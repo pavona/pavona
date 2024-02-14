@@ -107,7 +107,7 @@ cc_library(
 )
 
 cc_library(
-    name = "hmac",
+name = "hmac",
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
     deps = [
@@ -120,6 +120,28 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
+    ],
+)
+
+cc_library(
+    name = "rsa",
+    srcs = ["rsa.c"],
+    hdrs = ["rsa.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
+        "//sw/device/lib/crypto/impl/sha2:sha256",
+        "//sw/device/lib/crypto/impl/sha2:sha512",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:rsa_commands",
     ],
 )
 
@@ -167,6 +189,7 @@ FIRMWARE_DEPS = [
     ":hash",
     ":hmac",
     ":kmac",
+    ":rsa",
     ":sphincsplus",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",

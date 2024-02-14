@@ -481,3 +481,128 @@ test_suite(
         ":sphincsplus_kat",
     ],
 )
+
+WYCHEPROOF_RSA_OAEP_SUFFIXES = {
+    2048: [
+        # "sha256_mgf1sha256", 36/37 (D) 18/18 (E)
+        # "sha384_mgf1sha384", 33/34 (D) 16/16 (E)
+        # "sha512_mgf1sha512", 31/33 (D) 14/14 (E)
+    ],
+    3072: [
+        # "sha256_mgf1sha256", 35/37 (D) 18/18 (E)
+        # "sha512_mgf1sha512", 32/33 (D) 15/15 (E)
+    ],
+    4096: [
+        # "sha256_mgf1sha256", 35/37 (D) 18/18 (E)
+        # "sha512_mgf1sha512", 34/36 (D) 17/17 (E)
+    ],
+}
+
+WYCHEPROOF_RSA_PKCS1_15_SUFFIXES = {
+    2048: [
+        # "sha256", 256/257
+        # "sha384", 258/258
+        # "sha512", 258/258
+        # "sha3_224", 258/258
+        # "sha3_256", 256/257,
+        # "sha3_384", 258/258
+        # "sha3_512", 258/258
+    ],
+    3072: [
+        # "sha256", 259/259
+        # "sha384", 258/259
+        # "sha512", 260/260
+        # "sha3_256", 258/258
+        # "sha3_384", 259/259
+        # "sha3_512", 259/259
+    ],
+    4096: [
+        # "sha256", 257/258
+        # "sha384", 259/259
+        # "sha512", 258/259
+    ],
+}
+
+WYCHEPROOF_RSA_PSS_SUFFIXES = {
+    2048: [
+        # TODO uncomment if RSA supports salt_length != hash_digest_length
+        # "sha256_mgf1_0",
+        # "sha256_mgf1_32", 107/108
+        # "sha384_mgf1_48", 139/141
+    ],
+    3072: [
+        # "sha256_mgf1_32", 106/108
+        # TODO uncomment if RSA supports SHAKE
+        # "shake128",
+    ],
+    4096: [
+        # "sha256_mgf1_32", 106/108
+        # "sha384_mgf1_48", 138/141
+        # TODO uncomment if RSA supports salt_length != hash_digest_length
+        # "sha512_mgf1_32",
+        # "sha512_mgf1_64", 177/179
+        # TODO uncomment if RSA supports SHAKE
+        # "shake256",
+    ],
+}
+
+RSA_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_{}_{}_{}_json".format(
+        padding_mode,
+        security_level,
+        wy_suffix,
+    )
+    for security_level in [
+        2048,
+        3072,
+        4096,
+    ]
+    for padding_mode, wy_padding_mode, operation, suffixes in [
+        (
+            "oaep",
+            "oaep",
+            "decrypt",
+            WYCHEPROOF_RSA_OAEP_SUFFIXES[security_level],
+        ),
+        (
+            "pkcs1_1.5",
+            "signature",
+            "verify",
+            WYCHEPROOF_RSA_PKCS1_15_SUFFIXES[security_level],
+        ),
+        (
+            "pss",
+            "pss",
+            "verify",
+            WYCHEPROOF_RSA_PSS_SUFFIXES[security_level],
+        ),
+    ]
+    for wy_suffix in suffixes
+] + [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_rsa_{}_{}_json".format(
+        padding_mode,
+        operation,
+    )
+    for padding_mode in [
+        "pkcs1_1.5",
+        "pss",
+    ]
+    for operation in [
+        # TODO uncomment when RSA verify supports e != 0x10001
+        "sign",
+        # "verify",
+    ]
+]
+
+RSA_TESTVECTOR_ARGS = " ".join([
+    "--rsa-json=\"$(rootpath {})\"".format(target)
+    for target in RSA_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "rsa_kat",
+    slow_test = True,
+    test_args = RSA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
+    test_vectors = RSA_TESTVECTOR_TARGETS,
+)

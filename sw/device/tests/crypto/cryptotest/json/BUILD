@@ -16,6 +16,7 @@ cc_library(
         ":hash_commands",
         ":hmac_commands",
         ":kmac_commands",
+        ":rsa_commands",
         "//sw/device/lib/ujson",
     ],
 )
