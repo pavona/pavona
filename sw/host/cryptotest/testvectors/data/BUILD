@@ -628,6 +628,7 @@ WYCHEPROOF_RSA_PKCS1_15_SUFFIXES = {
         "sha256",
         "sha384",
         "sha512",
+        "sha3_224",
         "sha3_256",
         "sha3_384",
         "sha3_512",
