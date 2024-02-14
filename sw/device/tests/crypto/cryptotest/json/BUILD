@@ -63,6 +63,13 @@ cc_library(
 )
 
 cc_library(
+    name = "rsa_commands",
+    srcs = ["rsa_commands.c"],
+    hdrs = ["rsa_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "kmac_commands",
     srcs = ["kmac_commands.c"],
     hdrs = ["kmac_commands.h"],
