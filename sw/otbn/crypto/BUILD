@@ -409,6 +409,13 @@ otbn_library(
     ],
 )
 
+otbn_library(
+    name = "sha512_padding",
+    srcs = [
+        "sha512_padding.s",
+    ],
+)
+
 otbn_binary(
     name = "run_sha512",
     srcs = [

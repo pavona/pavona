@@ -56,19 +56,6 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "ed25519_sign_test",
-    srcs = [
-        "ed25519_sign_test.s",
-    ],
-    exp = "ed25519_sign_test.exp",
-    deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:ed25519_scalar",
-        "//sw/otbn/crypto:field25519",
-    ],
-)
-
-otbn_sim_test(
     name = "ed25519_verify_test",
     srcs = [
         "ed25519_verify_test.s",
@@ -1315,6 +1302,17 @@ otbn_sim_test(
     exp = "sha512_compact_test.exp",
     deps = [
         "//sw/otbn/crypto:sha512_compact",
+    ],
+)
+
+otbn_sim_test(
+    name = "sha512_padding_test",
+    srcs = [
+        "sha512_padding_test.s",
+    ],
+    exp = "sha512_padding_test.exp",
+    deps = [
+        "//sw/otbn/crypto:sha512_padding",
     ],
 )
 

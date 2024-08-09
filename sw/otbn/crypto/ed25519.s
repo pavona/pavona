@@ -268,51 +268,41 @@ ed25519_verify_var:
   ret
 
 /**
- * Top-level Ed25519 signature generation operation.
+ * Top-level Ed25519ph signature generation operation.
  *
- * Returns R_ (encoded signature point) and A_ (encoded public key point).
+ * Returns an 512-bit signature (R_ || S).
  *
- * The signature generation is split into two stages, because this program does
- * not have direct access to a SHA-512 implementation and therefore must pass
- * data to Ibex when a hash is needed. Ibex may then compute the hash, most
- * likely using a separate OTBN program, but the details of how are irrelevant
- * to this program. The full process looks like this:
- *   Ibex:
- *    - Inputs: secretkey, M
- *    - Compute h = SHA-512(secretkey). Denote the second half of h as prefix.
- *    - Compute r = SHA-512(dom2(F, C) || prefix || PH(M))
- *    - Outputs: h, r, PH(M)
- *   Stage 1:
- *    - Inputs: h (first half only), r
- *    - Construct the secret scalar s from the first half of h.
- *    - Compute the public key A = [s]B. Encode A as A_.
- *    - Compute the signature point R = [r]B. Encode R as R_.
- *    - Ouputs: R_, A_
- *  Ibex:
- *    - Inputs: R_, A_, PH(M)
- *    - Compute k = SHA-512(dom2(F, C) || R_ || A_ || PH(M))
- *    - Outputs: k
- *   Stage 2:
- *    - Inputs: h (first half only), r, k
- *    - Construct the secret scalar s from the first half of h.
- *    - Compute the signature scalar S = (r + k * s) mod L.
- *    - Ouputs: S
+ * Briefly, the signature generation algorithm is:
+ *   1. Compute h = SHA-512(d). Denote the second half of h as prefix.
+ *   2. Compute r = SHA-512(domain-separator || prefix || PH(M))
+ *   3. Construct the secret scalar s from the first half of h.
+ *   4. Compute the public key A = [s]B. Encode A as A_.
+ *   5. Compute the signature point R = [r]B. Encode R as R_.
+ *   6. Compute k = SHA-512(domain-separator || R_ || A_ || PH(M))
+ *   7. Compute the signature scalar S = (r + k * s) mod L.
+ *
+ * The "domain separator" in steps 2 and 6 is, as defined in IETF RFC 8032 and
+ * FIPS 186-5:
+ *   "SigEd25519 no Ed25519 collisions" || byte(1) || byte(ctx_len) || ctx
  *
  * This routine runs in constant time.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  w31: all-zero
- * @param[in]  dmem[ed25519_hash_r]: precomputed hash r, 512 bits
- * @param[in]  dmem[ed25519_hash_h_low]: lower half of precomputed hash h, 256 bits
- * @param[out] dmem[ed25519_sig_R]: encoded signature point R_, 256 bits
- * @param[out] dmem[ed25519_public_key]: encoded public key A_, 256 bits
+ * @param[in]  dmem[ed25519_d]: secret key (256 bits)
+ * @param[in]  dmem[ed25519_ctx]: context string (ctx_len bytes)
+ * @param[in]  dmem[ed25519_ctx_len]: length of context string in bytes
+ * @param[in]  dmem[ed25519_msg]: pre-hashed message (512 bits)
+ * @param[out] dmem[ed25519_sig]: encoded signature (512 bits)
  *
  * clobbered registers: x2 to x4, x20 to x23, w2 to w30
  * clobbered flag groups: FG0
  */
-.globl ed25519_sign_stage1
-ed25519_sign_stage1:
+.globl ed25519_sign_prehashed
+ed25519_sign_prehashed:
+  /* Initialize all-zero register. */
+  bn.xor   w31, w31, w31
+
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
        MOD <= L */
