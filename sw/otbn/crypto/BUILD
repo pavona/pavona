@@ -1,3 +1,7 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -406,6 +410,13 @@ otbn_library(
     name = "sha512",
     srcs = [
         "sha512.s",
+    ],
+)
+
+otbn_library(
+    name = "sha512_interface",
+    srcs = [
+        "sha512_interface.s",
     ],
 )
 

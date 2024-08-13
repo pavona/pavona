@@ -52,5 +52,7 @@ def find_tool(tool_name: str) -> str:
     raise RuntimeError('Unable to find {!r} in PATH or in {!r}. Set the {!r} '
                        'or TOOLCHAIN_PATH environment variable if you '
                        'installed your RISC-V toolchain in an alternate '
-                       'location.'
+                       'location. (Hint: if you installed the toolchain via '
+                       'Bazel, this is likely '
+                       '\'bazel-opentitan/external/lowrisc_rv32imcb_files/\' )'
                        .format(expanded, default_location, tool_env_var))

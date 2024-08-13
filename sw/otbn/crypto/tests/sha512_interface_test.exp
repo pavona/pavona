@@ -1,0 +1,7 @@
+# Test 1: SHA512("abc")
+w0 = 0x9ad3554be6ee9e0aa27ea9894efae612314120ae497341ccba7a6193a135afdd
+w1 = 0x9fa44ca54fc99a2a0ee83c6423444d45bdebfea3233cba36a8c14f272a999221
+
+# Test 2: SHA512("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+w2 = 0x189088b6adae9972a17f9febc679778f3f14fc1428f7f48cda13e3da759b958e
+w3 = 0x09e94b875be5965e5426ddb6ee29d3c73a43b5c4de991b33e4f700499e281d50

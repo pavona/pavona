@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -34,10 +38,10 @@
 
 
 /**
- * Compute SHA-512 (or SHA-384) hash
+ * Compute SHA-512 (or SHA-384) hash from pre-formatted message.
  *
  * Updates the SHA-512 state for n subsequent 1024-bit chunks of a
- * pre-formatted message.
+ * pre-formatted, pre-padded message.
  *
  * The message is expected in dmem in a pre-processed format:
  *  - The message has been padded according to the SHA-512 standard.
@@ -67,13 +71,13 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  dmem[n_chunks]: number of chunks to process in a single go
- * @param[in]  dmem[dptr_state]: dmem location with state      ][63:0]: H[0]
- * @param[in]  dmem[dptr_msg]: Pointer to memory location containing the pre-
- *                               formatted message chunks.
+ * @param[in]  dmem[sha512_n_chunks]: number of chunks to process in a single go
+ * @param[in]  dmem[sha512_dptr_state]: dmem location with state
+ * @param[in]  dmem[sha512_dptr_msg]: Pointer to memory location containing the pre-
+ *                                    formatted message chunks.
  *
  * clobbered registers: w0 to w7, w10, w11, w15 to w27, w31
- *                      x1, x2, x10, x11 to x17, x20
+ *                      x2, x10 to x17, x19, x20
  * clobbered flag groups: FG0
  */
 .globl sha512_compact
@@ -83,15 +87,15 @@ sha512_compact:
   bn.xor  w31, w31, w31
 
   /* read number of 1024-bit chunks from dmem */
-  la x20, n_chunks
+  la x20, sha512_n_chunks
   lw x20, 0(x20)
 
   /* read pointer to state variables from dmem */
-  la x17, dptr_state
+  la x17, sha512_dptr_state
   lw x17, 0(x17)
 
   /* read pointer to message buffer from dmem */
-  la x14, dptr_msg
+  la x14, sha512_dptr_msg
   lw x14, 0(x14)
 
   /* init reg pointers */
@@ -102,8 +106,12 @@ sha512_compact:
   /* init pointer to round constants */
   la x16, K
 
+  /* init pointer to message blocks */
+  la x14, sha512_dptr_msg
+  lw x14, 0(x14)
+
   /* one iteration per chunk */
-  loop x20, 105
+  loop x20, 103
 
     /* load state variables from dmem */
     addi     x2, x0, 0
@@ -128,8 +136,6 @@ sha512_compact:
     addi x15, x16, 0
 
     /* read pointer to message buffer from dmem */
-    la x14, dptr_msg
-    lw x14, 0(x14)
     /* The message schedule's 16 lower words (W_0 to W_15) are set equal to the
        16 words of the message chunk (M_0 to M_15). */
     addi    x2, x0, 24
@@ -137,6 +143,7 @@ sha512_compact:
     bn.lid  x2++, 32(x14)
     bn.lid  x2++, 64(x14)
     bn.lid  x2++, 96(x14)
+    addi    x14, x14, 128
 
    /* Main loop for SHA-512 compression function (80 rounds),
       split into an inner and outer loop here (80=20*4 cycles), since
@@ -328,22 +335,22 @@ ret
 .bss
 
 /* number of chunks to process */
-.globl n_chunks
-.weak n_chunks
+.globl sha512_n_chunks
+.weak sha512_n_chunks
 .balign 4
-n_chunks:
+sha512_n_chunks:
   .zero 4
 
-/* pointer to state (dptr_state) */
-.globl dptr_state
+/* pointer to state */
+.globl sha512_dptr_state
 .balign 4
-dptr_state:
+sha512_dptr_state:
   .zero 4
 
 /* pointer to msg (dptr_msg) */
-.globl dptr_msg
+.globl sha512_dptr_msg
 .balign 4
-dptr_msg:
+sha512_dptr_msg:
   .zero 4
 
 

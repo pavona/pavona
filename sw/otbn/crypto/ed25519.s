@@ -8,7 +8,7 @@
 
 /**
  * This library contains an implementation of the Ed25519 signature scheme
- * based on RFC 8032:
+ * based on RFC 8032 and FIPS 186-5:
  *   https://datatracker.ietf.org/doc/html/rfc8032
  *
  * This implementation uses affine (x, y) coordinates at the interface but uses
@@ -16,35 +16,9 @@
  * that accept input in affine form are prefixed with affine_ and those that
  * accept input in extended form are prefixed with ext_.
  *
- * For verification, we slightly diverge from the RFC in terms of point
- * validation, because the RFC does not match most real-world code in certain
- * edge cases (and in fact, the RFC allows implementations to disagree with
- * each other on what constitutes a valid signature). A detailed walkthrough of
- * Ed25519 point validation issues and existing practice is here:
- *   https://hdevalence.ca/blog/2020-10-04-its-25519am
- *
- * Signatures constructed as requested by the RFC are unaffected by these
- * corner cases. However, maliciously constructed signatures can use these
- * small differences in validation criteria to cause problems for systems which
- * expect implementations to agree.
- *
- * In order to maximize compatibility and predictability, this implementation
- * adopts the ZIP215 set of validation criteria from Zcash, specified here:
- *   https://zips.z.cash/zip-0215
- *
- * Specifically, these rules are:
- *   - The scalar s in the signature must be canonical (< L). This matches the
- *     RFC but differs from some existing implementations such as the original
- *     "ref10".
- *   - The y coordinates of encoded points A and R are not required to be fully
- *     reduced modulo p (that is, it can be the case that y is in the
- *     range[2^255-19,2^255-1], which is not permitted by the RFC).
- *   - Encodings in which x=0 and the sign bit of x is 1 are permitted (the RFC
- *     disallows this).
- *   - Signatures must satisfy the "batched" equation [8][S]B = [8]R +
- *     [8][k]A', rather than the "unbatched" equation without the
- *     multiplications by 8 (the RFC allows implementers to check either, but
- *     they are not always equivalent for dishonestly constructed signatures).
+ * Where RFC 8032 and FIPS 186-5 disagree, such as for certain cases of
+ * non-canonical point encodings (e.g. y >= p), we follow FIPS. The terminology
+ * in the comments matches the RFC.
  */
 
 /**
@@ -85,10 +59,9 @@
  *   2. Decodes and checks the range of the scalar value S.
  *   3. Checks the group equation [8][S]B = [8]R + [8][k]A.
  *
- * This verification uses the ZIP15 point validation criteria, so it checks
- * that S < L and always uses the group equation with the cofactors of 8 rather
- * than the optional version without these also offered by the RFC. See the
- * comments about ZIP15 at the top of this file for details.
+ * This verification checks that S < L, and always uses the group equation with
+ * the cofactors of 8 rather than the optional version without these also
+ * offered by the RFC.
  *
  * This routine runs in variable time.
  *
@@ -292,10 +265,11 @@ ed25519_verify_var:
  * @param[in]  dmem[ed25519_d]: secret key (256 bits)
  * @param[in]  dmem[ed25519_ctx]: context string (ctx_len bytes)
  * @param[in]  dmem[ed25519_ctx_len]: length of context string in bytes
- * @param[in]  dmem[ed25519_msg]: pre-hashed message (512 bits)
- * @param[out] dmem[ed25519_sig]: encoded signature (512 bits)
+ * @param[in]  dmem[ed25519_message]: pre-hashed message (512 bits)
+ * @param[out] dmem[ed25519_sig_R]: R component of signature (256 bits)
+ * @param[out] dmem[ed25519_sig_S]: S component of signature (256 bits)
  *
- * clobbered registers: x2 to x4, x20 to x23, w2 to w30
+ * clobbered registers: x2 to x4, x20 to x23, w1 to w30
  * clobbered flag groups: FG0
  */
 .globl ed25519_sign_prehashed
@@ -303,15 +277,53 @@ ed25519_sign_prehashed:
   /* Initialize all-zero register. */
   bn.xor   w31, w31, w31
 
+  /* Call the SHA-512 routine to hash d.
+       dmem[ed25519_hash_h] <= SHA-512(d) = h */
+  jal      x1, sha512_init
+  li       x18, 32
+  la       x20, ed25519_d
+  jal      x1, sha512_update
+  la       x18, ed25519_hash_h
+  jal      x1, sha512_final
+
+  /* Append the context length to the domain separator prefix.
+       dmem[ed25519_prehash_dom_sep+33] <= ctx_len */
+  la       x2, ed25519_ctx_len
+  lw       x2, 0(x2)
+  slli     x2, x2, 8
+  la       x3, ed25519_prehash_dom_sep
+  lw       x4, 32(x3)
+  or       x4, x4, x2
+  sw       x4, 0(x3)
+
+  /* dmem[ed25519_r] <= SHA-512(domain-separator || h[63:32] || PH(M)) */
+  jal      x1, sha512_init
+  li       x18, 34
+  la       x20, ed25519_prehash_dom_sep
+  jal      x1, sha512_update
+  la       x18, ed25519_ctx_len
+  lw       x18, 0(x18)
+  la       x20, ed25519_ctx
+  jal      x1, sha512_update
+  li       x18, 32
+  la       x20, ed25519_hash_h
+  addi     x20, x20, 32
+  jal      x1, sha512_update
+  li       x18, 64
+  la       x20, ed25519_message
+  jal      x1, sha512_update
+  la       x18, ed25519_hash_r
+  jal      x1, sha512_final
+
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
        MOD <= L */
   jal      x1, sc_init
 
-  /* Load the 256-bit lower half of the precomputed hash h.
+  /* Load the 256-bit lower half of the hash h.
        w16 <= h[255:0] */
   li       x2, 16
-  la       x3, ed25519_hash_h_low
+  la       x3, ed25519_hash_h
   bn.lid   x2, 0(x3)
 
   /* Recover the secret scalar s from h.
@@ -331,7 +343,7 @@ ed25519_sign_prehashed:
        w5 <= s mod L */
   bn.mov   w5, w18
 
-  /* Load the 512-bit precomputed hash r.
+  /* Load the 512-bit hash r.
        [w17:w16] <= r */
   li       x2, 16
   la       x3, ed25519_hash_r
@@ -344,8 +356,8 @@ ed25519_sign_prehashed:
   jal      x1, sc_reduce
 
   /* Save r for later.
-       w28 <= w18 = r mod L */
-  bn.mov   w28, w18
+       w1 <= w18 = r mod L */
+  bn.mov   w1, w18
 
   /* Set up for field arithmetic in preparation for scalar multiplication.
        MOD <= p
@@ -372,7 +384,8 @@ ed25519_sign_prehashed:
   jal      x1, affine_to_ext
 
   /* Compute the signature point R = [r]B.
-       [w13:w10] <= w28 * [w9:w6] = [r]B */
+       [w13:w10] <= w1 * [w9:w6] = [r]B */
+  bn.mov   w28, w1
   jal      x1, ext_scmul
 
   /* Convert R to affine coordinates.
@@ -408,58 +421,34 @@ ed25519_sign_prehashed:
   la       x3, ed25519_public_key
   bn.sid   x2, 0(x3)
 
-  ret
+  /* TODO: we could start with the pre-computed domain separator prefix here potentially */
+  /* dmem[ed25519_hash_k] <= SHA-512(domain-separator || R_ || A_ || PH(M)) */
+  jal      x1, sha512_init
+  li       x18, 34
+  la       x20, ed25519_prehash_dom_sep
+  jal      x1, sha512_update
+  la       x18, ed25519_ctx_len
+  lw       x18, 0(x18)
+  la       x20, ed25519_ctx
+  jal      x1, sha512_update
+  li       x18, 32
+  la       x20, ed25519_sig_R
+  jal      x1, sha512_update
+  li       x18, 32
+  la       x20, ed25519_public_key
+  jal      x1, sha512_update
+  li       x18, 64
+  la       x20, ed25519_message
+  jal      x1, sha512_update
+  la       x18, ed25519_hash_k
+  jal      x1, sha512_final
 
-/**
- * Top-level Ed25519 signature generation operation (second stage).
- *
- * Returns S (a scalar modulo L), the second half of the signature.
- *
- * See the docstring of ed25519_sign_stage1 for details about the breakdown of
- * the signature generation into two stages. This second stage takes inputs h,
- * r, and k, where r and k are SHA-512 hashes, and h is the first half of a
- * SHA-512 hash. This routine:
- *    - Reduces r and k modulo L (for efficiency)
- *    - Constructs the secret scalar s from the first half of h.
- *    - Computes the signature scalar S = (r + k * s) mod L.
- *
- * This routine runs in constant time.
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * @param[in]  w31: all-zero
- * @param[in]  dmem[ed25519_hash_k]: precomputed hash k, 512 bits
- * @param[in]  dmem[ed25519_hash_r]: precomputed hash r, 512 bits
- * @param[in]  dmem[ed25519_hash_h_low]: lower half of precomputed hash h, 256 bits
- * @param[out] dmem[ed25519_sig_S]: signature scalar S, 256 bits
- *
- * clobbered registers: x2 to x4, x20 to x23, w2 to w30
- * clobbered flag groups: FG0
- */
-.globl ed25519_sign_stage2
-ed25519_sign_stage2:
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
        MOD <= L */
   jal      x1, sc_init
 
-  /* Load the 512-bit precomputed hash r.
-       [w17:w16] <= r */
-  li       x2, 16
-  la       x3, ed25519_hash_r
-  bn.lid   x2, 0(x3++)
-  addi     x2, x2, 1
-  bn.lid   x2, 0(x3)
-
-  /* Reduce r modulo L.
-       w18 <= [w17:w16] mod L = r mod L */
-  jal      x1, sc_reduce
-
-  /* Save r for later.
-       w5 <= r mod L */
-  bn.mov   w5, w18
-
-  /* Load the 512-bit precomputed hash k.
+  /* Load the 512-bit hash k.
        [w17:w16] <= k */
   li       x2, 16
   la       x3, ed25519_hash_k
@@ -475,24 +464,14 @@ ed25519_sign_stage2:
        w4 <= k mod L */
   bn.mov   w4, w18
 
-  /* Load the 256-bit lower half of the precomputed hash h.
-       w16 <= h[255:0] */
-  li       x2, 16
-  la       x3, ed25519_hash_h_low
-  bn.lid   x2, 0(x3)
-
-  /* Recover the secret scalar s from h.
-       w16 <= s */
-  jal      x1, sc_clamp
-
   /* Compute the signature scalar S = (r + (k * s)) mod L. Note: s is not fully
      reduced modulo L here, but that is permitted according to the
      specification of sc_mul, which only requires that its inputs fit in 256
      bits. */
 
-  /* w18 <= (w4 * w16) mod L = (k * s) mod L */
+  /* w18 <= (w4 * w5) mod L = (k * s) mod L */
   bn.mov   w21, w4
-  bn.mov   w22, w16
+  bn.mov   w22, w5
   jal      x1, sc_mul
 
   /* w4 <= (w5 + w18) mod L = (r + k * s) mod L = S */
@@ -701,12 +680,15 @@ affine_encode:
  *   - Solving the curve equation to get two candidates for x.
  *   - Use lsb(x) to select the correct candidate.
  *
- * This implementation, in accordance with ZIP215 validation criteria, will
- * accept non-canonical values of y in the range [p,2^255). However, the output
- * y value will be fully reduced modulo p.
+ * Some implementations of Ed25519 disagree about how to decode points in
+ * particular whether to accept the following:
+ *   (a) non-canonical values of y in the range [p,2^255)
+ *   (b) points with a recovered x value of 0 but a sign bit of 1 (i.e. "-0")
  *
- * Since the inputs to this routine are all public values, there's no need to
- * make it constant-time.
+ * Following FIPS 186-5, this implementation rejects both (a) and (b).
+ *
+ * Since no points in Ed25519 are secret, the inputs to this routine are all
+ * public values and constant-time code is not a concern here.
  *
  * This routine runs in variable time.
  *
@@ -736,9 +718,22 @@ affine_decode_var:
   bn.rshi  w11, w11, w31 >> 255
   bn.rshi  w11, w31, w11 >> 1
 
-  /* Defensively reduce y modulo p in case y is non-canonical.
-       w11 <= (w11 + 0) mod p = w11 mod p */
-  bn.addm  w11, w11, w31
+  /* Reduce y modulo p and check if the value changed. If the values are equal,
+     the FG0 value will be exactly 8; FG0.Z (bit position 3) will be true and M,
+      L, and Z will be false. */
+  bn.addm  w14, w11, w31
+  bn.cmp   w11, w14
+  li       x3, 8
+  csrrs    x2, FG0, x0
+  beq      x2, x3, decode_y_ok
+
+  /* If we get here, then y >= p; reject the point. */
+  li       x20, 0xeda2bfaf
+  bn.mov   w10, w31
+  bn.mov   w11, w31
+  ret
+
+  decode_y_ok:
 
   /* Solve the curve equation to get a candidate root. From RFC 8032,
      section 5.1.3, step 2:
@@ -917,11 +912,11 @@ affine_decode_var:
      point's x coordinate to r if lsb(x) from the encoded point matches lsb(r),
      and set x to (-r) mod p otherwise.
 
-     Because we are following the ZIP15 validation criteria instead of the RFC,
-     we allow the case where x=0 but the encoded lsb(x)=1, so that check is
-     skipped here. In this case, we will decode x as (-0) mod p = 0.
+     We also need to check for the special case in which x=0 and lsb(x)=1,
+     which we should reject in line with FIPS 186-5.
 
      Code here expects:
+       w24: lsb(x)
        w27: r such that r^2 = x^2 (mod p).
        w31: all-zero
   */
@@ -931,20 +926,34 @@ affine_decode_var:
   bn.subm  w10, w31, w27
 
   /* Set FG.L to be 1 iff the LSBs of r and x are mismatched.
-       FG0.L <= lsb(w24 ^ w27) = lsb(lsb(x) ^ r) = lsb(x) ^ lsb(r) = (lsb(x) != lsb(r)) */
-  bn.xor   w24, w27, w24
+       FG0.L <= lsb(w27 ^ w24) = lsb(r ^ lsb(x)) = (lsb(x) != lsb(r)) */
+  bn.xor   w14, w27, w24
 
   /* If the LSBs are mismatched, select (-r) mod p; otherwise select r.
        w10 <= FG0.L ? w10 : w27
                 = if (lsb(x) != lsb(r)) then (-r) mod p else r */
   bn.sel   w10, w10, w27, FG0.L
 
+  /* If the LSBs are still mismatched, then reject the point. This should only
+     be possible in the invalid x=0, lsb(x)=1 case. Note that rejecting this
+     case is not critical for security. */
+  bn.xor   w14, w10, w24
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 4
+  beq      x2, x0, decode_success
+
+  /* Exit with FAILURE. */
+  li       x20, 0xeda2bfaf
+  bn.mov   w10, w31
+  bn.mov   w11, w31
+  ret
+
+  decode_success:
   /* TODO: add an extra check that the curve equation is satisfied to protect
      against glitching? */
 
   /* Exit point decoding with SUCCESS. */
   li       x20, 0xf77fe650
-
   ret
 
 /**
@@ -1645,49 +1654,15 @@ fe_pow_2252m3:
 
   ret
 
-.bss
+.section .scratchpad
 
-/* Verification result code (32 bits). Output for verify.
-   If verification is successful, this will be SUCCESS = 0xf77fe650.
-   Otherwise, this will be FAILURE = 0xeda2bfaf. */
+/* Hash of the secret key (512 bits). Intermediate value for sign. */
 .balign 32
-.weak ed25519_verify_result
-ed25519_verify_result:
-  .zero 4
-
-/* Signature point R (256 bits). Input for verify and output for sign. */
-.balign 32
-.weak ed25519_sig_R
-ed25519_sig_R:
-  .zero 32
-
-/* Signature scalar S (253 bits). Input for verify and output for sign. */
-.balign 32
-.weak ed25519_sig_S
-ed25519_sig_S:
-  .zero 32
-
-/* Encoded public key A_ (256 bits). Input for verify. */
-.balign 32
-.weak ed25519_public_key
-ed25519_public_key:
-  .zero 32
-
-/* Precomputed hash k (512 bits). Input for verify and sign. */
-.balign 32
-.weak ed25519_hash_k
-ed25519_hash_k:
+.weak ed25519_hash_h
+ed25519_hash_h:
   .zero 64
 
-/* Lower half of precomputed hash h (256 bits). See RFC 8032, section
-   5.1.6, step 1 or the docstring of ed25519_sign. Input for sign. */
-.balign 32
-.weak ed25519_hash_h_low
-ed25519_hash_h_low:
-  .zero 32
-
-/* Precomputed hash r (512 bits). See RFC 8032, section 5.1.6, step 2 or the
-   docstring of ed25519_sign. Input for sign. */
+/* Hash value r (512 bits). Intermediate value for sign. */
 .balign 32
 .weak ed25519_hash_r
 ed25519_hash_r:
@@ -1743,3 +1718,72 @@ ed25519_d:
   .word 0x8cc74079
   .word 0x2b6ffe73
   .word 0x52036cee
+
+/* Ed25519 pre-hash domain separator (256 bits).
+     Equal to 'SigEd25519 no Ed25519 collisions' followed by a 1 byte (33 bytes total). */
+ed25519_prehash_dom_sep:
+  .word 0x45676953
+  .word 0x35353264
+  .word 0x6e203931
+  .word 0x6445206f
+  .word 0x31353532
+  .word 0x6f632039
+  .word 0x73696c6c
+  .word 0x736e6f69
+  .word 0x00000001
+
+.bss
+
+/* Context string length in bytes for pre-hashed EdDSA */
+.balign 4
+.weak ed25519_ctx_len
+ed25519_ctx_len:
+  .zero 4
+
+/* Verification result code (32 bits). Output for verify.
+   If verification is successful, this will be SUCCESS = 0xf77fe650.
+   Otherwise, this will be FAILURE = 0xeda2bfaf. */
+.balign 4
+.weak ed25519_verify_result
+ed25519_verify_result:
+  .zero 4
+
+/* Signature point R (256 bits). Input for verify and output for sign. */
+.balign 32
+.weak ed25519_sig_R
+ed25519_sig_R:
+  .zero 32
+
+/* Signature scalar S (253 bits). Input for verify and output for sign. */
+.balign 32
+.weak ed25519_sig_S
+ed25519_sig_S:
+  .zero 32
+
+/* Encoded public key A_ (256 bits). Input for verify. */
+.balign 32
+.weak ed25519_public_key
+ed25519_public_key:
+  .zero 32
+
+/* Hash value k (512 bits). Input for verify, intermediate for sign. */
+.balign 32
+.weak ed25519_hash_k
+ed25519_hash_k:
+  .zero 64
+
+/* Context string for pre-hashed EdDSA (up to 255 bytes).
+
+   Note: If the context length is not a multiple of 32 bytes, the bytes up to
+   the next multiple of 32 should be initialized in order to prevent read
+   errors. The value of these bytes is ignored. */
+.balign 32
+.weak ed25519_ctx
+ed25519_ctx:
+  .zero 256
+
+/* Message (pre-hashed, 64 bytes). */
+.balign 32
+.weak ed25519_message
+ed25519_message:
+  .zero 64

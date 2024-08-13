@@ -20,6 +20,9 @@ otbn_sim_test(
         "//sw/otbn/crypto:ed25519",
         "//sw/otbn/crypto:ed25519_scalar",
         "//sw/otbn/crypto:field25519",
+        "//sw/otbn/crypto:sha512_compact",
+        "//sw/otbn/crypto:sha512_padding",
+        "//sw/otbn/crypto:sha512_interface",
     ],
 )
 
@@ -33,6 +36,9 @@ otbn_sim_test(
         "//sw/otbn/crypto:ed25519",
         "//sw/otbn/crypto:ed25519_scalar",
         "//sw/otbn/crypto:field25519",
+        "//sw/otbn/crypto:sha512_compact",
+        "//sw/otbn/crypto:sha512_padding",
+        "//sw/otbn/crypto:sha512_interface",
     ],
 )
 
@@ -72,6 +78,22 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "ed25519_sign_prehashed_test",
+    srcs = [
+        "ed25519_sign_prehashed_test.s",
+    ],
+    dexp = "ed25519_sign_prehashed_test.dexp",
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+        "//sw/otbn/crypto:sha512_compact",
+        "//sw/otbn/crypto:sha512_padding",
+        "//sw/otbn/crypto:sha512_interface",
+    ],
+)
+
+otbn_sim_test(
     name = "ed25519_verify_test",
     srcs = [
         "ed25519_verify_test.s",
@@ -81,6 +103,9 @@ otbn_sim_test(
         "//sw/otbn/crypto:ed25519",
         "//sw/otbn/crypto:ed25519_scalar",
         "//sw/otbn/crypto:field25519",
+        "//sw/otbn/crypto:sha512_compact",
+        "//sw/otbn/crypto:sha512_padding",
+        "//sw/otbn/crypto:sha512_interface",
     ],
 )
 
@@ -94,6 +119,9 @@ otbn_sim_test(
         "//sw/otbn/crypto:ed25519",
         "//sw/otbn/crypto:ed25519_scalar",
         "//sw/otbn/crypto:field25519",
+        "//sw/otbn/crypto:sha512_compact",
+        "//sw/otbn/crypto:sha512_padding",
+        "//sw/otbn/crypto:sha512_interface",
     ],
 )
 
@@ -1329,6 +1357,19 @@ otbn_sim_test(
     exp = "sha512_padding_test.exp",
     deps = [
         "//sw/otbn/crypto:sha512_padding",
+    ],
+)
+
+otbn_sim_test(
+    name = "sha512_interface_test",
+    srcs = [
+        "sha512_interface_test.s",
+    ],
+    exp = "sha512_interface_test.exp",
+    deps = [
+        "//sw/otbn/crypto:sha512_interface",
+        "//sw/otbn/crypto:sha512_padding",
+        "//sw/otbn/crypto:sha512_compact",
     ],
 )
 

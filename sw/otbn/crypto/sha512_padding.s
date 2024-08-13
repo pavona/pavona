@@ -26,9 +26,9 @@
  * (even if that means dptr_pad is not) and that there is enough space in DMEM
  * at the end of the message for the padding.  Precisely, the padded length
  * will be the smallest multiple of 1024 bits (128 bytes) that will fit the
- * message plus 9 bytes.
+ * message plus 17 bytes.
  *
- * Note that 136 bytes after the message is always enough; this is the maximum
+ * Note that 144 bytes after the message is always enough; this is the maximum
  * padding length.
  *
  * This routine runs in constant time relative to message content but variable
@@ -130,8 +130,6 @@ sha512_pad_message:
 /**
  * Swap the bytes in a 32-bit word, in-place.
  *
- * The implementation is optimized for small code size rather than speed.
- *
  * This routine runs in constant time.
  *
  * @param[in]  x23: w, input word (w[0] || w[1] || w[2] || w[3])
@@ -158,24 +156,3 @@ bswap32:
   /* x2 <= w[0] << 24 | w[1] << 16 | w[2] << 8 | w[3] */
   or      x23, x2, x3
   ret
-
-.bss
-
-/* number of chunks to process */
-.globl n_chunks
-.weak n_chunks
-.balign 4
-n_chunks:
-  .zero 4
-
-/* pointer to state (dptr_state) */
-.globl dptr_state
-.balign 4
-dptr_state:
-  .zero 4
-
-/* pointer to msg (dptr_msg) */
-.globl dptr_msg
-.balign 4
-dptr_msg:
-  .zero 4
