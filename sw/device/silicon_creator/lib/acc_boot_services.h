@@ -173,8 +173,8 @@ rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
  * Retrieve an additional attestation key generation seed.
  *
  * This function retrieves an optional, secondary key seed to be loaded it into
- * the OTBN data memory (DMEM). This seed complements the primary seed
- * side-loaded from the `keymgr` used by OTBN for generating the attestation
+ * the ACC data memory (DMEM). This seed complements the primary seed
+ * side-loaded from the `keymgr` used by ACC for generating the attestation
  * key.
  *
  * This implementation is **top-specific** because the seed's origin, storage
@@ -191,6 +191,62 @@ rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t acc_boot_attestation_keygen_seed(uint32_t seed_idx, uint32_t *seed);
+
+/**
+ * Start an ECDSA-P256 signature verify on ACC.
+ *
+ * Expects the ACC boot-services program to already be loaded; see
+ * `acc_boot_app_load`.
+ *
+ * @param key An ECDSA-P256 public key.
+ * @param sig An ECDSA-P256 signature.
+ * @param digest Message digest to check against.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t acc_boot_sigverify_start(const ecdsa_p256_public_key_t *key,
+                                     const ecdsa_p256_signature_t *sig,
+                                     const hmac_digest_t *digest);
+
+/**
+ * Finish an ECDSA-P256 signature verify on ACC.
+ *
+ * Call after the `start` operation to wait for completion and collect the
+ * result.
+ *
+ * @param[out] recovered_r Buffer for the recovered `r` value.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t acc_boot_sigverify_finish(uint32_t *recovered_r);
+
+/**
+ * Start an ECDSA-P256 signature verify on ACC.
+ *
+ * Expects the ACC boot-services program to already be loaded; see
+ * `acc_boot_app_load`.
+ *
+ * @param key An ECDSA-P256 public key.
+ * @param sig An ECDSA-P256 signature.
+ * @param digest Message digest to check against.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t acc_boot_sigverify_start(const ecdsa_p256_public_key_t *key,
+                                     const ecdsa_p256_signature_t *sig,
+                                     const hmac_digest_t *digest);
+
+/**
+ * Finish an ECDSA-P256 signature verify on ACC.
+ *
+ * Call after the `start` operation to wait for completion and collect the
+ * result.
+ *
+ * @param[out] recovered_r Buffer for the recovered `r` value.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t acc_boot_sigverify_finish(uint32_t *recovered_r);
 
 #ifdef __cplusplus
 }  // extern "C"

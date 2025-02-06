@@ -247,14 +247,33 @@ rom_error_t sc_acc_dmem_read(size_t num_words, const sc_acc_addr_t src,
                              uint32_t *dest);
 
 /**
- * Start the execution of the application loaded into ACC.
+ * Execute the application loaded into ACC.
  *
- * This function blocks until ACC is idle.
+ * This function blocks until ACC is idle and waits for the ACC application to
+ * finish.
  *
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_acc_execute(void);
+
+/**
+ * Start execution of the application loaded into ACC.
+ *
+ * This function blocks until ACC is idle and then starts the ACC application.
+ *
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_acc_execute_start(void);
+
+/**
+ * Wait for the ACC application to finish execution.
+ *
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_acc_execute_finish(void);
 
 /**
  * Blocks until ACC is idle.
