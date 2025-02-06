@@ -243,10 +243,9 @@ rom_error_t acc_boot_attestation_endorse(const hmac_digest_t *digest,
   return kErrorOk;
 }
 
-rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
-                               const ecdsa_p256_signature_t *sig,
-                               const hmac_digest_t *digest,
-                               uint32_t *recovered_r) {
+rom_error_t acc_boot_sigverify_start(const ecdsa_p256_public_key_t *key,
+                                     const ecdsa_p256_signature_t *sig,
+                                     const hmac_digest_t *digest) {
   // Write the mode.
   uint32_t mode = kAccBootModeSigverify;
   HARDENED_RETURN_IF_ERROR(
@@ -269,9 +268,12 @@ rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
                                              sig->s, kAccVarBootS));
 
   // Start the ACC routine.
-  HARDENED_RETURN_IF_ERROR(sc_acc_execute());
   SEC_MMIO_WRITE_INCREMENT(kScAccSecMmioExecute);
+  return sc_acc_execute_start();
+}
 
+rom_error_t acc_boot_sigverify_finish(uint32_t *recovered_r) {
+  HARDENED_RETURN_IF_ERROR(sc_acc_execute_finish());
   // Check if the signature passed basic checks.
   uint32_t ok;
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_read(1, kAccVarBootOk, &ok));
@@ -288,4 +290,12 @@ rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
   // Read the recovered `r` value from DMEM.
   return sc_acc_dmem_read(kEcdsaP256SignatureComponentWords, kAccVarBootXr,
                           recovered_r);
+}
+
+rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
+                               const ecdsa_p256_signature_t *sig,
+                               const hmac_digest_t *digest,
+                               uint32_t *recovered_r) {
+  HARDENED_RETURN_IF_ERROR(acc_boot_sigverify_start(key, sig, digest));
+  return acc_boot_sigverify_finish(recovered_r);
 }
