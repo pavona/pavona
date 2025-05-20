@@ -250,7 +250,7 @@ fn run_rsa_testcase(
             // RSA signing in cryptolib is nondeterministic, so we cannot compare against the
             // provided signature. Instead, we use a known-good implementation to check that we can
             // verify the returned signature.
-            let signature = CryptotestRsaSignature::recv(spi_console, opts.timeout, false)?;
+            let signature = CryptotestRsaSignature::recv(spi_console, opts.timeout, false, false)?;
             let signature = BigUint::from_bytes_le(&signature.signature[..signature.signature_len])
                 .to_bytes_be();
             let public = RsaPublicKey::new(
@@ -315,7 +315,7 @@ fn run_rsa_testcase(
                 signature_len: test_case.signature.len(),
             }
             .send(spi_console)?;
-            match CryptotestRsaVerifyOutput::recv(spi_console, opts.timeout, false)? {
+            match CryptotestRsaVerifyOutput::recv(spi_console, opts.timeout, false, false)? {
                 CryptotestRsaVerifyOutput::Success => true,
                 CryptotestRsaVerifyOutput::Failure => false,
                 CryptotestRsaVerifyOutput::IntValue(i) => {
@@ -358,7 +358,8 @@ fn run_rsa_testcase(
                 e: test_case.e,
             }
             .send(spi_console)?;
-            let ciphertext = CryptotestRsaCiphertext::recv(spi_console, opts.timeout, false)?;
+            let ciphertext =
+                CryptotestRsaCiphertext::recv(spi_console, opts.timeout, false, false)?;
             // Verify we can decrypt the ciphertext
             let private = RsaPrivateKey::from_components(
                 n_bigint
@@ -478,7 +479,7 @@ fn run_rsa_testcase(
                 e: test_case.e,
             }
             .send(spi_console)?;
-            let output = CryptotestRsaDecryptOutput::recv(spi_console, opts.timeout, false)?;
+            let output = CryptotestRsaDecryptOutput::recv(spi_console, opts.timeout, false, false)?;
             output.success != 0
                 && output.plaintext[..output.plaintext_len].eq(test_case.message.as_slice())
         }
