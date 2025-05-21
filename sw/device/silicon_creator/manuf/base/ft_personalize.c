@@ -640,7 +640,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                               &attestation_binding_value,
                               /*max_key_version=*/0));
   TRY(acc_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
-                                     &curr_pubkey));
+                                    &curr_pubkey));
   TRY(dice_cdi_1_cert_build(&kZeroDigest, &kZeroDigest, &kZeroDigest, 0,
                             kOwnerAppDomainProd, &cdi_1_key_ids, &curr_pubkey,
                             all_certs, &curr_cert_size));
