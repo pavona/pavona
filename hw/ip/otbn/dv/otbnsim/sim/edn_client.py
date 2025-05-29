@@ -18,12 +18,12 @@ class EdnClient:
         # non-None if we're in the middle of reading a value from the EDN. This
         # should always have length <= ACC_LEN (sending an extra beat of data
         # causes an error).
-        self._acc: Optional[List[int]] = None
+        self._acc = None  # type: Optional[List[int]]
 
         # A counter of the number of beats we've been waiting since self._acc
         # became full before being told that CDC was done. This is None unless
         # self._acc contains a list of ACC_LEN values.
-        self._cdc_counter: Optional[int] = None
+        self._cdc_counter = None  # type: Optional[int]
 
         # If true, the next transaction that completes will be discarded.
         self._poisoned = False
@@ -35,7 +35,7 @@ class EdnClient:
         self._fips_err = False
         self._rep_err = False
 
-        self._last_word: Optional[int] = None
+        self._last_word = None  # type: Optional[int]
 
     def request(self) -> None:
         '''Start a request if there isn't one pending'''

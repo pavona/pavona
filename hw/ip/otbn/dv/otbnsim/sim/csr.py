@@ -1,6 +1,9 @@
-# Copyright lowRISC contributors (OpenTitan project).
+# Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 
 from .flags import FlagGroups
 from .wsr import WSRFile
@@ -18,6 +21,8 @@ class CSRFile:
         for idx in range(0x7d0, 0x7d8):
             self._known_indices.add(idx)  # MODi
         self._known_indices.add(0x7d8)  # RND_PREFETCH
+        self._known_indices.add(0x7d9)  # KMAC_CFG
+        self._known_indices.add(0x7e2)  # KMAC_STATUS
         self._known_indices.add(0xfc0)  # RND
         self._known_indices.add(0xfc1)  # URND
 
@@ -57,6 +62,24 @@ class CSRFile:
             # RND_PREFETCH register
             return 0
 
+        if idx == 0x7d9:
+            # KMAC_CFG register
+            return 0
+
+        if idx == 0x7e2:
+            # KMAC_STATUS register
+            return wsrs.KMAC_STATUS.read_unsigned()
+
+        if 0x7e3 <= idx <= 0x7ea:
+            # KMAC_DIGEST_SHARE0
+            digest_n = idx - 0x7e3
+            return self._get_field(digest_n, 32, wsrs.KMAC_DIGEST_SHARE0.read_unsigned())
+
+        if 0x7eb <= idx <= 0x7f2:
+            # KMAC_DIGEST_SHARE1
+            digest_n = idx - 0x7eb
+            return self._get_field(digest_n, 32, wsrs.KMAC_DIGEST_SHARE1.read_unsigned())
+
         if idx == 0xfc0:
             # RND register
             return wsrs.RND.read_u32()
@@ -92,6 +115,19 @@ class CSRFile:
         if idx == 0x7d8:
             # RND_PREFETCH
             wsrs.RND.request_value()
+            return
+
+        if idx == 0x7d9:
+            # KMAC_CFG register
+            wsrs.KMAC_CFG.write_unsigned(value)
+            return 0
+
+        if idx == 0x7e2:
+            # KMAC_STATUS register
+            return
+
+        if 0x7e3 <= idx <= 0x7f2:
+            # KMAC_DIGEST_SHARE0 and _SHARE1
             return
 
         if idx == 0xfc0:

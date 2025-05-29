@@ -1,9 +1,13 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 
 from collections import Counter, defaultdict, namedtuple
 from typing import Dict, Iterator, List, Optional
+import re
 
 from elftools.dwarf.dwarfinfo import DWARFInfo  # type: ignore
 from elftools.elf.elffile import ELFFile  # type: ignore
@@ -21,9 +25,10 @@ class ExecutionStats:
         self.program = program
 
         self.stall_count = 0
-        self.insn_histo: Counter[str] = Counter()
-        self.func_calls: List[Dict[str, int]] = []
-        self.loops: List[Dict[str, int]] = []
+        self.insn_histo = Counter()  # type: typing.Counter[str]
+        self.func_calls = []  # type: List[Dict[str, int]]
+        self.loops = []  # type: List[Dict[str, int]]
+        self.func_instrs = {}
 
         # Histogram indexed by the length of the (extended) basic block.
         self.basic_block_histo: Counter[int] = Counter()
@@ -39,9 +44,21 @@ class ExecutionStats:
         '''Get the number of executed instructions.'''
         return sum(self.insn_histo.values())
 
-    def record_stall(self) -> None:
+    def record_stall(self, state_bc: OTBNState) -> None:
         '''Record a single stall cycle.'''
         self.stall_count += 1
+
+        mnemonic = self._insn_at_addr(state_bc.pc).insn.mnemonic
+
+        # [instruction count, stall count]
+        if state_bc.pc in self.func_instrs:
+            if mnemonic in self.func_instrs[state_bc.pc]:
+                self.func_instrs[state_bc.pc][mnemonic][1] += 1
+            else:
+                self.func_instrs[state_bc.pc][mnemonic] = [0, 1]
+        else:
+            self.func_instrs[state_bc.pc] = {}
+            self.func_instrs[state_bc.pc][mnemonic] = [0, 1]
 
     def _insn_at_addr(self, addr: int) -> Optional[OTBNInsn]:
         '''Get the instruction at a given address.'''
@@ -67,6 +84,16 @@ class ExecutionStats:
 
         # Instruction histogram
         self.insn_histo[insn.insn.mnemonic] += 1
+
+        # Record cycle for this function + instruction
+        if pc in self.func_instrs:
+            if insn.insn.mnemonic in self.func_instrs[pc]:
+                self.func_instrs[pc][insn.insn.mnemonic][0] += 1
+            else:
+                self.func_instrs[pc][insn.insn.mnemonic] = [1, 0]
+        else:
+            self.func_instrs[pc] = {}
+            self.func_instrs[pc][insn.insn.mnemonic] = [1, 0]
 
         # Function calls
         # - Direct function calls: jal x1, <offset>
@@ -178,7 +205,7 @@ def _get_addr_symbol_map(elf_file: ELFFile) -> Dict[int, str]:
     if not isinstance(section, SymbolTableSection):
         return {}
 
-    return {sym.entry.st_value: sym.name for sym in section.iter_symbols()}
+    return {sym.entry.st_value: sym.name for sym in section.iter_symbols() if sym.entry['st_shndx'] == 1}
 
 
 class ExecutionStatAnalyzer:
@@ -189,11 +216,16 @@ class ExecutionStatAnalyzer:
         self._elf_file = ELFFile(open(elf_file_path, 'rb'))
         self._stats = stats
         self._addr_symbol_map = _get_addr_symbol_map(self._elf_file)
+        self.func_cycles = None
+        self.func_instrs = None
+        self.func_calls = None
 
-    def _describe_imem_addr(self, address: int) -> str:
+    def _describe_imem_addr(self, address: int, name_only: bool = False) -> str:
         symbol_name = None
         if address in self._addr_symbol_map:
             symbol_name = self._addr_symbol_map[address]
+            if name_only:
+                return symbol_name
         else:
             # |func_addr| is the largest possible |sym_addr| which is at most
             # |address|.
@@ -202,6 +234,8 @@ class ExecutionStatAnalyzer:
                 if sym_addr <= address and sym_addr > func_addr:
                     func_addr = sym_addr
             func_name = self._addr_symbol_map[func_addr]
+            if name_only:
+                return func_name
             symbol_name = func_name + f"+{address - func_addr:#x}"
 
         file_line = None
@@ -231,6 +265,14 @@ class ExecutionStatAnalyzer:
         out += "-----------------------\n"
         out += self._dump_insn_histo()
         out += "\n\n"
+        out += "Function cycle counts\n"
+        out += "-----------------------\n"
+        out += self._dump_func_cycles()
+        out += "\n\n"
+        out += "Function Instruction counts\n"
+        out += "-----------------------\n"
+        out += self._dump_func_instrs()
+        out += "\n\n"
         out += "Basic block statistics\n"
         out += "----------------------\n"
         out += self._dump_basic_block_stats()
@@ -245,6 +287,18 @@ class ExecutionStatAnalyzer:
         out += "\n"
 
         return out
+
+    def get_stat_data(self) -> Dict:
+        assert self.func_cycles is not None
+        assert self.func_instrs is not None
+        stat_data = {
+            "insn_count": self._stats.get_insn_count(),
+            "stall_count": self._stats.stall_count,
+            "func_cycles": self.func_cycles,
+            "func_instrs": self.func_instrs,
+            "func_calls": {l: dict(m) for l, m in self.func_calls.items()}
+        }
+        return stat_data
 
     def _dump_execution_time(self) -> str:
         insn_count = self._stats.get_insn_count()
@@ -284,6 +338,8 @@ class ExecutionStatAnalyzer:
             return "No functions were called.\n"
 
         out = ""
+        self.func_calls = {}
+        # TODO: Add the start address as function?
 
         # Build function call graphs and a call site index
         # caller-indexed == forward, callee-indexed == reverse
@@ -291,9 +347,9 @@ class ExecutionStatAnalyzer:
         # The call graphs are on function granularity; the call sites
         # dictionary is indexed by the called function, but uses the call site
         # as value.
-        callgraph: Dict[int, Counter[int]] = {}  # type
-        rev_callgraph: Dict[int, Counter[int]] = {}
-        rev_callsites: Dict[int, Counter[int]] = {}
+        callgraph = {}  # type: Dict[int, typing.Counter[int]]
+        rev_callgraph = {}  # type: Dict[int, typing.Counter[int]]
+        rev_callsites = {}  # type: Dict[int, typing.Counter[int]]
         for c in self._stats.func_calls:
             if c['caller_func'] not in callgraph:
                 callgraph[c['caller_func']] = Counter()
@@ -313,10 +369,17 @@ class ExecutionStatAnalyzer:
         for rev_callee_func, rev_caller_funcs in rev_callgraph.items():
             has_one_callsite = False
             func = self._describe_imem_addr(rev_callee_func)
+            callee = func
+            callee_func_only = re.findall(r'\(([^]]*)\)', callee)[0]
+            if callee_func_only not in self.func_calls:
+                self.func_calls[callee_func_only] = {}
+                self.func_calls[callee_func_only] = defaultdict(lambda: 0, self.func_calls[callee_func_only])
             out += f"Function {func}\n"
             out += "  is called from the following functions\n"
             for rev_caller_func, cnt in rev_caller_funcs.most_common():
                 func = self._describe_imem_addr(rev_caller_func)
+                caller = func
+                self.func_calls[callee_func_only][caller] += cnt
                 out += f"    * {cnt} times by function {func}\n"
             out += "  from the following call sites\n"
             for rc, cnt in rev_callsites[rev_callee_func].most_common():
@@ -410,3 +473,60 @@ class ExecutionStatAnalyzer:
             out.append('end_of_record')
 
         return '\n'.join(out) + '\n'
+
+    def _dump_func_cycles(self) -> str:
+        accumulated = dict()
+        for func_addr, histdata in self._stats.func_instrs.items():
+            # find the next label that does not start with an "_". By
+            # convention, labels that do not start with an "_" are functions,
+            # labels that do are used inside functions.
+            _func_addr = func_addr
+            while self._describe_imem_addr(_func_addr, name_only=True).startswith("_"):
+                _func_addr -= 1
+            func_name = self._describe_imem_addr(_func_addr, name_only=True)
+
+            for _, counts in histdata.items():
+                if func_name in accumulated:
+                    from operator import add
+                    accumulated[func_name] = list(map(add, accumulated[func_name], counts))
+                else:
+                    accumulated[func_name] = []
+                    accumulated[func_name] = counts
+        self.func_cycles = accumulated
+        assert sum(sum(accumulated.values(), [])) == (sum(self._stats.insn_histo.values()) + self._stats.stall_count)
+        return tabulate([[k, v] for k, v in sorted(accumulated.items(), key=lambda item: item[1], reverse=True)], headers=['function', '[instr., stall]']) + "\n"
+
+    def _dump_func_instrs(self) -> str:
+        out = ''
+        accumulated = dict()
+        for func_addr, histdata in self._stats.func_instrs.items():
+            # find the next label that does not start with an "_". By
+            # convention, labels that do not start with an "_" are functions,
+            # labels that do are used inside functions.
+            _func_addr = func_addr
+            while self._describe_imem_addr(_func_addr, name_only=True).startswith("_"):
+                _func_addr -= 1
+            func_name = self._describe_imem_addr(_func_addr, name_only=True)
+
+            for instr, counts in histdata.items():
+                if func_name in accumulated:
+                    if instr in accumulated[func_name]:
+                        from operator import add
+                        accumulated[func_name][instr] = list(map(add, accumulated[func_name][instr], counts))
+                    else:
+                        accumulated[func_name][instr] = counts
+                else:
+                    accumulated[func_name] = {}
+                    accumulated[func_name][instr] = counts
+
+        # The number of instructions counted for this stat must sum up to the
+        # total number of instructions executed. Flatten and sum up over all
+        # recorded stats. sum(l, []) can be used to flatten a list l by one
+        # level.
+        total_cycles_incl_stalls = sum(sum(sum([list(a.values()) for a in accumulated.values()], []), []))
+        assert (sum(self._stats.insn_histo.values()) + self._stats.stall_count) == total_cycles_incl_stalls
+        self.func_instrs = accumulated
+        for func_name, data in accumulated.items():
+            out += f'\n{func_name}\n'
+            out += tabulate([[k, v] for k, v in sorted(data.items(), key=lambda item: item[1], reverse=True)], headers=['instruction', '[count, stalls]']) + "\n"
+        return out

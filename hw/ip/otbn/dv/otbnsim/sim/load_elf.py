@@ -1,6 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 
 '''OTBN ELF file handling'''
 
@@ -69,7 +72,7 @@ def _get_loop_warps(symbols: Dict[str, int]) -> LoopWarps:
     return ret
 
 
-def load_elf(sim: OTBNSim, path: str) -> Optional[int]:
+def load_elf(sim: OTBNSim, path: str, dump_rtl_sim: bool = False) -> Optional[int]:
     '''Load ELF file at path and inject its contents into sim
 
     Returns the expected end address, if set, otherwise None.

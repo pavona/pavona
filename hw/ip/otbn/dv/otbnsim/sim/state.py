@@ -9,7 +9,7 @@ from shared.mem_layout import get_memory_layout
 
 from .csr import CSRFile
 from .dmem import Dmem
-from .constants import ErrBits, LcTx, Status
+from .constants import ErrBits, Status
 from .edn_client import EdnClient
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
@@ -32,41 +32,43 @@ class FsmState(IntEnum):
         MEM_SEC_WIPE <--\
              |          |
              \-------> IDLE -> PRE_EXEC -> EXEC
-                         ^                   |
-                         |                   v
-                         \----WIPING <-> PRE_WIPE
-                                 |
-                 LOCKED <--------/
-
-    PRE_WIPE is the initial state. OTBN is requesting a URND seed from the EDN.
-    Once it arrives, we jump to WIPING and perform an actual round of wiping
-    internal state. Once that wipe is finished, we normally jump back to
-    PRE_WIPE and then back to WIPING again.
-
-    Once WIPING has finished for the second time, we jump to LOCKED if there
-    has been an RMA request or an error. If not, we jump to IDLE.
+                         ^                  | |
+                         \-- WIPING_GOOD <--/ |
+                                              |
+                 LOCKED <--  WIPING_BAD  <----/
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
     there has been a fatal error. It matches Status.LOCKED.
 
     MEM_SEC_WIPE only represents the state where OTBN is busy operating on
-    secure wipe of DMEM/IMEM to perform the SEC_WIPE_I(D)MEM command. Secure
-    wipe of the memories also happen when we encounter a fatal error while on
+    secure wipe of DMEM/IMEM using SEC_WIPE_I(D)MEM command. Secure wipe of the
+    memories also happen when we encounter a fatal error while on
     Status.BUSY_EXECUTE. However, if we are getting a fatal error Status would
     be LOCKED.
 
-    PRE_EXEC is the period after starting OTBN where we're still waiting for an
-    EDN value to seed URND. EXEC is the period where we start fetching and
-    executing instructions.
+    PRE_EXEC, EXEC, WIPING_GOOD and WIPING_BAD correspond to
+    Status.BUSY_EXECUTE. PRE_EXEC is the period after starting OTBN where we're
+    still waiting for an EDN value to seed URND. EXEC is the period where we
+    start fetching and executing instructions.
+
+    WIPING_GOOD and WIPING_BAD represent the time where we're performing a
+    secure wipe of internal state (ending in updating the STATUS register to
+    show we're done). The difference between them is that WIPING_GOOD goes back
+    to IDLE and WIPING_BAD goes to LOCKED.
+
+    This is a refinement of the Status enum and the integer values are picked
+    so that you can divide by 10 to get the corresponding Status entry. (This
+    isn't used in the code, but makes debugging slightly more convenient when
+    you just have the numeric values available).
     '''
-    PRE_WIPE = 0
-    WIPING = 1
-    IDLE = 2
-    PRE_EXEC = 3
-    EXEC = 4
-    MEM_SEC_WIPE = 10
-    LOCKED = 255
+    IDLE = 0
+    PRE_EXEC = 10
+    EXEC = 12
+    WIPING_GOOD = 13
+    WIPING_BAD = 14
+    MEM_SEC_WIPE = 20
+    LOCKED = 2550
 
 
 class InitSecWipeState(IntEnum):
@@ -85,26 +87,18 @@ class OTBNState:
         self.csrs = CSRFile()
 
         self.pc = 0
-        self._pc_next_override: Optional[int] = None
+        self._pc_next_override = None  # type: Optional[int]
 
         self.imem_size = get_memory_layout().imem_size_bytes
 
         self.dmem = Dmem()
 
-        self._fsm_state = FsmState.PRE_WIPE
-        self._next_fsm_state = FsmState.PRE_WIPE
+        self._fsm_state = FsmState.IDLE
+        self._next_fsm_state = FsmState.IDLE
 
         self._init_sec_wipe_state = InitSecWipeState.NOT_DONE
 
-        # Track how many rounds of secure wipe to do. This is normally 2, but
-        # we shorten things to a single round when we get an RMA req, which
-        # avoids needing to wait for URND data from an entropy complex that
-        # might not be available.
-        self.wipe_rounds_to_do = 2
-
-        # Track the number of rounds of secure wipe that have been done. This
-        # should never be more than wipe_rounds_to_do.
-        self.wipe_rounds_done = 0
+        self.first_round_of_wipe = True
 
         self.loop_stack = LoopStack()
 
@@ -119,16 +113,13 @@ class OTBNState:
         # model except for matching its timing) has a copy of the next
         # instruction. Make this a counter, decremented once per cycle. When we
         # get to zero, we set the flag.
-        self._time_to_imem_invalidation: Optional[int] = None
+        self._time_to_imem_invalidation = None  # type: Optional[int]
         self.invalidated_imem = False
 
         # This is the number of cycles left for wiping. When we're in the
-        # WIPING state, this should be a non-negative number. Initialise to -1
-        # to catch bugs if we forget to set it.
+        # WIPING_GOOD or WIPING_BAD state, this should be a non-negative
+        # number. Initialise to -1 to catch bugs if we forget to set it.
         self.wipe_cycles = -1
-
-        # This controls which state we move to when the next secure wipe ends
-        self.lock_after_wipe = False
 
         # If this is nonzero, there's been an error injected from outside. The
         # Sim.step function will OR these bits into err_bits and stop at the
@@ -138,12 +129,7 @@ class OTBNState:
         # cancelled).
         self.injected_err_bits = 0
         self.lock_immediately = False
-
-        # OTBN might zero its insn_cnt register during a secure wipe. The
-        # precise cycle that this happens depends slightly on how we decide to
-        # do so. If this is not None, it is a counter of the number of cycles
-        # before the zeroing should happen.
-        self.time_to_insn_cnt_zero: Optional[int] = None
+        self.zero_insn_cnt_next = False
 
         # If this is set, all software errors should result in the model status
         # being locked.
@@ -153,39 +139,10 @@ class OTBNState:
         # current fsm_state.
         self.cycles_in_this_state = 0
 
-        # An RMA request is seen if the rma_req_i signal (tracked as rma_req
-        # here) is ON at a particular time.
-        #
-        # The signal is observed by OTBN at a few specific times:
-        #
-        #   - When OTBN is idle (the 'initial' and 'halt' states in
-        #     otbn_start_stop_control)
-        #
-        #   - At the end of a secure wipe (the 'wipe complete' state in
-        #     otbn_start_stop_control). It gets sampled at that particular
-        #     point to allow an RMA to be chosen after triggering an error but
-        #     before the secure wipe is completed and the module locks
-        #     completely.
-        #
-        # When the signal is observed to be LcTx.ON, the response is to change
-        # state to LOCKED (a bit like an escalation from lifecycle controller).
-        self.rma_req = LcTx.OFF
-
-        # This flag gets set as soon as we leave the Idle state for the first
-        # time. It reflects the behaviour of wipe_after_urnd_refresh_q in
-        # otbn_start_stop_control.sv, which skips a round of secure wiping
-        self.has_state_to_wipe = False
-
-        # If this flag is set, jump straight to the LOCKED state when we step
-        # in IDLE.
-        self.delayed_lock = False
-
-        # We set this flag when the first URND seed comes back from the EDN. If
-        # we get an RMA request before this flag is set, we'll be in the
-        # PRE_WIPE state and the EDN might not actually be running. In that
-        # situation, we do a shortened secure wipe (just one round and no
-        # random data).
-        self.edn_seen_running = False
+        # RMA request changes state to LOCKED, basically an escalation from
+        # lifecycle controller. Initiates secure wiping through
+        # stop_at_end_of_cycle method and this flag.
+        self.rma_req = False
 
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
@@ -229,8 +186,6 @@ class OTBNState:
         # it back into four 64-bit words.
         w64s = [(w256 >> (64 * i)) & ((1 << 64) - 1) for i in range(4)]
 
-        self.edn_seen_running = True
-
         self.wsrs.URND.set_seed(w64s)
 
     def start_init_sec_wipe(self) -> None:
@@ -262,7 +217,7 @@ class OTBNState:
         return bool(self.loop_stack.stack)
 
     def changes(self) -> List[Trace]:
-        c: List[Trace] = []
+        c = []  # type: List[Trace]
         c += self.gprs.changes()
         if self._pc_next_override is not None:
             # Only append the next program counter to the trace if it has
@@ -282,7 +237,7 @@ class OTBNState:
                                        FsmState.MEM_SEC_WIPE]
 
     def wiping(self) -> bool:
-        return self._fsm_state == FsmState.WIPING
+        return self._fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
 
     def stop_if_pending_halt(self) -> bool:
         if self.pending_halt:
@@ -323,7 +278,8 @@ class OTBNState:
         # register) but nothing else. This is just an optimisation: if
         # everything is working properly, there won't be any other pending
         # changes.
-        if old_state not in [FsmState.EXEC, FsmState.WIPING]:
+        if old_state not in [FsmState.EXEC,
+                             FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
             return
 
         self.gprs.commit()
@@ -356,7 +312,6 @@ class OTBNState:
 
         self._fsm_state = FsmState.PRE_EXEC
         self._next_fsm_state = FsmState.PRE_EXEC
-        self.has_state_to_wipe = True
 
         self.pc = 0
 
@@ -397,7 +352,7 @@ class OTBNState:
         # externally-visible registers). We want to roll back any of those
         # changes.
         insn_failed = self._err_bits and self._fsm_state == FsmState.EXEC
-        if insn_failed:
+        if insn_failed or self.rma_req:
             self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
@@ -405,9 +360,9 @@ class OTBNState:
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
 
         should_lock = (((self._err_bits >> 16) != 0) or
-                       ((self._err_bits >> 10) & 1 != 0) or
-                       (self._err_bits != 0 and self.software_errs_fatal) or
-                       self.rma_req == LcTx.ON)
+                       ((self._err_bits >> 10) & 1) or
+                       (self._err_bits and self.software_errs_fatal) or
+                       self.rma_req)
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
 
@@ -432,13 +387,13 @@ class OTBNState:
                 self.ext_regs.write('WIPE_START', 1, True)
                 self.ext_regs.regs['WIPE_START'].commit()
 
-                # Switch to the pre-wipe state
-                self.set_fsm_state(FsmState.PRE_WIPE)
-                self.lock_after_wipe = should_lock
-                self.wipe_rounds_done = 0
-            elif self._fsm_state in [FsmState.PRE_WIPE, FsmState.WIPING]:
+                # Switch to a 'wiping' state
+                self.set_fsm_state(FsmState.WIPING_BAD if should_lock
+                                   else FsmState.WIPING_GOOD)
+            elif self._fsm_state in [FsmState.WIPING_BAD,
+                                     FsmState.WIPING_GOOD]:
                 assert should_lock
-                self.lock_after_wipe = True
+                self._next_fsm_state = FsmState.WIPING_BAD
             elif self._init_sec_wipe_state in [InitSecWipeState.IN_PROGRESS]:
                 # Make it so that we run stop method until initial secure wipe
                 # is done. Otherwise we would have missed the pending halt.
@@ -453,15 +408,14 @@ class OTBNState:
         # Clear any pending request in the RND EDN client
         self.ext_regs.rnd_forget()
 
+        # Clear RMA request flag
+        self.rma_req = False
+
     def get_fsm_state(self) -> FsmState:
         return self._fsm_state
 
     def set_fsm_state(self, new_state: FsmState) -> None:
-        # If we're switching to a wiping state, we consider this to be "the
-        # start of a wipe" and set the wipe_cycles counter to track how long
-        # the wiping operation itself will take.
-        wiping_next = new_state == FsmState.WIPING
-        if wiping_next:
+        if new_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
             self.wipe_cycles = _WIPE_CYCLES
         self._next_fsm_state = new_state
 

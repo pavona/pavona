@@ -148,8 +148,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     elif was_wiping:
         # The trailing space is a bit naff but matches the behaviour in the RTL
         # tracer, where it's rather difficult to change.
-        done_last_round = (sim.state.wipe_rounds_done == 2)
-        hdr = 'V ' if done_last_round else 'U '
+        hdr = 'U ' if sim.state.wiping() else 'V '
     elif sim.state.executing():
         hdr = 'STALL'
     else:
@@ -318,7 +317,7 @@ def on_edn_flush(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_edn_urnd_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('urnd_cdc_done', 0, args)
-    sim.urnd_completed()
+    sim.state.urnd_completed()
     return None
 
 
@@ -383,10 +382,9 @@ def on_send_err_escalation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
-def on_set_rma_req(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    check_arg_count('set_rma_req', 1, args)
-    rma_req = read_word('rma_req', args[0], 4)
-    sim.set_rma_req(rma_req)
+def on_send_rma_req(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('send_rma_req', 0, args)
+    sim.send_rma_req()
     return None
 
 
@@ -426,7 +424,7 @@ _HANDLERS = {
     'set_keymgr_value': on_set_keymgr_value,
     'step_crc': on_step_crc,
     'send_err_escalation': on_send_err_escalation,
-    'set_rma_req': on_set_rma_req,
+    'send_rma_req': on_send_rma_req,
     'initial_secure_wipe': on_initial_secure_wipe,
     'set_software_errs_fatal': on_set_software_errs_fatal
 }

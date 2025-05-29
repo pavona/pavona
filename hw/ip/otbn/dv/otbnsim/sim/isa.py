@@ -1,8 +1,12 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 
 import sys
+from math import floor
 from typing import Dict, Iterator, Optional, Tuple
 
 from shared.insn_yaml import Insn, DummyInsn, load_insns_yaml
@@ -54,7 +58,7 @@ class OTBNInsn:
 
     # A class variable that holds the Insn subclass corresponding to this
     # instruction.
-    insn: Insn = DummyInsn()
+    insn = DummyInsn()  # type: Insn
 
     # A class variable that is set by Insn subclasses that represent
     # instructions that affect control flow (and are not allowed at the end of
@@ -76,7 +80,7 @@ class OTBNInsn:
         # Memoized disassembly for this instruction. We store the PC at which
         # we disassembled too (which should be the same next time around, but
         # it can't hurt to check).
-        self._disasm: Optional[Tuple[int, str]] = None
+        self._disasm = None  # type: Optional[Tuple[int, str]]
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         '''Execute the instruction
@@ -99,10 +103,20 @@ class OTBNInsn:
         return disasm
 
     @staticmethod
-    def to_2s_complement(value: int) -> int:
+    def to_2s_complement(value: int, size: int = 32) -> int:
         '''Interpret the signed value as a 2's complement u32'''
-        assert -(1 << 31) <= value < (1 << 31)
-        return (1 << 32) + value if value < 0 else value
+        # assert -(1 << (size - 1)) <= value < (1 << (size - 1))
+        return (1 << size) + value if value < 0 else value
+
+    @staticmethod
+    def from_2s_complement(value: int, size: int = 32) -> int:
+        '''Interpret the unsigned value as a 2's complement s32 or s16'''
+        assert value < (1 << size)
+        if size == 32:
+            b = value.to_bytes(4, byteorder="little", signed=False)
+        if size == 16:
+            b = value.to_bytes(2, byteorder="little", signed=False)                                       
+        return int.from_bytes(b, byteorder="little", signed=True)
 
     def rtl_trace(self, pc: int) -> str:
         '''Return the RTL trace entry for executing this insn'''
@@ -141,6 +155,37 @@ class RV32ImmShift(OTBNInsn):
         self.shamt = op_vals['shamt']
 
 
+def bit_shift(value: int, shift_type: int, shift_bits: int, size: int, arith: bool = False) -> int:
+    '''Logical shift value by shift_bits to the left or right.
+
+    value should be an unsigned size-bit value. shift_type should be 0 (shift
+    left) or 1 (shift right), matching the encoding of the big number
+    instructions. shift_bytes should be a non-negative number of bytes to shift
+    by.
+
+    Returns a 32-bit value, truncating on an overflowing left shift.
+
+    '''
+    mask = (1 << size) - 1
+    # assert 0 <= value <= mask
+    assert 0 <= shift_type <= 1
+    assert 0 <= shift_bits
+
+    if not arith:
+        shifted = value << shift_bits if shift_type == 0 else value >> shift_bits
+    else:
+        # arithmetic shift
+        if shift_type == 1:
+            shifted = value >> shift_bits
+            if ((value & (1 << (size - 1))) >> (size - 1)) == 1:
+                # extend the most significant bits with the prior msb
+                shifted |= (((2 ** shift_bits) - 1) << (size - shift_bits))
+        else:
+            shifted = value << shift_bits
+
+    return shifted & mask
+
+
 def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
     '''Logical shift value by shift_bytes to the left or right.
 
@@ -167,3 +212,10 @@ def extract_quarter_word(value: int, qwsel: int) -> int:
     assert 0 <= value < (1 << 256)
     assert 0 <= qwsel <= 3
     return (value >> (qwsel * 64)) & ((1 << 64) - 1)
+
+
+def extract_sub_word(value: int, size: int, index: int) -> int:
+    '''Extract a `size`-bit word at index `index` from a 256-bit value.'''
+    assert 0 <= value < (1 << 256)
+    assert 0 <= index <= 256 // size
+    return (value >> (index * size)) & ((1 << size) - 1)

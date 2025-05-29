@@ -1,6 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 
 import struct
 from typing import Dict, List, Sequence, Optional
@@ -52,7 +55,7 @@ class Dmem:
         # if the word has invalid integrity bits and we'll get an error if we
         # try to read it. Otherwise, we store the integer value.
         num_words = dmem_size // 4
-        self.data: List[Optional[int]] = [None] * num_words
+        self.data = [None] * num_words  # type: List[Optional[int]]
 
         # Because it's an actual memory, stores to DMEM take two cycles in the
         # RTL. We wouldn't need to model this except that a DMEM invalidation
@@ -63,8 +66,8 @@ class Dmem:
         # this cycle. However, the first commit() will then move it to the
         # self.pending list. Entries here will only make it to self.data on the
         # next commit().
-        self.trace: List[TraceDmemStore] = []
-        self.pending: Dict[int, int] = {}
+        self.trace = []  # type: List[TraceDmemStore]
+        self.pending = {}  # type: Dict[int, int]
 
     def _load_5byte_le_words(self, data: bytes, word_offset: int) -> None:
         '''Replace the memory start at word_offset with data
@@ -130,7 +133,7 @@ class Dmem:
         else:
             self._load_4byte_le_words(data, word_offset)
 
-    def dump_le_words(self) -> bytes:
+    def dump_le_words(self, include_validity: bool = True) -> bytes:
         '''Return the contents of memory as bytes.
 
         The bytes are formatted as little-endian 32-bit words. These
@@ -138,15 +141,23 @@ class Dmem:
 
         '''
         ret = b''
+        pack_format = '<BI'
+        if include_validity is False:
+            pack_format = '<I'
         for idx, u32 in enumerate(self.data):
             # If there's a pending store, apply it. This matches the RTL, where
             # we only observe the memory after that store has landed.
             u32 = self.pending.get(idx, u32)
-
-            if u32 is None:
-                ret += struct.pack('<BI', 0, 0)
+            if include_validity:
+                if u32 is None:
+                    ret += struct.pack(pack_format, 0, 0)
+                else:
+                    ret += struct.pack(pack_format, 1, u32)
             else:
-                ret += struct.pack('<BI', 1, u32)
+                if u32 is None:
+                    ret += struct.pack(pack_format, 0)
+                else:
+                    ret += struct.pack(pack_format, u32)
 
         return ret
 

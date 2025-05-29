@@ -1,10 +1,13 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from .constants import ErrBits, LcTx, Status, read_lc_tx_t
+from .constants import ErrBits, Status
 from .decode import EmptyInsn
 from .isa import OTBNInsn
 from .state import OTBNState, FsmState
@@ -58,6 +61,8 @@ class OTBNSim:
         Use run() or step() to actually execute the program.
 
         '''
+        if self.state.get_fsm_state() != FsmState.IDLE:
+            return
         self.stats = ExecutionStats(self.program) if collect_stats else None
         self._execute_generator = None
         self._next_insn = None
@@ -96,15 +101,16 @@ class OTBNSim:
 
     def _on_stall(self,
                   verbose: bool,
-                  fetch_next: bool) -> List[Trace]:
+                  fetch_next: bool,
+                  no_count: bool = False) -> List[Trace]:
         '''This is run on a stall cycle'''
         self.state.stop_if_pending_halt()
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         if fetch_next:
             self._next_insn = self._fetch(self.state.pc)
-        if self.stats is not None and not self.state.wiping():
-            self.stats.record_stall()
+        if self.stats is not None and not self.state.wiping() and not no_count:
+            self.stats.record_stall(self.state)
         if verbose:
             self._print_trace(self.state.pc, '(stall)', changes)
 
@@ -117,10 +123,13 @@ class OTBNSim:
         assert self._execute_generator is None
         self.state.post_insn(self.loop_warps.get(self.state.pc, {}))
 
+        halting = self.state.stop_if_pending_halt()
         if self.stats is not None:
             self.stats.record_insn(insn, self.state)
+            if insn.has_fetch_stall or halting:
+                # Count a stall towards the fetch stalling instruction
+                self.stats.record_stall(self.state)
 
-        halting = self.state.stop_if_pending_halt()
         changes = self.state.changes()
 
         # Program counter before commit
@@ -137,43 +146,6 @@ class OTBNSim:
             self._print_trace(pc_before, disasm, changes)
 
         return changes
-
-    def _delayed_insn_cnt_zero(self, delay_if_locking: int) -> None:
-        '''Zero INSN_CNT if we are in a wiping state and are going to lock
-        after wipe.
-
-        This is delayed by delay_if_locking (using state.time_to_insn_cnt_zero)
-        to match the timing in the RTL.
-        '''
-        assert self.state.get_fsm_state() in [FsmState.PRE_WIPE,
-                                              FsmState.WIPING]
-
-        # Only zero instruction count if we're wiping before lock
-        if not self.state.lock_after_wipe:
-            return
-
-        # We don't print "INSN_CNT=0" on every cycle of the wipe, so we should
-        # only do something if the current value is nonzero.
-        if self.state.ext_regs.read('INSN_CNT', True) == 0:
-            return
-
-        # In this case, we know we want to zero INSN_CNT. There might be an
-        # operation to do so that has already been enqueued. If not (or if it
-        # would be waiting longer than delay_if_locking), switch to a new
-        # counter.
-        if self.state.time_to_insn_cnt_zero is None:
-            self.state.time_to_insn_cnt_zero = delay_if_locking
-        count = min(self.state.time_to_insn_cnt_zero, delay_if_locking)
-
-        if count == 0:
-            # If _time_to_insn_cnt_zero is now zero, it means that this is the
-            # cycle to update insn_cnt.
-            self.state.ext_regs.write('INSN_CNT', 0, True)
-            self.state.time_to_insn_cnt_zero = None
-        else:
-            # If _time_to_insn_cnt_zero isn't zero, we should decrement it
-            # (maybe we'll update insn_cnt next cycle).
-            self.state.time_to_insn_cnt_zero = count - 1
 
     def step(self, verbose: bool) -> StepRes:
         '''Run a single cycle.
@@ -193,8 +165,8 @@ class OTBNSim:
             FsmState.IDLE: (self._step_idle, False),
             FsmState.PRE_EXEC: (self._step_pre_exec, False),
             FsmState.EXEC: (self._step_exec, True),
-            FsmState.PRE_WIPE: (self._step_pre_wipe, False),
-            FsmState.WIPING: (self._step_wiping, False),
+            FsmState.WIPING_GOOD: (self._step_wiping, False),
+            FsmState.WIPING_BAD: (self._step_wiping, False),
             FsmState.LOCKED: (self._step_idle, False)
         }
 
@@ -206,60 +178,19 @@ class OTBNSim:
     def _step_idle(self, verbose: bool) -> StepRes:
         '''Step the simulation when OTBN is IDLE or LOCKED'''
         self.state.stop_if_pending_halt()
-
-        is_locked = self.state.get_fsm_state() == FsmState.LOCKED
-
-        # If we are locked or get an RMA request, the INSN_CNT register should
-        # be zeroed. To avoid sending a line to stdout on every cycle, we only
-        # actually do the register write if we've just entered the locked state
-        # or the write will change something.
-        should_zero = is_locked or self.state.rma_req == LcTx.ON
-        new_zero = (self.state.cycles_in_this_state == 0 or
-                    self.state.ext_regs.read('INSN_CNT', True) != 0)
-        if should_zero and new_zero:
+        if ((self.state._fsm_state == FsmState.LOCKED and
+             self.state.cycles_in_this_state == 0)):
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
-        if self.state.delayed_lock:
-            self.state.set_fsm_state(FsmState.LOCKED)
-            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
-            is_locked = True
-
-        # If we are IDLE and get an RMA request, we want to start a secure
-        # wipe, which will eventually put us into the LOCKED state.
-        if self.state.rma_req == LcTx.ON and not is_locked:
-            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
-            self.state.set_fsm_state(FsmState.PRE_WIPE)
-            self.state.lock_after_wipe = True
-            self.state.wipe_rounds_done = 0
-
-        if self.state.init_sec_wipe_is_running() and not is_locked:
-            # Wait for the URND seed. If there is some genuine state to wipe
-            # (because self.state.has_state_to_wipe is true), then we switch to
-            # WIPING, setting lock_after_wipe to true if the FSM state is
-            # currently LOCKED.
-            #
-            # As a special case, there might be an RMA request and this might
-            # be just after reset. In that case, we don't need to worry about
-            # wiping state (because the entropy complex might not have been set
-            # up yet, we might not even be able to seed URND). In that case, we
-            # jump straight to the LOCKED state.
+        if self.state.init_sec_wipe_is_running():
+            # Wait for the URND seed. Once that appears, switch to WIPING_GOOD
+            # unless the FSM state is already LOCKED, in which case we change
+            # it to WIPING_BAD.
             if self.state.wsrs.URND.running:
-                # If URND finishes, it's probably the seed for a secure wipe.
-                # But there's an extra possibility: we might have seen an RMA
-                # request before any instructions get run. In that case, the
-                # rma_req flag will be high and the has_state_to_wipe flag will
-                # be low. Jump straight to the LOCKED state and skip the WIPING
-                # state (since there is nothing that needs wiping anyway).
-                start_of_time_rma = (self.state.rma_req == LcTx.ON and
-                                     not self.state.has_state_to_wipe)
-                if start_of_time_rma:
-                    self.state.complete_init_sec_wipe()
-                    self.state.set_fsm_state(FsmState.LOCKED)
-                    self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+                if self.state.get_fsm_state() == FsmState.LOCKED:
+                    self.state.set_fsm_state(FsmState.WIPING_BAD)
                 else:
-                    self.state.set_fsm_state(FsmState.WIPING)
-                    if is_locked:
-                        self.state.lock_after_wipe = True
+                    self.state.set_fsm_state(FsmState.WIPING_GOOD)
 
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
@@ -283,11 +214,6 @@ class OTBNSim:
 
         changes = self._on_stall(verbose, fetch_next=False)
 
-        # Correctly handle an RMA request when we're still waiting to start by
-        # jumping immediately to the LOCKED state
-        if self.state.rma_req == LcTx.ON:
-            self.lock_immediately()
-
         # Zero INSN_CNT the cycle after we are told to start
         if self.state.ext_regs.read('INSN_CNT', True) != 0:
             self.state.ext_regs.write('INSN_CNT', 0, True)
@@ -301,26 +227,15 @@ class OTBNSim:
         assert self.state.init_sec_wipe_is_done()
 
         self.state.wsrs.URND.step()
+        self.state.wsrs.KMAC_MSG.step()
 
         insn = self._next_insn
         if insn is None:
             self.state.take_injected_err_bits()
-            return (None, self._on_stall(verbose, fetch_next=True))
-
-        # If there is an RMA request, we treat it a bit like a fatal error, and
-        # abort any instruction that's currently running
-        if self.state.rma_req == LcTx.ON:
-            # TODO: Passing a nonzero value in ErrBits is incorrect: we don't
-            #       actually expect anything to get set in the ERR_BITS
-            #       register. But there's a bug somewhere in the Python code
-            #       here and we don't properly stop execution when the err_bits
-            #       register is nonzero. This is an ugly hack, and will die if
-            #       someone reads ERR_BITS after we've stopped. But it gets the
-            #       test working for now.
-            self.state.stop_at_end_of_cycle(1)
-            self.state.set_fsm_state(FsmState.PRE_WIPE)
-            self.state.lock_after_wipe = True
-            self._execute_generator = None
+            # Don't count the stall for the stats here because fetch stalls are
+            # caused by the previous instruction. It has already been counted
+            # in `_on_retire`.
+            return (None, self._on_stall(verbose, fetch_next=True, no_count=True))
 
         # Whether or not we're currently executing an instruction, we fetched
         # an instruction on the previous cycle. If that fetch failed then
@@ -372,148 +287,87 @@ class OTBNSim:
 
         return (None, self._on_stall(verbose, fetch_next=False))
 
-    def _step_pre_wipe(self, verbose: bool) -> StepRes:
-        '''Step the simulation when waiting for a URND seed for wipe'''
-
-        # This is a bit of a hack to model a bug in the design where the STATUS
-        # register has a value of 0xff for a single cycle before it becomes
-        # BUSY_SEC_WIPE_INT.
-        #
-        # This happens when responding to an RMA request in _step_idle. If we
-        # update the register to be BUSY_SEC_WIPE_INT on each cycle (and the
-        # first one we are here in particular!), we will get analogous
-        # behaviour.
-        #
-        # TODO(#23903): Fix the bug in the design then drop this code (and
-        # change the STATUS value in _step_idle from LOCKED to
-        # BUSY_SEC_WIPE_INT).
-        self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
-
-        # If we get an RMA request before we've managed to run any rounds of
-        # wiping then we are waiting for our first URND seed. The entropy
-        # complex might not be up, so we don't want to wait for a seed. Handle
-        # this by jumping straight to the WIPING state and setting the number
-        # of rounds to 1 (so that we don't wait again for a seed afterwards)
-        if self.state.rma_req == LcTx.ON and not self.state.edn_seen_running:
-            self.state.lock_after_wipe = True
-            self.state.wipe_rounds_to_do = 1
-            self.state.set_fsm_state(FsmState.WIPING)
-
-        # Clear the WIPE_START register if it was set.
-        if self.state.ext_regs.read('WIPE_START', True):
-            self.state.ext_regs.write('WIPE_START', 0, True)
-
-        # Zero INSN_CNT once if we're going to lock after wipe.
-        self._delayed_insn_cnt_zero(0)
-
-        if self.state.wsrs.URND.running:
-            # Reflect wiping in STATUS register if it has not been updated yet.
-            if ((self.state.ext_regs.read('STATUS', True) not in
-                 [Status.BUSY_SEC_WIPE_INT, Status.LOCKED])):
-                self.state.ext_regs.write('STATUS',
-                                          Status.BUSY_SEC_WIPE_INT, True)
-
-            self.state.set_fsm_state(FsmState.WIPING)
-
-        return (None, self._on_stall(verbose, fetch_next=False))
-
     def _step_wiping(self, verbose: bool) -> StepRes:
         '''Step the simulation when wiping'''
         assert self.state.wipe_cycles >= 0
-
-        # Keep track of whether there was actually a wipe operation in progress
-        # (rather than us waiting for a URND seed for the next round). If there
-        # was, then subtract one from the number of cycles left in that
-        # operation.
-        was_wiping = self.state.wipe_cycles > 0
-        if was_wiping:
+        if self.state.wipe_cycles > 0:
             self.state.wipe_cycles -= 1
-
-        is_good = not self.state.lock_after_wipe
-        locking = self.state.rma_req == LcTx.ON or not is_good
-
-        # If there is an RMA request, ensure lock_after_wipe is set (since
-        # we're going to lock when we're done)
-        if self.state.rma_req == LcTx.ON:
-            self.state.lock_after_wipe = True
 
         # If something bad happened asynchronously (because of an escalation),
         # we want to finish the secure wipe but accept no further commands.  To
         # this end, turn this into a "wipe because something bad happended".
         if self.state.pending_halt:
-            self.state.lock_after_wipe = True
+            self.state._fsm_state = FsmState.WIPING_BAD
 
-        # Zero INSN_CNT once if we're going to lock after wipe.
-        self._delayed_insn_cnt_zero(1)
+        # Reflect wiping in STATUS register if it has not been updated yet.
+        if (self.state.wipe_cycles > 0 and
+            (self.state.ext_regs.read('STATUS', True) not in
+             [Status.BUSY_SEC_WIPE_INT, Status.LOCKED])):
+            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
+
+        is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
+
+        # Clear the WIPE_START register if it was set.
+        if self.state.ext_regs.read('WIPE_START', True):
+            self.state.ext_regs.write('WIPE_START', 0, True)
+
+        # Zero INSN_CNT once if we're in state WIPING_BAD.
+        if not is_good and self.state.ext_regs.read('INSN_CNT', True) != 0:
+            if ((self.state.zero_insn_cnt_next or
+                 not self.state.lock_immediately)):
+                self.state.ext_regs.write('INSN_CNT', 0, True)
+                self.state.zero_insn_cnt_next = False
+            if self.state.lock_immediately:
+                # Zero INSN_CNT in the *next* cycle to match RTL control flow.
+                self.state.zero_insn_cnt_next = True
 
         if self.state.wipe_cycles == 1:
-            # This is the penultimate clock cycle of a wipe round. We want to
-            # model the behaviour that we expect "at the end of a wipe round".
-            #
-            # On the last wipe round, we actually perform a wipe on the model
-            # side and set STATUS (to IDLE or LOCKED) to show that the wiping
-            # has finished .
-            #
-            # If there's another wipe round to follow, we mark the URND
-            # register as not available and request a new seed.
-            #
-            # RMA requests are a special case where the "last round" might
-            # actually be the first one as well.
-            final_wipe_round = (self.state.wipe_rounds_done ==
-                                (self.state.wipe_rounds_to_do - 1))
-            if final_wipe_round:
-                next_status = Status.LOCKED if locking else Status.IDLE
+            # This is the penultimate clock cycle of a wipe round.
+            if self.state.first_round_of_wipe:
+                # This is the first round.
+                self.state.wsrs.URND.running = False
+                if not self.state.rma_req:
+                    # If not wiping because of an RMA request, request an URND
+                    # refresh.
+                    self.state._urnd_client.request()
+            if (not self.state.first_round_of_wipe) or self.state.rma_req:
+                # This is the second wipe round or the only round of a wipe
+                # during an RMA request, so wipe all registers and set STATUS.
+                next_status = Status.IDLE if is_good else Status.LOCKED
                 self.state.ext_regs.write('STATUS', next_status, True)
                 self.state.wipe()
-            else:
-                self.state.wsrs.URND.running = False
-                self.state._urnd_client.request()
 
         if self.state.wipe_cycles == 0:
-            if was_wiping:
-                self.state.wipe_rounds_done += 1
-
-            final_wipe_round = (self.state.wipe_rounds_done ==
-                                self.state.wipe_rounds_to_do)
-
-            # This is the last clock cycle of a wipe round. Switch back to
-            # PRE_WIPE if there is another round to do. If not, switch to
-            # LOCKED or IDLE.
-            if not final_wipe_round:
-                self.state.set_fsm_state(FsmState.PRE_WIPE)
+            # This is the final clock cycle of a wipe round.
+            if self.state.first_round_of_wipe and not self.state.rma_req:
+                # This is the first wipe round and since there's no RMA
+                # request, a second round must follow after URND refresh
+                # acknowledgment.
+                if self.state.wsrs.URND.running:
+                    self.state.first_round_of_wipe = False
+                    self.state.set_fsm_state(self.state.get_fsm_state())
             else:
-                # Set a flag that tells us to lock when we get to idle. This
-                # matches the cycle of delay that happens between the end of a
-                # secure wipe where we see an invalid RMA request and the
-                # status getting locked.
-                if self.state.rma_req != LcTx.OFF:
-                    self.state.delayed_lock = True
-
-                # We've finished the final round in the current secure wipe. If
-                # there is an invalid RMA signal or we were already going to
-                # lock after wipe (so have the locking signal set) then we
-                # should lock. Otherwise, jump to IDLE.
-                if locking:
-                    next_state = FsmState.LOCKED
-                    self.state.ext_regs.write('STATUS', Status.LOCKED, True)
-                else:
+                # This is the second wipe round or the only wipe round during
+                # an RMA request. If the wipe was good, set the next state to
+                # IDLE; otherwise set it to LOCKED.
+                if is_good:
+                    assert not self.state.rma_req
                     next_state = FsmState.IDLE
                     if self.state.init_sec_wipe_is_running():
                         self.state.complete_init_sec_wipe()
+                else:
+                    next_state = FsmState.LOCKED
 
                 # Also, set wipe_cycles to an invalid value to make really sure
-                # we've left the wiping code. Leave wipe_rounds_done unchanged
-                # so that the "completed wipe" is visible when we come to write
-                # out the U/V line later. We'll zero it again when we enter a
-                # wiping state next time.
-                self.state.wipe_cycles = -1
-
+                # we've left the wiping code.
+                self.wipe_cycles = -1
+                self.state.first_round_of_wipe = True
                 self.state.set_fsm_state(next_state)
 
-        return (None, self._on_stall(verbose, fetch_next=False))
+        return (None, self._on_stall(verbose, fetch_next=False, no_count=True))
 
-    def dump_data(self) -> bytes:
-        return self.state.dmem.dump_le_words()
+    def dump_data(self, include_validity: bool = True) -> bytes:
+        return self.state.dmem.dump_le_words(include_validity=include_validity)
 
     def _print_trace(self, pc: int, disasm: str, changes: List[Trace]) -> None:
         '''Print a trace of the current instruction'''
@@ -527,9 +381,8 @@ class OTBNSim:
         # of a run that either will lock or already has done. In that case, we
         # don't want to do an FSM state change.
         cur_state = self.state.get_fsm_state()
-        allowed_states = [FsmState.MEM_SEC_WIPE,
-                          FsmState.PRE_WIPE, FsmState.WIPING, FsmState.LOCKED]
-        assert cur_state in allowed_states
+        assert cur_state in [FsmState.MEM_SEC_WIPE,
+                             FsmState.WIPING_BAD, FsmState.LOCKED]
         if cur_state == FsmState.MEM_SEC_WIPE:
             self.state.ext_regs.write('STATUS', Status.IDLE, True)
             self.state.set_fsm_state(FsmState.IDLE)
@@ -541,46 +394,9 @@ class OTBNSim:
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
 
-    def lock_immediately(self) -> None:
-        '''React to an event that should cause us to immediately jump to the
-        locked state.'''
-        self.state.set_fsm_state(FsmState.LOCKED)
-        self.state.ext_regs.write('STATUS',
-                                  Status.LOCKED, True, immediately=True)
-
-    def set_rma_req(self, rma_req: int) -> None:
-        '''Set the rma request pin state, based on a given integer input.
-
-        This gets read later, on the special cycles when it should have an
-        effect.
-        '''
-        self.state.rma_req = read_lc_tx_t(rma_req)
-
-    def urnd_completed(self) -> None:
-        '''An outstanding URND request has just completed.
-
-        Pass the data to self.state (to tell it the data is ready). But also
-        check that we are in a state where we expect to have made a URND
-        request that can complete. If not, we should immediately jump to the
-        locked state.
-        '''
-        self.state.urnd_completed()
-        # There should only be a URND response if one of the following is true:
-        #
-        #  1. We're in PRE_EXEC, so are waiting for a seed for the urnd
-        #     register itself.
-        #
-        #  2. We are in the middle of a secure wipe round and are waiting for
-        #     the seed to run the second round.
-        #
-        # If we get a response at another time, we should treat it as
-        # "unsolicited" and lock immediately.
-        #
-        # To distinguish (3) from "a URND ack appeared when we were in the
-        # middle of the actual wipe operation", we can check the wipe_cycles
-        # counter. This will be zero when the first round wipe operation is
-        # done and we are waiting for the second round seed.
-
-        cur_state = self.state.get_fsm_state()
-        if cur_state not in [FsmState.PRE_EXEC, FsmState.PRE_WIPE]:
-            self.lock_immediately()
+    def send_rma_req(self) -> None:
+        # Incoming RMA request basically acts like a fatal error.
+        # It does not immediately change the status to LOCKED just like any
+        # fatal error except spurious URND ack.
+        self.state.rma_req = True
+        self.state.pending_halt = True

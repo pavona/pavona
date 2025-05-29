@@ -129,8 +129,8 @@ class RGReg:
     def __init__(self, fields: List[RGField], double_flopped: bool):
         self.fields = fields
         self.double_flopped = double_flopped
-        self._changes: List[ExtRegChange] = []
-        self._next_changes: List[ExtRegChange] = []
+        self._changes = []  # type: List[ExtRegChange]
+        self._next_changes = []  # type: List[ExtRegChange]
 
     @staticmethod
     def from_register(reg: Register, double_flopped: bool) -> 'RGReg':
@@ -146,10 +146,7 @@ class RGReg:
             new_val |= field_new_val << field.lsb
         return new_val
 
-    def write(self,
-              value: int,
-              from_hw: bool,
-              immediately: bool = False) -> None:
+    def write(self, value: int, from_hw: bool) -> None:
         '''Stage the effects of writing a value.
 
         If from_hw is true, this write is from OTBN hardware (rather than the
@@ -158,8 +155,7 @@ class RGReg:
         '''
         assert value >= 0
         now = self._apply_fields(lambda fld, fv: fld.write(fv, from_hw), value)
-        delayed = self.double_flopped and not immediately
-        changes = self._next_changes if delayed else self._changes
+        changes = self._next_changes if self.double_flopped else self._changes
         changes.append(ExtRegChange('=', value, from_hw, now))
 
     def set_bits(self, value: int) -> None:
@@ -254,7 +250,7 @@ class OTBNExtRegs:
     def __init__(self) -> None:
         _, reg_block = load_registers()
 
-        self.regs: Dict[str, RGReg] = {}
+        self.regs = {}  # type: Dict[str, RGReg]
         self._dirty = 0
 
         assert isinstance(reg_block, RegBlock)
@@ -291,14 +287,10 @@ class OTBNExtRegs:
             raise ValueError('Unknown register name: {!r}.'.format(reg_name))
         return reg
 
-    def write(self,
-              reg_name: str,
-              value: int,
-              from_hw: bool,
-              immediately: bool = False) -> None:
+    def write(self, reg_name: str, value: int, from_hw: bool) -> None:
         '''Stage the effects of writing a value to a register'''
         assert value >= 0
-        self._get_reg(reg_name).write(value, from_hw, immediately)
+        self._get_reg(reg_name).write(value, from_hw)
         self._dirty = 2
 
     def set_bits(self, reg_name: str, value: int) -> None:
