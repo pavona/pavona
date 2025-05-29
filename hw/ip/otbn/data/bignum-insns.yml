@@ -1,6 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 
 # Definitions for the big number group of instructions. See insns.yml
 # for the detailed format.
@@ -108,7 +111,17 @@
 
 - mnemonic: bn.addm
   synopsis: Pseudo-Modulo Add
-  operands: [wrd, wrs1, wrs2]
+  operands:
+    - name: wrd
+      doc: Updated WDR.
+      type: wrb
+    - name: wrs1
+      doc: First source WDR
+      type: wrs
+    - name: wrs2
+      doc: Second source WDR
+      type: wrs
+  glued-ops: true
   doc: |
     Add two WDR values, modulo the MOD WSR.
 
@@ -120,6 +133,21 @@
     The intermediate result is small enough if both inputs are less than `MOD`.
 
     Flags are not used or saved.
+
+    If `<vec>` is set to 1:
+    Add two WDR registers interpreted as vectors, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with signed
+    elements of size 32 bit or 16 bit (depending on `type`). The elements are
+    individually summed. If the individual result is larger than MOD, MOD is
+    subtracted from it. Each result element is truncated to 32 or 16 bits
+    (depending on `type`) and stored in `<wrd>`.
+
+    This operation correctly implements addition modulo MOD, providing that the
+    intermediate result is less than `2 * MOD`. The intermediate result is small
+    enough if both inputs are less than `MOD`.
+  syntax: |
+    <wrd>, <wrs1>, <wrs2>
   errs: []
   iflow:
     - to: [wrd]
@@ -127,11 +155,166 @@
   encoding:
     scheme: bnam
     mapping:
+      vec: b0
+      type: b00
+      sub: b0
+      vec: b0
+      type: b00
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b101
+      wrd: wrd
+
+- mnemonic: bn.addv
+  synopsis: Pseudo-Modulo Add
+  operands:
+    - name: type
+      abbrev: t
+      type: enum(.8S,.16H,m.8S,m.16H)
+      doc: |
+        Select the data type of the registers. `.8S` interprets the WDRs as 8
+        32-bit registers, `.16H` as 16 16-bit registers. m for reduction
+    - name: wrd
+      doc: Updated WDR.
+      type: wrb
+    - name: wrs1
+      doc: First source WDR
+      type: wrs
+    - name: wrs2
+      doc: Second source WDR
+      type: wrs
+  glued-ops: true
+  doc: |
+    Add two WDR values, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are summed to get an intermediate result (of width `WLEN + 1`).
+    If this result is greater than MOD then MOD is subtracted from it.
+    The result is then truncated to 256 bits and stored in `<wrd>`.
+
+    This operation correctly implements addition modulo MOD, providing that the intermediate result is less than `2 * MOD`.
+    The intermediate result is small enough if both inputs are less than `MOD`.
+
+    Flags are not used or saved.
+
+    If `<vec>` is set to 1:
+    Add two WDR registers interpreted as vectors, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with signed
+    elements of size 32 bit or 16 bit (depending on `type`). The elements are
+    individually summed. If the individual result is larger than MOD, MOD is
+    subtracted from it. Each result element is truncated to 32 or 16 bits
+    (depending on `type`) and stored in `<wrd>`.
+
+    This operation correctly implements addition modulo MOD, providing that the
+    intermediate result is less than `2 * MOD`. The intermediate result is small
+    enough if both inputs are less than `MOD`.
+  syntax: |
+    [<type>] <wrd>, <wrs1>, <wrs2>
+  errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1, wrs2, mod]
+  encoding:
+    scheme: bnam
+    mapping:
+      vec: b1
+      type: type
       sub: b0
       wrs2: wrs2
       wrs1: wrs1
       funct3: b101
       wrd: wrd
+
+- mnemonic: bn.mulv
+  synopsis: Pseudo-Modulo Multiply Vector
+  operands:
+    - name: type
+      abbrev: t
+      type: enum(.8S,.16H,.l.8S,.l.16H,m.8S,m.16H,m.l.8S,m.l.16H)
+      doc: |
+        Select the data type of the registers. `.8S` interprets the WDRs as 8
+        32-bit registers, `.16H` as 16 16-bit registers. m enables reduction.
+    - name: wrd
+      doc: Updated WDR.
+      type: wrb
+    - name: wrs1
+      doc: First source WDR
+      type: wrs
+    - name: wrs2
+      doc: Second source WDR
+      type: wrs
+    - name: lane
+      doc: Select the lane of the `<wrs2>` to multiply `<wrs1>` with.
+      type: uimm
+  glued-ops: true
+  doc: |
+    Multiply two WDR registers interpreted as vectors, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with elements
+    of size 32 bit or 16 bit (depending on `type`). The elements are
+    individually multiplied and reduced by MOD to a result in [0, MOD). Each
+    result element is truncated to 32 or 16 bits (depending on `type`) and
+    stored in `<wrd>`.
+
+    The result is correct if each input element is in [0, MOD).
+
+    Flags are not used or saved.
+  syntax: |
+    <type> <wrd>, <wrs1>, <wrs2>[, <lane>]
+  errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1, wrs2, mod]
+  encoding:
+    scheme: bnammv
+    mapping:
+      type: type
+      lane: lane
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b110
+      wrd: wrd
+
+- mnemonic: bn.trn
+  synopsis: Partial transpose
+  operands:
+    - name: wrd
+      doc: Updated WDR.
+      type: wrb
+    - name: wrs1
+      doc: First source WDR
+      type: wrs
+    - name: wrs2
+      doc: Second source WDR
+      type: wrs
+    - name: type
+      abbrev: t
+      type: enum(1.16H,1.8S,1.4D,1.2Q,2.16H,2.8S,2.4D,2.2Q)
+      doc: |
+        Select the data type of the registers. `.8S` interprets the WDRs as 8
+        32-bit registers, `.16H` as 16 16-bit registers.
+  glued-ops: true
+  doc: |
+    Write the elements of one vector into a specified lane of a set of other
+    vectors. The number of other vectors depends on the number of elements in
+    the source vector. Vector <wrs> is the source, while <wrd+i> i in [0,7] are
+    the destination registers. 
+
+    Flags are not used or saved.
+  syntax: |
+    <type> <wrd>, <wrs1>, <wrs2>
+  errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1, wrs2]
+  encoding:
+    scheme: bntrn
+    mapping:
+      wrs1: wrs1
+      wrs2: wrs2
+      funct3: b010
+      wrd: wrd
+      type: type
 
 - mnemonic: bn.mulqacc
   synopsis: Quarter-word Multiply and Accumulate
@@ -325,6 +508,48 @@
       z: zero_acc
       wrd: wrd
 
+- mnemonic: bn.shv
+  synopsis: vector shift
+  operands: &bn-shv-operands
+    - name: type
+      abbrev: t
+      type: enum(.8S,.16H)
+      doc: |
+        Select the data type of the registers. `.8S` interprets the WDRs as 8
+        32-bit registers, `.16H` as 16 16-bit registers.
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs1
+      doc: Name of the source WDR
+    - *bn-shift-type-operand
+    - name: shift_bits
+      type: uimm5<<0
+      doc: Name of the second source WDR
+    - name: shift_arith
+      type: option(a)
+      doc: Arithmetic shifting instead of logical
+  glued-ops: true
+  syntax: &bn-shv-syntax |
+    <type> <wrd>, <wrs1> [<shift_arith> ]<shift_type> <shift_bits>
+  doc: |
+    Performs a bitwise shift operation.
+    Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
+    The content of the second source register can be shifted by an immediate before it is consumed by the operation.
+  errs: []
+  iflow: &bn-shv-iflow
+    - to: [wrd]
+      from: [wrs1]
+  encoding:
+    scheme: bnav
+    mapping:
+      shift_type: shift_type
+      shift_bits: shift_bits
+      shift_arith: shift_arith
+      wrs1: wrs1
+      funct3: b011
+      type: type
+      wrd: wrd
+
 - mnemonic: bn.sub
   synopsis: Subtraction
   operands: &bn-sub-operands
@@ -408,7 +633,17 @@
 
 - mnemonic: bn.subm
   synopsis: Pseudo-modulo subtraction
-  operands: [wrd, wrs1, wrs2]
+  operands:
+    - name: wrd
+      doc: Updated WDR.
+      type: wrb
+    - name: wrs1
+      doc: First source WDR
+      type: wrs
+    - name: wrs2
+      doc: Second source WDR
+      type: wrs
+  glued-ops: true
   doc: |
     Subtract `<wrs2>` from `<wrs1>`, modulo the `MOD` WSR.
 
@@ -420,6 +655,21 @@
     This is guaranteed if both inputs are less than `MOD`.
 
     Flags are not used or saved.
+
+    If `<vec>` is set to 1:
+    Subtract two WDR registers interpreted as vectors, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with signed
+    elements of size 32 bit or 16 bit (depending on `type`). The elements from
+    `<wrs1>` are individually subtracted from the ones in `<wrs2>`. If the
+    individual result is smaller than 0, MOD is added to it. Each result element
+    is truncated to 32 or 16 bits (depending on `type`) and stored in `<wrd>`.
+
+    This operation correctly implements addition modulo MOD, providing that the
+    intermediate result is less than `2 * MOD`. The intermediate result is small
+    enough if both inputs are less than `MOD`.
+  syntax: |
+    <wrd>, <wrs1>, <wrs2>
   errs: []
   iflow:
     - to: [wrd]
@@ -427,6 +677,68 @@
   encoding:
     scheme: bnam
     mapping:
+      sub: b1
+      vec: b0
+      type: b00
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b101
+      wrd: wrd
+
+- mnemonic: bn.subv
+  synopsis: Pseudo-Modulo Sub
+  operands:
+    - name: type
+      abbrev: t
+      type: enum(.8S,.16H,m.8S,m.16H)
+      doc: |
+        Select the data type of the registers. `.8S` interprets the WDRs as 8
+        32-bit registers, `.16H` as 16 16-bit registers. m for reduction
+    - name: wrd
+      doc: Updated WDR.
+      type: wrb
+    - name: wrs1
+      doc: First source WDR
+      type: wrs
+    - name: wrs2
+      doc: Second source WDR
+      type: wrs
+  glued-ops: true
+  doc: |
+    Sub two WDR values, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are summed to get an intermediate result (of width `WLEN + 1`).
+    If this result is greater than MOD then MOD is subtracted from it.
+    The result is then truncated to 256 bits and stored in `<wrd>`.
+
+    This operation correctly implements addition modulo MOD, providing that the intermediate result is less than `2 * MOD`.
+    The intermediate result is small enough if both inputs are less than `MOD`.
+
+    Flags are not used or saved.
+    TODO update
+    If `<vec>` is set to 1:
+    Add two WDR registers interpreted as vectors, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with signed
+    elements of size 32 bit or 16 bit (depending on `type`). The elements are
+    individually summed. If the individual result is larger than MOD, MOD is
+    subtracted from it. Each result element is truncated to 32 or 16 bits
+    (depending on `type`) and stored in `<wrd>`.
+
+    This operation correctly implements addition modulo MOD, providing that the
+    intermediate result is less than `2 * MOD`. The intermediate result is small
+    enough if both inputs are less than `MOD`.
+  syntax: |
+    [<type>] <wrd>, <wrs1>, <wrs2>
+  errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1, wrs2, mod]
+  encoding:
+    scheme: bnam
+    mapping:
+      vec: b1
+      type: type
       sub: b1
       wrs2: wrs2
       wrs1: wrs1

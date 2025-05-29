@@ -1,6 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 
 # Instruction encoding schemes for OTBN
 #
@@ -53,6 +56,10 @@ rv:
 funct3:
   fields:
     funct3: 14-12
+
+funct2:
+  fields:
+    funct2: 13-12
 
 # RISC-V "R-type" encoding (reg <- fun(reg, reg))
 R:
@@ -147,6 +154,21 @@ custom3:
   parents:
     - rv(opcode=b11110)
 
+# A partial scheme for custom instructions with opcode b11111
+custom4:
+  parents:
+    - rv(opcode=b11111)
+
+# A partial scheme for custom instructions with opcode b11111
+custom5:
+  parents:
+    - rv(opcode=b10010)
+
+# A partial scheme for custom instructions with opcode b10111
+custom6:
+  parents:
+    - rv(opcode=b10111)
+
 # A partial scheme for instructions that produce a dest WDR.
 wrd:
   fields:
@@ -231,6 +253,28 @@ bnan:
       bits: 19-15
       value: bxxxxx
 
+# Used for bn.mulmv
+bnammv:
+  parents:
+    - custom5
+    - wdr3
+    - funct3
+  fields:
+    type: 27-25  # .8S or .16H, lane or not, reduce or not
+    lane: 31-28
+
+bntrn:
+  parents:
+    - custom6
+    - wdr3
+    - funct3
+  fields:
+    fixed_top:
+      bits: 31-28
+      value: bxxxx
+    type: 27-25  # trn1 or trn1 and .2Q, .4D, .8S or .16H
+
+
 # Used for the wide reg/reg ALU instructions.
 bnaf:
   parents:
@@ -239,6 +283,21 @@ bnaf:
     - funct3
     - shift
     - fg
+
+# Used for bn.and, bn.or, bn.xor, bn.not vector variants
+bnav:
+  parents:
+    - custom4
+    - funct3
+    - shift
+    - wrd
+  fields:
+    wrs1: 24-20
+    type: 16
+    fixed:
+      bits: 31,19-17,15
+      value: bxxxxx
+
 
 # Used for the wide bn.addi and bn.subi instructions.
 bnai:
@@ -252,17 +311,19 @@ bnai:
     imm: 29-20
     wrs: 19-15
 
-# Used for bn.addm, bn.subm
+# Used for bn.addm, bn.subm (and vector variants)
 bnam:
   parents:
     - custom1
     - wdr3
     - funct3
   fields:
+    vec: 25
+    type: 27-26
     sub: 30
     fixed:
-      bits: 31,29-25
-      value: bxxxxxx
+      bits: 31,29-28
+      value: bxxx
 
 # Used for bn.mulqacc
 bnaq:
@@ -277,6 +338,21 @@ bnaq:
     qs1: 26-25
     shift: 14-13
     z: 12
+
+# Used for bn.shv
+bnav:
+  parents:
+    - custom4
+    - funct3
+    - shift
+    - wrd
+  fields:
+    wrs1: 24-20
+    shift_arith: 15
+    type: 16
+    fixed:
+      bits: 31,19-17
+      value: bxxxx
 
 # Unusual scheme used for bn.rshi (the immediate bleeds into the usual funct3
 # field)
