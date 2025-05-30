@@ -13,3 +13,17 @@ otbn_library(
         "poly_add_dilithium.s",
     ],
 )
+
+otbn_library(
+    name = "poly_base_dilithium",
+    srcs = [
+        "poly_base_dilithium.s",
+    ],
+)
+
+otbn_library(
+    name = "poly_pointwise_dilithium",
+    srcs = [
+        "poly_pointwise_dilithium.s",
+    ],
+)

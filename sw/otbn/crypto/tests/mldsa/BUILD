@@ -13,8 +13,31 @@ otbn_sim_test(
     srcs = [
         "poly_add_dilithium_test.s",
     ],
-    dexp = "poly_add_dilithium_test.exp",
+    dexp = "poly_add_dilithium_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:poly_add_dilithium",
+            ],
+)
+
+otbn_sim_test(
+    name = "poly_reduce32_dilithium_test",
+    srcs = [
+        "poly_reduce32_dilithium_test.s",
+    ],
+    dexp = "poly_reduce32_dilithium_test.exp",
+    deps = [
+        "//sw/otbn/crypto/mldsa:poly_base_dilithium",
+            ],
+)
+
+otbn_sim_test(
+    name = "poly_pointwise_dilithium_test",
+    srcs = [
+        "poly_pointwise_dilithium_test.s",
+    ],
+    dexp = "poly_pointwise_dilithium_test.dexp",
+    exp = "poly_pointwise_dilithium_test.exp",
+    deps = [
+        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
             ],
 )
