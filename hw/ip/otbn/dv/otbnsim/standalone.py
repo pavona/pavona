@@ -30,7 +30,7 @@ def main() -> int:
     parser.add_argument(
         '--dump-dmem',
         metavar="FILE",
-        type=argparse.FileType('w'),
+        type=argparse.FileType('wb'),
         help=("after execution, write the data memory contents to this file. "
               "Use '-' to write to STDOUT.")
     )
@@ -90,8 +90,7 @@ def main() -> int:
             return 1
 
     if args.dump_dmem is not None:
-        args.dump_dmem.write("dmem:\n")
-        args.dump_dmem.write(sim.dump_data().hex())
+        args.dump_dmem.write(sim.dump_data())
 
     if collect_stats:
         assert sim.stats is not None
