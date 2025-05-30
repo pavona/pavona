@@ -4,53 +4,41 @@
 
 import re
 import struct
-from typing import List
+from typing import Dict
 
 from hw.ip.otbn.util.shared.mem_layout import get_memory_layout
 
-_DMEM_RE = re.compile(r'\s*(?P<start>\d+)-(?P<end>\d+)\s*=\s*(?P<value>(:?0x[0-9a-f]+))$')
+_DMEM_RE = re.compile(
+    r'\s*(?P<label>[a-zA-Z0-9_]+)\s*:\s*(?P<val>(:?[0-9a-f]+))$')
 
-def parse_dmem_exp(exp: str) -> List[int]:
-    '''Parse expected output definition for dmem.
 
-    Expects each line to be of the form <index_start>-<index_end> = <value>,
-    where <index_{start,end}> are decimal byte offsets defining the dmem range
-    and <value> defining the data to be present in this memory region given as
-    hexadecimal with leading '0x' and padded to the size of the range.
+def parse_dmem_exp(dump: str) -> Dict[str, int]:
+    '''Parse the expected dmem.
 
-    Ranges may appear in arbitrary order but must not overlap. Comments use
-    '#'; any content in a line following '#' will be ignored.
+    Format:
+        label: hex_data
 
-    Returns a list of size `get_memory_layout().dmem_size_bytes` where each
-    element represents one byte of the expected dmem. Undefined bytes are
-    initialized as None.
+    Returns a dictionary mapping labels to the expected bytes.
     '''
-    dmem_bytes = [None] * get_memory_layout().dmem_size_bytes
 
-    for line in exp.split('\n'):
+    out = {}
+    for line in dump.split('\n'):
         # Remove comments and ignore blank lines.
         line = line.split('#', 1)[0].strip()
         if not line:
             continue
-
         m = _DMEM_RE.match(line)
         if not m:
-            raise ValueError(f'Failed to parse dmem dump line ({line:!r}).')
+            raise ValueError(f'Failed to parse dmem dump line ({line}).')
+        label = m.group('label')
+        value = bytes.fromhex(m.group('val'))
 
-        start = int(m.group("start"))
-        end = int(m.group("end"))
-        value = m.group("value")[2:]
+        if label in out:
+            raise ValueError(f'DMEM dump contains multiple values '
+                             f'for {label}.')
+        out[label] = value
 
-        if len(value) // 2 != ((end + 1) - start):
-            raise ValueError(f'Range does not match length of value:\
-                             {len(value) // 2} vs. {(end + 1) - start}')
-
-        if any(dmem_bytes[start:(end + 1)]):
-            raise ValueError('Ranges overlapping.')
-
-        dmem_bytes[start:(end + 1)] = [int(value[i:i + 2], 16) for i in
-                                       range(0, len(value), 2)]
-    return dmem_bytes
+    return out
 
 
 def parse_actual_dmem(dump: bytes) -> bytes:
@@ -59,11 +47,9 @@ def parse_actual_dmem(dump: bytes) -> bytes:
     Returns the dmem bytes except integrity info.
     '''
     dmem_bytes = []
-    hexdump = dump[6:]
-    bindump =  bytes.fromhex(hexdump.decode('ascii'))
     # 8 32-bit data words + 1 byte integrity info per word = 40 bytes
     bytes_w_integrity = 8 * 4 + 8
-    for w in struct.iter_unpack(f"<{bytes_w_integrity}s", bindump):
+    for w in struct.iter_unpack(f"<{bytes_w_integrity}s", dump):
         tmp = []
         # discard byte indicating integrity status
         for v in struct.iter_unpack("<BI", w[0]):
