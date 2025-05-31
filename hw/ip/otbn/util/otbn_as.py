@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-# Copyright lowRISC contributors (OpenTitan project).
+# Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+# Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+
 '''A wrapper around riscv32-unknown-elf-as for OTBN
 
 Partial support:
@@ -628,7 +631,8 @@ class Transformer:
 
         # Strings that should be spat out verbatim
         self.acc = []  # type: List[str]
-
+        self.macros = []  # type: List[str]
+        self.symbol_table = {} # type: Dict[str, str]
         # The key symbol for this statement
         self.key_sym = None  # type: Optional[str]
 
@@ -801,10 +805,7 @@ class Transformer:
             return
 
         # If this instruction comes from the rv32i instruction set, we can just
-        # pass it straight through. The extra check for "uses_isr" is needed to
-        # support ISR names in instructions like CSRRW. This instruction is
-        # part of the rv32i instruction set, but we want to do some work to
-        # resolve CSR names.
+        # pass it straight through.
         if insn.rv32i and not insn.uses_isr:
             self.out_handle.write(f'.line {self.line_number - 1}\n')
             self.out_handle.write(f'.loc {self.in_idx + 1} {self.line_number}\n')
@@ -873,7 +874,6 @@ class Transformer:
         '''Continue reading a string'''
         assert self.in_string
         assert self.state == 1
-
         while True:
             # Search from pos for " (end of string) or \ (possible escape
             # sequence)
@@ -950,7 +950,7 @@ class Transformer:
         '''Consume an optional token'''
         assert self.state == 1
         assert self.key_sym is not None
-        assert not self.in_comment
+        # assert not self.in_comment
         assert not self.in_string
 
         assert pos < len(line)
@@ -997,8 +997,8 @@ class Transformer:
         self.state = 0
 
         # If key_sym is a directive (starts with '.'), we can just pass it
-        # straight through.
-        if self.key_sym.startswith('.'):
+        # straight through. Also applies for macros.
+        if self.key_sym.startswith('.') or self.key_sym in self.macros:
             self.out_handle.write(self.key_sym)
             self.out_handle.write(''.join(self.acc))
             self.acc = []
@@ -1054,6 +1054,34 @@ class Transformer:
 
         self.key_sym = match.group(0)
         self.state = 1
+
+        if ".macro" in line:
+            self.macros.append(re.search(r"\.macro\s(\w+)", line).group(1))
+
+        def perform_replacement(line, symbol_table):
+            # Remove comment (only works single-line comments)
+            line_new = re.sub(r"/\*.*\*/", "", line)
+            # Check if the token is a symbol in the symbol table
+            for sym in symbol_table:
+                # Replace the token with the value from the most recent definition
+                line_new = re.sub(f"(?!\w\s){sym}(?!\w)", str(symbol_table[sym][-1]), line_new)
+
+            return line_new
+
+        def process_equ_directive(line, symbol_table):
+            # Parse the .equ directive line
+            search = re.search(r"\.equ\s+(\w+),\s+(\w+)", line)
+
+            # Update the symbol table with the new definition
+            if search.group(2) in symbol_table:
+                symbol_table[search.group(2)].append(search.group(1))
+            else:
+                symbol_table[search.group(2)] = [search.group(1)]
+
+        if '.equ' in line:
+            process_equ_directive(line, self.symbol_table)
+        else:
+            line = perform_replacement(line, self.symbol_table) + "\n"
 
         # We don't add key_sym to acc here: it will be read from self.key_sym
         # at the end of the instruction / directive.
@@ -1172,6 +1200,40 @@ def transform_inputs(out_dir: str, inputs: List[str], insns_file: InsnsFile,
     return out_paths
 
 
+def run_c_preprocessor(out_dir: str, inputs: List[str], copts: str) -> List[str]:
+    inputs_pre = []
+    for idx, in_path in enumerate(inputs):
+        out_path = os.path.join(out_dir, str(idx))
+        inputs_pre.append(out_path)
+
+        gcc_name = find_tool('gcc')
+        default_args = [ "-E" ]
+        if copts:
+            default_args.append(copts)
+        default_args += [
+            "-CC",
+            "-x", "assembler-with-cpp",
+            "-o", out_path
+        ]
+
+        cmd = [gcc_name] + default_args + [in_path]
+
+        assert subprocess.run(cmd).returncode == 0
+
+        # replace hacky comments used to get line breaks in macro expansion
+        # usually this probably would not hurt but it confuses this script
+        with open(out_path, "r+") as outfile:
+            lines = outfile.readlines()
+            outfile.seek(0)
+            for idx, line in enumerate(lines):
+                lines[idx] = re.sub("MACRO\*\/", "", lines[idx])
+                lines[idx] = re.sub("\/\*MACRO", "", lines[idx])
+            outfile.writelines(lines)
+            outfile.truncate()
+
+    return inputs_pre
+
+
 def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
     '''Run binutils' as on transformed inputs
 
@@ -1205,57 +1267,68 @@ def main(argv: List[str]) -> int:
     files, other_args, flags = parse_positionals(argv)
     files = files or ['--']
     just_translate = '--otbn-translate' in flags
+    if "-D" in other_args[0]:
+        copts = other_args[0] # -D option is at the beginning of other_args
+        other_args.remove(copts) # remove -D so that other compilations work
+    else:
+        copts = None
 
     # files is now a nonempty list of input files. Rather unusually, '--'
     # (rather than '-') denotes standard input.
-
-    try:
-        insns_file = load_insns_yaml()
-    except RuntimeError as err:
-        sys.stderr.write('{}\n'.format(err))
-        return 1
-
-    # A list of instructions that have "glued operations" (which means their
-    # syntax doesn't require a space between the mnemonic and the first
-    # operation). Ordered from longest to shortest mnemonic, so that you can
-    # find a maximal prefix by linearly searching through the list and calling
-    # startswith.
-    glued_insns_dec_len = []
-    for insn in insns_file.insns:
-        if insn.glued_ops:
-            glued_insns_dec_len.append(insn)
-    glued_insns_dec_len.sort(key=lambda insn: len(insn.mnemonic), reverse=True)
-
-    # Check that any instruction that claims to have a Python pseudo-op
-    # assembler really does.
-    for insn in insns_file.insns:
-        if insn.python_pseudo_op:
-            if insn.mnemonic not in _PSEUDO_OP_ASSEMBLERS:
-                sys.stderr.write(
-                    "Instruction {!r} has python-pseudo-op true, "
-                    "but otbn_as.py doesn't have a custom assembler "
-                    "for it.\n".format(insn.mnemonic))
-                return 1
-
-    # Try to match up OTBN instruction encodings with .insn schemes (as stored
-    # in RISCV_FORMATS).
-    mnem_to_rve = find_insn_schemes(insns_file.mnemonic_to_insn)
-
-    with tempfile.TemporaryDirectory(suffix='.otbn-as') as tmpdir:
+    with tempfile.TemporaryDirectory(suffix='.otbn-gcc') as tmpdir:
         try:
-            transformed = transform_inputs(tmpdir, files, insns_file,
-                                           mnem_to_rve, glued_insns_dec_len,
-                                           just_translate)
+            files = run_c_preprocessor(tmpdir, files, copts) # add copts = -D for preprocessor
         except RuntimeError as err:
             sys.stderr.write('{}\n'.format(err))
             return 1
 
-        if just_translate:
-            # transform_inputs already printed out the translated code. We're
-            # done.
-            return 0
+        try:
+            insns_file = load_insns_yaml()
+        except RuntimeError as err:
+            sys.stderr.write('{}\n'.format(err))
+            return 1
 
-        return run_binutils_as(transformed, other_args)
+        # A list of instructions that have "glued operations" (which means their
+        # syntax doesn't require a space between the mnemonic and the first
+        # operation). Ordered from longest to shortest mnemonic, so that you can
+        # find a maximal prefix by linearly searching through the list and calling
+        # startswith.
+        glued_insns_dec_len = []
+        for insn in insns_file.insns:
+            if insn.glued_ops:
+                glued_insns_dec_len.append(insn)
+        glued_insns_dec_len.sort(key=lambda insn: len(insn.mnemonic), reverse=True)
+
+        # Check that any instruction that claims to have a Python pseudo-op
+        # assembler really does.
+        for insn in insns_file.insns:
+            if insn.python_pseudo_op:
+                if insn.mnemonic not in _PSEUDO_OP_ASSEMBLERS:
+                    sys.stderr.write(
+                        "Instruction {!r} has python-pseudo-op true, "
+                        "but otbn_as.py doesn't have a custom assembler "
+                        "for it.\n".format(insn.mnemonic))
+                    return 1
+
+        # Try to match up OTBN instruction encodings with .insn schemes (as stored
+        # in RISCV_FORMATS).
+        mnem_to_rve = find_insn_schemes(insns_file.mnemonic_to_insn)
+
+        with tempfile.TemporaryDirectory(suffix='.otbn-as') as tmpdir:
+            try:
+                transformed = transform_inputs(tmpdir, files, insns_file,
+                                            mnem_to_rve, glued_insns_dec_len,
+                                            just_translate)
+            except RuntimeError as err:
+                sys.stderr.write('{}\n'.format(err))
+                return 1
+
+            if just_translate:
+                # transform_inputs already printed out the translated code. We're
+                # done.
+                return 0
+
+            return run_binutils_as(transformed, other_args)
 
 
 if __name__ == '__main__':

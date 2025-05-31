@@ -32,7 +32,7 @@ def interpolate_linker_script(in_path: str, out_path: str) -> None:
                                    dmem_bus_length=mems.dmem_bus_size_bytes)
     except OSError as err:
         raise RuntimeError(str(err)) from None
-    except:  # noqa: E722
+    except:  # noqa: 722
         raise RuntimeError(exceptions.text_error_template().render()) from None
 
     try:
