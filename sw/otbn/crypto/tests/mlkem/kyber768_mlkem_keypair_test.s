@@ -4,10 +4,27 @@
 
 
 /*
- * Test for kyber768_mlkem_keypair
+ * Testwrapper for kyber_mlkem_keypair
 */
 
 .section .text.start
+
+#define STACK_SIZE 20000
+#define CRYPTO_BYTES 32
+
+#if KYBER_K == 2
+  #define CRYPTO_PUBLICKEYBYTES  800
+  #define CRYPTO_SECRETKEYBYTES  1632
+  #define CRYPTO_CIPHERTEXTBYTES 768
+#elif KYBER_K == 3 
+  #define CRYPTO_PUBLICKEYBYTES  1184
+  #define CRYPTO_SECRETKEYBYTES  2400
+  #define CRYPTO_CIPHERTEXTBYTES 1088
+#elif KYBER_K == 4
+  #define CRYPTO_PUBLICKEYBYTES  1568
+  #define CRYPTO_SECRETKEYBYTES  3168
+  #define CRYPTO_CIPHERTEXTBYTES 1568
+#endif
 
 /* Entry point. */
 .globl main
@@ -18,14 +35,17 @@ main:
     /* MOD <= dmem[modulus] = KYBER_Q */
     li      x5, 2
     la      x6, modulus
+    bn.lid  x5++, 0(x6)
+    la      x6, modulus_inv
     bn.lid  x5, 0(x6)
+    bn.or   w2, w2, w3 << 32 /* MOD = R | Q */
     bn.wsrw 0x0, w2
 
     /* Load stack pointer */
     la   x2, stack_end
-    la   x10, randombytes
-    la   x11, kem_pk
-    la   x12, kem_sk
+    la   x10, coins
+    la   x11, ek
+    la   x12, dk
     jal  x1, crypto_kem_keypair
 
     ecall
@@ -34,22 +54,19 @@ main:
 .balign 32
 .global stack
 stack:
-  .zero 20000
+  .zero STACK_SIZE
 stack_end:
-kem_sk:
-  .zero 1152
-pk:
-  .zero 1184
-hash_pk:
-  .zero 32
-z:
-  .zero 32
-kem_pk:
-  .zero 1184
+.globl dk
+dk:
+  .zero CRYPTO_SECRETKEYBYTES
+.globl ek
+ek:
+  .zero CRYPTO_PUBLICKEYBYTES
 
 .balign 32
-/* First input: randombytes */
-randombytes:
+/* First input: coins */
+.globl coins
+coins:
   .word 0xa42b9c7f
   .word 0x7d828fe8
   .word 0x50456061
