@@ -41,3 +41,162 @@ otbn_sim_test(
         "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
             ],
 )
+
+otbn_sim_test(
+    name = "dilithium2_keypair_test",
+    srcs = [
+        "dilithium_keypair_test.s",
+    ],
+    exp = "dilithium2_keypair_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:key_pair_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
+
+otbn_sim_test(
+    name = "dilithium2_sign_test",
+    srcs = [
+        "dilithium_sign_test.s",
+    ],
+    exp = "dilithium2_sign_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:sign_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_sub_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
+
+otbn_sim_test(
+    name = "dilithium2_verify_test",
+    srcs = [
+        "dilithium_verify_test.s",
+    ],
+    exp = "dilithium2_verify_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:verify_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_sub_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
+
+otbn_sim_test(
+    name = "dilithium3_keypair_test",
+    srcs = [
+        "dilithium_keypair_test.s",
+    ],
+    exp = "dilithium3_keypair_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:key_pair_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
+
+otbn_sim_test(
+    name = "dilithium3_sign_test",
+    srcs = [
+        "dilithium_sign_test.s",
+    ],
+    exp = "dilithium3_sign_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:sign_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_sub_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
+
+otbn_sim_test(
+    name = "dilithium3_verify_test",
+    srcs = [
+        "dilithium_verify_test.s",
+    ],
+    exp = "dilithium3_verify_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:verify_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_sub_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
+
+otbn_sim_test(
+    name = "dilithium5_keypair_test",
+    srcs = [
+        "dilithium_keypair_test.s",
+    ],
+    exp = "dilithium5_keypair_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:key_pair_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
+
+otbn_sim_test(
+    name = "dilithium5_sign_test",
+    srcs = [
+        "dilithium_sign_test.s",
+    ],
+    exp = "dilithium5_sign_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:sign_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_sub_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
+
+otbn_sim_test(
+    name = "dilithium5_verify_test",
+    srcs = [
+        "dilithium_verify_test.s",
+    ],
+    exp = "dilithium5_verify_test.exp",
+    deps = [
+        "//sw/otbn/crypto/handwritten:verify_dilithium",
+        "//sw/otbn/crypto/handwritten:ntt_dilithium",
+        "//sw/otbn/crypto/handwritten:intt_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_pointwise_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_add_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_sub_dilithium",
+        "//sw/otbn/crypto/handwritten:poly_dilithium",
+        "//sw/otbn/crypto/handwritten:rounding_dilithium",
+    ],
+)
