@@ -10,6 +10,9 @@ _REG_RE = re.compile(r'\s*([a-zA-Z0-9_]+)\s*=\s*((:?0x[0-9a-f]+)|([0-9]+))$')
 
 def run_command(cmd):
     result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+    if result.returncode:
+      print(result.stderr)
+      raise ValueError(f"command failed: {cmd}")
     return result.stdout.strip()
 
 def extract_elf_path(aquery_output):
@@ -54,10 +57,19 @@ def hex_to_bytes(hex_str, byte_len):
 def main():
     parser = argparse.ArgumentParser(description="Run Bazel test and extract ELF symbols.")
     parser.add_argument("--test_target", help="Bazel test target (e.g. //path/to:test)")
+    parser.add_argument("--nm_path", nargs="?", default="riscv-none-elf-nm", help="Path to RISC-V nm command")
+    parser.add_argument("--copt", nargs="?", help="--copt argument to pass to bazel")
     args = parser.parse_args()
     target = args.test_target
 
-    run_command(f'./bazelisk.sh test {target}')
+    # touch the .dexp file in case it doesn't yet exist, so the bazel build doesn't fail.
+    dexp = bazel_target_to_exp(args.test_target, '.dexp')
+    run_command(f'touch {dexp}')
+
+    copt = ""
+    if args.copt is not None:
+      copt = f"--copt={args.copt}"
+    run_command(f'./bazelisk.sh build {copt} {target}')
 
     aquery_cmd = f"./bazelisk.sh aquery 'outputs(\".*\\.elf\", {target})' | grep Outputs"
     aquery_output = run_command(aquery_cmd)
@@ -68,7 +80,7 @@ def main():
         print(e)
         sys.exit(1)
 
-    nm_output = run_command(f"riscv-none-elf-nm {elf_path}")
+    nm_output = run_command(f"{args.nm_path} {elf_path}")
     symbol_dict = parse_nm_output(nm_output)
 
     # print(symbol_dict)
@@ -134,10 +146,11 @@ def main():
             for region, value in memory_map.items():
                 found = False
                 for symbol, attrs in symbol_dict.items():
-                    if attrs['address'] == region[1] and attrs['type'] == 'd':
+                    if attrs['address'] == region[1] and attrs['type'] in ['d', 'D']:
                         f.write(f'{symbol}: {value}\n')
                         print(f"Binding address {region[1]}(0x{region[1]:x}) to label '{symbol}'")
                         found = True
+                        break
                 if not found:
                     print(f"Error: could not automatically resolve dmem expected value at {region[1]}(0x{region[1]:x}) to any label")
                     print("Label candidates:")
