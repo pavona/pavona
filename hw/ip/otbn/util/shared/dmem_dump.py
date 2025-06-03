@@ -6,7 +6,7 @@ import re
 import struct
 from typing import Dict
 
-from hw.ip.otbn.util.shared.mem_layout import get_memory_layout
+from shared.mem_layout import get_memory_layout
 
 _DMEM_RE = re.compile(
     r'\s*(?P<label>[a-zA-Z0-9_]+)\s*:\s*(?P<val>(:?[0-9a-f]+))$')
