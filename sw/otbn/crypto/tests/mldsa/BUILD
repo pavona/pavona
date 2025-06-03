@@ -64,7 +64,7 @@ otbn_sim_test(
     srcs = [
         "dilithium_sign_test.s",
     ],
-    exp = "dilithium2_sign_test.exp",
+    dexp = "dilithium2_sign_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:sign_dilithium",
         "//sw/otbn/crypto/mldsa:ntt_dilithium",
@@ -82,7 +82,7 @@ otbn_sim_test(
     srcs = [
         "dilithium_verify_test.s",
     ],
-    exp = "dilithium2_verify_test.exp",
+    dexp = "dilithium2_verify_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:verify_dilithium",
         "//sw/otbn/crypto/mldsa:ntt_dilithium",
@@ -100,7 +100,7 @@ otbn_sim_test(
     srcs = [
         "dilithium_keypair_test.s",
     ],
-    exp = "dilithium3_keypair_test.exp",
+    dexp = "dilithium3_keypair_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:key_pair_dilithium",
         "//sw/otbn/crypto/mldsa:ntt_dilithium",
@@ -117,7 +117,7 @@ otbn_sim_test(
     srcs = [
         "dilithium_sign_test.s",
     ],
-    exp = "dilithium3_sign_test.exp",
+    dexp = "dilithium3_sign_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:sign_dilithium",
         "//sw/otbn/crypto/mldsa:ntt_dilithium",
@@ -135,7 +135,7 @@ otbn_sim_test(
     srcs = [
         "dilithium_verify_test.s",
     ],
-    exp = "dilithium3_verify_test.exp",
+    dexp = "dilithium3_verify_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:verify_dilithium",
         "//sw/otbn/crypto/mldsa:ntt_dilithium",
@@ -153,7 +153,7 @@ otbn_sim_test(
     srcs = [
         "dilithium_keypair_test.s",
     ],
-    exp = "dilithium5_keypair_test.exp",
+    dexp = "dilithium5_keypair_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:key_pair_dilithium",
         "//sw/otbn/crypto/mldsa:ntt_dilithium",
@@ -170,7 +170,7 @@ otbn_sim_test(
     srcs = [
         "dilithium_sign_test.s",
     ],
-    exp = "dilithium5_sign_test.exp",
+    dexp = "dilithium5_sign_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:sign_dilithium",
         "//sw/otbn/crypto/mldsa:ntt_dilithium",
@@ -188,7 +188,7 @@ otbn_sim_test(
     srcs = [
         "dilithium_verify_test.s",
     ],
-    exp = "dilithium5_verify_test.exp",
+    dexp = "dilithium5_verify_test.dexp",
     deps = [
         "//sw/otbn/crypto/mldsa:verify_dilithium",
         "//sw/otbn/crypto/mldsa:ntt_dilithium",

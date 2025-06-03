@@ -10,9 +10,8 @@ _REG_RE = re.compile(r'\s*([a-zA-Z0-9_]+)\s*=\s*((:?0x[0-9a-f]+)|([0-9]+))$')
 
 def run_command(cmd):
     result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
-    if result.returncode:
+    if result.stderr:
       print(result.stderr)
-      raise ValueError(f"command failed: {cmd}")
     return result.stdout.strip()
 
 def extract_elf_path(aquery_output):
@@ -62,14 +61,10 @@ def main():
     args = parser.parse_args()
     target = args.test_target
 
-    # touch the .dexp file in case it doesn't yet exist, so the bazel build doesn't fail.
-    dexp = bazel_target_to_exp(args.test_target, '.dexp')
-    run_command(f'touch {dexp}')
-
     copt = ""
     if args.copt is not None:
       copt = f"--copt={args.copt}"
-    run_command(f'./bazelisk.sh build {copt} {target}')
+    run_command(f'./bazelisk.sh test {copt} {target}')
 
     aquery_cmd = f"./bazelisk.sh aquery 'outputs(\".*\\.elf\", {target})' | grep Outputs"
     aquery_output = run_command(aquery_cmd)
@@ -80,6 +75,7 @@ def main():
         print(e)
         sys.exit(1)
 
+    print(args.nm_path)
     nm_output = run_command(f"{args.nm_path} {elf_path}")
     symbol_dict = parse_nm_output(nm_output)
 
@@ -146,11 +142,10 @@ def main():
             for region, value in memory_map.items():
                 found = False
                 for symbol, attrs in symbol_dict.items():
-                    if attrs['address'] == region[1] and attrs['type'] in ['d', 'D']:
+                    if attrs['address'] == region[1] and attrs['type'] == 'd':
                         f.write(f'{symbol}: {value}\n')
                         print(f"Binding address {region[1]}(0x{region[1]:x}) to label '{symbol}'")
                         found = True
-                        break
                 if not found:
                     print(f"Error: could not automatically resolve dmem expected value at {region[1]}(0x{region[1]:x}) to any label")
                     print("Label candidates:")
