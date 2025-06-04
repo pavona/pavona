@@ -6,12 +6,11 @@ load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
 
 package(default_visibility = ["//visibility:public"])
 
-otbn_library(
-    name = "ntt_dilithium_4l",
-    srcs = [
-        "ntt_dilithium_4l.s",
-    ],
-)
+NAME_BY_SEC_LEVEL = {
+    2: "dilithium2",
+    3: "dilithium3",
+    5: "dilithium5",
+}
 
 otbn_library(
     name = "ntt_dilithium",
@@ -76,93 +75,145 @@ otbn_library(
     ],
 )
 
-otbn_library(
-    name = "key_pair_dilithium",
-    srcs = [
-        "key_pair_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "key_pair_" + name,
+        srcs = [
+            "key_pair_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "key_pair_base_dilithium",
-    srcs = [
-        "key_pair_base_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "key_pair_base_" + name,
+        srcs = [
+            "key_pair_base_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "key_pair_plain_dilithium",
-    srcs = [
-        "key_pair_plain_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "key_pair_plain_" + name,
+        srcs = [
+            "key_pair_plain_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "verify_dilithium",
-    srcs = [
-        "verify_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "verify_" + name,
+        srcs = [
+            "verify_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "verify_base_dilithium",
-    srcs = [
-        "verify_base_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "verify_base_" + name,
+        srcs = [
+            "verify_base_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "verify_plain_dilithium",
-    srcs = [
-        "verify_plain_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "verify_plain_" + name,
+        srcs = [
+            "verify_plain_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "poly_dilithium",
-    srcs = [
-        "poly_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "poly_" + name,
+        srcs = [
+            "poly_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "poly_base_dilithium",
-    srcs = [
-        "poly_base_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "poly_base_" + name,
+        srcs = [
+            "poly_base_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "poly_plain_dilithium",
-    srcs = [
-        "poly_plain_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "poly_plain_" + name,
+        srcs = [
+            "poly_plain_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "rounding_dilithium",
-    srcs = [
-        "rounding_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "rounding_" + name,
+        srcs = [
+            "rounding_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "sign_dilithium",
-    srcs = [
-        "sign_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "sign_" + name,
+        srcs = [
+            "sign_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "sign_base_dilithium",
-    srcs = [
-        "sign_base_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "sign_base_" + name,
+        srcs = [
+            "sign_base_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
 
-otbn_library(
-    name = "sign_plain_dilithium",
-    srcs = [
-        "sign_plain_dilithium.s",
-    ],
-)
+[
+    otbn_library(
+        name = "sign_plain_" + name,
+        srcs = [
+            "sign_plain_dilithium.s",
+        ],
+        copts = ["-DDILITHIUM_MODE=" + str(sec_level)],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
