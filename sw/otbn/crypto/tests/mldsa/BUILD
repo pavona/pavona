@@ -19,21 +19,6 @@ otbn_sim_test(
     ],
 )
 
-# This test currently fails because it expects a different version of the
-# simulator.
-#
-# otbn_sim_test(
-#     name = "poly_pointwise_dilithium_test",
-#     srcs = [
-#         "poly_pointwise_dilithium_test.s",
-#     ],
-#     dexp = "poly_pointwise_dilithium_test.dexp",
-#     exp = "poly_pointwise_dilithium_test.exp",
-#     deps = [
-#         "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-#     ],
-# )
-
 otbn_sim_test(
     name = "dilithium2_keypair_test",
     srcs = [
