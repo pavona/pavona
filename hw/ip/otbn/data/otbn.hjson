@@ -34,7 +34,7 @@
           notes:              ""
       },
       {
-          version:            "1.0.0",
+          version:            "1.1.0",
           life_stage:         "L1",
           design_stage:       "D2S",
           verification_stage: "V2S",
@@ -757,7 +757,7 @@
     // Imem size (given as `items` below) must be a power of two.
     { window: {
         name: "IMEM",
-        items: "8192", // 4 kB
+        items: "8192", // 32 kB
         swaccess: "rw",
         data-intg-passthru: "true",
         byte-write: "false",
@@ -781,7 +781,6 @@
     { window: {
         name: "DMEM",
         items: "32768", // 32768 * 32bit = 128KiB, all visible over bus
-        unusual: "true", // Needed to avoid an error because of the non-power-of-two size
         swaccess: "rw",
         data-intg-passthru: "true",
         byte-write: "false",

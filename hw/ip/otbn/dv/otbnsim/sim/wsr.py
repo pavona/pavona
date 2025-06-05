@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
@@ -68,12 +68,10 @@ class WSR:
     def commit(self) -> None:
         '''Commit pending changes'''
         self._pending_write = False
-        return
 
     def abort(self) -> None:
         '''Abort pending changes'''
         self._pending_write = False
-        return
 
     def changes(self) -> Sequence[Trace]:
         '''Return list of pending architectural changes'''
@@ -85,7 +83,7 @@ class DumbWSR(WSR):
     def __init__(self, name: str):
         super().__init__(name)
         self._value = 0
-        self._next_value = None  # type: Optional[int]
+        self._next_value: Optional[int] = None
 
     def on_start(self) -> None:
         self._value = 0
@@ -131,8 +129,8 @@ class RandWSR(WSR):
     def __init__(self, name: str, ext_regs: OTBNExtRegs):
         super().__init__(name)
 
-        self._random_value = None  # type: Optional[int]
-        self._next_random_value = None  # type: Optional[int]
+        self._random_value: Optional[int] = None
+        self._next_random_value: Optional[int] = None
         self._ext_regs = ext_regs
 
         # The pending_request flag says that we've started an instruction that
@@ -215,10 +213,9 @@ class URNDWSR(WSR):
         super().__init__(name)
         seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
                 0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
-        self.state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
-        self.out = 4 * [0]
-        self._next_value = None  # type: Optional[int]
-        self._value = None  # type: Optional[int]
+        self._state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
+        self._next_value = 0
+        self._value = 0
         self.running = False
 
     def rol(self, n: int, d: int) -> int:
@@ -237,7 +234,6 @@ class URNDWSR(WSR):
         self.running = False
 
     def read_unsigned(self) -> int:
-        assert self._value is not None
         return self._value
 
     def state_update(self, data_in: List[int]) -> List[int]:
@@ -249,7 +245,7 @@ class URNDWSR(WSR):
         a_out = a_in ^ b_in ^ d_in
         b_out = a_in ^ b_in ^ c_in
         c_out = a_in ^ ((b_in << 17) & ((1 << 64) - 1)) ^ c_in
-        d_out = self.rol(d_in, 45) ^ self.rol(b_in, 45)
+        d_out = self.rol(d_in ^ b_in, 45)
         assert a_out < (1 << 64)
         assert b_out < (1 << 64)
         assert c_out < (1 << 64)
@@ -257,9 +253,9 @@ class URNDWSR(WSR):
         return [d_out, c_out, b_out, a_out]
 
     def set_seed(self, value: List[int]) -> None:
-        assert(len(value) == 4)
+        assert len(value) == 4
         self.running = True
-        self.state[0] = value
+        self._state[0] = value
         # Step immediately to update the internal state with the new seed
         self.step()
 
@@ -269,23 +265,19 @@ class URNDWSR(WSR):
             mid = 4 * [0]
             nv = 0
             for i in range(4):
-                st_i = self.state[i]
-                self.state[i + 1] = self.state_update(st_i)
+                st_i = self._state[i]
+                self._state[(i + 1) & 3] = self.state_update(st_i)
                 mid[i] = (st_i[3] + st_i[0]) & mask64
-                self.out[i] = (self.rol(mid[i], 23) + st_i[3]) & mask64
-                nv |= self.out[i] << (64 * i)
+                nv |= ((self.rol(mid[i], 23) + st_i[3]) & mask64) << (64 * i)
             self._next_value = nv
-            self.state[0] = self.state[4]
 
     def commit(self) -> None:
-        if self._next_value is not None:
-            self._value = self._next_value
-
-    def abort(self) -> None:
-        self._next_value = 0
+        self._value = self._next_value
 
     def changes(self) -> List[TraceWSR]:
-        return ([])
+        # Our URND model doesn't track (or report) changes to its internal
+        # state.
+        raise NotImplementedError
 
 
 class KeyTrace(Trace):
@@ -302,8 +294,8 @@ class SideloadKey:
     '''Represents a sideloaded key, with 384 bits of data and a valid signal'''
     def __init__(self, name: str):
         self.name = name
-        self._value = None  # type: Optional[int]
-        self._new_value = None  # type: Optional[Tuple[bool, int]]
+        self._value: Optional[int] = None
+        self._new_value: Optional[Tuple[bool, int]] = None
 
     def has_value(self) -> bool:
         return self._value is not None
@@ -1140,10 +1132,9 @@ class WSRFile:
         self.KMAC_DIGEST.abort()
 
     def changes(self) -> List[Trace]:
-        ret = []  # type: List[Trace]
+        ret: List[Trace] = []
         ret += self.MOD.changes()
         ret += self.RND.changes()
-        ret += self.URND.changes()
         ret += self.ACC.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
