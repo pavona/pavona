@@ -186,5 +186,6 @@ py_library(
     deps = [
         ":ext_regs",
         ":trace",
+        requirement("pycryptodome"),
     ],
 )
