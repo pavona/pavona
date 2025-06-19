@@ -34,7 +34,7 @@ static_assert(kDtAccCount >= 1, "This test requires at least one ACC instance");
 
 static dt_acc_t kTestAcc = (dt_acc_t)0;
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Gets the ACC instruction count, checks that it matches expectations.

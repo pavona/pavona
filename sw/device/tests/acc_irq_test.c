@@ -19,7 +19,7 @@ ACC_DECLARE_APP_SYMBOLS(err_test);
 static const acc_app_t kAppErrTest = ACC_APP_T_INIT(err_test);
 static const uint32_t kPlicTarget = 0;
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_rv_plic_t plic;
 static dif_acc_t acc;

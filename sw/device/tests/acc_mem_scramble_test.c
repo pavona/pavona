@@ -19,7 +19,7 @@ static_assert(kDtRvCoreIbexCount >= 1,
 static dt_acc_t kTestAcc = (dt_acc_t)0;
 static dt_rv_core_ibex_t kTestRvCoreIbex = (dt_rv_core_ibex_t)0;
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 typedef dif_result_t (*acc_read_t)(const dif_acc_t *acc, uint32_t offset_bytes,
                                    void *dest, size_t len_bytes);
