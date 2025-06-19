@@ -38,7 +38,7 @@ static const acc_addr_t kAccVarEncU = ACC_ADDR_T_INIT(x25519_sideload, enc_u);
 static const acc_addr_t kAccVarEncResult =
     ACC_ADDR_T_INIT(x25519_sideload, enc_result);
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Initializes all DIF handles for each peripheral used in this test.
