@@ -220,15 +220,6 @@
       act:     "rcv"
       package: "keymgr_pkg"
     },
-
-    // KMAC interface
-    { name:    "kmac_data"
-      package: "kmac_pkg"
-      struct:  "app"
-      act:     "req"
-      type:    "req_rsp"
-
-    },
   ],
   features: [
     {
@@ -780,7 +771,8 @@
     // Dmem size (given as `items` below) must be a power of two.
     { window: {
         name: "DMEM",
-        items: "32768", // 32768 * 32bit = 128KiB, all visible over bus
+        items: "32512", // 127kB visible over bus (1 kB scracth)
+        unusual: "true", // Needed to avoid an error because of the non-power-of-two size
         swaccess: "rw",
         data-intg-passthru: "true",
         byte-write: "false",
@@ -802,4 +794,3 @@
     }
   ]
 }
-

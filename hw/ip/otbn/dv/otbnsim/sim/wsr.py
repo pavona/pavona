@@ -6,13 +6,12 @@
 
 
 from typing import List, Optional, Sequence, Tuple
-from Crypto.Hash import cSHAKE128, cSHAKE256, SHAKE128, SHAKE256, SHA3_224, SHA3_256, SHA3_384, SHA3_512
-
+from Crypto.Hash import cSHAKE128, cSHAKE256, SHAKE128, SHAKE256, SHA3_224, \
+    SHA3_256, SHA3_384, SHA3_512
 from .trace import Trace
-
 from .ext_regs import OTBNExtRegs
-
 DEBUG_KMAC = False
+
 
 class TraceWSR(Trace):
     def __init__(self, wsr_name: str, new_value: Optional[int]):
@@ -346,6 +345,7 @@ class KeyWSR(WSR):
     def write_unsigned(self, value: int) -> None:
         return
 
+
 class KmacBlock:
     '''Emulates the KMAC hardware block.'''
     _CMD_START = 0x1d
@@ -355,9 +355,9 @@ class KmacBlock:
     _STATUS_IDLE = 'IDLE'
     _STATUS_ABSORB = 'ABSORB'
     _STATUS_SQUEEZE = 'SQUEEZE'
-    _MODE_SHA3    = 0x0
-    _MODE_SHAKE   = 0x1
-    _MODE_CSHAKE  = 0x2
+    _MODE_SHA3 = 0x0
+    _MODE_SHAKE = 0x1
+    _MODE_CSHAKE = 0x2
     _STRENGTH_128 = 0x0
     _STRENGTH_224 = 0x1
     _STRENGTH_256 = 0x2
@@ -375,7 +375,8 @@ class KmacBlock:
     # https://github.com/lowRISC/opentitan/blob/1b56f197b49d5f597867561d0a153d2e7a985909/hw/ip/kmac/rtl/keccak_round.sv#L50
     _MSG_FIFO_ABSORB_BYTES_PER_CYCLE = 8
 
-    # If the packer in the Keccak MSG FIFO fills up completely, it must flush, before it can consume new data.
+    # If the packer in the Keccak MSG FIFO fills up completely, it must flush
+    # before it can consume new data.
     _MSG_FIFO_PACKER_FLUSH_LATENCY = 2
 
     # Cycles for a Keccak round. See:
@@ -384,7 +385,8 @@ class KmacBlock:
     _KECCAK_NUM_ROUNDS = 24
     # It takes 3 cycles until the finished digest is exposed to the application interface.
     _KECCAK_LATENCY_DIGEST_EXPOSED = 3
-    # It takes 2 additional cycles when the Keccak permutation logic is done for operations to continue (e.g. padding logic to resume)
+    # It takes 2 additional cycles when the Keccak permutation logic is done
+    # for operations to continue (e.g. padding logic to resume)
     _KECCAK_LATENCY_DONE = 2
 
     # Number of bytes that can be sent to KMAC per cycle over the application
@@ -405,7 +407,8 @@ class KmacBlock:
     _SHIFT_DIGEST_LATENCY = 1
     # If a request for a new chunk of the digest exceeds the rate (for XOFs)
     # the application interface triggers a new permutation.
-    _NEW_PERMUTATION_LATENCY = _KECCAK_CYCLES_PER_ROUND * _KECCAK_NUM_ROUNDS + _KECCAK_LATENCY_DIGEST_EXPOSED + _SHIFT_DIGEST_LATENCY
+    _NEW_PERMUTATION_LATENCY = _KECCAK_CYCLES_PER_ROUND * _KECCAK_NUM_ROUNDS + \
+        _KECCAK_LATENCY_DIGEST_EXPOSED + _SHIFT_DIGEST_LATENCY
 
     def __init__(self):
         self._reset()
@@ -509,7 +512,13 @@ class KmacBlock:
 
     def digest_ready(self) -> bool:
         if DEBUG_KMAC:
-            print(f"\tKMAC Digest Ready Req: autowrite={self._automatically_write_digest} shift={self._shift_digest_reg} permute={self._new_permutation} read={self._digest_read} ready={self._digest_ready} read_offset={self._read_offset} leftover={self._leftover_digest_bytes}")
+            print(f"\tKMAC Digest Ready Req: \
+                  autowrite={self._automatically_write_digest} \
+                  shift={self._shift_digest_reg} \
+                  permute={self._new_permutation} \
+                  read={self._digest_read} ready={self._digest_ready} \
+                  read_offset={self._read_offset} \
+                  leftover={self._leftover_digest_bytes}")
         if self._automatically_write_digest:
             if self._digest_ready:
                 self._digest_read = True
@@ -523,7 +532,7 @@ class KmacBlock:
             self._digest_read = False
             if self._rate_bytes > self._read_offset + 32:
                 self._shift_digest_reg = True
-            elif self._leftover_digest_bytes + self._rate_bytes - self._read_offset  >= 32:
+            elif self._leftover_digest_bytes + self._rate_bytes - self._read_offset >= 32:
                 # Even if we can not directly get 32 bytes without
                 # a new permutation, we have n leftover bytes
                 # (8 for SHAKE128/256). Therefore after 4 permutations
@@ -555,37 +564,43 @@ class KmacBlock:
 
         if self._mode == self._MODE_SHA3:
             if self._strength == self._STRENGTH_128:
-                raise ValueError(f'KMAC: Invalid config: mode = {self._mode} and strength = {self._strength}')
+                raise ValueError(f'KMAC: Invalid config: \
+                                 mode = {self._mode} and \
+                                 strength = {self._strength}')
             elif self._strength == self._STRENGTH_224:
                 self._state = SHA3_224.new()
-                self._rate_bytes = (1600 - (224*2)) // 8
+                self._rate_bytes = (1600 - (224 * 2)) // 8
             elif self._strength == self._STRENGTH_256:
                 self._state = SHA3_256.new()
-                self._rate_bytes = (1600 - (256*2)) // 8
+                self._rate_bytes = (1600 - (256 * 2)) // 8
             elif self._strength == self._STRENGTH_384:
                 self._state = SHA3_384.new()
-                self._rate_bytes = (1600 - (384*2)) // 8
+                self._rate_bytes = (1600 - (384 * 2)) // 8
             elif self._strength == self._STRENGTH_512:
                 self._state = SHA3_512.new()
-                self._rate_bytes = (1600 - (512*2)) // 8
+                self._rate_bytes = (1600 - (512 * 2)) // 8
         elif self._mode == self._MODE_SHAKE:
             if self._strength == self._STRENGTH_128:
                 self._state = SHAKE128.new()
-                self._rate_bytes = (1600 - (128*2)) // 8
+                self._rate_bytes = (1600 - (128 * 2)) // 8
             elif self._strength == self._STRENGTH_256:
                 self._state = SHAKE256.new()
-                self._rate_bytes = (1600 - (256*2)) // 8
+                self._rate_bytes = (1600 - (256 * 2)) // 8
             else:
-                raise ValueError(f'KMAC: Invalid config: mode = {self._mode} and strength = {self._strength}')
+                raise ValueError(f'KMAC: Invalid config: \
+                                 mode = {self._mode} and \
+                                 strength = {self._strength}')
         elif self._mode == self._MODE_CSHAKE:
             if self._strength == self._STRENGTH_128:
                 self._state = cSHAKE128.new()
-                self._rate_bytes = (1600 - (128*2)) // 8
+                self._rate_bytes = (1600 - (128 * 2)) // 8
             elif self._strength == self._STRENGTH_256:
                 self._state = cSHAKE256.new()
-                self._rate_bytes = (1600 - (256*2)) // 8
+                self._rate_bytes = (1600 - (256 * 2)) // 8
             else:
-                raise ValueError(f'KMAC: Invalid config: mode = {self._mode} and strength = {self._strength}')
+                raise ValueError(f'KMAC: Invalid config: \
+                                 mode = {self._mode} and \
+                                 strength = {self._strength}')
 
         # Important assumption: since we send data to the core in fixed-size
         # chunks, we need to make sure the chunk size divides the rate.
@@ -609,7 +624,9 @@ class KmacBlock:
         if not self.is_absorbing():
             raise ValueError(f'KMAC: Cannot write in {self._status} status.')
         if DEBUG_KMAC:
-            print(f"\tAttempting write to App FIFO: ready = {self.app_intf_fifo_ready()}, fifo len = {len(self._app_intf_fifo)}")
+            print(f"\tAttempting write to App FIFO: \
+                  ready = {self.app_intf_fifo_ready()}, \
+                  fifo len = {len(self._app_intf_fifo)}")
         if not self.app_intf_fifo_ready() or len(self._app_intf_fifo) != 0:
             return False
         self._app_intf_fifo += msg
@@ -619,10 +636,12 @@ class KmacBlock:
         if DEBUG_KMAC:
             print("\tStarting round logic")
         if absorbed:
-            self._core_cycles_remaining = self._KECCAK_NUM_ROUNDS * self._KECCAK_CYCLES_PER_ROUND + self._KECCAK_LATENCY_DIGEST_EXPOSED
+            self._core_cycles_remaining = self._KECCAK_NUM_ROUNDS * \
+                self._KECCAK_CYCLES_PER_ROUND + \
+                self._KECCAK_LATENCY_DIGEST_EXPOSED
         else:
-            self._core_cycles_remaining = self._KECCAK_NUM_ROUNDS * self._KECCAK_CYCLES_PER_ROUND + self._KECCAK_LATENCY_DONE
-
+            self._core_cycles_remaining = self._KECCAK_NUM_ROUNDS * \
+                self._KECCAK_CYCLES_PER_ROUND + self._KECCAK_LATENCY_DONE
 
     def _core_is_busy(self) -> None:
         return self._core_cycles_remaining is not None and self._core_cycles_remaining > 0
@@ -679,13 +698,18 @@ class KmacBlock:
             return
 
         if DEBUG_KMAC:
-            print(f"CYCLE - Stepping KMAC, remaining_cycles = {self._core_cycles_remaining}, core_pending_bytes = {self._core_pending_bytes}, available = {self._rate_bytes - self._core_pending_bytes} pending_process = {self._pending_process}, digest_req_ctr = {self._digest_request_ctr}")
+            print(f"CYCLE - Stepping KMAC, \
+                  remaining_cycles = {self._core_cycles_remaining}, \
+                  core_pending_bytes = {self._core_pending_bytes}, \
+                  available = {self._rate_bytes - self._core_pending_bytes} \
+                  pending_process = {self._pending_process}, \
+                  digest_req_ctr = {self._digest_request_ctr}")
 
         if self._app_intf_ready_pending_ctr is not None:
             self._app_intf_ready_pending_ctr += 1
             if self._app_intf_ready_pending_ctr == self._APP_INTF_READY_LATENCY:
                 if DEBUG_KMAC:
-                    print(f"\tKMAC App Iface Ready")
+                    print("\tKMAC App Iface Ready")
                 self._app_intf_ready = True
                 self._app_intf_ready_pending_ctr = None
 
@@ -693,7 +717,8 @@ class KmacBlock:
         self._core_pending_bytes = self._core_pending_bytes_next
         core_available = self._rate_bytes - self._core_pending_bytes
         absorb_rate = self._MSG_FIFO_ABSORB_BYTES_PER_CYCLE
-        # We determine if the message fifo has space before it writes to the Keccak state to model the actual hardware.
+        # We determine if the message fifo has space before it writes to the
+        # Keccak state to model the actual hardware.
         # If the FIFO is full, it can only be written in the next cycle.
         msg_fifo_write_ready = self.msg_fifo_bytes_available() >= self._APP_INTF_BYTES_PER_CYCLE
         if core_available >= 1 and self._core_can_absorb():
@@ -701,7 +726,8 @@ class KmacBlock:
                 self._msg_fifo_flush_ctr += 1
             if len(self._msg_fifo) >= absorb_rate:
                 if DEBUG_KMAC:
-                    print(f"\tMSG FIFO -> STATE: Absorbing 64-bit: {self._msg_fifo[:absorb_rate][::-1].hex()}")
+                    print(f"\tMSG FIFO -> STATE: Absorbing 64-bit: \
+                          {self._msg_fifo[:absorb_rate][::-1].hex()}")
                 # Absorb a new chunk of the message.
                 self._core_pending_bytes_next = self._core_pending_bytes + absorb_rate
                 self._state.update(self._msg_fifo[:absorb_rate])
@@ -720,12 +746,17 @@ class KmacBlock:
                     # for flusing the fifo.
                     if self._msg_fifo_flush_ctr > 0:
                         if DEBUG_KMAC:
-                            print(f"\tMSG FIFO -> STATE: Absorbing last data (smaller than word): {self._msg_fifo[:absorb_rate][::-1].hex()}, flush_ctr = {self._msg_fifo_flush_ctr}")
+                            print(f"\tMSG FIFO -> STATE: \
+                                  Absorbing last data (smaller than word): \
+                                  {self._msg_fifo[:absorb_rate][::-1].hex()}, \
+                                  flush_ctr = {self._msg_fifo_flush_ctr}")
                         # model cycle for consuming the last data
                         self._state.update(self._msg_fifo)
-                        self._core_pending_bytes_next = self._core_pending_bytes + len(self._msg_fifo)
+                        self._core_pending_bytes_next = \
+                            self._core_pending_bytes + len(self._msg_fifo)
                         self._msg_fifo = bytes()
-                elif not self._msg_fifo_packer_flushed and self._msg_fifo_flush_ctr <= 2 and not self._padding_only:
+                elif not self._msg_fifo_packer_flushed and self._msg_fifo_flush_ctr <= 2 \
+                        and not self._padding_only:
                     if DEBUG_KMAC:
                         print("\tFlushing MSG FIFO PACKER")
                     self._msg_fifo_packer_flushed = True
@@ -750,13 +781,16 @@ class KmacBlock:
             # Pass data from the application interface FIFO to the message FIFO.
             nbytes = min(len(self._app_intf_fifo), self._APP_INTF_BYTES_PER_CYCLE, self._msg_len)
             if DEBUG_KMAC and nbytes > 0:
-                print(f"\tAPP FIFO -> MSG FIFO: Absorbing {nbytes} bytes: {hex(int.from_bytes(self._app_intf_fifo[:nbytes], 'little'))}, size of contents in MSG FIFO before new data: {len(self._msg_fifo)}")
+                print(f"\tAPP FIFO -> MSG FIFO: Absorbing {nbytes} \
+                      bytes: \
+                      {hex(int.from_bytes(self._app_intf_fifo[:nbytes], 'little'))}, \
+                      size of contents in MSG FIFO before new data: {len(self._msg_fifo)}")
             self._msg_fifo += self._app_intf_fifo[:nbytes]
             self._app_intf_fifo = self._app_intf_fifo[nbytes:]
             self._msg_len -= nbytes
         else:
-            # Once the FIFO fills up completely, the packer must flush completely until it can consume
-            # new data.
+            # Once the FIFO fills up completely, the packer must flush completely until it can
+            # consume new data.
             if self._msg_fifo_packer_flush_ctr == 0:
                 self._msg_fifo_packer_flushing = True
             if core_available >= absorb_rate and self._core_can_absorb():
@@ -768,7 +802,7 @@ class KmacBlock:
                 print(f"\tMSG FIFO FULL, flush ctr = {self._msg_fifo_packer_flush_ctr}")
         if self._msg_len == 0 and not self._app_intf_last:
             if DEBUG_KMAC:
-                print(f"\tAPP FIFO last")
+                print("\tAPP FIFO last")
             self.message_done()
             self._app_intf_last = True
         self._app_intf_fifo_ready = self._app_intf_fifo_ready_next
@@ -829,7 +863,6 @@ class KmacBlock:
                 self._msg_fifo_flushed = False
                 self._msg_fifo_packer_flushed = False
 
-
     def max_read_bytes(self) -> int:
         '''Returns the maximum readable bytes before a `run` command.'''
         # SHA3
@@ -843,16 +876,17 @@ class KmacBlock:
 
     def read(self, num_bytes: int) -> bytes:
         if self.max_read_bytes() is not None and num_bytes > self.max_read_bytes():
-            raise ValueError(f'KMAC: Read request exceeds Keccak rate.')
+            raise ValueError('KMAC: Read request exceeds Keccak rate.')
         if self._mode == self._MODE_SHAKE or self._mode == self._MODE_CSHAKE:
             # XOFs SHAKE and CSHAKE
             self._read_offset += num_bytes
             ret = self._state.read(num_bytes)
         else:
             # SHA3
-            ret = self._state.digest()[self._read_offset : self._read_offset + num_bytes]
+            ret = self._state.digest()[self._read_offset: self._read_offset + num_bytes]
             self._read_offset += num_bytes
         return ret
+
 
 class KmacMsgWSR(WSR):
     '''Keccak message WSR: sends data to the KMAC hardware block.
@@ -900,12 +934,10 @@ class KmacMsgWSR(WSR):
                     print(f"\tKMAC_MSG -> APP FIFO: Writing {len(value_bytes)} bytes to App FIFO")
                 self._pending_write_to_app_intf = False
 
-
     def request_write(self) -> bool:
         return self._kmac.app_intf_fifo_ready()
 
     def commit(self) -> None:
-
         # reg -> KMAC_MSG reg
         if self._pending_write:
             self._pending_write = False
@@ -915,7 +947,8 @@ class KmacMsgWSR(WSR):
                 self._value = self._next_value
                 self._pending_write_to_app_intf = True
             else:
-                value_bytes = None
+                # Silence F841 warning until we reimplement the KMAC interface.
+                value_bytes = None  # noqa: F841
         super().commit()
 
     def changes(self) -> Sequence[Trace]:
@@ -923,13 +956,14 @@ class KmacMsgWSR(WSR):
         return ([TraceWSR(self.name, self._next_value)]
                 if self._pending_write else [])
 
+
 class KmacCfgWSR(WSR):
     '''Keccak config WSR: used to set SHA3 mode and Keccak Strength
     '''
     def __init__(self, name: str, kmac: KmacBlock):
         super().__init__(name)
         self._value = 0
-        self._kmac  = kmac
+        self._kmac = kmac
 
     def read_unsigned(self) -> int:
         return self._value
@@ -947,9 +981,9 @@ class KmacCfgWSR(WSR):
                 # to Ibex
                 self._kmac._reset()
             else:
-                mode     = self._value & 0b11
+                mode = self._value & 0b11
                 strength = (self._value >> 2) & 0b111
-                msg_len  = self._value >> 5
+                msg_len = self._value >> 5
                 self._kmac._reset()
                 self._kmac.set_configuration(mode, strength, msg_len)
         super().commit()
@@ -959,12 +993,13 @@ class KmacCfgWSR(WSR):
         return ([TraceWSR(self.name, self._next_value)]
                 if self._pending_write else [])
 
+
 class KmacStatusWSR(WSR):
     '''Keccak status WSR
     '''
     def __init__(self, name: str, kmac: KmacBlock):
         super().__init__(name)
-        self._kmac  = kmac
+        self._kmac = kmac
 
     def read_unsigned(self) -> int:
         value = self._kmac.get_error() << 2
@@ -979,6 +1014,7 @@ class KmacStatusWSR(WSR):
         '''Return list of pending architectural changes'''
         return ([TraceWSR(self.name, self._next_value)]
                 if self._pending_write else [])
+
 
 class KmacDigestWSR(WSR):
     '''Keccak digest WSR: recieves data from the KMAC hardware block.
@@ -1067,8 +1103,7 @@ class WSRFile:
             8: self.KMAC_CFG,
             9: self.KMAC_MSG,
             10: self.KMAC_DIGEST
-            }
-
+        }
 
     def on_start(self) -> None:
         '''Called at the start of an operation
@@ -1138,9 +1173,10 @@ class WSRFile:
         ret += self.ACC.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
-        ret += self.KMAC_MSG.changes()
-        ret += self.KMAC_CFG.changes()
-        ret += self.KMAC_DIGEST.changes()
+        # Commented out until we implement the KMAC interface.
+        # ret += self.KMAC_MSG.changes()
+        # ret += self.KMAC_CFG.changes()
+        # ret += self.KMAC_DIGEST.changes()
         return ret
 
     def set_sideload_keys(self,

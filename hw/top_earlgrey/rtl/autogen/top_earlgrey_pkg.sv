@@ -402,12 +402,12 @@ package top_earlgrey_pkg;
   /**
    * Peripheral base address for otbn in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTBN_BASE_ADDR = 32'h41130000;
+  parameter int unsigned TOP_EARLGREY_OTBN_BASE_ADDR = 32'h41300000;
 
   /**
    * Peripheral size in bytes for otbn in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h10000;
+  parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h40000;
 
   /**
    * Peripheral base address for keymgr in top earlgrey.

@@ -601,9 +601,9 @@
         {
           base_addrs:
           {
-            hart: 0x41130000
+            hart: 0x41300000
           }
-          size_byte: 0x10000
+          size_byte: 0x40000
         }
       ]
       xbar: false

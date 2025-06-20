@@ -10,7 +10,7 @@ package otbn_reg_pkg;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
-  parameter int BlockAw = 16;
+  parameter int BlockAw = 18;
 
   // Number of registers for every interface
   parameter int NumRegs = 11;
@@ -269,17 +269,17 @@ package otbn_reg_pkg;
   } otbn_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] OTBN_INTR_STATE_OFFSET = 16'h 0;
-  parameter logic [BlockAw-1:0] OTBN_INTR_ENABLE_OFFSET = 16'h 4;
-  parameter logic [BlockAw-1:0] OTBN_INTR_TEST_OFFSET = 16'h 8;
-  parameter logic [BlockAw-1:0] OTBN_ALERT_TEST_OFFSET = 16'h c;
-  parameter logic [BlockAw-1:0] OTBN_CMD_OFFSET = 16'h 10;
-  parameter logic [BlockAw-1:0] OTBN_CTRL_OFFSET = 16'h 14;
-  parameter logic [BlockAw-1:0] OTBN_STATUS_OFFSET = 16'h 18;
-  parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 1c;
-  parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
-  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 24;
-  parameter logic [BlockAw-1:0] OTBN_LOAD_CHECKSUM_OFFSET = 16'h 28;
+  parameter logic [BlockAw-1:0] OTBN_INTR_STATE_OFFSET = 18'h 0;
+  parameter logic [BlockAw-1:0] OTBN_INTR_ENABLE_OFFSET = 18'h 4;
+  parameter logic [BlockAw-1:0] OTBN_INTR_TEST_OFFSET = 18'h 8;
+  parameter logic [BlockAw-1:0] OTBN_ALERT_TEST_OFFSET = 18'h c;
+  parameter logic [BlockAw-1:0] OTBN_CMD_OFFSET = 18'h 10;
+  parameter logic [BlockAw-1:0] OTBN_CTRL_OFFSET = 18'h 14;
+  parameter logic [BlockAw-1:0] OTBN_STATUS_OFFSET = 18'h 18;
+  parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 18'h 1c;
+  parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 18'h 20;
+  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 18'h 24;
+  parameter logic [BlockAw-1:0] OTBN_LOAD_CHECKSUM_OFFSET = 18'h 28;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
@@ -314,11 +314,11 @@ package otbn_reg_pkg;
   parameter logic [31:0] OTBN_LOAD_CHECKSUM_CHECKSUM_RESVAL = 32'h 0;
 
   // Window parameters
-  parameter logic [BlockAw-1:0] OTBN_IMEM_OFFSET = 16'h 4000;
-  parameter int unsigned        OTBN_IMEM_SIZE   = 'h 2000;
+  parameter logic [BlockAw-1:0] OTBN_IMEM_OFFSET = 18'h 8000;
+  parameter int unsigned        OTBN_IMEM_SIZE   = 'h 8000;
   parameter int unsigned        OTBN_IMEM_IDX    = 0;
-  parameter logic [BlockAw-1:0] OTBN_DMEM_OFFSET = 16'h 8000;
-  parameter int unsigned        OTBN_DMEM_SIZE   = 'h c00;
+  parameter logic [BlockAw-1:0] OTBN_DMEM_OFFSET = 18'h 20000;
+  parameter int unsigned        OTBN_DMEM_SIZE   = 'h 1fc00;
   parameter int unsigned        OTBN_DMEM_IDX    = 1;
 
   // Register index

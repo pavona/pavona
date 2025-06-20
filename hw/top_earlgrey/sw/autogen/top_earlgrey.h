@@ -738,7 +738,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTBN_BASE_ADDR 0x41130000u
+#define TOP_EARLGREY_OTBN_BASE_ADDR 0x41300000u
 
 /**
  * Peripheral size for otbn in top earlgrey.
@@ -748,7 +748,7 @@ extern "C" {
  * address between #TOP_EARLGREY_OTBN_BASE_ADDR and
  * `TOP_EARLGREY_OTBN_BASE_ADDR + TOP_EARLGREY_OTBN_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_OTBN_SIZE_BYTES 0x10000u
+#define TOP_EARLGREY_OTBN_SIZE_BYTES 0x40000u
 
 /**
  * Peripheral base address for keymgr in top earlgrey.
