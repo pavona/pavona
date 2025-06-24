@@ -28,6 +28,7 @@ class ExecutionStats:
         self.stall_count = 0
         self.insn_histo: Counter[str] = Counter()
         self.func_calls: List[Dict[str, int]] = []
+        self.func_instrs: Dict[int, Dict[str, List[int]]] = {}
         self.loops: List[Dict[str, int]] = []
 
         # Histogram indexed by the length of the (extended) basic block.
@@ -219,7 +220,7 @@ class ExecutionStatAnalyzer:
         self._addr_symbol_map = _get_addr_symbol_map(self._elf_file)
         self.func_cycles = None
         self.func_instrs = None
-        self.func_calls = None
+        self.func_calls = {}
 
     def _describe_imem_addr(self, address: int, name_only: bool = False) -> str:
         symbol_name = None
@@ -479,13 +480,13 @@ class ExecutionStatAnalyzer:
             # convention, labels that do not start with an "_" are functions,
             # labels that do are used inside functions.
             _func_addr = func_addr
-            while self._describe_imem_addr(_func_addr, name_only=True).startswith("_"):
-                _func_addr -= 1
             func_name = self._describe_imem_addr(_func_addr, name_only=True)
+            while func_name.startswith("_") and _func_addr > 0:
+                _func_addr -= 1
+                func_name = self._describe_imem_addr(_func_addr, name_only=True)
 
             for _, counts in histdata.items():
                 if func_name in accumulated:
-                    from operator import add
                     accumulated[func_name] = list(map(add, accumulated[func_name], counts))
                 else:
                     accumulated[func_name] = []
@@ -505,9 +506,10 @@ class ExecutionStatAnalyzer:
             # convention, labels that do not start with an "_" are functions,
             # labels that do are used inside functions.
             _func_addr = func_addr
-            while self._describe_imem_addr(_func_addr, name_only=True).startswith("_"):
-                _func_addr -= 1
             func_name = self._describe_imem_addr(_func_addr, name_only=True)
+            while func_name.startswith("_") and _func_addr > 0:
+                _func_addr -= 1
+                func_name = self._describe_imem_addr(_func_addr, name_only=True)
 
             for instr, counts in histdata.items():
                 if func_name in accumulated:
@@ -532,5 +534,5 @@ class ExecutionStatAnalyzer:
         for func_name, data in accumulated.items():
             out += f'\n{func_name}\n'
             sorted_data = sorted(data.items(), key=lambda item: item[1], reverse=True)
-            out += tabulate(sorted_data.items(), headers=['instruction', '[count, stalls]']) + "\n"
+            out += tabulate(sorted_data, headers=['instruction', '[count, stalls]']) + "\n"
         return out
