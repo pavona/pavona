@@ -13,6 +13,7 @@ from elftools.dwarf.dwarfinfo import DWARFInfo  # type: ignore
 from elftools.elf.elffile import ELFFile  # type: ignore
 from elftools.elf.sections import SymbolTableSection  # type: ignore
 from tabulate import tabulate
+from operator import add
 
 from .insn import BEQ, BNE, ECALL, JAL, JALR, LOOP, LOOPI
 from .isa import OTBNInsn
@@ -204,7 +205,8 @@ def _get_addr_symbol_map(elf_file: ELFFile) -> Dict[int, str]:
     if not isinstance(section, SymbolTableSection):
         return {}
 
-    return {sym.entry.st_value: sym.name for sym in section.iter_symbols() if sym.entry['st_shndx'] == 1}
+    return {sym.entry.st_value: sym.name
+            for sym in section.iter_symbols() if sym.entry['st_shndx'] == 1}
 
 
 class ExecutionStatAnalyzer:
@@ -295,7 +297,7 @@ class ExecutionStatAnalyzer:
             "stall_count": self._stats.stall_count,
             "func_cycles": self.func_cycles,
             "func_instrs": self.func_instrs,
-            "func_calls": {l: dict(m) for l, m in self.func_calls.items()}
+            "func_calls": {f: dict(m) for f, m in self.func_calls.items()}
         }
         return stat_data
 
@@ -369,8 +371,7 @@ class ExecutionStatAnalyzer:
             callee = func
             callee_func_only = re.findall(r'\(([^]]*)\)', callee)[0]
             if callee_func_only not in self.func_calls:
-                self.func_calls[callee_func_only] = {}
-                self.func_calls[callee_func_only] = defaultdict(lambda: 0, self.func_calls[callee_func_only])
+                self.func_calls[callee_func_only] = defaultdict(lambda: 0, {})
             out += f"Function {func}\n"
             out += "  is called from the following functions\n"
             for rev_caller_func, cnt in rev_caller_funcs.most_common():
@@ -490,8 +491,11 @@ class ExecutionStatAnalyzer:
                     accumulated[func_name] = []
                     accumulated[func_name] = counts
         self.func_cycles = accumulated
-        assert sum(sum(accumulated.values(), [])) == (sum(self._stats.insn_histo.values()) + self._stats.stall_count)
-        return tabulate([[k, v] for k, v in sorted(accumulated.items(), key=lambda item: item[1], reverse=True)], headers=['function', '[instr., stall]']) + "\n"
+        expected_total = sum(self._stats.insn_histo.values()) + self._stats.stall_count
+        assert sum(sum(accumulated.values(), [])) == expected_total
+        sorted_acc = sorted(accumulated.items(), key=lambda item: item[1], reverse=True)
+        table = tabulate([[k, v] for k, v in sorted_acc], headers=['function', '[instr., stall]'])
+        return table + "\n"
 
     def _dump_func_instrs(self) -> str:
         out = ''
@@ -508,8 +512,8 @@ class ExecutionStatAnalyzer:
             for instr, counts in histdata.items():
                 if func_name in accumulated:
                     if instr in accumulated[func_name]:
-                        from operator import add
-                        accumulated[func_name][instr] = list(map(add, accumulated[func_name][instr], counts))
+                        counts = list(map(add, accumulated[func_name][instr], counts))
+                        accumulated[func_name][instr] = counts
                     else:
                         accumulated[func_name][instr] = counts
                 else:
@@ -520,10 +524,13 @@ class ExecutionStatAnalyzer:
         # total number of instructions executed. Flatten and sum up over all
         # recorded stats. sum(l, []) can be used to flatten a list l by one
         # level.
-        total_cycles_incl_stalls = sum(sum(sum([list(a.values()) for a in accumulated.values()], []), []))
-        assert (sum(self._stats.insn_histo.values()) + self._stats.stall_count) == total_cycles_incl_stalls
+        all_counts = [list(a.values()) for a in accumulated.values()]
+        total_cycles_incl_stalls = sum(sum(sum(all_counts, []), []))
+        expected_total = sum(self._stats.insn_histo.values()) + self._stats.stall_count
+        assert total_cycles_incl_stalls == expected_total
         self.func_instrs = accumulated
         for func_name, data in accumulated.items():
             out += f'\n{func_name}\n'
-            out += tabulate([[k, v] for k, v in sorted(data.items(), key=lambda item: item[1], reverse=True)], headers=['instruction', '[count, stalls]']) + "\n"
+            sorted_data = sorted(data.items(), key=lambda item: item[1], reverse=True)
+            out += tabulate(sorted_data.items(), headers=['instruction', '[count, stalls]']) + "\n"
         return out

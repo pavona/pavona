@@ -6,7 +6,6 @@
 
 
 import sys
-from math import floor
 from typing import Dict, Iterator, Optional, Tuple
 
 from shared.insn_yaml import Insn, DummyInsn, load_insns_yaml
@@ -115,7 +114,7 @@ class OTBNInsn:
         if size == 32:
             b = value.to_bytes(4, byteorder="little", signed=False)
         if size == 16:
-            b = value.to_bytes(2, byteorder="little", signed=False)                                       
+            b = value.to_bytes(2, byteorder="little", signed=False)
         return int.from_bytes(b, byteorder="little", signed=True)
 
     def rtl_trace(self, pc: int) -> str:

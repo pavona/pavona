@@ -6,9 +6,7 @@
 
 
 from typing import Dict, Iterator, Optional
-from math import floor
 import sys
-import struct
 
 from .constants import ErrBits
 from .flags import FlagReg
@@ -26,6 +24,7 @@ DEBUG_FLOW = False
 
 STACK_BENCH = False
 STACK_SIZE = 20000
+
 
 def eprint(text):
     print(text, file=sys.stderr)
@@ -158,9 +157,9 @@ class SLLI(RV32ImmShift):
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return
-        if DEBUG_ARITH:
-            eprint(f"slli {hex(val1)} << {self.shamt} = {hex((val1 << self.shamt) & ((1 << 32) - 1))}")
         result = (val1 << self.shamt) & ((1 << 32) - 1)
+        if DEBUG_ARITH:
+            eprint(f"slli {hex(val1)} << {self.shamt} = {hex(result)}")
         state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
@@ -659,7 +658,8 @@ class BNADD(OTBNInsn):
         flags = FlagReg.mlz_for_result(carry_flag, masked_result)
 
         if DEBUG_ARITH:
-            eprint(f"bn.add 0x{format(a, '064x')} + 0x{format(b, '064x')} = {format(a+b, '064x')} = {format(masked_result, '064x')}")
+            eprint(f"bn.add 0x{format(a, '064x')} + 0x{format(b, '064x')} = "
+                   f"{format(a+b, '064x')} = {format(masked_result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(masked_result)
         state.set_flags(self.flag_group, flags)
@@ -711,7 +711,8 @@ class BNADDI(OTBNInsn):
         mask256 = (1 << 256) - 1
         masked_result = full_result & mask256
         if DEBUG_ARITH:
-            eprint(f"bn.addi {format(a, '064x')} + {b} = {format(a+b, '064x')} = {format(masked_result, '064x')}")
+            eprint(f"bn.addi {format(a, '064x')} + {b} = {format(a+b, '064x')} = "
+                   f"{format(masked_result, '064x')}")
         carry_flag = bool((full_result >> 256) & 1)
         flags = FlagReg.mlz_for_result(carry_flag, masked_result)
 
@@ -741,7 +742,8 @@ class BNADDM(OTBNInsn):
         result = result & ((1 << 256) - 1)
 
         if DEBUG_ARITH:
-            eprint(f"bn.addm 0x{format(a, '064x')} + 0x{format(b, '064x')} = {format(a+b, '064x')} = {format(result, '064x')}")
+            eprint(f"bn.addm 0x{format(a, '064x')} + 0x{format(b, '064x')} = "
+                   f"{format(a+b, '064x')} = {format(result, '064x')}")
             if result >= mod_val:
                 eprint("incomplete reduction")
 
@@ -775,10 +777,12 @@ class BNADDV(OTBNInsn):
                 resulti = cmod_single(resulti, mod_val)
             if DEBUG_ARITH:
                 eprint(f"addvm {ai} + {bi} = {ai + bi} = {resulti}")
-            result = (result << size) | (OTBNInsn.to_2s_complement(resulti, size) & ((1 << size) - 1))
+            result <<= size
+            result |= (OTBNInsn.to_2s_complement(resulti, size) & ((1 << size) - 1))
 
         result = result & ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
 
 class BNMULV(OTBNInsn):
     insn = insn_for_mnemonic('bn.mulv', 5)
@@ -805,7 +809,7 @@ class BNMULV(OTBNInsn):
         else:
             size = 16
         mod_val = extract_sub_word(state.wsrs.MOD.read_unsigned(), size, 0)
-        qinv_val = extract_sub_word(state.wsrs.MOD.read_unsigned(), size, (32//size))
+        qinv_val = extract_sub_word(state.wsrs.MOD.read_unsigned(), size, (32 // size))
         result = state.wdrs.get_reg(self.wrd).read_unsigned()
 
         # Extract the lane
@@ -829,27 +833,28 @@ class BNMULV(OTBNInsn):
                 eprint(f"modulus {mod_val}")
                 eprint(f"mulmv {ai} * {bi} = {ai * bi} = {resulti}")
 
-            result = (result << size) | (OTBNInsn.to_2s_complement(resulti, size) & ((1 << size) - 1))
-        result = result & ((1 << 256) - 1)
+            result <<= size
+            result |= (OTBNInsn.to_2s_complement(resulti, size) & ((1 << size) - 1))
+        result &= ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
         if red:
-          yield None
-          yield None
-          yield None
-          yield None
+            yield None
+            yield None
+            yield None
+            yield None
 
-          yield None
-          yield None
-          yield None
-          yield None
+            yield None
+            yield None
+            yield None
+            yield None
 
-          yield None
-          yield None
-          yield None
+            yield None
+            yield None
+            yield None
         else:
-          yield None
-          yield None
-          yield None
+            yield None
+            yield None
+            yield None
         state.wsrs.ACC.write_unsigned(result)
 
 
@@ -1011,7 +1016,8 @@ class BNSUB(OTBNInsn):
         flags = FlagReg.mlz_for_result(carry_flag, masked_result)
 
         if DEBUG_ARITH:
-            eprint(f"bn.sub 0x{format(a, '064x')} - 0x{format(b, '064x')} = {format(a-b, '064x')} = {format(masked_result, '064x')}")
+            eprint(f"bn.sub 0x{format(a, '064x')} - 0x{format(b, '064x')} = "
+                   f"{format(a-b, '064x')} = {format(masked_result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(masked_result)
         state.set_flags(self.flag_group, flags)
@@ -1090,9 +1096,11 @@ class BNSUBM(OTBNInsn):
         result = result & ((1 << 256) - 1)
 
         if DEBUG_ARITH:
-            eprint(f"bn.subm 0x{format(a, '064x')} - 0x{format(b, '064x')} = {format(a-b, '064x')} = {format(result, '064x')}")
+            eprint(f"bn.subm 0x{format(a, '064x')} - 0x{format(b, '064x')} = "
+                   f"{format(a-b, '064x')} = {format(result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
 
 class BNSUBV(OTBNInsn):
     insn = insn_for_mnemonic('bn.subv', 4)
@@ -1121,10 +1129,12 @@ class BNSUBV(OTBNInsn):
                 resulti = cmod_single(resulti, mod_val)
             if DEBUG_ARITH:
                 eprint(f"subvm {ai} - {bi} = {ai - bi} = {resulti}")
-            result = (result << size) | (OTBNInsn.to_2s_complement(resulti, size) & ((1 << size) - 1))
+            result <<= size
+            result |= (OTBNInsn.to_2s_complement(resulti, size) & ((1 << size) - 1))
 
-        result = result & ((1 << 256) - 1)
+        result &= ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
 
 class BNAND(OTBNInsn):
     insn = insn_for_mnemonic('bn.and', 6)
@@ -1146,11 +1156,12 @@ class BNAND(OTBNInsn):
         result = a & b_shifted
 
         if DEBUG_ARITH:
-            eprint(f"bn.and {format(a,'064x')} & {format(b_shifted, '064x')} = {format(result, '064x')}")
-            #eprint(f"bn.and {bin(a)} & {bin(b_shifted)} = {bin(result)}")
+            eprint(f"bn.and {format(a,'064x')} & {format(b_shifted, '064x')} = "
+                   f"{format(result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_mlz_flags(self.flag_group, result)
+
 
 class BNOR(OTBNInsn):
     insn = insn_for_mnemonic('bn.or', 6)
@@ -1172,7 +1183,8 @@ class BNOR(OTBNInsn):
         result = a | b_shifted
 
         if DEBUG_ARITH:
-            eprint(f"bn.or {format(a,'064x')} & {format(b_shifted, '064x')} = {format(result, '064x')}")
+            eprint(f"bn.or {format(a,'064x')} & {format(b_shifted, '064x')} = "
+                   f"{format(result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_mlz_flags(self.flag_group, result)
@@ -1217,7 +1229,8 @@ class BNXOR(OTBNInsn):
 
         result = a ^ b_shifted
         if DEBUG_ARITH:
-            eprint(f"bn.xor 0x{format(a, '064x')} ^ 0x{format(b_shifted, '064x')} = {format(a^b, '064x')} = {format(result, '064x')}")
+            eprint(f"bn.xor 0x{format(a, '064x')} ^ 0x{format(b_shifted, '064x')} = "
+                   f"{format(a^b, '064x')} = {format(result, '064x')}")
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_mlz_flags(self.flag_group, result)
 
@@ -1240,6 +1253,7 @@ class BNRSHI(OTBNInsn):
         if DEBUG_ARITH:
             eprint(f"bn.rshi {format(a, '064x')}, {format(b, '064x')} = {format(result, '064x')}")
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
 
 class BNSHV(OTBNInsn):
     insn = insn_for_mnemonic('bn.shv', 6)
@@ -1271,6 +1285,7 @@ class BNSHV(OTBNInsn):
             result = (result << size) | (resulti & ((1 << size) - 1))
 
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
 
 class BNSEL(OTBNInsn):
     insn = insn_for_mnemonic('bn.sel', 5)
@@ -1315,7 +1330,8 @@ class BNCMP(OTBNInsn):
         flags = FlagReg.mlz_for_result(carry_flag, masked_result)
 
         if DEBUG_ARITH:
-            eprint(f"bn.cmp {format(a, '064x')}, {format(b_shifted, '064x')} = {format(full_result, '064x')}")
+            eprint(f"bn.cmp {format(a, '064x')}, {format(b_shifted, '064x')} = "
+                   f"{format(full_result, '064x')}")
             eprint(f"\tCarry: {carry_flag}")
 
         state.set_flags(self.flag_group, flags)
@@ -1662,6 +1678,7 @@ class BNTRN(OTBNInsn):
         if (DEBUG_ARITH):
             eprint(f"trn: {format(a,'064x')}, {format(b,'064x')}, {format(result, '064x')}")
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
 
 INSN_CLASSES = [
     ADD, ADDI, LUI, SUB, SLL, SLLI, SRL, SRLI, SRA, SRAI,

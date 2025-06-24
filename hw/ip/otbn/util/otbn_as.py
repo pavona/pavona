@@ -630,9 +630,9 @@ class Transformer:
         self.line_number = 0
 
         # Strings that should be spat out verbatim
-        self.acc = []  # type: List[str]
+        self.acc = []   # type: List[str]
         self.macros = []  # type: List[str]
-        self.symbol_table = {} # type: Dict[str, str]
+        self.symbol_table = {}  # type: Dict[str, str]
         # The key symbol for this statement
         self.key_sym = None  # type: Optional[str]
 
@@ -1067,7 +1067,7 @@ class Transformer:
             # Check if the token is a symbol in the symbol table
             for sym in symbol_table:
                 # Replace the token with the value from the most recent definition
-                line_new = re.sub(f"(?!\w\s){sym}(?!\w)", str(symbol_table[sym][-1]), line_new)
+                line_new = re.sub(fr"(?!\w\s){sym}(?!\w)", str(symbol_table[sym][-1]), line_new)
 
             return line_new
 
@@ -1210,7 +1210,7 @@ def run_c_preprocessor(out_dir: str, inputs: List[str], copts: str) -> List[str]
         inputs_pre.append(out_path)
 
         gcc_name = find_tool('gcc')
-        default_args = [ "-E" ]
+        default_args = ["-E"]
         if copts:
             default_args.append(copts)
         default_args += [
@@ -1229,8 +1229,8 @@ def run_c_preprocessor(out_dir: str, inputs: List[str], copts: str) -> List[str]
             lines = outfile.readlines()
             outfile.seek(0)
             for idx, line in enumerate(lines):
-                lines[idx] = re.sub("MACRO\*\/", "", lines[idx])
-                lines[idx] = re.sub("\/\*MACRO", "", lines[idx])
+                lines[idx] = re.sub(r"MACRO\*\/", "", lines[idx])
+                lines[idx] = re.sub(r"\/\*MACRO", "", lines[idx])
             outfile.writelines(lines)
             outfile.truncate()
 
@@ -1271,8 +1271,8 @@ def main(argv: List[str]) -> int:
     files = files or ['--']
     just_translate = '--otbn-translate' in flags
     if "-D" in other_args[0]:
-        copts = other_args[0] # -D option is at the beginning of other_args
-        other_args.remove(copts) # remove -D so that other compilations work
+        copts = other_args[0]  # -D option is at the beginning of other_args
+        other_args.remove(copts)  # remove -D so that other compilations work
     else:
         copts = None
 
@@ -1280,7 +1280,7 @@ def main(argv: List[str]) -> int:
     # (rather than '-') denotes standard input.
     with tempfile.TemporaryDirectory(suffix='.otbn-gcc') as tmpdir:
         try:
-            files = run_c_preprocessor(tmpdir, files, copts) # add copts = -D for preprocessor
+            files = run_c_preprocessor(tmpdir, files, copts)  # add copts = -D for preprocessor
         except RuntimeError as err:
             sys.stderr.write('{}\n'.format(err))
             return 1
@@ -1320,8 +1320,8 @@ def main(argv: List[str]) -> int:
         with tempfile.TemporaryDirectory(suffix='.otbn-as') as tmpdir:
             try:
                 transformed = transform_inputs(tmpdir, files, insns_file,
-                                            mnem_to_rve, glued_insns_dec_len,
-                                            just_translate)
+                                               mnem_to_rve, glued_insns_dec_len,
+                                               just_translate)
             except RuntimeError as err:
                 sys.stderr.write('{}\n'.format(err))
                 return 1
