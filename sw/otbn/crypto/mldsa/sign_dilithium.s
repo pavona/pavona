@@ -220,68 +220,63 @@ sign_dilithium:
     #define STACK_TR -96 /* Prev - 16 - 64 */
         #define STACK_MU -96 /* Prev */
     #define STACK_RHO -128 /* Prev - 32 */
-        #define STACK_RND -128 /* Prev */
-    #define STACK_KEY -160 /* Prev - 32 */
-    #define STACK_RHOPRIME  -160 /* Prev */
+    #define STACK_RND -160 /* Prev - 32 */
+    #define STACK_KEY -192 /* Prev - 32 */
+    #define STACK_RHOPRIME -192 /* Prev */
+
 #if DILITHIUM_MODE == 2
-    #define STACK_T0  -4256 /* Prev - K*1024 */
-    #define STACK_S1  -8352 /* Prev - L*1024 */
-    #define STACK_S2  -12448 /* Prev - K*1024 */
-    #define STACK_MAT -28832 /* Prev - K*L*1024 */
-    #define STACK_Y -32928 /* Prev - K*1024 */
-        #define STACK_H -32928 /* Prev */
-        #define STACK_TMP_POLYVEC -32928 /* Prev */
-    #define STACK_Z -37024 /* Prev - L*1024 */
-    #define STACK_W1 -41120 /* Prev - K*1024 */
-    #define STACK_W0 -45216 /* Prev - K*1024 */
-    #define STACK_CP -46240 /* Prev - 1024 */
-        #define STACK_CTXLEN -46240 /* Prev */
-        #define STACK_CTX -46244 /* Prev - 4 */
-    #define SIGNATURE -48672 /* Prev - ((CRYPTO_BYTES>>5)+1)*1024 */
+    #define STACK_T0  -4288 /* Prev - K*1024 */
+    #define STACK_S1  -8384 /* Prev - L*1024 */
+    #define STACK_S2  -12480 /* Prev - K*1024 */
+    #define STACK_MAT  -13504 /* Prev - 1024 */
+    #define STACK_Y  -17600 /* Prev - K*1024 */
+        #define STACK_H  -17600 /* Prev */
+    #define STACK_Z  -21696 /* Prev - L*1024 */
+    #define STACK_W1  -25792 /* Prev - K*1024 */
+    #define STACK_W0  -29888 /* Prev - K*1024 */
+    #define STACK_CP  -30912 /* Prev - 1024 */
+        #define STACK_CTXLEN  -30912 /* Prev */
+    #define STACK_CTX  -30916 /* Prev - 4 */
+    #define INIT_SP -30944
+    #define STACK_SIZE -31072
 
 #elif DILITHIUM_MODE == 3
-    #define STACK_T0  -6304 /* Prev - K*1024 */
-    #define STACK_S1  -11424 /* Prev - L*1024 */
-    #define STACK_S2  -17568 /* Prev - K*1024 */
-    #define STACK_MAT -48288 /* Prev - K*L*1024 */
-    #define STACK_Y -54432 /* Prev - K*1024 */
-        #define STACK_H -54432 /* Prev */
-        #define STACK_TMP_POLYVEC -54432 /* Prev */
-    #define STACK_Z -59552 /* Prev - L*1024 */
-    #define STACK_W1 -65696 /* Prev - K*1024 */
-    #define STACK_W0 -71840 /* Prev - K*1024 */
-    #define STACK_CP -72864 /* Prev - 1024 */
-        #define STACK_CTXLEN -72864 /* Prev */
-        #define STACK_CTX -72868 /* Prev - 4 */
-    #define SIGNATURE -76192 /* Prev - ((CRYPTO_BYTES>>5)+1)*32 */
-    
+    #define STACK_T0  -6336 /* Prev - K*1024 */
+    #define STACK_S1  -11456 /* Prev - L*1024 */
+    #define STACK_S2  -17600 /* Prev - K*1024 */
+    #define STACK_MAT  -18624 /* Prev - 1024 */
+    #define STACK_Y  -24768 /* Prev - K*1024 */
+        #define STACK_H  -24768 /* Prev */
+    #define STACK_Z  -29888 /* Prev - L*1024 */
+    #define STACK_W1  -36032 /* Prev - K*1024 */
+    #define STACK_W0  -42176 /* Prev - K*1024 */
+    #define STACK_CP  -43200 /* Prev - 1024 */
+        #define STACK_CTXLEN  -43200 /* Prev */
+    #define STACK_CTX  -43204 /* Prev - 4 */
+    #define INIT_SP -43232
+    #define STACK_SIZE -43360
+
 #elif DILITHIUM_MODE == 5
-    #define STACK_T0  -8352 /* Prev - K*1024 */
-    #define STACK_S1  -15520 /* Prev - L*1024 */
-    #define STACK_S2  -23712 /* Prev - K*1024 */
-    #define STACK_MAT -81056 /* Prev - K*L*1024 */
-    #define STACK_Y -89248 /* Prev - K*1024 ; actually, L is enough but we overlap with TMP */
-        #define STACK_H -89248 /* Prev */
-        #define STACK_TMP_POLYVEC -89248 /* overlap */
-    #define STACK_Z -96416 /* Prev - L*1024 */
-    #define STACK_W1 -104608 /* Prev - K*1024 */
-    #define STACK_W0 -112800 /* Prev - K*1024 */
-    #define STACK_CP -113824 /* Prev - 1024 */
-        #define STACK_CTXLEN -113824 /* Prev */
-        #define STACK_CTX -113828 /* Prev - 4 */
-    #define SIGNATURE -118464 /* Prev - ((CRYPTO_BYTES>>5)+1)*32 */
+    #define STACK_T0  -8384 /* Prev - K*1024 */
+    #define STACK_S1  -15552 /* Prev - L*1024 */
+    #define STACK_S2  -23744 /* Prev - K*1024 */
+    #define STACK_MAT  -24768 /* Prev - 1024 */
+    #define STACK_Y  -32960 /* Prev - K*1024 */
+        #define STACK_H  -32960 /* Prev */
+    #define STACK_Z  -40128 /* Prev - L*1024 */
+    #define STACK_W1  -48320 /* Prev - K*1024 */
+    #define STACK_W0  -56512 /* Prev - K*1024 */
+    #define STACK_CP  -57536 /* Prev - 1024 */
+        #define STACK_CTXLEN  -57536 /* Prev */
+    #define STACK_CTX  -57540 /* Prev - 4 */
+    #define INIT_SP -57568
+    #define STACK_SIZE -57696
 #endif
     /* Initialize the frame pointer */
     addi fp, sp, 0
 
-    /* Reserve space on the stack */
-#if DILITHIUM_MODE == 2
-    li  t0, -48672
-#elif DILITHIUM_MODE == 3
-    li  t0, -76192
-#elif DILITHIUM_MODE == 5
-    li  t0, -118464
-#endif
+    /* Reserve space on the stack. */
+    li  t0, INIT_SP
     add sp, sp, t0
 
     /* Store parameters to stack */
@@ -334,7 +329,7 @@ sign_dilithium:
     bn.lid t0, 0(a3++)
     bn.sid t0, 32(t1)
 
-    
+
     /* Unpack s1 */
     /* Load pointer to s1 */
     li   a0, STACK_S1
@@ -345,7 +340,7 @@ sign_dilithium:
     LOOPI L, 2
         jal x1, polyeta_unpack_dilithium
         nop
-    
+
     /* Unpack s2 */
     /* Load pointer to s2 */
     li  a0, STACK_S2
@@ -369,7 +364,7 @@ sign_dilithium:
     /* Initialize a SHAKE256 operation. */
     li a1, TRBYTES
     addi a1, a1, 2 /* Add len of ctxlen */
-    
+
     li t2, STACK_CTXLEN
     add t2, fp, t2
     lw t2, 0(t2) /* t2 <= ctxlen */
@@ -487,7 +482,7 @@ sign_dilithium:
         /* Store m[2:]||m'[:2] to buffer */
         sw t2, 0(t3)
         addi t3, t3, 4
-    
+
     /* Store last two message bytes */
     lw t2, 0(a0) /* Load last two bytes */
     srli t2, t2, 16
@@ -513,23 +508,6 @@ sign_dilithium:
     bn.sid  t1, 0(a0++) /* Store into mu buffer */
 
     /* Finish the SHAKE-256 operation. */
-
-    /* Expand matrix */
-    /* Initialize the nonce */
-    li a2, 0
-
-    li a1, STACK_MAT
-    add a1, fp, a1
-    LOOPI K, 10
-        LOOPI L, 7
-            /* Load parameters */
-            addi a0, fp, STACK_RHO
-            push a2
-            jal  x1, poly_uniform
-            pop a2
-            addi a2, a2, 1
-        addi a2, a2, 256
-        addi a2, a2, -L
 
 #ifdef DILITHIUM_RANDOMIZED_SIGNING
     /* NOTE: Write real randomness to STACK_RND */
@@ -638,7 +616,7 @@ _rej_sign_dilithium:
     /* Uniform GAMMA1 */
     li  a1, STACK_RHOPRIME
     add a1, fp, a1
-    
+
     li  a0, STACK_Y
     add a0, fp, a0
 
@@ -648,7 +626,7 @@ _rej_sign_dilithium:
     LOOPI L, 2
         jal  x1, poly_uniform_gamma1_dilithium
         addi a2, a2, 1 /* a2 should be preserved after execution */
-    
+
     addi s11, s11, L
 
     /* NTT(Y) -> Z */
@@ -685,23 +663,59 @@ _rej_sign_dilithium:
     /* Load offset for resetting pointer */
     li s0, POLYVECL_BYTES
 
+    /* Initialize the nonce for matrix expansion. This value should be
+         byte(i) || byte(j)
+       for entry A[i][j]. */
+    li a3, 0
+
+    /* Compute A * y, computing the values for A on the fly. */
     .rept K
+        push a0
+        push a2
+        push a3
+        li  a0, STACK_RHO
+        add a0, fp, a0
+        addi a2, a3, 0
+        jal  x1, poly_uniform
+        addi a1, a1, -1024
+        pop a3
+        pop a2
+        pop a0
+        addi a3, a3, 1
         jal  x1, poly_pointwise_dilithium
+        addi a1, a1, -1024
         addi a2, a2, -1024
         .rept L-1
+            push a0
+            push a2
+            push a3
+            li  a0, STACK_RHO
+            add a0, fp, a0
+            addi a2, a3, 0
+            jal  x1, poly_uniform
+            pop a3
+            pop a2
+            pop a0
+            addi a1, a1, -1024
+            addi a3, a3, 1
             jal  x1, poly_pointwise_acc_dilithium
+            addi a1, a1, -1024
             addi a2, a2, -1024
         .endr
         /* Reset input vector pointer */
         sub  a0, a0, s0
         addi a2, a2, 1024
+        /* Increment the row index in the nonce by one. */
+        addi a3, a3, 256
+        /* Reset the column index in the nonce to zero. */
+        addi a3, a3, -L
     .endr
 
     /* Inverse NTT on w1 */
     li  a0, STACK_W1
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -712,7 +726,7 @@ _rej_sign_dilithium:
         addi a1, a1, -960
         /* Go to next input polynomial */
         addi a0, a0, 1024
-    
+
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
     .endr
@@ -725,7 +739,7 @@ _rej_sign_dilithium:
     addi a1, a2, 0    /* Output inplace */
     li   a0, STACK_W0 /* Output */
     add  a0, fp, a0
-    
+
     LOOPI K, 2
         jal x1, poly_decompose_dilithium
         nop
@@ -790,7 +804,7 @@ _rej_sign_dilithium:
         sw t2, 0(a0)
         addi t0, t0, 4
         addi a0, a0, 4
-    
+
     addi a0, a0, -CTILDEBYTES
 #elif CTILDEBYTES == 48
     bn.wsrr w8, 0xA   /* KECCAK_DIGEST */
@@ -814,7 +828,7 @@ _rej_sign_dilithium:
         sw t2, 0(a0)
         addi t0, t0, 4
         addi a0, a0, 4
-    
+
     addi a0, a0, -CTILDEBYTES
 #elif CTILDEBYTES == 64
     bn.wsrr w8, 0xA   /* KECCAK_DIGEST */
@@ -838,7 +852,7 @@ _rej_sign_dilithium:
         sw t2, 0(a0)
         addi t0, t0, 4
         addi a0, a0, 4
-    
+
     addi a0, a0, -CTILDEBYTES
 #endif
 
@@ -885,7 +899,7 @@ _rej_sign_dilithium:
     li  a0, STACK_Z
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -896,7 +910,7 @@ _rej_sign_dilithium:
         addi a1, a1, -960
         /* Go to next input polynomial */
         addi a0, a0, 1024
-    
+
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
     .endr
@@ -908,7 +922,7 @@ _rej_sign_dilithium:
     add a1, fp, a1
     li  a2, STACK_Z
     add a2, fp, a2
-    
+
     LOOPI L, 2
         jal x1, poly_add_dilithium
         nop
@@ -918,7 +932,7 @@ _rej_sign_dilithium:
     add a0, fp, a0
     li  a1, STACK_Z
     add a1, fp, a1
-    
+
     LOOPI L, 2
         jal x1, poly_reduce32_dilithium
         nop
@@ -935,7 +949,7 @@ _rej_sign_dilithium:
         addi a0, s0, 0
         jal x1, poly_chknorm_dilithium
         addi s0, s0, 1024
-        
+
         /* Reject */
         bne a0, zero, _rej_sign_dilithium
     .endr
@@ -956,7 +970,7 @@ _rej_sign_dilithium:
     li  a0, STACK_H
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -996,14 +1010,14 @@ _rej_sign_dilithium:
 
     LOOPI K, 2
         jal x1, poly_sub_dilithium
-        nop 
+        nop
 
     /* reduce32(z) to move to mod^{+-} for bound check */
     li  a0, STACK_W0
     add a0, fp, a0
     li  a1, STACK_W0
     add a1, fp, a1
-    
+
     LOOPI K, 2
         jal x1, poly_reduce32_dilithium
         nop
@@ -1087,7 +1101,7 @@ _rej_sign_dilithium:
     add a0, fp, a0
     li  a1, STACK_H
     add a1, fp, a1
-    
+
     LOOPI K, 2
         jal x1, poly_reduce32_dilithium
         nop
@@ -1148,7 +1162,7 @@ _rej_sign_dilithium:
 
     /* Set rest of sig to 0 */
     li     t0, 31
-    
+
 #if OMEGA == 80
     bn.sid t0, 0(a0++)
     bn.sid t0, 0(a0++)
