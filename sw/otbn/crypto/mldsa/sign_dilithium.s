@@ -229,48 +229,48 @@ sign_dilithium:
     #define STACK_S1  -8384 /* Prev - L*1024 */
     #define STACK_S2  -12480 /* Prev - K*1024 */
     #define STACK_MAT  -13504 /* Prev - 1024 */
+        #define STACK_CP  -13504 /* Prev */
     #define STACK_Y  -17600 /* Prev - K*1024 */
         #define STACK_H  -17600 /* Prev */
     #define STACK_Z  -21696 /* Prev - L*1024 */
     #define STACK_W1  -25792 /* Prev - K*1024 */
     #define STACK_W0  -29888 /* Prev - K*1024 */
-    #define STACK_CP  -30912 /* Prev - 1024 */
-        #define STACK_CTXLEN  -30912 /* Prev */
-    #define STACK_CTX  -30916 /* Prev - 4 */
-    #define INIT_SP -30944
-    #define STACK_SIZE -31072
+        #define STACK_CTXLEN  -29888 /* Prev */
+    #define STACK_CTX  -29892 /* Prev - 4 */
+    #define INIT_SP -29920
+    #define STACK_SIZE -30048
 
 #elif DILITHIUM_MODE == 3
     #define STACK_T0  -6336 /* Prev - K*1024 */
     #define STACK_S1  -11456 /* Prev - L*1024 */
     #define STACK_S2  -17600 /* Prev - K*1024 */
     #define STACK_MAT  -18624 /* Prev - 1024 */
+        #define STACK_CP  -18624 /* Prev */
     #define STACK_Y  -24768 /* Prev - K*1024 */
         #define STACK_H  -24768 /* Prev */
     #define STACK_Z  -29888 /* Prev - L*1024 */
     #define STACK_W1  -36032 /* Prev - K*1024 */
     #define STACK_W0  -42176 /* Prev - K*1024 */
-    #define STACK_CP  -43200 /* Prev - 1024 */
-        #define STACK_CTXLEN  -43200 /* Prev */
-    #define STACK_CTX  -43204 /* Prev - 4 */
-    #define INIT_SP -43232
-    #define STACK_SIZE -43360
+        #define STACK_CTXLEN  -42176 /* Prev */
+    #define STACK_CTX  -42180 /* Prev - 4 */
+    #define INIT_SP -42208
+    #define STACK_SIZE -42336
 
 #elif DILITHIUM_MODE == 5
     #define STACK_T0  -8384 /* Prev - K*1024 */
     #define STACK_S1  -15552 /* Prev - L*1024 */
     #define STACK_S2  -23744 /* Prev - K*1024 */
     #define STACK_MAT  -24768 /* Prev - 1024 */
+        #define STACK_CP  -24768 /* Prev */
     #define STACK_Y  -32960 /* Prev - K*1024 */
         #define STACK_H  -32960 /* Prev */
     #define STACK_Z  -40128 /* Prev - L*1024 */
     #define STACK_W1  -48320 /* Prev - K*1024 */
     #define STACK_W0  -56512 /* Prev - K*1024 */
-    #define STACK_CP  -57536 /* Prev - 1024 */
-        #define STACK_CTXLEN  -57536 /* Prev */
-    #define STACK_CTX  -57540 /* Prev - 4 */
-    #define INIT_SP -57568
-    #define STACK_SIZE -57696
+        #define STACK_CTXLEN  -56512 /* Prev */
+    #define STACK_CTX  -56516 /* Prev - 4 */
+    #define INIT_SP -56544
+    #define STACK_SIZE -56672
 #endif
     /* Initialize the frame pointer */
     addi fp, sp, 0
