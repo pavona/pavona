@@ -906,7 +906,7 @@ def check_implementation_targets(top: ConfigT, prefix: str) -> int:
             known_pad_names.update({pad['name']: 1})
 
         for pad in target['pinout']['add_pads']:
-            error += check_pad(top, pad, known_pad_names, ['manual'],
+            error += check_pad(top, pad, known_pad_names, ['manual', 'manual_nopadring'],
                                prefix + ' Additional Pad')
 
     return error

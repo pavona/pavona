@@ -45,7 +45,7 @@ proc generate_mmi {filename mem_infos designtask_count} {
         dict with mem_info {
             if {[llen $brams] == 0} {
                 send_msg "${designtask_count}-1" INFO "Cannot make MMI for zero BRAMs"
-                return
+                continue
             }
 
             set fake_slice_width [expr $fake_word_width / [llen $brams]]

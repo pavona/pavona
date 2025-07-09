@@ -39,6 +39,7 @@ def create_pinout_table(top, c_helper, target):
     stats['muxed'] = 0
     stats['direct'] = 0
     stats['manual'] = 0
+    stats['manual_nopadring'] = 0
 
     # get all pads for this target
     pads = top['pinout']['pads'] + target['pinout']['add_pads']

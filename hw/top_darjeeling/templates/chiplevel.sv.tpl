@@ -37,6 +37,7 @@ def get_dio_sig(pinmux: {}, pad: {}):
 maxwidth = 0
 muxed_pads = []
 dedicated_pads = []
+nopadring_pads = []
 k = 0
 for pad in pinout["pads"]:
   if pad["connection"] == "muxed":
@@ -54,7 +55,10 @@ for pad in target["pinout"]["add_pads"]:
   # we need to add their global index here.
   amended_pad = deepcopy(pad)
   amended_pad.update({"idx" : k})
-  dedicated_pads.append(pad)
+  if pad["connection"] == "manual_nopadring":
+    nopadring_pads.append(pad)
+  else:
+    dedicated_pads.append(pad)
   k += 1
 %>\
 
@@ -80,6 +84,11 @@ module chip_${top["name"]}_${target["name"]} #(
     comment = "// Manual Pad"
 %>\
   ${port_comment}${pad["port_type"]} ${pad["name"]}, ${comment}
+% endfor
+
+  // Manual Pads kept off padring
+% for pad in nopadring_pads:
+  ${port_comment}${pad["port_type"]} ${pad["name"]}, // Manual Pad kept off padring
 % endfor
 
   // Muxed Pads
@@ -113,6 +122,22 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
+    tck_idx:           TckPadIdx,
+    tms_idx:           TmsPadIdx,
+    trst_idx:          TrstNPadIdx,
+    tdi_idx:           TdiPadIdx,
+    tdo_idx:           TdoPadIdx,
+    tap_strap0_idx:    Tap0PadIdx,
+    tap_strap1_idx:    Tap1PadIdx,
+    dft_strap0_idx:    Dft0PadIdx,
+    dft_strap1_idx:    Dft1PadIdx,
+    // TODO: check whether there is a better way to pass these USB-specific params
+    // The use of these indexes is gated behind a parameter, but to synthesize they
+    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
+    // Hence, set to zero.
+    usb_dp_idx:        0,
+    usb_dn_idx:        0,
+    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
 <%
@@ -249,15 +274,18 @@ module chip_${top["name"]}_${target["name"]} #(
 
   ast_pkg::ast_clks_t ast_base_clks;
 
+% if target["name"] == "asic":
   // AST signals needed in padring
   logic scan_rst_n;
    prim_mubi_pkg::mubi4_t scanmode;
+% endif
 
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
     .NDioPads(${len(dedicated_pads)}),
     .NMioPads(${len(muxed_pads)}),
+% if target["name"] == "asic":
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
     .DioScanRole ({
@@ -280,6 +308,7 @@ module chip_${top["name"]}_${target["name"]} #(
       ${lib.Name.from_snake_case('io_bank_' + pad["bank"]).as_camel_case()}${" " if loop.last else ","} // ${pad['name']}
 % endfor
     }),
+% endif
 \
 \
     .DioPadType ({
@@ -294,8 +323,13 @@ module chip_${top["name"]}_${target["name"]} #(
     })
   ) u_padring (
   // This is only used for scan and DFT purposes
+% if target["name"] == "asic":
     .clk_scan_i   ( ast_base_clks.clk_sys ),
     .scanmode_i   ( scanmode              ),
+% else:
+    .clk_scan_i   ( 1'b0                  ),
+    .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
+% endif
     .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
@@ -482,6 +516,10 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
+% if target["name"] == "asic":
+  // external clock comes in at a fixed position
+  assign ext_clk = mio_in_raw[MioPadMio11];
+
   wire unused_t0, unused_t1;
   assign unused_t0 = 1'b0;
   assign unused_t1 = 1'b0;
@@ -493,16 +531,64 @@ module chip_${top["name"]}_${target["name"]} #(
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
+% else:
+  // TODO: Hook this up when FPGA pads are updated
+  assign ext_clk = '0;
+  assign pad2ast = '0;
+
+  logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
+  clkgen_xil7series # (
+    .AddClkBuf(0)
+  ) clkgen (
+    .clk_i(manual_in_io_clk),
+    .rst_ni(manual_in_por_n),
+    .srst_ni(srst_n),
+    .clk_main_o(clk_main),
+    .clk_48MHz_o(clk_usb_48mhz),
+    .clk_aon_o(clk_aon),
+    .rst_no(rst_n)
+  );
+
+  logic [31:0] fpga_info;
+  usr_access_xil7series u_info (
+    .info_o(fpga_info)
+  );
+
+  ast_pkg::clks_osc_byp_t clks_osc_byp;
+  assign clks_osc_byp = '{
+    usb: clk_usb_48mhz,
+    sys: clk_main,
+    io:  clk_main,
+    aon: clk_aon
+  };
+
+% endif
+
+  prim_mubi_pkg::mubi4_t ast_init_done;
+
   ast #(
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
+% if target["name"] == "asic":
     // external POR
     .por_ni                ( manual_in_por_n ),
 
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
     .ast2pad_t1_ao         ( unused_t1 ),
+% else:
+    // external POR
+    .por_ni                ( rst_n ),
+
+    // clocks' oscillator bypass for FPGA
+    .clk_osc_byp_i         ( clks_osc_byp ),
+
+    // Direct short to PAD
+    .ast2pad_t0_ao         (  ),
+    .ast2pad_t1_ao         (  ),
+
+% endif
 
     // clocks and resets supplied for detection
     .sns_clks_i            ( clkmgr_aon_clocks    ),
@@ -512,7 +598,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ),
+    .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     % for port, clk in ast["clock_connections"].items():
     .${port} (${clk}),
@@ -786,6 +872,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .alert_o()
   );
 
+###################################################################
+## ASIC                                                          ##
+###################################################################
+
+% if target["name"] == "asic":
   //////////////////////////////////
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
@@ -963,6 +1054,7 @@ module chip_${top["name"]}_${target["name"]} #(
     // FPGA build info
     .fpga_info_i                       ( '0                         )
   );
+% endif
 
   logic unused_signals;
   assign unused_signals = ^{pwrmgr_boot_status.clk_status,
