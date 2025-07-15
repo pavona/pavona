@@ -81,6 +81,7 @@ def elaborate_instance(instance, block: IpBlock):
 
     mod_name = instance["name"]
     cc_mod_name = lib.Name.from_snake_case(mod_name).as_camel_case()
+    is_external = instance.get("external") is not None
 
     # Check to see if all declared parameters exist
     param_decl_accounting = [decl for decl in instance["param_decl"].keys()]
@@ -99,119 +100,120 @@ def elaborate_instance(instance, block: IpBlock):
         if mem not in instance["memory"]:
             raise ValueError(f"Module instance {mod_name} does not describe memory {mem}")
 
-    # param_list
-    new_params = []
-    for param in block.params.by_name.values():
-        if isinstance(param, LocalParam):
-            # Remove local parameters.
-            continue
-
-        new_param = param.as_dict()
-
-        param_expose = param.expose if isinstance(param, Parameter) else False
-
-        # Check for security-relevant parameters that are not exposed,
-        # adding a top-level name.
-        if param.name.lower().startswith("sec") and not param_expose:
-            log.warning(f"{mod_name} has security-critical parameter "
-                        f"{param.name} not exposed to top")
-
-        # Move special prefixes to the beginning of the parameter name.
-        param_prefixes = ["Sec", "RndCnst", "MemSize"]
-        name_top = cc_mod_name + param.name
-        for prefix in param_prefixes:
-            if not param.name.startswith(prefix):
+    if not is_external:
+        # param_list
+        new_params = []
+        for param in block.params.by_name.values():
+            if isinstance(param, LocalParam):
+                # Remove local parameters.
                 continue
-            else:
-                if param.name == prefix:
-                    raise ValueError(f'Module instance {mod_name} has a '
-                                     f'parameter {param.name} that is equal '
-                                     f'to prefix {prefix}.')
 
-                if re.match(prefix + '[A-Z].+$', param.name):
-                    name_top = (prefix + cc_mod_name +
-                                param.name[len(prefix):])
-                break
+            new_param = param.as_dict()
 
-        new_param['name_top'] = name_top
+            param_expose = param.expose if isinstance(param, Parameter) else False
 
-        # Generate random bits or permutation, if needed
-        if isinstance(param, RandParameter):
-            if param.randtype == "data":
-                new_default = _get_random_data_hex_literal(param.randcount)
-                # Effective width of the random vector
-                randwidth = param.randcount
-            elif param.randtype == "perm":
-                new_default = _get_random_perm_hex_literal(param.randcount)
-                # Effective width of the random vector
-                randwidth = param.randcount * ceil(log2(param.randcount))
-            else:
-                assert param.randtype == "extdata"
-                # Default value is provided externally at a later point or has already been filled
-                # in. If this is already the case, we don't need to fill in a blank value to be
-                # filled in later.
-                fill_default = None
-                for p in instance.get("param_list", []):
-                    if p["name"] == param.name and p["default"] is not None:
-                        fill_default = p["default"]
-                        break
-                randwidth = param.randcount
-                new_default = None
-                if fill_default:
-                    new_default = fill_default
+            # Check for security-relevant parameters that are not exposed,
+            # adding a top-level name.
+            if param.name.lower().startswith("sec") and not param_expose:
+                log.warning(f"{mod_name} has security-critical parameter "
+                            f"{param.name} not exposed to top")
 
-            new_param['default'] = new_default
-            new_param['randwidth'] = randwidth
+            # Move special prefixes to the beginning of the parameter name.
+            param_prefixes = ["Sec", "RndCnst", "MemSize"]
+            name_top = cc_mod_name + param.name
+            for prefix in param_prefixes:
+                if not param.name.startswith(prefix):
+                    continue
+                else:
+                    if param.name == prefix:
+                        raise ValueError(f'Module instance {mod_name} has a '
+                                         f'parameter {param.name} that is equal '
+                                         f'to prefix {prefix}.')
 
-        elif isinstance(param, MemSizeParameter):
-            key = param.name[7:].lower()
-            # Set the parameter to the specified memory size.
-            if key in instance["memory"]:
-                new_default = int(instance["memory"][key]["size"], 0)
+                    if re.match(prefix + '[A-Z].+$', param.name):
+                        name_top = (prefix + cc_mod_name +
+                                    param.name[len(prefix):])
+                    break
+
+            new_param['name_top'] = name_top
+
+            # Generate random bits or permutation, if needed
+            if isinstance(param, RandParameter):
+                if param.randtype == 'data':
+                    new_default = _get_random_data_hex_literal(param.randcount)
+                    # Effective width of the random vector
+                    randwidth = param.randcount
+                elif param.randtype == "perm":
+                    new_default = _get_random_perm_hex_literal(param.randcount)
+                    # Effective width of the random vector
+                    randwidth = param.randcount * ceil(log2(param.randcount))
+                else:
+                    assert param.randtype == "extdata"
+                    # Default value is provided externally at a later point or has already been filled
+                    # in. If this is already the case, we don't need to fill in a blank value to be
+                    # filled in later.
+                    fill_default = None
+                    for p in instance.get("param_list", []):
+                        if p["name"] == param.name and p["default"] is not None:
+                            fill_default = p["default"]
+                            break
+                    randwidth = param.randcount
+                    new_default = None
+                    if fill_default:
+                        new_default = fill_default
+
                 new_param['default'] = new_default
-            else:
-                log.error("Missing memory configuration for "
-                          f"memory {key} in instance {instance['name']}")
+                new_param['randwidth'] = randwidth
 
-        # if this exposed parameter is listed in the `param_decl` dict,
-        # override its default value.
-        elif param.name in instance["param_decl"].keys():
-            new_param['default'] = instance["param_decl"][param.name]
-            # remove the parameter from the accounting dict
-            param_decl_accounting.remove(param.name)
+            elif isinstance(param, MemSizeParameter):
+                key = param.name[7:].lower()
+                # Set the parameter to the specified memory size.
+                if key in instance["memory"]:
+                    new_default = int(instance["memory"][key]["size"], 0)
+                    new_param['default'] = new_default
+                else:
+                    log.error("Missing memory configuration for "
+                              f"memory {key} in instance {instance['name']}")
 
-        new_params.append(new_param)
+            # if this exposed parameter is listed in the `param_decl` dict,
+            # override its default value.
+            elif param.name in instance["param_decl"].keys():
+                new_param['default'] = instance["param_decl"][param.name]
+                # remove the parameter from the accounting dict
+                param_decl_accounting.remove(param.name)
 
-    instance["param_list"] = new_params
+            new_params.append(new_param)
 
-    # for each module declaration, check to see that the parameter actually
-    # exists and can be set
-    for decl in param_decl_accounting:
-        log.error("{} is not a valid parameter of {} that can be "
-                  "set from top level".format(decl, block.name))
+        instance["param_list"] = new_params
 
-    # These objects get added-to in place by code in intermodule.py, so we have
-    # to convert and copy them here.
-    instance["inter_signal_list"] = [s.as_dict() for s in block.inter_signals]
+        # for each module declaration, check to see that the parameter actually
+        # exists and can be set
+        for decl in param_decl_accounting:
+            log.error("{} is not a valid parameter of {} that can be "
+                      "set from top level".format(decl, block.name))
 
-    # If we have width-parametrized intersignal, we need to update the intersignal param name
-    # the the instance mangled param name
-    for s in instance["inter_signal_list"]:
-        if isinstance(s['width'], Parameter):
-            for p in instance["param_list"]:
-                if p['name'] == s['width'].name:
-                    # When mangling the name, we first need to deep copy the
-                    # param. Parameters in signals have a reference to a
-                    # parameter. If we have multiple instances of the same IP,
-                    # then their signals would reference the same single
-                    # parameter. If we would mangle that directly, we all
-                    # signals of all IPs would reference to that single mangled
-                    # parameter. Since parameters are instance dependent, that
-                    # would fail. Therefore, copy the parameter first to have
-                    # a unique parameter for that particular signal and
-                    # instance, which is safe to mangle.
-                    s['width'] = deepcopy(s['width'])
-                    s['width'].name_top = p['name_top']
+        # These objects get added-to in place by code in intermodule.py, so we have
+        # to convert and copy them here.
+        instance["inter_signal_list"] = [s.as_dict() for s in block.inter_signals]
+
+        # If we have width-parametrized intersignal, we need to update the intersignal param name
+        # the the instance mangled param name
+        for s in instance["inter_signal_list"]:
+            if isinstance(s['width'], Parameter):
+                for p in instance["param_list"]:
+                    if p['name'] == s['width'].name:
+                        # When mangling the name, we first need to deep copy the
+                        # param. Parameters in signals have a reference to a
+                        # parameter. If we have multiple instances of the same IP,
+                        # then their signals would reference the same single
+                        # parameter. If we would mangle that directly, we all
+                        # signals of all IPs would reference to that single mangled
+                        # parameter. Since parameters are instance dependent, that
+                        # would fail. Therefore, copy the parameter first to have
+                        # a unique parameter for that particular signal and
+                        # instance, which is safe to mangle.
+                        s['width'] = deepcopy(s['width'])
+                        s['width'].name_top = p['name_top']
 
     # An instance must either have a 'base_addr' address or a 'base_addrs'
     # address, but can't have both.
@@ -224,14 +226,14 @@ def elaborate_instance(instance, block: IpBlock):
         else:
             # If the instance has a base_addr field, make sure that the block
             # has just one device interface.
-            if len(block.reg_blocks) != 1:
+            if not is_external and len(block.reg_blocks) != 1:
                 raise ValueError('Instance {!r} has a base_addr field but it '
                                  'instantiates the block {!r}, which has {} '
                                  'device interfaces.'.format(
                                      instance['name'], block.name,
                                      len(block.reg_blocks)))
             else:
-                if_name = next(iter(block.reg_blocks))
+                if_name = next(iter(block.reg_blocks)) if not is_external else None
                 base_addrs = {if_name: instance['base_addr']}
 
         # Fill in a bogus base address (we don't have proper error handling, so
@@ -249,8 +251,11 @@ def elaborate_instance(instance, block: IpBlock):
         # it's got the same set of keys as the name of the interfaces in the
         # block.
         inst_if_names = set(base_addrs.keys())
-        block_if_names = set(block.reg_blocks.keys()) | set(block.memories.keys())
-        if block_if_names != inst_if_names:
+        if is_external:
+            block_if_names = {None}
+        else:
+            block_if_names = set(block.reg_blocks.keys()) | set(block.memories.keys())
+        if not is_external and block_if_names != inst_if_names:
             log.error('Instance {!r} has a base_addrs field with keys {} '
                       'but the block it instantiates ({!r}) has device '
                       'interfaces {}.'.format(instance['name'], inst_if_names,
@@ -843,6 +848,9 @@ def amend_resets(top: ConfigT,
     # Generate exported reset list
     exported_rsts = OrderedDict()
     for module in top["module"]:
+        if module.get("external"):
+            continue
+
         block = name_to_block.get(module['type'])
         if block is None and allow_missing_blocks:
             continue
@@ -926,6 +934,8 @@ def create_alert_lpgs(top: ConfigT, name_to_block: IpBlocksT):
     assert isinstance(top['clocks'], Clocks)
     clock_groups = top['clocks'].make_clock_to_group()
     for module in top["module"]:
+        if module.get("external"):
+            continue
         # the alert senders are attached to the primary clock of this block,
         # so let's start by getting that primary clock port of an IP (we need
         # that to look up the clock connection at the top-level).
@@ -1035,6 +1045,9 @@ def get_interrupt_modules(top: ConfigT,
 
     modules = []
     for module in top["module"]:
+        if module.get("external"):
+            continue
+
         block = name_to_block.get(module["type"])
         if block is None and allow_missing_blocks:
             continue
@@ -1067,6 +1080,9 @@ def get_outgoing_interrupt_modules(top: ConfigT,
 
     modules = defaultdict(list)
     for module in top["module"]:
+        if module.get("external"):
+            continue
+
         block = name_to_block.get(module["type"])
         if block is None and allow_missing_blocks:
             continue
@@ -1162,6 +1178,9 @@ def get_alert_modules(top: ConfigT,
 
     modules = []
     for module in top['module']:
+        if module.get("external"):
+            continue
+
         block = name_to_block.get(module['type'])
         if block is None and allow_missing_blocks:
             continue
@@ -1296,6 +1315,9 @@ def get_outgoing_alert_modules(top: ConfigT,
 
     modules = defaultdict(list)
     for module in top['module']:
+        if module.get("external"):
+            continue
+
         block = name_to_block.get(module['type'])
         if block is None and allow_missing_blocks:
             continue
@@ -1374,6 +1396,9 @@ def amend_wkup(topcfg: ConfigT,
     # create list of wakeup signals
     wakeups = []
     for m in topcfg["module"]:
+        if m.get("external"):
+            continue
+
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:
             continue
@@ -1411,6 +1436,9 @@ def amend_reset_request(topcfg: ConfigT,
     # create list of reset signals
     reset_signals = []
     for m in topcfg["module"]:
+        if m.get("external"):
+            continue
+
         log.info("Adding reset requests from module %s" % m["name"])
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:

@@ -122,6 +122,7 @@ inst_type | optional | string | Instance type
 xbar | optional | python Bool | If true, the node is connected to another Xbar
 addr_range | optional | list of group | List of addr_range group
 stub | optional | python Bool | Real node or stub.  Stubs only occupy address ranges
+external | optional | python Bool | If true, the port does not have a module within the top
 
 
 ### Address configurations

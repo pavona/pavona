@@ -1095,6 +1095,11 @@ def create_generic_ip_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     invalid_attr_instances = []
     for instance in topcfg["module"]:
         ip_type = instance["type"]
+        if instance.get("external"):
+            ip_attrs[ip_type] = IpAttrs(ip_block=None,
+                                        hjson_path=None,
+                                        top_only=True,
+                                        instances=[instance])
         if "attr" not in instance:
             handle_instance(top_only=False)
         elif lib.is_top_reggen(instance):

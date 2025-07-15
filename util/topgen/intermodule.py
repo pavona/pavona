@@ -180,6 +180,8 @@ def autoconnect_xbar(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock],
         # If not, this is a memory that will just have a dictionary of inter
         # signals.
         block = name_to_block[port_mod['type']]
+        if name_to_module[port_base].get('external'):
+            sig_name = "tl"
         try:
             sig_name = block.bus_interfaces.find_port_name(
                 is_host, port_iname)
@@ -673,6 +675,11 @@ def find_otherside_modules(topcfg: OrderedDict, m,
     if special_result is not None:
         return [('top', special_result[0], special_result[1])]
 
+    for (prefix, sig), (dst_m, dst_s) in special_inst_names.items():
+        if s.startswith(sig) and m.startswith(prefix) and not s.endswith("soc"):
+            print(s, m)
+            return [('top', dst_m, dst_s)]
+
     signame = "{}.{}".format(m, s)
     for req, rsps in topcfg["inter_module"]["connect"].items():
         if req.startswith(signame):
@@ -695,6 +702,21 @@ def find_otherside_modules(topcfg: OrderedDict, m,
 
 
 def check_intermodule(topcfg: Dict, prefix: str) -> int:
+    name_to_module = {}
+    for mod in topcfg['module']:
+        assert mod['name'] not in name_to_module
+        if lib.is_inst(mod):
+            name_to_module[mod['name']] = mod
+        if mod.get("external"):
+            signal = {'name': 'tl',
+                      'struct': 'tl',
+                      'package': 'tlul_pkg',
+                      'type': 'req_rsp',
+                      'act': 'rsp',
+                      'width': '1',
+                      'inst_name': mod['name']}
+            topcfg['inter_signal']['signals'].append(signal)
+
     if "inter_module" not in topcfg:
         return 0
 

@@ -526,6 +526,8 @@ def get_pad_list(padstr: str) -> List[Dict[str, Union[str, int]]]:
 def idx_of_last_module_with_params(top: ConfigT) -> int:
     last = -1
     for idx, module in enumerate(top["module"]):
+        if module.get('external'):
+            continue
         if len(module["param_list"]):
             last = idx
     return last
@@ -725,21 +727,31 @@ def get_base_and_size(name_to_block: IpBlocksT, inst: ConfigT,
                       ifname: Optional[str]) -> Tuple[int, int]:
 
     block = name_to_block.get(inst['type'])
-    assert block, f"No module named {inst['type']} (coming from instance {inst['name']})"
-    # If inst is the instantiation of some block, find the register block
-    # that corresponds to ifname
-    if rb := block.reg_blocks.get(ifname):
-        bytes_used = 1 << rb.get_addr_width()
-    elif mem := inst["memory"].get(ifname):
-        bytes_used = int(mem["size"], 0)
+    if block is None:
+        if inst.get("external"):
+            if "external_size" in inst.keys():
+                bytes_used = deepcopy(int(inst["external_size"]))
+                base_addrs = deepcopy(inst['base_addrs'][ifname])
+            else:
+                raise ValueError('Missing external_size key in module '
+                                 '{}'.format(inst['name']))
+        else:
+            assert False, f"No module named {inst['type']} (coming from instance {inst['name']})"
     else:
-        raise RuntimeError(
-            'Cannot connect to non-existent {} device interface '
-            'on {!r} (an instance of the {!r} block).'.format(
-                'default' if ifname is None else repr(ifname),
-                inst['name'], block.name))
+        # If inst is the instantiation of some block, find the register block
+        # that corresponds to ifname
+        if rb := block.reg_blocks.get(ifname):
+            bytes_used = 1 << rb.get_addr_width()
+        elif mem := inst["memory"].get(ifname):
+            bytes_used = int(mem["size"], 0)
+        else:
+            raise RuntimeError(
+                'Cannot connect to non-existent {} device interface '
+                'on {!r} (an instance of the {!r} block).'.format(
+                    'default' if ifname is None else repr(ifname),
+                    inst['name'], block.name))
 
-    base_addrs = deepcopy(inst['base_addrs'][ifname])
+        base_addrs = deepcopy(inst['base_addrs'][ifname])
 
     for (asid, base_addr) in base_addrs.items():
         if isinstance(base_addr, str):
@@ -979,14 +991,9 @@ class TopGen:
         '''
         device_region = defaultdict(dict)
         for inst in self.top['module']:
-            block = self._name_to_block[inst['type']]
-            for if_name in block.reg_blocks.keys():
-                full_if = (inst['name'], if_name)
-                full_if_name = Name.from_snake_case(full_if[0])
-                if if_name is not None:
-                    full_if_name += Name.from_snake_case(if_name)
-
-                name = full_if_name
+            if inst.get("external"):
+                if_name = None
+                full_if_name = (inst['name'], if_name)
                 base, size = get_base_and_size(self._name_to_block, inst,
                                                if_name)
                 if addr_space not in base:
@@ -995,6 +1002,23 @@ class TopGen:
                 region = MemoryRegion(self._top_name, name, addr_space,
                                       base[addr_space], size)
                 device_region[inst['name']].update({if_name: region})
+            else:
+                block = self._name_to_block[inst['type']]
+                for if_name in block.reg_blocks.keys():
+                    full_if = (inst['name'], if_name)
+                    full_if_name = Name.from_snake_case(full_if[0])
+                    if if_name is not None:
+                        full_if_name += Name.from_snake_case(if_name)
+
+                    name = full_if_name
+                    base, size = get_base_and_size(self._name_to_block, inst,
+                                                   if_name)
+                    if addr_space not in base:
+                        continue
+
+                    region = MemoryRegion(self._top_name, name, addr_space,
+                                          base[addr_space], size)
+                    device_region[inst['name']].update({if_name: region})
 
         self.device_regions[addr_space] = device_region
 

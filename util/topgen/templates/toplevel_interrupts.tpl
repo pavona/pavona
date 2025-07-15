@@ -27,7 +27,7 @@
 <%
   block = name_to_block[m['type']]
 %>\
-    % if not lib.is_inst(m) or "outgoing_interrupt" in m:
+    % if not lib.is_inst(m) or "outgoing_interrupt" in m or m.get('external'):
 <% continue %>
     % endif
     % for intr in block.interrupts:

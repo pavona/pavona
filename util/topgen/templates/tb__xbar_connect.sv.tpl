@@ -99,6 +99,7 @@ initial begin
 `ifndef GATE_LEVEL
 % for xbar in top["xbar"]:
   % for node in xbar["nodes"]:
+    % if not node.get("external"): 
 <%
 clk = 'clk_' + clk_src[node["clock"]]
 esc_name = node['name'].replace('.', '__')
@@ -112,6 +113,7 @@ sig_name = inst_sig_list[0][2]
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
     % elif node["type"] == "device" and not node["xbar"]:
     `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
+    % endif
     % endif
   % endfor
 % endfor
