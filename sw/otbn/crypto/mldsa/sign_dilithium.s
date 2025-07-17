@@ -623,8 +623,9 @@ _rej_sign_dilithium:
     addi a2, s11, 0 /* Compute nonce */
     la   a3, gamma1_vec_const
 
-    LOOPI L, 2
+    LOOPI L, 3
         jal  x1, poly_uniform_gamma1_dilithium
+        addi a0, a0, 1024
         addi a2, a2, 1 /* a2 should be preserved after execution */
 
     addi s11, s11, L

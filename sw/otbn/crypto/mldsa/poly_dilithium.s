@@ -497,18 +497,6 @@ _inner_polyz_unpack_dilithium:
  */
  .global poly_chknorm_dilithium
 poly_chknorm_dilithium:
-    /* save fp to stack */
-    addi sp, sp, -32
-    sw   fp, 0(sp)
-
-    addi fp, sp, 0
-
-    /* Adjust sp to accomodate local variables */
-    addi sp, sp, -32
-
-    /* Reserve space for tmp buffer to hold a WDR */
-    #define STACK_WDR2GPR -32
-
     /* Load modulus Q */
     la   t0, modulus
     lw   t1, 0(t0)
@@ -541,9 +529,9 @@ _loop_poly_chknorm_dilithium:
     bn.and     w2, w2, w3
     /* w2 <= w1 - w2 */
     bn.subv.8S  w2, w1, w2
-    bn.sid      t2, STACK_WDR2GPR(fp)
+    la          t4, poly_wdr2gpr
+    bn.sid      t2, 0(t4)
 
-    addi t4, fp, STACK_WDR2GPR
     /* Check bound */
     .irp    offset,0,4,8,12,16,20,24,28
         lw  t3, \offset(t4)
@@ -556,20 +544,10 @@ _loop_poly_chknorm_dilithium:
     bne a0, t0, _loop_poly_chknorm_dilithium
 
 _ret0_poly_chknorm_dilithium:
-    /* sp <- fp */
-    addi sp, fp, 0
-    /* Pop ebp */
-    lw fp, 0(sp)
-    addi sp, sp, 32
     /* return success */
     li a0, 0
     ret
 _ret1_poly_chknorm_dilithium:
-    /* sp <- fp */
-    addi sp, fp, 0
-    /* Pop ebp */
-    lw fp, 0(sp)
-    addi sp, sp, 32
     /* return fail */
     li a0, 1
     ret
@@ -587,22 +565,10 @@ _ret1_poly_chknorm_dilithium:
  * @param[in]  a1: mu byte array containing seed of length CTILDEBYTES
  * @param[out] a0: pointer to output polynomial
  *
- * clobbered registers: a0-a5, t0-t3, w0-w3
+ * clobbered registers: a0-a5, t0-t4, w0-w3
  */
 .global poly_challenge
 poly_challenge:
-    /* save fp to stack */
-    addi sp, sp, -32
-    sw   fp, 0(sp)
-
-    addi fp, sp, 0
-
-    /* Adjust sp to accomodate local variables */
-    addi sp, sp, -32
-
-    /* Reserve space for tmp buffer to hold a WDR */
-    #define STACK_WDR2GPR -32
-
     /* save output pointer */
     addi a4, a0, 0
 
@@ -637,6 +603,9 @@ poly_challenge:
     /* Setup WDR */
     li t0, 0
     li a6, 3
+
+    /* Set up pointer to tmp buffer. */
+    la t4, poly_wdr2gpr
 
     /* fill signs */
 
@@ -676,12 +645,12 @@ _loop_inner_poly_challenge:
         bn.wsrr w0, 0xA /* KECCAK_DIGEST */
         li      a2, 256 /* reset the remaining bits counter */
 _loop_inner_skip_load_poly_challenge:
-        /* Store w0 to the stack in order to read one word into a GPR */
-        bn.sid  t0, STACK_WDR2GPR(fp)
+        /* Store w0 to memory in order to read one word into a GPR */
+        bn.sid  t0, 0(t4)
         bn.rshi w0, bn0, w0 >> 8 /* shift out used bits */
         addi    a2, a2, -8 /* decrease number of remaining bits */
         /* NOTE: optimize this to use all bytes from this load */
-        lw      t1, STACK_WDR2GPR(fp) /* get one word of SHAKE output into GPR */
+        lw      t1, 0(t4) /* get one word of SHAKE output into GPR */
         /* t1 = b from the reference implementation */
         andi    t1, t1, 0xFF /* mask out one byte, because we only need one */
         sub     t2, a3, t1 /* i <? b */
@@ -706,8 +675,8 @@ _loop_inner_skip_load_poly_challenge:
         bn.and  w3, w1, w2            /* signs & 1 */
         bn.add  w3, w3, w3            /* 2 * (signs & 1) */
         bn.subm  w3, w2, w3            /* 1 - 2 * (signs & 1) */
-        bn.sid  a6, STACK_WDR2GPR(fp) /* Store w3 to memory to move value to GPR */
-        lw      t2, STACK_WDR2GPR(fp)
+        bn.sid  a6, 0(t4) /* Store w3 to memory to move value to GPR */
+        lw      t2, 0(t4)
         sw      t2, 0(t1)             /* c->coeffs[b] = 1 - 2*(signs & 1); */
 
         bn.rshi w1, bn0, w1 >> 1 /* Discard the used bit: signs >>= 1 */
@@ -715,13 +684,6 @@ _loop_inner_skip_load_poly_challenge:
         addi a3, a3, 1 /* i++ */
 
     /* Finish the SHAKE-256 operation. */
-
-    /* sp <- fp */
-    addi sp, fp, 0
-
-    /* Pop ebp */
-    lw   fp, 0(sp)
-    addi sp, sp, 32
 
     ret
 
@@ -1137,164 +1099,100 @@ _poly_uniform_eta_arithmetic:
  * @param[out]    a1: input poly pointer
  * @param[out]    a2: input hint poly pointer
  *
- * clobbered registers: a0-a5, t0-t6, w0-w11
+ * clobbered registers: a0-a2, t0-t1, w0-w15, w30
  */
 .global poly_use_hint_dilithium
 poly_use_hint_dilithium:
-    /* save fp to stack */
-    addi sp, sp, -32
-    sw fp, 0(sp)
-
-    addi fp, sp, 0
-
-    /* Adjust sp to accomodate local variables */
-    addi sp, sp, -64
-
-    /* Reserve space for tmp buffer to hold a WDR */
-    #define STACK_WDR2GPR1 -32
-    #define STACK_WDR2GPR2 -64
-    addi a3, a0, 1024 /* overall stop address */
-
-    /* Constants */
-    li a4, 43
-    li a5, 1
-    li a6, 2
-
     /* WDR constants for decompose */
     la t0, decompose_127_const
     li t1, 5
     /* w5 <= decompose_127_const */
-    bn.lid t1, 0(t0)
+    bn.lid t1++, 0(t0)
 
     la t0, decompose_const
-    li t1, 6
     /* w6 <= decompose_const */
-    bn.lid t1, 0(t0)
+    bn.lid t1++, 0(t0)
 
     la t0, reduce32_const
-    li t1, 7
     /* w7 <= reduce32_const */
-    bn.lid t1, 0(t0)
+    bn.lid t1++, 0(t0)
 
     la t0, decompose_43_const
-    li t1, 8
     /* w8 <= decompose_43_const */
-    bn.lid t1, 0(t0)
+    bn.lid t1++, 0(t0)
 
     la t0, gamma2_vec_const
-    li t1, 9
     /* w9 <= gamma2_vec_const */
-    bn.lid t1, 0(t0)
+    bn.lid t1++, 0(t0)
 
     la t0, qm1half_const
-    li t1, 10
     /* w10 <= qm1half_const */
-    bn.lid t1, 0(t0)
+    bn.lid t1++, 0(t0)
 
     la t0, modulus
-    li t1, 11
     /* w11 <= modulus */
-    bn.lid t1, 0(t0)
+    bn.lid t1++, 0(t0)
 
-_loop_poly_use_hint_dilithium:
-    /* vectorized part: decompose */
-    li     t0, 0
-    bn.lid t0, 0(a1++)
-    jal    x1, decompose_dilithium
+    /* Save the value from the modulus register. */
+    bn.wsrr w15, MOD
 
-    /* Store result form decomposition do dmem */
-    bn.sid a5, STACK_WDR2GPR1(fp)
-    bn.sid a6, STACK_WDR2GPR2(fp)
+    /* Construct the modulus for the hint (decompose_43_const + 1). This is
+       either (vectorized) 44 or 16, depending on the parameters. */
+    bn.shv.8S w12, w5 >> 6
+    bn.addv.8S w12, w12, w8
+    bn.wsrw MOD, w12
 
-    /* "a{0,1}" refers to the variables from the reference code */
+    /* In pseudocode, this loop implements (for input polynomial r):
 
-    addi t2, fp, STACK_WDR2GPR1 /* "a0" */
-    addi t3, fp, STACK_WDR2GPR2 /* "a1" */
-    addi t4, a0, 32             /* stop address */
+       for i = 0..255:
+         r0, r1 = decompose(r[i])
+         if hint == 0:
+           return r1
+         if r0 > 0:
+           return (r1 + 1) % ((q - 1) / (2 * gamma2))
+         else:
+           return (r1 - 1) % ((q - 1) / (2 * gamma2))
 
-    /* scalar part starts here */
-#if GAMMA2 == (Q-1)/88
-    LOOPI 8, 24
-        lw  t1, 0(t3) /* Load "a1" */
-        /* Check if hint is 0 */
-        lw  t5, 0(a2)
-        bne t5, zero, _inner_loop_skip_store1_poly_use_hint_dilithium
-        sw  t1, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium
-_inner_loop_skip_store1_poly_use_hint_dilithium:
-        /* if(0 < "a0") */
-        lw t5, 0(t2)
-        sub t5, zero, t5
-        srli t5, t5, 31
-        bne t5, a5, _inner_loop_else_poly_use_hint_dilithium /* go to else-branch */
-        /* if("a1" == 43) */
-        bne t1, a4, _inner_loop_aplus1_poly_use_hint_dilithium /* go to else-branch */
-        sw zero, 0(a0) /* return 0 */
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium /* go to iteration end */
-_inner_loop_aplus1_poly_use_hint_dilithium:
-        /* if("a1" == 43) else-branch */
-        /* Store "a1" + 1 */
-        addi t1, t1, 1
-        sw t1, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium /* unconditional */
-_inner_loop_else_poly_use_hint_dilithium:
-        /* if(0 < "a0") else-branch */
-        /* if("a1" == 0) */
-        bne t1, zero, _inner_loop_aminus1_poly_use_hint_dilithium /* go to else-branch */
-        /* Store 43 */
-        sw a4, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium
-_inner_loop_aminus1_poly_use_hint_dilithium:
-        /* if("a1" == 0) else-branch */
-        /* Store "a1" - 1 */
-        addi t1, t1, -1
-        sw t1, 0(a0)
-_inner_loop_end_poly_use_hint_dilithium:
-        addi t3, t3, 4 /* increment "a1" pointer */
-        addi a0, a0, 4 /* increment output */
-        addi t2, t2, 4 /* increment "a0" pointer */
-        addi a2, a2, 4 /* increment *hint */
-        /* LOOP END */
-#elif GAMMA2 == (Q-1)/32
-    LOOPI 8, 20
-        lw  t1, 0(t3) /* Load "a1" */
-        /* Check if hint is 0 */
-        lw  t5, 0(a2)
-        bne t5, zero, _inner_loop_skip_store1_poly_use_hint_dilithium
-        sw  t1, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium
-_inner_loop_skip_store1_poly_use_hint_dilithium:
-        /* if(0 < "a0") */
-        lw t5, 0(t2)
-        sub t5, zero, t5
-        srli t5, t5, 31
-        bne t5, a5, _inner_loop_else_poly_use_hint_dilithium /* go to else-branch */
 
-        /* if-branch */
-        addi t1, t1, 1
-        andi t1, t1, 15
-        sw t1, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium
+       We implement the if/else cases using bitwise operations so that we can
+       vectorize the process, but the code does not actually need to be
+       constant-time.
 
-_inner_loop_else_poly_use_hint_dilithium:
-        /* else-branch */
-        addi t1, t1, -1
-        andi t1, t1, 15
-        sw t1, 0(a0)
-_inner_loop_end_poly_use_hint_dilithium:
-        addi t3, t3, 4 /* increment "a1" pointer */
-        addi a0, a0, 4 /* increment output */
-        addi t2, t2, 4 /* increment "a0" pointer */
-        addi a2, a2, 4 /* increment *hint */
-        /* LOOP END */
-#endif
-    bne a3, a0, _loop_poly_use_hint_dilithium
+       The hint values are assumed to be always 0 or 1, and decompose output is
+       assumed to be <= (q - 1) / 2 * gamma2 (16 or 44 depending on gamma2).
 
-    /* sp <- fp */
-    addi sp, fp, 0
-    /* Pop ebp */
-    lw fp, 0(sp)
-    addi sp, sp, 32
+       The reference code calls r0, r1 "a0" and "a1", but we use r here to
+       avoid confusion with register names.
+    */
+    LOOPI 32, 11
+      /* Load the next values from the input polynomial and decompose them.
+           w1 <= r0[i*8:(i+1)*8]
+           w2 <= r1[i*8:(i+1)*8] */
+      bn.lid x0, 0(a1++)
+      jal    x1, decompose_dilithium
+
+      /* Load the next values from the hint into w0. */
+      bn.lid x0, 0(a2++)
+
+      /* w12[j] <= 1 if r0[8*i+j] < 0 or r0[8*i+j] == 0 and h == 1, otherwise 0 */
+      bn.subv.8S w1, w1, w0
+      bn.shv.8S w12, w1 >> 31
+
+      /* w13[j] <= 1 if h[8*i+j] == 1 and r0[8*i+j] <= 0 */
+      bn.and w13, w12, w0
+
+      /* w12[j] <= 1 if h[8*i+j] == 1 and r0[8*i+j] > 0 */
+      bn.xor w12, w12, w0
+      bn.and w12, w12, w0
+
+      /* Compute and store the final result. */
+      bn.addvm.8S w0, w2, w12
+      bn.subvm.8S w0, w0, w13
+      bn.sid x0, 0(a0++)
+
+    /* Restore the previous value of the MOD register. */
+    bn.wsrw MOD, w15
+
     ret
 
 /**
@@ -2153,19 +2051,9 @@ _inner_polyt0_unpack_dilithium:
 .global poly_uniform_gamma1_dilithium
 poly_uniform_gamma1_dilithium:
 #if GAMMA1 == (1 << 17)
-    /* save fp to stack */
-    addi sp, sp, -32
-    sw fp, 0(sp)
+    /* copy output pointer */
+    addi t1, a0, 0
 
-    addi fp, sp, 0
-
-    /* Adjust sp to accomodate local variables */
-    addi sp, sp, -32
-
-    /* Reserve space for tmp buffer to hold a WDR */
-    #define STACK_WDR2GPR -32
-
-    push a0
     push a1
 
     /* Initialize a SHAKE256 operation. */
@@ -2183,13 +2071,13 @@ poly_uniform_gamma1_dilithium:
     jal  x1, keccak_send_message
 
     /* Send the nonce to the Keccak core. */
-    sw   a2, STACK_WDR2GPR(fp)
-    addi a0, fp, STACK_WDR2GPR /* a0 <= *STACK_WDR2GPR = *nonce*/
+    la   a0, poly_wdr2gpr /* a0 <= *poly_wdr2gpr = *nonce */
+    sw   a2, 0(a0)
     li   a1, 2 /* a1 <= 2 */
     jal  x1, keccak_send_message
 
-    pop a1
-    pop a0
+    /* restore original value of output pointer */
+    addi a0, t1, 0
 
     /* Load gamma1 as a vector into w4 */
     li t2, 4
@@ -2264,11 +2152,7 @@ poly_uniform_gamma1_dilithium:
 
     /* Finish the SHAKE-256 operation. */
 
-    /* sp <- fp */
-    addi sp, fp, 0
-    /* Pop ebp */
-    lw fp, 0(sp)
-    addi sp, sp, 32
+    pop a1
 
     ret
 
@@ -2285,22 +2169,12 @@ _inner_poly_uniform_gamma1_dilithium:
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
-    bn.sid     t2, 0(a0++)
+    bn.sid     t2, 0(t1++)
     ret
 #elif GAMMA1 == (1 << 19)
-/* save fp to stack */
-    addi sp, sp, -32
-    sw fp, 0(sp)
+    /* copy output pointer */
+    addi t1, a0, 0
 
-    addi fp, sp, 0
-
-    /* Adjust sp to accomodate local variables */
-    addi sp, sp, -32
-
-    /* Reserve space for tmp buffer to hold a WDR */
-    #define STACK_WDR2GPR -32
-
-    push a0
     push a1
 
     /* Initialize a SHAKE256 operation. */
@@ -2318,13 +2192,13 @@ _inner_poly_uniform_gamma1_dilithium:
     jal  x1, keccak_send_message
 
     /* Send the nonce to the Keccak core. */
-    sw   a2, STACK_WDR2GPR(fp)
-    addi a0, fp, STACK_WDR2GPR /* a0 <= *STACK_WDR2GPR = *nonce*/
+    la   a0, poly_wdr2gpr /* a0 <= *poly_wdr2gpr = *nonce */
+    sw   a2, 0(a0)
     li   a1, 2 /* a1 <= 2 */
     jal  x1, keccak_send_message
 
-    pop a1
-    pop a0
+    /* restore original value of output pointer */
+    addi a0, t1, 0
 
     /* Load gamma1 as a vector into w4 */
     li t2, 4
@@ -2372,11 +2246,8 @@ _inner_poly_uniform_gamma1_dilithium:
 
     /* Finish the SHAKE-256 operation. */
 
-    /* sp <- fp */
-    addi sp, fp, 0
-    /* Pop ebp */
-    lw fp, 0(sp)
-    addi sp, sp, 32
+    pop a1
+
     ret
 
 _inner_poly_uniform_gamma1_dilithium:
@@ -2392,7 +2263,7 @@ _inner_poly_uniform_gamma1_dilithium:
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 20 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
-    bn.sid     t2, 0(a0++)
+    bn.sid     t2, 0(t1++)
     ret
 #endif
 /**
@@ -2938,3 +2809,18 @@ poly_power2round_dilithium:
         bn.sid t3, 0(a1++)
 
     ret
+
+.data
+
+/* Aligned buffer to store a WDR value. */
+.balign 32
+.weak poly_wdr2gpr
+poly_wdr2gpr:
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
