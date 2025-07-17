@@ -83,7 +83,7 @@ ntt_base_kyber:
   #define buf11 w21
   #define wtmp3 w22
   #define buf12 w23
-  
+
   /* GPRs with indices to access WDRs */
   #define buf0_idx x4
   #define buf1_idx x5
@@ -117,7 +117,7 @@ ntt_base_kyber:
   sw   fp, 0(sp)
 
   addi fp, sp, 0
-    
+
   /* Adjust sp to accomodate local variables */
   addi sp, sp, -512
 
@@ -158,7 +158,7 @@ ntt_base_kyber:
   /* 0xFFFFFFFF for masking */
   bn.addi buf8, buf9, 1
   bn.rshi buf8, buf8, buf9 >> 224
-  bn.subi buf8, buf8, 1 
+  bn.subi buf8, buf8, 1
 
   /* Set second WLEN/4 quad word to modulus */
   la     tmp_gpr, modulus
@@ -186,7 +186,7 @@ ntt_base_kyber:
   bn.lid buf9_idx, 288(inp)
   bn.lid buf10_idx, 320(inp)
   bn.lid buf11_idx, 352(inp)
-  bn.lid buf12_idx, 384(inp) 
+  bn.lid buf12_idx, 384(inp)
 
   LOOPI 8, 555
     bn.lid tf1_idx, 0(twp)
@@ -587,7 +587,7 @@ ntt_base_kyber:
     bn.sid coeff15_idx, STACK_WDR2GPR(fp)
     lw     tmp_gpr, STACK_WDR2GPR(fp)
     sw     tmp_gpr, 480(outp)
-    
+
     /* Go to next coefficient for the unbuffered loads/stores */
     bn.lid tf1_idx, 0(twp)
     /* Extract coefficients from buffer registers into working state */
@@ -976,7 +976,7 @@ ntt_base_kyber:
     lw     tmp_gpr2, 416(outp)
     xor    tmp_gpr, tmp_gpr, tmp_gpr2
     sw     tmp_gpr, 416(outp)
-  
+
     /* Coeff14 */
     bn.sid coeff14_idx, STACK_WDR2GPR(fp)
     lw     tmp_gpr, STACK_WDR2GPR(fp)
@@ -992,7 +992,7 @@ ntt_base_kyber:
     lw     tmp_gpr2, 480(outp)
     xor    tmp_gpr, tmp_gpr, tmp_gpr2
     sw     tmp_gpr, 480(outp)
-    
+
     /* Go to next coefficient for the unbuffered loads/stores */
     addi inp, inp, 4
     addi outp, outp, 4
@@ -1024,7 +1024,7 @@ ntt_base_kyber:
   bn.xor  buf9, buf9, buf9
   bn.addi buf8, buf9, 1
   bn.rshi buf8, buf8, buf9 >> 240
-  bn.subi buf8, buf8, 1 
+  bn.subi buf8, buf8, 1
 
   LOOPI 16, 204
     /* Load layer 5 + 2 layer 6 + 1 layer 7 twiddle */

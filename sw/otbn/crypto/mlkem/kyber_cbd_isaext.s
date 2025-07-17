@@ -2,7 +2,7 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-.text 
+.text
 
 /*
  * cbd2
@@ -60,7 +60,7 @@ cbd2:
             bn.subvm.16H w2, w6, w7
             bn.sid x6, 0(x11++)
         NOP
-    ret    
+    ret
 
 /*
  * cbd3
@@ -106,9 +106,9 @@ cbd3:
         bn.and  w4, w4, w20       /* extract mod3=1 bit of w0 */
         bn.rshi w5, w31, w0 >> 2  /* w0 >> 1 */
         bn.and  w5, w5, w20       /* extract mod3=2 bit of w0 */
-        bn.add  w3, w3, w4        
+        bn.add  w3, w3, w4
         bn.add  w3, w3, w5        /* w3 stores 85 intermediate values */
-        
+
         bn.rshi w0, w1, w0 >> 255 /* w0 stores last bit of old w0, and 255 bits of w1 */
         bn.and  w4, w0, w20       /* extract mod3=0 bit of w0 */
         bn.rshi w5, w31, w0 >> 1  /* w0 >> 1 */
@@ -171,63 +171,63 @@ cbd3:
         bn.rshi w9, w31, w9 >> 10
         bn.rshi w1, w31, w1 >> 6     /* shift out the first intermediate value */
         LOOPI 5, 6
-            bn.rshi w8, w4, w8 >> 6 
+            bn.rshi w8, w4, w8 >> 6
             bn.rshi w9, w1, w9 >> 6
             bn.rshi w8, w31, w8 >> 10
             bn.rshi w9, w31, w9 >> 10
-            bn.rshi w1, w31, w1 >> 6 
+            bn.rshi w1, w31, w1 >> 6
             bn.rshi w4, w31, w4 >> 6
         bn.subvm.16H w11, w8, w9
-        bn.sid  x19, 0(x11++)        
+        bn.sid  x19, 0(x11++)
 
-        /* Compute 16*3=48 coeffs */ 
+        /* Compute 16*3=48 coeffs */
         LOOPI 2, 9
             LOOPI 16, 6
-                bn.rshi w8, w4, w8 >> 6 
+                bn.rshi w8, w4, w8 >> 6
                 bn.rshi w9, w1, w9 >> 6
                 bn.rshi w8, w31, w8 >> 10
                 bn.rshi w9, w31, w9 >> 10
-                bn.rshi w1, w31, w1 >> 6 
+                bn.rshi w1, w31, w1 >> 6
                 bn.rshi w4, w31, w4 >> 6
             bn.subvm.16H w11, w8, w9
             bn.sid  x19, 0(x11++)
         LOOPI 5, 6
-            bn.rshi w8, w4, w8 >> 6 
+            bn.rshi w8, w4, w8 >> 6
             bn.rshi w9, w1, w9 >> 6
             bn.rshi w8, w31, w8 >> 10
             bn.rshi w9, w31, w9 >> 10
-            bn.rshi w1, w31, w1 >> 6 
+            bn.rshi w1, w31, w1 >> 6
             bn.rshi w4, w31, w4 >> 6
         LOOPI 11, 6
-            bn.rshi w8, w2, w8 >> 6 
+            bn.rshi w8, w2, w8 >> 6
             bn.rshi w9, w5, w9 >> 6
             bn.rshi w8, w31, w8 >> 10
             bn.rshi w9, w31, w9 >> 10
-            bn.rshi w2, w31, w2 >> 6 
+            bn.rshi w2, w31, w2 >> 6
             bn.rshi w5, w31, w5 >> 6
         bn.subvm.16H w11, w8, w9
         bn.sid  x19, 0(x11++)
 
         /* Compute 16*2=32 coeffs */
         LOOPI 16, 6
-            bn.rshi w8, w2, w8 >> 6 
+            bn.rshi w8, w2, w8 >> 6
             bn.rshi w9, w5, w9 >> 6
             bn.rshi w8, w31, w8 >> 10
             bn.rshi w9, w31, w9 >> 10
-            bn.rshi w2, w31, w2 >> 6 
+            bn.rshi w2, w31, w2 >> 6
             bn.rshi w5, w31, w5 >> 6
         bn.subvm.16H w11, w8, w9
         bn.sid  x19, 0(x11++)
         LOOPI 15, 6
-            bn.rshi w8, w2, w8 >> 6 
+            bn.rshi w8, w2, w8 >> 6
             bn.rshi w9, w5, w9 >> 6
             bn.rshi w8, w31, w8 >> 10
             bn.rshi w9, w31, w9 >> 10
-            bn.rshi w2, w31, w2 >> 6 
+            bn.rshi w2, w31, w2 >> 6
             bn.rshi w5, w31, w5 >> 6
         bn.rshi w8, w2, w8 >> 16
         bn.rshi w9, w6, w9 >> 16
-        bn.subvm.16H w11, w8, w9 
+        bn.subvm.16H w11, w8, w9
         bn.sid  x19, 0(x11++)
     ret
 
@@ -243,7 +243,7 @@ cbd2_const:
     .word 0x55555555
     .word 0x55555555
     .word 0x55555555
-    /* const2 */ 
+    /* const2 */
     .word 0x33333333
     .word 0x33333333
     .word 0x33333333

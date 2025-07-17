@@ -12,7 +12,7 @@
  * This implements the polynomial subtraction for Dilithium, where n=256,q=8380417.
  *
  * Flags: -
- * 
+ *
  * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
  * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
  * @param[in]  w31: all-zero
@@ -30,9 +30,9 @@ poly_sub_dilithium:
     LOOPI 32, 4
         bn.lid x4, 0(x10++)
         bn.lid x5, 0(x11++)
-        
+
         bn.subvm.8S w2, w2, w3
-        
+
         bn.sid x4, 0(x12++)
 
     ret

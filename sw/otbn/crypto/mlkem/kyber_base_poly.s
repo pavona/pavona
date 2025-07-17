@@ -2,7 +2,7 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-.text 
+.text
 
 #if (KYBER_K == 2)
   #define LOOP_GETNOISE_1 6
@@ -50,12 +50,12 @@ poly_frommsg_base:
   /* Load input */
   bn.lid x4, 0(x10)
   bn.lid x6, 0(x11)
-  
+
   LOOPI 16, 8
     LOOPI 16, 5
       bn.rshi w1, w0, w31 >> 1
       bn.rshi w1, w31, w1 >> 255
-      bn.sub  w1, w31, w1 
+      bn.sub  w1, w31, w1
       bn.rshi w2, w1, w2 >> 16
       bn.rshi w0, w31, w0 >> 1
     bn.and w2, w2, w3
@@ -94,7 +94,7 @@ poly_tomsg_base:
   /* Load const */
   bn.lid x6, 0(x11)
   bn.lid x7, 0(x13)
-  
+
   bn.xor  w31, w31, w31
   bn.rshi w3, w31, w3 >> 4 /* 80635 */
   bn.addi w5, w31, 1
@@ -105,7 +105,7 @@ poly_tomsg_base:
     bn.rshi      w0, w0, w31 >> 255 /* <= 1 */
     bn.add       w0, w0, w2
     LOOPI 16, 5
-      bn.and          w1, w0, w5          
+      bn.and          w1, w0, w5
       bn.mulqacc.wo.z w1, w1.0, w3.0, 0 /* *80635 */
       bn.rshi         w1, w31, w1 >> 28  /* >= 28 */
       bn.rshi         w4, w1, w4 >> 1   /* save one bit */
@@ -168,7 +168,7 @@ poly_getnoise_eta_1:
   jal x1, cbd3
 #elif (KYBER_K == 3 || KYBER_K == 4)
   jal x1, cbd2
-#endif 
+#endif
 
   addi x2, x2, 8
 
@@ -234,7 +234,7 @@ poly_getnoise_eta_2:
  *
  * Description: Add 2 vectors
  *
- * Arguments:   - 
+ * Arguments:   -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
@@ -259,9 +259,9 @@ poly_add_base:
     bn.lid x4,  0(x10++)
     bn.lid x5,  0(x11++)
     LOOPI 16, 5
-      bn.and  w3, w0, w2 
-      bn.and  w4, w1, w2 
-      bn.addm w3, w3, w4 
+      bn.and  w3, w0, w2
+      bn.and  w4, w1, w2
+      bn.addm w3, w3, w4
       bn.rshi w0, w3, w0 >> 16
       bn.rshi w1, w31, w1 >> 16
     bn.sid x4,  0(x12++)
@@ -272,7 +272,7 @@ poly_add_base:
  *
  * Description: Sub 2 vectors
  *
- * Arguments:   - 
+ * Arguments:   -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
@@ -291,11 +291,11 @@ poly_sub_base:
 
   la     x7, modulus_bn
   bn.lid x6, 0(x7)
-  
+
   LOOPI 16, 5
     bn.lid x4,  0(x10++)
     bn.lid x5,  0(x11++)
-    bn.add w0, w0, w2 
+    bn.add w0, w0, w2
     bn.sub w0, w0, w1
     bn.sid x4, 0(x12++)
   ret
@@ -305,7 +305,7 @@ poly_sub_base:
  *
  * Description: Inplace Plantard reduction
  *
- * Arguments:   - 
+ * Arguments:   -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *

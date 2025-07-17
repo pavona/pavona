@@ -26,13 +26,13 @@
 intt_kyber:
   /* Set up wide registers for input and intermediate states */
   li x4, 0
-  li x5, 1 
-  li x6, 2 
-  li x7, 3 
-  li x8, 4 
-  li x9, 5 
-  li x13, 6 
-  li x14, 7 
+  li x5, 1
+  li x6, 2
+  li x7, 3
+  li x8, 4
+  li x9, 5
+  li x13, 6
+  li x14, 7
   li x15, 8
   li x16, 9
   li x17, 10
@@ -73,59 +73,59 @@ intt_kyber:
   /* Transpose for Layers 7--5 */
   /* First trans w24-w31 */
   bn.trn1.8S w24, w0, w1
-  bn.trn2.8S w25, w0, w1 
-  bn.trn1.8S w26, w2, w3  
+  bn.trn2.8S w25, w0, w1
+  bn.trn1.8S w26, w2, w3
   bn.trn2.8S w27, w2, w3
   bn.trn1.8S w28, w4, w5
   bn.trn2.8S w29, w4, w5
   bn.trn1.8S w30, w6, w7
-  bn.trn2.8S w31, w6, w7 
-  
+  bn.trn2.8S w31, w6, w7
+
   bn.trn1.4D w0, w24, w26
-  bn.trn2.4D w2, w24, w26 
+  bn.trn2.4D w2, w24, w26
   bn.trn1.4D w1, w25, w27
-  bn.trn2.4D w3, w25, w27 
-  bn.trn1.4D w4, w28, w30 
-  bn.trn2.4D w6, w28, w30 
+  bn.trn2.4D w3, w25, w27
+  bn.trn1.4D w4, w28, w30
+  bn.trn2.4D w6, w28, w30
   bn.trn1.4D w5, w29, w31
-  bn.trn2.4D w7, w29, w31 
-  
-  bn.trn1.2Q w24, w0, w4 
-  bn.trn2.2Q w28, w0, w4 
-  bn.trn1.2Q w25, w1, w5 
-  bn.trn2.2Q w29, w1, w5 
+  bn.trn2.4D w7, w29, w31
+
+  bn.trn1.2Q w24, w0, w4
+  bn.trn2.2Q w28, w0, w4
+  bn.trn1.2Q w25, w1, w5
+  bn.trn2.2Q w29, w1, w5
   bn.trn1.2Q w26, w2, w6
   bn.trn2.2Q w30, w2, w6
   bn.trn1.2Q w27, w3, w7
-  bn.trn2.2Q w31, w3, w7  
+  bn.trn2.2Q w31, w3, w7
 
   /* Second trans w0-w7 */
   bn.trn1.8S w0, w8, w9
-  bn.trn2.8S w1, w8, w9 
-  bn.trn1.8S w2, w10, w11  
+  bn.trn2.8S w1, w8, w9
+  bn.trn1.8S w2, w10, w11
   bn.trn2.8S w3, w10, w11
   bn.trn1.8S w4, w12, w13
   bn.trn2.8S w5, w12, w13
   bn.trn1.8S w6, w14, w15
-  bn.trn2.8S w7, w14, w15 
+  bn.trn2.8S w7, w14, w15
 
   bn.trn1.4D w8, w0, w2
-  bn.trn2.4D w10, w0, w2 
+  bn.trn2.4D w10, w0, w2
   bn.trn1.4D w9, w1, w3
-  bn.trn2.4D w11, w1, w3 
-  bn.trn1.4D w12, w4, w6 
-  bn.trn2.4D w14, w4, w6 
+  bn.trn2.4D w11, w1, w3
+  bn.trn1.4D w12, w4, w6
+  bn.trn2.4D w14, w4, w6
   bn.trn1.4D w13, w5, w7
-  bn.trn2.4D w15, w5, w7 
+  bn.trn2.4D w15, w5, w7
 
-  bn.trn1.2Q w0, w8, w12 
-  bn.trn2.2Q w4, w8, w12 
-  bn.trn1.2Q w1, w9, w13 
-  bn.trn2.2Q w5, w9, w13 
+  bn.trn1.2Q w0, w8, w12
+  bn.trn2.2Q w4, w8, w12
+  bn.trn1.2Q w1, w9, w13
+  bn.trn2.2Q w5, w9, w13
   bn.trn1.2Q w2, w10, w14
   bn.trn2.2Q w6, w10, w14
   bn.trn1.2Q w3, w11, w15
-  bn.trn2.2Q w7, w11, w15 
+  bn.trn2.2Q w7, w11, w15
 
   /* Layer 7, stride 2 */
   #define wtmp w8
@@ -137,7 +137,7 @@ intt_kyber:
   bn.lid x31, 128(x11)
   bn.lid x28, 160(x11)
   bn.lid x29, 192(x11)
-  bn.lid x30, 224(x11)  
+  bn.lid x30, 224(x11)
 
   /* Butterflies */
   bn.subvm.16H wtmp, w24, w25
@@ -171,7 +171,7 @@ intt_kyber:
   bn.lid x24, 288(x11)
   bn.lid x25, 320(x11)
   bn.lid x26, 352(x11)
-  
+
    /* Butterflies */
   bn.subvm.16H wtmp, w24, w26
   bn.addvm.16H w24, w24, w26
@@ -232,63 +232,63 @@ intt_kyber:
   /* Transpose back */
   /* First trans w8-w15 */
   bn.trn1.8S w8, w0, w1
-  bn.trn2.8S w9, w0, w1 
-  bn.trn1.8S w10, w2, w3  
+  bn.trn2.8S w9, w0, w1
+  bn.trn1.8S w10, w2, w3
   bn.trn2.8S w11, w2, w3
   bn.trn1.8S w12, w4, w5
   bn.trn2.8S w13, w4, w5
   bn.trn1.8S w14, w6, w7
-  bn.trn2.8S w15, w6, w7 
-  
+  bn.trn2.8S w15, w6, w7
+
   bn.trn1.4D w0, w8, w10
-  bn.trn2.4D w2, w8, w10 
+  bn.trn2.4D w2, w8, w10
   bn.trn1.4D w1, w9, w11
-  bn.trn2.4D w3, w9, w11 
-  bn.trn1.4D w4, w12, w14 
-  bn.trn2.4D w6, w12, w14 
+  bn.trn2.4D w3, w9, w11
+  bn.trn1.4D w4, w12, w14
+  bn.trn2.4D w6, w12, w14
   bn.trn1.4D w5, w13, w15
-  bn.trn2.4D w7, w13, w15 
-  
-  bn.trn1.2Q w8, w0, w4 
-  bn.trn2.2Q w12, w0, w4 
-  bn.trn1.2Q w9, w1, w5 
-  bn.trn2.2Q w13, w1, w5 
+  bn.trn2.4D w7, w13, w15
+
+  bn.trn1.2Q w8, w0, w4
+  bn.trn2.2Q w12, w0, w4
+  bn.trn1.2Q w9, w1, w5
+  bn.trn2.2Q w13, w1, w5
   bn.trn1.2Q w10, w2, w6
   bn.trn2.2Q w14, w2, w6
   bn.trn1.2Q w11, w3, w7
-  bn.trn2.2Q w15, w3, w7  
+  bn.trn2.2Q w15, w3, w7
 
   /* Second trans w0-w7 */
   bn.trn1.8S w0, w24, w25
-  bn.trn2.8S w1, w24, w25 
-  bn.trn1.8S w2, w26, w27  
+  bn.trn2.8S w1, w24, w25
+  bn.trn1.8S w2, w26, w27
   bn.trn2.8S w3, w26, w27
   bn.trn1.8S w4, w28, w29
   bn.trn2.8S w5, w28, w29
   bn.trn1.8S w6, w30, w31
-  bn.trn2.8S w7, w30, w31 
+  bn.trn2.8S w7, w30, w31
 
   bn.trn1.4D w24, w0, w2
-  bn.trn2.4D w26, w0, w2 
+  bn.trn2.4D w26, w0, w2
   bn.trn1.4D w25, w1, w3
-  bn.trn2.4D w27, w1, w3 
-  bn.trn1.4D w28, w4, w6 
-  bn.trn2.4D w30, w4, w6 
+  bn.trn2.4D w27, w1, w3
+  bn.trn1.4D w28, w4, w6
+  bn.trn2.4D w30, w4, w6
   bn.trn1.4D w29, w5, w7
-  bn.trn2.4D w31, w5, w7 
+  bn.trn2.4D w31, w5, w7
 
-  bn.trn1.2Q w0, w24, w28 
-  bn.trn2.2Q w4, w24, w28 
-  bn.trn1.2Q w1, w25, w29 
-  bn.trn2.2Q w5, w25, w29 
+  bn.trn1.2Q w0, w24, w28
+  bn.trn2.2Q w4, w24, w28
+  bn.trn1.2Q w1, w25, w29
+  bn.trn2.2Q w5, w25, w29
   bn.trn1.2Q w2, w26, w30
   bn.trn2.2Q w6, w26, w30
   bn.trn1.2Q w3, w27, w31
-  bn.trn2.2Q w7, w27, w31 
+  bn.trn2.2Q w7, w27, w31
 
   /* Layer 4, stride 16 */
   /* Load twiddle factors */
-  bn.lid x23, 448(x11) 
+  bn.lid x23, 448(x11)
 
   /* Butterflies */
   bn.subvm.16H   w30, w0, w1
@@ -404,7 +404,7 @@ intt_kyber:
   bn.mulvm.l.16H w6, w6, w16, 15
   bn.mulvm.l.16H w7, w7, w16, 15
 
- 
+
   /* Store output */
   bn.sid x4, 0(x12++)
   bn.sid x5, 0(x12++)
@@ -424,5 +424,3 @@ intt_kyber:
   bn.sid x22, 0(x12++)
 
   ret
-
-

@@ -322,7 +322,7 @@ verify_dilithium:
     /* Load c pointer */
     li  t1, STACK_C
     add t1, fp, t1
-    
+
     /* Setup WDR */
     li  t2, 2
     /* Copy c */
@@ -359,7 +359,7 @@ verify_dilithium:
         nop
 
     /* Decode h */
-    
+
     /* Load pointer to h */
     li  a0, STACK_H
     add a0, fp, a0
@@ -415,7 +415,7 @@ verify_dilithium:
     /* Send the message to the Keccak core. */
     li  a1, CRYPTO_PUBLICKEYBYTES /* set message length to CRYPTO_PUBLICKEYBYTES */
     jal x1, keccak_send_message
-    
+
     li  a0, STACK_MU
     add a0, fp, a0
 
@@ -431,7 +431,7 @@ verify_dilithium:
     /* Initialize a SHAKE256 operation. */
     li a1, TRBYTES
     addi a1, a1, 2 /* Add len of ctxlen */
-    
+
     li t2, STACK_CTXLEN
     add t2, fp, t2
     lw t2, 0(t2) /* t2 <= ctxlen */
@@ -549,7 +549,7 @@ verify_dilithium:
         /* Store m[2:]||m'[:2] to buffer */
         sw t2, 0(t3)
         addi t3, t3, 4
-    
+
     /* Store last two message bytes */
     lw t2, 0(a0) /* Load last two bytes */
     srli t2, t2, 16
@@ -723,7 +723,7 @@ verify_dilithium:
     li  a0, STACK_W1
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -746,7 +746,7 @@ verify_dilithium:
     add a1, fp, a1
     li  a2, STACK_H
     add a2, fp, a2
-   
+
     LOOPI K, 2
         jal x1, poly_use_hint_dilithium
         nop

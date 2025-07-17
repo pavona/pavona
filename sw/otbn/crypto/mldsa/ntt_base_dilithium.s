@@ -85,7 +85,7 @@ _aligned:
     sw   fp, 0(sp)
 
     addi fp, sp, 0
-    
+
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -32
 
@@ -100,7 +100,7 @@ _aligned:
     .irp reg,s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11
         push \reg
     .endr
-    
+
     #define coeff0 w0
     #define coeff1 w1
     #define coeff2 w2
@@ -139,7 +139,7 @@ _aligned:
     #define buf11 w21
     #define wtmp3 w22
     #define buf12 w23
-    
+
     /* GPRs with indices to access WDRs */
     #define buf0_idx x4
     #define buf1_idx x5
@@ -200,7 +200,7 @@ _aligned:
     /* 0xFFFFFFFF for masking */
     bn.addi buf8, buf9, 1
     bn.rshi buf8, buf8, buf9 >> 224
-    bn.subi buf8, buf8, 1 
+    bn.subi buf8, buf8, 1
 
     /* Set second WLEN/4 quad word to modulus */
     la tmp_gpr, modulus
@@ -592,7 +592,7 @@ _aligned:
             bn.sid coeff15_idx, STACK_WDR2GPR(fp)
             lw tmp_gpr, STACK_WDR2GPR(fp)
             sw tmp_gpr, 960(outp)
-            
+
             /* Go to next coefficient for the unbuffered loads/stores */
             addi inp, inp, 4
             addi outp, outp, 4
@@ -613,7 +613,7 @@ _aligned:
         bn.sid buf11_idx, 672(outp)
         bn.sid buf12_idx, 736(outp)
         /* Outer Loop End */
-    
+
     /* Restore input pointer */
     addi inp, inp, -64
     /* Restore output pointer */
@@ -628,7 +628,7 @@ _aligned:
     bn.xor buf9, buf9, buf9
     bn.addi buf8, buf9, 1
     bn.rshi buf8, buf8, buf9 >> 224
-    bn.subi buf8, buf8, 1 
+    bn.subi buf8, buf8, 1
 
     LOOPI 16, 232
         /* Load layer 5 + 2 layer 6 + 1 layer 7 twiddle */
@@ -970,7 +970,7 @@ _aligned:
         bn.rshi buf0, coeff6, buf0 >> 32
         bn.rshi buf0, coeff7, buf0 >> 32
         bn.sid buf0_idx, 0(outp++)
-        
+
         bn.rshi buf0, coeff8, buf0 >> 32
         bn.rshi buf0, coeff9, buf0 >> 32
         bn.rshi buf0, coeff10, buf0 >> 32

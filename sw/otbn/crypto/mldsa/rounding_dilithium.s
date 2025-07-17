@@ -149,7 +149,7 @@
  * mod^+ Q = a1*ALPHA + a0 with -ALPHA/2 < a0 <= ALPHA/2 except if a1 =
  * (Q-1)/ALPHA where we set a1 = 0 and -ALPHA/2 <= a0 = a mod^+ Q - Q < 0.
  * Assumes a to be standard representative.
- * 
+ *
  * Returns: output element vector "a0" in w1, output element vector "a1" in w2
  *
  * @param[in] w0: input element vector
@@ -161,7 +161,7 @@
  */
 .global decompose_dilithium
 decompose_dilithium:
-    /* "a", "a{0,1}" refer to the variable names from the reference code */ 
+    /* "a", "a{0,1}" refer to the variable names from the reference code */
 
     /* Compute "a1" */
     bn.addv.8S w2, w0, w5         /* "a" + 127 */
@@ -169,8 +169,8 @@ decompose_dilithium:
 #if GAMMA2 == (Q-1)/88
     bn.mulv.8S w2, w2, w6         /* "a1" * 11275 */
     bn.shv.8S  w4, w7 << 23  /* 1 << 23 */
-    bn.addv.8S w2, w2, w4         /* ("a1" * 11275) + (1 << 23) */ 
-    bn.shv.8S  w2, w2 >> 24  /* (("a1" * 11275) + (1 << 23)) >> 24 */ 
+    bn.addv.8S w2, w2, w4         /* ("a1" * 11275) + (1 << 23) */
+    bn.shv.8S  w2, w2 >> 24  /* (("a1" * 11275) + (1 << 23)) >> 24 */
     bn.subv.8S w3, w8, w2         /* 43 - "a1" */
     bn.shv.8S w30, w3 >> 31
     bn.subv.8S w30, bn0, w30 /* Build mask from MSBs */
@@ -179,8 +179,8 @@ decompose_dilithium:
 #elif GAMMA2 == (Q-1)/32
     bn.mulv.8S w2, w2, w6    /* "a1" * 1025 */
     bn.shv.8S  w4, w7 << 21  /* 1 << 21 */
-    bn.addv.8S w2, w2, w4    /* ("a1" * 1025) + (1 << 21) */ 
-    bn.shv.8S  w2, w2 >> 22  /* (("a1" * 1025) + (1 << 21)) >> 22 */ 
+    bn.addv.8S w2, w2, w4    /* ("a1" * 1025) + (1 << 21) */
+    bn.shv.8S  w2, w2 >> 22  /* (("a1" * 1025) + (1 << 21)) >> 22 */
     bn.and     w2, w2, w8    /* & 15 */
 #endif
 
@@ -191,7 +191,7 @@ decompose_dilithium:
     bn.subv.8S w4, w10, w1         /* (Q-1)/2 - "a0" */
     bn.shv.8S  w30, w4 >> 31
     bn.subv.8S w30, bn0, w30 /* Build mask from MSBs */
-    bn.and     w4, w11, w30        /* (((Q-1)/2 - "a0") >> 31) & Q */ 
+    bn.and     w4, w11, w30        /* (((Q-1)/2 - "a0") >> 31) & Q */
     bn.subv.8S w1, w1, w4          /* a0 -= (((Q-1)/2 - "a0") >> 31) & Q */
-    
+
     ret

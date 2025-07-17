@@ -15,7 +15,7 @@
   #define KYBER_POLYCOMPRESSEDBYTES    128
   #define KYBER_POLYVECCOMPRESSEDBYTES 640
   #define KYBER_ETA1 3
-  
+
   #define KYBER_INDCPA_MSGBYTES       32
   #define KYBER_INDCPA_PUBLICKEYBYTES 800
   #define KYBER_INDCPA_SECRETKEYBYTES 768
@@ -81,7 +81,7 @@
   #define POLY -512
   #define K_POLYS -2048
   #define K_SQUARED_POLYS -8192
-#endif 
+#endif
 
 /* Register aliases */
 .equ x0, zero
@@ -213,13 +213,13 @@ indcpa_keypair_base:
   #define STACK_A            -1664
   #define STACK_SKPV         -2688
 #elif (KYBER_K == 3)
-  #define STACK_A            -2176 
-  #define STACK_SKPV         -3712 
+  #define STACK_A            -2176
+  #define STACK_SKPV         -3712
 #elif (KYBER_K == 4)
-  #define STACK_A            -2688 
-  #define STACK_SKPV         -4736 
-#else 
-#endif 
+  #define STACK_A            -2688
+  #define STACK_SKPV         -4736
+#else
+#endif
 
   /* Store parameters to stack */
   sw  a0, STACK_COINS_ADDR(fp)
@@ -256,7 +256,7 @@ indcpa_keypair_base:
     addi a0, fp, STACK_NOISESEED
     sw   a2, STACK_NONCE(fp)
     jal  x1, poly_getnoise_eta_1
-    addi a2, a2, 1 
+    addi a2, a2, 1
 
   /*** NTT skpv ***/
   /* ntt(skpv) */
@@ -267,7 +267,7 @@ indcpa_keypair_base:
     la  a1, twiddles_ntt_base
     jal x1, ntt_base_kyber
   .endr
-  
+
   /*** Packing sk ***/
   li   a0, STACK_SKPV
   add  a0, fp, a0
@@ -310,17 +310,17 @@ indcpa_keypair_base:
       la   x28, twiddles_ntt_base
       jal  x1, basemul_acc_base_kyber
       addi a1, a1, POLY /* points back to A[0][1] */
-    .endr 
-    addi a2, a2, KYBER_GEN_MATRIX_NONCE 
-  .endr 
-  
+    .endr
+    addi a2, a2, KYBER_GEN_MATRIX_NONCE
+  .endr
+
   /* toplant */
   li  a0, STACK_A
   add a0, fp, a0
   la  a2, const_toplant
   .rept KYBER_K
     jal x1, poly_reduce
-  .endr 
+  .endr
 
   /*** CBD e ***/
   li   a5, STACK_TMP
@@ -333,7 +333,7 @@ indcpa_keypair_base:
     addi a0, fp, STACK_NOISESEED
     sw   a2, STACK_NONCE(fp)
     jal  x1, poly_getnoise_eta_1
-    addi a2, a2, 1 
+    addi a2, a2, 1
 
   /*** NTT e ***/
   /* ntt(skpv) */
@@ -348,22 +348,22 @@ indcpa_keypair_base:
   /* Polyvec add */
   li   a0, STACK_A
   add  a0, fp, a0
-  li   a1, STACK_SKPV 
-  add  a1, fp, a1 
-  add  a2, zero, a0 
+  li   a1, STACK_SKPV
+  add  a1, fp, a1
+  add  a2, zero, a0
   .rept KYBER_K
     jal x1, poly_add_base
   .endr
-  
+
   /*** Packing pk ***/
 
   lw   a3, STACK_PK_ADDR(fp)
   li   a0, STACK_A
-  add  a0, fp, a0 
+  add  a0, fp, a0
   addi a1, fp, STACK_PUBLICSEED
   jal  x1, pack_pk
 
-  ret 
+  ret
 
 /*
  * Name:        crypto_kem_keypair
@@ -379,15 +379,15 @@ indcpa_keypair_base:
  *
  * @param[in]  x10 (a0): pointer to seed (2*KYBER_SYMBYTES = 64)
  * @param[out] x11 (a1): dmem pointer to kem_pk
- * @param[out] x12 (a2): dmem pointer to kem_sk 
+ * @param[out] x12 (a2): dmem pointer to kem_sk
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 
 .globl crypto_kem_keypair
-crypto_kem_keypair: 
+crypto_kem_keypair:
   /* Set frame pointer */
-  addi fp, sp, 0 
+  addi fp, sp, 0
 #if KYBER_K == 2
     li  t0, -2688
 #elif KYBER_K == 3
@@ -395,7 +395,7 @@ crypto_kem_keypair:
 #elif KYBER_K == 4
     li  t0, -4736
 #endif
-  add  sp, sp, t0 
+  add  sp, sp, t0
 
   /*** indcpa_keypair ***/
   jal  x1, indcpa_keypair_base
@@ -408,7 +408,7 @@ crypto_kem_keypair:
     bn.sid x4, 0(a1++)
 
   /*** hash_h ***/
-  lw      a0, STACK_PK_ADDR(fp) 
+  lw      a0, STACK_PK_ADDR(fp)
   addi    a1, zero, KYBER_PUBLICKEYBYTES
   slli    t0, a1, 5
   addi    t0, t0, SHA3_256_CFG
@@ -423,10 +423,10 @@ crypto_kem_keypair:
 
   /*** Random bytes ***/
   lw      a0, STACK_COINS_ADDR(fp)
-  addi    a0, a0, 32 
+  addi    a0, a0, 32
   li      t0, 8
   bn.lid  t0, 0(a0)
-  bn.sid  t0, 0(a2++) 
+  bn.sid  t0, 0(a2++)
 
   /* Free space on stack */
   addi sp, fp, 0
@@ -446,13 +446,13 @@ crypto_kem_keypair:
  *                                   (of length KYBER_INDCPA_PUBLICKEYBYTES)
  *              - const uint8_t *coins: pointer to input random coins used as seed
  *                                      (of length KYBER_SYMBYTES) to deterministically
- *                                      generate all randomness 
+ *                                      generate all randomness
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x10 (a0): dmem pointer to input message 
+ * @param[in]  x10 (a0): dmem pointer to input message
  * @param[in]  x11 (a1): dmem pointer to input packed pk
- * @param[in]  x12 (a2): dmem pointer to input coins 
+ * @param[in]  x12 (a2): dmem pointer to input coins
  * @param[out] x13 (a3): dmem pointer to output ciphertext
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
@@ -474,7 +474,7 @@ indcpa_enc_base:
     #define STACK_ENC_PKPV     -1632
     #define STACK_ENC_EPP      -1632
   #define STACK_ENC_SP         -3168
-    #define STACK_ENC_EP       -3168 
+    #define STACK_ENC_EP       -3168
 #elif (KYBER_K == 3)
   #define STACK_ENC_AT         -2656
     #define STACK_ENC_K        -2656
@@ -482,7 +482,7 @@ indcpa_enc_base:
     #define STACK_ENC_PKPV     -2144
     #define STACK_ENC_EPP      -2144
   #define STACK_ENC_SP         -4192
-    #define STACK_ENC_EP       -4192 
+    #define STACK_ENC_EP       -4192
 #elif (KYBER_K == 4)
   #define STACK_ENC_AT         -3168
     #define STACK_ENC_K        -3168
@@ -490,9 +490,9 @@ indcpa_enc_base:
     #define STACK_ENC_PKPV     -2656
     #define STACK_ENC_EPP      -2656
   #define STACK_ENC_SP         -5216
-    #define STACK_ENC_EP       -5216 
-#else 
-#endif 
+    #define STACK_ENC_EP       -5216
+#else
+#endif
 
   /* Store parameters to stack */
   sw a2, STACK_ENC_COINS_ADDR(fp)
@@ -500,7 +500,7 @@ indcpa_enc_base:
   /*** poly_frommsg ***/
   la  a1, modulus_over_2
   li  a2, STACK_ENC_K
-  add a2, fp, a2 
+  add a2, fp, a2
   jal x1, poly_frommsg_base
 
   /*** unpack_pk ***/
@@ -518,7 +518,7 @@ indcpa_enc_base:
   add a4, zero, a0
   li  a1, STACK_ENC_SP
   add a1, fp, a1
-  li  a5, STACK_ENC_V  
+  li  a5, STACK_ENC_V
   li  a3, STACK_ENC_NONCE
   li  a2, 0
   LOOPI KYBER_K, 5
@@ -526,22 +526,22 @@ indcpa_enc_base:
     sw   a2, STACK_ENC_NONCE(fp)
     jal  x1, poly_getnoise_eta_1
     add  a0, zero, a4
-    addi a2, a2, 1  
+    addi a2, a2, 1
 
   /*** NTT ***/
-  li  a0, STACK_ENC_SP 
+  li  a0, STACK_ENC_SP
   add a0, fp, a0
-  add a2, zero, a0 
+  add a2, zero, a0
   .rept KYBER_K
     la  a1, twiddles_ntt_base
     jal x1, ntt_base_kyber
-  .endr 
+  .endr
 
-  /** v = sp * pkpv **/ 
-  li   x29, STACK_ENC_PKPV 
+  /** v = sp * pkpv **/
+  li   x29, STACK_ENC_PKPV
   add  x29, fp, x29
-  li   a1, STACK_ENC_SP 
-  add  a1, fp, a1 
+  li   a1, STACK_ENC_SP
+  add  a1, fp, a1
   li   a3, STACK_ENC_V
   add  a3, fp, a3
   la   x28, twiddles_ntt_base
@@ -549,7 +549,7 @@ indcpa_enc_base:
   .rept KYBER_K-1
     addi a3, a3, POLY
     la   x28, twiddles_ntt_base
-    jal  x1, basemul_acc_base_kyber 
+    jal  x1, basemul_acc_base_kyber
   .endr
 
   /*** reduce v ***/
@@ -560,8 +560,8 @@ indcpa_enc_base:
 
   /*** INTT v ***/
   li  a0, STACK_ENC_V
-  add a0, fp, a0 
-  add a2, zero, a0 
+  add a0, fp, a0
+  add a2, zero, a0
   la  a1, twiddles_intt_base
   jal x1, intt_base_kyber
 
@@ -581,7 +581,7 @@ indcpa_enc_base:
   add  a0, fp, a0
   li   a1, STACK_ENC_V
   add  a1, fp, a1
-  add  a2, zero, a1 
+  add  a2, zero, a1
   jal  x1, poly_add_base
   addi a1, a1, POLY
   addi a2, a2, POLY
@@ -616,8 +616,8 @@ indcpa_enc_base:
       la   x28, twiddles_ntt_base
       jal  x1, basemul_acc_base_kyber
       addi a1, a1, POLY /* points back to A[0][1] */
-    .endr 
-    addi a2, a2, KYBER_GEN_MATRIX_AT_NONCE 
+    .endr
+    addi a2, a2, KYBER_GEN_MATRIX_AT_NONCE
   .endr
 
   /* reduce */
@@ -630,12 +630,12 @@ indcpa_enc_base:
 
   /*** INTT ***/
   li  a0, STACK_ENC_AT
-  add a0, fp, a0 
-  add a2, zero, a0 
+  add a0, fp, a0
+  add a2, zero, a0
   .rept KYBER_K
     la  a1, twiddles_intt_base
     jal x1, intt_base_kyber
-  .endr 
+  .endr
 
   /*** CBD ep ***/
   lw  a0, STACK_ENC_COINS_ADDR(fp)
@@ -657,11 +657,11 @@ indcpa_enc_base:
   li  a0, STACK_ENC_B
   add a0, fp, a0
   li  a1, STACK_ENC_EP
-  add a1, fp, a1 
-  add a2, zero, a0 
+  add a1, fp, a1
+  add a2, zero, a0
   .rept KYBER_K
-    jal x1, poly_add_base 
-  .endr 
+    jal x1, poly_add_base
+  .endr
 
   /*** pack_ciphertext ***/
   li   a0, STACK_ENC_B
@@ -672,7 +672,7 @@ indcpa_enc_base:
   la   a3, const_1290167
   la   a5, modulus_over_2
   jal  x1, pack_ciphertext
-  ret 
+  ret
 
 /*
  * Name:        crypto_kem_enc
@@ -691,14 +691,14 @@ indcpa_enc_base:
  *
  * @param[in]  x10 (a0): dmem pointer to input randombytes (KYBER_SYMBYTES = 32)
  * @param[out] x11 (a1): dmem pointer to output ct
- * @param[out] x12 (a2): dmem pointer to output key_b 
- * @param[in]  x13 (a3): dmem pointer to input pk 
+ * @param[out] x12 (a2): dmem pointer to output key_b
+ * @param[in]  x13 (a3): dmem pointer to input pk
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 
 .globl crypto_kem_enc
-crypto_kem_enc: 
+crypto_kem_enc:
   #define STACK_KEM_ENC_KEYB_ADDR -20
   #define STACK_KEM_ENC_PK_ADDR   -24
   #define STACK_KEM_ENC_CT_ADDR   -32
@@ -706,7 +706,7 @@ crypto_kem_enc:
   #define STACK_KEM_ENC_KR      -1056
 
   /* Set frame pointer */
-  addi fp, sp, 0 
+  addi fp, sp, 0
 #if KYBER_K == 2
     li  t0, -3168
 #elif KYBER_K == 3
@@ -718,16 +718,16 @@ crypto_kem_enc:
 
   /* Save parameters to stack */
   sw a1, STACK_KEM_ENC_CT_ADDR(fp)
-  sw a2, STACK_KEM_ENC_KEYB_ADDR(fp) 
+  sw a2, STACK_KEM_ENC_KEYB_ADDR(fp)
   sw a3, STACK_KEM_ENC_PK_ADDR(fp)
 
   /*** Copy randombytes to buf ***/
   li     x4, 0
   bn.lid x4, 0(a0)
   li     t0, STACK_KEM_ENC_BUF
-  add    t0, fp, t0 
+  add    t0, fp, t0
   bn.sid x4, 0(t0++)
-  add    a2, zero, t0 
+  add    a2, zero, t0
 
   /*** hash_h(pk) ***/
   lw      a0, STACK_KEM_ENC_PK_ADDR(fp)
@@ -741,7 +741,7 @@ crypto_kem_enc:
   bn.sid  t0, 0(a2++) /* Store into buffer */
 
   /*** hash_g(randombytes||hash_h(pk)) ***/
-  addi  a0, a2, -64 
+  addi  a0, a2, -64
   lw    a2, STACK_KEM_ENC_KEYB_ADDR(fp)
   addi  a1, zero, 64
   slli  t0, a1, 5
@@ -774,11 +774,11 @@ crypto_kem_enc:
  *              - const uint8_t *c: pointer to input ciphertext
  *                                  (of length KYBER_INDCPA_BYTES)
  *              - const uint8_t *sk: pointer to input secret key
- *                                   (of length KYBER_INDCPA_SECRETKEYBYTES) 
+ *                                   (of length KYBER_INDCPA_SECRETKEYBYTES)
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x10 (a0): dmem pointer to input ciphertext 
+ * @param[in]  x10 (a0): dmem pointer to input ciphertext
  * @param[in]  x11 (a1): dmem pointer to input packed sk
  * @param[out] x13 (a3): dmem pointer to output message
  *
@@ -800,15 +800,15 @@ indcpa_dec_base:
   #define STACK_DEC_SKPV     -2080
   #define STACK_DEC_V        -2592
   #define STACK_DEC_B        -4640
-#else 
-#endif 
+#else
+#endif
 
   /* Store parameters to stack */
   sw a3, STACK_DEC_M_ADDR(fp)
-  
+
   /*** unpack_ciphertext ***/
   li  a2, STACK_DEC_B
-  add a2, fp, a2 
+  add a2, fp, a2
   la  a3, const_8
   la  a4, modulus
   la  a5, const_0x0fff
@@ -819,12 +819,12 @@ indcpa_dec_base:
 
   /*** NTT ***/
   li  a0, STACK_DEC_B
-  add a0, fp, a0 
-  add a2, zero, a0 
-  .rept KYBER_K 
+  add a0, fp, a0
+  add a2, zero, a0
+  .rept KYBER_K
     la  a1, twiddles_ntt_base
     jal x1, ntt_base_kyber
-  .endr 
+  .endr
 
   /*** Vector vector multiplication ***/
   addi x29, a0, K_POLYS
@@ -835,8 +835,8 @@ indcpa_dec_base:
   .rept KYBER_K-1
     addi a3, a3, POLY
     la   x28, twiddles_ntt_base
-    jal  x1, basemul_acc_base_kyber 
-  .endr 
+    jal  x1, basemul_acc_base_kyber
+  .endr
 
   /* reduce */
   li  a0, STACK_DEC_B
@@ -845,20 +845,20 @@ indcpa_dec_base:
   jal x1, poly_reduce
 
   /*** INTT ***/
-  add a0, a0, POLY 
+  add a0, a0, POLY
   la  a1, twiddles_intt_base
-  add a2, zero, a0 
+  add a2, zero, a0
   jal x1, intt_base_kyber
 
   /*** SUB ***/
   li   a0, STACK_DEC_V
-  add  a0, fp, a0 
+  add  a0, fp, a0
   addi a1, a2, POLY
-  addi a2, a2, POLY 
-  jal  x1, poly_sub_base 
+  addi a2, a2, POLY
+  jal  x1, poly_sub_base
 
   /*** poly_tomsg ***/
-  addi a0, a1, POLY 
+  addi a0, a1, POLY
   la   a1, modulus_over_2
   lw   a2, STACK_DEC_M_ADDR(fp)
   la   a3, const_1290167
@@ -882,7 +882,7 @@ indcpa_dec_base:
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
  * @param[in]  x10 (a0): dmem pointer to input ct
- * @param[in]  x11 (a1): dmem pointer to input sk 
+ * @param[in]  x11 (a1): dmem pointer to input sk
  * @param[out] x12 (a2): dmem pointer to output key_a
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
@@ -907,10 +907,10 @@ crypto_kem_dec:
   #define STACK_KEM_DEC_KR     -5280
   #define STACK_KEM_DEC_BUF    -5344
   #define STACK_KEM_DEC_CMP    -3168
-#else 
-#endif 
+#else
+#endif
   /* Set frame pointer */
-  addi fp, sp, 0 
+  addi fp, sp, 0
 #if KYBER_K == 2
     li  t0, -3296
 #elif KYBER_K == 3
@@ -920,32 +920,32 @@ crypto_kem_dec:
 #endif
   add  sp, sp, t0
 
-  /* Save parameters to stack */ 
+  /* Save parameters to stack */
   sw   a0, STACK_KEM_DEC_CT_ADDR(fp)
-  sw   a1, STACK_KEM_DEC_SK_ADDR(fp) 
-  addi t0, a1, KYBER_INDCPA_SECRETKEYBYTES 
+  sw   a1, STACK_KEM_DEC_SK_ADDR(fp)
+  addi t0, a1, KYBER_INDCPA_SECRETKEYBYTES
   sw   t0, STACK_KEM_DEC_PK_ADDR(fp)
   addi t0, t0, KYBER_INDCPA_PUBLICKEYBYTES
   sw   t0, STACK_KEM_DEC_H_ADDR(fp)
   sw   a2, STACK_KEM_DEC_KEYA_ADDR(fp)
 
-  /*** indcpa_dec ***/ 
+  /*** indcpa_dec ***/
   li  a3, STACK_KEM_DEC_BUF
-  add a3, fp, a3 
+  add a3, fp, a3
   jal x1, indcpa_dec_base
 
   /*** Copy hash_h(pk) to buf+32 ***/
   li     x4, 0
   lw     a0, STACK_KEM_DEC_H_ADDR(fp)
   li     a3, STACK_KEM_DEC_BUF
-  add    a3, fp, a3 
+  add    a3, fp, a3
   addi   a3, a3, 32
   bn.lid x4, 0(a0)
   bn.sid x4, 0(a3++)
 
   /*** hash_g(buf) ***/
-  addi  a0, a3, -64  
-  add   a2, zero, a3  
+  addi  a0, a3, -64
+  add   a2, zero, a3
   addi  a1, zero, 64
   slli  t0, a1, 5
   addi  t0, t0, SHA3_512_CFG
@@ -958,9 +958,9 @@ crypto_kem_dec:
 
   /*** indcpa_enc ***/
   addi a0, a0, -64
-  addi a2, a2, -32 
+  addi a2, a2, -32
   li   a3, STACK_KEM_DEC_CMP
-  add  a3, fp, a3 
+  add  a3, fp, a3
   sw   a3, STACK_KEM_DEC_CMP_ADDR(fp)
   jal  x1, indcpa_enc_base
 
@@ -981,7 +981,7 @@ crypto_kem_dec:
   jal     x1, keccak_send_message
   /* output buffer */
   li      a2, STACK_KEM_DEC_KR
-  add     a2, fp, a2 
+  add     a2, fp, a2
   addi    a2, a2, 32
   li      t0, 8
   bn.wsrr w8, 0xA /* KECCAK_DIGEST */
@@ -1000,20 +1000,20 @@ crypto_kem_dec:
     bn.lid t1, 0(a1++)
     bn.cmp w0, w1
     bn.sel w4, w31, w2, FG0.Z
-    csrrw  t2, 0x7C0, zero 
+    csrrw  t2, 0x7C0, zero
     srl t2, t2, 3
 _skip_verify:
     nop
 
   /*** cmov ***/
   li      a0, STACK_KEM_DEC_KR
-  add     a0, fp, a0 
+  add     a0, fp, a0
   bn.lid  t0, 0(a0++) /* load true key */
   bn.lid  t1, 0(a0)   /* load false key */
-  bn.xor  w3, w0, w1 
-  bn.and  w3, w3, w4 
-  bn.xor  w0, w0, w3 
-  lw      a0, STACK_KEM_DEC_KEYA_ADDR(fp) 
+  bn.xor  w3, w0, w1
+  bn.and  w3, w3, w4
+  bn.xor  w0, w0, w3
+  lw      a0, STACK_KEM_DEC_KEYA_ADDR(fp)
   bn.sid  t0, 0(a0) /* return key */
 
   ret

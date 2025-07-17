@@ -30,9 +30,9 @@ poly_pointwise_dilithium:
     LOOPI 32, 4
         bn.lid x4, 0(x10++)
         bn.lid x5, 0(x11++)
-        
+
         bn.mulvm.8S w2, w2, w3, 0
-        
+
         bn.sid x4, 0(x12++)
 
     ret
@@ -46,7 +46,7 @@ poly_pointwise_dilithium:
  * Accumulates onto the output polynomial.
  *
  * Flags: -
- * 
+ *
  * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
  * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
  * @param[in]  w31: all-zero
@@ -64,13 +64,13 @@ poly_pointwise_acc_dilithium:
     LOOPI 32, 6
         bn.lid x4, 0(x10++)
         bn.lid x5, 0(x11++)
-        
+
         bn.mulvm.8S w2, w2, w3
-        
+
         /* Accumulate onto output polynomial */
         bn.lid x5, 0(x12)
         bn.addvm.8S w2, w2, w3
-        
+
         bn.sid x4, 0(x12++)
 
     ret

@@ -203,7 +203,7 @@ _no_full_wdr:
  *
  * Unpack polynomial t1 with coefficients fitting in 10 bits.
  * Output coefficients are standard representatives.
- * 
+ *
  * Returns: -
  *
  * @param[in]  a1: pointer to input byte array with POLYT1_PACKEDBYTES bytes
@@ -215,7 +215,7 @@ _no_full_wdr:
 .global polyt1_unpack_dilithium
 polyt1_unpack_dilithium:
 
-    /* Setup WDR */ 
+    /* Setup WDR */
     li t1, 1
     li t2, 2
     li t3, 3
@@ -234,7 +234,7 @@ polyt1_unpack_dilithium:
     /* Current state: w1 = 0|w1[160:256] */
     bn.lid t6, 0(a1++)      /* Load new WLEN word to w6 */
     bn.or  w1, w1, w6 << 96 /* w1 = w6[0:160]|w1[160:256] */
-    jal    x1, _inner_polyt1_unpack_dilithium 
+    jal    x1, _inner_polyt1_unpack_dilithium
 
     /* Current state: w1 = 0|w6[64:160] */
     bn.rshi w6, bn0, w6 >> 160
@@ -287,7 +287,7 @@ _inner_polyt1_unpack_dilithium:
                 in the lower 10 bits */
             bn.rshi w1, bn0, w1 >> 10
         .endr
-        
+
         bn.and     w2, w2, w5 /* Mask unpacked coeffs to 10 bit */
 
         bn.sid t2, 0(a0++)
@@ -297,8 +297,8 @@ _inner_polyt1_unpack_dilithium:
  * polyz_unpack_dilithium
  *
  * Unpack polynomial z with coefficients in [-(GAMMA1 - 1), GAMMA1] fitting into
- * 18 bits. 
- * 
+ * 18 bits.
+ *
  * Returns: -
  *
  * @param[in]  a1: pointer to input byte array with POLYZ_PACKEDBYTES bytes
@@ -319,7 +319,7 @@ polyz_unpack_dilithium:
     la t3, polyz_unpack_dilithium_mask
     bn.lid t5, 0(t3)
 
-    /* Setup WDR */ 
+    /* Setup WDR */
     li t2, 2
     li t3, 3
     li t6, 6
@@ -402,7 +402,7 @@ _inner_polyz_unpack_dilithium:
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 18
     .endr
-    
+
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
     bn.sid     t2, 0(a0++)
@@ -418,7 +418,7 @@ _inner_polyz_unpack_dilithium:
     la t3, polyz_unpack_dilithium_mask
     bn.lid t5, 0(t3)
 
-    /* Setup WDR */ 
+    /* Setup WDR */
     li t2, 2
     li t3, 3
     li t6, 6
@@ -473,7 +473,7 @@ _inner_polyz_unpack_dilithium:
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 20
     .endr
-    
+
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
     bn.sid     t2, 0(a0++)
@@ -485,7 +485,7 @@ _inner_polyz_unpack_dilithium:
  *
  * Check infinity norm of polynomial against given bound.
  * Assumes input coefficients were reduced by reduce32().
- * 
+ *
  * Returns: 0 if norm is strictly smaller than B <= (Q-1)/8 and 1 otherwise.
  *
  * Flags: -
@@ -502,7 +502,7 @@ poly_chknorm_dilithium:
     sw   fp, 0(sp)
 
     addi fp, sp, 0
-    
+
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -32
 
@@ -528,12 +528,12 @@ poly_chknorm_dilithium:
     li t2, 2
 _loop_poly_chknorm_dilithium:
     bn.lid      t1, 0(a0++)
-    /* constant time absolute value 
+    /* constant time absolute value
        t = a->coeffs[i] >> 31;
        t = a->coeffs[i] - (t & 2*a->coeffs[i]);
     */
     /* Get the mask */
-    /* w2 <= 0, if w1 >=? 0, else 0xFFFFFFFF */ 
+    /* w2 <= 0, if w1 >=? 0, else 0xFFFFFFFF */
     bn.shv.8S  w2, w1 >> 31
     bn.subv.8S w2, bn0, w2 /* Build mask from MSBs */
     /* w2 <= w2 & (2 * w1) */
@@ -542,7 +542,7 @@ _loop_poly_chknorm_dilithium:
     /* w2 <= w1 - w2 */
     bn.subv.8S  w2, w1, w2
     bn.sid      t2, STACK_WDR2GPR(fp)
-    
+
     addi t4, fp, STACK_WDR2GPR
     /* Check bound */
     .irp    offset,0,4,8,12,16,20,24,28
@@ -579,7 +579,7 @@ _ret1_poly_chknorm_dilithium:
  *
  * Implementation of H. Samples polynomial with TAU nonzero coefficients in
  * {-1,1} using the output stream of SHAKE128(seed|nonce).
- * 
+ *
  * Returns: -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
@@ -596,7 +596,7 @@ poly_challenge:
     sw   fp, 0(sp)
 
     addi fp, sp, 0
-    
+
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -32
 
@@ -629,7 +629,7 @@ poly_challenge:
     /* Initialize output poly to 0 */
     add t1, zero, a0
 
-    /* w31 contains all zeros by convention */ 
+    /* w31 contains all zeros by convention */
     li t0, 31
     LOOPI 32, 1
         bn.sid t0, 0(t1++)
@@ -656,7 +656,7 @@ poly_challenge:
 
     /* a2 <= number of remaining bits in buf */
     li a2, 192
-    
+
     li t1, TAU
     li a4, N
     /* a3 <= i = N-TAU */
@@ -670,7 +670,7 @@ poly_challenge:
     /* start do-while loop */
 _loop_inner_poly_challenge:
         /* If the SHAKE output "buffer" register w0 is empty, squeeze again.
-           Since all reads from w0 are equally large (8 bits) and 8 | 256, 
+           Since all reads from w0 are equally large (8 bits) and 8 | 256,
            we can just check for "zero" */
         bne     zero, a2, _loop_inner_skip_load_poly_challenge
         bn.wsrr w0, 0xA /* KECCAK_DIGEST */
@@ -701,7 +701,7 @@ _loop_inner_skip_load_poly_challenge:
         lw t2, 0(t1) /* Load c->coeffs[b] */
         sw t2, 0(a5) /* c->coeffs[i] = c->coeffs[b]; */
 
-        /* NOTE: accumulate result values in WDR and store once 32 bytes; avoid 
+        /* NOTE: accumulate result values in WDR and store once 32 bytes; avoid
         moving between WDR and GPR? */
         bn.and  w3, w1, w2            /* signs & 1 */
         bn.add  w3, w3, w3            /* 2 * (signs & 1) */
@@ -750,7 +750,7 @@ _aligned:
     sw   fp, 0(sp)
 
     addi fp, sp, 0
-    
+
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -64
 
@@ -765,7 +765,7 @@ _aligned:
     /* Load Q to GPR */
     la t0, modulus
     lw a2, 0(t0)
-    
+
     /* Initialize a SHAKE128 operation. */
     addi  a4, a1, 0               /* save output pointer */
     addi  a1, zero, 34
@@ -781,7 +781,7 @@ _aligned:
     jal  x1, keccak_send_message
 
     addi a1, a4, 0 /* move output pointer back to a1 */
-    
+
     /* t0 = 1020, a1 + 1020 is the last valid address */
     addi t0, a1, 1024
 
@@ -863,12 +863,12 @@ _rej_sample_loop:
     andi a4, a4, 3 /* Mask flags */
     bne    a4, a6, _skip_store2 /* Reject if M, C are NOT set to 1, meaning
                                     NOT (q > cand) = (q <= cand) */
-    
+
     bn.rshi accumulator, cand, accumulator >> 32
     addi accumulator_count, accumulator_count, 1
 
     bne accumulator_count, t3, _skip_store2
-    
+
     bn.sid    t5, 0(a1++) /* Store to memory */
     li        accumulator_count, 0
 
@@ -901,12 +901,12 @@ _skip_store2:
     andi a4, a4, 3 /* Mask flags */
     bne  a4, a6, _skip_store4 /* Reject if M, C are NOT set to 1, meaning
                                     NOT (q > cand) = (q <= cand) */
-    
+
     bn.rshi accumulator, cand, accumulator >> 32
     addi accumulator_count, accumulator_count, 1
 
     bne accumulator_count, t3, _skip_store4
-    
+
     bn.sid t5, 0(a1++) /* Store to memory */
     li accumulator_count, 0
     /* if we have written the last coefficient, exit */
@@ -941,7 +941,7 @@ _poly_uniform_inner_loop:
         beq a1, t0, _skip_store1
         /* Mask shake output */
         bn.and cand, shake_reg, coeff_mask
-        
+
         bn.cmp cand, mod
         csrrs  a4, 0x7C0, zero /* Read flags */
 
@@ -954,12 +954,12 @@ _poly_uniform_inner_loop:
            flags. */
         bne  a4, a6, _skip_store1 /* Reject if M, C are NOT set to 1, meaning
                                      NOT (q > cand) = (q <= cand) */
-        
+
         bn.rshi accumulator, cand, accumulator >> 32
         addi    accumulator_count, accumulator_count, 1
 
         bne accumulator_count, t3, _skip_store1 /* Accumulator not full yet */
-        
+
         bn.sid    t5, 0(a1++) /* Store to memory */
         li        accumulator_count, 0
 _skip_store1:
@@ -992,7 +992,7 @@ _aligned_poly_uniform_eta:
     sw   fp, 0(sp)
 
     addi fp, sp, 0
-    
+
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -64
 
@@ -1008,7 +1008,7 @@ _aligned_poly_uniform_eta:
     /* Load a3 <= Q */
     la t0, modulus
     lw a3, 0(t0)
-    
+
     /* Initialize a SHAKE256 operation. */
     addi a4, a1, 0               /* save output pointer */
 
@@ -1054,12 +1054,12 @@ _aligned_poly_uniform_eta:
     li t4, 0
     bn.lid t4, 0(t6)
 
-    la t6, eta 
+    la t6, eta
     li t4, 1
     bn.lid t4, 0(t6)
-    
+
     li t6, 8 /* coeffs to be collected in register */
-    
+
     /* First squeeze */
     .equ w8, shake_reg
 
@@ -1069,7 +1069,7 @@ LOOPI 64, 13
         beq a1, t0, _rej_eta_sample_loop_continue
         /* Process 4 bits */
         bn.and  w9, shake_reg, w14            /* Mask out all other bits */
-        
+
         /* Check "t0" < {15,9} */
         bn.cmp w9, w16
         csrrs a4, 0x7C0, zero
@@ -1087,7 +1087,7 @@ LOOPI 64, 13
 
         /* Vectorized part for arithmetic */
 
-        /* "t{0,1}" indicate the variable names from the reference code */ 
+        /* "t{0,1}" indicate the variable names from the reference code */
         /* Compute "t0" = "t0" - (205 * "t0" >> 10) * 5 from reference code */
         jal x1, _poly_uniform_eta_arithmetic
 
@@ -1096,7 +1096,7 @@ LOOPI 64, 13
         li t6, 8
 _rej_eta_sample_loop_continue:
         bn.rshi shake_reg, bn0, shake_reg >> 4 /* shift out the used nibble */
-        
+
 /* Loop logic */
     bne  a1, t0, _rej_eta_sample_loop /* Continue sampling */
 
@@ -1128,8 +1128,8 @@ _poly_uniform_eta_arithmetic:
  * poly_use_hint_dilithium
  *
  * Use hint polynomial to correct the high bits of a polynomial.
- * 
- * Returns: 
+ *
+ * Returns:
  *
  * Flags: -
  *
@@ -1146,7 +1146,7 @@ poly_use_hint_dilithium:
     sw fp, 0(sp)
 
     addi fp, sp, 0
-    
+
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -64
 
@@ -1315,7 +1315,7 @@ _inner_loop_end_poly_use_hint_dilithium:
 polyt1_pack_dilithium:
     li t1, 1
     li t4, 4
-    
+
     jal     x1, _inner_polyt1_pack_dilithium
     bn.rshi w4, w2, w4 >> 160
 
@@ -1407,7 +1407,7 @@ _inner_polyt1_pack_dilithium:
             bn.rshi w2, w1, w2 >> 10 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
-    bn.rshi w2, bn0, w2 >> 96 /* Shift the 160 bits of data to the bottom of the 
+    bn.rshi w2, bn0, w2 >> 96 /* Shift the 160 bits of data to the bottom of the
                                  WDR */
     ret
 
@@ -1416,7 +1416,7 @@ _inner_polyt1_pack_dilithium:
  * polyeta_pack_dilithium
  *
  * Bit-pack polynomial with coefficients in [-ETA,ETA].
- * 
+ *
  * Returns: -
  *
  * Flags: -
@@ -1442,7 +1442,7 @@ polyeta_pack_dilithium:
 
     /* 1 */
     jal x1, _inner_polyeta_pack_dilithium
-    
+
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
     bn.subvm.8S w1, w3, w1
@@ -1460,10 +1460,10 @@ polyeta_pack_dilithium:
         bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
     .endr
-    
+
     /* 2 */
     jal x1, _inner_polyeta_pack_dilithium
-    
+
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
     bn.subvm.8S w1, w3, w1
@@ -1481,11 +1481,11 @@ polyeta_pack_dilithium:
         bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
     .endr
-    
+
     /* 3 */
     jal x1, _inner_polyeta_pack_dilithium
     bn.sid t2, 0(a0++)
-    ret 
+    ret
 
 /**
  * _inner_polyeta_pack_dilithium
@@ -1525,7 +1525,7 @@ _inner_polyeta_pack_dilithium:
     bn.sid t2, 0(a0++)
     jal x1, _inner_polyeta_pack_dilithium
     bn.sid t2, 0(a0++)
-    ret 
+    ret
 
 /**
  * _inner_polyeta_pack_dilithium
@@ -1550,7 +1550,7 @@ _inner_polyeta_pack_dilithium:
  * polyt0_pack_dilithium
  *
  * Bit-pack polynomial t0 with coefficients in ]-2^{D-1}, 2^{D-1}].
- * 
+ *
  * Flags: -
  *
  * @param[out] a0: pointer to output byte array with at least
@@ -1571,7 +1571,7 @@ polyt0_pack_dilithium:
     /* Load precomputed (1 << (D-1)) */
     la     t0, polyt0_pack_const
     bn.lid t3, 0(t0)
-    
+
     /* Start packing */
     jal     x1, _inner_polyt0_pack_dilithium
     bn.rshi w4, w2, w4 >> 208
@@ -1649,7 +1649,7 @@ polyt0_pack_dilithium:
     jal     x1, _inner_polyt0_pack_dilithium
     bn.rshi w4, w2, w4 >> 208
     bn.sid  t4, 0(a0++)
-    
+
     ret
 
 _inner_polyt0_pack_dilithium:
@@ -1661,7 +1661,7 @@ _inner_polyt0_pack_dilithium:
             bn.rshi w2, w1, w2 >> 13 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
-    bn.rshi w2, bn0, w2 >> 48 /* Shift the 208 bits of data to the bottom of the 
+    bn.rshi w2, bn0, w2 >> 48 /* Shift the 208 bits of data to the bottom of the
                                  WDR */
     ret
 
@@ -1670,7 +1670,7 @@ _inner_polyt0_pack_dilithium:
  *
  * Bit-pack polynomial w1 with coefficients fitting in 6 bits. Input
  * coefficients are assumed to be standard representatives.
- * 
+ *
  * Flags: -
  *
  * @param[out] a0: pointer to output byte array with at least
@@ -1717,7 +1717,7 @@ _inner_polyw1_pack_dilithium:
             bn.rshi w2, w1, w2 >> 6 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
-    bn.rshi w2, bn0, w2 >> 64 /* Shift the 192 bits of data to the bottom of the 
+    bn.rshi w2, bn0, w2 >> 64 /* Shift the 192 bits of data to the bottom of the
                                  WDR */
     ret
 #elif GAMMA2 == (Q-1)/32
@@ -1739,7 +1739,7 @@ _inner_polyw1_pack_dilithium:
 /**
  * polyeta_unpack_dilithium
  *
- * Unpack polynomial with coefficients fitting in [-ETA, ETA]. 
+ * Unpack polynomial with coefficients fitting in [-ETA, ETA].
  *
  * Flags: -
  *
@@ -1752,7 +1752,7 @@ _inner_polyw1_pack_dilithium:
 .global polyeta_unpack_dilithium
 polyeta_unpack_dilithium:
 #if ETA == 2
-    /* Setup WDR */ 
+    /* Setup WDR */
     li t1, 1
     li t2, 2
     li t3, 3
@@ -1766,7 +1766,7 @@ polyeta_unpack_dilithium:
     la t6, polyeta_unpack_mask
     bn.lid t5, 0(t6)
     li t6, 6
-    
+
     /* Start unpacking */
     bn.lid t1, 0(a1++)
     jal    x1, _inner_polyeta_unpack_dilithium
@@ -1807,14 +1807,14 @@ _inner_polyeta_unpack_dilithium:
                 in the lower 3 bits */
             bn.rshi w1, bn0, w1 >> 3
         .endr
-        
+
         bn.and     w2, w2, w5 /* Mask unpacked coeffs to 3 bit */
         bn.subvm.8S w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
         bn.sid t2, 0(a0++)
     ret
 #elif ETA == 4
-    /* Setup WDR */ 
+    /* Setup WDR */
     li t1, 1
     li t2, 2
     li t3, 3
@@ -1828,7 +1828,7 @@ _inner_polyeta_unpack_dilithium:
     la t6, polyeta_unpack_mask
     bn.lid t5, 0(t6)
     li t6, 6
-    
+
     /* Start unpacking */
     bn.lid t1, 0(a1++)
     jal    x1, _inner_polyeta_unpack_dilithium
@@ -1864,7 +1864,7 @@ _inner_polyeta_unpack_dilithium:
                 in the lower 3 bits */
             bn.rshi w1, bn0, w1 >> 4
         .endr
-        
+
         bn.and     w2, w2, w5 /* Mask unpacked coeffs to 4 bit */
         bn.subvm.8S w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
@@ -1874,7 +1874,7 @@ _inner_polyeta_unpack_dilithium:
 /**
  * polyvec_decode_h_dilithium
  *
- * Decode h from signature into polyvec h. Check extra indices. 
+ * Decode h from signature into polyvec h. Check extra indices.
  *
  * Flags: -
  *
@@ -1890,10 +1890,10 @@ polyvec_decode_h_dilithium:
     li t0, 31
     LOOPI 32, 1
         bn.sid t0, 0(t1++)
-    
+
     li t0, 0 /* "k" = 0 */
     li t1, 0 /* "i" = 0 */
-    /* Initialize constants */ 
+    /* Initialize constants */
     li t4, OMEGA
     li a2, 0xFFFFFFFC
     li a7, 1
@@ -1925,7 +1925,7 @@ _loop_decode_h_dilithium:
 
     /* Check if there is nothing to do if k = sig[OMEGA + i] */
     beq t2, t5, _loop_inner_skip_decode_h_dilithium
-    
+
     /* Do first iteration separately */
     /* Load sig[j] */
     add  t6, t5, a1   /* (sig + j) */
@@ -1936,7 +1936,7 @@ _loop_decode_h_dilithium:
     srl  t6, t6, a4   /* extract the respective byte */
     andi a6, t6, 0xFF /* a6 = sig[j] */
 
-    /* Store a 1 to h */ 
+    /* Store a 1 to h */
     slli a4, a6, 2  /* sig[j] * 4 */
     add  t6, a0, a4 /* (h[sig[j]]) */
     sw   a7, 0(t6)  /* h->vec[i].coeffs[sig[j]] = a7 = 1 */
@@ -1945,7 +1945,7 @@ _loop_decode_h_dilithium:
     addi t5, t5, 1
     beq t5, t2, _loop_inner_skip_decode_h_dilithium
 _loop_inner_decode_h_dilithium:
-        /* NOTE: Can be done more efficiently, probably dont need to compute 
+        /* NOTE: Can be done more efficiently, probably dont need to compute
                  this every iteration */
         /* Load sig[j] */
         add  a5, t5, a1  /* (sig + j) */
@@ -1972,7 +1972,7 @@ _loop_inner_decode_h_dilithium:
         add  t6, a0, a4 /* (h[sig[j]]) */
         sw   a7, 0(t6)  /* h->vec[i].coeffs[sig[j]] = 1 */
 
-        
+
         addi a6, a3, 0 /* set sig[j - 1] from sig[j] */
         addi t5, t5, 1 /* j++ */
 
@@ -2040,7 +2040,7 @@ polyt0_unpack_dilithium:
     la t3, polyt0_unpack_dilithium_mask
     bn.lid t5, 0(t3)
 
-    /* Setup WDR */ 
+    /* Setup WDR */
     li t2, 2
     li t3, 3
     li t6, 6
@@ -2105,7 +2105,7 @@ polyt0_unpack_dilithium:
 
     bn.rshi w1, bn0, w6 >> 48
     jal     x1, _inner_polyt0_unpack_dilithium
-   
+
     ret
 
 /**
@@ -2128,7 +2128,7 @@ _inner_polyt0_unpack_dilithium:
                 in the lower 13 bits */
             bn.rshi w1, bn0, w1 >> 13
         .endr
-        
+
         bn.and     w2, w2, w5 /* Mask unpacked coeffs to 13 bit */
         bn.subvm.8S w2, w4, w2 /* w2 <= (1 << (D-1)) - coeffs */
         bn.sid     t2, 0(a0++)
@@ -2158,7 +2158,7 @@ poly_uniform_gamma1_dilithium:
     sw fp, 0(sp)
 
     addi fp, sp, 0
-    
+
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -32
 
@@ -2167,7 +2167,7 @@ poly_uniform_gamma1_dilithium:
 
     push a0
     push a1
-    
+
     /* Initialize a SHAKE256 operation. */
     addi a0, a1, 0    /* save a0 <= seed address */
 
@@ -2201,7 +2201,7 @@ poly_uniform_gamma1_dilithium:
     la t3, polyz_unpack_dilithium_mask
     bn.lid t2, 0(t3)
 
-    /* Setup WDR */ 
+    /* Setup WDR */
     li t2, 2
     LOOPI 2, 42
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
@@ -2282,7 +2282,7 @@ _inner_poly_uniform_gamma1_dilithium:
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 18
     .endr
-    
+
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
     bn.sid     t2, 0(a0++)
@@ -2293,7 +2293,7 @@ _inner_poly_uniform_gamma1_dilithium:
     sw fp, 0(sp)
 
     addi fp, sp, 0
-    
+
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -32
 
@@ -2302,7 +2302,7 @@ _inner_poly_uniform_gamma1_dilithium:
 
     push a0
     push a1
-    
+
     /* Initialize a SHAKE256 operation. */
     addi a0, a1, 0    /* a0 <= seed address */
 
@@ -2336,7 +2336,7 @@ _inner_poly_uniform_gamma1_dilithium:
     la t3, polyz_unpack_dilithium_mask
     bn.lid t2, 0(t3)
 
-    /* Setup WDR */ 
+    /* Setup WDR */
     li t2, 2
 
     LOOPI 4, 22
@@ -2389,7 +2389,7 @@ _inner_poly_uniform_gamma1_dilithium:
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 20
     .endr
-    
+
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 20 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
     bn.sid     t2, 0(a0++)
@@ -2469,7 +2469,7 @@ poly_decompose_dilithium:
  *  bits of the corresponding coefficient of the input polynomial overflow into
  *  the high bits.
  *  The function accepts inputs mod^+ q.
- * 
+ *
  * Returns: Number of one bits
  *
  * @param[out] a0: pointer to output hint polynomial
@@ -2483,7 +2483,7 @@ poly_make_hint_dilithium:
     li   t2, 0
     li   t4, 1
 
-    /* Constants for condition checking */ 
+    /* Constants for condition checking */
     li t6, GAMMA2
 
     la t0, modulus
@@ -2527,7 +2527,7 @@ _loop_end_poly_make_hint_dilithium:
 /**
  * polyz_pack_dilithium
  *
- * Pack polynomial z with coefficients fitting in 18 bits. 
+ * Pack polynomial z with coefficients fitting in 18 bits.
  *
  * Flags: -
  *
@@ -2722,7 +2722,7 @@ _inner_polyz_pack_dilithium:
         bn.rshi w2, w1, w2 >> 18 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
     .endr
-    bn.rshi w2, bn0, w2 >> 112 /* Shift the 144 bits of data to the bottom of the 
+    bn.rshi w2, bn0, w2 >> 112 /* Shift the 144 bits of data to the bottom of the
                                  WDR */
     ret
 #elif GAMMA1 == (1 << 19)
@@ -2783,7 +2783,7 @@ _inner_polyz_pack_dilithium:
         bn.rshi w2, w1, w2 >> 20 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
     .endr
-    bn.rshi w2, bn0, w2 >> 96 /* Shift the 96 bits of data to the bottom of the 
+    bn.rshi w2, bn0, w2 >> 96 /* Shift the 96 bits of data to the bottom of the
                                  WDR */
     ret
 #endif
@@ -2863,18 +2863,18 @@ poly_reduce32_dilithium:
     /* Setup constant 1 << 22 */
     la        t1, reduce32_const
     bn.lid    t0, 0(t1)
-    bn.shv.8S w4, w4 << 22 
-    
+    bn.shv.8S w4, w4 << 22
+
     /* Load q */
     la     t3, modulus
     bn.lid t2, 0(t3)
 
     /* Set up constants for input/state */
-    li t3, 2    
+    li t3, 2
 
     LOOPI 32, 6
         bn.lid t3, 0(a0++)
-        
+
         /* t = a + (1 << 22) */
         bn.addv.8S w5, w2, w4
         /* t = (a + (1 << 22)) >> 23 */
@@ -2922,7 +2922,7 @@ poly_power2round_dilithium:
     LOOPI 32, 7
         /* Load input */
         bn.lid t1, 0(a0++)
-        
+
         /* Compute */
         /* (a + (1 << (D-1)) - 1) */
         bn.addv.8S w6, w4, w5

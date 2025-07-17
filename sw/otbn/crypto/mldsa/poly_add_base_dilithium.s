@@ -21,7 +21,7 @@
  */
 .global poly_add_base_dilithium
 poly_add_base_dilithium:
-    
+
 
     /* Init mask */
     bn.addi w7, w31, 1
@@ -46,7 +46,7 @@ poly_add_base_dilithium:
 
             bn.addm w4, w4, w5
             bn.rshi w3, w4, w3 >> 32
-        
+
         bn.sid x5, 0(x12++)
 
     ret
@@ -69,7 +69,7 @@ poly_add_base_dilithium:
  */
 .global poly_add_pseudovec_base_dilithium
 poly_add_pseudovec_base_dilithium:
-    
+
 
     /* Init mask */
     bn.addi w7, w31, 1
@@ -86,7 +86,7 @@ poly_add_pseudovec_base_dilithium:
         bn.lid x5, 0(x11++)
 
         bn.add w6, w2, w3
-        
+
         bn.sid x4, 0(x12++)
 
     ret
@@ -110,7 +110,7 @@ poly_add_pseudovec_base_dilithium:
  */
 .global poly_sub_base_dilithium
 poly_sub_base_dilithium:
-    
+
 
     /* Init mask */
     bn.addi w7, w31, 1
@@ -135,7 +135,7 @@ poly_sub_base_dilithium:
 
             bn.subm w4, w4, w5
             bn.rshi w3, w4, w3 >> 32
-        
+
         bn.sid x5, 0(x12++)
 
     ret

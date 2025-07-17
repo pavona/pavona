@@ -50,7 +50,7 @@
 #define SHA3_512_CFG 0x10
 
 /*
- * Name:        poly_gen_matrix 
+ * Name:        poly_gen_matrix
  *
  * Description: Run rejection sampling on uniform random bytes to generate
  *              uniform random integers mod q
@@ -81,7 +81,7 @@ _aligned:
   sw   fp, 0(sp)
 
   addi fp, sp, 0
-    
+
   /* Adjust sp to accomodate local variables */
   addi sp, sp, -64
 
@@ -92,7 +92,7 @@ _aligned:
 
   /* Store nonce to memory */
   sw a2, STACK_NONCE(fp)
-    
+
   /* Initialize a SHAKE128 operation. */
   addi  t0, zero, 34
   slli  t0, t0, 5
@@ -110,7 +110,7 @@ _aligned:
   addi t0, a1, 512
 
   /* Compare for flag bits */
-  li a6, 3 
+  li a6, 3
 
   /* For masking coeff with 0xFFF */
   bn.xor bn0, bn0, bn0
@@ -220,7 +220,7 @@ _skip_store4a:
   csrrs      a4, 0x7C0, zero      /* Read flags */
   andi       a4, a4, 3 /* Mask flags */
   bne        a4, a6, _skip_store4
-    
+
   bn.rshi    accumulator, cand, accumulator >> 16
   addi       accumulator_count, accumulator_count, 1
   bne        accumulator_count, s2, _skip_store4
@@ -249,7 +249,7 @@ _poly_uniform_inner_loop:
     beq        a1, t0, _skip_store1
 
     /* Get the candidate coefficient, multiplied by 2 (see below) */
-    bn.and     cand, coeff_mask, shake_reg 
+    bn.and     cand, coeff_mask, shake_reg
     bn.cmp     cand, mod
     csrrs      a4, 0x7C0, zero /* Read flags */
 
@@ -267,5 +267,3 @@ _skip_store1:
     /* Shift out the 12 bits we have read for the next potential coefficient */
     bn.rshi    shake_reg, bn0, shake_reg >> 12
   ret
-
-

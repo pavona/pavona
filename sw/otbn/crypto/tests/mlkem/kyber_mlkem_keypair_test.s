@@ -16,7 +16,7 @@
   #define CRYPTO_PUBLICKEYBYTES  800
   #define CRYPTO_SECRETKEYBYTES  1632
   #define CRYPTO_CIPHERTEXTBYTES 768
-#elif KYBER_K == 3 
+#elif KYBER_K == 3
   #define CRYPTO_PUBLICKEYBYTES  1184
   #define CRYPTO_SECRETKEYBYTES  2400
   #define CRYPTO_CIPHERTEXTBYTES 1088
@@ -146,7 +146,7 @@ const_8:
   .word 0x00080008
   .word 0x00080008
   .word 0x00080008
-  
+
 .globl const_tomont
 const_tomont:
   .word 0x05490549 /* 2^32 % KYBER_Q */
@@ -157,10 +157,10 @@ const_tomont:
   .word 0x05490549
   .word 0x05490549
   .word 0x05490549
-  
+
 .globl twiddles_ntt
 twiddles_ntt:
-    /* Layer 1--4 */ 
+    /* Layer 1--4 */
     .half 0x0a0b
     .half 0x0b9a
     .half 0x0714

@@ -266,7 +266,7 @@ key_pair_base_dilithium:
     li  t0, STACK_SK_ADDR
     add t0, fp, t0
     sw  a2, 0(t0)
-    
+
     /* Copy zeta to seedbuf */
     li t1, 0
     bn.lid t1, 0(a0) /* load zeta */
@@ -339,7 +339,7 @@ key_pair_base_dilithium:
         addi a0, fp, STACK_RHOPRIME
         jal  x1, poly_uniform_eta_base_dilithium
         addi a2, a2, 1
-    
+
     /* Sample s2 */
 
     /* initialize the nonce */
@@ -354,7 +354,7 @@ key_pair_base_dilithium:
         addi a0, fp, STACK_RHOPRIME
         jal  x1, poly_uniform_eta_base_dilithium /* Implicit increment of output pointer */
         addi a2, a2, 1
-    
+
     /* NTT(s1) */
     /* Load pointer to input polynomial */
     li  a0, STACK_S1
@@ -537,7 +537,7 @@ key_pair_base_dilithium:
     bn.lid t0, 0(t1)
     /* Store rho */
     bn.sid t0, 0(a0++)
-    
+
     /* Load key pointer */
     li     t1, STACK_KEY
     add    t1, fp, t1
@@ -546,7 +546,7 @@ key_pair_base_dilithium:
     bn.lid t0, 0(t1)
     /* Store key */
     bn.sid t0, 0(a0++)
-    
+
     /* Load tr pointer */
     li     t1, STACK_TR
     add    t1, fp, t1

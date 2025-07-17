@@ -94,7 +94,7 @@
 main:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
-  
+
   /* MOD <= dmem[modulus] = DILITHIUM_Q */
   li      x5, 2
   la      x6, modulus

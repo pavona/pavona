@@ -7,7 +7,7 @@
 .equ x0, zero
 .equ x2, sp
 .equ x3, fp
-  #define inpa w0 
+  #define inpa w0
   #define inpb w1
   #define coeff_a0 w2
   #define coeff_a1 w3
@@ -30,10 +30,10 @@
   #define mask2 w19
 
   #define inp1 x29
-  #define inp2 x11 
+  #define inp2 x11
   #define outp x13
   #define twp x28
-  
+
   /* GPRs with indices to access WDRs */
   #define inpa_idx x4
   #define inpb_idx x5
@@ -78,7 +78,7 @@ basemul_base_kyber:
   /* 0xFFFFFFFF for masking */
   bn.addi mask, bn0, 1
   bn.rshi mask, mask, bn0 >> 224
-  bn.subi mask, mask, 1 
+  bn.subi mask, mask, 1
 
   li     tmp_gpr2, 12 /* wtmp */
   /*Set zero quad word to 1/q % 2^32 */
@@ -125,15 +125,15 @@ basemul_base_kyber:
     bn.mulqacc.wo.z wtmp, coeff_a0.0, coeff_b0.0, 0 /* a0*b0 */
     bn.mulqacc.wo.z wtmp, wtmp.0, wtmp3.0, 192      /* a0*b0*qinv % 2^64 */
     bn.and          wtmp, wtmp, wtmp3               /* a0*b0*qinv % 2^32 */
-    bn.add          wtmp, wtmp3, wtmp >> 144        
+    bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul0, bn0, wtmp >> 16
 
     /* Plantard multiplication: a1*b1 */
-    bn.mulqacc.wo.z wtmp, coeff_a1.0, coeff_b1.0, 0 
-    bn.mulqacc.wo.z wtmp, wtmp.0, wtmp3.0, 192      
-    bn.and          wtmp, wtmp, wtmp3               
-    bn.add          wtmp, wtmp3, wtmp >> 144        
+    bn.mulqacc.wo.z wtmp, coeff_a1.0, coeff_b1.0, 0
+    bn.mulqacc.wo.z wtmp, wtmp.0, wtmp3.0, 192
+    bn.and          wtmp, wtmp, wtmp3
+    bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
 
@@ -145,7 +145,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r0 = a1*b1*tf + a0*b0 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a0*b1 */
@@ -165,7 +165,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r1 = a0*b1 + a1*b0 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a2*b2 */
@@ -183,10 +183,10 @@ basemul_base_kyber:
     bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
-    
+
     /* -a3*b3 */
-    bn.subm mul1, bn0, mul1 
-    
+    bn.subm mul1, bn0, mul1
+
     /* Plantard multiplication: a3*b3*(-tf) */
     bn.mulqacc.wo.z wtmp, mul1.0, tf1.0, 192
     bn.and          wtmp, wtmp, wtmp3
@@ -195,7 +195,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r2 = a3*b3*(-tf) + a2*b2 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a2*b3 */
@@ -215,7 +215,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r3 = a2*b3 + a3*b2 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /*-----------------------------------------*/
@@ -243,7 +243,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r4 = a5*b5*tf + a4*b4 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a4*b5 */
@@ -263,7 +263,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r5 = a4*b5 + a5*b4 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a6*b6 */
@@ -281,10 +281,10 @@ basemul_base_kyber:
     bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
-    
+
     /* -a7*b7 */
-    bn.subm mul1, bn0, mul1  
-    
+    bn.subm mul1, bn0, mul1
+
     /* Plantard multiplication: a7*b7*(-tf) */
     bn.mulqacc.wo.z wtmp, mul1.0, tf1.1, 192
     bn.and          wtmp, wtmp, wtmp3
@@ -293,7 +293,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r6 = a7*b7*(-tf) + a6*b6 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a6*b7 */
@@ -313,7 +313,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r7 = a6*b7 + a7*b6 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /*-----------------------------------------*/
@@ -341,7 +341,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r8 = a9*b9*tf + a8*b8 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a8*b9 */
@@ -361,7 +361,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r9 = a8*b9 + a9*b8 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a10*b10 */
@@ -379,10 +379,10 @@ basemul_base_kyber:
     bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
-    
+
     /* -a11*b11 */
-    bn.subm mul1, bn0, mul1  
-    
+    bn.subm mul1, bn0, mul1
+
     /* Plantard multiplication: a11*b11*(-tf) */
     bn.mulqacc.wo.z wtmp, mul1.0, tf1.2, 192
     bn.and          wtmp, wtmp, wtmp3
@@ -391,7 +391,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r10 = a11*b11*(-tf) + a10*b10 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a10*b11 */
@@ -411,7 +411,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r11 = a10*b11 + a11*b10 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /*-----------------------------------------*/
@@ -439,7 +439,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r12 = a13*b13*tf + a12*b12 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a12*b13 */
@@ -459,7 +459,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r13 = a12*b13 + a13*b12 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a14*b14 */
@@ -477,10 +477,10 @@ basemul_base_kyber:
     bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
-    
+
     /* -a15*b15 */
-    bn.subm mul1, bn0, mul1  
-    
+    bn.subm mul1, bn0, mul1
+
     /* Plantard multiplication: a15*b15*(-tf) */
     bn.mulqacc.wo.z wtmp, mul1.0, tf1.3, 192
     bn.and          wtmp, wtmp, wtmp3
@@ -489,7 +489,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r14 = a15*b15*(-tf) + a14*b14 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a14*b15 */
@@ -509,7 +509,7 @@ basemul_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r15 = a14*b15 + a15*b14 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     bn.sid bufres_idx, 0(outp++)
@@ -549,7 +549,7 @@ basemul_acc_base_kyber:
   /* 0xFFFFFFFF for masking */
   bn.addi mask, bn0, 1
   bn.rshi mask, mask, bn0 >> 224
-  bn.subi mask, mask, 1 
+  bn.subi mask, mask, 1
 
   li     tmp_gpr2, 12 /* wtmp */
   /*Set zero quad word to 1/q % 2^32 */
@@ -596,15 +596,15 @@ basemul_acc_base_kyber:
     bn.mulqacc.wo.z wtmp, coeff_a0.0, coeff_b0.0, 0 /* a0*b0 */
     bn.mulqacc.wo.z wtmp, wtmp.0, wtmp3.0, 192      /* a0*b0*qinv % 2^64 */
     bn.and          wtmp, wtmp, wtmp3               /* a0*b0*qinv % 2^32 */
-    bn.add          wtmp, wtmp3, wtmp >> 144        
+    bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul0, bn0, wtmp >> 16
 
     /* Plantard multiplication: a1*b1 */
-    bn.mulqacc.wo.z wtmp, coeff_a1.0, coeff_b1.0, 0 
-    bn.mulqacc.wo.z wtmp, wtmp.0, wtmp3.0, 192      
-    bn.and          wtmp, wtmp, wtmp3               
-    bn.add          wtmp, wtmp3, wtmp >> 144        
+    bn.mulqacc.wo.z wtmp, coeff_a1.0, coeff_b1.0, 0
+    bn.mulqacc.wo.z wtmp, wtmp.0, wtmp3.0, 192
+    bn.and          wtmp, wtmp, wtmp3
+    bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
 
@@ -616,7 +616,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r0 = a1*b1*tf + a0*b0 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a0*b1 */
@@ -636,7 +636,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r1 = a0*b1 + a1*b0 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a2*b2 */
@@ -654,10 +654,10 @@ basemul_acc_base_kyber:
     bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
-    
+
     /* -a3*b3 */
-    bn.subm mul1, bn0, mul1  
-    
+    bn.subm mul1, bn0, mul1
+
     /* Plantard multiplication: a3*b3*(-tf) */
     bn.mulqacc.wo.z wtmp, mul1.0, tf1.0, 192
     bn.and          wtmp, wtmp, wtmp3
@@ -666,7 +666,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r2 = a3*b3*(-tf) + a2*b2 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a2*b3 */
@@ -686,7 +686,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r3 = a2*b3 + a3*b2 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /*-----------------------------------------*/
@@ -714,7 +714,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r4 = a5*b5*tf + a4*b4 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a4*b5 */
@@ -734,7 +734,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r5 = a4*b5 + a5*b4 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a6*b6 */
@@ -752,10 +752,10 @@ basemul_acc_base_kyber:
     bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
-    
+
     /* -a7*b7 */
-    bn.subm mul1, bn0, mul1  
-    
+    bn.subm mul1, bn0, mul1
+
     /* Plantard multiplication: a7*b7*(-tf) */
     bn.mulqacc.wo.z wtmp, mul1.0, tf1.1, 192
     bn.and          wtmp, wtmp, wtmp3
@@ -764,7 +764,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r6 = a7*b7*(-tf) + a6*b6 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a6*b7 */
@@ -784,7 +784,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r7 = a6*b7 + a7*b6 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /*-----------------------------------------*/
@@ -812,7 +812,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r8 = a9*b9*tf + a8*b8 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a8*b9 */
@@ -832,7 +832,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r9 = a8*b9 + a9*b8 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a10*b10 */
@@ -850,10 +850,10 @@ basemul_acc_base_kyber:
     bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
-    
+
     /* -a11*b11 */
-    bn.subm mul1, bn0, mul1  
-    
+    bn.subm mul1, bn0, mul1
+
     /* Plantard multiplication: a11*b11*(-tf) */
     bn.mulqacc.wo.z wtmp, mul1.0, tf1.2, 192
     bn.and          wtmp, wtmp, wtmp3
@@ -862,7 +862,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r10 = a11*b11*(-tf) + a10*b10 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a10*b11 */
@@ -882,7 +882,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r11 = a10*b11 + a11*b10 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /*-----------------------------------------*/
@@ -910,7 +910,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r12 = a13*b13*tf + a12*b12 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a12*b13 */
@@ -930,7 +930,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r13 = a12*b13 + a13*b12 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a14*b14 */
@@ -948,10 +948,10 @@ basemul_acc_base_kyber:
     bn.add          wtmp, wtmp3, wtmp >> 144
     bn.mulqacc.wo.z wtmp, wtmp.1, wtmp3.2, 0
     bn.rshi         mul1, bn0, wtmp >> 16
-    
+
     /* -a15*b15 */
-    bn.subm mul1, bn0, mul1  
-    
+    bn.subm mul1, bn0, mul1
+
     /* Plantard multiplication: a15*b15*(-tf) */
     bn.mulqacc.wo.z wtmp, mul1.0, tf1.3, 192
     bn.and          wtmp, wtmp, wtmp3
@@ -960,7 +960,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r14 = a15*b15*(-tf) + a14*b14 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* Plantard multiplication: a14*b15 */
@@ -980,7 +980,7 @@ basemul_acc_base_kyber:
     bn.rshi         mul1, bn0, wtmp >> 16
 
     /* r15 = a14*b15 + a15*b14 */
-    bn.addm mul0, mul0, mul1 
+    bn.addm mul0, mul0, mul1
     bn.rshi bufres, mul0, bufres >> 16
 
     /* accumulating */

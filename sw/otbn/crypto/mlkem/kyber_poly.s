@@ -2,9 +2,9 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-.text 
+.text
 
-#ifndef KYBER_K 
+#ifndef KYBER_K
 #define KYBER_K 3
 #endif
 
@@ -55,13 +55,13 @@ poly_frommsg:
   /* Load input */
   bn.lid x4, 0(x10)
   bn.lid x6, 0(x11)
-  
+
   LOOPI 16, 7
     LOOPI 16, 3
       bn.rshi w1, w0, w1 >> 1
       bn.rshi w1, w31, w1 >> 15
       bn.rshi w0, w31, w0 >> 1
-    bn.subv.16H  w1, w31, w1 
+    bn.subv.16H  w1, w31, w1
     bn.and       w1, w1, w3
     bn.sid       x5, 0(x12++)
 
@@ -99,12 +99,12 @@ poly_tomsg:
   /* Load const */
   bn.lid x6, 0(x11)
   bn.lid x7, 0(x13)
-  
+
   bn.rshi w3, w31, w3 >> 4 /* 80635 */
   bn.xor  w31, w31, w31
   LOOPI 16, 15
     bn.lid       x4, 0(x10++)  /* Load input */
-    bn.shv.16H   w0, w0 << 1   /* <= 1 */ 
+    bn.shv.16H   w0, w0 << 1   /* <= 1 */
     bn.addv.16H  w0, w0, w2    /* += 1665 */
     LOOPI 2, 10
       LOOPI 8, 3
@@ -115,9 +115,9 @@ poly_tomsg:
       bn.shv.8S    w1, w1 >> 28      /* >>= 28 */
       LOOPI 8, 2
         bn.rshi    w4, w1, w4 >> 1
-        bn.rshi    w1, w31, w1 >> 32 
+        bn.rshi    w1, w31, w1 >> 32
       NOP
-    NOP 
+    NOP
   bn.sid x8, 0(x12)
 
   ret
@@ -176,7 +176,7 @@ poly_getnoise_eta_1:
   jal x1, cbd3
 #elif (KYBER_K == 3 || KYBER_K == 4)
   jal x1, cbd2
-#endif 
+#endif
 
   addi x2, x2, 8
 
@@ -237,13 +237,13 @@ poly_getnoise_eta_2:
   addi x2, x2, 8
 
   ret
-  
+
 /*
  * Name:        poly_add
  *
  * Description: Add 2 vectors
  *
- * Arguments:   - 
+ * Arguments:   -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
@@ -309,7 +309,7 @@ poly_add:
     bn.sid x9,  0(x12++)
     bn.sid x13, 0(x12++)
     bn.sid x14, 0(x12++)
-  
+
   ret
 
 /*
@@ -317,7 +317,7 @@ poly_add:
  *
  * Description: Sub 2 vectors
  *
- * Arguments:   - 
+ * Arguments:   -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
@@ -383,7 +383,7 @@ poly_sub:
     bn.sid x9,  0(x12++)
     bn.sid x13, 0(x12++)
     bn.sid x14, 0(x12++)
-  
+
   ret
 
 /*
@@ -391,7 +391,7 @@ poly_sub:
  *
  * Description: Put the input polynomial out of Montgomery domain
  *
- * Arguments:   - 
+ * Arguments:   -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
@@ -411,5 +411,5 @@ poly_tomont:
     bn.lid       x4, 0(x10)
     bn.mulvm.16H w1, w0, w1
     bn.sid       x4, 0(x10++)
-  
+
   ret

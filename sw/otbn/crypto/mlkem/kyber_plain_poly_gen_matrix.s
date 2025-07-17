@@ -56,7 +56,7 @@
 .endm
 
 /*
- * Name:        poly_gen_matrix 
+ * Name:        poly_gen_matrix
  *
  * Description: Run rejection sampling on uniform random bytes to generate
  *              uniform random integers mod q
@@ -87,7 +87,7 @@ _aligned:
   sw   fp, 0(sp)
 
   addi fp, sp, 0
-  
+
   /* Adjust sp to accomodate more local variables */
   addi sp, sp, -256
 
@@ -114,12 +114,12 @@ _aligned:
   jal  x1, sha3_init
 
   la   a0, context
-  add  a1, zero, s0 
+  add  a1, zero, s0
   li   a2, 32
   jal  x1, sha3_update
 
   la   a0, context
-  add  a1, fp, STACK_NONCE 
+  add  a1, fp, STACK_NONCE
   li   a2, 2
   jal  x1, sha3_update
 
@@ -129,12 +129,12 @@ _aligned:
   .irp reg,t4,t3,a5,a3,a2,a1,a0
     pop \reg
   .endr
-    
+
   /* t0 = 508, a1 + 508 is the last valid address */
   addi t0, a1, 512
 
   /* Compare for flag bits */
-  li a6, 3 
+  li a6, 3
 
   /* For masking coeff with 0xFFF */
   bn.xor bn0, bn0, bn0
@@ -163,7 +163,7 @@ _rej_sample_loop:
   .irp reg,t0,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6
     push \reg
   .endr
-  
+
   /* Preserve WDRs */
   addi t1, fp, STACK_WDRSPILL
   li   t0, 10
@@ -173,7 +173,7 @@ _rej_sample_loop:
 
   /* First squeeze */
   la     a0, context
-  add    a1, fp, STACK_WDR2GPR 
+  add    a1, fp, STACK_WDR2GPR
   addi   a2, zero, 32
   jal    x1, shake_out
 
@@ -207,11 +207,11 @@ _rej_sample_loop:
 
   /* 2 bytes of first squeeze + 1 byte of second squeeze */
   bn.rshi    cand, shake_reg, bn0 >> 16     /* Move remaining 2 bytes to the top of cand */
-  
+
   .irp reg,t0,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6
     push \reg
   .endr
-  
+
   /* Preserve WDRs */
   addi t1, fp, STACK_WDRSPILL
   li   t0, 10
@@ -221,7 +221,7 @@ _rej_sample_loop:
 
   /* First squeeze */
   la     a0, context
-  add    a1, fp, STACK_WDR2GPR 
+  add    a1, fp, STACK_WDR2GPR
   addi   a2, zero, 32
   jal    x1, shake_out
 
@@ -276,11 +276,11 @@ _skip_store2:
 
   /* 1 byte of second squeeze + 2 bytes of third squeeze */
   bn.rshi    cand, shake_reg, bn0 >> 8       /* move remaining 1 byte to the top of cand */
-  
+
   .irp reg,t0,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6
     push \reg
   .endr
-  
+
   /* Preserve WDRs */
   addi t1, fp, STACK_WDRSPILL
   li   t0, 10
@@ -290,7 +290,7 @@ _skip_store2:
 
   /* First squeeze */
   la     a0, context
-  add    a1, fp, STACK_WDR2GPR 
+  add    a1, fp, STACK_WDR2GPR
   addi   a2, zero, 32
   jal    x1, shake_out
 
@@ -331,7 +331,7 @@ _skip_store4a:
   csrrs      a4, 0x7C0, zero      /* Read flags */
   andi       a4, a4, 3 /* Mask flags */
   bne        a4, a6, _skip_store4
-    
+
   bn.rshi    accumulator, cand, accumulator >> 16
   addi       accumulator_count, accumulator_count, 1
   bne        accumulator_count, t3, _skip_store4
@@ -360,7 +360,7 @@ _poly_uniform_inner_loop:
     beq        a1, t0, _skip_store1
 
     /* Get the candidate coefficient, multiplied by 2 (see below) */
-    bn.and     cand, coeff_mask, shake_reg 
+    bn.and     cand, coeff_mask, shake_reg
     bn.cmp     cand, mod
     csrrs      a4, 0x7C0, zero /* Read flags */
 
@@ -379,5 +379,3 @@ _skip_store1:
     bn.rshi    shake_reg, bn0, shake_reg >> 12
   pop t4
   ret
-
-

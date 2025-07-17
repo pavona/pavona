@@ -2,7 +2,7 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-.text 
+.text
 /*
  * Constant-time Kyber NTT
  *
@@ -52,7 +52,7 @@ ntt_kyber:
 
   /* Load twiddle factors for Layers 1--4 */
   bn.lid x23, 0(x11)
-  
+
   /* Compute NTT Layers 1--4 */
   /* Load input */
   bn.lid x4,  0(x10++)
@@ -191,7 +191,7 @@ ntt_kyber:
   bn.trans.8S w24, w4, 4
   bn.trans.8S w24, w5, 5
   bn.trans.8S w24, w6, 6
-  bn.trans.8S w24, w7, 7    
+  bn.trans.8S w24, w7, 7
 
   bn.trans.8S w0, w8, 0
   bn.trans.8S w0, w9, 1
@@ -203,7 +203,7 @@ ntt_kyber:
   bn.trans.8S w0, w15, 7
 
   /* Layer 5, stride 8 */
-  
+
   /* Load twiddle factors */
   bn.lid x23, 32(x11)
   bn.lid x24, 64(x11)
@@ -317,7 +317,7 @@ ntt_kyber:
   bn.trans.8S w8, w5, 5
   bn.trans.8S w8, w6, 6
   bn.trans.8S w8, w7, 7
-  
+
   bn.trans.8S w0, w24, 0
   bn.trans.8S w0, w25, 1
   bn.trans.8S w0, w26, 2
@@ -346,5 +346,3 @@ ntt_kyber:
   bn.sid x22, 0(x12++)
 
   ret
-  
-

@@ -268,7 +268,7 @@ verify_plain_dilithium:
     /* Load c pointer */
     li  t1, STACK_C
     add t1, fp, t1
-    
+
     /* Setup WDR */
     li  t2, 2
     /* Copy c */
@@ -305,7 +305,7 @@ verify_plain_dilithium:
         nop
 
     /* Decode h */
-    
+
     /* Load pointer to h */
     li  a0, STACK_H
     add a0, fp, a0
@@ -346,7 +346,7 @@ verify_plain_dilithium:
     .irp reg,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
-    
+
     addi s0, a0, 0
     li  x10, STACK_SHAKE_CONTEXT
     add x10, fp, x10
@@ -363,7 +363,7 @@ verify_plain_dilithium:
     li  x10, STACK_SHAKE_CONTEXT
     add x10, fp, x10
     jal x1, shake_xof
-    
+
     li  x10, STACK_SHAKE_CONTEXT
     add x10, fp, x10
     la x11, STACK_MU
@@ -422,16 +422,16 @@ verify_plain_dilithium:
 
     li  x10, STACK_SHAKE_CONTEXT
     add x10, fp, x10
-    jal x1, shake_xof 
+    jal x1, shake_xof
 
 
     li  x10, STACK_SHAKE_CONTEXT
     add x10, fp, x10 /* a0 <= context */
-    la x11, STACK_MU 
+    la x11, STACK_MU
     add x11, fp, x11 /* a1 <= message */
     li x12, 64       /* a1 <= out len */
     jal x1, shake_out
-    
+
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0
         pop \reg
     .endr
@@ -521,14 +521,14 @@ verify_plain_dilithium:
         LOOPI 32, 6
             bn.lid    t0, 0(a0)
             LOOPI 8, 3
-                /* Move the coefficient to target register */ 
+                /* Move the coefficient to target register */
                 /* Clear lower 13 bits of next coefficient */
                 bn.rshi w1, bn0, w1 >> 13
-                /* Omit the upper 13 bits when shifting it into the target to 
+                /* Omit the upper 13 bits when shifting it into the target to
                    mimic the left shift by D */
                 bn.rshi w1, w0, w1 >> 19 /* 32 - D = 19 */
-                
-                /* Advance the input register */ 
+
+                /* Advance the input register */
                 bn.rshi w0, bn0, w0 >> 32
             bn.sid    t1, 0(a0++)
         nop /* Nested loops must not end on the same instruciton  */
@@ -618,7 +618,7 @@ verify_plain_dilithium:
     li  a0, STACK_W1
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -747,7 +747,7 @@ verify_plain_dilithium:
 
         /* Check if c == c2 */
         bn.cmp w8, w9
-        
+
         /* Get the FG0.Z flag into a register.
         x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
         csrrs t5, 0x7c0, zero

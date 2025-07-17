@@ -320,7 +320,7 @@ verify_base_dilithium:
     /* Load c pointer */
     li  t1, STACK_C
     add t1, fp, t1
-    
+
     /* Setup WDR */
     li  t2, 2
     /* Copy c */
@@ -357,7 +357,7 @@ verify_base_dilithium:
         nop
 
     /* Decode h */
-    
+
     /* Load pointer to h */
     li  a0, STACK_H
     add a0, fp, a0
@@ -404,7 +404,7 @@ verify_base_dilithium:
     /* Send the message to the Keccak core. */
     li  a1, CRYPTO_PUBLICKEYBYTES /* set message length to CRYPTO_PUBLICKEYBYTES */
     jal x1, keccak_send_message
-    
+
     li  a0, STACK_MU
     add a0, fp, a0
 
@@ -420,7 +420,7 @@ verify_base_dilithium:
     /* Initialize a SHAKE256 operation. */
     li a1, TRBYTES
     addi a1, a1, 2 /* Add len of ctxlen */
-    
+
     li t2, STACK_CTXLEN
     add t2, fp, t2
     lw t2, 0(t2) /* t2 <= ctxlen */
@@ -538,7 +538,7 @@ verify_base_dilithium:
         /* Store m[2:]||m'[:2] to buffer */
         sw t2, 0(t3)
         addi t3, t3, 4
-    
+
     /* Store last two message bytes */
     lw t2, 0(a0) /* Load last two bytes */
     srli t2, t2, 16
@@ -648,14 +648,14 @@ verify_base_dilithium:
         LOOPI 32, 6
             bn.lid    t0, 0(a0)
             LOOPI 8, 3
-                /* Move the coefficient to target register */ 
+                /* Move the coefficient to target register */
                 /* Clear lower 13 bits of next coefficient */
                 bn.rshi w1, bn0, w1 >> 13
-                /* Omit the upper 13 bits when shifting it into the target to 
+                /* Omit the upper 13 bits when shifting it into the target to
                    mimic the left shift by D */
                 bn.rshi w1, w0, w1 >> 19 /* 32 - D = 19 */
-                
-                /* Advance the input register */ 
+
+                /* Advance the input register */
                 bn.rshi w0, bn0, w0 >> 32
             bn.sid    t1, 0(a0++)
         nop /* Nested loops must not end on the same instruciton  */
@@ -745,7 +745,7 @@ verify_base_dilithium:
     li  a0, STACK_W1
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -842,7 +842,7 @@ verify_base_dilithium:
 
     /* Check if c == c2 */
     bn.cmp w8, w9
-    
+
     /* Get the FG0.Z flag into a register.
     x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
     csrrs t5, 0x7c0, zero

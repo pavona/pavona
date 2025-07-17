@@ -26,13 +26,13 @@
 intt_kyber:
   /* Set up wide registers for input and intermediate states */
   li x4, 0
-  li x5, 1 
-  li x6, 2 
-  li x7, 3 
-  li x8, 4 
-  li x9, 5 
-  li x13, 6 
-  li x14, 7 
+  li x5, 1
+  li x6, 2
+  li x7, 3
+  li x8, 4
+  li x9, 5
+  li x13, 6
+  li x14, 7
   li x15, 8
   li x16, 9
   li x17, 10
@@ -99,7 +99,7 @@ intt_kyber:
   bn.lid x31, 128(x11)
   bn.lid x28, 160(x11)
   bn.lid x29, 192(x11)
-  bn.lid x30, 224(x11)  
+  bn.lid x30, 224(x11)
 
   /* Butterflies */
   bn.subvm.16H wtmp, w24, w25
@@ -133,7 +133,7 @@ intt_kyber:
   bn.lid x24, 288(x11)
   bn.lid x25, 320(x11)
   bn.lid x26, 352(x11)
-  
+
    /* Butterflies */
   bn.subvm.16H wtmp, w24, w26
   bn.addvm.16H w24, w24, w26
@@ -212,7 +212,7 @@ intt_kyber:
 
   /* Layer 4, stride 16 */
   /* Load twiddle factors */
-  bn.lid x23, 448(x11) 
+  bn.lid x23, 448(x11)
 
   /* Butterflies */
   bn.subvm.16H   w30, w0, w1
@@ -328,7 +328,7 @@ intt_kyber:
   bn.mulvm.l.16H w6, w6, w16, 15
   bn.mulvm.l.16H w7, w7, w16, 15
 
- 
+
   /* Store output */
   bn.sid x4, 0(x12++)
   bn.sid x5, 0(x12++)
@@ -348,5 +348,3 @@ intt_kyber:
   bn.sid x22, 0(x12++)
 
   ret
-
-

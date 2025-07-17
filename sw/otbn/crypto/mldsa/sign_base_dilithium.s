@@ -252,7 +252,7 @@ sign_base_dilithium:
         #define STACK_CTXLEN -72864 /* Prev */
         #define STACK_CTX -72868 /* Prev - 4 */
     #define SIGNATURE -76192 /* Prev - ((CRYPTO_BYTES>>5)+1)*32 */
-    
+
 #elif DILITHIUM_MODE == 5
     #define STACK_T0  -8352 /* Prev - K*1024 */
     #define STACK_S1  -15520 /* Prev - L*1024 */
@@ -333,7 +333,7 @@ sign_base_dilithium:
     bn.lid t0, 0(a3++)
     bn.sid t0, 32(t1)
 
-    
+
     /* Unpack s1 */
     /* Load pointer to s1 */
     li   a0, STACK_S1
@@ -344,7 +344,7 @@ sign_base_dilithium:
     LOOPI L, 2
         jal x1, polyeta_unpack_base_dilithium
         nop
-    
+
     /* Unpack s2 */
     /* Load pointer to s2 */
     li  a0, STACK_S2
@@ -367,7 +367,7 @@ sign_base_dilithium:
     /* Initialize a SHAKE256 operation. */
     li a1, TRBYTES
     addi a1, a1, 2 /* Add len of ctxlen */
-    
+
     li t2, STACK_CTXLEN
     add t2, fp, t2
     lw t2, 0(t2) /* t2 <= ctxlen */
@@ -485,7 +485,7 @@ sign_base_dilithium:
         /* Store m[2:]||m'[:2] to buffer */
         sw t2, 0(t3)
         addi t3, t3, 4
-    
+
     /* Store last two message bytes */
     lw t2, 0(a0) /* Load last two bytes */
     srli t2, t2, 16
@@ -645,7 +645,7 @@ _rej_sign_dilithium:
     /* Uniform GAMMA1 */
     li  a1, STACK_RHOPRIME
     add a1, fp, a1
-    
+
     li  a0, STACK_Y
     add a0, fp, a0
 
@@ -655,7 +655,7 @@ _rej_sign_dilithium:
     LOOPI L, 2
         jal  x1, poly_uniform_gamma1_base_dilithium
         addi a2, a2, 1 /* a2 should be preserved after execution */
-    
+
     addi s11, s11, L
 
     /* NTT(Y) -> Z */
@@ -720,7 +720,7 @@ _rej_sign_dilithium:
     li  a0, STACK_W1
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -729,7 +729,7 @@ _rej_sign_dilithium:
         jal  x1, intt_base_dilithium
         addi a1, a1, -2048 /* Reset the twiddle pointer */
         addi a0, a0, 960 /* Go to next input poly, +64 already to a0 in intt */
-    
+
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
     .endr
@@ -740,7 +740,7 @@ _rej_sign_dilithium:
     addi a1, a2, 0    /* Output inplace */
     li   a0, STACK_W0 /* Output */
     add  a0, fp, a0
-    
+
     LOOPI K, 2
         jal x1, poly_decompose_dilithium
         nop
@@ -894,7 +894,7 @@ _rej_sign_dilithium:
     li  a0, STACK_Z
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -903,7 +903,7 @@ _rej_sign_dilithium:
         jal  x1, intt_base_dilithium
         addi a1, a1, -2048 /* Reset the twiddle pointer */
         addi a0, a0, 960 /* Go to next input poly, +64 already to a0 in intt */
-    
+
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
     .endr
@@ -919,7 +919,7 @@ _rej_sign_dilithium:
     LOOPI L, 2
         jal x1, poly_add_pseudovec_base_dilithium
         nop
-    
+
     /* reduce32 z */
     li   a0, STACK_Z
     add  a0, fp, a0
@@ -941,7 +941,7 @@ _rej_sign_dilithium:
         addi a0, s0, 0
         jal x1, poly_chknorm_base_dilithium
         addi s0, s0, 1024
-        
+
         /* Reject */
         bne a0, zero, _rej_sign_dilithium
     .endr
@@ -961,7 +961,7 @@ _rej_sign_dilithium:
     li  a0, STACK_H
     add a0, fp, a0
     la  a1, twiddles_inv
-   
+
     .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
         push \reg
     .endr
@@ -985,7 +985,7 @@ _rej_sign_dilithium:
 
     LOOPI K, 2
         jal x1, poly_sub_base_dilithium
-        nop 
+        nop
 
     /* reduce32 w0 */
     li   a0, STACK_W0
@@ -1010,7 +1010,7 @@ _rej_sign_dilithium:
         /* reject */
         bne  a0, zero, _rej_sign_dilithium
         addi s0, s0, 1024
-    .endr 
+    .endr
 
     /* h = cp * t0 */
     li  a0, STACK_CP
@@ -1079,7 +1079,7 @@ _rej_sign_dilithium:
     .endr
 
     /* make hint */
-    
+
     li  s0, 0
     li  s1, STACK_H
     add a0, fp, s1
@@ -1087,7 +1087,7 @@ _rej_sign_dilithium:
     add a1, fp, a1
     li  a2, STACK_W1
     add a2, fp, a2
-    
+
     /* DEBUG */
     li t0, 0
     bn.movr t0, t0
