@@ -252,12 +252,12 @@ package top_darjeeling_pkg;
   /**
    * Peripheral base address for otbn in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_OTBN_BASE_ADDR = 32'h21130000;
+  parameter int unsigned TOP_DARJEELING_OTBN_BASE_ADDR = 32'h22100000;
 
   /**
    * Peripheral size in bytes for otbn in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_OTBN_SIZE_BYTES = 32'h10000;
+  parameter int unsigned TOP_DARJEELING_OTBN_SIZE_BYTES = 32'h40000;
 
   /**
    * Peripheral base address for keymgr_dpe in top darjeeling.

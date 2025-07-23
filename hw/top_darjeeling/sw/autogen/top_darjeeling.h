@@ -468,7 +468,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_OTBN_BASE_ADDR 0x21130000u
+#define TOP_DARJEELING_OTBN_BASE_ADDR 0x22100000u
 
 /**
  * Peripheral size for otbn in top darjeeling.
@@ -478,7 +478,7 @@ extern "C" {
  * address between #TOP_DARJEELING_OTBN_BASE_ADDR and
  * `TOP_DARJEELING_OTBN_BASE_ADDR + TOP_DARJEELING_OTBN_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_OTBN_SIZE_BYTES 0x10000u
+#define TOP_DARJEELING_OTBN_SIZE_BYTES 0x40000u
 
 /**
  * Peripheral base address for keymgr_dpe in top darjeeling.
