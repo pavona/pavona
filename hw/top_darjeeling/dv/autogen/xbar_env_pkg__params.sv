@@ -56,7 +56,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h28000000, 32'h2fffffff}
     }},
     '{"otbn", '{
-        '{32'h21130000, 32'h2113ffff}
+        '{32'h22100000, 32'h2213ffff}
     }},
     '{"keymgr_dpe", '{
         '{32'h21140000, 32'h211400ff}
