@@ -1565,6 +1565,49 @@ _inner_polyt0_pack_dilithium:
     ret
 
 /**
+ * poly_nonzero_encode_dilithium
+ *
+ * Compactly encode the coefficients of the polynomial which are nonzero mod q.
+ *
+ * The bit at index (255-i) in the output 256-bit value is 1 if and only if the
+ * coefficient i of the input is nonzero mod q. The bits are in "reverse order"
+ * for more convenient iteration.
+ *
+ * Expects input in the range [0, q).
+ *
+ * Flags: -
+ *
+ * @param[in]  a0: pointer to input polynomial
+ * @param[out] w0: Representative of nonzero coefficients.
+ *
+ * clobbered registers: a0, t0, w0-w4
+ */
+.global poly_nonzero_encode_dilithium
+poly_nonzero_encode_dilithium:
+    /* Initialize accumulator to zero. */
+    bn.mov w0, w31
+
+    /* Create a 32-bit mask. */
+    bn.not w2, w31
+    bn.rshi w2, w31, w2 >> 224
+
+    /* Set up WDR pointer. */
+    li  t0, 1
+
+    /* Loop through the coefficients. */
+    loopi 32, 8
+        bn.lid t0, 0(a0++)
+        loopi 8, 5
+          bn.add   w0, w0, w0
+          bn.addi  w3, w0, 1
+          bn.and   w4, w1, w2
+          bn.sel   w0, w0, w3, FG0.Z
+          bn.rshi  w1, w31, w1 >> 32
+        nop
+
+    ret
+
+/**
  * polyw1_pack_dilithium
  *
  * Bit-pack polynomial w1 with coefficients fitting in 6 bits. Input
@@ -2270,7 +2313,7 @@ _inner_poly_uniform_gamma1_dilithium:
  * Flags: -
  *
  * @param[out] a0: a0 pointer to output polynomial with coefficients c0
- * @param[out] a1: a1: pointer to output polynomial with coefficients c1
+ * @param[out] a1: a1 pointer to output polynomial with coefficients c1
  * @param[in]  a2: *a: pointer to input polynomial
  *
  * clobbered registers: w0-w11, a0-a2, t0-t4
@@ -2334,11 +2377,14 @@ poly_decompose_dilithium:
  *  the high bits.
  *  The function accepts inputs mod^+ q.
  *
+ * Expects the high part of the polynomial to be represented with 256 bits, in
+ * the format produced by poly_nonzero_encode_dilithium.
+ *
  * Returns: Number of one bits
  *
  * @param[out] a0: pointer to output hint polynomial
  * @param[in]  a1: a0 pointer to low part of input polynomial
- * @param[in]  a2: a1: pointer to high part of input polynomial
+ * @param[in]  w0: 256b representative of nonzero values in high part of polynomial
  *
  * clobbered registers: t0-t2, t4-t6, a0-a2, a4-a7
  */
@@ -2357,7 +2403,6 @@ poly_make_hint_dilithium:
     /* Loop over every coefficient pair of the input */
     LOOPI 256, 21
         lw t0, 0(a1)
-        lw t1, 0(a2)
 
         sub t5, t6, t0 /* Check t0 < (gamma2 + 1) <=> 0 < (gamma2 + 1) - t0 */
         srli t3, t5, 31
@@ -2369,12 +2414,16 @@ poly_make_hint_dilithium:
 
         bne t0, a7, _return1
         li t3, 0
+
+        /* Branch to the end if the high part coefficient is 0. */
+        bn.add  w0, w0, w0
+        csrrs   t1, FG0, zero
+        andi    t1, t1, 1
         beq t1, zero, _loop_end_poly_make_hint_dilithium
-        beq t1, a6, _loop_end_poly_make_hint_dilithium
-        beq zero, zero, _return1
+        jal x0, _return1
 _return0:
         li t3, 0
-        beq zero, zero, _loop_end_poly_make_hint_dilithium
+        jal x0, _loop_end_poly_make_hint_dilithium
 _return1:
         li t3, 1
         /* Fall through to loop end */
@@ -2382,7 +2431,6 @@ _loop_end_poly_make_hint_dilithium:
         sw   t3, 0(a0) /* Write to output polynomial */
         add  t2, t2, t3
         addi a1, a1, 4
-        addi a2, a2, 4
         addi a0, a0, 4
 
     addi a0, t2, 0 /* move result to return value */
