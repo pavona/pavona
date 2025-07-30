@@ -203,8 +203,8 @@ static status_t p256_ecdsa_sign(const uint32_t *msg,
   pentest_set_trigger_high();
   // Give the trigger time to rise.
   asm volatile(NOP30);
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   // Read the results back (sig_r, sig_s)
@@ -259,7 +259,7 @@ status_t handle_otbn_sca_ecdsa_p256_sign(ujson_t *uj) {
   memcpy(ecc256_secret_k + kEcc256NumWords, ecc256_secret_k1,
          sizeof(ecc256_secret_k1));
 
-  otbn_load_app(kOtbnAppP256Ecdsa);
+  TRY(otbn_load_app(kOtbnAppP256Ecdsa));
 
   // Signature output.
   uint32_t ecc256_signature_r[kEcc256NumWords];
@@ -347,7 +347,7 @@ status_t handle_otbn_sca_ecdsa_p256_sign_batch(ujson_t *uj) {
   uint32_t ecc256_signature_s[kEcc256NumWords];
   // Run num_traces ECDSA operations.
   for (size_t i = 0; i < uj_data_num_traces.num_traces; ++i) {
-    otbn_load_app(kOtbnAppP256Ecdsa);
+    TRY(otbn_load_app(kOtbnAppP256Ecdsa));
 
     // Start the operation.
     p256_ecdsa_sign(ecc256_message_batch[i], ecc256_private_key_d_batch[i],
@@ -448,7 +448,7 @@ status_t handle_otbn_sca_ecdsa_p256_sign_fvsr_batch(ujson_t *uj) {
   uint32_t ecc256_signature_s[kEcc256NumWords];
   // Run num_traces ECDSA operations.
   for (size_t i = 0; i < uj_data_num_traces.num_traces; ++i) {
-    otbn_load_app(kOtbnAppP256Ecdsa);
+    TRY(otbn_load_app(kOtbnAppP256Ecdsa));
 
     // Start the operation.
     p256_ecdsa_sign(uj_data.msg, ecc256_private_key_d_batch[i],
@@ -553,13 +553,13 @@ status_t handle_otbn_sca_insn_carry_flag(ujson_t *uj) {
       OTBN_ADDR_T_INIT(otbn_insn_carry_flag, big_num_out);
 
   // Load app and write received big_num into DMEM.
-  otbn_load_app(kOtbnAppInsnCarryFlag);
+  TRY(otbn_load_app(kOtbnAppInsnCarryFlag));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarInsnCarryFlagBigNum, uj_data.big_num,
                           sizeof(uj_data.big_num)));
 
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   penetrationtest_otbn_sca_big_num_t uj_output;
@@ -594,7 +594,7 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
     sample_fixed = prng_rand_uint32() & 0x1;
   }
 
-  otbn_load_app(kOtbnAppKeySideloadSca);
+  TRY(otbn_load_app(kOtbnAppKeySideloadSca));
 
   uint32_t key_share_0_l[kKeySideloadNumIt], key_share_0_h[kKeySideloadNumIt];
   uint32_t key_share_1_l[16], key_share_1_h[kKeySideloadNumIt];
@@ -609,17 +609,17 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
     pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
-    otbn_execute();
-    otbn_busy_wait_for_done();
+    TRY(otbn_execute());
+    TRY(otbn_busy_wait_for_done());
     pentest_set_trigger_low();
     asm volatile(NOP30);
 
-    otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l[it]);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h[it]);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l[it]);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h[it]);
-    otbn_dmem_read(1, kOtbnAppKeySideloadkl, &key_l[it]);
-    otbn_dmem_read(1, kOtbnAppKeySideloadkh, &key_h[it]);
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l[it]));
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h[it]));
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l[it]));
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h[it]));
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadkl, &key_l[it]));
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadkh, &key_h[it]));
   }
 
   // Write back shares and keys to host.
@@ -641,7 +641,7 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
   // Get RSA256 parameters.
   penetrationtest_otbn_sca_rsa512_dec_t uj_data;
   TRY(ujson_deserialize_penetrationtest_otbn_sca_rsa512_dec_t(uj, &uj_data));
-  otbn_load_app(kOtbnAppRsa);
+  TRY(otbn_load_app(kOtbnAppRsa));
 
   uint32_t mode = 2;  // Decrypt.
   // RSA512 configuration.
@@ -660,8 +660,8 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
   pentest_set_trigger_high();
   // Give the trigger time to rise.
   asm volatile(NOP30);
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   // Send back decryption result to host.

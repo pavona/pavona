@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -83,15 +87,15 @@ enum {
 static status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
                                          const otbn_addr_t share0_addr,
                                          const otbn_addr_t share1_addr) {
-  HARDENED_TRY(
+  OTBN_WIPE_IF_ERROR(
       otbn_dmem_write(kP256MaskedScalarShareWords, src->share0, share0_addr));
-  HARDENED_TRY(
+  OTBN_WIPE_IF_ERROR(
       otbn_dmem_write(kP256MaskedScalarShareWords, src->share1, share1_addr));
 
   // Write trailing 0s so that OTBN's 256-bit read of the second share does not
   // cause an error.
-  HARDENED_TRY(otbn_dmem_set(kMaskedScalarPaddingWords, 0,
-                             share0_addr + kP256MaskedScalarShareBytes));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_set(kMaskedScalarPaddingWords, 0,
+                                   share0_addr + kP256MaskedScalarShareBytes));
   return otbn_dmem_set(kMaskedScalarPaddingWords, 0,
                        share1_addr + kP256MaskedScalarShareBytes);
 }
@@ -123,17 +127,17 @@ status_t p256_sideload_keygen_start(void) {
 status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
                               p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read the masked private key from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD0,
-                              private_key->share0));
-  HARDENED_TRY(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD1,
-                              private_key->share1));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD0,
+                                    private_key->share0));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD1,
+                                    private_key->share1));
 
   // Read the public key from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarX, public_key->x));
-  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarY, public_key->y));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256CoordWords, kOtbnVarX, public_key->x));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256CoordWords, kOtbnVarY, public_key->y));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -141,11 +145,11 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
 
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read the public key from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarX, public_key->x));
-  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarY, public_key->y));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256CoordWords, kOtbnVarX, public_key->x));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256CoordWords, kOtbnVarY, public_key->y));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -188,10 +192,12 @@ status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
   HARDENED_TRY(set_message_digest(digest));
 
   // Set the private key shares.
-  HARDENED_TRY(p256_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
+  OTBN_WIPE_IF_ERROR(
+      p256_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
   // Start the OTBN routine.
-  return otbn_execute();
+  OTBN_WIPE_IF_ERROR(otbn_execute());
+  return OTCRYPTO_OK;
 }
 
 status_t p256_ecdsa_sideload_sign_start(
@@ -212,13 +218,13 @@ status_t p256_ecdsa_sideload_sign_start(
 
 status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read signature R out of OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarR, result->r));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256ScalarWords, kOtbnVarR, result->r));
 
   // Read signature S out of OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarS, result->s));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256ScalarWords, kOtbnVarS, result->s));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -286,34 +292,38 @@ status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
   uint32_t mode = kOtbnP256ModeEcdh;
   HARDENED_TRY(otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode));
 
-  // Set the private key shares.
-  HARDENED_TRY(p256_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
-
   // Set the public key x coordinate.
   HARDENED_TRY(otbn_dmem_write(kP256CoordWords, public_key->x, kOtbnVarX));
 
   // Set the public key y coordinate.
   HARDENED_TRY(otbn_dmem_write(kP256CoordWords, public_key->y, kOtbnVarY));
 
+  // Set the private key shares.
+  OTBN_WIPE_IF_ERROR(
+      p256_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
+
   // Start the OTBN routine.
-  return otbn_execute();
+  OTBN_WIPE_IF_ERROR(otbn_execute());
+  return OTCRYPTO_OK;
 }
 
 status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read the code indicating if the public key is valid.
   uint32_t ok;
-  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, &ok));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(1, kOtbnVarOk, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Read the shares of the key from OTBN dmem (at vars x and y).
-  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarX, shared_key->share0));
-  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarY, shared_key->share1));
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_read(kP256CoordWords, kOtbnVarX, shared_key->share0));
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_read(kP256CoordWords, kOtbnVarY, shared_key->share1));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();

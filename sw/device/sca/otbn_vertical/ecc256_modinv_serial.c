@@ -94,7 +94,7 @@ static void p256_run_modinv(uint32_t *k0, uint32_t *k1) {
   pentest_set_trigger_high();
   pentest_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, false,
                          false);
-  otbn_busy_wait_for_done();
+  SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 }
 

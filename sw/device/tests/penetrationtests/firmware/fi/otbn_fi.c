@@ -157,12 +157,12 @@ status_t handle_otbn_fi_char_beq(ujson_t *uj) {
   const otbn_app_t kOtbnAppCharBeq = OTBN_APP_T_INIT(otbn_char_beq);
   static const otbn_addr_t kOtbnAppCharBeqRes =
       OTBN_ADDR_T_INIT(otbn_char_beq, res);
-  otbn_load_app(kOtbnAppCharBeq);
+  TRY(otbn_load_app(kOtbnAppCharBeq));
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -172,7 +172,7 @@ status_t handle_otbn_fi_char_beq(ujson_t *uj) {
   // Read counter (x1) from OTBN data memory.
   otbn_fi_result_cnt_t uj_output;
   uj_output.result = 0;
-  otbn_dmem_read(1, kOtbnAppCharBeqRes, &uj_output.result);
+  TRY(otbn_dmem_read(1, kOtbnAppCharBeqRes, &uj_output.result));
 
   // Read OTBN instruction counter.
   TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
@@ -219,14 +219,14 @@ status_t handle_otbn_fi_char_bn_rshi(ujson_t *uj) {
       OTBN_ADDR_T_INIT(otbn_char_bn_rshi, big_num_out);
 
   // Load app and write received big_num into DMEM.
-  otbn_load_app(kOtbnAppCharBnRshi);
+  TRY(otbn_load_app(kOtbnAppCharBnRshi));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnAppCharBnRshiBigNum, uj_data.big_num,
                           sizeof(uj_data.big_num)));
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -284,14 +284,14 @@ status_t handle_otbn_fi_char_bn_sel(ujson_t *uj) {
       OTBN_ADDR_T_INIT(otbn_char_bn_sel, big_num_out);
 
   // Load app and write received big_num into DMEM.
-  otbn_load_app(kOtbnAppCharBnSel);
+  TRY(otbn_load_app(kOtbnAppCharBnSel));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnAppCharBnSelBigNum, uj_data.big_num,
                           sizeof(uj_data.big_num)));
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -342,12 +342,12 @@ status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj) {
       OTBN_ADDR_T_INIT(otbn_char_bn_wsrr, otbn_res_values_wdr);
 
   // Load app and write received big_num into DMEM.
-  otbn_load_app(kOtbnAppCharBnWsrr);
+  TRY(otbn_load_app(kOtbnAppCharBnWsrr));
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
@@ -398,12 +398,12 @@ status_t handle_otbn_fi_char_bne(ujson_t *uj) {
   const otbn_app_t kOtbnAppCharBne = OTBN_APP_T_INIT(otbn_char_bne);
   static const otbn_addr_t kOtbnAppCharBneRes =
       OTBN_ADDR_T_INIT(otbn_char_bne, res);
-  otbn_load_app(kOtbnAppCharBne);
+  TRY(otbn_load_app(kOtbnAppCharBne));
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
@@ -413,7 +413,7 @@ status_t handle_otbn_fi_char_bne(ujson_t *uj) {
   // Read counter (x1) from OTBN data memory.
   otbn_fi_result_cnt_t uj_output;
   uj_output.result = 0;
-  otbn_dmem_read(1, kOtbnAppCharBneRes, &uj_output.result);
+  TRY(otbn_dmem_read(1, kOtbnAppCharBneRes, &uj_output.result));
 
   // Read OTBN instruction counter.
   TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
@@ -452,12 +452,12 @@ status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
   static const otbn_addr_t kOtbnVarCharDmemAccessValues =
       OTBN_ADDR_T_INIT(otbn_char_dmem_access, values);
 
-  otbn_load_app(kOtbnAppCharDmemAccess);
+  TRY(otbn_load_app(kOtbnAppCharDmemAccess));
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
@@ -509,7 +509,7 @@ status_t handle_otbn_fi_char_dmem_write(ujson_t *uj) {
       OTBN_ADDR_T_INIT(otbn_char_dmem_write, mem);
 
   // Init application and load reference values into DMEM.
-  otbn_load_app(kOtbnAppCharDmemWrite);
+  TRY(otbn_load_app(kOtbnAppCharDmemWrite));
   // FI code target.
   pentest_set_trigger_high();
   asm volatile(NOP30);
@@ -646,8 +646,8 @@ status_t handle_otbn_fi_char_dmem_write(ujson_t *uj) {
   pentest_set_trigger_low();
 
   // Execute OTBN application.
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -702,14 +702,14 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
       OTBN_APP_T_INIT(otbn_char_hardware_dmem_op_loop);
   static const otbn_addr_t kOtbnAppCharHardwareDmemOpLoopLC =
       OTBN_ADDR_T_INIT(otbn_char_hardware_dmem_op_loop, lc);
-  otbn_load_app(kOtbnAppCharHardwareDmemOpLoop);
+  TRY(otbn_load_app(kOtbnAppCharHardwareDmemOpLoop));
 
   uint32_t loop_counter;
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -717,7 +717,7 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
-  otbn_dmem_read(1, kOtbnAppCharHardwareDmemOpLoopLC, &loop_counter);
+  TRY(otbn_dmem_read(1, kOtbnAppCharHardwareDmemOpLoopLC, &loop_counter));
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -755,14 +755,14 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
       OTBN_APP_T_INIT(otbn_char_hardware_reg_op_loop);
   static const otbn_addr_t kOtbnAppCharHardwareRegOpLoopLC =
       OTBN_ADDR_T_INIT(otbn_char_hardware_reg_op_loop, lc);
-  otbn_load_app(kOtbnAppCharHardwareRegOpLoop);
+  TRY(otbn_load_app(kOtbnAppCharHardwareRegOpLoop));
 
   uint32_t loop_counter;
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -770,7 +770,7 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
-  otbn_dmem_read(1, kOtbnAppCharHardwareRegOpLoopLC, &loop_counter);
+  TRY(otbn_dmem_read(1, kOtbnAppCharHardwareRegOpLoopLC, &loop_counter));
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -807,12 +807,12 @@ status_t handle_otbn_fi_char_jal(ujson_t *uj) {
   const otbn_app_t kOtbnAppCharJal = OTBN_APP_T_INIT(otbn_char_jal);
   static const otbn_addr_t kOtbnAppCharJalRes =
       OTBN_ADDR_T_INIT(otbn_char_jal, res);
-  otbn_load_app(kOtbnAppCharJal);
+  TRY(otbn_load_app(kOtbnAppCharJal));
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -822,7 +822,7 @@ status_t handle_otbn_fi_char_jal(ujson_t *uj) {
   // Read counter (x1) from OTBN data memory.
   otbn_fi_result_cnt_t uj_output;
   uj_output.result = 0;
-  otbn_dmem_read(1, kOtbnAppCharJalRes, &uj_output.result);
+  TRY(otbn_dmem_read(1, kOtbnAppCharJalRes, &uj_output.result));
 
   // Read OTBN instruction counter.
   TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
@@ -864,13 +864,13 @@ status_t handle_otbn_fi_char_lw(ujson_t *uj) {
       OTBN_ADDR_T_INIT(otbn_char_lw, mem_out);
 
   // Load app and write reference values into mem_in DMEM.
-  otbn_load_app(kOtbnAppCharLw);
+  TRY(otbn_load_app(kOtbnAppCharLw));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnMemIn, ref_values, sizeof(ref_values)));
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
@@ -1049,13 +1049,13 @@ status_t handle_otbn_fi_char_register_file(ujson_t *uj) {
       OTBN_ADDR_T_INIT(otbn_char_rf, otbn_res_values_wdr);
 
   // Init application and load reference values into DMEM.
-  otbn_load_app(kOtbnAppCharRF);
+  TRY(otbn_load_app(kOtbnAppCharRF));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarCharRFRefValues, ref_values,
                           sizeof(ref_values)));
 
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
@@ -1131,14 +1131,14 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
       OTBN_APP_T_INIT(otbn_char_unrolled_dmem_op_loop);
   static const otbn_addr_t kOtbnAppCharUnrolledDmemOpLoopLC =
       OTBN_ADDR_T_INIT(otbn_char_unrolled_dmem_op_loop, lc);
-  otbn_load_app(kOtbnAppCharUnrolledDmemOpLoop);
+  TRY(otbn_load_app(kOtbnAppCharUnrolledDmemOpLoop));
 
   uint32_t loop_counter;
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1146,7 +1146,7 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
-  otbn_dmem_read(1, kOtbnAppCharUnrolledDmemOpLoopLC, &loop_counter);
+  TRY(otbn_dmem_read(1, kOtbnAppCharUnrolledDmemOpLoopLC, &loop_counter));
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -1184,14 +1184,14 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
       OTBN_APP_T_INIT(otbn_char_unrolled_reg_op_loop);
   static const otbn_addr_t kOtbnAppCharUnrolledRegOpLoopLC =
       OTBN_ADDR_T_INIT(otbn_char_unrolled_reg_op_loop, lc);
-  otbn_load_app(kOtbnAppCharUnrolledRegOpLoop);
+  TRY(otbn_load_app(kOtbnAppCharUnrolledRegOpLoop));
 
   uint32_t loop_counter;
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1199,7 +1199,7 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
-  otbn_dmem_read(1, kOtbnAppCharUnrolledRegOpLoopLC, &loop_counter);
+  TRY(otbn_dmem_read(1, kOtbnAppCharUnrolledRegOpLoopLC, &loop_counter));
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -1318,23 +1318,23 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
 
   if (!key_sideloading_init) {
     // Setup keymanager for sideloading key into OTBN.
-    otbn_load_app(kOtbnAppKeySideload);
+    TRY(otbn_load_app(kOtbnAppKeySideload));
     // Get reference keys.
-    otbn_execute();
-    otbn_busy_wait_for_done();
+    TRY(otbn_execute());
+    TRY(otbn_busy_wait_for_done());
 
-    otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l_ref);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h_ref);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l_ref);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h_ref);
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l_ref));
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h_ref));
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l_ref));
+    TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h_ref));
 
     key_sideloading_init = true;
   }
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
+  TRY(otbn_execute());
+  TRY(otbn_busy_wait_for_done());
   pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
@@ -1345,10 +1345,10 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
   // Read loop counter from OTBN data memory.
   uint32_t key_share_0_l, key_share_0_h;
   uint32_t key_share_1_l, key_share_1_h;
-  otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l);
-  otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h);
-  otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l);
-  otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h);
+  TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l));
+  TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h));
+  TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l));
+  TRY(otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h));
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -1392,7 +1392,7 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
     // Load the OTBN app and read the load checksum without FI to retrieve
     // reference value.
     clear_otbn_load_checksum();
-    otbn_load_app(kOtbnAppLoadIntegrity);
+    TRY(otbn_load_app(kOtbnAppLoadIntegrity));
     read_otbn_load_checksum(&load_checksum_ref);
     clear_otbn_load_checksum();
 
@@ -1401,7 +1401,7 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
 
   // FI code target.
   pentest_set_trigger_high();
-  otbn_load_app(kOtbnAppLoadIntegrity);
+  TRY(otbn_load_app(kOtbnAppLoadIntegrity));
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1415,9 +1415,9 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
 
   // Read loop counter from OTBN data memory.
   uint32_t ref_val1, ref_val2, ref_val3;
-  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal1, &ref_val1);
-  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal2, &ref_val2);
-  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal3, &ref_val3);
+  TRY(otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal1, &ref_val1));
+  TRY(otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal2, &ref_val2));
+  TRY(otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal3, &ref_val3));
 
   // Check if DMEM is corrupted.
   bool dmem_corrupted = false;
@@ -1476,12 +1476,12 @@ status_t handle_otbn_fi_pc(ujson_t *uj) {
   dif_otbn_status_t otbn_status;
 
   // Load app.
-  otbn_load_app(kOtbnAppPc);
+  TRY(otbn_load_app(kOtbnAppPc));
 
   // FI code target.
   pentest_set_trigger_high();
   TRY(dif_otbn_dmem_write(&otbn, kOtbnPc, &uj_data.pc, sizeof(uj_data.pc)));
-  otbn_execute();
+  TRY(otbn_execute());
   // Wait until is started before deasserting the trigger.
   bool is_running = false;
   while (!is_running) {
@@ -1491,7 +1491,7 @@ status_t handle_otbn_fi_pc(ujson_t *uj) {
     }
   }
   pentest_set_trigger_low();
-  otbn_busy_wait_for_done();
+  TRY(otbn_busy_wait_for_done());
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.

@@ -148,7 +148,7 @@ static void add_arrays(uint8_t *dest, uint8_t *source, size_t dest_len,
 /**
  * Callback wrapper for OTBN manual trigger function.
  */
-static void otbn_manual_trigger(void) { otbn_execute(); }
+static void otbn_manual_trigger(void) { OT_DISCARD(otbn_execute().value); }
 
 /**
  * Runs the OTBN key generation program.

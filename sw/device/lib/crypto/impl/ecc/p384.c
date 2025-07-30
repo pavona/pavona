@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -164,17 +168,17 @@ status_t p384_keygen_start(void) {
 status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
                               p384_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read the masked private key from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD0,
-                              private_key->share0));
-  HARDENED_TRY(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD1,
-                              private_key->share1));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD0,
+                                    private_key->share0));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD1,
+                                    private_key->share1));
 
   // Read the public key from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarX, public_key->x));
-  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarX, public_key->x));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -194,11 +198,11 @@ status_t p384_sideload_keygen_start(void) {
 
 status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read the public key from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarX, public_key->x));
-  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarX, public_key->x));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -217,10 +221,12 @@ status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
   HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
 
   // Set the private key shares.
-  HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
+  OTBN_WIPE_IF_ERROR(
+      p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
   // Start the OTBN routine.
-  return otbn_execute();
+  OTBN_WIPE_IF_ERROR(otbn_execute());
+  return OTCRYPTO_OK;
 }
 
 status_t p384_ecdsa_sideload_sign_start(
@@ -241,13 +247,13 @@ status_t p384_ecdsa_sideload_sign_start(
 
 status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read signature R out of OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarR, result->r));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384ScalarWords, kOtbnVarR, result->r));
 
   // Read signature S out of OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarS, result->s));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384ScalarWords, kOtbnVarS, result->s));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -312,32 +318,36 @@ status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
   uint32_t mode = kP384ModeEcdh;
   HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
 
-  // Set the private key shares.
-  HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
-
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
 
+  // Set the private key shares.
+  OTBN_WIPE_IF_ERROR(
+      p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
+
   // Start the OTBN routine.
-  return otbn_execute();
+  OTBN_WIPE_IF_ERROR(otbn_execute());
+  return OTCRYPTO_OK;
 }
 
 status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
   uint32_t ok;
-  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, &ok));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(1, kOtbnVarOk, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Read the shares of the key from OTBN dmem (at vars x and y).
-  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarX, shared_key->share0));
-  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarY, shared_key->share1));
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_read(kP384CoordWords, kOtbnVarX, shared_key->share0));
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_read(kP384CoordWords, kOtbnVarY, shared_key->share1));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();

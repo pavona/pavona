@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -189,11 +193,46 @@ typedef struct otbn_app {
   ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
 
 /**
+ * Variant of HARDENED_TRY that wipes DMEM before returning.
+ *
+ * Use this for operations that might fail after secret values were written to
+ * DMEM, so that later routines cannot read the data from the cancelled
+ * operation.
+ *
+ * @param expr_ An expression that evaluates to a `status_t`.
+ */
+#ifndef OT_DISABLE_HARDENING
+#define OTBN_WIPE_IF_ERROR(expr_)                                       \
+  do {                                                                  \
+    status_t status_ = expr_;                                           \
+    if (launder32(OT_UNSIGNED(status_.value)) != kHardenedBoolTrue) {   \
+      otbn_dmem_sec_wipe_nofail();                                      \
+      return (status_t){                                                \
+          .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
+    }                                                                   \
+    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);                \
+  } while (false)
+#else  // OT_DISABLE_HARDENING
+#define OTBN_WIPE_IF_ERROR(expr_)                                       \
+  do {                                                                  \
+    status_t status_ = expr_;                                           \
+    if (status_.value != kHardenedBoolTrue) {                           \
+      otbn_dmem_sec_wipe_nofail();                                      \
+      return (status_t){                                                \
+          .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
+    }                                                                   \
+  } while (false)
+#endif  // OT_DISABLE_HARDENING
+
+/**
  * Write to OTBN's data memory (DMEM)
  *
  * Only 32b-aligned 32b word accesses are allowed. If `dest` is not
  * word-aligned or if the length and offset exceed the DMEM size, this function
  * will return an error.
+ *
+ * Automatically checks that OTBN's LOAD_CHECKSUM register updates as expected
+ * for consistency.
  *
  * The caller must ensure OTBN is idle before calling this function.
  *
@@ -202,6 +241,7 @@ typedef struct otbn_app {
  * @param dest The DMEM location to copy to.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                          otbn_addr_t dest);
 
@@ -219,6 +259,7 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
  * @param dest The DMEM location to set.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_set(size_t num_words, const uint32_t src, otbn_addr_t dest);
 
 /**
@@ -235,6 +276,7 @@ status_t otbn_dmem_set(size_t num_words, const uint32_t src, otbn_addr_t dest);
  * @param[out] dest The main memory location to copy to.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
 
 /**
@@ -249,6 +291,7 @@ status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_execute(void);
 
 /**
@@ -258,6 +301,7 @@ status_t otbn_execute(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_busy_wait_for_done(void);
 
 /**
@@ -284,6 +328,20 @@ uint32_t otbn_err_bits_get(void);
 uint32_t otbn_instruction_count_get(void);
 
 /**
+ * Get the checksum value of loaded data from OTBN.
+ *
+ * @return The contents of OTBN's LOAD_CHECKSUM register.
+ */
+uint32_t otbn_load_checksum_get(void);
+
+/**
+ * Reset the value of OTBN's LOAD_CHECKSUM register.
+ *
+ * Sets the checksum value to all-zero.
+ */
+void otbn_load_checksum_reset(void);
+
+/**
  * Wipe IMEM securely.
  *
  * This function returns an error if called when OTBN is not idle, and blocks
@@ -295,6 +353,7 @@ uint32_t otbn_instruction_count_get(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_imem_sec_wipe(void);
 
 /**
@@ -309,7 +368,16 @@ status_t otbn_imem_sec_wipe(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_sec_wipe(void);
+
+/**
+ * Variant of otbn_dmem_sec_wipe that does not error or block.
+ *
+ * Intended for cases where another operation has failed and we want to wipe
+ * DMEM before returning the error code up the stack.
+ */
+void otbn_dmem_sec_wipe_nofail(void);
 
 /**
  * Sets the software errors are fatal bit in the control register.
@@ -322,6 +390,7 @@ status_t otbn_dmem_sec_wipe(void);
  * @param enable Enable or disable whether software errors are fatal.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_set_ctrl_software_errs_fatal(bool enable);
 
 /**
@@ -339,6 +408,7 @@ status_t otbn_set_ctrl_software_errs_fatal(bool enable);
  * @param app The application to load into OTBN.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_load_app(const otbn_app_t app);
 
 #ifdef __cplusplus

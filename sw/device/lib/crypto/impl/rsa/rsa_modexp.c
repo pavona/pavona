@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -92,15 +96,16 @@ status_t rsa_modexp_wait(size_t *num_words) {
 static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   // Wait for OTBN to complete and get the result size.
   size_t num_words_inferred;
-  HARDENED_TRY(rsa_modexp_wait(&num_words_inferred));
+  OTBN_WIPE_IF_ERROR(rsa_modexp_wait(&num_words_inferred));
 
   // Check that the inferred result size matches expectations.
   if (num_words != num_words_inferred) {
+    otbn_dmem_sec_wipe_nofail();
     return OTCRYPTO_FATAL_ERR;
   }
 
   // Read the result.
-  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -119,10 +124,12 @@ status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, base->data, kOtbnVarRsaInOut));
   HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, modulus->data, kOtbnVarRsaN));
-  HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, exp->data, kOtbnVarRsaD));
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_write(kRsa2048NumWords, exp->data, kOtbnVarRsaD));
 
   // Start OTBN.
-  return otbn_execute();
+  OTBN_WIPE_IF_ERROR(otbn_execute());
+  return OTCRYPTO_OK;
 }
 
 status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
@@ -169,10 +176,12 @@ status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, base->data, kOtbnVarRsaInOut));
   HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, modulus->data, kOtbnVarRsaN));
-  HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, exp->data, kOtbnVarRsaD));
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_write(kRsa3072NumWords, exp->data, kOtbnVarRsaD));
 
   // Start OTBN.
-  return otbn_execute();
+  OTBN_WIPE_IF_ERROR(otbn_execute());
+  return OTCRYPTO_OK;
 }
 
 status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
@@ -219,10 +228,12 @@ status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, base->data, kOtbnVarRsaInOut));
   HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, modulus->data, kOtbnVarRsaN));
-  HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, exp->data, kOtbnVarRsaD));
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_write(kRsa4096NumWords, exp->data, kOtbnVarRsaD));
 
   // Start OTBN.
-  return otbn_execute();
+  OTBN_WIPE_IF_ERROR(otbn_execute());
+  return OTCRYPTO_OK;
 }
 
 status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
