@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -25,8 +26,13 @@ module tb;
   wire intr_done;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
+  // kmac_app interfaces
+  kmac_pkg::app_req_t app_req;
+  kmac_pkg::app_rsp_t app_rsp;
+
   // interfaces
   clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
+  otbn_app_intf                 otbn_app_intf (.clk(clk), .rst_n(rst_n));
   tl_if                         tl_if       (.clk(clk), .rst_n(rst_n));
   otbn_escalate_if              escalate_if (.clk_i (clk), .rst_ni (rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if     (interrupts);
@@ -138,6 +144,10 @@ module tb;
   assign dut.u_otbn_core.i_otbn_trace_if.scramble_state_err_i = dut.otbn_scramble_state_error;
   assign dut.u_otbn_core.i_otbn_trace_if.missed_gnt_i.imem_gnt_missed_err = dut.imem_missed_gnt;
   assign dut.u_otbn_core.i_otbn_trace_if.missed_gnt_i.dmem_gnt_missed_err = dut.dmem_missed_gnt;
+
+  // Connect AppIntf between DUT and UVM vif
+  assign otbn_app_intf.kmac_data_req = app_req;
+  assign app_rsp = otbn_app_intf.kmac_data_rsp;
 
   bind dut.u_otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
@@ -308,6 +318,7 @@ module tb;
 
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "otp_clk_rst_vif", otp_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual otbn_app_intf)::set(null, "*env.m_otbn_app_agent", "vif", otbn_app_intf);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(ssctrl_vif)::set(null, "*.env", "ssctrl_vif", ssctrl_if);
     uvm_config_db#(escalate_vif)::set(null, "*.env", "escalate_vif", escalate_if);

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +14,7 @@ class otbn_env extends cip_base_env #(
   otbn_model_agent    model_agent;
   otbn_trace_monitor  trace_monitor;
   otbn_sideload_agent keymgr_sideload_agent;
+  otbn_app_agent      m_otbn_app_agent;
   otp_key_agent       key_agent;
 
   `uvm_component_new
@@ -22,6 +24,9 @@ class otbn_env extends cip_base_env #(
 
     cfg.mem_util = OtbnMemUtilMake(cfg.dut_instance_hier);
     `DV_CHECK_FATAL(cfg.mem_util != null);
+
+    m_otbn_app_agent = otbn_app_agent::type_id::create("m_otbn_app_agent", this);
+    uvm_config_db#(otbn_app_agent_cfg)::set(this, "m_otbn_app_agent", "cfg", cfg.m_otbn_app_agent_cfg);
 
     model_agent = otbn_model_agent::type_id::create("model_agent", this);
     uvm_config_db#(otbn_model_agent_cfg)::set(this, "model_agent*", "cfg", cfg.model_agent_cfg);
@@ -102,6 +107,7 @@ class otbn_env extends cip_base_env #(
     trace_monitor.analysis_port.connect(scoreboard.trace_fifo.analysis_export);
     cfg.scoreboard = scoreboard;
     virtual_sequencer.key_sideload_sequencer_h = keymgr_sideload_agent.sequencer;
+    virtual_sequencer.otbn_app_sequencer_h = m_otbn_app_agent.sequencer;
 
     // Configure the key sideload sequencer to use UVM_SEQ_ARB_STRICT_FIFO arbitration. This makes
     // sure that we can inject our own sequence if we need to override the default for a bit.

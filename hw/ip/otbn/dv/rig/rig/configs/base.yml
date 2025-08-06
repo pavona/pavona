@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +13,7 @@ gen-weights:
   LoopDupEnd: 0.01
   SmallVal: 0.2
   StraightLineInsn: 1.0
+  KmacAppReqInsn: 0.2
   KnownWDR: 0.05
   UntakenBranch: 0.05
 

@@ -23,6 +23,7 @@ from .gens.loop import Loop
 from .gens.loop_dup_end import LoopDupEnd
 from .gens.small_val import SmallVal
 from .gens.straight_line_insn import StraightLineInsn
+from .gens.app_req import KmacAppReqInsn
 
 from .gens.bad_at_end import BadAtEnd
 from .gens.bad_bnmovr import BadBNMovr
@@ -48,6 +49,7 @@ class SnippetGens:
         LoopDupEnd,
         SmallVal,
         StraightLineInsn,
+        KmacAppReqInsn,
         KnownWDR,
         UntakenBranch,
 

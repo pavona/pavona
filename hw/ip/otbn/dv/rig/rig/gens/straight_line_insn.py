@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -29,6 +30,19 @@ class StraightLineInsn(SnippetGen):
         for insn in insns_file.insns:
             # Skip pseudo-ops
             if insn.python_pseudo_op or insn.literal_pseudo_op:
+                continue
+
+            # Skipping vector instructions that are not yet implemented
+            if (
+                insn.mnemonic == 'bn.addv'
+                or insn.mnemonic == 'bn.subv'
+                or insn.mnemonic == 'bn.mulv'
+                or insn.mnemonic == 'bn.mulqacc'
+                or insn.mnemonic == 'bn.mulqacc.wo'
+                or insn.mnemonic == 'bn.mulqacc.so'
+                or insn.mnemonic == 'bn.shv'
+                or insn.mnemonic == 'bn.trn'
+            ):
                 continue
 
             seen_insns.add(insn.mnemonic)
@@ -450,6 +464,12 @@ class StraightLineInsn(SnippetGen):
         assert set(lsu_type_to_info.keys()) == set(LSUDesc.TYPES)
         mem_type, loads_value = lsu_type_to_info[insn.lsu.lsu_type]
 
+        # All KMAC CSR addrs are off limits outside of app_req generator
+        kmac_csr_off_limits = {v for k, v in model._kmac_csr_addr.items() if k != "MOD0"}
+
+        # All KMAC WSR addrs are off limits outside of app_req generator
+        kmac_wsr_off_limits = {v for k, v in model._kmac_wsr_addr.items() if k != "MOD0"}
+
         tgt = model.pick_lsu_target(mem_type,
                                     loads_value,
                                     op_to_known_regs,
@@ -460,6 +480,13 @@ class StraightLineInsn(SnippetGen):
             return None
 
         addr, imm_val, reg_indices = tgt
+
+        # If CSR/WSR addr are KMAC regs return None
+        if (mem_type == 'csr' and addr in kmac_csr_off_limits):
+            return None
+        if (mem_type == 'wsr' and addr in kmac_wsr_off_limits):
+            return None
+
         assert imm_op_range[0] <= imm_val <= imm_op_range[1]
 
         enc_vals = []

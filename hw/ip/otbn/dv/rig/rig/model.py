@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -250,6 +251,25 @@ class Model:
         wsrs.touch_addr(0x5)        # KEY_S0_H
         wsrs.touch_addr(0x6)        # KEY_S1_L
         wsrs.touch_addr(0x7)        # KEY_S1_H
+
+        # Separate CSR list for KMAC as these should be off-limits from
+        # non app_req generators, with the exception of MOD0
+        self._kmac_csr_addr = {
+            "MOD0": 0x7d0,
+            "KMAC_CFG": 0x7d9,
+            "KMAC_STATUS": 0x7e2,
+            "KMAC_PW": 0x7f3
+        }
+
+        # Separate WSR list for KMAC as these should be off-limits from
+        # non app_req generators, with the exception of MOD0
+        self._kmac_wsr_addr = {
+            "MOD": 0x0,
+            "KMAC_CFG": 0x8,
+            "KMAC_MSG": 0x9,
+            "KMAC_DIGEST": 0xa,
+            "KMAC_PW": 0xb
+        }
 
         # The current PC (the address of the next instruction that needs
         # generating)

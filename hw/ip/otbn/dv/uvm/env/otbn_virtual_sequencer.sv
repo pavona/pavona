@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,5 +11,6 @@ class otbn_virtual_sequencer extends cip_base_virtual_sequencer #(
   `uvm_component_new
 
   key_sideload_sequencer#(keymgr_pkg::otbn_key_req_t) key_sideload_sequencer_h;
+  otbn_app_sequencer otbn_app_sequencer_h;
 
 endclass

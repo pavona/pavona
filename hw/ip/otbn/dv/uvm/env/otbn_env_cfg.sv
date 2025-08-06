@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,6 +11,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   rand otbn_sideload_agent_cfg keymgr_sideload_agent_cfg;
 
   rand otp_key_agent_cfg key_cfg;
+
+  rand otbn_app_agent_cfg m_otbn_app_agent_cfg;
 
   virtual clk_rst_if otp_clk_rst_vif;
 
@@ -94,6 +97,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     sec_cm_alert_name = "fatal";
 
     model_agent_cfg  = otbn_model_agent_cfg  ::type_id::create("model_agent_cfg");
+    m_otbn_app_agent_cfg = otbn_app_agent_cfg::type_id::create("m_otbn_app_agent_cfg");
     keymgr_sideload_agent_cfg = otbn_sideload_agent_cfg::type_id::create(
       "keymgr_sideload_agent_cfg");
 

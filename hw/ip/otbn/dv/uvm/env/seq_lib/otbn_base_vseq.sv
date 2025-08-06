@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -391,6 +392,7 @@ class otbn_base_vseq extends cip_base_vseq #(
           _run_loop_warps();
           _run_sideload_sequence();
           _run_rnd_edn_rsp();
+          _run_otbn_app_rsp();
         join_any
 
         // Consumed by _run_sideload_sequence()
@@ -471,6 +473,23 @@ class otbn_base_vseq extends cip_base_vseq #(
     // Note: This must be the last thing in the function before we return. We use this flag to
     // synchronise with a "disable fork" in start_running_otbn().
     running_ = 1'b0;
+  endtask
+
+  // Runs the transaction sequence for the OTBN AppIntf
+  // Monitors the req to provide appropriate handshaking with DUT. Also
+  // generates the rsp digest payload to send to DUT for comparison with the ISS model.
+  // Sequence is inside forever loop so it will continue running after transaction completion.
+  // This is to allow for handshaking, and to prevent the task from terminating in run_otbn.
+  // Only the _run_otbn_cmd fork is allowed to terminate in run_otbn.
+  virtual task _run_otbn_app_rsp();
+    forever begin
+      otbn_app_base_seq otbn_app_seq;
+
+      // Create and send sequence
+      `uvm_create_on(otbn_app_seq, p_sequencer.otbn_app_sequencer_h);
+      `DV_CHECK_RANDOMIZE_FATAL(otbn_app_seq)
+      `uvm_send(otbn_app_seq)
+    end
   endtask
 
   // Wait for OTBN to finish, either by polling or by waiting on the interrupt pins
