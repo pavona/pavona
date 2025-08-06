@@ -8,6 +8,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 static_assert(kDtAccCount >= 1, "This test requires at least one ACC instance");
@@ -18,7 +19,7 @@ static_assert(kDtRvCoreIbexCount >= 1,
 static dt_acc_t kTestAcc = (dt_acc_t)0;
 static dt_rv_core_ibex_t kTestRvCoreIbex = (dt_rv_core_ibex_t)0;
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 typedef dif_result_t (*acc_read_t)(const dif_acc_t *acc, uint32_t offset_bytes,
                                    void *dest, size_t len_bytes);
@@ -86,6 +87,7 @@ static volatile bool has_irq_fired;
  * This overrides the default OTTF load integrity handler.
  */
 void ottf_load_integrity_error_handler(uint32_t *exc_info) {
+  OT_DISCARD(exc_info);
   has_irq_fired = true;
 }
 
@@ -234,6 +236,11 @@ bool test_main(void) {
   CHECK_STATUS_OK(acc_testutils_wait_for_done(&acc, kDifAccErrBitsNoError));
   CHECK_DIF_OK(dif_acc_write_cmd(&acc, kDifAccCmdSecWipeDmem));
   CHECK_STATUS_OK(acc_testutils_wait_for_done(&acc, kDifAccErrBitsNoError));
+
+  // The following integrity errors in ACC's memory causes a fatal alert in
+  // Ibex which cannot be acknowledge/dismissed, so we must ignore it instead.
+  CHECK_STATUS_OK(ottf_alerts_ignore_alert(dt_rv_core_ibex_alert_to_alert_id(
+      kTestRvCoreIbex, kDtRvCoreIbexAlertFatalHwErr)));
 
   // Read back and check random address offsets. We don't care about the values.
   // "Most" reads should trigger integrity errors.
