@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/acc.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_acc.h"
@@ -16,6 +17,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
@@ -24,6 +26,8 @@
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_acc_t acc;
+
+static const dt_acc_t kAccDt = (dt_acc_t)0;
 
 /* Set up pointers to symbols in the ACC application. */
 ACC_DECLARE_APP_SYMBOLS(x25519_sideload);
@@ -34,7 +38,7 @@ static const acc_addr_t kAccVarEncU = ACC_ADDR_T_INIT(x25519_sideload, enc_u);
 static const acc_addr_t kAccVarEncResult =
     ACC_ADDR_T_INIT(x25519_sideload, enc_result);
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * Initializes all DIF handles for each peripheral used in this test.
@@ -44,8 +48,7 @@ static void init_peripheral_handles(void) {
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
-  CHECK_DIF_OK(
-      dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kAccDt, &acc));
 }
 
 /**
@@ -133,11 +136,15 @@ static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
 
   // Clear the sideload key and check that ACC errors with the correct error
   // code (`KEY_INVALID` bit 5 = 1).
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_acc_alert_to_alert_id(kAccDt, kDtAccAlertRecov)));
   CHECK_DIF_OK(
       dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
   LOG_INFO("Clearing the Keymgr generated sideload keys.");
   uint32_t at_clear_salt_result[8];
   run_x25519_app(acc, at_clear_salt_result, kAccInvalidKeyErr);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_acc_alert_to_alert_id(kAccDt, kDtAccAlertRecov)));
 
   // Disable sideload key clearing.
   CHECK_DIF_OK(
