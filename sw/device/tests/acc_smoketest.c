@@ -9,6 +9,7 @@
 #include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 ACC_DECLARE_APP_SYMBOLS(barrett384);
@@ -33,7 +34,7 @@ static_assert(kDtAccCount >= 1, "This test requires at least one ACC instance");
 
 static dt_acc_t kTestAcc = (dt_acc_t)0;
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * Gets the ACC instruction count, checks that it matches expectations.
@@ -129,9 +130,13 @@ static void test_err_test(dif_acc_t *acc) {
   // TODO: Turn on software_errs_fatal for err_test. Currently the model doesn't
   // support this feature so turning it on leads to a failure when run with the
   // model.
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_acc_alert_to_alert_id(kTestAcc, kDtAccAlertRecov)));
   CHECK_DIF_OK(dif_acc_set_ctrl_software_errs_fatal(acc, false));
   CHECK_STATUS_OK(acc_testutils_execute(acc));
   CHECK_STATUS_OK(acc_testutils_wait_for_done(acc, kDifAccErrBitsBadDataAddr));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_acc_alert_to_alert_id(kTestAcc, kDtAccAlertRecov)));
 
   check_acc_insn_cnt(acc, 1);
 }
