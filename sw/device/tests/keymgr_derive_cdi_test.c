@@ -6,11 +6,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "hw/top/dt/keymgr.h"
 #include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
@@ -70,7 +72,7 @@ static const acc_addr_t kAccVarEncU = ACC_ADDR_T_INIT(x25519_sideload, enc_u);
 static const acc_addr_t kAccVarEncResult =
     ACC_ADDR_T_INIT(x25519_sideload, enc_result);
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * Initialize the dif handles required for this test.
@@ -197,7 +199,11 @@ static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
 #endif
 }
 
@@ -243,7 +249,11 @@ static void derive_sideload_acc_key(const char *state_name,
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
 #endif
 }
 
