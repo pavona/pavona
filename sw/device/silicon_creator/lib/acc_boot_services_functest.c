@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/acc.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -15,10 +17,12 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 // Keymgr handle for this test.
 static dif_keymgr_t keymgr;
+
+static const dt_acc_t kAccDt = (dt_acc_t)0;
 
 // Global variable holding the number of times we advanced keymgr after startup.
 size_t num_keymgr_advances = 0;
@@ -196,7 +200,9 @@ rom_error_t attestation_save_clear_key_test(void) {
   RETURN_IF_ERROR(acc_boot_attestation_endorse(&digest, &sig));
 
   // Clear the key and check that endorsing now fails (it should even lock
-  // ACC).
+  // ACC). We cannot recover from the fatal alert so must ignore it.
+  CHECK_STATUS_OK(ottf_alerts_ignore_alert(
+      dt_acc_alert_to_alert_id(kAccDt, kDtAccAlertFatal)));
   RETURN_IF_ERROR(acc_boot_attestation_key_clear());
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   CHECK(acc_boot_attestation_endorse(&digest, &sig) ==
