@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -262,6 +263,10 @@ interface otbn_trace_if
                                             u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
     assign ispr_read_data[IsprMod][i_word*32+:32] = u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
     assign ispr_write_data[IsprAcc][i_word*32+:32] = u_otbn_mac_bignum.acc_intg_d[i_word*39+:32];
+    assign ispr_write_data[IsprKmacMsg][i_word*32+:32] =
+      u_otbn_alu_bignum.kmac_msg_wr_en[i_word] ? u_otbn_alu_bignum.kmac_msg_intg_d[i_word*39+:32] :
+                                                 u_otbn_alu_bignum.kmac_msg_intg_q[i_word*39+:32];
+    assign ispr_read_data[IsprKmacMsg][i_word*32+:32] = u_otbn_alu_bignum.kmac_msg_intg_q[i_word*39+:32];
   end
 
   assign ispr_read[IsprMod] =
@@ -269,6 +274,29 @@ interface otbn_trace_if
     (insn_fetch_resp_valid &
      (alu_bignum_operation.op inside {AluOpBignumAddm, AluOpBignumSubm}));
 
+  // KMAC MSG
+  assign ispr_read[IsprKmacMsg] =
+    (any_ispr_read & (ispr_addr == IsprKmacMsg));
+
+  assign ispr_write[IsprKmacMsg] = u_otbn_alu_bignum.kmac_msg_wr_en & ~ispr_init;
+
+  // KMAC CFG
+  assign ispr_read[IsprKmacCfg] =
+    (any_ispr_read & (ispr_addr == IsprKmacCfg));
+
+  assign ispr_read_data[IsprKmacCfg]  = {224'b0, u_otbn_alu_bignum.kmac_cfg_intg_q[31:0]};
+  assign ispr_write[IsprKmacCfg]      = u_otbn_alu_bignum.kmac_cfg_wr_en & ~ispr_init;
+  assign ispr_write_data[IsprKmacCfg] = {224'b0, u_otbn_alu_bignum.kmac_cfg_intg_d[31:0]};
+
+  // KMAC PARTIAL WRITE
+  assign ispr_read[IsprKmacPartialW] =
+    (any_ispr_read & (ispr_addr == IsprKmacPartialW));
+
+  assign ispr_read_data[IsprKmacPartialW]   = {224'b0, u_otbn_alu_bignum.kmac_pw_intg_q[31:0]};
+  assign ispr_write[IsprKmacPartialW]       = u_otbn_alu_bignum.kmac_pw_wr_en & ~ispr_init;
+  assign ispr_write_data[IsprKmacPartialW]  = {224'b0, u_otbn_alu_bignum.kmac_pw_intg_d[31:0]};
+
+  // ACC
   assign ispr_write[IsprAcc] = u_otbn_mac_bignum.acc_en & ~ispr_init;
 
   assign ispr_read[IsprAcc] = (any_ispr_read & (ispr_addr == IsprAcc)) | mac_bignum_en;

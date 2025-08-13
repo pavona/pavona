@@ -133,7 +133,10 @@ module tb;
     .otbn_otp_key_o(otp_key_req),
     .otbn_otp_key_i(otp_key_rsp),
 
-    .keymgr_key_i(sideload_key)
+    .keymgr_key_i(sideload_key),
+
+    .kmac_data_o(app_req),
+    .kmac_data_i(app_rsp)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(

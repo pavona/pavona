@@ -1,4 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192)
+// Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -101,6 +104,7 @@ module otbn_alu_bignum
   output logic                        reg_intg_violation_err_o,
 
   input  logic                        sec_wipe_mod_urnd_i,
+  input  logic                        sec_wipe_kmac_regs_urnd_i,
   input  logic                        sec_wipe_running_i,
   output logic                        sec_wipe_err_o,
 
@@ -113,7 +117,14 @@ module otbn_alu_bignum
   input  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i,
 
   output logic alu_predec_error_o,
-  output logic ispr_predec_error_o
+  output logic ispr_predec_error_o,
+
+  output logic kmac_msg_write_ready_o,
+  output logic kmac_msg_pending_write_o,
+  output logic kmac_digest_valid_o,
+
+  output kmac_pkg::app_req_t          kmac_app_req_o,
+  input  kmac_pkg::app_rsp_t          kmac_app_rsp_i
 );
 
   logic [WLEN+1:0] adder_y_res;
@@ -405,6 +416,487 @@ module otbn_alu_bignum
                                sec_wipe_mod_urnd_i;
   end
 
+  //////////
+  // KMAC //
+  //////////
+
+  // CFG
+  logic [BaseIntgWidth-1:0] kmac_cfg_intg_q;
+  logic [31:0]              kmac_cfg_no_intg_d;
+  logic [BaseIntgWidth-1:0] kmac_cfg_intg_d;
+  logic [BaseIntgWidth-1:0] kmac_cfg_intg_calc;
+  logic                     kmac_cfg_ispr_wr_en;
+  logic                     kmac_cfg_wr_en;
+  logic [1:0]               kmac_cfg_intg_err;
+
+  logic [ExtWLEN-1:0] ispr_kmac_cfg_bignum_wdata_intg_blanked;
+
+  prim_secded_inv_39_32_enc u_kmac_cfg_secded_enc (
+    .data_i (kmac_cfg_no_intg_d),
+    .data_o (kmac_cfg_intg_calc)
+  );
+  prim_secded_inv_39_32_dec u_kmac_cfg_secded_dec (
+    .data_i     (kmac_cfg_intg_q),
+    .data_o     (/* unused because we abort on any integrity error */),
+    .syndrome_o (/* unused */),
+    .err_o      (kmac_cfg_intg_err)
+  );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_cfg_intg_q <= '0;
+    end else if (kmac_cfg_wr_en) begin
+      kmac_cfg_intg_q <= kmac_cfg_intg_d;
+    end
+  end
+
+  always_comb begin
+    unique case (1'b1)
+      ispr_init_i: begin
+        kmac_cfg_no_intg_d  = 32'b0;
+        kmac_cfg_intg_d     = kmac_cfg_intg_calc;
+      end
+      ispr_base_wr_en_i[0]: begin // Index 0 because only first 32-bit word contains cfg
+        kmac_cfg_no_intg_d  = ispr_base_wdata_i;
+        kmac_cfg_intg_d     = kmac_cfg_intg_calc;
+      end
+      default: begin
+        kmac_cfg_no_intg_d  = 32'b0;
+        kmac_cfg_intg_d     = ispr_kmac_cfg_bignum_wdata_intg_blanked[38:0];
+      end
+    endcase
+  end
+
+  `ASSERT(KmacCfgWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[0]}))
+
+  // Index 0 because only first 32-bit word contains cfg
+  assign kmac_cfg_ispr_wr_en = (ispr_addr_i == IsprKmacCfg) &
+                               (ispr_base_wr_en_i[0] | ispr_bignum_wr_en_i) &
+                               ispr_wr_commit_i;
+
+  assign kmac_cfg_wr_en = (ispr_init_i | kmac_cfg_ispr_wr_en) & !kmac_app_rsp_i.error;
+
+  prim_blanker #(.Width(ExtWLEN)) u_ispr_kmac_cfg_bignum_wdata_blanker (
+    .in_i (ispr_bignum_wdata_intg_i),
+    .en_i (ispr_predec_bignum_i.ispr_wr_en[IsprKmacCfg]),
+    .out_o(ispr_kmac_cfg_bignum_wdata_intg_blanked)
+  );
+
+  // PARTIAL WRITE
+  logic [BaseIntgWidth-1:0] kmac_pw_intg_q;
+  logic [31:0]              kmac_pw_no_intg_d;
+  logic [BaseIntgWidth-1:0] kmac_pw_intg_d;
+  logic [BaseIntgWidth-1:0] kmac_pw_intg_calc;
+  logic                     kmac_pw_ispr_wr_en;
+  logic                     kmac_pw_wr_en;
+  logic [1:0]               kmac_pw_intg_err;
+  logic                     kmac_msg_valid_q;
+
+  logic [ExtWLEN-1:0] ispr_kmac_pw_bignum_wdata_intg_blanked;
+
+  prim_secded_inv_39_32_enc u_kmac_pw_secded_enc (
+    .data_i (kmac_pw_no_intg_d),
+    .data_o (kmac_pw_intg_calc)
+  );
+  prim_secded_inv_39_32_dec u_kmac_pw_secded_dec (
+    .data_i     (kmac_pw_intg_q),
+    .data_o     (/* unused because we abort on any integrity error */),
+    .syndrome_o (/* unused */),
+    .err_o      (kmac_pw_intg_err)
+  );
+
+  always_ff @(posedge clk_i) begin
+    if (kmac_pw_wr_en) begin
+      kmac_pw_intg_q  <= kmac_pw_intg_d;
+    end
+  end
+
+  always_comb begin
+    unique case(1'b1)
+      ispr_init_i: begin
+        kmac_pw_no_intg_d = 32'b0;
+        kmac_pw_intg_d    = kmac_pw_intg_calc;
+      end
+      ispr_base_wr_en_i[0]: begin
+        kmac_pw_no_intg_d = ispr_base_wdata_i;
+        kmac_pw_intg_d    = kmac_pw_intg_calc;
+      end
+      default: begin
+        kmac_pw_no_intg_d = 32'b0;
+        kmac_pw_intg_d    = ispr_kmac_pw_bignum_wdata_intg_blanked[38:0];
+      end
+    endcase
+  end
+
+  `ASSERT(KmacPWWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[0]}))
+
+  // Index 0 because only first 32-bit word contains cfg
+  assign kmac_pw_ispr_wr_en = (ispr_addr_i == IsprKmacPartialW) &
+                              (ispr_base_wr_en_i[0] | ispr_bignum_wr_en_i) &
+                              ispr_wr_commit_i;
+
+  assign kmac_pw_wr_en = (ispr_init_i | kmac_pw_ispr_wr_en) & ~kmac_msg_valid_q;
+
+  prim_blanker #(.Width(ExtWLEN)) u_ispr_kmac_pw_bignum_wdata_blanker (
+    .in_i (ispr_bignum_wdata_intg_i),
+    .en_i (ispr_predec_bignum_i.ispr_wr_en[IsprKmacPartialW]),
+    .out_o(ispr_kmac_pw_bignum_wdata_intg_blanked)
+  );
+
+  // MSG
+  logic [ExtWLEN-1:0]             kmac_msg_intg_q;
+  logic [ExtWLEN-1:0]             kmac_msg_intg_d;
+  logic [BaseWordsPerWLEN-1:0]    kmac_msg_ispr_wr_en;
+  logic [BaseWordsPerWLEN-1:0]    kmac_msg_wr_en;
+
+  logic [WLEN-1:0]                kmac_msg_no_intg_d;
+  logic [WLEN-1:0]                kmac_msg_no_intg_q;
+  logic [ExtWLEN-1:0]             kmac_msg_intg_calc;
+  logic [2*BaseWordsPerWLEN-1:0]  kmac_msg_intg_err;
+
+  logic                           kmac_msg_wr_stall;
+  logic                           kmac_msg_raw;
+
+  logic [ExtWLEN-1:0] ispr_kmac_msg_bignum_wdata_intg_blanked;
+
+  prim_blanker #(.Width(ExtWLEN)) u_ispr_kmac_msg_bignum_wdata_blanker (
+    .in_i (ispr_bignum_wdata_intg_i),
+    .en_i (ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg]),
+    .out_o(ispr_kmac_msg_bignum_wdata_intg_blanked)
+  );
+
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_kmac_msg_words
+    prim_secded_inv_39_32_enc i_kmac_msg_secded_enc (
+      .data_i (kmac_msg_no_intg_d[i_word*32+:32]),
+      .data_o (kmac_msg_intg_calc[i_word*39+:39])
+    );
+    prim_secded_inv_39_32_dec i_kmac_msg_secded_dec (
+      .data_i     (kmac_msg_intg_q[i_word*39+:39]),
+      .data_o     (/* unused because we abort on any integrity error */),
+      .syndrome_o (/* unused */),
+      .err_o      (kmac_msg_intg_err[i_word*2+:2])
+    );
+
+    always_ff @(posedge clk_i) begin
+      if (kmac_msg_wr_en[i_word]) begin
+        kmac_msg_intg_q[i_word*39+:39] <= kmac_msg_intg_d[i_word*39+:39];
+      end
+    end
+    assign kmac_msg_no_intg_q[i_word*32+:32] = kmac_msg_intg_q[i_word*39+:32];
+
+    always_comb begin
+      kmac_msg_no_intg_d[i_word*32+:32] = '0;
+      kmac_msg_intg_d[i_word*39+:39] = '0;
+      if (sec_wipe_kmac_regs_urnd_i) begin
+        // Non-encoded inputs have to be encoded before writing to the register.
+        kmac_msg_no_intg_d[i_word*32+:32] = urnd_data_i[i_word*32+:32];
+        kmac_msg_intg_d[i_word*39+:39] = kmac_msg_intg_calc[i_word*39+:39];
+      end else begin
+        // Pre-encoded inputs can directly be written to the register.
+        kmac_msg_intg_d[i_word*39+:39] = ispr_kmac_msg_bignum_wdata_intg_blanked[i_word*39+:39];
+      end
+    end
+
+    `ASSERT(KmacMsgWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
+
+    assign kmac_msg_ispr_wr_en[i_word] = (ispr_addr_i == IsprKmacMsg) &
+                                         (ispr_base_wr_en_i[i_word] | ispr_bignum_wr_en_i) &
+                                         ispr_wr_commit_i;
+
+    assign kmac_msg_wr_en[i_word] = (ispr_init_i |
+                                    (kmac_msg_ispr_wr_en[i_word] & kmac_msg_write_ready_o) |
+                                    sec_wipe_kmac_regs_urnd_i) & ~kmac_msg_wr_stall;
+  end
+
+  assign kmac_msg_raw = (ispr_addr_i == IsprKmacMsg) & ispr_wr_commit_i;
+
+  // STATUS
+  logic [BaseIntgWidth-1:0] kmac_status_intg_q;
+  logic [BaseIntgWidth-1:0] kmac_status_intg_d;
+  logic [31:0]              kmac_status_no_intg_d;
+  logic [1:0]               kmac_status_intg_err;
+
+  logic kmac_new_cfg_q;
+
+  assign kmac_status_no_intg_d = kmac_new_cfg_q ? 32'b0 : {29'b0, kmac_app_rsp_i.error, kmac_app_rsp_i.ready, kmac_app_rsp_i.done};
+
+  prim_secded_inv_39_32_enc u_kmac_status_secded_enc (
+    .data_i (kmac_status_no_intg_d),
+    .data_o (kmac_status_intg_d)
+  );
+  prim_secded_inv_39_32_dec u_kmac_status_secded_dec (
+    .data_i     (kmac_status_intg_q),
+    .data_o     (/* unused because we abort on any integrity error */),
+    .syndrome_o (/* unused */),
+    .err_o      (kmac_status_intg_err)
+  );
+
+  always_ff @(posedge clk_i) begin
+    kmac_status_intg_q <= kmac_status_intg_d;
+  end
+
+  // DIGEST
+  logic [kmac_pkg::AppDigestW-1:0]      unmasked_digest_share;
+  logic [DigestRegLen-1:0]              kmac_digest_no_intg_d;
+  logic [ExtDigestLen-1:0]              kmac_digest_intg_q;
+  logic [ExtDigestLen-1:0]              kmac_digest_intg_d;
+  logic [BaseWordsPerDigestLen-1:0]     kmac_digest_wr_en;
+  logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest_intg_err;
+  logic                                 kmac_digest_rd_next;
+  logic                                 kmac_digest_valid_q;
+  logic                                 kmac_digest_rd;
+
+  assign kmac_digest_valid_o = kmac_digest_valid_q & !kmac_digest_rd;
+  assign kmac_digest_rd_next = kmac_digest_rd && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_digest_rd <= 1'b0;
+    end else if (kmac_digest_rd_next || kmac_new_cfg_q) begin
+      kmac_digest_rd <= 1'b0;
+    end else if (ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest] && kmac_digest_valid_q) begin
+      kmac_digest_rd <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_digest_valid_q <= 1'b0;
+    end else if (kmac_digest_rd_next || kmac_new_cfg_q) begin
+      kmac_digest_valid_q <= 1'b0;
+    end else if (kmac_app_rsp_i.done) begin
+      kmac_digest_valid_q <= 1'b1;
+    end
+  end
+
+  for (genvar i_word = 0; i_word < BaseWordsPerDigestLen; i_word++) begin : g_kmac_digest_words
+    prim_secded_inv_39_32_enc i_kmac_digest_secded_enc (
+      .data_i (kmac_digest_no_intg_d[i_word*32+:32]),
+      .data_o (kmac_digest_intg_d[i_word*39+:39])
+    );
+    prim_secded_inv_39_32_dec i_kmac_digest_secded_dec (
+      .data_i     (kmac_digest_intg_q[i_word*39+:39]),
+      .data_o     (/* unused because we abort on any integrity error */),
+      .syndrome_o (/* unused */),
+      .err_o      (kmac_digest_intg_err[i_word*2+:2])
+    );
+
+    always_ff @(posedge clk_i) begin
+      if (kmac_digest_wr_en[i_word]) begin
+        kmac_digest_intg_q[i_word*39+:39] <= kmac_digest_intg_d[i_word*39+:39];
+      end
+    end
+
+    assign kmac_digest_no_intg_d[i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
+                                                    urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] :
+                                                    unmasked_digest_share[i_word*32+:32];
+
+    assign kmac_digest_wr_en[i_word] = kmac_app_rsp_i.done | sec_wipe_kmac_regs_urnd_i;
+  end
+
+  // Digest shares are xor'ed to get the unmasked share value
+  // If KMAC is operating in unmasked mode then share1 is '0 and xor remains the unmasked val
+  assign unmasked_digest_share = kmac_app_rsp_i.digest_share0 ^ kmac_app_rsp_i.digest_share1;
+
+  // MSG INTERFACE
+  sha3_pkg::sha3_mode_e           kmac_cfg_sha3_mode;
+  sha3_pkg::keccak_strength_e     kmac_cfg_keccak_strength;
+  logic [10:0]                    kmac_cfg_unused_msg_len;
+  logic [14:0]                    kmac_cfg_msg_len;
+  logic [11:0]                    kmac_cfg_msg_len_words;
+  logic [2:0]                     kmac_cfg_msg_len_bytes;
+  logic [11:0]                    kmac_msg_ctr;
+
+  logic                           kmac_msg_clr;
+  logic                           kmac_msg_fifo_wvalid;
+  logic                           kmac_msg_fifo_wready;
+  logic [WLEN-1:0]                kmac_msg_fifo_wdata;
+  logic [WLEN-1:0]                kmac_msg_fifo_wdata_mask;
+  logic                           kmac_msg_fifo_rvalid;
+  logic                           kmac_msg_fifo_rready;
+  logic [kmac_pkg::MsgWidth-1:0]  kmac_msg_fifo_rdata;
+  logic [kmac_pkg::MsgWidth-1:0]  kmac_msg_fifo_rdata_mask;
+  logic                           kmac_msg_fifo_flush;
+  logic [kmac_pkg::MsgStrbW-1:0]  kmac_msg_strb;
+  logic                           kmac_last_msg_all_bytes_valid;
+  logic [kmac_pkg::MsgStrbW-1:0]  kmac_last_msg_strb;
+
+  logic       packer_ctr_last;
+  logic [7:0] packer_rdata_mask;
+  logic [3:0] packer_rdata_mask_cnt;
+
+  logic kmac_msg_active_q;
+  logic kmac_cfg_active_q;
+  logic kmac_write_cfg_to_app;
+  logic kmac_msg_ctr_err;
+  logic kmac_msg_last;
+  logic kmac_idle_q;
+  logic kmac_cfg_done;
+  logic kmac_app_cfg_sent;
+  logic kmac_msg_fifo_pending;
+
+  assign kmac_cfg_sha3_mode       = sha3_pkg::sha3_mode_e'(kmac_cfg_intg_q[1:0]);
+  assign kmac_cfg_keccak_strength = sha3_pkg::keccak_strength_e'(kmac_cfg_intg_q[4:2]);
+  assign kmac_cfg_done            = kmac_cfg_intg_q[31];
+  assign kmac_cfg_msg_len         = kmac_cfg_intg_q[19:5];
+  assign kmac_cfg_msg_len_words   = kmac_cfg_msg_len[14:3];
+  assign kmac_cfg_msg_len_bytes   = kmac_cfg_msg_len[2:0];
+  assign kmac_msg_clr             = kmac_app_rsp_i.error | sec_wipe_kmac_regs_urnd_i | kmac_msg_ctr_err;
+
+  assign kmac_last_msg_all_bytes_valid = &(~kmac_cfg_msg_len_bytes);
+  for (genvar i_bit = 1; i_bit < kmac_pkg::MsgStrbW+1; i_bit++) begin
+    assign kmac_last_msg_strb[i_bit-1] = kmac_last_msg_all_bytes_valid ? 1'b1 :
+                                            (i_bit <= kmac_cfg_msg_len_bytes) ? 1'b1 : 1'b0;
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_new_cfg_q <= 1'b0;
+    end else if (kmac_cfg_wr_en & ~sec_wipe_kmac_regs_urnd_i & ~ispr_init_i) begin
+      kmac_new_cfg_q <= 1'b1;
+    end else begin
+      kmac_new_cfg_q <= 1'b0;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_msg_active_q <= 1'b0;
+      kmac_cfg_active_q <= 1'b0;
+    end else if (kmac_new_cfg_q) begin
+      kmac_msg_active_q <= 1'b0;
+      kmac_cfg_active_q <= 1'b1;
+    end else if (kmac_msg_clr || kmac_idle_q) begin
+      kmac_msg_active_q <= 1'b0;
+      kmac_cfg_active_q <= 1'b0;
+    end else if (kmac_msg_fifo_wready) begin //kmac_app_cfg_sent
+      kmac_msg_active_q <= kmac_cfg_active_q;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_msg_valid_q <= 1'b0;
+    end else if (|(kmac_msg_wr_en) & ~sec_wipe_kmac_regs_urnd_i & ~ispr_init_i) begin
+      kmac_msg_valid_q <= 1'b1;
+    end else if (kmac_msg_fifo_wready) begin
+      kmac_msg_valid_q <= 1'b0;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_idle_q <= 1'b1;
+    end else if (kmac_cfg_done) begin
+      kmac_idle_q <= 1'b1;
+    end else begin
+      kmac_idle_q <= 1'b0;
+    end
+  end
+
+  assign kmac_msg_wr_stall = (kmac_msg_raw & (~kmac_msg_fifo_wready));
+
+  assign kmac_write_cfg_to_app = kmac_cfg_active_q && (~kmac_msg_active_q | ~kmac_app_cfg_sent) && ~kmac_idle_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_app_cfg_sent <= 1'b0;
+    end else if (kmac_cfg_active_q) begin
+      if (kmac_app_rsp_i.ready) begin
+        kmac_app_cfg_sent <= 1'b1;
+      end
+    end else begin
+      kmac_app_cfg_sent <= 1'b0;
+    end
+  end
+
+  always_comb begin
+    kmac_msg_fifo_wdata_mask = '0;
+    for (int i = 0; i < 32; i++) begin
+      if (kmac_pw_intg_q[i])
+        kmac_msg_fifo_wdata_mask[i*8 +: 8] = 8'hFF;
+    end
+  end
+
+  always_comb begin
+    for (int i = 0; i < kmac_pkg::MsgStrbW; i++) begin
+      kmac_msg_strb[i] = |kmac_msg_fifo_rdata_mask[i*8 +: 8];
+    end
+  end
+
+  always_comb begin
+    for (int i = 0; i < kmac_pkg::MsgStrbW; i++) begin
+      // collapse each 8-bit chunk into one strb bit
+      packer_rdata_mask[i] = |kmac_msg_fifo_rdata_mask[i*8 +: 8];
+    end
+    packer_rdata_mask_cnt = $countones(packer_rdata_mask);
+  end
+
+  assign packer_ctr_last = (kmac_cfg_msg_len_bytes == packer_rdata_mask_cnt) ? 1'b1 : 1'b0;
+
+  assign kmac_msg_fifo_flush = (kmac_msg_last && (kmac_cfg_msg_len_bytes != 3'h0));
+
+  prim_packer #(
+    .InW  (WLEN),
+    .OutW (kmac_pkg::MsgWidth)
+  ) u_kmac_msg_fifo (
+    .clk_i,
+    .rst_ni,
+
+    .valid_i      (kmac_msg_fifo_wvalid),
+    .data_i       (kmac_msg_fifo_wdata),
+    .mask_i       (kmac_msg_fifo_wdata_mask),
+    .ready_o      (kmac_msg_fifo_wready),
+
+    .valid_o      (kmac_msg_fifo_rvalid),
+    .data_o       (kmac_msg_fifo_rdata),
+    .mask_o       (kmac_msg_fifo_rdata_mask),
+    .ready_i      (kmac_msg_fifo_rready),
+
+    .flush_i      (kmac_msg_clr || kmac_new_cfg_q || kmac_msg_fifo_flush),
+    .flush_done_o (),
+
+    .err_o        ()
+  );
+
+  prim_count #(
+    .Width (12),
+    .EnableAlertTriggerSVA('0)
+  ) u_kmac_msg_ctr (
+    .clk_i,
+    .rst_ni,
+
+    .clr_i              (kmac_msg_clr || kmac_new_cfg_q),
+    .set_i              (1'b0),
+    .set_cnt_i          ({(12){1'b0}}),
+    .incr_en_i          (kmac_msg_fifo_rvalid & kmac_app_rsp_i.ready & kmac_msg_fifo_rready),
+    .decr_en_i          (1'b0),
+    .step_i             ({{(11){1'b0}}, {1'b1}}),
+    .commit_i           (1'b1),
+    .cnt_o              (kmac_msg_ctr),
+    .cnt_after_commit_o (/* unused */),
+    .err_o              (kmac_msg_ctr_err)
+  );
+
+  // fifo write iface
+  assign kmac_msg_fifo_wdata      = kmac_msg_no_intg_q;
+  assign kmac_msg_fifo_wvalid     = kmac_msg_valid_q & kmac_msg_fifo_wready;
+  assign kmac_msg_write_ready_o   = kmac_msg_fifo_wready;
+  assign kmac_msg_pending_write_o = kmac_msg_valid_q;
+
+  // fifo read iface
+  assign kmac_msg_last = (kmac_cfg_msg_len_bytes == 3'h0) ? (kmac_msg_ctr >= kmac_cfg_msg_len_words - 1) : ((kmac_msg_ctr >= kmac_cfg_msg_len_words) && packer_ctr_last);
+  assign kmac_msg_fifo_rready = kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app; //kmac_app_cfg_sent
+  assign kmac_app_req_o.valid = (kmac_write_cfg_to_app) ? 1'b1 : kmac_msg_fifo_rvalid & ~kmac_new_cfg_q; //kmac_app_cfg_sent
+  assign kmac_app_req_o.data  = kmac_write_cfg_to_app ?
+                                  {59'b0, kmac_cfg_keccak_strength, kmac_cfg_sha3_mode} :
+                                  kmac_msg_fifo_rdata;
+  assign kmac_app_req_o.strb  = kmac_write_cfg_to_app ?
+                                  8'h01 : kmac_app_req_o.last ? kmac_msg_strb : {(kmac_pkg::MsgStrbW){1'b1}};
+  assign kmac_app_req_o.last  = kmac_msg_fifo_rvalid & kmac_msg_last;
+  assign kmac_app_req_o.next  = kmac_digest_rd & ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
+  assign kmac_app_req_o.hold  = kmac_cfg_active_q & ~kmac_new_cfg_q & ~kmac_cfg_done;
+
   /////////
   // ACC //
   /////////
@@ -434,21 +926,25 @@ module otbn_alu_bignum
   // 2. Select between the ISPRs that have integrity bits and the result of the first stage.
 
   // Number of ISPRs that have integrity protection
-  localparam int NIntgIspr = 2;
+  localparam int NIntgIspr = 4;
   // IDs fpr ISPRs with integrity
-  localparam int IsprModIntg = 0;
-  localparam int IsprAccIntg = 1;
+  localparam int IsprModIntg        = 0;
+  localparam int IsprAccIntg        = 1;
+  localparam int IsprKmacMsgIntg    = 2;
+  localparam int IsprKmacDigestIntg = 3;
   // ID representing all ISPRs with no integrity
-  localparam int IsprNoIntg = 2;
+  localparam int IsprNoIntg         = 4;
 
   logic [NIntgIspr:0] ispr_rdata_intg_mux_sel;
   logic [ExtWLEN-1:0] ispr_rdata_intg_mux_in    [NIntgIspr+1];
   logic [WLEN-1:0]    ispr_rdata_no_intg_mux_in [NIspr];
 
   // First stage
-  // MOD and ACC supply their own integrity so these values are unused
-  assign ispr_rdata_no_intg_mux_in[IsprMod] = 0;
-  assign ispr_rdata_no_intg_mux_in[IsprAcc] = 0;
+  // MOD, ACC, KMAC_MSG and KMAC_DIGEST supply their own integrity so these values are unused
+  assign ispr_rdata_no_intg_mux_in[IsprMod]         = 0;
+  assign ispr_rdata_no_intg_mux_in[IsprAcc]         = 0;
+  assign ispr_rdata_no_intg_mux_in[IsprKmacMsg]     = 0;
+  assign ispr_rdata_no_intg_mux_in[IsprKmacDigest]  = 0;
 
   assign ispr_rdata_no_intg_mux_in[IsprRnd]    = rnd_data_i;
   assign ispr_rdata_no_intg_mux_in[IsprUrnd]   = urnd_data_i;
@@ -461,6 +957,8 @@ module otbn_alu_bignum
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1L] = sideload_key_shares_i[1][255:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
                                                   sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
+  assign ispr_rdata_no_intg_mux_in[IsprKmacCfg]     = {224'b0, kmac_cfg_intg_q[31:0]};
+  assign ispr_rdata_no_intg_mux_in[IsprKmacStatus]  = {224'b0, kmac_status_intg_q[31:0]};
 
   logic [WLEN-1:0]    ispr_rdata_no_intg;
   logic [ExtWLEN-1:0] ispr_rdata_intg_calc;
@@ -485,18 +983,25 @@ module otbn_alu_bignum
   end
 
   // Second stage
-  assign ispr_rdata_intg_mux_in[IsprModIntg] = mod_intg_q;
-  assign ispr_rdata_intg_mux_in[IsprAccIntg] = ispr_acc_intg_i;
-  assign ispr_rdata_intg_mux_in[IsprNoIntg]  = ispr_rdata_intg_calc;
+  assign ispr_rdata_intg_mux_in[IsprModIntg]        = mod_intg_q;
+  assign ispr_rdata_intg_mux_in[IsprAccIntg]        = ispr_acc_intg_i;
+  assign ispr_rdata_intg_mux_in[IsprKmacMsgIntg]    = kmac_msg_intg_q;
+  assign ispr_rdata_intg_mux_in[IsprKmacDigestIntg] = kmac_digest_intg_q;
+  assign ispr_rdata_intg_mux_in[IsprNoIntg]         = ispr_rdata_intg_calc;
 
-  assign ispr_rdata_intg_mux_sel[IsprModIntg] = ispr_predec_bignum_i.ispr_rd_en[IsprMod];
-  assign ispr_rdata_intg_mux_sel[IsprAccIntg] = ispr_predec_bignum_i.ispr_rd_en[IsprAcc];
+  assign ispr_rdata_intg_mux_sel[IsprModIntg]         = ispr_predec_bignum_i.ispr_rd_en[IsprMod];
+  assign ispr_rdata_intg_mux_sel[IsprAccIntg]         = ispr_predec_bignum_i.ispr_rd_en[IsprAcc];
+  assign ispr_rdata_intg_mux_sel[IsprKmacMsgIntg]     = ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg];
+  assign ispr_rdata_intg_mux_sel[IsprKmacDigestIntg]  = ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
 
   assign ispr_rdata_intg_mux_sel[IsprNoIntg]  =
     |{ispr_predec_bignum_i.ispr_rd_en[IsprKeyS1H:IsprKeyS0L],
       ispr_predec_bignum_i.ispr_rd_en[IsprUrnd],
       ispr_predec_bignum_i.ispr_rd_en[IsprFlags],
-      ispr_predec_bignum_i.ispr_rd_en[IsprRnd]};
+      ispr_predec_bignum_i.ispr_rd_en[IsprRnd],
+      ispr_predec_bignum_i.ispr_rd_en[IsprKmacCfg],
+      ispr_predec_bignum_i.ispr_rd_en[IsprKmacPartialW],
+      ispr_predec_bignum_i.ispr_rd_en[IsprKmacStatus]};
 
   // If we're reading from an ISPR we must be using the ispr_rdata_intg_mux
   `ASSERT(IsprRDataIntgMuxSelIfIsprRd_A,
@@ -955,18 +1460,26 @@ module otbn_alu_bignum
   // not none. If `shift_mod_sel` is low, `mod_intg_q` flows into `adder_y_op_b` and from there
   // into `adder_y_res`.  In this case, `mod_intg_q` is used iff  `adder_y_res` flows into
   // `operation_result_o`.
-  logic mod_used;
+  logic mod_used, kmac_used;
   assign mod_used = operation_valid_i & (operation_i.op != AluOpBignumNone)
                     & !alu_predec_bignum_i.shift_mod_sel & adder_y_res_used;
+  assign kmac_used = operation_valid_i & (operation_i.op != AluOpBignumNone) & ( |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg])    |
+                                                                                 |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest]) |
+                                                                                 |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacCfg])    |
+                                                                                 |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacStatus]) );
   `ASSERT_KNOWN(ModUsed_A, mod_used)
+  `ASSERT_KNOWN(KmacUsed_A, kmac_used)
 
   // Raise a register integrity violation error iff `mod_intg_q` is used and (at least partially)
   // invalid.
-  assign reg_intg_violation_err_o = mod_used & |(mod_intg_err);
+  assign reg_intg_violation_err_o = (mod_used & |(mod_intg_err)) | (kmac_used & ( |(kmac_msg_intg_err)    |
+                                                                                  |(kmac_cfg_intg_err)    |
+                                                                                  |(kmac_status_intg_err) |
+                                                                                  |(kmac_digest_intg_err) ));
   `ASSERT_KNOWN(RegIntgErrKnown_A, reg_intg_violation_err_o)
 
   // Detect and signal unexpected secure wipe signals.
-  assign sec_wipe_err_o = sec_wipe_mod_urnd_i & ~sec_wipe_running_i;
+  assign sec_wipe_err_o = (sec_wipe_kmac_regs_urnd_i | sec_wipe_mod_urnd_i) & ~sec_wipe_running_i;
 
   // Blanking Assertions
   // All blanking assertions are reset with predec_error or overall error in the whole system
@@ -1024,6 +1537,16 @@ module otbn_alu_bignum
   // MOD ISPR Blanking
   `ASSERT(BlankingIsprMod_A,
           !(|mod_wr_en) |-> ispr_mod_bignum_wdata_intg_blanked == '0,
+          clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
+
+  // KMAC CFG ISPR Blanking
+  `ASSERT(BlankingIsprKmacCfg_A,
+          !(|kmac_cfg_wr_en) |-> ispr_kmac_cfg_bignum_wdata_intg_blanked == '0,
+          clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
+
+  // KMAC MSG ISPR Blanking
+  `ASSERT(BlankingIsprKmacMsgA,
+          !((|kmac_msg_wr_en) | ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg]) |-> ispr_kmac_msg_bignum_wdata_intg_blanked == '0,
           clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
 
   // ACC ISPR Blanking

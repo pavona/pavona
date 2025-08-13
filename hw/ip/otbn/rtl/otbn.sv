@@ -1,4 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192)
+// Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -74,7 +77,11 @@ module otbn
   output otp_ctrl_pkg::otbn_otp_key_req_t otbn_otp_key_o,
   input  otp_ctrl_pkg::otbn_otp_key_rsp_t otbn_otp_key_i,
 
-  input keymgr_pkg::otbn_key_req_t keymgr_key_i
+  input keymgr_pkg::otbn_key_req_t keymgr_key_i,
+
+  // KMAC interface
+  output kmac_pkg::app_req_t      kmac_data_o,
+  input  kmac_pkg::app_rsp_t      kmac_data_i
 );
 
   import prim_mubi_pkg::*;
@@ -142,6 +149,12 @@ module otbn
 
   tlul_pkg::tl_h2d_t tl_win_h2d[2];
   tlul_pkg::tl_d2h_t tl_win_d2h[2];
+
+  kmac_pkg::app_req_t kmac_req;
+  kmac_pkg::app_rsp_t kmac_rsp;
+
+  assign kmac_data_o = kmac_req;
+  assign kmac_rsp    = kmac_data_i;
 
   // The clock can be gated and some registers can be updated as long as OTBN isn't currently
   // running. Other registers can only be updated when OTBN is in the Idle state (which also implies
@@ -1157,7 +1170,10 @@ module otbn
     .software_errs_fatal_i       (software_errs_fatal_q),
 
     .sideload_key_shares_i       (keymgr_key_i.key),
-    .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
+    .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}}),
+
+    .kmac_app_req_o (kmac_req),
+    .kmac_app_rsp_i (kmac_rsp)
   );
 
   always_ff @(posedge clk_i or negedge rst_n) begin

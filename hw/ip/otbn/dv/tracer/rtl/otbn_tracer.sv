@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -90,6 +91,9 @@ module otbn_tracer (
       IsprRnd: return "RND";
       IsprFlags: return "FLAGS";
       IsprUrnd: return "URND";
+      IsprKmacMsg: return "KMAC_MSG";
+      IsprKmacCfg: return "KMAC_CFG";
+      IsprKmacPartialW: return "KMAC_PARTIAL_WRITE";
       default: return "UNKNOWN_ISPR";
     endcase
   endfunction

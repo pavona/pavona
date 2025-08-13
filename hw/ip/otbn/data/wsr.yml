@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -67,3 +68,20 @@
     Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
     A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+
+- name: kmac_cfg
+  address: 8
+  doc: |
+    Contains the configuration bits for sending KMAC messages.
+    Also visible as a kmac_cfg CSR.
+
+- name: kmac_msg
+  address: 9
+  doc: |
+    The kmac msg to send over AppIntf.
+    A byte mask is applied to the msg from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
+
+- name: kmac_digest
+  address: 10
+  doc: |
+    Return digest from AppIntf.

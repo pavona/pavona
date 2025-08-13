@@ -1,4 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192)
+// Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -479,20 +482,28 @@ module otbn_predecode
         CsrFlags, CsrFg0, CsrFg1:           ispr_addr = IsprFlags;
         CsrMod0, CsrMod1, CsrMod2, CsrMod3,
         CsrMod4, CsrMod5, CsrMod6, CsrMod7: ispr_addr = IsprMod;
+        CsrKmacCfg: ispr_addr = IsprKmacCfg;
+        CsrKmacDigestW0, CsrKmacDigestW1, CsrKmacDigestW2, CsrKmacDigestW3, CsrKmacDigestW4,
+        CsrKmacDigestW5, CsrKmacDigestW6, CsrKmacDigestW7: ispr_addr = IsprKmacDigest;
+        CsrKmacPartialW:                    ispr_addr = IsprKmacPartialW;
+        CsrKmacStatus:                      ispr_addr = IsprKmacStatus;
         CsrRnd:                             ispr_addr = IsprRnd;
         CsrUrnd:                            ispr_addr = IsprUrnd;
         default: ;
       endcase
     end else begin
       unique case (wsr_addr)
-        WsrMod:    ispr_addr = IsprMod;
-        WsrRnd:    ispr_addr = IsprRnd;
-        WsrUrnd:   ispr_addr = IsprUrnd;
-        WsrAcc:    ispr_addr = IsprAcc;
-        WsrKeyS0L: ispr_addr = IsprKeyS0L;
-        WsrKeyS0H: ispr_addr = IsprKeyS0H;
-        WsrKeyS1L: ispr_addr = IsprKeyS1L;
-        WsrKeyS1H: ispr_addr = IsprKeyS1H;
+        WsrMod:           ispr_addr = IsprMod;
+        WsrKmacCfg:       ispr_addr = IsprKmacCfg;
+        WsrKmacMsg:       ispr_addr = IsprKmacMsg;
+        WsrKmacDigest:    ispr_addr = IsprKmacDigest;
+        WsrRnd:           ispr_addr = IsprRnd;
+        WsrUrnd:          ispr_addr = IsprUrnd;
+        WsrAcc:           ispr_addr = IsprAcc;
+        WsrKeyS0L:        ispr_addr = IsprKeyS0L;
+        WsrKeyS0H:        ispr_addr = IsprKeyS0H;
+        WsrKeyS1L:        ispr_addr = IsprKeyS1L;
+        WsrKeyS1H:        ispr_addr = IsprKeyS1H;
         default: ;
       endcase
     end
