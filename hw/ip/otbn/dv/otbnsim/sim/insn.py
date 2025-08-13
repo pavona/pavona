@@ -1,8 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
 # Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
 
 from typing import Dict, Iterator, Optional
@@ -574,6 +575,16 @@ class CSRRW(OTBNInsn):
             # value is available, it returns True.
             while not state.wsrs.RND.request_value():
                 # There's a pending EDN request. Stall for a cycle.
+                yield None
+
+        if self.csr == 0x7f3:
+            # A write to KMAC_PW might stall, if there is a pending write
+            # to the AppIntf FIFO inside OTBN Bignum ALU
+            if DEBUG_KMAC:
+                eprint("\tBNWSRW FOR KMAC PARTIAL WRITE REGISTER")
+            while state.wsrs.KMAC_MSG.pending_write():
+                if DEBUG_KMAC:
+                    eprint("\tBNWSRW to KMAC_PW stall")
                 yield None
 
         # At this point, the CSR is either ready or unneeded. Read it if
@@ -1620,14 +1631,14 @@ class BNWSRW(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         if DEBUG_KMAC:
-            print("\tRun BNWSRW")
+            eprint(f"\tRun BNWSRW Address {self.wsr}")
         dest_wsrs = state.wsrs._by_idx[self.wsr]
         if self.wsr == 0x9:
             # A write to KMAC_MSG might stall, if the register has not yet pushed
             # all its contents to the FIFO connected to the KMAC app interface.
             while not state.wsrs.KMAC_MSG.request_write():
                 if DEBUG_KMAC:
-                    print("\tBNWSRW to KMAC_MSG stall")
+                    eprint("\tBNWSRW to KMAC_MSG stall")
                 dest_wsrs.stalled = True
                 yield None
 

@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -95,6 +96,32 @@
   doc: |
     Write to this CSR to begin a request to fill the RND cache.
     Always reads as 0.
+
+- name: kmac_cfg
+  address: 0x7d9
+  doc: |
+    Write to this CSR to set the configuration for KMAC msg.
+    Bit  [31]   Cfg Done
+    Bits [19:8] Number of 64-bit words in message
+    Bits [7:5]  Number of bytes in final word
+    Bits [4:2]  Keccak Strength
+    Bits [1:0]  SHA3 Mode
+    This CSR is mapped to the KMAC CFG WSR.
+
+- name: kmac_status
+  address: 0x7e2
+  read-only: true
+  doc: |
+    Contains status bits for KMAC operations and return digest
+    Bit [2]   Digest error
+    Bit [1]   KMAC Ready
+    Bit [0]   Digest Done
+
+- name: kmac_partial_write
+  address: 0x7f3
+  doc: |
+    Partial write msg register used as a byte-mask for the msg being written into the internal MSG FIFO.
+    The value of this CSR should be contiguous ex.) 32'h0000_ffff is valid and 32'h0000_feff is not.
 
 - name: rnd
   address: 0xfc0

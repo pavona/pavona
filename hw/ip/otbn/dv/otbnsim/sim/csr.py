@@ -1,8 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
 # Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
 
 from .flags import FlagGroups
@@ -23,6 +24,7 @@ class CSRFile:
         self._known_indices.add(0x7d8)  # RND_PREFETCH
         self._known_indices.add(0x7d9)  # KMAC_CFG
         self._known_indices.add(0x7e2)  # KMAC_STATUS
+        self._known_indices.add(0x7f3)  # KMAC_PARTIAL_WRITE
         self._known_indices.add(0xfc0)  # RND
         self._known_indices.add(0xfc1)  # URND
 
@@ -80,6 +82,10 @@ class CSRFile:
             digest_n = idx - 0x7eb
             return self._get_field(digest_n, 32, wsrs.KMAC_DIGEST_SHARE1.read_unsigned())
 
+        if idx == 0x7f3:
+            # KMAC_PARTIAL_WRITE
+            return 0
+
         if idx == 0xfc0:
             # RND register
             return wsrs.RND.read_u32()
@@ -129,6 +135,10 @@ class CSRFile:
         if 0x7e3 <= idx <= 0x7f2:
             # KMAC_DIGEST_SHARE0 and _SHARE1
             return
+
+        if idx == 0x7f3:
+            wsrs.KMAC_PARTIAL_WRITE.write_unsigned(value)
+            return 0
 
         if idx == 0xfc0:
             # RND register (which ignores writes)

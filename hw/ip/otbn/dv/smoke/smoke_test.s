@@ -1,4 +1,5 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -116,6 +117,28 @@ csrrw x0, mod0, x23
 
 # x22 = 0x89c9b54f
 csrrs x23, mod5, x0
+
+bn.wsrr w1, 0x0 /* MOD 82a 4ea*/
+li x23, 0xdeadbeef
+csrrw x0, mod7, x23
+bn.wsrr w2, 0x0 /* MOD 82a 4ea*/
+li x23, 0x000004ea
+csrrw x0, kmac_cfg, x23
+li x23, 0x03ffffff
+csrrw x0, kmac_partial_write, x23
+bn.wsrw 0x9, w1 /* MSG */
+li x23, 0x00001fff
+csrrw x0, kmac_partial_write, x23
+bn.wsrw 0x9, w1 /* MSG */
+bn.wsrr w1, 0xa /* DIGEST */
+bn.wsrr w1, 0xa /* DIGEST */
+bn.wsrr w1, 0xa /* DIGEST */
+bn.wsrr w1, 0xa /* DIGEST */
+bn.wsrr w1, 0xa /* DIGEST */
+li x23, 0x800004ea /* STOP CFG 0x8000040a */
+csrrw x0, kmac_cfg, x23
+
+li x23, 0x53769ada
 
 # Note that some instructions used the fixed inputs (from w1 and w2) others use
 # results from previous instructions. When debugging an failure it is recommended
