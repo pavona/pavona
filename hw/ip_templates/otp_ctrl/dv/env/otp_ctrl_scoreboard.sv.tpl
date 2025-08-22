@@ -1695,7 +1695,7 @@ else:
 
         // In data read phase, check d_data when d_error = 1.
         if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
-          check_tl_read_value_after_error(item, ral_name);
+          check_tl_read_value_after_error(item, cfg.ral_models[ral_name]);
         end
       end
       return 1;
