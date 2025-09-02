@@ -342,7 +342,8 @@
     ]
     rst_ni: lc_io
     export_rsts: {}
-    with_alert_handler: true
+    with_alert_dump: true
+    with_cpu_dump: true
     topname: darjeeling
     uniquified_modules: {}
     module_instance_name: rstmgr

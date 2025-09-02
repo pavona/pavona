@@ -8,10 +8,12 @@ description: "Reset manager RTL"
 filesets:
   files_rtl:
     depend:
-% if with_alert_handler:
+% if with_alert_dump:
       - ${instance_vlnv("lowrisc:ip:alert_handler_pkg")}
 % endif
+% if with_cpu_dump:
       - lowrisc:ip:rv_core_ibex_pkg
+% endif
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:esc
