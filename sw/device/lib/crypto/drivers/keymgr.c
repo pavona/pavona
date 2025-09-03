@@ -83,9 +83,12 @@ static void keymgr_start(keymgr_diversification_t diversification) {
  * Wait for the key manager to finish an operation.
  *
  * Polls the key manager until it is no longer busy. If the operation completed
- * successfully or the key manager was already idle, returns OTCRYPTO_OK. If
- * there was an error during the operation, reads and clears the error code
- * and returns OTCRYPTO_RECOV_ERR; the operation can be retried afterwards.
+ * successfully, returns OTCRYPTO_OK. If there was an error during the
+ * operation, reads and clears the error code and returns OTCRYPTO_RECOV_ERR;
+ * the operation can be retried afterwards.
+ *
+ * This function assumes an operation has already been started by the caller.
+ * The function traps if the keymgr is already idle.
  *
  * @return OK or error.
  */
@@ -106,13 +109,12 @@ static status_t keymgr_wait_until_done(void) {
   HARDENED_CHECK_EQ(
       abs_mmio_read32(keymgr_base() + KEYMGR_OP_STATUS_REG_OFFSET), 0);
 
-  // Check if the key manager reported errors. If it is already idle or
-  // completed an operation successfully, return an OK status. No other
-  // statuses (e.g. WIP) should be possible.
-  switch (launder32(status)) {
-    case KEYMGR_OP_STATUS_STATUS_VALUE_IDLE:
-      HARDENED_CHECK_EQ(status, KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
-      return OTCRYPTO_OK;
+  // Check if the key manager reported errors. If it completed an operation
+  // successfully, return an OK status. No other statuses (e.g. WIP) should
+  // be possible.
+  // The `IDLE` status is left unhandled because the keymgr should never be
+  // idle after an operation has been started by the caller.
+  switch (status) {
     case KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS:
       HARDENED_CHECK_EQ(status, KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
       return OTCRYPTO_OK;
