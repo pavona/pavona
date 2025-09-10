@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -77,6 +81,48 @@ p384_base_mult_checked:
 
   /* Fail if FG0.Z is false. */
   jal       x1, trigger_fault_if_fg0_not_z
+
+  ret
+
+
+/**
+ * Trigger a fault if the FG0.Z flag is 0.
+ *
+ * If the flag is 0, then this routine will trigger an `ILLEGAL_INSN` error and
+ * abort the OTBN program. If the flag is 1, the routine will essentially do
+ * nothing.
+ *
+ * NOTE: Be careful when calling this routine that the FG0.Z flag is not
+ * sensitive; since aborting the program will be quicker than completing it,
+ * the flag's value is likely clearly visible to an attacker through timing.
+ *
+ * @param[in]    w31: all-zero
+ * @param[in]  FG0.Z: boolean indicating (complement of) fault condition
+ *
+ * clobbered registers: x2
+ * clobbered flag groups: none
+ */
+trigger_fault_if_fg0_not_z:
+  /* Read the FG0.Z flag (position 3).
+       x2 <= FG0.Z */
+  csrrw     x2, FG0, x0
+  andi      x2, x2, 8
+  srli      x2, x2, 3
+
+  /* Subtract 1 from FG0.Z.
+       x2 <= x2 - 1 = FG0.Z ? 0 : 2^32 - 1 */
+  addi      x2, x2, -1
+
+  /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
+     memory address is out of bounds. Therefore, if FG0.Z is 0, this
+     instruction causes an error, but if FG0.Z is 1 it simply loads the word at
+     address 0 into w31. */
+  li         x3, 31
+  bn.lid     x3, 0(x2)
+
+  /* If we get here, the flag must have been 1. Restore w31 to zero and return.
+       w31 <= 0 */
+  bn.xor     w31, w31, w31
 
   ret
 

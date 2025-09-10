@@ -533,6 +533,20 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p384_base_mult_checked_test",
+    srcs = [
+        "p384_base_mult_checked_test.s",
+    ],
+    exp = "p384_base_mult_checked_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_base_mult",
+        "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_isoncurve",
+    ],
+)
+
+otbn_sim_test(
     name = "p384_boolean_to_arithmetic_test",
     srcs = [
         "p384_boolean_to_arithmetic_test.s",
