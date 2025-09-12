@@ -200,6 +200,10 @@ scalar_mult_int_p384:
   bn.sid    x2++, 192(x30)
   bn.sid    x2++, 224(x30)
   bn.sid    x2++, 448(x30)
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.sid    x2++, 480(x30)
 
   /* get randomized projective coodinates of curve point

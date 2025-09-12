@@ -118,6 +118,12 @@ p384_key_from_seed:
   bn.sel    w6, w11, w25, FG0.C
   bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
+  /* Clear w25 before over writing it with a different share. */
+  bn.xor    w25, w25, w25
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[384] << 128 */
   bn.rshi   w25, w31, w21 >> 128
@@ -168,6 +174,12 @@ p384_key_from_seed:
   jal       x1, mul384
   bn.mov    w1, w18
   bn.mov    w2, w19
+
+  /* Clear regs. */
+  bn.xor    w10, w10, w10
+  bn.xor    w11, w11, w11
+  bn.xor    w18, w18, w18
+  bn.xor    w19, w19, w19
 
   /* N.B. We clear flags after this step to prevent the flags from leaking
      information about d1'.
