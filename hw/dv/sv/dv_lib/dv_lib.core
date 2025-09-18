@@ -19,6 +19,7 @@ filesets:
 
       - dv_pair.sv: {is_include_file: true}
       - dv_callback.sv: {is_include_file: true}
+      - dv_rst_domain.sv: {is_include_file: true}
       - dv_rst_safe_base_driver.sv: {is_include_file: true}
       - dv_monitor.sv: {is_include_file: true}
       - dv_rst_safe_base_monitor.sv: {is_include_file: true}

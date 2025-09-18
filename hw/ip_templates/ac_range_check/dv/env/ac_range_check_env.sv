@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +13,9 @@ class ac_range_check_env extends cip_base_env #(
 
   tl_agent tl_unfilt_agt;
   tl_agent tl_filt_agt;
+
+  clk_rst_agent clk_rst_agt;
+  delay_agent   delay_agt;
 
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
@@ -36,6 +40,19 @@ function void ac_range_check_env::build_phase(uvm_phase phase);
   tl_filt_agt = tl_agent::type_id::create("tl_filt_agt", this);
   uvm_config_db#(tl_agent_cfg)::set(this, "tl_filt_agt*", "cfg", cfg.tl_filt_agt_cfg);
   cfg.tl_filt_agt_cfg.en_cov = cfg.en_cov;
+
+  // clk_rst_agent establishes the default reset_domain that all other agents should use in the
+  // testbench. If there are more than one reset domains for the block/toplevel multiple clock
+  // agents with their associated reset domains should be establishec
+  clk_rst_agt = clk_rst_agent::type_id::create("clk_rst_agt", this);
+  uvm_config_db#(clk_rst_agent_cfg)::set(this, "clk_rst_agt*", "cfg", cfg.clk_rst_agt_cfg);
+  cfg.clk_rst_agt_cfg.en_cov       = cfg.en_cov;
+  cfg.clk_rst_agt_cfg.reset_domain = cfg.reset_domain;
+
+  // delay agent uses the same reset domain parameters that the clk_rst_agent uses as it works on
+  // the same underlying interface.
+  delay_agt = delay_agent::type_id::create("delay_agt", this);
+  uvm_config_db#(clk_rst_agent_cfg)::set(this, "delay_agt*", "cfg", cfg.clk_rst_agt_cfg);
 
   // Retrieve the ac_range_check_misc_io_if virtual interface
   if (!uvm_config_db#(misc_vif_t)::get(this, "", "misc_vif", cfg.misc_vif)) begin

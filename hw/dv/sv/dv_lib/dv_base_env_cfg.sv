@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -54,6 +55,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   virtual clk_rst_if  clk_rst_vifs[string];
   rand uint clk_freq_mhz;
   rand uint clk_freqs_mhz[string];
+
+  dv_rst_domain reset_domain;
+  dv_rst_domain reset_domains[string];
 
   constraint clk_freq_mhz_c {
     `DV_COMMON_CLK_CONSTRAINT(clk_freq_mhz)

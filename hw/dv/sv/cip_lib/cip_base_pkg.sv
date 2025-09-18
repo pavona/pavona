@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +12,7 @@ package cip_base_pkg;
   import dv_lib_pkg::*;
   import dv_base_reg_pkg::*;
   import tlul_pkg::*;
+  import clk_rst_agent_pkg::*;
   import tl_agent_pkg::*;
   import alert_esc_agent_pkg::*;
   import push_pull_agent_pkg::*;

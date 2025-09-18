@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +9,7 @@ package ac_range_check_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
+  import clk_rst_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;

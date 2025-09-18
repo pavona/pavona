@@ -24,6 +24,7 @@ package dv_lib_pkg;
   `include "dv_callback.sv"
   `include "dv_monitor.sv"
   `include "dv_sequencer_list.sv"
+  `include "dv_rst_domain.sv"
 
   // base agent
   `include "dv_base_agent_cfg.sv"

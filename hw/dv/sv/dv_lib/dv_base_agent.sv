@@ -31,7 +31,7 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
 
     // create components
     if (cfg.en_cov) begin
-      cov = COV_T ::type_id::create("cov", this);
+      cov = COV_T::type_id::create("cov", this);
       cov.cfg = cfg;
     end
 
@@ -64,4 +64,12 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
     end
   endfunction
 
+  // TODO: All agents will need to be associated with atleast one reset domain.
+  // As TB's transition to using reset domains this check is vital to ensure all agents clocking is
+  // only coming from the interface in the reset domain
+  // function void start_of_simulation_phase(uvm_phase phase);
+  //   super.start_of_simulation_phase(phase);
+  //   if (cfg.reset_domain == null)
+  //     `uvm_fatal(`gfn, "'cfg.reset_domain' is null. Resolve this before proceeding")
+  // endfunction
 endclass

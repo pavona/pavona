@@ -49,12 +49,16 @@ task dv_rst_safe_base_monitor::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
+  if (cfg.reset_domain == null)  begin
+    `uvm_fatal (`gfn, "cfg.reset_domain == null, please ensure reset_domain is setup in cfg")
+  end
+
   // The first reset is POR. Wait until a full reset cycle is observed before
   // capturing any transaction on the interface
-  wait (!cfg.vif.rst_n);
+  cfg.reset_domain.wait_reset_assert();
   reset_monitor();
 
-  wait (cfg.vif.rst_n);
+  cfg.reset_domain.wait_reset_deassert();
 
   forever begin
     // At this point reset is released and the monitor is the default state. We now need to monitor
@@ -65,7 +69,7 @@ task dv_rst_safe_base_monitor::run_phase(uvm_phase phase);
       begin : reset_thread
         // Capture Process handle for the spawned process
         reset_thread_id = process::self();
-        wait (!cfg.vif.rst_n);
+        cfg.reset_domain.wait_reset_assert();
         reset_monitor();
       end
       begin : interface_monitor_thread
@@ -96,7 +100,7 @@ task dv_rst_safe_base_monitor::run_phase(uvm_phase phase);
       `uvm_fatal (`gfn, "collect_trans() thread finished before reset thread")
     end
 
-    wait (cfg.vif.rst_n);
+    cfg.reset_domain.wait_reset_deassert();
   end // forever
 endtask
 

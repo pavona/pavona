@@ -13,7 +13,6 @@ filesets:
     files:
       - common_ifs_pkg.sv
       - clk_if.sv
-      - clk_rst_if.sv
     file_type: systemVerilogSource
 
 targets:

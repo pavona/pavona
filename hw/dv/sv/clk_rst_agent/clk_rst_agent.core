@@ -1,0 +1,32 @@
+CAPI=2:
+# Copyright zeroRISC Inc
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:clk_rst_agent:0.1"
+description: "Clock and Reset DV UVM agent"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+    files:
+      - clk_rst_if.sv
+      - clk_rst_agent_pkg.sv
+      - clk_rst_item.sv: {is_include_file: true}
+      - clk_rst_agent_cfg.sv: {is_include_file: true}
+      - clk_rst_agent_cov.sv: {is_include_file: true}
+      - clk_rst_driver.sv: {is_include_file: true}
+      - clk_rst_monitor.sv: {is_include_file: true}
+      - clk_rst_agent.sv: {is_include_file: true}
+      - seq_lib/reset_seq.sv: {is_include_file: true}
+      - seq_lib/delay_seq.sv: {is_include_file: true}
+      - seq_lib/clk_rst_seq_list.sv: {is_include_file: true}
+
+      - delay_driver.sv: {is_include_file: true}
+      - delay_agent.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

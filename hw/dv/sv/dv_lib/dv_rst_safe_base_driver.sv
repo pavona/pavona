@@ -22,7 +22,7 @@ class dv_rst_safe_base_driver #(type ITEM_T     = uvm_sequence_item,
   // 'reset_interface_and_driver' function is invoked when reset is triggered
   // The derived driver needs to implement this as to get the driver and the pins to the default
   // state when in POR
-  extern function void reset_interface_and_driver();
+  extern virtual function void reset_interface_and_driver();
 endclass
 
 
@@ -36,12 +36,16 @@ task dv_rst_safe_base_driver::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
+  if (cfg.reset_domain == null)  begin
+    `uvm_fatal (`gfn, "cfg.reset_domain == null, please ensure reset_domain is setup in cfg")
+  end
+
   // The first reset is POR. Wait until a full reset cycle is observed before
   // driving any transaction on the interface
-  wait (!cfg.vif.rst_n);
+  cfg.reset_domain.wait_reset_assert();
   reset_interface_and_driver();
 
-  wait (cfg.vif.rst_n);
+  cfg.reset_domain.wait_reset_deassert();
 
   forever begin
     // Process threading is used instead of isolation forks as it is cleaner and allows for fine
@@ -50,7 +54,7 @@ task dv_rst_safe_base_driver::run_phase(uvm_phase phase);
       begin : reset_thread
         // Capture Process handle for the spawned process
         reset_thread_id = process::self();
-        wait (!cfg.vif.rst_n);
+        cfg.reset_domain.wait_reset_assert();
         reset_interface_and_driver();
       end
       begin : interface_drive_thread
@@ -78,7 +82,7 @@ task dv_rst_safe_base_driver::run_phase(uvm_phase phase);
       `uvm_fatal (`gfn, "get_and_drive_thread_id() thread finished before reset thread")
     end
 
-    wait (cfg.vif.rst_n);
+    cfg.reset_domain.wait_reset_deassert();
   end // forever
 endtask
 

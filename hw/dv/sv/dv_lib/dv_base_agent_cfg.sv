@@ -1,8 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 class dv_base_agent_cfg extends uvm_object;
+
+  dv_rst_domain reset_domain;
 
   // agent cfg knobs
   bit         is_active = 1'b1;   // active driver/sequencer or passive monitor
