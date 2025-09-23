@@ -89,6 +89,165 @@ static status_t aes_write_key(aes_key_t key) {
 }
 
 /**
+ * Compute the ctrl register value for the given parameters.
+ *
+ * @param key AES key.
+ * @param encrypt True for encryption, false for decryption.
+ * @return result, OK or error.
+ */
+static status_t compute_ctrl_reg(aes_key_t key, hardened_bool_t encrypt,
+                                 uint32_t *ctrl_reg) {
+  *ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
+
+  // Set the operation (encrypt or decrypt).
+  hardened_bool_t operation_written = kHardenedBoolFalse;
+  switch (launder32(encrypt)) {
+    case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(encrypt, kHardenedBoolTrue);
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_OPERATION_FIELD,
+                                 AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC);
+      operation_written = launder32(kHardenedBoolTrue);
+      break;
+    case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(encrypt, kHardenedBoolFalse);
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_OPERATION_FIELD,
+                                 AES_CTRL_SHADOWED_OPERATION_VALUE_AES_DEC);
+      operation_written = launder32(kHardenedBoolTrue);
+      break;
+    default:
+      // Invalid value.
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(operation_written, kHardenedBoolTrue);
+
+  // Indicate whether the key will be sideloaded.
+  hardened_bool_t sideload_written = kHardenedBoolFalse;
+  switch (launder32(key.sideload)) {
+    case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
+      *ctrl_reg =
+          bitfield_bit32_write(*ctrl_reg, AES_CTRL_SHADOWED_SIDELOAD_BIT, true);
+      sideload_written = launder32(kHardenedBoolTrue);
+      break;
+    case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
+      *ctrl_reg = bitfield_bit32_write(*ctrl_reg,
+                                       AES_CTRL_SHADOWED_SIDELOAD_BIT, false);
+      sideload_written = launder32(kHardenedBoolTrue);
+      break;
+    default:
+      // Invalid value.
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(sideload_written, kHardenedBoolTrue);
+
+  // Translate the cipher mode to the hardware-encoding value and write the
+  // control reg field.
+  aes_cipher_mode_t mode_written;
+  switch (launder32(key.mode)) {
+    case kAesCipherModeEcb:
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                 AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB);
+      mode_written = launder32(kAesCipherModeEcb);
+      break;
+    case kAesCipherModeCbc:
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                 AES_CTRL_SHADOWED_MODE_VALUE_AES_CBC);
+      mode_written = launder32(kAesCipherModeCbc);
+      break;
+    case kAesCipherModeCfb:
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                 AES_CTRL_SHADOWED_MODE_VALUE_AES_CFB);
+      mode_written = launder32(kAesCipherModeCfb);
+      break;
+    case kAesCipherModeOfb:
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                 AES_CTRL_SHADOWED_MODE_VALUE_AES_OFB);
+      mode_written = launder32(kAesCipherModeOfb);
+      break;
+    case kAesCipherModeCtr:
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                 AES_CTRL_SHADOWED_MODE_VALUE_AES_CTR);
+      mode_written = launder32(kAesCipherModeCtr);
+      break;
+    default:
+      // Invalid value.
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(mode_written, key.mode);
+
+  // Translate the key length to the hardware-encoding value and write the
+  // control reg field.
+  hardened_bool_t len_written = kHardenedBoolFalse;
+  switch (launder32(key.key_len)) {
+    case kAesKeyWordLen128:
+      HARDENED_CHECK_EQ(key.key_len, kAesKeyWordLen128);
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128);
+      len_written = launder32(kHardenedBoolTrue);
+      break;
+    case kAesKeyWordLen192:
+      HARDENED_CHECK_EQ(key.key_len, kAesKeyWordLen192);
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_192);
+      len_written = launder32(kHardenedBoolTrue);
+      break;
+    case kAesKeyWordLen256:
+      HARDENED_CHECK_EQ(key.key_len, kAesKeyWordLen256);
+      *ctrl_reg =
+          bitfield_field32_write(*ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256);
+      len_written = launder32(kHardenedBoolTrue);
+      break;
+    default:
+      // Invalid value.
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(len_written, kHardenedBoolTrue);
+
+  // Never enable manual operation.
+  *ctrl_reg = bitfield_bit32_write(
+      *ctrl_reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false);
+
+  // Always set the PRNG reseed rate to once per 64 blocks.
+  *ctrl_reg = bitfield_field32_write(
+      *ctrl_reg, AES_CTRL_SHADOWED_PRNG_RESEED_RATE_FIELD,
+      AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_64);
+
+  return OTCRYPTO_OK;
+}
+
+status_t aes_verify_ctrl_reg(aes_key_t key, hardened_bool_t encrypt) {
+  uint32_t ctrl_reg;
+
+  HARDENED_TRY(compute_ctrl_reg(key, encrypt, &ctrl_reg));
+  HARDENED_CHECK_EQ(abs_mmio_read32(aes_base() + AES_CTRL_SHADOWED_REG_OFFSET),
+                    launder32(ctrl_reg));
+
+  return OTCRYPTO_OK;
+}
+
+status_t aes_verify_ctrl_aux_reg(void) {
+  // This has not been configured, so it is at its reset state.
+  uint32_t ctrl_aux_reg = 0x1;
+
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(aes_base() + AES_CTRL_AUX_SHADOWED_REG_OFFSET),
+      launder32(ctrl_aux_reg));
+
+  return OTCRYPTO_OK;
+}
+
+/**
  * Configure the AES block and write the key and IV if applicable.
  *
  * @param key AES key.
@@ -105,126 +264,9 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
   // Wait for the AES block to be idle.
   HARDENED_TRY(spin_until(AES_STATUS_IDLE_BIT));
 
-  uint32_t ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
+  uint32_t ctrl_reg;
 
-  // Set the operation (encrypt or decrypt).
-  hardened_bool_t operation_written = kHardenedBoolFalse;
-  switch (launder32(encrypt)) {
-    case kHardenedBoolTrue:
-      HARDENED_CHECK_EQ(encrypt, kHardenedBoolTrue);
-      ctrl_reg =
-          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_OPERATION_FIELD,
-                                 AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC);
-      operation_written = launder32(kHardenedBoolTrue);
-      break;
-    case kHardenedBoolFalse:
-      HARDENED_CHECK_EQ(encrypt, kHardenedBoolFalse);
-      ctrl_reg =
-          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_OPERATION_FIELD,
-                                 AES_CTRL_SHADOWED_OPERATION_VALUE_AES_DEC);
-      operation_written = launder32(kHardenedBoolTrue);
-      break;
-    default:
-      // Invalid value.
-      return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(operation_written, kHardenedBoolTrue);
-
-  // Indicate whether the key will be sideloaded.
-  hardened_bool_t sideload_written = kHardenedBoolFalse;
-  switch (launder32(key.sideload)) {
-    case kHardenedBoolTrue:
-      HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
-      ctrl_reg =
-          bitfield_bit32_write(ctrl_reg, AES_CTRL_SHADOWED_SIDELOAD_BIT, true);
-      sideload_written = launder32(kHardenedBoolTrue);
-      break;
-    case kHardenedBoolFalse:
-      HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
-      ctrl_reg =
-          bitfield_bit32_write(ctrl_reg, AES_CTRL_SHADOWED_SIDELOAD_BIT, false);
-      sideload_written = launder32(kHardenedBoolTrue);
-      break;
-    default:
-      // Invalid value.
-      return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(sideload_written, kHardenedBoolTrue);
-
-  // Translate the cipher mode to the hardware-encoding value and write the
-  // control reg field.
-  aes_cipher_mode_t mode_written;
-  switch (launder32(key.mode)) {
-    case kAesCipherModeEcb:
-      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
-                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB);
-      mode_written = launder32(kAesCipherModeEcb);
-      break;
-    case kAesCipherModeCbc:
-      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
-                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CBC);
-      mode_written = launder32(kAesCipherModeCbc);
-      break;
-    case kAesCipherModeCfb:
-      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
-                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CFB);
-      mode_written = launder32(kAesCipherModeCfb);
-      break;
-    case kAesCipherModeOfb:
-      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
-                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_OFB);
-      mode_written = launder32(kAesCipherModeOfb);
-      break;
-    case kAesCipherModeCtr:
-      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
-                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CTR);
-      mode_written = launder32(kAesCipherModeCtr);
-      break;
-    default:
-      // Invalid value.
-      return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(mode_written, key.mode);
-
-  // Translate the key length to the hardware-encoding value and write the
-  // control reg field.
-  hardened_bool_t len_written = kHardenedBoolFalse;
-  switch (launder32(key.key_len)) {
-    case kAesKeyWordLen128:
-      HARDENED_CHECK_EQ(key.key_len, kAesKeyWordLen128);
-      ctrl_reg =
-          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
-                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128);
-      len_written = launder32(kHardenedBoolTrue);
-      break;
-    case kAesKeyWordLen192:
-      HARDENED_CHECK_EQ(key.key_len, kAesKeyWordLen192);
-      ctrl_reg =
-          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
-                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_192);
-      len_written = launder32(kHardenedBoolTrue);
-      break;
-    case kAesKeyWordLen256:
-      HARDENED_CHECK_EQ(key.key_len, kAesKeyWordLen256);
-      ctrl_reg =
-          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
-                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256);
-      len_written = launder32(kHardenedBoolTrue);
-      break;
-    default:
-      // Invalid value.
-      return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(len_written, kHardenedBoolTrue);
-
-  // Never enable manual operation.
-  ctrl_reg = bitfield_bit32_write(
-      ctrl_reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false);
-
-  // Always set the PRNG reseed rate to once per 64 blocks.
-  ctrl_reg =
-      bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_PRNG_RESEED_RATE_FIELD,
-                             AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_64);
+  HARDENED_TRY(compute_ctrl_reg(key, encrypt, &ctrl_reg));
 
   abs_mmio_write32_shadowed(aes_base() + AES_CTRL_SHADOWED_REG_OFFSET,
                             launder32(ctrl_reg));

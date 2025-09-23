@@ -419,6 +419,10 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
   HARDENED_TRY(hmac_idle_wait());
   digest_read(digest, digest_wordlen);
 
+  // Read back the HMAC configuration and compare to the expected configuration.
+  HARDENED_CHECK_EQ(abs_mmio_read32(hmac_base() + HMAC_CFG_REG_OFFSET),
+                    launder32(cfg));
+
   clear();
   return OTCRYPTO_OK;
 }

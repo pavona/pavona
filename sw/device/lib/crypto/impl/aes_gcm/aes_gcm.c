@@ -67,6 +67,11 @@ static status_t aes_encrypt_block(const aes_key_t key, const aes_block_t *iv,
   HARDENED_TRY(aes_encrypt_begin(key, iv));
   HARDENED_TRY(aes_update(/*dest=*/NULL, input));
   HARDENED_TRY(aes_update(output, /*src=*/NULL));
+
+  // Verify the CTRL and CTRL_AUX registers of the encryption.
+  HARDENED_TRY(aes_verify_ctrl_reg(key, kHardenedBoolTrue));
+  HARDENED_TRY(aes_verify_ctrl_aux_reg());
+
   return aes_end(NULL);
 }
 
