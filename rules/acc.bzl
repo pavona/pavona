@@ -39,7 +39,7 @@ def _acc_assemble_sources(ctx, additional_srcs = []):
         ),
         env = {
             "RV32_TOOL_AS": ctx.executable._riscv32_as.path,
-            "RV32_TOOL_GCC": ctx.executable._riscv32_gcc.path,
+            "RV32_TOOL_GCC": ctx.executable._riscv32_clang.path,
         },
         arguments = copts + ["-o", obj.path] + paths + ctx.attr.args,
         executable = ctx.executable._acc_as,
@@ -115,7 +115,7 @@ def _acc_binary(ctx, additional_srcs = []):
         env = {
             "RV32_TOOL_AS": ctx.executable._riscv32_as.path,
             "RV32_TOOL_AR": ctx.executable._riscv32_ar.path,
-            "RV32_TOOL_GCC": ctx.executable._riscv32_gcc.path,
+            "RV32_TOOL_GCC": ctx.executable._riscv32_clang.path,
             "RV32_TOOL_LD": ctx.executable._riscv32_ld.path,
             "RV32_TOOL_OBJCOPY": ctx.executable._riscv32_objcopy.path,
         },
@@ -340,8 +340,8 @@ acc_library = rv_rule(
             executable = True,
             cfg = "exec",
         ),
-        "_riscv32_gcc": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gcc"),
+        "_riscv32_clang": attr.label(
+            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
@@ -382,8 +382,8 @@ acc_binary = rv_rule(
             executable = True,
             cfg = "exec",
         ),
-        "_riscv32_gcc": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gcc"),
+        "_riscv32_clang": attr.label(
+            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
@@ -439,8 +439,8 @@ acc_sim_test = rv_rule(
             executable = True,
             cfg = "exec",
         ),
-        "_riscv32_gcc": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gcc"),
+        "_riscv32_clang": attr.label(
+            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
@@ -509,8 +509,8 @@ acc_autogen_sim_test = rv_rule(
             executable = True,
             cfg = "exec",
         ),
-        "_riscv32_gcc": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gcc"),
+        "_riscv32_clang": attr.label(
+            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",

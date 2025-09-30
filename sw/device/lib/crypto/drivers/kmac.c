@@ -8,7 +8,7 @@
 
 #include "sw/device/lib/crypto/drivers/kmac.h"
 
-#include "hw/top/dt/dt_kmac.h"
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened_memory.h"
