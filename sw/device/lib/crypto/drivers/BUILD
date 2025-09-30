@@ -37,7 +37,7 @@ cc_library(
         ":entropy",
         ":rv_core_ibex",
         "//hw/top:aes_c_regs",
-        "//hw/top:dt_aes",
+        "//hw/top/dt:aes",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
@@ -73,8 +73,8 @@ cc_library(
     deps = [
         ":entropy",
         ":rv_core_ibex",
-        "//hw/top:dt_keymgr",
         "//hw/top:keymgr_c_regs",
+        "//hw/top/dt:keymgr",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened_memory",
@@ -129,8 +129,8 @@ dual_cc_library(
         device = [
             ":entropy",
             ":rv_core_ibex",
-            "//hw/top:dt_kmac",
             "//hw/top:kmac_c_regs",
+             "//hw/top/dt:kmac",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened_memory",
@@ -155,9 +155,9 @@ dual_cc_library(
             "//hw/top:csrng_c_regs",
             "//hw/top:edn_c_regs",
             "//hw/top:entropy_src_c_regs",
-            "//hw/top:dt_csrng",
-            "//hw/top:dt_entropy_src",
-            "//hw/top:dt_edn",
+            "//hw/top/dt:csrng",
+            "//hw/top/dt:entropy_src",
+            "//hw/top/dt:edn",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
@@ -178,7 +178,7 @@ cc_library(
     deps = [
         ":entropy",
         "//hw/top:csrng_c_regs",
-        "//hw/top:dt_csrng",
+        "//hw/top/dt:csrng",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
@@ -199,7 +199,7 @@ opentitan_test(
     deps = [
         ":entropy",
         ":entropy_kat",
-        "//hw/top:dt_acc",
+        "//hw/top/dt:acc",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:acc",
@@ -216,8 +216,8 @@ cc_library(
     deps = [
         ":entropy",
         ":rv_core_ibex",
-        "//hw/top:dt_hmac",
         "//hw/top:hmac_c_regs",
+        "//hw/top/dt:hmac",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",
@@ -240,7 +240,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top:dt_rv_core_ibex",
+            "//hw/top/dt:rv_core_ibex",
             "//hw/top:rv_core_ibex_c_regs",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
@@ -277,8 +277,8 @@ cc_library(
     hdrs = ["acc.h"],
     deps = [
         ":entropy",
+        "//hw/top/dt:acc",
         "//hw/top:acc_c_regs",
-        "//hw/top:dt_acc",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",

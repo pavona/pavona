@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_aes.h"
+#include "hw/top/dt/aes.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
