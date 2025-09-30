@@ -5,7 +5,7 @@
 
 #include "sw/device/lib/crypto/drivers/acc.h"
 
-#include "hw/top/dt/dt_acc.h"
+#include "hw/top/dt/acc.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"
