@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,6 +19,17 @@ package kmac_app_agent_pkg;
   parameter int KMAC_REQ_DATA_WIDTH = keymgr_pkg::KmacDataIfWidth       // data width
                                       + keymgr_pkg::KmacDataIfWidth / 8 // data mask width
                                       + 1;                              // bit last
+
+  typedef enum int {
+    AppKeymgr,
+    AppLc,
+    AppRom,
+    AppOtbn
+  } kmac_app_e;
+
+  // Create enum to determine size for NUM_APP_INTF
+  kmac_app_e kmac_app_modes;
+  parameter uint NUM_APP_INTF = kmac_app_modes.num();
 
   `define CONNECT_DATA_WIDTH .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)
 

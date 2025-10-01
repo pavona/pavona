@@ -1,4 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192)
+// Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -204,7 +207,11 @@ package kmac_pkg;
     // In KMAC mode, the secret key always comes from sideload.
     // KMAC mode needs uniformly distributed entropy. The request will be
     // silently discarded in Reset state.
-    AppKMAC   = 2
+    AppKMAC   = 2,
+
+    // In the configurable mode, the hash function (SHA3, SHAKE, cSHAKE)
+    // is chosen according to the first transmitted word.
+    AppConfigDynamic = 3
   } app_mode_e;
 
   // Predefined encoded_string
@@ -232,6 +239,7 @@ package kmac_pkg;
     logic [NSPrefixW-1:0] Prefix;
   } app_config_t;
 
+  // KeyMgr
   parameter app_config_t AppCfgKeyMgr = '{
     Mode: AppKMAC, // KeyMgr uses KMAC operation
     KeccakStrength: sha3_pkg::L256,
@@ -240,6 +248,7 @@ package kmac_pkg;
     Prefix: NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC})
   };
 
+  // LC_CTRL
   parameter app_config_t AppCfgLcCtrl= '{
     Mode: AppCShake,
     KeccakStrength: sha3_pkg::L128,
@@ -248,6 +257,7 @@ package kmac_pkg;
     Prefix: NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
   };
 
+  // ROM_CTRL
   parameter app_config_t AppCfgRomCtrl = '{
     Mode: AppCShake,
     KeccakStrength: sha3_pkg::L256,
@@ -256,36 +266,46 @@ package kmac_pkg;
     Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
   };
 
+  // OTBN
+  parameter app_config_t AppCfgOTBN = '{
+    Mode: AppConfigDynamic,
+    KeccakStrength: sha3_pkg::L256, // Ignored
+    PrefixMode: 1'b0,               // No Prefix
+    Prefix: NSPrefixW'({1'b0})
+  };
+
   // Exporting the app internal mux selection enum into the package. So that DV
   // can use this enum in its scoreboard.
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
-  //      -s 713832113 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: |||||||||||||||||||| (66.67%)
-  //  4: |||||||||| (33.33%)
-  //  5: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 4
-  //
-  localparam int AppMuxWidth = 5;
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
+//     -s 713832113 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (50.00%)
+//  4: |||||||||||||||| (40.00%)
+//  5: |||| (10.00%)
+//  6: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 5
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 4
+//
+  localparam int AppMuxWidth = 6;
   typedef enum logic [AppMuxWidth-1:0] {
-    SelNone   = 5'b10100,
-    SelApp    = 5'b11001,
-    SelOutLen = 5'b00010,
-    SelSw     = 5'b01111
+    SelNone           = 6'b101000,
+    SelApp            = 6'b110010,
+    SelDynamicAppCfg  = 6'b000100,
+    SelOutLen         = 6'b001111,
+    SelSw             = 6'b110101
   } app_mux_sel_e ;
 
-// Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 14 -n 10 \
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 17 -n 10 \
   //     -s 2454278799 --language=sv
   //
   // Hamming distance histogram:
@@ -293,17 +313,17 @@ package kmac_pkg;
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||| (14.29%)
-  //  4: |||||||||||||||||||| (27.47%)
-  //  5: ||||||||||||| (18.68%)
-  //  6: |||||||||||||||| (21.98%)
-  //  7: |||||||| (10.99%)
-  //  8: |||| (6.59%)
-  //  9: --
+  //  3: |||||||| (12.50%)
+  //  4: |||||||||||||||||||| (30.88%)
+  //  5: |||||||||| (15.44%)
+  //  6: ||||||||||||||| (23.53%)
+  //  7: ||||| (8.82%)
+  //  8: |||| (7.35%)
+  //  9:  (1.47%)
   // 10: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 8
+  // Maximum Hamming distance: 9
   // Minimum Hamming weight: 3
   // Maximum Hamming weight: 8
   //
@@ -328,13 +348,17 @@ package kmac_pkg;
     // the kmac_mode, sha3_mode, keccak strength.
     StAppCfg = 10'b1010101101,
 
+    StAppDynamicCfg = 10'b0000111100,
+
     StAppMsg = 10'b1110001011,
 
     // In StKeyOutLen, this module pushes encoded outlen to the MSG_FIFO.
     // Assume the length is 256 bit, the data will be 48'h 02_0100
     StAppOutLen  = 10'b1010011000,
     StAppProcess = 10'b1110110010,
+    StAppManualRun = 10'b0001101001,
     StAppWait    = 10'b1001010000,
+    StAppShiftDigest = 10'b0110100111,
 
     // SW Controlled
     // If start request comes from SW first, until the operation ends, all
@@ -362,6 +386,8 @@ package kmac_pkg;
 
   typedef struct packed {
     logic valid;
+    logic hold;
+    logic next;
     logic [MsgWidth-1:0] data;
     logic [MsgStrbW-1:0] strb;
     logic last;
@@ -380,6 +406,8 @@ package kmac_pkg;
 
   parameter app_req_t APP_REQ_DEFAULT = '{
     valid: 1'b 0,
+    hold: 1'b0,
+    next: 1'b0,
     data: '0,
     strb: '0,
     last: 1'b 0
@@ -442,6 +470,9 @@ package kmac_pkg;
     //  - Sw issues KMAC op without Entropy setting.
     ErrSwHashingWithoutEntropyReady = 8'h 09,
 
+    // Error Shadow register update
+    ErrShadowRegUpdate = 8'h C0,
+
     // Error due to lc_escalation_en_i or fatal fault
     ErrFatalError = 8'h C1,
 
@@ -449,7 +480,10 @@ package kmac_pkg;
     ErrPackerIntegrity = 8'h C2,
 
     // Error due to the counter integrity check failure inside MsgFifo.Fifo
-    ErrMsgFifoIntegrity = 8'h C3
+    ErrMsgFifoIntegrity = 8'h C3,
+
+    // Error in the packer that is connected for the app intf to OTBN
+    ErrAppIntfPacker = 8'hC4
   } err_code_e;
 
   typedef struct packed {
@@ -473,5 +507,20 @@ package kmac_pkg;
     conv_data = {<<8{v}};
     conv_endian32 = (swap) ? conv_data : v ;
   endfunction : conv_endian32
+
+  // Function to compute the number of digest words for OTBN request
+  // before starting a manual run
+  function automatic logic [2:0] compute_max_digest (
+    sha3_pkg::keccak_strength_e keccak_strength_i
+  );
+    case (keccak_strength_i)
+      sha3_pkg::L128: compute_max_digest = 3'h5;
+      sha3_pkg::L224: compute_max_digest = 3'h1;
+      sha3_pkg::L256: compute_max_digest = 3'h4;
+      sha3_pkg::L384: compute_max_digest = 3'h2;
+      sha3_pkg::L512: compute_max_digest = 3'h2;
+      default:        compute_max_digest = 3'h0;
+    endcase
+  endfunction
 
 endpackage : kmac_pkg

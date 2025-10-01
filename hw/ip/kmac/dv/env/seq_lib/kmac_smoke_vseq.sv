@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -19,6 +20,10 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
   // Set this bit to one if entropy fetched successfully without timeout error.
   bit entropy_fetched;
+
+  constraint app_mode_c {
+    app_mode inside {AppKeymgr, AppLc, AppRom, AppOtbn};
+  }
 
   constraint num_trans_c {
     num_trans inside {[1:200]};
@@ -239,6 +244,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           // Wait until the KMAC engine has completely finished
           `uvm_info(`gfn, "waiting for kmac_app operation to finish", UVM_HIGH)
           wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp_done == 1);
+          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.hold == 0); // OTBN mode has multiple rsp
           `uvm_info(`gfn, "finished waiting for kmac_app operation", UVM_HIGH)
 
           if (kmac_err_type inside

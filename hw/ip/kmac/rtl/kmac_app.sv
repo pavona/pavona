@@ -1,4 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192)
+// Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -13,8 +16,8 @@ module kmac_app
   parameter  bit          EnMasking          = 1'b0,
   localparam int          Share              = (EnMasking) ? 2 : 1, // derived parameter
   parameter  bit          SecIdleAcceptSwMsg = 1'b0,
-  parameter  int unsigned NumAppIntf         = 3,
-  parameter  app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl, AppCfgRomCtrl}
+  parameter  int unsigned NumAppIntf         = 4,
+  parameter  app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl, AppCfgRomCtrl, AppCfgOTBN}
 ) (
   input clk_i,
   input rst_ni,
@@ -85,6 +88,7 @@ module kmac_app
 
   // from SHA3
   input prim_mubi_pkg::mubi4_t absorbed_i,
+  input prim_mubi_pkg::mubi4_t squeezing_i,
 
   // to KMAC
   output kmac_cmd_e cmd_o,
@@ -187,7 +191,7 @@ module kmac_app
   // the other responses are controlled in separate logic. So define the signals
   // here and merge them to the response.
   logic app_data_ready, fsm_data_ready;
-  logic app_digest_done, fsm_digest_done_q, fsm_digest_done_d;
+  logic app_digest_done, sha3_digest_done, fsm_digest_done_q, fsm_digest_done_d;
   logic [AppDigestW-1:0] app_digest [2];
 
   // One more slot for value NumAppIntf. It is the value when no app intf is
@@ -198,6 +202,18 @@ module kmac_app
   // value to get the config or return the data.
   logic [AppIdxW-1:0] app_id, app_id_d;
   logic               clr_appid, set_appid;
+
+  // AppIntf OTBN signals
+  logic                       set_dynamic_sha_mode;
+  sha3_pkg::sha3_mode_e       dynamic_sha3_mode_q;
+  sha3_pkg::keccak_strength_e dynamic_keccak_strength_q;
+  logic [2:0] max_digest_words;
+  logic next_digest_word;
+  logic reset_digest_word;
+  logic digest_valid;
+  logic pack_digest_word;
+  logic shift_and_pack_digest;
+  logic [2:0] digest_word_idx_q, digest_word_idx_d;
 
   // Output length
   logic [OutLenW-1:0] encoded_outlen, encoded_outlen_mask;
@@ -217,6 +233,18 @@ module kmac_app
   logic service_rejected_error_set, service_rejected_error_clr;
   logic err_during_sw_d, err_during_sw_q;
 
+  // Digest packer for OTBN app intf
+  logic [255:0] digest_word_share_0, digest_word_share_1;
+  logic [255:0] packed_digest_word_share_0, packed_digest_word_share_1;
+  logic packed_digest_word_valid, packed_digest_word_valid_share_0, packed_digest_word_valid_share_1;
+  logic digest_packer_ready, digest_packer_ready_share_0, digest_packer_ready_share_1;
+  logic digest_packer_error, digest_packer_error_share_0, digest_packer_error_share_1;
+  logic req_packed_digest_word;
+  logic [255:0] digest_word_mask;
+  logic [1:0] permutation_ctr;
+  logic incr_permutation_ctr, reset_permutation_ctr;
+  logic otbn_app_intf_done;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)                         service_rejected_error <= 1'b 0;
     else if (service_rejected_error_set) service_rejected_error <= 1'b 1;
@@ -227,18 +255,48 @@ module kmac_app
   // Application Mux/ Demux //
   ////////////////////////////
 
+  // Set SHA3 mode and Keccak strength if OTBN mode
+  always_ff @(posedge clk_i) begin
+    if (app_i[AppConfigDynamic].valid && set_appid) begin
+      dynamic_sha3_mode_q <= sha3_pkg::sha3_mode_e'(app_i[AppConfigDynamic].data[1:0]);
+      dynamic_keccak_strength_q <= sha3_pkg::keccak_strength_e'(app_i[AppConfigDynamic].data[4:2]);
+    end
+  end
+
+  // Control the permutation index for keccak states and XOFs with OTBN
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      permutation_ctr <= 2'h0;
+    end else if (reset_permutation_ctr || clr_appid) begin
+      permutation_ctr <= 2'h0;
+    end else if (incr_permutation_ctr) begin
+      permutation_ctr <= permutation_ctr + 1'b1;
+    end
+  end
+
+  // Control the word index for XOFs with OTBN
+  assign digest_word_idx_d = digest_word_idx_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) digest_word_idx_q <= 3'h0;
+    else if ((app_i[AppConfigDynamic].valid && set_appid) || reset_digest_word) digest_word_idx_q <= 3'h0;
+    else if (next_digest_word) digest_word_idx_q <= digest_word_idx_d + 3'h1;
+  end
 
   // Processing return data.
   // sends to only selected app intf.
   // clear digest right after done to not leak info to other interface
+  // OTBN mode operates different with 256-bit digest being padded out of packer FIFO
   always_comb begin
-    for (int unsigned i = 0 ; i < NumAppIntf ; i++) begin
+    for (int unsigned i = 0 ; i < NumAppIntf; i++) begin
       if (i == app_id) begin
         app_o[i] = '{
           ready:         app_data_ready | fsm_data_ready,
-          done:          app_digest_done | fsm_digest_done_q,
-          digest_share0: app_digest[0],
-          digest_share1: app_digest[1],
+          done:          (AppCfg[app_id].Mode == AppConfigDynamic) ? otbn_app_intf_done
+                                                      : (app_digest_done | fsm_digest_done_q),
+          digest_share0: (AppCfg[app_id].Mode == AppConfigDynamic) ? {128'h0, packed_digest_word_share_0}
+                                                      : app_digest[0],
+          digest_share1: (AppCfg[app_id].Mode == AppConfigDynamic) ? {128'h0, packed_digest_word_share_1}
+                                                      : app_digest[1],
           // if fsm asserts done, should be an error case.
           error:         error_i | fsm_digest_done_q | sparse_fsm_error_o
                          | service_rejected_error
@@ -328,6 +386,7 @@ module kmac_app
     // app_id control
     set_appid = 1'b 0;
     clr_appid = 1'b 0;
+    set_dynamic_sha_mode = 1'b 0;
 
     // Commands
     cmd_o = CmdNone;
@@ -347,6 +406,14 @@ module kmac_app
     // If error happens, FSM asserts data ready but discard incoming msg
     fsm_data_ready = 1'b 0;
     fsm_digest_done_d = 1'b 0;
+
+    // digest word control
+    next_digest_word = 1'b 0;
+    shift_and_pack_digest = 1'b 0;
+    reset_digest_word = 1'b 0;
+    digest_valid = 1'b 0;
+    incr_permutation_ctr = 1'b 0;
+    reset_permutation_ctr = 1'b 0;
 
     unique case (st)
       StIdle: begin
@@ -376,6 +443,18 @@ module kmac_app
 
           service_rejected_error_set = 1'b 1;
 
+        end else if ((AppCfg[app_id].Mode == AppKMAC) &&
+          !keymgr_key_i.valid) begin
+            st_d = StKeyMgrErrKeyNotValid;
+
+            // As mux_sel is not set to SelApp, app_data_ready is still 0.
+            // This logic won't accept the requests from the selected App.
+
+        end else if ((AppCfg[app_id].Mode == AppConfigDynamic)) begin
+
+          st_d = StAppDynamicCfg;
+          set_dynamic_sha_mode = 1'b 1;
+
         end else begin
           // As Cfg is stable now, it sends cmd
           st_d = StAppMsg;
@@ -383,6 +462,13 @@ module kmac_app
           // App initiates the data
           cmd_o = CmdStart;
         end
+      end
+
+      // Indicates first word from req is used for cfg
+      StAppDynamicCfg: begin
+        cmd_o = CmdStart;
+        st_d = StAppMsg;
+        mux_sel = SelDynamicAppCfg;
       end
 
       StAppMsg: begin
@@ -413,13 +499,62 @@ module kmac_app
         st_d = StAppWait;
       end
 
-      StAppWait: begin
-        if (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i)) begin
-          // Send digest to KeyMgr and complete the op
-          st_d = StIdle;
-          cmd_o = CmdDone;
+      // Used to control packing into fifo for OTBN return digest
+      StAppShiftDigest: begin
+        st_d = StAppShiftDigest;
+        if (digest_packer_ready) begin
+          shift_and_pack_digest = 1'b1;
+          if (digest_word_idx_q == max_digest_words && permutation_ctr == 2'h3) begin
+            // Can handle one more squeeze with the remaining bits from previous
+            // permutations
+            st_d = StAppWait;
+          end else if (digest_word_idx_q == max_digest_words) begin
+            // Need a new permutation since only 64-bits has been squeeze
+            // Not enough to fill 256-bits in the packer
+            st_d = StAppManualRun;
+            incr_permutation_ctr = 1'b1;
+          end else begin
+            // Can squeeze 256-bit next time
+            st_d = StAppWait;
+          end
+        end
+      end
 
-          clr_appid = 1'b 1;
+      // Exhausted keccak state and need to run SHA3 core in manual mode
+      StAppManualRun: begin
+        reset_digest_word = 1'b1;
+        cmd_o = CmdManualRun;
+        st_d = StAppWait;
+      end
+
+      StAppWait: begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) || prim_mubi_pkg::mubi4_test_true_strict(squeezing_i)) begin
+          digest_valid = 1'b 1;
+          if (app_i[app_id].hold == 1'b0) begin // hold always 1'b0 for non-otbn modes maintaining normal behavior
+            // Send digest to KeyMgr and complete the op
+            st_d = StIdle;
+            cmd_o = CmdDone;
+            clr_appid = 1'b 1;
+          end else begin
+            if (app_i[app_id].next == 1'b1) begin
+              if (digest_word_idx_q < max_digest_words || permutation_ctr < 2'h3) begin
+                // We can still squeeze bits from the digest. For SHAKE 128 / 256 either
+                // the full 256-bit or 64-bit. StAppShiftDigest will decide if we need
+                // further bits (and therefore a new permutation) or not.
+                st_d = StAppShiftDigest;
+                next_digest_word = 1'b 1;
+              end else if (digest_word_idx_q == max_digest_words && permutation_ctr == 2'h3) begin
+                // We were able to handle the last squeeze only with remaining bits from the
+                // previous permutations (for SHAKE 128 / 256 this is the case for every 4th
+                // permutation. Therefore we can squeeze no bits at all and we need to start
+                // a new permutation.
+                st_d = StAppManualRun;
+                reset_permutation_ctr = 1'b 1;
+              end
+            end else begin
+              st_d = StAppWait;
+            end
+          end
         end else begin
           st_d = StAppWait;
         end
@@ -643,6 +778,12 @@ module kmac_app
         sw_ready_o   = kmac_ready_i ;
       end
 
+      SelDynamicAppCfg: begin
+        // Ready to consume next word on app iface,
+        // since the first word sets only the config
+        app_data_ready = kmac_ready_i;
+      end
+
       default: begin // Incl. SelNone
         kmac_valid_o = 1'b 0;
         kmac_data_o = '0;
@@ -741,11 +882,143 @@ module kmac_app
     end
   end
 
+  // Set the final word size for SHAKE 128/256 modes given rate
+  // SHA3 mode has fixed 256/512 bit sizes for OTBN
+  assign digest_word_mask = (dynamic_keccak_strength_q == sha3_pkg::L128 && digest_word_idx_q == 3'h5)  ? { {192{1'b0}}, {64{1'b1}} } :
+                            ((dynamic_keccak_strength_q == sha3_pkg::L256 && digest_word_idx_q == 3'h4) ? { {192{1'b0}}, {64{1'b1}} } : {256{1'b1}});
+
+  assign req_packed_digest_word = app_active_o && (AppCfg[app_id].Mode == AppConfigDynamic);
+
+  // Set the digest shares based on masked mode and word index into keccak state
+  generate
+  if (Share == 2) begin
+    always_comb begin
+      unique case (digest_word_idx_q)
+        3'h0: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][255:0]     : 256'h0;
+          digest_word_share_1 = req_packed_digest_word ? keccak_state_i[1][255:0]     : 256'h0;
+        end
+        3'h1: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][511:256]   : 256'h0;
+          digest_word_share_1 = req_packed_digest_word ? keccak_state_i[1][511:256]   : 256'h0;
+        end
+        3'h2: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][767:512]   : 256'h0;
+          digest_word_share_1 = req_packed_digest_word ? keccak_state_i[1][767:512]   : 256'h0;
+        end
+        3'h3: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][1023:768]  : 256'h0;
+          digest_word_share_1 = req_packed_digest_word ? keccak_state_i[1][1023:768]  : 256'h0;
+        end
+        3'h4: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][1279:1024] : 256'h0;
+          digest_word_share_1 = req_packed_digest_word ? keccak_state_i[1][1279:1024] : 256'h0;
+        end
+        3'h5: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][1535:1280] : 256'h0;
+          digest_word_share_1 = req_packed_digest_word ? keccak_state_i[1][1535:1280] : 256'h0;
+        end
+        default: begin
+          digest_word_share_0 = 256'h0;
+          digest_word_share_1 = 256'h0;
+        end
+      endcase
+    end
+  end else begin
+    always_comb begin
+      digest_word_share_1 = 256'h0;
+      unique case (digest_word_idx_q)
+        3'h0: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][255:0]     : 256'h0;
+        end
+        3'h1: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][511:256]   : 256'h0;
+        end
+        3'h2: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][767:512]   : 256'h0;
+        end
+        3'h3: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][1023:768]  : 256'h0;
+        end
+        3'h4: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][1279:1024] : 256'h0;
+        end
+        3'h5: begin
+          digest_word_share_0 = req_packed_digest_word ? keccak_state_i[0][1535:1280] : 256'h0;
+        end
+        default: begin
+          digest_word_share_0 = 256'h0;
+        end
+      endcase
+    end
+  end
+  endgenerate
+
+  logic squeezing_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      squeezing_q <= 1'b0;
+    end else if (prim_mubi_pkg::mubi4_test_true_strict(squeezing_i)) begin
+      squeezing_q <= 1'b1;
+    end else begin
+      squeezing_q <= 1'b0;
+    end
+  end
+
+  // Logic for digest share packer FIFOs in order to pack digest into 256-bit words
+  assign pack_digest_word = ((prim_mubi_pkg::mubi4_test_true_strict(squeezing_i) && !squeezing_q) || shift_and_pack_digest) && ~clr_appid && (AppCfg[app_id].Mode == AppConfigDynamic);
+  assign otbn_app_intf_done = packed_digest_word_valid && ~clr_appid && ((st == StAppWait) || (st == StAppShiftDigest) || (st == StAppManualRun));
+  assign digest_packer_ready = digest_packer_ready_share_0 & digest_packer_ready_share_1;
+  assign packed_digest_word_valid = packed_digest_word_valid_share_0 & packed_digest_word_valid_share_1;
+  assign digest_packer_error = digest_packer_error_share_0 | digest_packer_error_share_1;
+
+  prim_packer #(
+    .InW(256),
+    .OutW(256),
+    .HintByteData(1)
+  ) u_prim_digest_packer_share_0 (
+    .clk_i,
+    .rst_ni,
+    .valid_i    (pack_digest_word),
+    .data_i     (digest_word_share_0),
+    .mask_i     (digest_word_mask),
+    .ready_o    (digest_packer_ready_share_0),
+    .valid_o    (packed_digest_word_valid_share_0),
+    .data_o     (packed_digest_word_share_0),
+    .mask_o     (),
+    .ready_i    (req_packed_digest_word),
+    .flush_i      (clr_appid),
+    .flush_done_o (),
+    .err_o        (digest_packer_error_share_0)
+  );
+
+  prim_packer #(
+    .InW(256),
+    .OutW(256),
+    .HintByteData(1)
+  ) u_prim_digest_packer_share_1 (
+    .clk_i,
+    .rst_ni,
+    .valid_i    (pack_digest_word),
+    .data_i     (digest_word_share_1),
+    .mask_i     (digest_word_mask),
+    .ready_o    (digest_packer_ready_share_1),
+    .valid_o    (packed_digest_word_valid_share_1),
+    .data_o     (packed_digest_word_share_1),
+    .mask_o     (),
+    .ready_i    (req_packed_digest_word),
+    .flush_i      (clr_appid),
+    .flush_done_o (),
+    .err_o        (digest_packer_error_share_1)
+  );
+
   // Keccak state --> KeyMgr
+
+  assign sha3_digest_done = (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) || prim_mubi_pkg::mubi4_test_true_strict(squeezing_i)) && digest_valid;
   always_comb begin
     app_digest_done = 1'b 0;
     app_digest = '{default:'0};
-    if (st == StAppWait && prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) &&
+    if (st == StAppWait && sha3_digest_done &&
        lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i)) begin
       // SHA3 engine has calculated the hash. Return the data to KeyMgr
       app_digest_done = 1'b 1;
@@ -858,6 +1131,10 @@ module kmac_app
     endcase
   end
 
+  always_comb begin
+    max_digest_words = compute_max_digest(keccak_strength_o);
+  end
+
   // KMAC en / SHA3 mode / Strength
   //  by default, it uses reg cfg. When app intf reqs come, it uses AppCfg.
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -870,6 +1147,10 @@ module kmac_app
       kmac_en_o         <= reg_kmac_en_i;
       sha3_mode_o       <= reg_sha3_mode_i;
       keccak_strength_o <= reg_keccak_strength_i;
+    end else if (set_dynamic_sha_mode) begin
+      kmac_en_o         <= 1'b 0;
+      sha3_mode_o       <= dynamic_sha3_mode_q;
+      keccak_strength_o <= dynamic_keccak_strength_q;
     end else if (set_appid) begin
       kmac_en_o         <= AppCfg[arb_idx].Mode == AppKMAC ? 1'b 1 : 1'b 0;
       sha3_mode_o       <= AppCfg[arb_idx].Mode == AppSHA3
@@ -883,14 +1164,16 @@ module kmac_app
   end
 
   // Status
-  assign app_active_o = (st inside {StAppCfg, StAppMsg, StAppOutLen,
-                                    StAppProcess, StAppWait});
+  assign app_active_o = (st inside {StAppCfg, StAppDynamicCfg, StAppMsg,
+                                    StAppOutLen, StAppProcess, StAppWait,
+                                    StAppShiftDigest, StAppManualRun});
 
   // Error Reporting ==========================================================
   always_comb begin
-    priority casez ({fsm_err.valid, mux_err.valid})
-      2'b ?1: error_o = mux_err;
-      2'b 10: error_o = fsm_err;
+    priority casez ({fsm_err.valid, mux_err.valid, digest_packer_error})
+      3'b ?1: error_o = mux_err;
+      3'b 10: error_o = fsm_err;
+      3'b100: error_o = '{valid: 1'b0, code: ErrAppIntfPacker, info: '0};
       default: error_o = '{valid: 1'b0, code: ErrNone, info: '0};
     endcase
   end

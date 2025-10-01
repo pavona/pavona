@@ -88,9 +88,9 @@ module top_earlgrey #(
   parameter bit KmacSwKeyMasked = 0,
   parameter int SecKmacCmdDelay = 0,
   parameter bit SecKmacIdleAcceptSwMsg = 0,
-  parameter int KmacNumAppIntf = 3,
+  parameter int KmacNumAppIntf = 4,
   parameter kmac_pkg::app_config_t KmacAppCfg[KmacNumAppIntf] =
-      '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl},
+      '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOTBN},
   // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
@@ -829,6 +829,7 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
+  kmac_pkg::app_rsp_t unused_kmac_app_rsp3;
 
   // assign partial inter-module tie-off
 
@@ -840,6 +841,7 @@ module top_earlgrey #(
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
   assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
+  assign unused_kmac_app_rsp3 = kmac_app_rsp[3];
   assign otp_ctrl_sram_otp_key_req[3] = '0;
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
@@ -848,6 +850,7 @@ module top_earlgrey #(
   assign edn1_edn_req[5] = '0;
   assign edn1_edn_req[6] = '0;
   assign edn1_edn_req[7] = '0;
+  assign kmac_app_req[3] = kmac_pkg::APP_REQ_DEFAULT;
 
 
   // OTP HW_CFG* Broadcast signals.

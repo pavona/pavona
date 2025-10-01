@@ -530,3 +530,36 @@ In order to prevent mismatches between ISS and RTL, software needs to initialise
 Loop and call stack pointers are reset.
 
 Host software cannot explicitly trigger an internal secure wipe; it is performed automatically after reset and at the end of an `EXECUTE` operation.
+
+### KMAC Application Interface
+
+The OTBN has an application interface connection to the KMAC block allowing for function calls directly to SHA3 and SHAKE algorithms.
+For KMAC specific implementation details of the AppIntf view the [`KMAC Theory of Operation`](../../kmac/doc/theory_of_operation.md#application-interface).
+The first word written from KMAC on the application interface is used to dynamically configure the algorithm executed within the KMAC block.
+Bits [1:0] select the appropriate SHA3/cSHAKE/SHAKE algorithm and bits [4:2] select the appropriate Keccak drive strength.
+The CSR for configuring the KMAC operation can be found at 0x7D9.
+
+<table>
+  <thead>
+    <tr>
+      <th>CSR Name</th>
+      <th>Offset</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>CsrKmacCfg</code></td><td>0x7D9</td></tr>
+    <tr><td><code>CsrStatus</code></td><td>0x7E2</td></tr>
+    <tr><td><code>CsrKmacPartialWrite</code></td><td>0x7F3</td></tr>
+  </tbody>
+</table>
+
+#### Partial Word Support
+
+To reduce additional complexity and code size in the OTBN when initializing a SHA3/SHAKE algorithm the OTBN supports partial word writes.
+Writing to the `Send to KMAC` register is used to transfer data over the AppIntf.
+The optimization provides a reduced code size for the following reason.
+If software wanted to compute SHAKE128(a || b) where a is 2 bytes and b is 32 bytes, without partial write support, software is required to compute a || b[29:0].
+Then write the result and follow with the last two bytes, b[31:30].
+A `_KMAC_WRITE_LEN` register is used to write the size of the next word being transferred, if it is not 32B in size.
+After writing the partial word to the KMAC register, the `_KMAC_WRITE_LEN` register will clear itself unless a new value is written.
+The OTBN should be able to make requests to the KMAC block back-to-back.

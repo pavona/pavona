@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -71,10 +72,10 @@ package kmac_env_pkg;
 
   parameter uint NUM_EDN = 1;
 
-  // Earlgrey has 3 application interfaces
-  parameter uint NUM_APP_INTF = 3;
-  parameter app_config_t APP_CFG[NUM_APP_INTF] =
-    '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl};
+  // Earlgrey has 4 application interfaces
+  parameter app_config_t APP_CFG[kmac_app_agent_pkg::NUM_APP_INTF] =
+    '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl,
+      kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOTBN};
 
   /////////////////////////////
   // Timing Model Parameters //
@@ -142,23 +143,20 @@ package kmac_env_pkg;
     KmacHashCntClrIdx = 9
   } kmac_cmd_idx_e;
 
-  typedef enum int {
-    AppKeymgr,
-    AppLc,
-    AppRom
-  } kmac_app_e;
-
   // state values of the App FSM
-  typedef enum bit [9:0] {
-    StIdle                  = 10'b1011011010,
-    StAppCfg                = 10'b0001010000,
-    StAppMsg                = 10'b0001011111,
-    StAppOutLen             = 10'b1011001111,
-    StAppProcess            = 10'b1000100110,
-    StAppWait               = 10'b0010010110,
-    StSw                    = 10'b0111111111,
-    StKeyMgrErrKeyNotValid  = 10'b1001110100,
-    StError                 = 10'b1101011101
+  typedef enum bit [10:0] {
+    StIdle                  = 11'b10101111100,
+    StAppCfg                = 11'b10101011010,
+    StAppDynamicCfg         = 11'b11100010110,
+    StAppMsg                = 11'b10100110001,
+    StAppOutLen             = 11'b10101001001,
+    StAppProcess            = 11'b11101100100,
+    StAppManualRun          = 11'b10010100000,
+    StAppWait               = 11'b00101110110,
+    StAppShiftDigest        = 11'b01110111111,
+    StSw                    = 11'b00000000001,
+    StKeyMgrErrKeyNotValid  = 11'b00110111100,
+    StError                 = 11'b11100101111
   } kmac_app_st_e;
 
   typedef enum bit [23:0] {

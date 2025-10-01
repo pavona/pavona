@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+// Copyright zeroRISC Inc.
 
 {
   name:               "kmac",
@@ -24,7 +25,7 @@
   sw_checklist:       "/sw/device/lib/dif/dif_kmac",
   revisions: [
     {
-      version:            "2.0.0",
+      version:            "2.1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",
@@ -125,7 +126,7 @@
     }
     { name:    "NumAppIntf"
       type:    "int"
-      default: "3"
+      default: "4"
       desc:    "Number of application interfaces"
       local:   "false"
       expose:  "true"
@@ -136,7 +137,7 @@
                            '''
       type:                "kmac_pkg::app_config_t"
       unpacked_dimensions: "[KmacNumAppIntf]"
-      default:             "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl}"
+      default:             "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOTBN}"
       local:               "false"
       expose:              "true"
     }
