@@ -576,6 +576,30 @@ package otbn_pkg;
     logic            shift_acc;
   } mac_bignum_operation_t;
 
+  // States for KMAC error handling
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 2 -n 4 \
+  //     -s 573349984 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (100.00%)
+  //  4: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 3
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 3
+  //
+  localparam int StateWidth = 4;
+  typedef enum logic [StateWidth-1:0] {
+    StIdle         = 4'b1010,
+    StPendingReady = 4'b1101
+  } kmac_undersized_state_e;
+
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
   //      -s 5799399942 --language=sv

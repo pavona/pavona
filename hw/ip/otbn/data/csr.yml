@@ -113,6 +113,8 @@
   read-only: true
   doc: |
     Contains status bits for KMAC operations and return digest
+    Bit [4]   MSG Undersized Error
+    Bit [3]   MSG Oversized Error
     Bit [2]   Digest error
     Bit [1]   KMAC Ready
     Bit [0]   Digest Done

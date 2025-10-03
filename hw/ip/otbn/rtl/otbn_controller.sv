@@ -298,8 +298,8 @@ module otbn_controller
   logic [11:0] loop_bodysize;
   logic [31:0] loop_iterations;
 
-  // Loop generated jumps. The loop controller asks to jump when execution reaches the end of a loop
-  // body that hasn't completed all of its iterations.
+  // Loop generated jumps. The loop controller asks to jump when execution reaches the end of a
+  // loop body that hasn't completed all of its iterations.
   logic                     loop_jump;
   logic [ImemAddrWidth-1:0] loop_jump_addr;
 
@@ -984,7 +984,9 @@ module otbn_controller
     .out_o(rf_bignum_rd_addr_a_o)
   );
 
-  assign rf_bignum_rd_en_a_unbuf = insn_dec_bignum_i.rf_ren_a & insn_valid_i & (~stall | kmac_write_stall);
+  assign rf_bignum_rd_en_a_unbuf = insn_dec_bignum_i.rf_ren_a
+      & insn_valid_i
+      & (~stall | kmac_write_stall);
 
   prim_buf #(
     .Width(1)

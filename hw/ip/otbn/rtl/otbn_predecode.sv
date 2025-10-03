@@ -479,31 +479,31 @@ module otbn_predecode
 
     if (csr_addr_sel) begin
       unique case (csr_addr)
-        CsrFlags, CsrFg0, CsrFg1:           ispr_addr = IsprFlags;
         CsrMod0, CsrMod1, CsrMod2, CsrMod3,
         CsrMod4, CsrMod5, CsrMod6, CsrMod7: ispr_addr = IsprMod;
-        CsrKmacCfg: ispr_addr = IsprKmacCfg;
-        CsrKmacDigestW0, CsrKmacDigestW1, CsrKmacDigestW2, CsrKmacDigestW3, CsrKmacDigestW4,
-        CsrKmacDigestW5, CsrKmacDigestW6, CsrKmacDigestW7: ispr_addr = IsprKmacDigest;
+        CsrKmacCfg:                         ispr_addr = IsprKmacCfg;
         CsrKmacPartialW:                    ispr_addr = IsprKmacPartialW;
         CsrKmacStatus:                      ispr_addr = IsprKmacStatus;
+        CsrFlags, CsrFg0, CsrFg1:           ispr_addr = IsprFlags;
         CsrRnd:                             ispr_addr = IsprRnd;
         CsrUrnd:                            ispr_addr = IsprUrnd;
+        CsrKmacDigestW0, CsrKmacDigestW1, CsrKmacDigestW2, CsrKmacDigestW3, CsrKmacDigestW4,
+        CsrKmacDigestW5, CsrKmacDigestW6, CsrKmacDigestW7: ispr_addr = IsprKmacDigest;
         default: ;
       endcase
     end else begin
       unique case (wsr_addr)
-        WsrMod:           ispr_addr = IsprMod;
-        WsrKmacCfg:       ispr_addr = IsprKmacCfg;
-        WsrKmacMsg:       ispr_addr = IsprKmacMsg;
-        WsrKmacDigest:    ispr_addr = IsprKmacDigest;
-        WsrRnd:           ispr_addr = IsprRnd;
-        WsrUrnd:          ispr_addr = IsprUrnd;
-        WsrAcc:           ispr_addr = IsprAcc;
-        WsrKeyS0L:        ispr_addr = IsprKeyS0L;
-        WsrKeyS0H:        ispr_addr = IsprKeyS0H;
-        WsrKeyS1L:        ispr_addr = IsprKeyS1L;
-        WsrKeyS1H:        ispr_addr = IsprKeyS1H;
+        WsrMod:         ispr_addr = IsprMod;
+        WsrKmacCfg:     ispr_addr = IsprKmacCfg;
+        WsrKmacMsg:     ispr_addr = IsprKmacMsg;
+        WsrKmacDigest:  ispr_addr = IsprKmacDigest;
+        WsrRnd:         ispr_addr = IsprRnd;
+        WsrUrnd:        ispr_addr = IsprUrnd;
+        WsrAcc:         ispr_addr = IsprAcc;
+        WsrKeyS0L:      ispr_addr = IsprKeyS0L;
+        WsrKeyS0H:      ispr_addr = IsprKeyS0H;
+        WsrKeyS1L:      ispr_addr = IsprKeyS1L;
+        WsrKeyS1H:      ispr_addr = IsprKeyS1H;
         default: ;
       endcase
     end
