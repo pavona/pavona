@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -309,6 +313,7 @@ status_t handle_rsa_verify(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
       .key_length = key_length,
       .key = key,
   };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
 
   uint32_t signature_buf[uj_signature.signature_len / sizeof(uint32_t)];
   memcpy(signature_buf, uj_signature.signature, uj_signature.signature_len);

@@ -1,3 +1,7 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -527,20 +531,20 @@ WYCHEPROOF_RSA_PSS_SUFFIXES = {
     2048: [
         # TODO uncomment if RSA supports salt_length != hash_digest_length
         # "sha256_mgf1_0",
-        # "sha256_mgf1_32", 107/108
-        # "sha384_mgf1_48", 139/141
+        "sha256_mgf1_32",
+        "sha384_mgf1_48",
     ],
     3072: [
-        # "sha256_mgf1_32", 106/108
+        "sha256_mgf1_32",
         # TODO uncomment if RSA supports SHAKE
         # "shake128",
     ],
     4096: [
-        # "sha256_mgf1_32", 106/108
-        # "sha384_mgf1_48", 138/141
+        "sha256_mgf1_32",
+        "sha384_mgf1_48",
         # TODO uncomment if RSA supports salt_length != hash_digest_length
         # "sha512_mgf1_32",
-        # "sha512_mgf1_64", 177/179
+        "sha512_mgf1_64",
         # TODO uncomment if RSA supports SHAKE
         # "shake256",
     ],
@@ -588,9 +592,8 @@ RSA_TESTVECTOR_TARGETS = [
         "pss",
     ]
     for operation in [
-        # TODO uncomment when RSA verify supports e != 0x10001
         "sign",
-        # "verify",
+        "verify",
     ]
 ]
 

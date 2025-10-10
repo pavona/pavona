@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -254,7 +258,7 @@ fn run_rsa_testcase(
             let n = BigInt::from_signed_bytes_be(test_case.n.as_slice())
                 .to_bytes_le()
                 .1;
-            let signature = BigUint::from_bytes_be(test_case.signature.as_slice()).to_bytes_le();
+            let signature: Vec<_> = test_case.signature.iter().cloned().rev().collect();
             CryptotestRsaMessageDigest {
                 message_digest: message_digest_buf,
                 message_digest_len,

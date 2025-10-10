@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -26,6 +30,11 @@ HASH_NAME_MAPPING = {
     "SHA512": "sha-512",
 }
 
+HASH_SIZE_MAPPING = {
+    "SHA256": 32,
+    "SHA384": 48,
+    "SHA512": 64,
+}
 
 def parse_testcases(args) -> None:
     # Depending on the operation, we have to notify the parser that certain
@@ -53,6 +62,12 @@ def parse_testcases(args) -> None:
             continue
         if test_vec["SHAAlg"] not in HASH_NAME_MAPPING:
             continue
+        if args.padding == "pss":
+            salt_bytes = len(str_to_byte_array(test_vec["SaltVal"]))
+            digest_bytes = HASH_SIZE_MAPPING[test_vec["SHAAlg"]]
+            if salt_bytes != digest_bytes:
+                continue
+
         test_case = {
             "vendor": "nist",
             "test_case_id": count,
