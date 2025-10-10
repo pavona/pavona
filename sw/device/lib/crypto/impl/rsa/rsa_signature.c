@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors (OpenTitan project).
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -168,8 +172,47 @@ status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature) {
   return rsa_modexp_2048_finalize(signature);
 }
 
+
+/**
+ * Ensure that the provided RSA-2048 signature is reduced with respect to the
+ * provided RSA-2048 public key's modulus.
+ *
+ * @param public_key Public key to check against.
+ * @param signature Signature to check.
+ * @return Result of the operation (OK or BAD_ARGS).
+ */
+OT_WARN_UNUSED_RESULT
+static status_t rsa_signature_reduced_check_2048(
+    const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature) {
+
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  size_t i = 0;
+  for (; launder32(i) < kRsa2048NumWords; i++) {
+    uint32_t n_limb = public_key->n.data[i];
+    uint32_t sig_limb = signature->data[i];
+    if (launder32(borrow) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
+      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    } else {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    }
+  }
+  HARDENED_CHECK_EQ(i, kRsa2048NumWords);
+
+  if (launder32(borrow) == kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+  return OTCRYPTO_OK;
+
+}
+
 status_t rsa_signature_verify_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature) {
+  // Verify that the signature is reduced
+  HARDENED_TRY(rsa_signature_reduced_check_2048(public_key, signature));
+
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
   return rsa_modexp_vartime_2048_start(signature, public_key->e,
                                        &public_key->n);
@@ -237,8 +280,46 @@ status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature) {
   return rsa_modexp_3072_finalize(signature);
 }
 
+/**
+ * Ensure that the provided RSA-3072 signature is reduced with respect to the
+ * provided RSA-3072 public key's modulus.
+ *
+ * @param public_key Public key to check against.
+ * @param signature Signature to check.
+ * @return Result of the operation (OK or BAD_ARGS).
+ */
+OT_WARN_UNUSED_RESULT
+static status_t rsa_signature_reduced_check_3072(
+    const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature) {
+
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  size_t i = 0;
+  for (; launder32(i) < kRsa3072NumWords; i++) {
+    uint32_t n_limb = public_key->n.data[i];
+    uint32_t sig_limb = signature->data[i];
+    if (launder32(borrow) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
+      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    } else {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    }
+  }
+  HARDENED_CHECK_EQ(i, kRsa3072NumWords);
+
+  if (launder32(borrow) == kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+  return OTCRYPTO_OK;
+
+}
+
 status_t rsa_signature_verify_3072_start(
     const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature) {
+  // Verify that the signature is reduced
+  HARDENED_TRY(rsa_signature_reduced_check_3072(public_key, signature));
+
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
   return rsa_modexp_vartime_3072_start(signature, public_key->e,
                                        &public_key->n);
@@ -264,8 +345,46 @@ status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature) {
   return rsa_modexp_4096_finalize(signature);
 }
 
+/**
+ * Ensure that the provided RSA-4096 signature is reduced with respect to the
+ * provided RSA-4096 public key's modulus.
+ *
+ * @param public_key Public key to check against.
+ * @param signature Signature to check.
+ * @return Result of the operation (OK or BAD_ARGS).
+ */
+OT_WARN_UNUSED_RESULT
+static status_t rsa_signature_reduced_check_4096(
+    const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature) {
+
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  size_t i = 0;
+  for (; launder32(i) < kRsa4096NumWords; i++) {
+    uint32_t n_limb = public_key->n.data[i];
+    uint32_t sig_limb = signature->data[i];
+    if (launder32(borrow) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
+      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    } else {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    }
+  }
+  HARDENED_CHECK_EQ(i, kRsa4096NumWords);
+
+  if (launder32(borrow) == kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+  return OTCRYPTO_OK;
+
+}
+
 status_t rsa_signature_verify_4096_start(
     const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature) {
+  // Verify that the signature is reduced
+  HARDENED_TRY(rsa_signature_reduced_check_4096(public_key, signature));
+
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
   return rsa_modexp_vartime_4096_start(signature, public_key->e,
                                        &public_key->n);
