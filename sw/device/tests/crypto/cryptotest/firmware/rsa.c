@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/crypto/include/rsa.h"
 
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
@@ -315,11 +316,11 @@ status_t handle_rsa_verify(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
   };
   public_key.checksum = integrity_unblinded_checksum(&public_key);
 
-  uint32_t signature_buf[uj_signature.signature_len / sizeof(uint32_t)];
+  uint32_t signature_buf[ceil_div(uj_signature.signature_len, sizeof(uint32_t))];
   memcpy(signature_buf, uj_signature.signature, uj_signature.signature_len);
   otcrypto_const_word32_buf_t signature = {
       .data = signature_buf,
-      .len = uj_signature.signature_len / sizeof(uint32_t),
+      .len = ceil_div(uj_signature.signature_len, sizeof(uint32_t)),
   };
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
@@ -456,6 +457,7 @@ status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
       .key_length = key_length,
       .key = key,
   };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
 
   uint8_t label_buf[RSA_CMD_MAX_LABEL_BYTES];
   memcpy(label_buf, uj_label.label, uj_label.label_len);
@@ -607,7 +609,7 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
          uj_ciphertext.ciphertext_len);
   otcrypto_const_word32_buf_t ciphertext = {
       .data = ciphertext_buf,
-      .len = uj_ciphertext.ciphertext_len / sizeof(uint32_t),
+      .len = ceil_div(uj_ciphertext.ciphertext_len, sizeof(uint32_t)),
   };
 
   uint8_t label_buf[RSA_CMD_MAX_LABEL_BYTES];

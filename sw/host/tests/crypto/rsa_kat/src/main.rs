@@ -386,7 +386,7 @@ fn run_rsa_testcase(
             let d = BigInt::from_signed_bytes_be(test_case.d.as_slice())
                 .to_bytes_le()
                 .1;
-            let ciphertext = BigUint::from_bytes_be(test_case.ciphertext.as_slice()).to_bytes_le();
+            let ciphertext: Vec<_> = test_case.ciphertext.iter().cloned().rev().collect();
             // Send ciphertext
             CryptotestRsaCiphertext {
                 ciphertext: ArrayVec::try_from(ciphertext.as_slice())

@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors (OpenTitan project).
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -37,8 +41,44 @@ status_t rsa_encrypt_2048_finalize(rsa_2048_int_t *ciphertext) {
   return rsa_modexp_2048_finalize(ciphertext);
 }
 
+/**
+ * Ensure that the provided RSA-2048 ciphertext is reduced with respect to the
+ * provided RSA-2048 private key's modulus.
+ *
+ * @param private_key Private key to check against.
+ * @param ciphertext Ciphertext to check.
+ * @return Result of the operation (OK or BAD_ARGS).
+ */
+OT_WARN_UNUSED_RESULT
+static status_t rsa_ciphertext_reduced_check_2048(
+    const rsa_2048_private_key_t *private_key, const rsa_2048_int_t *ciphertext) {
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  size_t i = 0;
+  for (; launder32(i) < kRsa2048NumWords; i++) {
+    uint32_t n_limb = private_key->n.data[i];
+    uint32_t sig_limb = ciphertext->data[i];
+    if (launder32(borrow) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
+      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    } else {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    }
+  }
+  HARDENED_CHECK_EQ(i, kRsa2048NumWords);
+
+  if (launder32(borrow) == kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+  return OTCRYPTO_OK;
+}
+
 status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
                                 const rsa_2048_int_t *ciphertext) {
+  // Verify that the ciphertext is reduced
+  HARDENED_TRY(rsa_ciphertext_reduced_check_2048(private_key, ciphertext));
+
   // Start computing (ciphertext ^ d) mod n.
   return rsa_modexp_consttime_crt_2048_start(
       ciphertext, &private_key->d_p, &private_key->d_q, &private_key->i_q,
@@ -127,8 +167,44 @@ status_t rsa_encrypt_3072_finalize(rsa_3072_int_t *ciphertext) {
   return rsa_modexp_3072_finalize(ciphertext);
 }
 
+/**
+ * Ensure that the provided RSA-3072 ciphertext is reduced with respect to the
+ * provided RSA-3072 private key's modulus.
+ *
+ * @param private_key Private key to check against.
+ * @param ciphertext Ciphertext to check.
+ * @return Result of the operation (OK or BAD_ARGS).
+ */
+OT_WARN_UNUSED_RESULT
+static status_t rsa_ciphertext_reduced_check_3072(
+    const rsa_3072_private_key_t *private_key, const rsa_3072_int_t *ciphertext) {
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  size_t i = 0;
+  for (; launder32(i) < kRsa3072NumWords; i++) {
+    uint32_t n_limb = private_key->n.data[i];
+    uint32_t sig_limb = ciphertext->data[i];
+    if (launder32(borrow) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
+      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    } else {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    }
+  }
+  HARDENED_CHECK_EQ(i, kRsa3072NumWords);
+
+  if (launder32(borrow) == kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+  return OTCRYPTO_OK;
+}
+
 status_t rsa_decrypt_3072_start(const rsa_3072_private_key_t *private_key,
                                 const rsa_3072_int_t *ciphertext) {
+  // Verify that the ciphertext is reduced
+  HARDENED_TRY(rsa_ciphertext_reduced_check_3072(private_key, ciphertext));
+
   // Start computing (ciphertext ^ d) mod n.
   return rsa_modexp_consttime_crt_3072_start(
       ciphertext, &private_key->d_p, &private_key->d_q, &private_key->i_q,
@@ -156,8 +232,44 @@ status_t rsa_encrypt_4096_finalize(rsa_4096_int_t *ciphertext) {
   return rsa_modexp_4096_finalize(ciphertext);
 }
 
+/**
+ * Ensure that the provided RSA-4096 ciphertext is reduced with respect to the
+ * provided RSA-4096 private key's modulus.
+ *
+ * @param private_key Private key to check against.
+ * @param ciphertext Ciphertext to check.
+ * @return Result of the operation (OK or BAD_ARGS).
+ */
+OT_WARN_UNUSED_RESULT
+static status_t rsa_ciphertext_reduced_check_4096(
+    const rsa_4096_private_key_t *private_key, const rsa_4096_int_t *ciphertext) {
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  size_t i = 0;
+  for (; launder32(i) < kRsa4096NumWords; i++) {
+    uint32_t n_limb = private_key->n.data[i];
+    uint32_t sig_limb = ciphertext->data[i];
+    if (launder32(borrow) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
+      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    } else {
+      HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+    }
+  }
+  HARDENED_CHECK_EQ(i, kRsa4096NumWords);
+
+  if (launder32(borrow) == kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
+  return OTCRYPTO_OK;
+}
+
 status_t rsa_decrypt_4096_start(const rsa_4096_private_key_t *private_key,
                                 const rsa_4096_int_t *ciphertext) {
+  // Verify that the ciphertext is reduced
+  HARDENED_TRY(rsa_ciphertext_reduced_check_4096(private_key, ciphertext));
+
   // Start computing (ciphertext ^ d) mod n.
   return rsa_modexp_consttime_crt_4096_start(
       ciphertext, &private_key->d_p, &private_key->d_q, &private_key->i_q,

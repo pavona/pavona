@@ -488,17 +488,17 @@ test_suite(
 
 WYCHEPROOF_RSA_OAEP_SUFFIXES = {
     2048: [
-        # "sha256_mgf1sha256", 36/37 (D) 18/18 (E)
-        # "sha384_mgf1sha384", 33/34 (D) 16/16 (E)
-        # "sha512_mgf1sha512", 31/33 (D) 14/14 (E)
+        "sha256_mgf1sha256",
+        "sha384_mgf1sha384",
+        "sha512_mgf1sha512",
     ],
     3072: [
-        # "sha256_mgf1sha256", 35/37 (D) 18/18 (E)
-        # "sha512_mgf1sha512", 32/33 (D) 15/15 (E)
+        "sha256_mgf1sha256",
+        "sha512_mgf1sha512",
     ],
     4096: [
-        # "sha256_mgf1sha256", 35/37 (D) 18/18 (E)
-        # "sha512_mgf1sha512", 34/36 (D) 17/17 (E)
+        "sha256_mgf1sha256",
+        "sha512_mgf1sha512",
     ],
 }
 
