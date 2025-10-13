@@ -9,10 +9,13 @@
 use anyhow::{Error, Result};
 use arrayvec::ArrayVec;
 use clap::Parser;
-use sha2::{Digest as Sha2Digest, Sha256, Sha384, Sha512};
-use sha3::{digest::{Update as Sha3Update, ExtendableOutput}, Sha3_224, Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256};
 use num_bigint_dig::{BigInt, BigUint};
 use serde::Deserialize;
+use sha2::{Digest as Sha2Digest, Sha256, Sha384, Sha512};
+use sha3::{
+    Sha3_224, Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256,
+    digest::{ExtendableOutput, Update as Sha3Update},
+};
 use std::fs;
 use std::io::Read;
 use std::time::Duration;
@@ -125,37 +128,37 @@ fn run_rsa_testcase(
             }
             "sha-384" => {
                 let mut hasher = Sha384::new();
-                Sha2Digest::update(&mut hasher, test_case.message.as_slice());                
+                Sha2Digest::update(&mut hasher, test_case.message.as_slice());
                 (CryptotestRsaHashAlg::Sha384, hasher.finalize().to_vec())
             }
             "sha-512" => {
                 let mut hasher = Sha512::new();
-                Sha2Digest::update(&mut hasher, test_case.message.as_slice());                
+                Sha2Digest::update(&mut hasher, test_case.message.as_slice());
                 (CryptotestRsaHashAlg::Sha512, hasher.finalize().to_vec())
             }
             "sha3-224" => {
                 let mut hasher = Sha3_224::new();
-                Sha3Update::update(&mut hasher, test_case.message.as_slice());                
+                Sha3Update::update(&mut hasher, test_case.message.as_slice());
                 (CryptotestRsaHashAlg::Sha3_224, hasher.finalize().to_vec())
             }
             "sha3-256" => {
                 let mut hasher = Sha3_256::new();
-                Sha3Update::update(&mut hasher, test_case.message.as_slice());                
+                Sha3Update::update(&mut hasher, test_case.message.as_slice());
                 (CryptotestRsaHashAlg::Sha3_256, hasher.finalize().to_vec())
             }
             "sha3-384" => {
                 let mut hasher = Sha3_384::new();
-                Sha3Update::update(&mut hasher, test_case.message.as_slice());                
+                Sha3Update::update(&mut hasher, test_case.message.as_slice());
                 (CryptotestRsaHashAlg::Sha3_384, hasher.finalize().to_vec())
             }
             "sha3-512" => {
                 let mut hasher = Sha3_512::new();
-                Sha3Update::update(&mut hasher, test_case.message.as_slice());                
+                Sha3Update::update(&mut hasher, test_case.message.as_slice());
                 (CryptotestRsaHashAlg::Sha3_512, hasher.finalize().to_vec())
             }
             "shake-128" => {
                 let mut hasher = Shake128::default();
-                Sha3Update::update(&mut hasher, test_case.message.as_slice());                
+                Sha3Update::update(&mut hasher, test_case.message.as_slice());
                 let mut buf = vec![];
                 let mut reader = hasher.finalize_xof();
                 reader.read_to_end(&mut buf)?;
@@ -163,7 +166,7 @@ fn run_rsa_testcase(
             }
             "shake-256" => {
                 let mut hasher = Shake256::default();
-                Sha3Update::update(&mut hasher, test_case.message.as_slice());                
+                Sha3Update::update(&mut hasher, test_case.message.as_slice());
                 let mut buf = vec![];
                 let mut reader = hasher.finalize_xof();
                 reader.read_to_end(&mut buf)?;

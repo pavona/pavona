@@ -51,7 +51,8 @@ status_t rsa_encrypt_2048_finalize(rsa_2048_int_t *ciphertext) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t rsa_ciphertext_reduced_check_2048(
-    const rsa_2048_private_key_t *private_key, const rsa_2048_int_t *ciphertext) {
+    const rsa_2048_private_key_t *private_key,
+    const rsa_2048_int_t *ciphertext) {
   hardened_bool_t borrow = kHardenedBoolTrue;
   size_t i = 0;
   for (; launder32(i) < kRsa2048NumWords; i++) {
@@ -177,7 +178,8 @@ status_t rsa_encrypt_3072_finalize(rsa_3072_int_t *ciphertext) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t rsa_ciphertext_reduced_check_3072(
-    const rsa_3072_private_key_t *private_key, const rsa_3072_int_t *ciphertext) {
+    const rsa_3072_private_key_t *private_key,
+    const rsa_3072_int_t *ciphertext) {
   hardened_bool_t borrow = kHardenedBoolTrue;
   size_t i = 0;
   for (; launder32(i) < kRsa3072NumWords; i++) {
@@ -242,7 +244,8 @@ status_t rsa_encrypt_4096_finalize(rsa_4096_int_t *ciphertext) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t rsa_ciphertext_reduced_check_4096(
-    const rsa_4096_private_key_t *private_key, const rsa_4096_int_t *ciphertext) {
+    const rsa_4096_private_key_t *private_key,
+    const rsa_4096_int_t *ciphertext) {
   hardened_bool_t borrow = kHardenedBoolTrue;
   size_t i = 0;
   for (; launder32(i) < kRsa4096NumWords; i++) {

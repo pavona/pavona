@@ -316,7 +316,8 @@ status_t handle_rsa_verify(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
   };
   public_key.checksum = integrity_unblinded_checksum(&public_key);
 
-  uint32_t signature_buf[ceil_div(uj_signature.signature_len, sizeof(uint32_t))];
+  uint32_t
+      signature_buf[ceil_div(uj_signature.signature_len, sizeof(uint32_t))];
   memcpy(signature_buf, uj_signature.signature, uj_signature.signature_len);
   otcrypto_const_word32_buf_t signature = {
       .data = signature_buf,

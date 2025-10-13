@@ -107,7 +107,7 @@ cc_library(
 )
 
 cc_library(
-name = "hmac",
+    name = "hmac",
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
     deps = [
