@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/include/hmac.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/hmac.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 'm', 'c')
@@ -58,25 +58,28 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
   // according to FIPS 198-1, Section 4, Step 2.
   if (launder32(key->config.key_length) >
       key_block_wordlen * sizeof(uint32_t)) {
-    otcrypto_hmac_key_mode_t used_key_mode;
-    switch (key->config.key_mode) {
+    otcrypto_key_mode_t used_key_mode;
+    switch (launder32(key->config.key_mode)) {
       case kOtcryptoKeyModeHmacSha256:
+        used_key_mode = kOtcryptoKeyModeHmacSha256;
+        HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha256);
         HARDENED_TRY(hmac_hash_sha256((unsigned char *)unmasked_key,
                                       key->config.key_length,
                                       hmac_key->key_block));
-        used_key_mode = launder32(kOtcryptoKeyModeHmacSha256);
         break;
       case kOtcryptoKeyModeHmacSha384:
+        used_key_mode = kOtcryptoKeyModeHmacSha384;
+        HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha384);
         HARDENED_TRY(hmac_hash_sha384((unsigned char *)unmasked_key,
                                       key->config.key_length,
                                       hmac_key->key_block));
-        used_key_mode = launder32(kOtcryptoKeyModeHmacSha384);
         break;
       case kOtcryptoKeyModeHmacSha512:
+        used_key_mode = kOtcryptoKeyModeHmacSha512;
+        HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha512);
         HARDENED_TRY(hmac_hash_sha512((unsigned char *)unmasked_key,
                                       key->config.key_length,
                                       hmac_key->key_block));
-        used_key_mode = launder32(kOtcryptoKeyModeHmacSha512);
         break;
       default:
         return OTCRYPTO_BAD_ARGS;
@@ -85,8 +88,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
   } else {
     HARDENED_CHECK_LE(key->config.key_length,
                       key_block_wordlen * sizeof(uint32_t));
-    HARDENED_TRY(
-        hardened_memcpy(hmac_key->key_block, unmasked_key, unmasked_key_len));
+    hardened_memcpy(hmac_key->key_block, unmasked_key, unmasked_key_len);
     // If the key size isn't a multiple of the word size, zero the last few
     // bytes.
     size_t offset = key->config.key_length % sizeof(uint32_t);
@@ -102,12 +104,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
   hmac_key->key_len = key_block_wordlen;
 
   // Create the checksum of the key and store it in the key structure.
-  if (launder32(hmac_key->key_len) > 0) {
-    hmac_key->checksum = hmac_key_integrity_checksum(hmac_key);
-  } else {
-    HARDENED_CHECK_EQ(hmac_key->key_len, 0);
-  }
-
+  hmac_key->checksum = hmac_key_integrity_checksum(hmac_key);
   return OTCRYPTO_OK;
 }
 
@@ -154,168 +151,22 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   // Call the appropriate function from the HMAC driver.
   hmac_key_t hmac_key;
   switch (launder32(key->config.key_mode)) {
-    case kOtcryptoKeyModeHmacSha256: {
+    case kOtcryptoKeyModeHmacSha256:
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha256);
       HARDENED_TRY(hmac_key_construct(key, kHmacSha256BlockWords, &hmac_key));
-      if (launder32(key->config.security_level) ==
-          kOtcryptoKeySecurityLevelLow) {
-        // No protection against FI.
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha256(&hmac_key, input_message.data,
-                                input_message.len, tag.data);
-      } else if (launder32(key->config.security_level) ==
-                 kOtcryptoKeySecurityLevelMedium) {
-        // Call the HMAC core twice and compare both tags. This serves as a FI
-        // countermeasure.
-        // First HMAC computation using the HMAC core.
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelMedium);
-        HARDENED_TRY(hmac_hmac_sha256(&hmac_key, input_message.data,
-                                      input_message.len, tag.data));
-        // Second HMAC computation using the HMAC core.
-        uint32_t tag_redundant[tag.len];
-        hmac_key_t hmac_key_redundant;
-        HARDENED_TRY(hmac_key_construct(key, kHmacSha256BlockWords,
-                                        &hmac_key_redundant));
-        HARDENED_TRY(hmac_hmac_sha256(&hmac_key_redundant, input_message.data,
-                                      input_message.len, tag_redundant));
-        // Comparison of both tags.
-        HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant[0], tag.len),
-            kHardenedBoolTrue);
-        return OTCRYPTO_OK;
-      } else {
-        // Perform two HMAC operations. The first call uses the HMAC core. The
-        // second use uses a HMAC implementation that does not use the HMAC
-        // core. This serves as a FI countermeasure.
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelHigh);
-        // First HMAC computation using the HMAC core.
-        HARDENED_TRY(hmac_hmac_sha256(&hmac_key, input_message.data,
-                                      input_message.len, tag.data));
-        // Second HMAC computation without using the HMAC core.
-        uint32_t tag_redundant[tag.len];
-        hmac_key_t hmac_key_redundant;
-        HARDENED_TRY(hmac_key_construct(key, kHmacSha256BlockWords,
-                                        &hmac_key_redundant));
-        HARDENED_TRY(
-            hmac_hmac_sha256_redundant(&hmac_key_redundant, input_message.data,
-                                       input_message.len, tag_redundant));
-        // Comparison of both tags.
-        HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant[0], tag.len),
-            kHardenedBoolTrue);
-        return OTCRYPTO_OK;
-      }
-    }
+      return hmac_hmac_sha256(&hmac_key, input_message.data, input_message.len,
+                              tag.data);
     case kOtcryptoKeyModeHmacSha384: {
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha384);
       HARDENED_TRY(hmac_key_construct(key, kHmacSha384BlockWords, &hmac_key));
-      if (launder32(key->config.security_level) ==
-          kOtcryptoKeySecurityLevelLow) {
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha384(&hmac_key, input_message.data,
-                                input_message.len, tag.data);
-      } else if (launder32(key->config.security_level) ==
-                 kOtcryptoKeySecurityLevelMedium) {
-        // Call the HMAC core twice and compare both tags. This serves as a FI
-        // countermeasure.
-        // First HMAC computation using the HMAC core.
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelMedium);
-        HARDENED_TRY(hmac_hmac_sha384(&hmac_key, input_message.data,
-                                      input_message.len, tag.data));
-        // Second HMAC computation using the HMAC core.
-        uint32_t tag_redundant[tag.len];
-        hmac_key_t hmac_key_redundant;
-        HARDENED_TRY(hmac_key_construct(key, kHmacSha384BlockWords,
-                                        &hmac_key_redundant));
-        HARDENED_TRY(hmac_hmac_sha384(&hmac_key_redundant, input_message.data,
-                                      input_message.len, tag_redundant));
-        // Comparison of both tags.
-        HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant[0], tag.len),
-            kHardenedBoolTrue);
-        return OTCRYPTO_OK;
-      } else {
-        // Perform two HMAC operations. The first call uses the HMAC core. The
-        // second use uses a HMAC implementation that does not use the HMAC
-        // core. This serves as a FI countermeasure.
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelHigh);
-        // First HMAC computation using the HMAC core.
-        HARDENED_TRY(hmac_hmac_sha384(&hmac_key, input_message.data,
-                                      input_message.len, tag.data));
-        // Second HMAC computation without using the HMAC core.
-        uint32_t tag_redundant[tag.len];
-        hmac_key_t hmac_key_redundant;
-        HARDENED_TRY(hmac_key_construct(key, kHmacSha384BlockWords,
-                                        &hmac_key_redundant));
-        HARDENED_TRY(
-            hmac_hmac_sha384_redundant(&hmac_key_redundant, input_message.data,
-                                       input_message.len, tag_redundant));
-        // Comparison of both tags.
-        HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant[0], tag.len),
-            kHardenedBoolTrue);
-        return OTCRYPTO_OK;
-      }
+      return hmac_hmac_sha384(&hmac_key, input_message.data, input_message.len,
+                              tag.data);
     }
     case kOtcryptoKeyModeHmacSha512: {
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha512);
       HARDENED_TRY(hmac_key_construct(key, kHmacSha512BlockWords, &hmac_key));
-      if (launder32(key->config.security_level) ==
-          kOtcryptoKeySecurityLevelLow) {
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha512(&hmac_key, input_message.data,
-                                input_message.len, tag.data);
-      } else if (launder32(key->config.security_level) ==
-                 kOtcryptoKeySecurityLevelMedium) {
-        // Call the HMAC core twice and compare both tags. This serves as a FI
-        // countermeasure.
-        // First HMAC computation using the HMAC core.
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelMedium);
-        HARDENED_TRY(hmac_hmac_sha512(&hmac_key, input_message.data,
-                                      input_message.len, tag.data));
-        // Second HMAC computation using the HMAC core.
-        uint32_t tag_redundant[tag.len];
-        hmac_key_t hmac_key_redundant;
-        HARDENED_TRY(hmac_key_construct(key, kHmacSha512BlockWords,
-                                        &hmac_key_redundant));
-        HARDENED_TRY(hmac_hmac_sha512(&hmac_key_redundant, input_message.data,
-                                      input_message.len, tag_redundant));
-        // Comparison of both tags.
-        HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant[0], tag.len),
-            kHardenedBoolTrue);
-        return OTCRYPTO_OK;
-      } else {
-        // Perform two HMAC operations. The first call uses the HMAC core. The
-        // second use uses a HMAC implementation that does not use the HMAC
-        // core. This serves as a FI countermeasure.
-        HARDENED_CHECK_EQ(key->config.security_level,
-                          kOtcryptoKeySecurityLevelHigh);
-        // First HMAC computation using the HMAC core.
-        HARDENED_TRY(hmac_hmac_sha512(&hmac_key, input_message.data,
-                                      input_message.len, tag.data));
-        // Second HMAC computation without using the HMAC core.
-        uint32_t tag_redundant[tag.len];
-        hmac_key_t hmac_key_redundant;
-        HARDENED_TRY(hmac_key_construct(key, kHmacSha512BlockWords,
-                                        &hmac_key_redundant));
-        HARDENED_TRY(
-            hmac_hmac_sha512_redundant(&hmac_key_redundant, input_message.data,
-                                       input_message.len, tag_redundant));
-        // Comparison of both tags.
-        HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant[0], tag.len),
-            kHardenedBoolTrue);
-        return OTCRYPTO_OK;
-      }
+      return hmac_hmac_sha512(&hmac_key, input_message.data, input_message.len,
+                              tag.data);
     }
     default:
       return OTCRYPTO_BAD_ARGS;
