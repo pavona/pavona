@@ -119,10 +119,10 @@ impl Dediprog {
     const VID_ST_MICROELECTRONICS: u16 = 0x0483;
     const PID_DEDIPROG_SF100: u16 = 0xDADA;
 
-    pub fn new(
+    pub fn new<S: AsRef<str>>(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
-        usb_serial: Option<&str>,
+        usb_serial: &[S],
     ) -> anyhow::Result<Self> {
         let device = UsbBackend::new(
             usb_vid.unwrap_or(Self::VID_ST_MICROELECTRONICS),
@@ -386,7 +386,7 @@ impl Backend for DediprogBackend {
         Ok(Box::new(Dediprog::new(
             args.usb_vid,
             args.usb_pid,
-            args.usb_serial.as_deref(),
+            &args.usb_serial,
         )?))
     }
 }

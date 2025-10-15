@@ -58,7 +58,7 @@ impl Rescue for UsbDfu {
             Self::CLASS,
             Self::SUBCLASS,
             Self::PROTOCOL,
-            self.params.usb_serial.as_deref(),
+            self.params.usb_serial.as_slice(),
             self.enter_delay,
         );
         log::info!("Rescue triggered; clearing trigger condition.");

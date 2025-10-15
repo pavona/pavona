@@ -131,7 +131,7 @@ pub struct BackendOpts {
     pub usb_pid: Option<u16>,
     /// USB serial number of the interface.
     #[arg(long)]
-    pub usb_serial: Option<String>,
+    pub usb_serial: Vec<String>,
 
     #[command(flatten)]
     transport_specific_opts: TransportSpecificOpts,
