@@ -125,5 +125,13 @@ In particular, how do they interact with instructions that could cause other err
 {{#acc-isa base }}
 
 # Big Number Instruction Subset
-
 {{#acc-isa bignum }}
+
+# Encoding overview
+The following tables show the encodings of all instructions.
+
+## Base Instruction Subset
+{{#acc-isa base_encoding }}
+
+## Big Number Instruction Subset
+{{#acc-isa bignum_encoding }}
