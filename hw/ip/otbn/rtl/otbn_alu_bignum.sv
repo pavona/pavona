@@ -428,6 +428,7 @@ module otbn_alu_bignum
   logic                     kmac_cfg_ispr_wr_en;
   logic                     kmac_cfg_wr_en;
   logic [1:0]               kmac_cfg_intg_err;
+  logic                     kmac_new_cfg_q;
 
   logic [ExtWLEN-1:0] ispr_kmac_cfg_bignum_wdata_intg_blanked;
 
@@ -491,6 +492,7 @@ module otbn_alu_bignum
   logic                     kmac_pw_ispr_wr_en;
   logic                     kmac_pw_wr_en;
   logic [1:0]               kmac_pw_intg_err;
+  logic [5:0]               kmac_pw_mask;
   logic                     kmac_msg_valid_q;
   logic                     kmac_sent_last;
 
@@ -522,7 +524,7 @@ module otbn_alu_bignum
   assign kmac_pw_wr_en = (ispr_init_i | kmac_pw_ispr_wr_en) & (~kmac_msg_valid_q | kmac_sent_last);
 
   always_ff @(posedge clk_i) begin
-    if (kmac_pw_wr_en) begin
+    if (kmac_pw_wr_en | kmac_new_cfg_q) begin
       kmac_pw_intg_q  <= kmac_pw_intg_d;
     end
   end
@@ -537,12 +539,18 @@ module otbn_alu_bignum
         kmac_pw_no_intg_d = ispr_base_wdata_i;
         kmac_pw_intg_d    = kmac_pw_intg_calc;
       end
+      kmac_new_cfg_q: begin
+        kmac_pw_no_intg_d = 32'h20; // Set to full length at the start of cfg
+        kmac_pw_intg_d    = kmac_pw_intg_calc;
+      end
       default: begin
         kmac_pw_no_intg_d = 32'b0;
         kmac_pw_intg_d    = ispr_kmac_pw_bignum_wdata_intg_blanked[38:0];
       end
     endcase
   end
+
+  assign kmac_pw_mask = kmac_pw_intg_q[5:0];
 
   `ASSERT(KmacPWWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[0]}))
 
@@ -617,8 +625,6 @@ module otbn_alu_bignum
   logic [BaseIntgWidth-1:0] kmac_status_intg_d;
   logic [31:0]              kmac_status_no_intg_d;
   logic [1:0]               kmac_status_intg_err;
-
-  logic kmac_new_cfg_q;
 
   // Error handling status for undersized message
   logic kmac_undersized_req_err;
@@ -709,8 +715,8 @@ module otbn_alu_bignum
     end
 
     assign kmac_digest_no_intg_d[i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
-                                                    urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] :
-                                                    unmasked_digest_share[i_word*32+:32];
+        urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] :
+        unmasked_digest_share[i_word*32+:32];
 
     assign kmac_digest_wr_en[i_word] = kmac_app_rsp_i.done | sec_wipe_kmac_regs_urnd_i;
   end
@@ -790,6 +796,7 @@ module otbn_alu_bignum
   // Oversized error flag if last has already been sent and there is an additional fifo valid
   // Need to add a case when the fifo rvalid mask is greater than the last word strb
   logic last_word_oversized;
+  logic not_full_word;
   logic packer_oversized_last;
 
   assign kmac_cfg_sha3_mode       = sha3_pkg::sha3_mode_e'(kmac_cfg_intg_q[1:0]);
@@ -804,9 +811,9 @@ module otbn_alu_bignum
 
   // Create the strb for the last word in msg request
   assign kmac_last_msg_all_bytes_valid = &(~kmac_cfg_msg_len_bytes);
-  for (genvar i_bit = 1; i_bit < kmac_pkg::MsgStrbW+1; i_bit++) begin
-    assign kmac_last_msg_strb[i_bit-1] = kmac_last_msg_all_bytes_valid ? 1'b1 :
-                                         (i_bit <= kmac_cfg_msg_len_bytes) ? 1'b1 : 1'b0;
+  for (genvar i_bit = 1; i_bit < kmac_pkg::MsgStrbW+1; i_bit++) begin : gen_kmac_strb
+    assign kmac_last_msg_strb[i_bit-1] = kmac_last_msg_all_bytes_valid
+                                         | (i_bit <= kmac_cfg_msg_len_bytes);
   end
 
   // Set flag for a new KMAC cfg to indicate start/end of transaction
@@ -814,7 +821,7 @@ module otbn_alu_bignum
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       kmac_new_cfg_q <= 1'b0;
-    end else if (kmac_cfg_wr_en & ~sec_wipe_kmac_regs_urnd_i & ~ispr_init_i) begin
+    end else if (kmac_cfg_wr_en & !sec_wipe_kmac_regs_urnd_i & !ispr_init_i) begin
       kmac_new_cfg_q <= 1'b1;
     end else begin
       kmac_new_cfg_q <= 1'b0;
@@ -844,7 +851,7 @@ module otbn_alu_bignum
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       kmac_msg_valid_q <= 1'b0;
-    end else if (|(kmac_msg_wr_en) & ~sec_wipe_kmac_regs_urnd_i & ~ispr_init_i) begin
+    end else if (|(kmac_msg_wr_en) & !sec_wipe_kmac_regs_urnd_i & !ispr_init_i) begin
       kmac_msg_valid_q <= 1'b1;
     end else if (kmac_msg_fifo_wready) begin
       kmac_msg_valid_q <= 1'b0;
@@ -875,12 +882,13 @@ module otbn_alu_bignum
     end
   end
 
-  // Translates the 32-bit byte wise mask from PW WSR to 256-bit bit wise mask for APP FIFO
+  // Translates the 5-bit decimal mask from PW WSR to 256-bit bit wise mask for APP FIFO
   always_comb begin
     kmac_msg_fifo_wdata_mask = '0;
-    for (int i = 0; i < 32; i++) begin
-      if (kmac_pw_intg_q[i])
-        kmac_msg_fifo_wdata_mask[i*8 +: 8] = 8'hFF;
+    if (kmac_pw_mask == 0) begin
+      kmac_msg_fifo_wdata_mask = 256'b0;
+    end else begin
+      kmac_msg_fifo_wdata_mask = ~({256{1'b1}} << (kmac_pw_mask * 8));
     end
   end
 
@@ -900,10 +908,10 @@ module otbn_alu_bignum
   // Internal copy of otbn_controller stall signal to determine pending msg writes
   assign kmac_msg_wr_stall = (kmac_msg_write & (~kmac_msg_fifo_wready));
 
-  // When reading the return digest the message has already been sent and any remainider is cleared
+  // When reading the return digest the message has already been sent and any remainder is cleared
   assign kmac_msg_fifo_clr = kmac_sent_last
                              && (ispr_addr_i == IsprKmacDigest)
-                             && ~kmac_msg_pending_write_o;
+                             && !kmac_msg_pending_write_o;
 
   // Prim packer is used to send full words until the final word in msg request
   prim_packer #(
@@ -924,10 +932,9 @@ module otbn_alu_bignum
     .ready_i      (kmac_msg_fifo_rready),
 
     // kmac_msg_err_clr is for internal OTBN error to empty the FIFO
-    // kmac_new_cfg_q empties on new operation
     // kmac_msg_fifo_flush reads a partial word at the end of the msg
     // kmac_msg_fifo_clr ensures the fifo is empty outside of an active msg
-    .flush_i      (kmac_msg_err_clr || kmac_new_cfg_q || kmac_msg_fifo_flush || kmac_msg_fifo_clr),
+    .flush_i      (kmac_msg_err_clr || kmac_msg_fifo_flush || kmac_msg_fifo_clr),
     .flush_done_o (),
 
     .err_o        ()
@@ -953,10 +960,10 @@ module otbn_alu_bignum
     .err_o              (kmac_msg_ctr_err)
   );
 
-  // Ensure that the read mask is atleast the size of the cfg before asserting last
-  assign packer_ctr_last       = (packer_rdata_mask_cnt >= kmac_cfg_msg_len_bytes) ? 1'b1 : 1'b0;
+  // Ensure that the read mask is at least the size of the cfg before asserting last
+  assign packer_ctr_last       = (packer_rdata_mask_cnt >= kmac_cfg_msg_len_bytes);
 
-  // If it is time for the final word and their is a partial word we need to flush it out
+  // If it is time for the final word and there is a partial word we need to flush it out
   assign kmac_msg_fifo_flush   = (kmac_msg_last && (kmac_cfg_msg_len_bytes != 3'h0)
                                  && ~kmac_msg_fifo_rvalid);
 
@@ -975,26 +982,25 @@ module otbn_alu_bignum
   // fifo read iface
   assign kmac_msg_fifo_rready = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app) | kmac_sent_last;
   assign kmac_msg_last        = (kmac_cfg_msg_len_bytes == 3'h0) ?
-                                  (kmac_msg_ctr >= kmac_cfg_msg_len_words - 1) && kmac_msg_fifo_rvalid :
-                                  ((kmac_msg_ctr >= kmac_cfg_msg_len_words) && packer_ctr_last);
+                                (kmac_msg_ctr >= kmac_cfg_msg_len_words - 1) && kmac_msg_fifo_rvalid :
+                                ((kmac_msg_ctr >= kmac_cfg_msg_len_words) && packer_ctr_last);
 
   // When there is an undersized message we artificially inject a last valid to finish the message
-  assign kmac_app_req_o.valid = (kmac_write_cfg_to_app) ?
-                                  1'b1 : (kmac_inject_last_err) ?
-                                  1'b1 : kmac_msg_fifo_rvalid && ~kmac_new_cfg_q && ~kmac_sent_last;
+  assign kmac_app_req_o.valid = (kmac_write_cfg_to_app || kmac_inject_last_err) ?
+                                1'b1 : kmac_msg_fifo_rvalid && ~kmac_new_cfg_q && ~kmac_sent_last;
 
   // The first word contains the cfg otherwise send the body
   assign kmac_app_req_o.data  = kmac_write_cfg_to_app ?
-                                  {59'b0, kmac_cfg_keccak_strength, kmac_cfg_sha3_mode} :
-                                  kmac_msg_fifo_rdata;
+                                {59'b0, kmac_cfg_keccak_strength, kmac_cfg_sha3_mode} :
+                                kmac_msg_fifo_rdata;
 
   // The strb will always be 8'hFF except for the CFG and last word
   assign kmac_app_req_o.strb  = kmac_write_cfg_to_app ?
-                                  8'h01 : kmac_app_req_o.last ?
-                                  kmac_last_msg_strb : {(kmac_pkg::MsgStrbW){1'b1}};
+                                8'h01 : kmac_app_req_o.last ?
+                                kmac_last_msg_strb : {(kmac_pkg::MsgStrbW){1'b1}};
 
   // When there is an undersized message we artifically inject a last signal to finish the message
-  assign kmac_app_req_o.last  = (kmac_inject_last_err) ? 1'b1 : kmac_msg_fifo_rvalid & kmac_msg_last;
+  assign kmac_app_req_o.last  = kmac_inject_last_err | (kmac_msg_fifo_rvalid & kmac_msg_last);
 
   // If we request an additional digest send a next to KMAC
   assign kmac_app_req_o.next  = kmac_digest_rd & ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
@@ -1054,7 +1060,7 @@ module otbn_alu_bignum
   always_comb begin
     kmac_err_st_d = kmac_err_st_q;
     kmac_inject_last_err = 1'b0;
-    case (kmac_err_st_q)
+    unique case (kmac_err_st_q)
       StIdle: begin
         // At the first appearance of an undersized message during a tranasaction
         // set a flag to inject an artificial last word and wait until KMAC is ready
@@ -1072,6 +1078,10 @@ module otbn_alu_bignum
           kmac_err_st_d = StIdle;
         end
       end
+      default: begin
+        kmac_err_st_d = StIdle;
+        kmac_inject_last_err = 1'b0;
+      end
     endcase
   end
 
@@ -1086,14 +1096,11 @@ module otbn_alu_bignum
 
   // The cfg reads 0 when it is a full word which means the mask is 8 so we must skip evaluation
   // at these sizes, otherwise check if mask is greater than the cfg
-  assign packer_oversized_last =
-      (packer_rdata_mask_cnt > kmac_cfg_msg_len_bytes) ?
-          ((kmac_cfg_msg_len_bytes == 4'h0 &
-            packer_rdata_mask_cnt == 4'h8) ? 1'b0 : 1'b1) :
-          1'b0;
+  assign not_full_word          = ~(packer_rdata_mask_cnt == 4'h8 & kmac_cfg_msg_len_bytes == 4'h0);
+  assign packer_oversized_last  = not_full_word & (packer_rdata_mask_cnt > kmac_cfg_msg_len_bytes);
 
   assign last_word_oversized    = kmac_msg_last & packer_oversized_last;
-  assign kmac_oversized_req_err = kmac_sent_last & kmac_msg_fifo_rvalid
+  assign kmac_oversized_req_err = kmac_sent_last & (kmac_msg_fifo_rvalid | kmac_msg_valid_q)
                                   & ~kmac_undersized_req_err_latch | last_word_oversized;
 
   /////////

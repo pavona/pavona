@@ -407,7 +407,8 @@ class KmacBlock:
 
     # After setting the KMAC_CFG register, it takes two cycles until the KMAC_STATUS
     # register changes its value to ready.
-    _APP_INTF_READY_LATENCY = 3
+    # The third cycle holds the CFG word with KMAC now ready, 4th cycle is MSG
+    _APP_INTF_READY_LATENCY = 4
 
     # If a new chunk of the digest is requested for the DIGEST REG, there is a delay of
     # X cycles.
@@ -545,8 +546,7 @@ class KmacBlock:
     def digest_req_err(self) -> bool:
         msg_req_err = (self._msg_len > 0
                        and len(self._app_intf_fifo) < 8
-                       and self._msg_len != len(self._app_intf_fifo))
-
+                       and self._msg_len > len(self._app_intf_fifo))
         if (
             not self._app_intf_last_latch
             and msg_req_err
@@ -886,7 +886,7 @@ class KmacBlock:
             self._app_intf_last_latch = True
 
         self._app_intf_sending = False
-        if msg_fifo_write_ready and not self._msg_fifo_packer_flushing:
+        if msg_fifo_write_ready and not self._msg_fifo_packer_flushing and self._app_intf_ready:
             # Pass data from the application interface FIFO to the message FIFO.
             nbytes = min(len(self._app_intf_fifo), self._APP_INTF_BYTES_PER_CYCLE, self._msg_len)
             if nbytes >= self._APP_INTF_BYTES_PER_CYCLE:
@@ -1059,7 +1059,7 @@ class KmacBlock:
 class KmacPartialWriteISPR(WSR):
     '''Keccak partial write WSR
 
-    This register defines the numbeer of valid bytes in the
+    This register defines the number of valid bytes in the
     KmacMsgWSR register for writing partial words and STRB
     on the KMAC Req AppIntf
     '''
@@ -1075,9 +1075,9 @@ class KmacPartialWriteISPR(WSR):
     def read_mask(self) -> int:
         if self._value is None:
             return 32
-        elif self._value != (1 << self._value.bit_count()) - 1:
+        elif self._value > 32:
             raise ValueError(f'Invalid mask size for KMAC_PARTIAL_WRITE: {self._value:#066x}')
-        return self._value.bit_count()
+        return self._value
 
     def write_unsigned(self, value: int) -> None:
         self._next_value = value
@@ -1144,20 +1144,20 @@ class KmacMsgWSR(WSR):
             kmac_debug_print("\tPending write to App FIFO")
             if (
                 self._kmac._app_intf_last_latch
-                or self._kmac._pending_app_intf_last
-                and not self.pending_write()
+                or (self._kmac._pending_app_intf_last and not self.pending_write())
+                or self._kmac._app_intf_fifo_flush
             ):
                 kmac_debug_print("DROPPING WRITE TO FIFO FROM OVERSIZED MSG")
                 self._pending_write_to_app_intf = False
                 self._pending_write_stall_pw = False
-            elif self._kmac.write_to_app_intf_fifo(value_bytes):
+            elif not self._kmac._app_intf_last and self._kmac.write_to_app_intf_fifo(value_bytes):
                 kmac_debug_print(f"\tKMAC_MSG -> APP FIFO: Writing \
                                  {len(value_bytes)} bytes to App FIFO")
                 self._pending_write_to_app_intf = False
                 self._kmac._app_intf_writing = True
 
     def pending_write(self) -> bool:
-        return self._pending_write_stall_pw
+        return self._pending_write_stall_pw or self._kmac._app_intf_fifo_flush
 
     def request_write(self) -> bool:
         return self._start_cycle_fifo_ready
@@ -1188,10 +1188,11 @@ class KmacMsgWSR(WSR):
 class KmacCfgWSR(WSR):
     '''Keccak config WSR: used to set SHA3 mode and Keccak Strength
     '''
-    def __init__(self, name: str, kmac: KmacBlock):
+    def __init__(self, name: str, kmac: KmacBlock, partial_ispr: KmacPartialWriteISPR):
         super().__init__(name)
         self._value = 0
         self._kmac = kmac
+        self._partial_ispr = partial_ispr
 
     def read_unsigned(self) -> int:
         return self._value
@@ -1203,6 +1204,8 @@ class KmacCfgWSR(WSR):
     def commit(self) -> None:
         if self._pending_write:
             self._value = self._next_value
+            # We reset the PW value each config write to reduce uneccesary writes
+            self._partial_ispr._value = 32
             kmac_debug_print(f"\tREG -> KMAC_MSG reg: {hex(self._next_value)}")
             if self._value == (1 << 31):
                 # config value to release KMAC app intf
@@ -1318,10 +1321,10 @@ class WSRFile:
         self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
-        self.KMAC_CFG = KmacCfgWSR('KMAC_CFG', self.Kmac)
         self.KMAC_STATUS = KmacStatusWSR('KMAC_STATUS', self.Kmac)
         self.KMAC_DIGEST = KmacDigestWSR('KMAC_DIGEST', self.Kmac)
         self.KMAC_PARTIAL_WRITE = KmacPartialWriteISPR('KMAC_PARTIAL_WRITE', self.Kmac)
+        self.KMAC_CFG = KmacCfgWSR('KMAC_CFG', self.Kmac, self.KMAC_PARTIAL_WRITE)
         self.KMAC_MSG = KmacMsgWSR('KMAC_MSG', self.Kmac, self.KMAC_PARTIAL_WRITE)
 
         self._by_idx = {

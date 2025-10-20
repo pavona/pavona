@@ -565,9 +565,9 @@ module otbn_core
     .urnd_reseed_err_i(urnd_reseed_err),
 
     // KMAC interface
-    .kmac_msg_write_ready_i   (kmac_msg_write_ready),
-    .kmac_msg_pending_write_i (kmac_msg_pending_write),
-    .kmac_digest_valid_i      (kmac_digest_valid),
+    .kmac_msg_write_ready_i  (kmac_msg_write_ready),
+    .kmac_msg_pending_write_i(kmac_msg_pending_write),
+    .kmac_digest_valid_i     (kmac_digest_valid),
 
     // Secure wipe
     .secure_wipe_req_o     (secure_wipe_req),
@@ -881,9 +881,9 @@ module otbn_core
 
     .sideload_key_shares_i,
 
-    .kmac_msg_write_ready_o   (kmac_msg_write_ready),
-    .kmac_msg_pending_write_o (kmac_msg_pending_write),
-    .kmac_digest_valid_o      (kmac_digest_valid),
+    .kmac_msg_write_ready_o  (kmac_msg_write_ready),
+    .kmac_msg_pending_write_o(kmac_msg_pending_write),
+    .kmac_digest_valid_o     (kmac_digest_valid),
 
     .kmac_app_rsp_i,
     .kmac_app_req_o,

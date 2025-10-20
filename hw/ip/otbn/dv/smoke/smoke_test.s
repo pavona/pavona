@@ -119,15 +119,12 @@ csrrw x0, mod0, x23
 csrrs x23, mod5, x0
 
 bn.wsrr w1, 0x0 /* MOD 82a 4ea*/
-li x23, 0xdeadbeef
-csrrw x0, mod7, x23
-bn.wsrr w2, 0x0 /* MOD 82a 4ea*/
 li x23, 0x000004ea
 csrrw x0, kmac_cfg, x23
-li x23, 0x03ffffff
+li x23, 0x0000001a
 csrrw x0, kmac_partial_write, x23
 bn.wsrw 0x9, w1 /* MSG */
-li x23, 0x00001fff
+li x23, 0x0000000d
 csrrw x0, kmac_partial_write, x23
 bn.wsrw 0x9, w1 /* MSG */
 bn.wsrr w1, 0xa /* DIGEST */

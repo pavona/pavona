@@ -381,7 +381,7 @@ module otbn_controller
 
   // Reads to RND must stall until data is available.
   // Also, writes to the KMAC_MSG register are only
-  // allowed, if it can accept new data.
+  // allowed if it can accept new data.
   assign ispr_stall = (rnd_req_raw & ~rnd_valid_i) | (kmac_digest_req_raw & ~kmac_digest_valid_i);
 
   assign kmac_write_stall = (kmac_msg_write_req_raw & ~kmac_msg_write_ready_i)

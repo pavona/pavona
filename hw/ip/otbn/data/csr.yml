@@ -123,7 +123,9 @@
   address: 0x7f3
   doc: |
     Partial write msg register used as a byte-mask for the msg being written into the internal MSG FIFO.
-    The value of this CSR should be contiguous ex.) 32'h0000_ffff is valid and 32'h0000_feff is not.
+    The value should be the decimal number of bytes valid for the msg to be written ex.) 32 for every byte valid.
+    Conversion to a contiguous mask like 32'h0000_ffff are done internally.
+    Additionally, the register is reset to a default value of 32 at the start/end of any transaction.
 
 - name: rnd
   address: 0xfc0
