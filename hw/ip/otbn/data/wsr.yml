@@ -35,6 +35,11 @@
   doc: |
     The accumulator register used by the {{#otbn-insn-ref BN.MULQACC}} instruction.
 
+- name: acch
+  address: 11
+  doc: |
+    The high bits of the accumulator register used by the {{#otbn-insn-ref BN.MULV}} instruction.
+
 - name: key_s0_l
   address: 4
   read-only: true

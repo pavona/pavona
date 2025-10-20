@@ -30,6 +30,17 @@ module tb;
   kmac_pkg::app_req_t app_req;
   kmac_pkg::app_rsp_t app_rsp;
 
+`ifndef OTBN_PQC
+  always_comb begin
+    app_req.valid = '0;
+    app_req.data  = '0;
+    app_req.strb  = '0;
+    app_req.last  = '0;
+    app_req.next  = '0;
+    app_req.hold  = '0;
+  end
+`endif
+
   // interfaces
   clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
   otbn_app_intf                 otbn_app_intf (.clk(clk), .rst_n(rst_n));
@@ -132,11 +143,14 @@ module tb;
     .rst_otp_ni    (otp_rst_n),
     .otbn_otp_key_o(otp_key_req),
     .otbn_otp_key_i(otp_key_rsp),
-
+  `ifdef OTBN_PQC
     .keymgr_key_i(sideload_key),
 
     .kmac_data_o(app_req),
     .kmac_data_i(app_rsp)
+  `else
+    .keymgr_key_i(sideload_key)
+  `endif
   );
 
   bind dut.u_otbn_core otbn_trace_if #(

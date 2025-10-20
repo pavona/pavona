@@ -158,8 +158,6 @@
       vec: b0
       type: b00
       sub: b0
-      vec: b0
-      type: b00
       wrs2: wrs2
       wrs1: wrs1
       funct3: b101
@@ -225,55 +223,6 @@
       funct3: b101
       wrd: wrd
 
-- mnemonic: bn.mulv
-  synopsis: Pseudo-Modulo Multiply Vector
-  operands:
-    - name: type
-      abbrev: t
-      type: enum(.8S,.16H,.l.8S,.l.16H,m.8S,m.16H,m.l.8S,m.l.16H)
-      doc: |
-        Select the data type of the registers. `.8S` interprets the WDRs as 8
-        32-bit registers, `.16H` as 16 16-bit registers. m enables reduction.
-    - name: wrd
-      doc: Updated WDR.
-      type: wrb
-    - name: wrs1
-      doc: First source WDR
-      type: wrs
-    - name: wrs2
-      doc: Second source WDR
-      type: wrs
-    - name: lane
-      doc: Select the lane of the `<wrs2>` to multiply `<wrs1>` with.
-      type: uimm
-  glued-ops: true
-  doc: |
-    Multiply two WDR registers interpreted as vectors, modulo the MOD WSR.
-
-    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with elements
-    of size 32 bit or 16 bit (depending on `type`). The elements are
-    individually multiplied and reduced by MOD to a result in [0, MOD). Each
-    result element is truncated to 32 or 16 bits (depending on `type`) and
-    stored in `<wrd>`.
-
-    The result is correct if each input element is in [0, MOD).
-
-    Flags are not used or saved.
-  syntax: |
-    <type> <wrd>, <wrs1>, <wrs2>[, <lane>]
-  errs: []
-  iflow:
-    - to: [wrd]
-      from: [wrs1, wrs2, mod]
-  encoding:
-    scheme: bnammv
-    mapping:
-      type: type
-      lane: lane
-      wrs2: wrs2
-      wrs1: wrs1
-      funct3: b110
-      wrd: wrd
 
 - mnemonic: bn.trn
   synopsis: Partial transpose
@@ -298,7 +247,7 @@
     Write the elements of one vector into a specified lane of a set of other
     vectors. The number of other vectors depends on the number of elements in
     the source vector. Vector <wrs> is the source, while <wrd+i> i in [0,7] are
-    the destination registers. 
+    the destination registers.
 
     Flags are not used or saved.
   syntax: |
@@ -1269,3 +1218,210 @@
   lsu:
     type: wsr-store
     target: [wsr]
+
+- mnemonic: bn.mulv
+  synopsis: Vectorized Multiply and Accumulate
+  operands:
+    - *mulqacc-wrs1
+    - *mulqacc-wrs2
+    - *mulqacc-wrd
+    - name: type
+      type: enum(.16H.even, .8S.even, .16H.odd, .8S.odd,
+                 .16H.even.acc, .8S.even.acc, .16H.odd.acc, .8S.odd.acc,
+                 .16H.even.acc.z, .8S.even.acc.z, .16H.odd.acc.z, .8S.odd.acc.z,
+                 "", "", "", "",
+                 .16H.lo,
+                 .8S.even.lo, "", .8S.odd.lo,
+                 .16H.acc.lo,
+                 .8S.even.acc.lo, "", .8S.odd.acc.lo,
+                 .16H.acc.z.lo,
+                 .8S.even.acc.z.lo, "", .8S.odd.acc.z.lo,
+                 "", "", "", "",
+                 .16H.hi,
+                 .8S.even.hi, "", .8S.odd.hi,
+                 .16H.acc.hi,
+                 .8S.even.acc.hi, "", .8S.odd.acc.hi,
+                 .16H.acc.z.hi,
+                 .8S.even.acc.z.hi, "", .8S.odd.acc.z.hi,
+                 "", "", "", "", "", "", "", "",
+                 "", "", "", "", "", "", "", "",
+                 "", "", "", ""
+                 )
+  glued-ops: true
+  doc: |
+  syntax: |
+    <type> <wrd>, <wrs1>, <wrs2>
+  errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - type >= 0
+        - type <= 3
+      to: [wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - type >= 16
+        - type <= 19
+      to: [wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - type >= 32
+        - type <= 35
+      to: [wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - type >= 4
+        - type <= 7
+      to: [acch, acc]
+      from: [acch, acc]
+    - test:
+        - type >= 20
+        - type <= 23
+      to: [acch, acc]
+      from: [acch, acc]
+    - test:
+        - type >= 36
+        - type <= 39
+      to: [acch, acc]
+      from: [acch, acc]
+    - test:
+        - type >= 8
+        - type <= 11
+      to: [acch, acc, wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - type >= 40
+        - type <= 43
+      to: [acch, acc, wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - type >= 48
+        - type <= 51
+      to: [wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - type >= 52
+        - type <= 55
+      to: [acch, acc, wrd]
+      from: [acch, acc, wrs1, wrs2]
+    - test:
+        - type >= 56
+        - type <= 59
+      to: [acch, acc, wrd]
+      from: [wrs1, wrs2]
+  encoding:
+    scheme: bnmulv
+    mapping:
+      mode: b0
+      wrs2: wrs2
+      wrs1: wrs1
+      wrd: wrd
+      funct3: b110
+      type: type
+
+- mnemonic: bn.mulv.l
+  synopsis: Vectorized Multiply and Accumulate
+  operands:
+    - *mulqacc-wrs1
+    - *mulqacc-wrd
+    - name: lane_reg
+      type: enum(sw0, sw1)
+      doc: sw0 = w16, sw1 = 17
+    - name: lane_index
+      type: uimm4
+    - name: type
+      type: enum(.16H.even, .8S.even, .16H.odd, .8S.odd,
+                 .16H.even.acc, .8S.even.acc, .16H.odd.acc, .8S.odd.acc,
+                 .16H.even.acc.z, .8S.even.acc.z, .16H.odd.acc.z, .8S.odd.acc.z,
+                 "", "", "", "",
+                 .16H.lo,
+                 .8S.even.lo, "", .8S.odd.lo,
+                 .16H.acc.lo,
+                 .8S.even.acc.lo, "", .8S.odd.acc.lo,
+                 .16H.acc.z.lo,
+                 .8S.even.acc.z.lo, "", .8S.odd.acc.z.lo,
+                 "", "", "", "",
+                 .16H.hi,
+                 .8S.even.hi, "", .8S.odd.hi,
+                 .16H.acc.hi,
+                 .8S.even.acc.hi, "", .8S.odd.acc.hi,
+                 .16H.acc.z.hi,
+                 .8S.even.acc.z.hi, "", .8S.odd.acc.z.hi,
+                 "", "", "", "", "", "", "", "",
+                 "", "", "", "", "", "", "", "",
+                 "", "", "", ""
+                 )
+  glued-ops: true
+  doc: |
+  syntax: |
+    <type> <wrd>, <wrs1>, <lane_reg>.<lane_index>
+  errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1]
+    - test:
+        - type >= 0
+        - type <= 3
+      to: [wrd]
+      from: [wrs1]
+    - test:
+        - type >= 16
+        - type <= 19
+      to: [wrd]
+      from: [wrs1]
+    - test:
+        - type >= 32
+        - type <= 35
+      to: [wrd]
+      from: [wrs1]
+    - test:
+        - type >= 4
+        - type <= 7
+      to: [acch, acc]
+      from: [acch, acc]
+    - test:
+        - type >= 20
+        - type <= 23
+      to: [acch, acc]
+      from: [acch, acc]
+    - test:
+        - type >= 36
+        - type <= 39
+      to: [acch, acc]
+      from: [acch, acc]
+    - test:
+        - type >= 8
+        - type <= 11
+      to: [acch, acc, wrd]
+      from: [wrs1]
+    - test:
+        - type >= 40
+        - type <= 43
+      to: [acch, acc, wrd]
+      from: [wrs1]
+    - test:
+        - type >= 48
+        - type <= 51
+      to: [wrd]
+      from: [wrs1]
+    - test:
+        - type >= 52
+        - type <= 55
+      to: [acch, acc, wrd]
+      from: [acch, acc, wrs1]
+    - test:
+        - type >= 56
+        - type <= 59
+      to: [acch, acc, wrd]
+      from: [wrs1]
+  encoding:
+    scheme: bnmulvl
+    mapping:
+      mode: b1
+      lane_reg: lane_reg
+      lane_index: lane_index
+      wrs1: wrs1
+      wrd: wrd
+      funct3: b110
+      type: type

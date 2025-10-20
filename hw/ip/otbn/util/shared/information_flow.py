@@ -10,7 +10,7 @@ from serialize.parse_helpers import check_keys, check_list, check_str
 from .operand import Operand, RegOperandType
 
 FLAG_NAMES = ['c', 'm', 'l', 'z']
-SPECIAL_REG_NAMES = ['mod', 'acc']
+SPECIAL_REG_NAMES = ['mod', 'acc', 'acch']
 READONLY = ['x0']
 
 

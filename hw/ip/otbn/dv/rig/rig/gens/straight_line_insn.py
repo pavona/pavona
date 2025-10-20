@@ -34,12 +34,9 @@ class StraightLineInsn(SnippetGen):
 
             # Skipping vector instructions that are not yet implemented
             if (
-                insn.mnemonic == 'bn.addv'
-                or insn.mnemonic == 'bn.subv'
-                or insn.mnemonic == 'bn.mulv'
-                or insn.mnemonic == 'bn.mulqacc'
-                or insn.mnemonic == 'bn.mulqacc.wo'
-                or insn.mnemonic == 'bn.mulqacc.so'
+                insn.mnemonic == 'bn.subv'
+                or insn.mnemonic == 'bn.mulv'  # Broken generator due to "" in enum
+                or insn.mnemonic == 'bn.mulv.l'  # Broken generator due to "" in enum
                 or insn.mnemonic == 'bn.shv'
                 or insn.mnemonic == 'bn.trn'
             ):

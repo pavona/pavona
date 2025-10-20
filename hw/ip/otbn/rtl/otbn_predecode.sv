@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192)
 // Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors
-// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -63,6 +63,12 @@ module otbn_predecode
   logic alu_bignum_logic_shifter_en;
   logic [3:0] alu_bignum_logic_res_sel;
 
+`ifdef OTBN_PQC
+  alu_vector_type_t alu_bignum_vector_type;
+  logic             alu_bignum_vector_sel;
+  alu_trn_type_t    alu_bignum_trn_type;
+`endif
+
   flag_group_t flag_group;
   logic [NFlagGroups-1:0] flag_group_sel;
   flags_t flag_sel;
@@ -123,9 +129,17 @@ module otbn_predecode
   logic [$clog2(WLEN)-1:0] shift_amt_a_type_bignum;
   // Shift amount for BN.RSHI
   logic [$clog2(WLEN)-1:0] shift_amt_s_type_bignum;
+`ifdef OTBN_PQC
+  // Shift amount for BN.SHV
+  logic [$clog2(WLEN)-1:0] shift_amt_v_type_bignum;
+`endif
+
 
   assign shift_amt_a_type_bignum = {imem_rdata_i[29:25], 3'b0};
   assign shift_amt_s_type_bignum = {imem_rdata_i[31:25], imem_rdata_i[14]};
+`ifdef OTBN_PQC
+  assign shift_amt_v_type_bignum = {3'b0, imem_rdata_i[29:25]};
+`endif
 
   assign flag_group     = imem_rdata_i[31];
   assign flag_group_sel = {(flag_group == 1'b1), (flag_group == 1'b0)};
@@ -159,6 +173,11 @@ module otbn_predecode
     alu_bignum_logic_a_en            = 1'b0;
     alu_bignum_logic_shifter_en      = 1'b0;
     alu_bignum_logic_res_sel         = '0;
+  `ifdef OTBN_PQC
+    alu_bignum_vector_type           = alu_vector_type_t'('0);
+    alu_bignum_vector_sel            = 1'b0;
+    alu_bignum_trn_type              = alu_trn_type_t'('0);
+  `endif
 
     flags_adder_update = '0;
     flags_logic_update = '0;
@@ -170,6 +189,8 @@ module otbn_predecode
 
     ispr_rd_en = 1'b0;
     ispr_wr_en = 1'b0;
+
+    insn_rs2   = imem_rdata_i[24:20];
 
     csr_addr_sel = 1'b0;
 
@@ -327,6 +348,10 @@ module otbn_predecode
               alu_bignum_adder_x_en          = 1'b1;
               alu_bignum_x_res_operand_a_sel = 1'b1;
               alu_bignum_shift_mod_sel       = 1'b0;
+            `ifdef OTBN_PQC
+              alu_bignum_vector_type         = alu_vector_type_t'(imem_rdata_i[27:26]);
+              alu_bignum_vector_sel          = imem_rdata_i[25];
+            `endif
             end
             default: ;
           endcase
@@ -469,6 +494,59 @@ module otbn_predecode
           end
         end
 
+      `ifdef OTBN_PQC
+        ///////////////////////////////////////////
+        //            BN.MULV/BN.MULV.L          //
+        ///////////////////////////////////////////
+
+        InsnOpcodeBignumMulv: begin
+          unique case (imem_rdata_i[14:12])
+            3'b110: begin
+              rf_ren_a_bignum  = 1'b1;
+              rf_ren_b_bignum  = 1'b1;
+              mac_bignum_op_en = 1'b1;
+              rf_we_bignum     = 1'b1;
+
+              if (imem_rdata_i[25] == 1'b1) begin  // lane mode
+                insn_rs2 = {{4'b1000}, imem_rdata_i[24]};
+              end
+
+              if (imem_rdata_i[29:28] == 2'b01) begin
+                // zero_acc not set
+                mac_bignum_acc_rd_en = 1'b1;
+              end
+            end
+            default: ;
+          endcase
+        end
+
+        ////////////////////////////////////////////
+        //                 BN.SHV                 //
+        ////////////////////////////////////////////
+
+        InsnOpcodeBignumShiftv: begin
+          rf_we_bignum                = 1'b1;
+          rf_ren_b_bignum             = 1'b1;
+          alu_bignum_shifter_b_en     = 1'b1;
+          alu_bignum_vector_type      = alu_vector_type_t'({2'b01, imem_rdata_i[16]});
+          alu_bignum_shift_right      = imem_rdata_i[30];
+          alu_bignum_shift_amt        = shift_amt_v_type_bignum;
+          alu_bignum_logic_shifter_en = 1'b1;
+          alu_bignum_vector_sel       = 1'b1;
+        end
+
+        ////////////////////////////////////////////
+        //                 BN.TRN                 //
+        ////////////////////////////////////////////
+
+        InsnOpcodeBignumTrn: begin
+          rf_ren_a_bignum          = 1'b1;
+          rf_ren_b_bignum          = 1'b1;
+          rf_we_bignum             = 1'b1;
+          alu_bignum_trn_type      = alu_trn_type_t'(imem_rdata_i[27:25]);
+        end
+      `endif
+
         default: ;
       endcase
     end
@@ -481,25 +559,30 @@ module otbn_predecode
       unique case (csr_addr)
         CsrMod0, CsrMod1, CsrMod2, CsrMod3,
         CsrMod4, CsrMod5, CsrMod6, CsrMod7: ispr_addr = IsprMod;
+      `ifdef OTBN_PQC
         CsrKmacCfg:                         ispr_addr = IsprKmacCfg;
         CsrKmacPartialW:                    ispr_addr = IsprKmacPartialW;
         CsrKmacStatus:                      ispr_addr = IsprKmacStatus;
+        CsrKmacDigestW0, CsrKmacDigestW1, CsrKmacDigestW2, CsrKmacDigestW3, CsrKmacDigestW4,
+        CsrKmacDigestW5, CsrKmacDigestW6, CsrKmacDigestW7: ispr_addr = IsprKmacDigest;
+      `endif
         CsrFlags, CsrFg0, CsrFg1:           ispr_addr = IsprFlags;
         CsrRnd:                             ispr_addr = IsprRnd;
         CsrUrnd:                            ispr_addr = IsprUrnd;
-        CsrKmacDigestW0, CsrKmacDigestW1, CsrKmacDigestW2, CsrKmacDigestW3, CsrKmacDigestW4,
-        CsrKmacDigestW5, CsrKmacDigestW6, CsrKmacDigestW7: ispr_addr = IsprKmacDigest;
         default: ;
       endcase
     end else begin
       unique case (wsr_addr)
         WsrMod:         ispr_addr = IsprMod;
-        WsrKmacCfg:     ispr_addr = IsprKmacCfg;
-        WsrKmacMsg:     ispr_addr = IsprKmacMsg;
-        WsrKmacDigest:  ispr_addr = IsprKmacDigest;
         WsrRnd:         ispr_addr = IsprRnd;
         WsrUrnd:        ispr_addr = IsprUrnd;
         WsrAcc:         ispr_addr = IsprAcc;
+      `ifdef OTBN_PQC
+        WsrKmacCfg:     ispr_addr = IsprKmacCfg;
+        WsrKmacMsg:     ispr_addr = IsprKmacMsg;
+        WsrKmacDigest:  ispr_addr = IsprKmacDigest;
+        WsrAccH:        ispr_addr = IsprAccH;
+      `endif
         WsrKeyS0L:      ispr_addr = IsprKeyS0L;
         WsrKeyS0H:      ispr_addr = IsprKeyS0H;
         WsrKeyS1L:      ispr_addr = IsprKeyS1L;
@@ -516,6 +599,11 @@ module otbn_predecode
   assign alu_predec_bignum_o.shifter_a_en          = alu_bignum_shifter_a_en;
   assign alu_predec_bignum_o.shifter_b_en          = alu_bignum_shifter_b_en;
   assign alu_predec_bignum_o.shift_right           = alu_bignum_shift_right;
+`ifdef OTBN_PQC
+  assign alu_predec_bignum_o.vector_type           = alu_bignum_vector_type;
+  assign alu_predec_bignum_o.vector_sel            = alu_bignum_vector_sel;
+  assign alu_predec_bignum_o.trn_type              = alu_bignum_trn_type;
+`endif
   assign alu_predec_bignum_o.shift_amt             = alu_bignum_shift_amt;
   assign alu_predec_bignum_o.shift_mod_sel         = alu_bignum_shift_mod_sel;
   assign alu_predec_bignum_o.logic_a_en            = alu_bignum_logic_a_en;
@@ -533,7 +621,6 @@ module otbn_predecode
   assign mac_predec_bignum_o.acc_rd_en = mac_bignum_acc_rd_en;
 
   assign insn_rs1 = imem_rdata_i[19:15];
-  assign insn_rs2 = imem_rdata_i[24:20];
   assign insn_rd  = imem_rdata_i[11:7];
 
   prim_onehot_enc #(

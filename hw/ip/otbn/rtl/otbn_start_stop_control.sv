@@ -62,7 +62,9 @@ module otbn_start_stop_control
 
   output logic sec_wipe_acc_urnd_o,
   output logic sec_wipe_mod_urnd_o,
+`ifdef OTBN_PQC
   output logic sec_wipe_kmac_regs_urnd_o,
+`endif
   output logic sec_wipe_zero_o,
 
   output logic ispr_init_o,
@@ -167,7 +169,9 @@ module otbn_start_stop_control
     sec_wipe_base_urnd_o      = 1'b0;
     sec_wipe_acc_urnd_o       = 1'b0;
     sec_wipe_mod_urnd_o       = 1'b0;
+  `ifdef OTBN_PQC
     sec_wipe_kmac_regs_urnd_o = 1'b0;
+  `endif
     sec_wipe_zero_o           = 1'b0;
     addr_cnt_inc              = 1'b0;
     secure_wipe_ack_o         = 1'b0;
@@ -303,7 +307,9 @@ module otbn_start_stop_control
         // The first two clock cycles are used to write random data to accumulator and modulus.
         sec_wipe_acc_urnd_o       = (addr_cnt_q == 6'b000000);
         sec_wipe_mod_urnd_o       = (addr_cnt_q == 6'b000001);
+      `ifdef OTBN_PQC
         sec_wipe_kmac_regs_urnd_o = (addr_cnt_q == 6'b000010);
+      `endif
         // Supress writes to the zero register and the call stack.
         sec_wipe_base_o       = (addr_cnt_q > 6'b000001);
         sec_wipe_base_urnd_o  = (addr_cnt_q > 6'b000001);

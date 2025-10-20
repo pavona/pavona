@@ -13,6 +13,7 @@ from Crypto.Hash import cSHAKE128, cSHAKE256, SHAKE128, SHAKE256, SHA3_224, \
 from .trace import Trace
 from .ext_regs import OTBNExtRegs
 DEBUG_KMAC = False
+OTBN_PQC = True
 
 
 def kmac_debug_print(text):
@@ -1317,6 +1318,7 @@ class WSRFile:
         self.RND = RandWSR('RND', ext_regs)
         self.URND = URNDWSR('URND')
         self.ACC = DumbWSR('ACC')
+        self.ACCH = DumbWSR('ACCH')
         self.KeyS0L = KeyWSR('KeyS0L', 0, self.KeyS0)
         self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
@@ -1338,7 +1340,8 @@ class WSRFile:
             7: self.KeyS1H,
             8: self.KMAC_CFG,
             9: self.KMAC_MSG,
-            10: self.KMAC_DIGEST
+            10: self.KMAC_DIGEST,
+            11: self.ACCH,
         }
 
     def on_start(self) -> None:
@@ -1383,6 +1386,7 @@ class WSRFile:
         self.RND.commit()
         self.URND.commit()
         self.ACC.commit()
+        self.ACCH.commit()
         self.KeyS0.commit()
         self.KeyS1.commit()
         self.KMAC_MSG.commit()
@@ -1395,6 +1399,7 @@ class WSRFile:
         self.RND.abort()
         self.URND.abort()
         self.ACC.abort()
+        self.ACCH.abort()
         # We commit changes to the sideloaded keys from outside, even if the
         # instruction itself gets aborted.
         self.KeyS0.commit()
@@ -1409,13 +1414,16 @@ class WSRFile:
         ret += self.MOD.changes()
         ret += self.RND.changes()
         ret += self.ACC.changes()
+        if OTBN_PQC:
+            ret += self.ACCH.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
-        ret += self.KMAC_MSG.changes()
-        ret += self.KMAC_CFG.changes()
-        ret += self.KMAC_STATUS.changes()
-        ret += self.KMAC_DIGEST.changes()
-        ret += self.KMAC_PARTIAL_WRITE.changes()
+        if OTBN_PQC:
+            ret += self.KMAC_MSG.changes()
+            ret += self.KMAC_CFG.changes()
+            ret += self.KMAC_STATUS.changes()
+            ret += self.KMAC_DIGEST.changes()
+            ret += self.KMAC_PARTIAL_WRITE.changes()
         return ret
 
     def set_sideload_keys(self,
@@ -1427,5 +1435,6 @@ class WSRFile:
     def wipe(self) -> None:
         self.MOD.write_invalid()
         self.ACC.write_invalid()
+        self.ACCH.write_invalid()
         self.KMAC_MSG.write_invalid()
         self.KMAC_DIGEST.write_invalid()

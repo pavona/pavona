@@ -183,6 +183,14 @@ wdr3:
     wrs2: 24-20
     wrs1: 19-15
 
+# A partial scheme for instructions that take two source WDRs and produce a
+# dest WDR.
+wdr2:
+  parents:
+    - wrd
+  fields:
+    wrs1: 19-15
+
 # A partial scheme that defines the 'fg' field (for <flag_group> operands)
 fg:
   fields:
@@ -253,15 +261,30 @@ bnan:
       bits: 19-15
       value: bxxxxx
 
-# Used for bn.mulmv
-bnammv:
+
+# Used for bn.mulv instruction (no lane index)
+bnmulv:
   parents:
     - custom5
     - wdr3
     - funct3
   fields:
-    type: 27-25  # .8S or .16H, lane or not, reduce or not
-    lane: 31-28
+    mode: 25 # Mode: pairwise or lane mode
+    type: 31-26
+
+
+# Used for bn.mulv.l instruction (with lane index)
+bnmulvl:
+  parents:
+    - custom5
+    - wdr2
+    - funct3
+  fields:
+    lane_index: 23-20 # Lane index
+    lane_reg: 24 # Lane register: sw0 (w16) or sw1 (w17)
+    mode: 25 # Mode: pairwise or lane mode
+    type: 31-26
+
 
 bntrn:
   parents:
@@ -283,21 +306,6 @@ bnaf:
     - funct3
     - shift
     - fg
-
-# Used for bn.and, bn.or, bn.xor, bn.not vector variants
-bnav:
-  parents:
-    - custom4
-    - funct3
-    - shift
-    - wrd
-  fields:
-    wrs1: 24-20
-    type: 16
-    fixed:
-      bits: 31,19-17,15
-      value: bxxxxx
-
 
 # Used for the wide bn.addi and bn.subi instructions.
 bnai:

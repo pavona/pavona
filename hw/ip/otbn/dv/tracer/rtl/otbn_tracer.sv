@@ -88,12 +88,15 @@ module otbn_tracer (
     unique case (ispr)
       IsprMod: return "MOD";
       IsprAcc: return "ACC";
-      IsprRnd: return "RND";
-      IsprFlags: return "FLAGS";
-      IsprUrnd: return "URND";
+    `ifdef OTBN_PQC
+      IsprAccH: return "ACCH";
       IsprKmacMsg: return "KMAC_MSG";
       IsprKmacCfg: return "KMAC_CFG";
       IsprKmacPartialW: return "KMAC_PARTIAL_WRITE";
+    `endif
+      IsprRnd: return "RND";
+      IsprFlags: return "FLAGS";
+      IsprUrnd: return "URND";
       default: return "UNKNOWN_ISPR";
     endcase
   endfunction

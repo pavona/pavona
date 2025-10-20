@@ -1,10 +1,10 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192)
 // Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors
-// Copyright zeroRISC Inc.
+// Copyright "Improving ML-KEM and ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN" Authors
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 `include "prim_assert.sv"
 
 /**
@@ -101,10 +101,18 @@ module otbn_alu_bignum
   output logic [ExtWLEN-1:0]          ispr_acc_wr_data_intg_o,
   output logic                        ispr_acc_wr_en_o,
 
+`ifdef OTBN_PQC
+  input  logic [ExtWLEN-1:0]          ispr_acch_intg_i,
+  output logic [ExtWLEN-1:0]          ispr_acch_wr_data_intg_o,
+  output logic                        ispr_acch_wr_en_o,
+`endif
+
   output logic                        reg_intg_violation_err_o,
 
   input  logic                        sec_wipe_mod_urnd_i,
+`ifdef OTBN_PQC
   input  logic                        sec_wipe_kmac_regs_urnd_i,
+`endif
   input  logic                        sec_wipe_running_i,
   output logic                        sec_wipe_err_o,
 
@@ -117,6 +125,7 @@ module otbn_alu_bignum
   input  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i,
 
   output logic alu_predec_error_o,
+`ifdef OTBN_PQC
   output logic ispr_predec_error_o,
 
   output logic kmac_msg_write_ready_o,
@@ -125,9 +134,16 @@ module otbn_alu_bignum
 
   output kmac_pkg::app_req_t          kmac_app_req_o,
   input  kmac_pkg::app_rsp_t          kmac_app_rsp_i
+`else
+  output logic ispr_predec_error_o
+`endif
 );
 
+`ifndef OTBN_PQC
   logic [WLEN+1:0] adder_y_res;
+`else
+  logic [WLEN-1:0] adder_y_res;
+`endif
   logic [WLEN-1:0] logical_res;
 
   ///////////
@@ -240,12 +256,23 @@ module otbn_alu_bignum
                                  expected_flags_ispr_wr);
 
   // Adder operations update all flags.
+`ifndef OTBN_PQC
   assign adder_update_flags.C = (operation_i.op == AluOpBignumAdd ||
                                  operation_i.op == AluOpBignumAddc) ?  adder_y_res[WLEN+1] :
                                                                       ~adder_y_res[WLEN+1];
   assign adder_update_flags.M = adder_y_res[WLEN];
   assign adder_update_flags.L = adder_y_res[1];
   assign adder_update_flags.Z = ~|adder_y_res[WLEN:1];
+`else
+  logic [15:0] adder_y_carry_out;
+
+  assign adder_update_flags.C = (operation_i.op == AluOpBignumAdd ||
+                                 operation_i.op == AluOpBignumAddc) ?  adder_y_carry_out[15] :
+                                                                      ~adder_y_carry_out[15];
+  assign adder_update_flags.M = adder_y_res[WLEN-1];
+  assign adder_update_flags.L = adder_y_res[0];
+  assign adder_update_flags.Z = ~|adder_y_res;
+`endif
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_update_flag_groups
 
@@ -416,6 +443,7 @@ module otbn_alu_bignum
                                sec_wipe_mod_urnd_i;
   end
 
+`ifdef OTBN_PQC
   //////////
   // KMAC //
   //////////
@@ -1102,6 +1130,7 @@ module otbn_alu_bignum
   assign last_word_oversized    = kmac_msg_last & packer_oversized_last;
   assign kmac_oversized_req_err = kmac_sent_last & (kmac_msg_fifo_rvalid | kmac_msg_valid_q)
                                   & ~kmac_undersized_req_err_latch | last_word_oversized;
+`endif
 
   /////////
   // ACC //
@@ -1126,20 +1155,53 @@ module otbn_alu_bignum
   assign ispr_acc_wr_data_intg_o = ispr_init_i ? EccWideZeroWord
                                                : ispr_acc_bignum_wdata_intg_blanked;
 
+`ifdef OTBN_PQC
+  //////////
+  // ACCH //
+  //////////
+  assign ispr_acch_wr_en_o =
+      ((ispr_addr_i == IsprAccH) & ispr_bignum_wr_en_i & ispr_wr_commit_i) | ispr_init_i;
+
+  logic [ExtWLEN-1:0] ispr_acch_bignum_wdata_intg_blanked;
+
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(ExtWLEN)) u_ispr_acch_bignum_wdata_intg_blanker (
+    .in_i (ispr_bignum_wdata_intg_i),
+    .en_i (ispr_predec_bignum_i.ispr_wr_en[IsprAccH]),
+    .out_o(ispr_acch_bignum_wdata_intg_blanked)
+  );
+  // If the blanker is enabled, the output will not carry the correct ECC bits.  This is not
+  // a problem because a blanked value should never be used.  If the blanked value is used
+  // nonetheless, an integrity error arises.
+
+  assign ispr_acch_wr_data_intg_o = ispr_init_i ? EccWideZeroWord
+                                               : ispr_acch_bignum_wdata_intg_blanked;
+`endif
+
   // ISPR read data is muxed out in two stages:
   // 1. Select amongst the ISPRs that have no integrity bits. The output has integrity calculated
   //    for it.
   // 2. Select between the ISPRs that have integrity bits and the result of the first stage.
 
-  // Number of ISPRs that have integrity protection
-  localparam int NIntgIspr = 4;
   // IDs fpr ISPRs with integrity
   localparam int IsprModIntg        = 0;
   localparam int IsprAccIntg        = 1;
+`ifdef OTBN_PQC
   localparam int IsprKmacMsgIntg    = 2;
   localparam int IsprKmacDigestIntg = 3;
+  localparam int IsprAccHIntg       = 4;
+`endif
+`ifdef OTBN_PQC
   // ID representing all ISPRs with no integrity
-  localparam int IsprNoIntg         = 4;
+  localparam int IsprNoIntg = 5;
+  // Number of ISPRs that have integrity protection
+  localparam int NIntgIspr = 5;
+`else
+  // ID representing all ISPRs with no integrity
+  localparam int IsprNoIntg = 2;
+  // Number of ISPRs that have integrity protection
+  localparam int NIntgIspr = 2;
+`endif
 
   logic [NIntgIspr:0] ispr_rdata_intg_mux_sel;
   logic [ExtWLEN-1:0] ispr_rdata_intg_mux_in    [NIntgIspr+1];
@@ -1149,8 +1211,13 @@ module otbn_alu_bignum
   // MOD, ACC, KMAC_MSG and KMAC_DIGEST supply their own integrity so these values are unused
   assign ispr_rdata_no_intg_mux_in[IsprMod]         = 0;
   assign ispr_rdata_no_intg_mux_in[IsprAcc]         = 0;
+`ifdef OTBN_PQC
   assign ispr_rdata_no_intg_mux_in[IsprKmacMsg]     = 0;
+  assign ispr_rdata_no_intg_mux_in[IsprKmacCfg]     = {224'b0, kmac_cfg_intg_q[31:0]};
+  assign ispr_rdata_no_intg_mux_in[IsprKmacStatus]  = {224'b0, kmac_status_intg_q[31:0]};
   assign ispr_rdata_no_intg_mux_in[IsprKmacDigest]  = 0;
+  assign ispr_rdata_no_intg_mux_in[IsprAccH]        = 0;
+`endif
 
   assign ispr_rdata_no_intg_mux_in[IsprRnd]    = rnd_data_i;
   assign ispr_rdata_no_intg_mux_in[IsprUrnd]   = urnd_data_i;
@@ -1163,8 +1230,6 @@ module otbn_alu_bignum
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1L] = sideload_key_shares_i[1][255:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
                                                   sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
-  assign ispr_rdata_no_intg_mux_in[IsprKmacCfg]     = {224'b0, kmac_cfg_intg_q[31:0]};
-  assign ispr_rdata_no_intg_mux_in[IsprKmacStatus]  = {224'b0, kmac_status_intg_q[31:0]};
 
   logic [WLEN-1:0]    ispr_rdata_no_intg;
   logic [ExtWLEN-1:0] ispr_rdata_intg_calc;
@@ -1191,23 +1256,33 @@ module otbn_alu_bignum
   // Second stage
   assign ispr_rdata_intg_mux_in[IsprModIntg]        = mod_intg_q;
   assign ispr_rdata_intg_mux_in[IsprAccIntg]        = ispr_acc_intg_i;
+  assign ispr_rdata_intg_mux_in[IsprNoIntg]         = ispr_rdata_intg_calc;
+`ifdef OTBN_PQC
   assign ispr_rdata_intg_mux_in[IsprKmacMsgIntg]    = kmac_msg_intg_q;
   assign ispr_rdata_intg_mux_in[IsprKmacDigestIntg] = kmac_digest_intg_q;
-  assign ispr_rdata_intg_mux_in[IsprNoIntg]         = ispr_rdata_intg_calc;
+  assign ispr_rdata_intg_mux_in[IsprAccHIntg]       = ispr_acch_intg_i;
+`endif
 
   assign ispr_rdata_intg_mux_sel[IsprModIntg]         = ispr_predec_bignum_i.ispr_rd_en[IsprMod];
   assign ispr_rdata_intg_mux_sel[IsprAccIntg]         = ispr_predec_bignum_i.ispr_rd_en[IsprAcc];
+`ifdef OTBN_PQC
   assign ispr_rdata_intg_mux_sel[IsprKmacMsgIntg]     = ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg];
   assign ispr_rdata_intg_mux_sel[IsprKmacDigestIntg]  = ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
+  assign ispr_rdata_intg_mux_sel[IsprAccHIntg]        = ispr_predec_bignum_i.ispr_rd_en[IsprAccH];
+`endif
 
   assign ispr_rdata_intg_mux_sel[IsprNoIntg]  =
     |{ispr_predec_bignum_i.ispr_rd_en[IsprKeyS1H:IsprKeyS0L],
       ispr_predec_bignum_i.ispr_rd_en[IsprUrnd],
       ispr_predec_bignum_i.ispr_rd_en[IsprFlags],
+    `ifdef OTBN_PQC
       ispr_predec_bignum_i.ispr_rd_en[IsprRnd],
       ispr_predec_bignum_i.ispr_rd_en[IsprKmacCfg],
       ispr_predec_bignum_i.ispr_rd_en[IsprKmacPartialW],
       ispr_predec_bignum_i.ispr_rd_en[IsprKmacStatus]};
+    `else
+      ispr_predec_bignum_i.ispr_rd_en[IsprRnd]};
+    `endif
 
   // If we're reading from an ISPR we must be using the ispr_rdata_intg_mux
   `ASSERT(IsprRDataIntgMuxSelIfIsprRd_A,
@@ -1221,6 +1296,10 @@ module otbn_alu_bignum
   `ASSERT(IsprAccMustTakeIntg_A,
     ispr_predec_bignum_i.ispr_rd_en[IsprAcc] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
 
+`ifdef OTBN_PQC
+  `ASSERT(IsprAccHMustTakeIntg_A,
+    ispr_predec_bignum_i.ispr_rd_en[IsprAccH] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
+`endif
 
   prim_onehot_mux #(
     .Width  (ExtWLEN),
@@ -1260,12 +1339,31 @@ module otbn_alu_bignum
   // Shifter //
   /////////////
 
+`ifndef OTBN_PQC
   logic [WLEN-1:0]   shifter_in_upper, shifter_in_lower, shifter_in_lower_reverse;
   logic [WLEN*2-1:0] shifter_in;
   logic [WLEN*2-1:0] shifter_out;
   logic [WLEN-1:0]   shifter_out_lower_reverse, shifter_res, unused_shifter_out_upper;
+`else
+  logic [WLEN-1:0]   shifter_bignum_in_upper, shifter_bignum_in_lower, shifter_bignum_in_lower_reverse;
+  logic [WLEN*2-1:0] shifter_bignum_in;
+  logic [WLEN*2-1:0] shifter_bignum_out;
+  logic [WLEN-1:0]   shifter_bignum_out_lower_reverse, shifter_res, unused_shifter_out_upper;
+`endif
   logic [WLEN-1:0]   shifter_operand_a_blanked;
   logic [WLEN-1:0]   shifter_operand_b_blanked;
+`ifdef OTBN_PQC
+  logic [WLEN-1:0]   shifter_bignum_res;
+  logic [15:0]       shifter_vec_in [16:0];
+  logic [15:0]       shifter_vec_in_orig [15:0];
+  logic [15:0]       shifter_vec_in_reverse [15:0];
+  logic [15:0]       shifter_vec_out [15:0];
+  logic [31:0]       shifter_vec_tmp [15:0];
+  logic [31:0]       shifter_vec_tmp_shifted [15:0];
+  logic [15:0]       shifter_vec_out_reverse [15:0];
+  logic [WLEN-1:0]   shifter_vec_res;
+  logic              shifter_selvector_i;
+`endif
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_shifter_operand_a_blanker (
@@ -1281,11 +1379,18 @@ module otbn_alu_bignum
     .out_o(shifter_operand_b_blanked)
   );
 
+  // BIGNUM SHIFTER
   // Operand A is only used for BN.RSHI, otherwise the upper input is 0. For all instructions other
   // than BN.RHSI alu_predec_bignum_i.shifter_a_en will be 0, resulting in 0 for the upper input.
+`ifndef OTBN_PQC
   assign shifter_in_upper = shifter_operand_a_blanked;
   assign shifter_in_lower = shifter_operand_b_blanked;
+`else
+  assign shifter_bignum_in_upper = shifter_operand_a_blanked;
+  assign shifter_bignum_in_lower = shifter_operand_b_blanked;
+`endif
 
+`ifndef OTBN_PQC
   for (genvar i = 0; i < WLEN; i++) begin : g_shifter_in_lower_reverse
     assign shifter_in_lower_reverse[i] = shifter_in_lower[WLEN-i-1];
   end
@@ -1301,14 +1406,251 @@ module otbn_alu_bignum
 
   assign shifter_res =
       alu_predec_bignum_i.shift_right ? shifter_out[WLEN-1:0] : shifter_out_lower_reverse;
+`else
+  for (genvar i = 0; i < WLEN; i++) begin : g_shifter_bignum_in_lower_reverse
+    assign shifter_bignum_in_lower_reverse[i] = shifter_bignum_in_lower[WLEN-i-1];
+  end
+
+  assign shifter_bignum_in = {shifter_bignum_in_upper,
+      alu_predec_bignum_i.shift_right ? shifter_bignum_in_lower : shifter_bignum_in_lower_reverse};
+
+  assign shifter_bignum_out = shifter_bignum_in >> alu_predec_bignum_i.shift_amt;
+
+  for (genvar i = 0; i < WLEN; i++) begin : g_shifter_bignum_out_lower_reverse
+    assign shifter_bignum_out_lower_reverse[i] = shifter_bignum_out[WLEN-i-1];
+  end
+
+  assign shifter_bignum_res =
+      alu_predec_bignum_i.shift_right ? shifter_bignum_out[WLEN-1:0] : shifter_bignum_out_lower_reverse;
+`endif
+
+
+`ifdef OTBN_PQC
+  // VECTOR SHIFTER
+  assign shifter_selvector_i = operation_i.vector_type[0];
+  assign shifter_vec_in[16] = '0;
+  // split into 16-bit chunks for vectorized shift
+  for (genvar i=0; i<16; ++i) begin : g_shifter_vec
+    assign shifter_vec_in_orig[i] = shifter_operand_b_blanked[i*16+:16];
+    for (genvar j=0; j<WLEN/16; ++j) begin : g_shifter_vec_reverse_input
+      assign shifter_vec_in_reverse[i][j] = shifter_vec_in_orig[i][WLEN/16-j-1];
+    end
+    assign shifter_vec_in[i] =
+        alu_predec_bignum_i.shift_right ? shifter_vec_in_orig[i] : shifter_selvector_i ?
+            shifter_vec_in_reverse[i] : (i % 2 == 1) ?
+                shifter_vec_in_reverse[i-1] : shifter_vec_in_reverse[i+1];
+
+    // Shifter below either shifts as 16 or 32 bit vectors
+    assign shifter_vec_tmp[i] = {shifter_vec_in[i+1], shifter_vec_in[i]};
+    assign shifter_vec_tmp_shifted[i] = shifter_vec_tmp[i] >> alu_predec_bignum_i.shift_amt;
+    assign shifter_vec_out[i] =
+        (shifter_selvector_i | (i % 2 == 1)) ?
+            (shifter_vec_in[i] >> alu_predec_bignum_i.shift_amt) : shifter_vec_tmp_shifted[i][15:0];
+
+    for (genvar j=0; j<WLEN/16; ++j) begin : g_shifter_vec_reverse_output
+      assign shifter_vec_out_reverse[i][j] =
+          shifter_selvector_i ? shifter_vec_out[i][WLEN/16-j-1] : (i % 2 == 1) ?
+              shifter_vec_out[i-1][WLEN/16-j-1] : shifter_vec_out[i+1][WLEN/16-j-1];
+    end
+    assign shifter_vec_res[i*16+:16] =
+        alu_predec_bignum_i.shift_right ? shifter_vec_out[i] : shifter_vec_out_reverse[i];
+  end
+
+  // SHIFTER RESULT
+  assign shifter_res = (operation_i.op == otbn_pkg::AluOpBignumShv) ? shifter_vec_res : shifter_bignum_res;
+`endif
 
   // Only the lower WLEN bits of the shift result are returned.
+`ifndef OTBN_PQC
   assign unused_shifter_out_upper = shifter_out[WLEN*2-1:WLEN];
+`else
+  assign unused_shifter_out_upper = shifter_bignum_out[WLEN*2-1:WLEN];
+`endif
+
+`ifdef OTBN_PQC
+  ///////////////
+  // Transpose //
+  ///////////////
+
+  logic [WLEN/16-1:0] trn_op0_16h [15:0];
+  logic [WLEN/8-1:0]  trn_op0_8s  [7:0];
+  logic [WLEN/4-1:0]  trn_op0_4d  [3:0];
+  logic [WLEN/2-1:0]  trn_op0_2q  [1:0];
+
+  logic [WLEN/16-1:0] trn_op1_16h [15:0];
+  logic [WLEN/8-1:0]  trn_op1_8s  [7:0];
+  logic [WLEN/4-1:0]  trn_op1_4d  [3:0];
+  logic [WLEN/2-1:0]  trn_op1_2q  [1:0];
+
+  logic [WLEN-1:0]    trn_res;
+
+  for (genvar i=0; i<16; ++i) begin : g_trn_16h
+    assign trn_op0_16h[i] = operation_i.operand_a[i*16+:16];
+    assign trn_op1_16h[i] = operation_i.operand_b[i*16+:16];
+  end
+
+  for (genvar i=0; i<8; ++i) begin : g_trn_8s
+    assign trn_op0_8s[i] = operation_i.operand_a[i*32+:32];
+    assign trn_op1_8s[i] = operation_i.operand_b[i*32+:32];
+  end
+
+  for (genvar i=0; i<4; ++i) begin : g_trn_4d
+    assign trn_op0_4d[i] = operation_i.operand_a[i*64+:64];
+    assign trn_op1_4d[i] = operation_i.operand_b[i*64+:64];
+  end
+
+  for (genvar i=0; i<2; ++i) begin : g_trn_2q
+    assign trn_op0_2q[i] = operation_i.operand_a[i*128+:128];
+    assign trn_op1_2q[i] = operation_i.operand_b[i*128+:128];
+  end
+
+  always_comb begin
+    case (operation_i.trn_type)
+      trn1_16h: begin
+        for (int i=0; i<8; ++i) begin
+          trn_res[i*32+:32] = {trn_op1_16h[2*i],trn_op0_16h[2*i]};
+        end
+      end
+
+      trn1_8s: begin
+        for (int i=0; i<4; ++i) begin
+          trn_res[i*64+:64] = {trn_op1_8s[2*i],trn_op0_8s[2*i]};
+        end
+      end
+
+      trn1_4d: begin
+        for (int i=0; i<2; ++i) begin
+          trn_res[i*128+:128] = {trn_op1_4d[2*i],trn_op0_4d[2*i]};
+        end
+      end
+
+      trn1_2q: begin
+        for (int i=0; i<1; ++i) begin
+          trn_res[i*256+:256] = {trn_op1_2q[2*i],trn_op0_2q[2*i]};
+        end
+      end
+
+      trn2_16h: begin
+        for (int i=0; i<8; ++i) begin
+          trn_res[i*32+:32] = {trn_op1_16h[2*i+1],trn_op0_16h[2*i+1]};
+        end
+      end
+
+      trn2_8s: begin
+        for (int i=0; i<4; ++i) begin
+          trn_res[i*64+:64] = {trn_op1_8s[2*i+1],trn_op0_8s[2*i+1]};
+        end
+      end
+
+      trn2_4d: begin
+        for (int i=0; i<2; ++i) begin
+          trn_res[i*128+:128] = {trn_op1_4d[2*i+1],trn_op0_4d[2*i+1]};
+        end
+      end
+
+      trn2_2q: begin
+        for (int i=0; i<1; ++i) begin
+          trn_res[i*256+:256] = {trn_op1_2q[2*i+1],trn_op0_2q[2*i+1]};
+        end
+      end
+
+      default: begin
+        for (int i=0; i<8; ++i) begin
+          trn_res[i*32+:32] = {trn_op1_16h[2*i],trn_op0_16h[2*i]};
+        end
+      end
+    endcase
+  end
+`endif
 
   //////////////////
   // Adders X & Y //
   //////////////////
 
+`ifdef OTBN_PQC
+
+  // ADDER X logic
+  logic [WLEN-1:0] adder_x_op_a_blanked, adder_x_op_b, adder_x_op_b_blanked;
+  logic            adder_x_carry_in;
+  logic            adder_x_op_b_invert;
+  logic [WLEN-1:0] adder_x_res;
+  logic [15:0]     adder_x_carry_out;
+
+  // ADDER Y logic
+  logic [WLEN-1:0]  adder_y_op_a, adder_y_op_b;
+  logic             adder_y_carry_in;
+  logic             adder_y_op_b_invert;
+  logic [WLEN-1:0]  adder_y_op_a_blanked;
+  logic [WLEN-1:0]  adder_y_op_shifter_res_blanked;
+
+  logic [WLEN-1:0]  shift_mod_mux_out;
+  logic [WLEN-1:0]  x_res_operand_a_mux_out;
+
+  vec_type_e mode;
+  assign mode = operation_i.vector_sel ? (operation_i.vector_type[0] == 1'b0 ? VecType_s32 : VecType_h16) :
+                                         VecType_v256;
+
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(WLEN)) u_adder_x_op_a_blanked (
+    .in_i (operation_i.operand_a),
+    .en_i (alu_predec_bignum_i.adder_x_en),
+    .out_o(adder_x_op_a_blanked)
+  );
+
+  assign adder_x_op_b = adder_x_op_b_invert ? ~operation_i.operand_b : operation_i.operand_b;
+
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(WLEN)) u_adder_x_op_b_blanked (
+    .in_i (adder_x_op_b),
+    .en_i (alu_predec_bignum_i.adder_x_en),
+    .out_o(adder_x_op_b_blanked)
+  );
+
+  buffer_bit adder_x (
+    .A        (adder_x_op_a_blanked),
+    .B        (adder_x_op_b_blanked),
+    .word_mode(mode),
+    .cin      (adder_x_carry_in),
+    .res      (adder_x_res),
+    .cout     (adder_x_carry_out)
+  );
+
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(WLEN)) u_adder_y_op_a_blanked (
+    .in_i (operation_i.operand_a),
+    .en_i (alu_predec_bignum_i.adder_y_op_a_en),
+    .out_o(adder_y_op_a_blanked)
+  );
+
+  assign x_res_operand_a_mux_out =
+      alu_predec_bignum_i.x_res_operand_a_sel ? adder_x_res : adder_y_op_a_blanked;
+
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(WLEN)) u_adder_y_op_shifter_blanked (
+    .in_i (shifter_res),
+    .en_i (alu_predec_bignum_i.adder_y_op_shifter_en),
+    .out_o(adder_y_op_shifter_res_blanked)
+  );
+
+  assign shift_mod_mux_out =
+      alu_predec_bignum_i.shift_mod_sel ? adder_y_op_shifter_res_blanked :
+      (mode == VecType_h16) ? {16 {mod_no_intg_q[15:0]}} :
+      (mode == VecType_s32) ? { 8 {mod_no_intg_q[31:0]}} :
+      mod_no_intg_q;
+
+  assign adder_y_op_a = x_res_operand_a_mux_out;
+  assign adder_y_op_b = adder_y_op_b_invert ? ~shift_mod_mux_out : shift_mod_mux_out;
+
+  buffer_bit adder_y (
+    .A        (adder_y_op_a),
+    .B        (adder_y_op_b),
+    .word_mode(mode),
+    .cin      (adder_y_carry_in),
+    .res      (adder_y_res),
+    .cout     (adder_y_carry_out)
+  );
+
+`else
   logic [WLEN:0]   adder_x_op_a_blanked, adder_x_op_b, adder_x_op_b_blanked;
   logic            adder_x_carry_in;
   logic            adder_x_op_b_invert;
@@ -1367,6 +1709,7 @@ module otbn_alu_bignum
                          adder_y_carry_in};
 
   assign adder_y_res = adder_y_op_a + adder_y_op_b;
+`endif
 
   // The LSb of the adder results are unused.
   logic unused_adder_x_res_lsb, unused_adder_y_res_lsb;
@@ -1388,6 +1731,12 @@ module otbn_alu_bignum
   logic expected_logic_shifter_en;
   logic [3:0] expected_logic_res_sel;
 
+`ifdef OTBN_PQC
+  alu_vector_type_t expected_vector_type;
+  alu_trn_type_t    expected_trn_type;
+  logic             expected_vector_sel;
+`endif
+
   always_comb begin
     adder_x_carry_in          = 1'b0;
     adder_x_op_b_invert       = 1'b0;
@@ -1395,6 +1744,12 @@ module otbn_alu_bignum
     adder_y_op_b_invert       = 1'b0;
     adder_update_flags_en_raw = 1'b0;
     logic_update_flags_en_raw = 1'b0;
+
+  `ifdef OTBN_PQC
+    expected_vector_type      = alu_8s;
+    expected_trn_type         = alu_trn_type_t'('0);
+    expected_vector_sel       = 1'b0;
+  `endif
 
     expected_adder_x_en             = 1'b0;
     expected_x_res_operand_a_sel    = 1'b0;
@@ -1450,6 +1805,40 @@ module otbn_alu_bignum
         expected_x_res_operand_a_sel = 1'b1;
         expected_shift_mod_sel       = 1'b0;
       end
+    `ifdef OTBN_PQC
+      AluOpBignumAddv: begin
+        // X computes A + B
+        // Y computes adder_x_res - mod = adder_x_res + ~mod + 1
+        // Shifter ignored
+        // Output mux chooses result based on top bit of X result (whether mod subtraction in
+        // Y should be applied or not)
+        adder_x_carry_in    = 1'b0;
+        adder_x_op_b_invert = 1'b0;
+
+        expected_adder_x_en          = 1'b1;
+        expected_x_res_operand_a_sel = 1'b1;
+        expected_shift_mod_sel       = 1'b0;
+        expected_vector_type         = operation_i.vector_type;
+        expected_vector_sel          = operation_i.vector_sel;
+      end
+      AluOpBignumAddvm: begin
+        // X computes A + B
+        // Y computes adder_x_res - mod = adder_x_res + ~mod + 1
+        // Shifter ignored
+        // Output mux chooses result based on top bit of X result (whether mod subtraction in
+        // Y should be applied or not)
+        adder_x_carry_in    = 1'b0;
+        adder_x_op_b_invert = 1'b0;
+        adder_y_carry_in    = 1'b1;
+        adder_y_op_b_invert = 1'b1;
+
+        expected_adder_x_en          = 1'b1;
+        expected_x_res_operand_a_sel = 1'b1;
+        expected_shift_mod_sel       = 1'b0;
+        expected_vector_type         = operation_i.vector_type;
+        expected_vector_sel          = operation_i.vector_sel;
+      end
+    `endif
       AluOpBignumSub: begin
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A - shifter_res = A + ~shifter_res + 1
@@ -1491,6 +1880,40 @@ module otbn_alu_bignum
         expected_x_res_operand_a_sel = 1'b1;
         expected_shift_mod_sel       = 1'b0;
       end
+    `ifdef OTBN_PQC
+      AluOpBignumSubv: begin
+        // X computes A - B = A + ~B + 1
+        // Y computes adder_x_res + mod
+        // Shifter ignored
+        // Output mux chooses result based on top bit of X result (whether subtraction in Y should
+        // be applied or not)
+        adder_x_carry_in    = 1'b1;
+        adder_x_op_b_invert = 1'b1;
+
+        expected_adder_x_en          = 1'b1;
+        expected_x_res_operand_a_sel = 1'b1;
+        expected_shift_mod_sel       = 1'b0;
+        expected_vector_type         = operation_i.vector_type;
+        expected_vector_sel          = operation_i.vector_sel;
+      end
+      AluOpBignumSubvm: begin
+        // X computes A - B = A + ~B + 1
+        // Y computes adder_x_res + mod
+        // Shifter ignored
+        // Output mux chooses result based on top bit of X result (whether subtraction in Y should
+        // be applied or not)
+        adder_x_carry_in    = 1'b1;
+        adder_x_op_b_invert = 1'b1;
+        adder_y_carry_in    = 1'b0;
+        adder_y_op_b_invert = 1'b0;
+
+        expected_adder_x_en          = 1'b1;
+        expected_x_res_operand_a_sel = 1'b1;
+        expected_shift_mod_sel       = 1'b0;
+        expected_vector_type         = operation_i.vector_type;
+        expected_vector_sel          = operation_i.vector_sel;
+      end
+    `endif
       AluOpBignumRshi: begin
         // Shifter computes {A, B} >> shift_amt
         // X, Y ignored
@@ -1520,6 +1943,19 @@ module otbn_alu_bignum
         expected_logic_res_sel[AluOpLogicAnd] = operation_i.op == AluOpBignumAnd;
         expected_logic_res_sel[AluOpLogicNot] = operation_i.op == AluOpBignumNot;
       end
+      `ifdef OTBN_PQC
+      AluOpBignumShv: begin
+        expected_vector_type            = operation_i.vector_type;
+        expected_vector_sel             = operation_i.vector_sel;
+        expected_shifter_b_en           = 1'b1;
+        expected_shift_right            = operation_i.shift_right;
+        expected_logic_shifter_en       = 1'b1;
+        expected_logic_res_sel          = '0;
+      end
+      AluOpBignumTrn: begin
+        expected_trn_type = operation_i.trn_type;
+      end
+      `endif
       // No operation, do nothing.
       AluOpBignumNone: ;
       default: ;
@@ -1538,6 +1974,11 @@ module otbn_alu_bignum
       expected_shifter_a_en != alu_predec_bignum_i.shifter_a_en,
       expected_shifter_b_en != alu_predec_bignum_i.shifter_b_en,
       expected_shift_right != alu_predec_bignum_i.shift_right,
+    `ifdef OTBN_PQC
+      expected_vector_type != alu_predec_bignum_i.vector_type,
+      expected_trn_type != alu_predec_bignum_i.trn_type,
+      expected_vector_sel != alu_predec_bignum_i.vector_sel,
+    `endif
       expected_shift_amt != alu_predec_bignum_i.shift_amt,
       expected_shift_mod_sel != alu_predec_bignum_i.shift_mod_sel,
       expected_logic_a_en != alu_predec_bignum_i.logic_a_en,
@@ -1596,7 +2037,11 @@ module otbn_alu_bignum
 
   logic adder_y_res_used;
   always_comb begin
+  `ifndef OTBN_PQC
     operation_result_o = adder_y_res[WLEN:1];
+  `else
+    operation_result_o = adder_y_res;
+  `endif
     adder_y_res_used = 1'b1;
 
     unique case(operation_i.op)
@@ -1604,7 +2049,11 @@ module otbn_alu_bignum
       AluOpBignumAddc,
       AluOpBignumSub,
       AluOpBignumSubb: begin
+      `ifndef OTBN_PQC
         operation_result_o = adder_y_res[WLEN:1];
+      `else
+        operation_result_o = adder_y_res;
+      `endif
         adder_y_res_used = 1'b1;
       end
 
@@ -1622,30 +2071,97 @@ module otbn_alu_bignum
         // `adder_y_res` is always used: either as condition in the following `if` statement or, if
         // the `if` statement short-circuits, in the body of the `if` statement.
         adder_y_res_used = 1'b1;
+      `ifndef OTBN_PQC
         if (adder_x_res[WLEN+1] || adder_y_res[WLEN+1]) begin
           operation_result_o = adder_y_res[WLEN:1];
         end else begin
           operation_result_o = adder_x_res[WLEN:1];
         end
+      `else
+        if (adder_x_carry_out[15] || adder_y_carry_out[15]) begin
+          operation_result_o = adder_y_res;
+        end else begin
+          operation_result_o = adder_x_res;
+        end
+      `endif
       end
+
+    `ifdef OTBN_PQC
+      AluOpBignumAddv: begin
+        operation_result_o = adder_x_res;
+      end
+
+      AluOpBignumAddvm: begin
+        // `adder_y_res` is always used: either as condition in the following `if` statement or, if
+        // the `if` statement short-circuits, in the body of the `if` statement.
+        adder_y_res_used = 1'b1;
+
+        for (int i = 0; i < 16; i += 2) begin
+          operation_result_o[i*16 +: 16] = ((operation_i.vector_type[0]) ?
+              (adder_x_carry_out[i] || adder_y_carry_out[i]) :
+              (adder_x_carry_out[i + 1] || adder_y_carry_out[i + 1])) ?
+                  adder_y_res[i*16 +: 16] : adder_x_res[i*16 +: 16];
+          operation_result_o[(i + 1)* 16 +: 16] =
+            (adder_x_carry_out[i + 1] || adder_y_carry_out[i + 1]) ?
+                adder_y_res[(i + 1)*16 +: 16] : adder_x_res[(i + 1)*16 +: 16];
+        end
+      end
+    `endif
 
       // BN.SUBM - X = a - b, Y = X + mod, add mod if a - b < 0
       // * If X generates carry a - b >= 0 - Select X result
       // * Otherwise select Y result
       AluOpBignumSubm: begin
+      `ifndef OTBN_PQC
         if (adder_x_res[WLEN+1]) begin
           operation_result_o = adder_x_res[WLEN:1];
+      `else
+        if (adder_x_carry_out[15]) begin
+          operation_result_o = adder_x_res;
+      `endif
           adder_y_res_used = 1'b0;
         end else begin
+        `ifndef OTBN_PQC
           operation_result_o = adder_y_res[WLEN:1];
+        `else
+          operation_result_o = adder_y_res;
+        `endif
           adder_y_res_used = 1'b1;
         end
       end
 
+    `ifdef OTBN_PQC
+      AluOpBignumSubv: begin
+        operation_result_o = adder_x_res;
+      end
+      AluOpBignumSubvm: begin
+        adder_y_res_used = 1'b1;
+
+        for (int i = 0; i < 16; i += 2) begin
+          operation_result_o[i*16 +: 16] = ((operation_i.vector_type[0]) ?
+              adder_x_carry_out[i] : adder_x_carry_out[i + 1]) ?
+                  adder_x_res[i*16 +: 16] : adder_y_res[i*16 +: 16];
+          operation_result_o[(i + 1)* 16 +: 16] = adder_x_carry_out[i + 1] ?
+                adder_x_res[(i + 1)*16 +: 16] : adder_y_res[(i + 1)*16 +: 16];
+        end
+      end
+    `endif
+
+    `ifndef OTBN_PQC
       AluOpBignumRshi: begin
+    `else
+      AluOpBignumRshi,AluOpBignumShv: begin
+    `endif
         operation_result_o = shifter_res[WLEN-1:0];
         adder_y_res_used = 1'b0;
       end
+
+    `ifdef OTBN_PQC
+      AluOpBignumTrn: begin
+        operation_result_o = trn_res;
+        adder_y_res_used = 1'b0;
+      end
+    `endif
 
       AluOpBignumXor,
       AluOpBignumOr,
@@ -1666,14 +2182,18 @@ module otbn_alu_bignum
   // not none. If `shift_mod_sel` is low, `mod_intg_q` flows into `adder_y_op_b` and from there
   // into `adder_y_res`.  In this case, `mod_intg_q` is used iff  `adder_y_res` flows into
   // `operation_result_o`.
-  logic mod_used, kmac_used;
+  logic mod_used;
   assign mod_used = operation_valid_i & (operation_i.op != AluOpBignumNone)
                     & !alu_predec_bignum_i.shift_mod_sel & adder_y_res_used;
+
+  `ASSERT_KNOWN(ModUsed_A, mod_used)
+
+`ifdef OTBN_PQC
+  logic kmac_used;
   assign kmac_used = operation_valid_i & (operation_i.op != AluOpBignumNone) & ( |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg])    |
                                                                                  |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest]) |
                                                                                  |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacCfg])    |
                                                                                  |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacStatus]) );
-  `ASSERT_KNOWN(ModUsed_A, mod_used)
   `ASSERT_KNOWN(KmacUsed_A, kmac_used)
 
   // Raise a register integrity violation error iff `mod_intg_q` is used and (at least partially)
@@ -1682,11 +2202,19 @@ module otbn_alu_bignum
                                                                                   |(kmac_cfg_intg_err)    |
                                                                                   |(kmac_status_intg_err) |
                                                                                   |(kmac_digest_intg_err) ));
+`else
+  // Raise a register integrity violation error iff `mod_intg_q` is used and (at least partially)
+  // invalid.
+  assign reg_intg_violation_err_o = mod_used & |(mod_intg_err);
+`endif
   `ASSERT_KNOWN(RegIntgErrKnown_A, reg_intg_violation_err_o)
 
   // Detect and signal unexpected secure wipe signals.
+`ifdef OTBN_PQC
   assign sec_wipe_err_o = (sec_wipe_kmac_regs_urnd_i | sec_wipe_mod_urnd_i) & ~sec_wipe_running_i;
-
+`else
+  assign sec_wipe_err_o = sec_wipe_mod_urnd_i & ~sec_wipe_running_i;
+`endif
   // Blanking Assertions
   // All blanking assertions are reset with predec_error or overall error in the whole system
   // -indicated by operation_commit_i port- as OTBN does not guarantee blanking in the case
@@ -1745,6 +2273,7 @@ module otbn_alu_bignum
           !(|mod_wr_en) |-> ispr_mod_bignum_wdata_intg_blanked == '0,
           clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
 
+`ifdef OTBN_PQC
   // KMAC CFG ISPR Blanking
   `ASSERT(BlankingIsprKmacCfg_A,
           !(|kmac_cfg_wr_en) |-> ispr_kmac_cfg_bignum_wdata_intg_blanked == '0,
@@ -1754,6 +2283,7 @@ module otbn_alu_bignum
   `ASSERT(BlankingIsprKmacMsgA,
           !((|kmac_msg_wr_en) | ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg]) |-> ispr_kmac_msg_bignum_wdata_intg_blanked == '0,
           clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
+`endif
 
   // ACC ISPR Blanking
   `ASSERT(BlankingIsprACC_A,

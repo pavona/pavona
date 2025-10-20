@@ -1211,8 +1211,8 @@ def run_c_preprocessor(out_dir: str, inputs: List[str], copts: str) -> List[str]
 
         gcc_name = find_tool('gcc')
         default_args = ["-E"]
-        if copts:
-            default_args.append(copts)
+        default_args += copts
+
         default_args += [
             "-CC",
             "-x", "assembler-with-cpp",
@@ -1270,11 +1270,14 @@ def main(argv: List[str]) -> int:
     files, other_args, flags = parse_positionals(argv)
     files = files or ['--']
     just_translate = '--otbn-translate' in flags
-    if "-D" in other_args[0]:
-        copts = other_args[0]  # -D option is at the beginning of other_args
-        other_args.remove(copts)  # remove -D so that other compilations work
-    else:
-        copts = None
+
+    copts = []
+    for arg in other_args:
+        if "-D" in arg:
+            copts.append(arg)
+    if copts:
+        for arg in copts:
+            other_args.remove(arg)
 
     # files is now a nonempty list of input files. Rather unusually, '--'
     # (rather than '-') denotes standard input.
