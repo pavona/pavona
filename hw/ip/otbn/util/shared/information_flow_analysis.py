@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -8,8 +9,8 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .cache import Cache, CacheEntry
 from .constants import ConstantContext, get_op_val_str
-from .control_flow import (ControlLoc, ControlGraph, Cycle, Ecall,
-                           ImemEnd, LoopStart, Ret)
+from .control_flow import (ControlLoc, ControlGraph, Cycle, Ecall, ImemEnd,
+                           LoopStart, Ret)
 from .decode import OTBNProgram
 from .information_flow import InformationFlowGraph
 from .insn_yaml import Insn
@@ -34,9 +35,13 @@ from .insn_yaml import Insn
 #                   the program; the value is a set of PCs of control-flow
 #                   instructions through which the node influences the control
 #                   flow
+#   loop iters:     a dictionary whose keys are the program addresess at which
+#                   a loop instruction (either `loop` or `loopi`) occurs and
+#                   the number of iterations was determined to be a constant,
+#                   and whose values are those exact number of iterations
 IFlowResult = Tuple[Set[str], InformationFlowGraph, InformationFlowGraph,
                     Optional[ConstantContext], Dict[int, InformationFlowGraph],
-                    Dict[str, Set[int]]]
+                    Dict[str, Set[int]], Dict[int, int]]
 
 
 class IFlowCacheEntry(CacheEntry[ConstantContext, IFlowResult]):
@@ -49,6 +54,7 @@ class IFlowCacheEntry(CacheEntry[ConstantContext, IFlowResult]):
     same values for those constants but different values for others, the result
     should not change.
     '''
+
     def is_match(self, constants: ConstantContext) -> bool:
         return constants.includes(self.key)
 
@@ -229,7 +235,8 @@ def _get_iflow_update_state(
         rec_result: IFlowResult, iflow: InformationFlowGraph,
         program_end_iflow: InformationFlowGraph, used_constants: Set[str],
         constants: ConstantContext, cycles: Dict[int, InformationFlowGraph],
-        control_deps: Dict[str, Set[int]]) -> InformationFlowGraph:
+        control_deps: Dict[str, Set[int]],
+        loop_iters: Dict[int, int]) -> InformationFlowGraph:
     '''Update the internal state of _get_iflow after a recursive call.
 
     `iflow` is not modified.
@@ -249,6 +256,7 @@ def _get_iflow_update_state(
     rec_constants = rec_result[3]
     rec_cycles = rec_result[4]
     rec_control_deps = rec_result[5]
+    rec_loop_iters = rec_result[6]
 
     # Update the used constants and control-flow dependencies
     used_constants.update(iflow.sources_for_any(rec_used_constants))
@@ -258,6 +266,9 @@ def _get_iflow_update_state(
     for pc, cycle_iflow in rec_cycles.items():
         cycles.setdefault(pc, InformationFlowGraph.nonexistent()).update(
             iflow.seq(cycle_iflow))
+
+    # Update the loop iteration counts
+    loop_iters.update(rec_loop_iters)
 
     # Update the constants to keep only those that are either unmodified in the
     # return-path information flow or returned by the recursive call.
@@ -308,6 +319,9 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
     # Cycle starts that are accessible from this PC.
     cycles: Dict[int, InformationFlowGraph] = {}
+
+    # Loop iteration counts for loops accessible from this PC.
+    loop_iters: Dict[int, int] = {}
 
     # If this PC is the start of a cycle, then initialize the information flow
     # for the cycle with an empty graph (since doing nothing is a valid
@@ -370,6 +384,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
         if iterations is not None:
             # If the number of iterations is constant, perform recursive calls
             # for each iteration
+            loop_iters[section.end] = iterations
             for _ in range(iterations):
                 body_result = _get_iflow(program, graph,
                                          body_loc.loop_start_pc, constants,
@@ -378,7 +393,8 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
                 iflow = _get_iflow_update_state(body_result, iflow,
                                                 program_end_iflow,
                                                 used_constants, constants,
-                                                cycles, control_deps)
+                                                cycles, control_deps,
+                                                loop_iters)
 
             # Set the next edges to the instruction after the loop ends
             edges = [ControlLoc(body_loc.loop_end_pc + 4)]
@@ -396,10 +412,10 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
                                  cache)
         iflow = _get_iflow_update_state(jump_result, iflow, program_end_iflow,
                                         used_constants, constants, cycles,
-                                        control_deps)
+                                        control_deps, loop_iters)
 
         # Get information flow for return paths
-        _, jump_return_iflow, _, _, _, _ = jump_result
+        _, jump_return_iflow, _, _, _, _, _ = jump_result
 
         # Compose current iflow with the flow for the jump's return paths
         iflow = iflow.seq(jump_return_iflow)
@@ -440,11 +456,9 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
             # Defensively copy constants so they don't cross between branches
             local_constants = deepcopy(constants)
-            rec_return_iflow = _get_iflow_update_state(result, iflow,
-                                                       program_end_iflow,
-                                                       used_constants,
-                                                       local_constants, cycles,
-                                                       control_deps)
+            rec_return_iflow = _get_iflow_update_state(
+                result, iflow, program_end_iflow, used_constants,
+                local_constants, cycles, control_deps, loop_iters)
 
             # If there were any return paths, take values on which existing and
             # recursive constants agree.
@@ -523,14 +537,13 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
     # Update the cache and return
     out = (used_constants, return_iflow, program_end_iflow, common_consts,
-           cycles, control_deps)
+           cycles, control_deps, loop_iters)
 
     _get_iflow_cache_update(start_pc, start_constants, out, cache)
     return out
 
 
-def get_subroutine_iflow(program: OTBNProgram,
-                         graph: ControlGraph,
+def get_subroutine_iflow(program: OTBNProgram, graph: ControlGraph,
                          subroutine_name: str,
                          start_constants: Dict[str, int]) -> SubroutineIFlow:
     '''Gets the information-flow graphs for the subroutine.
@@ -550,7 +563,7 @@ def get_subroutine_iflow(program: OTBNProgram,
     start_constants['x0'] = 0
     constants = ConstantContext(start_constants)
     start_pc = program.get_pc_at_symbol(subroutine_name)
-    _, ret_iflow, end_iflow, _, cycles, control_deps = _get_iflow(
+    _, ret_iflow, end_iflow, _, cycles, control_deps, _ = _get_iflow(
         program, graph, start_pc, constants, None, IFlowCache())
     if cycles:
         for pc in cycles:
@@ -574,7 +587,7 @@ def get_program_iflow(program: OTBNProgram,
     2. The information-flow nodes whose values at the start of the subroutine
        influence its control flow.
     '''
-    _, ret_iflow, end_iflow, _, cycles, control_deps = _get_iflow(
+    _, ret_iflow, end_iflow, _, cycles, control_deps, _ = _get_iflow(
         program, graph, program.min_pc(), ConstantContext.empty(), None,
         IFlowCache())
     if cycles:
@@ -586,6 +599,37 @@ def get_program_iflow(program: OTBNProgram,
                          'when analyzing whole program.')
     assert end_iflow.exists
     return end_iflow, control_deps
+
+
+def get_subroutine_loop_iters(
+        program: OTBNProgram, graph: ControlGraph, subroutine_name: str,
+        start_constants: Dict[str, int]) -> Dict[int, int]:
+    '''Gets the loop iteration counts for the subroutine.
+
+    Returns a dictionary which maps
+    - from the program addresses of loop instructions (both `loop` and `loopi`)
+      for which the number of loop iterations is a constant that can be
+      statically determined,
+    - to that constant number of loop iterations.
+    '''
+    if 'x0' in start_constants and start_constants['x0'] != 0:
+        raise ValueError('The x0 register is always 0; cannot require '
+                         f'x0={start_constants["x0"]}')
+    start_constants['x0'] = 0
+    constants = ConstantContext(start_constants)
+    start_pc = program.get_pc_at_symbol(subroutine_name)
+    _, ret_iflow, end_iflow, _, cycles, _, loop_iters = _get_iflow(
+        program, graph, start_pc, constants, None, IFlowCache())
+    if cycles:
+        for pc in cycles:
+            print(cycles[pc].pretty())
+            print('---')
+        raise RuntimeError('Unresolved cycles; start PCs: {}'.format(', '.join(
+            ['{:#x}'.format(pc) for pc in cycles.keys()])))
+    if not (ret_iflow.exists or end_iflow.exists):
+        raise ValueError('Could not find any complete control-flow paths when '
+                         'analyzing subroutine.')
+    return loop_iters
 
 
 def stringify_control_deps(program: OTBNProgram,

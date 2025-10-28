@@ -1,5 +1,5 @@
-/* Copyright zeroRISC Inc.
- * Copyright lowRISC Contributors.
+/* Copyright lowRISC Contributors.
+ * Copyright zeroRISC Inc.
  * Copyright 2016 The Chromium OS Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE.dcrypto file.
@@ -575,6 +575,10 @@ mont_loop:
  * clobbered Flag Groups: FG0, FG1
  */
 montmul:
+  /* set pointers */
+  li        x10, 4
+  li        x11, 2
+
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0' */
   bn.lid    x9, 0(x17)
 
@@ -633,8 +637,7 @@ modload:
   bn.lid   x8, 0(x16)
 
   /* x31 <= N - 1 */
-  li       x2, 1
-  sub      x31, x30, x2
+  addi     x31, x30, -1
 
   /* Compute Montgomery constant */
   jal      x1, m0inv

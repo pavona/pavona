@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 from enum import Enum
 from math import inf
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from .control_flow import (ControlGraph, Cycle, Ecall, ImemEnd, LoopEnd,
                            LoopStart, Ret, program_control_graph,
                            subroutine_control_graph)
 from .decode import OTBNProgram
+from .information_flow_analysis import get_subroutine_loop_iters
 
 
 class StopPoint(Enum):
@@ -19,9 +21,10 @@ class StopPoint(Enum):
     ECALL = 'ecall'
 
 
-def _get_insn_count_range(program: OTBNProgram, graph: ControlGraph,
-                          start_pc: int,
-                          stop_at: StopPoint) -> Tuple[int, int]:
+def _get_insn_count_range(
+        program: OTBNProgram, graph: ControlGraph, start_pc: int,
+        stop_at: StopPoint, loop_iters: Optional[Dict[int, int]],
+        thru_label: Optional[str]) -> Optional[Tuple[int, int]]:
     '''Return minimum and maximum instruction counts across control paths.
 
     In the presence of control-flow cycles or loops with a non-constant
@@ -60,26 +63,39 @@ def _get_insn_count_range(program: OTBNProgram, graph: ControlGraph,
         return (sec_count, sec_count)
 
     # Find the minimum/maximum instruction counts for all next edges.
-    min_count = inf
-    max_count = sec_count
+    # min_count = inf
+    # max_count = sec_count
+    min_counts = []
+    max_counts = []
     for loc in edges:
         if isinstance(loc, Ecall) or isinstance(loc, ImemEnd):
             assert stop_at == StopPoint.ECALL
+            # If we haven't reached the required function, then we don't have
+            # any relevant instruction bounds to report.
+            if thru_label is not None:
+                continue
             loc_min, loc_max = 0, 0
         elif isinstance(loc, Ret):
             assert stop_at == StopPoint.RET
+            # If we haven't reached the required function, then we don't have
+            # any relevant instruction bounds to report.
+            if thru_label is not None:
+                continue
             loc_min, loc_max = 0, 0
         elif isinstance(loc, LoopEnd):
             # All LoopEnds should have been handled above!
             assert False, f'Unexpected loop end at PC {section.end:#x}'
         elif isinstance(loc, LoopStart):
             # Calculate the number of iterations if possible.
-            insn = program.get_insn(section.end)
-            if insn.mnemonic == 'loopi':
-                op_vals = program.get_operands(section.end)
-                num_iterations = op_vals['iterations']
-                loop_min, loop_max = _get_insn_count_range(
-                    program, graph, loc.loop_start_pc, StopPoint.LOOP_END)
+            num_iterations = loop_iters.get(section.end)
+            if num_iterations is not None:
+                loop_range = _get_insn_count_range(program, graph,
+                                                   loc.loop_start_pc,
+                                                   StopPoint.LOOP_END,
+                                                   loop_iters, thru_label)
+                if loop_range is None:
+                    continue
+                loop_min, loop_max = loop_range
                 loop_min *= num_iterations
                 loop_max *= num_iterations
             else:
@@ -87,8 +103,13 @@ def _get_insn_count_range(program: OTBNProgram, graph: ControlGraph,
                 loop_min, loop_max = 0, inf
 
             # Calculate the instruction count range after the loop.
-            post_loop_min, post_loop_max = _get_insn_count_range(
-                program, graph, loc.loop_end_pc + 4, stop_at)
+            post_loop_range = _get_insn_count_range(program, graph,
+                                                    loc.loop_end_pc + 4,
+                                                    stop_at, loop_iters,
+                                                    thru_label)
+            if post_loop_range is None:
+                continue
+            post_loop_min, post_loop_max = post_loop_range
             loc_min = loop_min + post_loop_min
             loc_max = loop_max + post_loop_max
         elif isinstance(loc, Cycle):
@@ -101,39 +122,74 @@ def _get_insn_count_range(program: OTBNProgram, graph: ControlGraph,
             operands = program.get_operands(section.end)
             if insn.mnemonic == 'jal' and operands['grd'] == 1:
                 # Jumping to another subroutine; count the range for the
-                # subroutine itself.
-                jump_min, jump_max = _get_insn_count_range(
-                    program, graph, loc.pc, StopPoint.RET)
+                # subroutine itself, and if we've gone through the required.
+                jump_range = _get_insn_count_range(program, graph, loc.pc,
+                                                   StopPoint.RET, loop_iters,
+                                                   thru_label)
+                if jump_range is None:
+                    continue
+                jump_min, jump_max = jump_range
                 # Calculate the instruction count range after returning from
                 # the jump.
-                post_jump_min, post_jump_max = _get_insn_count_range(
-                    program, graph, section.end + 4, stop_at)
+                post_jump_range = _get_insn_count_range(
+                    program, graph, section.end + 4, stop_at, loop_iters,
+                    thru_label)
+                if post_jump_range is None:
+                    continue
+                post_jump_min, post_jump_max = post_jump_range
                 loc_min = jump_min + post_jump_min
                 loc_max = jump_max + post_jump_max
             else:
+                # If we haven't passed through the required subroutine, but
+                # this jump will take us there, we can recurse without having
+                # to continue to look for the subroutine.
+                edge_thru_label = thru_label
+                if thru_label is not None:
+                    subroutine_pc = program.get_pc_at_symbol(thru_label)
+                    if loc.pc == subroutine_pc:
+                        edge_thru_label = None
+
                 # If not a jump, then this is just a normal PC (i.e. a branch).
                 # Follow the branch to get the min/max range.
-                loc_min, loc_max = _get_insn_count_range(
-                    program, graph, loc.pc, stop_at)
+                loc_range = _get_insn_count_range(program, graph, loc.pc,
+                                                  stop_at, loop_iters,
+                                                  edge_thru_label)
+                if loc_range is None:
+                    continue
+                loc_min, loc_max = loc_range
 
-        # Merge the min/max for this location into the final result
-        min_count = min(min_count, sec_count + loc_min)
-        max_count = max(max_count, sec_count + loc_max)
+        # Add the count for this edge to the list.
+        min_counts.append(loc_min + sec_count)
+        max_counts.append(loc_max + sec_count)
 
-    return (min_count, max_count)
+    if len(min_counts) == 0 or len(max_counts) == 0:
+        # No valid edges, so we can't proceed.
+        return None
+
+    return (min(min_counts), max(max_counts))
 
 
-def program_insn_count_range(
-        program: OTBNProgram) -> Tuple[int, Optional[int]]:
+def program_insn_count_range(program: OTBNProgram,
+                             mode: Optional[str]) -> Tuple[int, Optional[int]]:
     '''Return minimum and maximum instruction counts for the program.
 
     Wrapper for `_get_insn_count_range` that works on the full program; it
     starts at graph.start and returns the instruction counts for all paths that
     lead to the end of the program.
     '''
-    graph = program_control_graph(program)
-    min_count, max_count = _get_insn_count_range(program, graph, graph.start,
-                                                 StopPoint.ECALL)
+    if mode is not None:
+        subroutine_graph = subroutine_control_graph(program, mode)
+        loop_iters = get_subroutine_loop_iters(program, subroutine_graph, mode,
+                                               {})
+    else:
+        loop_iters = {}
+    program_graph = program_control_graph(program)
+    count_range = _get_insn_count_range(program, program_graph,
+                                        program_graph.start, StopPoint.ECALL,
+                                        loop_iters, mode)
+    if count_range is None:
+        raise ValueError(f'No control flow path found through label {mode}.')
+    min_count, max_count = count_range
     if max_count == inf:
         max_count = None
     return min_count, max_count
@@ -150,7 +206,7 @@ def subroutine_insn_count_range(program: OTBNProgram,
     '''
     graph = subroutine_control_graph(program, subroutine)
     min_count, max_count = _get_insn_count_range(program, graph, graph.start,
-                                                 StopPoint.RET)
+                                                 StopPoint.RET, {}, None)
     if max_count == inf:
         max_count = None
     return min_count, max_count

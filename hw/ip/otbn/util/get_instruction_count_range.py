@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -17,17 +18,25 @@ def main() -> int:
         'instruction count register and make sure the values fall within this '
         'range to protect against certain fault injection attacks.'))
     parser.add_argument('elf', help=('The .elf file to check.'))
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         '--subroutine',
         required=False,
         help=('The specific subroutine to check. If not provided, the start '
               'point is _imem_start (whole program).'))
+    group.add_argument(
+        '--mode',
+        required=False,
+        help=('The label to require a full-program analysis to traverse '
+              'through. Useful for computing instruction counts for specific '
+              'modes in top-level programs.'))
     args = parser.parse_args()
     program = decode_elf(args.elf)
 
     # Compute instruction count range.
     if args.subroutine is None:
-        min_count, max_count = program_insn_count_range(program)
+        min_count, max_count = program_insn_count_range(
+            program, args.mode)
     else:
         min_count, max_count = subroutine_insn_count_range(
             program, args.subroutine)
