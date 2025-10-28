@@ -3,95 +3,28 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@aspect_rules_lint//format:defs.bzl", "format_multirun", "format_test")
-load("@lowrisc_misc_linters//rules:rules.bzl", "licence_test")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 load("//rules:quality.bzl", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report")
 
 package(default_visibility = ["//visibility:public"])
 
-licence_test(
+py_test(
     name = "license_check",
-    exclude_patterns = [
-        # Exclude anything in vendored directories
-        "third_party/**",
-        "*/vendor/*/*",
-        "util/lowrisc_misc-linters/*",
-
-        ## Hardware Exclusions
-
-        # DV Vendored test vectors
-        "hw/dv/sv/test_vectors",
-        # Vendored CRC model
-        "hw/dv/dpi/usbdpi/usb_crc.c",
-        # Vendored HMAC model
-        "hw/ip/hmac/dv/cryptoc_dpi/*",
-        # PRINCE C++ reference model from Sebastien Riou
-        "hw/ip/prim/dv/prim_prince/crypto_dpi_prince/prince_ref.h",
-        # PRESENT C reference model from Thomas Siebert
-        "hw/ip/prim/dv/prim_present/crypto_dpi_present/boxes.inc",
-        "hw/ip/prim/dv/prim_present/crypto_dpi_present/comline.inc",
-        "hw/ip/prim/dv/prim_present/crypto_dpi_present/present.inc",
-        "hw/ip/prim/dv/prim_present/crypto_dpi_present/verbose.inc",
-        # PRESENT Python reference model
-        "util/design/lib/Present.py",
-        # Vendored FPGA information
-        "hw/top_earlgrey/data/*.xdc",
-        "util/fpga/bram_load.mmi",
-        # Manually checked, files contain additional copyright header lines
-        "hw/ip/usb_fs_nb_pe/rtl/*",
-        "hw/ip/usbdev/rtl/usbdev_iomux.sv",
-        # rv_core_ibex uses waiver file from Ibex, which is not compliant
-        "hw/top_earlgrey/ip_autogen/rv_core_ibex/lint/rv_core_ibex.vlt",
-        "hw/top_englishbreakfast/ip_autogen/rv_core_ibex/lint/rv_core_ibex.vlt",
-        "hw/top_darjeeling/ip_autogen/rv_core_ibex/lint/rv_core_ibex.vlt",
-
-        ## Software Exclusions
-
-        # Coremark Vendored Files
-        "sw/device/benchmarks/coremark/top_earlgrey/*",
-
-        ## Other Exclusions
-
-        # Other Licences,
-        "util/wavegen/LICENSE.wavedrom",
-        "sw/otbn/crypto/LICENSE.tiny_sha3",
-        # Site Assets
-        "site/**/assets/scss/**",
-        "site/landing/static/js/tiny-slider.js",
-        # MdBook assets (MPL licensed)
-        "site/book-theme/*",
-        # Code taken from Chromium, so covered by the BSD licence
-        "sw/otbn/crypto/modexp.s",
-        "sw/otbn/crypto/montmul.s",
-        "sw/otbn/crypto/p256.s",
-        "sw/otbn/crypto/rsa_verify.s",
-        "sw/otbn/crypto/handwritten/rsa_verify_3072.s",
-        "sw/otbn/crypto/sha512.s",
-        # Code based on tiny_sha3
-        "sw/otbn/crypto/sha3_shake.s",
-        # Mersenne Twister PRNG
-        "sw/device/sca/lib/prng.c",
-        # SPHINCS+ known-answer test data
-        "sw/device/tests/crypto/testvectors/sphincsplus_kat/*.hjson",
-        # Alma testbench files
-        "hw/ip/aes/pre_sca/alma/cpp/testbench.h",
-        "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp",
-        "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sub_bytes.cpp",
-        "hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_keccak_2share.cpp",
-        # Code contributed by mlkem-native authors
-        "sw/device/lib/crypto/include/mlkem.h",
-        "sw/device/lib/crypto/impl/mlkem/mlkem_native_monobuild.c",
-        "sw/device/lib/crypto/impl/mlkem/mlkem_native_monobuild.h",
-        "sw/device/lib/crypto/impl/mlkem/fips202_glue.h",
-        "sw/device/lib/crypto/impl/mlkem/fips202x4_glue.h",
-        "sw/device/lib/crypto/impl/mlkem/config.h",
-        "sw/device/tests/crypto/mlkem_functest.c",
+    srcs = ["license_check.py"],
+    args = [
+        "--config",
+        "$(location //quality:licenses.hjson)",
     ],
-    licence = """
-    Copyright lowRISC contributors (OpenTitan project).
-    Licensed under the Apache License, Version 2.0, see LICENSE for details.
-    SPDX-License-Identifier: Apache-2.0
-    """,
-    workspace = "//:MODULE.bazel",
+    data = ["licenses.hjson"],
+    tags = [
+        "external",
+        "no-cache",
+        "no-sandbox",
+    ],
+    deps = [
+        requirement("hjson"),
+        requirement("tabulate"),
+    ],
 )
 
 alias(
