@@ -1,0 +1,107 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Verible lint
+
+inputs:
+  config_file:
+    description: 'Relative path to configuration file'
+    required: false
+  extra_args:
+    description: 'Extra arguments for verible-linter'
+    required: false
+  paths:
+    description: 'Optional array of paths to directories with source code to check'
+    required: false
+    default: '.'
+  exclude_paths:
+    description: 'Exclude these paths after finding all target files'
+    required: false
+  extensions:
+    description: 'Run linting on files ending with following extensions'
+    required: false
+    default: ''
+  log_file:
+    description: 'Name for a log file'
+    required: false
+    default: 'verible-verilog-lint.log'
+  github_token:
+    description: 'GITHUB_TOKEN'
+    default: ''
+  reviewdog_reporter:
+    description: '-reporter option to reviewdog'
+    default: 'github-pr-review'
+  suggest_fixes:
+    description: 'Post results of using --autofix option as change suggestions,
+                  works only with github-pre-review reporter'
+    default: 'true'
+  fail_on_error:
+    description: 'Fail the action when rule violations are found'
+    default: 'false'
+  verible_version:
+    description: 'Use selected Verible version (defaults to latest release)'
+    default: 'latest'
+
+runs:
+  using: "composite"
+  steps:
+    # verible-linter-action
+    - name: Check if running on Ubuntu Linux
+      shell: bash
+      run: |
+          source /etc/os-release
+          case "$ID" in
+            ubuntu) echo 'Running on Ubuntu Linux'; exit 0 ;;
+                 *) echo 'Not running on Ubuntu Linux'; exit 1 ;;
+          esac
+    - name: Install dependencies
+      shell: bash
+      run: |
+          sudo apt-get update -qq
+          sudo apt-get -y install --no-install-recommends git python3 python3-click python3-unidiff
+    - name: Install Verible
+      uses: chipsalliance/verible-actions-common/install-verible@5430dd21cbfbb02b904f4d4474139e4d12a90ef8
+      with:
+        verible_version: ${{ inputs.verible_version }}
+    # verible-actions-common/build-reviewdog
+    - name: Download reviewdog source code
+      shell: bash
+      run: |
+          git clone https://github.com/reviewdog/reviewdog
+          cd reviewdog
+          git checkout df70ed74df59de7ebfd9276afabd62ea2de4d7dd # v0.21.0
+    - name: Install go (for reviewdog)
+      uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      with:
+        go-version-file: ./reviewdog/go.mod
+    - name: Build reviewdog
+      shell: bash
+      run: |
+          cd reviewdog
+          go version
+          sudo go build -o /usr/local/bin/ ./cmd/reviewdog
+    - name: Check reviewdog version
+      shell: bash
+      run: |
+          reviewdog --version
+    # back to verible-linter-action
+    - name: Run Verible linter with reviewdog
+      shell: bash
+      env:
+        INPUT_CONFIG_FILE: ${{ inputs.config_file }}
+        INPUT_EXCLUDE_PATHS: ${{ inputs.exclude_paths }}
+        INPUT_EXTRA_ARGS: ${{ inputs.extra_args }}
+        INPUT_EXTENSIONS: ${{ inputs.extensions }}
+        INPUT_FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_LOG_FILE: ${{ inputs.log_file }}
+        INPUT_PATHS: ${{ inputs.paths }}
+        INPUT_REVIEWDOG_REPORTER: ${{ inputs.reviewdog_reporter }}
+        INPUT_SUGGEST_FIXES: ${{ inputs.suggest_fixes }}
+      run: ./.github/actions/third_party/verible/entrypoint.sh
+    - name: Upload linter log
+      uses: actions/upload-artifact@v4
+      with:
+        name: verible-linter
+        path: ${{ inputs.log_file }}

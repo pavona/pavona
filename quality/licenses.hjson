@@ -244,5 +244,9 @@
     "sw/device/lib/crypto/impl/mldsa/fips202_glue.h",
     "sw/device/lib/crypto/impl/mldsa/mldsa_native_config.h",
     "sw/device/tests/crypto/mldsa_functest.c",
+    // Vendored chipsalliance/verible-linter-action (Apache-2.0)
+    ".github/actions/third_party/verible/action.py",
+    ".github/actions/third_party/verible/entrypoint.sh",
+    ".github/actions/third_party/verible/rdf_gen.py",
   ]
 }
