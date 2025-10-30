@@ -21,7 +21,7 @@ package flash_ctrl_env_pkg;
   import mem_bkdr_util_pkg::*;
   import prim_mubi_pkg::*;
   import lc_ctrl_pkg::*;
-  import flash_phy_prim_agent_pkg::*;
+  import flash_macro_agent_pkg::*;
   import sec_cm_pkg::*;
 
   // macro includes

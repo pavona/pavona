@@ -3,12 +3,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_phy_prim_driver extends dv_base_driver #(.ITEM_T(flash_phy_prim_item),
-                                                     .CFG_T (flash_phy_prim_agent_cfg));
-  `uvm_component_utils(flash_phy_prim_driver)
+class flash_macro_driver extends dv_base_driver #(.ITEM_T(flash_macro_item),
+                                                  .CFG_T (flash_macro_agent_cfg));
+  `uvm_component_utils(flash_macro_driver)
 
   // the base class provides the following handles for use:
-  // flash_phy_prim_agent_cfg: cfg
+  // flash_macro_agent_cfg: cfg
 
   `uvm_component_new
 

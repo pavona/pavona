@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package flash_phy_prim_agent_pkg;
+package flash_macro_agent_pkg;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
@@ -18,12 +18,12 @@ package flash_phy_prim_agent_pkg;
 
   // local types
   // forward declare classes to allow typedefs below
-  typedef class flash_phy_prim_item;
-  typedef class flash_phy_prim_agent_cfg;
+  typedef class flash_macro_item;
+  typedef class flash_macro_agent_cfg;
 
   // reuse dv_base_sequencer as is with the right parameter set
-  typedef dv_base_sequencer #(.ITEM_T(flash_phy_prim_item),
-                              .CFG_T (flash_phy_prim_agent_cfg)) flash_phy_prim_sequencer;
+  typedef dv_base_sequencer #(.ITEM_T(flash_macro_item),
+                              .CFG_T (flash_macro_agent_cfg)) flash_macro_sequencer;
 
   typedef logic [DataWidth-1:0] fdata_q_t[$];
 
@@ -39,12 +39,12 @@ package flash_phy_prim_agent_pkg;
   endfunction
 
   // package sources
-  `include "flash_phy_prim_item.sv"
-  `include "flash_phy_prim_agent_cfg.sv"
-  `include "flash_phy_prim_agent_cov.sv"
-  `include "flash_phy_prim_driver.sv"
-  `include "flash_phy_prim_monitor.sv"
-  `include "flash_phy_prim_agent.sv"
-  `include "flash_phy_prim_seq_list.sv"
+  `include "flash_macro_item.sv"
+  `include "flash_macro_agent_cfg.sv"
+  `include "flash_macro_agent_cov.sv"
+  `include "flash_macro_driver.sv"
+  `include "flash_macro_monitor.sv"
+  `include "flash_macro_agent.sv"
+  `include "flash_macro_seq_list.sv"
 
-endpackage: flash_phy_prim_agent_pkg
+endpackage: flash_macro_agent_pkg

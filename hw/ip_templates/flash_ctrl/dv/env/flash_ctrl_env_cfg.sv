@@ -25,7 +25,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   flash_ctrl_seq_cfg seq_cfg;
 
   // Flash phy prim interface agent config
-  flash_phy_prim_agent_cfg m_fpp_agent_cfg;
+  flash_macro_agent_cfg m_fpp_agent_cfg;
   // interface
   virtual flash_ctrl_if flash_ctrl_vif;
   virtual clk_rst_if clk_rst_vif_flash_ctrl_eflash_reg_block;
@@ -310,7 +310,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     seq_cfg = flash_ctrl_seq_cfg::type_id::create("seq_cfg");
     seq_cfg.configure();
 
-    m_fpp_agent_cfg = flash_phy_prim_agent_cfg::type_id::create("m_fpp_agent_cfg");
+    m_fpp_agent_cfg = flash_macro_agent_cfg::type_id::create("m_fpp_agent_cfg");
     m_fpp_agent_cfg.is_active = 0;
     m_fpp_agent_cfg.en_cov = 0;
 

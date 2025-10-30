@@ -15,7 +15,7 @@ class flash_ctrl_env #(
   `uvm_component_param_utils(flash_ctrl_env#(CFG_T, SCOREBOARD_T, VIRTUAL_SEQUENCER_T))
 
   flash_ctrl_otf_scoreboard  m_otf_scb;
-  flash_phy_prim_agent       m_fpp_agent;
+  flash_macro_agent       m_fpp_agent;
   virtual flash_ctrl_if flash_ctrl_vif;
 
   string hdl_path_root;
@@ -50,8 +50,8 @@ class flash_ctrl_env #(
       end
     end
 
-    m_fpp_agent = flash_phy_prim_agent::type_id::create("m_fpp_agent", this);
-    uvm_config_db#(flash_phy_prim_agent_cfg)::set(this, "m_fpp_agent", "cfg", cfg.m_fpp_agent_cfg);
+    m_fpp_agent = flash_macro_agent::type_id::create("m_fpp_agent", this);
+    uvm_config_db#(flash_macro_agent_cfg)::set(this, "m_fpp_agent", "cfg", cfg.m_fpp_agent_cfg);
     cfg.m_fpp_agent_cfg.mon_start = 0;
     m_otf_scb = flash_ctrl_otf_scoreboard::type_id::create("m_otf_scb", this);
     uvm_config_db#(flash_ctrl_env_cfg)::set(this, "m_otf_scb", "cfg", cfg);

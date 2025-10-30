@@ -13,7 +13,7 @@ filesets:
       - lowrisc:dv:dv_lib
       - lowrisc:dv:cip_lib
       - lowrisc:earlgrey_dv:flash_ctrl_bkdr_util
-      - lowrisc:dv:flash_phy_prim_agent
+      - lowrisc:dv:flash_macro_agent
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:earlgrey_ip:flash_ctrl_top_specific_pkg
       - lowrisc:earlgrey_constants:top_pkg

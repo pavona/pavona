@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_phy_prim_base_seq extends dv_base_seq #(
-    .REQ         (flash_phy_prim_item),
-    .CFG_T       (flash_phy_prim_agent_cfg),
-    .SEQUENCER_T (flash_phy_prim_sequencer)
+class flash_macro_base_seq extends dv_base_seq #(
+    .REQ         (flash_macro_item),
+    .CFG_T       (flash_macro_agent_cfg),
+    .SEQUENCER_T (flash_macro_sequencer)
   );
-  `uvm_object_utils(flash_phy_prim_base_seq)
+  `uvm_object_utils(flash_macro_base_seq)
 
   `uvm_object_new
 

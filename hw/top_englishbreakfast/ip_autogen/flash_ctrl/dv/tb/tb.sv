@@ -76,17 +76,17 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
-  flash_phy_prim_if fpp_if (
+  flash_macro_if flash_macro_if (
     .clk  (clk),
     .rst_n(rst_n)
   );
 
   `define FLASH_DEVICE_HIER tb.flash_macro_wrapper
-  assign fpp_if.req = `FLASH_DEVICE_HIER.flash_i;
-  assign fpp_if.rsp = `FLASH_DEVICE_HIER.flash_o;
+  assign flash_macro_if.req = `FLASH_DEVICE_HIER.flash_i;
+  assign flash_macro_if.rsp = `FLASH_DEVICE_HIER.flash_o;
   for (genvar i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; i++) begin : gen_bank_loop
-    assign fpp_if.rreq[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.req_i;
-    assign fpp_if.rdy[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.rdy_o;
+    assign flash_macro_if.rreq[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.req_i;
+    assign flash_macro_if.rdy[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.rdy_o;
 
     assign flash_ctrl_if.hazard[i] =
                         tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.data_hazard[3:0];
@@ -375,7 +375,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_macro_wrapper_reg_block*",
                                        "vif", prim_tl_if);
     uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
-    uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
+    uvm_config_db#(virtual flash_macro_if)::set(null, "*.env.m_fpp_agent*", "vif", flash_macro_if);
     $timeformat(-9, 1, " ns", 9);
     run_test();
   end

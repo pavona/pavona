@@ -35,7 +35,7 @@ class flash_otf_item extends uvm_object;
     exp_err = 0;
     skip_err_chk = 0;
     debug_flag = 0;
-  endfunction // new
+  endfunction : new
 
   virtual function void print(string name = "flash_otf_item");
     `dv_info($sformatf("partition : %s", cmd.partition.name()), UVM_MEDIUM, name)
@@ -52,15 +52,15 @@ class flash_otf_item extends uvm_object;
     end else begin // read
       printfq(fq, name);
     end
-  endfunction // do_print
+  endfunction : print
 
   function void printfq(fdata_q_t fq, string name = "printfq");
     foreach (fq[i]) begin
       `dv_info($sformatf("rdata%0d: %8x_%8x", i, fq[i][63:32], fq[i][31:0]), UVM_MEDIUM, name)
     end
-  endfunction
+  endfunction : printfq
 
-  function void get_from_phy(flash_phy_prim_item item, string rw);
+  function void get_from_macro_item(flash_macro_item item, string rw);
     this.cmd.partition = flash_dv_part_e'(item.req.part);
     if (item.req.pg_erase_req) this.cmd.erase_type = FlashErasePage;
     if (item.req.bk_erase_req) this.cmd.erase_type = FlashEraseBank;
@@ -77,7 +77,7 @@ class flash_otf_item extends uvm_object;
     // So we need an extra copy of mem interface address.
     this.mem_addr = item.req.addr;
     fq = item.fq;
-  endfunction // get_from_phy
+  endfunction : get_from_macro_item
 
   // Layout:
   // bit: 75...64 | 63..32, 31..0
@@ -99,7 +99,7 @@ class flash_otf_item extends uvm_object;
       fdata[top_pkg::TL_DW-1:0] = dq.pop_front();
       dq2fq.push_back(fdata);
     end
-  endfunction // dq2fq
+  endfunction : dq2fq
 
   // Inverse of dq2fq, copy fq to dq.
   function data_q_t fq2dq(fdata_q_t fq);
@@ -109,7 +109,7 @@ class flash_otf_item extends uvm_object;
       fq2dq.push_back(fq[i][31:0]);
       fq2dq.push_back(fq[i][63:32]);
     end
-  endfunction
+  endfunction : fq2dq
 
   // Scramble dq data and store result to fq.
   // Use 'create_flash_data' function from package
@@ -164,7 +164,7 @@ class flash_otf_item extends uvm_object;
       end
       addr += 8;
     end
-  endfunction // scramble
+  endfunction : scramble
 
   // Descramble fq data and store result to fq and dq.
   // Use 'create_raw_data' function from package
@@ -261,11 +261,11 @@ class flash_otf_item extends uvm_object;
     if (tail_pad) dq = dq[0:$-1];
     raw_fq = dq2fq(dq);
     derr = ecc_err;
-  endfunction // descramble
+  endfunction : descramble
 
   function void clear_qs();
     this.dq = '{};
     this.raw_fq = '{};
     this.fq = '{};
-  endfunction // clear_qs
-endclass // flash_otf_item
+  endfunction : clear_qs
+endclass : flash_otf_item

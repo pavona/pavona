@@ -12,11 +12,11 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   uvm_tlm_analysis_fifo #(flash_otf_item) eg_exp_host_fifo[NumBanks];
   uvm_tlm_analysis_fifo #(flash_otf_item) eg_rtl_ctrl_fifo[NumBanks];
   uvm_tlm_analysis_fifo #(flash_otf_item) eg_rtl_host_fifo[NumBanks];
-  uvm_tlm_analysis_fifo #(flash_phy_prim_item) eg_rtl_fifo[NumBanks];
-  uvm_tlm_analysis_fifo #(flash_phy_prim_item) rd_cmd_fifo[NumBanks];
+  uvm_tlm_analysis_fifo #(flash_macro_item) eg_rtl_fifo[NumBanks];
+  uvm_tlm_analysis_fifo #(flash_macro_item) rd_cmd_fifo[NumBanks];
 
   // Check last mile write /erase transactions
-  uvm_tlm_analysis_fifo #(flash_phy_prim_item) eg_exp_lm_fifo[NumBanks];
+  uvm_tlm_analysis_fifo #(flash_macro_item) eg_exp_lm_fifo[NumBanks];
 
   // tb memory model
   // This is used for the last mile write data integrity check
@@ -52,7 +52,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
   task clear_fifos();
     flash_otf_item dummy1;
-    flash_phy_prim_item dummy2;
+    flash_macro_item dummy2;
 
     foreach (eg_exp_ctrl_fifo[i]) begin
       while (eg_exp_ctrl_fifo[i].used() > 0) eg_exp_ctrl_fifo[i].get(dummy1);
@@ -73,10 +73,10 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   endfunction // connect_phase
 
   task run_phase(uvm_phase phase);
-    flash_otf_item       exp_ctrl_item[NumBanks];
-    flash_otf_item       exp_host_item[NumBanks];
-    flash_phy_prim_item  phy_item[NumBanks];
-    flash_phy_prim_item  rcmd[NumBanks];
+    flash_otf_item   exp_ctrl_item[NumBanks];
+    flash_otf_item   exp_host_item[NumBanks];
+    flash_macro_item  macro_item[NumBanks];
+    flash_macro_item  rcmd[NumBanks];
 
     for (int i = 0; i < NumBanks; i++) begin
       int j = i;
@@ -94,8 +94,8 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       end join_none
       fork begin
         forever begin
-          eg_rtl_fifo[j].get(phy_item[j]);
-          process_phy_item(phy_item[j], j);
+          eg_rtl_fifo[j].get(macro_item[j]);
+          process_macro_item(macro_item[j], j);
         end
       end join_none
       fork begin
@@ -382,23 +382,23 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     if (err == 0) begin
       `dv_info("data match!!", UVM_MEDIUM, str)
     end
-  endtask // compare_data
+  endtask : compare_data
 
-  // Transform phy_item to otf_item and
+  // Transform macro_item to otf_item and
   // classify to host or ctrl transaction
-  task process_phy_item(flash_phy_prim_item item, int bank);
+  task process_macro_item(flash_macro_item item, int bank);
     flash_otf_item       obs;
 
     `uvm_create_obj(flash_otf_item, obs);
     if (item.req.prog_req) begin
-      obs.get_from_phy(item, "w");
+      obs.get_from_macro_item(item, "w");
       eg_rtl_ctrl_fifo[bank].write(obs);
     end else begin // read request, guaranteed by monitor
-      obs.get_from_phy(item, "r");
+      obs.get_from_macro_item(item, "r");
     end
-  endtask // process_phy_item
+  endtask : process_macro_item
 
-  task process_rcmd(flash_phy_prim_item item, int bank);
+  task process_rcmd(flash_macro_item item, int bank);
     addr_t serr_addr;
     flash_dv_part_e part = get_part_name(item.req);
     if (cfg.ecc_mode == FlashSerrTestMode) begin
@@ -412,7 +412,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   endtask
 
   task monitor_tb_mem(int bank);
-    flash_phy_prim_item exp;
+    flash_macro_item exp;
     flash_otf_mem_entry rcv;
     string name = $sformatf("mon_tb_mem%0d", bank);
     fork
@@ -455,11 +455,11 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         join_any
         #0;
         disable fork;
-      end // block: isolation_fork
+      end : isolation_fork
     join
-  endtask // monitor_tb_mem
+  endtask : monitor_tb_mem
 
-  task lm_wdata_comp(flash_phy_prim_item exp, flash_otf_mem_entry rcv, int bank);
+  task lm_wdata_comp(flash_macro_item exp, flash_otf_mem_entry rcv, int bank);
     bit[flash_phy_pkg::FullDataWidth-1:0] rd_data;
     rd_cache_t entry;
     string name = $sformatf("lm_wdata_comp_bank%0d", bank);
@@ -573,5 +573,5 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         `DV_CHECK_EQ(rcv.mem_wdata, exp.req.prog_full_data,,, name)
       end
     end
-  endtask // lm_wdata_cmp
-endclass
+  endtask : lm_wdata_comp
+endclass : flash_ctrl_otf_scoreboard

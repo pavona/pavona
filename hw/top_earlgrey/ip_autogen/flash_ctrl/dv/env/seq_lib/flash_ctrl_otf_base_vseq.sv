@@ -465,7 +465,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.scramble(otp_addr_key, otp_data_key, flash_op.otf_addr, 1);
 
       p_sequencer.eg_exp_ctrl_port[bank].write(exp_item);
-      flash_phy_prim_agent_pkg::print_flash_data(exp_item.fq,
+      flash_macro_agent_pkg::print_flash_data(exp_item.fq,
           $sformatf("fdata_%0d bank %0d", cfg.otf_ctrl_wr_sent, bank));
     end
     global_pat_cnt++;

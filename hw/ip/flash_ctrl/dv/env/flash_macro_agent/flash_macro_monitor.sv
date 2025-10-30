@@ -3,23 +3,23 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_phy_prim_monitor extends dv_base_monitor #(
-    .ITEM_T (flash_phy_prim_item),
-    .CFG_T  (flash_phy_prim_agent_cfg),
-    .COV_T  (flash_phy_prim_agent_cov)
+class flash_macro_monitor extends dv_base_monitor #(
+    .ITEM_T (flash_macro_item),
+    .CFG_T  (flash_macro_agent_cfg),
+    .COV_T  (flash_macro_agent_cov)
   );
-  `uvm_component_utils(flash_phy_prim_monitor)
+  `uvm_component_utils(flash_macro_monitor)
 
   // the base class provides the following handles for use:
-  // flash_phy_prim_agent_cfg: cfg
-  // flash_phy_prim_agent_cov: cov
+  // flash_macro_agent_cfg: cfg
+  // flash_macro_agent_cov: cov
 
-  uvm_analysis_port #(flash_phy_prim_item) eg_rtl_port[NumBanks];
-  uvm_analysis_port #(flash_phy_prim_item) rd_cmd_port[NumBanks];
-  uvm_analysis_port #(flash_phy_prim_item) eg_rtl_lm_port[NumBanks];
-  flash_phy_prim_item w_item[NumBanks];
-  flash_phy_prim_item r_item[NumBanks];
-  flash_phy_prim_item lm_item[NumBanks];
+  uvm_analysis_port #(flash_macro_item) eg_rtl_port[NumBanks];
+  uvm_analysis_port #(flash_macro_item) rd_cmd_port[NumBanks];
+  uvm_analysis_port #(flash_macro_item) eg_rtl_lm_port[NumBanks];
+  flash_macro_item w_item[NumBanks];
+  flash_macro_item r_item[NumBanks];
+  flash_macro_item lm_item[NumBanks];
   logic [DataWidth-1:0] write_buffer[NumBanks][$];
 
   `uvm_component_new
@@ -66,7 +66,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
             @cfg.vif.cb;
             #0.1ns;
             if (cfg.vif.rreq[j] & cfg.vif.rdy[j]) begin
-              r_item[j] = flash_phy_prim_item::type_id::create($sformatf("r_item[%0d]", j));
+              r_item[j] = flash_macro_item::type_id::create($sformatf("r_item[%0d]", j));
               r_item[j].req = cfg.vif.req[j];
               eg_rtl_port[j].write(r_item[j]);
             end
@@ -80,7 +80,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   virtual protected task collect_trans();
     `DV_SPINWAIT(wait(cfg.vif.rst_n == 1);,
                  "timeout waiting for reset deassert", 100_000)
-    `uvm_info(`gfn, $sformatf("flash_phy_prim_monitor %s", (cfg.scb_otf_en)? "enabled" :
+    `uvm_info(`gfn, $sformatf("flash_macro_monitor %s", (cfg.scb_otf_en)? "enabled" :
                               "disabled"), UVM_MEDIUM)
 
     if (cfg.scb_otf_en) begin
@@ -114,8 +114,8 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   endtask // collect_trans
 
   task collect_rd_cmd(int bank);
-    flash_phy_prim_item rcmd;
-    rcmd = flash_phy_prim_item::type_id::create("rcmd");
+    flash_macro_item rcmd;
+    rcmd = flash_macro_item::type_id::create("rcmd");
     rcmd.req = cfg.vif.req[bank];
 
     rd_cmd_port[bank].write(rcmd);
@@ -123,7 +123,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
 
   task collect_wr_data(int bank);
     if (write_buffer[bank].size() == 0) begin
-      w_item[bank] = flash_phy_prim_item::type_id::create($sformatf("w_item[%0d]", bank));
+      w_item[bank] = flash_macro_item::type_id::create($sformatf("w_item[%0d]", bank));
       w_item[bank].req = cfg.vif.req[bank];
       w_item[bank].rsp = cfg.vif.rsp[bank];
       `uvm_info(`gfn, $sformatf("MON%0d s_addr:%x",bank, w_item[bank].req.addr), UVM_HIGH)
@@ -141,8 +141,8 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   endtask // collect_item
 
   function void collect_lm_item(int bank);
-    flash_phy_prim_item item;
-    `uvm_create_obj(flash_phy_prim_item, item)
+    flash_macro_item item;
+    `uvm_create_obj(flash_macro_item, item)
     item.req = cfg.vif.req[bank];
     item.rsp = cfg.vif.rsp[bank];
     eg_rtl_lm_port[bank].write(item);

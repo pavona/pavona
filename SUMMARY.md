@@ -502,7 +502,6 @@
   - [CSRNG Agent](./hw/dv/sv/csrng_agent/README.md)
   - [DV Library Classes](./hw/dv/sv/dv_lib/README.md)
   - [DV Utils](./hw/dv/sv/dv_utils/README.md)
-  - [FLASH_PHY_PRIM Agent](./hw/dv/sv/flash_phy_prim_agent/README.md)
   - [I2C Agent](./hw/dv/sv/i2c_agent/README.md)
   - [JTAG Agent](./hw/dv/sv/jtag_agent/README.md)
   - [JTAG DMI Agent](./hw/dv/sv/jtag_dmi_agent/README.md)

@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_phy_prim_agent_cov extends dv_base_agent_cov #(flash_phy_prim_agent_cfg);
-  `uvm_component_utils(flash_phy_prim_agent_cov)
+class flash_macro_agent_cov extends dv_base_agent_cov #(flash_macro_agent_cfg);
+  `uvm_component_utils(flash_macro_agent_cov)
 
   // the base class provides the following handles for use:
-  // flash_phy_prim_agent_cfg: cfg
+  // flash_macro_agent_cfg: cfg
 
   // covergroups
 
