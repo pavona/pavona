@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:dv_lib
       - lowrisc:dv:cip_lib
       - ${instance_vlnv("lowrisc:dv:flash_ctrl_bkdr_util")}
+      - ${instance_vlnv("lowrisc:ip:flash_phy_macro_pkg")}
       - lowrisc:dv:flash_macro_agent
       - lowrisc:dv:mem_bkdr_util
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}

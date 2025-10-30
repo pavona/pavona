@@ -14,6 +14,7 @@ filesets:
 
   files_dv:
     depend:
+      - lowrisc:ip:flash_macro_wrapper
       - ${instance_vlnv("lowrisc:dv:flash_ctrl_bkdr_util")}
       - ${instance_vlnv("lowrisc:dv:flash_ctrl_test")}
       - ${instance_vlnv("lowrisc:dv:flash_ctrl_sva")}
