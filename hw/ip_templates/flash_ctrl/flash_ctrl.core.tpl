@@ -13,7 +13,6 @@ filesets:
       - ${instance_vlnv("lowrisc:ip:flash_phy_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
       - lowrisc:ip:tlul
-      - lowrisc:ip:flash_macro_wrapper
       - lowrisc:prim:all
       - lowrisc:prim:count
       - lowrisc:prim:edge_detector

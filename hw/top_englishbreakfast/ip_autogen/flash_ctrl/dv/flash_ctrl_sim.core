@@ -14,6 +14,7 @@ filesets:
 
   files_dv:
     depend:
+      - lowrisc:ip:flash_macro_wrapper
       - lowrisc:englishbreakfast_dv:flash_ctrl_bkdr_util
       - lowrisc:englishbreakfast_dv:flash_ctrl_test
       - lowrisc:englishbreakfast_dv:flash_ctrl_sva
