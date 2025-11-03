@@ -99,7 +99,7 @@ class BadGiantLoop(Loop):
         # At this point, all the "loop related work" is done: we've entered the
         # loop body (from which we can never leave). Now call the continuation
         # with a flag to say that we'd like the generation to complete.
-        body_snippet, end_model = cont(body_model, program, True)
+        body_snippet, end_model = cont(body_model, program, False, True)
 
         # Because we passed end=True to cont, the snippet from the continuation
         # is not None.

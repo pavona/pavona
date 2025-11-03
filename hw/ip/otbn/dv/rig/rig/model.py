@@ -251,6 +251,7 @@ class Model:
         wsrs.touch_addr(0x5)        # KEY_S0_H
         wsrs.touch_addr(0x6)        # KEY_S1_L
         wsrs.touch_addr(0x7)        # KEY_S1_H
+        wsrs.touch_addr(0xb)        # ACCH
 
         # Separate CSR list for KMAC as these should be off-limits from
         # non app_req generators, with the exception of MOD0

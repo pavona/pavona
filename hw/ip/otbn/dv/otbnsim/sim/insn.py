@@ -38,11 +38,16 @@ def cmod(n, q):
     return t
 
 
-def cmod_single(n, q):
+def cmod_single_addv(n, q):
+    if n >= q:
+        return n - q
+    else:
+        return n
+
+
+def cmod_single_subv(n, q):
     if n < 0:
         return n + q
-    elif n >= q:
-        return n - q
     else:
         return n
 
@@ -781,15 +786,15 @@ class BNADDV(OTBNInsn):
         result = 0
 
         for i in range(256 // size - 1, -1, -1):
-            ai = OTBNInsn.from_2s_complement(extract_sub_word(a, size, i), size)
-            bi = OTBNInsn.from_2s_complement(extract_sub_word(b, size, i), size)
+            ai = extract_sub_word(a, size, i)
+            bi = extract_sub_word(b, size, i)
             resulti = ai + bi
             if red:
-                resulti = cmod_single(resulti, mod_val)
+                resulti = cmod_single_addv(resulti, mod_val)
             if DEBUG_ARITH:
                 eprint(f"addvm {ai:#x} + {bi:#x} = {ai + bi:#x} = {resulti:#x}")
             result <<= size
-            result |= (OTBNInsn.to_2s_complement(resulti, size) & ((1 << size) - 1))
+            result |= (resulti & ((1 << size) - 1))
 
         result = result & ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
@@ -876,8 +881,8 @@ class BNMULV(OTBNInsn):
             if exec_mode == 0:
                 lo = prodi & mask
                 hi = (prodi >> size) & mask
-                wrd_v[i - 1 if sel else i     ] = lo
-                wrd_v[i     if sel else i + 1 ] = hi
+                wrd_v[i - 1 if sel else i] = lo
+                wrd_v[i if sel else i + 1] = hi
             elif exec_mode == 1:
                 wrd_v[i] = prodi & mask
             elif exec_mode == 2:
@@ -987,8 +992,8 @@ class BNMULVL(OTBNInsn):
             if exec_mode == 0:
                 lo = prodi & mask
                 hi = (prodi >> size) & mask
-                wrd_v[i - 1 if sel else i     ] = lo
-                wrd_v[i     if sel else i + 1 ] = hi
+                wrd_v[i - 1 if sel else i] = lo
+                wrd_v[i if sel else i + 1] = hi
             elif exec_mode == 1:
                 wrd_v[i] = prodi & mask
             elif exec_mode == 2:
@@ -1277,15 +1282,15 @@ class BNSUBV(OTBNInsn):
         result = 0
 
         for i in range(256 // size - 1, -1, -1):
-            ai = OTBNInsn.from_2s_complement(extract_sub_word(a, size, i), size)
-            bi = OTBNInsn.from_2s_complement(extract_sub_word(b, size, i), size)
+            ai = extract_sub_word(a, size, i)
+            bi = extract_sub_word(b, size, i)
             resulti = ai - bi
             if red:
-                resulti = cmod_single(resulti, mod_val)
+                resulti = cmod_single_subv(resulti, mod_val)
             if DEBUG_ARITH:
-                eprint(f"subvm {ai} - {bi} = {ai - bi} = {resulti}")
+                eprint(f"subvm {ai:#x} - {bi:#x} = {ai - bi:#x} = {resulti:#x} | MOD: {mod_val:#x}")
             result <<= size
-            result |= (OTBNInsn.to_2s_complement(resulti, size) & ((1 << size) - 1))
+            result |= (resulti & ((1 << size) - 1))
 
         result &= ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
@@ -1431,10 +1436,7 @@ class BNSHV(OTBNInsn):
 
         for i in range((256 - size) // size, -1, -1):
             ai = extract_sub_word(a, size, i)
-            if self.shift_arith:
-                ai_shifted = bit_shift(ai, self.shift_type, self.shift_bits, size, arith=True)
-            else:
-                ai_shifted = bit_shift(ai, self.shift_type, self.shift_bits, size)
+            ai_shifted = bit_shift(ai, self.shift_type, self.shift_bits, size)
 
             resulti = ai_shifted
             result = (result << size) | (resulti & ((1 << size) - 1))

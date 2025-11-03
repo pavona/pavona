@@ -24,6 +24,7 @@ from .gens.loop_dup_end import LoopDupEnd
 from .gens.small_val import SmallVal
 from .gens.straight_line_insn import StraightLineInsn
 from .gens.app_req import KmacAppReqInsn
+from .gens.clear_wsr import ClearWsr
 
 from .gens.bad_at_end import BadAtEnd
 from .gens.bad_bnmovr import BadBNMovr
@@ -50,6 +51,7 @@ class SnippetGens:
         SmallVal,
         StraightLineInsn,
         KmacAppReqInsn,
+        ClearWsr,
         KnownWDR,
         UntakenBranch,
 
@@ -69,6 +71,7 @@ class SnippetGens:
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         self._cont_generators: List[Tuple[SnippetGen, float]] = []
+        self._start_generators: List[Tuple[SnippetGen, float]] = []
         self._end_generators: List[Tuple[SnippetGen, float]] = []
 
         # Grab an ECall generator. We'll use it in self.gens to append an ECALL
@@ -103,11 +106,16 @@ class SnippetGens:
                 pr = (gen, weight)
                 if cls.ends_program:
                     self._end_generators.append(pr)
+                elif cls.starts_program:
+                    self._start_generators.append(pr)
                 else:
                     self._cont_generators.append(pr)
 
         # self._end_generators should include ECall, at least.
         assert self._end_generators
+
+        # self._start_generators should include ClearWsr, at least.
+        assert self._start_generators
 
         # Check that we used all the names in cfg.gen_weights
         unused_names = set(cfg.gen_weights.values.keys()) - used_names
@@ -124,6 +132,7 @@ class SnippetGens:
     def gen(self,
             model: Model,
             program: Program,
+            start: bool,
             end: bool) -> Optional[GenRet]:
         '''Pick a snippet and update model, program with its contents.
 
@@ -138,7 +147,12 @@ class SnippetGens:
         if not model.fuel:
             return None
 
-        generators = self._end_generators if end else self._cont_generators
+        if end:
+            generators = self._end_generators
+        elif start:
+            generators = self._start_generators
+        else:
+            generators = self._cont_generators
 
         real_weights = []
         num_pos_weights = 0
@@ -186,6 +200,7 @@ class SnippetGens:
     def _gens(self,
               model: Model,
               program: Program,
+              start: bool,
               end: bool) -> Tuple[List[Snippet], Model]:
         '''Generate some snippets to continue program.
 
@@ -196,6 +211,9 @@ class SnippetGens:
 
         '''
         children: List[Snippet] = []
+
+        clear_wdr = start
+
         while True:
             gen_ecall = False
             # If we've run out of space and end is False, we stop immediately.
@@ -210,7 +228,7 @@ class SnippetGens:
             old_fuel = model.fuel
             gen_res = None
             if not gen_ecall:
-                gen_res = self.gen(model, program, end)
+                gen_res = self.gen(model, program, clear_wdr, end)
 
             if gen_res is None:
                 # We failed to generate another snippet. If end is False,
@@ -224,6 +242,9 @@ class SnippetGens:
             snippet, model = gen_res
             children.append(snippet)
 
+            if start:
+                clear_wdr = False
+
             if end:
                 break
 
@@ -234,6 +255,7 @@ class SnippetGens:
     def gens(self,
              model: Model,
              program: Program,
+             start: bool,
              end: bool) -> Tuple[Optional[Snippet], Model]:
         '''Try to generate snippets to continue program
 
@@ -243,7 +265,7 @@ class SnippetGens:
         OTBN to stop.
 
         '''
-        snippets, next_model = self._gens(model, program, end)
+        snippets, next_model = self._gens(model, program, start, end)
         # If end was True, there must be at least one instruction
         assert snippets or not end
         snippet = Snippet.merge_list(snippets) if snippets else None
@@ -271,11 +293,11 @@ class SnippetGens:
         tail_fuel = model.fuel - head_fuel
 
         model.fuel = head_fuel
-        head, model = self.gens(model, program, False)
+        head, model = self.gens(model, program, True, False)
         # Add the rest of the fuel to the tank
         model.fuel += tail_fuel
 
-        tail_snippets, end_model = self._gens(model, program, True)
+        tail_snippets, end_model = self._gens(model, program, False, True)
         # _gens() always generates at least one snippet (containing the final
         # ECALL or an instruction that causes an error). The model it returns
         # points at that final instruction's PC.

@@ -32,16 +32,6 @@ class StraightLineInsn(SnippetGen):
             if insn.python_pseudo_op or insn.literal_pseudo_op:
                 continue
 
-            # Skipping vector instructions that are not yet implemented
-            if (
-                insn.mnemonic == 'bn.subv'
-                or insn.mnemonic == 'bn.mulv'  # Broken generator due to "" in enum
-                or insn.mnemonic == 'bn.mulv.l'  # Broken generator due to "" in enum
-                or insn.mnemonic == 'bn.shv'
-                or insn.mnemonic == 'bn.trn'
-            ):
-                continue
-
             seen_insns.add(insn.mnemonic)
 
             # Skip anything that isn't straight-line
@@ -188,10 +178,27 @@ class StraightLineInsn(SnippetGen):
         op_vals = []
         for operand in insn.operands:
             op_val = model.pick_operand_value(operand.op_type)
+
             if op_val is None:
                 return None
 
+            # Ensure a proper type enum for mulv/l
+            if (
+                (insn.mnemonic == 'bn.mulv.l' or insn.mnemonic == "bn.mulv")
+                and (len(op_vals) == len(insn.operands) - 1)
+            ):
+                while operand.op_type.items[op_val] == '""':  # Empty enum index contain ""
+                    op_val = model.pick_operand_value(operand.op_type)
+
             op_vals.append(op_val)
+
+        # If out of range lane index take modulo to fit in bounds
+        if (
+            insn.mnemonic == "bn.mulv.l"
+            and operand.op_type.items[op_vals[-1]].startswith(".8")
+            and op_vals[-2] >= 8
+        ):
+            op_vals[-2] = op_vals[-2] % 8
 
         assert len(op_vals) == len(insn.operands)
         return ProgInsn(insn, op_vals, None)

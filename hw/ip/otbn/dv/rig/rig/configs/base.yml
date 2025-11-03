@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 gen-weights:
+  # Generators that start the program
+  ClearWsr: 1
+
   # Generators that can continue the program
   Branch: 0.1
   CallStackRW: 0.1

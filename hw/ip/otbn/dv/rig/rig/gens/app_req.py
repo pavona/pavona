@@ -144,11 +144,9 @@ class KmacAppReqInsn(SnippetGen):
         snippet = ProgSnippet(model.pc, insn_list)
         snippet.insert_into_program(program)
 
-        iteration = 1
         for insn in insn_list:
             model.update_for_insn(insn)
             model.pc += 4
-            iteration += 1
 
         return (snippet, model)
 

@@ -127,15 +127,21 @@ bn.wsrw 0x9, w1 /* MSG */
 li x23, 0x0000000d
 csrrw x0, kmac_partial_write, x23
 bn.wsrw 0x9, w1 /* MSG */
-bn.wsrr w1, 0xa /* DIGEST */
-bn.wsrr w1, 0xa /* DIGEST */
-bn.wsrr w1, 0xa /* DIGEST */
-bn.wsrr w1, 0xa /* DIGEST */
-bn.wsrr w1, 0xa /* DIGEST */
+bn.wsrr w2, 0xa /* DIGEST */
+bn.wsrr w2, 0xa /* DIGEST */
+bn.wsrr w2, 0xa /* DIGEST */
+bn.wsrr w2, 0xa /* DIGEST */
+bn.wsrr w3, 0xa /* DIGEST */
 li x23, 0x800004ea /* STOP CFG 0x8000040a */
 csrrw x0, kmac_cfg, x23
 
 li x23, 0x53769ada
+
+bn.wsrw 0xb, w2 /* ACCH */
+bn.wsrw 0x3, w3 /* ACC */
+bn.wsrr w4, 0xb
+bn.wsrr w5, 0x3
+
 
 # Note that some instructions used the fixed inputs (from w1 and w2) others use
 # results from previous instructions. When debugging an failure it is recommended
@@ -380,7 +386,7 @@ bn.mulv.l.8S.odd.acc.z.lo  w21, w0, sw0.5
 bn.mulv.l.8S.even.acc.z.hi w22, w0, sw0.5
 bn.mulv.l.8S.odd.acc.z.hi  w23, w0, sw0.5
 
-bn.addvm.8s    w1, w22, w28
+bn.subv w6, w22, w23
 
 # Nested loop testing, inner adds repeated a total of 3 * 5 = 15 times
 # x28 = 4, x29 = 3
