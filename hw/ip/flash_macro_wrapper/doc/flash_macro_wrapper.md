@@ -1,7 +1,7 @@
-# Primitive Component: Flash Wrapper
+# Flash Macro Wrapper
 
 # Overview
-`prim_flash` is a wrapper interface for technology specific flash modules.
+`flash_macro_wrapper` is a wrapper module for technology specific flash macros.
 
 As the exact details of each technology can be different, this document mainly describes the interface requirements and their functions.
 The wrapper however does assume that all page sizes are the same (they cannot be different between data and info partitions, or different types of info partitions).
@@ -17,7 +17,6 @@ InfoTypesWidth | int    | The number of bits needed to represent the info types.
 PagesPerBank   | int    | The number of pages per bank for data partition.
 WordsPerPage   | int    | The number of words per page per bank for both information and data partition.
 DataWidth      | int    | The full data width of a flash word (inclusive of metadata)
-MetaDataWidth  | int    | The metadata width of a flash word
 TestModeWidth  | int    | The number of test modes for a bank of flash
 
 
@@ -30,47 +29,45 @@ clk_i                   | input  | Clock input
 rst_ni                  | input  | Reset input
 flash_req_i             | input  | Inputs from flash protocol and physical controllers
 flash_rsp_o             | output | Outputs to flash protocol and physical controllers
-prog_type_avail_o       | output | Available program types in this flash wrapper: Currently there are only two types, program normal and program repair
-init_busy_o             | output | The flash wrapper is undergoing initialization
-tck_i                   | input  | jtag tck
-tdi_i                   | input  | jtag tdi
-tms_i                   | input  | jtag tms
-tdo_o                   | output | jtag tdo
+status_o                | output | Outputs comprise available program types, wrapper undergoing initialization, error and alert information
+lc_nvm_debug_en_i       | input  | Life cycle allows flash debug
+cio_tck_i               | input  | jtag tck
+cio_tdi_i               | input  | jtag tdi
+cio_tms_i               | input  | jtag tms
+cio_tdo_o               | output | jtag tdo
+cio_tdo_en_o            | output | jtag tdo enable
 bist_enable_i           | input  | lc_ctrl_pkg :: On for bist_enable input
 scanmode_i              | input  | dft scanmode input
 scan_en_i               | input  | dft scan shift input
 scan_rst_ni             | input  | dft scanmode reset
-flash_power_ready_h_i   | input  | flash power is ready (high voltage connection)
-flash_power_down_h_i    | input  | flash wrapper is powering down (high voltage connection)
-flash_test_mode_a_i     | input  | flash test mode values (analog connection)
-flash_test_voltage_h_i  | input  | flash test mode voltage (high voltage connection)
-flash_err_o             | output | flash level error interrupt indication, cleared on write 1 to status register
-flash_alert_po          | output | flash positive detector alert
-flash_alert_no          | output | flash negative detector alert
-flash_alert_ack         | input  | single pulse ack
-flash_alert_trig        | input  | alert force trig by SW
+power_ready_h_i         | input  | flash power is ready (high voltage connection)
+power_down_h_i          | input  | flash wrapper is powering down (high voltage connection)
+test_mode_a_i           | input  | flash test mode values (analog connection)
+test_voltage_h_i        | input  | flash test mode voltage (high voltage connection)
 tl_i                    | input  | TL_UL  interface for rd/wr registers access
 tl_o                    | output | TL_UL  interface for rd/wr registers access
+obs_ctrl_i              | input  | observability control
+fla_obs_o               | output | observability data
+
 ### Flash Request/Response Signals
 
 Name               | In/Out | Description
 -------------------|--------|---------------------------------
-rd                 | input  | read request
-prog               | input  | program request
+rd_req             | input  | read request
+prog_req           | input  | program request
 prog_last          | input  | last program beat
 prog_type          | input  | type of program requested: currently there are only two types, program normal and program repair
-pg_erase           | input  | page erase request
-bk_erase           | output | bank erase request
-erase_suspend      | input  | erase suspend request
+pg_erase_req       | input  | page erase request
+bk_erase_req       | output | bank erase request
+erase_suspend_req  | input  | erase suspend request
+he                 | input  | high endurance enable for requested address
 addr               | input  | requested transaction address
 part               | input  | requested transaction partition
 info_sel           | input  | if requested transaction is information partition, the type of information partition accessed
-he                 | input  | high endurance enable for requested address
-prog_data          | input  | program data
+prog_full_data     | input  | program data
 ack                | output | transaction acknowledge
-rd_data            | output | transaction read data
+rdata              | output | transaction read data
 done               | output | transaction done
-
 
 
 # Theory of Operations
@@ -78,7 +75,7 @@ done               | output | transaction done
 ## Transactions
 
 Transactions into the flash wrapper follow a req / ack / done format.
-A request is issued by raising one of `rd`, `prog`, `pg_erase` or `bk_erase` to 1.
+A request is issued by raising one of `rd_req`, `prog_req`, `pg_erase_req` or `bk_erase_req` to 1.
 When the flash wrapper accepts the transaction, `ack` is returned.
 When the transaction fully completes, a `done` is returned as well.
 
@@ -86,7 +83,7 @@ Depending on the type of transaction, there may be a significant gap between `ac
 For example, a read may have only 1 or 2 cycles between transaction acknowledgement and transaction complete.
 Whereas a program or erase may have a gap extending up to uS or even mS.
 
-It is the flash wrapper decision on how many outstanding transaction to accept.
+It is the flash wrapper decision how many outstanding transaction to accept.
 The following are examples for read, program and erase transactions.
 
 ### Read
@@ -162,6 +159,6 @@ The following is an example diagram
 ```
 
 ## Error Interrupt
-The `flash_err_o` is a level interrupt indication, that is asserted whenever an error event occurs in one of the Flash banks.
+The `status_o.flash_err` is a level interrupt indication, that is asserted whenever an error event occurs in one of the Flash banks.
 An Error status register is used to hold the error source of both banks, and it is cleared on writing 1 to the relevant bit.
 Clearing the status register trigs deassertion of the interrupt.

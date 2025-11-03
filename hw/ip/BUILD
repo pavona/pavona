@@ -70,6 +70,7 @@ filegroup(
         "//hw/ip/dma:doc_files",
         "//hw/ip/edn:doc_files",
         "//hw/ip/entropy_src:doc_files",
+        "//hw/ip/flash_macro_wrapper:doc_files",
         "//hw/ip/hmac:doc_files",
         "//hw/ip/i2c:doc_files",
         "//hw/ip/keymgr:doc_files",

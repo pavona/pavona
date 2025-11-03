@@ -180,6 +180,9 @@
     - [Hardware Checklist](./hw/ip_templates/flash_ctrl/doc/checklist.md)
     - [Software Checklist](sw/device/lib/dif/dif_flash_ctrl.md)
 
+  - [Flash Macro Wrapper](./hw/ip/flash_macro_wrapper/README.md)
+    - [Overview](./hw/ip/flash_macro_wrapper/doc/flash_macro_wrapper.md)
+
   - [GPIO \[templated\]](./hw/ip_templates/gpio/README.md.tpl)
     - [Theory of Operation](./hw/ip_templates/gpio/doc/theory_of_operation.md.tpl)
     - [Design Verification](./hw/ip_templates/gpio/dv/README.md.tpl)
@@ -477,7 +480,6 @@
     - [Software Checklist](sw/device/lib/dif/dif_usbdev.md)
 
 - [Hardware Primitives](./hw/ip/prim/README.md)
-  - [Flash Wrapper](./hw/ip/prim/doc/prim_flash.md)
   - [Keccak Permutation](./hw/ip/prim/doc/prim_keccak.md)
   - [Linear Feedback Shift Register](./hw/ip/prim/doc/prim_lfsr.md)
   - [Packer](./hw/ip/prim/doc/prim_packer.md)
