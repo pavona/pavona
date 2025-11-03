@@ -3,11 +3,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_virtual_sequencer extends cip_base_virtual_sequencer #(
-    .CFG_T(ac_range_check_env_cfg),
-    .COV_T(ac_range_check_env_cov)
+class ${module_instance_name}_virtual_sequencer extends cip_base_virtual_sequencer #(
+    .CFG_T(${module_instance_name}_env_cfg),
+    .COV_T(${module_instance_name}_env_cov)
   );
-  `uvm_component_utils(ac_range_check_virtual_sequencer)
+  `uvm_component_utils(${module_instance_name}_virtual_sequencer)
 
   // This virtual sequencer inherits the following handles from cip_base_virtual_sequencer
   // that need be connected at an environment level
@@ -22,13 +22,13 @@ class ac_range_check_virtual_sequencer extends cip_base_virtual_sequencer #(
   extern function new(string name="", uvm_component parent=null);
 
   extern virtual function void handle_reset_assertion();
-endclass : ac_range_check_virtual_sequencer
+endclass : ${module_instance_name}_virtual_sequencer
 
-function ac_range_check_virtual_sequencer::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_virtual_sequencer::new(string name="", uvm_component parent=null);
   super.new(name, parent);
 endfunction : new
 
-function void ac_range_check_virtual_sequencer::handle_reset_assertion();
+function void ${module_instance_name}_virtual_sequencer::handle_reset_assertion();
   `uvm_info(`gfn, "Reset Assertion - Anything at a sequence level that needs to be reset", UVM_LOW)
 
   // Low level agent that have not used 'dv_rst_safe_base_agent' as the parent class will need to
