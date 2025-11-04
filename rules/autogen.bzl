@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -718,4 +719,65 @@ def _autogen_stamp_include(ctx):
 autogen_stamp_include = rule(
     implementation = _autogen_stamp_include,
     attrs = stamp_attr(-1, "//rules:stamp_flag"),
+)
+
+def _autogen_otbn_insn_count_header(ctx):
+    """This rule generates a header containing min/max instruciton counts for
+    each mode of a top-level OTBN program.
+    """
+
+    # Fetch paths and declare files we'll need.
+    template = ctx.file.template
+    hjson = ctx.file.hjson
+    if not template.basename.endswith(".h.tpl"):
+        fail("Expected template to have a `.h.tpl` extension, got: " + str(ctx.files.srcs))
+    header = ctx.actions.declare_file("{}/{}".format(ctx.label.name, template.basename[:-4]))
+
+    # Extract the .elf file to check from the dependency list.
+    elf = [f for t in ctx.attr.deps for f in t[OutputGroupInfo].elf.to_list()]
+    if len(elf) != 1:
+        fail("Expected only one .elf file in dependencies, got: " + str(elf))
+    elf = elf[0]
+
+    # Run the header generator.
+    ctx.actions.run(
+        outputs = [header],
+        inputs = [elf, template, hjson],
+        arguments = [
+            "-e",
+            elf.path,
+            "-t",
+            template.path,
+            "-j",
+            hjson.path,
+            "-o",
+            header.path,
+        ],
+        executable = ctx.executable._generator,
+    )
+
+    return [
+        CcInfo(compilation_context = cc_common.create_compilation_context(
+            includes = depset([header.dirname]),
+            headers = depset([header]),
+            defines = depset(["RULE_NAME=\"{}\"".format(ctx.label.name)]),
+        )),
+        DefaultInfo(files = depset([header]), default_runfiles = ctx.runfiles(files = [hjson])),
+        OutputGroupInfo(
+            header = depset([header]),
+        ),
+    ]
+
+autogen_otbn_insn_count_header = rule(
+    implementation = _autogen_otbn_insn_count_header,
+    attrs = {
+        "deps": attr.label_list(providers = [OutputGroupInfo]),
+        "template": attr.label(mandatory = True, allow_single_file = [".tpl"]),
+        "hjson": attr.label(mandatory = True, allow_single_file = [".hjson"]),
+        "_generator": attr.label(
+            default = "//hw/ip/otbn/util:gen_instruction_count_header",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
 )

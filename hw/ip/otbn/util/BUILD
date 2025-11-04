@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -56,6 +57,17 @@ py_binary(
     deps = [
         "//hw/ip/otbn/util/shared:decode",
         "//hw/ip/otbn/util/shared:instruction_count_range",
+    ],
+)
+
+py_binary(
+    name = "gen_instruction_count_header",
+    srcs = ["gen_instruction_count_header.py"],
+    deps = [
+        "//hw/ip/otbn/util/shared:decode",
+        "//hw/ip/otbn/util/shared:instruction_count_range",
+        requirement("mako"),
+        requirement("pyelftools"),
     ],
 )
 
