@@ -1,7 +1,8 @@
-// Copyright "" Authors
+// Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of
+// "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN"
+// (https://eprint.iacr.org/2025/2028)
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 
 // This module implements a buffered-bit adder which performs a 256-bit addition
 // (original BN-ALU addition) for base bignum instructions (such as BN.ADD/SUB,
@@ -44,11 +45,6 @@ module buffer_bit
                                   1'b1;
     end
   endgenerate
-
-//  logic unused;
-//
-//  // Make sure we get addition with carry.
-//  assign {R_buffed, unused} = {A_buffed, cin} + {B_buffed, cin};  // same as A_buffed + B_buffed + cin
 
   assign R_buffed = A_buffed + B_buffed + {271'b0, cin};
 

@@ -1,3 +1,11 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of
+// "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN"
+// (https://eprint.iacr.org/2025/2028)
+// Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 module otbn_bignum_mul
 (
   input  logic [256-1:0]              A,
