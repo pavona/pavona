@@ -1,8 +1,5 @@
-/* Copyright zeroRISC Inc. */
-/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
-/* SPDX-License-Identifier: Apache-2.0 */
-
-/* Copyright lowRISC Contributors.
+/* Copyright zeroRISC Inc.
+ * Copyright lowRISC Contributors.
  * Copyright 2016 The Chromium OS Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE.dcrypto file.
@@ -212,7 +209,7 @@ modexp:
  * @param[in]  x17: dptr_m0d, dmem pointer to first limb of m0'
  * @param[in]  x18: dptr_RR, dmem pointer to first limb of RR
  * @param[in]  x23: dptr_a, dmem pointer to first limb of input A
- * @param[in]  x25: dptr_e_p, dmem pointer to first limb of exponent CRT 
+ * @param[in]  x25: dptr_e_p, dmem pointer to first limb of exponent CRT
        component E_p
  * @param[in]  x26: dptr_e_q, dmem pointer to first limb of exponent CRT
        component E_q
@@ -243,17 +240,17 @@ modexp_crt:
     bn.lid    x20, 0(x11++)
     bn.sid    x20, 0(x12++)
 
-  /* zero out the remainder of the exp region to perform the zero-extend 
+  /* zero out the remainder of the exp region to perform the zero-extend
        dmem[dptr_exp+(N/2)*32:dptr_exp+N*32] <= 0 */
   li        x31, 31
   loop      x30, 1
-    bn.sid    x31, 0(x12++) 
+    bn.sid    x31, 0(x12++)
 
-  /* restore the limb count provided 
+  /* restore the limb count provided
        x30 <= 2*(N/2) = N */
   add       x30, x30, x30
 
-  /* copy the message to the reduce buffer for in-place reduction 
+  /* copy the message to the reduce buffer for in-place reduction
        dmem[dptr_reduce:dptr_reduce+N*32] <= A */
   addi      x11, x23, 0
   addi      x12, x4, 0
@@ -302,15 +299,15 @@ modexp_crt:
   addi     x15, x3, 0
   jal      x1, modload
 
-  /* restore clobbered dmem pointers 
+  /* restore clobbered dmem pointers
        x2 <= dptr_c
        x3 <= dptr_exp */
   addi     x2, x14, 0
   addi     x3, x15, 0
 
   /* compute q-component of modexp result, saving dptr_exp as well
-       dmem[dptr_c:dptr_c+(N/2)*32] <= C_q = A_q^(E_q) mod q 
-       x4 <= dptr_exp 
+       dmem[dptr_c:dptr_c+(N/2)*32] <= C_q = A_q^(E_q) mod q
+       x4 <= dptr_exp
        x14 <= dptr_reduce
        x15 <= dptr_e_q
        x16 <= dptr_q */
@@ -326,7 +323,7 @@ modexp_crt:
   addi      x3, x4, 0
   addi      x4, x14, 0
 
-  /* copy the the q-component of the modexp result over E_q 
+  /* copy the the q-component of the modexp result over E_q
        dmem[dptr_e_q:dptr_e_q+(N/2)*32] <= C_q */
   addi      x11, x2, 0
   addi      x12, x26, 0
@@ -343,17 +340,17 @@ modexp_crt:
     bn.lid    x20, 0(x11++)
     bn.sid    x20, 0(x12++)
 
-  /* zero out the remainder of the exp region to perform the zero-extend 
+  /* zero out the remainder of the exp region to perform the zero-extend
        dmem[dptr_exp+(N/2)*32:dptr_exp+N*32] <= 0 */
   li        x31, 31
   loop      x30, 1
-    bn.sid    x31, 0(x12++) 
+    bn.sid    x31, 0(x12++)
 
-  /* restore the limb count provided 
+  /* restore the limb count provided
        x30 <= 2*(N/2) = N */
   add       x30, x30, x30
 
-  /* copy the message to the reduce buffer for in-place reduction 
+  /* copy the message to the reduce buffer for in-place reduction
        dmem[dptr_reduce:dptr_reduce+N*32] <= A */
   addi      x11, x23, 0
   addi      x12, x4, 0
@@ -369,7 +366,7 @@ modexp_crt:
   addi      x7, x25, 0
   addi      x9, x26, 0
 
-  /* compute input A modulo first cofactor, p 
+  /* compute input A modulo first cofactor, p
        dmem[dptr_exp:dptr_exp+N*32] <= A mod p */
   addi      x10, x4, 0
   addi      x11, x3, 0
@@ -400,21 +397,21 @@ modexp_crt:
   addi     x15, x3, 0
   jal      x1, modload
 
-  /* restore clobbered dmem pointers 
+  /* restore clobbered dmem pointers
        x2 <= dptr_c
        x3 <= dptr_exp */
   addi     x2, x14, 0
   addi     x3, x15, 0
 
   /* compute p-component of modexp result, saving dptr_exp as well
-       dmem[dptr_c:dptr_c+(N/2)*32] <= C_p = A_p^(E_p) mod p 
-       x4 <= dptr_exp 
+       dmem[dptr_c:dptr_c+(N/2)*32] <= C_p = A_p^(E_p) mod p
+       x4 <= dptr_exp
        x14 <= dptr_reduce
        x15 <= dptr_e_q
        x16 <= dptr_q */
   addi      x14, x4, 0
   addi      x4, x3, 0
-  addi      x15, x25, 0 
+  addi      x15, x25, 0
   addi      x16, x27, 0
   jal       x1, modexp
 
@@ -424,7 +421,7 @@ modexp_crt:
   addi      x3, x4, 0
   addi      x4, x14, 0
 
-  /* copy the the p-component of the modexp result over E_p 
+  /* copy the the p-component of the modexp result over E_p
        dmem[dptr_e_p:dptr_e_p+(N/2)*32] <= C_p */
   addi      x11, x2, 0
   addi      x12, x25, 0
@@ -488,22 +485,22 @@ modexp_crt:
   addi      x13, x3, 0
   addi      x14, x4, 0
 
-  /* multiply difference by q_p, inverse of q mod p 
+  /* multiply difference by q_p, inverse of q mod p
       dmem[dptr_c..dptr_c+(N/2)*32] <= q_p * (C_q - C_p) */
   addi      x10, x25, 0
   addi      x11, x29, 0
   addi      x12, x2, 0
   jal       x1, bignum_mul
 
-  /* restore clobbered dmem pointers 
-       x2 <= dptr_c 
+  /* restore clobbered dmem pointers
+       x2 <= dptr_c
        x3 <= dptr_exp
        x4 <= dptr_reduce */
   addi      x2, x12, 0
   addi      x3, x13, 0
   addi      x4, x14, 0
 
-  /* restore the limb count provided 
+  /* restore the limb count provided
        x30 <= 2*(N/2) = N */
   add       x30, x30, x30
 
@@ -514,14 +511,14 @@ modexp_crt:
   /* reduce mod p
       dmem[dptr_c..dptr_c+(N/2)*32] <= h = q_p * (C_q - C_p) mod p */
   addi      x10, x2, 0
-  addi      x11, x3, 0 
+  addi      x11, x3, 0
   addi      x12, x4, 0
   jal       x1, div
 
-  /* restore clobbered dmem pointers 
-       x2 <= dptr_c 
+  /* restore clobbered dmem pointers
+       x2 <= dptr_c
        x3 <= dptr_exp
-       x4 <= dptr_reduce 
+       x4 <= dptr_reduce
        x26 <= dptr_e_q */
   addi      x2, x10, 0
   addi      x3, x11, 0
@@ -532,22 +529,22 @@ modexp_crt:
        x30 <= N >> 1 = N / 2 */
   srli      x30, x30, 1
 
-  /* multiply result by q 
+  /* multiply result by q
        dmem[dptr_a..dptr_a+N*32] = h * q */
   addi      x10, x2, 0
   addi      x11, x28, 0
   addi      x12, x9, 0
   jal       x1, bignum_mul
 
-  /* restore clobbered dmem pointers 
+  /* restore clobbered dmem pointers
        x2 <= dmem_c
        x3 <= dptr_exp */
   addi      x2, x10, 0
   addi      x3, x12, 0
 
-  /* finally, add C_q to the result and write it back 
-       dmem[dptr_c..dptr_c+N*32] = h * q + C_q = modexp(A,E) */ 
-  addi     x11, x9, 0 
+  /* finally, add C_q to the result and write it back
+       dmem[dptr_c..dptr_c+N*32] = h * q + C_q = modexp(A,E) */
+  addi     x11, x9, 0
   addi     x12, x26, 0
   addi     x13, x2, 0
   loop     x30, 4
@@ -568,7 +565,7 @@ modexp_crt:
     /* dmem[dptr_c + N/2 + i] <= w20 */
     bn.sid   x20, 0(x13++)
 
-  /* restore the limb count provided 
+  /* restore the limb count provided
        x30 <= 2*(N/2) = N */
   add       x30, x30, x30
 

@@ -1,8 +1,5 @@
-/* Copyright zeroRISC Inc. */
-/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
-/* SPDX-License-Identifier: Apache-2.0 */
-
 /* Copyright lowRISC contributors (OpenTitan project). */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -224,7 +221,7 @@ do_modexp_crt:
   la    x28, q
 
   /* Run exponentiation. dmem[n] and dmem[d] are used as work buffers.
-       dmem[work_buf] = dmem[inout]^d mod n 
+       dmem[work_buf] = dmem[inout]^d mod n
        where
          d mod (p - 1) = d_p
          d mod (q - 1) = d_q

@@ -1,10 +1,10 @@
+/* Copyright lowRISC contributors (OpenTitan project). */
 /* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-/* Copyright lowRISC contributors (OpenTitan project). */
-/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
-/* SPDX-License-Identifier: Apache-2.0 */
+/* Public interface. */
+.globl modinv
 
 /**
  * Compute the inverse of a given value modulo a given number.
@@ -163,7 +163,7 @@ modinv:
        dmem[dptr_D] <= 1 */
   bn.addi  w20, w31, 1
   bn.sid   x20, 0(x16)
- 
+
   /* Copy the argument to the buffer for u.
        dmem[dptr_u..dptr_u+(plen*32)] <= a */
   addi     x3, x11, 0
@@ -375,7 +375,7 @@ modinv:
     /* Clear flags for both groups. */
     bn.sub   w31, w31, w31, FG0
     bn.sub   w31, w31, w31, FG1
-     
+
     /* Update B if we updated u in the previous steps (w24 == 2^256-1). We
        additionally subtract the modulus if *both* w24,w26 == 2^256-1.
          dmem[dptr_B..dptr_B+(plen*32)] <= (w24 == 2^256-1) ? (B + D) mod a : A */
@@ -622,7 +622,7 @@ _modinv_u_low_ok:
   sub      x31, x30, x2
   loop     x31, 2
     bn.lid   x20, 0(x17++)
-    bn.or    w23, w20, w23 
+    bn.or    w23, w20, w23
 
   /* Get the FG0.Z flag into a register.
        x2 <= CSRs[FG0] & 8 = FG0.Z << 3 */

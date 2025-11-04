@@ -27,7 +27,7 @@
   la       x28, modulus_q
 
   /* Run exponentiation.
-       dmem[plaintext] = dmem[ciphertext]^<exp> mod <modulus> 
+       dmem[plaintext] = dmem[ciphertext]^<exp> mod <modulus>
        where
          <exp> mod p = exp_p
          <exp> mod q = exp_q
@@ -38,7 +38,7 @@
   la       x23, ciphertext
   la       x25, exp_p
   la       x26, exp_q
-  la       x29, crt_coeff 
+  la       x29, crt_coeff
   jal      x1, modexp_crt
 
   /* copy all limbs of result to wide reg file */
@@ -217,4 +217,3 @@ work_exp:
 .balign 32
 work_reduce:
 .zero 128
-

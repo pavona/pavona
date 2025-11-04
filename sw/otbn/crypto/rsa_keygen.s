@@ -1,8 +1,5 @@
-/* Copyright zeroRISC Inc. */
-/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
-/* SPDX-License-Identifier: Apache-2.0 */
-
 /* Copyright lowRISC contributors (OpenTitan project). */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -75,8 +72,8 @@ rsa_keygen:
   jal      x1, generate_q
 
   /* Derive the private exponent d from p and q.
-       x2 <= zero if d is OK, otherwise nonzero 
-       dmem[rsa_p..rsa_p+(plen*32)] <= p - 1. 
+       x2 <= zero if d is OK, otherwise nonzero
+       dmem[rsa_p..rsa_p+(plen*32)] <= p - 1.
        dmem[rsa_p..rsa_p+(plen*32)] <= q - 1. */
   jal      x1, derive_d
 
@@ -91,19 +88,19 @@ rsa_keygen:
   addi     x31, x30, -1
 
   /* Compute p - 1 and q - 1.
-       dmem[rsa_pm1..rsa_pm1+(plen*32)] <= p - 1. 
+       dmem[rsa_pm1..rsa_pm1+(plen*32)] <= p - 1.
        dmem[rsa_qm1..rsa_qm1+(plen*32)] <= q - 1. */
-  jal      x1, prepare_pm1qm1 
+  jal      x1, prepare_pm1qm1
 
-  /* Compute CRT component d_p. 
+  /* Compute CRT component d_p.
        dmem[rsa_d_p..rsa_d_p+(plen*32)] <= d mod (p - 1). */
-  la       x10, rsa_d_p 
+  la       x10, rsa_d_p
   la       x11, rsa_pm1
   jal      x1, derive_crt_component
 
-  /* Compute CRT component d_q. 
+  /* Compute CRT component d_q.
        dmem[rsa_d_q..rsa_d_q+(plen*32)] <= d mod (q - 1). */
-  la       x10, rsa_d_q 
+  la       x10, rsa_d_q
   la       x11, rsa_qm1
   jal      x1, derive_crt_component
 
@@ -202,7 +199,7 @@ prepare_pm1qm1:
  */
 derive_d:
   /* Prepare p - 1 and q - 1 */
-  jal      x1, prepare_pm1qm1 
+  jal      x1, prepare_pm1qm1
 
   /* Load pointers to pm1, qm1, and the result buffer. */
   la       x10, rsa_pm1
@@ -259,7 +256,7 @@ derive_crt_component:
   /* Zero out the remainder of the scratchpad to perform the zero-extend. */
   li       x2, 31
   loop     x30, 1
-    bn.sid   x2, 0(x12++) 
+    bn.sid   x2, 0(x12++)
 
   /* Update the number of limbs for the copy of d and call to div.
        x30 <= plen*2 */
@@ -348,7 +345,7 @@ check_d:
  * @param[in] dmem[rsa_cofactor..rsa_cofactor+(plen*32)] Cofactor (p or q)
  * @param[out] dmem[rsa_n..rsa_n+(plen*2*32)] Recomputed public key modulus (n)
  * @param[out] dmem[rsa_p..rsa_p+(plen*2*32)] First (recomputed) private key
-       prime (p) 
+       prime (p)
  * @param[out] dmem[rsa_q..rsa_q+(plen*2*32)] Second private key prime (q)
  * @param[out] dmem[rsa_d_p..rsa_d_p+(plen*2*32)] First RSA private key private
        exponent CRT component (d_p)
@@ -423,23 +420,23 @@ rsa_key_from_cofactor:
   sub      x31, x30, x2
 
   /* Compute p - 1 and q - 1.
-       dmem[rsa_pm1..rsa_pm1+(plen*32)] <= p - 1. 
+       dmem[rsa_pm1..rsa_pm1+(plen*32)] <= p - 1.
        dmem[rsa_qm1..rsa_qm1+(plen*32)] <= q - 1. */
-  jal      x1, prepare_pm1qm1 
+  jal      x1, prepare_pm1qm1
 
-  /* Compute CRT component d_p. 
+  /* Compute CRT component d_p.
        dmem[rsa_d_p..rsa_d_p+(plen*32)] <= d mod (p - 1). */
-  la       x10, rsa_d_p 
+  la       x10, rsa_d_p
   la       x11, rsa_pm1
   jal      x1, derive_crt_component
 
-  /* Compute CRT component d_q. 
+  /* Compute CRT component d_q.
        dmem[rsa_d_q..rsa_d_q+(plen*32)] <= d mod (q - 1). */
-  la       x10, rsa_d_q 
+  la       x10, rsa_d_q
   la       x11, rsa_qm1
   jal      x1, derive_crt_component
 
-  /* Compute CRT coefficient i_q, the inverse of q mod p 
+  /* Compute CRT coefficient i_q, the inverse of q mod p
      (tail-call).
        dmem[rsa_i_q..rsa_i_q+(plen*32)] <= q^(-1) mod p. */
   la       x11, rsa_q

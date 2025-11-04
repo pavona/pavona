@@ -21,7 +21,7 @@ main:
   la    x28, modulus_q
 
   /* Run exponentiation.
-       dmem[plaintext] = dmem[ciphertext]^<exp> mod <modulus> 
+       dmem[plaintext] = dmem[ciphertext]^<exp> mod <modulus>
        where
          <exp> mod (p - 1) = exp_p
          <exp> mod (q - 1) = exp_q

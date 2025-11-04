@@ -21,7 +21,7 @@ main:
   la    x28, modulus_q
 
   /* Run exponentiation.
-       dmem[plaintext] = dmem[ciphertext]^<exp> mod <modulus> 
+       dmem[plaintext] = dmem[ciphertext]^<exp> mod <modulus>
        where
          <exp> mod p = exp_p
          <exp> mod q = exp_q
@@ -120,7 +120,7 @@ modulus_q:
   .word 0x2784a089
   .word 0xb53d9b76
   .word 0xc25d0713
-   
+
 /* Base for exponentiation (corresponds to ciphertext for decryption or
    message for signing).
 
@@ -324,4 +324,3 @@ work_exp:
 .balign 32
 work_reduce:
 .zero 256
-
