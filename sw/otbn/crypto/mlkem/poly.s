@@ -1,6 +1,10 @@
 /* Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+/* Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of */
+/* "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN" */
+/* (https://eprint.iacr.org/2025/2028) */
+/* Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham. */
 
 .text
 
@@ -61,9 +65,9 @@ poly_frommsg:
       bn.rshi w1, w0, w1 >> 1
       bn.rshi w1, w31, w1 >> 15
       bn.rshi w0, w31, w0 >> 1
-    bn.subv.16H  w1, w31, w1
-    bn.and       w1, w1, w3
-    bn.sid       x5, 0(x12++)
+    bn.subv.16H w1, w31, w1
+    bn.and      w1, w1, w3
+    bn.sid      x5, 0(x12++)
 
   ret
 
@@ -91,34 +95,35 @@ poly_frommsg:
 poly_tomsg:
   /* Set up registers for input and output */
   li x4, 0
-  li x5, 1
-  li x6, 2
-  li x7, 3
-  li x8, 4
+  li x5, 2
+  li x7, 16
 
   /* Load const */
-  bn.lid x6, 0(x11)
-  bn.lid x7, 0(x13)
+  bn.lid x5++, 0(x11) /* w2 = (0x681)^16 */
+  bn.lid x7, 0(x13) /* w16 = 1290167 */
 
-  bn.rshi w3, w31, w3 >> 4 /* 80635 */
+  /* Multiply the constant 80635 with 2**4 so that later we shift to the right
+   * 32 bits instead of 28 bits. This means we can return the high parts of
+   * the 64-bit products within the multiplication instruction. */
+  bn.subi w16, w16, 7 /* w16 = 1290160 = 80635 << 4 */
+  /* Zeroize w31 */
   bn.xor  w31, w31, w31
-  LOOPI 16, 15
-    bn.lid       x4, 0(x10++)  /* Load input */
-    bn.shv.16H   w0, w0 << 1   /* <= 1 */
-    bn.addv.16H  w0, w0, w2    /* += 1665 */
-    LOOPI 2, 10
-      LOOPI 8, 3
-        bn.rshi    w1, w0, w1 >> 16  /* write one coeff to w1 */
-        bn.rshi    w1, w31, w1 >> 16 /* make the coeff 32-bit */
-        bn.rshi    w0, w31, w0 >> 16 /* shift out used coeff */
-      bn.mulv.l.8S w1, w1, w3, 0     /* *= 80635 */
-      bn.shv.8S    w1, w1 >> 28      /* >>= 28 */
-      LOOPI 8, 2
-        bn.rshi    w4, w1, w4 >> 1
-        bn.rshi    w1, w31, w1 >> 32
-      NOP
+  LOOPI 16, 14
+    bn.lid               x4, 0(x10++)  /* Load input */
+    bn.shv.16H           w0, w0 << 1   /* <= 1 */
+    bn.addv.16H          w0, w0, w2    /* += 1665 */
+    bn.trn1.16H          w1, w0, w31 /* Put even coeffs in 32-bit slots */
+    bn.mulv.l.8S.even.hi w1, w1, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
+    bn.mulv.l.8S.odd.hi  w1, w1, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
+    bn.trn2.16H          w0, w0, w31 /* Put odd coeffs to 32-bit slots */
+    bn.mulv.l.8S.even.hi w0, w0, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
+    bn.mulv.l.8S.odd.hi  w0, w0, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
+    bn.trn1.16H          w0, w1, w0 /* Interleaving the results to original order */
+    LOOPI 16, 2
+      bn.rshi w3, w0, w3 >> 1
+      bn.rshi w0, w31, w0 >> 16
     NOP
-  bn.sid x8, 0(x12)
+  bn.sid x5, 0(x12)
 
   ret
 
@@ -158,10 +163,10 @@ poly_getnoise_eta_1:
   csrrw x0, KECCAK_CFG_REG, x5
 
   /* Send the message to the Keccak core. */
-  bn.lid x0, 0(x10)
+  bn.lid  x0, 0(x10)
   bn.wsrw 0x9, w0
-  add  x10, x3, x13
-  bn.lid x0, 0(x10)
+  add     x10, x3, x13
+  bn.lid  x0, 0(x10)
   bn.wsrw 0x9, w0
 
   li x5, 8
@@ -212,16 +217,16 @@ poly_getnoise_eta_2:
   sw   x6, 0(x2)
 
   /* Initialize a SHAKE256 operation. */
-  addi x5, x0, 33
-  slli x5, x5, 5
-  addi x5, x5, SHAKE256_CFG
+  addi  x5, x0, 33
+  slli  x5, x5, 5
+  addi  x5, x5, SHAKE256_CFG
   csrrw x0, KECCAK_CFG_REG, x5
 
   /* Send the message to the Keccak core. */
-  bn.lid x0, 0(x10)
+  bn.lid  x0, 0(x10)
   bn.wsrw 0x9, w0
-  add  x10, x3, x13
-  bn.lid x0, 0(x10)
+  add     x10, x3, x13
+  bn.lid  x0, 0(x10)
   bn.wsrw 0x9, w0
 
   li x5, 8
@@ -256,60 +261,13 @@ poly_getnoise_eta_2:
  */
 .globl poly_add
 poly_add:
-  li x4, 0
-  li x5, 1
-  li x6, 2
-  li x7, 3
-  li x8, 4
-  li x9, 5
-  li x13, 6
-  li x14, 7
-  li x15, 8
-  li x16, 9
-  li x17, 10
-  li x18, 11
-  li x19, 12
-  li x20, 13
-  li x21, 14
-  li x22, 15
+  li x4, 1
 
-  LOOPI 2, 32
-    bn.lid x4,  0(x10++)
-    bn.lid x5,  0(x10++)
-    bn.lid x6,  0(x10++)
-    bn.lid x7,  0(x10++)
-    bn.lid x8,  0(x10++)
-    bn.lid x9,  0(x10++)
-    bn.lid x13, 0(x10++)
-    bn.lid x14, 0(x10++)
-
-    bn.lid x15, 0(x11++)
-    bn.lid x16, 0(x11++)
-    bn.lid x17, 0(x11++)
-    bn.lid x18, 0(x11++)
-    bn.lid x19, 0(x11++)
-    bn.lid x20, 0(x11++)
-    bn.lid x21, 0(x11++)
-    bn.lid x22, 0(x11++)
-
-    bn.addvm.16H w0, w0, w8
-    bn.addvm.16H w1, w1, w9
-    bn.addvm.16H w2, w2, w10
-    bn.addvm.16H w3, w3, w11
-    bn.addvm.16H w4, w4, w12
-    bn.addvm.16H w5, w5, w13
-    bn.addvm.16H w6, w6, w14
-    bn.addvm.16H w7, w7, w15
-
-    bn.sid x4,  0(x12++)
-    bn.sid x5,  0(x12++)
-    bn.sid x6,  0(x12++)
-    bn.sid x7,  0(x12++)
-    bn.sid x8,  0(x12++)
-    bn.sid x9,  0(x12++)
-    bn.sid x13, 0(x12++)
-    bn.sid x14, 0(x12++)
-
+  LOOPI 16, 4
+    bn.lid       x0, 0(x10++)
+    bn.lid       x4, 0(x11++)
+    bn.addvm.16H w0, w0, w1
+    bn.sid       x0, 0(x12++)
   ret
 
 /*
@@ -330,60 +288,13 @@ poly_add:
  */
 .globl poly_sub
 poly_sub:
-  li x4, 0
-  li x5, 1
-  li x6, 2
-  li x7, 3
-  li x8, 4
-  li x9, 5
-  li x13, 6
-  li x14, 7
-  li x15, 8
-  li x16, 9
-  li x17, 10
-  li x18, 11
-  li x19, 12
-  li x20, 13
-  li x21, 14
-  li x22, 15
+  li x4, 1
 
-  LOOPI 2, 32
-    bn.lid x4,  0(x10++)
-    bn.lid x5,  0(x10++)
-    bn.lid x6,  0(x10++)
-    bn.lid x7,  0(x10++)
-    bn.lid x8,  0(x10++)
-    bn.lid x9,  0(x10++)
-    bn.lid x13, 0(x10++)
-    bn.lid x14, 0(x10++)
-
-    bn.lid x15, 0(x11++)
-    bn.lid x16, 0(x11++)
-    bn.lid x17, 0(x11++)
-    bn.lid x18, 0(x11++)
-    bn.lid x19, 0(x11++)
-    bn.lid x20, 0(x11++)
-    bn.lid x21, 0(x11++)
-    bn.lid x22, 0(x11++)
-
-    bn.subvm.16H w0, w0, w8
-    bn.subvm.16H w1, w1, w9
-    bn.subvm.16H w2, w2, w10
-    bn.subvm.16H w3, w3, w11
-    bn.subvm.16H w4, w4, w12
-    bn.subvm.16H w5, w5, w13
-    bn.subvm.16H w6, w6, w14
-    bn.subvm.16H w7, w7, w15
-
-    bn.sid x4,  0(x12++)
-    bn.sid x5,  0(x12++)
-    bn.sid x6,  0(x12++)
-    bn.sid x7,  0(x12++)
-    bn.sid x8,  0(x12++)
-    bn.sid x9,  0(x12++)
-    bn.sid x13, 0(x12++)
-    bn.sid x14, 0(x12++)
-
+  LOOPI 16, 4
+    bn.lid       x0, 0(x10++)
+    bn.lid       x4, 0(x11++)
+    bn.subvm.16H w0, w0, w1
+    bn.sid       x0, 0(x12++)
   ret
 
 /*
@@ -397,6 +308,8 @@ poly_sub:
  *
  * @param[in/out]  x10: dptr_input, dmem pointer to first poly
  * @param[in]      x11: ptr to const_tomont = 2^32 % Q
+ * @param[in]      w16: sw0, where sw0.2 = Q^-1 mod 2^32, sw0.0 = Q
+ * @param[in]      w31: all-zero
  *
  * clobbered registers: x4-x30, w0-w31
  * clobbered flag groups: None
@@ -404,12 +317,14 @@ poly_sub:
 .globl poly_tomont
 poly_tomont:
   /* Load const_tomont */
-  li x4, 0
+  li     x4, 0
   bn.lid x4++, 0(x11)
 
-  LOOPI 16, 3
-    bn.lid       x4, 0(x10)
-    bn.mulvm.16H w1, w0, w1
-    bn.sid       x4, 0(x10++)
-
+  LOOPI 16, 6
+    bn.lid               x4, 0(x10)
+    bn.mulv.16H.acc.z.lo w1, w0, w1
+    bn.mulv.l.16H.lo     w1, w1, sw0.2
+    bn.mulv.l.16H.acc.hi w1, w1, sw0.0
+    bn.addvm.16H         w1, w1, w31
+    bn.sid               x4, 0(x10++)
   ret

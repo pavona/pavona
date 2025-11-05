@@ -1,6 +1,10 @@
 /* Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+/* Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of */
+/* "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN" */
+/* (https://eprint.iacr.org/2025/2028) */
+/* Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham. */
 
 .text
 /* Register aliases */
@@ -66,7 +70,7 @@
  * @param[in]  a2: i||j (2 bytes)
  * @param[out] a1: dmem pointer to polynomial
  *
- * clobbered registers: a0-a5, t0-s4, w8, w16
+ * clobbered registers: a0-a5, t0-s4, w8, w14
  */
 
 .globl poly_gen_matrix
@@ -133,6 +137,7 @@ _aligned:
   #define accumulator_count s5
   li s5, 0
 
+  #define wtmp w14
   /* Loop until 256 coefficients have been written to the output */
 _rej_sample_loop:
   /* First squeeze */
@@ -161,13 +166,13 @@ _rej_sample_loop:
   bn.rshi    shake_reg, bn0, shake_reg >> 8 /* Shift out used byte in shake_reg */
 
   /* mask candidate */
-  bn.and     w16, coeff_mask, cand
-  bn.cmp     w16, mod
+  bn.and     wtmp, coeff_mask, cand
+  bn.cmp     wtmp, mod
   csrrs      a4, 0x7C0, zero       /* Read flags */
   andi       a4, a4, 3 /* Mask flags */
   bne        a4, a6, _skip_store2a /* Reject if M, C are NOT set to 1, meaning
                                     NOT (q > cand) = (q <= cand) */
-  bn.rshi    accumulator, w16, accumulator >> 16
+  bn.rshi    accumulator, wtmp, accumulator >> 16
   addi       accumulator_count, accumulator_count, 1
   bne        accumulator_count, s2, _skip_store2a
   bn.sid     s4, 0(a1++) /* Store to memory */
@@ -200,13 +205,13 @@ _skip_store2:
   bn.rshi    shake_reg, bn0, shake_reg >> 16 /* Shift out used 2 bytes */
 
   /* mask candidate */
-  bn.and     w16, coeff_mask, cand
-  bn.cmp     w16, mod
+  bn.and     wtmp, coeff_mask, cand
+  bn.cmp     wtmp, mod
   csrrs      a4, 0x7C0, zero       /* Read flags */
   andi       a4, a4, 3 /* Mask flags */
   bne        a4, a6, _skip_store4a /* Reject if M, C are NOT set to 1, meaning
                                       NOT (q > cand) = (q <= cand) */
-  bn.rshi    accumulator, w16, accumulator >> 16
+  bn.rshi    accumulator, wtmp, accumulator >> 16
   addi       accumulator_count, accumulator_count, 1
   bne        accumulator_count, s2, _skip_store4a
   bn.sid     s4, 0(a1++) /* Store to memory */
