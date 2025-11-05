@@ -3072,12 +3072,18 @@
           config:
           {
             banks: 2
+            data_width: 64
+            info_types: 3
+            infos_per_bank:
+            [
+              10
+              1
+              2
+            ]
             pages_per_bank: 16
             program_resolution: 8
-            pgm_resolution_bytes: 64
-            bytes_per_page: 2048
-            bytes_per_bank: 32768
             size: 0x10000
+            words_per_page: 256
           }
           size: 0x10000
         }

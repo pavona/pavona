@@ -314,7 +314,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   assign block_data_o = packed_data;
 
   // ECC handling
-  localparam int PlainDataEccWidth = DataWidth + 8;
+  localparam int PlainDataEccWidth = DataWidth + EccWidth;
 
   logic [FullDataWidth-1:0] ecc_data;
   logic [PlainDataEccWidth-1:0] plain_data_w_ecc;

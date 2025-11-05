@@ -9,7 +9,10 @@
   total_pages = banks * pages_per_bank
   page_idx_width = (total_pages-1).bit_length()
   page_num_width = total_pages.bit_length()
+  word_bytes = data_width // 8
+  pgm_resolution_bytes = program_resolution * word_bytes
   bytes_per_page = words_per_page * word_bytes
+  bytes_per_bank = bytes_per_page * pages_per_bank
   total_byte_width = int(total_pages*bytes_per_page-1).bit_length()
   info_type_width = (info_types-1).bit_length()
   max_fifo_depth = 16

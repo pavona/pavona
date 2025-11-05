@@ -29,7 +29,7 @@ package flash_phy_pkg;
   parameter int unsigned PageW          = flash_ctrl_top_specific_pkg::PageW;
   parameter int unsigned WordW          = flash_ctrl_top_specific_pkg::WordW;
   parameter int unsigned DataWidth      = flash_ctrl_top_specific_pkg::DataWidth;
-  parameter int unsigned EccWidth       = 8;
+  parameter int unsigned EccWidth       = flash_ctrl_top_specific_pkg::EccWidth;
   parameter int unsigned MetaDataWidth  = flash_ctrl_top_specific_pkg::MetaDataWidth;
   parameter int unsigned WidthMultiple  = flash_ctrl_top_specific_pkg::WidthMultiple;
   parameter int unsigned NumBuf         = 4; // number of flash read buffers

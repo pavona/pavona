@@ -6,11 +6,7 @@
   param_values:
   {
     banks: 2
-    pages_per_bank: 256
-    program_resolution: 8
-    words_per_page: 256
     data_width: 64
-    metadata_width: 12
     info_types: 3
     infos_per_bank:
     [
@@ -18,10 +14,10 @@
       1
       2
     ]
-    word_bytes: 8
-    pgm_resolution_bytes: 64
-    bytes_per_page: 2048
-    bytes_per_bank: 524288
+    pages_per_bank: 256
+    program_resolution: 8
+    words_per_page: 256
+    integrity_width: 4
     size: 1048576
     topname: earlgrey
     uniquified_modules: {}

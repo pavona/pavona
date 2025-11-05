@@ -100,6 +100,7 @@ _RND_SEED = 123
 
 
 def min_paritysize(k):
+    """Returns the number of SECDED bits needed for k bits."""
     # SECDED --> Hamming distance 'd': 4
     # 2^(m-1) should cover (m+k)
     for m in range(2, 10):

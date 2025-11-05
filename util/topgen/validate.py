@@ -233,9 +233,16 @@ special_sig_added = {
 eflash_required = {
     'type': ['s', 'string indicating type of memory'],
     'banks': ['d', 'number of flash banks'],
+    'data_width': ['d', 'number of bits per data word'],
+    'info_types': ['d', 'number of different info page types'],
+    'infos_per_bank': ['l',
+                       "number of pages per info type, the size of the "
+                       "list must match 'info_types'"],
+    'integrity_width': ['d', 'number of integrity bits per data word'],
     'pages_per_bank': ['d', 'number of data pages per flash bank'],
     'program_resolution':
-    ['d', 'maximum number of flash words allowed to program'],
+    ['d', 'maximum number of flash words allowed to program at a time'],
+    'words_per_page': ['d', 'number of words per page'],
 }
 
 eflash_optional = {}
@@ -507,25 +514,19 @@ class Flash:
             asid: int(base, 16)
             for (asid, base) in base_addrs.items()
         }
-        self.banks = mem.get('banks', 2)
-        self.pages_per_bank = mem.get('pages_per_bank', 8)
-        self.program_resolution = mem.get('program_resolution', 128)
-        self.words_per_page = 256
-        self.data_width = 64
-        self.metadata_width = 12
-        self.info_types = 3
-        self.infos_per_bank = [10, 1, 2]
-        self.word_bytes = int(self.data_width / 8)
-        self.pgm_resolution_bytes = int(self.program_resolution *
-                                        self.word_bytes)
+        # The mem map was checked to contain all required keys.
+        self.banks = mem['banks']
+        self.data_width = mem['data_width']
+        self.info_types = mem['info_types']
+        self.infos_per_bank = mem['infos_per_bank']
+        self.pages_per_bank = mem['pages_per_bank']
+        self.program_resolution = mem['program_resolution']
+        self.words_per_page = mem['words_per_page']
+        self.integrity_width = mem['integrity_width']
+        _word_bytes = self.data_width // 8
+        self.size = hex(_word_bytes * self.words_per_page *
+                        self.pages_per_bank * self.banks)
         self.check_values()
-
-        # populate size variable
-        self.bytes_per_page = self.word_bytes * self.words_per_page
-        self.bytes_per_bank = self.bytes_per_page * self.pages_per_bank
-
-        size_int = int(self.bytes_per_bank * self.banks)
-        self.size = hex(size_int)
 
     def is_pow2(self, n):
         return (n != 0) and (n & (n - 1) == 0)
@@ -546,15 +547,21 @@ class Flash:
             raise ValueError(
                 'flash number of banks and pages per bank too large')
 
+        if len(self.infos_per_bank) != self.info_types:
+            raise ValueError(
+                f'size of "infos_per_bank" ({len(self.infos_per_bank)}) '
+                f'must match "info_types" ({self.info_types})')
+
     def _asdict(self):
         return {
             'banks': self.banks,
+            'data_width': self.data_width,
+            'info_types': self.info_types,
+            'infos_per_bank': self.infos_per_bank,
             'pages_per_bank': self.pages_per_bank,
             'program_resolution': self.program_resolution,
-            'pgm_resolution_bytes': self.pgm_resolution_bytes,
-            'bytes_per_page': self.bytes_per_page,
-            'bytes_per_bank': self.bytes_per_bank,
-            'size': self.size
+            'size': self.size,
+            'words_per_page': self.words_per_page
         }
 
 

@@ -787,7 +787,7 @@
         ram: {
           label:    "ram_ret_aon",
           swaccess:   "rw",
-          data_intg_passthru: "true",
+          data_intg_passthru: "True",
           exec:       "True",
           byte_write: "True",
           size:     "0x1000"
@@ -811,14 +811,19 @@
         mem: {
           label:      "eflash",
           swaccess:   "ro",
-          data_intg_passthru: "true",
+          data_intg_passthru: "True",
           exec:       "True",
           byte_write: "False",
           config: {
             type: "flash",
             banks: 2,
             pages_per_bank: 256,
-            program_resolution: 8, // maximum number of flash words allowed to program at one time
+            program_resolution: 8,
+            words_per_page: 256,
+            data_width: 64,
+            integrity_width: 4,
+            info_types: 3,
+            infos_per_bank: [10, 1, 2],
           }
         }
       },
@@ -1002,7 +1007,7 @@
         ram: {
           label:      "ram_main",
           swaccess:   "rw",
-          data_intg_passthru: "true",
+          data_intg_passthru: "True",
           exec:       "True",
           byte_write: "True",
           size:       "0x20000"
@@ -1022,11 +1027,10 @@
         rom: {
           label:              "rom",
           swaccess:           "ro",
-          data_intg_passthru: "true",
+          data_intg_passthru: "True"
           exec:               "True",
           byte_write:         "False",
           size:               "0x8000",
-          data_intg_passthru: "True"
         }
       },
       param_decl: {

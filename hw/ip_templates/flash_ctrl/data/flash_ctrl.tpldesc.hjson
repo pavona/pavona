@@ -34,12 +34,6 @@
       default: "8"
     }
     {
-      name: "pgm_resolution_bytes"
-      desc: "The number of bytes affected by a program command"
-      type: "int"
-      default: "64"
-    }
-    {
       name: "words_per_page"
       desc: "The number of words per page"
       type: "int"
@@ -52,28 +46,10 @@
       default: "64"
     }
     {
-      name: "word_bytes"
-      desc: "The number of bytes per word"
+      name: "integrity_width"
+      desc: "The extra bits used for integrity checks"
       type: "int"
-      default: "8"
-    }
-    {
-      name: "bytes_per_page"
-      desc: "The number of bytes per page"
-      type: "int"
-      default: "2048"
-    }
-    {
-      name: "bytes_per_bank"
-      desc: "The number of bytes per bank"
-      type: "int"
-      default: "524288"
-    }
-    {
-      name: "metadata_width"
-      desc: "The extra bits needed for ecc and integrity checks"
-      type: "int"
-      default: "12"
+      default: "4"
     }
     {
       name: "info_types"

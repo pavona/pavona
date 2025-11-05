@@ -33,7 +33,9 @@ package flash_ctrl_top_specific_pkg;
 
   // fixed parameters of flash derived from topgen parameters
   parameter int DataWidth       = 64;
-  parameter int MetaDataWidth   = 12;
+  parameter int IntegrityWidth  = 4;
+  parameter int EccWidth        = 8;
+  parameter int MetaDataWidth   = IntegrityWidth + EccWidth;
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks

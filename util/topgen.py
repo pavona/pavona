@@ -645,13 +645,6 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
 
     ipgen_params = get_ipgen_params(flash_mems[0])
     ipgen_params.update(vars(flash_mems[0]["memory"]["mem"]["config"]))
-    # Additional parameters not provided in the top config.
-    ipgen_params.update({
-        "metadata_width": 12,
-        "info_types": 3,
-        "infos_per_bank": [10, 1, 2],
-    })
-
     ipgen_params.pop('base_addrs', None)
     return ipgen_params
 

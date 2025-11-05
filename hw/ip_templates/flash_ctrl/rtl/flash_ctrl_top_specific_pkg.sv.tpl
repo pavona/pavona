@@ -5,7 +5,10 @@
 //
 // Flash Controller top-specific package.
 //
-
+<%
+  from design.secded_gen import min_paritysize
+  ecc_width = min_paritysize(data_width + integrity_width)
+%>
 package flash_ctrl_top_specific_pkg;
 
   // Treat items from flash_ctrl_pkg as if they were declared here.
@@ -33,7 +36,9 @@ package flash_ctrl_top_specific_pkg;
 
   // fixed parameters of flash derived from topgen parameters
   parameter int DataWidth       = ${data_width};
-  parameter int MetaDataWidth   = ${metadata_width};
+  parameter int IntegrityWidth  = ${integrity_width};
+  parameter int EccWidth        = ${ecc_width};
+  parameter int MetaDataWidth   = IntegrityWidth + EccWidth;
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks
