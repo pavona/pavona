@@ -1,8 +1,10 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 import random
+import math
 from typing import Optional
 
 from shared.insn_yaml import Insn, InsnsFile
@@ -215,13 +217,31 @@ class BadLoadStore(SnippetGen):
         tgt_addr = random.randrange(val + min_offset, val + max_offset, 32)
 
         # Check if randomized tgt_addr is in OOB region.
-        if tgt_addr >> 12:
+        exponent = int(math.log(model.dmem_size, 2))
+        if tgt_addr >> exponent:
             bn_imm_val = tgt_addr - val
         # If randomized tgt_addr is not in OOB region, make sure bn_imm_val is
         # big enough. So that the new resulting tgt_addr will definitely
         # be in OOB region.
         else:
             bn_imm_val = tgt_addr + model.dmem_size - val
+            # There is a chance that with DMEM > 16KB that the offset does not take OOB
+            # easiest solution is if known reg val is less than 16,352 we adjust offset
+            # to produce a tgt_addr that is negative. First try with selected register.
+            # Trying to get an OOB address > DMEM SIZE would require an additional insn
+            if (
+                bn_imm_val > max_offset
+                and val < max_offset
+            ):
+                tgt_addr = random.randrange(val + min_offset, -1, 32)
+                bn_imm_val = tgt_addr - val
+            else:
+                # Otherwise we can use known reg 0x0 with value of 0 and negative offset.
+                for idx, u_val in known_regs:
+                    val = u_val - (1 << 32) if u_val >> 31 else u_val
+                    if val < max_offset:
+                        tgt_addr = random.randrange(val + min_offset, -1, 32)
+                        bn_imm_val = tgt_addr - val
 
         # Check if the final target address is in OOB region
         assert bn_imm_val + val < 0 or bn_imm_val + val >= model.dmem_size

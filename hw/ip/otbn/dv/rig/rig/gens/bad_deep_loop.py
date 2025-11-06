@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -48,9 +49,10 @@ class BadDeepLoop(SnippetGen):
         # instruction or points above the top of memory. Rather than doing
         # something clever, we pick the address at random and "re-roll" if it
         # points at a gap in instruction memory. Since bodysize_range[1] is
-        # 4096, giving a maximum address of 16KiB, which happens to equal the
-        # size of IMEM, we know it's going to be possible. Try to pick 50
+        # 4096, it is always possible if IMEM size is 16KiB. Try to pick 50
         # times, which should fail with probability at most 1/4^50 = 1/2^100.
+        # If the IMEM is greater than 16KB, it might not be possible to find a
+        # body size that fits these criteria, so we might fail and return None.
         bodysize_op_type = insn.operands[1].op_type
         bodysize_range = bodysize_op_type.get_op_val_range(pc)
         assert bodysize_range is not None
@@ -64,7 +66,15 @@ class BadDeepLoop(SnippetGen):
                 bodysize = guess
                 break
 
-        assert bodysize is not None
+        # Required return None option to skip generating instruction if a satisfactory
+        # bodysize cannot be found to prevent a build error when running dvsim tests.
+        # When the IMEM is > 16KB the ability to pick a bodysize that points to above
+        # the top of memory is limited to the PC of the insn. If the PC is not within
+        # the bodysize range * 4 of the top of memory the only satisfactory return would
+        # be if the bodysize points to an existing instruction, within a larger IMEM area.
+        if bodysize is None:
+            return None, None
+
         enc_bodysize = bodysize_op_type.op_val_to_enc_val(bodysize, pc)
         assert enc_bodysize is not None
         return (enc_bodysize, pc + 4 * guess)
@@ -121,6 +131,11 @@ class BadDeepLoop(SnippetGen):
 
         enc_bodysize, end_addr = self._pick_bodysize(insn, model.pc, program)
 
+        # Required to prevent assembly gen build error due to IMEM size increase.
+        # Refer to _pick_bodysize for description.
+        if enc_bodysize is None:
+            return None, None
+
         return (ProgInsn(insn, [enc_iters, enc_bodysize], None), end_addr)
 
     def _gen_loop_stack(self,
@@ -143,6 +158,11 @@ class BadDeepLoop(SnippetGen):
             # above)
             prog_insn, _ = self._gen_loop_head(model, program)
 
+            # Required to prevent assembly gen build error due to IMEM size increase.
+            # Refer to _pick_bodysize for description.
+            if prog_insn is None:
+                return (None, None)
+
             # Note that we generate a ProgSnippet, not a LoopSnippet here:
             # while we've got a loop instruction, we happen to know that it
             # will fault, so it's going to behave more like a straight line
@@ -163,6 +183,12 @@ class BadDeepLoop(SnippetGen):
 
         hd_pc = model.pc
         hd_insn, end_addr = self._gen_loop_head(model, program)
+
+        # Required to prevent assembly gen build error due to IMEM size increase.
+        # Refer to _pick_bodysize for description.
+        if hd_insn is None:
+            return (None, None)
+
         program.add_insns(hd_pc, [hd_insn])
         model.update_for_insn(hd_insn)
         model.pc += 4
@@ -187,6 +213,11 @@ class BadDeepLoop(SnippetGen):
             body_snippet = jump_snippet
 
         real_body_snippet, model = self._gen_loop_stack(model, program)
+
+        # Required to prevent assembly gen build error due to IMEM size increase.
+        # Refer to _pick_bodysize for description.
+        if real_body_snippet is None:
+            return (None, None)
 
         if body_snippet is None:
             body_snippet = real_body_snippet
@@ -251,4 +282,10 @@ class BadDeepLoop(SnippetGen):
 
         # At this point, we *should* be able to make the loop unconditionally.
         snippet, model = self._gen_loop_stack(model, program)
+
+        # Required to prevent assembly gen build error due to IMEM size increase.
+        # Refer to _pick_bodysize for description.
+        if snippet is None:
+            return None
+
         return (snippet, model)
