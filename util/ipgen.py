@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 r"""IP Generator: Produce IP blocks from IP templates
@@ -28,15 +29,26 @@ def action_generate(ip_template: IpTemplate, args: argparse.Namespace) -> None:
     output_path = args.outdir
 
     # Read the IP configuration file.
-    config_fp = args.config_file
-    config_text = config_fp.read()
-    config_fp.close()
-    ip_config = IpConfig.from_text(ip_template.params, config_text,
-                                   "the file passed to --config")
+    try:
+        config_text = args.config_file.read_text(encoding="utf-8")
+    except Exception as e:
+        logging.error(f"Could not read config file: {e}")
+        sys.exit(1)
+
+    try:
+        ip_config = IpConfig.from_text(ip_template.params, config_text,
+                                       "the file passed to --config")
+    except ValueError as e:
+        logging.error(f"IP config creation failed with {e}")
+        sys.exit(1)
 
     # Render the IP template into an IP block.
-    renderer = IpBlockRenderer(ip_template, ip_config)
-    renderer.render(output_path, overwrite_output_dir)
+    try:
+        renderer = IpBlockRenderer(ip_template, ip_config)
+        renderer.render(output_path, overwrite_output_dir)
+    except TemplateRenderError as e:
+        logging.error(e.verbose_str())
+        sys.exit(1)
 
     print(f"Wrote IP block {ip_config.instance_name!r} "
           f"from template {ip_template.name!r} to '{output_path}'.")
@@ -87,13 +99,13 @@ def main() -> int:
     subparsers.required = True
 
     # 'describe' subparser
-    parser_generate = subparsers.add_parser(
+    parser_describe = subparsers.add_parser(
         "describe",
         description="Show all information available for the IP template.",
         help="Show details about an IP template",
         parents=[parent_parser],
     )
-    parser_generate.set_defaults(func=action_describe)
+    parser_describe.set_defaults(func=action_describe)
 
     # 'generate' subparser
     parser_generate = subparsers.add_parser(
@@ -121,7 +133,7 @@ def main() -> int:
         "--config-file",
         "-c",
         required=True,
-        type=argparse.FileType('r'),
+        type=Path,
         help="path to a configuration file",
     )
     parser_generate.set_defaults(func=action_generate)
@@ -132,7 +144,6 @@ def main() -> int:
 
     try:
         ip_template = IpTemplate.from_template_path(args.template_dir)
-        args.func(ip_template, args)
     except (TemplateParseError, TemplateRenderError) as e:
         if args.verbose:
             # Show the full backtrace if operating in verbose mode.
@@ -141,6 +152,8 @@ def main() -> int:
             # Otherwise just log the problem itself in a more user-friendly way.
             logging.error(str(e))
         return 1
+
+    args.func(ip_template, args)
 
     return 0
 
