@@ -470,6 +470,7 @@ jobs:
     runs-on:
       group: zerorisc-none
     needs: quick_lint
+    if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
         with:
