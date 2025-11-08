@@ -72,7 +72,15 @@ jobs:
         uses: ./.github/actions/download-partial-build-bin
         with:
           job-patterns: ${{ inputs.bitstream }}
-
+      - name: Create bitstream cache archive
+        run: |
+          shopt -s globstar # Allow use of **
+          ./bazelisk.sh build //util/py/scripts:bitstream_cache_create
+          ./bazelisk.sh run //util/py/scripts:bitstream_cache_create -- \
+            --schema $PWD/rules/scripts/bitstreams_manifest.schema.json \
+            --stamp-file $PWD/bazel-out/volatile-status.txt \
+            --out $PWD/build-bin/bitstream-cache \
+            $PWD/build-bin/**/manifest.json
       - name: Execute tests
         run: |
           . util/build_consts.sh

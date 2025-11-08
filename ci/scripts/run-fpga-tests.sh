@@ -22,9 +22,9 @@ shift 2
 COMMIT="$(git rev-parse HEAD)"
 readonly COMMIT
 readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams/cache/${COMMIT}"
-readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey"
+readonly BIT_SRC="${BIN_DIR}/bitstream-cache/bitstream-cache.tar.gz"
 mkdir -p "${BIT_CACHE_DIR}"
-cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
+tar xzf ${BIT_SRC} -C ${BIT_CACHE_DIR}
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
 # in case we've crashed the UART handler on the CW310's SAM3U
