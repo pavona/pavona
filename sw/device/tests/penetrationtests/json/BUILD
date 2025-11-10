@@ -71,7 +71,29 @@ cc_library(
 cc_library(
     name = "cryptolib_sca_asym_commands",
     srcs = ["cryptolib_sca_asym_commands.c"],
-    hdrs = ["cryptolib_sca_asym_commands.h"],
+    hdrs = [
+        "cryptolib_sca_asym_commands.h",
+    ],
+    deps = [
+        ":cryptolib_sca_asym_commands_ecc",
+        ":cryptolib_sca_asym_commands_rsa",
+        "//sw/device/lib/ujson",
+    ],
+)
+
+cc_library(
+    name = "cryptolib_sca_asym_commands_ecc",
+    hdrs = [
+        "cryptolib_sca_asym_commands_ecc.h",
+    ],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "cryptolib_sca_asym_commands_rsa",
+    hdrs = [
+        "cryptolib_sca_asym_commands_rsa.h",
+    ],
     deps = ["//sw/device/lib/ujson"],
 )
 
