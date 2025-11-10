@@ -1088,6 +1088,52 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "mldsa_functest",
+    srcs = ["mldsa_functest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    verilator = verilator_params(timeout = "eternal"),
+    deps = [
+        "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "mldsa_benchmark",
+    srcs = ["mldsa_functest.c"],
+    copts = ["-DMLDSA_BENCHMARK_MODE"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 py_binary(
     name = "ecdsa_p256_verify_set_testvectors",
     srcs = ["ecdsa_p256_verify_set_testvectors.py"],

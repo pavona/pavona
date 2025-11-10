@@ -160,6 +160,8 @@ typedef enum otcrypto_key_type {
   kOtcryptoKeyTypeKdf = 0x3e1,
   // Key type ML-KEM.
   kOtcryptoKeyTypeMlkem = 0x396,
+  // Key type ML-DSA.
+  kOtcryptoKeyTypeMldsa = 0x8ab,
 } otcrypto_key_type_t;
 
 /**
@@ -294,6 +296,23 @@ typedef enum otcrypto_mlkem_key_mode {
 } otcrypto_mlkem_key_mode_t;
 
 /**
+ * Enum to specify ML-DSA key modes.
+ *
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
+ *
+ * Values are hardened.
+ */
+typedef enum otcrypto_mldsa_key_mode {
+  // Mode ML-DSA-44.
+  kOtcryptoMldsaKeyMode44 = 0x904,
+  // Mode ML-DSA-65.
+  kOtcryptoMldsaKeyMode65 = 0x9d3,
+  // Mode ML-DSA-87.
+  kOtcryptoMldsaKeyMode87 = 0xa9d,
+} otcrypto_mldsa_key_mode_t;
+
+/**
  * Enum for opentitan crypto modes that use a key.
  *
  * Denotes the crypto mode for which the provided key is to be used.
@@ -377,6 +396,15 @@ typedef enum otcrypto_key_mode {
   // Key is intended for ML-KEM-1024.
   kOtcryptoKeyModeMlkem1024 =
       kOtcryptoKeyTypeMlkem << 16 | kOtcryptoMlkemKeyMode1024,
+  // Key is intended for ML-DSA-44.
+  kOtcryptoKeyModeMldsa44 =
+      kOtcryptoKeyTypeMldsa << 16 | kOtcryptoMldsaKeyMode44,
+  // Key is intended for ML-DSA-65.
+  kOtcryptoKeyModeMldsa65 =
+      kOtcryptoKeyTypeMldsa << 16 | kOtcryptoMldsaKeyMode65,
+  // Key is intended for ML-DSA-87.
+  kOtcryptoKeyModeMldsa87 =
+      kOtcryptoKeyTypeMldsa << 16 | kOtcryptoMldsaKeyMode87,
 } otcrypto_key_mode_t;
 
 /**

@@ -361,6 +361,9 @@ use_repo(doxygen, "doxygen")
 mlkem_native = use_extension("//third_party/mlkem_native:extensions.bzl", "mlkem_native")
 use_repo(mlkem_native, "mlkem_native")
 
+mldsa_native = use_extension("//third_party/mldsa_native:extensions.bzl", "mldsa_native")
+use_repo(mldsa_native, "mldsa_native")
+
 # Hooks:
 # Extension for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
