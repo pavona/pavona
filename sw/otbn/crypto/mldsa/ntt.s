@@ -1,6 +1,10 @@
 /* Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+/* Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of */
+/* "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN" */
+/* (https://eprint.iacr.org/2025/2028) */
+/* Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham. */
 
 .text
 
@@ -14,46 +18,6 @@
     lw \reg, 0(sp)      /* Load value from the top of the stack into register */
     addi sp, sp, 4     /* Increment stack pointer by 4 bytes */
 .endm
-
-/* Register aliases */
-.equ x0, zero
-.equ x2, sp
-.equ x3, fp
-
-.equ x5, t0
-.equ x6, t1
-.equ x7, t2
-
-.equ x8, s0
-.equ x9, s1
-
-.equ x10, a0
-.equ x11, a1
-
-.equ x12, a2
-.equ x13, a3
-.equ x14, a4
-.equ x15, a5
-.equ x16, a6
-.equ x17, a7
-
-.equ x18, s2
-.equ x19, s3
-.equ x20, s4
-.equ x21, s5
-.equ x22, s6
-.equ x23, s7
-.equ x24, s8
-.equ x25, s9
-.equ x26, s10
-.equ x27, s11
-
-.equ x28, t3
-.equ x29, t4
-.equ x30, t5
-.equ x31, t6
-
-.equ w31, bn0
 
 /**
  * Constant Time Dilithium NTT
@@ -71,915 +35,889 @@
  *
  * clobbered registers: x4-x30, w2-w25, w30
  */
-.globl ntt_base_dilithium
-ntt_base_dilithium:
-    /* 32 byte align the sp */
-    andi x6, sp, 31
-    beq  x6, zero, _aligned
-    sub  sp, sp, x6
-_aligned:
-    push x6
-    addi sp, sp, -28
-    /* save fp to stack */
-    addi sp, sp, -32
-    sw   fp, 0(sp)
-
-    addi fp, sp, 0
-
-    /* Adjust sp to accomodate local variables */
-    addi sp, sp, -32
-
-    /* Reserve space for tmp buffer to hold a WDR */
-    #define STACK_WDR2GPR -32
-
-    /* clear STACK_WDR2GPR */
-    li t0, 31
-    bn.sid t0, STACK_WDR2GPR(fp)
+.globl ntt
+ntt:
 
     /* Save callee-saved registers */
     .irp reg,s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11
         push \reg
     .endr
 
-    #define coeff0 w0
-    #define coeff1 w1
-    #define coeff2 w2
-    #define coeff3 w3
-    #define coeff4 w4
-    #define coeff5 w5
-    #define coeff6 w6
-    #define coeff7 w7
-
-    #define coeff8 w8
-    #define coeff9 w9
-    #define coeff10 w10
-    #define coeff11 w11
-    #define coeff12 w12
-    #define coeff13 w13
-    #define coeff14 w14
-    #define coeff15 w15
-
-    #define buf0 w31
-    #define buf1 w30
-    #define buf2 w29
-    #define buf3 w28
-    #define buf4 w27
-    #define buf5 w26
-    #define buf6 w25
-    #define buf7 w24
-    #define buf8 w17
-    #define buf9 w18
-    #define buf10 w19
-
-    /* Twiddle Factors */
-    #define tf1 w16
-
-    /* Other */
-    #define wtmp w20
-    #define buf11 w21
-    #define wtmp3 w22
-    #define buf12 w23
-
-    /* GPRs with indices to access WDRs */
-    #define buf0_idx x4
-    #define buf1_idx x5
-    #define buf2_idx x6
-    #define buf3_idx x7
-    #define buf4_idx x8
-    #define buf5_idx x9
-    #define buf6_idx x13
-    #define buf7_idx x14
-    #define inp x10
-    #define twp x11
-    #define outp x12
-    #define coeff8_idx x15
-    #define coeff9_idx x16
-    #define coeff10_idx x17
-    #define coeff11_idx x18
-    #define coeff12_idx x19
-    #define coeff13_idx x20
-    #define coeff14_idx x21
-    #define coeff15_idx x22
-    #define tf1_idx x23
-    #define buf8_idx x24
-    #define buf9_idx x25
-    #define buf10_idx x26
-    #define tmp_gpr x27
-    #define tmp_gpr2 x28
-    #define buf11_idx x29
-    #define buf12_idx x30
+    /* Set up constants for input/state */
+    li x4, 0
+    li x5, 1
+    li x6, 2
+    li x7, 3
+    li x8, 4
+    li x9, 5
+    li x13, 6
+    li x14, 7
+    li x15, 8
+    li x16, 9
+    li x17, 10
+    li x18, 11
+    li x19, 12
+    li x20, 13
+    li x21, 14
+    li x22, 15
 
     /* Set up constants for input/twiddle factors */
-    li tf1_idx, 16
+    li x23, 17
+    li x24, 18
 
-    li coeff8_idx, 8
-    li coeff9_idx, 9
-    li coeff10_idx, 10
-    li coeff11_idx, 11
-    li coeff12_idx, 12
-    li coeff13_idx, 13
-    li coeff14_idx, 14
-    li coeff15_idx, 15
+    /* Load twiddle factors for layers 1--4 */
+    bn.lid x23, 0(x11) /* w17 */
+    bn.lid x24, 32(x11) /* w18 */
+    bn.mov w19, w17 /* Save first batch of Twiddle factors */
 
-    li buf0_idx, 31
-    li buf1_idx, 30
-    li buf2_idx, 29
-    li buf3_idx, 28
-    li buf4_idx, 27
-    li buf5_idx, 26
-    li buf6_idx, 25
-    li buf7_idx, 24
-    li buf8_idx, 17
-    li buf9_idx, 18
-    li buf10_idx, 19
-    li buf11_idx, 21
-    li buf12_idx, 23
+    LOOPI 2, 292
+        /* Load input data */
+        bn.lid x4, 0(x10)
+        bn.lid x5, 64(x10)
+        bn.lid x6, 128(x10)
+        bn.lid x7, 192(x10)
+        bn.lid x8, 256(x10)
+        bn.lid x9, 320(x10)
+        bn.lid x13, 384(x10)
+        bn.lid x14, 448(x10)
+        bn.lid x15, 512(x10)
+        bn.lid x16, 576(x10)
+        bn.lid x17, 640(x10)
+        bn.lid x18, 704(x10)
+        bn.lid x19, 768(x10)
+        bn.lid x20, 832(x10)
+        bn.lid x21, 896(x10)
+        bn.lid x22, 960(x10)
 
-    /* Zero out one register */
-    bn.xor buf9, buf9, buf9
-    /* 0xFFFFFFFF for masking */
-    bn.addi buf8, buf9, 1
-    bn.rshi buf8, buf8, buf9 >> 224
-    bn.subi buf8, buf8, 1
+        /* Layer 1, stride 128 */
 
-    /* Set second WLEN/4 quad word to modulus */
-    la tmp_gpr, modulus
-    li tmp_gpr2, 20 /* Load q to wtmp */
-    bn.lid tmp_gpr2, 0(tmp_gpr)
-    bn.and wtmp, wtmp, buf8
-    bn.or wtmp3, buf9, wtmp << 128
-    /* Load alpha to wtmp3.1 */
-    bn.addi wtmp, buf9, 1
-    bn.or wtmp3, wtmp3, wtmp << 64
-    /* Load mask to wtmp3.3 */
-    bn.or wtmp3, wtmp3, buf8 << 192
+        /* The original instruciton is:
+         *     bn.mulvm.l.8S w30, w8, w16, 0
+         * The new instructions are 7 instructions below.
+         * Note that after the first multiplication:
+         *     bn.mulv.l.8S.even.acc.z.lo w30, w8, sw1.0
+         * the odd parts of w8 is copied to w30. Then until
+         * the next instruction:
+         *     bn.mulv.l.8s.odd.acc.z.lo w30, w30, sw1.0
+         * if we multiplied w8 and sw1.0 again, the even parts
+         * of w8 would be copied to w30, erasing the correct
+         * even parts of w30 from previous computations. */
+        bn.mulv.l.8S.even.acc.z.lo w30, w8, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w8, w0, w30
+        bn.addvm.8S                w0, w0, w30
 
-    /* We can process 16 coefficients each iteration and need to process N=256, meaning we require 16 iterations. */
-    LOOPI 2, 269
-        /* Load coefficients into buffer registers */
-        bn.lid buf0_idx, 0(inp)
-        bn.lid buf1_idx, 64(inp)
-        bn.lid buf2_idx, 128(inp)
-        bn.lid buf3_idx, 192(inp)
-        bn.lid buf4_idx, 256(inp)
-        bn.lid buf5_idx, 320(inp)
-        bn.lid buf6_idx, 384(inp)
-        bn.lid buf7_idx, 448(inp)
-        bn.lid buf8_idx, 512(inp)
-        bn.lid buf9_idx, 576(inp)
-        bn.lid buf10_idx, 640(inp)
-        bn.lid buf11_idx, 704(inp)
-        bn.lid buf12_idx, 768(inp)
-        LOOPI 8, 242
-            bn.lid tf1_idx, 0(twp)
-            /* Extract coefficients from buffer registers into working state */
-            bn.and coeff0, buf0, wtmp3 >> 192
-            bn.and coeff1, buf1, wtmp3 >> 192
-            bn.and coeff2, buf2, wtmp3 >> 192
-            bn.and coeff3, buf3, wtmp3 >> 192
-            bn.and coeff4, buf4, wtmp3 >> 192
-            bn.and coeff5, buf5, wtmp3 >> 192
-            bn.and coeff6, buf6, wtmp3 >> 192
-            bn.and coeff7, buf7, wtmp3 >> 192
-            bn.and coeff8, buf8, wtmp3 >> 192
-            bn.and coeff9, buf9, wtmp3 >> 192
-            bn.and coeff10, buf10, wtmp3 >> 192
-            bn.and coeff11, buf11, wtmp3 >> 192
-            bn.and coeff12, buf12, wtmp3 >> 192
+        bn.mulv.l.8S.even.acc.z.lo w30, w9, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w9, w1, w30
+        bn.addvm.8S                w1, w1, w30
 
-            /* Load remaining coefficients using 32-bit loads */
-            /* Coeff 13 */
-            lw tmp_gpr, 832(inp)
-            sw tmp_gpr, STACK_WDR2GPR(fp)
-            bn.lid coeff13_idx, STACK_WDR2GPR(fp)
-            /* Coeff 14 */
-            lw tmp_gpr, 896(inp)
-            sw tmp_gpr, STACK_WDR2GPR(fp)
-            bn.lid coeff14_idx, STACK_WDR2GPR(fp)
-            /* Coeff 15 */
-            lw tmp_gpr, 960(inp)
-            sw tmp_gpr, STACK_WDR2GPR(fp)
-            bn.lid coeff15_idx, STACK_WDR2GPR(fp)
+        bn.mulv.l.8S.even.acc.z.lo w30, w10, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w10, w2, w30
+        bn.addvm.8S                w2, w2, w30
 
-            /* Layer 1 */
+        bn.mulv.l.8S.even.acc.z.lo w30, w11, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w11, w3, w30
+        bn.addvm.8S                w3, w3, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff8, coeff8.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff8, wtmp3, coeff8 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff8, coeff8.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff8 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff8, coeff0, wtmp
-            bn.addm coeff0, coeff0, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w12, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w12, w4, w30
+        bn.addvm.8S                w4, w4, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff9, coeff9.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff9, wtmp3, coeff9 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff9, coeff9.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff9 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff9, coeff1, wtmp
-            bn.addm coeff1, coeff1, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w13, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w13, w5, w30
+        bn.addvm.8S                w5, w5, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff10, coeff10.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff10, wtmp3, coeff10 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff10, coeff10.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff10 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff10, coeff2, wtmp
-            bn.addm coeff2, coeff2, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w14, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w14, w6, w30
+        bn.addvm.8S                w6, w6, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff11, coeff11.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff11, wtmp3, coeff11 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff11, coeff11.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff11 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff11, coeff3, wtmp
-            bn.addm coeff3, coeff3, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w15, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w15, w7, w30
+        bn.addvm.8S                w7, w7, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff12, coeff12.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff12, wtmp3, coeff12 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff12, coeff12.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff12 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff12, coeff4, wtmp
-            bn.addm coeff4, coeff4, wtmp
+        /* Layer 2, stride 64 */
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff13, coeff13.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff13, wtmp3, coeff13 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff13, coeff13.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff13 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff13, coeff5, wtmp
-            bn.addm coeff5, coeff5, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w4, sw1.1
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w4, w0, w30
+        bn.addvm.8S                w0, w0, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff14, coeff14.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff14, wtmp3, coeff14 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff14, coeff14.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff14 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff14, coeff6, wtmp
-            bn.addm coeff6, coeff6, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w5, sw1.1
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w5, w1, w30
+        bn.addvm.8S                w1, w1, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff15, coeff15.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff15, wtmp3, coeff15 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff15, coeff15.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff15 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff15, coeff7, wtmp
-            bn.addm coeff7, coeff7, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w6, sw1.1
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w6, w2, w30
+        bn.addvm.8S                w2, w2, w30
 
-            /* Layer 2 */
+        bn.mulv.l.8S.even.acc.z.lo w30, w7, sw1.1
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w7, w3, w30
+        bn.addvm.8S                w3, w3, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff4, coeff4.0, tf1.1, 192 /* a*bq' */
-            bn.add coeff4, wtmp3, coeff4 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff4, coeff4.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff4 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff4, coeff0, wtmp
-            bn.addm coeff0, coeff0, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w12, sw1.2
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w12, w8, w30
+        bn.addvm.8S                w8, w8, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff5, coeff5.0, tf1.1, 192 /* a*bq' */
-            bn.add coeff5, wtmp3, coeff5 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff5, coeff5.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff5 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff5, coeff1, wtmp
-            bn.addm coeff1, coeff1, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w13, sw1.2
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w13, w9, w30
+        bn.addvm.8S                w9, w9, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff6, coeff6.0, tf1.1, 192 /* a*bq' */
-            bn.add coeff6, wtmp3, coeff6 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff6, coeff6.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff6 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff6, coeff2, wtmp
-            bn.addm coeff2, coeff2, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w14, sw1.2
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w14, w10, w30
+        bn.addvm.8S                w10, w10, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff7, coeff7.0, tf1.1, 192 /* a*bq' */
-            bn.add coeff7, wtmp3, coeff7 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff7, coeff7.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff7 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff7, coeff3, wtmp
-            bn.addm coeff3, coeff3, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w15, sw1.2
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w15, w11, w30
+        bn.addvm.8S                w11, w11, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff12, coeff12.0, tf1.2, 192 /* a*bq' */
-            bn.add coeff12, wtmp3, coeff12 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff12, coeff12.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff12 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff12, coeff8, wtmp
-            bn.addm coeff8, coeff8, wtmp
+        /* Layer 3, stride 32 */
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff13, coeff13.0, tf1.2, 192 /* a*bq' */
-            bn.add coeff13, wtmp3, coeff13 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff13, coeff13.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff13 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff13, coeff9, wtmp
-            bn.addm coeff9, coeff9, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w2, sw1.3
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w2, w0, w30
+        bn.addvm.8S                w0, w0, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff14, coeff14.0, tf1.2, 192 /* a*bq' */
-            bn.add coeff14, wtmp3, coeff14 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff14, coeff14.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff14 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff14, coeff10, wtmp
-            bn.addm coeff10, coeff10, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w3, sw1.3
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w3, w1, w30
+        bn.addvm.8S                w1, w1, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff15, coeff15.0, tf1.2, 192 /* a*bq' */
-            bn.add coeff15, wtmp3, coeff15 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff15, coeff15.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff15 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff15, coeff11, wtmp
-            bn.addm coeff11, coeff11, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w6, sw1.4
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w6, w4, w30
+        bn.addvm.8S                w4, w4, w30
 
-            /* Layer 3 */
+        bn.mulv.l.8S.even.acc.z.lo w30, w7, sw1.4
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w7, w5, w30
+        bn.addvm.8S                w5, w5, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff2, coeff2.0, tf1.3, 192 /* a*bq' */
-            bn.add coeff2, wtmp3, coeff2 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff2, coeff2.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff2 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff2, coeff0, wtmp
-            bn.addm coeff0, coeff0, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w10, sw1.5
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w10, w8, w30
+        bn.addvm.8S                w8, w8, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff3, coeff3.0, tf1.3, 192 /* a*bq' */
-            bn.add coeff3, wtmp3, coeff3 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff3, coeff3.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff3 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff3, coeff1, wtmp
-            bn.addm coeff1, coeff1, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w11, sw1.5
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w11, w9, w30
+        bn.addvm.8S                w9, w9, w30
 
-            bn.lid tf1_idx, 32(twp)
+        bn.mulv.l.8S.even.acc.z.lo w30, w14, sw1.6
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w14, w12, w30
+        bn.addvm.8S                w12, w12, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff6, coeff6.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff6, wtmp3, coeff6 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff6, coeff6.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff6 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff6, coeff4, wtmp
-            bn.addm coeff4, coeff4, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w15, sw1.6
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w15, w13, w30
+        bn.addvm.8S                w13, w13, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff7, coeff7.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff7, wtmp3, coeff7 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff7, coeff7.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff7 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff7, coeff5, wtmp
-            bn.addm coeff5, coeff5, wtmp
+        /* Layer 4, stride 16 */
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff10, coeff10.0, tf1.1, 192 /* a*bq' */
-            bn.add coeff10, wtmp3, coeff10 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff10, coeff10.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff10 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff10, coeff8, wtmp
-            bn.addm coeff8, coeff8, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w1, sw1.7
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w1, w0, w30
+        bn.addvm.8S                w0, w0, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff11, coeff11.0, tf1.1, 192 /* a*bq' */
-            bn.add coeff11, wtmp3, coeff11 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff11, coeff11.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff11 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff11, coeff9, wtmp
-            bn.addm coeff9, coeff9, wtmp
+        bn.mov w17, w18 /* Copy second batch of Twiddle factors to w17 */
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff14, coeff14.0, tf1.2, 192 /* a*bq' */
-            bn.add coeff14, wtmp3, coeff14 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff14, coeff14.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff14 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff14, coeff12, wtmp
-            bn.addm coeff12, coeff12, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w3, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w3, w2, w30
+        bn.addvm.8S                w2, w2, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff15, coeff15.0, tf1.2, 192 /* a*bq' */
-            bn.add coeff15, wtmp3, coeff15 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff15, coeff15.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff15 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff15, coeff13, wtmp
-            bn.addm coeff13, coeff13, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w5, sw1.1
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w5, w4, w30
+        bn.addvm.8S                w4, w4, w30
 
-            /* Layer 4 */
+        bn.mulv.l.8S.even.acc.z.lo w30, w7, sw1.2
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w7, w6, w30
+        bn.addvm.8S                w6, w6, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff1, coeff1.0, tf1.3, 192 /* a*bq' */
-            bn.add coeff1, wtmp3, coeff1 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff1, coeff1.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff1 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff1, coeff0, wtmp
-            bn.addm coeff0, coeff0, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w9, sw1.3
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w9, w8, w30
+        bn.addvm.8S                w8, w8, w30
 
-            bn.lid tf1_idx, 64(twp)
+        bn.mulv.l.8S.even.acc.z.lo w30, w11, sw1.4
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w11, w10, w30
+        bn.addvm.8S                w10, w10, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff3, coeff3.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff3, wtmp3, coeff3 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff3, coeff3.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff3 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff3, coeff2, wtmp
-            bn.addm coeff2, coeff2, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w13, sw1.5
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w13, w12, w30
+        bn.addvm.8S                w12, w12, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff5, coeff5.0, tf1.1, 192 /* a*bq' */
-            bn.add coeff5, wtmp3, coeff5 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff5, coeff5.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff5 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff5, coeff4, wtmp
-            bn.addm coeff4, coeff4, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w15, sw1.6
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w15, w14, w30
+        bn.addvm.8S                w14, w14, w30
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff7, coeff7.0, tf1.2, 192 /* a*bq' */
-            bn.add coeff7, wtmp3, coeff7 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff7, coeff7.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff7 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff7, coeff6, wtmp
-            bn.addm coeff6, coeff6, wtmp
+        bn.mov w17, w19 /* Copy the first batch of Twiddle factors back for next loop. */
 
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff9, coeff9.0, tf1.3, 192 /* a*bq' */
-            bn.add coeff9, wtmp3, coeff9 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff9, coeff9.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff9 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff9, coeff8, wtmp
-            bn.addm coeff8, coeff8, wtmp
+        /* Store output data */
+        bn.sid x4,  0(x12)
+        bn.sid x5, 64(x12)
+        bn.sid x6, 128(x12)
+        bn.sid x7, 192(x12)
+        bn.sid x8, 256(x12)
+        bn.sid x9, 320(x12)
+        bn.sid x13, 384(x12)
+        bn.sid x14, 448(x12)
+        bn.sid x15, 512(x12)
+        bn.sid x16, 576(x12)
+        bn.sid x17, 640(x12)
+        bn.sid x18, 704(x12)
+        bn.sid x19, 768(x12)
+        bn.sid x20, 832(x12)
+        bn.sid x21, 896(x12)
+        bn.sid x22, 960(x12)
 
-            bn.lid tf1_idx, 96(twp)
-
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff11, coeff11.0, tf1.0, 192 /* a*bq' */
-            bn.add coeff11, wtmp3, coeff11 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff11, coeff11.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff11 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff11, coeff10, wtmp
-            bn.addm coeff10, coeff10, wtmp
-
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff13, coeff13.0, tf1.1, 192 /* a*bq' */
-            bn.add coeff13, wtmp3, coeff13 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff13, coeff13.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff13 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff13, coeff12, wtmp
-            bn.addm coeff12, coeff12, wtmp
-
-            /* Plantard multiplication: Twiddle * coeff */
-            bn.mulqacc.wo.z coeff15, coeff15.0, tf1.2, 192 /* a*bq' */
-            bn.add coeff15, wtmp3, coeff15 >> 160 /* + 2^alpha = 2^8 */
-            bn.mulqacc.wo.z coeff15, coeff15.1, wtmp3.2, 0 /* *q */
-            bn.rshi wtmp, wtmp3, coeff15 >> 32 /* >> l */
-            /* Butterfly */
-            bn.subm coeff15, coeff14, wtmp
-            bn.addm coeff14, coeff14, wtmp
-
-            /* Shift result values into the top of buffer registers */
-            /* implicitly removes the old value */
-            bn.rshi buf0, coeff0, buf0 >> 32
-            bn.rshi buf1, coeff1, buf1 >> 32
-            bn.rshi buf2, coeff2, buf2 >> 32
-            bn.rshi buf3, coeff3, buf3 >> 32
-            bn.rshi buf4, coeff4, buf4 >> 32
-            bn.rshi buf5, coeff5, buf5 >> 32
-            bn.rshi buf6, coeff6, buf6 >> 32
-            bn.rshi buf7, coeff7, buf7 >> 32
-            bn.rshi buf8, coeff8, buf8 >> 32
-            bn.rshi buf9, coeff9, buf9 >> 32
-            bn.rshi buf10, coeff10, buf10 >> 32
-            bn.rshi buf11, coeff11, buf11 >> 32
-            bn.rshi buf12, coeff12, buf12 >> 32
-
-            /* Store unbuffered values */
-            /* Coeff13 */
-            bn.sid coeff13_idx, STACK_WDR2GPR(fp)
-            lw tmp_gpr, STACK_WDR2GPR(fp)
-            sw tmp_gpr, 832(outp)
-            /* Coeff14 */
-            bn.sid coeff14_idx, STACK_WDR2GPR(fp)
-            lw tmp_gpr, STACK_WDR2GPR(fp)
-            sw tmp_gpr, 896(outp)
-            /* Coeff15 */
-            bn.sid coeff15_idx, STACK_WDR2GPR(fp)
-            lw tmp_gpr, STACK_WDR2GPR(fp)
-            sw tmp_gpr, 960(outp)
-
-            /* Go to next coefficient for the unbuffered loads/stores */
-            addi inp, inp, 4
-            addi outp, outp, 4
-            /* Inner Loop End */
-
-        /* Subtract 32 from offset to account for the increment inside the LOOP 8 */
-        bn.sid buf0_idx, -32(outp)
-        bn.sid buf1_idx, 32(outp)
-        bn.sid buf2_idx, 96(outp)
-        bn.sid buf3_idx, 160(outp)
-        bn.sid buf4_idx, 224(outp)
-        bn.sid buf5_idx, 288(outp)
-        bn.sid buf6_idx, 352(outp)
-        bn.sid buf7_idx, 416(outp)
-        bn.sid buf8_idx, 480(outp)
-        bn.sid buf9_idx, 544(outp)
-        bn.sid buf10_idx, 608(outp)
-        bn.sid buf11_idx, 672(outp)
-        bn.sid buf12_idx, 736(outp)
-        /* Outer Loop End */
+        addi x10, x10, 32
+        addi x12, x12, 32
 
     /* Restore input pointer */
-    addi inp, inp, -64
+    addi x10, x10, -64
     /* Restore output pointer */
-    addi outp, outp, -64
+    addi x12, x12, -64
 
     /* Set the twiddle pointer for layer 5 */
-    addi twp, twp, 128
+    addi x11, x11, 64
 
-    /* Set up constants for input/twiddle factors */
-    li tf1_idx, 16
+    /* w16--w23 are used for the twiddle factors on layers 5--8 */
+    LOOPI 2, 401
+        /* Load input data */
+        bn.lid x4, 0(x12)
+        bn.lid x5, 32(x12)
+        bn.lid x6, 64(x12)
+        bn.lid x7, 96(x12)
+        bn.lid x8, 128(x12)
+        bn.lid x9, 160(x12)
+        bn.lid x13, 192(x12)
+        bn.lid x14, 224(x12)
+        bn.lid x15, 256(x12)
+        bn.lid x16, 288(x12)
+        bn.lid x17, 320(x12)
+        bn.lid x18, 352(x12)
+        bn.lid x19, 384(x12)
+        bn.lid x20, 416(x12)
+        bn.lid x21, 448(x12)
+        bn.lid x22, 480(x12)
 
-    bn.xor buf9, buf9, buf9
-    bn.addi buf8, buf9, 1
-    bn.rshi buf8, buf8, buf9 >> 224
-    bn.subi buf8, buf8, 1
+        /* Layer 5, stride 8 */
 
-    LOOPI 16, 232
-        /* Load layer 5 + 2 layer 6 + 1 layer 7 twiddle */
-        bn.lid tf1_idx, 0(twp++)
+        /* Load twiddle factors */
+        bn.lid x23, 0(x11++)
 
-        /* Load Data */
-        bn.lid buf0_idx, 0(outp)
-        bn.and  coeff0, buf8, buf0 >> 0
-        bn.and  coeff1, buf8, buf0 >> 32
-        bn.and  coeff2, buf8, buf0 >> 64
-        bn.and  coeff3, buf8, buf0 >> 96
-        bn.and  coeff4, buf8, buf0 >> 128
-        bn.and  coeff5, buf8, buf0 >> 160
-        bn.and  coeff6, buf8, buf0 >> 192
-        bn.and  coeff7, buf8, buf0 >> 224
+        /* Butterflies */
+        bn.mulv.l.8S.even.acc.z.lo w30, w1, sw1.0
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w1, w0, w30
+        bn.addvm.8S                w0, w0, w30
 
-        bn.lid buf0_idx, 32(outp)
-        bn.and  coeff8, buf8, buf0 >> 0
-        bn.and  coeff9, buf8, buf0 >> 32
-        bn.and  coeff10, buf8, buf0 >> 64
-        bn.and  coeff11, buf8, buf0 >> 96
-        bn.and  coeff12, buf8, buf0 >> 128
-        bn.and  coeff13, buf8, buf0 >> 160
-        bn.and  coeff14, buf8, buf0 >> 192
-        bn.and  coeff15, buf8, buf0 >> 224
+        bn.mulv.l.8S.even.acc.z.lo w30, w3, sw1.1
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w3, w2, w30
+        bn.addvm.8S                w2, w2, w30
 
-        /* Layer 5 */
+        bn.mulv.l.8S.even.acc.z.lo w30, w5, sw1.2
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w5, w4, w30
+        bn.addvm.8S                w4, w4, w30
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff8, coeff8.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff8, wtmp3, coeff8 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff8, coeff8.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff8 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff8, coeff0, wtmp
-        bn.addm coeff0, coeff0, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w7, sw1.3
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w7, w6, w30
+        bn.addvm.8S                w6, w6, w30
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff9, coeff9.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff9, wtmp3, coeff9 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff9, coeff9.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff9 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff9, coeff1, wtmp
-        bn.addm coeff1, coeff1, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w9, sw1.4
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w9, w8, w30
+        bn.addvm.8S                w8, w8, w30
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff10, coeff10.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff10, wtmp3, coeff10 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff10, coeff10.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff10 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff10, coeff2, wtmp
-        bn.addm coeff2, coeff2, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w11, sw1.5
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w11, w10, w30
+        bn.addvm.8S                w10, w10, w30
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff11, coeff11.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff11, wtmp3, coeff11 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff11, coeff11.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff11 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff11, coeff3, wtmp
-        bn.addm coeff3, coeff3, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w13, sw1.6
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w13, w12, w30
+        bn.addvm.8S                w12, w12, w30
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff12, coeff12.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff12, wtmp3, coeff12 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff12, coeff12.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff12 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff12, coeff4, wtmp
-        bn.addm coeff4, coeff4, wtmp
+        bn.mulv.l.8S.even.acc.z.lo w30, w15, sw1.7
+        bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+        bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+        bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
+        bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+        bn.subvm.8S                w15, w14, w30
+        bn.addvm.8S                w14, w14, w30
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff13, coeff13.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff13, wtmp3, coeff13 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff13, coeff13.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff13 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff13, coeff5, wtmp
-        bn.addm coeff5, coeff5, wtmp
+        /* Transpose */
+        /* At this point, w0-w15 are in use */
+        bn.trn1.8S w24, w0, w1
+        bn.trn2.8S w25, w0, w1
+        bn.trn1.8S w26, w2, w3
+        bn.trn2.8S w27, w2, w3
+        bn.trn1.8S w28, w4, w5
+        bn.trn2.8S w29, w4, w5
+        bn.trn1.8S w30, w6, w7
+        bn.trn2.8S w31, w6, w7
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff14, coeff14.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff14, wtmp3, coeff14 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff14, coeff14.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff14 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff14, coeff6, wtmp
-        bn.addm coeff6, coeff6, wtmp
+        bn.trn1.4D w0, w24, w26
+        bn.trn2.4D w2, w24, w26
+        bn.trn1.4D w1, w25, w27
+        bn.trn2.4D w3, w25, w27
+        bn.trn1.4D w4, w28, w30
+        bn.trn2.4D w6, w28, w30
+        bn.trn1.4D w5, w29, w31
+        bn.trn2.4D w7, w29, w31
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff15, coeff15.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff15, wtmp3, coeff15 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff15, coeff15.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff15 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff15, coeff7, wtmp
-        bn.addm coeff7, coeff7, wtmp
+        bn.trn1.2Q w24, w0, w4
+        bn.trn2.2Q w28, w0, w4
+        bn.trn1.2Q w25, w1, w5
+        bn.trn2.2Q w29, w1, w5
+        bn.trn1.2Q w26, w2, w6
+        bn.trn2.2Q w30, w2, w6
+        bn.trn1.2Q w27, w3, w7
+        bn.trn2.2Q w31, w3, w7
 
-        /* Layer 6 */
+        /* bn.trans8 w8, w8 */
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff4, coeff4.0, tf1.1, 192 /* a*bq' */
-        bn.add coeff4, wtmp3, coeff4 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff4, coeff4.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff4 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff4, coeff0, wtmp
-        bn.addm coeff0, coeff0, wtmp
+        /* bn.trans8 w8, w8 */
+        bn.trn1.8S w0, w8, w9
+        bn.trn2.8S w1, w8, w9
+        bn.trn1.8S w2, w10, w11
+        bn.trn2.8S w3, w10, w11
+        bn.trn1.8S w4, w12, w13
+        bn.trn2.8S w5, w12, w13
+        bn.trn1.8S w6, w14, w15
+        bn.trn2.8S w7, w14, w15
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff5, coeff5.0, tf1.1, 192 /* a*bq' */
-        bn.add coeff5, wtmp3, coeff5 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff5, coeff5.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff5 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff5, coeff1, wtmp
-        bn.addm coeff1, coeff1, wtmp
+        bn.trn1.4D w8, w0, w2
+        bn.trn2.4D w10, w0, w2
+        bn.trn1.4D w9, w1, w3
+        bn.trn2.4D w11, w1, w3
+        bn.trn1.4D w12, w4, w6
+        bn.trn2.4D w14, w4, w6
+        bn.trn1.4D w13, w5, w7
+        bn.trn2.4D w15, w5, w7
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff6, coeff6.0, tf1.1, 192 /* a*bq' */
-        bn.add coeff6, wtmp3, coeff6 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff6, coeff6.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff6 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff6, coeff2, wtmp
-        bn.addm coeff2, coeff2, wtmp
+        bn.trn1.2Q w0, w8, w12
+        bn.trn2.2Q w4, w8, w12
+        bn.trn1.2Q w1, w9, w13
+        bn.trn2.2Q w5, w9, w13
+        bn.trn1.2Q w2, w10, w14
+        bn.trn2.2Q w6, w10, w14
+        bn.trn1.2Q w3, w11, w15
+        bn.trn2.2Q w7, w11, w15
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff7, coeff7.0, tf1.1, 192 /* a*bq' */
-        bn.add coeff7, wtmp3, coeff7 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff7, coeff7.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff7 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff7, coeff3, wtmp
-        bn.addm coeff3, coeff3, wtmp
+        /* Layer 6, stride 4 */
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff12, coeff12.0, tf1.2, 192 /* a*bq' */
-        bn.add coeff12, wtmp3, coeff12 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff12, coeff12.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff12 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff12, coeff8, wtmp
-        bn.addm coeff8, coeff8, wtmp
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
+        #define wtmp w8
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff13, coeff13.0, tf1.2, 192 /* a*bq' */
-        bn.add coeff13, wtmp3, coeff13 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff13, coeff13.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff13 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff13, coeff9, wtmp
-        bn.addm coeff9, coeff9, wtmp
+        /* Butterflies */
+        bn.mulv.8S.even.acc.z.lo   wtmp, w28, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w28, w24, wtmp
+        bn.addvm.8S                w24, w24, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff14, coeff14.0, tf1.2, 192 /* a*bq' */
-        bn.add coeff14, wtmp3, coeff14 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff14, coeff14.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff14 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff14, coeff10, wtmp
-        bn.addm coeff10, coeff10, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w29, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w29, w25, wtmp
+        bn.addvm.8S                w25, w25, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff15, coeff15.0, tf1.2, 192 /* a*bq' */
-        bn.add coeff15, wtmp3, coeff15 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff15, coeff15.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff15 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff15, coeff11, wtmp
-        bn.addm coeff11, coeff11, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w30, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w30, w26, wtmp
+        bn.addvm.8S                w26, w26, wtmp
 
-        /* Layer 7 */
+        bn.mulv.8S.even.acc.z.lo   wtmp, w31, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w31, w27, wtmp
+        bn.addvm.8S                w27, w27, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff2, coeff2.0, tf1.3, 192 /* a*bq' */
-        bn.add coeff2, wtmp3, coeff2 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff2, coeff2.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff2 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff2, coeff0, wtmp
-        bn.addm coeff0, coeff0, wtmp
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff3, coeff3.0, tf1.3, 192 /* a*bq' */
-        bn.add coeff3, wtmp3, coeff3 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff3, coeff3.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff3 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff3, coeff1, wtmp
-        bn.addm coeff1, coeff1, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w4, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w4, w0, wtmp
+        bn.addvm.8S                w0, w0, wtmp
 
-        /* Load 3 layer 7, 1 layer 8 */
-        bn.lid tf1_idx, 0(twp++)
+        bn.mulv.8S.even.acc.z.lo   wtmp, w5, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w5, w1, wtmp
+        bn.addvm.8S                w1, w1, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff6, coeff6.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff6, wtmp3, coeff6 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff6, coeff6.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff6 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff6, coeff4, wtmp
-        bn.addm coeff4, coeff4, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w6, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w6, w2, wtmp
+        bn.addvm.8S                w2, w2, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff7, coeff7.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff7, wtmp3, coeff7 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff7, coeff7.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff7 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff7, coeff5, wtmp
-        bn.addm coeff5, coeff5, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w7, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w7, w3, wtmp
+        bn.addvm.8S                w3, w3, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff10, coeff10.0, tf1.1, 192 /* a*bq' */
-        bn.add coeff10, wtmp3, coeff10 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff10, coeff10.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff10 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff10, coeff8, wtmp
-        bn.addm coeff8, coeff8, wtmp
+        /* Layer 7, stride 2 */
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff11, coeff11.0, tf1.1, 192 /* a*bq' */
-        bn.add coeff11, wtmp3, coeff11 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff11, coeff11.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff11 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff11, coeff9, wtmp
-        bn.addm coeff9, coeff9, wtmp
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff14, coeff14.0, tf1.2, 192 /* a*bq' */
-        bn.add coeff14, wtmp3, coeff14 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff14, coeff14.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff14 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff14, coeff12, wtmp
-        bn.addm coeff12, coeff12, wtmp
+        /* Butterflies */
+        bn.mulv.8S.even.acc.z.lo   wtmp, w26, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w26, w24, wtmp
+        bn.addvm.8S                w24, w24, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff15, coeff15.0, tf1.2, 192 /* a*bq' */
-        bn.add coeff15, wtmp3, coeff15 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff15, coeff15.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff15 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff15, coeff13, wtmp
-        bn.addm coeff13, coeff13, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w27, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w27, w25, wtmp
+        bn.addvm.8S                w25, w25, wtmp
 
-        /* Layer 8 */
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff1, coeff1.0, tf1.3, 192 /* a*bq' */
-        bn.add coeff1, wtmp3, coeff1 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff1, coeff1.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff1 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff1, coeff0, wtmp
-        bn.addm coeff0, coeff0, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w30, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w30, w28, wtmp
+        bn.addvm.8S                w28, w28, wtmp
 
-        /* Load layer 4 layer 8 */
-        bn.lid tf1_idx, 0(twp++)
+        bn.mulv.8S.even.acc.z.lo   wtmp, w31, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w31, w29, wtmp
+        bn.addvm.8S                w29, w29, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff3, coeff3.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff3, wtmp3, coeff3 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff3, coeff3.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff3 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff3, coeff2, wtmp
-        bn.addm coeff2, coeff2, wtmp
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff5, coeff5.0, tf1.1, 192 /* a*bq' */
-        bn.add coeff5, wtmp3, coeff5 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff5, coeff5.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff5 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff5, coeff4, wtmp
-        bn.addm coeff4, coeff4, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w2, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w2, w0, wtmp
+        bn.addvm.8S                w0, w0, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff7, coeff7.0, tf1.2, 192 /* a*bq' */
-        bn.add coeff7, wtmp3, coeff7 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff7, coeff7.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff7 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff7, coeff6, wtmp
-        bn.addm coeff6, coeff6, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w3, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w3, w1, wtmp
+        bn.addvm.8S                w1, w1, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff9, coeff9.0, tf1.3, 192 /* a*bq' */
-        bn.add coeff9, wtmp3, coeff9 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff9, coeff9.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff9 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff9, coeff8, wtmp
-        bn.addm coeff8, coeff8, wtmp
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
 
-        /* Load layer 4 layer 8 + padding */
-        bn.lid tf1_idx, 0(twp++)
+        bn.mulv.8S.even.acc.z.lo   wtmp, w6, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w6, w4, wtmp
+        bn.addvm.8S                w4, w4, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff11, coeff11.0, tf1.0, 192 /* a*bq' */
-        bn.add coeff11, wtmp3, coeff11 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff11, coeff11.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff11 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff11, coeff10, wtmp
-        bn.addm coeff10, coeff10, wtmp
+        bn.mulv.8S.even.acc.z.lo   wtmp, w7, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w7, w5, wtmp
+        bn.addvm.8S                w5, w5, wtmp
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff13, coeff13.0, tf1.1, 192 /* a*bq' */
-        bn.add coeff13, wtmp3, coeff13 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff13, coeff13.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff13 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff13, coeff12, wtmp
-        bn.addm coeff12, coeff12, wtmp
+        /* Layer 8, stride 1 */
 
-        /* Plantard multiplication: Twiddle * coeff */
-        bn.mulqacc.wo.z coeff15, coeff15.0, tf1.2, 192 /* a*bq' */
-        bn.add coeff15, wtmp3, coeff15 >> 160 /* + 2^alpha = 2^8 */
-        bn.mulqacc.wo.z coeff15, coeff15.1, wtmp3.2, 0 /* *q */
-        bn.rshi wtmp, wtmp3, coeff15 >> 32 /* >> l */
-        /* Butterfly */
-        bn.subm coeff15, coeff14, wtmp
-        bn.addm coeff14, coeff14, wtmp
 
-        /* Reassemble WDRs and store */
-        bn.rshi buf0, coeff0, buf0 >> 32
-        bn.rshi buf0, coeff1, buf0 >> 32
-        bn.rshi buf0, coeff2, buf0 >> 32
-        bn.rshi buf0, coeff3, buf0 >> 32
-        bn.rshi buf0, coeff4, buf0 >> 32
-        bn.rshi buf0, coeff5, buf0 >> 32
-        bn.rshi buf0, coeff6, buf0 >> 32
-        bn.rshi buf0, coeff7, buf0 >> 32
-        bn.sid buf0_idx, 0(outp++)
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
 
-        bn.rshi buf0, coeff8, buf0 >> 32
-        bn.rshi buf0, coeff9, buf0 >> 32
-        bn.rshi buf0, coeff10, buf0 >> 32
-        bn.rshi buf0, coeff11, buf0 >> 32
-        bn.rshi buf0, coeff12, buf0 >> 32
-        bn.rshi buf0, coeff13, buf0 >> 32
-        bn.rshi buf0, coeff14, buf0 >> 32
-        bn.rshi buf0, coeff15, buf0 >> 32
-        bn.sid buf0_idx, 0(outp++)
+        bn.mulv.8S.even.acc.z.lo   wtmp, w25, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w25, w24, wtmp
+        bn.addvm.8S                w24, w24, wtmp
+
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
+
+        bn.mulv.8S.even.acc.z.lo   wtmp, w27, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w27, w26, wtmp
+        bn.addvm.8S                w26, w26, wtmp
+
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
+
+        bn.mulv.8S.even.acc.z.lo   wtmp, w29, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w29, w28, wtmp
+        bn.addvm.8S                w28, w28, wtmp
+
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
+
+        bn.mulv.8S.even.acc.z.lo   wtmp, w31, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w31, w30, wtmp
+        bn.addvm.8S                w30, w30, wtmp
+
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
+
+        bn.mulv.8S.even.acc.z.lo   wtmp, w1, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w1, w0, wtmp
+        bn.addvm.8S                w0, w0, wtmp
+
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
+
+        bn.mulv.8S.even.acc.z.lo   wtmp, w3, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w3, w2, wtmp
+        bn.addvm.8S                w2, w2, wtmp
+
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
+
+        bn.mulv.8S.even.acc.z.lo   wtmp, w5, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w5, w4, wtmp
+        bn.addvm.8S                w4, w4, wtmp
+
+        bn.lid x23, 0(x11++) /* Load twiddle factors */
+
+        bn.mulv.8S.even.acc.z.lo   wtmp, w7, w17
+        bn.mulv.l.8S.even.lo       wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.even.acc.hi   wtmp, wtmp, sw0.0
+        bn.mulv.8S.odd.acc.z.lo    wtmp, wtmp, w17
+        bn.mulv.l.8S.odd.lo        wtmp, wtmp, sw0.1
+        bn.mulv.l.8S.odd.acc.hi    wtmp, wtmp, sw0.0
+        bn.subvm.8S                w7, w6, wtmp
+        bn.addvm.8S                w6, w6, wtmp
+
+        /* Transpose back */
+        /* First trans w8-w15 */
+        bn.trn1.8S w8, w0, w1
+        bn.trn2.8S w9, w0, w1
+        bn.trn1.8S w10, w2, w3
+        bn.trn2.8S w11, w2, w3
+        bn.trn1.8S w12, w4, w5
+        bn.trn2.8S w13, w4, w5
+        bn.trn1.8S w14, w6, w7
+        bn.trn2.8S w15, w6, w7
+
+        bn.trn1.4D w0, w8, w10
+        bn.trn2.4D w2, w8, w10
+        bn.trn1.4D w1, w9, w11
+        bn.trn2.4D w3, w9, w11
+        bn.trn1.4D w4, w12, w14
+        bn.trn2.4D w6, w12, w14
+        bn.trn1.4D w5, w13, w15
+        bn.trn2.4D w7, w13, w15
+
+        bn.trn1.2Q w8, w0, w4
+        bn.trn2.2Q w12, w0, w4
+        bn.trn1.2Q w9, w1, w5
+        bn.trn2.2Q w13, w1, w5
+        bn.trn1.2Q w10, w2, w6
+        bn.trn2.2Q w14, w2, w6
+        bn.trn1.2Q w11, w3, w7
+        bn.trn2.2Q w15, w3, w7
+
+        /* Second trans w0-w7 */
+        bn.trn1.8S w0, w24, w25
+        bn.trn2.8S w1, w24, w25
+        bn.trn1.8S w2, w26, w27
+        bn.trn2.8S w3, w26, w27
+        bn.trn1.8S w4, w28, w29
+        bn.trn2.8S w5, w28, w29
+        bn.trn1.8S w6, w30, w31
+        bn.trn2.8S w7, w30, w31
+
+        bn.trn1.4D w24, w0, w2
+        bn.trn2.4D w26, w0, w2
+        bn.trn1.4D w25, w1, w3
+        bn.trn2.4D w27, w1, w3
+        bn.trn1.4D w28, w4, w6
+        bn.trn2.4D w30, w4, w6
+        bn.trn1.4D w29, w5, w7
+        bn.trn2.4D w31, w5, w7
+
+        bn.trn1.2Q w0, w24, w28
+        bn.trn2.2Q w4, w24, w28
+        bn.trn1.2Q w1, w25, w29
+        bn.trn2.2Q w5, w25, w29
+        bn.trn1.2Q w2, w26, w30
+        bn.trn2.2Q w6, w26, w30
+        bn.trn1.2Q w3, w27, w31
+        bn.trn2.2Q w7, w27, w31
+
+
+        bn.sid x4, 0(x12)
+        bn.sid x5, 32(x12)
+        bn.sid x6, 64(x12)
+        bn.sid x7, 96(x12)
+        bn.sid x8, 128(x12)
+        bn.sid x9, 160(x12)
+        bn.sid x13, 192(x12)
+        bn.sid x14, 224(x12)
+
+        bn.sid x15, 256(x12)
+        bn.sid x16, 288(x12)
+        bn.sid x17, 320(x12)
+        bn.sid x18, 352(x12)
+        bn.sid x19, 384(x12)
+        bn.sid x20, 416(x12)
+        bn.sid x21, 448(x12)
+        bn.sid x22, 480(x12)
+
+        addi x10, x10, 512
+        addi x12, x12, 512
 
     .irp reg,s11,s10,s9,s8,s7,s6,s5,s4,s3,s2,s1,s0
         pop \reg
@@ -987,15 +925,5 @@ _aligned:
 
     /* Zero w31 again */
     bn.xor w31, w31, w31
-
-    /* sp <- fp */
-    addi sp, fp, 0
-    /* Pop ebp */
-    lw fp, 0(sp)
-    addi sp, sp, 32
-
-    add sp, sp, 28
-    pop x6
-    add sp, sp, x6
 
     ret

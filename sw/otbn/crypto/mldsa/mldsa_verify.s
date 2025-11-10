@@ -1,6 +1,10 @@
 /* Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+/* Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of */
+/* "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN" */
+/* (https://eprint.iacr.org/2025/2028) */
+/* Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham. */
 
 .text
 
@@ -154,52 +158,6 @@
 .endm
 
 /**
- * Send a variable-length message to the Keccak core.
- *
- * Expects the Keccak core to have already received a `start` command matching
- * the desired hash function. After calling this routine, reading from the
- * KECCAK_DIGEST special register will return the hash digest.
- *
- * @param[in]   a1: len, byte-length of the message
- * @param[in]   a0: dptr_msg, pointer to message in DMEM
- * @param[in]   w31: all-zero
- * @param[in] dmem[dptr_msg..dptr_msg+len]: msg, hash function input
- *
- * clobbered registers: t0, a1, w0
- * clobbered flag groups: None
- */
-keccak_send_message:
-  /* Compute the number of full 256-bit message chunks.
-  t0 <= x11 >> 5 = floor(len / 32) */
-  srli t0, x11, 5
-
-  /* Write all full 256-bit sections of the test message. */
-  beq  t0, zero, _no_full_wdr
-
-  loop t0, 2
-      /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
-         x10 <= x10 + 32 */
-      bn.lid  x0, 0(x10++)
-      /* Write to the KECCAK_MSG wide special register (index 9).
-         KECCAK_MSG <= w0 */
-      bn.wsrw 0x9, w0
-
-_no_full_wdr:
-  /* Compute the remaining message length.
-       t0 <= x11 & 31 = len mod 32 */
-  andi t0, x11, 31
-
-  /* If the remaining length is zero, return early. */
-  beq t0, x0, _keccak_send_message_end
-
-  bn.lid  x0, 0(x10)
-  bn.wsrw 0x9, w0
-
-  _keccak_send_message_end:
-  ret
-
-
-/**
  * Dilithium Verify
  *
  * Returns: 0 on success
@@ -208,8 +166,8 @@ _no_full_wdr:
  * @param[out] x10: 0 on success, -1 on failure
  *
  */
-.globl verify_dilithium
-verify_dilithium:
+.globl crypto_sign_verify_internal
+crypto_sign_verify_internal:
     /* Stack address mapping */
     #define STACK_SIG -4
     #define STACK_SIGLEN -8
@@ -291,7 +249,7 @@ verify_dilithium:
 
     /* Check input lengths */
     li t0, CRYPTO_BYTES
-    bne a1, t0, _fail_verify_dilithium
+    bne a1, t0, _fail_crypto_sign_verify_internal
 
     /* Unpack pk */
     /* Unpack rho */
@@ -310,7 +268,7 @@ verify_dilithium:
 
     /* Store t1 */
     LOOPI K, 2
-        jal x1, polyt1_unpack_dilithium
+        jal x1, polyt1_unpack
         nop
 
     /* Unpack sig */
@@ -355,7 +313,7 @@ verify_dilithium:
     add  a0, fp, a0
 
     LOOPI L, 2
-        jal x1, polyz_unpack_dilithium
+        jal x1, polyz_unpack
         nop
 
     /* Decode h */
@@ -368,9 +326,9 @@ verify_dilithium:
         push \reg
     .endr
 
-    jal x1, polyvec_decode_h_dilithium
+    jal x1, polyvec_decode_h
     /* Raise error */
-    bne a0, zero, _fail_verify_dilithium
+    bne a0, zero, _fail_crypto_sign_verify_internal
 
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
@@ -382,7 +340,7 @@ verify_dilithium:
     li  a1, STACK_MAT /* Use as temporary buffer */
     add a1, fp, a1
     LOOPI L, 2
-        jal x1, poly_reduce32_dilithium
+        jal x1, poly_reduce32
         nop
 
     /* chknorm */
@@ -395,8 +353,8 @@ verify_dilithium:
 
     .rept L
         addi a0, s0, 0 /* Copy back input pointer */
-        jal x1, poly_chknorm_dilithium
-        bne a0, zero, _fail_verify_dilithium /* Raise error */
+        jal x1, poly_chknorm
+        bne a0, zero, _fail_crypto_sign_verify_internal /* Raise error */
         addi s0, s0, 1024 /* Increment input pointer */
     .endr
 
@@ -599,6 +557,12 @@ verify_dilithium:
         addi a2, a2, 256
         addi a2, a2, -L
 
+    /* Prepare modulus */
+    #define mod_x2 w22
+    bn.wsrr   w16, 0x0 /* w16 = R | Q */
+    bn.shv.8S mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
+
+    bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
     /* NTT(z) */
     li   a0, STACK_Z
     add  a0, fp, a0
@@ -610,13 +574,14 @@ verify_dilithium:
     .endr
 
     LOOPI L, 2
-        jal  x1, ntt_dilithium
+        jal  x1, ntt
         addi a1, a1, -1024
 
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
     .endr
 
+    /* After NTT(z), w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* NTT(c) */
     li   a0, STACK_CP
     add  a0, fp, a0
@@ -627,7 +592,7 @@ verify_dilithium:
         push \reg
     .endr
 
-    jal x1, ntt_dilithium
+    jal x1, ntt
 
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
@@ -650,6 +615,7 @@ verify_dilithium:
             bn.sid    t0, 0(a0++)
         nop /* Nested loops must not end on the same instruciton  */
 
+    /* After NTT(c), w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* NTT(t1) */
     li   a0, STACK_T1
     add  a0, fp, a0
@@ -661,13 +627,14 @@ verify_dilithium:
     .endr
 
     LOOPI K, 2
-        jal  x1, ntt_dilithium
+        jal  x1, ntt
         addi a1, a1, -1024
 
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
     .endr
 
+    /* After NTT(t1), w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* Matrix-vector multiplication */
     /* Load source pointers */
     li  a0, STACK_Z
@@ -684,10 +651,10 @@ verify_dilithium:
     li s1, POLYVECL_BYTES
 
     .rept K
-        jal  x1, poly_pointwise_dilithium
+        jal  x1, poly_pointwise
         addi a2, a2, -1024
         .rept L-1
-            jal  x1, poly_pointwise_acc_dilithium
+            jal  x1, poly_pointwise_acc
             addi a2, a2, -1024
         .endr
         /* Reset input vector pointer */
@@ -695,6 +662,7 @@ verify_dilithium:
         addi a2, a2, 1024
     .endr
 
+    /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* t1 = cp * t1 */
     li  a0, STACK_CP
     add a0, fp, a0
@@ -704,9 +672,11 @@ verify_dilithium:
     add a2, fp, a2
 
     LOOPI K, 2
-        jal  x1, poly_pointwise_dilithium
+        jal  x1, poly_pointwise
         addi a0, a0, -1024
 
+    /* MOD is still 2*R | 2*Q, but since w1 and t1 are both in [0,2q), w1 - t1 mod 2q is still in
+     * [0,2q), which is fine as input to INTT right after. So we don't need to switch MOD back to q */
     /* w1 = w1 - t1 */
     li  a0, STACK_W1
     add a0, fp, a0
@@ -716,9 +686,10 @@ verify_dilithium:
     add a2, fp, a2
 
     LOOPI K, 2
-        jal x1, poly_sub_dilithium
+        jal x1, poly_sub
         nop
 
+    /* After poly_sub, w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* Inverse NTT on w1 */
     li  a0, STACK_W1
     add a0, fp, a0
@@ -729,11 +700,13 @@ verify_dilithium:
     .endr
 
     LOOPI K, 3
-        jal  x1, intt_dilithium
+        jal  x1, intt
         /* Reset the twiddle pointer */
         addi a1, a1, -960
         /* Go to next input polynomial */
         addi a0, a0, 1024
+
+    bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
     .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
         pop \reg
@@ -748,7 +721,7 @@ verify_dilithium:
     add a2, fp, a2
 
     LOOPI K, 2
-        jal x1, poly_use_hint_dilithium
+        jal x1, poly_use_hint
         nop
 
     /* Pack w1 */
@@ -758,7 +731,7 @@ verify_dilithium:
     add a0, fp, a0
 
     LOOPI K, 2
-        jal x1, polyw1_pack_dilithium
+        jal x1, polyw1_pack
         nop
 
     /* Call random oracle and verify challenge */
@@ -807,7 +780,7 @@ verify_dilithium:
     srli  t1, t1, 3
     andi  t1, t1, 1
 
-    beq t1, zero, _fail_verify_dilithium
+    beq t1, zero, _fail_crypto_sign_verify_internal
 #if CTILDEBYTES == 48 || CTILDEBYTES == 64
     bn.wsrr w8, 0xA /* KECCAK_DIGEST */
     /* Remove upper 16B from digest in the case of CTILDEBYTES == 48 */
@@ -826,21 +799,21 @@ verify_dilithium:
     srli  t0, t0, 3
     andi  t0, t0, 1
 
-    beq t0, zero, _fail_verify_dilithium
+    beq t0, zero, _fail_crypto_sign_verify_internal
 #endif
-    beq zero, zero, _success_verify_dilithium
+    beq zero, zero, _success_crypto_sign_verify_internal
 
     /* ------------------------ */
 
     /* Free space on the stack */
     addi sp, fp, 0
-_success_verify_dilithium:
+_success_crypto_sign_verify_internal:
     li a0, 0
     la a1, result
     sw a0, 0(a1)
     ret
 
-_fail_verify_dilithium:
+_fail_crypto_sign_verify_internal:
     li a0, -1
     la a1, result
     sw a0, 0(a1)

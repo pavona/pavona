@@ -143,7 +143,7 @@
 .endm
 
 /**
- * decompose_dilithium
+ * decompose
  *
  * For finite field element a, compute high and low bits a0, a1 such that a
  * mod^+ Q = a1*ALPHA + a0 with -ALPHA/2 < a0 <= ALPHA/2 except if a1 =
@@ -157,17 +157,18 @@
  * decompose_const, reduce32_const, decompose_43_const, gamma2_vec_const,
  * qm1half_const, modulus
  *
- * clobbered registers: w1-w4, w30
+ * clobbered registers: w1-w4, t0, t3-t4
  */
-.global decompose_dilithium
-decompose_dilithium:
+.global decompose
+decompose:
     /* "a", "a{0,1}" refer to the variable names from the reference code */
 
     /* Compute "a1" */
     bn.addv.8S w2, w0, w5         /* "a" + 127 */
     bn.shv.8S  w2, w2 >> 7   /* ("a" + 127) >> 7 */
 #if GAMMA2 == (Q-1)/88
-    bn.mulv.8S w2, w2, w6         /* "a1" * 11275 */
+    bn.mulv.8S.even.lo w2, w2, w6         /* "a1" * 11275 */
+    bn.mulv.8S.odd.lo  w2, w2, w6         /* "a1" * 11275 */
     bn.shv.8S  w4, w7 << 23  /* 1 << 23 */
     bn.addv.8S w2, w2, w4         /* ("a1" * 11275) + (1 << 23) */
     bn.shv.8S  w2, w2 >> 24  /* (("a1" * 11275) + (1 << 23)) >> 24 */
@@ -177,7 +178,8 @@ decompose_dilithium:
     bn.and w3, w2, w30           /* ((43 - "a1") >> 31) & "a1" */
     bn.xor w2, w2, w3            /* "a1" ^= ((43 - "a1") >> 31) & "a1" */
 #elif GAMMA2 == (Q-1)/32
-    bn.mulv.8S w2, w2, w6    /* "a1" * 1025 */
+    bn.mulv.8S.even.lo w2, w2, w6    /* "a1" * 1025 */
+    bn.mulv.8S.odd.lo  w2, w2, w6    /* "a1" * 1025 */
     bn.shv.8S  w4, w7 << 21  /* 1 << 21 */
     bn.addv.8S w2, w2, w4    /* ("a1" * 1025) + (1 << 21) */
     bn.shv.8S  w2, w2 >> 22  /* (("a1" * 1025) + (1 << 21)) >> 22 */
@@ -185,7 +187,8 @@ decompose_dilithium:
 #endif
 
     /* Compute "a0" */
-    bn.mulv.8S w4, w9, w2          /* "a1" * GAMMA2 */
+    bn.mulv.8S.even.lo w4, w2, w9          /* "a1" * GAMMA2 */
+    bn.mulv.8S.odd.lo  w4, w4, w9          /* "a1" * GAMMA2 */
     bn.shv.8S  w4, w4 << 1    /* "a1" * GAMMA2 * 2 */
     bn.subv.8S w1, w0, w4          /* a - "a1" * GAMMA2 * 2 */
     bn.subv.8S w4, w10, w1         /* (Q-1)/2 - "a0" */

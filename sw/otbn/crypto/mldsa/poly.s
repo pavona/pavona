@@ -3,7 +3,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .text
-/* #define SWSHAKE */
 
 #define SEEDBYTES 32
 #define CRHBYTES 64
@@ -154,51 +153,8 @@
     addi sp, sp, 4     /* Increment stack pointer by 4 bytes */
 .endm
 
-/*
- * Send a variable-length message to the Keccak core.
- *
- * Expects the Keccak core to have already received a `start` command matching
- * the desired hash function. After calling this routine, reading from the
- * KECCAK_DIGEST special register will return the hash digest.
- *
- * @param[in]   a1: len, byte-length of the message
- * @param[in]   a0: dptr_msg, pointer to message in DMEM
- * @param[in]   w31: all-zero
- * @param[in] dmem[dptr_msg..dptr_msg+len]: msg, hash function input
- *
- * clobbered registers: t0, a1, w0
- * clobbered flag groups: None
- */
-keccak_send_message:
-  /* Compute the number of full 256-bit message chunks.
-       t0 <= x11 >> 5 = floor(len / 32) */
-  srli     t0, x11, 5
-
-  /* Write all full 256-bit sections of the test message. */
-  beq t0, zero, _no_full_wdr
-  loop     t0, 2
-    /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
-       x10 <= x10 + 32 */
-    bn.lid   x0, 0(x10++)
-    /* Write to the KECCAK_MSG wide special register (index 8).
-         KECCAK_MSG <= w0 */
-    bn.wsrw  0x9, w0
-_no_full_wdr:
-  /* Compute the remaining message length.
-       t0 <= x10 & 31 = len mod 32 */
-  andi     t0, x11, 31
-
-  /* If the remaining length is zero, return early. */
-  beq      t0, x0, _keccak_send_message_end
-
-  bn.lid   x0, 0(x10)
-  bn.wsrw  0x9, w0
-
-  _keccak_send_message_end:
-  ret
-
 /**
- * polyt1_unpack_dilithium
+ * polyt1_unpack
  *
  * Unpack polynomial t1 with coefficients fitting in 10 bits.
  * Output coefficients are standard representatives.
@@ -211,8 +167,8 @@ _no_full_wdr:
  * clobbered registers: a0-a1, t0-t2
  */
 
-.global polyt1_unpack_dilithium
-polyt1_unpack_dilithium:
+.global polyt1_unpack
+polyt1_unpack:
 
     /* Setup WDR */
     li t1, 1
@@ -222,59 +178,58 @@ polyt1_unpack_dilithium:
     li t5, 5
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-    la t6, polyt1_unpack_dilithium_mask
+    la t6, polyt1_unpack_mask
     bn.lid t5, 0(t6)
     li t6, 6
+    .rept 2
+    /* Start unpacking */
+    bn.lid t1, 0(a1++)
+    jal    x1, _inner_polyt1_unpack
 
-    LOOPI 2, 23
-        /* Start unpacking */
-        bn.lid t1, 0(a1++)
-        jal    x1, _inner_polyt1_unpack_dilithium
+    /* Current state: w1 = 0|w1[160:256] */
+    bn.lid t6, 0(a1++)      /* Load new WLEN word to w6 */
+    bn.or  w1, w1, w6 << 96 /* w1 = w6[0:160]|w1[160:256] */
+    jal    x1, _inner_polyt1_unpack
 
-        /* Current state: w1 = 0|w1[160:256] */
-        bn.lid t6, 0(a1++)      /* Load new WLEN word to w6 */
-        bn.or  w1, w1, w6 << 96 /* w1 = w6[0:160]|w1[160:256] */
-        jal    x1, _inner_polyt1_unpack_dilithium
+    /* Current state: w1 = 0|w6[64:160] */
+    bn.rshi w6, bn0, w6 >> 160
+    bn.or   w1, w1, w6 << 96 /* w1 = 0[64]|w6[160:256]|w6[64:160] */
+    jal     x1, _inner_polyt1_unpack
 
-        /* Current state: w1 = 0|w6[64:160] */
-        bn.rshi w6, bn0, w6 >> 160
-        bn.or   w1, w1, w6 << 96 /* w1 = 0[64]|w6[160:256]|w6[64:160] */
-        jal     x1, _inner_polyt1_unpack_dilithium
+    /* Current state: w1 = 0|w6[224:256] */
+    bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
+    bn.or  w1, w1, w6 << 32  /* w1 = w6[0:224]|w6_prev[224:256] */
+    jal    x1, _inner_polyt1_unpack
 
-        /* Current state: w1 = 0|w6[224:256] */
-        bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
-        bn.or  w1, w1, w6 << 32  /* w1 = w6[0:224]|w6_prev[224:256] */
-        jal    x1, _inner_polyt1_unpack_dilithium
+    /* Current state: w1 = 0|w6[128:224] */
+    bn.or  w1, bn0, w6 >> 128
+    bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
+    bn.or  w1, w1, w6 << 128 /* w1 = w6[0:128]|w6_prev[128:256] */
+    jal    x1, _inner_polyt1_unpack
 
-        /* Current state: w1 = 0|w6[128:224] */
-        bn.or  w1, bn0, w6 >> 128
-        bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
-        bn.or  w1, w1, w6 << 128 /* w1 = w6[0:128]|w6_prev[128:256] */
-        jal    x1, _inner_polyt1_unpack_dilithium
+    /* Current state: w1 = 0|w6[32:128] */
+    bn.or w1, bn0, w6 >> 32 /* w1 = 0[32]|w6[128:256]|w6[32:128] */
+    jal   x1, _inner_polyt1_unpack
 
-        /* Current state: w1 = 0|w6[32:128] */
-        bn.or w1, bn0, w6 >> 32 /* w1 = 0[32]|w6[128:256]|w6[32:128] */
-        jal   x1, _inner_polyt1_unpack_dilithium
+    /* Current state: w1 = 0|w6[192:256] */
+    bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
+    bn.or  w1, w1, w6 << 64 /* w1 = w6[0:192]|w6_prev[192:256] */
+    jal    x1, _inner_polyt1_unpack
 
-        /* Current state: w1 = 0|w6[192:256] */
-        bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
-        bn.or  w1, w1, w6 << 64 /* w1 = w6[0:192]|w6_prev[192:256] */
-        jal    x1, _inner_polyt1_unpack_dilithium
-
-        bn.or w1, bn0, w6 >> 96 /* w1 = w6[96:256] */
-        jal   x1, _inner_polyt1_unpack_dilithium
-        nop
+    bn.or w1, bn0, w6 >> 96 /* w1 = w6[96:256] */
+    jal   x1, _inner_polyt1_unpack
+    .endr
 
     ret
 
 /**
- * _inner_polyt1_unpack_dilithium
+ * _inner_polyt1_unpack
  *
  * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyeta_unpack_dilithium.
+ * Do not call from anywhere but polyeta_unpack.
  * Does not adhere to calling convention.
  */
-_inner_polyt1_unpack_dilithium:
+_inner_polyt1_unpack:
     /* Unpack 16 coefficients in one go */
     LOOPI 2, 18
         /* This could also be done by a loop but it causes 64 cycles per
@@ -294,7 +249,7 @@ _inner_polyt1_unpack_dilithium:
     ret
 
 /**
- * polyz_unpack_base_dilithium
+ * polyz_unpack
  *
  * Unpack polynomial z with coefficients in [-(GAMMA1 - 1), GAMMA1] fitting into
  * 18 bits.
@@ -306,17 +261,17 @@ _inner_polyt1_unpack_dilithium:
  *
  * clobbered registers: a0-a1, t0-t6
  */
-.global polyz_unpack_base_dilithium
-polyz_unpack_base_dilithium:
+.global polyz_unpack
+polyz_unpack:
 #if GAMMA1 == (1 << 17)
-    /* Load gamma1 as a vector into w4 */
+     /* Load gamma1 as a vector into w4 */
     li t2, 4
-    la t3, gamma1_vec_base_const
+    la t3, gamma1_vec_const
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
     li t2, 5
-    la t3, polyz_unpack_base_dilithium_mask
+    la t3, polyz_unpack_mask
     bn.lid t5, 0(t3)
 
     /* Setup WDR */
@@ -327,96 +282,95 @@ polyz_unpack_base_dilithium:
     LOOPI 2, 42
         bn.lid  t6, 0(a1++)
         bn.mov  w1, w6
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 144
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w3 >> 32
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 176
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w6 >> 64
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 208
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w3 >> 96
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 240
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 128
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w3 >> 16
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 160
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w6 >> 48
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 192
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w3 >> 80
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 224
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w6 >> 112
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
         nop /* Must not end on branch */
 
     ret
 
 /**
- * _inner_polyz_unpack_base_dilithium
+ * _inner_polyz_unpack
  *
  * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyz_unpack_dilithium.
+ * Do not call from anywhere but polyz_unpack.
  * Does not adhere to calling convention.
  */
-_inner_polyz_unpack_base_dilithium:
+_inner_polyz_unpack:
     /* Unpack 8 coefficients in one go */
     .rept 8
-        /* Mask */
-        bn.and w7, w1, w5
-        /* Subtract coefficient from gamma1 */
-        bn.sub w7, w4, w7
-        /* Move coefficient into the output register */
-        bn.rshi w2, w7, w2 >> 32
+        /* Shift one coefficient into the output register, ignoring the
+            upper 14 bits of other coefficient data */
+        bn.rshi w2, w1, w2 >> 32
         /* Advance the input register such that the next coefficient is
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 18
     .endr
 
+    bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
+    bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
     bn.sid     t2, 0(a0++)
     ret
 #elif GAMMA1 == (1 << 19)
     /* Load gamma1 as a vector into w4 */
     li t2, 4
-    la t3, gamma1_vec_base_const
+    la t3, gamma1_vec_const
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
     li t2, 5
-    la t3, polyz_unpack_base_dilithium_mask
+    la t3, polyz_unpack_mask
     bn.lid t5, 0(t3)
 
     /* Setup WDR */
@@ -427,62 +381,62 @@ _inner_polyz_unpack_base_dilithium:
     LOOPI 4, 22
         bn.lid  t6, 0(a1++)
         bn.mov  w1, w6
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 160
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w3 >> 64
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 224
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 128
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w3 >> 32
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 192
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
 
         bn.rshi w1, bn0, w6 >> 96
-        jal     x1, _inner_polyz_unpack_base_dilithium
+        jal     x1, _inner_polyz_unpack
         nop /* Must not end on branch */
 
     ret
 
 /**
- * _inner_polyz_unpack_base_dilithium
+ * _inner_polyz_unpack
  *
  * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyz_unpack_dilithium.
+ * Do not call from anywhere but polyz_unpack.
  * Does not adhere to calling convention.
  */
-_inner_polyz_unpack_base_dilithium:
+_inner_polyz_unpack:
     /* Unpack 8 coefficients in one go */
     .rept 8
-        /* Mask */
-        bn.and w7, w1, w5
-        /* Subtract coefficient from gamma1 */
-        bn.sub w7, w4, w7
-        /* Move coefficient into the output register */
-        bn.rshi w2, w7, w2 >> 32
+        /* Shift one coefficient into the output register, ignoring the
+            upper 14 bits of other coefficient data */
+        bn.rshi w2, w1, w2 >> 32
         /* Advance the input register such that the next coefficient is
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 20
     .endr
 
+    bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
+    bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
     bn.sid     t2, 0(a0++)
     ret
 #endif
+
 /**
- * poly_chknorm_base_dilithium
+ * poly_chknorm
  *
  * Check infinity norm of polynomial against given bound.
  * Assumes input coefficients were reduced by reduce32().
@@ -496,8 +450,8 @@ _inner_polyz_unpack_base_dilithium:
  *
  * clobbered registers: a0-a1, t0-t5, w1-w2
  */
- .global poly_chknorm_base_dilithium
-poly_chknorm_base_dilithium:
+ .global poly_chknorm
+poly_chknorm:
     /* save fp to stack */
     addi sp, sp, -32
     sw   fp, 0(sp)
@@ -520,35 +474,43 @@ poly_chknorm_base_dilithium:
     /* (Q-1)/8 <? B  */
     sub t2, t1, a1
     srli t2, t2, 31
-    bne zero, t2, _ret1_poly_chknorm_base_dilithium
+    bne zero, t2, _ret1_poly_chknorm
 
     /* Set end address */
     addi t0, a0, 1024
     /* Setup WDRs */
     li t1, 1
     li t2, 2
-_loop_poly_chknorm_base_dilithium:
-    /* bn.lid      t1, 0(a0) */
-    lw t1, 0(a0)
-
+_loop_poly_chknorm:
+    bn.lid      t1, 0(a0++)
     /* constant time absolute value
        t = a->coeffs[i] >> 31;
        t = a->coeffs[i] - (t & 2*a->coeffs[i]);
     */
-    srai t2, t1, 31 /* Get the mask */
-    slli t3, t1, 1 /* t3 <= (2 * t1) */
-    and  t2, t2, t3 /* t2 <= t2 & (2 * t1) */
-    sub  t2, t1, t2
+    /* Get the mask */
+    /* w2 <= 0, if w1 >=? 0, else 0xFFFFFFFF */
+    bn.shv.8S  w2, w1 >> 31
+    bn.subv.8S w2, bn0, w2 /* Build mask from MSBs */
+    /* w2 <= w2 & (2 * w1) */
+    bn.shv.8S  w3, w1 << 1
+    bn.and     w2, w2, w3
+    /* w2 <= w1 - w2 */
+    bn.subv.8S  w2, w1, w2
+    bn.sid      t2, STACK_WDR2GPR(fp)
 
-    /* t5 <= 1, if t2 <? a1, else 0 with a1 the bound */
-    sub  t5, t2, a1
-    srli t5, t5, 31
-    beq  t5, zero, _ret1_poly_chknorm_base_dilithium
+    addi t4, fp, STACK_WDR2GPR
+    /* Check bound */
+    .irp    offset,0,4,8,12,16,20,24,28
+        lw  t3, \offset(t4)
+        /* t5 <= 1, if t3 <? a1, else 0 with a1 the bound */
+        sub t5, t3, a1
+        srli t5, t5, 31
+        beq t5, zero, _ret1_poly_chknorm
+    .endr
 
-    addi a0, a0, 4
-    bne a0, t0, _loop_poly_chknorm_base_dilithium
+    bne a0, t0, _loop_poly_chknorm
 
-_ret0_poly_chknorm_base_dilithium:
+_ret0_poly_chknorm:
     /* sp <- fp */
     addi sp, fp, 0
     /* Pop ebp */
@@ -557,7 +519,7 @@ _ret0_poly_chknorm_base_dilithium:
     /* return success */
     li a0, 0
     ret
-_ret1_poly_chknorm_base_dilithium:
+_ret1_poly_chknorm:
     /* sp <- fp */
     addi sp, fp, 0
     /* Pop ebp */
@@ -571,13 +533,13 @@ _ret1_poly_chknorm_base_dilithium:
  * poly_challenge
  *
  * Implementation of H. Samples polynomial with TAU nonzero coefficients in
- * {-1,1} using the output stream of SHAKE256(seed).
+ * {-1,1} using the output stream of SHAKE128(seed|nonce).
  *
  * Returns: -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
- * @param[in]  a1: mu byte array containing seed of length SEEDBYTES
+ * @param[in]  a1: mu byte array containing seed of length CTILDEBYTES
  * @param[out] a0: pointer to output polynomial
  *
  * clobbered registers: a0-a5, t0-t3, w0-w3
@@ -663,8 +625,8 @@ poly_challenge:
     /* start do-while loop */
 _loop_inner_poly_challenge:
         /* If the SHAKE output "buffer" register w0 is empty, squeeze again.
-        Since all reads from w0 are equally large (8 bits) and 8 | 256,
-        we can just check for "zero" */
+           Since all reads from w0 are equally large (8 bits) and 8 | 256,
+           we can just check for "zero" */
         bne     zero, a2, _loop_inner_skip_load_poly_challenge
         bn.wsrr w0, 0xA /* KECCAK_DIGEST */
         li      a2, 256 /* reset the remaining bits counter */
@@ -709,7 +671,6 @@ _loop_inner_skip_load_poly_challenge:
 
     /* Finish the SHAKE-256 operation. */
 
-
     /* sp <- fp */
     addi sp, fp, 0
 
@@ -720,7 +681,7 @@ _loop_inner_skip_load_poly_challenge:
     ret
 
 /**
- * poly_uniform_base_dilithium
+ * poly_uniform
  *
  * Returns: -
  *
@@ -730,10 +691,10 @@ _loop_inner_skip_load_poly_challenge:
  * @param[in]  a2: nonce
  * @param[out] a1: dmem pointer to polynomial
  *
- * clobbered registers: a0-a5, t0-t5, w8, s0-s3
+ * clobbered registers: a0-a5, t0-t5, w8, w16
  */
-.global poly_uniform_base_dilithium
-poly_uniform_base_dilithium:
+.global poly_uniform
+poly_uniform:
     /* 32 byte align the sp */
     andi a5, sp, 31
     beq  a5, zero, _aligned
@@ -756,6 +717,10 @@ _aligned:
     /* Store nonce to memory */
     sw a2, STACK_NONCE(fp)
 
+    /* Load Q to GPR */
+    la t0, modulus
+    lw a2, 0(t0)
+
     /* Initialize a SHAKE128 operation. */
     addi  a4, a1, 0               /* save output pointer */
     addi  a1, zero, 34
@@ -772,10 +737,6 @@ _aligned:
 
     addi a1, a4, 0 /* move output pointer back to a1 */
 
-    /* Load Q to GPR */
-    la t0, modulus
-    lw a2, 0(t0)
-
     /* t0 = 1020, a1 + 1020 is the last valid address */
     addi t0, a1, 1024
 
@@ -783,16 +744,19 @@ _aligned:
     li t2, 0x7FFFFF
 
     /* WDR index */
+    li t5, 8
+    li t6, 0xFFFF
     li a6, 3 /* Compare for flag bits */
+    bn.movr t5, a6
 
     #define cmp_mask w9
     bn.addi cmp_mask, bn0, 3
 
-    /* Get mask 0x7FFFFF */
     #define coeff_mask w10
     bn.addi coeff_mask, bn0, 1
     bn.rshi coeff_mask, coeff_mask, bn0 >> 233
     bn.subi coeff_mask, coeff_mask, 1
+    /* bn.addi coeff_mask, bn0, 0x7FFFFF */
 
     #define cand w11
 
@@ -809,6 +773,7 @@ _aligned:
     li t6, 0
 
     /* Loop until 256 coefficients have been written to the output */
+
 _rej_sample_loop:
     /* First squeeze */
     .equ w8, shake_reg
@@ -828,7 +793,7 @@ _rej_sample_loop:
        */
 
     /* Process floor(32 bytes / 3 bytes) * 3 bytes = 30 bytes */
-    jal x1, _poly_uniform_base_inner_loop
+    jal x1, _poly_uniform_inner_loop
 
     /* Check if we have finished in the previous loop */
     beq a1, t0, _end_rej_sample_loop
@@ -838,7 +803,7 @@ _rej_sample_loop:
     /* Get last two bytes of shake output in shake_reg into cand */
     bn.rshi cand, shake_reg, bn0 >> 16 /* move remaining 2 bytes to the top of cand */
     /* Squeeze */
-    bn.wsrr  shake_reg, 0xA /* KECCAK_DIGEST */
+    bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
 
     /* Get one more byte from new shake data*/
     bn.rshi cand, shake_reg, cand >> 240
@@ -859,7 +824,6 @@ _rej_sample_loop:
 
     bne accumulator_count, t3, _skip_store2
 
-    bn.or accumulator, bn0, accumulator
     bn.sid    t5, 0(a1++) /* Store to memory */
     li        accumulator_count, 0
 
@@ -868,7 +832,7 @@ _rej_sample_loop:
 _skip_store2:
 
     /* Process floor(31/3)*3 = 30 bytes */
-    jal x1, _poly_uniform_base_inner_loop
+    jal x1, _poly_uniform_inner_loop
 
     /* Check if we have finished in the previous loop */
     beq a1, t0, _end_rej_sample_loop
@@ -877,7 +841,7 @@ _skip_store2:
     /* Get last two bytes of shake output in shake_reg into cand */
     bn.rshi cand, shake_reg, bn0 >> 8 /* move remaining 1 byte to the top of cand */
     /* Squeeze */
-    bn.wsrr  shake_reg, 0xA /* KECCAK_DIGEST */
+    bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
 
     /* Get one more byte from new shake data*/
     bn.rshi cand, shake_reg, cand >> 248
@@ -898,7 +862,6 @@ _skip_store2:
 
     bne accumulator_count, t3, _skip_store4
 
-    bn.or accumulator, bn0, accumulator
     bn.sid t5, 0(a1++) /* Store to memory */
     li accumulator_count, 0
     /* if we have written the last coefficient, exit */
@@ -906,7 +869,7 @@ _skip_store2:
 _skip_store4:
 
     /* Process floor(30/3)*3 = 30 bytes */
-    jal x1, _poly_uniform_base_inner_loop
+    jal x1, _poly_uniform_inner_loop
 
     /* Check if we have finished in the previous loop */
     beq a1, t0, _end_rej_sample_loop
@@ -915,7 +878,7 @@ _skip_store4:
     beq zero, zero, _rej_sample_loop
 
 _end_rej_sample_loop:
-    /* Finish the SHAKE-128 operation. */
+    /* Finish the SHAKE-256 operation. */
 
     /* sp <- fp */
     addi sp, fp, 0
@@ -927,18 +890,23 @@ _end_rej_sample_loop:
 
     ret
 
-_poly_uniform_base_inner_loop:
+_poly_uniform_inner_loop:
+    li t4, 1
     LOOPI 10, 12
         beq a1, t0, _skip_store1
         /* Mask shake output */
-        /* Get the candidate coefficient */
-        bn.and cand, coeff_mask, shake_reg
+        bn.and cand, shake_reg, coeff_mask
 
         bn.cmp cand, mod
         csrrs  a4, 0x7C0, zero /* Read flags */
 
         /* Z L M C */
         andi a4, a4, 3 /* Mask flags */
+        /* In this comparison, the L flag will never be set. We avoid this by
+           multiplying the coefficient and q by 2 before the comparison. This
+           assures that both numbers will be even and thus, after a subtraction
+           the LSB will never be set. Therefore, we do not need to mask the
+           flags. */
         bne  a4, a6, _skip_store1 /* Reject if M, C are NOT set to 1, meaning
                                      NOT (q > cand) = (q <= cand) */
 
@@ -955,26 +923,25 @@ _skip_store1:
     ret
 
 /**
- * poly_uniform_eta_base_dilithium
+ * poly_uniform_eta
  *
  * Returns: -
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
  * @param[in]     a0: pointer to rho
- * @param[in]     a1: dmem pointer to polynomial
  * @param[in]     a2: nonce
- * @param[in]     a3: SHAKE context buffer
+ * @param[in]     a1: dmem pointer to polynomial
  *
  * clobbered registers: a1, a3-a5, w8-w15, w20, t0-t6
  */
-.global poly_uniform_eta_base_dilithium
-poly_uniform_eta_base_dilithium:
+.global poly_uniform_eta
+poly_uniform_eta:
 /* 32 byte align the sp */
     andi a5, sp, 31
-    beq  a5, zero, _aligned_poly_uniform_eta_base
+    beq  a5, zero, _aligned_poly_uniform_eta
     sub  sp, sp, a5
-_aligned_poly_uniform_eta_base:
+_aligned_poly_uniform_eta:
     /* save fp to stack, use 32 bytes to keep it 32-byte aligned */
     addi sp, sp, -32
     sw   fp, 0(sp)
@@ -983,6 +950,7 @@ _aligned_poly_uniform_eta_base:
 
     /* Adjust sp to accomodate local variables */
     addi sp, sp, -64
+
     /* Space for tmp buffer to hold a WDR */
     #define STACK_WDR2GPR -32
 
@@ -991,6 +959,10 @@ _aligned_poly_uniform_eta_base:
 
     /* Store nonce to memory */
     sw a2, STACK_NONCE(fp)
+
+    /* Load a3 <= Q */
+    la t0, modulus
+    lw a3, 0(t0)
 
     /* Initialize a SHAKE256 operation. */
     addi a4, a1, 0               /* save output pointer */
@@ -1015,50 +987,75 @@ _aligned_poly_uniform_eta_base:
     /* Initialize constants for WDR index */
     li t5, 9
     li t6, 10
-    li t3, 20
+    li t3, 15
 
-    jal x1, _poly_uniform_eta_base_init_wdr_consts
+    bn.movr t5, t6 /* DEBUG */
 
+    /* Initialize constants */
+    bn.addi w14, bn0, 0x0F
+#if ETA == 2
+    bn.addi w16, bn0, 15
+#elif ETA == 4
+    bn.addi w16, bn0, 9
+#endif
+    li a5, 8
     li a6, 2
+
+    la t6, poly_uniform_eta_205
+    li t4, 12
+    bn.lid t4, 0(t6)
+
+    la t6, poly_uniform_eta_5/* Merge into one const for lane use */
+    li t4, 0
+    bn.lid t4, 0(t6)
+
+    la t6, eta
+    li t4, 1
+    bn.lid t4, 0(t6)
+
+    li t6, 8 /* coeffs to be collected in register */
 
     /* First squeeze */
     .equ w8, shake_reg
 
-    li t6, 8
-    li s4, 0
-_rej_eta_base_sample_loop:
-
-    bn.wsrr  shake_reg, 0xA /* KECCAK_DIGEST */
-
+_rej_eta_sample_loop:
+        bn.wsrr  shake_reg, 0xA /* KECCAK_DIGEST */
 LOOPI 64, 13
-    beq a1, t0, _rej_eta_base_sample_loop_continue
-    /* Process 4 bits */
-    bn.and  w9, shake_reg, w14            /* Mask out all other bits */
+        beq a1, t0, _rej_eta_sample_loop_continue
+        /* Process 4 bits */
+        bn.and  w9, shake_reg, w14            /* Mask out all other bits */
 
-    /* Check "t0" < {15,9} */
-    bn.cmp w9, w16
-    csrrs a4, 0x7C0, zero
-    /* If the MSB of t0 - {15,9} is not set, we know that t0 >= {15,9}
+        /* Check "t0" < {15,9} */
+        bn.cmp w9, w16
+        csrrs a4, 0x7C0, zero
+        /* If the MSB of t0 - {15,9} is not set, we know that t0 >= {15,9}
            and thus, we have to reject. */
-    and a4, a4, a6
-    beq a4, zero, _rej_eta_base_sample_loop_continue
+        and a4, a4, a6
+        beq a4, zero, _rej_eta_sample_loop_continue
 
-    addi t6, t6, -1
+        addi t6, t6, -1 /* Found one more valid 4-bit value */
 
-    jal x1, _poly_uniform_eta_base_arithmetic
+        /* Put each 4-bit value into one of 32-bit words in the WDR */
+        bn.rshi w20, w9, w20 >> 32
 
-    /* Store coefficient value from WDR into target polynomial */
-    bn.rshi w20, w9, w20 >> 32
+        bne zero, t6, _rej_eta_sample_loop_continue
 
-    bne t6, zero, _rej_eta_base_sample_loop_continue
-    bn.sid t3, 0(a1++)
-    li t6, 8
+        /* Vectorized part for arithmetic */
 
-_rej_eta_base_sample_loop_continue:
-    bn.rshi shake_reg, bn0, shake_reg >> 4 /* shift out the used nibble */
+        /* "t{0,1}" indicate the variable names from the reference code */
+        /* Compute "t0" = "t0" - (205 * "t0" >> 10) * 5 from reference code */
+        jal x1, _poly_uniform_eta_arithmetic
 
-bne a1, t0, _rej_eta_base_sample_loop /* Continue sampling */
+        /* Store coefficient value from WDR into target polynomial */
+        bn.sid t5, 0(a1++)
+        li t6, 8
+_rej_eta_sample_loop_continue:
+        bn.rshi shake_reg, bn0, shake_reg >> 4 /* shift out the used nibble */
 
+/* Loop logic */
+    bne  a1, t0, _rej_eta_sample_loop /* Continue sampling */
+
+_end_rej_eta_sample_loop:
     /* Finish the SHAKE-256 operation. */
 
     /* sp <- fp */
@@ -1071,156 +1068,21 @@ bne a1, t0, _rej_eta_base_sample_loop /* Continue sampling */
 
     ret
 
-_poly_uniform_eta_base_arithmetic:
+_poly_uniform_eta_arithmetic:
 #if ETA == 2
-    /* "t{0,1}" indicate the variable names from the reference code */
-    /* Compute "t0" = "t0" - (205 * "t0" >> 10) * 5 from reference code */
-
-    bn.mulqacc.wo.z w13, w12.0, w9.0, 0 /* 205 * "t0" */
-    bn.rshi         w13, bn0, w13 >> 10 /* (205 * "t0" >> 10) */
-    bn.mulqacc.wo.z w13, w0.0, w13.0, 0 /* (205 * "t0" >> 10) * 5 */
-    bn.sub          w9, w9, w13         /* "t0" - (205 * "t0" >> 10) * 5 */
+    bn.mulv.8S.even.lo w13, w20, w12
+    bn.mulv.8S.odd.lo  w13, w13, w12
+    bn.shv.8S  w13, w13 >> 10
+    bn.mulv.8S.even.lo w13, w13, w0
+    bn.mulv.8S.odd.lo  w13, w13, w0
+    bn.subv.8S w20, w20, w13
 #endif
-    bn.subm          w9, w1, w9          /* ETA - ... */
+    bn.subvm.8S w9, w1, w20
     ret
 
-_poly_uniform_eta_base_init_wdr_consts:
-    /* Initialize constants */
-    bn.addi w14, bn0, 0x0F
-#if ETA == 2
-    bn.addi w16, bn0, 15
-#elif ETA == 4
-    bn.addi w16, bn0, 9
-#endif
-    bn.addi w12, bn0, 205
-    bn.addi w0, bn0, 5
-    bn.addi w1, bn0, ETA
-
-    ret
-/**
- * decompose_base_dilithium
- *
- * For finite field element a, compute high and low bits a0, a1 such that a
- * mod^+ Q = a1*ALPHA + a0 with -ALPHA/2 < a0 <= ALPHA/2 except if a1 =
- * (Q-1)/ALPHA where we set a1 = 0 and -ALPHA/2 <= a0 = a mod^+ Q - Q < 0.
- * Assumes a to be standard representative.
- *
- * Returns: output element vector "a0" in w1, output element vector "a1" in w2
- *
- * @param[in] w0: input element vector
- * @param[in] w5-w11: constants in the following order: 1<<23,
- * decompose_const_base, qm1half_base_const, 43 or 15, gamma2x2_vec_base_const,
- * modulus_base, 0xFFFFFFFF
- *
- * clobbered registers: w1-w4, t0, t3-t4
- */
-.global decompose_base_dilithium
-decompose_base_dilithium:
-    /* "a", "a{0,1}" refer to the variable names from the reference code */
-#if GAMMA2 == (Q-1)/88
-    LOOPI 8, 19
-#elif GAMMA2 == (Q-1)/32
-    LOOPI 8, 16
-#endif
-        bn.and w12, w0, w11 /* Mask 32-bit coefficient */
-        bn.rshi w0, bn0, w0 >> 32 /* Discard used coefficient */
-
-        /* Compute "a1" */
-        bn.addi w3, w12, 127 /* a1  = (a + 127) */
-        bn.rshi w3, bn0, w3 >> 7 /* a1  = (a + 127) >> 7 */
-#if GAMMA2 == (Q-1)/88
-        bn.mulqacc.wo.z w3, w3.0, w6.0, 0 /* a1*11275 */
-        bn.add          w3, w3, w5        /* a1*11275 + (1 << 23) */
-        bn.rshi         w3, bn0, w3 >> 24 /* (a1*11275 + (1 << 23)) >> 24 */
-
-        bn.sub w4, w8, w3 /* (43 - a1) */
-        bn.rshi w4, bn0, w4 >> 255 /* (43 - a1) >> 31) get sign bit */
-        bn.mulqacc.wo.z w4, w4.0, w3.0, 0 /* ((43 - a1) >> 31) & a1 */
-        bn.xor w3, w3, w4 /* a1 ^= ((43 - a1) >> 31) & a1 */
-#elif GAMMA2 == (Q-1)/32
-        bn.mulqacc.wo.z w3, w3.0, w6.0, 0 /* a1*1025 */
-        bn.add          w3, w3, w5        /* a1*1025 + (1 << 21) */
-        bn.rshi         w3, bn0, w3 >> 22 /* (a1*1025 + (1 << 21)) >> 22 */
-        bn.and          w3, w3, w8        /* & 15 */
-#endif
-        bn.rshi w2, w3, w2 >> 32 /* Accumulate output */
-
-        /* Compute "a0" */
-        bn.mulqacc.wo.z w4, w3.0, w9.0, 0 /* a1*2*GAMMA2 */
-        bn.sub w4, w12, w4 /* a - a1*2*GAMMA2 */
-
-        bn.sub          w12, w7, w4 /* ((Q-1)/2 - *a0) */
-        bn.rshi         w12, bn0, w12 >> 255 /* Get the sign bit */
-        bn.mulqacc.wo.z w12, w12.0, w10.0, 0 /* Subtract Q if sign is 1 */
-        bn.sub          w4, w4, w12 /* *a0 -= (((Q-1)/2 - *a0) >> 31) & Q; */
-
-        bn.rshi w1, w4, w1 >> 32 /* Accumulate output */
-
-    ret
 
 /**
- * decompose_base_dilithium
- *
- * For finite field element a, compute high and low bits a0, a1 such that a
- * mod^+ Q = a1*ALPHA + a0 with -ALPHA/2 < a0 <= ALPHA/2 except if a1 =
- * (Q-1)/ALPHA where we set a1 = 0 and -ALPHA/2 <= a0 = a mod^+ Q - Q < 0.
- * Assumes a to be standard representative.
- *
- * Returns: output element vector "a0" in w1, output element vector "a1" in w2
- *
- * @param[in] w0: input element vector
- * @param[in] w5-w11: constants in the following order: 1<<23,
- * decompose_const_base, qm1half_base_const, 43 or 15, gamma2x2_vec_base_const,
- * modulus_base, 0xFFFFFFFF
- *
- * clobbered registers: w1-w4, t0, t3-t4
- */
-.global decompose_unsigned_base_dilithium
-decompose_unsigned_base_dilithium:
-    /* "a", "a{0,1}" refer to the variable names from the reference code */
-#if GAMMA2 == (Q-1)/88
-    LOOPI 8, 19
-#elif GAMMA2 == (Q-1)/32
-    LOOPI 8, 16
-#endif
-        bn.and w12, w0, w11 /* Mask 32-bit coefficient */
-        bn.rshi w0, bn0, w0 >> 32 /* Discard used coefficient */
-
-        /* Compute "a1" */
-        bn.addi w3, w12, 127 /* a1  = (a + 127) */
-        bn.rshi w3, bn0, w3 >> 7 /* a1  = (a + 127) >> 7 */
-#if GAMMA2 == (Q-1)/88
-        bn.mulqacc.wo.z w3, w3.0, w6.0, 0 /* a1*11275 */
-        bn.add          w3, w3, w5        /* a1*11275 + (1 << 23) */
-        bn.rshi         w3, bn0, w3 >> 24 /* (a1*11275 + (1 << 23)) >> 24 */
-
-        bn.sub w4, w8, w3 /* (43 - a1) */
-        bn.rshi w4, bn0, w4 >> 255 /* (43 - a1) >> 31) get sign bit */
-        bn.mulqacc.wo.z w4, w4.0, w3.0, 0 /* ((43 - a1) >> 31) & a1 */
-        bn.xor w3, w3, w4 /* a1 ^= ((43 - a1) >> 31) & a1 */
-#elif GAMMA2 == (Q-1)/32
-        bn.mulqacc.wo.z w3, w3.0, w6.0, 0 /* a1*1025 */
-        bn.add          w3, w3, w5        /* a1*1025 + (1 << 21) */
-        bn.rshi         w3, bn0, w3 >> 22 /* (a1*1025 + (1 << 21)) >> 22 */
-        bn.and          w3, w3, w8        /* & 15 */
-#endif
-        bn.rshi w2, w3, w2 >> 32 /* Accumulate output */
-
-        /* Compute "a0" */
-        bn.mulqacc.wo.z w4, w3.0, w9.0, 0 /* a1*2*GAMMA2 */
-        bn.subm w4, w12, w4 /* a - a1*2*GAMMA2 */
-
-        bn.subm          w12, w7, w4 /* ((Q-1)/2 - *a0) */
-        bn.rshi         w12, bn0, w12 >> 255 /* Get the sign bit */
-        bn.mulqacc.wo.z w12, w12.0, w10.0, 0 /* Subtract Q if sign is 1 */
-        bn.sub          w4, w4, w12 /* *a0 -= (((Q-1)/2 - *a0) >> 31) & Q; */
-
-        bn.rshi w1, w4, w1 >> 32 /* Accumulate output */
-
-    ret
-
-/**
- * poly_use_hint_dilithium
+ * poly_use_hint
  *
  * Use hint polynomial to correct the high bits of a polynomial.
  *
@@ -1234,8 +1096,8 @@ decompose_unsigned_base_dilithium:
  *
  * clobbered registers: a0-a5, t0-t6, w0-w11
  */
-.global poly_use_hint_dilithium
-poly_use_hint_dilithium:
+.global poly_use_hint
+poly_use_hint:
     /* save fp to stack */
     addi sp, sp, -32
     sw fp, 0(sp)
@@ -1256,58 +1118,46 @@ poly_use_hint_dilithium:
     li a6, 2
 
     /* WDR constants for decompose */
-    /* w5 <= 1<<23 or 1<<21 */
-    bn.addi w5, bn0, 1
-#if GAMMA2 == (Q-1)/88
-    bn.rshi w5, w5, bn0 >> 233
-#elif GAMMA2 == (Q-1)/32
-    bn.rshi w5, w5, bn0 >> 235
-#endif
+    la t0, decompose_127_const
+    li t1, 5
+    /* w5 <= decompose_127_const */
+    bn.lid t1, 0(t0)
 
-    la t0, decompose_const_base
+    la t0, decompose_const
     li t1, 6
-    /* w6 <= decompose_const_base */
+    /* w6 <= decompose_const */
     bn.lid t1, 0(t0)
 
-    la t0, qm1half_base_const
+    la t0, reduce32_const
     li t1, 7
-    /* w7 <= qm1half_base_const */
+    /* w7 <= reduce32_const */
     bn.lid t1, 0(t0)
 
-    /* w8 <= decompose_43_const or decompose_15_const */
-#if GAMMA2 == (Q-1)/88
-    bn.addi w8, bn0, 43
-#elif GAMMA2 == (Q-1)/32
-    bn.addi w8, bn0, 15
-#endif
+    la t0, decompose_43_const
+    li t1, 8
+    /* w8 <= decompose_43_const */
+    bn.lid t1, 0(t0)
 
-    la t0, gamma2x2_vec_base_const
+    la t0, gamma2_vec_const
     li t1, 9
-    /* w9 <= gamma2x2_vec_base_const */
+    /* w9 <= gamma2_vec_const */
     bn.lid t1, 0(t0)
 
-    la t0, modulus_base
+    la t0, qm1half_const
     li t1, 10
-    /* w10 <= modulus_base */
+    /* w10 <= qm1half_const */
     bn.lid t1, 0(t0)
 
-    /* w11 <= 0xFFFFFFFF */
-    bn.addi w11, bn0, 1
-    bn.rshi w11, w11, bn0 >> 224
-    bn.subi w11, w11, 1
+    la t0, modulus
+    li t1, 11
+    /* w11 <= modulus */
+    bn.lid t1, 0(t0)
 
-    li t0, 0
-
-    addi t4, a0, 32 /* stop address */
-#if GAMMA2 == (Q-1)/88
-LOOPI 32, 32
-#elif GAMMA2 == (Q-1)/32
-LOOPI 32, 28
-#endif
-    /* decompose */
+_loop_poly_use_hint:
+    /* vectorized part: decompose */
+    li     t0, 0
     bn.lid t0, 0(a1++)
-    jal x1, decompose_base_dilithium
-
+    jal    x1, decompose
 
     /* Store result form decomposition do dmem */
     bn.sid a5, STACK_WDR2GPR1(fp)
@@ -1317,6 +1167,7 @@ LOOPI 32, 28
 
     addi t2, fp, STACK_WDR2GPR1 /* "a0" */
     addi t3, fp, STACK_WDR2GPR2 /* "a1" */
+    addi t4, a0, 32             /* stop address */
 
     /* scalar part starts here */
 #if GAMMA2 == (Q-1)/88
@@ -1324,78 +1175,77 @@ LOOPI 32, 28
         lw  t1, 0(t3) /* Load "a1" */
         /* Check if hint is 0 */
         lw  t5, 0(a2)
-        bne t5, zero, _inner_loop_skip_store1_poly_use_hint_dilithium
+        bne t5, zero, _inner_loop_skip_store1_poly_use_hint
         sw  t1, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium
-_inner_loop_skip_store1_poly_use_hint_dilithium:
+        beq zero, zero, _inner_loop_end_poly_use_hint
+_inner_loop_skip_store1_poly_use_hint:
         /* if(0 < "a0") */
         lw t5, 0(t2)
         sub t5, zero, t5
         srli t5, t5, 31
-        bne t5, a5, _inner_loop_else_poly_use_hint_dilithium /* go to else-branch */
+        bne t5, a5, _inner_loop_else_poly_use_hint /* go to else-branch */
         /* if("a1" == 43) */
-        bne t1, a4, _inner_loop_aplus1_poly_use_hint_dilithium /* go to else-branch */
+        bne t1, a4, _inner_loop_aplus1_poly_use_hint /* go to else-branch */
         sw zero, 0(a0) /* return 0 */
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium /* go to iteration end */
-_inner_loop_aplus1_poly_use_hint_dilithium:
+        beq zero, zero, _inner_loop_end_poly_use_hint /* go to iteration end */
+_inner_loop_aplus1_poly_use_hint:
         /* if("a1" == 43) else-branch */
         /* Store "a1" + 1 */
         addi t1, t1, 1
         sw t1, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium /* unconditional */
-_inner_loop_else_poly_use_hint_dilithium:
+        beq zero, zero, _inner_loop_end_poly_use_hint /* unconditional */
+_inner_loop_else_poly_use_hint:
         /* if(0 < "a0") else-branch */
         /* if("a1" == 0) */
-        bne t1, zero, _inner_loop_aminus1_poly_use_hint_dilithium /* go to else-branch */
+        bne t1, zero, _inner_loop_aminus1_poly_use_hint /* go to else-branch */
         /* Store 43 */
         sw a4, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium
-_inner_loop_aminus1_poly_use_hint_dilithium:
+        beq zero, zero, _inner_loop_end_poly_use_hint
+_inner_loop_aminus1_poly_use_hint:
         /* if("a1" == 0) else-branch */
         /* Store "a1" - 1 */
         addi t1, t1, -1
         sw t1, 0(a0)
-_inner_loop_end_poly_use_hint_dilithium:
+_inner_loop_end_poly_use_hint:
         addi t3, t3, 4 /* increment "a1" pointer */
         addi a0, a0, 4 /* increment output */
         addi t2, t2, 4 /* increment "a0" pointer */
         addi a2, a2, 4 /* increment *hint */
-
-    addi t4, a0, 32             /* stop address */
-    /* LOOP END */
+        /* LOOP END */
 #elif GAMMA2 == (Q-1)/32
     LOOPI 8, 20
         lw  t1, 0(t3) /* Load "a1" */
         /* Check if hint is 0 */
         lw  t5, 0(a2)
-        bne t5, zero, _inner_loop_skip_store1_poly_use_hint_dilithium
+        bne t5, zero, _inner_loop_skip_store1_poly_use_hint
         sw  t1, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium
-_inner_loop_skip_store1_poly_use_hint_dilithium:
+        beq zero, zero, _inner_loop_end_poly_use_hint
+_inner_loop_skip_store1_poly_use_hint:
         /* if(0 < "a0") */
         lw t5, 0(t2)
         sub t5, zero, t5
         srli t5, t5, 31
-        bne t5, a5, _inner_loop_else_poly_use_hint_dilithium /* go to else-branch */
+        bne t5, a5, _inner_loop_else_poly_use_hint /* go to else-branch */
 
         /* if-branch */
         addi t1, t1, 1
         andi t1, t1, 15
         sw t1, 0(a0)
-        beq zero, zero, _inner_loop_end_poly_use_hint_dilithium
+        beq zero, zero, _inner_loop_end_poly_use_hint
 
-_inner_loop_else_poly_use_hint_dilithium:
+_inner_loop_else_poly_use_hint:
         /* else-branch */
         addi t1, t1, -1
         andi t1, t1, 15
         sw t1, 0(a0)
-_inner_loop_end_poly_use_hint_dilithium:
+_inner_loop_end_poly_use_hint:
         addi t3, t3, 4 /* increment "a1" pointer */
         addi a0, a0, 4 /* increment output */
         addi t2, t2, 4 /* increment "a0" pointer */
         addi a2, a2, 4 /* increment *hint */
         /* LOOP END */
 #endif
+    bne a3, a0, _loop_poly_use_hint
 
     /* sp <- fp */
     addi sp, fp, 0
@@ -1405,7 +1255,7 @@ _inner_loop_end_poly_use_hint_dilithium:
     ret
 
 /**
- * polyt1_pack_dilithium
+ * polyt1_pack
  *
  * Bit-pack polynomial t1 with coefficients fitting in 10 bits. Input
  * coefficients are assumed to be standard representatives.
@@ -1418,96 +1268,96 @@ _inner_loop_end_poly_use_hint_dilithium:
  *
  * clobbered registers: a0-a1, t0-t2
  */
-.global polyt1_pack_dilithium
-polyt1_pack_dilithium:
+.global polyt1_pack
+polyt1_pack:
     li t1, 1
     li t4, 4
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 96
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 32
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 128
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 64
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 160
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 0
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 96
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 32
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 128
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 64
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 160
 
 
-    jal     x1, _inner_polyt1_pack_dilithium
+    jal     x1, _inner_polyt1_pack
     bn.rshi w4, w2, w4 >> 160
     bn.sid  t4, 0(a0++)
 
     ret
 
-_inner_polyt1_pack_dilithium:
+_inner_polyt1_pack:
     LOOPI 2, 17
         bn.lid t1, 0(a1++)
         .rept 8
@@ -1520,7 +1370,7 @@ _inner_polyt1_pack_dilithium:
 
 
 /**
- * polyeta_pack_dilithium
+ * polyeta_pack
  *
  * Bit-pack polynomial with coefficients in [-ETA,ETA].
  *
@@ -1534,80 +1384,85 @@ _inner_polyt1_pack_dilithium:
  *
  * clobbered registers: a0-a1, t0-t3, w1, w2
  */
-.global polyeta_pack_dilithium
-polyeta_pack_dilithium:
+.global polyeta_pack
+polyeta_pack:
 #if ETA == 2
-    /* Load mask */
-    bn.addi w20, bn0, 1
-    bn.or   w20, bn0, w20 << 32
-    bn.subi w20, w20, 1
-
     /* Compute ETA - coeff */
     /* Setup WDRs */
     li t1, 1
     li t2, 2
     li t3, 3
-    li t4, 4
 
     /* Load precomputed, vectorized eta */
-    la t0, eta_vec_base_const
+    la t0, eta
     bn.lid t3, 0(t0)
 
-    /* Load coefficient mask */
-    bn.addi w5, bn0, 7
+    /* 1 */
+    jal x1, _inner_polyeta_pack
 
-    jal     x1, _inner_polyeta_pack_dilithium
-    bn.rshi w4, w2, w4 >> 192
+    bn.lid t1, 0(a1++)
+    /* w1 <= eta - w1 */
+    bn.subvm.8S w1, w3, w1
+    .rept 5
+        bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
+        bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
+    .endr
+    /* Handle split coefficient */
+    bn.rshi w2, w1, w2 >> 1 /* Get one more bit to fill w2 */
+    bn.sid t2, 0(a0++)
+    bn.rshi w2, w1, w2 >> 3 /* Use up two remaining bits */
+    bn.rshi w1, bn0, w1 >> 32 /* Coeff done, goto next */
+    /* Do the rest of the register */
+    .rept 2
+        bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
+        bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
+    .endr
 
+    /* 2 */
+    jal x1, _inner_polyeta_pack
 
-    jal     x1, _inner_polyeta_pack_dilithium
-    bn.rshi w4, w2, w4 >> 64
-    bn.sid  t4, 0(a0++)
-    bn.rshi w4, w2, bn0 >> 192
+    bn.lid t1, 0(a1++)
+    /* w1 <= eta - w1 */
+    bn.subvm.8S w1, w3, w1
+    .rept 2
+        bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
+        bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
+    .endr
+    /* Handle split coefficient */
+    bn.rshi w2, w1, w2 >> 2 /* Get two more bits to fill w2 */
+    bn.sid t2, 0(a0++)
+    bn.rshi w2, w1, w2 >> 3 /* Use up one remaining bits */
+    bn.rshi w1, bn0, w1 >> 32 /* Coeff done, goto next */
+    /* Do the rest of the register */
+    .rept 5
+        bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
+        bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
+    .endr
 
-
-    jal     x1, _inner_polyeta_pack_dilithium
-    bn.rshi w4, w2, w4 >> 128
-    bn.sid  t4, 0(a0++)
-    bn.rshi w4, w2, bn0 >> 192
-
-
-    jal     x1, _inner_polyeta_pack_dilithium
-    bn.rshi w4, w2, w4 >> 192
-    bn.sid  t4, 0(a0++)
-
+    /* 3 */
+    jal x1, _inner_polyeta_pack
+    bn.sid t2, 0(a0++)
     ret
 
-
 /**
- * _inner_polyeta_pack_dilithium
+ * _inner_polyeta_pack
  *
  * Inner part of packing function to reduce the code size. Could be inlined.
- * Do not call from anywhere but polyeta_pack_dilithium.
+ * Do not call from anywhere but polyeta_pack.
  * Does not adhere to calling convention.
  */
-_inner_polyeta_pack_dilithium:
-    LOOPI 8, 33
+_inner_polyeta_pack:
+    LOOPI 10, 18
         bn.lid t1, 0(a1++)
+        /* w1 <= eta - w1 */
+        bn.subvm.8S w1, w3, w1
         .rept 8
-            /* Mask */
-            bn.and w7, w1, w20
-            /* Subtract coefficient from eta */
-            bn.subm w7, w3, w7
-            /* Move coefficient into the output register */
-            bn.rshi w2, w7, w2 >> 3
-            /* Shift out used coefficient */
-            bn.rshi w1, bn0, w1 >> 32
+            bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
+            bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
-    bn.rshi w2, bn0, w2 >> 64 /* Shift the 208 bits of data to the bottom of the
-                                 WDR */
+
     ret
 #else
-/* Load mask */
-    bn.addi w20, bn0, 1
-    bn.or   w20, bn0, w20 << 32
-    bn.subi w20, w20, 1
-
     /* Compute ETA - coeff */
     /* Setup WDRs */
     li t1, 1
@@ -1615,48 +1470,41 @@ _inner_polyeta_pack_dilithium:
     li t3, 3
 
     /* Load precomputed, vectorized eta */
-    la t0, eta_vec_base_const
+    la t0, eta
     bn.lid t3, 0(t0)
 
-    /* Load coefficient mask */
-    bn.addi w5, bn0, 7
-
-    jal     x1, _inner_polyeta_pack_dilithium
-    bn.sid  t2, 0(a0++)
-    jal     x1, _inner_polyeta_pack_dilithium
-    bn.sid  t2, 0(a0++)
-    jal     x1, _inner_polyeta_pack_dilithium
-    bn.sid  t2, 0(a0++)
-    jal     x1, _inner_polyeta_pack_dilithium
-    bn.sid  t2, 0(a0++)
-
+    /* Each WDR can hold 256/4 coefficients. So do this 4x */
+    jal x1, _inner_polyeta_pack
+    bn.sid t2, 0(a0++)
+    jal x1, _inner_polyeta_pack
+    bn.sid t2, 0(a0++)
+    jal x1, _inner_polyeta_pack
+    bn.sid t2, 0(a0++)
+    jal x1, _inner_polyeta_pack
+    bn.sid t2, 0(a0++)
     ret
 
-
 /**
- * _inner_polyeta_pack_dilithium
+ * _inner_polyeta_pack
  *
  * Inner part of packing function to reduce the code size. Could be inlined.
- * Do not call from anywhere but polyeta_pack_dilithium.
+ * Do not call from anywhere but polyeta_pack.
  * Does not adhere to calling convention.
  */
-_inner_polyeta_pack_dilithium:
-    LOOPI 8, 33
+_inner_polyeta_pack:
+    LOOPI 8, 18
         bn.lid t1, 0(a1++)
+        /* w1 <= eta - w1 */
+        bn.subvm.8S w1, w3, w1
         .rept 8
-            /* Mask */
-            bn.and w7, w1, w20
-            /* Subtract coefficient from eta */
-            bn.subm w7, w3, w7
-            /* Move coefficient into the output register */
-            bn.rshi w2, w7, w2 >> 4
-            /* Shift out used coefficient */
-            bn.rshi w1, bn0, w1 >> 32
+            bn.rshi w2, w1, w2 >> 4 /* Write one coefficient into the output WDR */
+            bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
+
     ret
 #endif
 /**
- * polyt0_pack_base_dilithium
+ * polyt0_pack
  *
  * Bit-pack polynomial t0 with coefficients in ]-2^{D-1}, 2^{D-1}].
  *
@@ -1668,8 +1516,9 @@ _inner_polyeta_pack_dilithium:
  *
  * clobbered registers: a0-a1, t0-t3, w1, w2
  */
-.global polyt0_pack_base_dilithium
-polyt0_pack_base_dilithium:
+.global polyt0_pack
+polyt0_pack:
+    /* Compute (1 << (D-1)) - coeff */
     /* Setup WDRs */
     li t1, 1
     li t2, 2
@@ -1677,112 +1526,104 @@ polyt0_pack_base_dilithium:
     li t4, 4
 
     /* Load precomputed (1 << (D-1)) */
-    la     t0, polyt0_pack_base_const
+    la     t0, polyt0_pack_const
     bn.lid t3, 0(t0)
 
-    /* Load coefficient mask */
-    bn.addi w5, bn0, 1
-    bn.rshi w5, w5, bn0 >> 243
-    bn.subi w5, w5, 1
-
     /* Start packing */
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 48 /* Fill up accumulator register to be 256 bits */
+    /*bn.rshi w2, bn0, w2 >> 48*/ /* Remove used up bits */
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208 /* Initialize the accumulator register again,
                                   shifting 48 bits more than the rest in the
                                   register actually is to discard the bits used
                                   to fill the accumulator before the store */
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 96
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 144
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 192
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 32
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 80
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 128
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 176
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 16
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 64
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 112
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 160
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 208
 
-    jal     x1, _inner_polyt0_pack_base_dilithium
+    jal     x1, _inner_polyt0_pack
     bn.rshi w4, w2, w4 >> 208
     bn.sid  t4, 0(a0++)
 
     ret
 
-_inner_polyt0_pack_base_dilithium:
-    LOOPI 2, 33
+_inner_polyt0_pack:
+    LOOPI 2, 18
         bn.lid t1, 0(a1++)
+        /* w1 <= eta - w1 */
+        bn.subv.8S w1, w3, w1
         .rept 8
-            /* Mask coefficient */
-            bn.and w7, w1, w5
-            /* Subtract from constant */
-            bn.sub w7, w3, w7
-            /* Move coefficient into the output register */
-            bn.rshi w2, w7, w2 >> 13
-            /* Shift out used coefficient */
-            bn.rshi w1, bn0, w1 >> 32
+            bn.rshi w2, w1, w2 >> 13 /* Write one coefficient into the output WDR */
+            bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
     bn.rshi w2, bn0, w2 >> 48 /* Shift the 208 bits of data to the bottom of the
                                  WDR */
     ret
 
 /**
- * polyw1_pack_dilithium
+ * polyw1_pack
  *
  * Bit-pack polynomial w1 with coefficients fitting in 6 bits. Input
  * coefficients are assumed to be standard representatives.
@@ -1795,8 +1636,8 @@ _inner_polyt0_pack_base_dilithium:
  *
  * clobbered registers: a0-a1, t0-t2
  */
-.global polyw1_pack_dilithium
-polyw1_pack_dilithium:
+.global polyw1_pack
+polyw1_pack:
 
     /* Setup WDRs */
     li t1, 1
@@ -1804,29 +1645,29 @@ polyw1_pack_dilithium:
     li t4, 4
 #if GAMMA2 == (Q-1)/88
     LOOPI 2, 13
-        jal     x1, _inner_polyw1_pack_dilithium
+        jal     x1, _inner_polyw1_pack
         bn.rshi w4, w2, w4 >> 192
 
 
-        jal     x1, _inner_polyw1_pack_dilithium
+        jal     x1, _inner_polyw1_pack
         bn.rshi w4, w2, w4 >> 64
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 192
 
 
-        jal     x1, _inner_polyw1_pack_dilithium
+        jal     x1, _inner_polyw1_pack
         bn.rshi w4, w2, w4 >> 128
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 192
 
 
-        jal     x1, _inner_polyw1_pack_dilithium
+        jal     x1, _inner_polyw1_pack
         bn.rshi w4, w2, w4 >> 192
         bn.sid  t4, 0(a0++)
 
     ret
 
-_inner_polyw1_pack_dilithium:
+_inner_polyw1_pack:
     LOOPI 4, 17
         bn.lid t1, 0(a1++)
         .rept 8
@@ -1838,12 +1679,12 @@ _inner_polyw1_pack_dilithium:
     ret
 #elif GAMMA2 == (Q-1)/32
     LOOPI 4, 2
-        jal     x1, _inner_polyw1_pack_dilithium
+        jal     x1, _inner_polyw1_pack
         bn.sid t2, 0(a0++)
 
     ret
 
-_inner_polyw1_pack_dilithium:
+_inner_polyw1_pack:
     LOOPI 8, 17
         bn.lid t1, 0(a1++)
         .rept 8
@@ -1853,7 +1694,7 @@ _inner_polyw1_pack_dilithium:
     ret
 #endif
 /**
- * polyeta_unpack_base_dilithium
+ * polyeta_unpack
  *
  * Unpack polynomial with coefficients fitting in [-ETA, ETA].
  *
@@ -1865,8 +1706,8 @@ _inner_polyw1_pack_dilithium:
  * clobbered registers: a0-a1, t0-t2, w1-w2
  */
 
-.global polyeta_unpack_base_dilithium
-polyeta_unpack_base_dilithium:
+.global polyeta_unpack
+polyeta_unpack:
 #if ETA == 2
     /* Setup WDR */
     li t1, 1
@@ -1876,54 +1717,56 @@ polyeta_unpack_base_dilithium:
     li t5, 5
 
     /* Load precomputed, vectorized eta */
-    la t0, eta_vec_base_const
+    la t0, eta
     bn.lid t4, 0(t0)
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-    bn.addi w5, bn0, 7
+    la t6, polyeta_unpack_mask
+    bn.lid t5, 0(t6)
     li t6, 6
 
     /* Start unpacking */
     bn.lid t1, 0(a1++)
-    jal    x1, _inner_polyeta_unpack_base_dilithium
+    jal    x1, _inner_polyeta_unpack
 
     /* Current state: w1 = |0|0|0|w1.3 */
     bn.lid t6, 0(a1++)      /* Load new WLEN word to w2 */
     bn.or  w1, w1, w6 << 64 /* w1 = |w6.2|w6.1|w6.0|w1.3| */
-    jal    x1, _inner_polyeta_unpack_base_dilithium /* 64-bit rest in w0.0 */
+    jal    x1, _inner_polyeta_unpack /* 64-bit rest in w0.0 */
 
     /* Current state: w1 = |0|0|0|w6.2 */
     bn.lid  t3, 0(a1++)       /* Load new WLEN word to w3 */
     bn.rshi w1, w3, w6 >> 128 /* w1 = |w3.1|w3.0|w6.3|w6.2 */
-    jal     x1, _inner_polyeta_unpack_base_dilithium
+    jal     x1, _inner_polyeta_unpack
 
     /* w1 = |0|w3.3|w3.2|w3.1 */
     bn.rshi w1, bn0, w3 >> 64
-    jal     x1, _inner_polyeta_unpack_base_dilithium
+    jal     x1, _inner_polyeta_unpack
 
     ret
 
 /**
- * inner_polyeta_unpack_base_dilithium
+ * inner_polyeta_unpack
  *
  * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyeta_unpack_base_dilithium.
+ * Do not call from anywhere but polyeta_unpack.
  * Does not adhere to calling convention.
  */
-_inner_polyeta_unpack_base_dilithium:
+_inner_polyeta_unpack:
     /* Unpack 64 coefficients in one go */
-    LOOPI 8, 33
-        /* This could also be done by a loop */
+    LOOPI 8, 19
+        /* This could also be done by a loop but it causes 64 cycles per
+           function call, which is a lot to save 14 instructions */
         .rept 8
-            /* Mask */
-            bn.and w7, w1, w5
-            /* Subtract coefficient from eta */
-            bn.subm w7, w4, w7
-            /* Move coefficient into the output register */
-            bn.rshi w2, w7, w2 >> 32
+            /* Shift one coefficient into the output register, ignoring the
+                upper 29 bits of other coefficient data */
+            bn.rshi w2, w1, w2 >> 32
             /* Advance the input register such that the next coefficient is
                 in the lower 3 bits */
             bn.rshi w1, bn0, w1 >> 3
         .endr
+
+        bn.and     w2, w2, w5 /* Mask unpacked coeffs to 3 bit */
+        bn.subvm.8S w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
         bn.sid t2, 0(a0++)
     ret
@@ -1936,56 +1779,57 @@ _inner_polyeta_unpack_base_dilithium:
     li t5, 5
 
     /* Load precomputed, vectorized eta */
-    la t0, eta_vec_base_const
+    la t0, eta
     bn.lid t4, 0(t0)
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-    bn.addi w5, bn0, 0x0f
+    la t6, polyeta_unpack_mask
+    bn.lid t5, 0(t6)
     li t6, 6
 
     /* Start unpacking */
     bn.lid t1, 0(a1++)
-    jal    x1, _inner_polyeta_unpack_base_dilithium
+    jal    x1, _inner_polyeta_unpack
 
     bn.lid t1, 0(a1++)
-    jal    x1, _inner_polyeta_unpack_base_dilithium
+    jal    x1, _inner_polyeta_unpack
 
     bn.lid  t1, 0(a1++)
-    jal     x1, _inner_polyeta_unpack_base_dilithium
+    jal     x1, _inner_polyeta_unpack
 
     bn.lid  t1, 0(a1++)
-    jal     x1, _inner_polyeta_unpack_base_dilithium
+    jal     x1, _inner_polyeta_unpack
 
     ret
+
 /**
- * inner_polyeta_unpack_base_dilithium
+ * inner_polyeta_unpack
  *
  * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyeta_unpack_base_dilithium.
+ * Do not call from anywhere but polyeta_unpack.
  * Does not adhere to calling convention.
  */
-_inner_polyeta_unpack_base_dilithium:
+_inner_polyeta_unpack:
     /* Unpack 64 coefficients in one go */
-    LOOPI 8, 33
-        /* This could also be done by a loop */
+    LOOPI 8, 19
+        /* This could also be done by a loop but it causes 64 cycles per
+           function call, which is a lot to save 14 instructions */
         .rept 8
-            /* Mask */
-            bn.and w7, w1, w5
-            /* Subtract coefficient from eta */
-            bn.subm w7, w4, w7
-            /* Move coefficient into the output register */
-            bn.rshi w2, w7, w2 >> 32
+            /* Shift one coefficient into the output register, ignoring the
+                upper 29 bits of other coefficient data */
+            bn.rshi w2, w1, w2 >> 32
             /* Advance the input register such that the next coefficient is
                 in the lower 3 bits */
             bn.rshi w1, bn0, w1 >> 4
         .endr
 
+        bn.and     w2, w2, w5 /* Mask unpacked coeffs to 4 bit */
+        bn.subvm.8S w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
+
         bn.sid t2, 0(a0++)
     ret
 #endif
-
-
 /**
- * polyvec_decode_h_dilithium
+ * polyvec_decode_h
  *
  * Decode h from signature into polyvec h. Check extra indices.
  *
@@ -1996,8 +1840,8 @@ _inner_polyeta_unpack_base_dilithium:
  *
  * clobbered registers: a0-a7, t0-t6
  */
-.global polyvec_decode_h_dilithium
-polyvec_decode_h_dilithium:
+.global polyvec_decode_h
+polyvec_decode_h:
     /* Initialize h to zero */
     add t1, zero, a0
     li t0, 31
@@ -2012,7 +1856,7 @@ polyvec_decode_h_dilithium:
     li a7, 1
 
     /* The notation inside the comments goes in line with the reference code */
-_loop_decode_h_dilithium:
+_loop_decode_h:
     /* Load sig[OMEGA + i] to t2 */
     addi t2, t1, OMEGA /* i + OMEGA */
     add  t6, t2, a1    /* (sig + OMEGA + i) */
@@ -2028,15 +1872,16 @@ _loop_decode_h_dilithium:
     /* sig[OMEGA + i] <? k  */
     sub t3, t2, t0
     srli t3, t3, 31
-    bne t3, zero, _ret1_decode_h_dilithium
+    bne t3, zero, _ret1_decode_h
     /* || sig[OMEGA + i] >? OMEGA */
     sub t3, t4, t2
     srli t3, t3, 31
-    bne t3, zero, _ret1_decode_h_dilithium
+    bne t3, zero, _ret1_decode_h
 
     addi t5, t0, 0 /* j = k */
-    /* in case j=k == sig[OMEGA+i], we're done */
-    beq t2, t0, _loop_inner_skip_decode_h_dilithium
+
+    /* Check if there is nothing to do if k = sig[OMEGA + i] */
+    beq t2, t5, _loop_inner_skip_decode_h
 
     /* Do first iteration separately */
     /* Load sig[j] */
@@ -2055,8 +1900,8 @@ _loop_decode_h_dilithium:
 
     /* Skip the loop if we are already done here */
     addi t5, t5, 1
-    beq t5, t2, _loop_inner_skip_decode_h_dilithium
-_loop_inner_decode_h_dilithium:
+    beq t5, t2, _loop_inner_skip_decode_h
+_loop_inner_decode_h:
         /* NOTE: Can be done more efficiently, probably dont need to compute
                  this every iteration */
         /* Load sig[j] */
@@ -2071,13 +1916,13 @@ _loop_inner_decode_h_dilithium:
         /* sig[j - 1] is in a6 at this point */
 
         /* sig[j] ==? sig[j-1] */
-        beq  a3, a6, _ret1_decode_h_dilithium
+        beq  a3, a6, _ret1_decode_h
         sub t6, a3, a6
         srli t6, t6, 31
 
         /* sig[j] <? sig[j-1] */
         li  a4, 1
-        beq t6, a4, _ret1_decode_h_dilithium
+        beq t6, a4, _ret1_decode_h
 
 
         slli a4, a3, 2  /* sig[j] * 4 */
@@ -2089,8 +1934,8 @@ _loop_inner_decode_h_dilithium:
         addi t5, t5, 1 /* j++ */
 
         /* j != sig[OMEGA + i] */
-        bne t5, t2, _loop_inner_decode_h_dilithium
-_loop_inner_skip_decode_h_dilithium:
+        bne t5, t2, _loop_inner_decode_h
+_loop_inner_skip_decode_h:
 
     addi t0, t2, 0    /* k = sig[OMEGA + i]; */
     addi t1, t1, 1    /* i++ */
@@ -2098,15 +1943,15 @@ _loop_inner_skip_decode_h_dilithium:
     li   t5, K
 
     /* i <? 4 (K = 4): Check if all polynomials are done */
-    bne t1, t5, _loop_decode_h_dilithium
+    bne t1, t5, _loop_decode_h
 
     /* Extra indices zero  */
     addi t5, t0, 0 /* j = k */
-    beq  t5, t4, _ret0_decode_h_dilithium
-_loop_extra_decode_h_dilithium:
+    beq  t5, t4, _ret0_decode_h
+_loop_extra_decode_h:
     /* Load sig[j] */
     add  t6, t5, a1   /* (sig + j) */
-    andi  a4, t6, 0x3  /* get lower two bits */
+    andi a4, t6, 0x3  /* get lower two bits */
     and  t6, t6, a2   /* set lowest two bits to 0 */
     lw   t6, 0(t6)    /* aligned load */
     slli a4, a4, 3
@@ -2114,21 +1959,21 @@ _loop_extra_decode_h_dilithium:
     andi a6, t6, 0xFF /* a6 = sig[j] */
 
     /* if(sig[j]) return 1; */
-    bne a6, zero, _ret1_decode_h_dilithium
+    bne a6, zero, _ret1_decode_h
 
     addi t5, t5, 1 /* j++ */
-    bne  t5, t4, _loop_extra_decode_h_dilithium
+    bne  t5, t4, _loop_extra_decode_h
 
-_ret0_decode_h_dilithium:
+_ret0_decode_h:
     li a0, 0
     ret
 
-_ret1_decode_h_dilithium:
+_ret1_decode_h:
     li a0, 1
     ret
 
 /**
- * polyt0_unpack_dilithium
+ * polyt0_unpack
  *
  * Bit-unpack polynomial t0 with coefficients in ]-2^{D-1}, 2^{D-1}].
  *
@@ -2140,18 +1985,17 @@ _ret1_decode_h_dilithium:
  *
  * clobbered registers: a0-a1, t2, t3, t5, t6, w1-w2
  */
-.global polyt0_unpack_base_dilithium
-polyt0_unpack_base_dilithium:
+.global polyt0_unpack
+polyt0_unpack:
+    /* Load (1 << (D-1)) as a vector into w4 */
+    li t2, 4
+    la t3, polyt0_pack_const
+    bn.lid t2, 0(t3)
 
-    li t4, 4
-    /* Load precomputed (1 << (D-1)) */
-    la     t0, polyt0_pack_base_const
-    bn.lid t4, 0(t0)
-
-    /* Load coefficient mask for 13-bit coefficients 0x1fff */
-    bn.addi w5, bn0, 1
-    bn.rshi w5, w5, bn0 >> 243
-    bn.subi w5, w5, 1
+    /* Load mask for zeroing the upper bits of the unpacked coefficients. */
+    li t2, 5
+    la t3, polyt0_unpack_mask
+    bn.lid t5, 0(t3)
 
     /* Setup WDR */
     li t2, 2
@@ -2160,95 +2004,96 @@ polyt0_unpack_base_dilithium:
 
     bn.lid  t6, 0(a1++)
     bn.mov  w1, w6
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t3, 0(a1++)
     bn.rshi w1, w3, w6 >> 208
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t6, 0(a1++)
     bn.rshi w1, w6, w3 >> 160
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t3, 0(a1++)
     bn.rshi w1, w3, w6 >> 112
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t6, 0(a1++)
     bn.rshi w1, w6, w3 >> 64
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.rshi w1, bn0, w6 >> 16
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t3, 0(a1++)
     bn.rshi w1, w3, w6 >> 224
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t6, 0(a1++)
     bn.rshi w1, w6, w3 >> 176
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t3, 0(a1++)
     bn.rshi w1, w3, w6 >> 128
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t6, 0(a1++)
     bn.rshi w1, w6, w3 >> 80
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.rshi w1, bn0, w6 >> 32
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t3, 0(a1++)
     bn.rshi w1, w3, w6 >> 240
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t6, 0(a1++)
     bn.rshi w1, w6, w3 >> 192
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t3, 0(a1++)
     bn.rshi w1, w3, w6 >> 144
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.lid  t6, 0(a1++)
     bn.rshi w1, w6, w3 >> 96
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     bn.rshi w1, bn0, w6 >> 48
-    jal     x1, _inner_polyt0_unpack_base_dilithium
+    jal     x1, _inner_polyt0_unpack
 
     ret
 
 /**
- * _inner_polyt0_unpack_base_dilithium
+ * _inner_polyt0_unpack
  *
  * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyt0_unpack_dilithium.
+ * Do not call from anywhere but polyt0_unpack.
  * Does not adhere to calling convention.
  */
-_inner_polyt0_unpack_base_dilithium:
+_inner_polyt0_unpack:
     /* Unpack 16 coefficients in one go */
-    LOOPI 2, 33
-        /* This could also be done by a loop */
+    LOOPI 2, 19
+        /* This could also be done by a loop but it causes 64 cycles per
+           function call, which is a lot to save 14 instructions */
         .rept 8
-            /* Mask */
-            bn.and w7, w1, w5
-            /* Subtract coefficient from eta */
-            bn.subm w7, w4, w7
-            /* Move coefficient into the output register */
-            bn.rshi w2, w7, w2 >> 32
+            /* Shift one coefficient into the output register, ignoring the
+                upper 19 bits of other coefficient data */
+            bn.rshi w2, w1, w2 >> 32
             /* Advance the input register such that the next coefficient is
                 in the lower 13 bits */
             bn.rshi w1, bn0, w1 >> 13
         .endr
 
+        bn.and     w2, w2, w5 /* Mask unpacked coeffs to 13 bit */
+        bn.subvm.8S w2, w4, w2 /* w2 <= (1 << (D-1)) - coeffs */
         bn.sid     t2, 0(a0++)
     ret
 
+
 /**
- * poly_uniform_gamma1_base_dilithium
+ * poly_uniform_gamma_1
  *
  *  Sample polynomial with uniformly random coefficients in [-(GAMMA1 - 1),
  *  GAMMA1] by unpacking output stream of SHAKE256(seed|nonce).
@@ -2260,10 +2105,10 @@ _inner_polyt0_unpack_base_dilithium:
  * @param[in]  a2: nonce
  * @param[in]  a3: pointer to gamma1_vec_const
  *
- * clobbered registers: a0, a4, t0-t6, w1-w2, w3, w6, w8
+ * clobbered registers: a0, a4, t0-t6, w1-w2, w8
  */
-.global poly_uniform_gamma1_base_dilithium
-poly_uniform_gamma1_base_dilithium:
+.global poly_uniform_gamma_1
+poly_uniform_gamma_1:
 #if GAMMA1 == (1 << 17)
     /* save fp to stack */
     addi sp, sp, -32
@@ -2305,82 +2150,73 @@ poly_uniform_gamma1_base_dilithium:
 
     /* Load gamma1 as a vector into w4 */
     li t2, 4
-    la t3, gamma1_vec_base_const
+    la t3, gamma1_vec_const
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients to w5 */
     li t2, 5
-    la t3, polyz_unpack_base_dilithium_mask
+    la t3, polyz_unpack_mask
     bn.lid t2, 0(t3)
 
     /* Setup WDR */
     li t2, 2
-    LOOPI 2, 51
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w1, w8
-        bn.mov  w6, w8
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+    LOOPI 2, 42
+        bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+        bn.mov  w1, w6
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w3, w8
+        bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 144
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w3 >> 32
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w6, w8
+        bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 176
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w6 >> 64
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w3, w8
+        bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 208
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w3 >> 96
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w6, w8
+        bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 240
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w3, w8
+        bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 128
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w3 >> 16
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w6, w8
+        bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 160
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w6 >> 48
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w3, w8
+        bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 192
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w3 >> 80
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w6, w8
+        bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 224
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w6 >> 112
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
         nop /* Loop must not end on jump */
 
     /* Finish the SHAKE-256 operation. */
@@ -2393,20 +2229,19 @@ poly_uniform_gamma1_base_dilithium:
 
     ret
 
-_inner_poly_uniform_gamma1_base_dilithium:
+_inner_poly_uniform_gamma_1:
     /* Unpack 8 coefficients in one go */
     .rept 8
-        /* Mask */
-        bn.and w7, w1, w5
-        /* Subtract coefficient from eta */
-        bn.subm w7, w4, w7
-        /* Move coefficient into the output register */
-        bn.rshi w2, w7, w2 >> 32
+        /* Shift one coefficient into the output register, ignoring the
+            upper 14 bits of other coefficient data */
+        bn.rshi w2, w1, w2 >> 32
         /* Advance the input register such that the next coefficient is
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 18
     .endr
 
+    bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
+    bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
     bn.sid     t2, 0(a0++)
     ret
 #elif GAMMA1 == (1 << 19)
@@ -2450,50 +2285,46 @@ _inner_poly_uniform_gamma1_base_dilithium:
 
     /* Load gamma1 as a vector into w4 */
     li t2, 4
-    la t3, gamma1_vec_base_const
+    la t3, gamma1_vec_const
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients to w5 */
     li t2, 5
-    la t3, polyz_unpack_base_dilithium_mask
+    la t3, polyz_unpack_mask
     bn.lid t2, 0(t3)
 
     /* Setup WDR */
     li t2, 2
-    LOOPI 4, 27
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov  w6, w8
-        bn.mov  w1, w6
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov w3, w8
+    LOOPI 4, 22
+        bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+        bn.mov  w1, w6
+        jal     x1, _inner_poly_uniform_gamma_1
+
+        bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 160
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w3 >> 64
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov w6, w8
+        bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 224
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov w3, w8
+        bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 128
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w3 >> 32
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
-        jal x1, _read_shake_poly_uniform_gamma1_base_dilithium
-        bn.mov w6, w8
+        bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 192
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
 
         bn.rshi w1, bn0, w6 >> 96
-        jal     x1, _inner_poly_uniform_gamma1_base_dilithium
+        jal     x1, _inner_poly_uniform_gamma_1
         nop /* Must not end on branch */
 
     /* Finish the SHAKE-256 operation. */
@@ -2503,33 +2334,26 @@ _inner_poly_uniform_gamma1_base_dilithium:
     /* Pop ebp */
     lw fp, 0(sp)
     addi sp, sp, 32
-
     ret
 
-_inner_poly_uniform_gamma1_base_dilithium:
+_inner_poly_uniform_gamma_1:
     /* Unpack 8 coefficients in one go */
     .rept 8
-        /* Mask */
-        bn.and w7, w1, w5
-        /* Subtract coefficient from eta */
-        bn.subm w7, w4, w7
-        /* Move coefficient into the output register */
-        bn.rshi w2, w7, w2 >> 32
+        /* Shift one coefficient into the output register, ignoring the
+            upper 14 bits of other coefficient data */
+        bn.rshi w2, w1, w2 >> 32
         /* Advance the input register such that the next coefficient is
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 20
     .endr
 
+    bn.and     w2, w2, w5 /* Mask unpacked coeffs to 20 bit */
+    bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
     bn.sid     t2, 0(a0++)
     ret
 #endif
-
-_read_shake_poly_uniform_gamma1_base_dilithium:
-    bn.wsrr w8, 0xA /* KECCAK_DIGEST */
-    ret
-
 /**
- * poly_decompose_dilithium
+ * poly_decompose
  *
  *  For all coefficients c of the input polynomial, compute high and low bits
  *  c0, c1 such c mod Q = c1*ALPHA + c0 with -ALPHA/2 < c0 <= ALPHA/2 except c1
@@ -2544,48 +2368,43 @@ _read_shake_poly_uniform_gamma1_base_dilithium:
  *
  * clobbered registers: w0-w11, a0-a2, t0-t4
  */
-.global poly_decompose_dilithium
-poly_decompose_dilithium:
+.global poly_decompose
+poly_decompose:
     /* WDR constants for decompose */
-    /* w5 <= 1<<23 or 1<<21 */
-    bn.addi w5, bn0, 1
-#if GAMMA2 == (Q-1)/88
-    bn.rshi w5, w5, bn0 >> 233
-#elif GAMMA2 == (Q-1)/32
-    bn.rshi w5, w5, bn0 >> 235
-#endif
+    la t0, decompose_127_const
+    li t1, 5
+    /* w5 <= decompose_127_const */
+    bn.lid t1, 0(t0)
 
-    la t0, decompose_const_base
+    la t0, decompose_const
     li t1, 6
-    /* w6 <= decompose_const_base */
+    /* w6 <= decompose_const */
     bn.lid t1, 0(t0)
 
-    la t0, qm1half_base_const
+    la t0, reduce32_const
     li t1, 7
-    /* w7 <= qm1half_base_const */
+    /* w7 <= reduce32_const */
     bn.lid t1, 0(t0)
 
-    /* w8 <= decompose_43_const or decompose_15_const */
-#if GAMMA2 == (Q-1)/88
-    bn.addi w8, bn0, 43
-#elif GAMMA2 == (Q-1)/32
-    bn.addi w8, bn0, 15
-#endif
+    la t0, decompose_43_const
+    li t1, 8
+    /* w8 <= decompose_43_const */
+    bn.lid t1, 0(t0)
 
-    la t0, gamma2x2_vec_base_const
+    la t0, gamma2_vec_const
     li t1, 9
-    /* w9 <= gamma2x2_vec_base_const */
+    /* w9 <= gamma2_vec_const */
     bn.lid t1, 0(t0)
 
-    la t0, modulus_base
+    la t0, qm1half_const
     li t1, 10
-    /* w10 <= modulus_base */
+    /* w10 <= qm1half_const */
     bn.lid t1, 0(t0)
 
-    /* w11 <= 0xFFFFFFFF */
-    bn.addi w11, bn0, 1
-    bn.rshi w11, w11, bn0 >> 224
-    bn.subi w11, w11, 1
+    la t0, modulus
+    li t1, 11
+    /* w11 <= modulus */
+    bn.lid t1, 0(t0)
 
     /* Setup constants for WDRs */
     li t0, 0
@@ -2594,14 +2413,14 @@ poly_decompose_dilithium:
 
     LOOPI 32, 4
         bn.lid t0, 0(a2++)
-        jal x1, decompose_unsigned_base_dilithium
+        jal x1, decompose
         bn.sid t1, 0(a0++)
         bn.sid t2, 0(a1++)
 
     ret
 
 /**
- * poly_make_hint_dilithium
+ * poly_make_hint
  *
  *  Compute hint polynomial. The coefficients of which indicate whether the low
  *  bits of the corresponding coefficient of the input polynomial overflow into
@@ -2616,8 +2435,8 @@ poly_decompose_dilithium:
  *
  * clobbered registers: t0-t2, t4-t6, a0-a2, a4-a7
  */
-.global poly_make_hint_dilithium
-poly_make_hint_dilithium:
+.global poly_make_hint
+poly_make_hint:
     li   t2, 0
     li   t4, 1
 
@@ -2635,7 +2454,7 @@ poly_make_hint_dilithium:
 
         sub t5, t6, t0 /* Check t0 < (gamma2 + 1) <=> 0 < (gamma2 + 1) - t0 */
         srli t3, t5, 31
-        beq t3, zero, _loop_end_poly_make_hint_dilithium
+        beq t3, zero, _loop_end_poly_make_hint
 
         sub t5, a7, t0 /* Check t0 > (q - gamma) <=> t0 - (q - gamma) > 0 */
         srli t3, t5, 31
@@ -2643,16 +2462,16 @@ poly_make_hint_dilithium:
 
         bne t0, a7, _return1
         li t3, 0
-        beq t1, zero, _loop_end_poly_make_hint_dilithium
-        beq t1, a6, _loop_end_poly_make_hint_dilithium
+        beq t1, zero, _loop_end_poly_make_hint
+        beq t1, a6, _loop_end_poly_make_hint
         beq zero, zero, _return1
 _return0:
         li t3, 0
-        beq zero, zero, _loop_end_poly_make_hint_dilithium
+        beq zero, zero, _loop_end_poly_make_hint
 _return1:
         li t3, 1
         /* Fall through to loop end */
-_loop_end_poly_make_hint_dilithium:
+_loop_end_poly_make_hint:
         sw   t3, 0(a0) /* Write to output polynomial */
         add  t2, t2, t3
         addi a1, a1, 4
@@ -2663,7 +2482,7 @@ _loop_end_poly_make_hint_dilithium:
     ret
 
 /**
- * polyz_pack_base_dilithium
+ * polyz_pack
  *
  * Pack polynomial z with coefficients fitting in 18 bits.
  *
@@ -2676,15 +2495,11 @@ _loop_end_poly_make_hint_dilithium:
  *
  * clobbered registers: a0-a1, t0-t2, w0-w1
  */
-.global polyz_pack_base_dilithium
-polyz_pack_base_dilithium:
+.global polyz_pack
+polyz_pack:
 #if GAMMA1 == (1 << 17)
-    la t1, gamma1_vec_base_const
+    la t1, gamma1_vec_const
     li t3, 3
-    bn.lid t3, 0(t1)
-
-    la t1, polyz_unpack_base_dilithium_mask
-    li t3, 5
     bn.lid t3, 0(t1)
 
     /* Setup WDRs */
@@ -2692,257 +2507,245 @@ polyz_pack_base_dilithium:
     li t4, 4
 
     /* Start packing */
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 112
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 80
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 48
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 16
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 128
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 96
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 64
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 32
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 112
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 80
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 48
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 16
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 128
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 96
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 64
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 32
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack_base_dilithium
+    jal     x1, _inner_polyz_pack
     bn.rshi w4, w2, w4 >> 144
     bn.sid  t4, 0(a0++)
 
     ret
 
-_inner_polyz_pack_base_dilithium:
+_inner_polyz_pack:
     bn.lid t1, 0(a1++)
+    /* w1 <= eta - w1 */
+    bn.subv.8S w1, w3, w1
     .rept 8
-        /* Mask coefficient */
-            bn.and w7, w1, w5
-            /* Subtract from constant */
-            bn.sub w7, w3, w7
-            /* Move coefficient into the output register */
-            bn.rshi w2, w7, w2 >> 18
-            /* Shift out used coefficient */
-            bn.rshi w1, bn0, w1 >> 32
+        bn.rshi w2, w1, w2 >> 18 /* Write one coefficient into the output WDR */
+        bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
     .endr
     bn.rshi w2, bn0, w2 >> 112 /* Shift the 144 bits of data to the bottom of the
                                  WDR */
     ret
 #elif GAMMA1 == (1 << 19)
-    la t1, gamma1_vec_base_const
+    la t1, gamma1_vec_const
     li t3, 3
-    bn.lid t3, 0(t1)
-
-    la t1, polyz_unpack_base_dilithium_mask
-    li t3, 5
     bn.lid t3, 0(t1)
 
     /* Setup WDRs */
     li t1, 1
     li t4, 4
     LOOPI 4, 25
-        jal     x1, _inner_polyz_pack_base_dilithium
+        jal     x1, _inner_polyz_pack
         bn.rshi w4, w2, w4 >> 160
 
 
-        jal     x1, _inner_polyz_pack_base_dilithium
+        jal     x1, _inner_polyz_pack
         bn.rshi w4, w2, w4 >> 96
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 160
 
 
-        jal     x1, _inner_polyz_pack_base_dilithium
+        jal     x1, _inner_polyz_pack
         bn.rshi w4, w2, w4 >> 160
 
 
-        jal     x1, _inner_polyz_pack_base_dilithium
+        jal     x1, _inner_polyz_pack
         bn.rshi w4, w2, w4 >> 32
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 160
 
 
-        jal     x1, _inner_polyz_pack_base_dilithium
+        jal     x1, _inner_polyz_pack
         bn.rshi w4, w2, w4 >> 128
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 160
 
 
-        jal     x1, _inner_polyz_pack_base_dilithium
+        jal     x1, _inner_polyz_pack
         bn.rshi w4, w2, w4 >> 160
 
 
-        jal     x1, _inner_polyz_pack_base_dilithium
+        jal     x1, _inner_polyz_pack
         bn.rshi w4, w2, w4 >> 64
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 160
 
 
-        jal     x1, _inner_polyz_pack_base_dilithium
+        jal     x1, _inner_polyz_pack
         bn.rshi w4, w2, w4 >> 160
         bn.sid  t4, 0(a0++)
 
     ret
-_inner_polyz_pack_base_dilithium:
+_inner_polyz_pack:
     bn.lid t1, 0(a1++)
+    /* w1 <= eta - w1 */
+    bn.subv.8S w1, w3, w1
     .rept 8
-        /* Mask coefficient */
-        bn.and w7, w1, w5
-        /* Subtract from constant */
-        bn.sub w7, w3, w7
-        /* Move coefficient into the output register */
-        bn.rshi w2, w7, w2 >> 20
-        /* Shift out used coefficient */
-        bn.rshi w1, bn0, w1 >> 32
+        bn.rshi w2, w1, w2 >> 20 /* Write one coefficient into the output WDR */
+        bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
     .endr
     bn.rshi w2, bn0, w2 >> 96 /* Shift the 96 bits of data to the bottom of the
                                  WDR */
     ret
 #endif
 /**
- * polyvec_encode_h_dilithium
+ * polyvec_encode_h
  *
  * Encode h to signature from polyvec h.
  *
@@ -2953,8 +2756,8 @@ _inner_polyz_pack_base_dilithium:
  *
  * clobbered registers: a1-a2, t0-t6
  */
-.global polyvec_encode_h_dilithium
-polyvec_encode_h_dilithium:
+.global polyvec_encode_h
+polyvec_encode_h:
     li t0, 0 /* k = 0 */
     li t1, 0 /* i = 0 */
 
@@ -2965,7 +2768,7 @@ polyvec_encode_h_dilithium:
         LOOPI N, 13
             lw   t3, 0(a1)
             addi a1, a1, 4   /* Increment input pointer */
-            beq  zero, t3, _skip_store_polyvec_encode_h_dilithium
+            beq  zero, t3, _skip_store_polyvec_encode_h
             add  t4, a0, t0  /* *sig + k */
             andi t5, t4, 0x3 /* preserve lower 2 bits */
             and  t4, t4, a2  /* align */
@@ -2976,7 +2779,7 @@ polyvec_encode_h_dilithium:
             sw   t6, 0(t4)
 
             addi t0, t0, 1 /* k++ */
-_skip_store_polyvec_encode_h_dilithium:
+_skip_store_polyvec_encode_h:
             addi t2, t2, 1
         addi t2, t1, OMEGA /* OMEGA + i */
         add  t2, a0, t2    /* *sig + OMEGA + i */
@@ -2989,6 +2792,58 @@ _skip_store_polyvec_encode_h_dilithium:
         sw   t4, 0(t2)
 
         addi t1, t1, 1
+
+    ret
+
+/**
+ * Constant Time Dilithium reduce32
+ *
+ * Returns: reduce32(input1)
+ *
+ * This implements reduce32 for Dilithium, where n=256,q=8380417.
+ *
+ * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  a0: dptr_input1, dmem pointer to first word of input1 polynomial
+ * @param[in]  w31: all-zero
+ * @param[out] a1: dmem pointer to result
+ *
+ * clobbered registers: x4-x7, x10-x11, w2-w6
+ */
+.globl poly_reduce32
+poly_reduce32:
+    /* Set up constants for input/state */
+    li t1, 3
+    li t0, 4
+    li t2, 6
+
+    /* Setup constant 1 << 22 */
+    la        t1, reduce32_const
+    bn.lid    t0, 0(t1)
+    bn.shv.8S w4, w4 << 22
+
+    /* Load q */
+    la     t3, modulus
+    bn.lid t2, 0(t3)
+
+    /* Set up constants for input/state */
+    li t3, 2
+
+    LOOPI 32, 7
+        bn.lid t3, 0(a0++)
+
+        /* t = a + (1 << 22) */
+        bn.addv.8S w5, w2, w4
+        /* t = (a + (1 << 22)) >> 23 */
+        /* Shift can be logical because inputs are positive anyways */
+        bn.shv.8S  w5, w5 >> 23
+        /* t = t * q */
+        bn.mulv.8S.even.lo  w5, w5, w6
+        bn.mulv.8S.odd.lo   w5, w5, w6
+        /* a - t */
+        bn.subv.8S w2, w2, w5
+
+        bn.sid t3, 0(a1++)
 
     ret
 
@@ -3008,466 +2863,36 @@ _skip_store_polyvec_encode_h_dilithium:
  *
  * clobbered registers: x4-x7, w2-w4
  */
-.global poly_power2round_base_dilithium
-poly_power2round_base_dilithium:
+.global poly_power2round
+poly_power2round:
     #define D 13
-    #define Dinv 243
+    /* Set up constants for input/state */
+    li t0, 4
+    li t2, 6
+    li t3, 7
 
-    /* Load (1 << (D-1)) - 1 to w10 */
-    li t0, 10
-    la t1, power2round_D_preprocessed_base
+    /* Load (1 << (D-1)) - 1 as vector */
+    la t1, power2round_D_preprocessed
     bn.lid t0, 0(t1)
 
-    /* Set up constants for input/state */
-    li t0, 0
-    li t1, 1
-    li t2, 2
+    li t1, 5
 
-    /* w11 <= 0xFFFFFFFF for masking */
-    bn.addi w11, bn0, 1
-    bn.rshi w11, w11, bn0 >> 224
-    bn.subi w11, w11, 1
-
-    LOOPI 32, 12
+    LOOPI 32, 7
         /* Load input */
-        bn.lid t0, 0(a0++)
+        bn.lid t1, 0(a0++)
 
-        LOOPI 8, 8
-            bn.and w3, w0, w11 /* Mask out one coefficient */
-
-            bn.addm w3, w3, bn0 /* Reduce q to 0 */
-
-            bn.add w4, w3, w10
-            bn.rshi w4, bn0, w4 >> D
-
-            bn.rshi w0, w4, w0 >> 32 /* Accumulate to output register */
-
-            bn.rshi w4, w4, bn0 >> Dinv /* << by D */
-            bn.sub w4, w3, w4
-
-            bn.rshi w1, w4, w1 >> 32 /* Accumulate to output register */
+        /* Compute */
+        /* (a + (1 << (D-1)) - 1) */
+        bn.addv.8S w6, w4, w5
+        /* a1 = (a + (1 << (D-1)) - 1) >> D */
+        bn.shv.8S w6, w6 >> D
+        /* a0 = (a1 << D) */
+        bn.shv.8S w7, w6 << D
+        /* a0 = a - (a1 << D) */
+        bn.subv.8S w7, w5, w7
 
         /* Store */
-        bn.sid t0, 0(a2++)
-        bn.sid t1, 0(a1++)
+        bn.sid t2, 0(a2++)
+        bn.sid t3, 0(a1++)
 
     ret
-
-/**
- * Constant Time Dilithium reduce32
- *
- * Returns: reduce32(input1)
- *
- * This implements reduce32 for Dilithium, where n=256,q=8380417.
- *
- * Note: This is a modified version that only takes small inputs. Used for
- *       obtaining centralized representative
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
- * @param[in]  a0: dptr_input1, dmem pointer to first word of input1 polynomial
- * @param[in]  w31: all-zero
- * @param[out] a1: dmem pointer to result
- *
- * clobbered registers: x4-x7, x10-x11, w2-w6
- */
-.globl poly_reduce32_short_dilithium
-poly_reduce32_short_dilithium:
-    /* Load 4194304 to w10 */
-    la t0, reduce32_cmp_const
-    li t1, 10
-    bn.lid t1, 0(t0)
-
-    /* Set up constants for input/state */
-    li t0, 0
-    li t1, 1
-    li t2, 2
-
-    /* w11 <= 0xFFFFFFFF for masking */
-    bn.addi w11, bn0, 1
-    bn.rshi w11, w11, bn0 >> 224
-    bn.subi w11, w11, 1
-
-    /* Load q */
-    li     t4, 12
-    la     t3, modulus
-    bn.lid t4, 0(t3)
-    bn.and w12, w12, w11 /* Only keep one word */
-
-    LOOPI 32, 8
-        bn.lid t0, 0(a0++)
-
-        LOOPI 8, 5
-            bn.and w3, w0, w11 /* Mask out one coefficient */
-
-            bn.cmp w3, w10
-            bn.sel w4, bn0, w12, C
-            bn.sub w2, w3, w4
-
-            bn.rshi w0, w2, w0 >> 32
-
-        bn.sid t0, 0(a1++)
-
-    ret
-
-
-/**
- * Constant Time Dilithium reduce32
- *
- * Returns: reduce32(input1)
- *
- * This implements reduce32 for Dilithium, where n=256,q=8380417.
- *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
- * @param[in]  a0: dptr_input1, dmem pointer to first word of input1 polynomial
- * @param[in]  w31: all-zero
- * @param[out] a1: dmem pointer to result
- *
- * clobbered registers: x4-x7, x10-x11, w2-w6
- */
-.globl poly_reduce32_dilithium
-poly_reduce32_dilithium:
-    /* Load 4194304 to w10 */
-    la t0, reduce32_cmp_const
-    li t1, 10
-    bn.lid t1, 0(t0)
-
-    /* Set up constants for input/state */
-    li t0, 0
-    li t1, 1
-    li t2, 2
-
-    /* w11 <= 0xFFFFFFFF for masking */
-    bn.addi w11, bn0, 1
-    bn.rshi w11, w11, bn0 >> 224
-    bn.subi w11, w11, 1
-
-    /* w13 <= mask for sign ext */
-    bn.addi w13, w11, 0
-    bn.rshi w13, bn0, w13 >> 9
-
-    /* Load q */
-    li     t4, 12
-    la     t3, modulus
-    bn.lid t4, 0(t3)
-    bn.and w12, w12, w11 /* Only keep one word */
-
-    LOOPI 32, 11
-        bn.lid t0, 0(a0++)
-
-        LOOPI 8, 8
-            bn.and w3, w0, w11
-
-            bn.add w4, w3, w10 /* Add (1<<22) */
-            bn.and w4, w4, w11
-            bn.rshi w4, bn0, w4 >> 23
-            bn.and w4, w4, w11
-
-            bn.mulqacc.wo.z w4, w4.0, w12.0, 0
-            bn.sub w3, w3, w4
-
-            bn.rshi w0, w3, w0 >> 32 /* Capture result and advance input */
-
-        bn.sid t0, 0(a1++)
-
-    ret
-
-/**
- * Constant Time Dilithium reduce32
- *
- * Returns: reduce32(input1)
- *
- * This implements reduce32 for Dilithium, where n=256,q=8380417.
- *
- * Note: This is a modified version giving a result in [0,6283007]
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
- * @param[in]  a0: dptr_input1, dmem pointer to first word of input1 polynomial
- * @param[in]  w31: all-zero
- * @param[out] a1: dmem pointer to result
- *
- * clobbered registers: x4-x7, x10-x11, w2-w6
- */
-.globl poly_reduce32_pos_dilithium
-poly_reduce32_pos_dilithium:
-    /* Load 4194304 to w10 */
-    la t0, reduce32_cmp_const
-    li t1, 10
-    bn.lid t1, 0(t0)
-
-    /* Set up constants for input/state */
-    li t0, 0
-    li t1, 1
-    li t2, 2
-
-    /* w11 <= 0xFFFFFFFF for masking */
-    bn.addi w11, bn0, 1
-    bn.rshi w11, w11, bn0 >> 224
-    bn.subi w11, w11, 1
-
-    /* w13 <= mask for sign ext */
-    bn.addi w13, w11, 0
-    bn.rshi w13, bn0, w13 >> 9
-
-    /* Load q */
-    li     t4, 12
-    la     t3, modulus
-    bn.lid t4, 0(t3)
-    bn.and w12, w12, w11 /* Only keep one word */
-
-    LOOPI 32, 11
-        bn.lid t0, 0(a0++)
-
-        LOOPI 8, 8
-            bn.and w3, w0, w11
-
-            bn.add w4, w3, w10 /* Add (1<<22) */
-            bn.and w4, w4, w11
-            bn.rshi w4, bn0, w4 >> 23
-            bn.and w4, w4, w11
-
-            bn.mulqacc.wo.z w4, w4.0, w12.0, 0
-            bn.subm w3, w3, w4
-
-            bn.rshi w0, w3, w0 >> 32 /* Capture result and advance input */
-
-        bn.sid t0, 0(a1++)
-
-    ret
-
-/**
- * Constant Time Dilithium base multiplication (pointwise)
- *
- * Returns: poly_pointwise(input1, input2)
- *
- * This implements the base multiplication for Dilithium, where n=256,q=8380417.
- *
- * Flags: -
- *
- * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
- * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
- * @param[in]  w31: all-zero
- * @param[out] x12: dmem pointer to result
- *
- * clobbered registers: x4-x6, w2-w4
- */
-.globl poly_pointwise_base_dilithium
-poly_pointwise_base_dilithium:
-    #define mask w7
-    #define qprime w8.2
-    #define q w8.3
-
-    /* Init constants */
-
-    /* Load mask */
-    bn.addi mask, bn0, 1
-    bn.or   mask, bn0, mask << 32
-    bn.subi mask, mask, 1
-
-    /* Load q' to w8.0 */
-    li t0, 8
-    la t1, qprime_single
-    bn.lid t0, 0(t1)
-    bn.or w8, bn0, w8 << 128
-
-    /* Load q to w8.2 */
-    li t0, 9
-    la t1, modulus
-    bn.lid t0, 0(t1)
-    bn.and w9, mask, w9
-    bn.or w8, w8, w9 << 192
-
-    /* Load alpha = 1 */
-    bn.addi w10, bn0, 1
-    bn.or w8, w8, w10 << 64
-    /* Constants for WDRs */
-    li t0, 0
-    li t1, 1
-    li t2, 6
-
-    LOOPI 32, 13
-        bn.lid t0, 0(a0++)
-        bn.lid t1, 0(a1++)
-
-        LOOPI 8, 9
-            /* Mask one coefficient to working registers */
-            bn.and w4, w0, w7
-            bn.and w5, w1, w7
-            /* Shift out used coefficient */
-            bn.rshi w0, bn0, w0 >> 32
-
-            /* Do operation */
-            /* c = a * b */
-            bn.mulqacc.wo.z w5, qprime, w5.0, 0
-            /* Multiply q' */
-            bn.mulqacc.wo.z w4, w4.0, w5.0, 192
-            /* Extract upper 32-bits of bottom result half */
-            /* + 1 */
-            bn.add w4, w8, w4 >> 160
-            bn.mulqacc.wo.z w4, w4.1, q, 0
-            bn.rshi w4, w8, w4 >> 32
-
-            /* Append result to output */
-            bn.rshi w1, w4, w1 >> 32
-        /* Store 8 coefficients */
-        bn.sid t1, 0(a2++)
-    ret
-
-/**
- * Constant Time Dilithium base multiplication (pointwise) with accumulation
- *
- * Returns: poly_pointwise_acc(input1, input2)
- *
- * This implements the base multiplication for Dilithium, where n=256,q=8380417.
- * Accumulates onto the output polynomial.
- *
- * Flags: -
- *
- * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
- * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
- * @param[in]  w31: all-zero
- * @param[in/out] x12: dmem pointer to result
- *
- * clobbered registers: x4-x6, w2-w4
- */
-.globl poly_pointwise_acc_base_dilithium
-poly_pointwise_acc_base_dilithium:
-    #define mask w7
-    #define qprime w8.2
-    #define q w8.3
-
-    /* Init constants */
-
-    /* Load mask */
-    bn.addi mask, bn0, 1
-    bn.or   mask, bn0, mask << 32
-    bn.subi mask, mask, 1
-
-    /* Load q' to w8.0 */
-    li t0, 8
-    la t1, qprime_single
-    bn.lid t0, 0(t1)
-    bn.or w8, bn0, w8 << 128
-
-    /* Load q to w8.2 */
-    li t0, 9
-    la t1, modulus
-    bn.lid t0, 0(t1)
-    bn.and w9, mask, w9
-    bn.or w8, w8, w9 << 192
-
-    /* Load alpha = 1 */
-    bn.addi w10, bn0, 1
-    bn.or w8, w8, w10 << 64
-
-    /* Constants for WDRs */
-    li t0, 0
-    li t1, 1
-    li t2, 2
-    li t3, 6
-
-    LOOPI 32, 15
-        bn.lid t0, 0(a0++)
-        bn.lid t1, 0(a1++)
-        bn.lid t2, 0(a2)
-
-        LOOPI 8, 9
-            /* Mask one coefficient to working registers */
-            bn.and w4, w0, mask
-            bn.and w5, w1, mask
-            /* Shift out used coefficient */
-            bn.rshi w0, bn0, w0 >> 32
-
-            /* Do operation */
-            /* c = a * b */
-            bn.mulqacc.wo.z w5, qprime, w5.0, 0
-            /* Multiply q' */
-            bn.mulqacc.wo.z w4, w5.0, w4.0, 192
-            /* + 1 */
-            bn.add w4, w8, w4 >> 160
-            bn.mulqacc.wo.z w4, w4.1, q, 0
-            bn.rshi w4, w8, w4 >> 32
-
-            /* Append result to output */
-            bn.rshi w1, w4, w1 >> 32
-
-        bn.add w1, w1, w2 /* Accumulate */
-
-        /* Store 8 coefficients */
-        bn.sid t1, 0(a2++)
-    ret
-
-/**
- * Constant Time Dilithium conditional add q
- *
- * Returns: input1 reduced mod^{+} q (taken from MOD WDR)
- *
- * This implements the polynomial addition for e.g. Dilithium, where n=256.
- *
- * Flags: -
- *
- * @param[in/out]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
- * @param[in]  w31: all-zero
- *
- * clobbered registers: x4-x6, w2-w4
- */
-.global poly_caddq_base_dilithium
-poly_caddq_base_dilithium:
-
-
-    /* Init mask */
-    bn.addi w7, w31, 1
-    bn.or w7, w31, w7 << 32
-    bn.subi w7, w7, 1
-
-    /* Load modulus */
-    la x4, modulus
-    li x5, 8
-    bn.lid x5, 0(x4)
-    bn.and w8, w8, w7
-
-    /* Load mask for masking the sign bit */
-    bn.addi w9, bn0, 1
-    bn.rshi w9, w9, bn0 >> 225 /* Set 31st bit to 1 */
-
-    /* Set up constants for input/state */
-    li x6, 2
-    li x5, 3
-    li x4, 6
-
-    LOOPI 32, 8
-        bn.lid x6, 0(x10)
-
-        LOOPI 8, 5
-            /* Mask one coefficient to working registers */
-            bn.and w4, w2, w7
-
-            /* Test sign */
-            bn.and w5, w4, w9
-            /* If sign bit was set, select q. Else 0. */
-            bn.sel w5, bn0, w8, z
-            bn.add w4, w4, w5
-
-            bn.rshi w2, w4, w2 >> 32
-
-        bn.sid x6, 0(x10++)
-
-    ret
-
-.data
-.balign 32
-qprime_single:
-    /* qprime */
-    .word 0x03802001, 0x180a4060
-    .word 0x0, 0x0
-    .word 0x0, 0x0
-    .word 0x0, 0x0
-reduce32_cmp_const:
-    .word 4194304
-    .word 0
-    .word 0
-    .word 0
-    .word 0
-    .word 0
-    .word 0
-    .word 0

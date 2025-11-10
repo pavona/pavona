@@ -1,6 +1,10 @@
 /* Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+/* Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of */
+/* "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN" */
+/* (https://eprint.iacr.org/2025/2028) */
+/* Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham. */
 
 .text
 
@@ -21,18 +25,14 @@
  * clobbered registers: x4 to x5
  *                      w2 to w3
  */
-.globl poly_sub_dilithium
-poly_sub_dilithium:
+.globl poly_sub
+poly_sub:
     /* Set up constants for input/state */
-    li x4, 2
-    li x5, 3
+    li x4, 1
 
     LOOPI 32, 4
-        bn.lid x4, 0(x10++)
-        bn.lid x5, 0(x11++)
-
-        bn.subvm.8S w2, w2, w3
-
-        bn.sid x4, 0(x12++)
-
+        bn.lid      x0, 0(x10++)
+        bn.lid      x4, 0(x11++)
+        bn.subvm.8S w0, w0, w1
+        bn.sid      x0, 0(x12++)
     ret

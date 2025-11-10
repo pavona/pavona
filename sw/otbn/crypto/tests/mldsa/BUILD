@@ -3,186 +3,208 @@
 # SPDX-License-Identifier: Apache-2.0
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
 # Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+# Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of
+# "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN"
+# (https://eprint.iacr.org/2025/2028)
+# Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
 
 load("//rules:otbn.bzl", "otbn_binary", "otbn_consttime_test", "otbn_library", "otbn_sim_test")
 
 package(default_visibility = ["//visibility:public"])
 
-otbn_sim_test(
-    name = "poly_add_dilithium_test",
-    srcs = [
-        "poly_add_dilithium_test.s",
-    ],
-    dexp = "poly_add_dilithium_test.dexp",
-    deps = [
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-    ],
-)
+# Refactor ML-DSA VER2
 
 otbn_sim_test(
-    name = "dilithium2_keypair_test",
+    name = "mldsa44_keypair_test",
     srcs = [
-        "dilithium_keypair_test.s",
+        "mldsa_keypair_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=2"],
+    copts = [
+        "-DDILITHIUM_MODE=2",
+    ],
     dexp = "dilithium2_keypair_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:key_pair_dilithium2",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium2",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium2",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_keypair",
+        "//sw/otbn/crypto/mldsa:mldsa44_poly",
+        "//sw/otbn/crypto/mldsa:mldsa44_rounding",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
     ],
 )
 
 otbn_sim_test(
-    name = "dilithium2_sign_test",
+    name = "mldsa44_sign_test",
     srcs = [
-        "dilithium_sign_test.s",
+        "mldsa_sign_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=2"],
+    copts = [
+        "-DDILITHIUM_MODE=2",
+    ],
     dexp = "dilithium2_sign_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium2",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_sub_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium2",
-        "//sw/otbn/crypto/mldsa:sign_dilithium2",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_poly",
+        "//sw/otbn/crypto/mldsa:mldsa44_rounding",
+        "//sw/otbn/crypto/mldsa:mldsa44_sign",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
+        "//sw/otbn/crypto/mldsa:poly_sub",
     ],
 )
 
 otbn_sim_test(
-    name = "dilithium2_verify_test",
+    name = "mldsa44_verify_test",
     srcs = [
-        "dilithium_verify_test.s",
+        "mldsa_verify_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=2"],
+    copts = [
+        "-DDILITHIUM_MODE=2",
+    ],
     dexp = "dilithium2_verify_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium2",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_sub_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium2",
-        "//sw/otbn/crypto/mldsa:verify_dilithium2",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_poly",
+        "//sw/otbn/crypto/mldsa:mldsa44_rounding",
+        "//sw/otbn/crypto/mldsa:mldsa44_verify",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
+        "//sw/otbn/crypto/mldsa:poly_sub",
     ],
 )
 
 otbn_sim_test(
-    name = "dilithium3_keypair_test",
+    name = "mldsa65_keypair_test",
     srcs = [
-        "dilithium_keypair_test.s",
+        "mldsa_keypair_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=3"],
+    copts = [
+        "-DDILITHIUM_MODE=3",
+    ],
     dexp = "dilithium3_keypair_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:key_pair_dilithium3",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium3",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium3",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa65_keypair",
+        "//sw/otbn/crypto/mldsa:mldsa65_poly",
+        "//sw/otbn/crypto/mldsa:mldsa65_rounding",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
     ],
 )
 
 otbn_sim_test(
-    name = "dilithium3_sign_test",
+    name = "mldsa65_sign_test",
     srcs = [
-        "dilithium_sign_test.s",
+        "mldsa_sign_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=3"],
+    copts = [
+        "-DDILITHIUM_MODE=3",
+    ],
     dexp = "dilithium3_sign_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium3",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_sub_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium3",
-        "//sw/otbn/crypto/mldsa:sign_dilithium3",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa65_poly",
+        "//sw/otbn/crypto/mldsa:mldsa65_rounding",
+        "//sw/otbn/crypto/mldsa:mldsa65_sign",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
+        "//sw/otbn/crypto/mldsa:poly_sub",
     ],
 )
 
 otbn_sim_test(
-    name = "dilithium3_verify_test",
+    name = "mldsa65_verify_test",
     srcs = [
-        "dilithium_verify_test.s",
+        "mldsa_verify_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=3"],
+    copts = [
+        "-DDILITHIUM_MODE=3",
+    ],
     dexp = "dilithium3_verify_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium3",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_sub_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium3",
-        "//sw/otbn/crypto/mldsa:verify_dilithium3",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa65_poly",
+        "//sw/otbn/crypto/mldsa:mldsa65_rounding",
+        "//sw/otbn/crypto/mldsa:mldsa65_verify",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
+        "//sw/otbn/crypto/mldsa:poly_sub",
     ],
 )
 
 otbn_sim_test(
-    name = "dilithium5_keypair_test",
+    name = "mldsa87_keypair_test",
     srcs = [
-        "dilithium_keypair_test.s",
+        "mldsa_keypair_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=5"],
+    copts = [
+        "-DDILITHIUM_MODE=5",
+    ],
     dexp = "dilithium5_keypair_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:key_pair_dilithium5",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium5",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium5",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa87_keypair",
+        "//sw/otbn/crypto/mldsa:mldsa87_poly",
+        "//sw/otbn/crypto/mldsa:mldsa87_rounding",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
     ],
 )
 
 otbn_sim_test(
-    name = "dilithium5_sign_test",
+    name = "mldsa87_sign_test",
     srcs = [
-        "dilithium_sign_test.s",
+        "mldsa_sign_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=5"],
+    copts = [
+        "-DDILITHIUM_MODE=5",
+    ],
     dexp = "dilithium5_sign_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium5",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_sub_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium5",
-        "//sw/otbn/crypto/mldsa:sign_dilithium5",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa87_poly",
+        "//sw/otbn/crypto/mldsa:mldsa87_rounding",
+        "//sw/otbn/crypto/mldsa:mldsa87_sign",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
+        "//sw/otbn/crypto/mldsa:poly_sub",
     ],
 )
 
 otbn_sim_test(
-    name = "dilithium5_verify_test",
+    name = "mldsa87_verify_test",
     srcs = [
-        "dilithium_verify_test.s",
+        "mldsa_verify_test.s",
     ],
-    copts = ["-DDILITHIUM_MODE=5"],
+    copts = [
+        "-DDILITHIUM_MODE=5",
+    ],
     dexp = "dilithium5_verify_test.dexp",
     deps = [
-        "//sw/otbn/crypto/mldsa:intt_dilithium",
-        "//sw/otbn/crypto/mldsa:ntt_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_add_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_dilithium5",
-        "//sw/otbn/crypto/mldsa:poly_pointwise_dilithium",
-        "//sw/otbn/crypto/mldsa:poly_sub_dilithium",
-        "//sw/otbn/crypto/mldsa:rounding_dilithium5",
-        "//sw/otbn/crypto/mldsa:verify_dilithium5",
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa87_poly",
+        "//sw/otbn/crypto/mldsa:mldsa87_rounding",
+        "//sw/otbn/crypto/mldsa:mldsa87_verify",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
+        "//sw/otbn/crypto/mldsa:poly_sub",
     ],
 )
