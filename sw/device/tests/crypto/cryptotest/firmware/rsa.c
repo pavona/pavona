@@ -155,19 +155,47 @@ status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  uint32_t n[uj_private_key.n_len];
+  uint32_t n[key_length / sizeof(uint32_t)];
+  memset(n, 0, sizeof(n));
   memcpy(n, uj_private_key.n, uj_private_key.n_len);
+  uint32_t p[(key_length / sizeof(uint32_t)) / 2];
+  memset(p, 0, sizeof(p));
+  memcpy(p, uj_private_key.p, uj_private_key.p_len);
+  uint32_t q[(key_length / sizeof(uint32_t)) / 2];
+  memset(q, 0, sizeof(q));
+  memcpy(q, uj_private_key.q, uj_private_key.q_len);
+  uint32_t d_p[(key_length / sizeof(uint32_t)) / 2];
+  memset(d_p, 0, sizeof(d_p));
+  memcpy(d_p, uj_private_key.d_p, uj_private_key.d_p_len);
+  uint32_t d_q[(key_length / sizeof(uint32_t)) / 2];
+  memset(d_q, 0, sizeof(d_q));
+  memcpy(d_q, uj_private_key.d_q, uj_private_key.d_q_len);
+  uint32_t i_q[(key_length / sizeof(uint32_t)) / 2];
+  memset(i_q, 0, sizeof(i_q));
+  memcpy(i_q, uj_private_key.i_q, uj_private_key.i_q_len);
   otcrypto_const_word32_buf_t modulus = {
       .len = key_length / sizeof(uint32_t),
       .data = n,
   };
-  otcrypto_const_word32_buf_t d_share0 = {
-      .len = key_length / sizeof(uint32_t),
-      .data = RANDOM_MASK,
+  otcrypto_const_word32_buf_t cofactor0 = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = p,
   };
-  otcrypto_const_word32_buf_t d_share1 = {
-      .len = key_length / sizeof(uint32_t),
-      .data = d_share1_buf,
+  otcrypto_const_word32_buf_t cofactor1 = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = q,
+  };
+  otcrypto_const_word32_buf_t d_component0 = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = d_p,
+  };
+  otcrypto_const_word32_buf_t d_component1 = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = d_q,
+  };
+  otcrypto_const_word32_buf_t crt_coeff = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = i_q,
   };
   uint32_t keyblob[keyblob_length / sizeof(uint32_t)];
   otcrypto_blinded_key_t private_key = {
@@ -175,15 +203,17 @@ status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
       .keyblob_length = keyblob_length,
       .keyblob = keyblob,
   };
-  // Create blinded private key object from components
+  // Create private key object from components
   otcrypto_status_t status = otcrypto_rsa_private_key_from_exponents(
-      rsa_size, modulus, uj_private_key.e, d_share0, d_share1, &private_key);
+      rsa_size, modulus, cofactor0, cofactor1, uj_private_key.e, d_component0,
+      d_component1, crt_coeff, &private_key);
   if (status.value != kOtcryptoStatusValueOk) {
     LOG_ERROR("Bad status value from key creation = 0x%x", status.value);
     return INTERNAL(status.value);
   }
 
   uint8_t message_buf[RSA_CMD_MAX_MESSAGE_DIGEST_BYTES];
+  memset(message_buf, 0, sizeof(message_buf));
   memcpy(message_buf, uj_message.message_digest, uj_message.message_digest_len);
   const otcrypto_hash_digest_t message_digest = {
       .mode = mode,
@@ -577,19 +607,47 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  uint32_t n[uj_private_key.n_len];
+  uint32_t n[key_length / sizeof(uint32_t)];
+  memset(n, 0, sizeof(n));
   memcpy(n, uj_private_key.n, uj_private_key.n_len);
+  uint32_t p[(key_length / sizeof(uint32_t)) / 2];
+  memset(p, 0, sizeof(p));
+  memcpy(p, uj_private_key.p, uj_private_key.p_len);
+  uint32_t q[(key_length / sizeof(uint32_t)) / 2];
+  memset(q, 0, sizeof(q));
+  memcpy(q, uj_private_key.q, uj_private_key.q_len);
+  uint32_t d_p[(key_length / sizeof(uint32_t)) / 2];
+  memset(d_p, 0, sizeof(d_p));
+  memcpy(d_p, uj_private_key.d_p, uj_private_key.d_p_len);
+  uint32_t d_q[(key_length / sizeof(uint32_t)) / 2];
+  memset(d_q, 0, sizeof(d_q));
+  memcpy(d_q, uj_private_key.d_q, uj_private_key.d_q_len);
+  uint32_t i_q[(key_length / sizeof(uint32_t)) / 2];
+  memset(i_q, 0, sizeof(i_q));
+  memcpy(i_q, uj_private_key.i_q, uj_private_key.i_q_len);
   otcrypto_const_word32_buf_t modulus = {
       .len = key_length / sizeof(uint32_t),
       .data = n,
   };
-  otcrypto_const_word32_buf_t d_share0 = {
-      .len = key_length / sizeof(uint32_t),
-      .data = RANDOM_MASK,
+  otcrypto_const_word32_buf_t cofactor0 = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = p,
   };
-  otcrypto_const_word32_buf_t d_share1 = {
-      .len = key_length / sizeof(uint32_t),
-      .data = d_share1_buf,
+  otcrypto_const_word32_buf_t cofactor1 = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = q,
+  };
+  otcrypto_const_word32_buf_t d_component0 = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = d_p,
+  };
+  otcrypto_const_word32_buf_t d_component1 = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = d_q,
+  };
+  otcrypto_const_word32_buf_t crt_coeff = {
+      .len = (key_length / sizeof(uint32_t)) / 2,
+      .data = i_q,
   };
   uint32_t keyblob[keyblob_length / sizeof(uint32_t)];
   otcrypto_blinded_key_t private_key = {
@@ -597,15 +655,17 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
       .keyblob_length = keyblob_length,
       .keyblob = keyblob,
   };
-  // Create blinded private key object from components
+  // Create private key object from components
   otcrypto_status_t status = otcrypto_rsa_private_key_from_exponents(
-      rsa_size, modulus, uj_private_key.e, d_share0, d_share1, &private_key);
+      rsa_size, modulus, cofactor0, cofactor1, uj_private_key.e, d_component0,
+      d_component1, crt_coeff, &private_key);
   if (status.value != kOtcryptoStatusValueOk) {
     LOG_ERROR("Bad status value from key generation: 0x%x", status.value);
     return INTERNAL(status.value);
   }
 
   uint32_t ciphertext_buf[RSA_CMD_MAX_CIPHERTEXT_BYTES / sizeof(uint32_t)];
+  memset(ciphertext_buf, 0, sizeof(ciphertext_buf));
   memcpy(ciphertext_buf, uj_ciphertext.ciphertext,
          uj_ciphertext.ciphertext_len);
   otcrypto_const_word32_buf_t ciphertext = {

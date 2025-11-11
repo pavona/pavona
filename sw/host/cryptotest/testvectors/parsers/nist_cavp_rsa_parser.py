@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-# Copyright zeroRISC Inc.
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-#
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -15,8 +12,14 @@ import argparse
 import sys
 import json
 import jsonschema
+import math
+import random
 
 from cryptotest_util import parse_rsp, str_to_byte_array
+
+# Fix random seed to make order of primes found by
+# add_crt_values_to_test_vector below deterministic.
+random.seed(3329)
 
 SUPPORTED_SECURITY_LEVELS = [
     2048,
@@ -35,6 +38,62 @@ HASH_SIZE_MAPPING = {
     "SHA384": 48,
     "SHA512": 64,
 }
+
+
+def add_crt_values_to_test_vector(test_case):
+    # Unpack the non-CRT test vector key
+    n = int.from_bytes(test_case["n"], "big")
+    d = int.from_bytes(test_case["d"], "big")
+    e = test_case["e"]
+
+    # Use private and public exponent to compute k, a multiple of phi(n)
+    k = d * e - 1
+
+    # Find a square root of unity mod n not equal to 1 or -1 mod n. By CRT,
+    # such a value is congruent to 1 mod p or 1 mod q, so computing a simple
+    # GCD suffices to extract a cofactor.
+    while True:
+        # Choose g nonzero at random mod n
+        g = random.randrange(2, n - 1)
+
+        # Check x = g^(k/2), g^(k/4), etc.
+        found = False
+        test_exp = k
+        while test_exp % 2 == 0:
+            test_exp //= 2
+            x = pow(g, test_exp, n)
+            if x == 1 or x == n - 1:
+                continue
+
+            # Try to factor n using this value
+            p = math.gcd(x - 1, n)
+            if p != 1:
+                found = True
+                break
+
+        # If we found a cofactor, we're done
+        if found:
+            break
+
+    # Compute the other cofactor and remaining CRT values
+    q = n // p
+    d_p = d % (p - 1)
+    d_q = d % (q - 1)
+    i_q = pow(q, -1, p)
+
+    # Now, we just need to attach the remaining values to the test vector
+    rsa_bytes = int(test_case["security_level"]) // 8
+    test_case["p"] = list(p.to_bytes(rsa_bytes // 2, "big"))
+    test_case["q"] = list(q.to_bytes(rsa_bytes // 2, "big"))
+    test_case["d_p"] = list(d_p.to_bytes(rsa_bytes // 2, "big"))
+    test_case["d_q"] = list(d_q.to_bytes(rsa_bytes // 2, "big"))
+    test_case["i_q"] = list(i_q.to_bytes(rsa_bytes // 2, "big"))
+
+    # Attach leading zero byte if the MSb of any value is set
+    for key in ["p", "q", "d_p", "d_q", "i_q"]:
+        if test_case[key][0] & 0x80 != 0:
+            test_case[key] = [0] + test_case[key]
+
 
 def parse_testcases(args) -> None:
     # Depending on the operation, we have to notify the parser that certain
@@ -88,6 +147,7 @@ def parse_testcases(args) -> None:
             # `Sign` tests always include the correct expected
             # signature.
             test_case["result"] = True
+            add_crt_values_to_test_vector(test_case)
         elif args.operation == "verify":
             result_str = test_vec["Result"][:1]
             if result_str == "P":

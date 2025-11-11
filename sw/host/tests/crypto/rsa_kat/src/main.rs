@@ -63,9 +63,19 @@ struct RsaTestCase {
     label: Vec<u8>,
     n: Vec<u8>,
     #[serde(default)]
+    p: Vec<u8>,
+    #[serde(default)]
+    q: Vec<u8>,
+    #[serde(default)]
     e: u32,
     #[serde(default)]
     d: Vec<u8>,
+    #[serde(default)]
+    d_p: Vec<u8>,
+    #[serde(default)]
+    d_q: Vec<u8>,
+    #[serde(default)]
+    i_q: Vec<u8>,
     #[serde(default)]
     signature: Vec<u8>,
     #[serde(default)]
@@ -194,9 +204,19 @@ fn run_rsa_testcase(
             // Convert parameters to unsigned little-endian
             let n_bigint = BigInt::from_signed_bytes_be(test_case.n.as_slice());
             let n = n_bigint.to_bytes_le().1;
-            let d = BigInt::from_signed_bytes_be(test_case.d.as_slice())
-                .to_bytes_le()
-                .1;
+            let p_bigint = BigInt::from_signed_bytes_be(test_case.p.as_slice());
+            let p = p_bigint.to_bytes_le().1;
+            let q_bigint = BigInt::from_signed_bytes_be(test_case.q.as_slice());
+            let q = q_bigint.to_bytes_le().1;
+            let d_bigint = BigInt::from_signed_bytes_be(test_case.d.as_slice());
+            let d = d_bigint.to_bytes_le().1;
+            let d_p_bigint = BigInt::from_signed_bytes_be(test_case.d_p.as_slice());
+            let d_p = d_p_bigint.to_bytes_le().1;
+            let d_q_bigint = BigInt::from_signed_bytes_be(test_case.d_q.as_slice());
+            let d_q = d_q_bigint.to_bytes_le().1;
+            let i_q_bigint = BigInt::from_signed_bytes_be(test_case.i_q.as_slice());
+            let i_q = i_q_bigint.to_bytes_le().1;
+
             CryptotestRsaMessageDigest {
                 message_digest: message_digest_buf,
                 message_digest_len,
@@ -206,9 +226,24 @@ fn run_rsa_testcase(
                 n: ArrayVec::try_from(n.as_slice())
                     .expect("RSA parameter n too long for device firmware configuration."),
                 n_len: n.len(),
+                p: ArrayVec::try_from(p.as_slice())
+                    .expect("RSA parameter p too long for device firmware configuration."),
+                p_len: p.len(),
+                q: ArrayVec::try_from(q.as_slice())
+                    .expect("RSA parameter q too long for device firmware configuration."),
+                q_len: q.len(),
                 d: ArrayVec::try_from(d.as_slice())
                     .expect("RSA parameter d too long for device firmware configuration."),
                 d_len: d.len(),
+                d_p: ArrayVec::try_from(d_p.as_slice())
+                    .expect("RSA parameter d_p too long for device firmware configuration."),
+                d_p_len: d_p.len(),
+                d_q: ArrayVec::try_from(d_q.as_slice())
+                    .expect("RSA parameter d_q too long for device firmware configuration."),
+                d_q_len: d_q.len(),
+                i_q: ArrayVec::try_from(i_q.as_slice())
+                    .expect("RSA parameter i_q too long for device firmware configuration."),
+                i_q_len: i_q.len(),
                 e: test_case.e,
             }
             .send(spi_console)?;
@@ -383,12 +418,20 @@ fn run_rsa_testcase(
         }
         CryptotestRsaOperation::Decrypt => {
             // Convert parameters to unsigned little-endian
-            let n = BigInt::from_signed_bytes_be(test_case.n.as_slice())
-                .to_bytes_le()
-                .1;
-            let d = BigInt::from_signed_bytes_be(test_case.d.as_slice())
-                .to_bytes_le()
-                .1;
+            let n_bigint = BigInt::from_signed_bytes_be(test_case.n.as_slice());
+            let n = n_bigint.to_bytes_le().1;
+            let p_bigint = BigInt::from_signed_bytes_be(test_case.p.as_slice());
+            let p = p_bigint.to_bytes_le().1;
+            let q_bigint = BigInt::from_signed_bytes_be(test_case.q.as_slice());
+            let q = q_bigint.to_bytes_le().1;
+            let d_bigint = BigInt::from_signed_bytes_be(test_case.d.as_slice());
+            let d = d_bigint.to_bytes_le().1;
+            let d_p_bigint = BigInt::from_signed_bytes_be(test_case.d_p.as_slice());
+            let d_p = d_p_bigint.to_bytes_le().1;
+            let d_q_bigint = BigInt::from_signed_bytes_be(test_case.d_q.as_slice());
+            let d_q = d_q_bigint.to_bytes_le().1;
+            let i_q_bigint = BigInt::from_signed_bytes_be(test_case.i_q.as_slice());
+            let i_q = i_q_bigint.to_bytes_le().1;
             let ciphertext: Vec<_> = test_case.ciphertext.iter().cloned().rev().collect();
             // Send ciphertext
             CryptotestRsaCiphertext {
@@ -414,9 +457,24 @@ fn run_rsa_testcase(
                 n: ArrayVec::try_from(n.as_slice())
                     .expect("RSA parameter n too long for device firmware configuration."),
                 n_len: n.len(),
+                p: ArrayVec::try_from(p.as_slice())
+                    .expect("RSA parameter p too long for device firmware configuration."),
+                p_len: p.len(),
+                q: ArrayVec::try_from(q.as_slice())
+                    .expect("RSA parameter q too long for device firmware configuration."),
+                q_len: q.len(),
                 d: ArrayVec::try_from(d.as_slice())
                     .expect("RSA parameter d too long for device firmware configuration."),
                 d_len: d.len(),
+                d_p: ArrayVec::try_from(d_p.as_slice())
+                    .expect("RSA parameter d_p too long for device firmware configuration."),
+                d_p_len: d_p.len(),
+                d_q: ArrayVec::try_from(d_q.as_slice())
+                    .expect("RSA parameter d_q too long for device firmware configuration."),
+                d_q_len: d_q.len(),
+                i_q: ArrayVec::try_from(i_q.as_slice())
+                    .expect("RSA parameter i_q too long for device firmware configuration."),
+                i_q_len: i_q.len(),
                 e: test_case.e,
             }
             .send(spi_console)?;
