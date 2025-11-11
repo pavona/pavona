@@ -18,6 +18,7 @@ from cryptotest_util import str_to_byte_array
 # add_crt_values_to_test_vector below deterministic.
 random.seed(3329)
 
+
 def add_crt_values_to_test_vector(test_vec):
     # Unpack the non-CRT test vector key
     n = int.from_bytes(test_vec["n"], "big")
