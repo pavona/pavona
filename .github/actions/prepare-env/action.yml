@@ -40,19 +40,6 @@ inputs:
   license-port:
     description: Port on license-server that the license server is serving on.
     default: '2100'
-  ts-oauth-client-id:
-    description: Tailscale OAuth client ID
-  ts-oauth-secret:
-    description: Tailscale OAuth secret
-  ts-tag:
-    description: Tailscale device tag
-    default: "ci-runner"
-  ts-version:
-    description: Tailscale version
-    default: "1.84.0"
-  ts-args:
-    description: Additional arguments to pass to tailscaled.
-    default: ""
   fpga:
     description: FPGA board type to prepare, if any.
     default: ''
@@ -236,24 +223,9 @@ runs:
          # Add Vivado binary directory to path
          echo "/tools/Xilinx/Vivado/${{ inputs.vivado-version }}/bin" >> $GITHUB_PATH
       shell: bash
-    - name: Authenticate to tailscale to access license server
-      uses: tailscale/github-action@v3
-      with:
-        oauth-client-id: ${{ inputs.ts-oauth-client-id }}
-        oauth-secret: ${{ inputs.ts-oauth-secret }}
-        tailscaled-args: '--tun=userspace-networking ${{ inputs.ts-args }}'
-        tags: tag:${{ inputs.ts-tag }}
-        version: ${{ inputs.ts-version }}
-        use-cache: 'true'
-      if: inputs.vivado-version != ''
     - name: Set environment variable for license server
       if: inputs.vivado-version != ''
       run: |
-        LICENSE_SERVER_IP=$(
-          tailscale status --json | \
-          jq --join-output --raw-output \
-          '.Peer[] | select(.HostName  == "${{ inputs.license-host }}") | .TailscaleIPs[0]'
-        )
-        sudo bash -c "echo $LICENSE_SERVER_IP ${{ inputs.license-host }} >> /etc/hosts"
-        echo "XILINXD_LICENSE_FILE=${{ inputs.license-port }}@${{ inputs.license-host }}" >> $GITHUB_ENV
+        LICENSE_HOST="$(cat /etc/ci/${{ inputs.license-host }}/hostname)"
+        echo "XILINXD_LICENSE_FILE=${{ inputs.license-port }}@${LICENSE_HOST}" >> $GITHUB_ENV
       shell: bash
