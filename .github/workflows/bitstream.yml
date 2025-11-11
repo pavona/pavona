@@ -27,8 +27,6 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
-          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           vivado-version: ${{ inputs.vivado_version }}
       - name: Configure bitstream strategy
         id: strategy
