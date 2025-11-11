@@ -1,7 +1,3 @@
-// Copyright zeroRISC Inc.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
 // Copyright lowRISC contributors (OpenTitan project).
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -53,17 +49,37 @@ OT_WARN_UNUSED_RESULT
 static status_t rsa_ciphertext_reduced_check_2048(
     const rsa_2048_private_key_t *private_key,
     const rsa_2048_int_t *ciphertext) {
-  hardened_bool_t borrow = kHardenedBoolTrue;
+  // Reconstruct n from the private key
+  uint32_t n[kRsa2048NumWords];
+  memset(n, 0, kRsa2048NumBytes);
   size_t i = 0;
+  for (; launder32(i) < kRsa2048NumWords / 2; i++) {
+    uint32_t carry = 0;
+    size_t j = 0;
+    for (; launder32(j) < kRsa2048NumWords / 2; j++) {
+      uint64_t inner_prod =
+          (uint64_t)private_key->p.data[j] * (uint64_t)private_key->q.data[i] +
+          n[i + j] + carry;
+      n[i + j] = inner_prod & 0xFFFFFFFF;
+      carry = inner_prod >> 32;
+    }
+    HARDENED_CHECK_EQ(j, kRsa2048NumWords / 2);
+    n[i + (kRsa2048NumWords / 2)] = carry;
+  }
+  HARDENED_CHECK_EQ(i, kRsa2048NumWords / 2);
+
+  // Verify that the provided signature is less than n
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  i = 0;
   for (; launder32(i) < kRsa2048NumWords; i++) {
-    uint32_t n_limb = private_key->n.data[i];
-    uint32_t sig_limb = ciphertext->data[i];
+    uint32_t n_limb = n[i];
+    uint32_t ct_limb = ciphertext->data[i];
     if (launder32(borrow) == kHardenedBoolTrue) {
       HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
-      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+      borrow = (n_limb <= ct_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
     } else {
       HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
-      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+      borrow = (n_limb < ct_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
     }
   }
   HARDENED_CHECK_EQ(i, kRsa2048NumWords);
@@ -180,17 +196,37 @@ OT_WARN_UNUSED_RESULT
 static status_t rsa_ciphertext_reduced_check_3072(
     const rsa_3072_private_key_t *private_key,
     const rsa_3072_int_t *ciphertext) {
-  hardened_bool_t borrow = kHardenedBoolTrue;
+  // Reconstruct n from the private key
+  uint32_t n[kRsa3072NumWords];
+  memset(n, 0, kRsa3072NumBytes);
   size_t i = 0;
+  for (; launder32(i) < kRsa3072NumWords / 2; i++) {
+    uint32_t carry = 0;
+    size_t j = 0;
+    for (; launder32(j) < kRsa3072NumWords / 2; j++) {
+      uint64_t inner_prod =
+          (uint64_t)private_key->p.data[j] * (uint64_t)private_key->q.data[i] +
+          n[i + j] + carry;
+      n[i + j] = inner_prod & 0xFFFFFFFF;
+      carry = inner_prod >> 32;
+    }
+    HARDENED_CHECK_EQ(j, kRsa3072NumWords / 2);
+    n[i + (kRsa3072NumWords / 2)] = carry;
+  }
+  HARDENED_CHECK_EQ(i, kRsa3072NumWords / 2);
+
+  // Verify that the provided signature is less than n
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  i = 0;
   for (; launder32(i) < kRsa3072NumWords; i++) {
-    uint32_t n_limb = private_key->n.data[i];
-    uint32_t sig_limb = ciphertext->data[i];
+    uint32_t n_limb = n[i];
+    uint32_t ct_limb = ciphertext->data[i];
     if (launder32(borrow) == kHardenedBoolTrue) {
       HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
-      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+      borrow = (n_limb <= ct_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
     } else {
       HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
-      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+      borrow = (n_limb < ct_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
     }
   }
   HARDENED_CHECK_EQ(i, kRsa3072NumWords);
@@ -246,17 +282,37 @@ OT_WARN_UNUSED_RESULT
 static status_t rsa_ciphertext_reduced_check_4096(
     const rsa_4096_private_key_t *private_key,
     const rsa_4096_int_t *ciphertext) {
-  hardened_bool_t borrow = kHardenedBoolTrue;
+  // Reconstruct n from the private key
+  uint32_t n[kRsa4096NumWords];
+  memset(n, 0, kRsa4096NumBytes);
   size_t i = 0;
+  for (; launder32(i) < kRsa4096NumWords / 2; i++) {
+    uint32_t carry = 0;
+    size_t j = 0;
+    for (; launder32(j) < kRsa4096NumWords / 2; j++) {
+      uint64_t inner_prod =
+          (uint64_t)private_key->p.data[j] * (uint64_t)private_key->q.data[i] +
+          n[i + j] + carry;
+      n[i + j] = inner_prod & 0xFFFFFFFF;
+      carry = inner_prod >> 32;
+    }
+    HARDENED_CHECK_EQ(j, kRsa4096NumWords / 2);
+    n[i + (kRsa4096NumWords / 2)] = carry;
+  }
+  HARDENED_CHECK_EQ(i, kRsa4096NumWords / 2);
+
+  // Verify that the provided signature is less than n
+  hardened_bool_t borrow = kHardenedBoolTrue;
+  i = 0;
   for (; launder32(i) < kRsa4096NumWords; i++) {
-    uint32_t n_limb = private_key->n.data[i];
-    uint32_t sig_limb = ciphertext->data[i];
+    uint32_t n_limb = n[i];
+    uint32_t ct_limb = ciphertext->data[i];
     if (launder32(borrow) == kHardenedBoolTrue) {
       HARDENED_CHECK_EQ(borrow, kHardenedBoolTrue);
-      borrow = (n_limb <= sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+      borrow = (n_limb <= ct_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
     } else {
       HARDENED_CHECK_EQ(borrow, kHardenedBoolFalse);
-      borrow = (n_limb < sig_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
+      borrow = (n_limb < ct_limb) ? kHardenedBoolTrue : kHardenedBoolFalse;
     }
   }
   HARDENED_CHECK_EQ(i, kRsa4096NumWords);

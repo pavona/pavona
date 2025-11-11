@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -7,9 +8,70 @@ import argparse
 import json
 import jsonschema
 import logging
+import math
+import random
 import sys
 
 from cryptotest_util import str_to_byte_array
+
+# Fix random seed to make order of primes found by
+# add_crt_values_to_test_vector below deterministic.
+random.seed(3329)
+
+def add_crt_values_to_test_vector(test_vec):
+    # Unpack the non-CRT test vector key
+    n = int.from_bytes(test_vec["n"], "big")
+    d = int.from_bytes(test_vec["d"], "big")
+    e = test_vec["e"]
+
+    # Use private and public exponent to compute k, a multiple of phi(n)
+    k = d * e - 1
+
+    # Find a square root of unity mod n not equal to 1 or -1 mod n. By CRT,
+    # such a value is congruent to 1 mod p or 1 mod q, so computing a simple
+    # GCD suffices to extract a cofactor.
+    while True:
+        # Choose g nonzero at random mod n
+        g = random.randrange(2, n - 1)
+
+        # Check x = g^(k/2), g^(k/4), etc.
+        found = False
+        test_exp = k
+        while test_exp % 2 == 0:
+            test_exp //= 2
+            x = pow(g, test_exp, n)
+            if x == 1 or x == n - 1:
+                continue
+
+            # Try to factor n using this value
+            p = math.gcd(x - 1, n)
+            if p != 1:
+                found = True
+                break
+
+        # If we found a cofactor, we're done
+        if found:
+            break
+
+    # Compute the other cofactor and remaining CRT values
+    assert n % p == 0
+    q = n // p
+    d_p = d % (p - 1)
+    d_q = d % (q - 1)
+    i_q = pow(q, -1, p)
+
+    # Now, we just need to attach the remaining values to the test vector
+    rsa_bytes = int(test_vec["security_level"]) // 8
+    test_vec["p"] = list(p.to_bytes(rsa_bytes // 2, "big"))
+    test_vec["q"] = list(q.to_bytes(rsa_bytes // 2, "big"))
+    test_vec["d_p"] = list(d_p.to_bytes(rsa_bytes // 2, "big"))
+    test_vec["d_q"] = list(d_q.to_bytes(rsa_bytes // 2, "big"))
+    test_vec["i_q"] = list(i_q.to_bytes(rsa_bytes // 2, "big"))
+
+    # Attach leading zero byte if the MSb of any value is set
+    for key in ["p", "q", "d_p", "d_q", "i_q"]:
+        if test_vec[key][0] & 0x80 != 0:
+            test_vec[key] = [0] + test_vec[key]
 
 
 def parse_test_vectors(raw_data, args):
@@ -37,6 +99,7 @@ def parse_test_vectors(raw_data, args):
                 test_vec["d"] = str_to_byte_array(group["privateKey"]["privateExponent"])
                 test_vec["e"] = int(group["privateKey"]["publicExponent"], 16)
                 test_vec["label"] = str_to_byte_array(test["label"])
+                add_crt_values_to_test_vector(test_vec)
             elif args.operation == "verify":
                 test_vec["signature"] = str_to_byte_array(test["sig"])
                 test_vec["n"] = str_to_byte_array(group["publicKey"]["modulus"])

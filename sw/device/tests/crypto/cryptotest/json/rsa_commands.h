@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors.
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,6 +18,9 @@ extern "C" {
 #define RSA_CMD_MAX_MODULUS_BYTES 512
 #define RSA_CMD_MAX_PUBLIC_EXPONENT_BYTES 512
 #define RSA_CMD_MAX_PRIVATE_EXPONENT_BYTES 512
+#define RSA_CMD_MAX_COFACTOR_BYTES 256
+#define RSA_CMD_MAX_CRT_COMPONENT_BYTES 256
+#define RSA_CMD_MAX_CRT_COEFFICIENT_BYTES 256
 
 // clang-format off
 
@@ -100,8 +104,18 @@ UJSON_SERDE_STRUCT(CryptotestRsaPublicKey, cryptotest_rsa_public_key_t, RSA_PUBL
 #define RSA_PRIVATE_KEY(field, string) \
     field(n, uint8_t, RSA_CMD_MAX_MODULUS_BYTES) \
     field(n_len, size_t) \
+    field(p, uint8_t, RSA_CMD_MAX_COFACTOR_BYTES) \
+    field(p_len, size_t) \
+    field(q, uint8_t, RSA_CMD_MAX_COFACTOR_BYTES) \
+    field(q_len, size_t) \
     field(d, uint8_t, RSA_CMD_MAX_PRIVATE_EXPONENT_BYTES) \
     field(d_len, size_t) \
+    field(d_p, uint8_t, RSA_CMD_MAX_CRT_COMPONENT_BYTES) \
+    field(d_p_len, size_t) \
+    field(d_q, uint8_t, RSA_CMD_MAX_CRT_COMPONENT_BYTES) \
+    field(d_q_len, size_t) \
+    field(i_q, uint8_t, RSA_CMD_MAX_CRT_COEFFICIENT_BYTES) \
+    field(i_q_len, size_t) \
     field(e, uint32_t)
 UJSON_SERDE_STRUCT(CryptotestRsaPrivateKey, cryptotest_rsa_private_key_t, RSA_PRIVATE_KEY);
 

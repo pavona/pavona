@@ -69,7 +69,27 @@
         "type": "integer"
       },
       "d": {
-        "description": "RSA private value d",
+        "description": "RSA private exponent d",
+        "$ref": "#/$defs/byte_array"
+      },
+      "p": {
+        "description": "RSA private cofactor p",
+        "$ref": "#/$defs/byte_array"
+      },
+      "q": {
+        "description": "RSA private cofactor q",
+        "$ref": "#/$defs/byte_array"
+      },
+      "d_p": {
+        "description": "RSA private exponent CRT component d_p",
+        "$ref": "#/$defs/byte_array"
+      },
+      "d_q": {
+        "description": "RSA private exponent CRT component d_q",
+        "$ref": "#/$defs/byte_array"
+      },
+      "i_q": {
+        "description": "RSA CRT coefficient i_q",
         "$ref": "#/$defs/byte_array"
       },
       "signature": {
