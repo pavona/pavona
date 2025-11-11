@@ -52,6 +52,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rsa_datatypes",
+        ":rsa_modexp_insn_counts",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/otbn/crypto:run_rsa_modexp",
     ],

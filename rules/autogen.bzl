@@ -731,7 +731,7 @@ def _autogen_otbn_insn_count_header(ctx):
     hjson = ctx.file.hjson
     if not template.basename.endswith(".h.tpl"):
         fail("Expected template to have a `.h.tpl` extension, got: " + str(ctx.files.srcs))
-    header = ctx.actions.declare_file("{}/{}".format(ctx.label.name, template.basename[:-4]))
+    header = ctx.actions.declare_file(template.basename[:-4])
 
     # Extract the .elf file to check from the dependency list.
     elf = [f for t in ctx.attr.deps for f in t[OutputGroupInfo].elf.to_list()]

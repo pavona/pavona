@@ -169,7 +169,7 @@ status_t rsa_signature_generate_2048_start(
 }
 
 status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature) {
-  return rsa_modexp_2048_finalize(signature);
+  return rsa_modexp_consttime_2048_finalize(signature);
 }
 
 /**
@@ -228,21 +228,21 @@ status_t rsa_signature_verify_finalize(
   switch (num_words) {
     case kRsa2048NumWords: {
       rsa_2048_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_2048_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_vartime_2048_finalize(&recovered_message));
       return encoded_message_verify(
           message_digest, padding_mode, recovered_message.data,
           ARRAYSIZE(recovered_message.data), verification_result);
     }
     case kRsa3072NumWords: {
       rsa_3072_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_3072_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_vartime_3072_finalize(&recovered_message));
       return encoded_message_verify(
           message_digest, padding_mode, recovered_message.data,
           ARRAYSIZE(recovered_message.data), verification_result);
     }
     case kRsa4096NumWords: {
       rsa_4096_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_4096_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_vartime_4096_finalize(&recovered_message));
       return encoded_message_verify(
           message_digest, padding_mode, recovered_message.data,
           ARRAYSIZE(recovered_message.data), verification_result);
@@ -274,7 +274,7 @@ status_t rsa_signature_generate_3072_start(
 }
 
 status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature) {
-  return rsa_modexp_3072_finalize(signature);
+  return rsa_modexp_consttime_3072_finalize(signature);
 }
 
 /**
@@ -337,7 +337,7 @@ status_t rsa_signature_generate_4096_start(
 }
 
 status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature) {
-  return rsa_modexp_4096_finalize(signature);
+  return rsa_modexp_consttime_4096_finalize(signature);
 }
 
 /**

@@ -13,8 +13,8 @@ from mako.template import Template
 from shared.decode import decode_elf
 from shared.instruction_count_range import program_insn_count_range
 '''
-Compute the range of instruction counts for each RSA mode, and generate a
-header file with these ranges.
+Compute the range of instruction counts for each OTBN program mode, and
+generate a header file with these ranges.
 '''
 
 

@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors (OpenTitan project).
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -34,7 +38,7 @@ status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
 }
 
 status_t rsa_encrypt_2048_finalize(rsa_2048_int_t *ciphertext) {
-  return rsa_modexp_2048_finalize(ciphertext);
+  return rsa_modexp_vartime_2048_finalize(ciphertext);
 }
 
 /**
@@ -134,21 +138,21 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   switch (num_words) {
     case kRsa2048NumWords: {
       rsa_2048_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_2048_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_consttime_2048_finalize(&recovered_message));
       return rsa_padding_oaep_decode(
           hash_mode, label, label_bytelen, recovered_message.data,
           ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
     }
     case kRsa3072NumWords: {
       rsa_3072_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_3072_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_consttime_3072_finalize(&recovered_message));
       return rsa_padding_oaep_decode(
           hash_mode, label, label_bytelen, recovered_message.data,
           ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
     }
     case kRsa4096NumWords: {
       rsa_4096_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_4096_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_consttime_4096_finalize(&recovered_message));
       return rsa_padding_oaep_decode(
           hash_mode, label, label_bytelen, recovered_message.data,
           ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
@@ -181,7 +185,7 @@ status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
 }
 
 status_t rsa_encrypt_3072_finalize(rsa_3072_int_t *ciphertext) {
-  return rsa_modexp_3072_finalize(ciphertext);
+  return rsa_modexp_vartime_3072_finalize(ciphertext);
 }
 
 /**
@@ -267,7 +271,7 @@ status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
 }
 
 status_t rsa_encrypt_4096_finalize(rsa_4096_int_t *ciphertext) {
-  return rsa_modexp_4096_finalize(ciphertext);
+  return rsa_modexp_vartime_4096_finalize(ciphertext);
 }
 
 /**

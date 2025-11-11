@@ -14,8 +14,8 @@ extern "C" {
 enum {
 % for mode, min_count, max_count in counts:
     // ${mode["comment"]}
-    ${"kRsa" + mode["const_str"] + "MinInstructionCount"} = ${min_count},
-    ${"kRsa" + mode["const_str"] + "MaxInstructionCount"} = ${max_count},
+    ${"k" + mode["const_str"] + "MinInstructionCount"} = ${min_count},
+    ${"k" + mode["const_str"] + "MaxInstructionCount"} = ${max_count},
 % endfor
 };
 
