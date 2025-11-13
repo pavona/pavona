@@ -6373,7 +6373,7 @@
           "@@//third_party/mdbook/Cargo.lock": "016b012024cd9dce5be7c958215a9e09e13f005f42f66b199adeebf8f711a1b6",
           "@@//third_party/mdbook/Cargo.toml": "334d3b905cce5adf4db0c4dbccd00adf5e99e68af9cdda0e40bc9d970a882eec",
           "@@//third_party/rust/Cargo.lock": "05b5db7d96aa8be48c0646b0b49828f4f888e4df848db118ba595d6d52b702c7",
-          "@@//third_party/rust/Cargo.toml": "03d837f12d2a66cea1c89912c69e28e5f1a0ce6224969ae6d031f8b3fa6b6a4d",
+          "@@//third_party/rust/Cargo.toml": "a297fd699b3244e86c06675d7e2fdb402a90358c2399856914ffaacb1216e256",
           "@@//third_party/tock/Cargo.lock": "b5a7a833ae205f1e3697a510e97e3185b44b195d7a22879b4669bff95febd5c8",
           "@@//third_party/tock/Cargo.toml": "3bceef09052741f82b750258f9ea85405e5ad48eafba2aafda6faf50ca147ef4"
         },
