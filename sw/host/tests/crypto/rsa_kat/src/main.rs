@@ -342,7 +342,7 @@ fn run_rsa_testcase(
             CryptotestRsaLabel {
                 label: ArrayVec::try_from(label_str.as_bytes())
                     .expect("Label was too long for device firmware configuration."),
-                label_len: label_str.as_bytes().len(),
+                label_len: label_str.len(),
             }
             .send(spi_console)?;
             // Send expected ciphertext length
@@ -406,7 +406,7 @@ fn run_rsa_testcase(
                     },
                     &ciphertext,
                 )
-                .map_err(|e| Error::new(e))
+                .map_err(Error::new)
                 .and_then(|plaintext| {
                     if test_case.message.eq(&plaintext) {
                         Ok(())
