@@ -39,7 +39,7 @@
 #define CRYPTO_PUBLICKEYBYTES 1312
 #define CRYPTO_SECRETKEYBYTES 2560
 #define CRYPTO_BYTES 2420
-#define STACK_SIZE 31072 /* minimum 32KB */
+#define STACK_SIZE 30048 /* minimum 31KB */
 
 #elif DILITHIUM_MODE == 3
 #define K 6
@@ -55,7 +55,7 @@
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_SECRETKEYBYTES 4032
 #define CRYPTO_BYTES 3309
-#define STACK_SIZE 43360 /* minimum 44KB */
+#define STACK_SIZE 42336 /* minimum 43KB */
 
 #elif DILITHIUM_MODE == 5
 #define K 8
@@ -71,7 +71,7 @@
 #define CRYPTO_PUBLICKEYBYTES 2592
 #define CRYPTO_SECRETKEYBYTES 4896
 #define CRYPTO_BYTES 4627
-#define STACK_SIZE 57696 /* minimum 58KB */
+#define STACK_SIZE 56672 /* minimum 57KB */
 
 #endif
 
