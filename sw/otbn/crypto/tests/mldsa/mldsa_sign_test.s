@@ -1,4 +1,5 @@
 /* Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 /* Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of */
@@ -38,7 +39,7 @@
 #define CRYPTO_PUBLICKEYBYTES 1312
 #define CRYPTO_SECRETKEYBYTES 2560
 #define CRYPTO_BYTES 2420
-#define STACK_SIZE 51200 /* minimum 50KB */
+#define STACK_SIZE 31072 /* minimum 32KB */
 
 #elif DILITHIUM_MODE == 3
 #define K 6
@@ -54,7 +55,7 @@
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_SECRETKEYBYTES 4032
 #define CRYPTO_BYTES 3309
-#define STACK_SIZE 78848 /* minimum 77KB */
+#define STACK_SIZE 43360 /* minimum 44KB */
 
 #elif DILITHIUM_MODE == 5
 #define K 8
@@ -70,7 +71,7 @@
 #define CRYPTO_PUBLICKEYBYTES 2592
 #define CRYPTO_SECRETKEYBYTES 4896
 #define CRYPTO_BYTES 4627
-#define STACK_SIZE 120832 /* minimum 118KB */
+#define STACK_SIZE 57696 /* minimum 58KB */
 
 #endif
 
@@ -208,17 +209,15 @@ main:
 
 .data
 .balign 32
-#if DILITHIUM_MODE == 2
-.global stack
-stack:
-    .zero 2528 /* STACK_SIZE + STACK_SIGNATURE */
+/* Stack (labelled at the end). */
+.zero STACK_SIZE
+stack_end:
 
+#if DILITHIUM_MODE == 2
 .globl signature
 signature:
   .zero CRYPTO_BYTES
   .zero 12
-
-.zero 17408 /* STACK_SIZE + STACK_MAT - (CRYPTO_BYTES + 12) - 1504 */
 
 .globl sk
 sk:
@@ -888,14 +887,7 @@ message:
 messagelen:
   .word 0x00000040
 
-  .zero 23072
-stack_end:
-
 #elif DILITHIUM_MODE == 3
-.global stack
-stack:
-    .zero 2656 /* STACK_SIZE + STACK_SIGNATURE */
-
 /* In case of Dilithium3, CTILDEBYTES is 48, not divisible by 32.
    To make the packing easier, we dis-align the start of the signature buffer
    because we will simply need to write C to the beginning, which is much easier
@@ -905,8 +897,6 @@ stack:
 signature:
   .zero CRYPTO_BYTES
   .zero 3
-
-.zero 24576 /* STACK_SIZE + STACK_MAT - (CRYPTO_BYTES + 12) - 79328 */
 
 .globl sk
 sk:
@@ -1944,20 +1934,11 @@ message:
 messagelen:
   .word 0x00000040
 
-  .zero 41056
-stack_end:
-
 #elif DILITHIUM_MODE == 5
-.global stack
-stack:
-    .zero 2368 /* STACK_SIZE + STACK_SIGNATURE */
-
 .globl signature
 signature:
   .zero CRYPTO_BYTES
   .zero 13
-
-.zero 32768 /* STACK_SIZE + STACK_MAT - (CRYPTO_BYTES + 13) - 9536 */
 
 .globl sk
 sk:
@@ -3210,9 +3191,6 @@ message:
 .globl messagelen
 messagelen:
   .word 0x00000040
-
-  .zero 72960
-stack_end:
 #endif
 
 .balign 32
