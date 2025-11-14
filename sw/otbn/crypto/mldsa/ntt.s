@@ -1,4 +1,5 @@
 /* Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 /* Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of */
@@ -33,7 +34,7 @@
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4-x30, w2-w25, w30
+ * clobbered registers: x4-x27, w0-w15, w17-w19, w24-w30
  */
 .globl ntt
 ntt:

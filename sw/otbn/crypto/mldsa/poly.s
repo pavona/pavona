@@ -654,7 +654,7 @@ _loop_inner_skip_load_poly_challenge:
  * @param[in]  a2: nonce
  * @param[out] a1: dmem pointer to polynomial
  *
- * clobbered registers: a0-a5, t0-t6, w8, w16
+ * clobbered registers: a0-a5, t0-t6, w8, w21
  */
 .global poly_uniform
 poly_uniform:
@@ -957,9 +957,9 @@ _aligned_poly_uniform_eta:
     /* Initialize constants */
     bn.addi w14, bn0, 0x0F
 #if ETA == 2
-    bn.addi w16, bn0, 15
+    bn.addi w21, bn0, 15
 #elif ETA == 4
-    bn.addi w16, bn0, 9
+    bn.addi w21, bn0, 9
 #endif
     li a5, 8
     li a6, 2
@@ -989,7 +989,7 @@ LOOPI 64, 13
         bn.and  w9, shake_reg, w14            /* Mask out all other bits */
 
         /* Check "t0" < {15,9} */
-        bn.cmp w9, w16
+        bn.cmp w9, w21
         csrrs a4, 0x7C0, zero
         /* If the MSB of t0 - {15,9} is not set, we know that t0 >= {15,9}
            and thus, we have to reject. */
@@ -1891,7 +1891,7 @@ polyt0_unpack:
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
     li t2, 5
     la t3, polyt0_unpack_mask
-    bn.lid t5, 0(t3)
+    bn.lid t2, 0(t3)
 
     /* Setup WDR */
     li t2, 2
@@ -2605,54 +2605,57 @@ _inner_polyz_pack:
                                  WDR */
     ret
 #endif
+
 /**
- * polyvec_encode_h
+ * poly_encode_h
  *
- * Encode h to signature from polyvec h.
+ * Encode hint to signature from single polynomial h[i].
  *
  * Flags: -
  *
- * @param[in]  a1: pointer to input polynomial h
- * @param[out] a0: pointer to output byte array signature
+ * @param[in]  a1: pointer to input polynomial h[i]
+ * @param[in]  a2: k, number of nonzero h coefficients so far
+ * @param[in]  a3: i, index of this polynomial in h
+ * @param[out] a0: pointer to the start of all signature hint bytes
  *
  * clobbered registers: a1-a2, t0-t6
  */
-.global polyvec_encode_h
-polyvec_encode_h:
-    li t0, 0 /* k = 0 */
-    li t1, 0 /* i = 0 */
-
+.global poly_encode_h
+poly_encode_h:
     /* Masking constant for alignment */
-    li a2, 0xFFFFFFFC
-    LOOPI K, 25
-        li t2, 0 /* j = 0 */
-        LOOPI N, 13
-            lw   t3, 0(a1)
-            addi a1, a1, 4   /* Increment input pointer */
-            beq  zero, t3, _skip_store_polyvec_encode_h
-            add  t4, a0, t0  /* *sig + k */
-            andi t5, t4, 0x3 /* preserve lower 2 bits */
-            and  t4, t4, a2  /* align */
-            lw   t6, 0(t4)   /* load form aligned(sig+k) */
-            slli t5, t5, 3   /* #bytes -> #bits */
-            sll  t5, t2, t5  /* j << #bits */
-            or   t6, t6, t5
-            sw   t6, 0(t4)
+    li t0, 0xFFFFFFFC
 
-            addi t0, t0, 1 /* k++ */
-_skip_store_polyvec_encode_h:
-            addi t2, t2, 1
-        addi t2, t1, OMEGA /* OMEGA + i */
+    /* j = 0 (index within h[i]) */
+    li t2, 0
+
+    /* Loop through each coefficient and store indices of nonzero ones. */
+    LOOPI N, 13
+        lw   t3, 0(a1)
+        addi a1, a1, 4   /* Increment input pointer */
+        beq  zero, t3, _skip_store_poly_encode_h
+        add  t4, a0, a2  /* *sig + k */
+        andi t5, t4, 0x3 /* preserve lower 2 bits */
+        and  t4, t4, t0  /* align */
+        lw   t6, 0(t4)   /* load form aligned(sig+k) */
+        slli t5, t5, 3   /* #bytes -> #bits */
+        sll  t5, t2, t5  /* j << #bits */
+        or   t6, t6, t5
+        sw   t6, 0(t4)
+
+        addi a2, a2, 1 /* k++ */
+_skip_store_poly_encode_h:
+        addi t2, t2, 1
+
+        /* Store the number of nonzero coefficients after h[i] at the end. */
+        addi t2, a3, OMEGA /* OMEGA + i */
         add  t2, a0, t2    /* *sig + OMEGA + i */
         andi t3, t2, 0x3   /* preserve lower 2 bits */
-        and  t2, t2, a2    /* align */
+        and  t2, t2, t0    /* align */
         lw   t4, 0(t2)     /* load from aligned(*sig + OMEGA + i) */
         slli t3, t3, 3     /* #bytes -> #bits */
-        sll  t3, t0, t3    /* k << #bits */
+        sll  t3, a2, t3    /* k << #bits */
         or   t4, t4, t3
         sw   t4, 0(t2)
-
-        addi t1, t1, 1
 
     ret
 
