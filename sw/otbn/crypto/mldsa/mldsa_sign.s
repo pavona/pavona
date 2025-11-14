@@ -190,14 +190,14 @@ crypto_sign_signature_internal:
     #define STACK_S2  -12480 /* Prev - K*1024 */
     #define STACK_MAT  -13504 /* Prev - 1024 */
       #define STACK_CP  -13504 /* Prev */
-    #define STACK_Y  -17600 /* Prev - K*1024 */
-        #define STACK_H  -17600 /* Prev */
-    #define STACK_Z  -21696 /* Prev - L*1024 */
-    #define STACK_W1  -25792 /* Prev - K*1024 */
-    #define STACK_W0  -29888 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -29888 /* Prev */
-    #define STACK_CTX  -29892 /* Prev - 4 */
-    #define INIT_SP -29920
+    #define STACK_Y  -14528 /* Prev - 1024 */
+    #define STACK_Z  -18624 /* Prev - L*1024 */
+    #define STACK_W1  -22720 /* Prev - K*1024 */
+        #define STACK_H  -22720 /* Prev */
+    #define STACK_W0  -26816 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -26816 /* Prev */
+    #define STACK_CTX  -26820 /* Prev - 4 */
+    #define INIT_SP -26848
 
 #elif DILITHIUM_MODE == 3
     #define STACK_T0  -6336 /* Prev - K*1024 */
@@ -205,14 +205,14 @@ crypto_sign_signature_internal:
     #define STACK_S2  -17600 /* Prev - K*1024 */
     #define STACK_MAT  -18624 /* Prev - 1024 */
       #define STACK_CP  -18624 /* Prev */
-    #define STACK_Y  -24768 /* Prev - K*1024 */
-        #define STACK_H  -24768 /* Prev */
-    #define STACK_Z  -29888 /* Prev - L*1024 */
-    #define STACK_W1  -36032 /* Prev - K*1024 */
-    #define STACK_W0  -42176 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -42176 /* Prev */
-    #define STACK_CTX  -42180 /* Prev - 4 */
-    #define INIT_SP -42208
+    #define STACK_Y  -19648 /* Prev - 1024 */
+    #define STACK_Z  -24768 /* Prev - L*1024 */
+    #define STACK_W1  -30912 /* Prev - K*1024 */
+        #define STACK_H  -30912 /* Prev */
+    #define STACK_W0  -37056 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -37056 /* Prev */
+    #define STACK_CTX  -37060 /* Prev - 4 */
+    #define INIT_SP -37088
 
 #elif DILITHIUM_MODE == 5
     #define STACK_T0  -8384 /* Prev - K*1024 */
@@ -220,14 +220,14 @@ crypto_sign_signature_internal:
     #define STACK_S2  -23744 /* Prev - K*1024 */
     #define STACK_MAT  -24768 /* Prev - 1024 */
       #define STACK_CP  -24768 /* Prev */
-    #define STACK_Y  -32960 /* Prev - K*1024 */
-        #define STACK_H  -32960 /* Prev */
-    #define STACK_Z  -40128 /* Prev - L*1024 */
-    #define STACK_W1  -48320 /* Prev - K*1024 */
-    #define STACK_W0  -56512 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -56512 /* Prev */
-    #define STACK_CTX  -56516 /* Prev - 4 */
-    #define INIT_SP -56544
+    #define STACK_Y  -25792 /* Prev - 1024 */
+    #define STACK_Z  -32960 /* Prev - L*1024 */
+    #define STACK_W1  -41152 /* Prev - K*1024 */
+        #define STACK_H  -41152 /* Prev */
+    #define STACK_W0  -49344 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -49344 /* Prev */
+    #define STACK_CTX  -49348 /* Prev - 4 */
+    #define INIT_SP -49376
 
 #endif
     /* Initialize the frame pointer */
@@ -581,105 +581,89 @@ crypto_sign_signature_internal:
     li s11, 0 /* nonce */
 
 _rej_crypto_sign_signature_internal:
-    /* Uniform GAMMA1 */
-    li  a1, STACK_RHOPRIME
-    add a1, fp, a1
-
-    li  a0, STACK_Y
-    add a0, fp, a0
-
-    addi a2, s11, 0 /* Compute nonce */
-    la   a3, gamma1_vec_const
-
-    LOOPI L, 3
-        jal  x1, poly_uniform_gamma_1
-        addi a0, a0, 1024
-        addi a2, a2, 1 /* a2 should be preserved after execution */
-
-    addi s11, s11, L
-
-    bn.wsrw  0x0, mod_x2 /* MOD = 2*R | 2*Q */
-    /* NTT(Y) -> Z */
-    li  a0, STACK_Y
-    add a0, fp, a0 /* in */
-    li  a2, STACK_Z
-    add a2, fp, a2 /* out */
-    la  a1, twiddles_fwd
-
-  .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
-     push \reg
-  .endr
-
-    LOOPI L, 2
-        jal x1, ntt
-        addi a1, a1, -1024
-
-    .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
-      pop \reg
-    .endr
-
-    /* After NTT, w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* Matrix-vector multiplication */
 
-    /* Load source pointers */
-    li  a0, STACK_Z
-    add a0, fp, a0
-    li  a1, STACK_MAT
-    add a1, fp, a1
+    /* Save some stack offsets. */
+    li s0, STACK_Y
+    add s0, fp, s0
+    li s1, STACK_W1
+    add s1, fp, s1
+    li s2, STACK_MAT
+    add s2, fp, s2
+    li s3, STACK_RHOPRIME
+    add s3, fp, s3
+    li s5, STACK_RHO
+    add s5, fp, s5
 
-    /* Load destination pointer */
-    li  a2, STACK_W1
-    add a2, fp, a2
+    /* Initialize destination to 0. */
+    li t0, 31
+    addi a3, s1, 0
+    LOOPI K, 3
+        LOOPI 32, 1
+          bn.sid t0, 0(a3++)
+        nop
 
-    /* Load offset for resetting pointer */
-    li s0, POLYVECL_BYTES
+    /* Load the constant for resetting the w1 pointer. */
+    li s6, POLYVECK_BYTES
 
     /* Initialize the nonce for matrix expansion. This value should be
          byte(i) || byte(j)
        for entry A[i][j]. */
-    li a3, 0
+    li s4, 0
 
-    /* Compute A * y, computing the values for A on the fly. */
-    .rept K
-        push a0
-        push a2
-        push a3
-        li  a0, STACK_RHO
-        add a0, fp, a0
-        addi a2, a3, 0
-        jal  x1, poly_uniform
-        addi a1, a1, -1024
-        pop a3
-        pop a2
-        pop a0
-        addi a3, a3, 1
-        jal  x1, poly_pointwise
-        addi a1, a1, -1024
-        addi a2, a2, -1024
-        .rept L-1
-            push a0
-            push a2
-            push a3
-            li  a0, STACK_RHO
-            add a0, fp, a0
-            addi a2, a3, 0
+    /* Compute A * y, computing the values for A and y on the fly.
+
+       We compute column-wise so that we genearate elements of y only once; in
+       pseudocode, this computation does:
+
+         for j in 0..l-1:
+           yj = ntt(y[j])
+           for i in 0..k-1:
+             w1[i] += A[i][j] * yj
+    */
+    .rept L
+        /* Compute y[j], storing temporarily in the matrix poly buffer. */
+        li   a0, STACK_MAT
+        add  a0, fp, a0
+        li   a1, STACK_RHOPRIME
+        add  a1, fp, a1
+        addi a2, s11, 0 /* y sampling nonce */
+        la   a3, gamma1_vec_const
+        jal  x1, poly_uniform_gamma_1
+        addi s11, a2, 1 /* a2 should be preserved after execution */
+        /* Compute ntt(y[j]). */
+        li   a0, STACK_MAT
+        add  a0, fp, a0
+        la  a1, twiddles_fwd
+        li   a2, STACK_Y
+        add  a2, fp, a2
+        jal x1, ntt
+        .rept K
+            /* Compute A[i][j]. */
+            li   a0, STACK_RHO
+            add  a0, fp, a0
+            li   a1, STACK_MAT
+            add  a1, fp, a1
+            addi a2, s4, 0 /* matrix nonce */
             jal  x1, poly_uniform
-            pop a3
-            pop a2
-            pop a0
-            addi a1, a1, -1024
-            addi a3, a3, 1
+            li   a0, STACK_Y
+            add  a0, fp, a0
+            li   a1, STACK_MAT
+            add  a1, fp, a1
+            addi a2, s1, 0 /* *W1[i] */
+            /* Add A[i][j] * y[j] to w1[i]. */
             jal  x1, poly_pointwise_acc
-            addi a1, a1, -1024
-            addi a2, a2, -1024
-        .endr
-        /* Reset input vector pointer */
-        sub  a0, a0, s0
-        addi a2, a2, 1024
-        /* Increment the row index in the nonce by one. */
-        addi a3, a3, 256
-        /* Reset the column index in the nonce to zero. */
-        addi a3, a3, -L
+            /* Increment the w1 pointer. */
+            addi s1, s1, 1024
+            /* Increment the row index by 1. */
+            addi s4, s4, 256
+         .endr
+        /* Reset w1 pointer. */
+        sub  s1, s1, s6
+        /* Increment the column index in the nonce by one. */
+        addi s4, s4, 1
+        /* Reset the row index in the nonce to zero. */
+        andi s4, s4, 255
     .endr
 
     /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
@@ -892,17 +876,33 @@ _rej_crypto_sign_signature_internal:
         pop \reg
     .endr
 
-    /* z = z + y */
-    li  a0, STACK_Z
-    add a0, fp, a0
-    li  a1, STACK_Y
-    add a1, fp, a1
-    li  a2, STACK_Z
-    add a2, fp, a2
+    /* Add y to z, computing values of y on the fly. */
+    addi s11, s11, -L /* reset y nonce */
+    la   a3, gamma1_vec_const
 
-    LOOPI L, 2
+    /* Initialize pointers to y and z. */
+    li  a0, STACK_Y
+    add a0, fp, a0
+    li  a1, STACK_Z
+    add a1, fp, a1
+
+    /* Store the stack offset to avoid using li within a loop. */
+    li  s0, STACK_RHOPRIME
+
+    LOOPI L, 9
+        /* Save the z pointer. */
+        addi s1, a1, 0
+        /* Sample the next value of y. */
+        add a1, fp, s0
+        addi a2, s11, 0
+        jal  x1, poly_uniform_gamma_1
+        addi s11, a2, 1 /* a2 should be preserved after execution */
+        /* z[i] += y[i] */
+        addi a1, s1, 0
+        addi a2, s1, 0
         jal x1, poly_add
-        nop
+        /* Reset the pointer to the buffer for y[i]. */
+        addi a0, a0, -1024
 
     /* reduce32(z) to move to mod^{+-} for bound check */
     li  a0, STACK_Z
