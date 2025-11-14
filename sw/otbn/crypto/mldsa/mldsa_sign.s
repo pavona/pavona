@@ -183,13 +183,12 @@ crypto_sign_signature_internal:
     #define STACK_RHO -128 /* Prev - 32 */
     #define STACK_RND -160 /* Prev - 32 */
     #define STACK_KEY -192 /* Prev - 32 */
-    #define STACK_RHOPRIME -192 /* Prev */
+      #define STACK_RHOPRIME -192 /* Prev */
 #if DILITHIUM_MODE == 2
     #define STACK_T0  -4288 /* Prev - K*1024 */
     #define STACK_S1  -8384 /* Prev - L*1024 */
     #define STACK_S2  -12480 /* Prev - K*1024 */
-    #define STACK_MAT  -13504 /* Prev - 1024 */
-      #define STACK_CP  -13504 /* Prev */
+    #define STACK_CP  -13504 /* Prev - 1024 */
     #define STACK_Y  -14528 /* Prev - 1024 */
     #define STACK_Z  -18624 /* Prev - L*1024 */
     #define STACK_W1  -22720 /* Prev - K*1024 */
@@ -203,8 +202,7 @@ crypto_sign_signature_internal:
     #define STACK_T0  -6336 /* Prev - K*1024 */
     #define STACK_S1  -11456 /* Prev - L*1024 */
     #define STACK_S2  -17600 /* Prev - K*1024 */
-    #define STACK_MAT  -18624 /* Prev - 1024 */
-      #define STACK_CP  -18624 /* Prev */
+    #define STACK_CP  -18624 /* Prev - 1024 */
     #define STACK_Y  -19648 /* Prev - 1024 */
     #define STACK_Z  -24768 /* Prev - L*1024 */
     #define STACK_W1  -30912 /* Prev - K*1024 */
@@ -218,8 +216,7 @@ crypto_sign_signature_internal:
     #define STACK_T0  -8384 /* Prev - K*1024 */
     #define STACK_S1  -15552 /* Prev - L*1024 */
     #define STACK_S2  -23744 /* Prev - K*1024 */
-    #define STACK_MAT  -24768 /* Prev - 1024 */
-      #define STACK_CP  -24768 /* Prev */
+    #define STACK_CP  -24768 /* Prev - 1024 */
     #define STACK_Y  -25792 /* Prev - 1024 */
     #define STACK_Z  -32960 /* Prev - L*1024 */
     #define STACK_W1  -41152 /* Prev - K*1024 */
@@ -349,7 +346,7 @@ crypto_sign_signature_internal:
     li t2, STACK_CTXLEN
     add a0, fp, t2
     lw t2, 0(a0) /* t2 <= ctxlen */
-    li t3, STACK_CP /* Re-use CP buffer for absorbing ctxlen and ctx */
+    li t3, STACK_Z /* Re-use Z buffer for absorbing ctxlen and ctx */
     add t3, fp, t3
 
     /* Note: Add support for non-4B multiple ctxlen */
@@ -449,7 +446,7 @@ crypto_sign_signature_internal:
     /* a1 still contains length but includes TRBYTES */
     addi a1, a1, -TRBYTES
 
-    li t3, STACK_CP /* Re-use CP buffer for absorbing ctxlen and ctx */
+    li t3, STACK_Z /* Re-use Z buffer for absorbing ctxlen and ctx */
     add a0, fp, t3
 
     jal x1, keccak_send_message
@@ -583,24 +580,16 @@ crypto_sign_signature_internal:
 _rej_crypto_sign_signature_internal:
     /* Matrix-vector multiplication */
 
-    /* Save some stack offsets. */
-    li s0, STACK_Y
-    add s0, fp, s0
+    /* Get destination pointer. */
     li s1, STACK_W1
     add s1, fp, s1
-    li s2, STACK_MAT
-    add s2, fp, s2
-    li s3, STACK_RHOPRIME
-    add s3, fp, s3
-    li s5, STACK_RHO
-    add s5, fp, s5
 
     /* Initialize destination to 0. */
     li t0, 31
-    addi a3, s1, 0
+    addi t1, s1, 0
     LOOPI K, 3
         LOOPI 32, 1
-          bn.sid t0, 0(a3++)
+          bn.sid t0, 0(t1++)
         nop
 
     /* Load the constant for resetting the w1 pointer. */
@@ -622,8 +611,8 @@ _rej_crypto_sign_signature_internal:
              w1[i] += A[i][j] * yj
     */
     .rept L
-        /* Compute y[j], storing temporarily in the matrix poly buffer. */
-        li   a0, STACK_MAT
+        /* Compute y[j]. */
+        li   a0, STACK_Y
         add  a0, fp, a0
         li   a1, STACK_RHOPRIME
         add  a1, fp, a1
@@ -632,7 +621,7 @@ _rej_crypto_sign_signature_internal:
         jal  x1, poly_uniform_gamma_1
         addi s11, a2, 1 /* a2 should be preserved after execution */
         /* Compute ntt(y[j]). */
-        li   a0, STACK_MAT
+        li   a0, STACK_Y
         add  a0, fp, a0
         la  a1, twiddles_fwd
         li   a2, STACK_Y
@@ -642,13 +631,13 @@ _rej_crypto_sign_signature_internal:
             /* Compute A[i][j]. */
             li   a0, STACK_RHO
             add  a0, fp, a0
-            li   a1, STACK_MAT
+            li   a1, STACK_Z
             add  a1, fp, a1
             addi a2, s4, 0 /* matrix nonce */
             jal  x1, poly_uniform
             li   a0, STACK_Y
             add  a0, fp, a0
-            li   a1, STACK_MAT
+            li   a1, STACK_Z
             add  a1, fp, a1
             addi a2, s1, 0 /* *W1[i] */
             /* Add A[i][j] * y[j] to w1[i]. */
@@ -748,69 +737,45 @@ _rej_crypto_sign_signature_internal:
 
     /* Setup WDR */
     li t1, 8
+    /* Restore a0. */
+    addi a0, s0, 0
 
+    /* Read first 32 bytes of digest. */
+    bn.wsrr w8, 0xA
+
+    /* Get temp buffer */
+    /* Get always-aligned temporary buffer. */
+    li   t0, STACK_CP
+    add  t0, fp, t0
 #if CTILDEBYTES == 32
-    bn.wsrr w8, 0xA   /* KECCAK_DIGEST */
-    addi    a0, s0, 0 /* restore a0 */
-    /* Get temp buffer */
-    li   t0, STACK_CP
-    add  t0, fp, t0
-    bn.sid  t1, 0(t0) /* Store CTILDE into temp buffer */
-    LOOPI 8, 4
-        lw t2, 0(t0)
-        sw t2, 0(a0)
-        addi t0, t0, 4
-        addi a0, a0, 4
-
-    addi a0, a0, -CTILDEBYTES
+    /* Store first 32 bytes into temp buffer and signature. */
+    bn.sid  t1, 0(t0)
+    bn.sid  t1, 0(a0)
 #elif CTILDEBYTES == 48
-    bn.wsrr w8, 0xA   /* KECCAK_DIGEST */
-    addi    a0, s0, 0 /* restore a0 */
-
-    /* Get temp buffer */
-    li   t0, STACK_CP
-    add  t0, fp, t0
-    bn.sid  t1, 0(t0) /* Store CTILDE into temp buffer */
+    /* Store first 32 bytes into temp buffer and (unaligned) signature. */
+    bn.sid  t1, 0(t0)
     LOOPI 8, 4
         lw t2, 0(t0)
         sw t2, 0(a0)
         addi t0, t0, 4
         addi a0, a0, 4
 
-    bn.wsrr w8, 0xA   /* KECCAK_DIGEST */
-
-    bn.sid  t1, 0(t0) /* Store CTILDE into temp buffer */
+    /* Read 32 more bytes and store 16 of them. */
+    bn.wsrr w8, 0xA
+    bn.sid  t1, 0(t0)
     LOOPI 4, 4
         lw t2, 0(t0)
         sw t2, 0(a0)
         addi t0, t0, 4
         addi a0, a0, 4
-
-    addi a0, a0, -CTILDEBYTES
 #elif CTILDEBYTES == 64
-    bn.wsrr w8, 0xA   /* KECCAK_DIGEST */
-    addi    a0, s0, 0 /* restore a0 */
-
-    /* Get temp buffer */
-    li   t0, STACK_CP
-    add  t0, fp, t0
-    bn.sid  t1, 0(t0) /* Store CTILDE into temp buffer */
-    LOOPI 8, 4
-        lw t2, 0(t0)
-        sw t2, 0(a0)
-        addi t0, t0, 4
-        addi a0, a0, 4
-
-    bn.wsrr w8, 0xA   /* KECCAK_DIGEST */
-
-    bn.sid  t1, 0(t0) /* Store CTILDE into temp buffer */
-    LOOPI 8, 4
-        lw t2, 0(t0)
-        sw t2, 0(a0)
-        addi t0, t0, 4
-        addi a0, a0, 4
-
-    addi a0, a0, -CTILDEBYTES
+    /* Store first 32 bytes into temp buffer and signature. */
+    bn.sid  t1, 0(t0)
+    bn.sid  t1, 0(a0)
+    /* Store 32 more bytes (both places). */
+    bn.wsrr w8, 0xA
+    bn.sid  t1, 32(t0)
+    bn.sid  t1, 32(a0)
 #endif
 
     /* Finish the SHAKE-256 operation. */
