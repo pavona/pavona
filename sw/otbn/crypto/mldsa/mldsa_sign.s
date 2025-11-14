@@ -190,23 +190,23 @@ crypto_sign_signature_internal:
     #define STACK_TMP -2240 /* Prev - 1024 */
     #define STACK_CP  -3264 /* Prev - 1024 */
 #if DILITHIUM_MODE == 2
-    #define STACK_W1  -7360 /* Prev - K*1024 */
-    #define STACK_W0  -11456 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -11456 /* Prev */
-    #define STACK_CTX  -11460 /* Prev - 4 */
-    #define INIT_SP -11488
+    #define STACK_W1  -3392 /* Prev - K*32 */
+    #define STACK_W0  -7488 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -7488 /* Prev */
+    #define STACK_CTX  -7492 /* Prev - 4 */
+    #define INIT_SP -7520
 #elif DILITHIUM_MODE == 3
-    #define STACK_W1  -9408 /* Prev - K*1024 */
-    #define STACK_W0  -15552 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -15552 /* Prev */
-    #define STACK_CTX  -15556 /* Prev - 4 */
-    #define INIT_SP -15584
+    #define STACK_W1  -3456 /* Prev - K*32 */
+    #define STACK_W0  -9600 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -9600 /* Prev */
+    #define STACK_CTX  -9604 /* Prev - 4 */
+    #define INIT_SP -9632
 #elif DILITHIUM_MODE == 5
-    #define STACK_W1  -11456 /* Prev - K*1024 */
-    #define STACK_W0  -19648 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -19648 /* Prev */
-    #define STACK_CTX  -19652 /* Prev - 4 */
-    #define INIT_SP -19680
+    #define STACK_W1  -3520 /* Prev - K*32 */
+    #define STACK_W0  -11712 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -11712 /* Prev */
+    #define STACK_CTX  -11716 /* Prev - 4 */
+    #define INIT_SP -11744
 #endif
 
     /* Initialize the frame pointer */
@@ -477,7 +477,7 @@ _rej_crypto_sign_signature_internal:
     /* Matrix-vector multiplication */
 
     /* Get destination pointer. */
-    li s1, STACK_W1
+    li s1, STACK_W0
     add s1, fp, s1
 
     /* Initialize destination to 0. */
@@ -488,7 +488,7 @@ _rej_crypto_sign_signature_internal:
           bn.sid t0, 0(t1++)
         nop
 
-    /* Load the constant for resetting the w1 pointer. */
+    /* Load the constant for resetting the w pointer. */
     li s6, POLYVECK_BYTES
 
     /* Initialize the nonce for matrix expansion. This value should be
@@ -504,7 +504,7 @@ _rej_crypto_sign_signature_internal:
          for j in 0..l-1:
            yj = ntt(y[j])
            for i in 0..k-1:
-             w1[i] += A[i][j] * yj
+             w[i] += A[i][j] * yj
     */
     .rept L
         /* Compute y[j]. */
@@ -536,15 +536,15 @@ _rej_crypto_sign_signature_internal:
             add  a0, fp, a0
             li   a1, STACK_TMP
             add  a1, fp, a1
-            addi a2, s1, 0 /* *W1[i] */
-            /* Add A[i][j] * y[j] to w1[i]. */
+            addi a2, s1, 0 /* *w[i] */
+            /* Add A[i][j] * y[j] to w[i]. */
             jal  x1, poly_pointwise_acc
-            /* Increment the w1 pointer. */
+            /* Increment the w pointer. */
             addi s1, s1, 1024
             /* Increment the row index by 1. */
             addi s4, s4, 256
          .endr
-        /* Reset w1 pointer. */
+        /* Reset w pointer. */
         sub  s1, s1, s6
         /* Increment the column index in the nonce by one. */
         addi s4, s4, 1
@@ -554,8 +554,8 @@ _rej_crypto_sign_signature_internal:
     .endr
 
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
-    /* Inverse NTT on w1 */
-    li  a0, STACK_W1
+    /* Inverse NTT on w */
+    li  a0, STACK_W0
     add a0, fp, a0
     la  a1, twiddles_inv
 
@@ -575,34 +575,6 @@ _rej_crypto_sign_signature_internal:
     .endr
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
-    /* Load source pointers */
-
-    /* Decompose */
-    li   a2, STACK_W1 /* Input */
-    add  a2, fp, a2
-    addi a1, a2, 0    /* Output inplace */
-    li   a0, STACK_W0 /* Output */
-    add  a0, fp, a0
-
-    LOOPI K, 2
-        jal x1, poly_decompose
-        nop
-
-    /* Pack w1 */
-    li  a1, STACK_W1 /* Get *w1 */
-    add a1, fp, a1
-    /* Use an offset of 16 to accomodate for the alignment hack for CTILDE */
-    li  a0, STACK_SIG
-    add a0, fp, a0
-    lw  a0, 0(a0) /* Get *sig */
-#if CTILDEBYTES == 48
-    addi a0, a0, 16
-#endif
-
-    LOOPI K, 2
-        jal x1, polyw1_pack
-        nop
-
     /* Random oracle */
     /* Initialize a SHAKE256 operation. */
     addi  a1, zero, CRHBYTES
@@ -618,25 +590,55 @@ _rej_crypto_sign_signature_internal:
     add a0, fp, a0
     jal x1, keccak_send_message
 
-    /* Send packed w1 to the Keccak core. */
-    /* set packed w1 length to K*POLYW1_PACKEDBYTES */
-    li a1, 0
-    LOOPI K, 1
-        addi a1, a1, POLYW1_PACKEDBYTES
-    /* Use an offset of 16 to accomodate for the alignment hack for CTILDE */
-    li   a0, STACK_SIG
-    add  a0, fp, a0
-    lw   a0, 0(a0) /* get *sig */
-    addi s0, a0, 0 /* save a0 */
+    /* Save some pointers for loop. */
+    li  s0, STACK_W0
+    add s0, fp, s0
+    li  s1, STACK_W1
+    add s1, fp, s1
+    li  s4, STACK_TMP
+    add s4, fp, s4
+
+    /* Get the pointer to the signature (used as tmp buffer for packed w1). */
+    li  s2, STACK_SIG
+    add s2, fp, s2
+    lw  s2, 0(s2) /* Get *sig */
+    addi s3, s2, 0 /* Save *sig. */
 #if CTILDEBYTES == 48
-    addi a0, a0, 16
+    /* Use an offset of 16 to get an aligned buffer (alignment hack for CTILDE). */
+    addi s2, s2, 16
 #endif
-    jal  x1, keccak_send_message
+
+    /* This loop:
+         - decomposes each polynomial w[i] into w0[i] and w1[i]
+         - packs w1[i] and sends it to the Keccak core
+         - records the nonzero high bits of w1[i] for later use
+
+       Afterwards, the w1[i] value can be discarded, so we do not need to keep
+       two w-sized polyvecs in scope at once. */
+    .rept K
+        /* Decompose w and store w0 in-place, w1 in tmp. */
+        addi   a0, s0, 0
+        addi   a1, s4, 0
+        addi   a2, s0, 0
+        jal    x1, poly_decompose
+        /* Pack w1. */
+        addi   a0, s2, 0
+        addi   a1, s4, 0
+        jal    x1, polyw1_pack
+        /* Send packed w1 to the Keccak core. */
+        addi   a0, s2, 0
+        li     a1, POLYW1_PACKEDBYTES
+        jal    x1, keccak_send_message
+        /* Calculate the coefficients of w1 that are nonzero mod q, and store them. */
+        addi   a0, s4, 0
+        jal    x1, poly_nonzero_encode
+        bn.sid x0, 0(s1++)
+        /* Increment w pointer. */
+        addi s0, s0, 1024
+    .endr
 
     /* Setup WDR */
     li t1, 8
-    /* Restore a0. */
-    addi a0, s0, 0
 
     /* Read first 32 bytes of digest. */
     bn.wsrr w8, 0xA
@@ -647,32 +649,32 @@ _rej_crypto_sign_signature_internal:
 #if CTILDEBYTES == 32
     /* Store first 32 bytes into temp buffer and signature. */
     bn.sid  t1, 0(t0)
-    bn.sid  t1, 0(a0)
+    bn.sid  t1, 0(s3)
 #elif CTILDEBYTES == 48
     /* Store first 32 bytes into temp buffer and (unaligned) signature. */
     bn.sid  t1, 0(t0)
     LOOPI 8, 4
         lw t2, 0(t0)
-        sw t2, 0(a0)
+        sw t2, 0(s3)
         addi t0, t0, 4
-        addi a0, a0, 4
+        addi s3, s3, 4
 
     /* Read 32 more bytes and store 16 of them. */
     bn.wsrr w8, 0xA
     bn.sid  t1, 0(t0)
     LOOPI 4, 4
         lw t2, 0(t0)
-        sw t2, 0(a0)
+        sw t2, 0(s3)
         addi t0, t0, 4
-        addi a0, a0, 4
+        addi s3, s3, 4
 #elif CTILDEBYTES == 64
     /* Store first 32 bytes into temp buffer and signature. */
     bn.sid  t1, 0(t0)
-    bn.sid  t1, 0(a0)
+    bn.sid  t1, 0(s3)
     /* Store 32 more bytes (both places). */
     bn.wsrr w8, 0xA
     bn.sid  t1, 32(t0)
-    bn.sid  t1, 32(a0)
+    bn.sid  t1, 32(s3)
 #endif
 
     /* Finish the SHAKE-256 operation. */
@@ -972,10 +974,10 @@ _rej_crypto_sign_signature_internal:
         bne  a0, zero, _rej_crypto_sign_signature_internal
 
         /* h[i] = make_hint(w0[i], w1[i]) */
-        addi a0, s1, 0
-        addi a1, s3, 0
-        addi a2, s5, 0
-        jal x1, poly_make_hint
+        addi   a0, s1, 0
+        addi   a1, s3, 0
+        bn.lid x0, 0(s5++)
+        jal    x1, poly_make_hint
 
         /* Update the coefficient sum accumulator (saving previous value). */
         add  a2, s4, 0
@@ -997,8 +999,6 @@ _rej_crypto_sign_signature_internal:
         addi s6, s6, 1
         /* Update pointer into w0. */
         addi s3, s3, 1024
-        /* Update pointer into w1. */
-        addi s5, s5, 1024
     .endr
 
     /* Return success and signature length */
