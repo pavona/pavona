@@ -131,8 +131,8 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
   OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kP256RandomKeygenMinInstructionCount,
-                        kP256RandomKeygenMaxInstructionCount);
+  OTBN_CHECK_INSN_COUNT(kP256KeygenMinInstructionCount,
+                        kP256KeygenMaxInstructionCount);
 
   // Read the masked private key from OTBN dmem.
   OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD0,

@@ -33,6 +33,7 @@ cc_library(
     hdrs = ["p384.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":p384_insn_counts",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
@@ -63,5 +64,14 @@ autogen_otbn_insn_count_header(
     template = "p256_insn_counts.h.tpl",
     deps = [
         "//sw/otbn/crypto:run_p256",
+    ],
+)
+
+autogen_otbn_insn_count_header(
+    name = "p384_insn_counts",
+    hjson = "p384_modes.hjson",
+    template = "p384_insn_counts.h.tpl",
+    deps = [
+        "//sw/otbn/crypto:run_p384",
     ],
 )

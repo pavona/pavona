@@ -5,7 +5,7 @@
 [
   {
     symbol: "random_keygen",
-    const_str: "P256RandomKeygen",
+    const_str: "P256Keygen",
     comment: "P-256 key generation",
   },
   {

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -74,7 +75,7 @@ otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
                                      const otcrypto_unblinded_key_t *public_key,
                                      otcrypto_blinded_key_t *shared_secret) {
   HARDENED_TRY(otcrypto_ecdh_p384_async_start(private_key, public_key));
-  return otcrypto_ecdh_p384_async_finalize(shared_secret);
+  return otcrypto_ecdh_p384_async_finalize(private_key, shared_secret);
 }
 
 /**
@@ -524,6 +525,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_blinded_key_t *shared_secret) {
   if (shared_secret == NULL || shared_secret->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -557,7 +559,17 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
   p384_ecdh_shared_key_t ss;
   hardened_memshred(ss.share0, ARRAYSIZE(ss.share0));
   hardened_memshred(ss.share1, ARRAYSIZE(ss.share1));
-  HARDENED_TRY(p384_ecdh_finalize(&ss));
+
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    HARDENED_TRY(p384_sideload_ecdh_finalize(&ss));
+  } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+    HARDENED_TRY(p384_ecdh_finalize(&ss));
+  } else {
+    // Invalid value for `hw_backed`.
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   HARDENED_TRY(keyblob_from_shares(ss.share0, ss.share1, shared_secret->config,
                                    shared_secret->keyblob));

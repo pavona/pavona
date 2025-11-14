@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -287,6 +288,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_blinded_key_t *shared_secret);
 
 #ifdef __cplusplus
