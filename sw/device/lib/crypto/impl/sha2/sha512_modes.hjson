@@ -1,0 +1,10 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+[
+  {
+    const_str: "Sha512",
+    comment: "SHA-512 hash",
+  },
+]
