@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/crypto/impl/ecc/ed25519.h"
 
+#include "sw/device/lib/crypto/impl/ecc/ed25519_insn_counts.h"
+
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('e', '2', 'r')
 
@@ -114,6 +116,10 @@ status_t ed25519_sign_finalize(ed25519_signature_t *result) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
 
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kEd25519SignMinInstructionCount,
+                        kEd25519SignMaxInstructionCount);
+
   // Read signature R out of OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(8, kOtbnVarEd25519SigR, result->r));
 
@@ -169,6 +175,10 @@ status_t ed25519_verify_finalize(const ed25519_signature_t *signature,
                                  hardened_bool_t *result) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kEd25519VerifyMinInstructionCount,
+                        kEd25519VerifyMaxInstructionCount);
 
   // Read verification result out of OTBN dmem.
   uint32_t verify_result;

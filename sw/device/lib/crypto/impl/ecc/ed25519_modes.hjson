@@ -1,0 +1,17 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+[
+  {
+    symbol: "ed25519_sign_top",
+    const_str: "Ed25519Sign",
+    comment: "Ed25519 signing",
+  },
+  {
+    symbol: "ed25519_verify_top",
+    const_str: "Ed25519Verify",
+    comment: "Ed25519 verification",
+  },
+]
+

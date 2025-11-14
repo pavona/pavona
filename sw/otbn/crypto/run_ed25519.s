@@ -57,7 +57,7 @@ start:
 
 /**
  * Generate an Ed25519 signature.
- * 
+ *
  * See documentation for ed25519_sign_prehashed in ed25519.s for details.
  *
  * @param[in]  dmem[ed25519_hash_h]: hash of secret key (512 bits)
