@@ -654,7 +654,7 @@ _loop_inner_skip_load_poly_challenge:
  * @param[in]  a2: nonce
  * @param[out] a1: dmem pointer to polynomial
  *
- * clobbered registers: a0-a5, t0-t5, w8, w16
+ * clobbered registers: a0-a5, t0-t6, w8, w16
  */
 .global poly_uniform
 poly_uniform:
@@ -2009,8 +2009,6 @@ poly_uniform_gamma_1:
     /* copy output pointer */
     addi t1, a0, 0
 
-    push a1
-
     /* Initialize a SHAKE256 operation. */
     addi a0, a1, 0    /* save a0 <= seed address */
 
@@ -2107,8 +2105,6 @@ poly_uniform_gamma_1:
 
     /* Finish the SHAKE-256 operation. */
 
-    pop a1
-
     ret
 
 _inner_poly_uniform_gamma_1:
@@ -2129,8 +2125,6 @@ _inner_poly_uniform_gamma_1:
 #elif GAMMA1 == (1 << 19)
     /* copy output pointer */
     addi t1, a0, 0
-
-    push a1
 
     /* Initialize a SHAKE256 operation. */
     addi a0, a1, 0    /* a0 <= seed address */
@@ -2200,8 +2194,6 @@ _inner_poly_uniform_gamma_1:
         nop /* Must not end on branch */
 
     /* Finish the SHAKE-256 operation. */
-
-    pop a1
 
     ret
 
