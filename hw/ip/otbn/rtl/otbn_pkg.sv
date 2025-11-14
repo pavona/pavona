@@ -11,8 +11,6 @@
 
 `include "prim_assert.sv"
 
-`define OTBN_PQC
-
 package otbn_pkg;
 
   // Global Constants ==============================================================================
@@ -234,14 +232,10 @@ package otbn_pkg;
     InsnOpcodeBignumMisc     = 7'h0B,
     InsnOpcodeBignumArith    = 7'h2B,
     InsnOpcodeBignumMulqacc  = 7'h3B,
-  `ifdef OTBN_PQC
     InsnOpcodeBignumMulv     = 7'h4B,
     InsnOpcodeBignumTrn      = 7'h5F,
     InsnOpcodeBignumBaseMisc = 7'h7B,
     InsnOpcodeBignumShiftv   = 7'h7F
-  `else
-    InsnOpcodeBignumBaseMisc = 7'h7B
-  `endif
   } insn_opcode_e;
 
   typedef enum logic [3:0] {
@@ -258,26 +252,18 @@ package otbn_pkg;
     AluOpBaseSll
   } alu_op_base_e;
 
-`ifndef OTBN_PQC
-  typedef enum logic [3:0] {
-`else
   typedef enum logic [4:0] {
-`endif
     AluOpBignumAdd,
     AluOpBignumAddc,
     AluOpBignumAddm,
-  `ifdef OTBN_PQC
     AluOpBignumAddv,
     AluOpBignumAddvm,
-  `endif
 
     AluOpBignumSub,
     AluOpBignumSubb,
     AluOpBignumSubm,
-  `ifdef OTBN_PQC
     AluOpBignumSubv,
     AluOpBignumSubvm,
-  `endif
 
     AluOpBignumRshi,
 
@@ -286,10 +272,8 @@ package otbn_pkg;
     AluOpBignumAnd,
     AluOpBignumNot,
 
-  `ifdef OTBN_PQC
     AluOpBignumShv,
     AluOpBignumTrn,
-  `endif
 
     AluOpBignumNone
   } alu_op_bignum_e;
@@ -334,9 +318,7 @@ package otbn_pkg;
   typedef enum logic [1:0] {
     ShamtSelBignumA,
     ShamtSelBignumS,
-  `ifdef OTBN_PQC
     ShamtSelBignumV,
-  `endif
     ShamtSelBignumZero
   } shamt_sel_bignum_e;
 
@@ -368,7 +350,6 @@ package otbn_pkg;
     CsrMod6        = 12'h7D6,
     CsrMod7        = 12'h7D7,
     CsrRndPrefetch = 12'h7D8,
-  `ifdef OTBN_PQC
     CsrKmacCfg     = 12'h7D9,
     CsrKmacStatus  = 12'h7E2,
     CsrKmacDigestW0 = 12'h7E3,
@@ -380,18 +361,13 @@ package otbn_pkg;
     CsrKmacDigestW6 = 12'h7E9,
     CsrKmacDigestW7 = 12'h7EA,
     CsrKmacPartialW = 12'h7F3,
-  `endif
     // 0xFC0-0xFFF Custom read-only
     CsrRnd         = 12'hFC0,
     CsrUrnd        = 12'hFC1
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)
-`ifdef OTBN_PQC
   parameter int NWsr = 12; // Number of WSRs
-`else
-  parameter int NWsr = 8; // Number of WSRs
-`endif
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
     WsrMod          = 'd0,
@@ -401,25 +377,17 @@ package otbn_pkg;
     WsrKeyS0L       = 'd4,
     WsrKeyS0H       = 'd5,
     WsrKeyS1L       = 'd6,
-  `ifdef OTBN_PQC
     WsrKeyS1H       = 'd7,
     WsrKmacCfg      = 'd8,
     WsrKmacMsg      = 'd9,
     WsrKmacDigest   = 'd10,
     WsrAccH         = 'd11
-  `else
-    WsrKeyS1H       = 'd7
-  `endif
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-`ifdef OTBN_PQC
   parameter int NIspr = 15;
-`else
-  parameter int NIspr = 9;
-`endif
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
     IsprMod           = 'd0,
@@ -430,7 +398,6 @@ package otbn_pkg;
     IsprKeyS0L        = 'd5,
     IsprKeyS0H        = 'd6,
     IsprKeyS1L        = 'd7,
-  `ifdef OTBN_PQC
     IsprKeyS1H        = 'd8,
     IsprKmacCfg       = 'd9,
     IsprKmacMsg       = 'd10,
@@ -438,9 +405,6 @@ package otbn_pkg;
     IsprKmacDigest    = 'd12,
     IsprKmacPartialW  = 'd13,
     IsprAccH          = 'd14
-  `else
-    IsprKeyS1H        = 'd8
-  `endif
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;
@@ -497,7 +461,6 @@ package otbn_pkg;
     logic                loop_immediate;
   } insn_dec_base_t;
 
-`ifdef OTBN_PQC
   typedef enum logic[1:0] {
     alu_8s,     // b000
     alu_16h,    // b001
@@ -523,7 +486,6 @@ package otbn_pkg;
     VecType_d64  = 2'b10,
     VecType_v256 = 2'b11
   } vec_type_e;
-`endif
 
   typedef struct packed {
     logic [WdrAw-1:0]        d;           // Destination register
@@ -551,12 +513,10 @@ package otbn_pkg;
     logic [$clog2(WLEN)-1:0] alu_shift_amt;   // Shift amount
     logic                    alu_shift_right; // Shift right if set otherwise left
 
-  `ifdef OTBN_PQC
     alu_vector_type_t        vector_type;
     logic                    vector_sel;
 
     alu_trn_type_t           alu_trn_type;
-  `endif
 
     flag_group_t             alu_flag_group;
     flag_e                   alu_sel_flag;
@@ -571,7 +531,7 @@ package otbn_pkg;
     logic [1:0]              mac_pre_acc_shift;
     logic                    mac_zero_acc;
     logic                    mac_shift_out;
-  `ifdef OTBN_PQC
+
     logic                    mac_mulv;
     logic                    mac_data_type;
     logic                    mac_sel;
@@ -579,7 +539,7 @@ package otbn_pkg;
     logic                    mac_lane_word_32;
     logic                    mac_lane_word_16;
     logic [1:0]              mac_exec_mode;
-  `endif
+
     logic                    mac_en;
 
     logic                    rf_we;
@@ -605,11 +565,11 @@ package otbn_pkg;
     logic                    shifter_a_en;
     logic                    shifter_b_en;
     logic                    shift_right;
-  `ifdef OTBN_PQC
+
     alu_vector_type_t        vector_type;
     logic                    vector_sel;
     alu_trn_type_t           trn_type;
-  `endif
+
     logic [$clog2(WLEN)-1:0] shift_amt;
     logic                    logic_a_en;
     logic                    logic_shifter_en;
@@ -658,11 +618,11 @@ package otbn_pkg;
     alu_op_bignum_e op;
     logic [WLEN-1:0]         operand_a;
     logic [WLEN-1:0]         operand_b;
-  `ifdef OTBN_PQC
+
     alu_vector_type_t        vector_type;
     logic                    vector_sel;
     alu_trn_type_t           trn_type;
-  `endif
+
     logic                    shift_right;
     logic [$clog2(WLEN)-1:0] shift_amt;
     flag_group_t             flag_group;
@@ -680,7 +640,6 @@ package otbn_pkg;
     logic [1:0]      pre_acc_shift_imm;
     logic            zero_acc;
     logic            shift_acc;
-  `ifdef OTBN_PQC
     logic            mulv;
     logic            data_type;
     logic            sel;
@@ -688,7 +647,6 @@ package otbn_pkg;
     logic            lane_word_32;
     logic            lane_word_16;
     logic [1:0]      exec_mode;
-  `endif
   } mac_bignum_operation_t;
 
   // States for KMAC error handling

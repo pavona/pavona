@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +14,8 @@ module otbn_instruction_fetch
   import otbn_pkg::*;
 #(
   parameter int ImemSizeByte = 4096,
+  // Enabling PQC hardware support with vector ISA extension
+  parameter bit OtbnPQCEn = 1'b1,
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte)
 ) (
@@ -129,7 +132,8 @@ module otbn_instruction_fetch
 
   // SEC_CM: DATA_REG_SW.SCA
   otbn_predecode #(
-    .ImemSizeByte(ImemSizeByte)
+    .ImemSizeByte(ImemSizeByte),
+    .OtbnPQCEn(OtbnPQCEn)
   ) u_otbn_predecode (
     .clk_i,
     .rst_ni,

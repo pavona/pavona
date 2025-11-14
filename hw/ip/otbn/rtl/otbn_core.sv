@@ -30,6 +30,9 @@ module otbn_core
   // Size of the data memory, in bytes
   parameter int DmemSizeByte = 4096,
 
+  // Enabling PQC hardware support with vector ISA extension
+  parameter bit OtbnPQCEn = 1'b1,
+
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
 
@@ -102,15 +105,11 @@ module otbn_core
   input logic software_errs_fatal_i,
 
   input logic [1:0]                       sideload_key_shares_valid_i,
-`ifdef OTBN_PQC
   input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i,
 
   // KMAC AppIntf
   output kmac_pkg::app_req_t kmac_app_req_o,
   input  kmac_pkg::app_rsp_t kmac_app_rsp_i
-`else
-  input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
-`endif
 );
   import prim_mubi_pkg::*;
 
@@ -241,11 +240,9 @@ module otbn_core
   logic [ExtWLEN-1:0]          ispr_acc_intg;
   logic [ExtWLEN-1:0]          ispr_acc_wr_data_intg;
   logic                        ispr_acc_wr_en;
-`ifdef OTBN_PQC
   logic [ExtWLEN-1:0]          ispr_acch_intg;
   logic [ExtWLEN-1:0]          ispr_acch_wr_data_intg;
   logic                        ispr_acch_wr_en;
-`endif
   logic                        ispr_init;
 
   logic            rnd_req;
@@ -268,11 +265,11 @@ module otbn_core
   logic        state_reset;
   logic        insn_cnt_clear_int;
   logic [31:0] insn_cnt;
-`ifdef OTBN_PQC
+
   logic kmac_msg_write_ready;
   logic kmac_msg_pending_write;
   logic kmac_digest_valid;
-`endif
+
   logic secure_wipe_req, secure_wipe_ack;
 
   logic sec_wipe_wdr_d, sec_wipe_wdr_q;
@@ -283,9 +280,7 @@ module otbn_core
 
   logic sec_wipe_acc_urnd;
   logic sec_wipe_mod_urnd;
-`ifdef OTBN_PQC
   logic sec_wipe_kmac_regs_urnd;
-`endif
   logic sec_wipe_zero;
   logic sec_wipe_err;
 
@@ -315,6 +310,7 @@ module otbn_core
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
   otbn_start_stop_control #(
+    .OtbnPQCEn(OtbnPQCEn),
     .SecMuteUrnd(SecMuteUrnd),
     .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
   ) u_otbn_start_stop_control (
@@ -346,9 +342,7 @@ module otbn_core
 
     .sec_wipe_acc_urnd_o      (sec_wipe_acc_urnd),
     .sec_wipe_mod_urnd_o      (sec_wipe_mod_urnd),
-  `ifdef OTBN_PQC
     .sec_wipe_kmac_regs_urnd_o(sec_wipe_kmac_regs_urnd),
-  `endif
     .sec_wipe_zero_o          (sec_wipe_zero),
 
     .ispr_init_o         (ispr_init),
@@ -369,7 +363,8 @@ module otbn_core
 
   // Instruction fetch unit
   otbn_instruction_fetch #(
-    .ImemSizeByte(ImemSizeByte)
+    .ImemSizeByte(ImemSizeByte),
+    .OtbnPQCEn(OtbnPQCEn)
   ) u_otbn_instruction_fetch (
     .clk_i,
     .rst_ni,
@@ -420,7 +415,9 @@ module otbn_core
   );
 
   // Instruction decoder
-  otbn_decoder u_otbn_decoder (
+  otbn_decoder #(
+    .OtbnPQCEn(OtbnPQCEn)
+  ) u_otbn_decoder (
     // The decoder is combinatorial; clk and rst are only used for assertions.
     .clk_i,
     .rst_ni,
@@ -462,7 +459,8 @@ module otbn_core
   // operand sources), and post-process their outputs as needed.
   otbn_controller #(
     .ImemSizeByte(ImemSizeByte),
-    .DmemSizeByte(DmemSizeByte)
+    .DmemSizeByte(DmemSizeByte),
+    .OtbnPQCEn(OtbnPQCEn)
   ) u_otbn_controller (
     .clk_i,
     .rst_ni,
@@ -581,12 +579,10 @@ module otbn_core
 
     .urnd_reseed_err_i(urnd_reseed_err),
 
-  `ifdef OTBN_PQC
     // KMAC interface
     .kmac_msg_write_ready_i  (kmac_msg_write_ready),
     .kmac_msg_pending_write_i(kmac_msg_pending_write),
     .kmac_digest_valid_i     (kmac_digest_valid),
-  `endif
 
     // Secure wipe
     .secure_wipe_req_o     (secure_wipe_req),
@@ -857,7 +853,9 @@ module otbn_core
 
   assign rf_bignum_wr_sec_wipe_err = sec_wipe_wdr_q & ~secure_wipe_running_o;
 
-  otbn_alu_bignum u_otbn_alu_bignum (
+  otbn_alu_bignum #(
+    .OtbnPQCEn(OtbnPQCEn)
+  ) u_otbn_alu_bignum (
     .clk_i,
     .rst_ni,
 
@@ -885,18 +883,14 @@ module otbn_core
     .ispr_acc_wr_data_intg_o(ispr_acc_wr_data_intg),
     .ispr_acc_wr_en_o       (ispr_acc_wr_en),
 
-  `ifdef OTBN_PQC
     .ispr_acch_intg_i        (ispr_acch_intg),
     .ispr_acch_wr_data_intg_o(ispr_acch_wr_data_intg),
     .ispr_acch_wr_en_o       (ispr_acch_wr_en),
-  `endif
 
     .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i      (sec_wipe_mod_urnd),
-  `ifdef OTBN_PQC
     .sec_wipe_kmac_regs_urnd_i(sec_wipe_kmac_regs_urnd),
-  `endif
     .sec_wipe_running_i       (secure_wipe_running_o),
     .sec_wipe_err_o           (alu_bignum_sec_wipe_err),
 
@@ -908,20 +902,20 @@ module otbn_core
 
     .sideload_key_shares_i,
 
-  `ifdef OTBN_PQC
     .kmac_msg_write_ready_o  (kmac_msg_write_ready),
     .kmac_msg_pending_write_o(kmac_msg_pending_write),
     .kmac_digest_valid_o     (kmac_digest_valid),
 
     .kmac_app_rsp_i,
     .kmac_app_req_o,
-  `endif
 
     .alu_predec_error_o(alu_bignum_predec_error),
     .ispr_predec_error_o(ispr_predec_error)
   );
 
-  otbn_mac_bignum u_otbn_mac_bignum (
+  otbn_mac_bignum #(
+    .OtbnPQCEn(OtbnPQCEn)
+  ) u_otbn_mac_bignum (
     .clk_i,
     .rst_ni,
 
@@ -942,11 +936,9 @@ module otbn_core
     .mac_en_i    (mac_bignum_en),
     .mac_commit_i(mac_bignum_commit),
 
-  `ifdef OTBN_PQC
     .ispr_acch_intg_o        (ispr_acch_intg),
     .ispr_acch_wr_data_intg_i(ispr_acch_wr_data_intg),
     .ispr_acch_wr_en_i       (ispr_acch_wr_en),
-  `endif
 
     .ispr_acc_intg_o        (ispr_acc_intg),
     .ispr_acc_wr_data_intg_i(ispr_acc_wr_data_intg),

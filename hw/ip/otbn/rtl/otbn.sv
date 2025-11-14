@@ -23,6 +23,10 @@ module otbn
   parameter bit                   Stub            = 1'b0,
   parameter regfile_e             RegFile         = RegFileFF,
   parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
+
+  // Enabling PQC hardware support with vector ISA extension
+  parameter bit                   OtbnPQCEn       = 1'b0,
+
   // Number of cycles a differential skew is tolerated on the alert signal
   parameter int unsigned          AlertSkewCycles = 1,
 
@@ -80,16 +84,11 @@ module otbn
   input                                   rst_otp_ni,
   output otp_ctrl_pkg::otbn_otp_key_req_t otbn_otp_key_o,
   input  otp_ctrl_pkg::otbn_otp_key_rsp_t otbn_otp_key_i,
-
-`ifdef OTBN_PQC
-  input keymgr_pkg::otbn_key_req_t keymgr_key_i,
+  input  keymgr_pkg::otbn_key_req_t       keymgr_key_i,
 
   // KMAC interface
   output kmac_pkg::app_req_t      kmac_data_o,
   input  kmac_pkg::app_rsp_t      kmac_data_i
-`else
-  input keymgr_pkg::otbn_key_req_t keymgr_key_i
-`endif
 );
 
   import prim_mubi_pkg::*;
@@ -158,13 +157,18 @@ module otbn
   tlul_pkg::tl_h2d_t tl_win_h2d[2];
   tlul_pkg::tl_d2h_t tl_win_d2h[2];
 
-`ifdef OTBN_PQC
   kmac_pkg::app_req_t kmac_req;
   kmac_pkg::app_rsp_t kmac_rsp;
 
-  assign kmac_data_o = kmac_req;
-  assign kmac_rsp    = kmac_data_i;
-`endif
+  generate
+    if (OtbnPQCEn) begin : gen_active_app_intf
+      assign kmac_data_o = kmac_req;
+      assign kmac_rsp    = kmac_data_i;
+    end else begin : gen_inactive_app_intf
+      assign kmac_data_o = '0;
+      assign kmac_rsp    = '0;
+    end
+  endgenerate
 
   // The clock can be gated and some registers can be updated as long as OTBN isn't currently
   // running. Other registers can only be updated when OTBN is in the Idle state (which also implies
@@ -1125,6 +1129,7 @@ module otbn
     .RegFile(RegFile),
     .DmemSizeByte(DmemSizeByte),
     .ImemSizeByte(ImemSizeByte),
+    .OtbnPQCEn(OtbnPQCEn),
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
     .SecMuteUrnd(SecMuteUrnd),
     .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
@@ -1180,14 +1185,10 @@ module otbn
     .software_errs_fatal_i       (software_errs_fatal_q),
 
     .sideload_key_shares_i       (keymgr_key_i.key),
-  `ifdef OTBN_PQC
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}}),
 
     .kmac_app_req_o (kmac_req),
     .kmac_app_rsp_i (kmac_rsp)
-  `else
-    .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
-  `endif
   );
 
   always_ff @(posedge clk_i or negedge rst_n) begin

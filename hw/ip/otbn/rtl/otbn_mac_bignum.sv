@@ -13,7 +13,10 @@
 
 module otbn_mac_bignum
   import otbn_pkg::*;
-(
+#(
+  // Enabling PQC hardware support with vector ISA extension
+  parameter bit OtbnPQCEn = 1'b1
+) (
   input logic clk_i,
   input logic rst_ni,
 
@@ -34,11 +37,9 @@ module otbn_mac_bignum
   input  logic            sec_wipe_running_i,
   output logic            sec_wipe_err_o,
 
-`ifdef OTBN_PQC
   output logic [ExtWLEN-1:0] ispr_acch_intg_o,
   input  logic [ExtWLEN-1:0] ispr_acch_wr_data_intg_i,
   input  logic               ispr_acch_wr_en_i,
-`endif
 
   output logic [ExtWLEN-1:0] ispr_acc_intg_o,
   input  logic [ExtWLEN-1:0] ispr_acc_wr_data_intg_i,
@@ -46,36 +47,28 @@ module otbn_mac_bignum
 );
   // The MAC operates on quarter-words, QWLEN gives the number of bits in a quarter-word.
   localparam int unsigned QWLEN = WLEN / 4;
+  // Width of adder and mul nets based on PQC enable
+  localparam int ADDER_WIDTH = (OtbnPQCEn) ? 2*WLEN : WLEN;
 
-`ifdef OTBN_PQC
-  logic [2*WLEN-1:0] adder_op_a;
-  logic [2*WLEN-1:0] adder_op_b;
-  logic [2*WLEN-1:0] adder_result;
-`else
-  logic [WLEN-1:0] adder_op_a;
-  logic [WLEN-1:0] adder_op_b;
-  logic [WLEN-1:0] adder_result;
-`endif
+  // Tie unused ports to '0
+  generate
+    if (!OtbnPQCEn) begin : gen_unused_outputs
+      assign ispr_acch_intg_o = '0;
+    end
+  endgenerate
+
+  // Adder nets have width assigned based on PQC enable
+  logic [ADDER_WIDTH-1:0] adder_op_a;
+  logic [ADDER_WIDTH-1:0] adder_op_b;
+  logic [ADDER_WIDTH-1:0] adder_result;
+  logic [ADDER_WIDTH-1:0] mul_res_shifted;
 
   logic [1:0]      adder_result_hw_is_zero;
-
-`ifdef OTBN_PQC
-  logic [2*WLEN-1:0] mul_res_shifted;
-`else
-  logic [WLEN-1:0]   mul_res_shifted;
-`endif
 
   logic [ExtWLEN-1:0] acc_intg_d;
   logic [ExtWLEN-1:0] acc_intg_q;
   logic [WLEN-1:0]    acc_blanked;
   logic               acc_en;
-
-`ifdef OTBN_PQC
-  logic [ExtWLEN-1:0] acch_intg_d;
-  logic [ExtWLEN-1:0] acch_intg_q;
-  logic [WLEN-1:0]    acch_blanked;
-  logic               acch_en;
-`endif
 
   logic [WLEN-1:0] operand_a_blanked, operand_b_blanked;
 
@@ -105,31 +98,33 @@ module otbn_mac_bignum
   logic unused_ok;
   assign unused_ok = ^(rst_ni);
 
-`ifdef OTBN_PQC
-  unified_mul mul (
-    .word_mode         ({operation_i.mulv, operation_i.data_type}), // 00 = 64x64, 11 = 4x32x32, 10 = 16x16x16
-    .word_sel_A        (operation_i.operand_a_qw_sel),
-    .word_sel_B        (operation_i.operand_b_qw_sel),
-    .exec_mode         (operation_i.exec_mode),
-    .half_sel          (operation_i.sel),
-    .lane_mode         (operation_i.lane_mode),
-    .lane_word_32      (operation_i.lane_word_32),
-    .lane_word_16      (operation_i.lane_word_16),
-    .A                 (operand_a_blanked),
-    .B                 (operand_b_blanked),
-    .data_type_64_shift(operation_i.pre_acc_shift_imm),
-    .result            (mul_res_shifted)
-  );
-`else
-  otbn_bignum_mul mul (
-    .A                 (operand_a_blanked),
-    .B                 (operand_b_blanked),
-    .word_sel_A        (operation_i.operand_a_qw_sel),
-    .word_sel_B        (operation_i.operand_b_qw_sel),
-    .data_type_64_shift(operation_i.pre_acc_shift_imm),
-    .result            (mul_res_shifted)
-  );
-`endif
+  generate
+    if (OtbnPQCEn) begin : gen_mul_pqc
+      unified_mul mul (
+        .word_mode         ({operation_i.mulv, operation_i.data_type}), // 00 = 64x64, 11 = 4x32x32, 10 = 16x16x16
+        .word_sel_A        (operation_i.operand_a_qw_sel),
+        .word_sel_B        (operation_i.operand_b_qw_sel),
+        .exec_mode         (operation_i.exec_mode),
+        .half_sel          (operation_i.sel),
+        .lane_mode         (operation_i.lane_mode),
+        .lane_word_32      (operation_i.lane_word_32),
+        .lane_word_16      (operation_i.lane_word_16),
+        .A                 (operand_a_blanked),
+        .B                 (operand_b_blanked),
+        .data_type_64_shift(operation_i.pre_acc_shift_imm),
+        .result            (mul_res_shifted)
+      );
+    end else begin : gen_mul
+      otbn_bignum_mul mul (
+        .A                 (operand_a_blanked),
+        .B                 (operand_b_blanked),
+        .word_sel_A        (operation_i.operand_a_qw_sel),
+        .word_sel_B        (operation_i.operand_b_qw_sel),
+        .data_type_64_shift(operation_i.pre_acc_shift_imm),
+        .result            (mul_res_shifted)
+      );
+    end
+  endgenerate
 
   `ASSERT_KNOWN_IF(PreAccShiftImmKnown, operation_i.pre_acc_shift_imm, mac_en_i)
 
@@ -152,38 +147,45 @@ module otbn_mac_bignum
     assign acc_no_intg_q[i_word*32+:32] = acc_intg_q[i_word*39+:32];
   end
 
-`ifdef OTBN_PQC
-  // ECC encode and decode of accumulator high register
-  logic [WLEN-1:0]                acch_no_intg_d;
-  logic [WLEN-1:0]                acch_no_intg_q;
-  logic [ExtWLEN-1:0]             acch_intg_calc;
-  logic [2*BaseWordsPerWLEN-1:0]  acch_intg_err;
-  // logic [2*BaseWordsPerWLEN-1:0]  acch_intg_err;  // FIX ME!
-  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_acch_words
-    prim_secded_inv_39_32_enc i_secdedh_enc (
-      .data_i (acch_no_intg_d[i_word*32+:32]),
-      .data_o (acch_intg_calc[i_word*39+:39])
-    );
-    prim_secded_inv_39_32_dec i_secdedh_dec (
-      .data_i     (acch_intg_q[i_word*39+:39]),
-      .data_o     (/* unused because we abort on any integrity error */),
-      .syndrome_o (/* unused */),
-      .err_o      (acch_intg_err[i_word*2+:2])
-    );
-    assign acch_no_intg_q[i_word*32+:32] = acch_intg_q[i_word*39+:32];
-  end
-`endif
+  generate
+    if (OtbnPQCEn) begin : gen_acch_reg
+      // ECC encode and decode of accumulator high register
+      logic [WLEN-1:0]                acch_no_intg_d;
+      logic [WLEN-1:0]                acch_no_intg_q;
+      logic [ExtWLEN-1:0]             acch_intg_calc;
+      logic [2*BaseWordsPerWLEN-1:0]  acch_intg_err;
+
+      for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_acch_words
+        prim_secded_inv_39_32_enc i_secdedh_enc (
+          .data_i (acch_no_intg_d[i_word*32+:32]),
+          .data_o (acch_intg_calc[i_word*39+:39])
+        );
+        prim_secded_inv_39_32_dec i_secdedh_dec (
+          .data_i     (gen_acch_wr_en.acch_intg_q[i_word*39+:39]),
+          .data_o     (/* unused because we abort on any integrity error */),
+          .syndrome_o (/* unused */),
+          .err_o      (acch_intg_err[i_word*2+:2])
+        );
+        assign acch_no_intg_q[i_word*32+:32] = gen_acch_wr_en.acch_intg_q[i_word*39+:32];
+      end
+    end
+  endgenerate
 
   // Propagate integrity error only if accumulator register is used: `acc_intg_q` flows into
   // `operation_result_o` via `acc`, `adder_op_b`, and `adder_result` iff the MAC is enabled and the
   // current operation does not zero the accumulation register.
   logic acc_used;
   assign acc_used = mac_en_i & ~operation_i.zero_acc;
-`ifdef OTBN_PQC
-  assign operation_intg_violation_err_o = acc_used & |(acc_intg_err); // FIX ME - add acch
-`else
-  assign operation_intg_violation_err_o = acc_used & |(acc_intg_err);
-`endif
+
+  generate
+    if (OtbnPQCEn) begin : gen_op_intg_err_pqc
+      // If the MAC is enabled then the ACCH integrity error should be propagated directly
+      assign operation_intg_violation_err_o = (acc_used & |(acc_intg_err))
+                                              | (mac_en_i & |(gen_acch_reg.acch_intg_err));
+    end else begin : gen_op_intg_err
+      assign operation_intg_violation_err_o = acc_used & |(acc_intg_err);
+    end
+  endgenerate
 
   // Accumulator logic
 
@@ -195,58 +197,71 @@ module otbn_mac_bignum
     .out_o(acc_blanked)
   );
 
-`ifdef OTBN_PQC
-  prim_blanker #(.Width(WLEN)) u_acch_blanker (
-    .in_i (acch_no_intg_q),
-    .en_i (mac_predec_bignum_i.acc_rd_en & operation_i.mulv),
-    .out_o(acch_blanked)
-  );
-`endif
+  generate
+    if (OtbnPQCEn) begin : gen_acch_blanker
+      logic [WLEN-1:0] acch_blanked;
 
-  // Add shifted multiplier result to current accumulator.
+      prim_blanker #(.Width(WLEN)) u_acch_blanker (
+        .in_i (gen_acch_reg.acch_no_intg_q),
+        .en_i (mac_predec_bignum_i.acc_rd_en & operation_i.mulv),
+        .out_o(acch_blanked)
+      );
+    end
+  endgenerate
+
   assign adder_op_a = mul_res_shifted;
-`ifdef OTBN_PQC
-  assign adder_op_b = {acch_blanked, acc_blanked};
-`else
-  assign adder_op_b = acc_blanked;
-`endif
 
-`ifdef OTBN_PQC
-  vec_type_e mode;
-  assign mode = operation_i.mulv ? (operation_i.data_type == 1'b0 ? VecType_s32 : VecType_d64) :
-                                   VecType_v256;
+  generate
+    if (OtbnPQCEn) begin : gen_adder_op_pqc
+      // Add shifted multiplier result to current accumulator.
+      assign adder_op_b = {gen_acch_blanker.acch_blanked, acc_blanked};
+    end else begin : gen_adder_op
+      // Add shifted multiplier result to current accumulator.
+      assign adder_op_b = acc_blanked;
+    end
+  endgenerate
 
-  buffer_bit adder (
-    .A        (adder_op_a[WLEN-1:0]),
-    .B        (adder_op_b[WLEN-1:0]),
-    .word_mode(mode),
-    .cin      (1'b0),
-    .res      (adder_result[WLEN-1:0]),
-    .cout     ()
-  );
+  generate
+    if (OtbnPQCEn) begin : gen_mac_adder_pqc
+      vec_type_e mode;
+      assign mode = operation_i.mulv ? (operation_i.data_type == 1'b0 ? VecType_s32 : VecType_d64) :
+                                      VecType_v256;
 
-  buffer_bit adder16 (
-    .A        (operation_i.mulv ? adder_op_a[WLEN+:WLEN] : 256'b0),
-    .B        (operation_i.mulv ? adder_op_b[WLEN+:WLEN] : 256'b0),
-    .word_mode(operation_i.data_type == 1'b0 ? VecType_s32 : VecType_d64),
-    .cin      (1'b0),
-    .res      (adder_result[WLEN+:WLEN]),
-    .cout     ()
-  );
-`else
-  assign adder_result = adder_op_a + adder_op_b;
-`endif
+      buffer_bit adder (
+        .A        (adder_op_a[WLEN-1:0]),
+        .B        (adder_op_b[WLEN-1:0]),
+        .word_mode(mode),
+        .cin      (1'b0),
+        .res      (adder_result[WLEN-1:0]),
+        .cout     ()
+      );
 
-  // Split zero check between the two halves of the result. This is used for flag setting (see
-  // below).
-  assign adder_result_hw_is_zero[0] = adder_result[WLEN/2-1:0] == 'h0;
-  assign adder_result_hw_is_zero[1] = adder_result[WLEN/2+:WLEN/2] == 'h0;
+      buffer_bit adder16 (
+        .A        (operation_i.mulv ? adder_op_a[WLEN+:WLEN] : 256'b0),
+        .B        (operation_i.mulv ? adder_op_b[WLEN+:WLEN] : 256'b0),
+        .word_mode(operation_i.data_type == 1'b0 ? VecType_s32 : VecType_d64),
+        .cin      (1'b0),
+        .res      (adder_result[WLEN+:WLEN]),
+        .cout     ()
+      );
+
+      // Split zero check between the two halves of the result. This is used for flag setting (see
+      // below).
+      assign adder_result_hw_is_zero[0] = adder_result[WLEN/2-1:0] == 'h0;
+      assign adder_result_hw_is_zero[1] = adder_result[WLEN/2+:WLEN/2] == 'h0;
+
+    end else begin : gen_mac_adder
+      assign adder_result = adder_op_a + adder_op_b;
+      // Split zero check between the two halves of the result. This is used for flag setting (see
+      // below).
+      assign adder_result_hw_is_zero[0] = adder_result[WLEN/2-1:0] == 'h0;
+      assign adder_result_hw_is_zero[1] = adder_result[WLEN/2+:WLEN/2] == 'h0;
+    end
+  endgenerate
 
   always_comb begin
-`ifdef OTBN_PQC
     case (operation_i.mulv)
       1'b0 : begin
-`endif
         operation_flags_o.L    = adder_result[0];
         // L is always updated for .WO, and for .SO when writing to the lower half-word
         operation_flags_en_o.L = operation_i.shift_acc ? ~operation_i.wr_hw_sel_upper : 1'b1;
@@ -269,7 +284,6 @@ module otbn_mac_bignum
         operation_flags_en_o.Z =
             operation_i.shift_acc & operation_i.wr_hw_sel_upper ? ~adder_result_hw_is_zero[0] :
                                                                   1'b1;
-  `ifdef OTBN_PQC
       end
       default: begin
         operation_flags_o.L    = 1'b0;
@@ -280,12 +294,13 @@ module otbn_mac_bignum
         operation_flags_en_o.Z = 1'b0;
       end
     endcase
-  `endif
   end
+
   // MAC never sets the carry flag
   assign operation_flags_o.C    = 1'b0;
   assign operation_flags_en_o.C = 1'b0;
 
+  // ACC
   always_comb begin
     acc_no_intg_d = '0;
     unique case (1'b1)
@@ -309,166 +324,178 @@ module otbn_mac_bignum
     endcase
   end
 
-`ifdef OTBN_PQC
-  always_comb begin
-    acch_no_intg_d = '0;
-    unique case (1'b1)
-      // Non-encoded inputs have to be encoded before writing to the register.
-      sec_wipe_acc_urnd_i: begin   // FIX ME!
-        acch_no_intg_d = urnd_data_i;   // FIX ME!
-        acch_intg_d = acch_intg_calc;
-      end
-      default: begin
-        if (ispr_acch_wr_en_i) begin
-          acch_intg_d = ispr_acch_wr_data_intg_i;
-        end else begin
-          acch_no_intg_d = adder_result[WLEN+:WLEN];
-          acch_intg_d = acch_intg_calc;
-        end
-      end
-    endcase
-  end
-`endif
-
   // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occurring or secure
   // wipe of the internal state is occurring.
   assign acc_en = (mac_en_i & mac_commit_i) | ispr_acc_wr_en_i | sec_wipe_acc_urnd_i;
-`ifdef OTBN_PQC
-  assign acch_en = (mac_en_i & mac_commit_i & operation_i.mulv) | ispr_acch_wr_en_i | sec_wipe_acc_urnd_i;  // FIX ME acch
-`endif
 
   always_ff @(posedge clk_i) begin
     if (acc_en) begin
       acc_intg_q <= acc_intg_d;
     end
-`ifdef OTBN_PQC
-    if (acch_en) begin
-      acch_intg_q <= acch_intg_d;
-    end
-`endif
   end
 
   assign ispr_acc_intg_o = acc_intg_q;
 
-`ifdef OTBN_PQC
-  assign ispr_acch_intg_o = acch_intg_q;
-`endif
+  // ACCH
+  generate
+    if (OtbnPQCEn) begin : gen_acch_wr_en
+      // New ACCH nets
+      logic [ExtWLEN-1:0] acch_intg_d;
+      logic [ExtWLEN-1:0] acch_intg_q;
+      logic               acch_en;
 
-`ifdef OTBN_PQC
-  always_comb begin
-    case (operation_i.mulv)
-      1'b0 : begin
-        operation_result_o = adder_result[WLEN-1:0];
-      end
-      default: begin
-        case (operation_i.exec_mode)
-          2'b00 : begin
-            case (operation_i.data_type)
-              1'b1 : begin
-                operation_result_o = {adder_result[384 + 64*operation_i.sel +: 64],
-                                      adder_result[256 + 64*operation_i.sel +: 64],
-                                      adder_result[128 + 64*operation_i.sel +: 64],
-                                      adder_result[      64*operation_i.sel +: 64]};
-              end
-              1'b0 : begin
-                operation_result_o = {adder_result[448 + 32*operation_i.sel +: 32],
-                                      adder_result[384 + 32*operation_i.sel +: 32],
-                                      adder_result[320 + 32*operation_i.sel +: 32],
-                                      adder_result[256 + 32*operation_i.sel +: 32],
-                                      adder_result[192 + 32*operation_i.sel +: 32],
-                                      adder_result[128 + 32*operation_i.sel +: 32],
-                                      adder_result[ 64 + 32*operation_i.sel +: 32],
-                                      adder_result[      32*operation_i.sel +: 32]};
-              end
-              default: begin
-                operation_result_o = {WLEN{1'b0}};   // ERROR!
-              end
-            endcase
-          end
-          2'b01 : begin
-            case (operation_i.data_type)
-              1'b1 : begin
-                case (operation_i.sel)
-                  1'b0: begin
-                    operation_result_o = {operand_a_blanked[224+:32], adder_result[384+:32],
-                                          operand_a_blanked[160+:32], adder_result[256+:32],
-                                          operand_a_blanked[ 96+:32], adder_result[128+:32],
-                                          operand_a_blanked[ 32+:32], adder_result[  0+:32]};
-                  end
-                  1'b1: begin
-                    operation_result_o = {adder_result[384+64+:32], operand_a_blanked[192+:32],
-                                          adder_result[256+64+:32], operand_a_blanked[128+:32],
-                                          adder_result[128+64+:32], operand_a_blanked[ 64+:32],
-                                          adder_result[  0+64+:32], operand_a_blanked[  0+:32]};
-                  end
-                endcase
-              end
-              1'b0 : begin
-                operation_result_o = {adder_result[480+:16], adder_result[448+:16],
-                                      adder_result[416+:16], adder_result[384+:16],
-                                      adder_result[352+:16], adder_result[320+:16],
-                                      adder_result[288+:16], adder_result[256+:16],
-                                      adder_result[224+:16], adder_result[192+:16],
-                                      adder_result[160+:16], adder_result[128+:16],
-                                      adder_result[ 96+:16], adder_result[ 64+:16],
-                                      adder_result[ 32+:16], adder_result[  0+:16]};
-              end
-              default: begin
-                operation_result_o = {WLEN{1'b0}};   // ERROR!
-              end
-            endcase
-          end
-          2'b10, 2'b11 : begin
-            case (operation_i.data_type)
-              1'b1 : begin
-                case (operation_i.sel)
-                  1'b0: begin
-                    operation_result_o = {operand_a_blanked[224+:32], adder_result[416+:32],
-                                          operand_a_blanked[160+:32], adder_result[288+:32],
-                                          operand_a_blanked[ 96+:32], adder_result[160+:32],
-                                          operand_a_blanked[ 32+:32], adder_result[ 32+:32]};
-                  end
-                  1'b1: begin
-                    operation_result_o = {adder_result[416+64+:32], operand_a_blanked[192+:32],
-                                          adder_result[288+64+:32], operand_a_blanked[128+:32],
-                                          adder_result[160+64+:32], operand_a_blanked[ 64+:32],
-                                          adder_result[ 32+64+:32], operand_a_blanked[  0+:32]};
-                  end
-                endcase
-              end
-              1'b0 : begin
-                operation_result_o = {adder_result[496+:16], adder_result[464+:16],
-                                      adder_result[432+:16], adder_result[400+:16],
-                                      adder_result[368+:16], adder_result[336+:16],
-                                      adder_result[304+:16], adder_result[272+:16],
-                                      adder_result[240+:16], adder_result[208+:16],
-                                      adder_result[176+:16], adder_result[144+:16],
-                                      adder_result[112+:16], adder_result[ 80+:16],
-                                      adder_result[ 48+:16], adder_result[ 16+:16]};
-              end
-              default: begin
-                operation_result_o = {WLEN{1'b0}};   // ERROR!
-              end
-            endcase
+      always_comb begin
+        gen_acch_reg.acch_no_intg_d = '0;
+        unique case (1'b1)
+          // Non-encoded inputs have to be encoded before writing to the register.
+          sec_wipe_acc_urnd_i: begin   // FIX ME!
+            gen_acch_reg.acch_no_intg_d = urnd_data_i;   // FIX ME!
+            acch_intg_d = gen_acch_reg.acch_intg_calc;
           end
           default: begin
-            operation_result_o = adder_result[WLEN-1:0];
+            if (ispr_acch_wr_en_i) begin
+              acch_intg_d = ispr_acch_wr_data_intg_i;
+            end else begin
+              gen_acch_reg.acch_no_intg_d = adder_result[WLEN+:WLEN];
+              acch_intg_d = gen_acch_reg.acch_intg_calc;
+            end
           end
         endcase
       end
-    endcase
-  end
-`else
-  // The operation result is taken directly from the adder, shift_acc only applies to the new value
-  // written to the accumulator.
-  assign operation_result_o = adder_result;
-`endif
 
-`ifdef OTBN_PQC
-  assign expected_op_en     = mac_en_i | operation_i.mulv;
-`else
-  assign expected_op_en     = mac_en_i;
-`endif
+      // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occurring or secure
+      // wipe of the internal state is occurring.
+      assign acch_en = (mac_en_i & mac_commit_i & operation_i.mulv) | ispr_acch_wr_en_i | sec_wipe_acc_urnd_i;  // FIX ME acch
+
+      always_ff @(posedge clk_i) begin
+        if (acch_en) begin
+          acch_intg_q <= acch_intg_d;
+        end
+      end
+
+      assign ispr_acch_intg_o = acch_intg_q;
+    end
+  endgenerate
+
+  generate
+    if (OtbnPQCEn) begin : gen_op_result_pqc
+      always_comb begin
+        case (operation_i.mulv)
+          1'b0 : begin
+            operation_result_o = adder_result[WLEN-1:0];
+          end
+          default: begin
+            case (operation_i.exec_mode)
+              2'b00 : begin
+                case (operation_i.data_type)
+                  1'b1 : begin
+                    operation_result_o = {adder_result[384 + 64*operation_i.sel +: 64],
+                                          adder_result[256 + 64*operation_i.sel +: 64],
+                                          adder_result[128 + 64*operation_i.sel +: 64],
+                                          adder_result[      64*operation_i.sel +: 64]};
+                  end
+                  1'b0 : begin
+                    operation_result_o = {adder_result[448 + 32*operation_i.sel +: 32],
+                                          adder_result[384 + 32*operation_i.sel +: 32],
+                                          adder_result[320 + 32*operation_i.sel +: 32],
+                                          adder_result[256 + 32*operation_i.sel +: 32],
+                                          adder_result[192 + 32*operation_i.sel +: 32],
+                                          adder_result[128 + 32*operation_i.sel +: 32],
+                                          adder_result[ 64 + 32*operation_i.sel +: 32],
+                                          adder_result[      32*operation_i.sel +: 32]};
+                  end
+                  default: begin
+                    operation_result_o = {WLEN{1'b0}};   // ERROR!
+                  end
+                endcase
+              end
+              2'b01 : begin
+                case (operation_i.data_type)
+                  1'b1 : begin
+                    case (operation_i.sel)
+                      1'b0: begin
+                        operation_result_o = {operand_a_blanked[224+:32], adder_result[384+:32],
+                                              operand_a_blanked[160+:32], adder_result[256+:32],
+                                              operand_a_blanked[ 96+:32], adder_result[128+:32],
+                                              operand_a_blanked[ 32+:32], adder_result[  0+:32]};
+                      end
+                      1'b1: begin
+                        operation_result_o = {adder_result[384+64+:32], operand_a_blanked[192+:32],
+                                              adder_result[256+64+:32], operand_a_blanked[128+:32],
+                                              adder_result[128+64+:32], operand_a_blanked[ 64+:32],
+                                              adder_result[  0+64+:32], operand_a_blanked[  0+:32]};
+                      end
+                    endcase
+                  end
+                  1'b0 : begin
+                    operation_result_o = {adder_result[480+:16], adder_result[448+:16],
+                                          adder_result[416+:16], adder_result[384+:16],
+                                          adder_result[352+:16], adder_result[320+:16],
+                                          adder_result[288+:16], adder_result[256+:16],
+                                          adder_result[224+:16], adder_result[192+:16],
+                                          adder_result[160+:16], adder_result[128+:16],
+                                          adder_result[ 96+:16], adder_result[ 64+:16],
+                                          adder_result[ 32+:16], adder_result[  0+:16]};
+                  end
+                  default: begin
+                    operation_result_o = {WLEN{1'b0}};   // ERROR!
+                  end
+                endcase
+              end
+              2'b10, 2'b11 : begin
+                case (operation_i.data_type)
+                  1'b1 : begin
+                    case (operation_i.sel)
+                      1'b0: begin
+                        operation_result_o = {operand_a_blanked[224+:32], adder_result[416+:32],
+                                              operand_a_blanked[160+:32], adder_result[288+:32],
+                                              operand_a_blanked[ 96+:32], adder_result[160+:32],
+                                              operand_a_blanked[ 32+:32], adder_result[ 32+:32]};
+                      end
+                      1'b1: begin
+                        operation_result_o = {adder_result[416+64+:32], operand_a_blanked[192+:32],
+                                              adder_result[288+64+:32], operand_a_blanked[128+:32],
+                                              adder_result[160+64+:32], operand_a_blanked[ 64+:32],
+                                              adder_result[ 32+64+:32], operand_a_blanked[  0+:32]};
+                      end
+                    endcase
+                  end
+                  1'b0 : begin
+                    operation_result_o = {adder_result[496+:16], adder_result[464+:16],
+                                          adder_result[432+:16], adder_result[400+:16],
+                                          adder_result[368+:16], adder_result[336+:16],
+                                          adder_result[304+:16], adder_result[272+:16],
+                                          adder_result[240+:16], adder_result[208+:16],
+                                          adder_result[176+:16], adder_result[144+:16],
+                                          adder_result[112+:16], adder_result[ 80+:16],
+                                          adder_result[ 48+:16], adder_result[ 16+:16]};
+                  end
+                  default: begin
+                    operation_result_o = {WLEN{1'b0}};   // ERROR!
+                  end
+                endcase
+              end
+              default: begin
+                operation_result_o = adder_result[WLEN-1:0];
+              end
+            endcase
+          end
+        endcase
+      end
+    end else begin : gen_op_result
+      // The operation result is taken directly from the adder, shift_acc only applies to the new value
+      // written to the accumulator.
+      assign operation_result_o = adder_result;
+    end
+  endgenerate
+
+  generate
+    if (OtbnPQCEn) begin : gen_expected_op_en_pqc
+      assign expected_op_en     = mac_en_i | operation_i.mulv;
+    end else begin : gen_expected_op_en
+      assign expected_op_en     = mac_en_i;
+    end
+  endgenerate
 
   assign expected_acc_rd_en = ~operation_i.zero_acc & mac_en_i;
 
@@ -476,14 +503,20 @@ module otbn_mac_bignum
   assign predec_error_o = |{expected_op_en     != mac_predec_bignum_i.op_en,
                             expected_acc_rd_en != mac_predec_bignum_i.acc_rd_en};
 
-`ifdef OTBN_PQC
-  assign sec_wipe_err_o = sec_wipe_acc_urnd_i & ~sec_wipe_running_i; // FIX ME acch
-`else
-  assign sec_wipe_err_o = sec_wipe_acc_urnd_i & ~sec_wipe_running_i;
-`endif
+  generate
+    if (OtbnPQCEn) begin : gen_sec_wipe_err_pqc
+      assign sec_wipe_err_o = sec_wipe_acc_urnd_i & ~sec_wipe_running_i; // FIX ME acch
+    end else begin : gen_sec_wipe_err
+      assign sec_wipe_err_o = sec_wipe_acc_urnd_i & ~sec_wipe_running_i;
+    end
+  endgenerate
 
   `ASSERT(NoISPRAccWrAndMacEn, ~(ispr_acc_wr_en_i & mac_en_i))
-`ifdef OTBN_PQC
-  `ASSERT(NoISPRAccHWrAndMacEn, ~(ispr_acch_wr_en_i & mac_en_i))
-`endif
+
+  generate
+    if (OtbnPQCEn) begin : gen_acch_assert
+      `ASSERT(NoISPRAccHWrAndMacEn, ~(ispr_acch_wr_en_i & mac_en_i))
+    end
+  endgenerate
+
 endmodule
