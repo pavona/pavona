@@ -1,0 +1,43 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+[
+  {
+    symbol: "random_keygen",
+    const_str: "P256RandomKeygen",
+    comment: "P-256 key generation",
+  },
+  {
+    symbol: "ecdsa_verify",
+    const_str: "P256Verify",
+    comment: "P-256 ECDSA verification",
+  },
+  {
+    symbol: "sideload_keygen",
+    const_str: "P256SideloadKeygen",
+    comment: "P-256 key generation with sideloaded seed",
+  },
+  {
+    symbol: "sideload_ecdsa_sign",
+    const_str: "P256SideloadSign",
+    comment: "P-256 ECDSA signing with sideloaded key",
+  },
+  {
+    symbol: "shared_key_from_seed",
+    const_str: "P256SideloadEcdh",
+    comment: "P-256 ECDH key exchange with sideloaded seed",
+  },
+  {
+    symbol: "ecdsa_sign",
+    const_str: "P256Sign",
+    comment: "P-256 ECDSA signing"
+  },
+  {
+    symbol: "shared_key",
+    exclude_symbols: ["shared_key_from_seed"],
+    const_str: "P256Ecdh",
+    comment: "P-256 ECDH key exchange"
+  },
+]
+

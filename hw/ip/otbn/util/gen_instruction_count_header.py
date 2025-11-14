@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import pathlib
 import sys
 
 import hjson
@@ -62,8 +61,9 @@ def main() -> int:
     # Compute instruction count range.
     insn_counts = []
     for mode in modes:
+        exclude_symbols = mode.get("exclude_symbols", [])
         min_count, max_count = program_insn_count_range(
-            program, mode["symbol"])
+            program, mode["symbol"], exclude_labels=exclude_symbols)
         insn_counts.append((mode, min_count, max_count))
 
     # Write out the resulting filled header template.

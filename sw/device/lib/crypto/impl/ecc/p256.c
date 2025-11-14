@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/ecc/p256_insn_counts.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -129,6 +130,10 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
   // Spin here waiting for OTBN to complete.
   OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kP256RandomKeygenMinInstructionCount,
+                        kP256RandomKeygenMaxInstructionCount);
+
   // Read the masked private key from OTBN dmem.
   OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD0,
                                     private_key->share0));
@@ -146,6 +151,10 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
   OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kP256SideloadKeygenMinInstructionCount,
+                        kP256SideloadKeygenMaxInstructionCount);
 
   // Read the public key from OTBN dmem.
   OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256CoordWords, kOtbnVarX, public_key->x));
@@ -220,6 +229,10 @@ status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
   // Spin here waiting for OTBN to complete.
   OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kP256SignMinInstructionCount,
+                        kP256SignMaxInstructionCount);
+
   // Read signature R out of OTBN dmem.
   OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP256ScalarWords, kOtbnVarR, result->r));
 
@@ -273,6 +286,10 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kP256VerifyMinInstructionCount,
+                        kP256VerifyMaxInstructionCount);
+
   // Read x_r (recovered R) out of OTBN dmem.
   uint32_t x_r[kP256ScalarWords];
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarXr, x_r));
@@ -319,6 +336,10 @@ status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kP256EcdhMinInstructionCount,
+                        kP256EcdhMaxInstructionCount);
+
   // Read the shares of the key from OTBN dmem (at vars x and y).
   OTBN_WIPE_IF_ERROR(
       otbn_dmem_read(kP256CoordWords, kOtbnVarX, shared_key->share0));
@@ -345,4 +366,30 @@ status_t p256_sideload_ecdh_start(const p256_point_t *public_key) {
 
   // Start the OTBN routine.
   return otbn_execute();
+}
+
+status_t p256_sideload_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
+  // Spin here waiting for OTBN to complete.
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+
+  // Read the code indicating if the public key is valid.
+  uint32_t ok;
+  OTBN_WIPE_IF_ERROR(otbn_dmem_read(1, kOtbnVarOk, &ok));
+  if (launder32(ok) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
+
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kP256SideloadEcdhMinInstructionCount,
+                        kP256SideloadEcdhMaxInstructionCount);
+
+  // Read the shares of the key from OTBN dmem (at vars x and y).
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_read(kP256CoordWords, kOtbnVarX, shared_key->share0));
+  OTBN_WIPE_IF_ERROR(
+      otbn_dmem_read(kP256CoordWords, kOtbnVarY, shared_key->share1));
+
+  // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
 }

@@ -9,6 +9,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules:autogen.bzl", "autogen_otbn_insn_count_header")
 
 cc_library(
     name = "p256",
@@ -16,6 +17,7 @@ cc_library(
     hdrs = ["p256.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":p256_insn_counts",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
@@ -52,5 +54,14 @@ cc_library(
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
         "//sw/otbn/crypto:run_ed25519",
+    ],
+)
+
+autogen_otbn_insn_count_header(
+    name = "p256_insn_counts",
+    hjson = "p256_modes.hjson",
+    template = "p256_insn_counts.h.tpl",
+    deps = [
+        "//sw/otbn/crypto:run_p256",
     ],
 )

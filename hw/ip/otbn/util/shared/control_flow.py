@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -15,6 +16,7 @@ class ControlLoc:
 
     Represents a normal PC that a branch or jump instruction could link to.
     '''
+
     def __init__(self, pc: int) -> None:
         self.pc = pc
 
@@ -28,6 +30,7 @@ class ControlLoc:
 
 class ImemEnd(ControlLoc):
     '''Represents the end of instruction memory.'''
+
     def __init__(self) -> None:
         super().__init__(-1)
 
@@ -41,6 +44,7 @@ class ImemEnd(ControlLoc):
 
 class Ret(ControlLoc):
     '''Represents the location at the top of the call stack.'''
+
     def __init__(self) -> None:
         super().__init__(-1)
 
@@ -54,6 +58,7 @@ class Ret(ControlLoc):
 
 class Ecall(ControlLoc):
     '''Represents program termination as a result of an ecall.'''
+
     def __init__(self) -> None:
         super().__init__(-1)
 
@@ -71,6 +76,7 @@ class LoopStart(ControlLoc):
     The `loop_start_pc` is the first PC of the loop body, and the `loop_end_pc`
     is the last PC of the loop body.
     '''
+
     def __init__(self, loop_start_pc: int, loop_end_pc: int):
         super().__init__(loop_start_pc)
         self.loop_start_pc = loop_start_pc
@@ -93,6 +99,7 @@ class Cycle(ControlLoc):
     potentially cause an infinite loop; with this structure, the control-flow
     graph remains a DAG.
     '''
+
     @classmethod
     def is_special(cls) -> bool:
         return True
@@ -106,6 +113,7 @@ class LoopEnd(Cycle):
 
     Contains the LoopStart instance we're looping back to.
     '''
+
     def __init__(self, loop_start: LoopStart):
         super().__init__(loop_start.loop_start_pc)
         self.loop_start = loop_start
@@ -132,6 +140,7 @@ class ControlGraph:
           CodeSection ending in `ret` would have a single Ret() instance in its
           list.
     '''
+
     def __init__(self, start: int, graph: Dict[int, Tuple[CodeSection,
                                                           List[ControlLoc]]]):
         for pc, (sec, _) in graph.items():
@@ -307,10 +316,14 @@ def _get_next_control_locations(insn: Insn, operands: Dict[str, int],
         return [LoopStart(pc + 4, loop_end_pc)]
     elif insn.mnemonic == 'ecall':
         return [Ecall()]
+    elif insn.mnemonic == 'csrrw' and operands['csr'] == 3072:
+        # This is an unimp, which for the purposes of control flow analysis
+        # can be treated as an ecall
+        return [Ecall()]
 
     raise RuntimeError('Unrecognized control flow instruction '
-                       '(straight-line=false) at PC {:#x}: {}'
-                       .format(pc, insn.disassemble(pc, operands)))
+                       '(straight-line=false) at PC {:#x}: {}'.format(
+                           pc, insn.disassemble(pc, operands)))
 
 
 def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
@@ -351,7 +364,11 @@ def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
             return
 
         insn = program.get_insn(pc)
-        if insn.straight_line:
+        operands = program.get_operands(pc)
+        # We make a small exception here for unimp (implemented as a csrrw of
+        # the cycle CSR, which has address 3072)
+        if insn.straight_line and not (insn.mnemonic == 'csrrw' and
+                                       operands['csr'] == 3072):
             continue
         operands = program.get_operands(pc)
         section = CodeSection(start_pc, pc)
@@ -410,8 +427,17 @@ def _label_cycles(program: OTBNProgram, graph: ControlGraph, start_pc: int,
     sec, edges = graph.get_entry(start_pc)
     for pc in sec:
         visited_pcs.add(pc)
-    for i in range(len(edges)):
-        edge = edges[i]
+
+    # Augment the set of edges to continue past non-tailcall function calls
+    explore_edges = edges.copy()
+    last_insn = program.get_insn(sec.end)
+    last_op_vals = program.get_operands(sec.end)
+    if (last_insn.mnemonic == "jal" and last_op_vals['grd'] == 1 and
+            sec.end + 4 not in visited_pcs):
+        explore_edges.append(ControlLoc(sec.end + 4))
+
+    for i in range(len(explore_edges)):
+        edge = explore_edges[i]
         if isinstance(edge, Ret) or isinstance(edge, ImemEnd) or isinstance(
                 edge, Ecall):
             # Cannot possibly loop back
