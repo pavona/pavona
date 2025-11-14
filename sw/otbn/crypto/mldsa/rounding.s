@@ -157,7 +157,7 @@
  * decompose_const, reduce32_const, decompose_43_const, gamma2_vec_const,
  * qm1half_const, modulus
  *
- * clobbered registers: w1-w4, t0, t3-t4
+ * clobbered registers: w1-w4, w30
  */
 .global decompose
 decompose:

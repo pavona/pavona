@@ -5150,3 +5150,6 @@ poly_uniform_eta_5:
     .word 5
     .word 5
     .word 5
+.global poly_wdr2gpr
+poly_wdr2gpr:
+    .zero 32
