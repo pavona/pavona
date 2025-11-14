@@ -426,7 +426,7 @@ jobs:
   dj_sw_build_test:
     name: Build and test Darjeeling software
     runs-on:
-      group: zerorisc-none
+      group: zerorisc-large
     timeout-minutes: 120
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
