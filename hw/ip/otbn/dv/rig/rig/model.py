@@ -183,10 +183,11 @@ class Model:
     following the instruction stream to this point.
 
     '''
-    def __init__(self, dmem_size: int, fuel: int) -> None:
+    def __init__(self, dmem_size: int, fuel: int, pqc: bool) -> None:
         assert fuel >= 0
         self.initial_fuel = fuel
         self.fuel = fuel
+        self.pqc = pqc
 
         self.dmem_size = dmem_size
 
@@ -278,7 +279,7 @@ class Model:
 
     def copy(self) -> 'Model':
         '''Return a deep copy of the model'''
-        ret = Model(self.dmem_size, self.initial_fuel)
+        ret = Model(self.dmem_size, self.initial_fuel, self.pqc)
         ret.pc = self.pc
         ret.fuel = self.fuel
         ret._known_regs = {n: regs.copy()

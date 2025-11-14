@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -61,6 +62,7 @@ def gen_main(args: argparse.Namespace) -> int:
     try:
         init_data, snippet, end_addr = gen_program(config,
                                                    args.size,
+                                                   args.pqc,
                                                    insns_file)
     except RuntimeError as err:
         print(err, file=sys.stderr)
@@ -155,6 +157,9 @@ def main() -> int:
     gen.add_argument('--size', type=int, default=100,
                      help=('Max number of instructions in stream. '
                            'Defaults to 100.'))
+    gen.add_argument('--pqc', type=int, default=0,
+                     help=('Enables generation of pqc instructions if value '
+                           'is 1. Defaults to 0.'))
     gen.add_argument('--config', type=str, default='default',
                      help='Configuration to use')
     gen.add_argument('--output', '-o',

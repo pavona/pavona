@@ -1,12 +1,13 @@
 # Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
+# Copyright zeroRISC Inc.
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
 # Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
 # Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of
 # "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN"
 # (https://eprint.iacr.org/2025/2028)
 # Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
 
 # Definitions for the big number group of instructions. See insns.yml
@@ -169,6 +170,7 @@
 
 - mnemonic: bn.addv
   synopsis: Pseudo-Modulo Add
+  pqc: true
   operands:
     - name: type
       abbrev: t
@@ -230,6 +232,7 @@
 
 - mnemonic: bn.trn
   synopsis: Partial transpose
+  pqc: true
   operands:
     - name: wrd
       doc: Updated WDR.
@@ -463,6 +466,7 @@
 
 - mnemonic: bn.shv
   synopsis: vector shift
+  pqc: true
   operands: &bn-shv-operands
     - name: type
       abbrev: t
@@ -640,6 +644,7 @@
 
 - mnemonic: bn.subv
   synopsis: Pseudo-Modulo Sub
+  pqc: true
   operands:
     - name: type
       abbrev: t
@@ -1225,6 +1230,7 @@
 
 - mnemonic: bn.mulv
   synopsis: Vectorized Multiply and Accumulate
+  pqc: true
   operands:
     - *mulqacc-wrs1
     - *mulqacc-wrs2
@@ -1326,6 +1332,7 @@
 
 - mnemonic: bn.mulv.l
   synopsis: Vectorized Multiply and Accumulate
+  pqc: true
   operands:
     - *mulqacc-wrs1
     - *mulqacc-wrd

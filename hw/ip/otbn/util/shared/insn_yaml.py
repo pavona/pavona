@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -33,7 +34,7 @@ class Insn:
                          'syntax', 'doc', 'errs', 'note',
                          'encoding', 'glued-ops',
                          'literal-pseudo-op', 'python-pseudo-op', 'lsu',
-                         'straight-line', 'iflow'])
+                         'straight-line', 'pqc', 'iflow'])
 
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
@@ -165,6 +166,8 @@ class Insn:
                                      .format(idx, what, op_name))
 
         self.straight_line = yd.get('straight-line', True)
+
+        self.pqc = yd.get('pqc', False)
 
         iflow_what = 'iflow field for {}'.format(what)
         self.iflow = InsnInformationFlow.from_yaml(yd.get('iflow', None),

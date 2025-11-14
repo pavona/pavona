@@ -72,6 +72,7 @@ class SnippetGens:
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         self._cont_generators: List[Tuple[SnippetGen, float]] = []
+        self._pqc_generators: List[Tuple[SnippetGen, float]] = []
         self._start_generators: List[Tuple[SnippetGen, float]] = []
         self._end_generators: List[Tuple[SnippetGen, float]] = []
 
@@ -109,6 +110,8 @@ class SnippetGens:
                     self._end_generators.append(pr)
                 elif cls.starts_program:
                     self._start_generators.append(pr)
+                elif cls.pqc_program:
+                    self._pqc_generators.append(pr)
                 else:
                     self._cont_generators.append(pr)
 
@@ -153,7 +156,10 @@ class SnippetGens:
         elif start:
             generators = self._start_generators
         else:
-            generators = self._cont_generators
+            if model.pqc:
+                generators = self._cont_generators + self._pqc_generators
+            else:
+                generators = self._cont_generators
 
         real_weights = []
         num_pos_weights = 0

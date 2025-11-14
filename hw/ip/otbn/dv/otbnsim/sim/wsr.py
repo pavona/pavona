@@ -11,12 +11,12 @@
 
 
 import sys
+import os
 from typing import List, Optional, Sequence, Tuple
 from .trace import Trace
 from .ext_regs import OTBNExtRegs
 from .kmac import KmacBlock
 DEBUG_KMAC = False
-OTBN_PQC = True
 
 
 def kmac_debug_print(text):
@@ -614,6 +614,7 @@ class KmacDigestWSR(WSR):
 class WSRFile:
     '''A model of the WSR file'''
     def __init__(self, ext_regs: OTBNExtRegs, kmac: KmacBlock) -> None:
+        self.EN_PQC = int(os.environ.get("PQC_EN", '0'))
         self.KeyS0 = SideloadKey('KeyS0')
         self.KeyS1 = SideloadKey('KeyS1')
         self.Kmac = kmac
@@ -718,11 +719,11 @@ class WSRFile:
         ret += self.MOD.changes()
         ret += self.RND.changes()
         ret += self.ACC.changes()
-        if OTBN_PQC:
+        if self.EN_PQC:
             ret += self.ACCH.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
-        if OTBN_PQC:
+        if self.EN_PQC:
             ret += self.KMAC_MSG.changes()
             ret += self.KMAC_CFG.changes()
             ret += self.KMAC_STATUS.changes()

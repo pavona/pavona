@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -81,6 +82,9 @@ encoding-schemes: enc-schemes.yml
 #
 #  straight-line: A boolean. If true, this instruction has no effect on control
 #                 flow. Optional, default true.
+#
+#  pqc:       A boolean. If true, this instruction is part of the PQC ISA extension.
+#             Optional, default false.
 #
 #  cycles:    A positive integer, giving the number of cycles that the
 #             instruction takes to execute. Optional, default 1.

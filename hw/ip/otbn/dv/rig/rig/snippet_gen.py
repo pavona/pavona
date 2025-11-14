@@ -49,6 +49,7 @@ class SnippetGen:
     # program (with an ECALL or an error)
     ends_program: bool = False
     starts_program: bool = False
+    pqc_program: bool = False
 
     def __init__(self) -> None:
         self.disabled = False

@@ -26,6 +26,8 @@ class KmacAppReqInsn(SnippetGen):
         of instructions and is guarenteed to fit.
     '''
 
+    pqc_program = True
+
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 

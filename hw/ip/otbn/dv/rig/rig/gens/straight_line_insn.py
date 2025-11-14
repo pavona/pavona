@@ -24,7 +24,9 @@ class StraightLineInsn(SnippetGen):
 
         # Find all the straight line, non-pseudo instructions in insns_file
         self.insns = []
+        self.pqc_insns = []
         self.weights = []
+        self.pqc_weights = []
 
         seen_insns = set()
         for insn in insns_file.insns:
@@ -42,6 +44,9 @@ class StraightLineInsn(SnippetGen):
             if weight > 0:
                 self.insns.append(insn)
                 self.weights.append(weight)
+                if insn.pqc:
+                    self.pqc_insns.append(insn)
+                    self.pqc_weights.append(weight)
 
         # Check that the config's insn-weights dictionary didn't have any
         # non-existent instructions. Note that we even add jumps to seen_insns:
@@ -57,6 +62,12 @@ class StraightLineInsn(SnippetGen):
         # Check that at least one instruction has a positive weight
         assert len(self.insns) == len(self.weights)
         if not self.insns:
+            raise ValueError('Config at {} defines a zero weight '
+                             'for all instructions.'
+                             .format(cfg.path))
+
+        assert len(self.pqc_insns) == len(self.pqc_weights)
+        if not self.pqc_insns:
             raise ValueError('Config at {} defines a zero weight '
                              'for all instructions.'
                              .format(cfg.path))
@@ -114,6 +125,8 @@ class StraightLineInsn(SnippetGen):
         if program.get_insn_space_at(model.pc) <= 1:
             return None
 
+        pqc_mnemonics = {insn.mnemonic for insn in self.pqc_insns}
+
         weights = self.weights
         prog_insn = None
         while prog_insn is None:
@@ -128,7 +141,10 @@ class StraightLineInsn(SnippetGen):
             # this index and go around again. We take the copy here, rather
             # than outside the loop, because we don't expect this to happen
             # very often.
-            prog_insn = self.fill_insn(self.insns[idx], model)
+            if model.pqc == 0 and self.insns[idx].mnemonic in pqc_mnemonics:
+                prog_insn = None
+            else:
+                prog_insn = self.fill_insn(self.insns[idx], model)
             if prog_insn is None:
                 weights = self.weights.copy()
                 weights[idx] = 0

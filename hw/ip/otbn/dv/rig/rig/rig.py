@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -17,6 +18,7 @@ from .snippet import Snippet
 
 def gen_program(config: Config,
                 fuel: int,
+                pqc: bool,
                 insns_file: InsnsFile) -> Tuple[InitData, Snippet, int]:
     '''Generate a random program for OTBN
 
@@ -37,7 +39,7 @@ def gen_program(config: Config,
 
     program = Program(mems.imem_address, mems.imem_size_bytes,
                       mems.dmem_address, mems.dmem_size_bytes)
-    model = Model(mems.dmem_size_bytes, fuel)
+    model = Model(mems.dmem_size_bytes, fuel, pqc)
 
     # Generate some initialised data to start with. Otherwise, it takes a while
     # before we start issuing loads (because we need stores to happen first).
