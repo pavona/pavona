@@ -63,7 +63,7 @@ def main() -> int:
     for mode in modes:
         exclude_symbols = mode.get("exclude_symbols", [])
         min_count, max_count = program_insn_count_range(
-            program, mode["symbol"], exclude_labels=exclude_symbols)
+            program, mode.get("symbol"), exclude_labels=exclude_symbols)
         insn_counts.append((mode, min_count, max_count))
 
     # Write out the resulting filled header template.

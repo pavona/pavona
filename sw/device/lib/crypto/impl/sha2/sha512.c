@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,6 +16,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/impl/sha2/sha512_insn_counts.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 // Module ID for status codes.
@@ -141,6 +143,9 @@ static status_t process_message_buffer(sha512_otbn_ctx_t *ctx) {
   // Run the OTBN program.
   HARDENED_TRY(otbn_execute());
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Check instruction count.
+  OTBN_CHECK_INSN_COUNT(kSha512MinInstructionCount, kSha512MaxInstructionCount);
 
   // Reset the message buffer counter.
   ctx->num_blocks = 0;
