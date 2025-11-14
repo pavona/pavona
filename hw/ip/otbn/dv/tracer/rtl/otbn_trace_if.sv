@@ -33,6 +33,7 @@ interface otbn_trace_if
 #(
   parameter int ImemAddrWidth = 15,
   parameter int DmemAddrWidth = 15,
+  parameter bit OtbnPQCEn     = `EN_PQC,
   parameter otbn_pkg::regfile_e RegFile = otbn_pkg::RegFileFF
 )(
   input logic clk_i,
@@ -261,49 +262,67 @@ interface otbn_trace_if
 
   assign ispr_write[IsprMod] = |u_otbn_alu_bignum.mod_wr_en & ~ispr_init;
 
-  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_and_acc_words
-    assign ispr_write_data[IsprMod][i_word*32+:32] =
-      u_otbn_alu_bignum.mod_wr_en[i_word] ? u_otbn_alu_bignum.mod_intg_d[i_word*39+:32] :
-                                            u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
-    assign ispr_read_data[IsprMod][i_word*32+:32] = u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
-    assign ispr_write_data[IsprAcc][i_word*32+:32] = u_otbn_mac_bignum.acc_intg_d[i_word*39+:32];
-  `ifdef OTBN_PQC
-    assign ispr_write_data[IsprKmacMsg][i_word*32+:32] =
-      u_otbn_alu_bignum.kmac_msg_wr_en[i_word] ? u_otbn_alu_bignum.kmac_msg_intg_d[i_word*39+:32] :
-                                                 u_otbn_alu_bignum.kmac_msg_intg_q[i_word*39+:32];
-    assign ispr_read_data[IsprKmacMsg][i_word*32+:32] = u_otbn_alu_bignum.kmac_msg_intg_q[i_word*39+:32];
-    assign ispr_write_data[IsprAccH][i_word*32+:32] = u_otbn_mac_bignum.acch_intg_d[i_word*39+:32];
-  `endif
-  end
+  generate
+    if (OtbnPQCEn) begin : gen_ispr_data_pqc
+      for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_and_acc_words
+        assign ispr_write_data[IsprMod][i_word*32+:32] =
+          u_otbn_alu_bignum.mod_wr_en[i_word] ? u_otbn_alu_bignum.mod_intg_d[i_word*39+:32] :
+                                                u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
+        assign ispr_read_data[IsprMod][i_word*32+:32] = u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
+        assign ispr_write_data[IsprAcc][i_word*32+:32] = u_otbn_mac_bignum.acc_intg_d[i_word*39+:32];
+        assign ispr_write_data[IsprKmacMsg][i_word*32+:32] =
+          u_otbn_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en[i_word] ? u_otbn_alu_bignum.gen_pqc_wsr.kmac_msg_intg_d[i_word*39+:32] :
+                                                    u_otbn_alu_bignum.gen_pqc_wsr.kmac_msg_intg_q[i_word*39+:32];
+        assign ispr_read_data[IsprKmacMsg][i_word*32+:32] = u_otbn_alu_bignum.gen_pqc_wsr.kmac_msg_intg_q[i_word*39+:32];
+        assign ispr_write_data[IsprAccH][i_word*32+:32] = u_otbn_mac_bignum.gen_acch_wr_en.acch_intg_d[i_word*39+:32];
+      end
+    end else begin : gen_ispr_data
+      for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_and_acc_words
+        assign ispr_write_data[IsprMod][i_word*32+:32] =
+          u_otbn_alu_bignum.mod_wr_en[i_word] ? u_otbn_alu_bignum.mod_intg_d[i_word*39+:32] :
+                                                u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
+        assign ispr_read_data[IsprMod][i_word*32+:32] = u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
+        assign ispr_write_data[IsprAcc][i_word*32+:32] = u_otbn_mac_bignum.acc_intg_d[i_word*39+:32];
+      end
+    end
+  endgenerate
 
   assign ispr_read[IsprMod] =
     (any_ispr_read & (ispr_addr == IsprMod)) |
     (insn_fetch_resp_valid &
      (alu_bignum_operation.op inside {AluOpBignumAddm, AluOpBignumSubm}));
 
-`ifdef OTBN_PQC
-  // KMAC MSG
-  assign ispr_read[IsprKmacMsg] =
-    (any_ispr_read & (ispr_addr == IsprKmacMsg));
+  generate
+    if (OtbnPQCEn) begin : gen_ispr_read_write_pqc
+      // KMAC MSG
+      assign ispr_read[IsprKmacMsg] =
+        (any_ispr_read & (ispr_addr == IsprKmacMsg));
 
-  assign ispr_write[IsprKmacMsg] = u_otbn_alu_bignum.kmac_msg_wr_en & ~ispr_init;
+      assign ispr_write[IsprKmacMsg] = u_otbn_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en & ~ispr_init;
 
-  // KMAC CFG
-  assign ispr_read[IsprKmacCfg] =
-    (any_ispr_read & (ispr_addr == IsprKmacCfg));
+      // KMAC CFG
+      assign ispr_read[IsprKmacCfg] =
+        (any_ispr_read & (ispr_addr == IsprKmacCfg));
 
-  assign ispr_read_data[IsprKmacCfg]  = {224'b0, u_otbn_alu_bignum.kmac_cfg_intg_q[31:0]};
-  assign ispr_write[IsprKmacCfg]      = u_otbn_alu_bignum.kmac_cfg_wr_en & ~ispr_init;
-  assign ispr_write_data[IsprKmacCfg] = {224'b0, u_otbn_alu_bignum.kmac_cfg_intg_d[31:0]};
+      assign ispr_read_data[IsprKmacCfg]  = {224'b0, u_otbn_alu_bignum.gen_pqc_wsr.kmac_cfg_intg_q[31:0]};
+      assign ispr_write[IsprKmacCfg]      = u_otbn_alu_bignum.gen_pqc_wsr.kmac_cfg_wr_en & ~ispr_init;
+      assign ispr_write_data[IsprKmacCfg] = {224'b0, u_otbn_alu_bignum.gen_pqc_wsr.kmac_cfg_intg_d[31:0]};
 
-  // KMAC PARTIAL WRITE
-  assign ispr_read[IsprKmacPartialW] =
-    (any_ispr_read & (ispr_addr == IsprKmacPartialW));
+      // KMAC PARTIAL WRITE
+      assign ispr_read[IsprKmacPartialW] =
+        (any_ispr_read & (ispr_addr == IsprKmacPartialW));
 
-  assign ispr_read_data[IsprKmacPartialW]   = {224'b0, u_otbn_alu_bignum.kmac_pw_intg_q[31:0]};
-  assign ispr_write[IsprKmacPartialW]       = u_otbn_alu_bignum.kmac_pw_wr_en & ~ispr_init;
-  assign ispr_write_data[IsprKmacPartialW]  = {224'b0, u_otbn_alu_bignum.kmac_pw_intg_d[31:0]};
-`endif
+      assign ispr_read_data[IsprKmacPartialW]   = {224'b0, u_otbn_alu_bignum.gen_pqc_wsr.kmac_pw_intg_q[31:0]};
+      assign ispr_write[IsprKmacPartialW]       = u_otbn_alu_bignum.gen_pqc_wsr.kmac_pw_wr_en & ~ispr_init;
+      assign ispr_write_data[IsprKmacPartialW]  = {224'b0, u_otbn_alu_bignum.gen_pqc_wsr.kmac_pw_intg_d[31:0]};
+
+      assign ispr_write[IsprAccH]     = u_otbn_mac_bignum.gen_acch_wr_en.acch_en & ~ispr_init;
+      assign ispr_read[IsprAccH]      = (any_ispr_read & (ispr_addr == IsprAccH)) | mac_bignum_en;
+      assign ispr_read_data[IsprAccH] =
+          (any_ispr_read & (ispr_addr == IsprAccH)) ? u_otbn_mac_bignum.gen_acch_reg.acch_no_intg_q :
+                                                      u_otbn_mac_bignum.gen_acch_blanker.acch_blanked;
+    end
+  endgenerate
 
   // ACC
   assign ispr_write[IsprAcc] = u_otbn_mac_bignum.acc_en & ~ispr_init;
@@ -314,14 +333,6 @@ interface otbn_trace_if
   assign ispr_read_data[IsprAcc] =
       (any_ispr_read & (ispr_addr == IsprAcc)) ? u_otbn_mac_bignum.acc_no_intg_q  :
                                                  u_otbn_mac_bignum.acc_blanked;
-
-`ifdef OTBN_PQC
-  assign ispr_write[IsprAccH]     = u_otbn_mac_bignum.acch_en & ~ispr_init;
-  assign ispr_read[IsprAccH]      = (any_ispr_read & (ispr_addr == IsprAccH)) | mac_bignum_en;
-  assign ispr_read_data[IsprAccH] =
-      (any_ispr_read & (ispr_addr == IsprAccH)) ? u_otbn_mac_bignum.acch_no_intg_q :
-                                                  u_otbn_mac_bignum.acch_blanked;
-`endif
 
   assign ispr_write[IsprRnd] = 1'b0;
   assign ispr_write_data[IsprRnd] = '0;

@@ -14,7 +14,9 @@
  * cycle and provides it to the simulation environment via a DPI call. It uses `otbn_trace_if` to
  * get the information it needs. For further information see `hw/ip/otbn/dv/tracer/README.md`.
  */
-module otbn_tracer (
+module otbn_tracer #(
+  parameter bit OtbnPQCEn = `EN_PQC
+) (
   input  logic  clk_i,
   input  logic  rst_ni,
 
@@ -92,12 +94,26 @@ module otbn_tracer (
     unique case (ispr)
       IsprMod: return "MOD";
       IsprAcc: return "ACC";
-    `ifdef OTBN_PQC
-      IsprAccH: return "ACCH";
-      IsprKmacMsg: return "KMAC_MSG";
-      IsprKmacCfg: return "KMAC_CFG";
-      IsprKmacPartialW: return "KMAC_PARTIAL_WRITE";
-    `endif
+      IsprAccH: begin
+        if (OtbnPQCEn) begin
+          return "ACCH";
+        end
+      end
+      IsprKmacMsg: begin
+        if (OtbnPQCEn) begin
+          return "KMAC_MSG";
+        end
+      end
+      IsprKmacCfg: begin
+        if (OtbnPQCEn) begin
+          return "KMAC_CFG";
+        end
+      end
+      IsprKmacPartialW: begin
+        if (OtbnPQCEn) begin
+          return "KMAC_PARTIAL_WRITE";
+        end
+      end
       IsprRnd: return "RND";
       IsprFlags: return "FLAGS";
       IsprUrnd: return "URND";
@@ -276,6 +292,7 @@ module otbn_tracer (
       do_trace();
     end
   end
+
 endmodule
 
 `endif // SYNTHESIS

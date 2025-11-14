@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 '''A helper script to generate a default set of binaries for OTBN testing
@@ -93,6 +94,7 @@ def main() -> int:
                         help='Number of binaries to generate (default: 10)')
     parser.add_argument('--seed', type=read_positive)
     parser.add_argument('--size', type=read_positive)
+    parser.add_argument('--pqc', type=int)
     parser.add_argument('--src-dir',
                         help=('If supplied, gen-binaries.py will not generate '
                               'random binaries. Instead, it will assemble and '
@@ -124,6 +126,8 @@ def main() -> int:
             args.seed = 1
         if args.size is None:
             args.size = 100
+        if args.pqc is None:
+            args.pqc = 0
     else:
         if args.count is not None:
             raise RuntimeError('Invalid combination: --count and --src-dir '
@@ -153,7 +157,7 @@ def main() -> int:
     with open(os.path.join(args.destdir, ninja_fname), 'w') as ninja_handle:
         if args.src_dir is None:
             write_ninja_rnd(ninja_handle, toolchain, otbn_dir, args.count,
-                            args.seed, args.size, args.config)
+                            args.seed, args.size, args.config, args.pqc)
         else:
             write_ninja_fixed(ninja_handle, toolchain, otbn_dir, args.src_dir)
 
@@ -179,7 +183,7 @@ def main() -> int:
 
 def write_ninja_rnd(handle: TextIO, toolchain: Toolchain, otbn_dir: str,
                     count: int, start_seed: int,
-                    size: int, config: str) -> None:
+                    size: int, config: str, pqc: int) -> None:
     '''Write a build.ninja to build random binaries.
 
     The rules build everything in the same directory as the build.ninja file.
@@ -194,8 +198,8 @@ def write_ninja_rnd(handle: TextIO, toolchain: Toolchain, otbn_dir: str,
 
     handle.write(
         'rule rig-gen\n'
-        '  command = {rig} gen --size {size} --config {config} '
-        '--seed $seed -o $out\n\n'.format(rig=otbn_rig, size=size, config=config))
+        '  command = {rig} gen --size {size} --config {config} --pqc {pqc} '
+        '--seed $seed -o $out\n\n'.format(rig=otbn_rig, size=size, config=config, pqc=pqc))
 
     handle.write('rule rig-asm\n'
                  '  command = {rig} asm -o $seed $in\n\n'.format(rig=otbn_rig))

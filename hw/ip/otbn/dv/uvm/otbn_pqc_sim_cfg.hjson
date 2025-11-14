@@ -1,22 +1,22 @@
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// sim cfg file for the standard version of OTBN
+// sim cfg file for the pqc version of OTBN
 {
   // Name of the sim cfg variant
-  variant: standard
+  variant: pqc
 
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/ip/otbn/dv/uvm/otbn_base_sim_cfg.hjson"]
 
   // Enable this build mode for all tests
-  en_build_modes: ["disable_pqc_mode"]
+  en_build_modes: ["enable_pqc_mode"]
 
-  smoke_dir: "{otbn_dir}/dv/smoke"
+  smoke_dir: "{otbn_dir}/dv/smoke_pqc"
 
-  pqc_enable: 0
+  pqc_enable: 1
 
   exports: [
-    { PQC_EN: 0 },
+    { PQC_EN: 1 },
   ]
 }

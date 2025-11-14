@@ -119,6 +119,34 @@ csrrw x0, mod1, x23
 li x23, 0x53769ada
 csrrw x0, mod0, x23
 
+# x22 = 0x89c9b54f
+csrrs x23, mod5, x0
+
+bn.wsrr w1, 0x0 /* MOD 82a 4ea*/
+li x23, 0x000004ea
+csrrw x0, kmac_cfg, x23
+li x23, 0x0000001a
+csrrw x0, kmac_partial_write, x23
+bn.wsrw 0x9, w1 /* MSG */
+li x23, 0x0000000d
+csrrw x0, kmac_partial_write, x23
+bn.wsrw 0x9, w1 /* MSG */
+bn.wsrr w2, 0xa /* DIGEST */
+bn.wsrr w2, 0xa /* DIGEST */
+bn.wsrr w2, 0xa /* DIGEST */
+bn.wsrr w2, 0xa /* DIGEST */
+bn.wsrr w3, 0xa /* DIGEST */
+li x23, 0x800004ea /* STOP CFG 0x8000040a */
+csrrw x0, kmac_cfg, x23
+
+li x23, 0x53769ada
+
+bn.wsrw 0xb, w2 /* ACCH */
+bn.wsrw 0x3, w3 /* ACC */
+bn.wsrr w4, 0xb
+bn.wsrr w5, 0x3
+
+
 # Note that some instructions used the fixed inputs (from w1 and w2) others use
 # results from previous instructions. When debugging an failure it is recommended
 # you first look at the failure from the lowest numbered register as failures
@@ -273,6 +301,96 @@ bn.mulqacc.wo w31, w27.1, w28.1, 128
 
 # w0 = acc = 0x37adadae_f9dbff5e_73880075_5466a52c_67a8c221_6978ad1b_25769434_0f09b7c8
 bn.wsrr w0, 0x3 /* ACC */
+
+li     x4, 0
+li     x5, 1
+la     x6, operand1
+bn.lid x4, 0(x6)
+bn.lid x5, 32(x6)
+
+bn.mulv.16H.even          w2, w0, w1
+bn.mulv.16H.odd           w3, w0, w1
+bn.mulv.16H.lo            w4, w0, w1
+bn.mulv.16H.hi            w5, w0, w1
+bn.mulv.16H.even.acc      w7, w0, w1
+bn.mulv.16H.odd.acc       w8, w0, w1
+bn.mulv.16H.acc.lo        w9, w0, w1
+bn.mulv.16H.acc.hi        w10, w0, w1
+bn.mulv.16H.even.acc.z    w12, w0, w1
+bn.mulv.16H.odd.acc.z     w13, w0, w1
+bn.mulv.16H.acc.z.lo      w14, w0, w1
+bn.mulv.16H.acc.z.hi      w15, w0, w1
+
+li     x4, 0
+li     x5, 1
+la     x6, operand1
+bn.lid x4, 0(x6)
+bn.lid x5, 32(x6)
+
+bn.mulv.8S.even          w2, w0, w1
+bn.mulv.8S.odd           w3, w0, w1
+bn.mulv.8S.even.lo       w4, w0, w1
+bn.mulv.8S.odd.lo        w5, w0, w1
+bn.mulv.8S.even.hi       w6, w0, w1
+bn.mulv.8S.odd.hi        w7, w0, w1
+bn.mulv.8S.even.acc      w10, w0, w1
+bn.mulv.8S.odd.acc       w11, w0, w1
+bn.mulv.8S.even.acc.lo   w12, w0, w1
+bn.mulv.8S.odd.acc.lo    w13, w0, w1
+bn.mulv.8S.even.acc.hi   w14, w0, w1
+bn.mulv.8S.odd.acc.hi    w15, w0, w1
+bn.mulv.8S.even.acc.z    w18, w0, w1
+bn.mulv.8S.odd.acc.z     w19, w0, w1
+bn.mulv.8S.even.acc.z.lo w20, w0, w1
+bn.mulv.8S.odd.acc.z.lo  w21, w0, w1
+bn.mulv.8S.even.acc.z.hi w22, w0, w1
+bn.mulv.8S.odd.acc.z.hi  w23, w0, w1
+
+li     x4, 0
+li     x5, 17
+la     x6, operand1
+bn.lid x4, 0(x6)
+bn.lid x5, 32(x6)
+
+bn.mulv.l.16H.even          w2, w0, sw1.3
+bn.mulv.l.16H.odd           w3, w0, sw1.3
+bn.mulv.l.16H.lo            w4, w0, sw1.3
+bn.mulv.l.16H.hi            w5, w0, sw1.3
+bn.mulv.l.16H.even.acc      w7, w0, sw1.3
+bn.mulv.l.16H.odd.acc       w8, w0, sw1.3
+bn.mulv.l.16H.acc.lo        w9, w0, sw1.3
+bn.mulv.l.16H.acc.hi        w10, w0, sw1.3
+bn.mulv.l.16H.even.acc.z    w12, w0, sw1.3
+bn.mulv.l.16H.odd.acc.z     w13, w0, sw1.3
+bn.mulv.l.16H.acc.z.lo      w14, w0, sw1.3
+bn.mulv.l.16H.acc.z.hi      w15, w0, sw1.3
+
+li     x4, 0
+li     x5, 16
+la     x6, operand1
+bn.lid x4, 0(x6)
+bn.lid x5, 32(x6)
+
+bn.mulv.l.8S.even          w2, w0, sw0.5
+bn.mulv.l.8S.odd           w3, w0, sw0.5
+bn.mulv.l.8S.even.lo       w4, w0, sw0.5
+bn.mulv.l.8S.odd.lo        w5, w0, sw0.5
+bn.mulv.l.8S.even.hi       w6, w0, sw0.5
+bn.mulv.l.8S.odd.hi        w7, w0, sw0.5
+bn.mulv.l.8S.even.acc      w10, w0, sw0.5
+bn.mulv.l.8S.odd.acc       w11, w0, sw0.5
+bn.mulv.l.8S.even.acc.lo   w12, w0, sw0.5
+bn.mulv.l.8S.odd.acc.lo    w13, w0, sw0.5
+bn.mulv.l.8S.even.acc.hi   w14, w0, sw0.5
+bn.mulv.l.8S.odd.acc.hi    w15, w0, sw0.5
+bn.mulv.l.8S.even.acc.z    w18, w0, sw0.5
+bn.mulv.l.8S.odd.acc.z     w19, w0, sw0.5
+bn.mulv.l.8S.even.acc.z.lo w20, w0, sw0.5
+bn.mulv.l.8S.odd.acc.z.lo  w21, w0, sw0.5
+bn.mulv.l.8S.even.acc.z.hi w22, w0, sw0.5
+bn.mulv.l.8S.odd.acc.z.hi  w23, w0, sw0.5
+
+bn.subv w6, w22, w23
 
 # Nested loop testing, inner adds repeated a total of 3 * 5 = 15 times
 # x28 = 4, x29 = 3

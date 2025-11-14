@@ -30,17 +30,6 @@ module tb;
   kmac_pkg::app_req_t app_req;
   kmac_pkg::app_rsp_t app_rsp;
 
-`ifndef OTBN_PQC
-  always_comb begin
-    app_req.valid = '0;
-    app_req.data  = '0;
-    app_req.strb  = '0;
-    app_req.last  = '0;
-    app_req.next  = '0;
-    app_req.hold  = '0;
-  end
-`endif
-
   // interfaces
   clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
   otbn_app_intf                 otbn_app_intf (.clk(clk), .rst_n(rst_n));
@@ -105,7 +94,8 @@ module tb;
   // dut
   otbn # (
     .RndCnstOtbnKey(TestScrambleKey),
-    .RndCnstOtbnNonce(TestScrambleNonce)
+    .RndCnstOtbnNonce(TestScrambleNonce),
+    .OtbnPQCEn(`EN_PQC)
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
@@ -143,19 +133,16 @@ module tb;
     .rst_otp_ni    (otp_rst_n),
     .otbn_otp_key_o(otp_key_req),
     .otbn_otp_key_i(otp_key_rsp),
-  `ifdef OTBN_PQC
     .keymgr_key_i(sideload_key),
 
     .kmac_data_o(app_req),
     .kmac_data_i(app_rsp)
-  `else
-    .keymgr_key_i(sideload_key)
-  `endif
   );
 
   bind dut.u_otbn_core otbn_trace_if #(
     .ImemAddrWidth (ImemAddrWidth),
-    .DmemAddrWidth (DmemAddrWidth)
+    .DmemAddrWidth (DmemAddrWidth),
+    .OtbnPQCEn     (`EN_PQC)
   ) i_otbn_trace_if (.*);
 
   assign dut.u_otbn_core.i_otbn_trace_if.scramble_state_err_i = dut.otbn_scramble_state_error;
@@ -166,7 +153,9 @@ module tb;
   assign otbn_app_intf.kmac_data_req = app_req;
   assign app_rsp = otbn_app_intf.kmac_data_rsp;
 
-  bind dut.u_otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
+  bind dut.u_otbn_core otbn_tracer #(
+    .OtbnPQCEn(`EN_PQC)
+  ) u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller
     otbn_loop_if i_otbn_loop_if (
@@ -203,7 +192,9 @@ module tb;
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
   bind dut.u_otbn_core.u_otbn_controller otbn_controller_if i_otbn_controller_if (.*);
-  bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if i_otbn_mac_bignum_if (.*);
+  bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if #(
+    .OtbnPQCEn(`EN_PQC)
+  ) i_otbn_mac_bignum_if (.*);
   bind dut.u_otbn_core.u_otbn_rf_base otbn_rf_base_if i_otbn_rf_base_if (.*);
 
   bind dut.u_otbn_core.u_otbn_rnd otbn_rnd_if i_otbn_rnd_if (.*);
