@@ -185,28 +185,28 @@ crypto_sign_signature_internal:
     #define STACK_KEY -192 /* Prev - 32 */
       #define STACK_RHOPRIME -192 /* Prev */
     #define STACK_Y   -1216 /* Prev - 1024 */
-        #define STACK_S1  -1216 /* Prev */
-        #define STACK_H   -1216 /* Prev */
+      #define STACK_CP  -1216 /* Prev */
     #define STACK_TMP -2240 /* Prev - 1024 */
-    #define STACK_CP  -3264 /* Prev - 1024 */
+      #define STACK_H   -2240 /* Prev */
+      #define STACK_S1  -2240 /* Prev */
 #if DILITHIUM_MODE == 2
-    #define STACK_W1  -3392 /* Prev - K*32 */
-    #define STACK_W0  -7488 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -7488 /* Prev */
-    #define STACK_CTX  -7492 /* Prev - 4 */
-    #define INIT_SP -7520
+    #define STACK_W1  -2368 /* Prev - K*32 */
+    #define STACK_W0  -6464 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -6464 /* Prev */
+    #define STACK_CTX  -6468 /* Prev - 4 */
+    #define INIT_SP -6496
 #elif DILITHIUM_MODE == 3
-    #define STACK_W1  -3456 /* Prev - K*32 */
-    #define STACK_W0  -9600 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -9600 /* Prev */
-    #define STACK_CTX  -9604 /* Prev - 4 */
-    #define INIT_SP -9632
+    #define STACK_W1  -2432 /* Prev - K*32 */
+    #define STACK_W0  -8576 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -8576 /* Prev */
+    #define STACK_CTX  -8580 /* Prev - 4 */
+    #define INIT_SP -8608
 #elif DILITHIUM_MODE == 5
-    #define STACK_W1  -3520 /* Prev - K*32 */
-    #define STACK_W0  -11712 /* Prev - K*1024 */
-        #define STACK_CTXLEN  -11712 /* Prev */
-    #define STACK_CTX  -11716 /* Prev - 4 */
-    #define INIT_SP -11744
+    #define STACK_W1  -2496 /* Prev - K*32 */
+    #define STACK_W0  -10688 /* Prev - K*1024 */
+        #define STACK_CTXLEN  -10688 /* Prev */
+    #define STACK_CTX  -10692 /* Prev - 4 */
+    #define INIT_SP -10720
 #endif
 
     /* Initialize the frame pointer */
@@ -496,6 +496,9 @@ _rej_crypto_sign_signature_internal:
        for entry A[i][j]. */
     li s4, 0
 
+    /* Load a constant pointer to the zero wide register. */
+    li s5, 31
+
     /* Compute A * y, computing the values for A and y on the fly.
 
        We compute column-wise so that we genearate elements of y only once; in
@@ -507,6 +510,11 @@ _rej_crypto_sign_signature_internal:
              w[i] += A[i][j] * yj
     */
     .rept L
+        /* Zero the buffer for y[j]. */
+        li   a0, STACK_Y
+        add  a0, fp, a0
+        loopi 32, 1
+          bn.sid s5, 0(a0++)
         /* Compute y[j]. */
         li   a0, STACK_Y
         add  a0, fp, a0
@@ -756,8 +764,8 @@ _rej_crypto_sign_signature_internal:
 
         bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
-        /* Sample the next value of y and reuse s1 buffer to store it. */
-        addi a0, s1, 0
+        /* Sample the next value of y and add it to z. */
+        addi a0, s2, 0
         addi a1, s3, 0
         addi a2, s8, 0
         addi a3, s10, 0
@@ -765,12 +773,6 @@ _rej_crypto_sign_signature_internal:
 
         /* Update the nonce for y. */
         addi s8, a2, 1
-
-        /* z[i] += y[i] */
-        addi a0, s1, 0
-        addi a1, s2, 0
-        addi a2, s2, 0
-        jal x1, poly_add
 
         /* reduce32(z) to move to mod^{+-} for bound check */
         addi a0, s2, 0

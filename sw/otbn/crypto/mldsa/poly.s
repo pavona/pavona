@@ -2039,14 +2039,18 @@ _inner_polyt0_unpack:
  *  Sample polynomial with uniformly random coefficients in [-(GAMMA1 - 1),
  *  GAMMA1] by unpacking output stream of SHAKE256(seed|nonce).
  *
+ * Accumulates the result onto the existing value in the output polynomial
+ * register; the caller should zero this value if only the sampling output is
+ * desired.
+ *
  * Flags: -
  *
- * @param[out] a0: pointer to output polynomial
+ * @param[out] a0: pointer to accumulator on which to add output
  * @param[in]  a1: byte array with seed of length CRHBYTES
  * @param[in]  a2: nonce
  * @param[in]  a3: pointer to gamma1_vec_const
  *
- * clobbered registers: a0, a4, t0-t6, w1-w2, w8
+ * clobbered registers: a1, t0-t3, w1-w6
  */
 .global poly_uniform_gamma_1
 poly_uniform_gamma_1:
@@ -2165,6 +2169,8 @@ _inner_poly_uniform_gamma_1:
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
+    bn.lid     x0, 0(t1)
+    bn.addvm.8S w2, w0, w2
     bn.sid     t2, 0(t1++)
     ret
 #elif GAMMA1 == (1 << 19)
@@ -2255,6 +2261,8 @@ _inner_poly_uniform_gamma_1:
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 20 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
+    bn.lid     x0, 0(t1)
+    bn.addvm.8S w2, w0, w2
     bn.sid     t2, 0(t1++)
     ret
 #endif
