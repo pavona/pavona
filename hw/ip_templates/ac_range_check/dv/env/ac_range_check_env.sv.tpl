@@ -18,13 +18,13 @@ class ${module_instance_name}_env extends cip_rst_safe_base_env #(
   delay_agent   delay_agt;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 endclass : ${module_instance_name}_env
 
 
-function ${module_instance_name}_env::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_env::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

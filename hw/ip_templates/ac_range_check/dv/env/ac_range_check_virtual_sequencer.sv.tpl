@@ -19,12 +19,12 @@ class ${module_instance_name}_virtual_sequencer extends cip_base_virtual_sequenc
   tl_sequencer tl_filt_sqr;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
 
   extern virtual function void handle_reset_assertion();
 endclass : ${module_instance_name}_virtual_sequencer
 
-function ${module_instance_name}_virtual_sequencer::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_virtual_sequencer::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
