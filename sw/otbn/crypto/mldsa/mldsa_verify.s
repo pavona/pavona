@@ -184,7 +184,6 @@ crypto_sign_verify_internal:
     #define STACK_CP -13472 /* Prev - 1024 */
     #define STACK_MAT -29856 /* Prev - K*L*1024 */
     #define STACK_W1 -33952 /* Prev - K*1024 */
-    #define STACK_BUF -34720 /* Prev - K*128 */
         #define STACK_CTX -34716
         #define STACK_CTXLEN -34720
 #elif DILITHIUM_MODE == 3
@@ -195,7 +194,6 @@ crypto_sign_verify_internal:
     #define STACK_CP -18624 /* Prev - 1024 */
     #define STACK_MAT -49344 /* Prev - K*L*1024 */
     #define STACK_W1 -55488 /* Prev - K*1024 */
-    #define STACK_BUF -56256 /* Prev - K*128 */
         #define STACK_CTX -56252
         #define STACK_CTXLEN -56256
 #elif DILITHIUM_MODE == 5
@@ -206,7 +204,6 @@ crypto_sign_verify_internal:
     #define STACK_CP -24768 /* Prev - 1024 */
     #define STACK_MAT -82112 /* Prev - K*L*1024 */
     #define STACK_W1 -90304 /* Prev - K*1024 */
-    #define STACK_BUF -91328 /* Prev - K*128 */
         #define STACK_CTX -91324
         #define STACK_CTXLEN -91328
 #endif
@@ -712,28 +709,6 @@ crypto_sign_verify_internal:
         pop \reg
     .endr
 
-    /* Use hint */
-    li  a0, STACK_W1
-    add a0, fp, a0
-    li  a1, STACK_W1
-    add a1, fp, a1
-    li  a2, STACK_H
-    add a2, fp, a2
-
-    LOOPI K, 2
-        jal x1, poly_use_hint
-        nop
-
-    /* Pack w1 */
-    li  a1, STACK_W1
-    add a1, fp, a1
-    li  a0, STACK_BUF
-    add a0, fp, a0
-
-    LOOPI K, 2
-        jal x1, polyw1_pack
-        nop
-
     /* Call random oracle and verify challenge */
     /* Initialize a SHAKE256 operation. */
     li a1, CRHBYTES
@@ -749,12 +724,29 @@ crypto_sign_verify_internal:
     li  a1, CRHBYTES /* set mu length to CRHBYTES */
     jal x1, keccak_send_message
 
-    /* Send buf to the Keccak core. */
-    li  a0, STACK_BUF
-    add a0, fp, a0
-    LOOPI K, 3
+    /* This loop computes w1 polynomials and sends them to the Keccak core
+       incrementally. This way, we avoid ever storing the entire w1 on the
+       stack. */
+    li  s1, STACK_W1
+    add s1, fp, s1
+    li  s2, STACK_H
+    add s2, fp, s2
+    LOOPI K, 13
+        /* Use the hint to compute the next w1 polynomial. */
+        addi a0, s1, 0
+        addi a1, s1, 0
+        addi a2, s2, 0
+        jal  x1, poly_use_hint
+        addi s2, a2, 0
+        /* Pack the w1 polynomial (in-place). */
+        addi a0, s1, 0
+        addi a1, s1, 0
+        jal  x1, polyw1_pack
+        /* Send the packed w1 polynomial to the Keccak core. */
+        addi a0, s1, 0
+        addi s1, a1, 0 /* increment *w1 */
         addi a1, zero, POLYW1_PACKEDBYTES
-        jal x1, keccak_send_message
+        jal  x1, keccak_send_message
         nop
 
     /* Setup WDR for c2 */

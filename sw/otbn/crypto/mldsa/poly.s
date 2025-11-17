@@ -1569,6 +1569,9 @@ poly_nonzero_encode:
  * Bit-pack polynomial w1 with coefficients fitting in 6 bits. Input
  * coefficients are assumed to be standard representatives.
  *
+ * Output and input buffers may not arbitrarily overlap, but they may be the
+ * same.
+ *
  * Flags: -
  *
  * @param[out] a0: pointer to output byte array with at least
