@@ -16,6 +16,9 @@
  * the desired hash function. After calling this routine, reading from the
  * KECCAK_DIGEST special register will return the hash digest.
  *
+ * This function can be called repeatedly before reading the digest. On return,
+ * dptr_msg is updated to point to the end of the source buffer.
+ *
  * @param[in]   a1: len, byte-length of the message
  * @param[in]   a0: dptr_msg, pointer to message in DMEM
  * @param[in]   w31: all-zero
@@ -43,7 +46,7 @@ keccak_send_message:
       bn.lid  x0, 0(x10++)
       /* Write to the KECCAK_MSG wide special register (index 9).
          KECCAK_MSG <= w0 */
-      bn.wsrw 0x9, w0
+      bn.wsrw kmac_msg, w0
 #ifdef RTL_ISS_TEST
       LOOPI 300, 1
         NOP
@@ -58,8 +61,13 @@ _no_full_wdr:
   /* If the remaining length is zero, return early. */
   beq t0, x0, _keccak_send_message_end
 
+  /* Send a partial-word write. */
+  csrrw   x0, kmac_partial_write, t0
   bn.lid  x0, 0(x10)
-  bn.wsrw 0x9, w0
+  bn.wsrw kmac_msg, w0
+
+  /* Increment the source pointer to reflect the partial write. */
+  add     x10, x10, t0
 
   _keccak_send_message_end:
   ret
