@@ -271,7 +271,7 @@ polyz_unpack:
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-    li t2, 5
+    li t5, 5
     la t3, polyz_unpack_mask
     bn.lid t5, 0(t3)
 
@@ -370,7 +370,7 @@ _inner_polyz_unpack:
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-    li t2, 5
+    li t5, 5
     la t3, polyz_unpack_mask
     bn.lid t5, 0(t3)
 
