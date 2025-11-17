@@ -1772,40 +1772,45 @@ _inner_polyeta_unpack:
         bn.sid t2, 0(a0++)
     ret
 #endif
+
+
 /**
- * polyvec_decode_h
+ * poly_decode_h
  *
- * Decode h from signature into polyvec h. Check extra indices.
+ * Decode a single polynomial of the hint from the signature. Returns 1 on a
+ * decode failure, or 0 on success. Increments input pointer and indices for
+ * the next call to the same function (but not output pointer). If the index
+ * indicates that this is the last hint polynomial, then checks that extra bits
+ * are zero.
  *
  * Flags: -
  *
- * @param[in]  a1: pointer to input byte array signature
- * @param[out] a0: pointer to output polynomial h
+ * @param[in]  a0: pointer to output polynomial h
+ * @param[in]  a1: pointer to bytes of encoded hint
+ * @param[in]  a2: k, number of nonzero h coefficients so far
+ * @param[in]  a3: i, index of this polynomial in h
+ * @param[out] a4: return code (1 or 0)
  *
  * clobbered registers: a0-a7, t0-t6
  */
-.global polyvec_decode_h
-polyvec_decode_h:
-    /* Initialize h to zero */
+.global poly_decode_h
+poly_decode_h:
+    /* Initialize h[i] to zero */
     add t1, zero, a0
     li t0, 31
     LOOPI 32, 1
         bn.sid t0, 0(t1++)
 
-    li t0, 0 /* "k" = 0 */
-    li t1, 0 /* "i" = 0 */
     /* Initialize constants */
     li t4, OMEGA
-    li a2, 0xFFFFFFFC
     li a7, 1
 
     /* The notation inside the comments goes in line with the reference code */
-_loop_decode_h:
     /* Load sig[OMEGA + i] to t2 */
-    addi t2, t1, OMEGA /* i + OMEGA */
+    addi t2, a3, OMEGA /* i + OMEGA */
     add  t6, t2, a1    /* (sig + OMEGA + i) */
-    andi  a4, t6, 0x3   /* get lower two bits */
-    and  t6, t6, a2    /* set lowest two bits to 0 */
+    andi a4, t6, 0x3   /* get lower two bits */
+    sub  t6, t6, a4    /* set lowest two bits to 0 */
     lw   t6, 0(t6)     /* aligned load */
     slli a4, a4, 3
     srl  t6, t6, a4    /* extract the respective byte */
@@ -1814,7 +1819,7 @@ _loop_decode_h:
     /* Note: sig, k, OMEGA are all unsigned. Can also compare by subtracting and
        checking the MSB */
     /* sig[OMEGA + i] <? k  */
-    sub t3, t2, t0
+    sub t3, t2, a2
     srli t3, t3, 31
     bne t3, zero, _ret1_decode_h
     /* || sig[OMEGA + i] >? OMEGA */
@@ -1822,7 +1827,7 @@ _loop_decode_h:
     srli t3, t3, 31
     bne t3, zero, _ret1_decode_h
 
-    addi t5, t0, 0 /* j = k */
+    addi t5, a2, 0 /* j = k */
 
     /* Check if there is nothing to do if k = sig[OMEGA + i] */
     beq t2, t5, _loop_inner_skip_decode_h
@@ -1831,7 +1836,7 @@ _loop_decode_h:
     /* Load sig[j] */
     add  t6, t5, a1   /* (sig + j) */
     andi a4, t6, 0x3  /* get lower two bits */
-    and  t6, t6, a2   /* set lowest two bits to 0 */
+    sub  t6, t6, a4   /* set lowest two bits to 0 */
     lw   t6, 0(t6)    /* aligned load */
     slli a4, a4, 3
     srl  t6, t6, a4   /* extract the respective byte */
@@ -1851,17 +1856,17 @@ _loop_inner_decode_h:
         /* Load sig[j] */
         add  a5, t5, a1  /* (sig + j) */
         andi a4, a5, 0x3 /* get lower two bits */
-        and  t6, a5, a2  /* set lowest two bits to 0 */
-        lw   a3, 0(t6)   /* aligned load */
+        sub  t6, a5, a4  /* set lowest two bits to 0 */
+        lw   t1, 0(t6)   /* aligned load */
         slli a4, a4, 3
-        srl  a3, a3, a4  /* extract the respective byte */
-        andi a3, a3, 0xFF
+        srl  t1, t1, a4  /* extract the respective byte */
+        andi t1, t1, 0xFF
 
         /* sig[j - 1] is in a6 at this point */
 
         /* sig[j] ==? sig[j-1] */
-        beq  a3, a6, _ret1_decode_h
-        sub t6, a3, a6
+        beq  t1, a6, _ret1_decode_h
+        sub t6, t1, a6
         srli t6, t6, 31
 
         /* sig[j] <? sig[j-1] */
@@ -1869,7 +1874,7 @@ _loop_inner_decode_h:
         beq t6, a4, _ret1_decode_h
 
 
-        slli a4, a3, 2  /* sig[j] * 4 */
+        slli a4, t1, 2  /* sig[j] * 4 */
         add  t6, a0, a4 /* (h[sig[j]]) */
         sw   a7, 0(t6)  /* h->vec[i].coeffs[sig[j]] = 1 */
 
@@ -1881,22 +1886,22 @@ _loop_inner_decode_h:
         bne t5, t2, _loop_inner_decode_h
 _loop_inner_skip_decode_h:
 
-    addi t0, t2, 0    /* k = sig[OMEGA + i]; */
-    addi t1, t1, 1    /* i++ */
-    addi a0, a0, 1024 /* Go to next poly in h */
+    addi a2, t2, 0    /* k = sig[OMEGA + i]; */
+    addi a3, a3, 1    /* i++ */
+
+    /* Check if this is the last polynomial. */
     li   t5, K
+    bne  a3, t5, _ret0_decode_h
 
-    /* i <? 4 (K = 4): Check if all polynomials are done */
-    bne t1, t5, _loop_decode_h
+    /* Ensure the extra indices are 0. */
 
-    /* Extra indices zero  */
-    addi t5, t0, 0 /* j = k */
+    addi t5, a2, 0 /* j = k */
     beq  t5, t4, _ret0_decode_h
 _loop_extra_decode_h:
     /* Load sig[j] */
     add  t6, t5, a1   /* (sig + j) */
     andi a4, t6, 0x3  /* get lower two bits */
-    and  t6, t6, a2   /* set lowest two bits to 0 */
+    sub  t6, t6, a4   /* set lowest two bits to 0 */
     lw   t6, 0(t6)    /* aligned load */
     slli a4, a4, 3
     srl  t6, t6, a4   /* extract the respective byte */
@@ -1909,11 +1914,11 @@ _loop_extra_decode_h:
     bne  t5, t4, _loop_extra_decode_h
 
 _ret0_decode_h:
-    li a0, 0
+    li a4, 0
     ret
 
 _ret1_decode_h:
-    li a0, 1
+    li a4, 1
     ret
 
 /**

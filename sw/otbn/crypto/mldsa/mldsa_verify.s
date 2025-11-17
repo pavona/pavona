@@ -189,26 +189,18 @@ crypto_sign_verify_internal:
 #if DILITHIUM_MODE == 2
     #define STACK_C  -2208 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
     #define STACK_Z  -6304 /* Prev - L*1024 */
-    #define STACK_H  -10400 /* Prev - K*1024 */
-    #define STACK_W1  -14496 /* Prev - K*1024 */
-    #define INIT_SP -14496
-    #define STACK_SIZE 14624
-
+    #define STACK_W1  -10400 /* Prev - K*1024 */
+    #define INIT_SP -10400
 #elif DILITHIUM_MODE == 3
     #define STACK_C  -2240 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
     #define STACK_Z  -7360 /* Prev - L*1024 */
-    #define STACK_H  -13504 /* Prev - K*1024 */
-    #define STACK_W1  -19648 /* Prev - K*1024 */
-    #define INIT_SP -19648
-    #define STACK_SIZE 19776
-
+    #define STACK_W1  -13504 /* Prev - K*1024 */
+    #define INIT_SP -13504
 #elif DILITHIUM_MODE == 5
     #define STACK_C  -2240 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
     #define STACK_Z  -9408 /* Prev - L*1024 */
-    #define STACK_H  -17600 /* Prev - K*1024 */
-    #define STACK_W1  -25792 /* Prev - K*1024 */
-    #define INIT_SP -25792
-    #define STACK_SIZE 25920
+    #define STACK_W1  -17600 /* Prev - K*1024 */
+    #define INIT_SP -17600
 #endif
 
     /* Initialize the frame pointer */
@@ -298,23 +290,8 @@ crypto_sign_verify_internal:
         jal x1, polyz_unpack
         nop
 
-    /* Decode h */
-
-    /* Load pointer to h */
-    li  a0, STACK_H
-    add a0, fp, a0
-
-    .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
-        push \reg
-    .endr
-
-    jal x1, polyvec_decode_h
-    /* Raise error */
-    bne a0, zero, _fail_crypto_sign_verify_internal
-
-    .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
-        pop \reg
-    .endr
+    /* Copy sig pointer for unpacking h later. */
+    addi s9, a1, 0
 
     /* reduce32(z) for central representation */
     li  a0, STACK_Z
@@ -636,20 +613,22 @@ crypto_sign_verify_internal:
     lw   s6, 0(s6)
     addi s6, s6, 32
 
+    /* Initialize the counters for poly_decode_h. */
+    li   s7, 0
+    li   s8, 0
+
     /* This loop computes w1 polynomials and sends them to the Keccak core
        incrementally. This way, we avoid ever storing the entire w1 on the
        stack. */
     la  s0, twiddles_inv
     li  s1, STACK_W1
     add s1, fp, s1
-    li  s2, STACK_H
-    add s2, fp, s2
     li  s3, STACK_TMP
     add s3, fp, s3
     li  s4, STACK_CP
     add s4, fp, s4
     la  s5, twiddles_fwd
-    LOOPI K, 36
+    .rept K
         /* Unpack the next polynomial from t1 and store it in temp buffer. */
         addi a0, s3, 0
         addi a1, s6, 0
@@ -680,12 +659,21 @@ crypto_sign_verify_internal:
         addi a0, s1, 0
         addi a1, s0, 0
         jal  x1, intt
+        /* Decode the next polynomial from the hint, failing on error. */
+        addi a0, s3, 0
+        addi a1, s9, 0
+        addi a2, s7, 0
+        addi a3, s8, 0
+        jal x1, poly_decode_h
+        bne a4, zero, _fail_crypto_sign_verify_internal
+        addi s9, a1, 0
+        addi s7, a2, 0
+        addi s8, a3, 0
         /* Use the hint to compute the next w1 polynomial. */
         addi a0, s1, 0
         addi a1, s1, 0
-        addi a2, s2, 0
+        addi a2, s3, 0
         jal  x1, poly_use_hint
-        addi s2, a2, 0
         /* Pack the w1 polynomial (in-place). */
         addi a0, s1, 0
         addi a1, s1, 0
@@ -695,6 +683,7 @@ crypto_sign_verify_internal:
         addi a1, zero, POLYW1_PACKEDBYTES
         jal  x1, keccak_send_message
         addi s1, s1, 1024 /* increment *w1 */
+    .endr
 
     /* Setup WDR for c2 */
     li t1, 8

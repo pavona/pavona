@@ -12,11 +12,11 @@
 
 .section .text.start
 #if DILITHIUM_MODE == 2
-    #define STACK_SIZE 14624
+    #define STACK_SIZE 10528
 #elif DILITHIUM_MODE == 3
-    #define STACK_SIZE 19776
+    #define STACK_SIZE 13632
 #elif DILITHIUM_MODE == 5
-    #define STACK_SIZE 25920
+    #define STACK_SIZE 17728
 #endif
 
 #define CTXLEN 32
