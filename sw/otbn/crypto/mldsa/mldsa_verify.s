@@ -162,8 +162,14 @@
  *
  * Returns: 0 on success
  *
- * @param[in]  x10: zeta (random bytes)
- * @param[out] x10: 0 on success, -1 on failure
+ * @param[in] x10: *sig, pointer to signature in DMEM
+ * @param[in] x11: siglen, byte-length of signature
+ * @param[in] x12: *msg, pointer to message in DMEM
+ * @param[in] x13: msglen, byte-length of message
+ * @param[in] x14: *pk, pointer to public key in DMEM
+ * @param[in] x15: *ctx, pointer to context in DMEM
+ * @param[in] x16: ctxlen, byte-length of context
+ * @param[out] dmem[result]: 0 on success, 0xffffff on failure
  *
  */
 .globl crypto_sign_verify_internal
@@ -181,28 +187,28 @@ crypto_sign_verify_internal:
     #define STACK_CP   -1152 /* Prev - 1024 */
     #define STACK_TMP  -2176 /* Prev - 1024 */
 #if DILITHIUM_MODE == 2
-    #define STACK_T1  -6272 /* Prev - K*1024 */
-    #define STACK_C  -6304 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
-    #define STACK_Z  -10400 /* Prev - L*1024 */
-    #define STACK_H  -14496 /* Prev - K*1024 */
-    #define STACK_W1  -18592 /* Prev - K*1024 */
-    #define INIT_SP -18624
+    #define STACK_C  -2208 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
+    #define STACK_Z  -6304 /* Prev - L*1024 */
+    #define STACK_H  -10400 /* Prev - K*1024 */
+    #define STACK_W1  -14496 /* Prev - K*1024 */
+    #define INIT_SP -14496
+    #define STACK_SIZE 14624
 
 #elif DILITHIUM_MODE == 3
-    #define STACK_T1  -8320 /* Prev - K*1024 */
-    #define STACK_C  -8384 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
-    #define STACK_Z  -13504 /* Prev - L*1024 */
-    #define STACK_H  -19648 /* Prev - K*1024 */
-    #define STACK_W1  -25792 /* Prev - K*1024 */
-    #define INIT_SP -25824
+    #define STACK_C  -2240 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
+    #define STACK_Z  -7360 /* Prev - L*1024 */
+    #define STACK_H  -13504 /* Prev - K*1024 */
+    #define STACK_W1  -19648 /* Prev - K*1024 */
+    #define INIT_SP -19648
+    #define STACK_SIZE 19776
 
 #elif DILITHIUM_MODE == 5
-    #define STACK_T1  -10368 /* Prev - K*1024 */
-    #define STACK_C  -10432 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
-    #define STACK_Z  -17600 /* Prev - L*1024 */
-    #define STACK_H  -25792 /* Prev - K*1024 */
-    #define STACK_W1  -33984 /* Prev - K*1024 */
-    #define INIT_SP -34016
+    #define STACK_C  -2240 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
+    #define STACK_Z  -9408 /* Prev - L*1024 */
+    #define STACK_H  -17600 /* Prev - K*1024 */
+    #define STACK_W1  -25792 /* Prev - K*1024 */
+    #define INIT_SP -25792
+    #define STACK_SIZE 25920
 #endif
 
     /* Initialize the frame pointer */
@@ -246,18 +252,6 @@ crypto_sign_verify_internal:
     li     t1, STACK_RHO
     add    t1, fp, t1
     bn.sid t0, 0(t1)
-
-    /* Unpack t1 */
-    /* Load pointer to t1 */
-    li   a0, STACK_T1
-    add  a0, fp, a0
-    /* Load pointer to packed t1 */
-    addi a1, a4, 0
-
-    /* Store t1 */
-    LOOPI K, 2
-        jal x1, polyt1_unpack
-        nop
 
     /* Unpack sig */
     /* Unpack c */
@@ -569,43 +563,8 @@ crypto_sign_verify_internal:
         pop \reg
     .endr
 
-    /* shiftl(t1) */
-
-    /* Load t1 address */
-    li  a0, STACK_T1
-    add a0, fp, a0
-
-    /* Setup WDRs */
-    li t0, 0
-    li t1, 1
-
-    LOOPI K, 5
-        LOOPI 32, 3
-            bn.lid    t0, 0(a0)
-            bn.shv.8S w0, w0 << D
-            bn.sid    t0, 0(a0++)
-        nop /* Nested loops must not end on the same instruciton  */
 
     /* After NTT(c), w16 is still R | Q and MOD is still 2*R | 2*Q */
-    /* NTT(t1) */
-    li   a0, STACK_T1
-    add  a0, fp, a0
-    addi a2, a0, 0 /* inplace */
-    la   a1, twiddles_fwd
-
-    .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
-        push \reg
-    .endr
-
-    LOOPI K, 2
-        jal  x1, ntt
-        addi a1, a1, -1024
-
-    .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
-        pop \reg
-    .endr
-
-    /* After NTT(t1), w16 is still R | Q and MOD is still 2*R | 2*Q */
 
     /* Load source pointers for matrix-vector multiplication. */
     li  s0, STACK_Z
@@ -671,6 +630,12 @@ crypto_sign_verify_internal:
     li  a1, CRHBYTES /* set mu length to CRHBYTES */
     jal x1, keccak_send_message
 
+    /* Load the pointer to the packed t1 within the public key. */
+    li   s6, STACK_PK
+    add  s6, fp, s6
+    lw   s6, 0(s6)
+    addi s6, s6, 32
+
     /* This loop computes w1 polynomials and sends them to the Keccak core
        incrementally. This way, we avoid ever storing the entire w1 on the
        stack. */
@@ -679,11 +644,28 @@ crypto_sign_verify_internal:
     add s1, fp, s1
     li  s2, STACK_H
     add s2, fp, s2
-    li  s3, STACK_T1
+    li  s3, STACK_TMP
     add s3, fp, s3
     li  s4, STACK_CP
     add s4, fp, s4
-    LOOPI K, 24
+    la  s5, twiddles_fwd
+    LOOPI K, 36
+        /* Unpack the next polynomial from t1 and store it in temp buffer. */
+        addi a0, s3, 0
+        addi a1, s6, 0
+        jal  x1, polyt1_unpack
+        addi s6, a1, 0
+        /* Shift-left of t1 polynomial. */
+        addi t1, s3, 0
+        LOOPI 32, 3
+            bn.lid    zero, 0(t1)
+            bn.shv.8S w0, w0 << D
+            bn.sid    zero, 0(t1++)
+        /* Compute ntt(t1) in place. */
+        addi a0, s3, 0
+        addi a1, s5, 0
+        addi a2, s3, 0
+        jal  x1, ntt
         /* Compute cp * t1, storing the result in t1. */
         addi a0, s4, 0
         addi a1, s3, 0
@@ -712,7 +694,6 @@ crypto_sign_verify_internal:
         addi a0, s1, 0
         addi a1, zero, POLYW1_PACKEDBYTES
         jal  x1, keccak_send_message
-        addi s3, s3, 1024 /* increment *t1 */
         addi s1, s1, 1024 /* increment *w1 */
 
     /* Setup WDR for c2 */
