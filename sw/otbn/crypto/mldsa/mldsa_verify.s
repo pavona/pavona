@@ -659,56 +659,6 @@ crypto_sign_verify_internal:
         addi a2, a2, 1024
     .endr
 
-    /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
-    /* t1 = cp * t1 */
-    li  a0, STACK_CP
-    add a0, fp, a0
-    li  a1, STACK_T1
-    add a1, fp, a1
-    li  a2, STACK_T1
-    add a2, fp, a2
-
-    LOOPI K, 2
-        jal  x1, poly_pointwise
-        addi a0, a0, -1024
-
-    /* MOD is still 2*R | 2*Q, but since w1 and t1 are both in [0,2q), w1 - t1 mod 2q is still in
-     * [0,2q), which is fine as input to INTT right after. So we don't need to switch MOD back to q */
-    /* w1 = w1 - t1 */
-    li  a0, STACK_W1
-    add a0, fp, a0
-    li  a1, STACK_T1
-    add a1, fp, a1
-    li  a2, STACK_W1
-    add a2, fp, a2
-
-    LOOPI K, 2
-        jal x1, poly_sub
-        nop
-
-    /* After poly_sub, w16 is still R | Q and MOD is still 2*R | 2*Q */
-    /* Inverse NTT on w1 */
-    li  a0, STACK_W1
-    add a0, fp, a0
-    la  a1, twiddles_inv
-
-    .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
-        push \reg
-    .endr
-
-    LOOPI K, 3
-        jal  x1, intt
-        /* Reset the twiddle pointer */
-        addi a1, a1, -960
-        /* Go to next input polynomial */
-        addi a0, a0, 1024
-
-    bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
-
-    .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
-        pop \reg
-    .endr
-
     /* Call random oracle and verify challenge */
     /* Initialize a SHAKE256 operation. */
     li a1, CRHBYTES
@@ -727,11 +677,30 @@ crypto_sign_verify_internal:
     /* This loop computes w1 polynomials and sends them to the Keccak core
        incrementally. This way, we avoid ever storing the entire w1 on the
        stack. */
+    la  s0, twiddles_inv
     li  s1, STACK_W1
     add s1, fp, s1
     li  s2, STACK_H
     add s2, fp, s2
-    LOOPI K, 13
+    li  s3, STACK_T1
+    add s3, fp, s3
+    li  s4, STACK_CP
+    add s4, fp, s4
+    LOOPI K, 24
+        /* Compute cp * t1, storing the result in t1. */
+        addi a0, s4, 0
+        addi a1, s3, 0
+        addi a2, s3, 0
+        jal  x1, poly_pointwise
+        /* Compute the next polynomial of w_approx = Az - t1. */
+        addi a0, s1, 0
+        addi a1, s3, 0
+        addi a2, s1, 0
+        jal x1, poly_sub
+        /* Inverse NTT on w_approx (stored in w1 buffer). */
+        addi a0, s1, 0
+        addi a1, s0, 0
+        jal  x1, intt
         /* Use the hint to compute the next w1 polynomial. */
         addi a0, s1, 0
         addi a1, s1, 0
@@ -744,10 +713,10 @@ crypto_sign_verify_internal:
         jal  x1, polyw1_pack
         /* Send the packed w1 polynomial to the Keccak core. */
         addi a0, s1, 0
-        addi s1, a1, 0 /* increment *w1 */
         addi a1, zero, POLYW1_PACKEDBYTES
         jal  x1, keccak_send_message
-        nop
+        addi s3, s3, 1024 /* increment *t1 */
+        addi s1, s1, 1024 /* increment *w1 */
 
     /* Setup WDR for c2 */
     li t1, 8
