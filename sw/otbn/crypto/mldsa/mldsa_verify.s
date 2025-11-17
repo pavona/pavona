@@ -752,12 +752,10 @@ crypto_sign_verify_internal:
     /* Send buf to the Keccak core. */
     li  a0, STACK_BUF
     add a0, fp, a0
-    li a1, 0
-    LOOPI K, 1
-        addi a1, a1, POLYW1_PACKEDBYTES
-
-    /* li  a1, 768 */ /* set mu length to K*POLYW1_PACKEDBYTES */
-    jal x1, keccak_send_message
+    LOOPI K, 3
+        addi a1, zero, POLYW1_PACKEDBYTES
+        jal x1, keccak_send_message
+        nop
 
     /* Setup WDR for c2 */
     li t1, 8
