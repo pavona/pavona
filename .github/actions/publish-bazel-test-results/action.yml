@@ -19,21 +19,29 @@ inputs:
 runs:
   using: composite
   steps:
+    # Add hostname to test suites before merging, as doing this after merging
+    # can cause a `CData section too long` error in `xmlstarlet`.
+    - name: Add hostname to testsuites
+      shell: bash
+      run: |
+        mkdir -p /tmp/test-xml-files
+        count=0
+        for xmlfile in $(find -L bazel-out -name "test.xml"); do
+          cp ${xmlfile} /tmp/test-xml-files/test-${count}.xml
+          xmlstarlet ed --inplace -i '/testsuites/testsuite' -t attr -n hostname -v "${{ runner.name }}" /tmp/test-xml-files/test-${count}.xml
+          count=$((count+1))
+        done;
+
     # Bazel produce one xml for each test. Merge them together.
     - name: Merge JUnit reports
       shell: bash
       run: |
-        if find -L bazel-out -name "test.xml" | grep -F '' >> /tmp/test-xmls; then
+        if find -L /tmp/test-xml-files -type f | grep -F '' >> /tmp/test-xmls; then
           cat /tmp/test-xmls | xargs merge-junit -o "${{ inputs.merged-results }}"
         else
           # merge-junit doesn't handle 0 inputs.
           echo '<?xml version="1.0" encoding="UTF-8"?><testsuites/>' >> "${{ inputs.merged-results }}"
         fi
-
-    - name: Add hostname to testsuites
-      shell: bash
-      run: |
-        xmlstarlet ed --inplace -i '/testsuites/testsuite' -t attr -n hostname -v "${{ runner.name }}" "${{ inputs.merged-results }}"
 
     - name: Upload report as artifact
       if: inputs.artifact-name != ''
