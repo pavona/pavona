@@ -169,56 +169,47 @@
 .globl crypto_sign_verify_internal
 crypto_sign_verify_internal:
     /* Stack address mapping */
-    #define STACK_SIG -4
-    #define STACK_SIGLEN -8
-    #define STACK_MSG -12
+    #define STACK_SIG     -4
+    #define STACK_SIGLEN  -8
+    #define STACK_MSG    -12
     #define STACK_MSGLEN -16
-    #define STACK_PK -20
-    #define STACK_RHO -64
-    #define STACK_MU -128
+    #define STACK_PK     -20
+    #define STACK_CTX    -24
+    #define STACK_CTXLEN -28
+    #define STACK_RHO    -64
+    #define STACK_MU    -128
+    #define STACK_CP   -1152 /* Prev - 1024 */
+    #define STACK_TMP  -2176 /* Prev - 1024 */
 #if DILITHIUM_MODE == 2
-    #define STACK_T1 -4224 /* Prev - K*1024 */
-    #define STACK_C -4256 /* Prev - ceil(CTILDEBYTES/32)*32 */
-    #define STACK_Z -8352 /* Prev - L*1024 */
-    #define STACK_H -12448 /* Prev - K*1024 */
-    #define STACK_CP -13472 /* Prev - 1024 */
-    #define STACK_MAT -29856 /* Prev - K*L*1024 */
-    #define STACK_W1 -33952 /* Prev - K*1024 */
-        #define STACK_CTX -34716
-        #define STACK_CTXLEN -34720
+    #define STACK_T1  -6272 /* Prev - K*1024 */
+    #define STACK_C  -6304 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
+    #define STACK_Z  -10400 /* Prev - L*1024 */
+    #define STACK_H  -14496 /* Prev - K*1024 */
+    #define STACK_W1  -18592 /* Prev - K*1024 */
+    #define INIT_SP -18624
+
 #elif DILITHIUM_MODE == 3
-    #define STACK_T1 -6272 /* Prev - K*1024 */
-    #define STACK_C -6336 /* Prev - ceil(CTILDEBYTES/32)*32 */
-    #define STACK_Z -11456 /* Prev - L*1024 */
-    #define STACK_H -17600 /* Prev - K*1024 */
-    #define STACK_CP -18624 /* Prev - 1024 */
-    #define STACK_MAT -49344 /* Prev - K*L*1024 */
-    #define STACK_W1 -55488 /* Prev - K*1024 */
-        #define STACK_CTX -56252
-        #define STACK_CTXLEN -56256
+    #define STACK_T1  -8320 /* Prev - K*1024 */
+    #define STACK_C  -8384 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
+    #define STACK_Z  -13504 /* Prev - L*1024 */
+    #define STACK_H  -19648 /* Prev - K*1024 */
+    #define STACK_W1  -25792 /* Prev - K*1024 */
+    #define INIT_SP -25824
+
 #elif DILITHIUM_MODE == 5
-    #define STACK_T1 -8320 /* Prev - K*1024 */
-    #define STACK_C -8384 /* Prev - ceil(CTILDEBYTES/32)*32 */
-    #define STACK_Z -15552 /* Prev - L*1024 */
-    #define STACK_H -23744 /* Prev - K*1024 */
-    #define STACK_CP -24768 /* Prev - 1024 */
-    #define STACK_MAT -82112 /* Prev - K*L*1024 */
-    #define STACK_W1 -90304 /* Prev - K*1024 */
-        #define STACK_CTX -91324
-        #define STACK_CTXLEN -91328
+    #define STACK_T1  -10368 /* Prev - K*1024 */
+    #define STACK_C  -10432 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
+    #define STACK_Z  -17600 /* Prev - L*1024 */
+    #define STACK_H  -25792 /* Prev - K*1024 */
+    #define STACK_W1  -33984 /* Prev - K*1024 */
+    #define INIT_SP -34016
 #endif
 
     /* Initialize the frame pointer */
     addi fp, sp, 0
 
     /* Reserve space on the stack */
-#if DILITHIUM_MODE == 2
-    li  t0, -34720
-#elif DILITHIUM_MODE == 3
-    li  t0, -56256
-#elif DILITHIUM_MODE == 5
-    li  t0, -91328
-#endif
+    li  t0, INIT_SP
     add sp, sp, t0
 
     /* Store parameters to stack */
@@ -334,7 +325,7 @@ crypto_sign_verify_internal:
     /* reduce32(z) for central representation */
     li  a0, STACK_Z
     add a0, fp, a0
-    li  a1, STACK_MAT /* Use as temporary buffer */
+    li  a1, STACK_W1
     add a1, fp, a1
     LOOPI L, 2
         jal x1, poly_reduce32
@@ -344,7 +335,7 @@ crypto_sign_verify_internal:
     li  t0, GAMMA1
     li  t1, BETA
     sub a1, t0, t1
-    li  a0, STACK_MAT
+    li  a0, STACK_W1
     add a0, fp, a0
     addi s0, a0, 0
 
@@ -537,23 +528,6 @@ crypto_sign_verify_internal:
     add a1, fp, a1
     jal x1, poly_challenge
 
-    /* Expand matrix */
-    /* Initialize the nonce */
-    addi a2, zero, 0
-
-    li a1, STACK_MAT
-    add a1, fp, a1
-    LOOPI K, 10
-        LOOPI L, 7
-            /* Load parameters */
-            addi a0, fp, STACK_RHO
-            push a2
-            jal  x1, poly_uniform
-            pop a2
-            addi a2, a2, 1
-        addi a2, a2, 256
-        addi a2, a2, -L
-
     /* Prepare modulus */
     #define mod_x2 w22
     bn.wsrr   w16, 0x0 /* w16 = R | Q */
@@ -632,32 +606,55 @@ crypto_sign_verify_internal:
     .endr
 
     /* After NTT(t1), w16 is still R | Q and MOD is still 2*R | 2*Q */
-    /* Matrix-vector multiplication */
-    /* Load source pointers */
-    li  a0, STACK_Z
-    add a0, fp, a0
 
-    li  a1, STACK_MAT
-    add a1, fp, a1
+    /* Load source pointers for matrix-vector multiplication. */
+    li  s0, STACK_Z
+    add s0, fp, s0
+    li  s1, STACK_TMP
+    add s1, fp, s1
 
-    /* Load destination pointer */
-    li  a2, STACK_W1
-    add a2, fp, a2
+    /* Load destination pointer for matrix-vector multiplication. */
+    li  s2, STACK_W1
+    add s2, fp, s2
 
-    /* Load offset for resetting pointer */
-    li s1, POLYVECL_BYTES
+    /* Zero the destination buffer. */
+    li t0, 31
+    addi t1, s2, 0
+    LOOPI K, 3
+        LOOPI 32, 1
+          bn.sid t0, 0(t1++)
+        nop
 
-    .rept K
-        jal  x1, poly_pointwise
-        addi a2, a2, -1024
-        .rept L-1
+    /* Load offset for resetting vector pointer. */
+    li s3, POLYVECL_BYTES
+
+    /* Initialize the nonce for matrix expansion. This value should be
+         byte(i) || byte(j)
+       for entry A[i][j]. */
+    li s4, 0
+
+     /* Compute A * z, computing elements of A on the fly. */
+    loopi K, 15
+        loopi L, 10
+            /* Compute A[i][j]. */
+            addi a0, fp, STACK_RHO
+            addi a1, s1, 0
+            addi a2, s4, 0
+            jal  x1, poly_uniform
+            /* Increment the matrix nonce. */
+            addi s4, s4, 1
+            /* Compute A[i][j] * z[j] and add it to the output at index i. */
+            addi a0, s0, 0
+            addi a1, s1, 0
+            addi a2, s2, 0
             jal  x1, poly_pointwise_acc
-            addi a2, a2, -1024
-        .endr
+            addi s0, s0, 1024
         /* Reset input vector pointer */
-        sub  a0, a0, s1
-        addi a2, a2, 1024
-    .endr
+        sub  s0, s0, s3
+        addi s2, s2, 1024
+        /* Adjust the matrix nonce to reset the column and increment the row. */
+        addi s4, s4, 256
+        addi s4, s4, -L
 
     /* Call random oracle and verify challenge */
     /* Initialize a SHAKE256 operation. */

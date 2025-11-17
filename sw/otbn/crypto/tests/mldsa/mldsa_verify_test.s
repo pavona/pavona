@@ -11,7 +11,13 @@
 */
 
 .section .text.start
-#define STACK_SIZE 112000
+#if DILITHIUM_MODE == 2
+    #define STACK_SIZE 18752
+#elif DILITHIUM_MODE == 3
+    #define STACK_SIZE 25952
+#elif DILITHIUM_MODE == 5
+    #define STACK_SIZE 34144
+#endif
 
 #define CTXLEN 32
 
