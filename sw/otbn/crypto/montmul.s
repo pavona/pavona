@@ -575,7 +575,9 @@ mont_loop:
  * clobbered Flag Groups: FG0, FG1
  */
 montmul:
-  /* set pointers */
+  /* set pointers to allow static analysis constant propagation */
+  /* TODO (#137): find a way to elide this while allowing instruciton count
+     bounding to still work */
   li        x10, 4
   li        x11, 2
 
