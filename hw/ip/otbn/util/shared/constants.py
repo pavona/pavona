@@ -24,6 +24,7 @@ class ConstantContext:
     This datatype is used to track and evaluate GPR pointers for indirect
     references.
     '''
+
     def __init__(self, values: Dict[str, int]):
         # The x0 register needs to always be 0
         assert values.get('x0', None) == 0
@@ -104,6 +105,29 @@ class ConstantContext:
                 # Operand is a constant; add/update grd
                 new_values[
                     grd_name] = self.values[grs1_name] << op_vals['shamt']
+        elif insn.mnemonic == 'srli':
+            grs1_name = get_op_val_str(insn, op_vals, 'grs1')
+            if grs1_name in self.values:
+                grd_name = get_op_val_str(insn, op_vals, 'grd')
+                # Operand is a constant; add/update grd
+                new_values[
+                    grd_name] = self.values[grs1_name] >> op_vals['shamt']
+        elif insn.mnemonic == 'add':
+            grs1_name = get_op_val_str(insn, op_vals, 'grs1')
+            grs2_name = get_op_val_str(insn, op_vals, 'grs2')
+            if grs1_name in self.values and grs2_name in self.values:
+                grd_name = get_op_val_str(insn, op_vals, 'grd')
+                # Operand is a constant; add/update grd
+                new_values[
+                    grd_name] = self.values[grs1_name] + self.values[grs2_name]
+        elif insn.mnemonic == 'sub':
+            grs1_name = get_op_val_str(insn, op_vals, 'grs1')
+            grs2_name = get_op_val_str(insn, op_vals, 'grs2')
+            if grs1_name in self.values and grs2_name in self.values:
+                grd_name = get_op_val_str(insn, op_vals, 'grd')
+                # Operand is a constant; add/update grd
+                new_values[
+                    grd_name] = self.values[grs1_name] - self.values[grs2_name]
         elif insn.mnemonic == 'lui':
             grd_name = get_op_val_str(insn, op_vals, 'grd')
             new_values[grd_name] = op_vals['imm'] << 12

@@ -41,7 +41,7 @@ from .insn_yaml import Insn
 #                   and whose values are those exact number of iterations
 IFlowResult = Tuple[Set[str], InformationFlowGraph, InformationFlowGraph,
                     Optional[ConstantContext], Dict[int, InformationFlowGraph],
-                    Dict[str, Set[int]], Dict[int, int]]
+                    Dict[str, Set[int]], Dict[int, Set[int]]]
 
 
 class IFlowCacheEntry(CacheEntry[ConstantContext, IFlowResult]):
@@ -236,7 +236,7 @@ def _get_iflow_update_state(
         program_end_iflow: InformationFlowGraph, used_constants: Set[str],
         constants: ConstantContext, cycles: Dict[int, InformationFlowGraph],
         control_deps: Dict[str, Set[int]],
-        loop_iters: Dict[int, int]) -> InformationFlowGraph:
+        loop_iters: Dict[int, Set[int]]) -> InformationFlowGraph:
     '''Update the internal state of _get_iflow after a recursive call.
 
     `iflow` is not modified.
@@ -268,6 +268,12 @@ def _get_iflow_update_state(
             iflow.seq(cycle_iflow))
 
     # Update the loop iteration counts
+    for pc in rec_loop_iters.keys():
+        if pc in loop_iters:
+            loop_iters[pc].update(rec_loop_iters[pc])
+        else:
+            loop_iters[pc] = rec_loop_iters[pc]
+
     loop_iters.update(rec_loop_iters)
 
     # Update the constants to keep only those that are either unmodified in the
@@ -320,8 +326,8 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
     # Cycle starts that are accessible from this PC.
     cycles: Dict[int, InformationFlowGraph] = {}
 
-    # Loop iteration counts for loops accessible from this PC.
-    loop_iters: Dict[int, int] = {}
+    # Possible loop iteration counts for loops accessible from this PC.
+    loop_iters: Dict[int, Set[int]] = {}
 
     # If this PC is the start of a cycle, then initialize the information flow
     # for the cycle with an empty graph (since doing nothing is a valid
@@ -384,7 +390,9 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
         if iterations is not None:
             # If the number of iterations is constant, perform recursive calls
             # for each iteration
-            loop_iters[section.end] = iterations
+            if section.end not in loop_iters:
+                loop_iters[section.end] = set()
+            loop_iters[section.end].add(iterations)
             for _ in range(iterations):
                 body_result = _get_iflow(program, graph,
                                          body_loc.loop_start_pc, constants,

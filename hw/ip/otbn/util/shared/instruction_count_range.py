@@ -100,8 +100,8 @@ def _get_insn_count_range(
                 if loop_range is None:
                     continue
                 loop_min, loop_max = loop_range
-                loop_min *= num_iterations
-                loop_max *= num_iterations
+                loop_min *= min(num_iterations)
+                loop_max *= max(num_iterations)
             else:
                 # Cannot determine # iterations statically.
                 loop_min, loop_max = 0, inf
@@ -180,9 +180,6 @@ def _get_insn_count_range(
     if len(min_counts) == 0 or len(max_counts) == 0:
         # No valid edges, so we can't proceed.
         return None
-
-    # if section.start == 0x124:
-    #     breakpoint()
 
     return (min(min_counts), max(max_counts))
 

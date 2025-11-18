@@ -84,24 +84,25 @@ status_t rsa_signature_verify_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature);
 
 /**
- * Waits for any RSA signature verification to complete.
+ * Waits for a RSA-2048 signature verification to complete.
  *
- * Should be invoked only after a `rsa_signature_verify_{size}_start` call, but
- * can be invoked for any size. Blocks until OTBN is done processing, and then
- * infers the size from the OTBN application mode.
+ * Should be invoked only after a `rsa_signature_verify_2048_start` call.
+ * Blocks until OTBN is done processing.
  *
  * The caller must check the `result` parameter to see if the signature passed
  * or failed verification; the return value of this function will always return
  * OK unless there are operational errors while running the verification and
  * reading back the result.
  *
+ * @param public_key Public key used to verify the signature.
  * @param message_digest Message digest to verify the signature against.
  * @param padding_mode Signature padding mode.
  * @param[out] verification_result Whether verification succeeded or failed.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_signature_verify_finalize(
+status_t rsa_signature_verify_2048_finalize(
+    const rsa_2048_public_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode,
     hardened_bool_t *verification_result);
@@ -123,6 +124,30 @@ status_t rsa_signature_generate_3072_start(
     const rsa_3072_private_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode);
+
+/**
+ * Waits for a RSA-3072 signature verification to complete.
+ *
+ * Should be invoked only after a `rsa_signature_verify_3072_start` call.
+ * Blocks until OTBN is done processing.
+ *
+ * The caller must check the `result` parameter to see if the signature passed
+ * or failed verification; the return value of this function will always return
+ * OK unless there are operational errors while running the verification and
+ * reading back the result.
+ *
+ * @param public_key Public key used to verify the signature.
+ * @param message_digest Message digest to verify the signature against.
+ * @param padding_mode Signature padding mode.
+ * @param[out] verification_result Whether verification succeeded or failed.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_signature_verify_3072_finalize(
+    const rsa_3072_public_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    const rsa_signature_padding_t padding_mode,
+    hardened_bool_t *verification_result);
 
 /**
  * Waits for an RSA-3072 signature generation to complete.
@@ -191,6 +216,30 @@ status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature);
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_4096_start(
     const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature);
+
+/**
+ * Waits for a RSA-4096 signature verification to complete.
+ *
+ * Should be invoked only after a `rsa_signature_verify_4096_start` call.
+ * Blocks until OTBN is done processing.
+ *
+ * The caller must check the `result` parameter to see if the signature passed
+ * or failed verification; the return value of this function will always return
+ * OK unless there are operational errors while running the verification and
+ * reading back the result.
+ *
+ * @param public_key Public key used to verify the signature.
+ * @param message_digest Message digest to verify the signature against.
+ * @param padding_mode Signature padding mode.
+ * @param[out] verification_result Whether verification succeeded or failed.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_signature_verify_4096_finalize(
+    const rsa_4096_public_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    const rsa_signature_padding_t padding_mode,
+    hardened_bool_t *verification_result);
 
 #ifdef __cplusplus
 }  // extern "C"

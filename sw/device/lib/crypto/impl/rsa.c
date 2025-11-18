@@ -333,8 +333,8 @@ otcrypto_status_t otcrypto_rsa_verify(
     otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
-  return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
-                                            verification_result);
+  return otcrypto_rsa_verify_async_finalize(public_key, message_digest,
+                                            padding_mode, verification_result);
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt(
@@ -343,7 +343,7 @@ otcrypto_status_t otcrypto_rsa_encrypt(
     otcrypto_const_byte_buf_t label, otcrypto_word32_buf_t ciphertext) {
   HARDENED_TRY(
       otcrypto_rsa_encrypt_async_start(public_key, hash_mode, message, label));
-  return otcrypto_rsa_encrypt_async_finalize(ciphertext);
+  return otcrypto_rsa_encrypt_async_finalize(public_key, ciphertext);
 }
 
 otcrypto_status_t otcrypto_rsa_decrypt(
@@ -840,6 +840,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
+    const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, hardened_bool_t *verification_result) {
   // Check for NULL pointers.
@@ -853,11 +854,38 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
   // Initialize verification result to false by default.
   *verification_result = kHardenedBoolFalse;
 
-  // Call the unified `finalize` operation, which will determine the RSA size
-  // based on the mode stored in OTBN.
-  return rsa_signature_verify_finalize(message_digest,
-                                       (rsa_signature_padding_t)padding_mode,
-                                       verification_result);
+  // Infer the RSA size from the public key.
+  otcrypto_rsa_size_t size;
+  HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
+
+  switch (size) {
+    case kOtcryptoRsaSize2048: {
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
+      return rsa_signature_verify_2048_finalize(
+          pk, message_digest, (rsa_signature_padding_t)padding_mode,
+          verification_result);
+    }
+    case kOtcryptoRsaSize3072: {
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
+      return rsa_signature_verify_3072_finalize(
+          pk, message_digest, (rsa_signature_padding_t)padding_mode,
+          verification_result);
+    }
+    case kOtcryptoRsaSize4096: {
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
+      return rsa_signature_verify_4096_finalize(
+          pk, message_digest, (rsa_signature_padding_t)padding_mode,
+          verification_result);
+    }
+    default:
+      // Invalid key size. Since the size was inferred, should be unreachable.
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
@@ -932,6 +960,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
+    const otcrypto_unblinded_key_t *public_key,
     otcrypto_word32_buf_t ciphertext) {
   // Check for NULL pointers.
   if (ciphertext.data == NULL) {
@@ -945,20 +974,23 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     case kRsa2048NumWords: {
       HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
                         sizeof(rsa_2048_int_t));
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext.data;
-      return rsa_encrypt_2048_finalize(ctext);
+      return rsa_encrypt_2048_finalize(pk, ctext);
     }
     case kRsa3072NumWords: {
       HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
                         sizeof(rsa_3072_int_t));
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
       rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext.data;
-      return rsa_encrypt_3072_finalize(ctext);
+      return rsa_encrypt_3072_finalize(pk, ctext);
     }
     case kRsa4096NumWords: {
       HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
                         sizeof(rsa_4096_int_t));
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
       rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext.data;
-      return rsa_encrypt_4096_finalize(ctext);
+      return rsa_encrypt_4096_finalize(pk, ctext);
     }
     default:
       return OTCRYPTO_BAD_ARGS;

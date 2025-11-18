@@ -19,6 +19,21 @@
     comment: "RSA 4096 modular exponentiation operation",
   },
   {
+    symbol: "rsa_2048_modexp_crt",
+    const_str: "Rsa2048ModexpCrt",
+    comment: "RSA 2048 CRT modular exponentiation operation",
+  },
+  {
+    symbol: "rsa_3072_modexp_crt",
+    const_str: "Rsa3072ModexpCrt",
+    comment: "RSA 3072 CRT modular exponentiation operation",
+  },
+  {
+    symbol: "rsa_4096_modexp_crt",
+    const_str: "Rsa4096ModexpCrt",
+    comment: "RSA 4096 CRT modular exponentiation operation",
+  },
+  {
     symbol: "rsa_2048_modexp_f4",
     const_str: "Rsa2048ModexpF4",
     comment: "RSA 2048 modular exponentiation operation for F4",

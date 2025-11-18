@@ -390,6 +390,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
  * @return Result of async RSA verify finalize operation.
  */
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
+    const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, hardened_bool_t *verification_result);
 
@@ -422,6 +423,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
  * @return The result of the RSA encryption operation.
  */
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
+    const otcrypto_unblinded_key_t *public_key,
     otcrypto_word32_buf_t ciphertext);
 
 /**

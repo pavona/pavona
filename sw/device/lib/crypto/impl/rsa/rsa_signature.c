@@ -215,7 +215,8 @@ status_t rsa_signature_verify_2048_start(
                                        &public_key->n);
 }
 
-status_t rsa_signature_verify_finalize(
+status_t rsa_signature_verify_2048_finalize(
+    const rsa_2048_public_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode,
     hardened_bool_t *verification_result) {
@@ -225,32 +226,58 @@ status_t rsa_signature_verify_finalize(
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
-  switch (num_words) {
-    case kRsa2048NumWords: {
-      rsa_2048_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_vartime_2048_finalize(&recovered_message));
-      return encoded_message_verify(
-          message_digest, padding_mode, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), verification_result);
-    }
-    case kRsa3072NumWords: {
-      rsa_3072_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_vartime_3072_finalize(&recovered_message));
-      return encoded_message_verify(
-          message_digest, padding_mode, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), verification_result);
-    }
-    case kRsa4096NumWords: {
-      rsa_4096_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_vartime_4096_finalize(&recovered_message));
-      return encoded_message_verify(
-          message_digest, padding_mode, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), verification_result);
-    }
-    default:
-      // Unexpected number of words; should never get here.
-      return OTCRYPTO_FATAL_ERR;
-  }
+  rsa_2048_int_t recovered_message;
+  HARDENED_TRY(
+      rsa_modexp_vartime_2048_finalize(public_key->e, &recovered_message));
+  return encoded_message_verify(
+      message_digest, padding_mode, recovered_message.data,
+      ARRAYSIZE(recovered_message.data), verification_result);
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
+}
+
+status_t rsa_signature_verify_3072_finalize(
+    const rsa_3072_public_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    const rsa_signature_padding_t padding_mode,
+    hardened_bool_t *verification_result) {
+  // Wait for OTBN to complete and get the size for the last RSA operation.
+  size_t num_words;
+  HARDENED_TRY(rsa_modexp_wait(&num_words));
+
+  // Call the appropriate `finalize()` operation to get the recovered encoded
+  // message.
+  rsa_3072_int_t recovered_message;
+  HARDENED_TRY(
+      rsa_modexp_vartime_3072_finalize(public_key->e, &recovered_message));
+  return encoded_message_verify(
+      message_digest, padding_mode, recovered_message.data,
+      ARRAYSIZE(recovered_message.data), verification_result);
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
+}
+
+status_t rsa_signature_verify_4096_finalize(
+    const rsa_4096_public_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    const rsa_signature_padding_t padding_mode,
+    hardened_bool_t *verification_result) {
+  // Wait for OTBN to complete and get the size for the last RSA operation.
+  size_t num_words;
+  HARDENED_TRY(rsa_modexp_wait(&num_words));
+
+  // Call the appropriate `finalize()` operation to get the recovered encoded
+  // message.
+  rsa_4096_int_t recovered_message;
+  HARDENED_TRY(
+      rsa_modexp_vartime_4096_finalize(public_key->e, &recovered_message));
+  return encoded_message_verify(
+      message_digest, padding_mode, recovered_message.data,
+      ARRAYSIZE(recovered_message.data), verification_result);
 
   // Should be unreachable.
   HARDENED_TRAP();

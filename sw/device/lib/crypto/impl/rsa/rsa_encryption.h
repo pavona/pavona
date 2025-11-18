@@ -51,7 +51,8 @@ status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_encrypt_2048_finalize(rsa_2048_int_t *ciphertext);
+status_t rsa_encrypt_2048_finalize(const rsa_2048_public_key_t *public_key,
+                                   rsa_2048_int_t *ciphertext);
 
 /**
  * Start decrypting a message with RSA-2048; returns immediately.
@@ -138,7 +139,8 @@ status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_encrypt_3072_finalize(rsa_3072_int_t *ciphertext);
+status_t rsa_encrypt_3072_finalize(const rsa_3072_public_key_t *public_key,
+                                   rsa_3072_int_t *ciphertext);
 
 /**
  * Start decrypting a message with RSA-3072; returns immediately.
@@ -187,7 +189,8 @@ status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_encrypt_4096_finalize(rsa_4096_int_t *ciphertext);
+status_t rsa_encrypt_4096_finalize(const rsa_4096_public_key_t *public_key,
+                                   rsa_4096_int_t *ciphertext);
 
 /**
  * Start decrypting a message with RSA-4096; returns immediately.
