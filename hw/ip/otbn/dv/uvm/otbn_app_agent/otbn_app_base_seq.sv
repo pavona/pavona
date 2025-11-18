@@ -286,7 +286,7 @@ class otbn_app_base_seq extends dv_base_seq #(
 
               // With 1B or less the packer absorb will ocurr during ongoing run if required
               end else begin
-                flush_ctr += ((kmac_msg_fifo_cnt % 8) > 0) ? 1 : 0;
+                flush_ctr += (kmac_msg_fifo_cnt > 0) ? 1 : 0;
                 flush_in_absorb = 1;
               end
             end

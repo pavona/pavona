@@ -436,6 +436,7 @@ class KmacBlock:
         self._app_intf_fifo_ready = True
         self._app_intf_fifo_ready_next = True
         self._app_intf_fifo_flush = False
+        self._app_fifo_after_flush = False
         self._pending_app_intf_last = False
         self._app_intf_last = False
         self._app_intf_last_latch = False
@@ -480,6 +481,7 @@ class KmacBlock:
         self._app_intf_fifo_ready = True
         self._app_intf_fifo_ready_next = True
         self._app_intf_fifo_flush = False
+        self._app_fifo_after_flush = False
         self._core_pending_bytes = 0
         self._core_pending_bytes_next = 0
         self._msg_len = 0
@@ -513,6 +515,7 @@ class KmacBlock:
         self._app_intf_bytes_sent = 0
         self._app_intf_ready_pending_ctr = 0
         self._app_intf_last_latch = False
+        self._app_fifo_after_flush = False
         # Reset error flags
         self._kmac_undersized_err = False
         self._kmac_oversized_err = False
@@ -720,9 +723,11 @@ class KmacBlock:
                         ready = {self.app_intf_fifo_ready()}, \
                         fifo len = {len(self._app_intf_fifo)}")
         # If there is more than 8B we can not yet write
+        # When the FIFO is flushing it is illegal to write to
         if (
             not self.app_intf_fifo_ready()
             or len(self._app_intf_fifo) > self._APP_INTF_BYTES_PER_CYCLE
+            or self._app_intf_fifo_flush
         ):
             return False
         self._app_intf_fifo += msg
@@ -915,6 +920,7 @@ class KmacBlock:
                 self._msg_len -= nbytes
                 self._app_intf_bytes_sent += nbytes
                 self._app_intf_fifo_flush = False
+                self._app_fifo_after_flush = True
                 self._app_intf_sending = True
 
             # Flushing the APP FIFO has an extra clock cycle to read
@@ -926,6 +932,7 @@ class KmacBlock:
                 if (len(self._app_intf_fifo) < 8):
                     # Flushing the APP FIFO has an extra clock cycle to read
                     self._app_intf_fifo_flush = True
+                    kmac_debug_print("FLUSHING APP INTF")
                 else:
                     # This is an oversized message and has filled the next
                     # word therefore no etra flush cycle
@@ -1142,6 +1149,8 @@ class KmacMsgWSR(WSR):
         kmac_debug_print("\tFETCHING STARTING FIFO STATUS")
         self._pending_write_stall_pw = self._pending_write_to_app_intf
         self._start_cycle_fifo_ready = self._kmac.app_intf_fifo_ready()
+        if self._kmac._app_fifo_after_flush:
+            self._pending_write_stall_pw = False
         # KMAC_MSG reg -> FIFO
         if self._pending_write_to_app_intf:
             strb_len = self._partial_ispr.read_mask()
@@ -1149,8 +1158,8 @@ class KmacMsgWSR(WSR):
             kmac_debug_print("\tPending write to App FIFO")
             if (
                 self._kmac._app_intf_last_latch
-                or (self._kmac._pending_app_intf_last and not self.pending_write())
-                or self._kmac._app_intf_fifo_flush
+                or (self._kmac._pending_app_intf_last and not self.pending_write_pw())
+                and not self._kmac._app_intf_fifo_flush
             ):
                 kmac_debug_print("DROPPING WRITE TO FIFO FROM OVERSIZED MSG")
                 self._pending_write_to_app_intf = False
@@ -1161,8 +1170,11 @@ class KmacMsgWSR(WSR):
                 self._pending_write_to_app_intf = False
                 self._kmac._app_intf_writing = True
 
-    def pending_write(self) -> bool:
-        return self._pending_write_stall_pw or self._kmac._app_intf_fifo_flush
+    def pending_write_pw(self) -> bool:
+        if self._kmac._app_intf_fifo_flush and not self._pending_write_to_app_intf:
+            return False
+        else:
+            return self._pending_write_stall_pw
 
     def request_write(self) -> bool:
         return self._start_cycle_fifo_ready

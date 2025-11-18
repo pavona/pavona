@@ -242,6 +242,7 @@ class BadLoadStore(SnippetGen):
                     if val < max_offset:
                         tgt_addr = random.randrange(val + min_offset, -1, 32)
                         bn_imm_val = tgt_addr - val
+                        break
 
         # Check if the final target address is in OOB region
         assert bn_imm_val + val < 0 or bn_imm_val + val >= model.dmem_size

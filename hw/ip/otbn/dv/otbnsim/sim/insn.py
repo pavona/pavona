@@ -591,7 +591,7 @@ class CSRRW(OTBNInsn):
             # to the AppIntf FIFO inside OTBN Bignum ALU
             if DEBUG_KMAC:
                 eprint("\tBNWSRW FOR KMAC PARTIAL WRITE REGISTER")
-            while state.wsrs.KMAC_MSG.pending_write():
+            while state.wsrs.KMAC_MSG.pending_write_pw():
                 if DEBUG_KMAC:
                     eprint("\tBNWSRW to KMAC_PW stall")
                 yield None
