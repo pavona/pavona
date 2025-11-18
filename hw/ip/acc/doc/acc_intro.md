@@ -1,11 +1,11 @@
 # Introduction to ACC
 
-ACC (the **O**pen**T**itan **B**ig **N**umber accelerator) is a specialized coprocessor designed for cryptography.
+ACC (the **A**symmetric **C**ryptography **C**oprocessor) is a specialized coprocessor designed for cryptography.
 It runs as part of OpenTitan in addition to the main processor, Ibex.
 The ACC hardware block could also run as part of a different system and interact with a different main processor, but this page will focus on the OpenTitan context.
 
 This page is an introduction and overview of ACC.
-For more detailed information, see the [technical specification](../README.md) and the [ISA guide](isa.md).
+For more detailed information, see the [technical specification](theory_of_operation.md) and the [ISA guide](isa.md).
 
 ## How ACC executes programs
 

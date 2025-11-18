@@ -52,7 +52,7 @@ The quickest way to run an ACC-only program is to use the Python simulator.
 First, generate a `.elf.` file either using the usual build process or by
 manually running `acc_as.py` and `acc_ld.py` as shown above. Then, from `$REPO_TOP`:
 ```console
-$ hw/ip/acc/dv/accsim/standalone.py -t path/to/prog.elf
+$ hw/ip/acc/dv/accsim/standalone.py path/to/prog.elf
 ```
 
 ### Run the standalone RTL simulation
@@ -60,7 +60,9 @@ A standalone environment to run ACC alone in Verilator is included. Build it
 with `fusesoc` as follows:
 
 ```sh
-fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ip:acc_top_sim
+fusesoc --cores-root=. run --target=sim --setup --build \
+  --mapping=lowrisc:prim_generic:all:0.1 lowrisc:ip:acc_top_sim \
+  --make_options="-j$(nproc)"
 ```
 
 It includes functionality to set the initial Dmem and Imem contents from a .elf
