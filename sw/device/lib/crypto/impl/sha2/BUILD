@@ -18,6 +18,7 @@ cc_library(
     hdrs = ["sha256.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":sha256_insn_counts",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
@@ -26,7 +27,6 @@ cc_library(
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/otbn/crypto:run_sha256",
-        ":sha256_insn_counts",
     ],
 )
 
