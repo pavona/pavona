@@ -181,27 +181,22 @@ crypto_sign_keypair:
     #define STACK_SK_ADDR -168
     #define STACK_TR      -256
     #define STACK_TMP    -1280 /* Prev - 1024 */
+    #define STACK_S1     -2304 /* Prev - 1024 */
 #if DILITHIUM_MODE == 2
-    #define STACK_S1  -5376 /* Prev - L*1024 */
-    #define STACK_S2  -9472 /* Prev - K*1024 */
-    #define STACK_T1  -13568 /* Prev - K*1024 */
-    #define STACK_T0  -17664 /* Prev - K*1024 */
-    #define STACK_S1_HAT  -21760 /* Prev - L*1024 */
-    #define INIT_SP -21760
+    #define STACK_S2  -6400 /* Prev - K*1024 */
+    #define STACK_T1  -10496 /* Prev - K*1024 */
+    #define STACK_T0  -14592 /* Prev - K*1024 */
+    #define INIT_SP -14592
 #elif DILITHIUM_MODE == 3
-    #define STACK_S1  -6400 /* Prev - L*1024 */
-    #define STACK_S2  -12544 /* Prev - K*1024 */
-    #define STACK_T1  -18688 /* Prev - K*1024 */
-    #define STACK_T0  -24832 /* Prev - K*1024 */
-    #define STACK_S1_HAT  -29952 /* Prev - L*1024 */
-    #define INIT_SP -29952
+    #define STACK_S2  -8448 /* Prev - K*1024 */
+    #define STACK_T1  -14592 /* Prev - K*1024 */
+    #define STACK_T0  -20736 /* Prev - K*1024 */
+    #define INIT_SP -20736
 #elif DILITHIUM_MODE == 5
-    #define STACK_S1  -8448 /* Prev - L*1024 */
-    #define STACK_S2  -16640 /* Prev - K*1024 */
-    #define STACK_T1  -24832 /* Prev - K*1024 */
-    #define STACK_T0  -33024 /* Prev - K*1024 */
-    #define STACK_S1_HAT  -40192 /* Prev - L*1024 */
-    #define INIT_SP -40192
+    #define STACK_S2  -10496 /* Prev - K*1024 */
+    #define STACK_T1  -18688 /* Prev - K*1024 */
+    #define STACK_T0  -26880 /* Prev - K*1024 */
+    #define INIT_SP -26880
 #endif
     /* Initialize the frame pointer */
     addi fp, sp, 0
@@ -259,20 +254,6 @@ crypto_sign_keypair:
 
     /* Finish the SHAKE-256 operation. */
 
-    /* Sample s1 */
-
-    li a2, 0 /* initialize the nonce */
-
-    /* Load output pointer */
-    li  a1, STACK_S1
-    add a1, fp, a1
-
-    LOOPI L, 3
-        /* Load pointer to input */
-        addi a0, fp, STACK_RHOPRIME
-        jal  x1, poly_uniform_eta
-        addi a2, a2, 1
-
     /* Sample s2 */
 
     /* initialize the nonce */
@@ -288,35 +269,12 @@ crypto_sign_keypair:
         jal  x1, poly_uniform_eta /* Implicit increment of output pointer */
         addi a2, a2, 1
 
-    /* NTT(s1) */
-    /* Load pointer to input polynomial */
-    li  a0, STACK_S1
-    add a0, fp, a0
-    /* Load pointer to twiddle factors */
-    la  a1, twiddles_fwd
-    /* Load pointer to output polynomial */
-    li  a2, STACK_S1_HAT
-    add a2, fp, a2
-
-    .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
-        push \reg
-    .endr
-
-    bn.wsrr   w16, 0x0 /* w16 = R | Q */
-    bn.shv.8S w0, w16 << 1 /* w0 = 2*R | 2*Q */
-    bn.wsrw   0x0, w0 /* MOD = 2*R | 2*Q */
-    LOOPI L, 2
-        jal x1, ntt
-        addi a1, a1, -1024
-
-    .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
-        pop \reg
-    .endr
-
-    /* After NTT, w16 is still R | Q and MOD is still 2*R | 2*Q */
+    bn.wsrr   w16, mod /* w16 = R | Q */
+    bn.shv.8S w22, w16 << 1 /* w22 = 2*R | 2*Q */
+    bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
 
     /* Load source pointers for matrix-vector multiplication. */
-    li  s0, STACK_S1_HAT
+    li  s0, STACK_S1
     add s0, fp, s0
     li  s1, STACK_TMP
     add s1, fp, s1
@@ -334,35 +292,75 @@ crypto_sign_keypair:
         nop
 
     /* Load offset for resetting vector pointer. */
-    li s3, POLYVECL_BYTES
+    li s3, POLYVECK_BYTES
 
     /* Initialize the nonce for matrix expansion. This value should be
          byte(i) || byte(j)
        for entry A[i][j]. */
     li s4, 0
 
-     /* Compute A * s1, computing elements of A on the fly. */
-    loopi K, 15
-        loopi L, 10
+    /* Load pointer to twiddle factors for NTT */
+    la  s5, twiddles_fwd
+
+    /* Initialize the nonce for sampling s1. */
+    li   s6, 0
+
+    /* Load the destination for packed s1 within the secret key. */
+    li   t1, STACK_SK_ADDR
+    add  t1, fp, t1
+    lw   s7, 0(t1)
+    addi s7, s7, 128
+
+    /* Compute A * s1, computing elements of A on the fly.
+
+       We compute column-wise so that we generate elements of s1 only once; in
+       pseudocode, this computation does:
+
+         for j in 0..l-1:
+           s1j = ntt(s1[j])
+           for i in 0..k-1:
+             out[i] += A[i][j] * s1j
+    */
+    loopi L, 29
+        bn.wsrw   mod, w16 /* MOD = R | Q */
+        /* Sample the next polynomial from s1. */
+        addi a0, fp, STACK_RHOPRIME
+        addi a1, s0, 0
+        addi a2, s6, 0
+        jal  x1, poly_uniform_eta
+        addi s6, s6, 1
+        /* Pack the s1 polynomial into the secret key. */
+        addi a0, s7, 0
+        addi a1, s0, 0
+        jal x1, polyeta_pack
+        addi s7, a0, 0
+        bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
+        /* Compute ntt(s1[j]). */
+        addi a0, s0, 0
+        addi a1, s5, 0
+        addi a2, s0, 0
+        jal  x1, ntt
+        loopi K, 10
             /* Compute A[i][j]. */
             addi a0, fp, STACK_RHO
             addi a1, s1, 0
             addi a2, s4, 0
             jal  x1, poly_uniform
-            /* Increment the matrix nonce. */
-            addi s4, s4, 1
+            /* Increment the row in the matrix nonce (upper byte). */
+            addi s4, s4, 256
             /* Compute A[i][j] * s1[j] and add it to the output at index i. */
             addi a0, s0, 0
             addi a1, s1, 0
             addi a2, s2, 0
             jal  x1, poly_pointwise_acc
-            addi s0, s0, 1024
-        /* Reset input vector pointer */
-        sub  s0, s0, s3
-        addi s2, s2, 1024
-        /* Adjust the matrix nonce to reset the column and increment the row. */
-        addi s4, s4, 256
-        addi s4, s4, -L
+            /* Increment the output vector pointer. */
+            addi s2, s2, 1024
+        /* Reset output vector pointer. */
+        sub  s2, s2, s3
+        /* Increment the column index in the nonce by one. */
+        addi s4, s4, 1
+        /* Reset the row index in the nonce to zero. */
+        andi s4, s4, 255
 
     /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* Inverse NTT on t1 */
@@ -509,14 +507,8 @@ crypto_sign_keypair:
     bn.lid t0, 0(t1++)
     bn.sid t0, 0(a0++)
 
-    /* Load pointer to s1 */
-    li  a1, STACK_S1
-    add a1, fp, a1
-
-    /* Store s1 */
-    LOOPI L, 2
-        jal x1, polyeta_pack
-        nop
+    /* Skip s1, since it was already packed earlier. */
+    addi a0, s7, 0
 
     /* Load pointer to s2 */
     li  a1, STACK_S2
