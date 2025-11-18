@@ -180,39 +180,34 @@ crypto_sign_keypair:
     #define STACK_PK_ADDR -164
     #define STACK_SK_ADDR -168
     #define STACK_TR      -256
+    #define STACK_TMP    -1280 /* Prev - 1024 */
 #if DILITHIUM_MODE == 2
-    #define STACK_MAT -16640 /* Prev - K*L*1024 */
-    #define STACK_S1  -20736 /* Prev - L*1024 */
-    #define STACK_S2  -24832 /* Prev - K*1024 */
-    #define STACK_T1  -28928 /* Prev - K*1024 */
-    #define STACK_T0  -33024 /* Prev - K*1024 */
-    #define STACK_S1_HAT  -37120 /* Prev - L*1024 */
+    #define STACK_S1  -5376 /* Prev - L*1024 */
+    #define STACK_S2  -9472 /* Prev - K*1024 */
+    #define STACK_T1  -13568 /* Prev - K*1024 */
+    #define STACK_T0  -17664 /* Prev - K*1024 */
+    #define STACK_S1_HAT  -21760 /* Prev - L*1024 */
+    #define INIT_SP -21760
 #elif DILITHIUM_MODE == 3
-    #define STACK_MAT -30976 /* Prev - K*L*1024 */
-    #define STACK_S1  -36096 /* Prev - L*1024 */
-    #define STACK_S2  -42240 /* Prev - K*1024 */
-    #define STACK_T1  -48384 /* Prev - K*1024 */
-    #define STACK_T0  -54528 /* Prev - K*1024 */
-    #define STACK_S1_HAT  -59648 /* Prev - L*1024 */
+    #define STACK_S1  -6400 /* Prev - L*1024 */
+    #define STACK_S2  -12544 /* Prev - K*1024 */
+    #define STACK_T1  -18688 /* Prev - K*1024 */
+    #define STACK_T0  -24832 /* Prev - K*1024 */
+    #define STACK_S1_HAT  -29952 /* Prev - L*1024 */
+    #define INIT_SP -29952
 #elif DILITHIUM_MODE == 5
-    #define STACK_MAT -57600 /* Prev - K*L*1024 */
-    #define STACK_S1  -64768 /* Prev - L*1024 */
-    #define STACK_S2  -72960 /* Prev - K*1024 */
-    #define STACK_T1  -81152 /* Prev - K*1024 */
-    #define STACK_T0  -89344 /* Prev - K*1024 */
-    #define STACK_S1_HAT  -96512 /* Prev - L*1024 */
+    #define STACK_S1  -8448 /* Prev - L*1024 */
+    #define STACK_S2  -16640 /* Prev - K*1024 */
+    #define STACK_T1  -24832 /* Prev - K*1024 */
+    #define STACK_T0  -33024 /* Prev - K*1024 */
+    #define STACK_S1_HAT  -40192 /* Prev - L*1024 */
+    #define INIT_SP -40192
 #endif
     /* Initialize the frame pointer */
     addi fp, sp, 0
 
     /* Reserve space on the stack */
-#if DILITHIUM_MODE == 2
-    li  t0, -37120
-#elif DILITHIUM_MODE == 3
-    li  t0, -59648
-#elif DILITHIUM_MODE == 5
-    li  t0, -96512
-#endif
+    li  t0, INIT_SP
     add sp, sp, t0
 
     /* Store parameters to stack */
@@ -263,24 +258,6 @@ crypto_sign_keypair:
         bn.sid  t0, 0(t1++) /* Store into buffer */
 
     /* Finish the SHAKE-256 operation. */
-
-    /* Expand matrix */
-
-    /* Initialize the nonce */
-    li a2, 0
-
-    li a1, STACK_MAT
-    add a1, fp, a1
-    LOOPI K, 10
-        LOOPI L, 7
-            /* Load parameters */
-            addi a0, fp, STACK_RHO
-            push a2
-            jal  x1, poly_uniform
-            pop  a2
-            addi a2, a2, 1
-        addi a2, a2, 256
-        addi a2, a2, -L
 
     /* Sample s1 */
 
@@ -337,33 +314,55 @@ crypto_sign_keypair:
     .endr
 
     /* After NTT, w16 is still R | Q and MOD is still 2*R | 2*Q */
-    /* Matrix-vector multiplication */
 
-    /* Load source pointers */
-    li  a0, STACK_S1_HAT
-    add a0, fp, a0
-    li  a1, STACK_MAT
-    add a1, fp, a1
+    /* Load source pointers for matrix-vector multiplication. */
+    li  s0, STACK_S1_HAT
+    add s0, fp, s0
+    li  s1, STACK_TMP
+    add s1, fp, s1
 
-    /* Load destination pointer */
-    li  a2, STACK_T1
-    add a2, fp, a2
+    /* Load destination pointer for matrix-vector multiplication. */
+    li  s2, STACK_T1
+    add s2, fp, s2
 
-    /* Load offset for resetting pointer */
-    li s1, POLYVECL_BYTES
+    /* Zero the destination buffer. */
+    li t0, 31
+    addi t1, s2, 0
+    LOOPI K, 3
+        LOOPI 32, 1
+          bn.sid t0, 0(t1++)
+        nop
 
-    .rept K
-        jal  x1, poly_pointwise
-        addi a2, a2, -1024
+    /* Load offset for resetting vector pointer. */
+    li s3, POLYVECL_BYTES
 
-        .rept L-1
+    /* Initialize the nonce for matrix expansion. This value should be
+         byte(i) || byte(j)
+       for entry A[i][j]. */
+    li s4, 0
+
+     /* Compute A * s1, computing elements of A on the fly. */
+    loopi K, 15
+        loopi L, 10
+            /* Compute A[i][j]. */
+            addi a0, fp, STACK_RHO
+            addi a1, s1, 0
+            addi a2, s4, 0
+            jal  x1, poly_uniform
+            /* Increment the matrix nonce. */
+            addi s4, s4, 1
+            /* Compute A[i][j] * s1[j] and add it to the output at index i. */
+            addi a0, s0, 0
+            addi a1, s1, 0
+            addi a2, s2, 0
             jal  x1, poly_pointwise_acc
-            addi a2, a2, -1024
-        .endr
-
-        sub  a0, a0, s1   /* Reset input vector pointer */
-        addi a2, a2, 1024 /* Write next output polynomial */
-    .endr
+            addi s0, s0, 1024
+        /* Reset input vector pointer */
+        sub  s0, s0, s3
+        addi s2, s2, 1024
+        /* Adjust the matrix nonce to reset the column and increment the row. */
+        addi s4, s4, 256
+        addi s4, s4, -L
 
     /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* Inverse NTT on t1 */
