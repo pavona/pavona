@@ -256,8 +256,7 @@ status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
 /**
  * Finish an async ECDH/P-384 shared key generation operation on OTBN.
  *
- * Blocks until OTBN is idle. May be used after either `p384_ecdh_start` or
- * `p384_sideload_ecdh_start`; the operation is the same.
+ * Blocks until OTBN is idle.
  *
  * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
  * @return Result of the operation (OK or error).
@@ -285,8 +284,7 @@ status_t p384_sideload_ecdh_start(const p384_point_t *public_key);
  * Uses a private key generated from a key manager seed. The key manager should
  * already have sideloaded the key into OTBN before this operation is called.
  *
- * Blocks until OTBN is idle. May be used after either `p384_ecdh_start` or
- * `p384_sideload_ecdh_start`; the operation is the same.
+ * Blocks until OTBN is idle.
  *
  * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
  * @return Result of the operation (OK or error).

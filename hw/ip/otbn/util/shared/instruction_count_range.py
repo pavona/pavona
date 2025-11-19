@@ -126,7 +126,8 @@ def _get_insn_count_range(
             operands = program.get_operands(section.end)
             if insn.mnemonic == 'jal' and operands['grd'] == 1:
                 # Jumping to another subroutine; count the range for the
-                # subroutine itself, and if we've gone through the required.
+                # subroutine itself, and if we've gone through the required
+                # label.
                 jump_range = _get_insn_count_range(program, graph, loc.pc,
                                                    StopPoint.RET, loop_iters,
                                                    None, exclude_labels)

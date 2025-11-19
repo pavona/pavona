@@ -576,7 +576,7 @@ mont_loop:
  */
 montmul:
   /* set pointers to allow static analysis constant propagation */
-  /* TODO (#137): find a way to elide this while allowing instruciton count
+  /* TODO (#137): find a way to elide this while allowing instruction count
      bounding to still work */
   li        x10, 4
   li        x11, 2

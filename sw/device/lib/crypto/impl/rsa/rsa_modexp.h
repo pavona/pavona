@@ -51,10 +51,6 @@ status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
 /**
  * Waits for an RSA-2048 modular exponentiation to complete.
  *
- * Can be used after either:
- * - `rsa_modexp_consttime_2048_start()`
- * - `rsa_modexp_vartime_2048_start()`
- *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
@@ -86,10 +82,6 @@ status_t rsa_modexp_consttime_crt_2048_start(const rsa_2048_int_t *base,
 /**
  * Waits for an RSA-2048 CRT modular exponentiation to complete.
  *
- * Can be used after either:
- * - `rsa_modexp_consttime_2048_start()`
- * - `rsa_modexp_vartime_2048_start()`
- *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
@@ -114,10 +106,6 @@ status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
 
 /**
  * Waits for an RSA-2048 modular exponentiation to complete.
- *
- * Can be used after either:
- * - `rsa_modexp_consttime_2048_start()`
- * - `rsa_modexp_vartime_2048_start()`
  *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @param exp Exponent base was raised to.
@@ -145,10 +133,6 @@ status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
 
 /**
  * Waits for an RSA-3072 modular exponentiation to complete.
- *
- * Can be used after either:
- * - `rsa_modexp_consttime_3072_start()`
- * - `rsa_modexp_vartime_3072_start()`
  *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
@@ -181,10 +165,6 @@ status_t rsa_modexp_consttime_crt_3072_start(const rsa_3072_int_t *base,
 /**
  * Waits for an RSA-3072 CRT modular exponentiation to complete.
  *
- * Can be used after either:
- * - `rsa_modexp_consttime_3072_start()`
- * - `rsa_modexp_vartime_3072_start()`
- *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
@@ -209,10 +189,6 @@ status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
 
 /**
  * Waits for an RSA-3072 modular exponentiation to complete.
- *
- * Can be used after either:
- * - `rsa_modexp_consttime_3072_start()`
- * - `rsa_modexp_vartime_3072_start()`
  *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @param exp Exponent base was raised to.
@@ -240,10 +216,6 @@ status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
 
 /**
  * Waits for an RSA-4096 modular exponentiation to complete.
- *
- * Can be used after either:
- * - `rsa_modexp_consttime_4096_start()`
- * - `rsa_modexp_vartime_4096_start()`
  *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
@@ -276,10 +248,6 @@ status_t rsa_modexp_consttime_crt_4096_start(const rsa_4096_int_t *base,
 /**
  * Waits for an RSA-4096 CRT modular exponentiation to complete.
  *
- * Can be used after either:
- * - `rsa_modexp_consttime_4096_start()`
- * - `rsa_modexp_vartime_4096_start()`
- *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
@@ -304,10 +272,6 @@ status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
 
 /**
  * Waits for an RSA-4096 modular exponentiation to complete.
- *
- * Can be used after either:
- * - `rsa_modexp_consttime_4096_start()`
- * - `rsa_modexp_vartime_4096_start()`
  *
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @param exp Exponent base was raised to.
