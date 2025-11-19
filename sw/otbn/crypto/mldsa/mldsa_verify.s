@@ -625,6 +625,9 @@ crypto_sign_verify_internal:
     li   s7, 0
     li   s8, 0
 
+    /* Initialize failure buffer (0 on success, -1 on failure) */
+    li   s10, 0
+
     /* This loop computes w1 polynomials and sends them to the Keccak core
        incrementally. This way, we avoid ever storing the entire w1 on the
        stack. */
@@ -636,7 +639,7 @@ crypto_sign_verify_internal:
     li  s4, STACK_CP
     add s4, fp, s4
     la  s5, twiddles_fwd
-    .rept K
+    loopi K, 44
         /* Unpack the next polynomial from t1 and store it in temp buffer. */
         addi a0, s3, 0
         addi a1, s6, 0
@@ -667,16 +670,16 @@ crypto_sign_verify_internal:
         addi a0, s1, 0
         addi a1, s0, 0
         jal  x1, intt
-        /* Decode the next polynomial from the hint, failing on error. */
+        /* Decode the next polynomial from the hint and update the error register. */
         addi a0, s3, 0
         addi a1, s9, 0
         addi a2, s7, 0
         addi a3, s8, 0
         jal x1, poly_decode_h
-        bne a4, zero, _fail_crypto_sign_verify_internal
         addi s9, a1, 0
         addi s7, a2, 0
         addi s8, a3, 0
+        or   s10, s10, a4
         /* Use the hint to compute the next w1 polynomial. */
         addi a0, s1, 0
         addi a1, s1, 0
@@ -691,12 +694,14 @@ crypto_sign_verify_internal:
         addi a1, zero, POLYW1_PACKEDBYTES
         jal  x1, keccak_send_message
         addi s1, s1, 1024 /* increment *w1 */
-    .endr
+
+    bn.wsrr w8, 0xA /* KECCAK_DIGEST */
+
+    /* Check the failure register from the loop. */
+    bne s10, zero, _fail_crypto_sign_verify_internal
 
     /* Setup WDR for c2 */
     li t1, 8
-
-    bn.wsrr w8, 0xA /* KECCAK_DIGEST */
 
     /* Setup WDR for c */
     li t2, 9
