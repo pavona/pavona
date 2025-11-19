@@ -172,13 +172,13 @@ crypto_sign_keypair:
     #define STACK_TMP    -1280 /* Prev - 1024 */
     #define STACK_S1     -2304 /* Prev - 1024 */
 #if DILITHIUM_MODE == 2
-    #define STACK_T1  -6400 /* Prev - K*1024 */
+    #define STACK_T -6400 /* Prev - K*1024 */
     #define INIT_SP -6400
 #elif DILITHIUM_MODE == 3
-    #define STACK_T1  -8448 /* Prev - K*1024 */
+    #define STACK_T -8448 /* Prev - K*1024 */
     #define INIT_SP -8448
 #elif DILITHIUM_MODE == 5
-    #define STACK_T1  -10496 /* Prev - K*1024 */
+    #define STACK_T -10496 /* Prev - K*1024 */
     #define INIT_SP -10496
 #endif
     /* Initialize the frame pointer */
@@ -248,7 +248,7 @@ crypto_sign_keypair:
     add s1, fp, s1
 
     /* Load destination pointer for matrix-vector multiplication. */
-    li  s2, STACK_T1
+    li  s2, STACK_T
     add s2, fp, s2
 
     /* Zero the destination buffer. */
@@ -287,7 +287,7 @@ crypto_sign_keypair:
          for j in 0..l-1:
            s1j = ntt(s1[j])
            for i in 0..k-1:
-             out[i] += A[i][j] * s1j
+             t[i] += A[i][j] * s1j
     */
     loopi L, 29
         bn.wsrw   mod, w16 /* MOD = R | Q */
@@ -321,7 +321,7 @@ crypto_sign_keypair:
             addi a1, s1, 0
             addi a2, s2, 0
             jal  x1, poly_pointwise_acc
-            /* Increment the output vector pointer. */
+            /* Increment the output vector pointer *t. */
             addi s2, s2, 1024
         /* Reset output vector pointer. */
         sub  s2, s2, s3
@@ -331,8 +331,8 @@ crypto_sign_keypair:
         andi s4, s4, 255
 
     /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
-    /* Inverse NTT on t1 */
-    li  a0, STACK_T1
+    /* Inverse NTT on t=A*s1 */
+    li  a0, STACK_T
     add a0, fp, a0
     la  a1, twiddles_inv
 
@@ -345,13 +345,13 @@ crypto_sign_keypair:
     /* Load pointers for loop. */
     li  s0, STACK_TMP
     add s0, fp, s0
-    li  s1, STACK_T1
+    li  s1, STACK_T
     add s1, fp, s1
 
     /* Initialize the nonce for sampling s2. */
     li s6, L
 
-    /* This loop samples s2 and adds it to A*s1 (currently in the t1 buffer). */
+    /* This loop samples s2 and adds it to A*s1 (currently in the t buffer). */
     LOOPI K, 14
         /* Sample the next polynomial from s2 and store in temp buffer. */
         addi a0, fp, STACK_RHOPRIME
@@ -369,15 +369,15 @@ crypto_sign_keypair:
         addi a1, s1, 0
         addi a2, s1, 0
         jal  x1, poly_add
-        /* Increment polyvec pointer. */
+        /* Increment polyvec pointer *t. */
         addi s1, s1, 1024
 
-    /* Reset t1 pointer for power2round loop. */
-    li  s1, STACK_T1
+    /* Reset t pointer for power2round loop. */
+    li  s1, STACK_T
     add s1, fp, s1
 
     LOOPI K, 9
-        /* Split t polynomial into t0 (tmp buffer) and t1 (t1 buffer). */
+        /* Split t polynomial into t0 (tmp buffer) and t1 (t buffer). */
         addi a0, s1, 0
         addi a1, s0, 0
         addi a2, s1, 0
@@ -387,7 +387,7 @@ crypto_sign_keypair:
         addi a1, s0, 0
         jal  x1, polyt0_pack
         addi s7, a0, 0
-        /* Increment polyvec pointer. */
+        /* Increment polyvec pointer *t. */
         addi s1, s1, 1024
 
     /* Pack pk */
@@ -407,7 +407,7 @@ crypto_sign_keypair:
     bn.sid t0, 0(a0++)
 
     /* Load pointer to t1 */
-    li  a1, STACK_T1
+    li  a1, STACK_T
     add a1, fp, a1
 
     /* Pack t1 */
