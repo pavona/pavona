@@ -63,15 +63,16 @@ def _get_insn_count_range(
         assert len(edges) == 2
         return (sec_count, sec_count)
 
+    # if start_pc == 0xdbc:
+    #     breakpoint()
+
     # Find the minimum/maximum instruction counts for all next edges.
     min_counts = []
     max_counts = []
     for loc in edges:
         if isinstance(loc, Ecall) or isinstance(loc, ImemEnd):
-            # An ecall during a called procedure indicates a failure case,
-            # which we shouldn't include in our analysis.
-            if stop_at == StopPoint.RET:
-                continue
+            if stop_at != StopPoint.ECALL:
+                breakpoint()
             assert stop_at == StopPoint.ECALL
             # If we haven't reached the required function, then we don't have
             # any relevant instruction bounds to report.
@@ -124,6 +125,17 @@ def _get_insn_count_range(
         else:
             insn = program.get_insn(section.end)
             operands = program.get_operands(section.end)
+
+            # First, make sure this edge doesn't take us to an excluded label
+            skip_loc = False
+            for exclude_label in exclude_labels:
+                exclude_pc = program.get_pc_at_symbol(exclude_label)
+                if loc.pc == exclude_pc:
+                    skip_loc = True
+                    break
+            if skip_loc:
+                continue
+
             if insn.mnemonic == 'jal' and operands['grd'] == 1:
                 # Jumping to another subroutine; count the range for the
                 # subroutine itself, and if we've gone through the required
@@ -145,16 +157,6 @@ def _get_insn_count_range(
                 loc_min = jump_min + post_jump_min
                 loc_max = jump_max + post_jump_max
             else:
-                # First, make sure this edge doesn't take us to an excluded label
-                skip_loc = False
-                for exclude_label in exclude_labels:
-                    exclude_pc = program.get_pc_at_symbol(exclude_label)
-                    if loc.pc == exclude_pc:
-                        skip_loc = True
-                        break
-                if skip_loc:
-                    continue
-
                 # If we haven't passed through the required label, but
                 # this step will take us there, we can recurse without having
                 # to continue to look for the subroutine.

@@ -5,37 +5,43 @@
 [
   {
     symbol: "random_keygen",
+    exclude_symbols: ["p256_invalid_input"],
     const_str: "P256Keygen",
     comment: "P-256 key generation",
   },
   {
     symbol: "ecdsa_verify",
+    exclude_symbols: ["p256_invalid_input"],
     const_str: "P256Verify",
     comment: "P-256 ECDSA verification",
   },
   {
     symbol: "sideload_keygen",
+    exclude_symbols: ["p256_invalid_input"],
     const_str: "P256SideloadKeygen",
     comment: "P-256 key generation with sideloaded seed",
   },
   {
     symbol: "sideload_ecdsa_sign",
+    exclude_symbols: ["p256_invalid_input"],
     const_str: "P256SideloadSign",
     comment: "P-256 ECDSA signing with sideloaded key",
   },
   {
     symbol: "shared_key_from_seed",
+    exclude_symbols: ["p256_invalid_input"],
     const_str: "P256SideloadEcdh",
     comment: "P-256 ECDH key exchange with sideloaded seed",
   },
   {
     symbol: "ecdsa_sign",
+    exclude_symbols: ["p256_invalid_input"],
     const_str: "P256Sign",
     comment: "P-256 ECDSA signing"
   },
   {
     symbol: "shared_key",
-    exclude_symbols: ["shared_key_from_seed"],
+    exclude_symbols: ["p256_invalid_input", "shared_key_from_seed"],
     const_str: "P256Ecdh",
     comment: "P-256 ECDH key exchange"
   },
