@@ -760,7 +760,6 @@ def _autogen_otbn_insn_count_header(ctx):
         CcInfo(compilation_context = cc_common.create_compilation_context(
             includes = depset([header.dirname]),
             headers = depset([header]),
-            defines = depset(["RULE_NAME=\"{}\"".format(ctx.label.name)]),
         )),
         DefaultInfo(files = depset([header]), default_runfiles = ctx.runfiles(files = [hjson])),
         OutputGroupInfo(
