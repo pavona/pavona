@@ -147,17 +147,6 @@
 /* Config to start a SHA3_512 operation. */
 #define SHA3_512_CFG 0x10
 
-/* Macros */
-.macro push reg
-    addi sp, sp, -4      /* Decrement stack pointer by 4 bytes */
-    sw \reg, 0(sp)      /* Store register value at the top of the stack */
-.endm
-
-.macro pop reg
-    lw \reg, 0(sp)      /* Load value from the top of the stack into register */
-    addi sp, sp, 4     /* Increment stack pointer by 4 bytes */
-.endm
-
 /**
  * Dilithium Key Pair generation
  *
@@ -368,20 +357,11 @@ crypto_sign_keypair:
     add a0, fp, a0
     la  a1, twiddles_inv
 
-    .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
-        push \reg
-    .endr
-
     LOOPI K, 3
         jal  x1, intt
         addi a1, a1, -960 /* Reset the twiddle pointer */
         addi a0, a0, 1024 /* Go to next input polynomial */
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
-
-    /* Restore caller-saved registers */
-    .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
-        pop \reg
-    .endr
 
     /* t1+s2 */
 
