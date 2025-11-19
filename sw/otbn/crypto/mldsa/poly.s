@@ -658,27 +658,9 @@ _loop_inner_skip_load_poly_challenge:
  */
 .global poly_uniform
 poly_uniform:
-    /* 32 byte align the sp */
-    andi a5, sp, 31
-    beq  a5, zero, _aligned
-    sub  sp, sp, a5
-_aligned:
-    /* save fp to stack, use 32 bytes to keep it 32-byte aligned */
-    addi sp, sp, -32
-    sw   fp, 0(sp)
-
-    addi fp, sp, 0
-
-    /* Adjust sp to accomodate local variables */
-    addi sp, sp, -64
-
-    /* Space for tmp buffer to hold a WDR */
-    #define STACK_WDR2GPR -32
-    /* Space for the nonce */
-    #define STACK_NONCE -64
-
-    /* Store nonce to memory */
-    sw a2, STACK_NONCE(fp)
+    /* Save nonce to memory (use poly tmp buffer). */
+    la t0, poly_wdr2gpr
+    sw a2, 0(t0)
 
     /* Load Q to GPR */
     la t0, modulus
@@ -695,7 +677,7 @@ _aligned:
     li   a1, 32                  /* set message length */
     jal  x1, keccak_send_message /* a0 already contains the input buffer */
     addi a1, zero, 2             /* set message length */
-    addi a0, fp, STACK_NONCE     /* Set a0 to point to the nonce in memory */
+    la   a0, poly_wdr2gpr        /* Set a0 to point to the nonce in memory */
     jal  x1, keccak_send_message
 
     addi a1, a4, 0 /* move output pointer back to a1 */
@@ -843,14 +825,6 @@ _skip_store4:
 _end_rej_sample_loop:
     /* Finish the SHAKE-256 operation. */
 
-    /* sp <- fp */
-    addi sp, fp, 0
-    /* Pop ebp */
-    lw fp, 0(sp)
-    addi sp, sp, 32
-    /* Correct alignment offset (unalign) */
-    add sp, sp, a5
-
     ret
 
 _poly_uniform_inner_loop:
@@ -900,28 +874,9 @@ _skip_store1:
  */
 .global poly_uniform_eta
 poly_uniform_eta:
-/* 32 byte align the sp */
-    andi a5, sp, 31
-    beq  a5, zero, _aligned_poly_uniform_eta
-    sub  sp, sp, a5
-_aligned_poly_uniform_eta:
-    /* save fp to stack, use 32 bytes to keep it 32-byte aligned */
-    addi sp, sp, -32
-    sw   fp, 0(sp)
-
-    addi fp, sp, 0
-
-    /* Adjust sp to accomodate local variables */
-    addi sp, sp, -64
-
-    /* Space for tmp buffer to hold a WDR */
-    #define STACK_WDR2GPR -32
-
-    /* Space for the nonce */
-    #define STACK_NONCE -64
-
-    /* Store nonce to memory */
-    sw a2, STACK_NONCE(fp)
+    /* Save nonce to memory (use poly tmp buffer). */
+    la t0, poly_wdr2gpr
+    sw a2, 0(t0)
 
     /* Load a3 <= Q */
     la t0, modulus
@@ -940,7 +895,7 @@ _aligned_poly_uniform_eta:
     addi a0, a0, 0
     jal  x1, keccak_send_message /* a0 already contains the input buffer */
     addi a1, zero, 2             /* set nonce length */
-    addi a0, fp, STACK_NONCE     /* After rho, absorb nonce */
+    la   a0, poly_wdr2gpr        /* After rho, absorb nonce */
     jal  x1, keccak_send_message
     addi a1, a4, 0 /* move output pointer back to a1 */
 
@@ -1020,14 +975,6 @@ _rej_eta_sample_loop_continue:
 
 _end_rej_eta_sample_loop:
     /* Finish the SHAKE-256 operation. */
-
-    /* sp <- fp */
-    addi sp, fp, 0
-    /* Pop ebp */
-    lw   fp, 0(sp)
-    addi sp, sp, 32
-    /* Correct alignment offset (unalign) */
-    add  sp, sp, a5
 
     ret
 
