@@ -173,16 +173,13 @@ crypto_sign_keypair:
     #define STACK_S1     -2304 /* Prev - 1024 */
 #if DILITHIUM_MODE == 2
     #define STACK_T1  -6400 /* Prev - K*1024 */
-    #define STACK_T0  -10496 /* Prev - K*1024 */
-    #define INIT_SP -10496
+    #define INIT_SP -6400
 #elif DILITHIUM_MODE == 3
     #define STACK_T1  -8448 /* Prev - K*1024 */
-    #define STACK_T0  -14592 /* Prev - K*1024 */
-    #define INIT_SP -14592
+    #define INIT_SP -8448
 #elif DILITHIUM_MODE == 5
     #define STACK_T1  -10496 /* Prev - K*1024 */
-    #define STACK_T0  -18688 /* Prev - K*1024 */
-    #define INIT_SP -18688
+    #define INIT_SP -10496
 #endif
     /* Initialize the frame pointer */
     addi fp, sp, 0
@@ -375,21 +372,23 @@ crypto_sign_keypair:
         /* Increment polyvec pointer. */
         addi s1, s1, 1024
 
-    /* power2round */
+    /* Reset t1 pointer for power2round loop. */
+    li  s1, STACK_T1
+    add s1, fp, s1
 
-    /* Load source pointer */
-    li  a0, STACK_T1
-    add a0, fp, a0
-
-    /* Load destination pointer */
-    li  a1, STACK_T0
-    add a1, fp, a1
-    li  a2, STACK_T1
-    add a2, fp, a2
-
-    LOOPI K, 2
-        jal x1, poly_power2round
-        nop
+    LOOPI K, 9
+        /* Split t polynomial into t0 (tmp buffer) and t1 (t1 buffer). */
+        addi a0, s1, 0
+        addi a1, s0, 0
+        addi a2, s1, 0
+        jal  x1, poly_power2round
+        /* Pack the t0 polynomial into secret key. */
+        addi a0, s7, 0
+        addi a1, s0, 0
+        jal  x1, polyt0_pack
+        addi s7, a0, 0
+        /* Increment polyvec pointer. */
+        addi s1, s1, 1024
 
     /* Pack pk */
 
@@ -482,18 +481,6 @@ crypto_sign_keypair:
     bn.sid t0, 0(a0++)
     bn.lid t0, 0(t1++)
     bn.sid t0, 0(a0++)
-
-    /* Skip s1 and s2, since they were already packed earlier. */
-    addi a0, s7, 0
-
-    /* Load pointer to t0 */
-    li  a1, STACK_T0
-    add a1, fp, a1
-
-    /* Store packed(t0) */
-    LOOPI K, 2
-        jal x1, polyt0_pack
-        nop
 
     /* Free space on the stack */
     addi sp, fp, 0
