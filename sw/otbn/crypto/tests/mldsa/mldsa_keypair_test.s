@@ -13,11 +13,11 @@
 
 .section .text.start
 #if DILITHIUM_MODE == 2
-    #define STACK_SIZE 14720
+    #define STACK_SIZE 10624
 #elif DILITHIUM_MODE == 3
-    #define STACK_SIZE 20864
+    #define STACK_SIZE 14720
 #elif DILITHIUM_MODE == 5
-    #define STACK_SIZE 27008
+    #define STACK_SIZE 18816
 #endif
 
 #define SEEDBYTES 32

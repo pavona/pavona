@@ -172,20 +172,17 @@ crypto_sign_keypair:
     #define STACK_TMP    -1280 /* Prev - 1024 */
     #define STACK_S1     -2304 /* Prev - 1024 */
 #if DILITHIUM_MODE == 2
-    #define STACK_S2  -6400 /* Prev - K*1024 */
-    #define STACK_T1  -10496 /* Prev - K*1024 */
+    #define STACK_T1  -6400 /* Prev - K*1024 */
+    #define STACK_T0  -10496 /* Prev - K*1024 */
+    #define INIT_SP -10496
+#elif DILITHIUM_MODE == 3
+    #define STACK_T1  -8448 /* Prev - K*1024 */
     #define STACK_T0  -14592 /* Prev - K*1024 */
     #define INIT_SP -14592
-#elif DILITHIUM_MODE == 3
-    #define STACK_S2  -8448 /* Prev - K*1024 */
-    #define STACK_T1  -14592 /* Prev - K*1024 */
-    #define STACK_T0  -20736 /* Prev - K*1024 */
-    #define INIT_SP -20736
 #elif DILITHIUM_MODE == 5
-    #define STACK_S2  -10496 /* Prev - K*1024 */
-    #define STACK_T1  -18688 /* Prev - K*1024 */
-    #define STACK_T0  -26880 /* Prev - K*1024 */
-    #define INIT_SP -26880
+    #define STACK_T1  -10496 /* Prev - K*1024 */
+    #define STACK_T0  -18688 /* Prev - K*1024 */
+    #define INIT_SP -18688
 #endif
     /* Initialize the frame pointer */
     addi fp, sp, 0
@@ -242,21 +239,6 @@ crypto_sign_keypair:
         bn.sid  t0, 0(t1++) /* Store into buffer */
 
     /* Finish the SHAKE-256 operation. */
-
-    /* Sample s2 */
-
-    /* initialize the nonce */
-    li a2, L
-
-    /* Load output pointer */
-    li  a1, STACK_S2
-    add a1, fp, a1
-
-    LOOPI K, 3
-        /* Load pointer to input */
-        addi a0, fp, STACK_RHOPRIME
-        jal  x1, poly_uniform_eta /* Implicit increment of output pointer */
-        addi a2, a2, 1
 
     bn.wsrr   w16, mod /* w16 = R | Q */
     bn.shv.8S w22, w16 << 1 /* w22 = 2*R | 2*Q */
@@ -363,21 +345,35 @@ crypto_sign_keypair:
         addi a0, a0, 1024 /* Go to next input polynomial */
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
-    /* t1+s2 */
+    /* Load pointers for loop. */
+    li  s0, STACK_TMP
+    add s0, fp, s0
+    li  s1, STACK_T1
+    add s1, fp, s1
 
-    /* Load source pointers */
-    li  a0, STACK_S2
-    add a0, fp, a0
-    li  a1, STACK_T1
-    add a1, fp, a1
+    /* Initialize the nonce for sampling s2. */
+    li s6, L
 
-    /* Load destination pointer */
-    li  a2, STACK_T1
-    add a2, fp, a2
-
-    LOOPI K, 2
-        jal x1, poly_add
-        nop
+    /* This loop samples s2 and adds it to A*s1 (currently in the t1 buffer). */
+    LOOPI K, 14
+        /* Sample the next polynomial from s2 and store in temp buffer. */
+        addi a0, fp, STACK_RHOPRIME
+        addi a1, s0, 0
+        addi a2, s6, 0
+        jal  x1, poly_uniform_eta
+        addi s6, s6, 1
+        /* Pack the s2 polynomial into the secret key. */
+        addi a0, s7, 0
+        addi a1, s0, 0
+        jal  x1, polyeta_pack
+        addi s7, a0, 0
+        /* t[i] += s2 */
+        addi a0, s0, 0
+        addi a1, s1, 0
+        addi a2, s1, 0
+        jal  x1, poly_add
+        /* Increment polyvec pointer. */
+        addi s1, s1, 1024
 
     /* power2round */
 
@@ -487,17 +483,8 @@ crypto_sign_keypair:
     bn.lid t0, 0(t1++)
     bn.sid t0, 0(a0++)
 
-    /* Skip s1, since it was already packed earlier. */
+    /* Skip s1 and s2, since they were already packed earlier. */
     addi a0, s7, 0
-
-    /* Load pointer to s2 */
-    li  a1, STACK_S2
-    add a1, fp, a1
-
-    /* Store packed(s2) */
-    LOOPI K, 2
-        jal x1, polyeta_pack
-        nop
 
     /* Load pointer to t0 */
     li  a1, STACK_T0
