@@ -28,7 +28,7 @@ runs:
         count=0
         for xmlfile in $(find -L bazel-out -name "test.xml"); do
           cp ${xmlfile} /tmp/test-xml-files/test-${count}.xml
-          xmlstarlet ed --inplace -i '/testsuites/testsuite' -t attr -n hostname -v "${{ runner.name }}" /tmp/test-xml-files/test-${count}.xml
+          xmlstarlet ed --inplace -i '/testsuites/testsuite' -t attr -n hostname -v "${{ runner.name }}" /tmp/test-xml-files/test-${count}.xml || true
           count=$((count+1))
         done;
 
