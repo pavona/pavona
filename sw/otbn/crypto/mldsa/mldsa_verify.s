@@ -30,6 +30,7 @@
 
 #define POLYVECK_BYTES 4096
 #define POLYVECL_BYTES 4096
+#define Lminus1 3
 
 #define CRYPTO_PUBLICKEYBYTES 1312
 #define CRYPTO_SECRETKEYBYTES 2560
@@ -48,6 +49,7 @@
 
 #define POLYVECK_BYTES 6144
 #define POLYVECL_BYTES 5120
+#define Lminus1 4
 
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_SECRETKEYBYTES 4032
@@ -66,6 +68,7 @@
 
 #define POLYVECK_BYTES 8192
 #define POLYVECL_BYTES 7168
+#define Lminus1 6
 
 #define CRYPTO_PUBLICKEYBYTES 2592
 #define CRYPTO_SECRETKEYBYTES 4896
@@ -296,7 +299,7 @@ crypto_sign_verify_internal:
     /* reduce32(z) for central representation */
     li  a0, STACK_Z
     add a0, fp, a0
-    li  a1, STACK_W1
+    li  a1, STACK_W1 /* Use as temporary buffer. */
     add a1, fp, a1
     LOOPI L, 2
         jal x1, poly_reduce32
@@ -553,14 +556,6 @@ crypto_sign_verify_internal:
     li  s2, STACK_W1
     add s2, fp, s2
 
-    /* Zero the destination buffer. */
-    li t0, 31
-    addi t1, s2, 0
-    LOOPI K, 3
-        LOOPI 32, 1
-          bn.sid t0, 0(t1++)
-        nop
-
     /* Load offset for resetting vector pointer. */
     li s3, POLYVECL_BYTES
 
@@ -570,8 +565,21 @@ crypto_sign_verify_internal:
     li s4, 0
 
      /* Compute A * z, computing elements of A on the fly. */
-    loopi K, 15
-        loopi L, 10
+    loopi K, 25
+        /* Compute A[i][j]. */
+        addi a0, fp, STACK_RHO
+        addi a1, s1, 0
+        addi a2, s4, 0
+        jal  x1, poly_uniform
+        /* Increment the matrix nonce. */
+        addi s4, s4, 1
+        /* Compute A[i][j] * z[j] and set the output at index i. */
+        addi a0, s0, 0
+        addi a1, s1, 0
+        addi a2, s2, 0
+        jal  x1, poly_pointwise
+        addi s0, s0, 1024
+        loopi Lminus1, 10
             /* Compute A[i][j]. */
             addi a0, fp, STACK_RHO
             addi a1, s1, 0
