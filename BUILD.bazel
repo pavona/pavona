@@ -15,11 +15,9 @@ filegroup(
     name = "doc_files",
     srcs = [
         "README.md",
-        "//doc:doc_files",
         "//hw:doc_files",
         "//rules/opentitan:doc_files",
         "//signing:doc_files",
-        "//site/book-theme:doc_files",
         "//sw:doc_files",
         "//third_party:doc_files",
         "//toolchain:doc_files",
