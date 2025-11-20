@@ -700,6 +700,9 @@ crypto_sign_verify_internal:
 
     bn.wsrr w8, 0xA /* KECCAK_DIGEST */
 
+    /* Restore MOD = R | Q to avoid clobbering, unused from here on. */
+    bn.wsrw mod, w16
+
     /* Check the failure register from the loop. */
     bne s10, zero, _fail_crypto_sign_verify_internal
 
