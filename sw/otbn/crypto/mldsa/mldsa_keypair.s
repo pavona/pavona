@@ -174,12 +174,15 @@ crypto_sign_keypair:
 #if DILITHIUM_MODE == 2
     #define STACK_T -6400 /* Prev - K*1024 */
     #define INIT_SP -6400
+    #define STACK_SIZE 6528 /* Expected stack size for reference (unused). */
 #elif DILITHIUM_MODE == 3
     #define STACK_T -8448 /* Prev - K*1024 */
     #define INIT_SP -8448
+    #define STACK_SIZE 8576 /* Expected stack size for reference (unused). */
 #elif DILITHIUM_MODE == 5
     #define STACK_T -10496 /* Prev - K*1024 */
     #define INIT_SP -10496
+    #define STACK_SIZE 10624 /* Expected stack size for reference (unused). */
 #endif
     /* Initialize the frame pointer */
     addi fp, sp, 0
