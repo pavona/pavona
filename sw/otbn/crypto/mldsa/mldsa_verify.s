@@ -194,16 +194,19 @@ crypto_sign_verify_internal:
     #define STACK_Z  -6304 /* Prev - L*1024 */
     #define STACK_W1  -10400 /* Prev - K*1024 */
     #define INIT_SP -10400
+    #define STACK_SIZE 10528 /* Expected stack size for reference (unused). */
 #elif DILITHIUM_MODE == 3
     #define STACK_C  -2240 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
     #define STACK_Z  -7360 /* Prev - L*1024 */
     #define STACK_W1  -13504 /* Prev - K*1024 */
     #define INIT_SP -13504
+    #define STACK_SIZE 13632 /* Expected stack size for reference (unused). */
 #elif DILITHIUM_MODE == 5
     #define STACK_C  -2240 /* Prev - K*ceil(CTILDEBYTES/32)*32 */
     #define STACK_Z  -9408 /* Prev - L*1024 */
     #define STACK_W1  -17600 /* Prev - K*1024 */
     #define INIT_SP -17600
+    #define STACK_SIZE 17728 /* Expected stack size for reference (unused). */
 #endif
 
     /* Initialize the frame pointer */
