@@ -195,18 +195,21 @@ crypto_sign_signature_internal:
         #define STACK_CTXLEN  -6464 /* Prev */
     #define STACK_CTX  -6468 /* Prev - 4 */
     #define INIT_SP -6496
+    #define STACK_SIZE 6624 /* Expected stack size for reference (unused). */
 #elif DILITHIUM_MODE == 3
     #define STACK_W1  -2432 /* Prev - K*32 */
     #define STACK_W0  -8576 /* Prev - K*1024 */
         #define STACK_CTXLEN  -8576 /* Prev */
     #define STACK_CTX  -8580 /* Prev - 4 */
     #define INIT_SP -8608
+    #define STACK_SIZE 8736 /* Expected stack size for reference (unused). */
 #elif DILITHIUM_MODE == 5
     #define STACK_W1  -2496 /* Prev - K*32 */
     #define STACK_W0  -10688 /* Prev - K*1024 */
         #define STACK_CTXLEN  -10688 /* Prev */
     #define STACK_CTX  -10692 /* Prev - 4 */
     #define INIT_SP -10720
+    #define STACK_SIZE 10848 /* Expected stack size for reference (unused). */
 #endif
 
     /* Initialize the frame pointer */
