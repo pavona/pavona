@@ -209,3 +209,21 @@ otbn_sim_test(
         "//sw/otbn/crypto/mldsa:poly_sub",
     ],
 )
+
+otbn_sim_test(
+    name = "poly_uniform_test",
+    srcs = [
+        "poly_uniform_test.s",
+    ],
+    # poly_uniform should be unaffected by mode, but other parts of the
+    # polynomial library require some mode to be set.
+    copts = [
+        "-DDILITHIUM_MODE=2",
+    ],
+    dexp = "poly_uniform_test.dexp",
+    deps = [
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_poly",
+        "//sw/otbn/crypto/mldsa:mldsa44_rounding",
+    ],
+)
