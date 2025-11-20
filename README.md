@@ -1,29 +1,15 @@
-# OpenTitan
+# About this Repository
 
-![OpenTitan logo](./doc/opentitan-logo.png)
+This codebase is an open silicon distribution built in part from [OpenTitan](https://github.com/lowRISC/opentitan) technical collateral.
+Its purpose is to explore enhancements and extensions to increase the utility, flexibility or standards alignment of Open Silicon in general.
 
-## About the project
+This repository will from time to time sync with relevant collateral from OpenTitan and other repositories.
 
-[OpenTitan](https://opentitan.org) is an open source silicon Root of Trust (RoT) project.
-OpenTitan will make the silicon RoT design and implementation more transparent, trustworthy, and secure for enterprises, platform providers, and chip manufacturers.
-OpenTitan is administered by [lowRISC CIC](https://www.lowrisc.org) as a collaborative project to produce high quality, open IP for instantiation as a full-featured product.
-See the [OpenTitan site](https://opentitan.org) and [OpenTitan docs](https://opentitan.org/book/) for more information about the project.
+This repository is independent of and not affiliated with OpenTitan.
+We have attempted to retain original authorship, commit history and comply with license terms.
+OpenTitan is a trademark of its respective owners.
+This fork is not affiliated with or endorsed by the original project.
 
-## About this repository
+## License
 
-This repository contains hardware, software and utilities written as part of the OpenTitan project.
-It is structured as monolithic repository, or "monorepo", where all components live in one repository.
-It exists to enable collaboration across partners participating in the OpenTitan project.
-
-## Documentation
-
-The project contains comprehensive documentation of all IPs and tools.
-You can access it [online at opentitan.org/book/](https://opentitan.org/book/).
-
-## How to contribute
-
-Have a look at [CONTRIBUTING](CONTRIBUTING.md) and our [documentation on project organization and processes](./doc/project_governance/README.md) for guidelines on how to contribute code to this repository.
-
-## Licensing
-
-Unless otherwise noted, everything in this repository is covered by the Apache License, Version 2.0 (see [LICENSE](https://github.com/lowRISC/opentitan/blob/master/LICENSE) for full text).
+Unless otherwise stated, everything in this repository is covered by the Apache License, Version 2.0.
