@@ -407,7 +407,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for otbn in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h40000;
+  parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h20000;
 
   /**
    * Peripheral base address for keymgr in top earlgrey.

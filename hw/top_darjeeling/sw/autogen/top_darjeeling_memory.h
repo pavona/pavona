@@ -510,7 +510,7 @@
  * address between #TOP_DARJEELING_OTBN_BASE_ADDR and
  * `TOP_DARJEELING_OTBN_BASE_ADDR + TOP_DARJEELING_OTBN_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_OTBN_SIZE_BYTES 0x40000
+#define TOP_DARJEELING_OTBN_SIZE_BYTES 0x20000
 /**
  * Peripheral base address for keymgr_dpe in top darjeeling.
  *

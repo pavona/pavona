@@ -369,7 +369,7 @@ pub const OTBN_BASE_ADDR: usize = 0x22100000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #OTBN_BASE_ADDR and
 /// `OTBN_BASE_ADDR + OTBN_SIZE_BYTES`.
-pub const OTBN_SIZE_BYTES: usize = 0x40000;
+pub const OTBN_SIZE_BYTES: usize = 0x20000;
 
 /// Peripheral base address for keymgr_dpe in top darjeeling.
 ///

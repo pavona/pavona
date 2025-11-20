@@ -271,6 +271,44 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
+      <td>0x7D9</td>
+      <td>RW</td>
+      <td>KMAC_CFG</td>
+      <td>
+        Write to this CSR to set the configuration for KMAC msg.
+        Bit  [31]   Cfg Done
+        Bits [19:8] Number of 64-bit words in message
+        Bits [7:5]  Number of bytes in final word
+        Bits [4:2]  Keccak Strength
+        Bits [1:0]  SHA3 Mode
+        This CSR is mapped to the KMAC CFG WSR.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E2</td>
+      <td>RO</td>
+      <td>KMAC_STATUS</td>
+      <td>
+        Contains status bits for KMAC operations and return digest
+        Bit [4]   MSG Undersized Error
+        Bit [3]   MSG Oversized Error
+        Bit [2]   Digest error
+        Bit [1]   KMAC Ready
+        Bit [0]   Digest Done
+      </td>
+    </tr>
+    <tr>
+      <td>0x7F3</td>
+      <td>RW</td>
+      <td>KMAC_PARTIAL_WRITE</td>
+      <td>
+        Partial write msg register used as a byte-mask for the msg being written into the internal MSG FIFO.
+        The value should be the decimal number of bytes valid for the msg to be written ex.) 32 for every byte valid.
+        Conversion to a contiguous mask like 32'h0000_ffff are done internally.
+        Additionally, the register is reset to a default value of 32 at the start/end of any transaction.
+      </td>
+    </tr>
+    <tr>
       <td>0xFC0</td>
       <td>RO</td>
       <td>RND</td>
@@ -381,6 +419,14 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
+      <td>0xB</td>
+      <td>RW</td>
+      <td><a name="acch">ACCH</a></td>
+      <td>
+        The high bits of the accumulator register used by the {{#otbn-insn-ref BN.MULV}} instruction.
+      </td>
+    </tr>
+    <tr>
       <td>0x4</td>
       <td>RO</td>
       <td><a name="key-s0-l">KEY_S0_L</a></td>
@@ -420,6 +466,32 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
         Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
         <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+      </td>
+    </tr>
+    <tr>
+      <td>0x8</td>
+      <td>RW</td>
+      <td><a name="kmac-cfg">KMAC_CFG</a></td>
+      <td>
+        Contains the configuration bits for sending KMAC messages.
+        Also visible as a kmac_cfg CSR.
+      </td>
+    </tr>
+    <tr>
+      <td>0x9</td>
+      <td>RW</td>
+      <td><a name="kmac-msg">KMAC_MSG</a></td>
+      <td>
+        The kmac msg to send over AppIntf.
+        A byte mask is applied to the msg from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
+      </td>
+    </tr>
+    <tr>
+      <td>0xA</td>
+      <td>RW</td>
+      <td><a name="kmac-digest">KMAC_DIGEST</a></td>
+      <td>
+        Return digest from AppIntf.
       </td>
     </tr>
   </tbody>

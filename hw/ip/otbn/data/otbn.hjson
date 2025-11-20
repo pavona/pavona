@@ -766,12 +766,12 @@
       }
     }
 
-    { skipto: "0x12000" }
+    { skipto: "0x18000" }
 
     // Dmem size (given as `items` below) must be a power of two.
     { window: {
         name: "DMEM",
-        items: "32512", // 127kB visible over bus (1 kB scracth)
+        items: "7936", // 31kB visible over bus (1 kB scracth)
         unusual: "true", // Needed to avoid an error because of the non-power-of-two size
         swaccess: "rw",
         data-intg-passthru: "true",

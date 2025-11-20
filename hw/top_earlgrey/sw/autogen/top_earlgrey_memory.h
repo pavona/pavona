@@ -745,7 +745,7 @@
  * address between #TOP_EARLGREY_OTBN_BASE_ADDR and
  * `TOP_EARLGREY_OTBN_BASE_ADDR + TOP_EARLGREY_OTBN_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_OTBN_SIZE_BYTES 0x40000
+#define TOP_EARLGREY_OTBN_SIZE_BYTES 0x20000
 /**
  * Peripheral base address for keymgr in top earlgrey.
  *
