@@ -499,6 +499,18 @@ _rej_crypto_sign_signature_internal:
     /* Load a constant pointer to the zero wide register. */
     li s5, 31
 
+    /* Load a pointer to the vectorized gamma1. */
+    la   s7, gamma1_vec_const
+
+    /* Load a pointer to the NTT twiddles. */
+    la   s9, twiddles_fwd
+
+    /* Load other pointers. */
+    li   s8, STACK_Y
+    add  s8, fp, s8
+    li   s10, STACK_TMP
+    add  s10, fp, s10
+
     /* Compute A * y, computing the values for A and y on the fly.
 
        We compute column-wise so that we genearate elements of y only once; in
@@ -509,41 +521,32 @@ _rej_crypto_sign_signature_internal:
            for i in 0..k-1:
              w[i] += A[i][j] * yj
     */
-    .rept L
+    loopi L, 29
         /* Zero the buffer for y[j]. */
-        li   a0, STACK_Y
-        add  a0, fp, a0
+        addi  t0, s8, 0
         loopi 32, 1
-          bn.sid s5, 0(a0++)
+          bn.sid s5, 0(t0++)
         /* Compute y[j]. */
-        li   a0, STACK_Y
-        add  a0, fp, a0
-        li   a1, STACK_RHOPRIME
-        add  a1, fp, a1
+        addi a0, s8, 0
+        add  a1, fp, STACK_RHOPRIME
         addi a2, s11, 0 /* y sampling nonce */
-        la   a3, gamma1_vec_const
+        addi a3, s7, 0
         jal  x1, poly_uniform_gamma_1
         addi s11, a2, 1 /* a2 should be preserved after execution */
         bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
         /* Compute ntt(y[j]). */
-        li   a0, STACK_Y
-        add  a0, fp, a0
-        la  a1, twiddles_fwd
-        li   a2, STACK_Y
-        add  a2, fp, a2
+        addi a0, s8, 0
+        addi a1, s9, 0
+        addi a2, s8, 0
         jal x1, ntt
-        .rept K
+        loopi K, 10
             /* Compute A[i][j]. */
-            li   a0, STACK_RHO
-            add  a0, fp, a0
-            li   a1, STACK_TMP
-            add  a1, fp, a1
+            addi a0, fp, STACK_RHO
+            addi a1, s10, 0
             addi a2, s4, 0 /* matrix nonce */
             jal  x1, poly_uniform
-            li   a0, STACK_Y
-            add  a0, fp, a0
-            li   a1, STACK_TMP
-            add  a1, fp, a1
+            addi a0, s8, 0
+            addi a1, s10, 0
             addi a2, s1, 0 /* *w[i] */
             /* Add A[i][j] * y[j] to w[i]. */
             jal  x1, poly_pointwise_acc
@@ -551,7 +554,6 @@ _rej_crypto_sign_signature_internal:
             addi s1, s1, 1024
             /* Increment the row index by 1. */
             addi s4, s4, 256
-         .endr
         /* Reset w pointer. */
         sub  s1, s1, s6
         /* Increment the column index in the nonce by one. */
@@ -559,7 +561,6 @@ _rej_crypto_sign_signature_internal:
         /* Reset the row index in the nonce to zero. */
         andi s4, s4, 255
         bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
-    .endr
 
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
     /* Inverse NTT on w */
@@ -623,7 +624,7 @@ _rej_crypto_sign_signature_internal:
 
        Afterwards, the w1[i] value can be discarded, so we do not need to keep
        two w-sized polyvecs in scope at once. */
-    .rept K
+    loopi K, 14
         /* Decompose w and store w0 in-place, w1 in tmp. */
         addi   a0, s0, 0
         addi   a1, s4, 0
@@ -635,7 +636,7 @@ _rej_crypto_sign_signature_internal:
         jal    x1, polyw1_pack
         /* Send packed w1 to the Keccak core. */
         addi   a0, s2, 0
-        li     a1, POLYW1_PACKEDBYTES
+        addi   a1, zero, POLYW1_PACKEDBYTES
         jal    x1, keccak_send_message
         /* Calculate the coefficients of w1 that are nonzero mod q, and store them. */
         addi   a0, s4, 0
@@ -643,7 +644,6 @@ _rej_crypto_sign_signature_internal:
         bn.sid x0, 0(s1++)
         /* Increment w pointer. */
         addi s0, s0, 1024
-    .endr
 
     /* Setup WDR */
     li t1, 8
