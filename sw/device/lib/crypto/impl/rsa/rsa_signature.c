@@ -169,7 +169,7 @@ status_t rsa_signature_generate_2048_start(
 }
 
 status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature) {
-  return rsa_modexp_consttime_2048_finalize(signature);
+  return rsa_modexp_consttime_crt_2048_finalize(signature);
 }
 
 /**
@@ -301,7 +301,7 @@ status_t rsa_signature_generate_3072_start(
 }
 
 status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature) {
-  return rsa_modexp_consttime_3072_finalize(signature);
+  return rsa_modexp_consttime_crt_3072_finalize(signature);
 }
 
 /**
@@ -364,7 +364,7 @@ status_t rsa_signature_generate_4096_start(
 }
 
 status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature) {
-  return rsa_modexp_consttime_4096_finalize(signature);
+  return rsa_modexp_consttime_crt_4096_finalize(signature);
 }
 
 /**

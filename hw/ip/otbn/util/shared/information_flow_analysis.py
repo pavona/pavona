@@ -274,8 +274,6 @@ def _get_iflow_update_state(
         else:
             loop_iters[pc] = rec_loop_iters[pc]
 
-    loop_iters.update(rec_loop_iters)
-
     # Update the constants to keep only those that are either unmodified in the
     # return-path information flow or returned by the recursive call.
     constants.removemany(rec_return_iflow.all_sinks())
