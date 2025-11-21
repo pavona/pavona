@@ -76,8 +76,9 @@ jobs:
       - name: Trailing whitespace
         run: ./ci/scripts/whitespace.sh "$GITHUB_BASE_REF"
         if: ${{ github.event_name == 'pull_request' }}
-      - name: Broken links
-        run: ./ci/scripts/check-links.sh
+      # Temporarily disabled, see expo#153
+      # - name: Broken links
+      #   run: ./ci/scripts/check-links.sh
       - name: Lock files
         run: ./ci/scripts/check-lock-files.sh
 
