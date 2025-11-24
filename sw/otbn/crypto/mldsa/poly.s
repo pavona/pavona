@@ -654,7 +654,7 @@ _loop_inner_skip_load_poly_challenge:
  * @param[in]  a2: nonce
  * @param[out] a1: dmem pointer to polynomial
  *
- * clobbered registers: a0-a5, t0-t6, w8, w21
+ * clobbered registers: a0-a3, t0-t6, w0, w8-w12
  */
 .global poly_uniform
 poly_uniform:
@@ -667,7 +667,7 @@ poly_uniform:
     lw a2, 0(t0)
 
     /* Initialize a SHAKE128 operation. */
-    addi  a4, a1, 0               /* save output pointer */
+    addi  a3, a1, 0               /* save output pointer */
     addi  a1, zero, 34
     slli  t0, a1, 5
     addi  t0, t0, SHAKE128_CFG
@@ -680,184 +680,254 @@ poly_uniform:
     la   a0, poly_wdr2gpr        /* Set a0 to point to the nonce in memory */
     jal  x1, keccak_send_message
 
-    addi a1, a4, 0 /* move output pointer back to a1 */
+    addi a1, a3, 0 /* move output pointer back to a1 */
 
-    /* t0 = 1020, a1 + 1020 is the last valid address */
-    addi t0, a1, 1024
+    /* Define temporary registers. */
+    #define shake_reg w8
+    #define shake_reg_ptr 8
 
-    /* Load mask for coefficient */
-    li t2, 0x7FFFFF
+    /* Set up a mask to select the lower 23 bits of each 32 bits. */
+    bn.not  w11, bn0
+    bn.rshi w11, bn0, w11 >> 233
+    bn.or   w11, w11, w11 << 128
+    bn.or   w11, w11, w11 << 64
+    bn.or   w11, w11, w11 << 32
 
-    /* WDR index */
-    li t5, 8
-    li t6, 0xFFFF
-    li a6, 3 /* Compare for flag bits */
-    bn.movr t5, a6
+    /* Speculatively store 256 candidate coefficients.
 
-    #define cmp_mask w9
-    bn.addi cmp_mask, bn0, 3
+       For performance reasons, we do not check that the coefficients are < Q
+       within this loop. Because the vast majority of 23-bit numbers are within
+       bounds (Q / 2^23 = 0.99902), it's faster to store speculatively and then
+       post-process to discard the small number of bad coefficients.
 
-    #define coeff_mask w10
-    bn.addi coeff_mask, bn0, 1
-    bn.rshi coeff_mask, coeff_mask, bn0 >> 233
-    bn.subi coeff_mask, coeff_mask, 1
-    /* bn.addi coeff_mask, bn0, 0x7FFFFF */
+       Each iteration of this loop processes 96 bytes of digest into 32
+       coefficient candidates that are 23 bits each. The loop is slightly
+       unrolled to handle imperfect alignment between reads of the digest, but
+       luckily the pattern repeats every 3 reads:
+         - read 32B of digest
+         - create 10 candidates (uses 30B, 2B of digest remaining)
+         - read 32B of digest
+         - create 11 candidates (uses 33B, 1B of digest remaining)
+         - read 32B of digest
+         - create 11 candidates (uses 33B, now safe to repeat)
+    */
+    loopi 8, 35
 
-    #define cand w11
+      /* Read 32 bytes from the digest. */
+      bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
 
-    #define mod w12
-    li t3, 12
-    la t1, modulus
-    bn.lid t3, 0(t1)
-    bn.rshi mod, bn0, mod >> 224 /* Only keep mod in lowest word */
+      /* Load 8 23-bit coefficient candidates into vector register. */
+      loopi   8, 2
+        bn.rshi w0, shake_reg, w0 >> 32
+        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
 
-    #define accumulator w13
-    li t5, 13
-    li t3, 8
-    #define accumulator_count t6
-    li t6, 0
+      /* Store 8 coefficient candidates. */
+      bn.and  w0, w0, w11
+      bn.sid  x0, 0(a1++)
 
-    /* Loop until 256 coefficients have been written to the output */
+      /* Load 2 23-bit coefficient candidates into vector register. */
+      loopi   2, 2
+        bn.rshi w0, shake_reg, w0 >> 32
+        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
 
-_rej_sample_loop:
-    /* First squeeze */
-    .equ w8, shake_reg
-    bn.wsrr  shake_reg, 0xA /* KECCAK_DIGEST */
+      /* Save the leftover bytes (2) in the upper part of w0. */
+      bn.rshi w0, shake_reg, w0 >> 16
 
-    /* With one SHAKE squeeze, we get 32 bytes of data. From this, we can try to
-       build 10 coefficients with 3 bytes each and are left with 2 bytes
-       remainder. We then take the two remaining bytes and one byte from the
-       next squeeze operation and try to get another coefficient, leaving us
-       with 31 bytes from which we can, again, try to read 10 coefficients and
-       are left with 1 byte remainder. From the next 32 bytes, we take 2 bytes
-       and try to build one coefficient with the remaining 1 byte. Finally, we
-       are left with 30 bytes which we can try to turn into 10 coefficients
-       without any remainder. lcm(3, 32) = 96, meaning we use 96 bytes of SHAKE
-       output each (full) iteration of the main loop. In case we reach the
-       target amount of coefficients, we jump to _end_rej_sample_loop and exit.
-       */
+      /* Read 32 bytes from the digest. */
+      bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
 
-    /* Process floor(32 bytes / 3 bytes) * 3 bytes = 30 bytes */
-    jal x1, _poly_uniform_inner_loop
+      /* Complete the partial coefficient with 1 more byte from the digest. */
+      bn.rshi w0, shake_reg, w0 >> 16
+      bn.rshi shake_reg, shake_reg, shake_reg >> 8 # rotate-right
 
-    /* Check if we have finished in the previous loop */
-    beq a1, t0, _end_rej_sample_loop
+      /* Load 5 23-bit coefficient candidates into vector register. */
+      loopi   5, 2
+        bn.rshi w0, shake_reg, w0 >> 32
+        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
 
-    /* Process remaining 2 bytes */
+      /* Store 8 coefficient candidates. */
+      bn.and  w0, w0, w11
+      bn.sid  x0, 0(a1++)
 
-    /* Get last two bytes of shake output in shake_reg into cand */
-    bn.rshi cand, shake_reg, bn0 >> 16 /* move remaining 2 bytes to the top of cand */
-    /* Squeeze */
+      /* Load 5 23-bit coefficient candidates into vector register. */
+      loopi   5, 2
+        bn.rshi w0, shake_reg, w0 >> 32
+        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
+
+      /* Save the leftover bytes (1) in the upper part of w0. */
+      bn.rshi w0, shake_reg, w0 >> 8
+
+      /* Read 32 bytes from the digest. */
+      bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
+
+      /* Complete the partial coefficient with 2 more bytes from the digest. */
+      bn.rshi w0, shake_reg, w0 >> 24
+      bn.rshi shake_reg, shake_reg, shake_reg >> 16 # rotate-right
+
+      /* Load 2 23-bit coefficient candidates into vector register. */
+      loopi   2, 2
+        bn.rshi w0, shake_reg, w0 >> 32
+        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
+
+      /* Store 8 coefficient candidates. */
+      bn.and  w0, w0, w11
+      bn.sid  x0, 0(a1++)
+
+      /* Load 8 23-bit coefficient candidates into vector register. */
+      loopi   8, 2
+        bn.rshi w0, shake_reg, w0 >> 32
+        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
+
+      /* Store 8 coefficient candidates. */
+      bn.and  w0, w0, w11
+      bn.sid  x0, 0(a1++)
+
+      /* End of loop body. */
+
+    /* Copy the pointer to the end of the output. */
+    addi    t3, a1, 0
+
+    /* Reset the output pointer. */
+    addi    a1, a1, -1024
+
+    /* Set up a mask to select the least significant byte of each 32 bits. */
+    bn.addi w11, bn0, 0xff
+    bn.or   w11, w11, w11 << 128
+    bn.or   w11, w11, w11 << 64
+    bn.or   w11, w11, w11 << 32
+
+    /* w12 <= vectorized modulus */
+    li      t0, 12
+    la      t1, modulus
+    bn.lid  t0, 0(t1)
+
+    /* Keep track of the number of bytes available in the digest. Starts at 0
+       since at present all bytes have been consumed. */
+    li    t2, 0
+
+    /* Keep a value that represents the expected flags after masking. */
+    li    a3, 8
+
+    /* Now, postprocess to remove bad coefficients. Note: this loop is a hot
+       path for performance, running 1792 times for every matrix expansion in
+       ML-DSA-87 signing. Handle with care. The discard_bad_coeff path is
+       rarely taken (roughly one out of every 1000 coefficients is bad) and can
+       be less heavily optimized. */
+    loopi 32, 7
+_poly_uniform_discard_coeff_done:
+       /* Load the next 8 candidate coefficients. */
+       bn.lid  x0, 0(a1)
+
+       /* Subtract the modulus from each coefficient. */
+       bn.subv.8S w10, w0, w12
+
+       /* Select the most significant byte of each difference and shift it down
+          to the least significant byte-position. */
+       bn.and  w10, w11, w10 >> 24
+
+       /* Compare to the mask. If all coefficients are good, the values should
+          be equal and all flags should be zero except for Z. */
+       bn.cmp  w11, w10
+
+       /* Check the flag values. If only Z is set, all indicator
+          bytes are 0xff and we can proceed to the next word.  Otherwise, we
+          need to remove a bad coefficient (will jump back to the loop start
+          when done). */
+       csrrs   t0, FG0, x0
+       bne     t0, a3, _poly_uniform_find_and_discard_bad_coeff
+
+       /* Increment the output pointer. */
+       addi    a1, a1, 32
+
+     ret
+
+_poly_uniform_find_and_discard_bad_coeff:
+    /* If we jump here:
+         - a1 points to a vector with a bad coefficient
+         - t2 has the number of digest bytes available in shake_reg
+         - t3 points to the end of the output polynomial
+         - w10 has the indicator bytes for each coefficient.
+       We can use the indicator to find and discard the bad coefficient. Only
+       process one at a time, because discarding will shift the indices and
+       make subsequent correction more complicated. */
+    addi    t0, a1, 0
+    bn.or   w10, w10, bn0
+    .rept 8
+        /* Probe the L flag. If it is unset, discard the coefficient. */
+        csrrs   t1, FG0, x0
+        andi    t1, t1, 4
+        beq     t1, zero, _poly_uniform_discard_coeff
+        /* Increment the output pointer. */
+        addi    t0, t0, 4
+        /* Shift the indicators (sets the L flag for the next iteration). */
+        bn.or   w10, bn0, w10 >> 32
+    .endr
+
+     /* We should never get here; it would mean there was no bad coefficient. */
+     unimp
+
+_poly_uniform_discard_coeff:
+    /* If we jump here:
+         - t0 points to a bad 32-bit coefficient
+         - t2 has the number of digest bytes available in shake_reg
+         - t3 points to the end of the output polynomial
+       Now we need to shift the entire polynomial to eliminate the bad
+       coefficient, and backfill the next candidate from the digest. */
+    /* Get the number of coefficients to shift. */
+    sub  t1, t3, t0
+    srli t1, t1, 2
+    addi t1, t1, -1
+    /* Loop iteration count cannot be zero. */
+    beq  t1, zero, _poly_uniform_discard_coeff_skip_shift
+    /* For every coefficient from *a1...poly[254], shift in the value of the
+       next coefficient. This overwrites the bad coefficient. */
+    loop t1, 3
+      lw   t1, 4(t0)
+      sw   t1, 0(t0)
+      addi t0, t0, 4
+_poly_uniform_discard_coeff_skip_shift:
+    /* Speculatively copy 23 bits of digest (some bytes may be invalid). */
+    la      t4, poly_wdr2gpr
+    li      t5, shake_reg_ptr
+    bn.sid  t5, 0(t4)
+    bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    lw      t1, 0(t4)
+    li      t6, 0x7fffff
+    and     t1, t1, t6
+    sw      t1, 0(t0)
+    /* Update number of bytes available and check for underflow. If the bytes
+       were all valid, we're done. */
+    addi    t2, t2, -3
+    srli    t6, t2, 31
+    beq     t6, zero, _poly_uniform_discard_coeff_done
+    /* Some upper bytes are not valid. Refresh the digest and re-read. */
     bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
-
-    /* Get one more byte from new shake data*/
-    bn.rshi cand, shake_reg, cand >> 240
-    /* We use only 1 byte of the 4, so shift by 8 */
-    bn.or   shake_reg, bn0, shake_reg >> 8
-
-    /* mask candidate */
-    bn.and cand, coeff_mask, cand
-
-    bn.cmp cand, mod
-    csrrs  a4, 0x7C0, zero      /* Read flags */
-    andi a4, a4, 3 /* Mask flags */
-    bne    a4, a6, _skip_store2 /* Reject if M, C are NOT set to 1, meaning
-                                    NOT (q > cand) = (q <= cand) */
-
-    bn.rshi accumulator, cand, accumulator >> 32
-    addi accumulator_count, accumulator_count, 1
-
-    bne accumulator_count, t3, _skip_store2
-
-    bn.sid    t5, 0(a1++) /* Store to memory */
-    li        accumulator_count, 0
-
-    /* if we have written the last coefficient, exit */
-    beq  a1, t0, _end_rej_sample_loop
-_skip_store2:
-
-    /* Process floor(31/3)*3 = 30 bytes */
-    jal x1, _poly_uniform_inner_loop
-
-    /* Check if we have finished in the previous loop */
-    beq a1, t0, _end_rej_sample_loop
-
-    /* Process remaining 1 byte */
-    /* Get last two bytes of shake output in shake_reg into cand */
-    bn.rshi cand, shake_reg, bn0 >> 8 /* move remaining 1 byte to the top of cand */
-    /* Squeeze */
-    bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
-
-    /* Get one more byte from new shake data*/
-    bn.rshi cand, shake_reg, cand >> 248
-    /* We use only 1 byte of the 4, so shift by 8 */
-    bn.or  shake_reg, bn0, shake_reg >> 16
-
-    /* mask candidate */
-    bn.and cand, coeff_mask, cand
-
-    bn.cmp cand, mod
-    csrrs a4, 0x7C0, zero /* Read flags */
-    andi a4, a4, 3 /* Mask flags */
-    bne  a4, a6, _skip_store4 /* Reject if M, C are NOT set to 1, meaning
-                                    NOT (q > cand) = (q <= cand) */
-
-    bn.rshi accumulator, cand, accumulator >> 32
-    addi accumulator_count, accumulator_count, 1
-
-    bne accumulator_count, t3, _skip_store4
-
-    bn.sid t5, 0(a1++) /* Store to memory */
-    li accumulator_count, 0
-    /* if we have written the last coefficient, exit */
-    beq  a1, t0, _end_rej_sample_loop
-_skip_store4:
-
-    /* Process floor(30/3)*3 = 30 bytes */
-    jal x1, _poly_uniform_inner_loop
-
-    /* Check if we have finished in the previous loop */
-    beq a1, t0, _end_rej_sample_loop
-
-    /* No remainder! Start all over again. */
-    beq zero, zero, _rej_sample_loop
-
-_end_rej_sample_loop:
-    /* Finish the SHAKE-256 operation. */
-
-    ret
-
-_poly_uniform_inner_loop:
-    li t4, 1
-    LOOPI 10, 12
-        beq a1, t0, _skip_store1
-        /* Mask shake output */
-        bn.and cand, shake_reg, coeff_mask
-
-        bn.cmp cand, mod
-        csrrs  a4, 0x7C0, zero /* Read flags */
-
-        /* Z L M C */
-        andi a4, a4, 3 /* Mask flags */
-        /* In this comparison, the L flag will never be set. We avoid this by
-           multiplying the coefficient and q by 2 before the comparison. This
-           assures that both numbers will be even and thus, after a subtraction
-           the LSB will never be set. Therefore, we do not need to mask the
-           flags. */
-        bne  a4, a6, _skip_store1 /* Reject if M, C are NOT set to 1, meaning
-                                     NOT (q > cand) = (q <= cand) */
-
-        bn.rshi accumulator, cand, accumulator >> 32
-        addi    accumulator_count, accumulator_count, 1
-
-        bne accumulator_count, t3, _skip_store1 /* Accumulator not full yet */
-
-        bn.sid    t5, 0(a1++) /* Store to memory */
-        li        accumulator_count, 0
-_skip_store1:
-        /* Shift out the 3 bytes we have read for the next potential coefficient */
-        bn.or shake_reg, bn0, shake_reg >> 24
-    ret
+    bn.sid  t5, 0(t4)
+    lw      t6, 0(t4)
+    /* Calculate how many bytes we need and rotate them out of the digest. */
+    sub     t4, zero, t2
+    loop    t4, 1
+      bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    /* Update the number of bytes available. */
+    addi    t2, t2, 32
+    /* Get the number of lower bytes that were valid (may be 0). */
+    addi    t4, t4, -3
+    sub     t4, zero, t4
+    /* Mask out the new upper bytes and shift them into position. */
+    slli    t4, t4, 3
+    li      t5, 0x7fffff
+    srl     t5, t5, t4
+    and     t6, t6, t5
+    sll     t6, t6, t4
+    /* Mask out valid lower bytes. */
+    li      t5, 1
+    sll     t5, t5, t4
+    addi    t5, t5, -1
+    and     t1, t1, t5
+    /* Assemble final coefficient and store; now done. */
+    or      t6, t6, t1
+    sw      t6, 0(t0)
+    jal     x0, _poly_uniform_discard_coeff_done
 
 /**
  * poly_uniform_eta
@@ -934,7 +1004,7 @@ poly_uniform_eta:
     li t6, 8 /* coeffs to be collected in register */
 
     /* First squeeze */
-    .equ w8, shake_reg
+    #define shake_reg w8
 
 _rej_eta_sample_loop:
         bn.wsrr  shake_reg, 0xA /* KECCAK_DIGEST */
