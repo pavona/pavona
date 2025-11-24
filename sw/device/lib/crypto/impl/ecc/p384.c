@@ -168,8 +168,8 @@ status_t p384_keygen_start(void) {
 
 status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
                               p384_point_t *public_key) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Check instruction count.
   OTBN_CHECK_INSN_COUNT(kP384KeygenMinInstructionCount,
@@ -202,8 +202,8 @@ status_t p384_sideload_keygen_start(void) {
 }
 
 status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Check instruction count.
   OTBN_CHECK_INSN_COUNT(kP384SideloadKeygenMinInstructionCount,
@@ -255,8 +255,8 @@ status_t p384_ecdsa_sideload_sign_start(
 }
 
 status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Check instruction count.
   OTBN_CHECK_INSN_COUNT(kP384SignMinInstructionCount,
@@ -300,8 +300,8 @@ status_t p384_ecdsa_verify_start(const p384_ecdsa_signature_t *signature,
 
 status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
                                     hardened_bool_t *result) {
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
@@ -348,8 +348,8 @@ status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
 }
 
 status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
@@ -390,8 +390,8 @@ status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {
 }
 
 status_t p384_sideload_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).

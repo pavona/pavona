@@ -19,6 +19,7 @@
 otcrypto_status_t otcrypto_ecdsa_p384_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdsa_p384_keygen_async_start(private_key));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdsa_p384_keygen_async_finalize(private_key, public_key);
 }
 
@@ -28,6 +29,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
     otcrypto_word32_buf_t signature) {
   HARDENED_TRY(
       otcrypto_ecdsa_p384_sign_async_start(private_key, message_digest));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdsa_p384_sign_async_finalize(signature);
 }
 
@@ -38,6 +40,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_ecdsa_p384_verify_async_start(
       public_key, message_digest, signature));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdsa_p384_verify_async_finalize(signature,
                                                    verification_result);
 }
@@ -68,6 +71,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
 otcrypto_status_t otcrypto_ecdh_p384_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdh_p384_keygen_async_start(private_key));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdh_p384_keygen_async_finalize(private_key, public_key);
 }
 
@@ -75,6 +79,7 @@ otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
                                      const otcrypto_unblinded_key_t *public_key,
                                      otcrypto_blinded_key_t *shared_secret) {
   HARDENED_TRY(otcrypto_ecdh_p384_async_start(private_key, public_key));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdh_p384_async_finalize(private_key, shared_secret);
 }
 
