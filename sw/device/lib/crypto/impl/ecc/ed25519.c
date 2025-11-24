@@ -113,8 +113,8 @@ status_t ed25519_sign_start(
 }
 
 status_t ed25519_sign_finalize(ed25519_signature_t *result) {
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Check instruction count.
   OTBN_CHECK_INSN_COUNT(kEd25519SignMinInstructionCount,
@@ -173,8 +173,8 @@ status_t ed25519_verify_start(
 
 status_t ed25519_verify_finalize(const ed25519_signature_t *signature,
                                  hardened_bool_t *result) {
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Check instruction count.
   OTBN_CHECK_INSN_COUNT(kEd25519VerifyMinInstructionCount,

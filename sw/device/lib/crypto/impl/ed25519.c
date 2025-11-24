@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -30,6 +31,7 @@ otcrypto_status_t otcrypto_ed25519_sign(
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature) {
   HARDENED_TRY(otcrypto_ed25519_sign_async_start(
       private_key, input_message, context, sign_mode, signature));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ed25519_sign_async_finalize(signature);
 }
 
@@ -40,6 +42,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_ed25519_verify_async_start(
       public_key, input_message, context, sign_mode, signature));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ed25519_verify_async_finalize(signature, verification_result);
 }
 
