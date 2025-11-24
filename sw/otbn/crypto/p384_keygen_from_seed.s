@@ -121,9 +121,6 @@ p384_key_from_seed:
   /* Clear w25 before over writing it with a different share. */
   bn.xor    w25, w25, w25
 
-  /* Dummy instruction to avoid consecutive share access. */
-  bn.xor    w31, w31, w31
-
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[384] << 128 */
   bn.rshi   w25, w31, w21 >> 128

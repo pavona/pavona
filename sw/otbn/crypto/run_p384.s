@@ -212,9 +212,6 @@ ecdsa_sign_sideloaded:
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
 
-  /* Dummy instruction to avoid consecutive share access. */
-  bn.xor    w31, w31, w31
-
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H
 
@@ -343,9 +340,6 @@ keypair_from_seed:
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
 
-  /* Dummy instruction to avoid consecutive share access. */
-  bn.xor    w31, w31, w31
-
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H
 
@@ -385,9 +379,6 @@ shared_key_from_seed:
        w10,w11 <= seed1 */
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
-
-  /* Dummy instruction to avoid consecutive share access. */
-  bn.xor    w31, w31, w31
 
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H

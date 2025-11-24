@@ -50,7 +50,6 @@ p384_arithmetic_to_boolean_mod:
      [w26,w25] <= [w12,w11] = A */
   bn.mov    w23, w18
   bn.mov    w24, w19
-  bn.xor    w31, w31, w31 /* Dummy instruction to avoid consecutive share access. */
   bn.mov    w25, w11
   bn.mov    w26, w12
 
@@ -69,7 +68,6 @@ p384_arithmetic_to_boolean_mod:
      prepare input for 385-bit A2B function. */
   bn.mov    w18, w23
   bn.mov    w19, w24
-  bn.xor    w31, w31, w31 /* Dummy instruction to avoid consecutive share access. */
   bn.mov    w11, w25
   bn.mov    w12, w26
 
@@ -212,7 +210,7 @@ p384_arithmetic_to_boolean:
   bn.xor    w6, w6, w2
 
   /* Loop for k = 1 to K - 1 = 385 - 1 */
-  loopi     384, 14
+  loopi     384, 15
 
     /* [w2,w1] = gamma  <= [w4,w3] & [w19,w18] = T & r
 
