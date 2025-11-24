@@ -1,8 +1,5 @@
-// Copyright zeroRISC Inc.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -95,29 +92,6 @@ static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
   }
 
   return OTCRYPTO_OK;
-}
-
-/**
- * Ensures OTBN is idle.
- *
- * If OTBN is busy or locked, this function will return
- * `OTCRYPTO_ASYNC_INCOMPLETE`; otherwise it will return `OTCRYPTO_OK`.
- *
- * @return Result of the operation.
- */
-static status_t otbn_assert_idle(void) {
-  uint32_t status = launder32(~(uint32_t)kOtbnStatusIdle);
-  status_t res = (status_t){
-      .value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value ^ status)};
-  status = abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET);
-  res.value ^= ~status;
-  if (launder32(OT_UNSIGNED(res.value)) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(res.value, kHardenedBoolTrue);
-    HARDENED_CHECK_EQ(abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET),
-                      kOtbnStatusIdle);
-    return res;
-  }
-  return OTCRYPTO_ASYNC_INCOMPLETE;
 }
 
 /**
@@ -244,6 +218,21 @@ status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
   HARDENED_CHECK_EQ(i, num_words);
 
   return OTCRYPTO_OK;
+}
+
+status_t otbn_assert_idle(void) {
+  uint32_t status = launder32(~(uint32_t)kOtbnStatusIdle);
+  status_t res = (status_t){
+      .value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value ^ status)};
+  status = abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET);
+  res.value ^= ~status;
+  if (launder32(OT_UNSIGNED(res.value)) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(res.value, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET),
+                      kOtbnStatusIdle);
+    return res;
+  }
+  return OTCRYPTO_ASYNC_INCOMPLETE;
 }
 
 status_t otbn_execute(void) {

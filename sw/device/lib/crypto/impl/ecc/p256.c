@@ -127,8 +127,8 @@ status_t p256_sideload_keygen_start(void) {
 
 status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
                               p256_point_t *public_key) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Check instruction count.
   OTBN_CHECK_INSN_COUNT(kP256KeygenMinInstructionCount,
@@ -149,8 +149,8 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
 }
 
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Check instruction count.
   OTBN_CHECK_INSN_COUNT(kP256SideloadKeygenMinInstructionCount,
@@ -226,8 +226,8 @@ status_t p256_ecdsa_sideload_sign_start(
 }
 
 status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Check instruction count.
   OTBN_CHECK_INSN_COUNT(kP256SignMinInstructionCount,
@@ -274,8 +274,8 @@ status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
 
 status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
                                     hardened_bool_t *result) {
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
@@ -325,8 +325,8 @@ status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
 }
 
 status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Read the code indicating if the public key is valid.
   uint32_t ok;
@@ -369,8 +369,8 @@ status_t p256_sideload_ecdh_start(const p256_point_t *public_key) {
 }
 
 status_t p256_sideload_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Read the code indicating if the public key is valid.
   uint32_t ok;

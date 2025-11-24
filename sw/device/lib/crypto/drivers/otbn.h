@@ -305,6 +305,16 @@ OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
 
 /**
+ * Ensures OTBN is idle.
+ *
+ * If OTBN is busy or locked, this function will return
+ * `OTCRYPTO_ASYNC_INCOMPLETE`; otherwise it will return `OTCRYPTO_OK`.
+ *
+ * @return Result of the operation.
+ */
+status_t otbn_assert_idle(void);
+
+/**
  * Start the execution of the application loaded into OTBN.
  *
  * This function returns an error if called when OTBN is not idle.
