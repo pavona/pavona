@@ -107,8 +107,8 @@ static status_t keygen_start(uint32_t mode) {
 static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
                                 uint32_t *n, uint32_t *p, uint32_t *q,
                                 uint32_t *d_p, uint32_t *d_q, uint32_t *i_q) {
-  // Spin here waiting for OTBN to complete.
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
 
   // Read the mode from OTBN dmem and panic if it's not as expected.
   uint32_t act_mode = 0;

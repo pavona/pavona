@@ -13,6 +13,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_modexp.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
 
@@ -222,7 +223,13 @@ status_t rsa_signature_verify_2048_finalize(
     hardened_bool_t *verification_result) {
   // Wait for OTBN to complete and get the size for the last RSA operation.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_wait(&num_words));
+  HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
+
+  // Check that the inferred result size matches expectations.
+  if (num_words != kRsa2048NumWords) {
+    otbn_dmem_sec_wipe_nofail();
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
@@ -245,7 +252,13 @@ status_t rsa_signature_verify_3072_finalize(
     hardened_bool_t *verification_result) {
   // Wait for OTBN to complete and get the size for the last RSA operation.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_wait(&num_words));
+  HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
+
+  // Check that the inferred result size matches expectations.
+  if (num_words != kRsa3072NumWords) {
+    otbn_dmem_sec_wipe_nofail();
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
@@ -268,7 +281,13 @@ status_t rsa_signature_verify_4096_finalize(
     hardened_bool_t *verification_result) {
   // Wait for OTBN to complete and get the size for the last RSA operation.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_wait(&num_words));
+  HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
+
+  // Check that the inferred result size matches expectations.
+  if (num_words != kRsa4096NumWords) {
+    otbn_dmem_sec_wipe_nofail();
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.

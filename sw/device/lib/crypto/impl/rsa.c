@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_keygen.h"
@@ -44,6 +45,7 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_unblinded_key_t *public_key,
                                       otcrypto_blinded_key_t *private_key) {
   HARDENED_TRY(otcrypto_rsa_keygen_async_start(size));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_rsa_keygen_async_finalize(public_key, private_key);
 }
 
@@ -268,6 +270,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
   HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_start(
       size, modulus, e, cofactor_share0, cofactor_share1));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_finalize(public_key,
                                                                  private_key));
 
@@ -324,6 +327,7 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                     otcrypto_word32_buf_t signature) {
   HARDENED_TRY(
       otcrypto_rsa_sign_async_start(private_key, message_digest, padding_mode));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_rsa_sign_async_finalize(signature);
 }
 
@@ -333,6 +337,7 @@ otcrypto_status_t otcrypto_rsa_verify(
     otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_rsa_verify_async_finalize(public_key, message_digest,
                                             padding_mode, verification_result);
 }
@@ -343,6 +348,7 @@ otcrypto_status_t otcrypto_rsa_encrypt(
     otcrypto_const_byte_buf_t label, otcrypto_word32_buf_t ciphertext) {
   HARDENED_TRY(
       otcrypto_rsa_encrypt_async_start(public_key, hash_mode, message, label));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_rsa_encrypt_async_finalize(public_key, ciphertext);
 }
 
@@ -352,6 +358,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
     otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen) {
   HARDENED_TRY(otcrypto_rsa_decrypt_async_start(private_key, ciphertext));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext,
                                              plaintext_bytelen);
 }
