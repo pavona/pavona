@@ -784,6 +784,11 @@ poly_uniform:
 
       /* End of loop body. */
 
+/* This label is for testing, so we can intentionally give the postprocessing
+ * part difficult inputs. */
+.globl _poly_uniform_postprocess_test_entrypoint
+_poly_uniform_postprocess_test_entrypoint:
+
     /* Copy the pointer to the end of the output. */
     addi    t3, a1, 0
 
@@ -852,6 +857,8 @@ _poly_uniform_find_and_discard_bad_coeff:
        make subsequent correction more complicated. */
     addi    t0, a1, 0
     bn.or   w10, w10, bn0
+    /* Note: this cannot be a hardware loop because after discarding the bad
+       coefficient we will branch directly back to the postprocessing loop. */
     .rept 8
         /* Probe the L flag. If it is unset, discard the coefficient. */
         csrrs   t1, FG0, x0
