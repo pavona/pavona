@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -19,6 +20,7 @@
 otcrypto_status_t otcrypto_ecdsa_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdsa_p256_keygen_async_start(private_key));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
 }
 
@@ -28,6 +30,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
     otcrypto_word32_buf_t signature) {
   HARDENED_TRY(
       otcrypto_ecdsa_p256_sign_async_start(private_key, message_digest));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdsa_p256_sign_async_finalize(signature);
 }
 
@@ -38,6 +41,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify(
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_ecdsa_p256_verify_async_start(
       public_key, message_digest, signature));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdsa_p256_verify_async_finalize(signature,
                                                    verification_result);
 }
@@ -68,6 +72,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
 otcrypto_status_t otcrypto_ecdh_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdh_p256_keygen_async_start(private_key));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdh_p256_keygen_async_finalize(private_key, public_key);
 }
 
@@ -75,6 +80,7 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
                                      const otcrypto_unblinded_key_t *public_key,
                                      otcrypto_blinded_key_t *shared_secret) {
   HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_ecdh_p256_async_finalize(private_key, shared_secret);
 }
 
