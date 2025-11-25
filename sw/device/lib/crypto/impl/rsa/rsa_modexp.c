@@ -119,7 +119,7 @@ static status_t rsa_modexp_finalize(const size_t num_words,
                                     const uint32_t min_insn_count,
                                     const uint32_t max_insn_count,
                                     uint32_t *result) {
-  // Wait for OTBN to complete and get the result size.
+  // Get the result size, failing if the OTBN isn't done.
   size_t num_words_inferred;
   OTBN_WIPE_IF_ERROR(rsa_modexp_get_result_size(&num_words_inferred));
 

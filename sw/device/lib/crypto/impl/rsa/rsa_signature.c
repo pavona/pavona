@@ -221,7 +221,7 @@ status_t rsa_signature_verify_2048_finalize(
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode,
     hardened_bool_t *verification_result) {
-  // Wait for OTBN to complete and get the size for the last RSA operation.
+  // Get the result size, failing if the OTBN isn't done.
   size_t num_words;
   HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
 
@@ -250,7 +250,7 @@ status_t rsa_signature_verify_3072_finalize(
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode,
     hardened_bool_t *verification_result) {
-  // Wait for OTBN to complete and get the size for the last RSA operation.
+  // Get the result size, failing if the OTBN isn't done.
   size_t num_words;
   HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
 
@@ -279,7 +279,7 @@ status_t rsa_signature_verify_4096_finalize(
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode,
     hardened_bool_t *verification_result) {
-  // Wait for OTBN to complete and get the size for the last RSA operation.
+  // Get the result size, failing if the OTBN isn't done.
   size_t num_words;
   HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
 
