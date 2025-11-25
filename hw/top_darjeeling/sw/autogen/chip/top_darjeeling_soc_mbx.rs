@@ -17,6 +17,7 @@
 //! - PLIC Interrupt ID Names and Source Mappings
 //! - Alert ID Names and Source Mappings
 
+#[allow(unused_imports)]
 use core::convert::TryFrom;
 
 /// Peripheral base address for soc device on mbx0 in top darjeeling.

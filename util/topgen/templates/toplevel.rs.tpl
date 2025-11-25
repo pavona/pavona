@@ -62,6 +62,7 @@ ${helper.file_header.render()}
 //! - Power Manager Wakeups
 % endif
 
+#[allow(unused_imports)]
 use core::convert::TryFrom;
 % for (inst_name, if_name), region in helper.devices(addr_space):
 <%
