@@ -400,6 +400,10 @@ class otbn_base_vseq extends cip_base_vseq #(
 
         wait(!stop_tokens);
 
+        // TODO: Remove the stop sequences call once the reset safe base libaries
+        // have been implemented for the driver and sequencers.
+        p_sequencer.otbn_app_sequencer_h.stop_sequences();
+
         // Kill any processes that didn't use the stop token mechanism
         disable fork;
       end

@@ -80,6 +80,17 @@ class otbn_app_base_seq extends dv_base_seq #(
         end
       end
 
+      // If hold is dropped we should reset and drive ready low
+      if (!item.req_hold && !saw_first_rsp) begin
+        otbn_app_item rsp = otbn_app_item::type_id::create("rsp_item");
+        rsp.rsp_ready         = 0;
+        rsp.drive_rsp_ready   = 1;
+        rsp.rsp_ready_delay   = 0;
+        start_item(rsp);
+        finish_item(rsp);
+        finish_seq = 1;
+      end
+
       // Set ready to 1 at the start of a transaction
       if (!item.rsp_ready && item.drive_rsp_ready && !initial_ready_rsp) begin
         otbn_app_item rsp = otbn_app_item::type_id::create("rsp_item");

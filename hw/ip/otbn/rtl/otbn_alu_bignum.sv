@@ -803,6 +803,7 @@ module otbn_alu_bignum
   logic [11:0]                    kmac_msg_ctr;
 
   logic                           kmac_msg_err_clr;
+  logic                           kmac_msg_err_clr_q;
   logic                           kmac_msg_fifo_wvalid;
   logic                           kmac_msg_fifo_wready;
   logic [WLEN-1:0]                kmac_msg_fifo_wdata;
@@ -841,6 +842,8 @@ module otbn_alu_bignum
   // Oversized error flag if last has already been sent and there is an additional fifo valid
   // Need to add a case when the fifo rvalid mask is greater than the last word strb
   logic last_word_oversized;
+  logic rw_after_last;
+  logic write_during_last;
   logic not_full_word;
   logic packer_oversized_last;
 
@@ -899,6 +902,19 @@ module otbn_alu_bignum
       kmac_new_cfg_q <= 1'b1;
     end else begin
       kmac_new_cfg_q <= 1'b0;
+    end
+  end
+
+  // If there is an error we need to flush the remainder of the FIFO under the assumption
+  // that KMAC won't be asserting a ready signal to OTBN. Latch the error flag until a new
+  // config is written to OTBN and use this to empty the FIFO and prepare for the next transaction.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_msg_err_clr_q <= 1'b0;
+    end else if (kmac_cfg_wr_en) begin
+      kmac_msg_err_clr_q <= 1'b0;
+    end else if (kmac_msg_err_clr) begin
+      kmac_msg_err_clr_q <= 1'b1;
     end
   end
 
@@ -1047,21 +1063,23 @@ module otbn_alu_bignum
 
   // fifo write iface
   assign kmac_msg_fifo_wdata      = kmac_msg_no_intg_q;
-  assign kmac_msg_fifo_wvalid     = kmac_msg_valid_q && kmac_msg_fifo_wready
+  assign kmac_msg_fifo_wvalid     = kmac_cfg_active_q && kmac_msg_valid_q && kmac_msg_fifo_wready
                                     && ~kmac_msg_fifo_flush && ~kmac_sent_last && (~kmac_msg_last);
 
   assign kmac_msg_write_ready_o   = kmac_msg_fifo_wready;
   assign kmac_msg_pending_write_o = kmac_msg_valid_q && ~kmac_sent_last;
 
   // fifo read iface
-  assign kmac_msg_fifo_rready = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app) | kmac_sent_last;
+  assign kmac_msg_fifo_rready = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app)
+                                 | (kmac_sent_last | kmac_msg_err_clr_q);
   assign kmac_msg_last        = (kmac_cfg_msg_len_bytes == 3'h0) ?
                                 (kmac_msg_ctr >= kmac_cfg_msg_len_words - 1) && kmac_msg_fifo_rvalid :
                                 ((kmac_msg_ctr >= kmac_cfg_msg_len_words) && packer_ctr_last);
 
   // When there is an undersized message we artificially inject a last valid to finish the message
   assign kmac_app_req_o.valid = (kmac_write_cfg_to_app || kmac_inject_last_err) ?
-                                1'b1 : kmac_msg_fifo_rvalid && ~kmac_new_cfg_q && ~kmac_sent_last;
+                                1'b1 : kmac_msg_fifo_rvalid && ~kmac_new_cfg_q
+                                       && ~kmac_sent_last && ~kmac_msg_err_clr_q;
 
   // The first word contains the cfg otherwise send the body
   assign kmac_app_req_o.data  = kmac_write_cfg_to_app ?
@@ -1176,7 +1194,13 @@ module otbn_alu_bignum
   assign packer_oversized_last  = not_full_word & (packer_rdata_mask_cnt > kmac_cfg_msg_len_bytes);
 
   assign last_word_oversized    = kmac_msg_last & packer_oversized_last;
-  assign kmac_oversized_req_err = kmac_sent_last & (kmac_msg_fifo_rvalid | kmac_msg_valid_q)
+  // Read or write to/from FIFO that occurs after last
+  assign rw_after_last          = kmac_sent_last & (kmac_msg_fifo_rvalid | kmac_msg_valid_q);
+  // There is still a pending write to the FIFO while last is being asserted after flush
+  assign write_during_last      = kmac_app_req_o.last & kmac_msg_valid_q;
+  // Injecting an artificial last may impact the write_during_last flag so we check that the
+  // message isn't undersized before raising this flag
+  assign kmac_oversized_req_err = (rw_after_last | write_during_last)
                                   & ~kmac_undersized_req_err_latch | last_word_oversized;
     end
   endgenerate

@@ -17,7 +17,13 @@ class otbn_app_driver extends dv_base_driver #(
 
   // reset signals
   virtual task reset_signals();
-    invalidate_signals();
+    forever begin
+      @(negedge cfg.vif.rst_n);
+      `uvm_info(`gfn, "Reset asserted: invalidating app interface immediately", UVM_MEDIUM);
+      invalidate_signals();
+      @(posedge cfg.vif.rst_n);
+      `uvm_info(`gfn, "Reset deasserted: resume driver activity", UVM_MEDIUM);
+    end
   endtask
 
   virtual function void invalidate_signals();
@@ -34,6 +40,10 @@ class otbn_app_driver extends dv_base_driver #(
     forever begin
       otbn_app_item item;
       seq_item_port.get_next_item(item);
+      // TODO: This driver needs to be updated to use the random reset base class
+      // which will fix the non-blocking call to the sequencer before the item has
+      // been driven to the interface.
+      seq_item_port.item_done();
 
       // Rsp sequence always occurs after the DUT sends the initial request
       // drive_rsp_ready is set during the ready signal assertion stage only
@@ -43,21 +53,21 @@ class otbn_app_driver extends dv_base_driver #(
         drive_rsp_response(item);
       end
 
-      seq_item_port.item_done();
-
       // Drives additional responses from next as long as hold is asserted
       while (cfg.vif.mon_cb.req_hold && ~item.drive_rsp_ready) begin
+        otbn_app_item next_item;
+        if (!cfg.vif.rst_n) begin
+          break;
+        end
         // Break when hold is 0
         if (cfg.vif.mon_cb.req_next && cfg.vif.mon_cb.req_hold) begin
-          otbn_app_item next_item;
           seq_item_port.get_next_item(next_item);
+          seq_item_port.item_done();
           `uvm_info(`gfn, $sformatf("Got next item for response %0s",
                                     next_item.sprint()), UVM_MEDIUM)
 
           // Drives additional digest response
           drive_rsp_response(next_item);
-
-          seq_item_port.item_done();
         end else begin
           @(posedge cfg.vif.clk);
         end
@@ -72,10 +82,18 @@ class otbn_app_driver extends dv_base_driver #(
     `uvm_info(`gfn, $sformatf("Item received by ready driver:\n%0s", item.sprint()), UVM_MEDIUM)
     // Fixed value to delay initial rsp ready from first received req word
     for (int i = 0; i < item.rsp_ready_delay; i++) begin
+      if (!cfg.vif.rst_n) begin
+        `uvm_info(`gfn, $sformatf("Reset Detected During Ready Drive"), UVM_MEDIUM)
+        return;
+      end
       @(posedge cfg.vif.clk);
       remaining = item.rsp_ready_delay - i;
       `uvm_info(`gfn, $sformatf("AppIntf rsp KMAC model waiting, %0d cycles remaining",
                 remaining), UVM_MEDIUM)
+    end
+    if (!cfg.vif.rst_n) begin
+      `uvm_info(`gfn, $sformatf("Reset Detected During Ready Drive"), UVM_MEDIUM)
+      return;
     end
     cfg.vif.host_cb.rsp_ready <= item.rsp_ready && item.drive_rsp_ready;
   endtask
@@ -93,9 +111,19 @@ class otbn_app_driver extends dv_base_driver #(
         invalidate_signals();
         return;
       end
+
+      if (!cfg.vif.rst_n) begin
+        `uvm_info(`gfn, $sformatf("Reset Detected During Rsp Drive"), UVM_MEDIUM)
+        return;
+      end
       remaining = item.rsp_delay - i;
       `uvm_info(`gfn, $sformatf("AppIntf rsp KMAC model waiting, %0d cycles remaining",
                 remaining), UVM_MEDIUM)
+    end
+
+    if (!cfg.vif.rst_n) begin
+      `uvm_info(`gfn, $sformatf("Reset Detected During Rsp Drive"), UVM_MEDIUM)
+      return;
     end
 
     // Set response from sequence
@@ -108,10 +136,7 @@ class otbn_app_driver extends dv_base_driver #(
     @(posedge cfg.vif.clk);
 
     // Invalidate signals if not driving a response
-    cfg.vif.host_cb.rsp_done          <= 0;
-    cfg.vif.host_cb.rsp_digest_share0 <= 'x;
-    cfg.vif.host_cb.rsp_digest_share1 <= 'x;
-    cfg.vif.host_cb.rsp_error         <= 0;
+    invalidate_signals();
   endtask
 
 endclass

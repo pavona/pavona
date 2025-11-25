@@ -89,9 +89,14 @@ class otbn_app_monitor extends dv_base_monitor #(
             done = 1;
           end
         end
+
+        if (!cfg.vif.mon_cb.req_hold) begin
+          done = 1;
+        end
+
         base_item.req_valid   = cfg.vif.mon_cb.req_valid;
         base_item.req_next    = cfg.vif.mon_cb.req_next; // Should be 0
-        base_item.req_hold    = cfg.vif.mon_cb.req_hold; // Still 1 for first msg
+        base_item.req_hold    = cfg.vif.mon_cb.req_hold; // Still 1 for first msg unless early exit
         base_item.rsp_ready   = cfg.vif.mon_cb.rsp_ready;
 
         req_analysis_port.write(base_item);
