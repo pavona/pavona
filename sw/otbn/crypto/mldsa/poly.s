@@ -693,6 +693,27 @@ poly_uniform:
     bn.or   w11, w11, w11 << 64
     bn.or   w11, w11, w11 << 32
 
+    /* Set up a mask to select the least significant byte of each 32 bits.
+       This is only used later, but right now we're waiting on Keccak to
+       complete anyway so we process it early. */
+    bn.shv.8S w13, w11 >> 15
+
+    /* Load the vectorized modulus for later. */
+    li      t0, 12
+    la      t1, modulus
+    bn.lid  t0, 0(t1)
+
+    /* Set up a mask to select the most significant byte of each 32 bits. */
+    bn.shv.8S w13, w11 << 24
+
+    /* Initialize a register that will eventually hold the vector index of the
+       first vector with bad coefficients. */
+    bn.xor  w14, w14, w14
+
+    /* Initialize a register to increment the vector index. When we reach the
+       first bad vector, we set this to zero to stop incrementing. */
+    bn.addi w15, bn0, 1
+
     /* Speculatively store 256 candidate coefficients.
 
        For performance reasons, we do not check that the coefficients are < Q
@@ -711,7 +732,7 @@ poly_uniform:
          - read 32B of digest
          - create 11 candidates (uses 33B, now safe to repeat)
     */
-    loopi 8, 35
+    loopi 8, 55
 
       /* Read 32 bytes from the digest. */
       bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
@@ -724,6 +745,19 @@ poly_uniform:
       /* Store 8 coefficient candidates. */
       bn.and  w0, w0, w11
       bn.sid  x0, 0(a1++)
+
+      /* Subtract the modulus from each coefficient and select the upper byte
+         to detect underflow. */
+      bn.subv.8S w10, w0, w12
+      bn.and     w10, w10, w13
+
+      /* If the masked value is equal to the mask (Z is set), all coefficients
+         are good. Otherwise, stop incrementing the vector index. */
+      bn.cmp     w10, w13
+      bn.sel     w15, w15, bn0, Z
+
+      /* Increment the vector index. */
+      bn.add     w14, w14, w15
 
       /* Load 2 23-bit coefficient candidates into vector register. */
       loopi   2, 2
@@ -749,6 +783,19 @@ poly_uniform:
       bn.and  w0, w0, w11
       bn.sid  x0, 0(a1++)
 
+      /* Subtract the modulus from each coefficient and select the upper byte
+         to detect underflow. */
+      bn.subv.8S w10, w0, w12
+      bn.and     w10, w10, w13
+
+      /* If the masked value is equal to the mask (Z is set), all coefficients
+         are good. Otherwise, stop incrementing the vector index. */
+      bn.cmp     w10, w13
+      bn.sel     w15, w15, bn0, Z
+
+      /* Increment the vector index. */
+      bn.add     w14, w14, w15
+
       /* Load 5 23-bit coefficient candidates into vector register. */
       loopi   5, 2
         bn.rshi w0, shake_reg, w0 >> 32
@@ -773,6 +820,19 @@ poly_uniform:
       bn.and  w0, w0, w11
       bn.sid  x0, 0(a1++)
 
+      /* Subtract the modulus from each coefficient and select the upper byte
+         to detect underflow. */
+      bn.subv.8S w10, w0, w12
+      bn.and     w10, w10, w13
+
+      /* If the masked value is equal to the mask (Z is set), all coefficients
+         are good. Otherwise, stop incrementing the vector index. */
+      bn.cmp     w10, w13
+      bn.sel     w15, w15, bn0, Z
+
+      /* Increment the vector index. */
+      bn.add     w14, w14, w15
+
       /* Load 8 23-bit coefficient candidates into vector register. */
       loopi   8, 2
         bn.rshi w0, shake_reg, w0 >> 32
@@ -782,6 +842,19 @@ poly_uniform:
       bn.and  w0, w0, w11
       bn.sid  x0, 0(a1++)
 
+      /* Subtract the modulus from each coefficient and select the upper byte
+         to detect underflow. */
+      bn.subv.8S w10, w0, w12
+      bn.and     w10, w10, w13
+
+      /* If the masked value is equal to the mask (Z is set), all coefficients
+         are good. Otherwise, stop incrementing the vector index. */
+      bn.cmp     w10, w13
+      bn.sel     w15, w15, bn0, Z
+
+      /* Increment the vector index. */
+      bn.add     w14, w14, w15
+
       /* End of loop body. */
 
 /* This label is for testing, so we can intentionally give the postprocessing
@@ -789,76 +862,51 @@ poly_uniform:
 .globl _poly_uniform_postprocess_test_entrypoint
 _poly_uniform_postprocess_test_entrypoint:
 
+    /* Keep track of the number of bytes available in the digest. Starts at 0
+       since at present all bytes have been consumed. */
+    li    t2, 0
+
     /* Copy the pointer to the end of the output. */
     addi    t3, a1, 0
 
     /* Reset the output pointer. */
     addi    a1, a1, -1024
 
-    /* Set up a mask to select the least significant byte of each 32 bits. */
-    bn.addi w11, bn0, 0xff
-    bn.or   w11, w11, w11 << 128
-    bn.or   w11, w11, w11 << 64
-    bn.or   w11, w11, w11 << 32
+    /* Copy the index of the first bad coefficient into a GPR. */
+    la      t0, poly_wdr2gpr
+    li      t1, 14
+    bn.sid  t1, 0(t0)
+    lw      a3, 0(t0)
 
-    /* w12 <= vectorized modulus */
-    li      t0, 12
-    la      t1, modulus
-    bn.lid  t0, 0(t1)
-
-    /* Keep track of the number of bytes available in the digest. Starts at 0
-       since at present all bytes have been consumed. */
-    li    t2, 0
-
-    /* Keep a value that represents the expected flags after masking. */
-    li    a3, 8
-
-    /* Now, postprocess to remove bad coefficients. Note: this loop is a hot
-       path for performance, running 1792 times for every matrix expansion in
-       ML-DSA-87 signing. Handle with care. The discard_bad_coeff path is
-       rarely taken (roughly one out of every 1000 coefficients is bad) and can
-       be less heavily optimized. */
-    loopi 32, 7
 _poly_uniform_discard_coeff_done:
-       /* Load the next 8 candidate coefficients. */
-       bn.lid  x0, 0(a1)
+    /* If we jump here, we assume:
+         - a1 points to the start of the output polynomial
+         - w11 holds a mask that selects the lower 23 bits of each 32b word
+         - w12 holds the vectorized modulus
+         - w13 holds a mask that selects the upper 8 bits of each 32b word
+         - a3 holds the first vector index with a bad coefficient (32 if none)
+     */
 
-       /* Subtract the modulus from each coefficient. */
-       bn.subv.8S w10, w0, w12
+    /* If the index is 32, there are no bad coefficients and we can return. */
+    li      t1, 32
+    bne     a3, t1, .+8
+    ret
 
-       /* Select the most significant byte of each difference and shift it down
-          to the least significant byte-position. */
-       bn.and  w10, w11, w10 >> 24
+    /* Load the bad vector. */
+    slli    t0, a3, 5
+    add     t0, t0, a1
+    bn.lid  x0, 0(t0)
 
-       /* Compare to the mask. If all coefficients are good, the values should
-          be equal and all flags should be zero except for Z. */
-       bn.cmp  w11, w10
+    /* Subtract the modulus from each coefficient. */
+    bn.subv.8S w10, w0, w12
 
-       /* Check the flag values. If only Z is set, all indicator
-          bytes are 0xff and we can proceed to the next word.  Otherwise, we
-          need to remove a bad coefficient (will jump back to the loop start
-          when done). */
-       csrrs   t0, FG0, x0
-       bne     t0, a3, _poly_uniform_find_and_discard_bad_coeff
+    /* Select the most significant byte of each difference. */
+    bn.and  w10, w10, w13
 
-       /* Increment the output pointer. */
-       addi    a1, a1, 32
-
-     ret
-
-_poly_uniform_find_and_discard_bad_coeff:
-    /* If we jump here:
-         - a1 points to a vector with a bad coefficient
-         - t2 has the number of digest bytes available in shake_reg
-         - t3 points to the end of the output polynomial
-         - w10 has the indicator bytes for each coefficient.
-       We can use the indicator to find and discard the bad coefficient. Only
-       process one at a time, because discarding will shift the indices and
-       make subsequent correction more complicated. */
-    addi    t0, a1, 0
-    bn.or   w10, w10, bn0
+    /* Cycle through probing the L flag to find the bad coefficient. */
     /* Note: this cannot be a hardware loop because after discarding the bad
        coefficient we will branch directly back to the postprocessing loop. */
+    bn.or   w10, bn0, w10 >> 24
     .rept 8
         /* Probe the L flag. If it is unset, discard the coefficient. */
         csrrs   t1, FG0, x0
@@ -878,6 +926,8 @@ _poly_uniform_discard_coeff:
          - t0 points to a bad 32-bit coefficient
          - t2 has the number of digest bytes available in shake_reg
          - t3 points to the end of the output polynomial
+         - a3 holds the vector index of t0 
+         - w11 holds a vectorized 23-bit mask
        Now we need to shift the entire polynomial to eliminate the bad
        coefficient, and backfill the next candidate from the digest. */
     /* Get the number of coefficients to shift. */
@@ -893,47 +943,71 @@ _poly_uniform_discard_coeff:
       sw   t1, 0(t0)
       addi t0, t0, 4
 _poly_uniform_discard_coeff_skip_shift:
-    /* Speculatively copy 23 bits of digest (some bytes may be invalid). */
-    la      t4, poly_wdr2gpr
-    li      t5, shake_reg_ptr
-    bn.sid  t5, 0(t4)
+    /* Now we need to draw a new coefficient from SHAKE output. */
+    /* Load the last vector of coefficients. */
+    srli    t0, t0, 5
+    slli    t0, t0, 5
+    bn.lid  zero, 0(t0)
+    /* Rotate so the last coefficient is in the least significant position. */
+    bn.rshi w0, w0, w0 >> 224
+    /* Speculatively copy 3 bytes of digest (some bytes may be invalid). */
+    bn.rshi w0, shake_reg, w0 >> 32
     bn.rshi shake_reg, shake_reg, shake_reg >> 24
-    lw      t1, 0(t4)
-    li      t6, 0x7fffff
-    and     t1, t1, t6
-    sw      t1, 0(t0)
+    /* Speculatively mask and store. */
+    bn.and  w0, w0, w11
+    bn.sid  zero, 0(t0)
     /* Update number of bytes available and check for underflow. If the bytes
        were all valid, we're done. */
     addi    t2, t2, -3
-    srli    t6, t2, 31
-    beq     t6, zero, _poly_uniform_discard_coeff_done
-    /* Some upper bytes are not valid. Refresh the digest and re-read. */
+    srli    t1, t2, 31
+    beq     t1, zero, _poly_uniform_recompute_first_bad_index
+    /* Some upper bytes are not valid. Refresh the digest. */
     bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
-    bn.sid  t5, 0(t4)
-    lw      t6, 0(t4)
-    /* Calculate how many bytes we need and rotate them out of the digest. */
+    /* Shift the uppermost 0 byte out of the vector. */
+    bn.rshi w0, w0, bn0 >> 248
+    /* Calculate how many bytes were invalid. */
     sub     t4, zero, t2
+    /* Shift invalid upper bytes out of the coefficient. */
     loop    t4, 1
+      bn.rshi w0, w0, bn0 >> 248
+    /* Rotate valid bytes into the coefficient. */
+    loop    t4, 2
+      bn.rshi w0, shake_reg, w0 >> 8
       bn.rshi shake_reg, shake_reg, shake_reg >> 8
-    /* Update the number of bytes available. */
+    /* Reinsert the uppermost 0 byte. */
+    bn.rshi w0, bn0, w0 >> 8
+    /* Update the number of bytes available in the digest. */
     addi    t2, t2, 32
-    /* Get the number of lower bytes that were valid (may be 0). */
-    addi    t4, t4, -3
-    sub     t4, zero, t4
-    /* Mask out the new upper bytes and shift them into position. */
-    slli    t4, t4, 3
-    li      t5, 0x7fffff
-    srl     t5, t5, t4
-    and     t6, t6, t5
-    sll     t6, t6, t4
-    /* Mask out valid lower bytes. */
-    li      t5, 1
-    sll     t5, t5, t4
-    addi    t5, t5, -1
-    and     t1, t1, t5
-    /* Assemble final coefficient and store; now done. */
-    or      t6, t6, t1
-    sw      t6, 0(t0)
+    /* Re-mask and re-store. */
+    bn.and  w0, w0, w11
+    bn.sid  zero, 0(t0)
+_poly_uniform_recompute_first_bad_index:
+    /* Calculate the number of vectors remaining (includes the just-corrected
+       one; we may have shifted in a bad coefficient). */
+    li   t1, 32
+    sub  t1, t1, a3
+    /* Get a pointer to the just-corrected vector. */
+    slli t0, a3, 5
+    add  t0, t0, a1
+    /* Initialize the increment value. */
+    li   t4, 1
+    /* Check for underflow in each vector and stop incrementing the index if we
+       find it. */
+    loop t1, 9
+      /* Load the next vector. */
+      bn.lid  zero, 0(t0++)
+      /* Check for underflow in all coefficients. */
+      bn.subv.8S w10, w0, w12
+      bn.and     w10, w10, w13
+      bn.cmp     w10, w13
+      /* If the Z flag is set, stop incrementing the index. */
+      csrrs      t1, FG0, zero
+      andi       t1, t1, 8
+      bne        t1, zero, .+8
+      addi       t4, zero, 0
+      add        a3, a3, t4
+
+    /* Jump back to discard next bad coefficient, if any. */
     jal     x0, _poly_uniform_discard_coeff_done
 
 /**

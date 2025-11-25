@@ -19,27 +19,68 @@ main:
 
   /* Note: if details of poly_uniform change, this setup might also need to change. */
 
+  /* Load the mask. */
+  li      x11, 11
+  la      x2, mask23
+  bn.lid  x11, 0(x2)
+
+  /* Load the vectorized modulus. */
+  li      x12, 12
+  la      x2, modulus
+  bn.lid  x12, 0(x2)
+
+  /* Load the mask. */
+  li      x13, 13
+  la      x2, mask8
+  bn.lid  x13, 0(x2)
+
   /* Set up a SHAKE128 operation with an empty input (just so there's digest to read). */
-  li     x2, 0x2
-  csrrw  x0, kmac_cfg, x2
+  li      x2, 0x2
+  csrrw   x0, kmac_cfg, x2
 
   /* Run the first test. */
-  la     x11, result1
-  addi   x11, x11, 1024
-  jal    x1, _poly_uniform_postprocess_test_entrypoint
+  la      x11, result1
+  addi    x11, x11, 1024
+  bn.addi w14, w31, 0
+  jal     x1, _poly_uniform_postprocess_test_entrypoint
 
   /* Reset SHAKE128 operation. */
-  li     x2, 0x2
-  csrrw  x0, kmac_cfg, x2
+  li      x2, 0x2
+  csrrw   x0, kmac_cfg, x2
 
   /* Run the second test. */
-  la     x11, result2
-  addi   x11, x11, 1024
-  jal    x1, _poly_uniform_postprocess_test_entrypoint
+  la      x11, result2
+  addi    x11, x11, 1024
+  bn.addi w14, w31, 31
+  jal     x1, _poly_uniform_postprocess_test_entrypoint
 
   ecall
 
 .data
+/* Mask used internally by poly_uniform. */
+.balign 32
+mask8:
+  .word 0xff000000
+  .word 0xff000000
+  .word 0xff000000
+  .word 0xff000000
+  .word 0xff000000
+  .word 0xff000000
+  .word 0xff000000
+  .word 0xff000000
+
+/* Mask used internally by poly_uniform. */
+.balign 32
+mask23:
+  .word 0x007fffff
+  .word 0x007fffff
+  .word 0x007fffff
+  .word 0x007fffff
+  .word 0x007fffff
+  .word 0x007fffff
+  .word 0x007fffff
+  .word 0x007fffff
+
 /* Polynomial with all good coefficients except for the very last (this means
    no shifting of the polynomial is required and could cause a loop error if
    not properly handled). */
