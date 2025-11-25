@@ -34,6 +34,7 @@ status_t ecdsa_p256_verify_test(
   TRY(p256_ecdsa_verify_start(&testvec->signature, digest.data,
                               &testvec->public_key));
   hardened_bool_t result;
+  TRY(otbn_busy_wait_for_done());
   TRY(p256_ecdsa_verify_finalize(&testvec->signature, &result));
 
   if (testvec->valid && result != kHardenedBoolTrue) {
