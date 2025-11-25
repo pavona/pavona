@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("//rules/opentitan:providers.bzl", "get_one_binary_file")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -17,11 +18,12 @@ DEFAULTS = struct(
     env = "//hw/bitstream/universal:none",
 )
 
-def gen_vivado_mem_file(ctx, name, src, tool, swap_nibbles = True):
+def gen_vivado_mem_file(ctx, name, src, tool, otp_size, swap_nibbles = True):
     update = ctx.actions.declare_file("{}.update.mem".format(name))
     args = ctx.actions.args()
     if swap_nibbles:
         args.add("--swap-nibbles")
+    args.add("--otp-size={}".format(otp_size))
     args.add_all([src, update])
     ctx.actions.run(
         mnemonic = "GenVivadoImage",
@@ -116,6 +118,17 @@ def _bitstream_splice_impl(ctx):
         rom = exec_env.rom
     else:
         rom = ctx.attr.rom
+
+    # OTP size in number of 2-byte words.
+    top_name = ctx.attr._top[BuildSettingInfo].value
+    if top_name == "earlgrey":
+        # Earlgrey: 2K OTP == 1024 2-byte words
+        otp_size = 1024
+    elif top_name == "darjeeling":
+        # Darjeeling: 16K OTP == 8192 2-byte words
+        otp_size = 8192
+    else:
+        fail("Top name should be 'earlgrey' or 'darjeeling' for bitstream splice; got `{}`".format(top_name))
     if rom and rom.label.name != "none":
         rom = get_one_binary_file(rom, field = "rom", providers = [exec_env.provider])
         mem = gen_vivado_mem_file(
@@ -123,6 +136,7 @@ def _bitstream_splice_impl(ctx):
             name = "{}-rom".format(ctx.label.name),
             src = rom,
             tool = tc.tools.gen_mem_image,
+            otp_size = otp_size,
             swap_nibbles = ctx.attr.swap_nibbles,
         )
         src = vivado_updatemem(
@@ -146,6 +160,7 @@ def _bitstream_splice_impl(ctx):
             name = "{}-otp".format(ctx.label.name),
             src = otp,
             tool = tc.tools.gen_mem_image,
+            otp_size = otp_size,
             swap_nibbles = ctx.attr.swap_nibbles,
         )
         src = vivado_updatemem(
@@ -177,6 +192,7 @@ bitstream_splice_ = rule(
         "swap_nibbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = False, doc = "Emit debug info while updating"),
         "skip": attr.bool(default = False, doc = "Skip splice and do not modify the bitstream"),
+        "_top": attr.label(doc = "The hardware top-level name", default = "//hw/top"),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )

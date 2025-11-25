@@ -192,12 +192,13 @@ runs:
 
     # Setup FPGA, if requested.
     - name: FPGA setup
-      if: inputs.fpga != ''
       run: |
-         # Install dependencies
-         sudo apt install -y libudev-dev libclang-dev libftdi1-dev
-         # Add Vivado Lab binary directory to path
-         echo "/tools/Xilinx/Vivado_Lab/${{ inputs.vivado-lab-version }}/bin" >> $GITHUB_PATH
+        if command -v apt > /dev/null; then
+          # Install dependencies
+          sudo apt install -y libudev-dev libclang-dev libftdi1-dev
+        fi
+        # Add Vivado Lab binary directory to path
+        echo "/tools/Xilinx/Vivado_Lab/${{ inputs.vivado-lab-version }}/bin" >> $GITHUB_PATH
       shell: bash
     - name: Run FPGA set-pll and clear bitstream
       if: inputs.fpga == 'cw310' || inputs.fpga == 'cw340'
