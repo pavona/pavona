@@ -26,6 +26,7 @@ filegroup(
         "//hw/ip/hmac:rtl_files",
         "//hw/ip/i2c:rtl_files",
         "//hw/ip/keymgr:rtl_files",
+        "//hw/ip/keymgr_dpe:rtl_files",
         "//hw/ip/kmac:rtl_files",
         "//hw/ip/lc_ctrl:rtl_files",
         "//hw/ip/mbx:rtl_files",

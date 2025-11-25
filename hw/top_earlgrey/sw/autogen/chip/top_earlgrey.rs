@@ -19,6 +19,7 @@
 //! - Pinmux Pin/Select Names
 //! - Power Manager Wakeups
 
+#[allow(unused_imports)]
 use core::convert::TryFrom;
 
 /// Peripheral base address for uart0 in top earlgrey.

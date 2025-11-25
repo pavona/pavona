@@ -17,6 +17,7 @@
 //! - PLIC Interrupt ID Names and Source Mappings
 //! - Alert ID Names and Source Mappings
 
+#[allow(unused_imports)]
 use core::convert::TryFrom;
 
 /// Peripheral base address for dmi device on lc_ctrl in top darjeeling.
