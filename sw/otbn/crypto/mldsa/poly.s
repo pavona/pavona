@@ -654,7 +654,7 @@ _loop_inner_skip_load_poly_challenge:
  * @param[in]  a2: nonce
  * @param[out] a1: dmem pointer to polynomial
  *
- * clobbered registers: a0-a3, t0-t6, w0, w8-w12
+ * clobbered registers: a0-a3, t0-t6, w0, w8-w13, w21
  */
 .global poly_uniform
 poly_uniform:
@@ -662,10 +662,7 @@ poly_uniform:
     la t0, poly_wdr2gpr
     sw a2, 0(t0)
 
-    /* Load Q to GPR */
-    la t0, modulus
-    lw a2, 0(t0)
-
+    /* TODO: Start the operation outside the function. */
     /* Initialize a SHAKE128 operation. */
     addi  a3, a1, 0               /* save output pointer */
     addi  a1, zero, 34
@@ -693,11 +690,6 @@ poly_uniform:
     bn.or   w11, w11, w11 << 64
     bn.or   w11, w11, w11 << 32
 
-    /* Set up a mask to select the least significant byte of each 32 bits.
-       This is only used later, but right now we're waiting on Keccak to
-       complete anyway so we process it early. */
-    bn.shv.8S w13, w11 >> 15
-
     /* Load the vectorized modulus for later. */
     li      t0, 12
     la      t1, modulus
@@ -706,156 +698,365 @@ poly_uniform:
     /* Set up a mask to select the most significant byte of each 32 bits. */
     bn.shv.8S w13, w11 << 24
 
+    /* Copy the pointer to the start of the output polynomial. */
+    addi    t3, a1, 0
+
     /* Initialize a register that will eventually hold the vector index of the
-       first vector with bad coefficients. */
+       first vector with bad coefficients as a hint to the postprocessing. */
     bn.xor  w14, w14, w14
 
     /* Initialize a register to increment the vector index. When we reach the
        first bad vector, we set this to zero to stop incrementing. */
     bn.addi w15, bn0, 1
 
+    /* Initialize a temp register pointer. */
+    li      t6, 21
+
     /* Speculatively store 256 candidate coefficients.
 
-       For performance reasons, we do not check that the coefficients are < Q
-       within this loop. Because the vast majority of 23-bit numbers are within
-       bounds (Q / 2^23 = 0.99902), it's faster to store speculatively and then
-       post-process to discard the small number of bad coefficients.
+       In the following logic, we translate 768 bytes of SHAKE data into 256
+       23-bit candidate coefficients by sampling 3 bytes per coefficient and
+       masking out the uppermost bit. This logic is performance-critical.
 
-       Each iteration of this loop processes 96 bytes of digest into 32
-       coefficient candidates that are 23 bits each. The loop is slightly
-       unrolled to handle imperfect alignment between reads of the digest, but
-       luckily the pattern repeats every 3 reads:
+       We read the digest in 32-byte chunks from the digest register. SHAKE128
+       produces output 168 bytes at a time, so once every ~5 reads we will need
+       to wait about 100 cycles for the KMAC hardware block to process.
+       Carefully scheduled during this time, we store information about whether
+       the coefficients we stored so far are < Q or not. For performance
+       reasons, we do not discard them immediately, since it would complicate
+       the vectorization of the sampling routine. The vast majority of 23-bit
+       numbers are within bounds (Q / 2^23 = 0.99902), so it's faster to store
+       speculatively and run a more expensive correction routine later for the
+       few bad values.
+
+       Reads from SHAKE and stores of candidate vectors follow a repeating
+       pattern every 3 reads/4 stores:
          - read 32B of digest
-         - create 10 candidates (uses 30B, 2B of digest remaining)
+         - create 8 candidates (uses 24B, 8B of digest remaining)
+         - store 8 candidates
+         - create 2 candidates (uses 6B, 2B of digest remaining)
          - read 32B of digest
-         - create 11 candidates (uses 33B, 1B of digest remaining)
+         - create 6 candidates (uses 18B, 16B of digest remaining)
+         - store 8 candidates
+         - create 5 candidates (uses 15B, 1B of digest remaining)
          - read 32B of digest
-         - create 11 candidates (uses 33B, now safe to repeat)
+         - create 3 candidates (uses 9B, 24B of digest remaining)
+         - store 8 candidates
+         - create 8 candidates (uses 24B, now aligned again)
+         - store 8 candidates
     */
-    loopi 8, 55
 
-      /* Read 32 bytes from the digest. */
-      bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
+    /* Process bytes 0..95 of digest (no state refresh needed). */
 
-      /* Load 8 23-bit coefficient candidates into vector register. */
-      loopi   8, 2
-        bn.rshi w0, shake_reg, w0 >> 32
-        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
+    /* Read 32 bytes from the digest. */
+    bn.wsrr shake_reg, kmac_digest
+    /* Load 8 23-bit coefficient candidates into vector register. */
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    /* Store 8 coefficient candidates. */
+    bn.sid  x0, 0(a1++)
+    /* Load 2 23-bit coefficient candidates into vector register. */
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    /* Save the leftover bytes (2) in the upper part of w0. */
+    bn.rshi w0, shake_reg, w0 >> 16
+    /* Read 32 bytes from the digest. */
+    bn.wsrr shake_reg, kmac_digest
+    /* Complete the partial coefficient with 1 more byte from the digest. */
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    /* Load 5 23-bit coefficient candidates into vector register. */
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    /* Store 8 coefficient candidates. */
+    bn.sid  x0, 0(a1++)
+    /* Load 5 23-bit coefficient candidates into vector register. */
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    /* Save the leftover bytes (1) in the upper part of w0. */
+    bn.rshi w0, shake_reg, w0 >> 8
+    /* Read 32 bytes from the digest. */
+    bn.wsrr shake_reg, kmac_digest
+    /* Complete the partial coefficient with 2 more bytes from the digest. */
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    /* Load 2 23-bit coefficient candidates into vector register. */
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    /* Store 8 coefficient candidates. */
+    bn.sid  x0, 0(a1++)
+    /* Load 8 23-bit coefficient candidates into vector register. */
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    /* Store 8 coefficient candidates. */
+    bn.sid  x0, 0(a1++)
 
-      /* Store 8 coefficient candidates. */
-      bn.and  w0, w0, w11
-      bn.sid  x0, 0(a1++)
+    /* Process bytes 96..191 of digest (state refresh before third read). */
 
-      /* Subtract the modulus from each coefficient and select the upper byte
-         to detect underflow. */
-      bn.subv.8S w10, w0, w12
-      bn.and     w10, w10, w13
+    bn.wsrr shake_reg, kmac_digest
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 8
+    /* While waiting for more digest, mask and check vectors 0..5. */
+    li      t1, 6
+    jal     x1, poly_uniform_mask_and_check_vectors
+    /* STATE REFRESH. */
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
 
-      /* If the masked value is equal to the mask (Z is set), all coefficients
-         are good. Otherwise, stop incrementing the vector index. */
-      bn.cmp     w10, w13
-      bn.sel     w15, w15, bn0, Z
+    /* Process bytes 192-287 of digest (no state refresh needed). */
 
-      /* Increment the vector index. */
-      bn.add     w14, w14, w15
+    bn.wsrr shake_reg, kmac_digest
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 8
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
 
-      /* Load 2 23-bit coefficient candidates into vector register. */
-      loopi   2, 2
-        bn.rshi w0, shake_reg, w0 >> 32
-        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
+    /* Process bytes 288-383 of digest (state refresh before second read). */
 
-      /* Save the leftover bytes (2) in the upper part of w0. */
-      bn.rshi w0, shake_reg, w0 >> 16
+    bn.wsrr shake_reg, kmac_digest
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 16
+    /* While waiting for more digest, mask and check vectors 6..12. */
+    li      t1, 7
+    jal     x1, poly_uniform_mask_and_check_vectors
+    /* STATE REFRESH. */
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 8
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
 
-      /* Read 32 bytes from the digest. */
-      bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
+    /* Process bytes 384-479 of digest (no state refresh needed). */
 
-      /* Complete the partial coefficient with 1 more byte from the digest. */
-      bn.rshi w0, shake_reg, w0 >> 16
-      bn.rshi shake_reg, shake_reg, shake_reg >> 8 # rotate-right
+    bn.wsrr shake_reg, kmac_digest
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 8
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
 
-      /* Load 5 23-bit coefficient candidates into vector register. */
-      loopi   5, 2
-        bn.rshi w0, shake_reg, w0 >> 32
-        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
+    /* Process bytes 480-575 of digest (state refresh before first read). */
 
-      /* Store 8 coefficient candidates. */
-      bn.and  w0, w0, w11
-      bn.sid  x0, 0(a1++)
+    /* While waiting for more digest, mask and check vectors 13..19. Note that
+       t1 already holds the right vector count from the previous check (and for
+       this run in particular we actually exceed the SHAKE latency due to the
+       larger amount of computation between the last shake read and this one,
+       so saving the instruction counts). */
+    jal     x1, poly_uniform_mask_and_check_vectors
+    /* STATE REFRESH. */
+    bn.wsrr shake_reg, kmac_digest
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 8
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
 
-      /* Subtract the modulus from each coefficient and select the upper byte
-         to detect underflow. */
-      bn.subv.8S w10, w0, w12
-      bn.and     w10, w10, w13
+    /* Process bytes 576-671 of digest (no state refresh needed). */
 
-      /* If the masked value is equal to the mask (Z is set), all coefficients
-         are good. Otherwise, stop incrementing the vector index. */
-      bn.cmp     w10, w13
-      bn.sel     w15, w15, bn0, Z
+    bn.wsrr shake_reg, kmac_digest
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 8
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
 
-      /* Increment the vector index. */
-      bn.add     w14, w14, w15
+    /* Process bytes 672-767 of digest (state refresh before first read). */
 
-      /* Load 5 23-bit coefficient candidates into vector register. */
-      loopi   5, 2
-        bn.rshi w0, shake_reg, w0 >> 32
-        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
+    /* While waiting for more digest, mask and check vectors 20..27. */
+    li      t1, 8
+    jal     x1, poly_uniform_mask_and_check_vectors
+    /* STATE REFRESH. */
+    bn.wsrr shake_reg, kmac_digest
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   5, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.rshi w0, shake_reg, w0 >> 8
+    bn.wsrr shake_reg, kmac_digest
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    loopi   2, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
+    loopi   8, 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    bn.sid  x0, 0(a1++)
 
-      /* Save the leftover bytes (1) in the upper part of w0. */
-      bn.rshi w0, shake_reg, w0 >> 8
-
-      /* Read 32 bytes from the digest. */
-      bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
-
-      /* Complete the partial coefficient with 2 more bytes from the digest. */
-      bn.rshi w0, shake_reg, w0 >> 24
-      bn.rshi shake_reg, shake_reg, shake_reg >> 16 # rotate-right
-
-      /* Load 2 23-bit coefficient candidates into vector register. */
-      loopi   2, 2
-        bn.rshi w0, shake_reg, w0 >> 32
-        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
-
-      /* Store 8 coefficient candidates. */
-      bn.and  w0, w0, w11
-      bn.sid  x0, 0(a1++)
-
-      /* Subtract the modulus from each coefficient and select the upper byte
-         to detect underflow. */
-      bn.subv.8S w10, w0, w12
-      bn.and     w10, w10, w13
-
-      /* If the masked value is equal to the mask (Z is set), all coefficients
-         are good. Otherwise, stop incrementing the vector index. */
-      bn.cmp     w10, w13
-      bn.sel     w15, w15, bn0, Z
-
-      /* Increment the vector index. */
-      bn.add     w14, w14, w15
-
-      /* Load 8 23-bit coefficient candidates into vector register. */
-      loopi   8, 2
-        bn.rshi w0, shake_reg, w0 >> 32
-        bn.rshi shake_reg, shake_reg, shake_reg >> 24 # rotate-right
-
-      /* Store 8 coefficient candidates. */
-      bn.and  w0, w0, w11
-      bn.sid  x0, 0(a1++)
-
-      /* Subtract the modulus from each coefficient and select the upper byte
-         to detect underflow. */
-      bn.subv.8S w10, w0, w12
-      bn.and     w10, w10, w13
-
-      /* If the masked value is equal to the mask (Z is set), all coefficients
-         are good. Otherwise, stop incrementing the vector index. */
-      bn.cmp     w10, w13
-      bn.sel     w15, w15, bn0, Z
-
-      /* Increment the vector index. */
-      bn.add     w14, w14, w15
-
-      /* End of loop body. */
+    /* Done sampling; mask and check the last few vectors 28..31. */
+    li      t1, 4
+    jal     x1, poly_uniform_mask_and_check_vectors
 
 /* This label is for testing, so we can intentionally give the postprocessing
  * part difficult inputs. */
@@ -866,17 +1067,8 @@ _poly_uniform_postprocess_test_entrypoint:
        since at present all bytes have been consumed. */
     li    t2, 0
 
-    /* Copy the pointer to the end of the output. */
-    addi    t3, a1, 0
-
     /* Reset the output pointer. */
     addi    a1, a1, -1024
-
-    /* Copy the index of the first bad coefficient into a GPR. */
-    la      t0, poly_wdr2gpr
-    li      t1, 14
-    bn.sid  t1, 0(t0)
-    lw      a3, 0(t0)
 
 _poly_uniform_discard_coeff_done:
     /* If we jump here, we assume:
@@ -884,8 +1076,14 @@ _poly_uniform_discard_coeff_done:
          - w11 holds a mask that selects the lower 23 bits of each 32b word
          - w12 holds the vectorized modulus
          - w13 holds a mask that selects the upper 8 bits of each 32b word
-         - a3 holds the first vector index with a bad coefficient (32 if none)
+         - w14 holds the first vector index with a bad coefficient (32 if none)
      */
+
+    /* Copy the index of the first bad coefficient into a GPR. */
+    la      t0, poly_wdr2gpr
+    li      t1, 14
+    bn.sid  t1, 0(t0)
+    lw      a3, 0(t0)
 
     /* If the index is 32, there are no bad coefficients and we can return. */
     li      t1, 32
@@ -926,7 +1124,7 @@ _poly_uniform_discard_coeff:
          - t0 points to a bad 32-bit coefficient
          - t2 has the number of digest bytes available in shake_reg
          - t3 points to the end of the output polynomial
-         - a3 holds the vector index of t0 
+         - a3 holds the vector index of t0
          - w11 holds a vectorized 23-bit mask
        Now we need to shift the entire polynomial to eliminate the bad
        coefficient, and backfill the next candidate from the digest. */
@@ -962,7 +1160,7 @@ _poly_uniform_discard_coeff_skip_shift:
     srli    t1, t2, 31
     beq     t1, zero, _poly_uniform_recompute_first_bad_index
     /* Some upper bytes are not valid. Refresh the digest. */
-    bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
+    bn.wsrr shake_reg, kmac_digest
     /* Shift the uppermost 0 byte out of the vector. */
     bn.rshi w0, w0, bn0 >> 248
     /* Calculate how many bytes were invalid. */
@@ -987,28 +1185,62 @@ _poly_uniform_recompute_first_bad_index:
     li   t1, 32
     sub  t1, t1, a3
     /* Get a pointer to the just-corrected vector. */
-    slli t0, a3, 5
-    add  t0, t0, a1
-    /* Initialize the increment value. */
-    li   t4, 1
-    /* Check for underflow in each vector and stop incrementing the index if we
-       find it. */
-    loop t1, 9
-      /* Load the next vector. */
-      bn.lid  zero, 0(t0++)
-      /* Check for underflow in all coefficients. */
-      bn.subv.8S w10, w0, w12
-      bn.and     w10, w10, w13
-      bn.cmp     w10, w13
-      /* If the Z flag is set, stop incrementing the index. */
-      csrrs      t1, FG0, zero
-      andi       t1, t1, 8
-      bne        t1, zero, .+8
-      addi       t4, zero, 0
-      add        a3, a3, t4
+    slli t3, a3, 5
+    add  t3, t3, a1
+    /* Reset the incrementer value. The index register will still correctly
+       indicate the current vector. */
+    bn.addi w15, bn0, 1
+    jal     x1, poly_uniform_mask_and_check_vectors
 
     /* Jump back to discard next bad coefficient, if any. */
     jal     x0, _poly_uniform_discard_coeff_done
+
+/**
+ * Internal helper routine for poly_uniform.
+ *
+ * Given a series of vectors in memory, loads them, masks them, and returns the
+ * index of the first one that contains at least one bad coefficient.
+ *
+ * The index and incrementer arguments are used to ensure we stop after the
+ * first bad coefficient. If we find a bad coefficient, we set the incrementer
+ * register to zero, and then future loops or calls to this function will not
+ * change the index.
+ *
+ * This routine is performance-critical within the sampling loop, where it
+ * typically runs between KMAC refreshes that take ~100 cycles and typically
+ * checks about 5 vectors at a time. Therefore, keeping the total cycle count
+ * under about 80 cycles per 5 vectors is important but hyperoptimizing the
+ * performance beyond that is not.
+ *
+ * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ *
+ * @param[in] w11 mask that selects lower 23 bits of each 32b word
+ * @param[in] w12 vectorized modulus
+ * @param[in] w13 mask that selects upper 8 bits of each 32b word
+ * @param[in] t1, number of vectors to check
+ * @param[in] t6, constant 21 (wide register pointer)
+ * @param[in,out] t3, pointer to first input vector (updated in-place)
+ * @param[in,out] w14 index, either current index or first bad index if found
+ * @param[in,out] w15 incrementer, 1 if bad index not found yet otherwise 0
+ *
+ * clobbered registers: w10, w21
+ */
+poly_uniform_mask_and_check_vectors:
+    loop  t1, 8
+      /* Load the next vector. */
+      bn.lid     t6, 0(t3)
+      /* Mask and store the data. */
+      bn.and     w21, w21, w11
+      bn.sid     t6, 0(t3++)
+      /* Check for underflow in all coefficients. */
+      bn.subv.8S w10, w21, w12
+      bn.and     w10, w10, w13
+      bn.cmp     w10, w13
+      /* If the Z flag is unset, stop incrementing the index. */
+      bn.sel     w15, w15, bn0, Z
+      bn.add     w14, w14, w15
+    ret
+
 
 /**
  * poly_uniform_eta
