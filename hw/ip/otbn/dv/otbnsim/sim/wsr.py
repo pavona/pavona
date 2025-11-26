@@ -433,7 +433,6 @@ class KmacMsgWSR(WSR):
         self._pending_write = True
 
     def step(self) -> None:
-        self._kmac.step()
         self._kmac._app_intf_writing = False
         kmac_debug_print("\tFETCHING STARTING FIFO STATUS")
         self._pending_write_stall_pw = self._pending_write_to_app_intf

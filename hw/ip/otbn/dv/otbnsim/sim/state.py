@@ -297,6 +297,7 @@ class OTBNState:
             self.take_injected_err_bits()
         self.ext_regs.step()
         self._urnd_client.step()
+        self.kmac.step()
 
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
