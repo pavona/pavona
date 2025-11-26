@@ -227,9 +227,9 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
 }
 
 otcrypto_status_t otcrypto_rsa_public_key_deconstruct(
-    otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t *modulus,
+    otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t modulus,
     uint32_t *exponent) {
-  if (public_key == NULL || public_key->key == NULL || modulus == NULL ||
+  if (public_key == NULL || public_key->key == NULL || modulus.data == NULL ||
       exponent == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -246,32 +246,32 @@ otcrypto_status_t otcrypto_rsa_public_key_deconstruct(
   // Extract the values of n and e based on the inferred size.
   switch (size) {
     case kOtcryptoRsaSize2048: {
-      if (modulus->len != kRsa2048NumWords) {
+      if (modulus.len != kRsa2048NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       *exponent = pk->e;
-      hardened_memcpy(modulus->data, pk->n.data, kRsa2048NumWords);
+      hardened_memcpy(modulus.data, pk->n.data, kRsa2048NumWords);
       return OTCRYPTO_OK;
     }
     case kOtcryptoRsaSize3072: {
-      if (modulus->len != kRsa3072NumWords) {
+      if (modulus.len != kRsa3072NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
       *exponent = pk->e;
-      modulus->len = kRsa3072NumWords;
-      hardened_memcpy(modulus->data, pk->n.data, kRsa3072NumWords);
+      modulus.len = kRsa3072NumWords;
+      hardened_memcpy(modulus.data, pk->n.data, kRsa3072NumWords);
       return OTCRYPTO_OK;
     }
     case kOtcryptoRsaSize4096: {
-      if (modulus->len != kRsa4096NumWords) {
+      if (modulus.len != kRsa4096NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
       *exponent = pk->e;
-      modulus->len = kRsa4096NumWords;
-      hardened_memcpy(modulus->data, pk->n.data, kRsa4096NumWords);
+      modulus.len = kRsa4096NumWords;
+      hardened_memcpy(modulus.data, pk->n.data, kRsa4096NumWords);
       return OTCRYPTO_OK;
     }
     default: {
@@ -419,6 +419,81 @@ otcrypto_status_t otcrypto_rsa_private_key_construct(
 
   private_key->checksum = integrity_blinded_checksum(private_key);
   return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_rsa_private_key_deconstruct(
+    otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t p,
+    otcrypto_word32_buf_t q, otcrypto_word32_buf_t d_p,
+    otcrypto_word32_buf_t d_q, otcrypto_word32_buf_t i_q) {
+  if (private_key == NULL || private_key->keyblob == NULL || p.data == NULL ||
+      q.data == NULL || d_p.data == NULL || d_q.data == NULL ||
+      i_q.data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  // Entropy complex must be initialized for `hardened_memcpy`.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Infer the RSA size from the public key modulus.
+  otcrypto_rsa_size_t size;
+  HARDENED_TRY(rsa_size_from_private_key(private_key, &size));
+
+  // Ensure that the cofactors, private exponent components, and CRT coefficient
+  // are all the proper length with respect to each other.
+  if (p.len != q.len || d_p.len != p.len || d_q.len != q.len ||
+      i_q.len != p.len) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the caller-provided private key buffer.
+  HARDENED_TRY(private_key_structural_check(size, private_key));
+
+  // Extract the values of p, q, d_p, d_q, and i_q based on the inferred size.
+  switch (size) {
+    case kOtcryptoRsaSize2048: {
+      if (p.len != kRsa2048NumWords / 2) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_2048_private_key_t *sk =
+          (rsa_2048_private_key_t *)private_key->keyblob;
+      hardened_memcpy(p.data, sk->p.data, p.len);
+      hardened_memcpy(q.data, sk->q.data, q.len);
+      hardened_memcpy(d_p.data, sk->d_p.data, d_p.len);
+      hardened_memcpy(d_q.data, sk->d_q.data, d_q.len);
+      hardened_memcpy(i_q.data, sk->i_q.data, i_q.len);
+      return OTCRYPTO_OK;
+    }
+    case kOtcryptoRsaSize3072: {
+      if (p.len != kRsa3072NumWords / 2) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_3072_private_key_t *sk =
+          (rsa_3072_private_key_t *)private_key->keyblob;
+      hardened_memcpy(p.data, sk->p.data, p.len);
+      hardened_memcpy(q.data, sk->q.data, q.len);
+      hardened_memcpy(d_p.data, sk->d_p.data, d_p.len);
+      hardened_memcpy(d_q.data, sk->d_q.data, d_q.len);
+      hardened_memcpy(i_q.data, sk->i_q.data, i_q.len);
+      return OTCRYPTO_OK;
+    }
+    case kOtcryptoRsaSize4096: {
+      if (p.len != kRsa4096NumWords / 2) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_4096_private_key_t *sk =
+          (rsa_4096_private_key_t *)private_key->keyblob;
+      hardened_memcpy(p.data, sk->p.data, p.len);
+      hardened_memcpy(q.data, sk->q.data, q.len);
+      hardened_memcpy(d_p.data, sk->d_p.data, d_p.len);
+      hardened_memcpy(d_q.data, sk->d_q.data, d_q.len);
+      hardened_memcpy(i_q.data, sk->i_q.data, i_q.len);
+      return OTCRYPTO_OK;
+    }
+    default: {
+      // Invalid key size. Since the size was inferred, should be unreachable.
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+    }
+  }
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
