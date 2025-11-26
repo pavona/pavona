@@ -15,6 +15,7 @@ from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
 from .loop import LoopStack
+from .kmac import KmacBlock
 from .reg import RegFile
 from .trace import Trace, TracePC
 from .wsr import WSRFile
@@ -81,7 +82,8 @@ class OTBNState:
         self.wdrs = RegFile('w', 256, 32)
 
         self.ext_regs = OTBNExtRegs()
-        self.wsrs = WSRFile(self.ext_regs)
+        self.kmac = KmacBlock()
+        self.wsrs = WSRFile(self.ext_regs, self.kmac)
         self.csrs = CSRFile()
 
         self.pc = 0

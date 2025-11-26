@@ -614,10 +614,10 @@ class KmacDigestWSR(WSR):
 
 class WSRFile:
     '''A model of the WSR file'''
-    def __init__(self, ext_regs: OTBNExtRegs) -> None:
+    def __init__(self, ext_regs: OTBNExtRegs, kmac: KmacBlock) -> None:
         self.KeyS0 = SideloadKey('KeyS0')
         self.KeyS1 = SideloadKey('KeyS1')
-        self.Kmac = KmacBlock()
+        self.Kmac = kmac
 
         self.MOD = DumbWSR('MOD')
         self.RND = RandWSR('RND', ext_regs)

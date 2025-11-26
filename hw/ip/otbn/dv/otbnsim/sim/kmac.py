@@ -20,7 +20,7 @@ def kmac_debug_print(text):
 
 
 class KmacBlock:
-    '''Emulates the KMAC hardware block.'''
+    '''Emulates the KMAC hardware interface.'''
     _CMD_START = 0x1d
     _CMD_PROCESS = 0x2e
     _CMD_RUN = 0x31
