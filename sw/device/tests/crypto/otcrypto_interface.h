@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -212,10 +213,13 @@ typedef struct otcrypto_interface_t {
                                                 otcrypto_const_word32_buf_t,
                                                 uint32_t,
                                                 otcrypto_unblinded_key_t *);
-  otcrypto_status_t (*rsa_private_key_from_exponents)(
-      otcrypto_rsa_size_t, otcrypto_const_word32_buf_t, uint32_t,
-      otcrypto_const_word32_buf_t, otcrypto_const_word32_buf_t,
-      otcrypto_blinded_key_t *);
+  otcrypto_status_t (*rsa_private_key_construct)(otcrypto_rsa_size_t,
+                                                 otcrypto_const_word32_buf_t,
+                                                 otcrypto_const_word32_buf_t,
+                                                 otcrypto_const_word32_buf_t,
+                                                 otcrypto_const_word32_buf_t,
+                                                 otcrypto_const_word32_buf_t,
+                                                 otcrypto_blinded_key_t *);
   otcrypto_status_t (*rsa_keypair_from_cofactor)(
       otcrypto_rsa_size_t, otcrypto_const_word32_buf_t, uint32_t,
       otcrypto_const_word32_buf_t, otcrypto_const_word32_buf_t,

@@ -221,13 +221,8 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
       .keyblob = keyblob,
       .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
   };
-  otcrypto_const_word32_buf_t modulus = {
-      .data = kTestModulus,
-      .len = ARRAYSIZE(kTestModulus),
-  };
-  TRY(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048, modulus, p,
-                                              q, kTestPublicExponent, d_p, d_q,
-                                              i_q, &private_key));
+  TRY(otcrypto_rsa_private_key_construct(kOtcryptoRsaSize2048, p, q, d_p, d_q,
+                                         i_q, &private_key));
 
   otcrypto_byte_buf_t plaintext_buf = {.data = msg, .len = kMaxPlaintextBytes};
   otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};

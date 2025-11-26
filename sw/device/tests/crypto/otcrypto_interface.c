@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -169,7 +170,7 @@ const otcrypto_interface_t otcrypto = {
 
     // RSA key construction.
     .rsa_public_key_construct = &otcrypto_rsa_public_key_construct,
-    .rsa_private_key_from_exponents = &otcrypto_rsa_private_key_from_exponents,
+    .rsa_private_key_construct = &otcrypto_rsa_private_key_construct,
 
     // RSA key generation (blocking).
     .rsa_keygen = &otcrypto_rsa_keygen,

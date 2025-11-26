@@ -173,10 +173,6 @@ status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
   uint32_t i_q[(key_length / sizeof(uint32_t)) / 2];
   memset(i_q, 0, sizeof(i_q));
   memcpy(i_q, uj_private_key.i_q, uj_private_key.i_q_len);
-  otcrypto_const_word32_buf_t modulus = {
-      .len = key_length / sizeof(uint32_t),
-      .data = n,
-  };
   otcrypto_const_word32_buf_t cofactor0 = {
       .len = (key_length / sizeof(uint32_t)) / 2,
       .data = p,
@@ -204,9 +200,9 @@ status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
       .keyblob = keyblob,
   };
   // Create private key object from components
-  otcrypto_status_t status = otcrypto_rsa_private_key_from_exponents(
-      rsa_size, modulus, cofactor0, cofactor1, uj_private_key.e, d_component0,
-      d_component1, crt_coeff, &private_key);
+  otcrypto_status_t status = otcrypto_rsa_private_key_construct(
+      rsa_size, cofactor0, cofactor1, d_component0, d_component1, crt_coeff,
+      &private_key);
   if (status.value != kOtcryptoStatusValueOk) {
     LOG_ERROR("Bad status value from key creation = 0x%x", status.value);
     return INTERNAL(status.value);
@@ -625,10 +621,6 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
   uint32_t i_q[(key_length / sizeof(uint32_t)) / 2];
   memset(i_q, 0, sizeof(i_q));
   memcpy(i_q, uj_private_key.i_q, uj_private_key.i_q_len);
-  otcrypto_const_word32_buf_t modulus = {
-      .len = key_length / sizeof(uint32_t),
-      .data = n,
-  };
   otcrypto_const_word32_buf_t cofactor0 = {
       .len = (key_length / sizeof(uint32_t)) / 2,
       .data = p,
@@ -656,9 +648,9 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
       .keyblob = keyblob,
   };
   // Create private key object from components
-  otcrypto_status_t status = otcrypto_rsa_private_key_from_exponents(
-      rsa_size, modulus, cofactor0, cofactor1, uj_private_key.e, d_component0,
-      d_component1, crt_coeff, &private_key);
+  otcrypto_status_t status = otcrypto_rsa_private_key_construct(
+      rsa_size, cofactor0, cofactor1, d_component0, d_component1, crt_coeff,
+      &private_key);
   if (status.value != kOtcryptoStatusValueOk) {
     LOG_ERROR("Bad status value from key generation: 0x%x", status.value);
     return INTERNAL(status.value);

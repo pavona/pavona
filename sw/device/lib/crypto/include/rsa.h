@@ -134,27 +134,26 @@ otcrypto_status_t otcrypto_rsa_public_key_deconstruct(
     uint32_t *exponent);
 
 /**
- * Constructs an RSA private key from the modulus and public/private exponents.
+ * Constructs an RSA private key from cofactors of the modulus, private exponent
+ * CRT components, and a CRT coefficient.
  *
  * The caller should allocate space for the private key and set the `keyblob`,
  * `keyblob_length`, and `key_length` fields accordingly.
  *
  * @param size RSA size parameter.
- * @param modulus RSA modulus (n).
  * @param p First cofactor of RSA modulus (p).
  * @param q Second cofactor of RSA modulus (q).
- * @param e RSA public exponent (e).
  * @param d_p First CRT component of the RSA private exponent d (d_p).
  * @param d_q Second CRT component of the RSA private exponent d (d_q).
  * @param i_q CRT reconstruction coefficient for given cofactors (i_q).
- * @param[out] public_key Destination public key struct.
+ * @param[out] private_key Destination private key struct.
  * @return Result of the RSA key construction.
  */
-otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
-    otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q, uint32_t e,
-    otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
-    otcrypto_const_word32_buf_t i_q, otcrypto_blinded_key_t *private_key);
+otcrypto_status_t otcrypto_rsa_private_key_construct(
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t p,
+    otcrypto_const_word32_buf_t q, otcrypto_const_word32_buf_t d_p,
+    otcrypto_const_word32_buf_t d_q, otcrypto_const_word32_buf_t i_q,
+    otcrypto_blinded_key_t *private_key);
 
 /**
  * Constructs an RSA keypair from the public key and one prime cofactor.

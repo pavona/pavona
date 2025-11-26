@@ -341,11 +341,11 @@ static status_t private_key_structural_check(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
-    otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q, uint32_t e,
-    otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
-    otcrypto_const_word32_buf_t i_q, otcrypto_blinded_key_t *private_key) {
+otcrypto_status_t otcrypto_rsa_private_key_construct(
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t p,
+    otcrypto_const_word32_buf_t q, otcrypto_const_word32_buf_t d_p,
+    otcrypto_const_word32_buf_t d_q, otcrypto_const_word32_buf_t i_q,
+    otcrypto_blinded_key_t *private_key) {
   if (p.data == NULL || q.data == NULL || d_p.data == NULL ||
       d_q.data == NULL || i_q.data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
@@ -358,14 +358,8 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
 
   // Ensure that the cofactors, private exponent components, and CRT coefficient
   // are all the proper length with respect to each other.
-  if (p.len != modulus.len / 2 || q.len != modulus.len / 2 ||
-      d_p.len != p.len || d_q.len != q.len || i_q.len != p.len) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check the public exponent is odd and greater than 2^16 (see FIPS 186-5,
-  // section A.1.1).
-  if ((e & 1) != 1 || e >> 16 == 0) {
+  if (p.len != q.len || d_p.len != p.len || d_q.len != q.len ||
+      i_q.len != p.len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -379,7 +373,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   switch (size) {
     case kOtcryptoRsaSize2048: {
       if (private_key->keyblob_length != sizeof(rsa_2048_private_key_t) ||
-          modulus.len != kRsa2048NumWords) {
+          p.len != kRsa2048NumWords / 2) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_private_key_t *sk =
@@ -393,7 +387,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     }
     case kOtcryptoRsaSize3072: {
       if (private_key->keyblob_length != sizeof(rsa_3072_private_key_t) ||
-          modulus.len != kRsa3072NumWords) {
+          p.len != kRsa3072NumWords / 2) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_private_key_t *sk =
@@ -407,7 +401,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     }
     case kOtcryptoRsaSize4096: {
       if (private_key->keyblob_length != sizeof(rsa_4096_private_key_t) ||
-          modulus.len != kRsa4096NumWords) {
+          p.len != kRsa4096NumWords / 2) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_private_key_t *sk =

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -234,9 +235,9 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_rsa_private_key_from_exponents(
-        rsa_size, modulus, cofactor0, cofactor1, uj_input.e, d_component0,
-        d_component1, crt_coeff, &private_key));
+    TRY(otcrypto_rsa_private_key_construct(rsa_size, cofactor0, cofactor1,
+                                           d_component0, d_component1,
+                                           crt_coeff, &private_key));
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_low();
     }
@@ -424,18 +425,13 @@ status_t cryptolib_fi_rsa_sign_impl(
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, uj_input.n_len);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
-
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(
-      rsa_size, modulus, cofactor0, cofactor1, uj_input.e, d_component0,
-      d_component1, crt_coeff, &private_key));
+  TRY(otcrypto_rsa_private_key_construct(rsa_size, cofactor0, cofactor1,
+                                         d_component0, d_component1, crt_coeff,
+                                         &private_key));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
