@@ -1,8 +1,5 @@
-# Copyright zeroRISC Inc.
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -787,6 +784,63 @@ opentitan_test(
         "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_2048_key_construct_functest",
+    srcs = ["rsa_2048_key_construct_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    fpga = fpga_params(
+        timeout = "short",
+    ),
+    verilator = verilator_params(
+        timeout = "short",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_3072_key_construct_functest",
+    srcs = ["rsa_3072_key_construct_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    fpga = fpga_params(
+        timeout = "short",
+    ),
+    verilator = verilator_params(
+        timeout = "short",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_4096_key_construct_functest",
+    srcs = ["rsa_4096_key_construct_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    fpga = fpga_params(
+        timeout = "short",
+    ),
+    verilator = verilator_params(
+        timeout = "short",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

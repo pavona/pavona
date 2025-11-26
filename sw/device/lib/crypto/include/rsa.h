@@ -120,6 +120,20 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
     uint32_t exponent, otcrypto_unblinded_key_t *public_key);
 
 /**
+ * Deconstructs an RSA public key into its modulus and public exponent.
+ *
+ * The caller should allocate space for the modulus and exponent.
+ *
+ * @param public_key Source public key struct.
+ * @param[out] modulus RSA modulus (n).
+ * @param[out] exponent RSA public exponent (e).
+ * @return Result of the RSA key construction.
+ */
+otcrypto_status_t otcrypto_rsa_public_key_deconstruct(
+    otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t *modulus,
+    uint32_t *exponent);
+
+/**
  * Constructs an RSA private key from the modulus and public/private exponents.
  *
  * The caller should allocate space for the private key and set the `keyblob`,
