@@ -497,7 +497,7 @@ _rej_crypto_sign_signature_internal:
     /* Initialize the nonce for matrix expansion. This value should be
          byte(i) || byte(j)
        for entry A[i][j]. */
-    li s4, 0
+    bn.xor w23, w23, w23
 
     /* Load a constant pointer to the zero wide register. */
     li s5, 31
@@ -514,6 +514,11 @@ _rej_crypto_sign_signature_internal:
     li   s10, STACK_TMP
     add  s10, fp, s10
 
+    /* Precompute the SHAKE128 configuration for poly_uniform. */
+    addi  s4, zero, 34
+    slli  s4, s4, 5
+    addi  s4, s4, SHAKE128_CFG
+
     /* Compute A * y, computing the values for A and y on the fly.
 
        We compute column-wise so that we genearate elements of y only once; in
@@ -524,7 +529,7 @@ _rej_crypto_sign_signature_internal:
            for i in 0..k-1:
              w[i] += A[i][j] * yj
     */
-    loopi L, 29
+    loopi L, 38
         /* Zero the buffer for y[j]. */
         addi  t0, s8, 0
         loopi 32, 1
@@ -536,18 +541,30 @@ _rej_crypto_sign_signature_internal:
         addi a3, s7, 0
         jal  x1, poly_uniform_gamma_1
         addi s11, a2, 1 /* a2 should be preserved after execution */
+        /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
+        csrrw zero, kmac_cfg, s4
+        addi  a0, fp, STACK_RHO
+        bn.lid    x0, 0(a0)
+        bn.wsrw   kmac_msg, w0
+        bn.wsrw   kmac_msg, w23
         bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
         /* Compute ntt(y[j]). */
         addi a0, s8, 0
         addi a1, s9, 0
         addi a2, s8, 0
         jal x1, ntt
-        loopi K, 10
+        loopi K, 13
             /* Compute A[i][j]. */
-            addi a0, fp, STACK_RHO
             addi a1, s10, 0
-            addi a2, s4, 0 /* matrix nonce */
             jal  x1, poly_uniform
+            /* Increment the row index by 1. */
+            bn.addi w23, w23, 256
+            /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
+            csrrw zero, kmac_cfg, s4
+            addi  a0, fp, STACK_RHO
+            bn.lid    x0, 0(a0)
+            bn.wsrw   kmac_msg, w0
+            bn.wsrw   kmac_msg, w23
             addi a0, s8, 0
             addi a1, s10, 0
             addi a2, s1, 0 /* *w[i] */
@@ -555,14 +572,13 @@ _rej_crypto_sign_signature_internal:
             jal  x1, poly_pointwise_acc
             /* Increment the w pointer. */
             addi s1, s1, 1024
-            /* Increment the row index by 1. */
-            addi s4, s4, 256
         /* Reset w pointer. */
         sub  s1, s1, s6
         /* Increment the column index in the nonce by one. */
-        addi s4, s4, 1
+        bn.addi w23, w23, 1
         /* Reset the row index in the nonce to zero. */
-        andi s4, s4, 255
+        bn.rshi w23, w23, bn0 >> 8
+        bn.rshi w23, bn0, w23 >> 248
         bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */

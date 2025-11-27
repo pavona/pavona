@@ -12,10 +12,18 @@ main:
   /* Prepare all-zero register. */
   bn.xor w31, w31, w31
 
-  /* Call poly_uniform with an all-zero input. */
-  la  x10, rho
+  /* Set up the SHAKE128 configuration for poly_uniform. */
+  addi  x2, zero, 34
+  slli  x2, x2, 5
+  addi  x2, x2, 0x2 /* SHAKE128 */
+  csrrw x0, kmac_cfg, x2
+
+  /* Send the input (34 zero bytes) */
+  bn.wsrw   kmac_msg, w31
+  bn.wsrw   kmac_msg, w31
+
+  /* Call poly_uniform. */
   la  x11, result
-  li  x12, 0
   jal x1, poly_uniform
 
   ecall

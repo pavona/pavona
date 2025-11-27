@@ -268,7 +268,7 @@ crypto_sign_keypair:
     /* Initialize the nonce for matrix expansion. This value should be
          byte(i) || byte(j)
        for entry A[i][j]. */
-    li s4, 0
+    bn.xor w23, w23, w23
 
     /* Load pointer to twiddle factors for NTT */
     la  s5, twiddles_fwd
@@ -282,6 +282,11 @@ crypto_sign_keypair:
     lw   s7, 0(t1)
     addi s7, s7, 128
 
+    /* Precompute the SHAKE128 configuration for poly_uniform. */
+    addi  s4, zero, 34
+    slli  s4, s4, 5
+    addi  s4, s4, SHAKE128_CFG
+
     /* Compute A * s1, computing elements of A on the fly.
 
        We compute column-wise so that we generate elements of s1 only once; in
@@ -292,7 +297,7 @@ crypto_sign_keypair:
            for i in 0..k-1:
              t[i] += A[i][j] * s1j
     */
-    loopi L, 29
+    loopi L, 38
         bn.wsrw   mod, w16 /* MOD = R | Q */
         /* Sample the next polynomial from s1. */
         addi a0, fp, STACK_RHOPRIME
@@ -300,6 +305,12 @@ crypto_sign_keypair:
         addi a2, s6, 0
         jal  x1, poly_uniform_eta
         addi s6, s6, 1
+        /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
+        csrrw zero, kmac_cfg, s4
+        addi  a0, fp, STACK_RHO
+        bn.lid    x0, 0(a0)
+        bn.wsrw   kmac_msg, w0
+        bn.wsrw   kmac_msg, w23
         /* Pack the s1 polynomial into the secret key. */
         addi a0, s7, 0
         addi a1, s0, 0
@@ -311,14 +322,18 @@ crypto_sign_keypair:
         addi a1, s5, 0
         addi a2, s0, 0
         jal  x1, ntt
-        loopi K, 10
+        loopi K, 13
             /* Compute A[i][j]. */
-            addi a0, fp, STACK_RHO
             addi a1, s1, 0
-            addi a2, s4, 0
             jal  x1, poly_uniform
             /* Increment the row in the matrix nonce (upper byte). */
-            addi s4, s4, 256
+            bn.addi w23, w23, 256
+            /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
+            csrrw zero, kmac_cfg, s4
+            addi  a0, fp, STACK_RHO
+            bn.lid    x0, 0(a0)
+            bn.wsrw   kmac_msg, w0
+            bn.wsrw   kmac_msg, w23
             /* Compute A[i][j] * s1[j] and add it to the output at index i. */
             addi a0, s0, 0
             addi a1, s1, 0
@@ -329,9 +344,10 @@ crypto_sign_keypair:
         /* Reset output vector pointer. */
         sub  s2, s2, s3
         /* Increment the column index in the nonce by one. */
-        addi s4, s4, 1
+        bn.addi w23, w23, 1
         /* Reset the row index in the nonce to zero. */
-        andi s4, s4, 255
+        bn.rshi w23, w23, bn0 >> 8
+        bn.rshi w23, bn0, w23 >> 248
 
     /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* Inverse NTT on t=A*s1 */

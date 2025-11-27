@@ -529,6 +529,23 @@ crypto_sign_verify_internal:
         pop \reg
     .endr
 
+    /* Initialize the nonce for matrix expansion. This value should be
+         byte(i) || byte(j)
+       for entry A[i][j]. */
+    bn.xor w23, w23, w23
+
+    /* Precompute the SHAKE128 configuration for poly_uniform. */
+    addi  s4, zero, 34
+    slli  s4, s4, 5
+    addi  s4, s4, SHAKE128_CFG
+
+    /* Start the SHAKE computation for A[0][0] ahead of NTT for performance. */
+    csrrw zero, kmac_cfg, s4
+    addi  a0, fp, STACK_RHO
+    bn.lid    x0, 0(a0)
+    bn.wsrw   kmac_msg, w0
+    bn.wsrw   kmac_msg, w23
+
     /* After NTT(z), w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* NTT(c) */
     li   a0, STACK_CP
@@ -562,34 +579,37 @@ crypto_sign_verify_internal:
     /* Load offset for resetting vector pointer. */
     li s3, POLYVECL_BYTES
 
-    /* Initialize the nonce for matrix expansion. This value should be
-         byte(i) || byte(j)
-       for entry A[i][j]. */
-    li s4, 0
-
      /* Compute A * z, computing elements of A on the fly. */
-    loopi K, 25
-        /* Compute A[i][j]. */
-        addi a0, fp, STACK_RHO
+    loopi K, 36
+        /* Compute A[i][0]. */
         addi a1, s1, 0
-        addi a2, s4, 0
         jal  x1, poly_uniform
         /* Increment the matrix nonce. */
-        addi s4, s4, 1
-        /* Compute A[i][j] * z[j] and set the output at index i. */
+        bn.addi w23, w23, 1
+        /* Start the SHAKE128 operation for poly_uniform for A[i][1]. */
+        csrrw zero, kmac_cfg, s4
+        addi  a0, fp, STACK_RHO
+        bn.lid    x0, 0(a0)
+        bn.wsrw   kmac_msg, w0
+        bn.wsrw   kmac_msg, w23
+        /* Compute A[i][0] * z[0] and set the output at index i. */
         addi a0, s0, 0
         addi a1, s1, 0
         addi a2, s2, 0
         jal  x1, poly_pointwise
         addi s0, s0, 1024
-        loopi Lminus1, 10
+        loopi Lminus1, 13
             /* Compute A[i][j]. */
-            addi a0, fp, STACK_RHO
             addi a1, s1, 0
-            addi a2, s4, 0
             jal  x1, poly_uniform
             /* Increment the matrix nonce. */
-            addi s4, s4, 1
+            bn.addi w23, w23, 1
+            /* Start the SHAKE128 operation for poly_uniform for A[i][j+1]. */
+            csrrw zero, kmac_cfg, s4
+            addi  a0, fp, STACK_RHO
+            bn.lid    x0, 0(a0)
+            bn.wsrw   kmac_msg, w0
+            bn.wsrw   kmac_msg, w23
             /* Compute A[i][j] * z[j] and add it to the output at index i. */
             addi a0, s0, 0
             addi a1, s1, 0
@@ -600,8 +620,14 @@ crypto_sign_verify_internal:
         sub  s0, s0, s3
         addi s2, s2, 1024
         /* Adjust the matrix nonce to reset the column and increment the row. */
-        addi s4, s4, 256
-        addi s4, s4, -L
+        bn.addi w23, w23, 256
+        bn.subi w23, w23, L
+        /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
+        csrrw zero, kmac_cfg, s4
+        addi  a0, fp, STACK_RHO
+        bn.lid    x0, 0(a0)
+        bn.wsrw   kmac_msg, w0
+        bn.wsrw   kmac_msg, w23
 
     /* Call random oracle and verify challenge */
     /* Initialize a SHAKE256 operation. */

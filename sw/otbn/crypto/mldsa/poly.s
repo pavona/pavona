@@ -646,39 +646,20 @@ _loop_inner_skip_load_poly_challenge:
 /**
  * poly_uniform
  *
- * Returns: -
+ * Rejection-samples SHAKE output for a full polynomial of coefficients < Q.
+ *
+ * Expects the SHAKE operation to have already been initialized before this
+ * function is called.
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
- * @param[in]  a0: pointer to rho
- * @param[in]  a2: nonce
- * @param[out] a1: dmem pointer to polynomial
+ * @param[in] a1: dmem pointer to polynomial
+ * @param[out] dmem[a1]: freshly sampled polynomial
  *
- * clobbered registers: a0-a3, t0-t6, w0, w8-w13, w21
+ * clobbered registers: a0-a3, t0-t6, w0, w8-w15, w21
  */
 .global poly_uniform
 poly_uniform:
-    /* Save nonce to memory (use poly tmp buffer). */
-    la t0, poly_wdr2gpr
-    sw a2, 0(t0)
-
-    /* TODO: Start the operation outside the function. */
-    /* Initialize a SHAKE128 operation. */
-    addi  a3, a1, 0               /* save output pointer */
-    addi  a1, zero, 34
-    slli  t0, a1, 5
-    addi  t0, t0, SHAKE128_CFG
-    csrrw zero, KECCAK_CFG_REG, t0
-
-    /* Send the message to the Keccak core. */
-    li   a1, 32                  /* set message length */
-    jal  x1, keccak_send_message /* a0 already contains the input buffer */
-    addi a1, zero, 2             /* set message length */
-    la   a0, poly_wdr2gpr        /* Set a0 to point to the nonce in memory */
-    jal  x1, keccak_send_message
-
-    addi a1, a3, 0 /* move output pointer back to a1 */
-
     /* Define temporary registers. */
     #define shake_reg w8
     #define shake_reg_ptr 8
