@@ -943,12 +943,20 @@ poly_uniform:
 
     /* Process bytes 480-575 of digest (state refresh before first read). */
 
-    /* While waiting for more digest, mask and check vectors 13..19. Note that
-       t1 already holds the right vector count from the previous check (and for
-       this run in particular we actually exceed the SHAKE latency due to the
-       larger amount of computation between the last shake read and this one,
-       so saving the instruction counts). */
-    jal     x1, poly_uniform_mask_and_check_vectors
+    /* Note: this loop is an inlined version of
+       poly_uniform_mask_and_check_vectors, because when there is a refresh on
+       the first read of a 96-byte cycle the checking latency slightly exceeds
+       the SHAKE latency and saving a few instructions on loading the loop size
+       and jumping actually counts. */
+    loopi  7, 8
+      bn.lid     t6, 0(t3)
+      bn.and     w21, w21, w11
+      bn.sid     t6, 0(t3++)
+      bn.subv.8S w10, w21, w12
+      bn.and     w10, w10, w13
+      bn.cmp     w10, w13
+      bn.sel     w15, w15, bn0, Z
+      bn.add     w14, w14, w15
     /* STATE REFRESH. */
     bn.wsrr shake_reg, kmac_digest
     loopi   8, 2
@@ -1019,8 +1027,20 @@ poly_uniform:
     /* Process bytes 672-767 of digest (state refresh before first read). */
 
     /* While waiting for more digest, mask and check vectors 20..27. */
-    li      t1, 8
-    jal     x1, poly_uniform_mask_and_check_vectors
+    /* Note: this loop is an inlined version of
+       poly_uniform_mask_and_check_vectors, because when there is a refresh on
+       the first read of a 96-byte cycle the checking latency slightly exceeds
+       the SHAKE latency and saving a few instructions on loading the loop size
+       and jumping actually counts. */
+    loopi  8, 8
+      bn.lid     t6, 0(t3)
+      bn.and     w21, w21, w11
+      bn.sid     t6, 0(t3++)
+      bn.subv.8S w10, w21, w12
+      bn.and     w10, w10, w13
+      bn.cmp     w10, w13
+      bn.sel     w15, w15, bn0, Z
+      bn.add     w14, w14, w15
     /* STATE REFRESH. */
     bn.wsrr shake_reg, kmac_digest
     loopi   8, 2
@@ -1151,8 +1171,7 @@ _poly_uniform_discard_coeff_skip_shift:
     /* Speculatively copy 3 bytes of digest (some bytes may be invalid). */
     bn.rshi w0, shake_reg, w0 >> 32
     bn.rshi shake_reg, shake_reg, shake_reg >> 24
-    /* Speculatively mask and store. */
-    bn.and  w0, w0, w11
+    /* Speculatively store. */
     bn.sid  zero, 0(t0)
     /* Update number of bytes available and check for underflow. If the bytes
        were all valid, we're done. */
@@ -1176,8 +1195,7 @@ _poly_uniform_discard_coeff_skip_shift:
     bn.rshi w0, bn0, w0 >> 8
     /* Update the number of bytes available in the digest. */
     addi    t2, t2, 32
-    /* Re-mask and re-store. */
-    bn.and  w0, w0, w11
+    /* Store again. */
     bn.sid  zero, 0(t0)
 _poly_uniform_recompute_first_bad_index:
     /* Calculate the number of vectors remaining (includes the just-corrected
