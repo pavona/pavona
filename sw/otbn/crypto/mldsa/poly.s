@@ -732,15 +732,17 @@ poly_uniform:
     /* Read 32 bytes from the digest. */
     bn.wsrr shake_reg, kmac_digest
     /* Load 8 23-bit coefficient candidates into vector register. */
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     /* Store 8 coefficient candidates. */
     bn.sid  x0, 0(a1++)
     /* Load 2 23-bit coefficient candidates into vector register. */
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     /* Save the leftover bytes (2) in the upper part of w0. */
     bn.rshi w0, shake_reg, w0 >> 16
     /* Read 32 bytes from the digest. */
@@ -749,15 +751,17 @@ poly_uniform:
     bn.rshi w0, shake_reg, w0 >> 16
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
     /* Load 5 23-bit coefficient candidates into vector register. */
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     /* Store 8 coefficient candidates. */
     bn.sid  x0, 0(a1++)
     /* Load 5 23-bit coefficient candidates into vector register. */
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     /* Save the leftover bytes (1) in the upper part of w0. */
     bn.rshi w0, shake_reg, w0 >> 8
     /* Read 32 bytes from the digest. */
@@ -766,39 +770,45 @@ poly_uniform:
     bn.rshi w0, shake_reg, w0 >> 24
     bn.rshi shake_reg, shake_reg, shake_reg >> 16
     /* Load 2 23-bit coefficient candidates into vector register. */
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     /* Store 8 coefficient candidates. */
     bn.sid  x0, 0(a1++)
     /* Load 8 23-bit coefficient candidates into vector register. */
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     /* Store 8 coefficient candidates. */
     bn.sid  x0, 0(a1++)
 
     /* Process bytes 96..191 of digest (state refresh before third read). */
 
     bn.wsrr shake_reg, kmac_digest
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 16
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 16
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 8
     /* While waiting for more digest, mask and check vectors 0..5. */
     li      t1, 6
@@ -807,59 +817,69 @@ poly_uniform:
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 24
     bn.rshi shake_reg, shake_reg, shake_reg >> 16
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
 
     /* Process bytes 192-287 of digest (no state refresh needed). */
 
     bn.wsrr shake_reg, kmac_digest
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 16
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 16
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 8
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 24
     bn.rshi shake_reg, shake_reg, shake_reg >> 16
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
 
     /* Process bytes 288-383 of digest (state refresh before second read). */
 
     bn.wsrr shake_reg, kmac_digest
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 16
     /* While waiting for more digest, mask and check vectors 6..12. */
     li      t1, 7
@@ -868,58 +888,68 @@ poly_uniform:
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 16
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 8
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 24
     bn.rshi shake_reg, shake_reg, shake_reg >> 16
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
 
     /* Process bytes 384-479 of digest (no state refresh needed). */
 
     bn.wsrr shake_reg, kmac_digest
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 16
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 16
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 8
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 24
     bn.rshi shake_reg, shake_reg, shake_reg >> 16
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
 
     /* Process bytes 480-575 of digest (state refresh before first read). */
@@ -940,69 +970,81 @@ poly_uniform:
       bn.add     w14, w14, w15
     /* STATE REFRESH. */
     bn.wsrr shake_reg, kmac_digest
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 16
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 16
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 8
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 24
     bn.rshi shake_reg, shake_reg, shake_reg >> 16
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
 
     /* Process bytes 576-671 of digest (no state refresh needed). */
 
     bn.wsrr shake_reg, kmac_digest
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 16
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 16
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 8
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 24
     bn.rshi shake_reg, shake_reg, shake_reg >> 16
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
 
     /* Process bytes 672-767 of digest (state refresh before first read). */
@@ -1024,35 +1066,41 @@ poly_uniform:
       bn.add     w14, w14, w15
     /* STATE REFRESH. */
     bn.wsrr shake_reg, kmac_digest
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 16
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 16
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   5, 2
+    .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.rshi w0, shake_reg, w0 >> 8
     bn.wsrr shake_reg, kmac_digest
     bn.rshi w0, shake_reg, w0 >> 24
     bn.rshi shake_reg, shake_reg, shake_reg >> 16
-    loopi   2, 2
+    .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
-    loopi   8, 2
+    .rept 8
       bn.rshi w0, shake_reg, w0 >> 32
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
     bn.sid  x0, 0(a1++)
 
     /* Done sampling; mask and check the last few vectors 28..31. */
