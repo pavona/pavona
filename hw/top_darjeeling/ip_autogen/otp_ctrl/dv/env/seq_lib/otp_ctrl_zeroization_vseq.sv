@@ -47,7 +47,7 @@ class otp_ctrl_zeroization_vseq extends otp_ctrl_smoke_vseq;
       CreatorSwCfgIdx,
       OwnerSwCfgIdx,
       OwnershipSlotStateIdx,
-      RotCreatorAuthIdx,
+      RotCreatorIdentityIdx,
       RotOwnerAuthSlot0Idx,
       RotOwnerAuthSlot1Idx,
       PlatIntegAuthSlot0Idx,
@@ -58,8 +58,12 @@ class otp_ctrl_zeroization_vseq extends otp_ctrl_smoke_vseq;
       PlatOwnerAuthSlot3Idx,
       ExtNvmIdx,
       RomPatchIdx,
+      SocFusesCpIdx,
+      SocFusesFtIdx,
+      ScratchFusesIdx,
       HwCfg0Idx,
       HwCfg1Idx,
+      HwCfg2Idx,
       Secret0Idx,
       Secret1Idx,
       Secret2Idx,
@@ -68,40 +72,48 @@ class otp_ctrl_zeroization_vseq extends otp_ctrl_smoke_vseq;
   }
 
   constraint dai_wr_legal_addr_c {
+    if (part_idx == SocFusesCpIdx)
+        dai_addr inside `PART_CONTENT_RANGE(SocFusesCpIdx);
+    if (part_idx == SocFusesFtIdx)
+        dai_addr inside `PART_CONTENT_RANGE(SocFusesFtIdx);
     if (part_idx == VendorTestIdx)
-        dai_addr inside `PART_CONTENT_RANGE(VendorTestIdx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(VendorTestIdx);
     if (part_idx == CreatorSwCfgIdx)
-        dai_addr inside `PART_CONTENT_RANGE(CreatorSwCfgIdx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(CreatorSwCfgIdx);
     if (part_idx == OwnerSwCfgIdx)
-        dai_addr inside `PART_CONTENT_RANGE(OwnerSwCfgIdx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(OwnerSwCfgIdx);
     if (part_idx == OwnershipSlotStateIdx)
-        dai_addr inside `PART_CONTENT_RANGE(OwnershipSlotStateIdx);
-    if (part_idx == RotCreatorAuthIdx)
-        dai_addr inside `PART_CONTENT_RANGE(RotCreatorAuthIdx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(OwnershipSlotStateIdx);
+    if (part_idx == RotCreatorIdentityIdx)
+        dai_addr inside `PART_CONTENT_RANGE_ZER(RotCreatorIdentityIdx);
     if (part_idx == RotOwnerAuthSlot0Idx)
-        dai_addr inside `PART_CONTENT_RANGE(RotOwnerAuthSlot0Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(RotOwnerAuthSlot0Idx);
     if (part_idx == RotOwnerAuthSlot1Idx)
-        dai_addr inside `PART_CONTENT_RANGE(RotOwnerAuthSlot1Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(RotOwnerAuthSlot1Idx);
     if (part_idx == PlatIntegAuthSlot0Idx)
-        dai_addr inside `PART_CONTENT_RANGE(PlatIntegAuthSlot0Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(PlatIntegAuthSlot0Idx);
     if (part_idx == PlatIntegAuthSlot1Idx)
-        dai_addr inside `PART_CONTENT_RANGE(PlatIntegAuthSlot1Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(PlatIntegAuthSlot1Idx);
     if (part_idx == PlatOwnerAuthSlot0Idx)
-        dai_addr inside `PART_CONTENT_RANGE(PlatOwnerAuthSlot0Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(PlatOwnerAuthSlot0Idx);
     if (part_idx == PlatOwnerAuthSlot1Idx)
-        dai_addr inside `PART_CONTENT_RANGE(PlatOwnerAuthSlot1Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(PlatOwnerAuthSlot1Idx);
     if (part_idx == PlatOwnerAuthSlot2Idx)
-        dai_addr inside `PART_CONTENT_RANGE(PlatOwnerAuthSlot2Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(PlatOwnerAuthSlot2Idx);
     if (part_idx == PlatOwnerAuthSlot3Idx)
-        dai_addr inside `PART_CONTENT_RANGE(PlatOwnerAuthSlot3Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(PlatOwnerAuthSlot3Idx);
     if (part_idx == ExtNvmIdx)
-        dai_addr inside `PART_CONTENT_RANGE(ExtNvmIdx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(ExtNvmIdx);
     if (part_idx == RomPatchIdx)
-        dai_addr inside `PART_CONTENT_RANGE(RomPatchIdx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(RomPatchIdx);
+    if (part_idx == ScratchFusesIdx)
+        dai_addr inside `PART_CONTENT_RANGE_ZER(ScratchFusesIdx);
     if (part_idx == HwCfg0Idx)
-        dai_addr inside `PART_CONTENT_RANGE(HwCfg0Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(HwCfg0Idx);
     if (part_idx == HwCfg1Idx)
-        dai_addr inside `PART_CONTENT_RANGE(HwCfg1Idx);
+        dai_addr inside `PART_CONTENT_RANGE_ZER(HwCfg1Idx);
+    if (part_idx == HwCfg2Idx)
+        dai_addr inside `PART_CONTENT_RANGE_ZER(HwCfg2Idx);
     if (part_idx == Secret0Idx)
         dai_addr inside `PART_CONTENT_RANGE_ZER(Secret0Idx);
     if (part_idx == Secret1Idx)
