@@ -829,16 +829,17 @@ module top_darjeeling #(
   assign lc_ctrl_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign soc_dbg_ctrl_soc_dbg_state =
-      otp_ctrl_otp_broadcast.hw_cfg1_data.soc_dbg_state;
+      otp_ctrl_otp_broadcast.hw_cfg2_data.soc_dbg_state;
   assign lc_ctrl_otp_manuf_state =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
+      otp_ctrl_otp_broadcast.hw_cfg2_data.manuf_state;
   assign keymgr_dpe_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
   logic unused_otp_broadcast_bits;
   assign unused_otp_broadcast_bits = ^{
     otp_ctrl_otp_broadcast.valid,
-    otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
+    otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated,
+    otp_ctrl_otp_broadcast.hw_cfg2_data.unallocated
   };
 
   // See #7978 This below is a hack.
