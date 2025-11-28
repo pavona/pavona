@@ -30,7 +30,7 @@ class aes_core_fi_vseq extends aes_base_vseq;
     aes_pkg::aes_ctrl_e core_state_array [] = '{
         aes_pkg::CTRL_IDLE,
         aes_pkg::CTRL_LOAD,
-        aes_pkg::CTRL_PRNG_UPDATE,
+        aes_pkg::CTRL_GHASH_READY,
         aes_pkg::CTRL_PRNG_RESEED,
         aes_pkg::CTRL_FINISH,
         aes_pkg::CTRL_CLEAR_I,
@@ -82,9 +82,9 @@ class aes_core_fi_vseq extends aes_base_vseq;
         end
 
         // Wait and apply force.
-        if (await_state inside {aes_pkg::CTRL_PRNG_UPDATE, aes_pkg::CTRL_CLEAR_I,
+        if (await_state inside {aes_pkg::CTRL_GHASH_READY, aes_pkg::CTRL_CLEAR_I,
                                       aes_pkg::CTRL_CLEAR_CO}) begin
-          // The PRNG Update and Clear states are entered for ~1 cycle by clear_regs() during the
+          // The GHASH Ready and Clear states are entered for ~1 cycle by clear_regs() during the
           // multi-cycle CSR write. Arm a watcher BEFORE the trigger to sample the CG at entry.
           sample_fi_cg_at_state(AesFiCgCore, await_state, target, AesFiCgClearRegs,
                                  0, '{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
