@@ -213,13 +213,60 @@ main:
 .zero STACK_SIZE
 stack_end:
 
-#if DILITHIUM_MODE == 2
+.globl messagelen
+messagelen:
+  .word 0x00000040
+
+.globl message
+message:
+  .word 0xa9eeb13c
+  .word 0x934b0088
+  .word 0x0afb3c10
+  .word 0x682afdee
+  .word 0x4afa016e
+  .word 0x63a3e858
+  .word 0xe3a1a89c
+  .word 0xe257aef9
+  .word 0x87ccb835
+  .word 0x62dc233c
+  .word 0x1660d2b8
+  .word 0x752ffa9a
+  .word 0x586a91ab
+  .word 0x889174d9
+  .word 0x6a5ed235
+  .word 0xb2855043
+
+.balign 32
+.globl ctx
+ctx:
+    .word 0x00000000
+    .word 0x11111111
+    .word 0x22222222
+    .word 0x33333333
+    .word 0x44444444
+    .word 0x55555555
+    .word 0x66666666
+    .word 0x77777777
+
 .globl signature
+#if DILITHIUM_MODE == 3
+/* In case of Dilithium3, CTILDEBYTES is 48, not divisible by 32.
+   To make the packing easier, we dis-align the start of the signature buffer
+   because we will simply need to write C to the beginning, which is much easier
+   than dealing with the disalignment later on in the signature. */
+  .zero 16
+signature:
+  .zero CRYPTO_BYTES
+  .zero 3
+#else
 signature:
   .zero CRYPTO_BYTES
   .zero 12
+#endif
 
+.balign 32
 .globl sk
+#if DILITHIUM_MODE == 2
 sk:
   .word 0xb07ee122
   .word 0x1af5a5de
@@ -862,43 +909,7 @@ sk:
   .word 0x9591bcea
   .word 0x1de1af12
 
-.globl message
-message:
-  .word 0xa9eeb13c
-  .word 0x934b0088
-  .word 0x0afb3c10
-  .word 0x682afdee
-  .word 0x4afa016e
-  .word 0x63a3e858
-  .word 0xe3a1a89c
-  .word 0xe257aef9
-  .word 0x87ccb835
-  .word 0x62dc233c
-  .word 0x1660d2b8
-  .word 0x752ffa9a
-  .word 0x586a91ab
-  .word 0x889174d9
-  .word 0x6a5ed235
-  .word 0xb2855043
-  .zero 3132
-/* account for longer messages in the tests */
-
-.globl messagelen
-messagelen:
-  .word 0x00000040
-
 #elif DILITHIUM_MODE == 3
-/* In case of Dilithium3, CTILDEBYTES is 48, not divisible by 32.
-   To make the packing easier, we dis-align the start of the signature buffer
-   because we will simply need to write C to the beginning, which is much easier
-   than dealing with the disalignment later on in the signature. */
-  .zero 16
-.globl signature
-signature:
-  .zero CRYPTO_BYTES
-  .zero 3
-
-.globl sk
 sk:
   .word 0x8ca9a4c8
   .word 0xbc446839
@@ -1909,38 +1920,7 @@ sk:
   .word 0xc32986ff
   .word 0xbc1218f0
 
-.globl message
-message:
-  .word 0xa9eeb13c
-  .word 0x934b0088
-  .word 0x0afb3c10
-  .word 0x682afdee
-  .word 0x4afa016e
-  .word 0x63a3e858
-  .word 0xe3a1a89c
-  .word 0xe257aef9
-  .word 0x87ccb835
-  .word 0x62dc233c
-  .word 0x1660d2b8
-  .word 0x752ffa9a
-  .word 0x586a91ab
-  .word 0x889174d9
-  .word 0x6a5ed235
-  .word 0xb2855043
-  .zero 3132
-/* account for longer messages in the tests */
-
-.globl messagelen
-messagelen:
-  .word 0x00000040
-
 #elif DILITHIUM_MODE == 5
-.globl signature
-signature:
-  .zero CRYPTO_BYTES
-  .zero 13
-
-.globl sk
 sk:
   .word 0x3afd5356
   .word 0x4bce1420
@@ -3166,44 +3146,7 @@ sk:
   .word 0x245cd39c
   .word 0xd1188683
   .word 0x554d19e3
-
-.globl message
-message:
-  .word 0xa9eeb13c
-  .word 0x934b0088
-  .word 0x0afb3c10
-  .word 0x682afdee
-  .word 0x4afa016e
-  .word 0x63a3e858
-  .word 0xe3a1a89c
-  .word 0xe257aef9
-  .word 0x87ccb835
-  .word 0x62dc233c
-  .word 0x1660d2b8
-  .word 0x752ffa9a
-  .word 0x586a91ab
-  .word 0x889174d9
-  .word 0x6a5ed235
-  .word 0xb2855043
-  .zero 3132
-/* account for longer messages in the tests */
-
-.globl messagelen
-messagelen:
-  .word 0x00000040
 #endif
-
-.balign 32
-.globl ctx
-ctx:
-    .word 0x00000000
-    .word 0x11111111
-    .word 0x22222222
-    .word 0x33333333
-    .word 0x44444444
-    .word 0x55555555
-    .word 0x66666666
-    .word 0x77777777
 
 /* Modulus for reduction */
 .global modulus
