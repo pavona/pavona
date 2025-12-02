@@ -36,6 +36,27 @@ otbn_sim_test(
     ],
 )
 
+otbn_library(
+    name = "mldsa44_sign_data",
+    srcs = [
+        "mldsa44_sign_data.s",
+    ],
+)
+
+otbn_library(
+    name = "mldsa65_sign_data",
+    srcs = [
+        "mldsa65_sign_data.s",
+    ],
+)
+
+otbn_library(
+    name = "mldsa87_sign_data",
+    srcs = [
+        "mldsa87_sign_data.s",
+    ],
+)
+
 otbn_sim_test(
     name = "mldsa44_sign_test",
     srcs = [
@@ -47,6 +68,7 @@ otbn_sim_test(
     dexp = "dilithium2_sign_test.dexp",
     pqc = True,
     deps = [
+        ":mldsa44_sign_data",
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
         "//sw/otbn/crypto/mldsa:mldsa44_consts",
@@ -118,6 +140,7 @@ otbn_sim_test(
     dexp = "dilithium3_sign_test.dexp",
     pqc = True,
     deps = [
+        ":mldsa65_sign_data",
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
         "//sw/otbn/crypto/mldsa:mldsa65_consts",
@@ -189,6 +212,7 @@ otbn_sim_test(
     dexp = "dilithium5_sign_test.dexp",
     pqc = True,
     deps = [
+        ":mldsa87_sign_data",
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
         "//sw/otbn/crypto/mldsa:mldsa87_consts",
