@@ -280,24 +280,6 @@ class KmacBlock:
         elif self._shift_digest_reg or self._new_permutation:
             return False
         elif self._digest_read:
-            self._digest_read = False
-            if self._rate_bytes > self._read_offset + 32:
-                self._shift_digest_reg = True
-            elif self._leftover_digest_bytes + self._rate_bytes - self._read_offset >= 32:
-                # Even if we can not directly get 32 bytes without
-                # a new permutation, we have n leftover bytes
-                # (8 for SHAKE128/256). Therefore after 4 permutations
-                # we have 32 bytes available without a new permutation.
-                self._leftover_digest_bytes = 0
-                self._shift_digest_reg = True
-                # For the next squeeze request, we do not have the latency
-                # for shifting the remaining bits from the state.
-                self._skip_digest_shift_cycle = True
-            else:
-                self._new_permutation = True
-                self._leftover_digest_bytes += max(self._rate_bytes - self._read_offset, 0)
-                self._read_offset = 0
-            self._digest_ready_next = False
             return False
         elif self._digest_ready:
             self._digest_read = True
@@ -648,6 +630,36 @@ class KmacBlock:
                 self._digest_ready_next = True
         else:
             self._digest_ready_next = self.is_squeezing() and (self._core_cycles_remaining == 0)
+
+        if (
+            self._digest_read and self._digest_ready
+            and not self._shift_digest_reg and not self._new_permutation
+        ):
+            # If we have read the digest then set ready to False as well for proper status sampling
+            self._digest_read = False
+            self._digest_ready = False
+            if self._rate_bytes > self._read_offset + 32:
+                self._shift_digest_reg = True
+                self._digest_request_ctr += 1
+            elif self._leftover_digest_bytes + self._rate_bytes - self._read_offset >= 32:
+                # Even if we can not directly get 32 bytes without
+                # a new permutation, we have n leftover bytes
+                # (8 for SHAKE128/256). Therefore after 4 permutations
+                # we have 32 bytes available without a new permutation.
+                self._leftover_digest_bytes = 0
+                self._shift_digest_reg = True
+                self._digest_request_ctr += 1
+                # For the next squeeze request, we do not have the latency
+                # for shifting the remaining bits from the state.
+                self._skip_digest_shift_cycle = True
+            else:
+                if self._mode in [self._MODE_SHAKE, self. _MODE_CSHAKE]:
+                    # For XOF modes, eagerly trigger a new permutation.
+                    self._new_permutation = True
+                    self._digest_request_ctr += 1
+                    self._leftover_digest_bytes += max(self._rate_bytes - self._read_offset, 0)
+                    self._read_offset = 0
+            self._digest_ready_next = False
 
         # Either step the core or check if we can start it.
         if self._core_is_busy():
