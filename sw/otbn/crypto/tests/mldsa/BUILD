@@ -13,8 +13,6 @@ load("//rules:otbn.bzl", "otbn_binary", "otbn_consttime_test", "otbn_library", "
 
 package(default_visibility = ["//visibility:public"])
 
-# Refactor ML-DSA VER2
-
 otbn_sim_test(
     name = "mldsa44_keypair_test",
     srcs = [
@@ -28,6 +26,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_consts",
         "//sw/otbn/crypto/mldsa:mldsa44_keypair",
         "//sw/otbn/crypto/mldsa:mldsa44_poly",
         "//sw/otbn/crypto/mldsa:mldsa44_rounding",
@@ -50,6 +49,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_consts",
         "//sw/otbn/crypto/mldsa:mldsa44_poly",
         "//sw/otbn/crypto/mldsa:mldsa44_rounding",
         "//sw/otbn/crypto/mldsa:mldsa44_sign",
@@ -73,6 +73,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_consts",
         "//sw/otbn/crypto/mldsa:mldsa44_poly",
         "//sw/otbn/crypto/mldsa:mldsa44_rounding",
         "//sw/otbn/crypto/mldsa:mldsa44_verify",
@@ -96,6 +97,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa65_consts",
         "//sw/otbn/crypto/mldsa:mldsa65_keypair",
         "//sw/otbn/crypto/mldsa:mldsa65_poly",
         "//sw/otbn/crypto/mldsa:mldsa65_rounding",
@@ -118,6 +120,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa65_consts",
         "//sw/otbn/crypto/mldsa:mldsa65_poly",
         "//sw/otbn/crypto/mldsa:mldsa65_rounding",
         "//sw/otbn/crypto/mldsa:mldsa65_sign",
@@ -141,6 +144,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa65_consts",
         "//sw/otbn/crypto/mldsa:mldsa65_poly",
         "//sw/otbn/crypto/mldsa:mldsa65_rounding",
         "//sw/otbn/crypto/mldsa:mldsa65_verify",
@@ -164,6 +168,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa87_consts",
         "//sw/otbn/crypto/mldsa:mldsa87_keypair",
         "//sw/otbn/crypto/mldsa:mldsa87_poly",
         "//sw/otbn/crypto/mldsa:mldsa87_rounding",
@@ -186,6 +191,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa87_consts",
         "//sw/otbn/crypto/mldsa:mldsa87_poly",
         "//sw/otbn/crypto/mldsa:mldsa87_rounding",
         "//sw/otbn/crypto/mldsa:mldsa87_sign",
@@ -209,6 +215,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa87_consts",
         "//sw/otbn/crypto/mldsa:mldsa87_poly",
         "//sw/otbn/crypto/mldsa:mldsa87_rounding",
         "//sw/otbn/crypto/mldsa:mldsa87_verify",
@@ -233,6 +240,7 @@ otbn_sim_test(
     pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_consts",
         "//sw/otbn/crypto/mldsa:mldsa44_poly",
         "//sw/otbn/crypto/mldsa:mldsa44_rounding",
     ],
@@ -252,6 +260,7 @@ otbn_sim_test(
     pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:mldsa44_consts",
         "//sw/otbn/crypto/mldsa:mldsa44_poly",
         "//sw/otbn/crypto/mldsa:mldsa44_rounding",
     ],

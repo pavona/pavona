@@ -119,3 +119,16 @@ otbn_library(
     )
     for sec_level, name in NAME_BY_SEC_LEVEL.items()
 ]
+
+[
+    otbn_library(
+        name = name + "_consts",
+        srcs = [
+            "mldsa_consts.s",
+        ],
+        copts = [
+            "-DDILITHIUM_MODE=" + str(sec_level),
+        ],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
