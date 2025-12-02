@@ -212,15 +212,28 @@ jobs:
           echo "::group::Verible waiver"
           cat "verible_waiver"
           echo "::endgroup::"
-      - name: Run Verible linter action
+      - name: Install Verible
         uses: ./.github/actions/third_party/verible
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           verible_version: ${{ env.verible_version }}
-          reviewdog_reporter: 'github-pr-check'
-          suggest_fixes: 'false'
-          config_file: ${{ env.verible_config }}
-          extra_args: "--waiver_files=verible_waiver"
+      - name: Run Verible linter with reviewdog
+        shell: bash
+        env:
+          INPUT_CONFIG_FILE: ${{ env.verible_config }}
+          INPUT_EXTRA_ARGS: '--waiver_files=verible_waiver'
+          INPUT_EXTENSIONS: ''
+          INPUT_FAIL_ON_ERROR: 'false'
+          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_LOG_FILE: 'verible-verilog-lint.log'
+          INPUT_PATHS: '.'
+          INPUT_REVIEWDOG_REPORTER: 'github-pr-check'
+          INPUT_SUGGEST_FIXES: 'false'
+        run: ./.github/actions/third_party/verible/entrypoint.sh
+      - name: Upload Verible linter log
+        uses: actions/upload-artifact@v4
+        with:
+          name: verible-linter
+          path: 'verible-verilog-lint.log'
 
   acc_standalone_tests:
     name: Run ACC smoke Test

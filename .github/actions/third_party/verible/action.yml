@@ -2,43 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: Verible lint
+name: Install Verible
 
 inputs:
-  config_file:
-    description: 'Relative path to configuration file'
-    required: false
-  extra_args:
-    description: 'Extra arguments for verible-linter'
-    required: false
-  paths:
-    description: 'Optional array of paths to directories with source code to check'
-    required: false
-    default: '.'
-  exclude_paths:
-    description: 'Exclude these paths after finding all target files'
-    required: false
-  extensions:
-    description: 'Run linting on files ending with following extensions'
-    required: false
-    default: ''
-  log_file:
-    description: 'Name for a log file'
-    required: false
-    default: 'verible-verilog-lint.log'
-  github_token:
-    description: 'GITHUB_TOKEN'
-    default: ''
-  reviewdog_reporter:
-    description: '-reporter option to reviewdog'
-    default: 'github-pr-review'
-  suggest_fixes:
-    description: 'Post results of using --autofix option as change suggestions,
-                  works only with github-pre-review reporter'
-    default: 'true'
-  fail_on_error:
-    description: 'Fail the action when rule violations are found'
-    default: 'false'
   verible_version:
     description: 'Use selected Verible version (defaults to latest release)'
     default: 'latest'
@@ -85,23 +51,3 @@ runs:
       shell: bash
       run: |
           reviewdog --version
-    # back to verible-linter-action
-    - name: Run Verible linter with reviewdog
-      shell: bash
-      env:
-        INPUT_CONFIG_FILE: ${{ inputs.config_file }}
-        INPUT_EXCLUDE_PATHS: ${{ inputs.exclude_paths }}
-        INPUT_EXTRA_ARGS: ${{ inputs.extra_args }}
-        INPUT_EXTENSIONS: ${{ inputs.extensions }}
-        INPUT_FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
-        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
-        INPUT_LOG_FILE: ${{ inputs.log_file }}
-        INPUT_PATHS: ${{ inputs.paths }}
-        INPUT_REVIEWDOG_REPORTER: ${{ inputs.reviewdog_reporter }}
-        INPUT_SUGGEST_FIXES: ${{ inputs.suggest_fixes }}
-      run: ./.github/actions/third_party/verible/entrypoint.sh
-    - name: Upload linter log
-      uses: actions/upload-artifact@v4
-      with:
-        name: verible-linter
-        path: ${{ inputs.log_file }}
