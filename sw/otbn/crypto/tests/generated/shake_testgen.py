@@ -9,14 +9,14 @@ from typing import TextIO, Optional
 
 from Crypto.Hash import SHAKE128, SHAKE256
 
-from shared.testgen import write_test_data, write_test_exp
+from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 DST_LEN = random.choice([16, 32])  # SHAKE128: 16, SHAKE256: 32
 MSG_LEN_UBOUND = 512  # change this to set upper bound for message's length
 DST_SQUEEZE_BOUND = 32  # change this to set upper bound for SHAKE squeeze
 
 
-def gen_shake_test(seed: Optional[int], data_file: TextIO, exp_file: TextIO):
+def gen_shake_test(seed: Optional[int], data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     # Generate random operands.
     if seed is not None:
         random.seed(seed)
@@ -51,6 +51,9 @@ def gen_shake_test(seed: Optional[int], data_file: TextIO, exp_file: TextIO):
     exp['w0'] = dst_ref.read(32)
     write_test_exp(exp, exp_file)
 
+    # Write expected dmem values (none).
+    write_test_dexp({}, dexp_file)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -66,5 +69,9 @@ if __name__ == '__main__':
                         metavar='FILE',
                         type=argparse.FileType('w'),
                         help=('Output file for expected register values.'))
+    parser.add_argument('dexp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected DMEM values.'))
     args = parser.parse_args()
-    gen_shake_test(args.seed, args.data, args.exp)
+    gen_shake_test(args.seed, args.data, args.exp, args.dexp)

@@ -252,14 +252,15 @@ def _otbn_autogen_sim_test_impl(ctx):
 
     data = ctx.actions.declare_file(ctx.attr.name + "_data.s")
     exp = ctx.actions.declare_file(ctx.attr.name + ".exp")
+    dexp = ctx.actions.declare_file(ctx.attr.name + ".dexp")
     ctx.actions.run(
-        outputs = [data, exp],
+        outputs = [data, exp, dexp],
         inputs = [ctx.executable.testgen],
-        arguments = ["-s", str(ctx.attr.seed), data.path, exp.path],
+        arguments = ["-s", str(ctx.attr.seed), data.path, exp.path, dexp.path],
         executable = ctx.executable.testgen,
     )
 
-    return _run_sim_test(ctx, exp, None, ctx.attr.pqc, additional_srcs = [data])
+    return _run_sim_test(ctx, exp, dexp, ctx.attr.pqc, additional_srcs = [data])
 
 def _otbn_consttime_test_impl(ctx):
     """This rule checks if a program or subroutine is constant-time.

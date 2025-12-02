@@ -30,7 +30,7 @@ def write_test_data(inputs: Dict[str, bytes], data_file: TextIO) -> None:
 
 
 def write_test_exp(exp: Dict[str, bytes], exp_file: TextIO) -> None:
-    '''Write the expected-values file for the test.'''
+    '''Write the expected register values file for the test.'''
     for name in exp:
         value = int.from_bytes(exp[name], byteorder='little')
         if name in _GPR_NAMES or name == 'ERR_BITS':
@@ -43,3 +43,10 @@ def write_test_exp(exp: Dict[str, bytes], exp_file: TextIO) -> None:
             exp_file.write(f'{name} = {value:#066x}\n')
         else:
             raise ValueError(f'Register name {name} not recognized.')
+
+
+def write_test_dexp(dexp: Dict[str, bytes], dexp_file: TextIO) -> None:
+    '''Write the expected memory values file for the test.'''
+    for name in dexp:
+        value = dexp[name]
+        dexp_file.write(f'{name}: {value.hex()}')
