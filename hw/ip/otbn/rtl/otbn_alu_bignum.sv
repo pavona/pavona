@@ -725,7 +725,7 @@ module otbn_alu_bignum
   logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest_intg_err;
   logic                                 kmac_digest_rd_next;
   logic                                 kmac_digest_valid_q;
-  logic                                 kmac_digest_rd;
+  logic [1:0]                           sha_digest_rsp_cnt;
 
   for (genvar i_word = 0; i_word < BaseWordsPerDigestLen; i_word++) begin : g_kmac_digest_words
     prim_secded_inv_39_32_enc i_kmac_digest_secded_enc (
@@ -752,18 +752,8 @@ module otbn_alu_bignum
     assign kmac_digest_wr_en[i_word] = kmac_app_rsp_i.done | sec_wipe_kmac_regs_urnd_i;
   end
 
-  assign kmac_digest_valid_o = kmac_digest_valid_q & !kmac_digest_rd;
-  assign kmac_digest_rd_next = kmac_digest_rd && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      kmac_digest_rd <= 1'b0;
-    end else if (kmac_digest_rd_next || kmac_new_cfg_q) begin
-      kmac_digest_rd <= 1'b0;
-    end else if (ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest] && kmac_digest_valid_q) begin
-      kmac_digest_rd <= 1'b1;
-    end
-  end
+  assign kmac_digest_valid_o = kmac_digest_valid_q;
+  assign kmac_digest_rd_next = kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -772,6 +762,19 @@ module otbn_alu_bignum
       kmac_digest_valid_q <= 1'b0;
     end else if (kmac_app_rsp_i.done) begin
       kmac_digest_valid_q <= 1'b1;
+    end
+  end
+
+  // Only in SHA256 or SHA512 mode accumulate and limit the number of responses
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sha_digest_rsp_cnt <= 2'b0;
+    end else if (kmac_new_cfg_q) begin
+      sha_digest_rsp_cnt <= 2'b0;
+    end else if (sha3_pkg::sha3_mode_e'(kmac_cfg_intg_q[1:0]) == sha3_pkg::Sha3) begin
+      if (ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest] && kmac_digest_valid_q) begin
+        sha_digest_rsp_cnt <= sha_digest_rsp_cnt + 1'b1;
+      end
     end
   end
 
@@ -839,6 +842,35 @@ module otbn_alu_bignum
   assign kmac_msg_err_clr         = kmac_app_rsp_i.error
                                     | sec_wipe_kmac_regs_urnd_i
                                     | kmac_msg_ctr_err;
+
+  // We speculatively fetch the next digest but this is illegal for non XOF
+  // modes. As such SHA will need to limit the speculative fetch based on strength.
+  logic kmac_next_sha;
+
+  always_comb begin
+    unique case (kmac_cfg_sha3_mode)
+      sha3_pkg::Sha3: begin
+        if (kmac_cfg_keccak_strength == sha3_pkg::L256) begin
+          kmac_next_sha = 1'b0; // There will never be a new read
+        end else if (kmac_cfg_keccak_strength == sha3_pkg::L512) begin
+          if (sha_digest_rsp_cnt < 1) begin
+            kmac_next_sha = 1'b1;
+          end else begin
+            kmac_next_sha = 1'b0;
+          end
+        end
+      end
+      sha3_pkg::Shake: begin
+        kmac_next_sha = 1'b1;
+      end
+      sha3_pkg::CShake: begin
+        kmac_next_sha = 1'b1;
+      end
+      default: begin
+        kmac_next_sha = 1'b0;
+      end
+    endcase
+  end
 
   // Create the strb for the last word in msg request
   assign kmac_last_msg_all_bytes_valid = &(~kmac_cfg_msg_len_bytes);
@@ -1034,7 +1066,9 @@ module otbn_alu_bignum
   assign kmac_app_req_o.last  = kmac_inject_last_err | (kmac_msg_fifo_rvalid & kmac_msg_last);
 
   // If we request an additional digest send a next to KMAC
-  assign kmac_app_req_o.next  = kmac_digest_rd & ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
+  assign kmac_app_req_o.next  = kmac_digest_valid_o
+                                & ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest]
+                                & kmac_next_sha;
 
   // Hold will remain active for duration of transaction unless an internal error occurs
   assign kmac_app_req_o.hold  = kmac_cfg_active_q & ~kmac_new_cfg_q & ~kmac_cfg_done;

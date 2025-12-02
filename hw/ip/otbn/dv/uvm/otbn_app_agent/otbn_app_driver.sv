@@ -88,6 +88,11 @@ class otbn_app_driver extends dv_base_driver #(
 
     for (int i = 0; i < item.rsp_delay; i++) begin
       @(posedge cfg.vif.clk);
+      if (!cfg.vif.mon_cb.req_hold) begin
+        `uvm_info(`gfn, $sformatf("Exit manual run response from speculative next"), UVM_MEDIUM)
+        invalidate_signals();
+        return;
+      end
       remaining = item.rsp_delay - i;
       `uvm_info(`gfn, $sformatf("AppIntf rsp KMAC model waiting, %0d cycles remaining",
                 remaining), UVM_MEDIUM)
