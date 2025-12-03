@@ -700,8 +700,8 @@
       type: "kmac",
       param_decl: {
         EnMasking: "1",
-        NumAppIntf: 4,
-        AppCfg: "'{kmac_pkg::AppCfgKeyMgr,\n        kmac_pkg::AppCfgLcCtrl,\n        kmac_pkg::AppCfgRomCtrl,\n        kmac_pkg::AppCfgRomCtrl}"
+        NumAppIntf: 5,
+        AppCfg: "'{kmac_pkg::AppCfgKeyMgr,\n        kmac_pkg::AppCfgLcCtrl,\n        kmac_pkg::AppCfgRomCtrl,\n        kmac_pkg::AppCfgRomCtrl,\n        kmac_pkg::AppCfgOTBN}"
       }
       clock_srcs: {clk_i: "main", clk_edn_i: "main"}
       clock_group: "trans"
@@ -712,6 +712,9 @@
     },
     { name: "otbn",
       type: "otbn",
+      param_decl: {
+        OtbnPQCEn: "0"
+      }
       clock_srcs: {
         clk_i: {
           clock: "main",
@@ -1236,10 +1239,11 @@
 
       // KMAC Application Interface
       // Note that arbitration is fixed priority top to bottom.
-      'kmac.app'                : ['keymgr_dpe.kmac_data',     // Keymgr needs to be at index 0
-                                   'lc_ctrl.kmac_data',    // LC needs to be at index 1
-                                   'rom_ctrl0.kmac_data',  // ROM needs to be at index 2 or 3
-                                   'rom_ctrl1.kmac_data'], // ROM needs to be at index 2 or 3
+      'kmac.app'                : ['keymgr_dpe.kmac_data',  // Keymgr needs to be at index 0
+                                   'lc_ctrl.kmac_data',     // LC needs to be at index 1
+                                   'rom_ctrl0.kmac_data',   // ROM needs to be at index 2 or 3
+                                   'rom_ctrl1.kmac_data',   // ROM needs to be at index 2 or 3
+                                   'otbn.kmac_data'],       // OTBN needs to be at index 4
       'kmac.en_masking'         : ['keymgr_dpe.kmac_en_masking']
 
       // The idle connection is automatically connected through topgen.

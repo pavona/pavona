@@ -15,6 +15,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | otbn_otp_key     | otp_ctrl_pkg::otbn_otp_key      | req_rsp | req   |       1 |               |
 | edn_rnd          | edn_pkg::edn                    | req_rsp | req   |       1 |               |
 | edn_urnd         | edn_pkg::edn                    | req_rsp | req   |       1 |               |
+| kmac_data        | kmac_pkg::app                   | req_rsp | req   |       1 |               |
 | idle             | prim_mubi_pkg::mubi4            | uni     | req   |       1 |               |
 | ram_cfg_imem     | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   |       1 |               |
 | ram_cfg_dmem     | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   |       1 |               |

@@ -70,17 +70,19 @@ module top_darjeeling #(
   parameter bit KmacSwKeyMasked = 0,
   parameter int SecKmacCmdDelay = 0,
   parameter bit SecKmacIdleAcceptSwMsg = 0,
-  parameter int KmacNumAppIntf = 4,
+  parameter int KmacNumAppIntf = 5,
   parameter kmac_pkg::app_config_t KmacAppCfg[KmacNumAppIntf] =
       '{kmac_pkg::AppCfgKeyMgr,
         kmac_pkg::AppCfgLcCtrl,
         kmac_pkg::AppCfgRomCtrl,
-        kmac_pkg::AppCfgRomCtrl},
+        kmac_pkg::AppCfgRomCtrl,
+        kmac_pkg::AppCfgOTBN},
   // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
   parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
+  parameter bit OtbnOtbnPQCEn = 0,
   // parameters for keymgr_dpe
   parameter bit KeymgrDpeKmacEnMasking = 1,
   // parameters for csrng
@@ -1877,7 +1879,8 @@ module top_darjeeling #(
     .SecMuteUrnd(SecOtbnMuteUrnd),
     .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
     .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
-    .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)
+    .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce),
+    .OtbnPQCEn(OtbnOtbnPQCEn)
   ) u_otbn (
 
       // Interrupt
@@ -1894,6 +1897,8 @@ module top_darjeeling #(
       .edn_rnd_i(edn1_edn_rsp[0]),
       .edn_urnd_o(edn0_edn_req[5]),
       .edn_urnd_i(edn0_edn_rsp[5]),
+      .kmac_data_o(kmac_app_req[4]),
+      .kmac_data_i(kmac_app_rsp[4]),
       .idle_o(clkmgr_aon_idle[3]),
       .ram_cfg_imem_i(otbn_imem_ram_1p_cfg_i),
       .ram_cfg_dmem_i(otbn_dmem_ram_1p_cfg_i),

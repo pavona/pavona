@@ -275,7 +275,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>KMAC_CFG</td>
       <td>
-        Write to this CSR to set the configuration for KMAC msg.
+        Write to this CSR to set the configuration for KMAC message requests.
         Bit  [31]   Cfg Done
         Bits [19:8] Number of 64-bit words in message
         Bits [7:5]  Number of bytes in final word
@@ -302,8 +302,8 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>KMAC_PARTIAL_WRITE</td>
       <td>
-        Partial write msg register used as a byte-mask for the msg being written into the internal MSG FIFO.
-        The value should be the decimal number of bytes valid for the msg to be written ex.) 32 for every byte valid.
+        Partial write message register used as a byte-mask for the message being written into the internal MSG FIFO.
+        The value should be the decimal number of bytes valid for the message to be written ex.) 32 for every byte valid.
         Conversion to a contiguous mask like 32'h0000_ffff are done internally.
         Additionally, the register is reset to a default value of 32 at the start/end of any transaction.
       </td>
@@ -482,8 +482,8 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td><a name="kmac-msg">KMAC_MSG</a></td>
       <td>
-        The kmac msg to send over AppIntf.
-        A byte mask is applied to the msg from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
+        The kmac message data to send over the AppIntf.
+        A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
       </td>
     </tr>
     <tr>

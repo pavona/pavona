@@ -87,8 +87,8 @@
 - name: kmac_msg
   address: 9
   doc: |
-    The kmac msg to send over AppIntf.
-    A byte mask is applied to the msg from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
+    The kmac message data to send over the AppIntf.
+    A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
 
 - name: kmac_digest
   address: 10
