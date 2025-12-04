@@ -49,4 +49,11 @@ def write_test_dexp(dexp: Dict[str, bytes], dexp_file: TextIO) -> None:
     '''Write the expected memory values file for the test.'''
     for name in dexp:
         value = dexp[name]
-        dexp_file.write(f'{name}: {value.hex()}')
+        # TODO: change this behavior in otbn_sim_test so raw bytes work
+        # dexp_file.write(f'{name}: {value.hex()}\n')
+        # reverse the byte order of each word
+        hexstr = ''
+        for i in range(0, len(value), 4):
+            w = bytes(reversed(value[i:i+4]))
+            hexstr += w.hex()
+        dexp_file.write(f'{name}: {hexstr}\n')

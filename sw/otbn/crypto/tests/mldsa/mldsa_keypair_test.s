@@ -124,9 +124,13 @@ main:
 stack:
     .zero STACK_SIZE
 stack_end:
+
+.balign 32
 .globl pk
 pk:
   .zero CRYPTO_PUBLICKEYBYTES
+
+.balign 32
 .globl sk
 sk:
   .zero CRYPTO_SECRETKEYBYTES

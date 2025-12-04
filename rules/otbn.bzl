@@ -253,10 +253,11 @@ def _otbn_autogen_sim_test_impl(ctx):
     data = ctx.actions.declare_file(ctx.attr.name + "_data.s")
     exp = ctx.actions.declare_file(ctx.attr.name + ".exp")
     dexp = ctx.actions.declare_file(ctx.attr.name + ".dexp")
+    args = ["-s", str(ctx.attr.seed)] + ctx.attr.testgen_args + [data.path, exp.path, dexp.path]
     ctx.actions.run(
         outputs = [data, exp, dexp],
         inputs = [ctx.executable.testgen],
-        arguments = ["-s", str(ctx.attr.seed), data.path, exp.path, dexp.path],
+        arguments = args,
         executable = ctx.executable.testgen,
     )
 
@@ -491,6 +492,7 @@ otbn_autogen_sim_test = rv_rule(
         "deps": attr.label_list(providers = [DefaultInfo]),
         "copts": attr.string_list(),
         "pqc": attr.bool(default = False),
+        "testgen_args": attr.string_list(),
         "_riscv32_ar": attr.label(
             default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
             allow_single_file = True,
