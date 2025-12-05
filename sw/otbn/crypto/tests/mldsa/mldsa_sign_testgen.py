@@ -23,7 +23,7 @@ MAX_MSG_LEN = 4096
 MIN_CTX_LEN = 0
 MAX_CTX_LEN = 255
 
-def gen_verify_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
+def gen_sign_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     # Generate a random key pair.
     pk, sk = mldsa.keygen()
 
@@ -34,11 +34,7 @@ def gen_verify_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
     ctx = random.randbytes(ctxlen)
 
     # Sign the message.
-    sig = mldsa.sign(sk, msg, ctx=ctx)
-
-    # Accomodate alignment hack for ML-DSA-65.
-    if mldsa == ML_DSA_65:
-      sig = bytes([0] * 16) + sig
+    sig = mldsa.sign(sk, msg, ctx=ctx, deterministic=True)
 
     # Ensure ctx and message end up 32-byte aligned
     if ctxlen <= 4:
@@ -52,8 +48,7 @@ def gen_verify_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
         'messagelen': int.to_bytes(msglen, length=4, byteorder='little'),
         'ctx': ctx,
         'message': msg,
-        'signature': sig,
-        'pk': pk,
+        'sk': sk,
     }
     write_test_data(data, data_file)
 
@@ -61,7 +56,7 @@ def gen_verify_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
     write_test_exp({}, exp_file)
 
     # Write expected dmem values.
-    write_test_dexp({'result': bytes([0]*32)}, dexp_file)
+    write_test_dexp({'signature': sig}, dexp_file)
 
 
 if __name__ == '__main__':
@@ -94,4 +89,4 @@ if __name__ == '__main__':
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
     mldsa = INSTANCE_FOR_PARAMS[args.params]
-    gen_verify_test(mldsa, args.data, args.exp, args.dexp)
+    gen_sign_test(mldsa, args.data, args.exp, args.dexp)
