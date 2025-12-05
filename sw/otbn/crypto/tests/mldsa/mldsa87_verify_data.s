@@ -12,6 +12,22 @@
 messagelen:
   .word 0x00000040
 
+.globl ctxlen
+ctxlen:
+  .word 0x00000020
+
+.balign 32
+.globl ctx
+ctx:
+    .word 0x00000000
+    .word 0x11111111
+    .word 0x22222222
+    .word 0x33333333
+    .word 0x44444444
+    .word 0x55555555
+    .word 0x66666666
+    .word 0x77777777
+
 .balign 32
 .globl message
 message:

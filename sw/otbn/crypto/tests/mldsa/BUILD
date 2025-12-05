@@ -15,6 +15,12 @@ load("//rules:otbn.bzl", "otbn_binary", "otbn_consttime_test", "otbn_library", "
 
 package(default_visibility = ["//visibility:public"])
 
+MLDSA_PARAMS = ["mldsa44", "mldsa65", "mldsa87"]
+MODE_FOR_PARAMS = {"mldsa44": 2, "mldsa65": 3, "mldsa87": 5}
+NTESTS = 10
+
+# Key generation tests
+
 py_binary(
     name = "mldsa_keypair_testgen",
     srcs = ["mldsa_keypair_testgen.py"],
@@ -26,12 +32,6 @@ py_binary(
         requirement("dilithium-py"),
     ],
 )
-
-MLDSA_PARAMS = ["mldsa44", "mldsa65", "mldsa87"]
-MODE_FOR_PARAMS = {"mldsa44": 2, "mldsa65": 3, "mldsa87": 5}
-NTESTS = 3
-
-# Key generation tests
 [
     otbn_autogen_sim_test(
         name = params + "_keypair_test" + str(i),
@@ -57,6 +57,44 @@ NTESTS = 3
     for i in range(NTESTS) for params in MLDSA_PARAMS
 ]
 
+
+# Signature verification tests
+py_binary(
+    name = "mldsa_verify_testgen",
+    srcs = ["mldsa_verify_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
+    ],
+    deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+        requirement("dilithium-py"),
+    ],
+)
+[
+    otbn_autogen_sim_test(
+        name = params + "_verify_test" + str(i),
+        srcs = ["mldsa_verify_test.s"],
+        seed = i,
+        testgen = ":mldsa_verify_testgen",
+        testgen_args = [params],
+        copts = [
+            "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
+        ],
+        deps = [
+        "//sw/otbn/crypto/mldsa:intt",
+        "//sw/otbn/crypto/mldsa:kmac_send_msg",
+        "//sw/otbn/crypto/mldsa:" + params + "_consts",
+        "//sw/otbn/crypto/mldsa:" + params + "_poly",
+        "//sw/otbn/crypto/mldsa:" + params + "_rounding",
+        "//sw/otbn/crypto/mldsa:" + params + "_verify",
+        "//sw/otbn/crypto/mldsa:ntt",
+        "//sw/otbn/crypto/mldsa:poly_add",
+        "//sw/otbn/crypto/mldsa:poly_pointwise",
+        "//sw/otbn/crypto/mldsa:poly_sub",
+        ],
+    )
+    for i in range(NTESTS) for params in MLDSA_PARAMS
+]
 otbn_library(
     name = "mldsa44_sign_data",
     srcs = [
