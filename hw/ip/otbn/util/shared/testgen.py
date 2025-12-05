@@ -55,5 +55,6 @@ def write_test_dexp(dexp: Dict[str, bytes], dexp_file: TextIO) -> None:
         hexstr = ''
         for i in range(0, len(value), 4):
             w = bytes(reversed(value[i:i+4]))
+            w = bytes([0] * (4 - len(w))) + w
             hexstr += w.hex()
         dexp_file.write(f'{name}: {hexstr}\n')

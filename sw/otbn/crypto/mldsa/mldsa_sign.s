@@ -272,151 +272,67 @@ crypto_sign_signature_internal:
 
     /* CRH(tr, msg) */
 
+    /* Compute the total length of tr + [0,ctxlen] + ctx + msg. */
+    li   t1, TRBYTES
+    addi t1, t1, 2
+    li   t2, STACK_CTXLEN
+    add  t2, fp, t2
+    lw   t2, 0(t2) /* t2 <= ctxlen */
+    add  t1, t1, t2 /* Add len(ctx) */
+    li   t2, STACK_MSGLEN
+    add  t2, fp, t2
+    lw   t2, 0(t2) /* t2 <= msglen */
+    add  t1, t1, t2 /* Add msglen */
+
     /* Initialize a SHAKE256 operation. */
-    li a1, TRBYTES
-    addi a1, a1, 2 /* Add len of ctxlen */
-
-    li t2, STACK_CTXLEN
-    add t2, fp, t2
-    lw t2, 0(t2) /* t2 <= ctxlen */
-    add a1, a1, t2 /* Add len(ctx) */
-
-    li  t2, STACK_MSGLEN
-    add t2, fp, t2
-    lw  t2, 0(t2)
-    add a1, a1, t2 /* Add msglen */
-
-    slli  t0, a1, 5
+    slli  t0, t1, 5
     addi  t0, t0, SHAKE256_CFG
     csrrw zero, KECCAK_CFG_REG, t0
 
-    push a1
     /* Send TR to the Keccak core. */
-    li  a1, TRBYTES /* set message length to TRBYTES */
+    li  a1, TRBYTES
     li  a0, STACK_TR
     add a0, fp, a0
     jal x1, keccak_send_message
-    pop a1
 
-    /* Copy ctxlen (2B)||ctx (???B) to continous memory location */
-    li t2, STACK_CTXLEN
-    add a0, fp, t2
-    lw t2, 0(a0) /* t2 <= ctxlen */
-    li t3, STACK_TMP /* Use temporary buffer for absorbing ctxlen and ctx */
-    add t3, fp, t3
+    /* Copy 0 || ctxlen to a 32B-aligned buffer temporarily. */
+    li   a0, STACK_TMP
+    add  a0, fp, a0
+    li   t1, STACK_CTXLEN
+    add  t1, fp, t1
+    lw   t1, 0(t1)
+    slli t1, t1, 8
+    sw   t1, 0(a0)
 
-    /* Note: Add support for non-4B multiple ctxlen */
-    /* Compute number of iterations */
-    srli t4, t2, 2 /* Divide by 4 because of word-wise operation*/
-
-    /* Create mask for clearing upper bits */
-    addi t6, zero, -1
-    srli t6, t6, 16
-
-    /* Add 0-byte */
-    slli t2, t2, 8
-    /* Clear upper bits */
-    slli t2, t2, 16
-    srli t2, t2, 16
-
-    /* Get ctx pointer */
-    li a0, STACK_CTX
-    add a0, fp, a0
-    lw a0, 0(a0) /* a0 <= *ctx */
-
-    /* Load first ctx word and merge it with the 2 bytes from 0||ctxlen */
-    lw t5, 0(a0)
-    slli t5, t5, 16
-    or t2, t5, t2
-    sw t2, 0(t3) /* First store to buffer */
-    addi t3, t3, 4 /* First write done */
-
-    addi t4, t4, -1
-
-    LOOP t4, 8
-        /* Load word from ctx: c */
-        lw t2, 0(a0)
-        srli t2, t2, 16
-        /* Load next word from ctx: c' */
-        lw t5, 4(a0)
-        slli t5, t5, 16 /* Shift lower bits to the top half for merging */
-        addi a0, a0, 4/* Increment address */
-
-        /* Merge remaining two bytes from c with first two bytes of c' */
-        or t2, t2, t5
-        /* Store c[2:]||c'[:2] to buffer */
-        sw t2, 0(t3)
-        addi t3, t3, 4
-
-    /* Use last 2B from the ctx that will be left over to merge with the message */
-    lw t2, 0(a0)
-    srli t2, t2, 16
-
-    /* Load first word of the message and combinde with remainder from ctx */
-    li  a0, STACK_MSG
-    add a0, fp, a0
-    lw  a0, 0(a0) /* loads msg pointer */
-
-    lw t4, 0(a0)
-    slli t4, t4, 16 /* Clear upper bits and move in place for merging */
-    /* merge ctx and msg */
-    or t2, t2, t4
-
-    /* First store */
-    sw t2, 0(t3) /* First store to buffer */
-    addi t3, t3, 4 /* First write done */
-
-    /* Compute number of iterations from msglen */
-    li  t4, STACK_MSGLEN
-    add t4, fp, t4
-    lw  t4, 0(t4)
-
-    /* Divide msglen by wordsize */
-    /* NOTE: Add support for non multiple of 4B */
-    srli t4, t4, 2
-
-    addi t4, t4, -1
-
-    /* Iterate over remaining message bytes */
-    LOOP t4, 8
-        /* Load word from msg: m */
-        lw t2, 0(a0)
-        srli t2, t2, 16
-        /* Load next word from msg: m' */
-        lw t5, 4(a0)
-        slli t5, t5, 16 /* Shift lower bits to the top half for merging */
-        addi a0, a0, 4/* Increment address */
-
-        /* Merge remaining two bytes from m with first two bytes of m' */
-        or t2, t2, t5
-
-        /* Store m[2:]||m'[:2] to buffer */
-        sw t2, 0(t3)
-        addi t3, t3, 4
-
-    /* Store last two message bytes */
-    lw t2, 0(a0) /* Load last two bytes */
-    srli t2, t2, 16
-    sw t2, 0(t3)
-
-    /* a1 still contains length but includes TRBYTES */
-    addi a1, a1, -TRBYTES
-
-    li t3, STACK_TMP /* Use temporary buffer for absorbing ctxlen and ctx */
-    add a0, fp, t3
-
+    /* Send 0 || ctxlen to the Keccak core (2B). */
+    li  a1, 2
     jal x1, keccak_send_message
 
-    /* Setup WDR */
-    li t1, 8
+    /* Send ctx to the Keccak core. */
+    li  a1, STACK_CTXLEN
+    add a1, fp, a1
+    lw  a1, 0(a1) /* a1 <= ctxlen */
+    li  a0, STACK_CTX
+    add a0, fp, a0
+    lw  a0, 0(a0) /* a0 <= *ctx */
+    jal x1, keccak_send_message
 
-    /* Write SHAKE output to dmem */
-    li      a0, STACK_MU
-    add     a0, fp, a0
-    bn.wsrr w8, 0xA     /* KECCAK_DIGEST */
-    bn.sid  t1, 0(a0++) /* Store into mu buffer */
-    bn.wsrr w8, 0xA     /* KECCAK_DIGEST */
-    bn.sid  t1, 0(a0++) /* Store into mu buffer */
+    /* Send message to the Keccak core. */
+    li  a1, STACK_MSGLEN
+    add a1, fp, a1
+    lw  a1, 0(a1) /* a1 <= msglen */
+    li  a0, STACK_MSG
+    add a0, fp, a0
+    lw  a0, 0(a0) /* a0 <= *msg */
+    jal x1, keccak_send_message
+
+    /* Write 64B of SHAKE output to STACK_MU. */
+    li  a0, STACK_MU
+    add a0, fp, a0
+    bn.wsrr w0, kmac_digest
+    bn.sid  zero, 0(a0++)
+    bn.wsrr w0, kmac_digest
+    bn.sid  zero, 0(a0)
 
     /* Finish the SHAKE-256 operation. */
 
