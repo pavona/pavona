@@ -17,12 +17,12 @@ permissions:
   statuses: write
 
 jobs:
-  CLAAssistant:
+  cla-assistant:
     runs-on: ubuntu-latest
     steps:
       - name: "CLA Assistant"
         if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I certify that I have read and agree that my contributions will be bound by the expo CLA.') || github.event_name == 'pull_request_target'
-        uses: contributor-assistant/github-action@v2.6.1
+        uses: zerorisc/cla-assistant-lite@v0.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # the below token should have repo scope and must be manually added by you in the repository's secret
