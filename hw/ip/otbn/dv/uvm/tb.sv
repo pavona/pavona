@@ -8,6 +8,7 @@ module tb;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import sram_ctrl_bkdr_util_pkg::sram_ctrl_bkdr_util;
+  import otbn_pqc_env_pkg::*;
   import otbn_env_pkg::*;
   import otbn_test_pkg::*;
   import otbn_pkg::NGpr, otbn_pkg::NWdr;
@@ -95,7 +96,7 @@ module tb;
   otbn # (
     .RndCnstOtbnKey(TestScrambleKey),
     .RndCnstOtbnNonce(TestScrambleNonce),
-    .OtbnPQCEn(`EN_PQC)
+    .OtbnPQCEn(OtbnPQCEn)
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
@@ -139,10 +140,12 @@ module tb;
     .kmac_data_i(app_rsp)
   );
 
+  // Assert that the DUT and Package have the same PQC parameter
+  `ASSERT(MatchingPQC_A, otbn_pqc_env_pkg::OtbnPQCEn == dut.OtbnPQCEn, clk, !rst_n)
+
   bind dut.u_otbn_core otbn_trace_if #(
     .ImemAddrWidth (ImemAddrWidth),
-    .DmemAddrWidth (DmemAddrWidth),
-    .OtbnPQCEn     (`EN_PQC)
+    .DmemAddrWidth (DmemAddrWidth)
   ) i_otbn_trace_if (.*);
 
   assign dut.u_otbn_core.i_otbn_trace_if.scramble_state_err_i = dut.otbn_scramble_state_error;
@@ -153,9 +156,7 @@ module tb;
   assign otbn_app_intf.kmac_data_req = app_req;
   assign app_rsp = otbn_app_intf.kmac_data_rsp;
 
-  bind dut.u_otbn_core otbn_tracer #(
-    .OtbnPQCEn(`EN_PQC)
-  ) u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
+  bind dut.u_otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller
     otbn_loop_if i_otbn_loop_if (
@@ -192,9 +193,7 @@ module tb;
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
   bind dut.u_otbn_core.u_otbn_controller otbn_controller_if i_otbn_controller_if (.*);
-  bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if #(
-    .OtbnPQCEn(`EN_PQC)
-  ) i_otbn_mac_bignum_if (.*);
+  bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if i_otbn_mac_bignum_if (.*);
   bind dut.u_otbn_core.u_otbn_rf_base otbn_rf_base_if i_otbn_rf_base_if (.*);
 
   bind dut.u_otbn_core.u_otbn_rnd otbn_rnd_if i_otbn_rnd_if (.*);

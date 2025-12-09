@@ -16,9 +16,6 @@ name:
   // Simulator used to sign off this block
   tool: xcelium
 
-  // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:dv:otbn_sim:0.1
-
   otbn_dir: "{proj_root}/hw/ip/otbn"
 
   // Testplan hjson file.
@@ -80,16 +77,6 @@ name:
     {
       name: default
       pre_build_cmds: []
-    }
-    {
-      name: enable_pqc_mode
-      build_opts: ["+define+EN_PQC=1"]
-      run_opts: ["+enable_pqc=1"]
-    }
-    {
-      name: disable_pqc_mode
-      build_opts: ["+define+EN_PQC=0"]
-      run_opts: ["+enable_pqc=0"]
     }
   ]
 

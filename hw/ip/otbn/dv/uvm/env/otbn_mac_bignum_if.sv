@@ -7,7 +7,7 @@
 
 interface otbn_mac_bignum_if #(
   // Enabling PQC hardware support with vector ISA extension
-  parameter bit OtbnPQCEn = `EN_PQC,
+  parameter bit OtbnPQCEn = otbn_pqc_env_pkg::OtbnPQCEn,
   localparam int WLEN = OtbnPQCEn ? 512 : 256
 ) (
   input         clk_i,

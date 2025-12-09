@@ -15,7 +15,7 @@
  * get the information it needs. For further information see `hw/ip/otbn/dv/tracer/README.md`.
  */
 module otbn_tracer #(
-  parameter bit OtbnPQCEn = `EN_PQC
+  parameter bit OtbnPQCEn = otbn_pqc_env_pkg::OtbnPQCEn
 ) (
   input  logic  clk_i,
   input  logic  rst_ni,

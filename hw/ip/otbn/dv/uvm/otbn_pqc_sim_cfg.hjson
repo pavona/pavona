@@ -9,13 +9,15 @@
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/ip/otbn/dv/uvm/otbn_base_sim_cfg.hjson"]
 
-  // Enable this build mode for all tests
-  en_build_modes: ["enable_pqc_mode"]
-
   smoke_dir: "{otbn_dir}/dv/smoke_pqc"
 
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:otbn_sim_pqc:0.1
+
+  // Used to generate pqc instructions with assembly gen
   pqc_enable: 1
 
+  // Sets otbnsim to PQC mode
   exports: [
     { PQC_EN: 1 },
   ]

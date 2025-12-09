@@ -33,7 +33,7 @@ interface otbn_trace_if
 #(
   parameter int ImemAddrWidth = 15,
   parameter int DmemAddrWidth = 15,
-  parameter bit OtbnPQCEn     = `EN_PQC,
+  parameter bit OtbnPQCEn     = otbn_pqc_env_pkg::OtbnPQCEn,
   parameter otbn_pkg::regfile_e RegFile = otbn_pkg::RegFileFF
 )(
   input logic clk_i,

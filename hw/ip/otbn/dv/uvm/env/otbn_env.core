@@ -8,6 +8,7 @@ description: "OTBN DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:otbn_pqc_env_pkg
       - lowrisc:ip:otbn
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
