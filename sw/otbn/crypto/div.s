@@ -1,9 +1,11 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /* Public interface. */
 .globl div
+.globl mod
 
 /**
  * Shift a bignum one bit to the right.
@@ -369,5 +371,98 @@ div:
     slli        x5, x8, 5
     add         x5, x5, x12
     bn.sid      x26, 0(x5)
+
+  ret
+
+/**
+ * Constant-time modular reduction of arbitrarily large numbers.
+ *
+ * Returns q = x mod y by reducing x in-place.
+ *
+ * This is simply an adaptation of div which doesn't compute or store
+ * the quotient, useful for performing one-off modular reduction with a
+ * somewhat smaller dmem footprint and slightly fewer operations.
+ *
+ * For completeness, the algorithm is as follows:
+ *   r = x // remainder
+ *   for i=nbits(x)..0:
+ *     if r >= (y << i)
+ *       r -= (y << i)
+ *
+ * See the docuentation for div for additional details.
+ *
+ * Flags have no meaning outside the scope of this subroutine.
+ *
+ * @param[in] x10: dptr_x, pointer to numerator x in dmem
+ * @param[in] x11: dptr_y, pointer to denominator y in dmem
+ * @param[in] x30: n, number of 256-bit limbs for inputs x and y
+ * @param[in] w31: all-zero
+ * @param[out] dmem[dptr_x..dptr_x+n*32]: r, remainder
+ *
+ * clobbered registers:
+ * clobbered flag groups: FG0
+ */
+mod:
+  /* Initialize loop counter.
+       x8 <= x30 = n */
+  addi      x8, x30, 0
+
+  /* Initialize constants for loop.
+       x23 = 23
+       x24 = 24
+       x25 = 25
+       x26 = 26 */
+  li        x23, 23
+  li        x24, 24
+  li        x25, 25
+  li        x26, 26
+
+  /* Main loop. This loop iterates through limbs of the remainder, and then the
+     inner loop iterates through bits of each limb. */
+  loop      x30, 13
+    /* Decrement counter.
+         x8 <= x8 - 1 = i */
+    addi      x5, x0, 1
+    sub       x8, x8, x5
+
+    /* Shift the denominator a full limb to the left. As we iterate through
+       bits, we will shift it right one bit at a time.
+         w27 <= y[n-1]
+         dmem[dptr_y..dptr_y+n*32] <= (y << 256) mod 2^(n*256)  */
+    addi      x3, x11, 0
+    jal       x1, bignum_lshift256
+    bn.mov    w27, w23
+
+    /* Inner loop. Iterates through bits in this limb of quotient, most
+       significant bit first. At each iteration, we check if r >= (y <<
+       (i*256+j)). If so, we simply subtract this shifted denominator from the
+       remainder.
+
+       Loop invariants for iteration j of inner loop (j=255..0):
+         x8 = i
+         x23 = 23
+         x24 = 24
+         x25 = 25
+         r = dmem[dptr_x..dptr_x+n*32]
+         y << (j + 1) = w27 || dmem[dptr_y..dptr_y+n*32]
+         r = x mod y
+         r < y << (i*256 + j + 1)
+    */
+    loopi    256, 6
+      /* Shift denominator one bit to the right.
+          dmem[dptr_y..dptr_y+n*32] <= lsb(w27) || dmem[dptr_y..dptr_y+n*32] >> 1
+          w27 <= w27 >> 1 */
+      addi      x3, x11, 0
+      bn.mov    w23, w27
+      jal       x1, bignum_rshift1
+      bn.rshi   w27, w31, w27 >> 1
+
+      /* Conditional subtraction.
+           dmem[dptr_x..dptr_x+n*32] <= r mod (y << (i*256+j))
+           w23 <= 0 if there was a subtraction, otherwise 2^256-1 */
+      jal         x1, cond_sub_shifted
+      nop
+
+    nop
 
   ret

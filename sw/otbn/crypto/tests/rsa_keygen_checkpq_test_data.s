@@ -1,4 +1,5 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -39,60 +40,6 @@
    For reference, the hex value of the RSA-2048 lower bound is:
    0xb504f333f9de6484597d89b3754abe9f1d6f60ba893ba84ced17ac85833399154afc83043ab8a2c3a8b1fe6fdc83db390f74a85e439c7b4a780487363dfa2768d2202e8742af1f4e53059c6011bc337bcab1bc911688458a460abc722f7c4e33c6d5a8a38bb7e9dccb2a634331f3c84df52f120f836e582eeaa4a0899040ca4a
 */
-
-/**
- * An odd 1024-bit value that is too small to be used for p or q.
- *
- * Specifically, this value is the highest prime number below the lower bound.
- *
- * Python script for generating the test data (using PyCryptoDome's
- * Crypto.Util.number package for the primality check):
-too_small = lower_bound - 1
-while True:
-  if math.gcd(too_small-1, 65537) != 1:
-    continue
-  if number.isPrime(too_small):
-    break
-  too_small -= 2
- *
- * Hex value for reference:
- * 0xb504f333f9de6484597d89b3754abe9f1d6f60ba893ba84ced17ac85833399154afc83043ab8a2c3a8b1fe6fdc83db390f74a85e439c7b4a780487363dfa2768d2202e8742af1f4e53059c6011bc337bcab1bc911688458a460abc722f7c4e33c6d5a8a38bb7e9dccb2a634331f3c84df52f120f836e582eeaa4a0899040c619
- */
-.balign 32
-.globl too_small
-too_small:
-  .word 0x9040c619
-  .word 0xeaa4a089
-  .word 0x836e582e
-  .word 0xf52f120f
-  .word 0x31f3c84d
-  .word 0xcb2a6343
-  .word 0x8bb7e9dc
-  .word 0xc6d5a8a3
-  .word 0x2f7c4e33
-  .word 0x460abc72
-  .word 0x1688458a
-  .word 0xcab1bc91
-  .word 0x11bc337b
-  .word 0x53059c60
-  .word 0x42af1f4e
-  .word 0xd2202e87
-  .word 0x3dfa2768
-  .word 0x78048736
-  .word 0x439c7b4a
-  .word 0x0f74a85e
-  .word 0xdc83db39
-  .word 0xa8b1fe6f
-  .word 0x3ab8a2c3
-  .word 0x4afc8304
-  .word 0x83339915
-  .word 0xed17ac85
-  .word 0x893ba84c
-  .word 0x1d6f60ba
-  .word 0x754abe9f
-  .word 0x597d89b3
-  .word 0xf9de6484
-  .word 0xb504f333
 
 /**
  * An 1024-bit value that doesn't satisfy relative primality with 65537.

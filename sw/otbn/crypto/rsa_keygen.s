@@ -6,6 +6,8 @@
 /* Public interface. */
 .globl rsa_keygen
 .globl rsa_key_from_cofactor
+.globl rsa_check_key
+.globl rsa_check_primes
 
 /* Exposed for testing purposes only. */
 .globl relprime_f4
@@ -13,6 +15,7 @@
 .globl check_q
 .globl modinv_f4
 .globl relprime_small_primes
+.globl recover_d_from_crt
 
 /**
  * Generate a random RSA key pair.
@@ -123,7 +126,341 @@ rsa_keygen:
   la       x12, rsa_n
   jal      x0, bignum_mul
 
+/* TODO: DOCUMENT */
+rsa_check_key:
+  /* Compute (<# of limbs> - 1), a helpful constant for later computations.
+       x31 <= x30 - 1 */
+  addi     x31, x30, -1
 
+  /* Initialize wide-register pointers.
+       x20 <= 20
+       x21 <= 21 */
+  li       x20, 20
+  li       x21, 21
+
+  /* Zero-extend the provided 32-bit value of e. */
+  la       x10, rsa_e
+  lw       x2, 0(x10)
+  li       x3, 31
+  bn.sid   x3, 0(x10)
+  sw       x2, 0(x10)
+
+  /* Reconstruct d from p, q, e, d_p, and d_q. */
+  jal      x1, recover_d_from_crt
+
+  /* Recompute p - 1 and q - 1 for later use in several steps. */
+  jal      x1, prepare_pm1qm1
+
+  /* Compute e * d_p mod (p - 1) to check validity of d_p. */
+  la       x13, rsa_d_p
+  la       x14, rsa_pm1
+  jal      x1, check_crt_component
+
+  /* Compute e * d_q mod (q - 1) to check validity of d_q. */
+  la       x13, rsa_d_q
+  la       x14, rsa_qm1
+  jal      x1, check_crt_component
+
+  /* Compute q * i_q mod p to check validity of i_q. */
+  jal      x1, check_crt_coeff
+
+  /* Compute the OR of the upper limbs of the reocvere d. */
+  jal      x1, check_recovered_d
+
+  /* Multiply p and q to get the public modulus n (tail call).
+       dmem[rsa_n..rsa_n+(plen*2*32)] <= p * q */
+  la       x10, rsa_p
+  la       x11, rsa_q
+  la       x12, rsa_n
+  jal      x0, bignum_mul
+
+  ret
+
+/* TODO: DOCUMENT */
+rsa_check_primes:
+  /* Compute (<# of limbs> - 1), a helpful constant for later computations.
+       x31 <= x30 - 1 */
+  addi     x31, x30, -1
+
+  /* Initialize wide-register pointers.
+       x20 <= 20
+       x21 <= 21 */
+  li       x20, 20
+  li       x21, 21
+  li       x24, 24
+
+  /* Check the first cofactor p. */
+  la       x16, rsa_p
+  jal      x1, check_p
+  bn.sid   x24, 0(x16)
+
+  /* Check the second cofactor q. */
+  jal      x1, check_q
+  bn.sid   x24, 0(x16)
+
+  ret
+
+/**
+ * Perform a check of the validity of a single private key exponent CRT component.
+ *
+ * Given a public exponent e and a private exponent CRT component d_p, computes
+ * the value e * d_p mod (p - 1).
+ *
+ * If the provided value of d_p is consistent with the provided cofactor and
+ * public exponent, this computed value should be 1.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x13: dptr_d_p, pointer to buffer to store result in DMEM (n limbs)
+ * @param[in]  x14: dptr_pm1, pointer to (p - 1) to reduce modulo in DMEM (n limbs)
+ * @param[in]  x20: 20, constant
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[dptr_d_p..dptr_d_p+(plen*32)]: result, equal to 1 to valid (n limbs)
+ */
+check_crt_component:
+  /* Multiply e * d_p, storing result in tmp_scratchpad. */
+  addi     x10, x13, 0
+  la       x11, rsa_e
+  la       x12, tmp_scratchpad
+  jal      x1, bignum_mul256
+
+  /* Copy p - 1, using rsa_n as a temporary buffer. */
+  addi     x10, x14, 0
+  la       x11, rsa_n
+  loop     x30, 2
+    bn.lid   x20, 0(x10++)
+    bn.sid   x20, 0(x11++)
+
+  /* Zero out one additional word to zero-extend. */
+  li       x2, 31
+  bn.sid   x2, 0(x11)
+
+  /* Add one to the limb count. */
+  addi     x30, x30, 1
+
+  /* Perform a modular reduction. */
+  la       x10, tmp_scratchpad
+  la       x11, rsa_n
+  jal      x1, mod
+
+  /* Subtract one back from the limb count. */
+  addi     x30, x30, -1
+
+  /* Copy result to d_p. */
+  la       x10, tmp_scratchpad
+  addi     x11, x13, 0
+  loop     x30, 2
+    bn.lid   x20, 0(x10++)
+    bn.sid   x20, 0(x11++)
+
+  ret
+
+check_crt_coeff:
+  /* Multiply q * i_q, storing result in tmp_scratchpad. */
+  la       x10, rsa_q
+  la       x11, rsa_i_q
+  la       x12, tmp_scratchpad
+  jal      x1, bignum_mul
+
+  /* Copy p to the start of rsa_n to zero-extend it. */
+  la       x10, rsa_p
+  la       x11, rsa_n
+  loop     x30, 2
+    bn.lid   x20, 0(x10++)
+    bn.sid   x20, 0(x11++)
+
+  /* Zero out the remainder of the scratchpad to perform the zero-extend. */
+  li       x2, 31
+  loop     x30, 1
+    bn.sid   x2, 0(x11++)
+
+  /* Double limb count. */
+  add      x30, x30, x30
+
+  /* Perform a modular reduction. */
+  la       x10, tmp_scratchpad
+  la       x11, rsa_n
+  jal      x1, mod
+
+  /* Halve limb count. */
+  srli     x30, x30, 1
+
+  /* Copy result to i_q. */
+  la       x10, tmp_scratchpad
+  la       x11, rsa_i_q
+  loop     x30, 2
+    bn.lid   x20, 0(x10++)
+    bn.sid   x20, 0(x11++)
+
+  ret
+
+recover_d_from_crt:
+  /* Multiply d_p * d_q, storing result in rsa_n */
+  la       x10, rsa_d_p
+  la       x11, rsa_d_q
+  la       x12, rsa_n
+  jal      x1, bignum_mul
+
+  /* Double the limb count for the next copy.  */
+  add      x30, x30, x30
+
+  /* Multiply e * d_p * d_q, storing result in rsa_d */
+  la       x10, rsa_n
+  la       x11, rsa_e
+  la       x12, rsa_d
+  jal      x1, bignum_mul256
+
+  /* Halve the limb count.  */
+  srli     x30, x30, 1
+
+  /* Compute p - 1 and q - 1 for LCM computation. */
+  jal      x1, prepare_pm1qm1
+
+  /* Compute the LCM of (p-1) and (q-1) and store it in rsa_d.
+       dmem[rsa_n] <= LCM(p-1,q-1) */
+  la       x10, rsa_pm1
+  la       x11, rsa_qm1
+  la       x12, rsa_n
+  jal      x1, lcm
+
+  /* Double the limb count for the next copy.  */
+  add      x30, x30, x30
+
+  /* Copy the result to rsa_cofactor. */
+  la       x10, rsa_n
+  la       x11, rsa_cofactor
+  loop     x30, 2
+    bn.lid   x20, 0(x10++)
+    bn.sid   x20, 0(x11++)
+
+  /* Zero extend the LCM for an upcoming modular reduction. */
+  li       x2, 31
+  bn.sid   x2, 0(x11)
+
+  /* Increment the limb count. */
+  addi     x30, x30, 1
+
+  /* Reduce e * d_p * d_q mod lcm(p - 1, q - 1) */
+  la       x10, rsa_d
+  la       x11, rsa_cofactor
+  jal      x1, mod
+
+  /* Decrement the limb count. */
+  addi     x30, x30, -1
+
+  /* Clear flags. */
+  bn.add   w31, w31, w31
+
+  /* Negate e * d_p * d_q mod lcm(p - 1, q - 1). */
+  la       x10, rsa_cofactor
+  la       x11, rsa_d
+  loop     x30, 4
+    bn.lid   x20, 0(x10++)
+    bn.lid   x21, 0(x11)
+    bn.subb  w20, w20, w21
+    bn.sid   x20, 0(x11++)
+
+  /* Clear flags. */
+  bn.sub   w31, w31, w31
+
+  /* Halve the limb counts. */
+  srli     x30, x30, 1
+
+  /* Add rsa_d_p and rsa_d_q, storing the result in rsa_n in preparation. */
+  la       x10, rsa_d_p
+  la       x11, rsa_d_q
+  la       x12, rsa_n
+  loop     x30, 4
+    bn.lid   x20, 0(x10++)
+    bn.lid   x21, 0(x11++)
+    bn.addc  w20, w20, w21
+    bn.sid   x20, 0(x12++)
+
+  /* Write the carry out, and zero the rest of rsa_n. */
+  bn.addc  w20, w31, w31
+  bn.sid   x20, 0(x12++)
+  li       x2, 31
+  loop     x31, 1
+    bn.sid   x2, 0(x12++)
+
+  /* Clear both flag groups. */
+  bn.add   w31, w31, w31
+  bn.add   w31, w31, w31, FG1
+
+  /* Double the limb count. */
+  add      x30, x30, x30
+
+  /* Compare e * d_p * d_q (stored in rsa_d) plus d_p + d_q (stored in rsa_n)
+     to lcm(p - 1, q - 1). */
+  la       x10, rsa_d
+  la       x11, rsa_n
+  la       x12, rsa_cofactor
+  loop     x30, 5
+    bn.lid   x20, 0(x10++)
+    bn.lid   x21, 0(x11++)
+    bn.addc  w22, w20, w21
+    bn.lid   x21, 0(x12++)
+    bn.cmpb  w22, w21, FG1
+
+  /* Capture ~FG0.C & FG1.C as a mask that is all 1s if we should subtract
+     the modulus.
+       w26 <= (~FG0.C & FG1.C) ? 0 : 2^256 - 1 */
+  bn.subb  w23, w31, w31, FG0
+  bn.subb  w26, w31, w31, FG1
+  bn.not   w26, w26
+  bn.or    w26, w23, w26
+
+  /* Clear flags for both groups. */
+  bn.sub   w31, w31, w31, FG0
+  bn.sub   w31, w31, w31, FG1
+
+  /* Update rsa_d to store the actual recovered value of d. */
+  la       x10, rsa_d
+  la       x11, rsa_n
+  la       x12, rsa_cofactor
+  loop     x30, 7
+    bn.lid   x20, 0(x10)
+    bn.lid   x21, 0(x11++)
+    bn.addc  w20, w20, w21
+    bn.lid   x21, 0(x12++)
+    bn.and   w21, w21, w26
+    bn.subb  w20, w20, w21, FG1
+    bn.sid   x20, 0(x10++)
+
+  /* Reset the limb count. */
+  srli     x30, x30, 1
+
+  ret
+
+
+check_recovered_d:
+  /* Get a pointer to the second half of d.
+       x3 <= rsa_d + plen*32 */
+  slli     x2, x30, 5
+  la       x10, rsa_d
+  add      x10, x10, x2
+
+  /* Create a pair of possible return values */
+  bn.mov    w22, w31
+  bn.not    w23, w22
+
+  /* Logical OR all upper limbs of d together. */
+  bn.mov   w21, w31
+  loop     x30, 2
+    /* w20 <= d[n+i] */
+    bn.lid  x20, 0(x10++)
+    /* w23 <= w23 | w20 */
+    bn.or   w21, w21, w20
+
+  /* Select either all 0s or all 1s based on FG0.Z */
+  bn.sel   w21, w22, w23, FG0.Z
+
+  /* Store the result in rsa_e. */
+  la       x10, rsa_e
+  bn.sid   x21, 0(x10)
+
+  ret
 
 /**
  * Subtract one from both RSA cofactors p and q, in preparation for computation
@@ -1859,7 +2196,7 @@ is_zero_mod_small_prime:
 .section .scratchpad
 
 /* RSA private exponent d. Up to 4096 bits; also used as a temporary work buffer
-  containing `mont_m0inv` and `mont_rr`. */
+   containing `mont_m0inv` and `mont_rr`. */
 .balign 32
 rsa_d:
 
@@ -1926,7 +2263,7 @@ rsa_i_q:
 .zero 256
 
 /* Prime cofactor for n for `rsa_key_from_cofactor`; also used as a temporary
- * work buffer containing `rsa_pm1` and `rsa_pm2`. */
+   work buffer containing `rsa_pm1` and `rsa_pm2`. */
 .balign 32
 .globl rsa_cofactor
 rsa_cofactor:
@@ -1946,3 +2283,12 @@ rsa_pm1:
 .globl rsa_qm1
 rsa_qm1:
 .zero 256
+
+/* RSA public exponent e. Used only for checking validity of private keys, as
+   all key generation routines require e = 65537. Note that this overlaps with
+   rsa_cofactor, as no mode reqiures the processor to provide a public exponent
+   and lone cofactor. */
+.balign 32
+.globl rsa_e
+rsa_e:
+.zero 32

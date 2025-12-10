@@ -167,6 +167,28 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "mod_test",
+    srcs = [
+        "mod_test.s",
+    ],
+    exp = "mod_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+    ],
+)
+
+otbn_consttime_test(
+    name = "mod_consttime",
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "mod",
+    deps = [
+        ":mod_test",
+    ],
+)
+
+otbn_sim_test(
     name = "field25519_test",
     srcs = [
         "field25519_test.s",
@@ -273,6 +295,27 @@ otbn_consttime_test(
     # All inputs are in DMEM; no registers are secret.
     secrets = ["dmem"],
     subroutine = "bignum_mul",
+    deps = [
+        ":mul_test",
+    ],
+)
+
+otbn_sim_test(
+    name = "mul256_test",
+    srcs = [
+        "mul256_test.s",
+    ],
+    dexp = "mul256_test.dexp",
+    deps = [
+        "//sw/otbn/crypto:mul",
+    ],
+)
+
+otbn_consttime_test(
+    name = "mul256_consttime",
+    # All inputs are in DMEM; no registers are secret.
+    secrets = ["dmem"],
+    subroutine = "bignum_mul256",
     deps = [
         ":mul_test",
     ],
@@ -1261,6 +1304,25 @@ otbn_sim_test(
         "//sw/otbn/crypto:modinv",
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_check_key_recover_d_from_crt_test",
+    timeout = "long",
+    srcs = [
+        "rsa_check_key_recover_d_from_crt_test.s",
+    ],
+    dexp = "rsa_check_key_recover_d_from_crt_test.dexp",
+    deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:modinv",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
     ],
 )

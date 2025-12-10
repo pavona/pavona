@@ -1,9 +1,11 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /* Public interface. */
 .globl bignum_mul
+.globl bignum_mul256
 
 /**
  * Compute the product of two bignums.
@@ -127,6 +129,72 @@ bignum_mul:
          x4 <= x4 + 32 = dptr_c + (i+1)*32 */
     addi     x5, x0, 32
     add      x4, x4, x5
+
+  ret
+
+/*
+ * Compute the product of a bignum with a 256-bit value.
+ *
+ * Returns c = a * b, where a is a bignum and b is a 256-bit value.
+ *
+ * The basic algorithm here is a textbook multi-limb multiplication, specialized
+ * to the case where the second input is a single limb:
+ *   out = 0
+ *   for i=0..n-1:
+ *     out += (a[i]*b) << (256*i)
+ *
+ * This routine runs in constant-time relative to the input *values*, but the
+ * number of limbs is considered non-secret.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x10: dptr_a, dmem address of first operand (n limbs)
+ * @param[in]  x11: dptr_b, dmem address of second operand (1 limb)
+ * @param[in]  x12: dptr_c, dmem address of buffer for result (n + 1 limbs)
+ * @param[in]  x30: number of 256-bit limbs for a
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[x12..x12+(n*2*32)]: result, a*b
+ *
+ * clobbered registers: x2, x3, x20, x21, x22, x23, w20, w21, w22, w23
+ * clobbered flag groups: FG0
+ */
+bignum_mul256:
+  /* Zeroize first word of output buffer.
+       dmem[dptr_c] <= 0 */
+  li       x2, 31
+  bn.sid   x2, 0(x12)
+
+  /* Copy bignum pointers.
+       x2 <= dptr_a
+       x3 <= dptr_c */
+  addi     x2, x10, 0
+  addi     x3, x12, 0
+
+  /* Load constants to use as wide-register pointers. */
+  li       x20, 20
+  li       x21, 21
+  li       x22, 22
+  li       x23, 23
+
+  /* Load b. */
+  bn.lid    x21, 0(x11)
+
+  /* Loop through the limbs of a. */
+  loop     x30, 7
+    /* w20 <= a[i] */
+    bn.lid    x20, 0(x2++)
+
+    /* w22, w23 <= w20*w21 = a[i]*b */
+    jal       x1, mul256_w20xw21
+
+    /* out[i], FG0.C <= w22 + out[i] */
+    bn.lid    x20, 0(x3)
+    bn.add    w22, w22, w20
+    bn.sid    x22, 0(x3++)
+
+    /* out[i + 1] <= w23 + FG0.C */
+    bn.addc   w23, w23, w31
+    bn.sid    x23, 0(x3)
 
   ret
 
