@@ -185,6 +185,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
   // Entropy complex must be initialized for `hardened_memcpy`.
   HARDENED_TRY(entropy_complex_check());
 
+  // Check that the key mode is a valid RSA mode.
   HARDENED_TRY(rsa_mode_check(public_key->key_mode));
 
   switch (size) {
@@ -354,6 +355,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct(
   // Entropy complex must be initialized for `hardened_memcpy`.
   HARDENED_TRY(entropy_complex_check());
 
+  // Check that the key mode is a valid RSA mode.
   HARDENED_TRY(rsa_mode_check(private_key->config.key_mode));
 
   // Ensure that the cofactors, private exponent components, and CRT coefficient
@@ -419,6 +421,125 @@ otcrypto_status_t otcrypto_rsa_private_key_construct(
 
   private_key->checksum = integrity_blinded_checksum(private_key);
   return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_rsa_private_key_construct_and_check(
+    otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q,
+    otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
+    otcrypto_const_word32_buf_t i_q, const otcrypto_unblinded_key_t *public_key,
+    hardened_bool_t check_primes, otcrypto_blinded_key_t *private_key,
+    hardened_bool_t *key_valid) {
+  HARDENED_TRY(otcrypto_rsa_private_key_construct_and_check_async_start(
+      p, q, d_p, d_q, i_q, public_key, check_primes, private_key, key_valid));
+  return otcrypto_rsa_private_key_construct_and_check_async_finalize(
+      public_key, check_primes, private_key, key_valid);
+}
+
+otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_start(
+    otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q,
+    otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
+    otcrypto_const_word32_buf_t i_q, const otcrypto_unblinded_key_t *public_key,
+    hardened_bool_t check_primes, otcrypto_blinded_key_t *private_key,
+    hardened_bool_t *key_valid) {
+  // Defensively mark the private key as invalid to start.
+  *key_valid = kHardenedBoolFalse;
+
+  // Infer size of key from provided public key.
+  otcrypto_rsa_size_t size;
+  HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
+
+  // Construct a copy of the private key from the provided parameters.
+  HARDENED_TRY(otcrypto_rsa_private_key_construct(size, p, q, d_p, d_q, i_q,
+                                                  private_key));
+
+  // Perform the correct private key check based on parameters.
+  switch (size) {
+    case kOtcryptoRsaSize2048: {
+      if (private_key->keyblob_length != sizeof(rsa_2048_private_key_t) ||
+          p.len != kRsa2048NumWords / 2) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
+      rsa_2048_private_key_t *sk =
+          (rsa_2048_private_key_t *)private_key->keyblob;
+      return rsa_key_check_2048_start(pk, sk, check_primes);
+    }
+    case kOtcryptoRsaSize3072: {
+      if (private_key->keyblob_length != sizeof(rsa_3072_private_key_t) ||
+          p.len != kRsa3072NumWords / 2) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
+      rsa_3072_private_key_t *sk =
+          (rsa_3072_private_key_t *)private_key->keyblob;
+      return rsa_key_check_3072_start(pk, sk, check_primes);
+    }
+    case kOtcryptoRsaSize4096: {
+      if (private_key->keyblob_length != sizeof(rsa_4096_private_key_t) ||
+          p.len != kRsa4096NumWords / 2) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
+      rsa_4096_private_key_t *sk =
+          (rsa_4096_private_key_t *)private_key->keyblob;
+      return rsa_key_check_4096_start(pk, sk, check_primes);
+    }
+    default:
+      // Invalid key size. Since the size was inferred, should be unreachable.
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
+}
+
+otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_finalize(
+    const otcrypto_unblinded_key_t *public_key, hardened_bool_t check_primes,
+    otcrypto_blinded_key_t *private_key, hardened_bool_t *key_valid) {
+  // Infer size of key from provided public key.
+  otcrypto_rsa_size_t size;
+  HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
+
+  // Perform the correct private key check based on parameters.
+  switch (size) {
+    case kOtcryptoRsaSize2048: {
+      if (private_key->keyblob_length != sizeof(rsa_2048_private_key_t)) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
+      rsa_2048_private_key_t *sk =
+          (rsa_2048_private_key_t *)private_key->keyblob;
+      return rsa_key_check_2048_finalize(pk, sk, check_primes, key_valid);
+    }
+    case kOtcryptoRsaSize3072: {
+      if (private_key->keyblob_length != sizeof(rsa_3072_private_key_t)) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
+      rsa_3072_private_key_t *sk =
+          (rsa_3072_private_key_t *)private_key->keyblob;
+      return rsa_key_check_3072_finalize(pk, sk, check_primes, key_valid);
+    }
+    case kOtcryptoRsaSize4096: {
+      if (private_key->keyblob_length != sizeof(rsa_4096_private_key_t)) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
+      rsa_4096_private_key_t *sk =
+          (rsa_4096_private_key_t *)private_key->keyblob;
+      return rsa_key_check_4096_finalize(pk, sk, check_primes, key_valid);
+    }
+    default:
+      // Invalid key size. Since the size was inferred, should be unreachable.
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
 }
 
 otcrypto_status_t otcrypto_rsa_private_key_deconstruct(

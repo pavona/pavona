@@ -188,6 +188,51 @@ status_t rsa_keygen_from_cofactor_4096_start(
 status_t rsa_keygen_from_cofactor_4096_finalize(
     rsa_4096_public_key_t *public_key, rsa_4096_private_key_t *private_key);
 
+/**
+ * Checks the validity of a private key with respect to a given public key.
+ */
+status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
+                                  const rsa_2048_private_key_t *private_key,
+                                  hardened_bool_t check_primes);
+
+/*
+ * Checks the validity of a private key with respect to a given public key.
+ */
+status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
+                                     const rsa_2048_private_key_t *private_key,
+                                     hardened_bool_t check_primes,
+                                     hardened_bool_t *key_valid);
+
+/**
+ * Checks the validity of a private key with respect to a given public key.
+ */
+status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
+                                  const rsa_3072_private_key_t *private_key,
+                                  hardened_bool_t check_primes);
+
+/*
+ * Checks the validity of a private key with respect to a given public key.
+ */
+status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
+                                     const rsa_3072_private_key_t *private_key,
+                                     hardened_bool_t check_primes,
+                                     hardened_bool_t *key_valid);
+
+/**
+ * Checks the validity of a private key with respect to a given public key.
+ */
+status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
+                                  const rsa_4096_private_key_t *private_key,
+                                  hardened_bool_t check_primes);
+
+/*
+ * Checks the validity of a private key with respect to a given public key.
+ */
+status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
+                                     const rsa_4096_private_key_t *private_key,
+                                     hardened_bool_t check_primes,
+                                     hardened_bool_t *key_valid);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
