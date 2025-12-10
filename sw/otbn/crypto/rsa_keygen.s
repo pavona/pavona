@@ -138,7 +138,7 @@ rsa_check_key:
   li       x20, 20
   li       x21, 21
 
-  /* Zero-extend the provided 32-bit value of e. */
+  /* Zero-extend the 32-bit provided value of e. */
   la       x10, rsa_e
   lw       x2, 0(x10)
   li       x3, 31
@@ -334,6 +334,12 @@ recover_d_from_crt:
     bn.lid   x20, 0(x10++)
     bn.sid   x20, 0(x11++)
 
+  /* Copy rsa_e into a register, as the following zero-extension of the LCM may
+     overwrite it for larger key sizes. */
+  li       x2, 28
+  la       x3, rsa_e
+  bn.lid   x2, 0(x3)
+
   /* Zero extend the LCM for an upcoming modular reduction. */
   li       x2, 31
   bn.sid   x2, 0(x11)
@@ -431,8 +437,12 @@ recover_d_from_crt:
   /* Reset the limb count. */
   srli     x30, x30, 1
 
-  ret
+  /* Restore e. */
+  li       x2, 28
+  la       x3, rsa_e
+  bn.sid   x2, 0(x3)
 
+  ret
 
 check_recovered_d:
   /* Get a pointer to the second half of d.

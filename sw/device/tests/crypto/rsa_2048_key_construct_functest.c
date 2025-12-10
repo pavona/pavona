@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -76,6 +77,15 @@ static uint32_t kTestCrtCoefficient[kRsa2048NumWords / 2] = {
     0x05f32291, 0x4c4cc843, 0x4f7bd2e4, 0xa158cc81, 0x2b3fdadf, 0x20b88f37,
     0x5e424f2a, 0x41794ace, 0x86297642, 0x1472ceaa, 0xeedce93a, 0xad62154d,
     0xae949fc6, 0x267d8cbc,
+};
+
+static uint32_t kTestInvalidPrivateExponentComponentP[kRsa2048NumWords / 2] = {
+    0x450b9217, 0x4edd47a6, 0x65eaa581, 0xa489536c, 0x46c6416e, 0xcdcd3461,
+    0x07ba3fc0, 0x95d56f89, 0xcf3c23e1, 0x3a09db7b, 0x841780f5, 0x3ee50c5d,
+    0x6858dd49, 0xf56e4c70, 0x872d1012, 0xe23c883f, 0x24170efd, 0xeb61ae33,
+    0xd05cb6b7, 0x81db8c2f, 0x1cd58c9b, 0xa828fecf, 0x09db577e, 0xcdc21d77,
+    0x9ebfb60c, 0xbacad629, 0x98bc44a7, 0x8498e6dc, 0x399dc28f, 0x95d22e4d,
+    0x7b1d095d, 0xacc9ede5,
 };
 
 static uint32_t kTestPublicExponent = 65537;
@@ -207,6 +217,187 @@ status_t private_key_roundtrip_test(void) {
   return OK_STATUS();
 }
 
+status_t private_key_check_valid_roundtrip_inner(hardened_bool_t check_primes) {
+  // Construct the public key.
+  otcrypto_const_word32_buf_t modulus = {
+      .data = kTestModulus,
+      .len = ARRAYSIZE(kTestModulus),
+  };
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, modulus,
+                                    kTestPublicExponent, &public_key);
+
+  // Construct the private key.
+  otcrypto_const_word32_buf_t p = {
+      .data = kTestCofactorP,
+      .len = ARRAYSIZE(kTestCofactorP),
+  };
+  otcrypto_const_word32_buf_t q = {
+      .data = kTestCofactorQ,
+      .len = ARRAYSIZE(kTestCofactorQ),
+  };
+  otcrypto_const_word32_buf_t d_p = {
+      .data = kTestPrivateExponentComponentP,
+      .len = ARRAYSIZE(kTestPrivateExponentComponentP),
+  };
+  otcrypto_const_word32_buf_t d_q = {
+      .data = kTestPrivateExponentComponentQ,
+      .len = ARRAYSIZE(kTestPrivateExponentComponentQ),
+  };
+  otcrypto_const_word32_buf_t i_q = {
+      .data = kTestCrtCoefficient,
+      .len = ARRAYSIZE(kTestCrtCoefficient),
+  };
+  otcrypto_key_config_t private_key_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  size_t keyblob_words =
+      ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
+  uint32_t keyblob[keyblob_words];
+  otcrypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+  };
+  hardened_bool_t key_valid = kHardenedBoolFalse;
+  TRY(otcrypto_rsa_private_key_construct_and_check(
+      p, q, d_p, d_q, i_q, &public_key, kHardenedBoolFalse, &private_key,
+      &key_valid));
+
+  TRY_CHECK(key_valid == kHardenedBoolTrue);
+
+  // Deconstruct the public key
+  uint32_t roundtrip_p_data[kRsa2048NumWords / 2] = {0};
+  otcrypto_word32_buf_t roundtrip_p = {
+      .data = roundtrip_p_data,
+      .len = ARRAYSIZE(roundtrip_p_data),
+  };
+  uint32_t roundtrip_q_data[kRsa2048NumWords / 2] = {0};
+  otcrypto_word32_buf_t roundtrip_q = {
+      .data = roundtrip_q_data,
+      .len = ARRAYSIZE(roundtrip_p_data),
+  };
+  uint32_t roundtrip_d_p_data[kRsa2048NumWords / 2] = {0};
+  otcrypto_word32_buf_t roundtrip_d_p = {
+      .data = roundtrip_d_p_data,
+      .len = ARRAYSIZE(roundtrip_p_data),
+  };
+  uint32_t roundtrip_d_q_data[kRsa2048NumWords / 2] = {0};
+  otcrypto_word32_buf_t roundtrip_d_q = {
+      .data = roundtrip_d_q_data,
+      .len = ARRAYSIZE(roundtrip_d_q_data),
+  };
+  uint32_t roundtrip_i_q_data[kRsa2048NumWords / 2] = {0};
+  otcrypto_word32_buf_t roundtrip_i_q = {
+      .data = roundtrip_i_q_data,
+      .len = ARRAYSIZE(roundtrip_i_q_data),
+  };
+  otcrypto_rsa_private_key_deconstruct(&private_key, roundtrip_p, roundtrip_q,
+                                       roundtrip_d_p, roundtrip_d_q,
+                                       roundtrip_i_q);
+
+  // Check that the round trip had the expected results
+  TRY_CHECK(roundtrip_p.len == ARRAYSIZE(kTestCofactorP));
+  TRY_CHECK_ARRAYS_EQ(roundtrip_p.data, kTestCofactorP,
+                      ARRAYSIZE(kTestCofactorP));
+  TRY_CHECK(roundtrip_q.len == ARRAYSIZE(kTestCofactorQ));
+  TRY_CHECK_ARRAYS_EQ(roundtrip_q.data, kTestCofactorQ,
+                      ARRAYSIZE(kTestCofactorQ));
+  TRY_CHECK(roundtrip_d_p.len == ARRAYSIZE(kTestPrivateExponentComponentP));
+  TRY_CHECK_ARRAYS_EQ(roundtrip_d_p.data, kTestPrivateExponentComponentP,
+                      ARRAYSIZE(kTestPrivateExponentComponentP));
+  TRY_CHECK(roundtrip_d_q.len == ARRAYSIZE(kTestPrivateExponentComponentQ));
+  TRY_CHECK_ARRAYS_EQ(roundtrip_d_q.data, kTestPrivateExponentComponentQ,
+                      ARRAYSIZE(kTestPrivateExponentComponentQ));
+  TRY_CHECK(roundtrip_i_q.len == ARRAYSIZE(kTestCrtCoefficient));
+  TRY_CHECK_ARRAYS_EQ(roundtrip_i_q.data, kTestCrtCoefficient,
+                      ARRAYSIZE(kTestCrtCoefficient));
+  return OK_STATUS();
+}
+
+status_t private_key_check_valid_roundtrip_test(void) {
+  // Call the internal roundtrip test, with the check_primes flag unset.
+  return private_key_check_valid_roundtrip_inner(kHardenedBoolFalse);
+}
+
+status_t private_key_check_with_primes_valid_roundtrip_test(void) {
+  // Call the internal roundtrip test, with the check_primes flag set.
+  return private_key_check_valid_roundtrip_inner(kHardenedBoolTrue);
+}
+
+status_t private_key_check_invalid(void) {
+  // Construct the public key.
+  otcrypto_const_word32_buf_t modulus = {
+      .data = kTestModulus,
+      .len = ARRAYSIZE(kTestModulus),
+  };
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, modulus,
+                                    kTestPublicExponent, &public_key);
+
+  // Attempt to construct the private key, providing an invalid value for d_p
+  // with a single bit changed.
+  otcrypto_const_word32_buf_t p = {
+      .data = kTestCofactorP,
+      .len = ARRAYSIZE(kTestCofactorP),
+  };
+  otcrypto_const_word32_buf_t q = {
+      .data = kTestCofactorQ,
+      .len = ARRAYSIZE(kTestCofactorQ),
+  };
+  otcrypto_const_word32_buf_t d_p = {
+      .data = kTestInvalidPrivateExponentComponentP,
+      .len = ARRAYSIZE(kTestPrivateExponentComponentP),
+  };
+  otcrypto_const_word32_buf_t d_q = {
+      .data = kTestPrivateExponentComponentQ,
+      .len = ARRAYSIZE(kTestPrivateExponentComponentQ),
+  };
+  otcrypto_const_word32_buf_t i_q = {
+      .data = kTestCrtCoefficient,
+      .len = ARRAYSIZE(kTestCrtCoefficient),
+  };
+  otcrypto_key_config_t private_key_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  size_t keyblob_words =
+      ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
+  uint32_t keyblob[keyblob_words];
+  otcrypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+  };
+  hardened_bool_t key_valid = kHardenedBoolFalse;
+  TRY(otcrypto_rsa_private_key_construct_and_check(
+      p, q, d_p, d_q, i_q, &public_key, kHardenedBoolFalse, &private_key,
+      &key_valid));
+
+  // Ensure the private key was marked as invalid
+  TRY_CHECK(key_valid == kHardenedBoolFalse);
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -214,5 +405,8 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, public_key_roundtrip_test);
   EXECUTE_TEST(test_result, private_key_roundtrip_test);
+  EXECUTE_TEST(test_result, private_key_check_valid_roundtrip_test);
+  EXECUTE_TEST(test_result, private_key_check_with_primes_valid_roundtrip_test);
+  EXECUTE_TEST(test_result, private_key_check_invalid);
   return status_ok(test_result);
 }

@@ -156,6 +156,76 @@ otcrypto_status_t otcrypto_rsa_private_key_construct(
     otcrypto_blinded_key_t *private_key);
 
 /**
+ * Constructs an RSA private key from cofactors of the modulus, private exponent
+ * CRT components, and a CRT coefficient, using a supplied public key to
+ * verify that the constructed private key is valid.
+ *
+ * The caller should allocate space for the private key and set the `keyblob`,
+ * `keyblob_length`, and `key_length` fields accordingly.
+ *
+ * @param p First cofactor of RSA modulus (p).
+ * @param q Second cofactor of RSA modulus (q).
+ * @param d_p First CRT component of the RSA private exponent d (d_p).
+ * @param d_q Second CRT component of the RSA private exponent d (d_q).
+ * @param i_q CRT reconstruction coefficient for given cofactors (i_q).
+ * @param public_key Public key to check private key against.
+ * @param check_primes Whether to perform primality checks on p and q.
+ * @param[out] private_key Destination private key struct.
+ * @param[out] key_valid Whether the resultant key is valid.
+ * @return Result of the RSA key construction and check.
+ */
+otcrypto_status_t otcrypto_rsa_private_key_construct_and_check(
+    otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q,
+    otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
+    otcrypto_const_word32_buf_t i_q, const otcrypto_unblinded_key_t *public_key,
+    hardened_bool_t check_primes, otcrypto_blinded_key_t *private_key,
+    hardened_bool_t *key_valid);
+
+/**
+ * Starts the process of constructing a RSA private key from cofactors of the
+ * modulus, private exponent CRT components, and a CRT coefficient, using a
+ * supplied public key to verify that the constructed private key is valid.
+ *
+ * See `otcrypto_rsa_private_key_construct_and_check` for details on the
+ * requirements for input and output buffers.
+ *
+ * @param p First cofactor of RSA modulus (p).
+ * @param q Second cofactor of RSA modulus (q).
+ * @param d_p First CRT component of the RSA private exponent d (d_p).
+ * @param d_q Second CRT component of the RSA private exponent d (d_q).
+ * @param i_q CRT reconstruction coefficient for given cofactors (i_q).
+ * @param public_key Public key to check private key against.
+ * @param check_primes Whether to perform primality checks on p and q.
+ * @param[out] private_key Destination private key struct.
+ * @param[out] key_valid Whether the resultant key is valid.
+ * @return Result of starting the RSA key construction and check.
+ */
+otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_start(
+    otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q,
+    otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
+    otcrypto_const_word32_buf_t i_q, const otcrypto_unblinded_key_t *public_key,
+    hardened_bool_t check_primes, otcrypto_blinded_key_t *private_key,
+    hardened_bool_t *key_valid);
+
+/**
+ * Finalizes the process of constructing a RSA private key from cofactors of
+ * the modulus, private exponent CRT components, and a CRT coefficient, using a
+ * supplied public key to verify that the constructed private key is valid.
+ *
+ * See `otcrypto_rsa_private_key_construct_and_check` for details on the
+ * requirements for input and output buffers.
+ *
+ * @param public_key Public key to check private key against.
+ * @param check_primes Whether to perform primality checks on p and q.
+ * @param[out] private_key Destination private key struct.
+ * @param[out] key_valid Whether the resultant key is valid.
+ * @return Result of starting the RSA key construction and check.
+ */
+otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_finalize(
+    const otcrypto_unblinded_key_t *public_key, hardened_bool_t check_primes,
+    otcrypto_blinded_key_t *private_key, hardened_bool_t *key_valid);
+
+/**
  * Deonstructs an RSA private key into cofactors of the modulus, private
  * exponent CRT components, and a CRT coefficient.
  *
