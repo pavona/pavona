@@ -26,11 +26,13 @@ package prim_sha2_pkg;
                                  // set to all-1 for word-aligned input
   } sha_fifo64_t;
 
-  typedef enum logic [1:0] {
-    FifoIdle,
-    FifoLoadFromFifo,
-    FifoWait
-  } fifoctl_state_e;
+  typedef enum logic [2:0] {
+    ShaIdle,
+    ShaLoad,
+    ShaInit,
+    ShaCompress,
+    ShaUpdateDigest
+  } sha_st_e;
 
   // one-hot encoded
   typedef enum logic [3:0] {

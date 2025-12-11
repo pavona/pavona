@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:sha2_pkg
     files:
+      - rtl/prim_sha2_compression.sv
       - rtl/prim_sha2_pad.sv
       - rtl/prim_sha2.sv
       - rtl/prim_sha2_32.sv
