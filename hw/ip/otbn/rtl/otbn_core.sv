@@ -281,6 +281,7 @@ module otbn_core
   logic sec_wipe_acc_urnd;
   logic sec_wipe_mod_urnd;
   logic sec_wipe_kmac_regs_urnd;
+  logic sec_wipe_acch_urnd;
   logic sec_wipe_zero;
   logic sec_wipe_err;
 
@@ -343,6 +344,7 @@ module otbn_core
     .sec_wipe_acc_urnd_o      (sec_wipe_acc_urnd),
     .sec_wipe_mod_urnd_o      (sec_wipe_mod_urnd),
     .sec_wipe_kmac_regs_urnd_o(sec_wipe_kmac_regs_urnd),
+    .sec_wipe_acch_urnd_o     (sec_wipe_acch_urnd),
     .sec_wipe_zero_o          (sec_wipe_zero),
 
     .ispr_init_o         (ispr_init),
@@ -928,10 +930,11 @@ module otbn_core
     .mac_predec_bignum_i(mac_predec_bignum),
     .predec_error_o     (mac_bignum_predec_error),
 
-    .urnd_data_i        (urnd_data),
-    .sec_wipe_acc_urnd_i(sec_wipe_acc_urnd),
-    .sec_wipe_running_i (secure_wipe_running_o),
-    .sec_wipe_err_o     (mac_bignum_sec_wipe_err),
+    .urnd_data_i         (urnd_data),
+    .sec_wipe_acc_urnd_i (sec_wipe_acc_urnd),
+    .sec_wipe_acch_urnd_i(sec_wipe_acch_urnd),
+    .sec_wipe_running_i  (secure_wipe_running_o),
+    .sec_wipe_err_o      (mac_bignum_sec_wipe_err),
 
     .mac_en_i    (mac_bignum_en),
     .mac_commit_i(mac_bignum_commit),

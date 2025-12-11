@@ -34,6 +34,7 @@ module otbn_mac_bignum
 
   input  logic [WLEN-1:0] urnd_data_i,
   input  logic            sec_wipe_acc_urnd_i,
+  input  logic            sec_wipe_acch_urnd_i,
   input  logic            sec_wipe_running_i,
   output logic            sec_wipe_err_o,
 
@@ -348,8 +349,8 @@ module otbn_mac_bignum
         gen_acch_reg.acch_no_intg_d = '0;
         unique case (1'b1)
           // Non-encoded inputs have to be encoded before writing to the register.
-          sec_wipe_acc_urnd_i: begin   // FIX ME!
-            gen_acch_reg.acch_no_intg_d = urnd_data_i;   // FIX ME!
+          sec_wipe_acch_urnd_i: begin
+            gen_acch_reg.acch_no_intg_d = urnd_data_i;
             acch_intg_d = gen_acch_reg.acch_intg_calc;
           end
           default: begin
@@ -365,7 +366,7 @@ module otbn_mac_bignum
 
       // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occurring or secure
       // wipe of the internal state is occurring.
-      assign acch_en = (mac_en_i & mac_commit_i & operation_i.mulv) | ispr_acch_wr_en_i | sec_wipe_acc_urnd_i;  // FIX ME acch
+      assign acch_en = (mac_en_i & mac_commit_i & operation_i.mulv) | ispr_acch_wr_en_i | sec_wipe_acch_urnd_i;
 
       always_ff @(posedge clk_i) begin
         if (acch_en) begin
@@ -505,7 +506,7 @@ module otbn_mac_bignum
 
   generate
     if (OtbnPQCEn) begin : gen_sec_wipe_err_pqc
-      assign sec_wipe_err_o = sec_wipe_acc_urnd_i & ~sec_wipe_running_i; // FIX ME acch
+      assign sec_wipe_err_o = (sec_wipe_acc_urnd_i | sec_wipe_acch_urnd_i) & ~sec_wipe_running_i;
     end else begin : gen_sec_wipe_err
       assign sec_wipe_err_o = sec_wipe_acc_urnd_i & ~sec_wipe_running_i;
     end
