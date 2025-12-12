@@ -14,7 +14,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_macros
-      - lowrisc:dv:common_ifs
+      - lowrisc:dv:clk_rst_agent
       - lowrisc:dv:dv_test_status
       - lowrisc:dv:crypto_dpi_prince
     files:
