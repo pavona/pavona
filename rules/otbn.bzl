@@ -161,27 +161,29 @@ def _otbn_binary(ctx, additional_srcs = []):
         ),
     ]
 
-def _run_sim_test(ctx, exp, dexp, pqc, testcase = None, additional_srcs = []):
+def _run_sim_test(ctx, exp, dexp, pqc, stats, testcase = None, additional_srcs = []):
     providers = _otbn_binary(ctx, additional_srcs)
 
     # Extract the output .elf file from the output group.
     elf = providers[1].elf.to_list()[0]
 
-    exp_content = ""
+    flag_content = ""
     exp_files = []
     if exp != None:
-        exp_content += "--expected_regs {} ".format(exp.short_path)
+        flag_content += "--expected_regs {} ".format(exp.short_path)
         exp_files.append(exp)
     if dexp != None:
-        exp_content += "--expected_dmem {} ".format(dexp.short_path)
+        flag_content += "--expected_dmem {} ".format(dexp.short_path)
         exp_files.append(dexp)
     if testcase != None:
         if exp != None or dexp != None:
             fail("Testcase with legacy exp or dexp specified.")
-        exp_content += "--testcase {} ".format(testcase.short_path)
+        flag_content += "--testcase {} ".format(testcase.short_path)
         exp_files.append(testcase)
     if pqc:
-        exp_content += "--pqc "
+        flag_content += "--pqc "
+    if stats:
+        flag_content += "--stats "
 
     # Create a simple script that runs the OTBN test wrapper on the .elf file
     # using the provided simulator path.
@@ -189,7 +191,7 @@ def _run_sim_test(ctx, exp, dexp, pqc, testcase = None, additional_srcs = []):
     simulator = ctx.executable._simulator
     ctx.actions.write(
         output = ctx.outputs.executable,
-        content = "{} {} -- {} {}".format(sim_test_wrapper.short_path, exp_content, simulator.short_path, elf.short_path),
+        content = "{} {} -- {} {}".format(sim_test_wrapper.short_path, flag_content, simulator.short_path, elf.short_path),
     )
 
     # Runfiles include sources, the .elf file, the simulator and test wrapper
@@ -210,7 +212,7 @@ def _otbn_sim_test(ctx):
     them on the simulator. Tests are expected to count failures in the w0
     register; the test checks that w0=0 to determine if the test passed.
     """
-    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp, ctx.attr.pqc, testcase = ctx.file.testcase)
+    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp, ctx.attr.pqc, ctx.attr.stats, testcase = ctx.file.testcase)
 
 def otbn_sim_test_suite(name, tests, **kwargs):
     def testname(target):
@@ -261,7 +263,7 @@ def _otbn_autogen_sim_test_impl(ctx):
         executable = ctx.executable.testgen,
     )
 
-    return _run_sim_test(ctx, exp, dexp, ctx.attr.pqc, additional_srcs = [data])
+    return _run_sim_test(ctx, exp, dexp, ctx.attr.pqc, ctx.attr.stats, additional_srcs = [data])
 
 def _otbn_consttime_test_impl(ctx):
     """This rule checks if a program or subroutine is constant-time.
@@ -424,6 +426,7 @@ otbn_sim_test = rv_rule(
         "testcase": attr.label(allow_single_file = True),
         "copts": attr.string_list(),
         "pqc": attr.bool(default = False),
+        "stats": attr.bool(default=False),
         "_riscv32_ar": attr.label(
             default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
             allow_single_file = True,
@@ -493,6 +496,7 @@ otbn_autogen_sim_test = rv_rule(
         "copts": attr.string_list(),
         "pqc": attr.bool(default = False),
         "testgen_args": attr.string_list(),
+        "stats": attr.bool(default=False),
         "_riscv32_ar": attr.label(
             default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
             allow_single_file = True,

@@ -81,6 +81,9 @@ def main() -> int:
     parser.add_argument('--pqc',
                         action='store_true',
                         help='Enable PQC mode for the simulator.')
+    parser.add_argument('--stats',
+                        action='store_true',
+                        help='Print statistics (makes test run slower).')
     parser.add_argument('elf',
                         help='Path to the .elf file for the OTBN program.')
     parser.add_argument('-v', '--verbose', action='store_true')
@@ -107,6 +110,12 @@ def main() -> int:
     if args.pqc:
         cmd_flags.extend([
             "--pqc",
+            "-",
+        ])
+
+    if args.stats:
+        cmd_flags.extend([
+            "--dump-stats",
             "-",
         ])
 

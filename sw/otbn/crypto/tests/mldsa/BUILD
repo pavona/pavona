@@ -18,6 +18,7 @@ package(default_visibility = ["//visibility:public"])
 MLDSA_PARAMS = ["mldsa44", "mldsa65", "mldsa87"]
 MODE_FOR_PARAMS = {"mldsa44": 2, "mldsa65": 3, "mldsa87": 5}
 NTESTS = 100
+STATS = True # makes tests run slower but logs detailed execution stats
 
 # Key generation tests
 py_binary(
@@ -38,6 +39,7 @@ py_binary(
         seed = i,
         testgen = ":mldsa_keypair_testgen",
         testgen_args = [params],
+        stats = STATS,
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
         ],
@@ -77,6 +79,7 @@ py_binary(
         testgen = ":mldsa_sign_testgen",
         testgen_args = [params],
         timeout = "long",
+        stats = STATS,
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
         ],
@@ -116,6 +119,7 @@ py_binary(
         seed = i,
         testgen = ":mldsa_verify_testgen",
         testgen_args = [params],
+        stats = STATS,
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
         ],
