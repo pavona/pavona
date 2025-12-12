@@ -342,16 +342,22 @@ module otbn_predecode
             end
             3'b101: begin
               // BN.ADDM/BN.SUBM
-              rf_ren_a_bignum                = 1'b1;
-              rf_ren_b_bignum                = 1'b1;
-              rf_we_bignum                   = 1'b1;
-              alu_bignum_shift_amt           = shift_amt_a_type_bignum;
-              alu_bignum_adder_x_en          = 1'b1;
-              alu_bignum_x_res_operand_a_sel = 1'b1;
-              alu_bignum_shift_mod_sel       = 1'b0;
-              if (OtbnPQCEn) begin
-                alu_bignum_vector_type_pqc = alu_vector_type_t'(imem_rdata_i[27:26]);
-                alu_bignum_vector_sel_pqc  = imem_rdata_i[25];
+              // BN.ADDV/BN.SUBV are also predecoded here
+              // We check rdata[25] (Vector Enable) and OtbnPQCEn to make sure that predecode
+              // flags are only set for legal instructions.
+              // rdata[25] can not be 1 and OtbnPQCEn be 0
+              if (~imem_rdata_i[25] | OtbnPQCEn) begin
+                rf_ren_a_bignum                = 1'b1;
+                rf_ren_b_bignum                = 1'b1;
+                rf_we_bignum                   = 1'b1;
+                alu_bignum_shift_amt           = shift_amt_a_type_bignum;
+                alu_bignum_adder_x_en          = 1'b1;
+                alu_bignum_x_res_operand_a_sel = 1'b1;
+                alu_bignum_shift_mod_sel       = 1'b0;
+                if (OtbnPQCEn) begin
+                  alu_bignum_vector_type_pqc = alu_vector_type_t'(imem_rdata_i[27:26]);
+                  alu_bignum_vector_sel_pqc  = imem_rdata_i[25];
+                end
               end
             end
             default: ;
