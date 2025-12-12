@@ -15,6 +15,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_test_status
+      - lowrisc:dv:clk_rst_agent
       - lowrisc:dv:common_ifs
     files:
       - tb.sv
