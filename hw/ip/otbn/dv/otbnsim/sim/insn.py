@@ -781,6 +781,9 @@ class BNADDV(OTBNInsn):
         self.type = op_vals['type']
 
     def execute(self, state: OTBNState) -> None:
+        if not state.wsrs.EN_PQC:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
         b = state.wdrs.get_reg(self.wrs2).read_unsigned()
         mod_val = state.wsrs.MOD.read_unsigned()
@@ -815,6 +818,9 @@ class BNMULV(OTBNInsn):
         self.type = op_vals['type']
 
     def execute(self, state: OTBNState) -> None:
+        if not state.wsrs.EN_PQC:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+
         wrs1 = state.wdrs.get_reg(self.wrs1).read_unsigned()
         wrs2 = state.wdrs.get_reg(self.wrs2).read_unsigned()
 
@@ -923,6 +929,9 @@ class BNMULVL(OTBNInsn):
         self.lane_index = op_vals['lane_index']
 
     def execute(self, state: OTBNState) -> None:
+        if not state.wsrs.EN_PQC:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+
         # Extract fields in the encoding:
         #    data_type:    0 = .16H, 1 = .8S
         #    sel:       0 = .even, 1 = .odd
@@ -1277,6 +1286,9 @@ class BNSUBV(OTBNInsn):
         self.type = op_vals['type']
 
     def execute(self, state: OTBNState) -> None:
+        if not state.wsrs.EN_PQC:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
         b = state.wdrs.get_reg(self.wrs2).read_unsigned()
         mod_val = state.wsrs.MOD.read_unsigned()
@@ -1432,6 +1444,9 @@ class BNSHV(OTBNInsn):
         self.shift_arith = op_vals['shift_arith']
 
     def execute(self, state: OTBNState) -> None:
+        if not state.wsrs.EN_PQC:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
 
         size = 32 if self.type == 0 else 16
@@ -1809,6 +1824,9 @@ class BNTRN(OTBNInsn):
         self.type = op_vals['type']
 
     def execute(self, state: OTBNState) -> None:
+        if not state.wsrs.EN_PQC:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
         b = state.wdrs.get_reg(self.wrs2).read_unsigned()
 
