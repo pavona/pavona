@@ -304,7 +304,7 @@
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .mubi_i(MuBi4False),
+    .mubi_i(MuBi4True),
     .mubi_o({calib_rdy})
   );
 
