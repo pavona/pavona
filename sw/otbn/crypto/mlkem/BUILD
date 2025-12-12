@@ -126,6 +126,19 @@ otbn_library(
     for sec_level, name in NAME_BY_SEC_LEVEL.items()
 ]
 
+[
+    otbn_library(
+        name = name + "_consts",
+        srcs = [
+            "mlkem_consts.s",
+        ],
+        copts = [
+            "-DKYBER_K=" + str(sec_level),
+        ],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
+
 otbn_library(
     name = "kmac_send_msg",
     srcs = [
