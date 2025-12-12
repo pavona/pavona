@@ -304,7 +304,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     // divider step down controls
     .step_down_acks_i(step_down_acks)
   );
-  % endif
+% endif
 
   ////////////////////////////////////////////////////
   // Feed through clocks
@@ -393,7 +393,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   % if ext_clk_bypass:
     .mubi_i(calib_rdy_i),
   % else:
-    .mubi_i(MuBi4False),
+    .mubi_i(MuBi4True),
   % endif
     .mubi_o({calib_rdy})
   );
