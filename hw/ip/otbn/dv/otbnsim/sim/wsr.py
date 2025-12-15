@@ -643,11 +643,15 @@ class WSRFile:
             5: self.KeyS0H,
             6: self.KeyS1L,
             7: self.KeyS1H,
-            8: self.KMAC_CFG,
-            9: self.KMAC_MSG,
-            10: self.KMAC_DIGEST,
-            11: self.ACCH,
         }
+
+        if self.EN_PQC:
+            self._by_idx.update({
+                8: self.KMAC_CFG,
+                9: self.KMAC_MSG,
+                10: self.KMAC_DIGEST,
+                11: self.ACCH,
+            })
 
     def on_start(self) -> None:
         '''Called at the start of an operation

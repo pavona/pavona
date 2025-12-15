@@ -30,7 +30,7 @@ class BadIspr(SnippetGen):
 
         for insn in insns_file.insns:
             # Pick only the instructions pertaining to CSR and WSR.
-            if insn.mnemonic not in ['csrrw', 'csrrs', 'wsrs', 'wsrw']:
+            if insn.mnemonic not in ['csrrw', 'csrrs', 'bn.wsrr', 'bn.wsrw']:
                 continue
 
             assert not (insn.python_pseudo_op or insn.literal_pseudo_op)

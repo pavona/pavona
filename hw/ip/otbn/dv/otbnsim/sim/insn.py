@@ -1797,6 +1797,11 @@ class BNWSRW(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         if DEBUG_KMAC:
             eprint(f"\tRun BNWSRW Address {self.wsr}")
+        if not state.wsrs.check_idx(self.wsr):
+            # Invalid WSR index. Stop with an illegal instruction error.
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
         dest_wsrs = state.wsrs._by_idx[self.wsr]
         if self.wsr == 0x9:
             # A write to KMAC_MSG might stall, if the register has not yet pushed

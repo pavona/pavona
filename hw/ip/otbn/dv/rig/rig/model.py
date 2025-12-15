@@ -228,7 +228,7 @@ class Model:
 
         # Known values for memory, keyed by memory type ('dmem', 'csr', 'wsr').
         csrs = KnownMem(4096)
-        wsrs = KnownMem(4096)
+        wsrs = KnownMem(256)
         self._known_mem = {
             'dmem': KnownMem(dmem_size),
             'csr': csrs,
@@ -241,6 +241,10 @@ class Model:
         csrs.touch_addr(0x7c8)      # FLAGS
         csrs.touch_range(0x7d0, 8)  # MOD0 - MOD7
         csrs.touch_addr(0x7d8)      # RND_PREFETCH
+        if self.pqc:
+            csrs.touch_addr(0x7d9)  # KMAC_CFG
+            csrs.touch_addr(0x7e2)  # KMAC_STATUS
+            csrs.touch_addr(0x7f3)  # KMAC_PW
         csrs.touch_addr(0xfc0)      # RND
         csrs.touch_addr(0xfc1)      # URND
 
@@ -252,7 +256,11 @@ class Model:
         wsrs.touch_addr(0x5)        # KEY_S0_H
         wsrs.touch_addr(0x6)        # KEY_S1_L
         wsrs.touch_addr(0x7)        # KEY_S1_H
-        wsrs.touch_addr(0xb)        # ACCH
+        if self.pqc:
+            wsrs.touch_addr(0x8)    # KMAC_CFG
+            wsrs.touch_addr(0x9)    # KMAC_MSG
+            wsrs.touch_addr(0xa)    # KMAC_DIGEST
+            wsrs.touch_addr(0xb)    # ACCH
 
         # Separate CSR list for KMAC as these should be off-limits from
         # non app_req generators, with the exception of MOD0
@@ -269,8 +277,7 @@ class Model:
             "MOD": 0x0,
             "KMAC_CFG": 0x8,
             "KMAC_MSG": 0x9,
-            "KMAC_DIGEST": 0xa,
-            "KMAC_PW": 0xb
+            "KMAC_DIGEST": 0xa
         }
 
         # The current PC (the address of the next instruction that needs
