@@ -126,7 +126,71 @@ rsa_keygen:
   la       x12, rsa_n
   jal      x0, bignum_mul
 
-/* TODO: DOCUMENT */
+/**
+ * Perform a check of a RSA private key.
+ *
+ * Accepts the contents of an RSA private key along with a RSA public key to
+ * compare with, and returns a series of check values which can readily be
+ * compared to fixed values to determine the validity of the RSA private key
+ * with respect to the public key.
+ *
+ * In particular, this checks whether
+
+ *  (a) the public modulus is the product of the primes in the private key,
+ *  (b) the private exponent, as determined by the private exponent CRT,
+ *      components in the private key, is the inverse of the public exponent
+ *      modulo the Carmichael function of the public modulus,
+ *  (c) the higher limbs of this reconstructed private exponent are non-zero, as
+ *      required in FIPS 186-5 section A.1.1,
+ *  (d) the CRT coefficient in the private key is the inverse of the second
+ *      modulus cofactor modulo the first.
+ *
+ * After this function executes, the processor can verify validity of the
+ * private key by checking the following values:
+ *
+ *   - The n check value (in rsa_n) will be computed as p * q and should equal
+ *     the public modulus (n).
+ *   - The d_p check value (in rsa_d_p) will be computed as e * d_p mod (p - 1)
+ *     and should equal 1.
+ *   - The d_q check value (in rsa_d_q) will be computed as e * d_q mod (q - 1)
+ *     and should equal 1.
+ *   - The i_q check value (in rsa_i_q) will be computed as q * i_q mod p and
+ *     should equal 1.
+ *   - The d check value (in rsa_e) will be equal to (1 << 256) - 1 if at least
+ *     one of the upper `plen` bits of the reconstructed private exponent (d) is
+ *     nonzero, otherwise 0. It should equal (1 << 256) - 1.
+ *
+ * Note that the second and third checks are equivalent to checking whether the
+ * private exponent d implied by (d_p, d_q) is an inverse of e mod lcm(p-1, q-1)
+ * via a simple application of the CRT.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[rsa_p..rsa_p+(plen*32)] first RSA private key prime (p)
+ * @param[in]  dmem[rsa_q..rsa_q+(plen*32)] second RSA private key prime (q)
+ * @param[in]  dmem[rsa_d_p..rsa_d_p+(plen*32)] first RSA private key
+       private exponent CRT component (d_p)
+ * @param[in]  dmem[rsa_d_q..rsa_d_q+(plen*32)] second RSA private key
+       private exponent CRT component (d_q)
+ * @param[in]  dmem[rsa_i_q..rsa_i_q+(plen*32)] RSA private key CRT
+       reconstruction coefficient (i_q)
+ * @param[in]  dmem[rsa_e..rsa_e+4] RSA public exponent (e)
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[rsa_n..rsa_n+(plen*2*32)] RSA public key modulus (n)
+       check value
+ * @param[in]  dmem[rsa_d_p..rsa_d_p+(plen*32)] first RSA private key private
+       exponent CRT component (d_p) check value
+ * @param[in]  dmem[rsa_d_q..rsa_d_q+(plen*32)] second RSA private key private
+       exponent CRT component (d_q) check value
+ * @param[in]  dmem[rsa_i_q..rsa_i_q+(plen*32)] RSA private key CRT
+       reconstruction coefficient (i_q) check value
+ * @param[in]  dmem[rsa_e..rsa_e+32] RSA private key private exponent (d)
+       check value
+ *
+ * clobbered registers: x2 to x8, x10 to x14, x20 to x25, w20 to w25, w27
+ * clobbered flag groups: FG0, FG1
+ */
 rsa_check_key:
   /* Compute (<# of limbs> - 1), a helpful constant for later computations.
        x31 <= x30 - 1 */
@@ -176,7 +240,33 @@ rsa_check_key:
 
   ret
 
-/* TODO: DOCUMENT */
+/**
+ * Perform checks on the primes in an RSA private key.
+ *
+ * This routine performs a Miller-Rabin primailty check on both provided primes
+ * and ensures that the two aren't too close, just as `rsa_keygen` does. See the
+ * documentation for `check_p` and `check_q` for details.
+ *
+ * After execution of this function, check values will be stored in each prime's
+ * place, equal to (1 << 256) - 1 if the checks for that prime pass, and 0
+ * otherwise.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[rsa_p..rsa_p+(plen*32)] first RSA private key prime (p)
+ * @param[in]  dmem[rsa_q..rsa_q+(plen*32)] second RSA private key prime (q)
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[rsa_p..rsa_p+(plen*32)] first RSA private key prime (p)
+       check value
+ * @param[in]  dmem[rsa_q..rsa_q+(plen*32)] second RSA private key prime (q)
+       check value
+ *
+ * clobbered registers: x2, x3, x5 to x13, x16 to x26,
+ *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
+ * clobbered flag groups: FG0, FG1
+ */
+
 rsa_check_primes:
   /* Compute (<# of limbs> - 1), a helpful constant for later computations.
        x31 <= x30 - 1 */
@@ -211,12 +301,15 @@ rsa_check_primes:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x13: dptr_d_p, pointer to buffer to store result in DMEM (n limbs)
- * @param[in]  x14: dptr_pm1, pointer to (p - 1) to reduce modulo in DMEM (n limbs)
+ * @param[in]  x13: dptr_d_p, pointer to buffer to store result in DMEM
+ * @param[in]  x14: dptr_pm1, pointer to (p - 1) to reduce modulo in DMEM
  * @param[in]  x20: 20, constant
  * @param[in]  x30: plen, number of 256-bit limbs for p and q
  * @param[in]  w31: all-zero
- * @param[out] dmem[dptr_d_p..dptr_d_p+(plen*32)]: result, equal to 1 to valid (n limbs)
+ * @param[out] dmem[dptr_d_p..dptr_d_p+(plen*32)]: result, equal to 1 when valid
+ *
+ * clobbered registers: x2 to x5, x8, x10 to x12, x21 to x23, w20 to w25, w27
+ * clobbered flag groups: FG0
  */
 check_crt_component:
   /* Multiply e * d_p, storing result in tmp_scratchpad. */
@@ -256,6 +349,29 @@ check_crt_component:
 
   ret
 
+/**
+ * Perform a check of the validity of a CRT coefficient.
+ *
+ * Computes i_q * q modulo p, storing the result over i_q. This value will be 1
+ * exactly when the provided i_q is valid.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[rsa_i_q..rsa_i_q+(plen*32)] CRT coefficient (i_q)
+ * @param[in]  dmem[rsa_p..rsa_p+(plen*32)] first RSA prime (p)
+ * @param[in]  dmem[rsa_q..rsa_q+(plen*32)] second RSA prime (q)
+ * @param[in]  dmem[rsa_d_p..rsa_d_p+(plen*32)] first RSA private key
+       private exponent CRT component (d_p)
+ * @param[in]  dmem[rsa_d_q..rsa_d_q+(plen*32)] second RSA private key
+       private exponent CRT component (d_q)
+ * @param[in]  x20: 20, constant
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[rsa_i_q..rsa_i_q+(plen*32)]: result, equal to 1 when valid
+ *
+ * clobbered registers: x2 to x8, x10 to x12, x21 to x23, w20 to w25, w27
+ * clobbered flag groups: FG0
+ */
 check_crt_coeff:
   /* Multiply q * i_q, storing result in tmp_scratchpad. */
   la       x10, rsa_q
@@ -295,6 +411,31 @@ check_crt_coeff:
 
   ret
 
+/**
+ * Recover a full private exponent from its CRT components.
+ *
+ * Computes d_p + d_q - e * d_p * d_q mod lcm(p - 1, q - 1). This expression
+ * can be verified to be equal to d_p and d_q modulo p - 1 and q - 1
+ * respectively, implying it recovers d mod lcm(p - 1, q - 1) by CRT.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[rsa_p..rsa_p+(plen*32)] first RSA prime (p)
+ * @param[in]  dmem[rsa_q..rsa_q+(plen*32)] second RSA prime (q)
+ * @param[in]  dmem[rsa_d_p..rsa_d_p+(plen*32)] first RSA private key private
+       exponent CRT component (d_p)
+ * @param[in]  dmem[rsa_d_q..rsa_d_q+(plen*32)] second RSA private key private
+       exponent CRT component (d_q)
+ * @param[in]  dmem[rsa_e..rsa_e+32] RSA public exponent (e)
+ * @param[in]  x20: 20, constant
+ * @param[in]  x21: 21, constant
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[rsa_d..rsa_d+(plen*2*32)] RSA private exponent (d)
+ *
+ * clobbered registers: x2 to x8, x10 to x12, x22 to x25, w20 to w25, w27
+ * clobbered flag groups: FG0, FG1
+ */
 recover_d_from_crt:
   /* Multiply d_p * d_q, storing result in rsa_n */
   la       x10, rsa_d_p
@@ -444,6 +585,25 @@ recover_d_from_crt:
 
   ret
 
+/**
+ * Check the recovered value of a recovered RSA private exponent.
+ *
+ * Checks that at least one of the upper `plen` bits of a recovered RSA private
+ * exponent (d) is non-zero. Stores (1 << 256) - 1 in dmem[rsa_e..rsa_e+32] if
+ * this check passes, otherwise 0.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[rsa_d..rsa_d+(plen*2*32)] RSA private exponent (d)
+ * @param[in]  x20: 20, constant
+ * @param[in]  x21: 21, constant
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[rsa_e..rsa_e+32] RSA private exponent (d) check value
+ *
+ * clobbered registers: x2, x10, w20 to w23
+ * clobbered flag groups: FG0
+ */
 check_recovered_d:
   /* Get a pointer to the second half of d.
        x3 <= rsa_d + plen*32 */

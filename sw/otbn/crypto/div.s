@@ -399,7 +399,7 @@ div:
  * @param[in] w31: all-zero
  * @param[out] dmem[dptr_x..dptr_x+n*32]: r, remainder
  *
- * clobbered registers:
+ * clobbered registers: x2 to x5, x8, w23 to w25, w27
  * clobbered flag groups: FG0
  */
 mod:

@@ -89,11 +89,11 @@ enum {
   kFixedPublicExponent = 65537,
   /* Number of words used to represent the application mode. */
   kOtbnRsaModeWords = 1,
-  /* Number of bits for the private exponent (d) check value for key import */
+  /* Number of bits for the private exponent (d) check value for key import. */
   kPrivateExponentCheckBits = 256,
-  /* Number of bytesfor the private exponent (d) check value for key import */
+  /* Number of bytes for the private exponent (d) check value for key import. */
   kPrivateExponentCheckBytes = kPrivateExponentCheckBits / 8,
-  /* Number of words for the private exponent (d) check value for key import */
+  /* Number of words for the private exponent (d) check value for key import. */
   kPrivateExponentCheckWords = kPrivateExponentCheckBytes / sizeof(uint32_t),
 };
 

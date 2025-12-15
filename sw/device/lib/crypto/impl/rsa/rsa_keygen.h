@@ -189,14 +189,56 @@ status_t rsa_keygen_from_cofactor_4096_finalize(
     rsa_4096_public_key_t *public_key, rsa_4096_private_key_t *private_key);
 
 /**
- * Checks the validity of a private key with respect to a given public key.
+ * Checks the validity of a RSA-2048 private key with respect to a given
+ * RSA-2048 public key.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * This method performs a series of checks to ensure that a private key is
+ * internally consistent with a given public key. Namely, it checks that
+ *
+ *  (a) the public modulus is the product of the primes in the private key,
+ *  (b) the private exponent, as determined by the private exponent CRT,
+ *      components in the private key, is the inverse of the public exponent
+ *      modulo the Carmichael function of the public modulus,
+ *  (c) the higher limbs of this reconstructed private exponent are non-zero, as
+ *      required in FIPS 186-5 section A.1.1,
+ *  (d) the CRT coefficient in the private key is the inverse of the second
+ *      modulus cofactor modulo the first.
+ *
+ * Additionally, if the hardened `check_primes` flag is set, then this routine
+ * also checks that both primes pass Miller-Rabin primality tests and that
+ * the primes aren't too close.
+ *
+ * As part of performing these checks, check values are computed using the OTBN
+ * which are verified on the Ibex by performing hardened comparisons to expected
+ * values.
+ *
+ * @param public_key Public key (n, e).
+ * @param private_key Private key (p, q, d_p, d_q, i_q).
+ * @param check_primes Whether to perform checks on the private key primes.
+ * @return Result of the operation (OK or error).
  */
 status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
                                   const rsa_2048_private_key_t *private_key,
                                   hardened_bool_t check_primes);
 
 /*
- * Checks the validity of a private key with respect to a given public key.
+ * Waits for an RSA-2048 private key check to complete.
+ *
+ * Should be invoked only after `rsa_key_check_2048_start`. Blocks until OTBN is
+ * done processing.
+ *
+ * The `check_primes` flag should be provided exactly as it was to
+ * `rsa_key_check_2048_start` in order to ensure that the correct set of check
+ * values returned from the OTBN as a result of `rsa_key_check_2048_start` are
+ * verified by the Ibex.
+ *
+ * @param public_key Public key (n, e).
+ * @param private_key Private key (p, q, d_p, d_q, i_q).
+ * @param check_primes Whether to perform checks on the private key primes.
+ * @param[out] key_valid Whether the provided private key is valid.
+ * @return Result of the operation (OK or error).
  */
 status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
                                      const rsa_2048_private_key_t *private_key,
@@ -204,14 +246,56 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
                                      hardened_bool_t *key_valid);
 
 /**
- * Checks the validity of a private key with respect to a given public key.
+ * Checks the validity of a RSA-3072 private key with respect to a given
+ * RSA-3072 public key.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * This method performs a series of checks to ensure that a private key is
+ * internally consistent with a given public key. Namely, it checks that
+ *
+ *  (a) the public modulus is the product of the primes in the private key,
+ *  (b) the private exponent, as determined by the private exponent CRT,
+ *      components in the private key, is the inverse of the public exponent
+ *      modulo the Carmichael function of the public modulus,
+ *  (c) the higher limbs of this reconstructed private exponent are non-zero, as
+ *      required in FIPS 186-5 section A.1.1,
+ *  (d) the CRT coefficient in the private key is the inverse of the second
+ *      modulus cofactor modulo the first.
+ *
+ * Additionally, if the hardened `check_primes` flag is set, then this routine
+ * also checks that both primes pass Miller-Rabin primality tests and that
+ * the primes aren't too close.
+ *
+ * As part of performing these checks, check values are computed using the OTBN
+ * which are verified on the Ibex by performing hardened comparisons to expected
+ * values.
+ *
+ * @param public_key Public key (n, e).
+ * @param private_key Private key (p, q, d_p, d_q, i_q).
+ * @param check_primes Whether to perform checks on the private key primes.
+ * @return Result of the operation (OK or error).
  */
 status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
                                   const rsa_3072_private_key_t *private_key,
                                   hardened_bool_t check_primes);
 
 /*
- * Checks the validity of a private key with respect to a given public key.
+ * Waits for an RSA-3072 private key check to complete.
+ *
+ * Should be invoked only after `rsa_key_check_3072_start`. Blocks until OTBN is
+ * done processing.
+ *
+ * The `check_primes` flag should be provided exactly as it was to
+ * `rsa_key_check_3072_start` in order to ensure that the correct set of check
+ * values returned from the OTBN as a result of `rsa_key_check_3072_start` are
+ * verified by the Ibex.
+ *
+ * @param public_key Public key (n, e).
+ * @param private_key Private key (p, q, d_p, d_q, i_q).
+ * @param check_primes Whether to perform checks on the private key primes.
+ * @param[out] key_valid Whether the provided private key is valid.
+ * @return Result of the operation (OK or error).
  */
 status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
                                      const rsa_3072_private_key_t *private_key,
@@ -219,14 +303,56 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
                                      hardened_bool_t *key_valid);
 
 /**
- * Checks the validity of a private key with respect to a given public key.
+ * Checks the validity of a RSA-4096 private key with respect to a given
+ * RSA-4096 public key.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * This method performs a series of checks to ensure that a private key is
+ * internally consistent with a given public key. Namely, it checks that
+ *
+ *  (a) the public modulus is the product of the primes in the private key,
+ *  (b) the private exponent, as determined by the private exponent CRT,
+ *      components in the private key, is the inverse of the public exponent
+ *      modulo the Carmichael function of the public modulus,
+ *  (c) the higher limbs of this reconstructed private exponent are non-zero, as
+ *      required in FIPS 186-5 section A.1.1,
+ *  (d) the CRT coefficient in the private key is the inverse of the second
+ *      modulus cofactor modulo the first.
+ *
+ * Additionally, if the hardened `check_primes` flag is set, then this routine
+ * also checks that both primes pass Miller-Rabin primality tests and that
+ * the primes aren't too close.
+ *
+ * As part of performing these checks, check values are computed using the OTBN
+ * which are verified on the Ibex by performing hardened comparisons to expected
+ * values.
+ *
+ * @param public_key Public key (n, e).
+ * @param private_key Private key (p, q, d_p, d_q, i_q).
+ * @param check_primes Whether to perform checks on the private key primes.
+ * @return Result of the operation (OK or error).
  */
 status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
                                   const rsa_4096_private_key_t *private_key,
                                   hardened_bool_t check_primes);
 
 /*
- * Checks the validity of a private key with respect to a given public key.
+ * Waits for an RSA-4096 private key check to complete.
+ *
+ * Should be invoked only after `rsa_key_check_4096_start`. Blocks until OTBN is
+ * done processing.
+ *
+ * The `check_primes` flag should be provided exactly as it was to
+ * `rsa_key_check_4096_start` in order to ensure that the correct set of check
+ * values returned from the OTBN as a result of `rsa_key_check_4096_start` are
+ * verified by the Ibex.
+ *
+ * @param public_key Public key (n, e).
+ * @param private_key Private key (p, q, d_p, d_q, i_q).
+ * @param check_primes Whether to perform checks on the private key primes.
+ * @param[out] key_valid Whether the provided private key is valid.
+ * @return Result of the operation (OK or error).
  */
 status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
                                      const rsa_4096_private_key_t *private_key,
