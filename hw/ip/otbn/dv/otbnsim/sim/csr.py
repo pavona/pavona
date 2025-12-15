@@ -72,16 +72,6 @@ class CSRFile:
             # KMAC_STATUS register
             return wsrs.KMAC_STATUS.read_unsigned()
 
-        if 0x7e3 <= idx <= 0x7ea:
-            # KMAC_DIGEST_SHARE0
-            digest_n = idx - 0x7e3
-            return self._get_field(digest_n, 32, wsrs.KMAC_DIGEST_SHARE0.read_unsigned())
-
-        if 0x7eb <= idx <= 0x7f2:
-            # KMAC_DIGEST_SHARE1
-            digest_n = idx - 0x7eb
-            return self._get_field(digest_n, 32, wsrs.KMAC_DIGEST_SHARE1.read_unsigned())
-
         if idx == 0x7f3:
             # KMAC_PARTIAL_WRITE
             return 0
