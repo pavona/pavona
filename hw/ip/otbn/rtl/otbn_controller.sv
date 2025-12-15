@@ -1554,6 +1554,11 @@ module otbn_controller
       end
       default: wsr_illegal_addr = 1'b1;
     endcase
+
+    // BN.WSRR/WSRW encoding allows 8-bit immediate but only declared WSR are valid
+    if (insn_dec_bignum_i.i[7:0] >= (1 << WsrNumWidth)) begin
+      wsr_illegal_addr = 1'b1;
+    end
   end
 
   assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata | rf_bignum_rd_data_a_no_intg :
