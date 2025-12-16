@@ -314,11 +314,13 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
 
       ignore_bins part_not_zeroizable_no_digest_addr =
            binsof (zeroizable) intersect {0}
+% if zr_unbuffered_parts_without_digest:
         && binsof (part_idx) intersect {
-% for part in zr_unbuffered_parts_without_digest:
+  % for part in zr_unbuffered_parts_without_digest:
           ${Name.to_camel_case(part["name"])}Idx${"" if loop.last else ","}
-% endfor
+  % endfor
         }
+% endif
         && binsof (offset_addr) intersect {OtpPartDigestAddr};
 
       ignore_bins part_not_zeroizable_no_zero_addr =
@@ -330,13 +332,15 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
         }
         && binsof (offset_addr) intersect {OtpPartZeroAddr};
 
+% if zeroizable_parts:
       ignore_bins part_zeroizable =
            binsof (zeroizable) intersect {0}
         && binsof (part_idx) intersect {
-% for part in zeroizable_parts:
+  % for part in zeroizable_parts:
           ${Name.to_camel_case(part["name"])}Idx${"" if loop.last else ","}
-% endfor
+  % endfor
         };
+% endif
     }
   endgroup
 
