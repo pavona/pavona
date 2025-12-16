@@ -106,6 +106,7 @@ enum {
  * @param mode Mode parameter for keygen.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t keygen_start(uint32_t mode) {
   // Load the RSA key generation app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaKeygen));
@@ -131,6 +132,7 @@ static status_t keygen_start(uint32_t mode) {
  * @param[out] i_q Buffer for the CRT reconstruction coefficient.
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
                                 uint32_t *n, uint32_t *p, uint32_t *q,
                                 uint32_t *d_p, uint32_t *d_q, uint32_t *i_q) {

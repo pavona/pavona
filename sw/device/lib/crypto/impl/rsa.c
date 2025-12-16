@@ -56,6 +56,7 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  * @param mode Mode to check.
  * @return OK if the mode is for RSA, OTCRYPTO_BAD_ARGS otherwise.
  */
+OT_WARN_UNUSED_RESULT
 static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
   switch (mode) {
     case kOtcryptoKeyModeRsaSignPkcs:
@@ -80,6 +81,7 @@ static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
  * @param[out] key_size RSA key size.
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
+OT_WARN_UNUSED_RESULT
 static status_t rsa_size_from_public_key(
     const otcrypto_unblinded_key_t *public_key, otcrypto_rsa_size_t *key_size) {
   switch (launder32(public_key->key_length)) {
@@ -112,6 +114,7 @@ static status_t rsa_size_from_public_key(
  * @param[out] key_size RSA key size.
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
+OT_WARN_UNUSED_RESULT
 static status_t rsa_size_from_private_key(
     const otcrypto_blinded_key_t *private_key, otcrypto_rsa_size_t *key_size) {
   switch (launder32(private_key->config.key_length)) {
@@ -150,6 +153,7 @@ static status_t rsa_size_from_private_key(
  * @param public_key Key to check.
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
+OT_WARN_UNUSED_RESULT
 static status_t public_key_structural_check(
     const otcrypto_unblinded_key_t *public_key) {
   // Check that the key mode is a valid RSA mode.
@@ -301,6 +305,7 @@ otcrypto_status_t otcrypto_rsa_public_key_deconstruct(
  * @param private_key Key to check.
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
+OT_WARN_UNUSED_RESULT
 static status_t private_key_structural_check(
     const otcrypto_rsa_size_t size, const otcrypto_blinded_key_t *private_key) {
   // Check that the key mode is a valid RSA mode.
@@ -928,6 +933,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
  * @param key_mode Mode for the RSA key.
  * @param padding_mode RSA signature padding scheme.
  */
+OT_WARN_UNUSED_RESULT
 static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
                                        otcrypto_rsa_padding_t padding_mode) {
   switch (launder32(padding_mode)) {

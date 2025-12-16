@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +26,7 @@
  * @param[out] seed_material Resulting entropy complex seed.
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t seed_material_construct(
     otcrypto_const_byte_buf_t value, entropy_seed_material_t *seed_material) {
   if (value.len > kEntropySeedBytes) {
@@ -57,6 +59,7 @@ static status_t seed_material_construct(
  * @param seed_material Entropy complex seed, modified in-place.
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static otcrypto_status_t seed_material_xor(
     otcrypto_const_byte_buf_t value, entropy_seed_material_t *seed_material) {
   if (value.len > kEntropySeedBytes) {
@@ -171,6 +174,7 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * @param[out] drbg_output Buffer for output
  * @return Result status; OK or error
  */
+OT_WARN_UNUSED_RESULT
 static otcrypto_status_t generate(hardened_bool_t fips_check,
                                   otcrypto_const_byte_buf_t additional_input,
                                   otcrypto_word32_buf_t drbg_output) {

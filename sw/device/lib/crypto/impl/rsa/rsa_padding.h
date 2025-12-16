@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -129,6 +130,7 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
  * @param[out] max_message_bytelen Maximum length of message in bytes.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_padding_oaep_max_message_bytelen(
     const otcrypto_hash_mode_t hash_mode, size_t rsa_wordlen,
     size_t *max_message_bytelen);

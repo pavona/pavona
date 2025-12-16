@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -307,6 +308,7 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * @param[out] ctx Initialized context object.
  * @return Error status; OK if no errors.
  */
+OT_WARN_UNUSED_RESULT
 static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
                              const uint32_t *iv, aes_gcm_context_t *ctx) {
   // Check for null pointers and IV length (must be 96 or 128 bits = 3 or 4

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,6 +21,7 @@
  * @param buffer Inspected string.
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t check_zero_byte(const otcrypto_const_byte_buf_t buffer) {
   for (size_t i = 0; i < buffer.len; i++) {
     if (buffer.data[i] == 0x00) {
@@ -36,6 +38,7 @@ static status_t check_zero_byte(const otcrypto_const_byte_buf_t buffer) {
  * @param[out] digest_words Number of words in the hash digest.
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
                                                size_t *digest_words) {
   *digest_words = 0;

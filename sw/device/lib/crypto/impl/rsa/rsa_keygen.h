@@ -26,6 +26,7 @@ extern "C" {
  *
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_2048_start(void);
 
 /**
@@ -38,6 +39,7 @@ status_t rsa_keygen_2048_start(void);
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
                                   rsa_2048_private_key_t *private_key);
 
@@ -50,6 +52,7 @@ status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
  *
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_3072_start(void);
 
 /**
@@ -62,6 +65,7 @@ status_t rsa_keygen_3072_start(void);
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
                                   rsa_3072_private_key_t *private_key);
 
@@ -74,6 +78,7 @@ status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
  *
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_4096_start(void);
 
 /**
@@ -86,6 +91,7 @@ status_t rsa_keygen_4096_start(void);
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
                                   rsa_4096_private_key_t *private_key);
 
@@ -102,6 +108,7 @@ status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
  * @param cofactor One of the prime cofactors (p or q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_short_t *cofactor);
 
@@ -119,6 +126,7 @@ status_t rsa_keygen_from_cofactor_2048_start(
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_2048_finalize(
     rsa_2048_public_key_t *public_key, rsa_2048_private_key_t *private_key);
 
@@ -135,6 +143,7 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
  * @param cofactor One of the prime cofactors (p or q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_3072_start(
     const rsa_3072_public_key_t *public_key, const rsa_3072_short_t *cofactor);
 
@@ -152,6 +161,7 @@ status_t rsa_keygen_from_cofactor_3072_start(
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_3072_finalize(
     rsa_3072_public_key_t *public_key, rsa_3072_private_key_t *private_key);
 
@@ -168,6 +178,7 @@ status_t rsa_keygen_from_cofactor_3072_finalize(
  * @param cofactor One of the prime cofactors (p or q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_4096_start(
     const rsa_4096_public_key_t *public_key, const rsa_4096_short_t *cofactor);
 
@@ -185,6 +196,7 @@ status_t rsa_keygen_from_cofactor_4096_start(
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_4096_finalize(
     rsa_4096_public_key_t *public_key, rsa_4096_private_key_t *private_key);
 
@@ -219,6 +231,7 @@ status_t rsa_keygen_from_cofactor_4096_finalize(
  * @param check_primes Whether to perform checks on the private key primes.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
                                   const rsa_2048_private_key_t *private_key,
                                   hardened_bool_t check_primes);
@@ -240,6 +253,7 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
                                      const rsa_2048_private_key_t *private_key,
                                      hardened_bool_t check_primes,
@@ -276,6 +290,7 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
  * @param check_primes Whether to perform checks on the private key primes.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
                                   const rsa_3072_private_key_t *private_key,
                                   hardened_bool_t check_primes);
@@ -297,6 +312,7 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
                                      const rsa_3072_private_key_t *private_key,
                                      hardened_bool_t check_primes,
@@ -333,6 +349,7 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
  * @param check_primes Whether to perform checks on the private key primes.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
                                   const rsa_4096_private_key_t *private_key,
                                   hardened_bool_t check_primes);
@@ -354,6 +371,7 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
                                      const rsa_4096_private_key_t *private_key,
                                      hardened_bool_t check_primes,

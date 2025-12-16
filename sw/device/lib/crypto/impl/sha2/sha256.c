@@ -86,6 +86,7 @@ void sha256_init(sha256_state_t *state) {
  * @param ctx OTBN message buffer context information (updated in place).
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
   // Write the number of blocks to DMEM.
   HARDENED_TRY(
@@ -112,6 +113,7 @@ static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
  * @param block Block to write.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t process_block(sha256_otbn_ctx_t *ctx,
                               const sha256_message_block_t *block) {
   // Calculate the offset within the message buffer.
@@ -146,6 +148,7 @@ static status_t process_block(sha256_otbn_ctx_t *ctx,
  * @param block Current (partial) block.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t process_padding(sha256_otbn_ctx_t *ctx,
                                 const uint64_t total_len,
                                 sha256_message_block_t *block) {
@@ -191,6 +194,7 @@ static status_t process_padding(sha256_otbn_ctx_t *ctx,
  * @param padding_needed Whether to pad the message.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t process_message(sha256_state_t *state, const uint8_t *msg,
                                 size_t msg_len,
                                 hardened_bool_t padding_needed) {

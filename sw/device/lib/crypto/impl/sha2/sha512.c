@@ -112,6 +112,7 @@ void sha384_init(sha512_state_t *state) {
  * @param[out] new_total_len New total received data length.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t get_new_total_len(const sha512_state_t *state, size_t msg_len,
                                   sha512_message_length_t *new_total_len) {
   // We need to shift `msg_len` here because `total_len` is in bits, not bytes.
@@ -136,6 +137,7 @@ static status_t get_new_total_len(const sha512_state_t *state, size_t msg_len,
  * @param ctx OTBN message buffer context information (updated in place).
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t process_message_buffer(sha512_otbn_ctx_t *ctx) {
   // Write the number of blocks to DMEM.
   HARDENED_TRY(otbn_dmem_write(1, &ctx->num_blocks, kOtbnVarSha512NChunks));
@@ -161,6 +163,7 @@ static status_t process_message_buffer(sha512_otbn_ctx_t *ctx) {
  * @param block Block to write.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t process_block(sha512_otbn_ctx_t *ctx,
                               const sha512_message_block_t *block) {
   // Calculate the offset within the message buffer.
@@ -204,6 +207,7 @@ static status_t process_block(sha512_otbn_ctx_t *ctx,
  * @param block Current (partial) block.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t process_padding(sha512_otbn_ctx_t *ctx,
                                 const sha512_message_length_t total_len,
                                 sha512_message_block_t *block) {
@@ -253,6 +257,7 @@ static status_t process_padding(sha512_otbn_ctx_t *ctx,
  * @param padding_needed Whether to pad the message.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t process_message(sha512_state_t *state, const uint8_t *msg,
                                 size_t msg_len,
                                 hardened_bool_t padding_needed) {

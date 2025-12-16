@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -128,6 +129,7 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
                                       aes_key_t *aes_key) {
   // Key integrity check.

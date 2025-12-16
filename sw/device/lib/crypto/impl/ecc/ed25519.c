@@ -69,6 +69,7 @@ enum {
  * @param context Context to set (little-endian).
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t set_context(const uint32_t context[kEd25519ContextWords],
                             const uint32_t context_length) {
   // Ensure that our context length is valid; if not, fail early.

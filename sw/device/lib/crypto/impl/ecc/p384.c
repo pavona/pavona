@@ -98,6 +98,7 @@ enum {
       kOtbnWideWordNumWords,
 };
 
+OT_WARN_UNUSED_RESULT
 static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
                                          const otbn_addr_t share0_addr,
                                          const otbn_addr_t share1_addr) {
@@ -120,6 +121,7 @@ static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
  * @param src Source value.
  * @param addr DMEM address to write.
  */
+OT_WARN_UNUSED_RESULT
 static status_t p384_scalar_write(const uint32_t src[kP384ScalarWords],
                                   const otbn_addr_t addr) {
   HARDENED_TRY(otbn_dmem_write(kP384ScalarWords, src, addr));
@@ -132,6 +134,7 @@ static status_t p384_scalar_write(const uint32_t src[kP384ScalarWords],
  *
  * @param p Point to write.
  */
+OT_WARN_UNUSED_RESULT
 static status_t set_public_key(const p384_point_t *p) {
   HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->x, kOtbnVarX));
   HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->y, kOtbnVarY));
@@ -141,6 +144,7 @@ static status_t set_public_key(const p384_point_t *p) {
   return otbn_dmem_set(kCoordPaddingWords, 0, kOtbnVarY + kP384CoordBytes);
 }
 
+OT_WARN_UNUSED_RESULT
 static status_t set_message_digest(const uint32_t digest[kP384ScalarWords],
                                    const otbn_addr_t dst) {
   // Set the message digest. We swap all the bytes so that OTBN can interpret

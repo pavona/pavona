@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -74,6 +75,7 @@ static inline void gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
  * @param[in,out] internal_ctx Internal context object.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
   if (launder32(internal_ctx->key.sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(internal_ctx->key.sideload, kHardenedBoolFalse);
@@ -106,6 +108,7 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
                                       aes_key_t *aes_key) {
   // Key integrity check.
@@ -173,6 +176,7 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
  * @param tag_len Tag length enum value.
  * @return OK if the tag length is acceptable, BAD_ARGS otherwise.
  */
+OT_WARN_UNUSED_RESULT
 status_t aes_gcm_check_tag_length(size_t word_len,
                                   otcrypto_aes_gcm_tag_len_t tag_len) {
   size_t bit_len = 0;
@@ -229,6 +233,7 @@ status_t aes_gcm_check_tag_length(size_t word_len,
  * @param key Key to load.
  * @return OK or errror.
  */
+OT_WARN_UNUSED_RESULT
 static status_t load_key_if_sideloaded(const aes_key_t key) {
   if (launder32(key.sideload) == kHardenedBoolFalse) {
     return OTCRYPTO_OK;
@@ -253,6 +258,7 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
  * @param key Key that was possibly loaded.
  * @return OK or errror.
  */
+OT_WARN_UNUSED_RESULT
 static status_t clear_key_if_sideloaded(const aes_key_t key) {
   if (launder32(key.sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);

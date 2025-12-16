@@ -88,6 +88,7 @@ enum {
       kOtbnWideWordNumWords,
 };
 
+OT_WARN_UNUSED_RESULT
 static status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
                                          const otbn_addr_t share0_addr,
                                          const otbn_addr_t share1_addr) {
@@ -176,6 +177,7 @@ status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
  * @param digest Digest to set (big-endian).
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t set_message_digest(const uint32_t digest[kP256ScalarWords]) {
   // Set the message digest. We swap all the bytes so that OTBN can interpret
   // the digest as a little-endian integer, which is a more natural fit for the

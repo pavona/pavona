@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -43,6 +44,7 @@ static_assert(sizeof(hmac_ctx_t) % sizeof(uint32_t) == 0,
  * @param[out] hmac_key Destination of the HMAC key struct.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
                                    size_t key_block_wordlen,
                                    hmac_key_t *hmac_key) {
@@ -114,6 +116,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
  * @param key HMAC key.
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t check_key(const otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -135,7 +138,6 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
   return OTCRYPTO_OK;
 }
 
-OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t input_message,
                                 otcrypto_word32_buf_t tag) {

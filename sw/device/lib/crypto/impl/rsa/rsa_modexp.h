@@ -31,6 +31,7 @@ extern "C" {
  * @param[out] num_words Number of words for result buffers.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_get_result_size(size_t *num_words);
 
 /**
@@ -46,6 +47,7 @@ status_t rsa_modexp_get_result_size(size_t *num_words);
  * @param modulus Modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
                                          const rsa_2048_int_t *exp,
                                          const rsa_2048_int_t *modulus);
@@ -56,6 +58,7 @@ status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_2048_finalize(rsa_2048_int_t *result);
 
 /**
@@ -74,6 +77,7 @@ status_t rsa_modexp_consttime_2048_finalize(rsa_2048_int_t *result);
  * @param modulus_q Second cofactor of modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_crt_2048_start(const rsa_2048_int_t *base,
                                              const rsa_2048_short_t *exp_p,
                                              const rsa_2048_short_t *exp_q,
@@ -87,6 +91,7 @@ status_t rsa_modexp_consttime_crt_2048_start(const rsa_2048_int_t *base,
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_crt_2048_finalize(rsa_2048_int_t *result);
 
 /**
@@ -102,6 +107,7 @@ status_t rsa_modexp_consttime_crt_2048_finalize(rsa_2048_int_t *result);
  * @param modulus Modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
                                        const uint32_t exp,
                                        const rsa_2048_int_t *modulus);
@@ -113,6 +119,7 @@ status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
  * @param exp Exponent base was raised to.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_2048_finalize(const uint32_t exp,
                                           rsa_2048_int_t *result);
 
@@ -129,6 +136,7 @@ status_t rsa_modexp_vartime_2048_finalize(const uint32_t exp,
  * @param modulus Modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
                                          const rsa_3072_int_t *exp,
                                          const rsa_3072_int_t *modulus);
@@ -139,6 +147,7 @@ status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_3072_finalize(rsa_3072_int_t *result);
 
 /**
@@ -157,6 +166,7 @@ status_t rsa_modexp_consttime_3072_finalize(rsa_3072_int_t *result);
  * @param modulus_q Second cofactor of modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_crt_3072_start(const rsa_3072_int_t *base,
                                              const rsa_3072_short_t *exp_p,
                                              const rsa_3072_short_t *exp_q,
@@ -170,6 +180,7 @@ status_t rsa_modexp_consttime_crt_3072_start(const rsa_3072_int_t *base,
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_crt_3072_finalize(rsa_3072_int_t *result);
 
 /**
@@ -185,6 +196,7 @@ status_t rsa_modexp_consttime_crt_3072_finalize(rsa_3072_int_t *result);
  * @param modulus Modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
                                        const uint32_t exp,
                                        const rsa_3072_int_t *modulus);
@@ -196,6 +208,7 @@ status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
  * @param exp Exponent base was raised to.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_3072_finalize(const uint32_t exp,
                                           rsa_3072_int_t *result);
 
@@ -212,6 +225,7 @@ status_t rsa_modexp_vartime_3072_finalize(const uint32_t exp,
  * @param modulus Modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
                                          const rsa_4096_int_t *exp,
                                          const rsa_4096_int_t *modulus);
@@ -222,6 +236,7 @@ status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_4096_finalize(rsa_4096_int_t *result);
 
 /**
@@ -240,6 +255,7 @@ status_t rsa_modexp_consttime_4096_finalize(rsa_4096_int_t *result);
  * @param modulus_q Second cofactor of modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_crt_4096_start(const rsa_4096_int_t *base,
                                              const rsa_4096_short_t *exp_p,
                                              const rsa_4096_short_t *exp_q,
@@ -253,6 +269,7 @@ status_t rsa_modexp_consttime_crt_4096_start(const rsa_4096_int_t *base,
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_crt_4096_finalize(rsa_4096_int_t *result);
 
 /**
@@ -268,6 +285,7 @@ status_t rsa_modexp_consttime_crt_4096_finalize(rsa_4096_int_t *result);
  * @param modulus Modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
                                        const uint32_t exp,
                                        const rsa_4096_int_t *modulus);
@@ -279,6 +297,7 @@ status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
  * @param exp Exponent base was raised to.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_4096_finalize(const uint32_t exp,
                                           rsa_4096_int_t *result);
 

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +26,7 @@
  * @param config Key configuration.
  * @return Number of bytes in one share of the blinded key.
  */
+OT_WARN_UNUSED_RESULT
 static size_t keyblob_share_num_bytes(const otcrypto_key_config_t config) {
   // Get the key type from the top 16 bits of the full mode.
   otcrypto_key_type_t key_type = (otcrypto_key_type_t)(config.key_mode >> 16);
@@ -70,6 +72,7 @@ size_t keyblob_num_words(const otcrypto_key_config_t config) {
  * @param key Blinded key.
  * @returns OK if the keyblob length is correct, BAD_ARGS otherwise.
  */
+OT_WARN_UNUSED_RESULT
 static status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
   size_t num_words = keyblob_num_words(key->config);
   if (launder32(key->keyblob_length) == num_words * sizeof(uint32_t)) {

@@ -115,6 +115,7 @@ status_t rsa_modexp_get_result_size(size_t *num_words) {
  * @param[out] result Result of the modexp operation.
  * @return Status of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 static status_t rsa_modexp_finalize(const size_t num_words,
                                     const uint32_t min_insn_count,
                                     const uint32_t max_insn_count,

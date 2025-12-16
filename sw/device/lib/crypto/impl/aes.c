@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -42,6 +43,7 @@ OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kOtcryptoAesModeCtr);
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
                                   const otcrypto_aes_mode_t aes_mode,
                                   aes_key_t *aes_key) {
@@ -126,6 +128,7 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
  * @param[out] padded_block Destination padded block.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
                                   const size_t partial_data_len,
                                   aes_block_t *block) {
@@ -172,6 +175,7 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
  * @param padding Padding mode.
  * @returns Number of AES blocks required.
  */
+OT_WARN_UNUSED_RESULT
 static status_t num_padded_blocks_get(size_t plaintext_len,
                                       otcrypto_aes_padding_t padding,
                                       size_t *num_blocks) {
@@ -208,6 +212,7 @@ static status_t num_padded_blocks_get(size_t plaintext_len,
  * @param padding Padding mode.
  * @returns Number of AES blocks required.
  */
+OT_WARN_UNUSED_RESULT
 static status_t get_block(otcrypto_const_byte_buf_t input,
                           otcrypto_aes_padding_t padding, size_t index,
                           aes_block_t *block) {

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -22,6 +23,7 @@
  * @param[out] digest_words Number of words in the hash digest.
  * @return OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
                                                size_t *digest_words) {
   *digest_words = 0;
@@ -89,6 +91,7 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
  * @param prk Pseudo-random key struct to check.
  * @return OK if the PRK is acceptable, otherwise OTCRYPTO_BAD_ARGS.
  */
+OT_WARN_UNUSED_RESULT
 static status_t hkdf_check_prk(size_t digest_words,
                                const otcrypto_blinded_key_t *prk) {
   if (launder32(prk->config.key_mode) >> 16 != kOtcryptoKeyTypeHmac) {
