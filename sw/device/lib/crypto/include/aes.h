@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -73,6 +74,7 @@ typedef enum otcrypto_aes_padding {
  * @return Size of the padded input or ciphertext.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_padded_plaintext_length(
     size_t plaintext_len, otcrypto_aes_padding_t aes_padding,
     size_t *padded_len);
@@ -102,6 +104,7 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
  * @param[out] cipher_output Output data after cipher operation.
  * @return The result of the cipher operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_word32_buf_t iv,
                                otcrypto_aes_mode_t aes_mode,

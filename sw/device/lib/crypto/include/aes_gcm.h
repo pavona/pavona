@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -66,6 +67,7 @@ typedef struct otcrypto_aes_gcm_context {
  * @return Result of the authenticated encryption.
  * operation
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
                                            otcrypto_const_byte_buf_t plaintext,
                                            otcrypto_const_word32_buf_t iv,
@@ -101,6 +103,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
  * @return Result of the authenticated decryption.
  * operation
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
     otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
     otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
@@ -129,6 +132,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
  * @param[out] ctx Context object for the operation.
  * @return Result of the initialization operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
     otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
     otcrypto_aes_gcm_context_t *ctx);
@@ -159,6 +163,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
  * @param[out] ctx Context object for the operation.
  * @return Result of the initialization operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
     otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
     otcrypto_aes_gcm_context_t *ctx);
@@ -172,6 +177,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
  * @param aad Additional authenticated data.
  * @return Result of the update operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
                                               otcrypto_const_byte_buf_t aad);
 
@@ -199,6 +205,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
  * @param[out] output_bytes_written Number of bytes written to `output`.
  * @return Result of the update operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t input,
     otcrypto_byte_buf_t output, size_t *output_bytes_written);
@@ -222,6 +229,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
  * @param[out] auth_tag Generated authentication tag.
  * @return Result of the final operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
     otcrypto_byte_buf_t ciphertext, size_t *ciphertext_bytes_written,
@@ -250,6 +258,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
  * @param[out] success Whether the tag passed verification.
  * @return Result of the final operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t plaintext,

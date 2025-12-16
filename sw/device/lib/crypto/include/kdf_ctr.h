@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -34,6 +35,7 @@ extern "C" {
  * @param[out] output_key_material Blinded output key material.
  * @return Result of the key derivation operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_blinded_key_t *key_derivation_key,
     const otcrypto_const_byte_buf_t label,

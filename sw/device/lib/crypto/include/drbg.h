@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,6 +29,7 @@ extern "C" {
  * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG instantiate operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_drbg_instantiate(
     otcrypto_const_byte_buf_t perso_string);
 
@@ -40,6 +42,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
  * @param additional_input Pointer to the additional input for DRBG.
  * @return Result of the DRBG reseed operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_drbg_reseed(
     otcrypto_const_byte_buf_t additional_input);
 
@@ -58,6 +61,7 @@ otcrypto_status_t otcrypto_drbg_reseed(
  * @param personalization_string Pointer to personalization bitstring.
  * @return Result of the DRBG manual instantiation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_drbg_manual_instantiate(
     otcrypto_const_byte_buf_t entropy, otcrypto_const_byte_buf_t perso_string);
 
@@ -72,6 +76,7 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
  * @param additional_input Pointer to the additional input for DRBG.
  * @return Result of the manual DRBG reseed operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_drbg_manual_reseed(
     otcrypto_const_byte_buf_t entropy,
     otcrypto_const_byte_buf_t additional_input);
@@ -94,6 +99,7 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
  * @return Result of the DRBG generate operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_drbg_generate(
     otcrypto_const_byte_buf_t additional_input,
     otcrypto_word32_buf_t drbg_output);
@@ -116,6 +122,7 @@ otcrypto_status_t otcrypto_drbg_generate(
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
  * @return Result of the DRBG generate operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_drbg_manual_generate(
     otcrypto_const_byte_buf_t additional_input,
     otcrypto_word32_buf_t drbg_output);
@@ -125,6 +132,7 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
  *
  * @return Result of the DRBG uninstantiate operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_drbg_uninstantiate(void);
 
 #ifdef __cplusplus

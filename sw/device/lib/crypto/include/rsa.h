@@ -99,6 +99,7 @@ enum {
  * @param[out] private_key Pointer to blinded private key struct.
  * @return Result of the RSA key generation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_unblinded_key_t *public_key,
                                       otcrypto_blinded_key_t *private_key);
@@ -115,6 +116,7 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  * @param[out] public_key Destination public key struct.
  * @return Result of the RSA key construction.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
     uint32_t exponent, otcrypto_unblinded_key_t *public_key);
@@ -129,6 +131,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
  * @param[out] exponent RSA public exponent (e).
  * @return Result of the RSA key construction.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_public_key_deconstruct(
     otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t modulus,
     uint32_t *exponent);
@@ -149,6 +152,7 @@ otcrypto_status_t otcrypto_rsa_public_key_deconstruct(
  * @param[out] private_key Destination private key struct.
  * @return Result of the RSA key construction.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_private_key_construct(
     otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t p,
     otcrypto_const_word32_buf_t q, otcrypto_const_word32_buf_t d_p,
@@ -174,6 +178,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct(
  * @param[out] key_valid Whether the resultant key is valid.
  * @return Result of the RSA key construction and check.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_private_key_construct_and_check(
     otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q,
     otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
@@ -200,6 +205,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check(
  * @param[out] key_valid Whether the resultant key is valid.
  * @return Result of starting the RSA key construction and check.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_start(
     otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q,
     otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
@@ -221,6 +227,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_start(
  * @param[out] key_valid Whether the resultant key is valid.
  * @return Result of starting the RSA key construction and check.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_finalize(
     const otcrypto_unblinded_key_t *public_key, hardened_bool_t check_primes,
     otcrypto_blinded_key_t *private_key, hardened_bool_t *key_valid);
@@ -240,6 +247,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_finalize(
  * @param[out] i_q CRT reconstruction coefficient for given cofactors (i_q).
  * @return Result of the RSA key deconstruction.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_private_key_deconstruct(
     otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t p,
     otcrypto_word32_buf_t q, otcrypto_word32_buf_t d_p,
@@ -261,6 +269,7 @@ otcrypto_status_t otcrypto_rsa_private_key_deconstruct(
  * @param[out] private_key Destination private key struct.
  * @return Result of the RSA key construction.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t cofactor_share0,
@@ -281,6 +290,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
  * @param[out] signature Pointer to the generated signature struct.
  * @return The result of the RSA signature generation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                     const otcrypto_hash_digest_t message_digest,
                                     otcrypto_rsa_padding_t padding_mode,
@@ -300,6 +310,7 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
  * @param[out] verification_result Result of signature verification.
  * @return Result of the RSA verify operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
@@ -337,6 +348,7 @@ otcrypto_status_t otcrypto_rsa_verify(
  * @param[out] ciphertext Buffer for the ciphertext.
  * @return The result of the RSA encryption operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t message,
@@ -372,6 +384,7 @@ otcrypto_status_t otcrypto_rsa_encrypt(
  * @param[out] plaintext_bytelen Recovered byte-length of plaintext.
  * @return Result of the RSA decryption operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
@@ -386,6 +399,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
  * @param size RSA size parameter.
  * @return Result of async RSA keygen start operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size);
 
 /**
@@ -398,6 +412,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size);
  * @param[out] private_key Pointer to blinded private key struct.
  * @return Result of asynchronous RSA keygen finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
 
@@ -414,6 +429,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
  * @param cofactor_share1 Second share of the prime cofactor (p or q).
  * @return Result of the RSA key construction.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t cofactor_share0,
@@ -435,6 +451,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
  * @param[out] private_key Destination private key struct.
  * @return Result of the RSA key construction.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
 
@@ -449,6 +466,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
  * @param padding_mode Padding scheme to be used for the data.
  * @return Result of async RSA sign start operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
@@ -462,6 +480,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
  * @param[out] signature Pointer to generated signature struct.
  * @return Result of async RSA sign finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_sign_async_finalize(
     otcrypto_word32_buf_t signature);
 
@@ -475,6 +494,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
  * @param signature Pointer to the input signature to be verified.
  * @return Result of async RSA verify start operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_word32_buf_t signature);
@@ -491,6 +511,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
  * @param[out] verification_result Result of signature verification.
  * @return Result of async RSA verify finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
@@ -508,6 +529,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
  * @param label Label for OAEP encoding.
  * @return The result of the RSA encryption start operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t message,
@@ -524,6 +546,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
  * @param[out] ciphertext Buffer for the ciphertext.
  * @return The result of the RSA encryption operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_word32_buf_t ciphertext);
@@ -538,6 +561,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
  * @param ciphertext Ciphertext to decrypt.
  * @return Result of the RSA decryption start operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_const_word32_buf_t ciphertext);
@@ -554,6 +578,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
  * @param[out] plaintext_bytelen Recovered byte-length of plaintext.
  * @return Result of the RSA decryption finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
     otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen);
