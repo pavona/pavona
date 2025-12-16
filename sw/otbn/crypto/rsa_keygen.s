@@ -179,13 +179,13 @@ rsa_keygen:
  * @param[in]  w31: all-zero
  * @param[out] dmem[rsa_n..rsa_n+(plen*2*32)] RSA public key modulus (n)
        check value
- * @param[in]  dmem[rsa_d_p..rsa_d_p+(plen*32)] first RSA private key private
+ * @param[out]  dmem[rsa_d_p..rsa_d_p+(plen*32)] first RSA private key private
        exponent CRT component (d_p) check value
- * @param[in]  dmem[rsa_d_q..rsa_d_q+(plen*32)] second RSA private key private
+ * @param[out]  dmem[rsa_d_q..rsa_d_q+(plen*32)] second RSA private key private
        exponent CRT component (d_q) check value
- * @param[in]  dmem[rsa_i_q..rsa_i_q+(plen*32)] RSA private key CRT
+ * @param[out]  dmem[rsa_i_q..rsa_i_q+(plen*32)] RSA private key CRT
        reconstruction coefficient (i_q) check value
- * @param[in]  dmem[rsa_e..rsa_e+32] RSA private key private exponent (d)
+ * @param[out]  dmem[rsa_e..rsa_e+32] RSA private key private exponent (d)
        check value
  *
  * clobbered registers: x2 to x8, x10 to x14, x20 to x25, w20 to w25, w27
@@ -620,7 +620,7 @@ check_recovered_d:
   loop     x30, 2
     /* w20 <= d[n+i] */
     bn.lid  x20, 0(x10++)
-    /* w23 <= w23 | w20 */
+    /* w21 <= w21 | w20 */
     bn.or   w21, w21, w20
 
   /* Select either all 0s or all 1s based on FG0.Z */

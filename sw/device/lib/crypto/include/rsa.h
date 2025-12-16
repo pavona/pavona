@@ -226,7 +226,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_finalize(
     otcrypto_blinded_key_t *private_key, hardened_bool_t *key_valid);
 
 /**
- * Deonstructs an RSA private key into cofactors of the modulus, private
+ * Deconstructs an RSA private key into cofactors of the modulus, private
  * exponent CRT components, and a CRT coefficient.
  *
  * The caller should allocate space for the private key and set the `keyblob`,
@@ -238,7 +238,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_finalize(
  * @param[out] d_p First CRT component of the RSA private exponent d (d_p).
  * @param[out] d_q Second CRT component of the RSA private exponent d (d_q).
  * @param[out] i_q CRT reconstruction coefficient for given cofactors (i_q).
- * @return Result of the RSA key construction.
+ * @return Result of the RSA key deconstruction.
  */
 otcrypto_status_t otcrypto_rsa_private_key_deconstruct(
     otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t p,

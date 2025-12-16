@@ -245,6 +245,8 @@ otcrypto_status_t otcrypto_rsa_public_key_deconstruct(
   HARDENED_TRY(public_key_structural_check(public_key));
 
   // Extract the values of n and e based on the inferred size.
+  // Note that we use `hardened_memcpy` as adefense against fault injection, as
+  // faulting RSA public keys to weak moduli is often quite easy.
   switch (size) {
     case kOtcryptoRsaSize2048: {
       if (modulus.len != kRsa2048NumWords) {
@@ -615,6 +617,10 @@ otcrypto_status_t otcrypto_rsa_private_key_deconstruct(
       return OTCRYPTO_FATAL_ERR;
     }
   }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
