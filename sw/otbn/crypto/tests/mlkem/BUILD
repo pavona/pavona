@@ -54,30 +54,45 @@ py_binary(
     for i in range(NTESTS) for params in MODE_FOR_PARAMS
 ]
 
-otbn_sim_test(
-    name = "mlkem512_encap_test",
-    srcs = [
-        "mlkem_encap_test.s",
+# Encapsulation tests
+py_binary(
+    name = "mlkem_encap_testgen",
+    srcs = ["mlkem_encap_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
     ],
-    copts = [
-        "-DKYBER_K=2",
-    ],
-    dexp = "mlkem512_encap_test.dexp",
-    pqc = True,
     deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+        requirement("kyber-py"),
+    ],
+)
+[
+    otbn_autogen_sim_test(
+        name = params + "_encap_test" + str(i),
+        srcs = ["mlkem_encap_test.s"],
+        seed = i,
+        testgen = ":mlkem_encap_testgen",
+        testgen_args = [params],
+        stats = STATS,
+        copts = [
+            "-DKYBER_K=" + str(MODE_FOR_PARAMS[params]),
+        ],
+        deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
         "//sw/otbn/crypto/mlkem:intt",
         "//sw/otbn/crypto/mlkem:kmac_send_msg",
-        "//sw/otbn/crypto/mlkem:mlkem512_consts",
-        "//sw/otbn/crypto/mlkem:mlkem512_encap",
-        "//sw/otbn/crypto/mlkem:mlkem512_pack_ciphertext",
-        "//sw/otbn/crypto/mlkem:mlkem512_pack_keys",
-        "//sw/otbn/crypto/mlkem:mlkem512_poly",
+        "//sw/otbn/crypto/mlkem:" + params + "_consts",
+        "//sw/otbn/crypto/mlkem:" + params + "_encap",
+        "//sw/otbn/crypto/mlkem:" + params + "_pack_ciphertext",
+        "//sw/otbn/crypto/mlkem:" + params + "_pack_keys",
+        "//sw/otbn/crypto/mlkem:" + params + "_poly",
         "//sw/otbn/crypto/mlkem:ntt",
         "//sw/otbn/crypto/mlkem:poly_gen_matrix",
-    ],
-)
+        ],
+    )
+    for i in range(NTESTS) for params in MODE_FOR_PARAMS
+]
 
 otbn_sim_test(
     name = "mlkem512_decap_test",
@@ -132,31 +147,6 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "mlkem768_encap_test",
-    srcs = [
-        "mlkem_encap_test.s",
-    ],
-    copts = [
-        "-DKYBER_K=3",
-    ],
-    dexp = "mlkem768_encap_test.dexp",
-    pqc = True,
-    deps = [
-        "//sw/otbn/crypto/mlkem:basemul",
-        "//sw/otbn/crypto/mlkem:cbd",
-        "//sw/otbn/crypto/mlkem:intt",
-        "//sw/otbn/crypto/mlkem:kmac_send_msg",
-        "//sw/otbn/crypto/mlkem:mlkem768_consts",
-        "//sw/otbn/crypto/mlkem:mlkem768_encap",
-        "//sw/otbn/crypto/mlkem:mlkem768_pack_ciphertext",
-        "//sw/otbn/crypto/mlkem:mlkem768_pack_keys",
-        "//sw/otbn/crypto/mlkem:mlkem768_poly",
-        "//sw/otbn/crypto/mlkem:ntt",
-        "//sw/otbn/crypto/mlkem:poly_gen_matrix",
-    ],
-)
-
-otbn_sim_test(
     name = "mlkem768_decap_test",
     srcs = [
         "mlkem_decap_test.s",
@@ -203,31 +193,6 @@ otbn_sim_test(
         "//sw/otbn/crypto/mlkem:mlkem768_pack_ciphertext",
         "//sw/otbn/crypto/mlkem:mlkem768_pack_keys",
         "//sw/otbn/crypto/mlkem:mlkem768_poly",
-        "//sw/otbn/crypto/mlkem:ntt",
-        "//sw/otbn/crypto/mlkem:poly_gen_matrix",
-    ],
-)
-
-otbn_sim_test(
-    name = "mlkem1024_encap_test",
-    srcs = [
-        "mlkem_encap_test.s",
-    ],
-    copts = [
-        "-DKYBER_K=4",
-    ],
-    dexp = "mlkem1024_encap_test.dexp",
-    pqc = True,
-    deps = [
-        "//sw/otbn/crypto/mlkem:basemul",
-        "//sw/otbn/crypto/mlkem:cbd",
-        "//sw/otbn/crypto/mlkem:intt",
-        "//sw/otbn/crypto/mlkem:kmac_send_msg",
-        "//sw/otbn/crypto/mlkem:mlkem1024_consts",
-        "//sw/otbn/crypto/mlkem:mlkem1024_encap",
-        "//sw/otbn/crypto/mlkem:mlkem1024_pack_ciphertext",
-        "//sw/otbn/crypto/mlkem:mlkem1024_pack_keys",
-        "//sw/otbn/crypto/mlkem:mlkem1024_poly",
         "//sw/otbn/crypto/mlkem:ntt",
         "//sw/otbn/crypto/mlkem:poly_gen_matrix",
     ],

@@ -17,19 +17,22 @@ INSTANCE_FOR_PARAMS = {
   'mlkem1024': ML_KEM_1024,
 }
 
-def gen_keypair_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
-    # Generate a random seed and expected keys.
-    coins = random.randbytes(64)
-    ek, dk = mlkem.key_derive(coins)
+def gen_encaps_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
+    # Generate a random key pair.
+    ek, _ = mlkem.keygen()
+
+    # Generate a random message and encapsulate it.
+    coins = random.randbytes(32)
+    ss, ct = mlkem._encaps_internal(ek, coins)
 
     # Write input values.
-    write_test_data({'coins': coins}, data_file)
+    write_test_data({'coins': coins, 'ek': ek}, data_file)
 
     # Write expected register values (none).
     write_test_exp({}, exp_file)
 
     # Write expected dmem values.
-    write_test_dexp({'ek': ek, 'dk': dk}, dexp_file)
+    write_test_dexp({'ct': ct, 'ss': ss}, dexp_file)
 
 
 if __name__ == '__main__':
@@ -62,4 +65,4 @@ if __name__ == '__main__':
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
     mlkem = INSTANCE_FOR_PARAMS[args.params]
-    gen_keypair_test(mlkem, args.data, args.exp, args.dexp)
+    gen_encaps_test(mlkem, args.data, args.exp, args.dexp)
