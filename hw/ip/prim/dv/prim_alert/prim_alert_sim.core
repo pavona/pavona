@@ -14,7 +14,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_test_status
-      - lowrisc:dv:common_ifs
+      - zerorisc:dv:clk_rst_if
     files:
       - tb/prim_alert_tb.sv
     file_type: systemVerilogSource
