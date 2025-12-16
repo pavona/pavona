@@ -17,22 +17,29 @@ INSTANCE_FOR_PARAMS = {
   'mlkem1024': ML_KEM_1024,
 }
 
-def gen_encaps_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
+def gen_decaps_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO, invalid=False):
     # Generate a random key pair.
-    ek, _ = mlkem.keygen()
+    ek, dk = mlkem.keygen()
 
-    # Generate a random seed and encapsulate based on it.
-    coins = random.randbytes(32)
-    ss, ct = mlkem._encaps_internal(ek, coins)
+    # Encapsulate a shared secret.
+    ss, ct = mlkem.encaps(ek)
+
+    if invalid:
+      # Pick a random index in the ciphertext and modify a random byte.
+      idx = random.randrange(len(ct))
+      ct = ct[:idx] + bytes([ct[idx] ^ 1]) + ct[idx+1:]
+
+    # Decapsulate (if invalid, output is garbage as specified by FIPS 203).
+    ss = mlkem.decaps(dk, ct)
 
     # Write input values.
-    write_test_data({'coins': coins, 'ek': ek}, data_file)
+    write_test_data({'ct': ct, 'dk': dk}, data_file)
 
     # Write expected register values (none).
     write_test_exp({}, exp_file)
 
     # Write expected dmem values.
-    write_test_dexp({'ct': ct, 'ss': ss}, dexp_file)
+    write_test_dexp({'ss': ss}, dexp_file)
 
 
 if __name__ == '__main__':
@@ -41,6 +48,9 @@ if __name__ == '__main__':
                         type=int,
                         required=False,
                         help=('Seed value for pseudorandomness.'))
+    parser.add_argument('-i', '--invalid',
+                        action='store_true',
+                        help=('Set in order to make the decapsulation input invalid.'))
     parser.add_argument('params',
                         type=str,
                         help=('Parameters to use. Options: '
@@ -65,4 +75,4 @@ if __name__ == '__main__':
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
     mlkem = INSTANCE_FOR_PARAMS[args.params]
-    gen_encaps_test(mlkem, args.data, args.exp, args.dexp)
+    gen_decaps_test(mlkem, args.data, args.exp, args.dexp, args.invalid)
