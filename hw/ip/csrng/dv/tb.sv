@@ -48,8 +48,7 @@ module tb;
   `DV_ALERT_IF_CONNECT()
 
   // dut
-  csrng#(.NHwApps(NUM_HW_APPS),
-         .RndCnstCsKeymgrDivNonProduction(LC_HW_DEBUG_EN_ON_DATA),
+  csrng#(.RndCnstCsKeymgrDivNonProduction(LC_HW_DEBUG_EN_ON_DATA),
          .RndCnstCsKeymgrDivProduction(LC_HW_DEBUG_EN_OFF_DATA))
   dut (
     .clk_i                      (clk      ),
