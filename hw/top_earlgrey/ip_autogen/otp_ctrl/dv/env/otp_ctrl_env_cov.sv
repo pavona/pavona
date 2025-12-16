@@ -315,8 +315,6 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
 
       ignore_bins part_not_zeroizable_no_digest_addr =
            binsof (zeroizable) intersect {0}
-        && binsof (part_idx) intersect {
-        }
         && binsof (offset_addr) intersect {OtpPartDigestAddr};
 
       ignore_bins part_not_zeroizable_no_zero_addr =
@@ -336,10 +334,6 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
         }
         && binsof (offset_addr) intersect {OtpPartZeroAddr};
 
-      ignore_bins part_zeroizable =
-           binsof (zeroizable) intersect {0}
-        && binsof (part_idx) intersect {
-        };
     }
   endgroup
 
