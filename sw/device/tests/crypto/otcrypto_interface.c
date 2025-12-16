@@ -168,9 +168,17 @@ const otcrypto_interface_t otcrypto = {
     .x25519_async_start = &otcrypto_x25519_async_start,
     .x25519_async_finalize = &otcrypto_x25519_async_finalize,
 
-    // RSA key construction.
+    // RSA key construction and deconstruction.
     .rsa_public_key_construct = &otcrypto_rsa_public_key_construct,
+    .rsa_public_key_deconstruct = &otcrypto_rsa_public_key_deconstruct,
     .rsa_private_key_construct = &otcrypto_rsa_private_key_construct,
+    .rsa_private_key_construct_and_check =
+        &otcrypto_rsa_private_key_construct_and_check,
+    .rsa_private_key_construct_and_check_async_start =
+        &otcrypto_rsa_private_key_construct_and_check_async_start,
+    .rsa_private_key_construct_and_check_async_finalize =
+        &otcrypto_rsa_private_key_construct_and_check_async_finalize,
+    .rsa_private_key_deconstruct = &otcrypto_rsa_private_key_deconstruct,
 
     // RSA key generation (blocking).
     .rsa_keygen = &otcrypto_rsa_keygen,
