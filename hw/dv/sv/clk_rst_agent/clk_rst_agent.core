@@ -9,8 +9,8 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
+      - zerorisc:dv:clk_rst_if
     files:
-      - clk_rst_if.sv
       - clk_rst_agent_pkg.sv
       - clk_rst_item.sv: {is_include_file: true}
       - clk_rst_agent_cfg.sv: {is_include_file: true}

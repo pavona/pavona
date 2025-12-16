@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:csr_utils
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:common_ifs
+      - zerorisc:dv:clk_rst_if
       - lowrisc:opentitan:bus_params_pkg
     files:
       - dv_lib_pkg.sv
