@@ -433,6 +433,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check(
     hardened_bool_t *key_valid) {
   HARDENED_TRY(otcrypto_rsa_private_key_construct_and_check_async_start(
       p, q, d_p, d_q, i_q, public_key, check_primes, private_key, key_valid));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
   return otcrypto_rsa_private_key_construct_and_check_async_finalize(
       public_key, check_primes, private_key, key_valid);
 }

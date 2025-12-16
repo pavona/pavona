@@ -370,6 +370,9 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
                                      const rsa_2048_private_key_t *private_key,
                                      hardened_bool_t check_primes,
                                      hardened_bool_t *key_valid) {
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
+
   // Spin here waiting for OTBN to complete.
   OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
@@ -544,6 +547,9 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
                                      const rsa_3072_private_key_t *private_key,
                                      hardened_bool_t check_primes,
                                      hardened_bool_t *key_valid) {
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
+
   // Spin here waiting for OTBN to complete.
   OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
@@ -718,6 +724,9 @@ status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
                                      const rsa_4096_private_key_t *private_key,
                                      hardened_bool_t check_primes,
                                      hardened_bool_t *key_valid) {
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
+
   // Spin here waiting for OTBN to complete.
   OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
 
