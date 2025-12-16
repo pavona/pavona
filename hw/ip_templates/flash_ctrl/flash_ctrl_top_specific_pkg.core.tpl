@@ -20,6 +20,7 @@ filesets:
       - lowrisc:ip:flash_ctrl_pkg
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/flash_ctrl_reg_pkg.sv
       - rtl/flash_ctrl_top_specific_pkg.sv
