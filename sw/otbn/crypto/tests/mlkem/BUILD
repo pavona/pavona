@@ -7,32 +7,52 @@
 # (https://eprint.iacr.org/2025/2028)
 # Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
 
-load("//rules:otbn.bzl", "otbn_binary", "otbn_consttime_test", "otbn_library", "otbn_sim_test")
+load("@ot_python_deps//:requirements.bzl", "requirement")
+load("//rules:otbn.bzl", "otbn_binary", "otbn_consttime_test", "otbn_library", "otbn_sim_test", "otbn_autogen_sim_test")
 
 package(default_visibility = ["//visibility:public"])
 
-otbn_sim_test(
-    name = "mlkem512_keypair_test",
-    srcs = [
-        "mlkem_keypair_test.s",
+MODE_FOR_PARAMS = {"mlkem512": 2, "mlkem768": 3, "mlkem1024": 4}
+NTESTS = 10
+STATS = True # makes tests run slower but logs detailed execution stats
+
+# Key generation tests
+py_binary(
+    name = "mlkem_keypair_testgen",
+    srcs = ["mlkem_keypair_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
     ],
-    copts = [
-        "-DKYBER_K=2",
-    ],
-    dexp = "mlkem512_keypair_test.dexp",
-    pqc = True,
     deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+        requirement("kyber-py"),
+    ],
+)
+[
+    otbn_autogen_sim_test(
+        name = params + "_keypair_test" + str(i),
+        srcs = ["mlkem_keypair_test.s"],
+        seed = i,
+        testgen = ":mlkem_keypair_testgen",
+        testgen_args = [params],
+        stats = STATS,
+        copts = [
+            "-DKYBER_K=" + str(MODE_FOR_PARAMS[params]),
+        ],
+        deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
         "//sw/otbn/crypto/mlkem:kmac_send_msg",
-        "//sw/otbn/crypto/mlkem:mlkem512_consts",
-        "//sw/otbn/crypto/mlkem:mlkem512_keypair",
-        "//sw/otbn/crypto/mlkem:mlkem512_pack_keys",
-        "//sw/otbn/crypto/mlkem:mlkem512_poly",
+        "//sw/otbn/crypto/mlkem:" + params + "_consts",
+        "//sw/otbn/crypto/mlkem:" + params + "_keypair",
+        "//sw/otbn/crypto/mlkem:" + params + "_pack_keys",
+        "//sw/otbn/crypto/mlkem:" + params + "_poly",
         "//sw/otbn/crypto/mlkem:ntt",
         "//sw/otbn/crypto/mlkem:poly_gen_matrix",
-    ],
-)
+        ],
+    )
+    for i in range(NTESTS) for params in MODE_FOR_PARAMS
+]
 
 otbn_sim_test(
     name = "mlkem512_encap_test",
@@ -112,29 +132,6 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "mlkem768_keypair_test",
-    srcs = [
-        "mlkem_keypair_test.s",
-    ],
-    copts = [
-        "-DKYBER_K=3",
-    ],
-    dexp = "mlkem768_keypair_test.dexp",
-    pqc = True,
-    deps = [
-        "//sw/otbn/crypto/mlkem:basemul",
-        "//sw/otbn/crypto/mlkem:cbd",
-        "//sw/otbn/crypto/mlkem:kmac_send_msg",
-        "//sw/otbn/crypto/mlkem:mlkem768_consts",
-        "//sw/otbn/crypto/mlkem:mlkem768_keypair",
-        "//sw/otbn/crypto/mlkem:mlkem768_pack_keys",
-        "//sw/otbn/crypto/mlkem:mlkem768_poly",
-        "//sw/otbn/crypto/mlkem:ntt",
-        "//sw/otbn/crypto/mlkem:poly_gen_matrix",
-    ],
-)
-
-otbn_sim_test(
     name = "mlkem768_encap_test",
     srcs = [
         "mlkem_encap_test.s",
@@ -206,29 +203,6 @@ otbn_sim_test(
         "//sw/otbn/crypto/mlkem:mlkem768_pack_ciphertext",
         "//sw/otbn/crypto/mlkem:mlkem768_pack_keys",
         "//sw/otbn/crypto/mlkem:mlkem768_poly",
-        "//sw/otbn/crypto/mlkem:ntt",
-        "//sw/otbn/crypto/mlkem:poly_gen_matrix",
-    ],
-)
-
-otbn_sim_test(
-    name = "mlkem1024_keypair_test",
-    srcs = [
-        "mlkem_keypair_test.s",
-    ],
-    copts = [
-        "-DKYBER_K=4",
-    ],
-    dexp = "mlkem1024_keypair_test.dexp",
-    pqc = True,
-    deps = [
-        "//sw/otbn/crypto/mlkem:basemul",
-        "//sw/otbn/crypto/mlkem:cbd",
-        "//sw/otbn/crypto/mlkem:kmac_send_msg",
-        "//sw/otbn/crypto/mlkem:mlkem1024_consts",
-        "//sw/otbn/crypto/mlkem:mlkem1024_keypair",
-        "//sw/otbn/crypto/mlkem:mlkem1024_pack_keys",
-        "//sw/otbn/crypto/mlkem:mlkem1024_poly",
         "//sw/otbn/crypto/mlkem:ntt",
         "//sw/otbn/crypto/mlkem:poly_gen_matrix",
     ],

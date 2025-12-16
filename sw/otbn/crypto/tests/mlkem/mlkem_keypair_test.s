@@ -99,24 +99,3 @@ dk:
 .globl ek
 ek:
   .zero CRYPTO_PUBLICKEYBYTES
-
-.balign 32
-/* First input: coins */
-.globl coins
-coins:
-  .word 0xa42b9c7f
-  .word 0x7d828fe8
-  .word 0x50456061
-  .word 0x3e850576
-  .word 0x93803bd7
-  .word 0x88bceff6
-  .word 0xac6e1aeb
-  .word 0x26ef66fa
-  .word 0xa9eeb13c
-  .word 0x934b0088
-  .word 0x0afb3c10
-  .word 0x682afdee
-  .word 0x4afa016e
-  .word 0x63a3e858
-  .word 0xe3a1a89c
-  .word 0xe257aef9
