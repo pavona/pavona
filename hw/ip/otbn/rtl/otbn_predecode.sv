@@ -585,15 +585,9 @@ module otbn_predecode
             ispr_addr = IsprKmacStatus;
           end
         end
-        CsrKmacDigestW0, CsrKmacDigestW1, CsrKmacDigestW2, CsrKmacDigestW3, CsrKmacDigestW4,
-        CsrKmacDigestW5, CsrKmacDigestW6, CsrKmacDigestW7: begin
-          if (OtbnPQCEn) begin
-            ispr_addr = IsprKmacDigest;
-          end
-        end
-        CsrFlags, CsrFg0, CsrFg1:           ispr_addr = IsprFlags;
-        CsrRnd:                             ispr_addr = IsprRnd;
-        CsrUrnd:                            ispr_addr = IsprUrnd;
+        CsrFlags, CsrFg0, CsrFg1: ispr_addr = IsprFlags;
+        CsrRnd:                   ispr_addr = IsprRnd;
+        CsrUrnd:                  ispr_addr = IsprUrnd;
         default: ;
       endcase
     end else begin

@@ -1354,15 +1354,6 @@ module otbn_controller
           csr_illegal_addr = 1'b1;
         end
       end
-      CsrKmacDigestW0, CsrKmacDigestW1, CsrKmacDigestW2, CsrKmacDigestW3,
-      CsrKmacDigestW4, CsrKmacDigestW5, CsrKmacDigestW6, CsrKmacDigestW7: begin
-        if (OtbnPQCEn) begin
-          ispr_addr_base      = IsprKmacDigest;
-          ispr_word_addr_base = csr_sub_addr;
-        end else begin
-          csr_illegal_addr = 1'b1;
-        end
-      end
       CsrKmacPartialW: begin
         if (OtbnPQCEn) begin
           ispr_addr_base      = IsprKmacPartialW;
