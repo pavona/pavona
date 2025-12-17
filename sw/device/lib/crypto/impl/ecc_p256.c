@@ -17,6 +17,113 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '2', '5')
 
+/**
+ * Check if a key mode is intended for ECC P-256 use.
+ *
+ * @param mode Mode to check.
+ * @return OK if the mode is for ECC P-256 use, OTCRYPTO_BAD_ARGS otherwise.
+ */
+static status_t p256_mode_check(const otcrypto_key_mode_t mode) {
+  switch (launder32(mode)) {
+    case kOtcryptoKeyModeEcdsaP256:
+      HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeEcdsaP256);
+      return OTCRYPTO_OK;
+    case kOtcryptoKeyModeEcdhP256:
+      HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeEcdhP256);
+      return OTCRYPTO_OK;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
+}
+
+/**
+ * Check the lengths of public keys for curve P-256.
+ *
+ * Checks the length of caller-allocated buffers for a P-256 public key. This
+ * function may be used for both ECDSA and ECDH keys, since the key structure
+ * is the same.
+ *
+ * If this check passes, it is safe to interpret public_key->key as a
+ * `p256_point_t *`.
+ *
+ * @param public_key Public key struct to check.
+ * @return OK if the lengths are correct or BAD_ARGS otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t p256_public_key_length_check(
+    const otcrypto_unblinded_key_t *public_key) {
+  if (launder32(public_key->key_length) != sizeof(p256_point_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(public_key->key_length, sizeof(p256_point_t));
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_p256_public_key_construct(
+    otcrypto_const_word32_buf_t x, otcrypto_const_word32_buf_t y,
+    otcrypto_unblinded_key_t *public_key) {
+  // Entropy complex must be initialized for `hardened_memcpy`.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Check for any NULL pointers.
+  if (public_key == NULL || public_key->key == NULL || x.data == NULL ||
+      y.data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the key mode.
+  HARDENED_TRY(p256_mode_check(public_key->key_mode));
+
+  // Check the key and coordinate lengths.
+  HARDENED_TRY(p256_public_key_length_check(public_key));
+  if (x.len != kP256CoordWords || y.len != kP256CoordWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(x.len, kP256CoordWords);
+  HARDENED_CHECK_EQ(y.len, kP256CoordWords);
+
+  // Copy the provided values into the public key.
+  p256_point_t *pk = (p256_point_t *)public_key->key;
+  hardened_memcpy(pk->x, x.data, kP256CoordWords);
+  hardened_memcpy(pk->y, y.data, kP256CoordWords);
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_p256_public_key_deconstruct(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t x,
+    otcrypto_word32_buf_t y) {
+  // Entropy complex must be initialized for `hardened_memcpy`.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Check for any NULL pointers.
+  if (public_key == NULL || public_key->key == NULL || x.data == NULL ||
+      y.data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the key mode.
+  HARDENED_TRY(p256_mode_check(public_key->key_mode));
+
+  // Check the key and coordinate lengths.
+  HARDENED_TRY(p256_public_key_length_check(public_key));
+  if (x.len != kP256CoordWords || y.len != kP256CoordWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(x.len, kP256CoordWords);
+  HARDENED_CHECK_EQ(y.len, kP256CoordWords);
+
+  // Copy the provided values into the public key.
+  p256_point_t *pk = (p256_point_t *)public_key->key;
+  hardened_memcpy(x.data, pk->x, kP256CoordWords);
+  hardened_memcpy(y.data, pk->y, kP256CoordWords);
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_ecdsa_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdsa_p256_keygen_async_start(private_key));
@@ -174,29 +281,6 @@ static status_t p256_private_key_length_check(
   }
   HARDENED_CHECK_EQ(private_key->keyblob_length, sizeof(p256_masked_scalar_t));
 
-  return OTCRYPTO_OK;
-}
-
-/**
- * Check the lengths of public keys for curve P-256.
- *
- * Checks the length of caller-allocated buffers for a P-256 public key. This
- * function may be used for both ECDSA and ECDH keys, since the key structure
- * is the same.
- *
- * If this check passes, it is safe to interpret public_key->key as a
- * `p256_point_t *`.
- *
- * @param public_key Public key struct to check.
- * @return OK if the lengths are correct or BAD_ARGS otherwise.
- */
-OT_WARN_UNUSED_RESULT
-static status_t p256_public_key_length_check(
-    const otcrypto_unblinded_key_t *public_key) {
-  if (launder32(public_key->key_length) != sizeof(p256_point_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(public_key->key_length, sizeof(p256_point_t));
   return OTCRYPTO_OK;
 }
 

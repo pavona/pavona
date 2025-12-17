@@ -241,6 +241,22 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "ecc_p256_key_construct_functest",
+    srcs = ["ecc_p256_key_construct_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl/ecc:p256",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "ecdh_p256_functest",
     srcs = ["ecdh_p256_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,

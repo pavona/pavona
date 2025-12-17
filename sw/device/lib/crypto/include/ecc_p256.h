@@ -20,6 +20,36 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Constructs an ECDSA/ECDH P-256 public key from affine coordinates
+ *
+ * The caller should allocate space for the public key and set the `key` and
+ * `key_length` fields accordingly.
+ *
+ * @param size RSA size parameter.
+ * @param x First affine coordinate of public key (x).
+ * @param y Second affine coordinate of public key (y).
+ * @param[out] public_key Destination public key struct.
+ * @return Result of the P-256 key construction.
+ */
+otcrypto_status_t otcrypto_p256_public_key_construct(
+    otcrypto_const_word32_buf_t x, otcrypto_const_word32_buf_t y,
+    otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Deconstructs an ECDSA/ECDH P-256 public key into affine coordinates
+ *
+ * The caller should allocate space for both affine coordinates.
+ *
+ * @param public_key Destination public key struct.
+ * @param[out] x First affine coordinate of public key (x).
+ * @param[out] y Second affine coordinate of public key (y).
+ * @return Result of the P-256 key deconstruction.
+ */
+otcrypto_status_t otcrypto_p256_public_key_deconstruct(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t x,
+    otcrypto_word32_buf_t y);
+
+/**
  * Generates a key pair for ECDSA with curve P-256.
  *
  * The caller should allocate and partially populate the blinded key struct,
