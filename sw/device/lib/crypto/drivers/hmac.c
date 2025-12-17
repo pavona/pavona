@@ -191,6 +191,7 @@ static void clear(void) {
  * @param key The buffer that points to the hmac_key_t key structure.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t key_write(const hmac_key_t *key) {
   if (key != NULL) {
     hardened_mmio_write(hmac_base() + HMAC_KEY_0_REG_OFFSET, key->key_block,
@@ -234,6 +235,7 @@ static inline void digest_read(uint32_t *digest, size_t digest_wordlen) {
  *
  * @param ctx Context object from which to restore.
  */
+OT_WARN_UNUSED_RESULT
 static status_t context_restore(hmac_ctx_t *ctx) {
   // The previous caller should have left it clean, but it doesn't hurt to
   // clear again.
@@ -359,6 +361,7 @@ static uint32_t cfg_get(bool hmac_en, hmac_digest_length_t digest_len,
  *
  * @return OK if the block is idle, OTCRYPTO_RECOV_ERR otherwise.
  */
+OT_WARN_UNUSED_RESULT
 static status_t ensure_idle(void) {
   uint32_t status = abs_mmio_read32(hmac_base() + HMAC_STATUS_REG_OFFSET);
   if (bitfield_bit32_read(status, HMAC_STATUS_HMAC_IDLE_BIT) == 0) {
@@ -382,6 +385,7 @@ static status_t ensure_idle(void) {
  * @param digest_wordlen Digest length in 32-bit words.
  * @param[out] digest Buffer for the digest.
  */
+OT_WARN_UNUSED_RESULT
 static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
                         const uint8_t *msg, size_t msg_len,
                         size_t digest_wordlen, uint32_t *digest) {

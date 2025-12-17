@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
@@ -102,6 +103,7 @@ static void entropy_csrng_internal_state_get(
  * @param csrng A CSRNG handle.
  * @param expected Expected CSRNG internal state.
  */
+OT_WARN_UNUSED_RESULT
 static status_t check_internal_state(
     const entropy_csrng_internal_state_t *expected) {
   entropy_csrng_internal_state_t got = {0};

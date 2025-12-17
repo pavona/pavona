@@ -75,6 +75,7 @@ typedef enum otbn_status {
  * @param mem_size Size of memory.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
                                  size_t mem_size) {
   if (num_words > UINT32_MAX / sizeof(uint32_t)) {
@@ -340,6 +341,7 @@ status_t otbn_set_ctrl_software_errs_fatal(bool enable) {
  * @param app the OTBN application to check
  * @return `OTCRYPTO_OK` if checks pass, otherwise `OTCRYPTO_BAD_ARGS`.
  */
+OT_WARN_UNUSED_RESULT
 static status_t check_app_address_ranges(const otbn_app_t *app) {
   // IMEM must not be backwards or empty.
   if (app->imem_end <= app->imem_start) {

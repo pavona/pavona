@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_AES_H_
@@ -82,6 +83,7 @@ typedef struct aes_key {
  * @param encrypt True for encryption, false for decryption.
  * @return result, OK or error.
  */
+OT_WARN_UNUSED_RESULT
 status_t aes_verify_ctrl_reg(aes_key_t key, hardened_bool_t encrypt);
 
 /**
@@ -89,6 +91,7 @@ status_t aes_verify_ctrl_reg(aes_key_t key, hardened_bool_t encrypt);
  *
  * @return result, OK or error.
  */
+OT_WARN_UNUSED_RESULT
 status_t aes_verify_ctrl_aux_reg(void);
 
 /**

@@ -353,9 +353,10 @@ static const bitfield_field32_t kAppCmdFieldGlen = ENTROPY_CMD(0x7ffff, 12);
  * @param cmd Command to send.
  * @param cmd_type Type of the command.
  */
-OT_WARN_UNUSED_RESULT static status_t csrng_send_app_cmd(
-    uint32_t base_address, entropy_csrng_cmd_t cmd,
-    entropy_csrng_send_app_cmd_type_t cmd_type) {
+OT_WARN_UNUSED_RESULT
+static status_t csrng_send_app_cmd(uint32_t base_address,
+                                   entropy_csrng_cmd_t cmd,
+                                   entropy_csrng_send_app_cmd_type_t cmd_type) {
   enum {
     // This is to maintain full compliance with NIST SP 800-90A, which requires
     // the max generate output to be constrained to gen < 2 ^ 12 bits or 0x800

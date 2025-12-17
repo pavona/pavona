@@ -40,6 +40,7 @@ enum {
 /**
  * Spins until the AES hardware reports a specific status bit.
  */
+OT_WARN_UNUSED_RESULT
 static status_t spin_until(uint32_t bit) {
   while (true) {
     uint32_t reg = abs_mmio_read32(aes_base() + AES_STATUS_REG_OFFSET);
@@ -63,6 +64,7 @@ static status_t spin_until(uint32_t bit) {
  * @param key AES key.
  * @return result, OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t aes_write_key(aes_key_t key) {
   if (key.sideload != kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
@@ -95,6 +97,7 @@ static status_t aes_write_key(aes_key_t key) {
  * @param encrypt True for encryption, false for decryption.
  * @return result, OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t compute_ctrl_reg(aes_key_t key, hardened_bool_t encrypt,
                                  uint32_t *ctrl_reg) {
   *ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
@@ -255,6 +258,7 @@ status_t aes_verify_ctrl_aux_reg(void) {
  * @param encrypt True for encryption, false for decryption.
  * @return result, OK or error.
  */
+OT_WARN_UNUSED_RESULT
 static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
                           hardened_bool_t encrypt) {
   // Ensure the entropy complex is in an appropriate state. The AES block seeds

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/crypto/drivers/entropy.h"
@@ -17,6 +18,7 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+OT_WARN_UNUSED_RESULT
 static status_t entropy_complex_init_test(void) {
   TRY(entropy_complex_init());
 

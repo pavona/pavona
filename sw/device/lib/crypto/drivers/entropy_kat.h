@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_ENTROPY_KAT_H_
@@ -48,6 +49,7 @@ extern "C" {
  *
  * @return Operation status in `status_t` format.
  */
+OT_WARN_UNUSED_RESULT
 status_t entropy_csrng_kat(void);
 
 #ifdef __cplusplus

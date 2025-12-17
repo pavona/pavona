@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,6 +22,7 @@
  * we disabled it.
  * @return Error status.
  */
+OT_WARN_UNUSED_RESULT
 status_t ibex_disable_icache(hardened_bool_t *icache_enabled);
 
 /**

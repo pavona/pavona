@@ -264,6 +264,7 @@ status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification) {
  *
  * @param slot Value to write to the SIDELOAD_CLEAR register.
  */
+OT_WARN_UNUSED_RESULT
 static status_t keymgr_sideload_clear(uint32_t slot) {
   // Ensure that the entropy complex has been initialized and keymgr is idle.
   HARDENED_TRY(entropy_complex_check());

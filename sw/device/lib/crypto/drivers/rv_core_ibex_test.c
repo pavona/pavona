@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +14,7 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+OT_WARN_UNUSED_RESULT
 static status_t ibex_entropy_test(void) {
   // Read the initial value of the RND_DATA CSR.
   uint32_t rnd_data0 = ibex_rnd32_read();
