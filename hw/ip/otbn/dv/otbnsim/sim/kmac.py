@@ -584,6 +584,7 @@ class KmacBlock:
                     self._msg_len -= nbytes
                     self._app_intf_bytes_sent += nbytes
                     self._app_intf_sending = True
+                    self._kmac_oversized_err = True
 
             kmac_debug_print(f"\tMSG FIFO SIZE: {len(self._msg_fifo)}")
         else:

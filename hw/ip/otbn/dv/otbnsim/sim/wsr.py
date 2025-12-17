@@ -449,6 +449,7 @@ class KmacMsgWSR(WSR):
                 and not self._kmac._app_intf_fifo_flush
             ):
                 kmac_debug_print("DROPPING WRITE TO FIFO FROM OVERSIZED MSG")
+                self._kmac._kmac_oversized_err = True
                 self._pending_write_to_app_intf = False
                 self._pending_write_stall_pw = False
             elif not self._kmac._app_intf_last and self._kmac.write_to_app_intf_fifo(value_bytes):
@@ -475,6 +476,7 @@ class KmacMsgWSR(WSR):
                 self._value = self._next_value
                 if self._kmac._app_intf_last_latch or self._kmac._pending_app_intf_last:
                     self._pending_write_to_app_intf = False
+                    self._kmac._kmac_oversized_err = True
                 else:
                     self._pending_write_to_app_intf = True
                 self._pending_write_stall_pw = True

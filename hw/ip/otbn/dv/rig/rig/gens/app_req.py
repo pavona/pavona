@@ -249,6 +249,26 @@ class KmacAppReqInsn(SnippetGen):
             prog_wsrr_digest = self.fill_bn_wsrr(model)
             insn_list.append(prog_wsrr_digest)
 
+        # Status read
+        op_vals = []
+        mem_type = 'csr'
+
+        csrrw_grd_val = 0x0
+        while (csrrw_grd_val <= 0x1):
+            csrrw_grd_val = model.pick_operand_value(self.csrrw_grd_op_type)
+
+        op_vals.append(csrrw_grd_val)
+        csrrw_csr_val = model._kmac_csr_addr["KMAC_STATUS"]
+        op_vals.append(csrrw_csr_val)
+        csrrw_grs1_val = 0x0
+        op_vals.append(csrrw_grs1_val)
+        addr = csrrw_csr_val
+
+        assert len(op_vals) == len(self.csrrw.operands)
+        status_insn = ProgInsn(self.csrrw, op_vals, (mem_type, addr))
+
+        insn_list.append(status_insn)
+
         # CFG end insns
         self._cfg_done = 1
         cfg_stop_insns = self.fill_cfg_insns(model)
