@@ -49,6 +49,36 @@ otcrypto_status_t otcrypto_p384_public_key_deconstruct(
     const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t x,
     otcrypto_word32_buf_t y);
 
+/*
+ * Constructs an ECDSA/ECDH P-384 private key from scalar shares.
+ *
+ * The caller should allocate space for the private key and set the `keyblob`,
+ * `keyblob_length`, and `config` fields accordingly.
+ *
+ * @param scalar_share0 First share of scalar (d).
+ * @param scalar_share1 Second share of scalar (d).
+ * @param[out] private_key Destination private key struct.
+ * @return Result of the P-384 private key construction.
+ */
+otcrypto_status_t otcrypto_p384_private_key_construct(
+    otcrypto_const_word32_buf_t scalar_share0,
+    otcrypto_const_word32_buf_t scalar_share1,
+    otcrypto_blinded_key_t *private_key);
+
+/*
+ * Deconstructs an ECDSA/ECDH P-384 private key into scalar shares.
+ *
+ * The caller should allocate space for both scalar shares.
+ *
+ * @param private_key Source private key struct.
+ * @param[out] scalar_share0 First share of scalar (d).
+ * @param[out] scalar_share1 Second share of scalar (d).
+ * @return Result of the P-384 private key deconstruction.
+ */
+otcrypto_status_t otcrypto_p384_private_key_deconstruct(
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_word32_buf_t scalar_share0, otcrypto_word32_buf_t scalar_share1);
+
 /**
  * Generates a key pair for ECDSA with curve P-384.
  *
