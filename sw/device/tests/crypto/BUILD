@@ -248,8 +248,10 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl/ecc:p256",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
