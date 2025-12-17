@@ -10,6 +10,7 @@
 
 class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `uvm_component_utils(otbn_env_cov)
+  import otbn_pqc_env_pkg::*;
 
   // A field for each known mnemonic, cast to a mnem_str_t. We have to do this because VCS (at
   // least) complains if you put an uncast string literal in a position where it expects an integral
@@ -68,6 +69,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `DEF_MNEM(mnem_bn_movr,       "bn.movr");
   `DEF_MNEM(mnem_bn_wsrr,       "bn.wsrr");
   `DEF_MNEM(mnem_bn_wsrw,       "bn.wsrw");
+  `DEF_MNEM(mnem_bn_addv,       "bn.addv");
+  `DEF_MNEM(mnem_bn_subv,       "bn.subv");
+  `DEF_MNEM(mnem_bn_mulv,       "bn.mulv");
+  `DEF_MNEM(mnem_bn_mulvl,      "bn.mulv.l");
+  `DEF_MNEM(mnem_bn_trn,        "bn.trn");
+  `DEF_MNEM(mnem_bn_shv,        "bn.shv");
   // A fake mnemonic, used for bits that don't decode to a real instruction
   `DEF_MNEM(mnem_dummy,         "dummy-insn");
   // A fake mnemonic, used for invalid IMEM data (after a failed integrity check)
@@ -108,6 +115,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_MNEM_BIN(mnem_bn_lid); `DEF_MNEM_BIN(mnem_bn_sid);            \
     `DEF_MNEM_BIN(mnem_bn_mov); `DEF_MNEM_BIN(mnem_bn_movr);           \
     `DEF_MNEM_BIN(mnem_bn_wsrr); `DEF_MNEM_BIN(mnem_bn_wsrw);
+
+  // Generate a bin for each pqc mnemonic except ECALL
+`define DEF_MNEM_BINS_PQC                                      \
+    `DEF_MNEM_BIN(mnem_bn_addv); `DEF_MNEM_BIN(mnem_bn_subv);  \
+    `DEF_MNEM_BIN(mnem_bn_mulvl); `DEF_MNEM_BIN(mnem_bn_mulv); \
+    `DEF_MNEM_BIN(mnem_bn_trn);                                \
+    `DEF_MNEM_BIN(mnem_bn_shv);
 
   // Equivalents of DEF_MNEM and DEF_MNEM_BINp, but for external CSRs. Again, we want to use the CSR
   // names as bins in coverpoints and need sized literals.
@@ -287,31 +301,38 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       12'h7d5: return 8;   // MOD5
       12'h7d6: return 9;   // MOD6
       12'h7d7: return 10;  // MOD7
-      12'hfc8: return 11;  // RND_PREFETCH
-      12'hfc0: return 12;  // RND
-      12'hfc1: return 13;  // URND
+      12'h7d8: return 11;  // RND_PREFETCH
+      12'h7d9: return 12;  // KMAC_CFG
+      12'h7e2: return 13;  // KMAC_STATUS
+      12'h7f3: return 14;  // KMAC_PW
+      12'hfc0: return 15;  // RND
+      12'hfc1: return 16;  // URND
       default: return -1;  // (invalid)
     endcase
   endfunction
 
-`define DEF_CSR_CP(NAME, EXPR)         \
-  NAME: coverpoint (remap_csr(EXPR)) { \
-    bins fg0          = {0};           \
-    bins fg1          = {1};           \
-    bins flags        = {2};           \
-    bins mod0         = {3};           \
-    bins mod1         = {4};           \
-    bins mod2         = {5};           \
-    bins mod3         = {6};           \
-    bins mod4         = {7};           \
-    bins mod5         = {8};           \
-    bins mod6         = {9};           \
-    bins mod7         = {10};          \
-    bins rnd_prefetch = {11};          \
-    bins rnd          = {12};          \
-    bins urnd         = {13};          \
-    bins invalid      = {-1};          \
-    illegal_bins bad  = default;       \
+`define DEF_CSR_CP(NAME, EXPR)                          \
+  NAME: coverpoint (remap_csr(EXPR)) {                  \
+    bins fg0           = {0};                           \
+    bins fg1           = {1};                           \
+    bins flags         = {2};                           \
+    bins mod0          = {3};                           \
+    bins mod1          = {4};                           \
+    bins mod2          = {5};                           \
+    bins mod3          = {6};                           \
+    bins mod4          = {7};                           \
+    bins mod5          = {8};                           \
+    bins mod6          = {9};                           \
+    bins mod7          = {10};                          \
+    bins rnd_prefetch  = {11};                          \
+    bins kmac_cfg      = {12};                          \
+    bins kmac_status   = {13};                          \
+    bins kmac_pw       = {14};                          \
+    bins rnd           = {15};                          \
+    bins urnd          = {16};                          \
+    bins invalid       = {-1};                          \
+    ignore_bins no_pqc = {12, 13, 14} iff (!OtbnPQCEn); \
+    illegal_bins bad   = default;                       \
   }
 
   // An equivalent of remap_csr / DEF_CSR_CP, but specialized to WSRs.
@@ -325,22 +346,31 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       8'h05: return 5;     // KEY_S0_H
       8'h06: return 6;     // KEY_S1_L
       8'h07: return 7;     // KEY_S1_H
+      8'h08: return 8;     // KMAC_CFG
+      8'h09: return 9;     // KMAC_MSG
+      8'h0a: return 10;    // KMAC_DIGEST
+      8'h0b: return 11;    // ACCH
       default: return -1;  // (invalid)
     endcase
   endfunction
 
-`define DEF_WSR_CP(NAME, EXPR)         \
-  NAME: coverpoint (remap_wsr(EXPR)) { \
-    bins mod         = {0};            \
-    bins rnd         = {1};            \
-    bins urnd        = {2};            \
-    bins acc         = {3};            \
-    bins key_s0_l    = {4};            \
-    bins key_s0_h    = {5};            \
-    bins key_s1_l    = {6};            \
-    bins key_s1_h    = {7};            \
-    bins invalid     = {-1};           \
-    illegal_bins bad = default;        \
+`define DEF_WSR_CP(NAME, EXPR)                            \
+  NAME: coverpoint (remap_wsr(EXPR)) {                    \
+    bins mod           = {0};                             \
+    bins rnd           = {1};                             \
+    bins urnd          = {2};                             \
+    bins acc           = {3};                             \
+    bins key_s0_l      = {4};                             \
+    bins key_s0_h      = {5};                             \
+    bins key_s1_l      = {6};                             \
+    bins key_s1_h      = {7};                             \
+    bins kmac_cfg      = {8};                             \
+    bins kmac_msg      = {9};                             \
+    bins kmac_digest   = {10};                            \
+    bins acch          = {11};                            \
+    bins invalid       = {-1};                            \
+    ignore_bins no_pqc = {8, 9, 10, 11} iff (!OtbnPQCEn); \
+    illegal_bins bad   = default;                         \
   }
 
   // State tracking
@@ -729,6 +759,23 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     pair_cross: cross last_cp, cur_cp;
   endgroup
 
+  covergroup pairwise_insn_pqc_cg with function sample(mnem_str_t last, mnem_str_t cur);
+    last_cp: coverpoint last {
+      `DEF_MNEM_BINS_EXCEPT_ECALL
+      `DEF_MNEM_BINS_PQC
+      illegal_bins other = default;
+    }
+    cur_cp: coverpoint cur {
+      `DEF_MNEM_BINS_EXCEPT_ECALL
+      `DEF_MNEM_BINS_PQC
+      `DEF_MNEM_BIN(mnem_ecall);
+      `DEF_MNEM_BIN(mnem_dummy);
+      `DEF_MNEM_BIN(mnem_question_mark);
+      illegal_bins other = default;
+    }
+    pair_cross: cross last_cp, cur_cp;
+  endgroup
+
   // Per-encoding covergroups //////////////////////////////////////////////////
   covergroup enc_bna_cg
     with function sample(mnem_str_t    mnemonic,
@@ -862,6 +909,31 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_WDR_TOGGLE_CROSS(wrs2)
   endgroup
 
+  covergroup enc_bnam_pqc_cg
+    with function sample(mnem_str_t   mnemonic,
+                         logic [31:0] insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_addm);
+      `DEF_MNEM_BIN(mnem_bn_subm);
+      `DEF_MNEM_BIN(mnem_bn_addv);
+      `DEF_MNEM_BIN(mnem_bn_subv);
+      illegal_bins other = default;
+    }
+
+    vec_cp: coverpoint insn_data[25];
+    type_cp: coverpoint insn_data[27:26] {
+        bins extremes[] = {'0, '1};
+      }
+
+    `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
+    `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
+    `DEF_WDR_TOGGLE_CROSS(wrs1)
+    `DEF_WDR_TOGGLE_CROSS(wrs2)
+  endgroup
+
   covergroup enc_bnan_cg
     with function sample(mnem_str_t    mnemonic,
                          logic [31:0]  insn_data,
@@ -984,6 +1056,131 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // BN.MULQACC.WO can write the M, L and Z flags, but does not affect the carry flag (bit 0 in
     // the flags_t struct).
     `DEF_MLZ_FLAGS_TOGGLE_COV(flags, flags_write_data[insn_data[31]])
+  endgroup
+
+  covergroup enc_bnmulv_cg
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b);
+
+    // Used for BN.MULV
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_mulv);
+      illegal_bins other = default;
+    }
+
+    mode_cp: coverpoint insn_data[25];    // Specifies lane mode or pairwise
+    // Valid types are defined by the encoding scheme of bn.mulv
+    // hw/ip/otbn/data/bignum-insns.yml
+    type_cp: coverpoint insn_data[31:26] {
+      bins legal_enc[] = {
+        [0:11],
+        [16:17],
+        [19:21],
+        [23:25],
+        27,
+        [32:33],
+        [35:37],
+        [39:41],
+        43
+      };
+      illegal_bins empty_enc = default;
+    }
+
+    `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
+    `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
+  endgroup
+
+  covergroup enc_bnmulvl_cg
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a);
+
+    // Used for BN.MULV.L
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_mulvl);
+      illegal_bins other = default;
+    }
+
+    ln_idx_cp: coverpoint insn_data[23:20] { bins extremes[] = {'0, '1}; } // Specifies lane index
+    ln_reg_cp: coverpoint insn_data[24];  // Specifies lane reg 0: w16 1: w17
+    mode_cp: coverpoint insn_data[25];    // Specifies lane mode or pairwise
+
+    // Valid types are defined by the encoding scheme of bn.mulv.l
+    // hw/ip/otbn/data/bignum-insns.yml
+    type_cp: coverpoint insn_data[31:26] {
+      bins legal_enc[] = {
+        [0:11],
+        [16:17],
+        [19:21],
+        [23:25],
+        27,
+        [32:33],
+        [35:37],
+        [39:41],
+        43
+      };
+      illegal_bins empty_enc = default;
+    }
+
+    // If the lane index is greater than or equal to 8 then the encoding type can not
+    // be any .8 variant from hw/ip/otbn/data/bignum-insns.yml
+    type_index_cross: cross type_cp, ln_idx_cp {
+      illegal_bins bad_type_idx =
+        binsof(ln_idx_cp) intersect {[8:15]} &&
+        binsof(type_cp) intersect { 1, 3, 5, 7, 9, 11, 17, 19, 21, 23, 25, 27, 33, 35, 37, 39, 41, 43 };
+    }
+
+    `DEF_WDR_TOGGLE_COV(wrs, wdr_operand_a)
+  endgroup
+
+  covergroup enc_bntrn_cg
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b);
+
+    // Used for BN.TRN
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_trn);
+      illegal_bins other = default;
+    }
+
+    type_cp: coverpoint insn_data[27:25];
+
+    `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
+    `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
+  endgroup
+
+
+  covergroup enc_bnav_cg
+    with function sample(mnem_str_t    mnemonic,
+                         logic [31:0]  insn_data,
+                         logic [255:0] wdr_operand_a);
+
+    // Used for BN.SHV
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_shv);
+      illegal_bins other = default;
+    }
+
+    // The shifted version of wdr_operand_a is nonzero
+    `DEF_SEEN_CP(nz_shifted_cp,
+                  0 != (insn_data[30] ?
+                        (wdr_operand_a >> {insn_data[29:25], 3'b0}) :
+                        (wdr_operand_a << {insn_data[29:25], 3'b0})))
+
+    type_cp: coverpoint insn_data[16];
+    sb_cp: coverpoint insn_data[29:25] { bins extremes[] = {'0, '1}; }
+    st_cp: coverpoint insn_data[30];
+
+    // Crossing st_cp, sb_cp and nz_shifted_cp means that we see extremal values of shift in both
+    // directions, restricted to cases where the result is nonzero (so the shift actually did
+    // something).
+    `DEF_MNEM_CROSS3(st, sb, nz_shifted)
+    // Toggle coverage of the input result
+    `DEF_WDR_TOGGLE_COV(wrs, wdr_operand_a)
   endgroup
 
   covergroup enc_bnc_cg
@@ -2141,12 +2338,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_addr_cg = new;
     call_stack_cg = new;
     flag_write_cg = new;
-    pairwise_insn_cg = new;
 
     enc_bna_cg = new;
     enc_bnaf_cg = new;
     enc_bnai_cg = new;
-    enc_bnam_cg = new;
     enc_bnan_cg = new;
     enc_bnaq_cg = new;
     enc_bnaqw_cg = new;
@@ -2168,6 +2363,18 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     enc_s_cg = new;
     enc_wcsr_cg = new;
     enc_u_cg = new;
+
+    if (OtbnPQCEn) begin
+      pairwise_insn_pqc_cg = new;
+      enc_bnam_pqc_cg = new;
+      enc_bnmulv_cg = new;
+      enc_bnmulvl_cg = new;
+      enc_bnav_cg = new;
+      enc_bntrn_cg = new;
+    end else begin
+      pairwise_insn_cg = new;
+      enc_bnam_cg = new;
+    end
 
     insn_addsub_cg = new;
     insn_addi_cg = new;
@@ -2248,6 +2455,16 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_encodings[mnem_bn_movr]       = "bnmovr";
     insn_encodings[mnem_bn_wsrr]       = "wcsr";
     insn_encodings[mnem_bn_wsrw]       = "wcsr";
+
+    if (OtbnPQCEn) begin
+      insn_encodings[mnem_bn_addv]     = "bnam";
+      insn_encodings[mnem_bn_subv]     = "bnam";
+      insn_encodings[mnem_bn_mulv]     = "bnmulv";
+      insn_encodings[mnem_bn_mulvl]    = "bnmulvl";
+      insn_encodings[mnem_bn_shv]      = "bnav";
+      insn_encodings[mnem_bn_trn]      = "bntrn";
+    end
+
     insn_encodings[mnem_dummy]         = "dummy";
     insn_encodings[mnem_question_mark] = "dummy";
   endfunction
@@ -2450,7 +2667,11 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // Track pairwise instructions. last_mnem is zero if this is the first instruction since
     // starting an operation.
     if (last_mnem != '0) begin
-      pairwise_insn_cg.sample(last_mnem, mnem);
+      if (OtbnPQCEn) begin
+        pairwise_insn_pqc_cg.sample(last_mnem, mnem);
+      end else begin
+        pairwise_insn_cg.sample(last_mnem, mnem);
+      end
     end
     last_mnem = mnem;
 
@@ -2470,8 +2691,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         enc_bnai_cg.sample(mnem, insn_data,
                            rtl_item.wdr_operand_a,
                            rtl_item.flags_write_data);
-      "bnam":
-        enc_bnam_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+      "bnam": begin
+        if (OtbnPQCEn) begin
+          enc_bnam_pqc_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+        end else begin
+          enc_bnam_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+        end
+      end
       "bnan":
         enc_bnan_cg.sample(mnem, insn_data,
                            rtl_item.wdr_operand_a,
@@ -2487,6 +2713,14 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         enc_bnaqw_cg.sample(mnem, insn_data,
                             rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
                             rtl_item.flags_write_data);
+      "bnav": begin
+        if (OtbnPQCEn) begin
+          enc_bnav_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a);
+        end else begin
+          `dv_fatal($sformatf("Unknown encoding (%0s) for instruction `%0s'", encoding, mnem),
+                    `gfn)
+        end
+      end
       "bnc":
         enc_bnc_cg.sample(mnem, insn_data,
                           rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
@@ -2495,12 +2729,36 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         enc_bnmov_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a);
       "bnmovr":
         enc_bnmovr_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
+      "bnmulv": begin
+        if (OtbnPQCEn) begin
+          enc_bnmulv_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+        end else begin
+          `dv_fatal($sformatf("Unknown encoding (%0s) for instruction `%0s'", encoding, mnem),
+                    `gfn)
+        end
+      end
+      "bnmulvl": begin
+        if (OtbnPQCEn) begin
+          enc_bnmulvl_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a);
+        end else begin
+          `dv_fatal($sformatf("Unknown encoding (%0s) for instruction `%0s'", encoding, mnem),
+                    `gfn)
+        end
+      end
       "bnr":
         enc_bnr_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
       "bns":
         enc_bns_cg.sample(mnem, insn_data,
                           rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
                           rtl_item.flags_read_data);
+      "bntrn": begin
+        if (OtbnPQCEn) begin
+          enc_bntrn_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+        end else begin
+          `dv_fatal($sformatf("Unknown encoding (%0s) for instruction `%0s'", encoding, mnem),
+                    `gfn)
+        end
+      end
       "bnxid":
         enc_bnxid_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
       "B":
@@ -2721,6 +2979,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
 `undef DEF_MNEM_BIN
 `undef DEF_MNEM_BINS_EXCEPT_ECALL
+`undef DEF_MNEM_BINS_PQC
 `undef DEF_MNEM_CROSS
 `undef DEF_MNEM_CROSS2
 `undef DEF_MNEM_CROSS3
