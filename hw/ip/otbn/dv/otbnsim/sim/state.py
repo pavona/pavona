@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -77,14 +78,15 @@ class InitSecWipeState(IntEnum):
 
 
 class OTBNState:
-    def __init__(self) -> None:
+    def __init__(self, pqc: bool) -> None:
+        self.EN_PQC = pqc
         self.gprs = GPRs()
         self.wdrs = RegFile('w', 256, 32)
 
         self.ext_regs = OTBNExtRegs()
         self.kmac = KmacBlock()
-        self.wsrs = WSRFile(self.ext_regs, self.kmac)
-        self.csrs = CSRFile()
+        self.wsrs = WSRFile(self.ext_regs, self.kmac, self.EN_PQC)
+        self.csrs = CSRFile(self.EN_PQC)
 
         self.pc = 0
         self._pc_next_override: Optional[int] = None
@@ -366,7 +368,7 @@ class OTBNState:
         # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
         # treatment because some of them have values that persist across
         # operations.
-        self.csrs = CSRFile()
+        self.csrs = CSRFile(self.EN_PQC)
         self.wsrs.on_start()
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()

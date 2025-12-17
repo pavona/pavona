@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
 # Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
 
 import argparse
@@ -48,6 +49,11 @@ def main() -> int:
         help=("after execution, write execution statistics to this file. "
               "Use '-' to write to STDOUT.")
     )
+    parser.add_argument(
+        '--pqc',
+        type=bool,
+        help=("set otbnsim to PQC feature mode for ML-KEM and ML-DSA.")
+    )
 
     args = parser.parse_args()
 
@@ -58,7 +64,7 @@ def main() -> int:
     if coverage_dat:
         collect_stats = True
 
-    sim = StandaloneSim()
+    sim = StandaloneSim(args.pqc)
     exp_end_addr = load_elf(sim, args.elf, args.dump_rtl_sim)
 
     testcase = None

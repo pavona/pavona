@@ -1,9 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
 # Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
-
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
@@ -26,8 +26,9 @@ StepRes = Tuple[Optional[OTBNInsn], List[Trace]]
 
 
 class OTBNSim:
-    def __init__(self) -> None:
-        self.state = OTBNState()
+    def __init__(self, pqc: bool) -> None:
+        self.EN_PQC = pqc
+        self.state = OTBNState(self.EN_PQC)
         self.program: List[OTBNInsn] = []
         self.loop_warps: LoopWarps = {}
         self.stats: Optional[ExecutionStats] = None

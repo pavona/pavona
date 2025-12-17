@@ -11,7 +11,6 @@
 
 
 import sys
-import os
 from typing import List, Optional, Sequence, Tuple
 from .trace import Trace
 from .ext_regs import OTBNExtRegs
@@ -613,8 +612,8 @@ class KmacDigestWSR(WSR):
 
 class WSRFile:
     '''A model of the WSR file'''
-    def __init__(self, ext_regs: OTBNExtRegs, kmac: KmacBlock) -> None:
-        self.EN_PQC = int(os.environ.get("PQC_EN", '0'))
+    def __init__(self, ext_regs: OTBNExtRegs, kmac: KmacBlock, pqc: bool) -> None:
+        self.EN_PQC = pqc
         self.KeyS0 = SideloadKey('KeyS0')
         self.KeyS1 = SideloadKey('KeyS1')
         self.Kmac = kmac
@@ -634,6 +633,7 @@ class WSRFile:
         self.KMAC_CFG = KmacCfgWSR('KMAC_CFG', self.Kmac, self.KMAC_PARTIAL_WRITE)
         self.KMAC_MSG = KmacMsgWSR('KMAC_MSG', self.Kmac, self.KMAC_PARTIAL_WRITE)
 
+        # These are the common index regardless of PQC enable or not
         self._by_idx = {
             0: self.MOD,
             1: self.RND,

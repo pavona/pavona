@@ -24,6 +24,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=2",
     ],
     dexp = "dilithium2_keypair_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -45,6 +46,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=2",
     ],
     dexp = "dilithium2_sign_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -67,6 +69,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=2",
     ],
     dexp = "dilithium2_verify_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -89,6 +92,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=3",
     ],
     dexp = "dilithium3_keypair_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -110,6 +114,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=3",
     ],
     dexp = "dilithium3_sign_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -132,6 +137,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=3",
     ],
     dexp = "dilithium3_verify_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -154,6 +160,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=5",
     ],
     dexp = "dilithium5_keypair_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -175,6 +182,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=5",
     ],
     dexp = "dilithium5_sign_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -197,6 +205,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=5",
     ],
     dexp = "dilithium5_verify_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:intt",
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
@@ -221,6 +230,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=2",
     ],
     dexp = "poly_uniform_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
         "//sw/otbn/crypto/mldsa:mldsa44_poly",
@@ -239,6 +249,7 @@ otbn_sim_test(
         "-DDILITHIUM_MODE=2",
     ],
     dexp = "poly_uniform_postprocess_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mldsa:kmac_send_msg",
         "//sw/otbn/crypto/mldsa:mldsa44_poly",

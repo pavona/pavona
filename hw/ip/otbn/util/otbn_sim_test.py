@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -77,6 +78,9 @@ def main() -> int:
                         metavar='FILE',
                         type=argparse.FileType('r'),
                         help='Path to a testcase hjson file.')
+    parser.add_argument('--pqc',
+                        action='store_true',
+                        help='Enable PQC mode for the simulator.')
     parser.add_argument('elf',
                         help='Path to the .elf file for the OTBN program.')
     parser.add_argument('-v', '--verbose', action='store_true')
@@ -98,6 +102,12 @@ def main() -> int:
         cmd_flags.extend([
             "--testcase",
             args.testcase.name,
+        ])
+
+    if args.pqc:
+        cmd_flags.extend([
+            "--pqc",
+            "-",
         ])
 
     with tempfile.NamedTemporaryFile() as regs_file, tempfile.NamedTemporaryFile() as dmem_file:

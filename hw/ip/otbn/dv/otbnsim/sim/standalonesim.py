@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -22,6 +23,9 @@ _TEST_URND_DATA = [
 
 
 class StandaloneSim(OTBNSim):
+    def __init__(self, pqc: bool) -> None:
+        super().__init__(pqc=pqc)
+
     def run(self, verbose: bool, dump_file: Optional[TextIO]) -> int:
         '''Run until ECALL.
 

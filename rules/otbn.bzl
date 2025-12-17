@@ -1,8 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
 # Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
 load("//rules:rv.bzl", "rv_rule")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
@@ -160,7 +161,7 @@ def _otbn_binary(ctx, additional_srcs = []):
         ),
     ]
 
-def _run_sim_test(ctx, exp, dexp, testcase = None, additional_srcs = []):
+def _run_sim_test(ctx, exp, dexp, pqc, testcase = None, additional_srcs = []):
     providers = _otbn_binary(ctx, additional_srcs)
 
     # Extract the output .elf file from the output group.
@@ -172,13 +173,15 @@ def _run_sim_test(ctx, exp, dexp, testcase = None, additional_srcs = []):
         exp_content += "--expected_regs {} ".format(exp.short_path)
         exp_files.append(exp)
     if dexp != None:
-        exp_content += "--expected_dmem {}".format(dexp.short_path)
+        exp_content += "--expected_dmem {} ".format(dexp.short_path)
         exp_files.append(dexp)
     if testcase != None:
         if exp != None or dexp != None:
             fail("Testcase with legacy exp or dexp specified.")
         exp_content += "--testcase {} ".format(testcase.short_path)
         exp_files.append(testcase)
+    if pqc:
+        exp_content += "--pqc "
 
     # Create a simple script that runs the OTBN test wrapper on the .elf file
     # using the provided simulator path.
@@ -207,7 +210,7 @@ def _otbn_sim_test(ctx):
     them on the simulator. Tests are expected to count failures in the w0
     register; the test checks that w0=0 to determine if the test passed.
     """
-    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp, testcase = ctx.file.testcase)
+    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp, ctx.attr.pqc, testcase = ctx.file.testcase)
 
 def otbn_sim_test_suite(name, tests, **kwargs):
     def testname(target):
@@ -256,7 +259,7 @@ def _otbn_autogen_sim_test_impl(ctx):
         executable = ctx.executable.testgen,
     )
 
-    return _run_sim_test(ctx, exp, None, additional_srcs = [data])
+    return _run_sim_test(ctx, exp, None, ctx.attr.pqc, additional_srcs = [data])
 
 def _otbn_consttime_test_impl(ctx):
     """This rule checks if a program or subroutine is constant-time.
@@ -418,6 +421,7 @@ otbn_sim_test = rv_rule(
         "dexp": attr.label(allow_single_file = True),
         "testcase": attr.label(allow_single_file = True),
         "copts": attr.string_list(),
+        "pqc": attr.bool(default = False),
         "_riscv32_ar": attr.label(
             default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
             allow_single_file = True,
@@ -485,6 +489,7 @@ otbn_autogen_sim_test = rv_rule(
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
         "copts": attr.string_list(),
+        "pqc": attr.bool(default = False),
         "_riscv32_ar": attr.label(
             default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
             allow_single_file = True,

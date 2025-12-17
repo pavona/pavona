@@ -20,6 +20,7 @@ otbn_sim_test(
         "-DKYBER_K=2",
     ],
     dexp = "mlkem512_keypair_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -41,6 +42,7 @@ otbn_sim_test(
         "-DKYBER_K=2",
     ],
     dexp = "mlkem512_encap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -64,6 +66,7 @@ otbn_sim_test(
         "-DKYBER_K=2",
     ],
     dexp = "mlkem512_decap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -88,6 +91,7 @@ otbn_sim_test(
         "-DKYBER_K=2",
     ],
     dexp = "mlkem512_false_decap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -112,6 +116,7 @@ otbn_sim_test(
         "-DKYBER_K=3",
     ],
     dexp = "mlkem768_keypair_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -133,6 +138,7 @@ otbn_sim_test(
         "-DKYBER_K=3",
     ],
     dexp = "mlkem768_encap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -156,6 +162,7 @@ otbn_sim_test(
         "-DKYBER_K=3",
     ],
     dexp = "mlkem768_decap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -180,6 +187,7 @@ otbn_sim_test(
         "-DKYBER_K=3",
     ],
     dexp = "mlkem768_false_decap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -204,6 +212,7 @@ otbn_sim_test(
         "-DKYBER_K=4",
     ],
     dexp = "mlkem1024_keypair_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -225,6 +234,7 @@ otbn_sim_test(
         "-DKYBER_K=4",
     ],
     dexp = "mlkem1024_encap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -248,6 +258,7 @@ otbn_sim_test(
         "-DKYBER_K=4",
     ],
     dexp = "mlkem1024_decap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",
@@ -272,6 +283,7 @@ otbn_sim_test(
         "-DKYBER_K=4",
     ],
     dexp = "mlkem1024_false_decap_test.dexp",
+    pqc = True,
     deps = [
         "//sw/otbn/crypto/mlkem:basemul",
         "//sw/otbn/crypto/mlkem:cbd",

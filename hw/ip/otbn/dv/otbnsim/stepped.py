@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -74,6 +75,7 @@ prefixed with "0x" if they are hexadecimal.
 
 import binascii
 import sys
+import os
 from typing import List, Optional
 
 from sim.decode import decode_file
@@ -292,7 +294,7 @@ def on_print_call_stack(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_reset(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('reset', 0, args)
-    return OTBNSim()
+    return OTBNSim(get_pqc_mode())
 
 
 def on_edn_rnd_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
@@ -452,8 +454,12 @@ def on_input(sim: OTBNSim, line: str) -> Optional[OTBNSim]:
     return ret
 
 
+def get_pqc_mode() -> int:
+    return int(os.environ.get("PQC_EN", '0'))
+
+
 def main() -> int:
-    sim = OTBNSim()
+    sim = OTBNSim(get_pqc_mode())
     try:
         for line in sys.stdin:
             ret = on_input(sim, line)

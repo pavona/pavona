@@ -781,7 +781,7 @@ class BNADDV(OTBNInsn):
         self.type = op_vals['type']
 
     def execute(self, state: OTBNState) -> None:
-        if not state.wsrs.EN_PQC:
+        if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
 
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -818,7 +818,7 @@ class BNMULV(OTBNInsn):
         self.type = op_vals['type']
 
     def execute(self, state: OTBNState) -> None:
-        if not state.wsrs.EN_PQC:
+        if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
 
         wrs1 = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -929,7 +929,7 @@ class BNMULVL(OTBNInsn):
         self.lane_index = op_vals['lane_index']
 
     def execute(self, state: OTBNState) -> None:
-        if not state.wsrs.EN_PQC:
+        if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
 
         # Extract fields in the encoding:
@@ -1286,7 +1286,7 @@ class BNSUBV(OTBNInsn):
         self.type = op_vals['type']
 
     def execute(self, state: OTBNState) -> None:
-        if not state.wsrs.EN_PQC:
+        if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
 
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -1444,7 +1444,7 @@ class BNSHV(OTBNInsn):
         self.shift_arith = op_vals['shift_arith']
 
     def execute(self, state: OTBNState) -> None:
-        if not state.wsrs.EN_PQC:
+        if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
 
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -1829,7 +1829,7 @@ class BNTRN(OTBNInsn):
         self.type = op_vals['type']
 
     def execute(self, state: OTBNState) -> None:
-        if not state.wsrs.EN_PQC:
+        if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
 
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
