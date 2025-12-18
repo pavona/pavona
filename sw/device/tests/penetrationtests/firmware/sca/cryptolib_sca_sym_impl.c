@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -127,8 +128,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
   aes_key.checksum = integrity_blinded_checksum(&aes_key);
 
   size_t padded_len_bytes;
-  otcrypto_aes_padded_plaintext_length(data_in_len, aes_padding,
-                                       &padded_len_bytes);
+  TRY(otcrypto_aes_padded_plaintext_length(data_in_len, aes_padding,
+                                           &padded_len_bytes));
 
   if (padded_len_bytes > AES_CMD_MAX_MSG_BYTES) {
     return OUT_OF_RANGE();

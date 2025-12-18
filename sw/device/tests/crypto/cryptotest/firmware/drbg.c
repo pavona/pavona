@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -101,7 +102,7 @@ status_t handle_drbg(ujson_t *uj) {
   TRY(otcrypto_drbg_manual_generate(addl_2, output));
 
   // Uninstantiate the DRBG system
-  otcrypto_drbg_uninstantiate();
+  TRY(otcrypto_drbg_uninstantiate());
 
   // Send output to host via UART
   RESP_OK(ujson_serialize_cryptotest_drbg_output_t, uj, &uj_output);

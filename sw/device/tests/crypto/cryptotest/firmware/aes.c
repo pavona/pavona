@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -131,8 +132,8 @@ status_t handle_aes_block(ujson_t *uj) {
   key.checksum = integrity_blinded_checksum(&key);
 
   size_t padded_len_bytes;
-  otcrypto_aes_padded_plaintext_length((size_t)uj_data.input_len, padding,
-                                       &padded_len_bytes);
+  TRY(otcrypto_aes_padded_plaintext_length((size_t)uj_data.input_len, padding,
+                                           &padded_len_bytes));
   if (padded_len_bytes > AES_CMD_MAX_MSG_BYTES) {
     return OUT_OF_RANGE();
   }
@@ -142,7 +143,7 @@ status_t handle_aes_block(ujson_t *uj) {
       .len = sizeof(output_buf),
   };
 
-  otcrypto_aes(&key, iv, mode, op, input, padding, output);
+  TRY(otcrypto_aes(&key, iv, mode, op, input, padding, output));
 
   cryptotest_aes_output_t uj_output;
   uj_output.output_len = padded_len_bytes;
