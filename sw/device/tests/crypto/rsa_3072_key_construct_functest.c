@@ -123,8 +123,8 @@ status_t public_key_roundtrip_test(void) {
       .key_length = kOtcryptoRsa3072PublicKeyBytes,
       .key = public_key_data,
   };
-  otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, modulus,
-                                    kTestPublicExponent, &public_key);
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, modulus,
+                                        kTestPublicExponent, &public_key));
 
   // Deconstruct the public key
   uint32_t roundtrip_modulus_data[kRsa3072NumWords] = {0};
@@ -133,8 +133,8 @@ status_t public_key_roundtrip_test(void) {
       .len = ARRAYSIZE(roundtrip_modulus_data),
   };
   uint32_t roundtrip_public_exponent = 0;
-  otcrypto_rsa_public_key_deconstruct(&public_key, roundtrip_modulus,
-                                      &roundtrip_public_exponent);
+  TRY(otcrypto_rsa_public_key_deconstruct(&public_key, roundtrip_modulus,
+                                          &roundtrip_public_exponent));
 
   // Check that the round trip had the expected results
   TRY_CHECK(roundtrip_public_exponent == kTestPublicExponent);
@@ -211,9 +211,9 @@ status_t private_key_roundtrip_test(void) {
       .data = roundtrip_i_q_data,
       .len = ARRAYSIZE(roundtrip_i_q_data),
   };
-  otcrypto_rsa_private_key_deconstruct(&private_key, roundtrip_p, roundtrip_q,
-                                       roundtrip_d_p, roundtrip_d_q,
-                                       roundtrip_i_q);
+  TRY(otcrypto_rsa_private_key_deconstruct(&private_key, roundtrip_p,
+                                           roundtrip_q, roundtrip_d_p,
+                                           roundtrip_d_q, roundtrip_i_q));
 
   // Check that the round trip had the expected results
   TRY_CHECK(roundtrip_p.len == ARRAYSIZE(kTestCofactorP));
@@ -247,8 +247,8 @@ status_t private_key_check_valid_roundtrip_inner(hardened_bool_t check_primes) {
       .key_length = kOtcryptoRsa3072PublicKeyBytes,
       .key = public_key_data,
   };
-  otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, modulus,
-                                    kTestPublicExponent, &public_key);
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, modulus,
+                                        kTestPublicExponent, &public_key));
 
   // Construct the private key.
   otcrypto_const_word32_buf_t p = {
@@ -319,9 +319,9 @@ status_t private_key_check_valid_roundtrip_inner(hardened_bool_t check_primes) {
       .data = roundtrip_i_q_data,
       .len = ARRAYSIZE(roundtrip_i_q_data),
   };
-  otcrypto_rsa_private_key_deconstruct(&private_key, roundtrip_p, roundtrip_q,
-                                       roundtrip_d_p, roundtrip_d_q,
-                                       roundtrip_i_q);
+  TRY(otcrypto_rsa_private_key_deconstruct(&private_key, roundtrip_p,
+                                           roundtrip_q, roundtrip_d_p,
+                                           roundtrip_d_q, roundtrip_i_q));
 
   // Check that the round trip had the expected results
   TRY_CHECK(roundtrip_p.len == ARRAYSIZE(kTestCofactorP));
@@ -365,8 +365,8 @@ status_t private_key_check_invalid(void) {
       .key_length = kOtcryptoRsa3072PublicKeyBytes,
       .key = public_key_data,
   };
-  otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, modulus,
-                                    kTestPublicExponent, &public_key);
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, modulus,
+                                        kTestPublicExponent, &public_key));
 
   // Attempt to construct the private key, providing an invalid value for d_p
   // with a single bit changed.
