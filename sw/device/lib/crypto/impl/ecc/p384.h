@@ -161,6 +161,28 @@ OT_WARN_UNUSED_RESULT
 status_t p384_sideload_keygen_finalize(p384_point_t *public_key);
 
 /**
+ * Start a P-384 public key on-curve check on OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @param[in] public_key Generated public key.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_public_key_check_start(p384_point_t *public_key);
+
+/**
+ * Finish a P-384 public key on-curve check on OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @param[out] reuslt Result of on-curve check.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_public_key_check_finalize(hardened_bool_t *result);
+
+/**
  * Start an async ECDSA/P-384 signature generation operation on OTBN.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.

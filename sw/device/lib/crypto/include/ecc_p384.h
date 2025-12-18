@@ -36,6 +36,51 @@ otcrypto_status_t otcrypto_p384_public_key_construct(
     otcrypto_unblinded_key_t *public_key);
 
 /**
+ * Constructs an ECDSA/ECDH P-384 public key from affine coordinates, performing
+ * an on-curve check on the constructed key.
+ *
+ * The caller should allocate space for the public key and set the `key` and
+ * `key_length` fields accordingly.
+ *
+ * @param x First affine coordinate of public key (x).
+ * @param y Second affine coordinate of public key (y).
+ * @param[out] public_key Destination public key struct.
+ * @param[out] key_valid Whether the constructed key is valid.
+ * @return Result of the P-384 key construction.
+ */
+otcrypto_status_t otcrypto_p384_public_key_construct_and_check(
+    otcrypto_const_word32_buf_t x, otcrypto_const_word32_buf_t y,
+    otcrypto_unblinded_key_t *public_key, hardened_bool_t *key_valid);
+
+/**
+ * Starts an asynchronous public key check for ECDSA/P-384.
+ *
+ * See `otcrypto_p384_public_key_construct_and_check` for requirements on input
+ * and output values.
+ *
+ * @param x First affine coordinate of public key (x).
+ * @param y Second affine coordinate of public key (y).
+ * @param[out] public_key Destination public key struct.
+ * @param[out] key_valid Whether the constructed key is valid.
+ * @return Result of the P-384 key construction.
+ */
+otcrypto_status_t otcrypto_p384_public_key_construct_and_check_async_start(
+    otcrypto_const_word32_buf_t x, otcrypto_const_word32_buf_t y,
+    otcrypto_unblinded_key_t *public_key, hardened_bool_t *key_valid);
+
+/**
+ * Finalizes an asynchronous public key check for ECDSA/P-384.
+ *
+ * See `otcrypto_p384_public_key_construct_and_check` for requirements on input
+ * and output values.
+ *
+ * @param[out] key_valid Whether the constructed key is valid.
+ * @return Result of the P-384 key construction.
+ */
+otcrypto_status_t otcrypto_p384_public_key_construct_and_check_async_finalize(
+    hardened_bool_t *key_valid);
+
+/**
  * Deconstructs an ECDSA/ECDH P-384 public key into affine coordinates
  *
  * The caller should allocate space for both affine coordinates.

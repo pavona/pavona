@@ -146,6 +146,35 @@ otcrypto_status_t otcrypto_p384_public_key_construct(
   return OTCRYPTO_OK;
 }
 
+otcrypto_status_t otcrypto_p384_public_key_construct_and_check(
+    otcrypto_const_word32_buf_t x, otcrypto_const_word32_buf_t y,
+    otcrypto_unblinded_key_t *public_key, hardened_bool_t *key_valid) {
+  HARDENED_TRY(otcrypto_p384_public_key_construct_and_check_async_start(
+      x, y, public_key, key_valid));
+  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  return otcrypto_p384_public_key_construct_and_check_async_finalize(key_valid);
+}
+
+otcrypto_status_t otcrypto_p384_public_key_construct_and_check_async_start(
+    otcrypto_const_word32_buf_t x, otcrypto_const_word32_buf_t y,
+    otcrypto_unblinded_key_t *public_key, hardened_bool_t *key_valid) {
+  // Defensively mark the private key as invalid to start.
+  *key_valid = kHardenedBoolFalse;
+
+  // Construct a copy of the private key from the provided parameters.
+  HARDENED_TRY(otcrypto_p384_public_key_construct(x, y, public_key));
+
+  // Start the public key check.
+  p384_point_t *pk = (p384_point_t *)public_key->key;
+  return p384_public_key_check_start(pk);
+}
+
+otcrypto_status_t otcrypto_p384_public_key_construct_and_check_async_finalize(
+    hardened_bool_t *key_valid) {
+  // Finalize the public key check.
+  return p384_public_key_check_finalize(key_valid);
+}
+
 otcrypto_status_t otcrypto_p384_public_key_deconstruct(
     const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t x,
     otcrypto_word32_buf_t y) {

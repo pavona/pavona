@@ -47,6 +47,7 @@ static const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p384, ok);
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEYGEN);
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEY_CHECK);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIGN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_VERIFY);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_ECDH);
@@ -54,6 +55,8 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_SIGN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_ECDH);
 static const uint32_t kP384ModeKeygen = OTBN_ADDR_T_INIT(run_p384, MODE_KEYGEN);
+static const uint32_t kP384ModeKeyCheck =
+    OTBN_ADDR_T_INIT(run_p384, MODE_KEY_CHECK);
 static const uint32_t kP384ModeSign = OTBN_ADDR_T_INIT(run_p384, MODE_SIGN);
 static const uint32_t kP384ModeVerify = OTBN_ADDR_T_INIT(run_p384, MODE_VERIFY);
 static const uint32_t kP384ModeEcdh = OTBN_ADDR_T_INIT(run_p384, MODE_ECDH);
@@ -212,6 +215,33 @@ status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
   // Read the public key from OTBN dmem.
   OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarX, public_key->x));
   OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
+
+  // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
+}
+
+status_t p384_public_key_check_start(p384_point_t *public_key) {
+  // Load the P-384 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+
+  // Set mode so start() will jump into signing.
+  uint32_t mode = kP384ModeKeyCheck;
+  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+
+  // Set the public key.
+  HARDENED_TRY(set_public_key(public_key));
+
+  // Start the OTBN routine.
+  OTBN_WIPE_IF_ERROR(otbn_execute());
+  return OTCRYPTO_OK;
+}
+
+status_t p384_public_key_check_finalize(hardened_bool_t *result) {
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
+  HARDENED_TRY(otbn_assert_idle());
+
+  // Read the status code out of DMEM (false if the public key is invalid)
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, result));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();

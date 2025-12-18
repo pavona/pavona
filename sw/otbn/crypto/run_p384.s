@@ -11,17 +11,18 @@
  *
  * This binary has the following modes of operation:
  * 1. MODE_KEYGEN: generate a new keypair
- * 2. MODE_SIGN: generate an ECDSA signature using caller-provided secret key
- * 3. MODE_VERIFY: verify an ECDSA signature
- * 4. MODE_ECDH: ECDH key exchange using a caller-provided secret key
- * 5. MODE_SIDELOAD_KEYGEN: generate a keypair from a sideloaded seed
- * 6. MODE_SIDELOAD_SIGN: generate an ECDSA signature using sideloaded secret key/seed
- * 7. MODE_SIDELOAD_ECDH: ECDH key exchange using a secret key from a sideloaded seed
+ * 2. MODE_KEY_CHECK: check validity of a public key
+ * 3. MODE_SIGN: generate an ECDSA signature using caller-provided secret key
+ * 4. MODE_VERIFY: verify an ECDSA signature
+ * 5. MODE_ECDH: ECDH key exchange using a caller-provided secret key
+ * 6. MODE_SIDELOAD_KEYGEN: generate a keypair from a sideloaded seed
+ * 7. MODE_SIDELOAD_SIGN: generate an ECDSA signature using sideloaded secret key/seed
+ * 8. MODE_SIDELOAD_ECDH: ECDH key exchange using a secret key from a sideloaded seed
  */
 
 /**
  * Mode magic values generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 11 --avoid-zero -s 1654842154
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 --avoid-zero -s 1654842154
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
@@ -31,18 +32,20 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x0e7
-.equ MODE_SIGN, 0x633
-.equ MODE_VERIFY, 0x54d
-.equ MODE_ECDH, 0x3bd
-.equ MODE_SIDELOAD_KEYGEN, 0x4da
-.equ MODE_SIDELOAD_SIGN, 0x786
-.equ MODE_SIDELOAD_ECDH, 0x36a
+.equ MODE_KEYGEN, 0x3cc
+.equ MODE_KEY_CHECK, 0x7a1
+.equ MODE_SIGN, 0x655
+.equ MODE_VERIFY, 0x0bd
+.equ MODE_ECDH, 0x578
+.equ MODE_SIDELOAD_KEYGEN, 0x31b
+.equ MODE_SIDELOAD_SIGN, 0x2f2
+.equ MODE_SIDELOAD_ECDH, 0x4cb
 
 /**
  * Make the mode constants visible to Ibex.
  */
 .globl MODE_KEYGEN
+.globl MODE_KEY_CHECK
 .globl MODE_SIGN
 .globl MODE_VERIFY
 .globl MODE_ECDH
@@ -67,6 +70,9 @@ start:
 
   addi  x3, x0, MODE_KEYGEN
   beq   x2, x3, keypair_random
+
+  addi  x3, x0, MODE_KEY_CHECK
+  beq   x2, x3, public_key_check
 
   addi  x3, x0, MODE_VERIFY
   beq   x2, x3, ecdsa_verify
@@ -171,6 +177,24 @@ keypair_random:
   la       x13, d1
   la       x14, d1_io
   jal      x1, copy_share
+
+  ecall
+
+/**
+ * Check whether a key point is on the P-384 curve.
+ *
+ * @param[in] dmem[x]: Public key x-coordinate.
+ * @param[in] dmem[y]: Public key y-coordinate.
+ * @param[out] dmem[ok]: success/failure of basic checks (32 bits)
+ */
+public_key_check:
+  /* Validate the public key (ends the program on failure). */
+  jal      x1, p384_check_public_key
+
+  /* If we got here the basic validity checks passed, so set `ok` to true. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
 
   ecall
 

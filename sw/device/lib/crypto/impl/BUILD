@@ -87,7 +87,10 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:ecc_p384.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":integrity",
         ":keyblob",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p384",
