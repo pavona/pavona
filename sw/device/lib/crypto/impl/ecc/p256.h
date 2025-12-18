@@ -161,6 +161,28 @@ OT_WARN_UNUSED_RESULT
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key);
 
 /**
+ * Start a P-256 public key on-curve check on OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @param[in] public_key Generated public key.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p256_public_key_check_start(p256_point_t *public_key);
+
+/**
+ * Finish a P-256 public key on-curve check on OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @param[out] reuslt Result of on-curve check.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p256_public_key_check_finalize(hardened_bool_t *result);
+
+/**
  * Start an async ECDSA/P-256 signature generation operation on OTBN.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.

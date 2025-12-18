@@ -37,6 +37,11 @@ static uint32_t kTestScalarShare1[kP256MaskedScalarShareWords] = {
     0xb1799dd0, 0xde58fd04, 0xda594df1, 0x87a18c1d,
 };
 
+static uint32_t kTestInvalidCoordinateY[kP256CoordWords] = {
+    0xee9f8557, 0xbbb1d213, 0x0d45e2f0, 0x842dabf7,
+    0x9c83325a, 0x637bc906, 0xcb96e9a6, 0x5ad30f11,
+};
+
 // ECC P-256 key mode for testing.
 static const otcrypto_key_mode_t kTestKeyMode = kOtcryptoKeyModeEcdsaP256;
 
@@ -91,6 +96,75 @@ status_t public_key_roundtrip_test(void) {
   return OK_STATUS();
 }
 
+status_t public_key_check_valid_roundtrip_test(void) {
+  // Construct the public key.
+  otcrypto_const_word32_buf_t x = {
+      .data = kTestCoordinateX,
+      .len = ARRAYSIZE(kTestCoordinateX),
+  };
+  otcrypto_const_word32_buf_t y = {
+      .data = kTestCoordinateY,
+      .len = ARRAYSIZE(kTestCoordinateY),
+  };
+  uint32_t public_key_data[kP256PublicKeyWords];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kTestKeyMode,
+      .key_length = sizeof(public_key_data),
+      .key = public_key_data,
+  };
+  hardened_bool_t key_valid = kHardenedBoolFalse;
+  otcrypto_p256_public_key_construct_and_check(x, y, &public_key, &key_valid);
+
+  // Ensure the constructed key is valid.
+  TRY_CHECK(key_valid == kHardenedBoolTrue);
+
+  // Deconstruct the public key.
+  uint32_t roundtrip_x_data[kP256CoordWords] = {0};
+  otcrypto_word32_buf_t roundtrip_x = {
+      .data = roundtrip_x_data,
+      .len = ARRAYSIZE(roundtrip_x_data),
+  };
+  uint32_t roundtrip_y_data[kP256CoordWords] = {0};
+  otcrypto_word32_buf_t roundtrip_y = {
+      .data = roundtrip_y_data,
+      .len = ARRAYSIZE(roundtrip_y_data),
+  };
+  otcrypto_p256_public_key_deconstruct(&public_key, roundtrip_x, roundtrip_y);
+
+  // Check that the round trip had the expected results.
+  TRY_CHECK(roundtrip_x.len == ARRAYSIZE(kTestCoordinateX));
+  TRY_CHECK_ARRAYS_EQ(roundtrip_x.data, kTestCoordinateX,
+                      ARRAYSIZE(kTestCoordinateX));
+  TRY_CHECK(roundtrip_y.len == ARRAYSIZE(kTestCoordinateY));
+  TRY_CHECK_ARRAYS_EQ(roundtrip_y.data, kTestCoordinateY,
+                      ARRAYSIZE(kTestCoordinateY));
+  return OK_STATUS();
+}
+
+status_t public_key_check_invalid(void) {
+  // Construct the public key.
+  otcrypto_const_word32_buf_t x = {
+      .data = kTestCoordinateX,
+      .len = ARRAYSIZE(kTestCoordinateX),
+  };
+  otcrypto_const_word32_buf_t y = {
+      .data = kTestInvalidCoordinateY,
+      .len = ARRAYSIZE(kTestInvalidCoordinateY),
+  };
+  uint32_t public_key_data[kP256PublicKeyWords];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kTestKeyMode,
+      .key_length = sizeof(public_key_data),
+      .key = public_key_data,
+  };
+  hardened_bool_t key_valid = kHardenedBoolFalse;
+  otcrypto_p256_public_key_construct_and_check(x, y, &public_key, &key_valid);
+
+  // Ensure the constructed key is invalid.
+  TRY_CHECK(key_valid == kHardenedBoolFalse);
+  return OK_STATUS();
+}
+
 status_t private_key_roundtrip_test(void) {
   // Construct the public key.
   otcrypto_const_word32_buf_t scalar_share0 = {
@@ -139,6 +213,8 @@ bool test_main(void) {
   status_t test_result = OK_STATUS();
   CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, public_key_roundtrip_test);
+  EXECUTE_TEST(test_result, public_key_check_valid_roundtrip_test);
+  EXECUTE_TEST(test_result, public_key_check_invalid);
   EXECUTE_TEST(test_result, private_key_roundtrip_test);
   return status_ok(test_result);
 }
