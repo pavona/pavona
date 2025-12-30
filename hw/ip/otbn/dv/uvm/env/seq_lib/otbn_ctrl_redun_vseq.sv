@@ -47,16 +47,22 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
   endtask
 
   // Wait until the value at path becomes nonzero
-  task wait_for_flag(string path);
+  task wait_for_flag(string path, int width);
     // Initialise flag to zero. With some simulators (one version of Xcelium, at least), it seems
     // that the call to uvm_hdl_read might leave its destination set to X. The HDL path exists and
     // the signal is not X, so this is rather confusing. Initialising flag to zero before calling
     // uvm_hdl_read seems to fix the behaviour.
     uvm_hdl_data_t flag = 0;
+    uvm_hdl_data_t mask;
+    uvm_hdl_data_t value;
+
+    mask = (uvm_hdl_data_t'(1) << width) - 1;
+
     `DV_SPINWAIT(do begin
                    @(cfg.clk_rst_vif.cb);
-                   `DV_CHECK_FATAL(uvm_hdl_read(path, flag) == 1);
-                 end while(!flag);)
+                   `DV_CHECK_FATAL(uvm_hdl_read(path, flag));
+                   value = flag & mask;
+                 end while(!value);)
   endtask
 
   function void report_err_type(string desc);
@@ -83,7 +89,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       0: begin
         report_err_type("error on ispr_addr during a write");
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_addr_i";
-        wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_wr_en");
+        wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_wr_en", 1);
         `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_addr));
         // Mask to corrupt 1 to 2 bits of the ispr addr
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
@@ -93,7 +99,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       1: begin
         report_err_type("error on ispr_addr during a read");
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_addr_i";
-        wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_rd_en_i");
+        wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_rd_en_i", 1);
         `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_addr));
         // Mask to corrupt 1 to 2 bits of the ispr addr
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
@@ -104,6 +110,8 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         logic [3:0] good_op, bad_op;
         logic       selected_flags_C;
         bit         avoid_addc = 1'b0;
+        bit         avoid_addv = 1'b0;
+        bit         op_valid = 1'b0;
 
         string alu_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum";
         string op_path = {alu_path, ".operation_i.op"};
@@ -117,7 +125,8 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         // operation_valid_i flag should be high, and this should be the opcode for a genuine
         // operation (less than or equal to AluOpBignumNot).
         while (1) begin
-          wait_for_flag(op_valid_path);
+          wait_for_flag(op_valid_path, 1);
+          uvm_hdl_read(op_valid_path, op_valid);
           `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_op))
           if (good_op <= otbn_pkg::AluOpBignumNot)
             break;
@@ -126,9 +135,10 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         end
 
         // We also know that the pre-decode check won't spot conversions between add/addc and
-        // sub/subb if the selected flags register happens to be zero (because the change in opcode
-        // won't actually have any effect). We want to constrain the randomisation to avoid doing
-        // one of those conversions if we're in that situation.
+        // sub/subb if the selected flags register happens to be zero (because the change in
+        // opcode won't actually have any effect). We want to constrain the randomisation to avoid
+        // doing one of those conversions if we're in that situation. The same applies for
+        // addm/addv and subm/subv.
         //
         //  - Do this by adding an avoid_addc flag that avoids a conversion between add/addc when
         //    the carry flag is zero. (This also applies to subtractions: see the point below)
@@ -149,6 +159,11 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
                               otbn_pkg::AluOpBignumSub, otbn_pkg::AluOpBignumSubb}) begin
             avoid_addc = 1'b1;
           end
+          if (good_op inside {otbn_pkg::AluOpBignumAddm, otbn_pkg::AluOpBignumAddv,
+                              otbn_pkg::AluOpBignumSubm, otbn_pkg::AluOpBignumSubv,
+                              otbn_pkg::AluOpBignumAddvm, otbn_pkg::AluOpBignumSubvm}) begin
+            avoid_addv = 1'b1;
+          end
         end
 
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_op,
@@ -159,6 +174,17 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
                                                           bad_op != otbn_pkg::AluOpBignumSub &&
                                                           bad_op != otbn_pkg::AluOpBignumSubb);
                                            bad_op != good_op + 3; good_op != bad_op + 3;)
+
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_op,
+                                           bad_op != good_op;
+                                           bad_op != otbn_pkg::AluOpBignumNone;
+                                           avoid_addv -> (bad_op != otbn_pkg::AluOpBignumAddm &&
+                                                          bad_op != otbn_pkg::AluOpBignumAddv &&
+                                                          bad_op != otbn_pkg::AluOpBignumSubm &&
+                                                          bad_op != otbn_pkg::AluOpBignumSubv &&
+                                                          bad_op != otbn_pkg::AluOpBignumAddvm &&
+                                                          bad_op != otbn_pkg::AluOpBignumSubvm);
+                                           bad_op != good_op + 5; good_op != bad_op + 5;)
 
         `uvm_info(`gfn,
                   $sformatf("Forcing %0s from %0d to %0d", err_path, good_op, bad_op),
@@ -173,7 +199,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         report_err_type($sformatf("error on lsu_addr_en (choose_err = %0d)", choose_err));
 
         err_path = "tb.dut.u_otbn_core.u_otbn_controller.insn_dec_shared_i";
-        wait_for_flag("tb.dut.u_otbn_core.u_otbn_controller.insn_valid_i");
+        wait_for_flag("tb.dut.u_otbn_core.u_otbn_controller.insn_valid_i", 1);
         `DV_CHECK_FATAL(uvm_hdl_read(err_path, insn_dec_shared_i));
         case(choose_err)
           0: begin
@@ -196,7 +222,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         report_err_type($sformatf("core error (choose_err = %0d, after %0d clocks)",
                                   choose_err, num_clks));
         cfg.clk_rst_vif.wait_clks(num_clks);
-        wait_for_flag("tb.dut.u_otbn_core.insn_valid");
+        wait_for_flag("tb.dut.u_otbn_core.insn_valid", 1);
         case(choose_err)
           0: begin
             bit [31:0] bad_rf_ren_a;
@@ -243,7 +269,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         cfg.clk_rst_vif.wait_clks(num_clks);
         // Wait for valid instruction, because `otbn_core` only propagates bignum MAC predec errors
         // for valid instructions.
-        wait_for_flag("tb.dut.u_otbn_core.insn_valid");
+        wait_for_flag("tb.dut.u_otbn_core.insn_valid", 1);
         case(choose_err)
           0: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i";
@@ -253,7 +279,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           1: begin
             bit zero_acc;
             err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.operation_i.zero_acc";
-            wait_for_flag("tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i");
+            wait_for_flag("tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i", 1);
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, zero_acc));
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, !zero_acc) == 1);
           end
@@ -272,7 +298,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         case(choose_err)
           0: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_addr_i[4:0]";
-            wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_en_i[1:0]");
+            wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_en_i[1:0]", 2);
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, addr));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
@@ -286,7 +312,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           end
           1: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_addr_a_i";
-            wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_a_i");
+            wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_a_i", 1);
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, addr));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
@@ -294,7 +320,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           end
           2: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_addr_b_i";
-            wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_b_i");
+            wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_b_i", 1);
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, addr));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
