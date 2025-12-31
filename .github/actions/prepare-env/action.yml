@@ -155,7 +155,7 @@ runs:
         # Inject the OS version into a parameter used in the action key computation to
         # avoid collisions between different operating systems in the caches.
         # See #14695 for more information.
-        echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -ds)\"" >> ~/.bazelrc
+        echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -is)_$(lsb_release -rs)\"" >> ~/.bazelrc
 
         if ${{ github.event_name != 'pull_request' }}; then
           echo "Will upload to the cache." >&2
