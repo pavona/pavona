@@ -131,6 +131,10 @@ class ACCState:
         # to catch bugs if we forget to set it.
         self.wipe_cycles = -1
 
+        # Remember the last state we were in. This is used to determine whether we
+        # need to delay zeroing INSN_CNT when locking after a wipe.
+        self.old_state = self._fsm_state
+
         # This controls which state we move to when the next secure wipe ends
         self.lock_after_wipe = False
 
@@ -308,11 +312,11 @@ class ACCState:
                 self.invalidated_imem = True
                 self._time_to_imem_invalidation = None
 
-        old_state = self._fsm_state
+        self.old_state = self._fsm_state
 
         self._fsm_state = self._next_fsm_state
 
-        if self._fsm_state == old_state:
+        if self._fsm_state == self.old_state:
             self.cycles_in_this_state += 1
         else:
             self.cycles_in_this_state = 0
@@ -328,7 +332,7 @@ class ACCState:
         # register) but nothing else. This is just an optimisation: if
         # everything is working properly, there won't be any other pending
         # changes.
-        if old_state not in [FsmState.EXEC, FsmState.WIPING]:
+        if self.old_state not in [FsmState.EXEC, FsmState.WIPING]:
             return
 
         self.gprs.commit()
