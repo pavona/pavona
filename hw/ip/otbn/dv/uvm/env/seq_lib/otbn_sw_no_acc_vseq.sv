@@ -17,7 +17,10 @@ class otbn_sw_no_acc_vseq extends otbn_single_vseq;
     logic [127:0]    key;
     logic [63:0]     nonce;
     bit [31:0] err_val = 32'd1 << 21;
-    bit [11:0] offset;
+    bit [14:0] offset;
+
+    localparam int unsigned OTBN_TOTAL_DMEM = otbn_reg_pkg::OTBN_DMEM_SIZE
+                                              + otbn_pkg::DmemScratchSizeByte;
 
     key = cfg.get_dmem_key();
     nonce = cfg.get_dmem_nonce();
@@ -25,11 +28,10 @@ class otbn_sw_no_acc_vseq extends otbn_single_vseq;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data, $countones(data) != BUS_DW;)
     `DV_CHECK_STD_RANDOMIZE_FATAL(write)
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(offset,
-                                       offset dist {12'hC00           :/ 5,
-                                                    [12'hC00:12'hFFC] :/ 1,
-                                                    12'hFFC           :/ 5};)
-    addr = cfg.ral.get_addr_from_offset('h8000 + offset);
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(offset, offset dist {otbn_reg_pkg::OTBN_DMEM_SIZE :/ 5,
+                                          [otbn_reg_pkg::OTBN_DMEM_SIZE:OTBN_TOTAL_DMEM] :/ 1,
+                                          OTBN_TOTAL_DMEM                                :/ 5};)
+    addr = cfg.ral.get_addr_from_offset(otbn_reg_pkg::OTBN_DMEM_OFFSET + offset);
     `uvm_info(`gfn, $sformatf("addr = %h", addr), UVM_LOW)
 
     super.body();
