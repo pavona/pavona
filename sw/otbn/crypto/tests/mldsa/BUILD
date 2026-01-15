@@ -39,6 +39,7 @@ py_binary(
         seed = i,
         testgen = ":mldsa_keypair_testgen",
         testgen_args = [params],
+        pqc = True,
         stats = STATS,
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
@@ -79,6 +80,7 @@ py_binary(
         testgen = ":mldsa_sign_testgen",
         testgen_args = [params],
         timeout = "long",
+        pqc = True,
         stats = STATS,
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
@@ -119,6 +121,7 @@ py_binary(
         seed = i,
         testgen = ":mldsa_verify_testgen",
         testgen_args = [params],
+        pqc = True,
         stats = STATS,
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),

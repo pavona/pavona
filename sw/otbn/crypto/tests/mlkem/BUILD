@@ -35,6 +35,7 @@ py_binary(
         seed = i,
         testgen = ":mlkem_keypair_testgen",
         testgen_args = [params],
+        pqc = True,
         stats = STATS,
         copts = [
             "-DKYBER_K=" + str(MODE_FOR_PARAMS[params]),
@@ -73,6 +74,7 @@ py_binary(
         seed = i,
         testgen = ":mlkem_encap_testgen",
         testgen_args = [params],
+        pqc = True,
         stats = STATS,
         copts = [
             "-DKYBER_K=" + str(MODE_FOR_PARAMS[params]),
@@ -113,6 +115,7 @@ py_binary(
         seed = i,
         testgen = ":mlkem_decap_testgen",
         testgen_args = [params],
+        pqc = True,
         stats = STATS,
         copts = [
             "-DKYBER_K=" + str(MODE_FOR_PARAMS[params]),
@@ -141,6 +144,7 @@ py_binary(
         seed = i,
         testgen = ":mlkem_decap_testgen",
         testgen_args = ['-i', params],
+        pqc = True,
         stats = STATS,
         copts = [
             "-DKYBER_K=" + str(MODE_FOR_PARAMS[params]),
