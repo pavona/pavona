@@ -30,6 +30,9 @@ dependencies = [
   "tabulate==0.8.10",
   "typer==0.6.1",
 
+  # Dependencies: util/get-toolchain.py
+  "urllib3==2.6.3",
+
   # Dependencies: bitstreams cache
   "jsonschema ~= 4.17",
   # Pin jsonschema2md to 1.5.2; version 1.7.0 causes build issues in user
