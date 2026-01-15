@@ -282,6 +282,11 @@ indcpa_enc:
   add  t1, fp, t1
   jal  x1, poly_getnoise_eta_2
 
+  /* Prepare for the first call to poly_gen_matrix. */
+  li   a2, 0
+  addi a0, fp, STACK_ENC_SEED
+  jal  x1, poly_gen_matrix_init
+
   /** v = v + k + epp **/
   li   a0, STACK_ENC_K
   add  a0, fp, a0
@@ -300,11 +305,20 @@ indcpa_enc:
   li   a1, STACK_ENC_AT
   add  a1, fp, a1
   li   a2, 0
-  .rept KYBER_K
+
+  /* Run rejection sampling to generate the public key. */
+
+  /* This is somewhat verbosely unrolled in order to interleave calls to
+     `poly_gen_matrix_init`, which initializes the SHAKE128 operation, and
+     `poly_gen_matrix`, which makes use of the result. By doing this carefully,
+     we can avoid any stalls while reading SHAKE128 results. */
+
+  .rept KYBER_K - 1
     /* Gen 1st mat poly */
     addi a0, fp, STACK_ENC_SEED
     jal  x1, poly_gen_matrix
     addi a2, a2, 0x0100
+    jal  x1, poly_gen_matrix_init
 
     /* Mutliply this generated poly with sk */
     addi a1, a1, POLY /* point back to A[0][0] */
@@ -313,11 +327,13 @@ indcpa_enc:
     add  a3, a1, x0   /* output at A[0][0] */
     la   x28, twiddles_basemul
     jal  x1, basemul
-    .rept KYBER_K-1
+
+    .rept KYBER_K-2
       /* Gen next mat poly */
       addi a0, fp, STACK_ENC_SEED
       jal  x1, poly_gen_matrix
       addi a2, a2, 0x0100
+      jal  x1, poly_gen_matrix_init
 
       /* Mutliply this generated poly with sk */
       addi a1, a1, POLY /* points back to A[0][1] */
@@ -326,8 +342,62 @@ indcpa_enc:
       jal  x1, basemul_acc
       addi a1, a1, POLY /* points back to A[0][1] */
     .endr
+
+    /* Gen next mat poly */
+    addi a0, fp, STACK_ENC_SEED
+    jal  x1, poly_gen_matrix
+    addi a2, a2, 0x0100
     addi a2, a2, KYBER_GEN_MATRIX_AT_NONCE
+    jal  x1, poly_gen_matrix_init
+
+    /* Mutliply this generated poly with sk */
+    addi a1, a1, POLY /* points back to A[0][1] */
+    addi a3, a1, POLY /* points back to A[0][0] for accumulation */
+    la   x28, twiddles_basemul
+    jal  x1, basemul_acc
+    addi a1, a1, POLY /* points back to A[0][1] */
   .endr
+
+  /* Gen 1st mat poly */
+  addi a0, fp, STACK_ENC_SEED
+  jal  x1, poly_gen_matrix
+  addi a2, a2, 0x0100
+  jal  x1, poly_gen_matrix_init
+
+  /* Mutliply this generated poly with sk */
+  addi a1, a1, POLY /* point back to A[0][0] */
+  li   x29, STACK_ENC_SP
+  add  x29, fp, x29 /* point to sk[0] */
+  add  a3, a1, x0   /* output at A[0][0] */
+  la   x28, twiddles_basemul
+  jal  x1, basemul
+
+  .rept KYBER_K-2
+    /* Gen next mat poly */
+    addi a0, fp, STACK_ENC_SEED
+    jal  x1, poly_gen_matrix
+    addi a2, a2, 0x0100
+    jal  x1, poly_gen_matrix_init
+
+    /* Mutliply this generated poly with sk */
+    addi a1, a1, POLY /* points back to A[0][1] */
+    addi a3, a1, POLY /* points back to A[0][0] for accumulation */
+    la   x28, twiddles_basemul
+    jal  x1, basemul_acc
+    addi a1, a1, POLY /* points back to A[0][1] */
+  .endr
+
+  /* Gen next mat poly */
+  addi a0, fp, STACK_ENC_SEED
+  jal  x1, poly_gen_matrix
+
+  /* Mutliply this generated poly with sk */
+  addi a1, a1, POLY /* points back to A[0][1] */
+  addi a3, a1, POLY /* points back to A[0][0] for accumulation */
+  la   x28, twiddles_basemul
+  jal  x1, basemul_acc
+
+  /* (End of public key rejection sampling) */
 
   /* After basemul, w16 is still R | Q and MOD is still 2*R | 2*Q */
   /*** INTT ***/
