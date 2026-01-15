@@ -54,6 +54,43 @@
 #define SHA3_512_CFG 0x10
 
 /*
+ * Name:        poly_gen_matrix_init
+ *
+ * Description: Initialze a SHAKE128 operation to prepare for rejection sampling
+ *              on uniform random bytes using `poly_gen_matrix`.
+ *
+ * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  a0: pointer to seed (KYBER_SYMBYTES = 32)
+ * @param[in]  a2: i||j (2 bytes)
+ *
+ * clobbered registers: a0, t0, w0
+ */
+
+.globl poly_gen_matrix_init
+poly_gen_matrix_init:
+  /* Space for the nonce */
+  #define STACK_NONCE -64
+
+  /* Store nonce to memory */
+  sw a2, STACK_NONCE(fp)
+
+  /* Initialize a SHAKE128 operation. */
+  addi  t0, zero, 34
+  slli  t0, t0, 5
+  addi  t0, t0, SHAKE128_CFG
+  csrrw zero, KECCAK_CFG_REG, t0
+
+  /* Send the message to the Keccak core. */
+  bn.lid x0, 0(a0)             /* a0 still contains the input buffer */
+  bn.wsrw 0x9, w0              /* Write to KECCAK_MSG_REG */
+  addi a0, fp, STACK_NONCE     /* Set a0 to point to the nonce in memory */
+  bn.lid x0, 0(a0)
+  bn.wsrw 0x9, w0              /* Write to KECCAK_MSG_REG */
+
+  ret
+
+/*
  * Name:        poly_gen_matrix
  *
  * Description: Run rejection sampling on uniform random bytes to generate
@@ -91,24 +128,6 @@ _aligned:
 
   /* Space for tmp buffer to hold a WDR */
   #define STACK_WDR2GPR -32
-  /* Space for the nonce */
-  #define STACK_NONCE -64
-
-  /* Store nonce to memory */
-  sw a2, STACK_NONCE(fp)
-
-  /* Initialize a SHAKE128 operation. */
-  addi  t0, zero, 34
-  slli  t0, t0, 5
-  addi  t0, t0, SHAKE128_CFG
-  csrrw zero, KECCAK_CFG_REG, t0
-
-  /* Send the message to the Keccak core. */
-  bn.lid x0, 0(a0)             /* a0 still contains the input buffer */
-  bn.wsrw 0x9, w0              /* Write to KECCAK_MSG_REG */
-  addi a0, fp, STACK_NONCE     /* Set a0 to point to the nonce in memory */
-  bn.lid x0, 0(a0)
-  bn.wsrw 0x9, w0              /* Write to KECCAK_MSG_REG */
 
   /* t0 = 508, a1 + 508 is the last valid address */
   addi t0, a1, 512
@@ -133,11 +152,11 @@ _aligned:
 
   #define accumulator w13
   li s4, 13
-  li s2, 16 /* 1 WDR stores 16 coeffs */
   #define accumulator_count s5
-  li s5, 0
+  li s5, 16  /* Counts number of remaining accumulator slots */
 
   #define wtmp w14
+  #define accumulator_new w17
   /* Loop until 256 coefficients have been written to the output */
 _rej_sample_loop:
   /* First squeeze */
@@ -169,14 +188,13 @@ _rej_sample_loop:
   bn.and     wtmp, coeff_mask, cand
   bn.cmp     wtmp, mod
   csrrs      a4, 0x7C0, zero       /* Read flags */
-  andi       a4, a4, 3 /* Mask flags */
-  bne        a4, a6, _skip_store2a /* Reject if M, C are NOT set to 1, meaning
-                                    NOT (q > cand) = (q <= cand) */
-  bn.rshi    accumulator, wtmp, accumulator >> 16
-  addi       accumulator_count, accumulator_count, 1
-  bne        accumulator_count, s2, _skip_store2a
-  bn.sid     s4, 0(a1++) /* Store to memory */
-  li         accumulator_count, 0
+  andi       a4, a4, 1             /* Mask carry flag to detect underflow */
+  bn.rshi    accumulator_new, wtmp, accumulator >> 16
+  bn.sel     accumulator, accumulator_new, accumulator, FG0.C
+  sub        accumulator_count, accumulator_count, a4 /* Move to next slot iff not rejected */
+  bne        accumulator_count, zero, _skip_store2a
+  bn.sid     s4, 0(a1++)           /* Store to memory */
+  li         accumulator_count, 16 /* Set all slots to available */
   /* if we have written the last coefficient, exit */
   beq        a1, t0, _end_rej_sample_loop
 _skip_store2a:
@@ -184,13 +202,13 @@ _skip_store2a:
   bn.and     cand, coeff_mask, cand
   bn.cmp     cand, mod
   csrrs      a4, 0x7C0, zero      /* Read flags */
-  andi       a4, a4, 3 /* Mask flags */
-  bne        a4, a6, _skip_store2
-  bn.rshi    accumulator, cand, accumulator >> 16
-  addi       accumulator_count, accumulator_count, 1
-  bne        accumulator_count, s2, _skip_store2
-  bn.sid     s4, 0(a1++) /* Store to memory */
-  li         accumulator_count, 0
+  andi       a4, a4, 1            /* Mask carry flag to detect underflow */
+  bn.rshi    accumulator_new, cand, accumulator >> 16
+  bn.sel     accumulator, accumulator_new, accumulator, FG0.C
+  sub        accumulator_count, accumulator_count, a4 /* Move to next slot iff not rejected */
+  bne        accumulator_count, zero, _skip_store2
+  bn.sid     s4, 0(a1++)           /* Store to memory */
+  li         accumulator_count, 16 /* Set all slots to available */
 
   /* if we have written the last coefficient, exit */
   beq        a1, t0, _end_rej_sample_loop
@@ -208,29 +226,28 @@ _skip_store2:
   bn.and     wtmp, coeff_mask, cand
   bn.cmp     wtmp, mod
   csrrs      a4, 0x7C0, zero       /* Read flags */
-  andi       a4, a4, 3 /* Mask flags */
-  bne        a4, a6, _skip_store4a /* Reject if M, C are NOT set to 1, meaning
-                                      NOT (q > cand) = (q <= cand) */
-  bn.rshi    accumulator, wtmp, accumulator >> 16
-  addi       accumulator_count, accumulator_count, 1
-  bne        accumulator_count, s2, _skip_store4a
-  bn.sid     s4, 0(a1++) /* Store to memory */
-  li         accumulator_count, 0
+  andi       a4, a4, 1             /* Mask carry flag to detect underflow */
+  bn.rshi    accumulator_new, wtmp, accumulator >> 16
+  bn.sel     accumulator, accumulator_new, accumulator, FG0.C
+  sub        accumulator_count, accumulator_count, a4 /* Move to next slot iff not rejected */
+  bne        accumulator_count, zero, _skip_store4a
+  bn.sid     s4, 0(a1++)           /* Store to memory */
+  li         accumulator_count, 16 /* Set all slots to available */
+
   /* if we have written the last coefficient, exit */
   beq        a1, t0, _end_rej_sample_loop
 _skip_store4a:
   bn.rshi    cand, bn0, cand >> 12
   bn.and     cand, coeff_mask, cand
   bn.cmp     cand, mod
-  csrrs      a4, 0x7C0, zero      /* Read flags */
-  andi       a4, a4, 3 /* Mask flags */
-  bne        a4, a6, _skip_store4
-
-  bn.rshi    accumulator, cand, accumulator >> 16
-  addi       accumulator_count, accumulator_count, 1
-  bne        accumulator_count, s2, _skip_store4
-  bn.sid     s4, 0(a1++) /* Store to memory */
-  li         accumulator_count, 0
+  csrrs      a4, 0x7C0, zero       /* Read flags */
+  andi       a4, a4, 1             /* Mask carry flag to detect underflow */
+  bn.rshi    accumulator_new, cand, accumulator >> 16
+  bn.sel     accumulator, accumulator_new, accumulator, FG0.C
+  sub        accumulator_count, accumulator_count, a4 /* Move to next slot iff not rejected */
+  bne        accumulator_count, zero, _skip_store4
+  bn.sid     s4, 0(a1++)           /* Store to memory */
+  li         accumulator_count, 16 /* Set all slots to available */
   /* if we have written the last coefficient, exit */
   beq        a1, t0, _end_rej_sample_loop
 _skip_store4:
@@ -249,26 +266,77 @@ _end_rej_sample_loop:
   ret
 
 _poly_uniform_inner_loop:
-  li s3, 1
-  LOOPI 20, 12
+  /* Skip the per-iteration total coefficient count checks in this hot loop if
+     we have more than 20 candidates remaining. */
+  sub        t2, a1, t0  /* Get -(number of bytes remaining to write out) */
+  addi       t2, t2, 64  /* Add 64 bytes = 2 wide words >= 20 coeffs */
+  sra        t2, t2, 31  /* Fill register with resulting sign bit */
+  bne        t2, zero, _fast_inner_loop  /* _fast_inner_loop skips checks of t0 */
+
+  loopi 20, 12
     beq        a1, t0, _skip_store1
 
-    /* Get the candidate coefficient, multiplied by 2 (see below) */
+    /* Get the candidate coefficient */
     bn.and     cand, coeff_mask, shake_reg
     bn.cmp     cand, mod
     csrrs      a4, 0x7C0, zero /* Read flags */
 
-    /* Z L M C */
-    andi a4, a4, 3
-    bne        a4, a6, _skip_store1 /* Reject if M, C are NOT set to 1, meaning
-                                        NOT (q > cand) = (q <= cand) */
-    bn.rshi    accumulator, cand, accumulator >> 16
-    addi       accumulator_count, accumulator_count, 1
-    bne        accumulator_count, s2, _skip_store1 /* Accumulator not full yet */
-
-    bn.sid     s4, 0(a1++)                      /* Store to memory */
-    li         accumulator_count, 0
+    /* Add it to the accumulator if not rejected */
+    andi a4, a4, 1 /* Mask carry flag to detect underflow */
+    bn.rshi    accumulator_new, cand, accumulator >> 16
+    bn.sel     accumulator, accumulator_new, accumulator, FG0.C
+    sub        accumulator_count, accumulator_count, a4 /* Move to next slot iff not rejected */
+    bne        accumulator_count, zero, _skip_store1    /* Accumulator not full yet */
+    bn.sid     s4, 0(a1++)                              /* Store to memory */
+    li         accumulator_count, 16                    /* Set all slots to available */
 _skip_store1:
     /* Shift out the 12 bits we have read for the next potential coefficient */
     bn.rshi    shake_reg, bn0, shake_reg >> 12
+
+  ret
+
+_fast_inner_loop:
+  #define cand_count t2
+  li cand_count, 20
+
+  /* Eagerly fill the accumulator (fine since 16 < 20) */
+  sub cand_count, cand_count, accumulator_count
+  loop accumulator_count, 8
+    /* Get the candidate coefficient */
+    bn.and     cand, coeff_mask, shake_reg
+    bn.cmp     cand, mod
+    csrrs      a4, 0x7C0, zero /* Read flags */
+
+    /* Add it to the accumulator if not rejected */
+    andi       a4, a4, 1 /* Mask carry flag to detect underflow */
+    bn.rshi    accumulator_new, cand, accumulator >> 16
+    bn.sel     accumulator, accumulator_new, accumulator, FG0.C
+    sub        accumulator_count, accumulator_count, a4 /* Move to next slot iff not rejected */
+    /* Shift out the 12 bits we have read for the next potential coefficient */
+    bn.rshi    shake_reg, bn0, shake_reg >> 12
+
+  /* Possibly flush accumulator if we filled it (~3% of time) */
+  bne        accumulator_count, zero, _handle_rest
+  bn.sid     s4, 0(a1++)           /* Store to memory */
+  li         accumulator_count, 16 /* Set all slots to available */
+
+_handle_rest:
+  loop cand_count, 11
+    /* Get the candidate coefficient */
+    bn.and     cand, coeff_mask, shake_reg
+    bn.cmp     cand, mod
+    csrrs      a4, 0x7C0, zero /* Read flags */
+
+    /* Add it to the accumulator if not rejected */
+    andi a4, a4, 1 /* Mask carry flag to detect underflow */
+    bn.rshi    accumulator_new, cand, accumulator >> 16
+    bn.sel     accumulator, accumulator_new, accumulator, FG0.C
+    sub        accumulator_count, accumulator_count, a4   /* Move to next slot iff not rejected */
+    bne        accumulator_count, zero, _skip_store1_fast /* Accumulator not full yet */
+    bn.sid     s4, 0(a1++)                                /* Store to memory */
+    li         accumulator_count, 16                      /* Set all slots to available */
+_skip_store1_fast:
+    /* Shift out the 12 bits we have read for the next potential coefficient */
+    bn.rshi    shake_reg, bn0, shake_reg >> 12
+
   ret

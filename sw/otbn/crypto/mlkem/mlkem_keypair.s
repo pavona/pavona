@@ -244,6 +244,7 @@ indcpa_keypair:
   .rept KYBER_K
     /* Gen 1st mat poly */
     addi a0, fp, STACK_PUBLICSEED
+    jal  x1, poly_gen_matrix_init
     jal  x1, poly_gen_matrix
     addi a2, a2, 1
 
@@ -258,6 +259,7 @@ indcpa_keypair:
     .rept KYBER_K-1
       /* Gen next mat poly */
       addi a0, fp, STACK_PUBLICSEED
+      jal  x1, poly_gen_matrix_init
       jal  x1, poly_gen_matrix
       addi a2, a2, 1
 
