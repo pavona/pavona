@@ -286,18 +286,29 @@ def detect_comment_char(all_matchers, filename):
 
 
 def git_find_repo_toplevel():
-    git_output = subprocess.check_output(
-        ["git", "rev-parse", "--show-toplevel"]
-    )
-    return Path(git_output.decode().strip()).resolve()
+    try:
+        git_output = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"]
+        )
+        return Path(git_output.decode().strip()).resolve()
+    except subprocess.CalledProcessError:
+        logging.warning("unable to find repo top level with git; using relative path")
+        return Path(__file__).parents[1].resolve()
 
 
 def git_find_all_file_paths(top_level, search_paths):
-    git_output = subprocess.check_output(
-        ["git", "-C", str(top_level), "ls-files", "-z", "--", *search_paths]
-    )
-    for path in git_output.rstrip(b"\0").split(b"\0"):
-        yield Path(top_level, path.decode())
+    try:
+        git_output = subprocess.check_output(
+            ["git", "-C", str(top_level), "ls-files", "-z", "--", *search_paths]
+        )
+        for path in git_output.rstrip(b"\0").split(b"\0"):
+            yield Path(top_level, path.decode())
+    except subprocess.CalledProcessError:
+        logging.warning("unable to find all filepaths with git; using glob from repo top")
+        for sp in search_paths:
+            if (Path(top_level) / sp).is_dir():
+                sp = sp + "/**"  # recurse into directories
+            yield from (fp for fp in Path(top_level).glob(sp) if fp.is_file())
 
 
 class ResultsTracker(object):

@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Lint Python for lowRISC rules"""
+"""Lint Python"""
 
 import argparse
 import os
@@ -26,9 +26,12 @@ _KNOWN_TOOLS = {
 def show_and_exit(clitool: str, packages: List[str]) -> None:
     util_path = os.path.dirname(os.path.realpath(clitool))
     os.chdir(util_path)
-    ver = subprocess.check_output(
-        ["git", "describe", "--always", "--dirty", "--broken"],
-        universal_newlines=True).strip()
+    try:
+        ver = subprocess.check_output(
+            ["git", "describe", "--always", "--dirty", "--broken"],
+            universal_newlines=True).strip()
+    except subprocess.CalledProcessError:
+        ver = None
     if not ver:
         ver = 'not found (not in Git repository?)'
     sys.stderr.write(clitool + " Git version " + ver + '\n')
@@ -154,6 +157,14 @@ def install_commit_hook():
     os.symlink(rel_path, hook_path)
 
 
+def in_git_repo():
+    try:
+        subprocess.check_output(["git", "rev-parse", "--is-inside-work-tree"])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -199,6 +210,8 @@ def main():
     if args.hook:
         if args.file:
             raise RuntimeError('Cannot specify both --hook and a file list.')
+        if not in_git_repo():
+            raise RuntimeError("Must be within a git repo to install commit hooks.")
         install_commit_hook()
         return 0
 
@@ -206,8 +219,11 @@ def main():
         input_files = args.file
         if args.commit:
             raise RuntimeError('Cannot specify both --commit and a file list.')
-    else:
+    elif in_git_repo():
         input_files = get_files_from_git(running_hook or args.commit)
+    else:
+        input_files = None
+        print("Must specify a file list if not in git repo.")
 
     if not input_files:
         print('No input files. Exiting.')

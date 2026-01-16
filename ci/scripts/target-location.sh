@@ -6,7 +6,7 @@
 # Use Bazel to query for the location of targets instead of searching
 
 set -e
-REPO_TOP=$(git rev-parse --show-toplevel)
+REPO_TOP=$(git rev-parse --show-toplevel) || REPO_TOP=$(realpath $0/../../..)
 readonly REPO_TOP
 
 verbose='false'

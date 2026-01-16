@@ -52,13 +52,17 @@ verbose = False
 
 def git_is_clean_workdir(git_workdir):
     """Check if the git working directory is clean (no unstaged or staged changes)"""
-    cmd = ['git', 'status', '--untracked-files=no', '--porcelain']
-    modified_files = subprocess.run(cmd,
-                                    cwd=str(git_workdir),
-                                    check=True,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE).stdout.strip()
-    return not modified_files
+    try:
+        cmd = ['git', 'status', '--untracked-files=no', '--porcelain']
+        modified_files = subprocess.run(cmd,
+                                        cwd=str(git_workdir),
+                                        check=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE).stdout.strip()
+        return not modified_files
+    except subprocess.CalledProcessError:
+        log.warning(f"Unable to query `git status` for {git_workdir}; assuming not clean")
+        return False
 
 
 def github_qualify_references(log, repo_userorg, repo_name):
@@ -301,9 +305,13 @@ class Mapping1:
             basedir = basepath
         cmd = ['git', 'apply', '--directory', str(basedir), '-p1',
                str(patchfile)]
+        alt_cmd = ['patch', '-d', str(basedir), '-p1', str(patchfile)]
         if verbose:
             cmd += ['--verbose']
-        subprocess.run(cmd, check=True)
+        try:
+            subprocess.run(cmd, check=True)
+        except subprocess.CalledProcessError:
+            subprocess.run(alt_cmd, check=True)
 
     def import_from_upstream(self, upstream_path,
                              target_path, exclude_files, patch_dir):

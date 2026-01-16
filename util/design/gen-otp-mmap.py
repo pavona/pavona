@@ -68,8 +68,8 @@ SEQ_TEMPLATES = [
 
 
 def check_in_repo_top():
-    dot_git_path = Path.cwd() / ".git"
-    if not dot_git_path.exists():
+    reltop = Path(__file__).parents[2].resolve()
+    if Path.cwd() != reltop:
         log.error('This utility must be run from repo_top')
         exit(1)
 

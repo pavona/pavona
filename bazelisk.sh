@@ -14,6 +14,7 @@ cd "$(dirname "$0")"
 
 : "${CURL_FLAGS:=--silent}"
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
+: "${REPO_TOP:=$(dirname $0)}"
 : "${BINDIR:=.bin}"
 : "${BAZEL_BIN:=$(which bazel 2>/dev/null)}"
 

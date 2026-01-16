@@ -174,7 +174,7 @@ def main(args_in):
     # Generate commit hash of current provisioning run.
     commit_hash = subprocess.run(shlex.split("git rev-parse HEAD"),
                                  capture_output=True,
-                                 text=True).stdout.strip()
+                                 text=True).stdout.strip() or "default"
 
     # Run all provisioning flows.
     get_user_confirmation(sku_config, device_id, commit_hash, args)

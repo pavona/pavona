@@ -59,7 +59,7 @@ def get_scm_revision(volatile_status_file: Path):
             tokens = line.strip().split(' ')
             if len(tokens) == 2 and tokens[0] == 'BUILD_SCM_REVISION':
                 return tokens[1]
-    raise Exception('Could not get BUILD_SCM_REVISION from {}.'.format(volatile_status_file))
+    return "default"
 
 
 def update_manifest_stamps(manifest: Dict, stamp: str):

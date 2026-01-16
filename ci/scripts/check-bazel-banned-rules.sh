@@ -6,7 +6,7 @@
 
 set -e
 
-REPO_TOP="$(git rev-parse --show-toplevel)"
+REPO_TOP="$(git rev-parse --show-toplevel)" || REPO_TOP="$(realpath $0/../../..)"
 cd "$REPO_TOP"
 
 if grep -r --include '*MODULE.bazel' git_override; then

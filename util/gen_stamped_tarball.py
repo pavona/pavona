@@ -20,8 +20,8 @@ def main(args):
 
     version = args.version
     build_date = datetime.datetime.now().strftime('%Y-%m-%d')
-    commit_hash = stamp["BUILD_SCM_REVISION_SHORT"].strip()
-    commit_status = stamp["BUILD_SCM_STATUS"].strip()
+    commit_hash = stamp.get("BUILD_SCM_REVISION_SHORT", "default").strip()
+    commit_status = stamp.get("BUILD_SCM_STATUS", "modified").strip()
 
     package_dir = f'{build_date}-v{version}-{commit_hash}'
     if commit_status != 'clean':

@@ -6,6 +6,7 @@
 set -euo pipefail
 
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
+: "${REPO_TOP:=$(dirname $0/.. | xargs realpath)}"
 
 : "${BAZELISK:=${REPO_TOP}/bazelisk.sh}"
 : "${BAZEL_VERSION:=$(cat "${REPO_TOP}/.bazelversion")}"

@@ -19,7 +19,7 @@ shift 2
 
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
-COMMIT="$(git rev-parse HEAD)"
+COMMIT="$(git rev-parse HEAD)" || COMMIT="default"
 readonly COMMIT
 readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams/cache/${COMMIT}"
 readonly BIT_SRC="${BIN_DIR}/bitstream-cache/bitstream-cache.tar.gz"

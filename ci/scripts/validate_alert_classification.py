@@ -18,9 +18,10 @@ import sys
 from typing import Any, Dict, Tuple
 import hjson
 import re
+from tempfile import TemporaryFile
 
 
-REGS_OUTPUT_FILE = "sw/host/opentitanlib/src/otp/alert_handler_regs.rs"
+REGS_OUTPUT_FILE = Path("sw/host/opentitanlib/src/otp/alert_handler_regs.rs")
 
 
 def find_item_in_cfg(cfg_data: Dict[str, Any], item_name: str) -> Dict[str, Any]:
@@ -133,10 +134,15 @@ def validate_digest_values(
     print("    Generating expected digest values using opentitantool...")
     alert_handler_regtool_file = alert_handler_file.parent / "alert_handler.hjson"
 
+    stashed_regs_output = TemporaryFile(mode="x+t")
+    if not REGS_OUTPUT_FILE.is_file():
+        REGS_OUTPUT_FILE.touch()
+
     try:
         print("    Generating alert handler registers...")
+        stashed_regs_output.write(REGS_OUTPUT_FILE.read_text())
         subprocess.run(
-            ["./util/regtool.py", alert_handler_regtool_file, "-R", "-o", REGS_OUTPUT_FILE],
+            ["./util/regtool.py", alert_handler_regtool_file, "-R", "-o", str(REGS_OUTPUT_FILE)],
             check=True,
             capture_output=True,
             text=True,
@@ -159,10 +165,12 @@ def validate_digest_values(
         opentitantool_output = result.stdout
 
     except subprocess.CalledProcessError as e:
-        print(f"Error: Failed to generate expected digest values: {e}")
+        print(f"Error: Failed to generate expected digest values: {e.stderr}")
         return False, {}
-    finally:
-        subprocess.run(["git", "checkout", "--", REGS_OUTPUT_FILE], capture_output=True)
+    finally:  # restore original register output regardless of error or no error
+        stashed_regs_output.seek(0)
+        REGS_OUTPUT_FILE.write_text(stashed_regs_output.read())
+        stashed_regs_output.close()
 
     expected_digests_hex = {}
     try:

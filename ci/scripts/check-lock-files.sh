@@ -6,13 +6,25 @@
 
 set -e
 
-REPO_TOP="$(git rev-parse --show-toplevel)"
+REPO_TOP="$(git rev-parse --show-toplevel)" || REPO_TOP="$(realpath $0/../../..)"
 
 cd "$REPO_TOP"
 
 fail() {
   file="$1"
   command="$2"
+
+  # if not using git repo, this simply allows users to easily regenerate files
+  git rev-parse --is-inside-work-tree > /dev/null || {
+    echo "No way to compare files to previous version (not in git directory)."
+    echo "Regenerate ${file} with \`${command}\`? (y/N)"
+    read regen
+    if [ "$regen" = "y" ]; then
+      $command
+      exit 0
+    fi
+    exit 1
+  }
 
   echo "::error::${file} is not up to date"             >&2
   echo "Regenerate this lock file using \`${command}\`" >&2

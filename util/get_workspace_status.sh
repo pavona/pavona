@@ -22,10 +22,14 @@
 # More info about the difference between stable and volatile variables is
 # available in https://bazel.build/docs/user-manual#workspace-status-command.
 
+if ! [ "$(git rev-parse --is-inside-work-tree)" ]; then
+  exit 0  # if not in a git working tree just provide no information
+fi
+
 git_rev=$(git rev-parse HEAD)
 if [[ $? != 0 ]];
 then
-  exit 1
+  git_rev="default"
 fi
 echo "BUILD_SCM_REVISION ${git_rev}"
 echo "STABLE_BUILD_SCM_REVISION ${git_rev}"
@@ -33,14 +37,14 @@ echo "STABLE_BUILD_SCM_REVISION ${git_rev}"
 git_rev_short=$(git rev-parse --short=8 HEAD)
 if [[ $? != 0 ]];
 then
-  exit 1
+  git_rev_short="default"
 fi
 echo "BUILD_SCM_REVISION_SHORT ${git_rev_short}"
 
 git_version=$(git describe --always --tags)
 if [[ $? != 0 ]];
 then
-  exit 1
+  git_version="default"
 fi
 echo "BUILD_GIT_VERSION ${git_version}"
 

@@ -20,9 +20,12 @@ VERIBLE_ARGS = ["--formal_parameters_indentation=indent",
 
 
 def get_repo_top():
-    return subprocess.run(['git', 'rev-parse', '--show-toplevel'],
-                          check=True, universal_newlines=True,
-                          stdout=subprocess.PIPE).stdout.strip()
+    try:
+        return subprocess.run(['git', 'rev-parse', '--show-toplevel'],
+                              check=True, universal_newlines=True,
+                              stdout=subprocess.PIPE).stdout.strip()
+    except subprocess.CalledProcessError:
+        return os.path.realpath(__file__ + "/../..")
 
 
 def get_verible_executable_path():

@@ -159,12 +159,14 @@ def get_proj_root():
                             stderr=subprocess.PIPE)
     proj_root = result.stdout.decode("utf-8").strip()
     if not proj_root:
-        log.error(
+        log.warning(
             "Attempted to find the root of this GitHub repository by running:\n"
             "{}\n"
             "But this command has failed:\n"
-            "{}".format(' '.join(cmd), result.stderr.decode("utf-8")))
-        sys.exit(1)
+            "{}\n"
+            "Getting root directory "
+            "from relative path.".format(' '.join(cmd), result.stderr.decode("utf-8")))
+        proj_root = str(Path(__file__).parents[2].resolve())
     return proj_root
 
 

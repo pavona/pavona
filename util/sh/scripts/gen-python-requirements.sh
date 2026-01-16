@@ -7,6 +7,7 @@ source util/sh/lib/banners.sh
 source util/sh/lib/strict.sh
 
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
+: "${REPO_TOP:=$(realpath $0/../../..)}"
 PYTHON_REQS_IN_FILE="$REPO_TOP/pyproject.toml"
 PYTHON_REQS_OUT_FILE="$REPO_TOP/python-requirements.txt"
 

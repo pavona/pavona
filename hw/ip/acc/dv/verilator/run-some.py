@@ -36,7 +36,6 @@ def find_gen_binaries() -> str:
 def get_projdir() -> str:
     '''Return the path to the top of the project'''
     path = os.path.join(_SCRIPT_DIR, '../../../../..')
-    assert os.path.exists(os.path.join(path, '.git'))
     return os.path.normpath(path)
 
 

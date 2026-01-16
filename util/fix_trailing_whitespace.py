@@ -36,7 +36,10 @@ IGNORED_SUFFIXES = {
 def is_ignored(path):
     if path in IGNORED_PATHS:
         return True
-    return subprocess.run(['git', 'check-ignore', path]).returncode == 0
+    git_check = subprocess.run(['git', 'check-ignore', path]).returncode
+    if git_check == 128:  # fatal error (https://git-scm.com/docs/git-check-ignore#_exit_status)
+        print("`git check-ignore` failed; not referencing any gitignore files (nothing ignored)")
+    return git_check == 0
 
 
 def walk_tree(paths=[REPO_TOP]):
