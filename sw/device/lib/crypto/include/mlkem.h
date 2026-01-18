@@ -30,6 +30,19 @@ enum {
   kOtcryptoMlkem1024CiphertextBytes = 1568,
   kOtcryptoMlkem1024SharedSecretBytes = 32,
   kOtcryptoMlkem1024KeygenSeedBytes = 64,
+
+  // Work buffer sizes in 32-bit words
+  kOtcryptoMlkem512WorkBufferKeypairWords = 5824 / sizeof(uint32_t),
+  kOtcryptoMlkem512WorkBufferEncapsWords = 8384 / sizeof(uint32_t),
+  kOtcryptoMlkem512WorkBufferDecapsWords = 9152 / sizeof(uint32_t),
+
+  kOtcryptoMlkem768WorkBufferKeypairWords = 10176 / sizeof(uint32_t),
+  kOtcryptoMlkem768WorkBufferEncapsWords = 13248 / sizeof(uint32_t),
+  kOtcryptoMlkem768WorkBufferDecapsWords = 14336 / sizeof(uint32_t),
+
+  kOtcryptoMlkem1024WorkBufferKeypairWords = 15552 / sizeof(uint32_t),
+  kOtcryptoMlkem1024WorkBufferEncapsWords = 19136 / sizeof(uint32_t),
+  kOtcryptoMlkem1024WorkBufferDecapsWords = 20704 / sizeof(uint32_t),
 };
 
 /**
@@ -43,11 +56,13 @@ enum {
  *
  * @param[out] pk public key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] sk secret key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem512WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_mlkem512_keygen(otcrypto_unblinded_key_t *public_key,
-                                           otcrypto_blinded_key_t *secret_key);
+otcrypto_status_t otcrypto_mlkem512_keygen(
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem512WorkBufferKeypairWords]);
 
 /**
  * Generates an ML-KEM-512 key pair based on caller-provided randomness.
@@ -61,12 +76,14 @@ otcrypto_status_t otcrypto_mlkem512_keygen(otcrypto_unblinded_key_t *public_key,
  * @param randomness seed for keygen, len `kOtcryptoMlkem512KeygenSeedBytes`.
  * @param[out] pk public key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] sk secret key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem512WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem512_keygen_derand(
     otcrypto_const_byte_buf_t randomness, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key);
+    otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem512WorkBufferKeypairWords]);
 
 /**
  * Generates ciphertext and shared secret for the given public key.
@@ -80,12 +97,14 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
  * @param pk public key for which to generate ciphertext/shared secret
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem512CiphertextBytes`.
  * @param[out] shared_secret dest key, len `kOtcryptoMlkem512SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem512WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem512_encapsulate(
     const otcrypto_unblinded_key_t *public_key, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem512WorkBufferEncapsWords]);
 
 /**
  * Generates ciphertext and shared secret for the given public key.
@@ -100,13 +119,15 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate(
  * @param randomness seed for encapsulate, len 32 bytes.
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem512CiphertextBytes`.
  * @param[out] shared_secret dest key, len `kOtcryptoMlkem512SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem512WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t randomness, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem512WorkBufferEncapsWords]);
 
 /**
  * Generates shared secret for the given ciphertext and private key.
@@ -120,13 +141,14 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
  * @param secret_key decapsulation key for which ciphertext was created.
  * @param ciphertext buffer of len `kOtcryptoMlkem512CiphertextBytes`.
  * @param[out] shared_secret dest key, len `kOtcryptoMlkem512SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem512WorkBufferDecapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem512_decapsulate(
     const otcrypto_blinded_key_t *secret_key,
-    otcrypto_const_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_const_byte_buf_t ciphertext, otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem512WorkBufferDecapsWords]);
 
 /**
  * Generates a fresh random ML-KEM-768 key pair.
@@ -139,11 +161,13 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
  *
  * @param[out] pk public key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] sk secret key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem768WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_mlkem768_keygen(otcrypto_unblinded_key_t *public_key,
-                                           otcrypto_blinded_key_t *secret_key);
+otcrypto_status_t otcrypto_mlkem768_keygen(
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem768WorkBufferKeypairWords]);
 
 /**
  * Generates an ML-KEM-768 key pair based on caller-provided randomness.
@@ -157,12 +181,14 @@ otcrypto_status_t otcrypto_mlkem768_keygen(otcrypto_unblinded_key_t *public_key,
  * @param randomness seed for keygen, len `kOtcryptoMlkem768KeygenSeedBytes`.
  * @param[out] pk public key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] sk secret key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem768WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem768_keygen_derand(
     otcrypto_const_byte_buf_t randomness, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key);
+    otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem768WorkBufferKeypairWords]);
 
 /**
  * Generates ciphertext and shared secret for the given public key.
@@ -176,12 +202,14 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
  * @param pk public key for which to generate ciphertext/shared secret
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem768CiphertextBytes`.
  * @param[out] shared_secret dest key, len `kOtcryptoMlkem768SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem768WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem768_encapsulate(
     const otcrypto_unblinded_key_t *public_key, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem768WorkBufferEncapsWords]);
 
 /**
  * Generates ciphertext and shared secret for the given public key.
@@ -196,13 +224,15 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate(
  * @param randomness seed for encapsulate, len 32 bytes.
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem768CiphertextBytes`.
  * @param[out] shared_secret dest key, len `kOtcryptoMlkem768SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem768WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t randomness, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem768WorkBufferEncapsWords]);
 
 /**
  * Generates shared secret for the given ciphertext and private key.
@@ -216,13 +246,14 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
  * @param secret_key decapsulation key for which ciphertext was created.
  * @param ciphertext buffer of len `kOtcryptoMlkem768CiphertextBytes`.
  * @param[out] shared_secret dest key, len `kOtcryptoMlkem768SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem768WorkBufferDecapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem768_decapsulate(
     const otcrypto_blinded_key_t *secret_key,
-    otcrypto_const_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_const_byte_buf_t ciphertext, otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem768WorkBufferDecapsWords]);
 
 /**
  * Generates a fresh random ML-KEM-1024 key pair.
@@ -235,11 +266,13 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
  *
  * @param[out] pk public key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] sk secret key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem1024_keygen(
-    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key);
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferKeypairWords]);
 
 /**
  * Generates an ML-KEM-1024 key pair based on caller-provided randomness.
@@ -253,12 +286,14 @@ otcrypto_status_t otcrypto_mlkem1024_keygen(
  * @param randomness seed for keygen, len `kOtcryptoMlkem1024KeygenSeedBytes`.
  * @param[out] pk public key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] sk secret key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
     otcrypto_const_byte_buf_t randomness, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key);
+    otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferKeypairWords]);
 
 /**
  * Generates ciphertext and shared secret for the given public key.
@@ -273,12 +308,14 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem1024CiphertextBytes`.
  * @param[out] shared_secret dest key, len
  * `kOtcryptoMlkem1024SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem1024_encapsulate(
     const otcrypto_unblinded_key_t *public_key, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferEncapsWords]);
 
 /**
  * Generates ciphertext and shared secret for the given public key.
@@ -294,13 +331,15 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate(
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem1024CiphertextBytes`.
  * @param[out] shared_secret dest key, len
  * `kOtcryptoMlkem1024SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t randomness, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferEncapsWords]);
 
 /**
  * Generates shared secret for the given ciphertext and private key.
@@ -315,13 +354,14 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
  * @param ciphertext buffer of len `kOtcryptoMlkem1024CiphertextBytes`.
  * @param[out] shared_secret dest key, len
  * `kOtcryptoMlkem1024SharedSecretBytes`.
+ * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferDecapsWords` words).
  * @return Status code (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     const otcrypto_blinded_key_t *secret_key,
-    otcrypto_const_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret);
+    otcrypto_const_byte_buf_t ciphertext, otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferDecapsWords]);
 
 #ifdef __cplusplus
 }  // extern "C"

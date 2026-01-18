@@ -7,18 +7,19 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "mlkem_native",
-    srcs = ["mlkem_native_monobuild.c"],
-    hdrs = [
-        "config.h",
-        "fips202_glue.h",
-        "fips202x4_glue.h",
-        "mlkem_native_monobuild.h",
+    srcs = [
+        "mlkem_native_alloc.c",
+        "mlkem_native_monobuild.c",
     ],
-    copts = [
-        '-DMLK_CONFIG_FILE=\\"config.h\\"',
+    hdrs = [
+        "fips202_glue.h",
+        "mlkem_native_alloc.h",
+        "mlkem_native_config.h",
+        "mlkem_native_monobuild.h",
     ],
     includes = ["."],
     deps = [
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/impl:sha3",
         "@mlkem_native//:mlkem_native_sources",
     ],
