@@ -9,17 +9,50 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/mlkem/mlkem_native_alloc.h"
 #include "sw/device/lib/crypto/impl/mlkem/mlkem_native_monobuild.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('m', 'l', 'k')
 
+// Static assertions to verify buffer sizes match mlkem-native
+_Static_assert(kOtcryptoMlkem512WorkBufferKeypairWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_512_KEYPAIR,
+               "ML-KEM-512 keypair work buffer size mismatch");
+_Static_assert(kOtcryptoMlkem512WorkBufferEncapsWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_512_ENCAPS,
+               "ML-KEM-512 encaps work buffer size mismatch");
+_Static_assert(kOtcryptoMlkem512WorkBufferDecapsWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_512_DECAPS,
+               "ML-KEM-512 decaps work buffer size mismatch");
+
+_Static_assert(kOtcryptoMlkem768WorkBufferKeypairWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_768_KEYPAIR,
+               "ML-KEM-768 keypair work buffer size mismatch");
+_Static_assert(kOtcryptoMlkem768WorkBufferEncapsWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_768_ENCAPS,
+               "ML-KEM-768 encaps work buffer size mismatch");
+_Static_assert(kOtcryptoMlkem768WorkBufferDecapsWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_768_DECAPS,
+               "ML-KEM-768 decaps work buffer size mismatch");
+
+_Static_assert(kOtcryptoMlkem1024WorkBufferKeypairWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_1024_KEYPAIR,
+               "ML-KEM-1024 keypair work buffer size mismatch");
+_Static_assert(kOtcryptoMlkem1024WorkBufferEncapsWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_1024_ENCAPS,
+               "ML-KEM-1024 encaps work buffer size mismatch");
+_Static_assert(kOtcryptoMlkem1024WorkBufferDecapsWords * sizeof(uint32_t) ==
+                   MLK_TOTAL_ALLOC_1024_DECAPS,
+               "ML-KEM-1024 decaps work buffer size mismatch");
+
 // ML-KEM-512 functions
 
 otcrypto_status_t otcrypto_mlkem512_keygen_derand(
     otcrypto_const_byte_buf_t randomness, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key) {
+    otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem512WorkBufferKeypairWords]) {
   if (randomness.len != 2 * MLKEM512_BYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -47,9 +80,12 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
   memset(sk_share1, 0, MLKEM512_SECRETKEYBYTES);
 
-  int result =
-      mlkem512_keypair_derand((unsigned char *)public_key->key,
-                              (unsigned char *)sk_share0, randomness.data);
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem512WorkBufferKeypairWords,
+                         .offset_words = 0};
+  int result = mlkem512_keypair_derand((unsigned char *)public_key->key,
+                                       (unsigned char *)sk_share0,
+                                       randomness.data, &ctx);
   if (result != 0) {
     memset(sk_share0, 0, MLKEM512_SECRETKEYBYTES);
     return OTCRYPTO_FATAL_ERR;
@@ -64,7 +100,8 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
 otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t randomness, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem512WorkBufferEncapsWords]) {
   if (public_key->key_length != MLKEM512_PUBLICKEYBYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -102,9 +139,12 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, MLKEM512_BYTES);
 
-  int result =
-      mlkem512_enc_derand(ciphertext.data, (unsigned char *)ss_share0,
-                          (unsigned char *)public_key->key, randomness.data);
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem512WorkBufferEncapsWords,
+                         .offset_words = 0};
+  int result = mlkem512_enc_derand(ciphertext.data, (unsigned char *)ss_share0,
+                                   (unsigned char *)public_key->key,
+                                   randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, MLKEM512_BYTES);
     return OTCRYPTO_FATAL_ERR;
@@ -115,8 +155,9 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_mlkem512_keygen(otcrypto_unblinded_key_t *public_key,
-                                           otcrypto_blinded_key_t *secret_key) {
+otcrypto_status_t otcrypto_mlkem512_keygen(
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem512WorkBufferKeypairWords]) {
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[ceil_div(2 * MLKEM512_BYTES, sizeof(uint32_t))];
@@ -129,13 +170,14 @@ otcrypto_status_t otcrypto_mlkem512_keygen(otcrypto_unblinded_key_t *public_key,
 
   otcrypto_const_byte_buf_t randomness_buf = {
       .data = (unsigned char *)randomness, .len = sizeof(randomness)};
-  return otcrypto_mlkem512_keygen_derand(randomness_buf, public_key,
-                                         secret_key);
+  return otcrypto_mlkem512_keygen_derand(randomness_buf, public_key, secret_key,
+                                         work);
 }
 
 otcrypto_status_t otcrypto_mlkem512_encapsulate(
     const otcrypto_unblinded_key_t *public_key, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem512WorkBufferEncapsWords]) {
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[ceil_div(MLKEM512_BYTES, sizeof(uint32_t))];
@@ -149,13 +191,13 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate(
   otcrypto_const_byte_buf_t randomness_buf = {
       .data = (unsigned char *)randomness, .len = sizeof(randomness)};
   return otcrypto_mlkem512_encapsulate_derand(public_key, randomness_buf,
-                                              ciphertext, shared_secret);
+                                              ciphertext, shared_secret, work);
 }
 
 otcrypto_status_t otcrypto_mlkem512_decapsulate(
     const otcrypto_blinded_key_t *secret_key,
-    otcrypto_const_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_const_byte_buf_t ciphertext, otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem512WorkBufferDecapsWords]) {
   if (secret_key->config.key_length != MLKEM512_SECRETKEYBYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -189,9 +231,10 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Unmask the key for the underlying implementation.
-  uint32_t sk[ceil_div(MLKEM512_SECRETKEYBYTES, sizeof(uint32_t))];
-  HARDENED_TRY(keyblob_key_unmask(secret_key, ARRAYSIZE(sk), sk));
+  // Secret keys are stored unmasked in share0 (share1 is zero).
+  uint32_t *sk_share0;
+  uint32_t *sk_share1;
+  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -199,8 +242,11 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, MLKEM512_BYTES);
 
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem512WorkBufferDecapsWords,
+                         .offset_words = 0};
   int result = mlkem512_dec((unsigned char *)ss_share0, ciphertext.data,
-                            (unsigned char *)sk);
+                            (unsigned char *)sk_share0, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, MLKEM512_BYTES);
     return OTCRYPTO_FATAL_ERR;
@@ -213,7 +259,8 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
 
 otcrypto_status_t otcrypto_mlkem768_keygen_derand(
     otcrypto_const_byte_buf_t randomness, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key) {
+    otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem768WorkBufferKeypairWords]) {
   if (randomness.len != 2 * MLKEM768_BYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -241,9 +288,12 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
   memset(sk_share1, 0, MLKEM768_SECRETKEYBYTES);
 
-  int result =
-      mlkem768_keypair_derand((unsigned char *)public_key->key,
-                              (unsigned char *)sk_share0, randomness.data);
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem768WorkBufferKeypairWords,
+                         .offset_words = 0};
+  int result = mlkem768_keypair_derand((unsigned char *)public_key->key,
+                                       (unsigned char *)sk_share0,
+                                       randomness.data, &ctx);
   if (result != 0) {
     memset(sk_share0, 0, MLKEM768_SECRETKEYBYTES);
     return OTCRYPTO_FATAL_ERR;
@@ -258,7 +308,8 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
 otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t randomness, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem768WorkBufferEncapsWords]) {
   if (public_key->key_length != MLKEM768_PUBLICKEYBYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -296,9 +347,12 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, MLKEM768_BYTES);
 
-  int result =
-      mlkem768_enc_derand(ciphertext.data, (unsigned char *)ss_share0,
-                          (unsigned char *)public_key->key, randomness.data);
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem768WorkBufferEncapsWords,
+                         .offset_words = 0};
+  int result = mlkem768_enc_derand(ciphertext.data, (unsigned char *)ss_share0,
+                                   (unsigned char *)public_key->key,
+                                   randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, MLKEM768_BYTES);
     return OTCRYPTO_FATAL_ERR;
@@ -309,8 +363,9 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_mlkem768_keygen(otcrypto_unblinded_key_t *public_key,
-                                           otcrypto_blinded_key_t *secret_key) {
+otcrypto_status_t otcrypto_mlkem768_keygen(
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem768WorkBufferKeypairWords]) {
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[ceil_div(2 * MLKEM768_BYTES, sizeof(uint32_t))];
@@ -323,13 +378,14 @@ otcrypto_status_t otcrypto_mlkem768_keygen(otcrypto_unblinded_key_t *public_key,
 
   otcrypto_const_byte_buf_t randomness_buf = {
       .data = (unsigned char *)randomness, .len = sizeof(randomness)};
-  return otcrypto_mlkem768_keygen_derand(randomness_buf, public_key,
-                                         secret_key);
+  return otcrypto_mlkem768_keygen_derand(randomness_buf, public_key, secret_key,
+                                         work);
 }
 
 otcrypto_status_t otcrypto_mlkem768_encapsulate(
     const otcrypto_unblinded_key_t *public_key, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem768WorkBufferEncapsWords]) {
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[ceil_div(MLKEM768_BYTES, sizeof(uint32_t))];
@@ -343,13 +399,13 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate(
   otcrypto_const_byte_buf_t randomness_buf = {
       .data = (unsigned char *)randomness, .len = sizeof(randomness)};
   return otcrypto_mlkem768_encapsulate_derand(public_key, randomness_buf,
-                                              ciphertext, shared_secret);
+                                              ciphertext, shared_secret, work);
 }
 
 otcrypto_status_t otcrypto_mlkem768_decapsulate(
     const otcrypto_blinded_key_t *secret_key,
-    otcrypto_const_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_const_byte_buf_t ciphertext, otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem768WorkBufferDecapsWords]) {
   if (secret_key->config.key_length != MLKEM768_SECRETKEYBYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -383,9 +439,10 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Unmask the key for the underlying implementation.
-  uint32_t sk[ceil_div(MLKEM768_SECRETKEYBYTES, sizeof(uint32_t))];
-  HARDENED_TRY(keyblob_key_unmask(secret_key, ARRAYSIZE(sk), sk));
+  // Secret keys are stored unmasked in share0 (share1 is zero).
+  uint32_t *sk_share0;
+  uint32_t *sk_share1;
+  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -393,8 +450,11 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, MLKEM768_BYTES);
 
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem768WorkBufferDecapsWords,
+                         .offset_words = 0};
   int result = mlkem768_dec((unsigned char *)ss_share0, ciphertext.data,
-                            (unsigned char *)sk);
+                            (unsigned char *)sk_share0, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, MLKEM768_BYTES);
     return OTCRYPTO_FATAL_ERR;
@@ -407,7 +467,8 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
 
 otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
     otcrypto_const_byte_buf_t randomness, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key) {
+    otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferKeypairWords]) {
   if (randomness.len != 2 * MLKEM1024_BYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -435,9 +496,12 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
   memset(sk_share1, 0, MLKEM1024_SECRETKEYBYTES);
 
-  int result =
-      mlkem1024_keypair_derand((unsigned char *)public_key->key,
-                               (unsigned char *)sk_share0, randomness.data);
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem1024WorkBufferKeypairWords,
+                         .offset_words = 0};
+  int result = mlkem1024_keypair_derand((unsigned char *)public_key->key,
+                                        (unsigned char *)sk_share0,
+                                        randomness.data, &ctx);
   if (result != 0) {
     memset(sk_share0, 0, MLKEM1024_SECRETKEYBYTES);
     return OTCRYPTO_FATAL_ERR;
@@ -452,7 +516,8 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
 otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t randomness, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferEncapsWords]) {
   if (public_key->key_length != MLKEM1024_PUBLICKEYBYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -490,9 +555,12 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, MLKEM1024_BYTES);
 
-  int result =
-      mlkem1024_enc_derand(ciphertext.data, (unsigned char *)ss_share0,
-                           (unsigned char *)public_key->key, randomness.data);
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem1024WorkBufferEncapsWords,
+                         .offset_words = 0};
+  int result = mlkem1024_enc_derand(ciphertext.data, (unsigned char *)ss_share0,
+                                    (unsigned char *)public_key->key,
+                                    randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, MLKEM1024_BYTES);
     return OTCRYPTO_FATAL_ERR;
@@ -504,7 +572,8 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
 }
 
 otcrypto_status_t otcrypto_mlkem1024_keygen(
-    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key) {
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferKeypairWords]) {
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[ceil_div(2 * MLKEM1024_BYTES, sizeof(uint32_t))];
@@ -518,12 +587,13 @@ otcrypto_status_t otcrypto_mlkem1024_keygen(
   otcrypto_const_byte_buf_t randomness_buf = {
       .data = (unsigned char *)randomness, .len = sizeof(randomness)};
   return otcrypto_mlkem1024_keygen_derand(randomness_buf, public_key,
-                                          secret_key);
+                                          secret_key, work);
 }
 
 otcrypto_status_t otcrypto_mlkem1024_encapsulate(
     const otcrypto_unblinded_key_t *public_key, otcrypto_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferEncapsWords]) {
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[ceil_div(MLKEM1024_BYTES, sizeof(uint32_t))];
@@ -537,13 +607,13 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate(
   otcrypto_const_byte_buf_t randomness_buf = {
       .data = (unsigned char *)randomness, .len = sizeof(randomness)};
   return otcrypto_mlkem1024_encapsulate_derand(public_key, randomness_buf,
-                                               ciphertext, shared_secret);
+                                               ciphertext, shared_secret, work);
 }
 
 otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     const otcrypto_blinded_key_t *secret_key,
-    otcrypto_const_byte_buf_t ciphertext,
-    otcrypto_blinded_key_t *shared_secret) {
+    otcrypto_const_byte_buf_t ciphertext, otcrypto_blinded_key_t *shared_secret,
+    uint32_t work[kOtcryptoMlkem1024WorkBufferDecapsWords]) {
   if (secret_key->config.key_length != MLKEM1024_SECRETKEYBYTES) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -577,9 +647,10 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Unmask the key for the underlying implementation.
-  uint32_t sk[ceil_div(MLKEM1024_SECRETKEYBYTES, sizeof(uint32_t))];
-  HARDENED_TRY(keyblob_key_unmask(secret_key, ARRAYSIZE(sk), sk));
+  // Secret keys are stored unmasked in share0 (share1 is zero).
+  uint32_t *sk_share0;
+  uint32_t *sk_share1;
+  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -587,8 +658,11 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, MLKEM1024_BYTES);
 
+  mlk_alloc_ctx_t ctx = {.base = work,
+                         .size_words = kOtcryptoMlkem1024WorkBufferDecapsWords,
+                         .offset_words = 0};
   int result = mlkem1024_dec((unsigned char *)ss_share0, ciphertext.data,
-                             (unsigned char *)sk);
+                             (unsigned char *)sk_share0, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, MLKEM1024_BYTES);
     return OTCRYPTO_FATAL_ERR;

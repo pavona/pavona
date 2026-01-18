@@ -135,9 +135,10 @@
     "sw/device/lib/crypto/impl/mlkem/BUILD",
     "sw/device/lib/crypto/impl/mlkem/mlkem_native_monobuild.c",
     "sw/device/lib/crypto/impl/mlkem/mlkem_native_monobuild.h",
+    "sw/device/lib/crypto/impl/mlkem/mlkem_native_alloc.c",
+    "sw/device/lib/crypto/impl/mlkem/mlkem_native_alloc.h",
+    "sw/device/lib/crypto/impl/mlkem/mlkem_native_config.h",
     "sw/device/lib/crypto/impl/mlkem/fips202_glue.h",
-    "sw/device/lib/crypto/impl/mlkem/fips202x4_glue.h",
-    "sw/device/lib/crypto/impl/mlkem/config.h",
     "sw/device/tests/crypto/mlkem_functest.c",
     // Code contributed by mldsa-native authors
     "sw/device/lib/crypto/impl/mldsa.c",
