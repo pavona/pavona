@@ -124,6 +124,7 @@ main:
   la x14, ctx
   la x15, ctxlen
   lw x15, 0(x15)
+  la x16, rnd
 
   jal x1, crypto_sign_signature_internal
 
