@@ -36,8 +36,12 @@ module prim_sha2_compression import prim_sha2_pkg::*;
   input               hash_continue_i, // continue hashing: set data counter to `message_length_i`
                                        // and use current digest
   input digest_mode_e digest_mode_i,
-  output logic        hash_done_o,
 
+  // Hash output signals
+  output logic              hash_done_o,
+  output sha_word64_t [7:0] hash_o,
+
+  // Digest input/output signals
   input  [63:0]             message_length_i, // bits but byte based
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
@@ -136,6 +140,9 @@ module prim_sha2_compression import prim_sha2_pkg::*;
       else          hash_q <= hash_d;
     end : update_hash_multimode
 
+    // assign hash to output
+    assign hash_o = hash_q;
+
     // compute digest
     always_comb begin : compute_digest_multimode
       digest_d = digest_q;
@@ -229,6 +236,12 @@ module prim_sha2_compression import prim_sha2_pkg::*;
       if (!rst_ni) hash256_q <= '0;
       else         hash256_q <= hash256_d;
     end : update_hash256
+
+    // assign hash to output
+    for (genvar i = 0; i < 8; i++) begin  : gen_assign_hash_256
+      assign hash_o[i][31:0]  = hash256_q[i];
+      assign hash_o[i][63:32] = 32'b0;
+    end
 
     // compute digest_256
     always_comb begin : compute_digest_256

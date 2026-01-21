@@ -136,6 +136,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     .hash_continue_i    (hash_continue_i),
     .digest_mode_i      (digest_mode_i),
     .hash_done_o        (hash_done_o),
+    .hash_o             (),
     .message_length_i   (message_length_i),
     .digest_i           (digest_i),
     .digest_we_i        (digest_we_i),
