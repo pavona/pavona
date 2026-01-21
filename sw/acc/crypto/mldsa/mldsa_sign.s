@@ -168,6 +168,9 @@
  * @param[in]  x11: *msg
  * @param[in]  x12: msglen
  * @param[in]  x13: *sk
+ * @param[in]  x14: *ctx
+ * @param[in]  x15: ctxlen
+ * @param[in]  x16: *rnd
  * @param[out] x10: 0 (success)
  * @param[out] x11: siglen
  *
@@ -239,6 +242,12 @@ crypto_sign_signature_internal:
     li  t0, STACK_CTXLEN
     add t0, fp, t0
     sw  a5, 0(t0)
+
+    /* Unpack rnd (discarding the pointer). */
+    bn.lid zero, 0(a6)
+    li     t0, STACK_RND
+    add    t0, fp, t0
+    bn.sid zero, 0(t0)
 
     /* Unpack sk */
 
@@ -336,17 +345,6 @@ crypto_sign_signature_internal:
     bn.sid  zero, 0(a0)
 
     /* Finish the SHAKE-256 operation. */
-
-#ifdef DILITHIUM_RANDOMIZED_SIGNING
-    /* NOTE: Write real randomness to STACK_RND */
-#else
-    /* Write RNDBYTES=32 0s to rnd */
-    bn.xor w0, w0, w0
-    li     t0, 0
-    li     a0, STACK_RND
-    add    a0, fp, a0
-    bn.sid t0, 0(a0)
-#endif
 
     /* Initialize a SHAKE256 operation. */
     addi  a1, zero, SEEDBYTES

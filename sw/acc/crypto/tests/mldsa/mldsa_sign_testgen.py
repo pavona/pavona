@@ -34,7 +34,8 @@ def gen_sign_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO)
     msg = random.randbytes(msglen)
     ctx = random.randbytes(ctxlen)
 
-    # Sign the message.
+    # Sign the message using deterministic signing.
+    rnd = bytes([0] * 32)
     sig = mldsa.sign(sk, msg, ctx=ctx, deterministic=True)
 
     # Ensure ctx and message end up 32-byte aligned
@@ -50,6 +51,7 @@ def gen_sign_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO)
         'ctx': ctx,
         'message': msg,
         'sk': sk,
+        'rnd': rnd,
     }
     write_test_data(data, data_file)
 
