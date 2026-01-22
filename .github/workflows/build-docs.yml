@@ -1,0 +1,61 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Build Documentation
+on:
+  pull_request:
+  merge_group:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Needed for workload identity federation
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build_docs:
+    name: Build documentation
+    runs-on:
+      group: zerorisc-none
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Build documentation
+        run: util/site/build-docs.sh build
+      - name: Upload files as artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: docs
+          path: build-site/
+          overwrite: true
+
+  upload_docs:
+    name: Upload documentation
+    if: ${{ github.event_name != 'pull_request' && github.ref_name == 'master' }}
+    needs: build_docs
+    runs-on:
+      # Requires access to license-server.
+      group: zerorisc-vivado
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: docs
+          path: build-site/
+      - name: Upload documentation to web server
+        run: |
+          HOST="$(cat /home/ci/license-server/hostname)"
+          KEY_FILE=/tmp/key.pem
+          echo ${{ secrets.HTML_UPLOAD_KEY }} > ${KEY_FILE}
+          scp -r -i ${KEY_FILE} build-site/book/* "www@${HOST}:public_html/"
