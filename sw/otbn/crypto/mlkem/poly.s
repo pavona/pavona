@@ -128,34 +128,23 @@ poly_tomsg:
   ret
 
 /*
- * Name:        poly_getnoise_eta1
+ * Name:        poly_getnoise_eta_init
  *
- * Description: Sample a polynomial deterministically from a seed and a nonce,
- *              with output polynomial close to centered binomial distribution
- *              with parameter KYBER_ETA1
- *
- * Arguments:   - poly *r: pointer to output polynomial
- *              - const uint8_t *seed: pointer to input seed (of length KYBER_SYMBYTES bytes)
- *              - uint8_t nonce: one-byte input nonce
+ * Description: Prepares for polynomial CBD sampling via either of
+ *              `poly_getnoise_eta_1` or `poly_getnoise_eta_2` given a seed and
+ *              a nonce by initializing a SHAKE256 operation.
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
- * @param[in]  w31: all-zero
  * @param[in]  x10: dptr_input, dmem pointer to input seed
  * @param[in]  x13: STACK_NONCE
- * @param[in]  x6: dmem_ptr to SHAKE256 results
- * @param[out] x11: dptr_output, dmem pointer to output polynomial
  *
- * clobbered registers: x4-x30, w0-w31
+ * clobbered registers: x5, x10
  * clobbered flag groups: None
  */
 
-.globl poly_getnoise_eta_1
-poly_getnoise_eta_1:
-  addi x2, x2, -8
-  sw   x11, 4(x2)
-  sw   x6, 0(x2)
-
+.globl poly_getnoise_eta_init
+poly_getnoise_eta_init:
   /* Initialize a SHAKE256 operation. */
   addi  x5, x0, 33
   slli  x5, x5, 5
@@ -168,6 +157,37 @@ poly_getnoise_eta_1:
   add     x10, x3, x13
   bn.lid  x0, 0(x10)
   bn.wsrw 0x9, w0
+
+  ret
+
+/*
+ * Name:        poly_getnoise_eta1
+ *
+ * Description: Sample a polynomial deterministically from a seed and a nonce,
+ *              with output polynomial close to centered binomial
+ *              distribution with parameter KYBER_ETA1; this function assumes
+ *              `poly_getnoise_eta_init` has been called first with the
+ *              appropriate seed and nonce
+ *
+ * Arguments:   - poly *r: pointer to output polynomial
+ *              - const uint8_t *seed: pointer to input seed (of length KYBER_SYMBYTES bytes)
+ *              - uint8_t nonce: one-byte input nonce
+ *
+ * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w31: all-zero
+ * @param[in]  x6: dmem_ptr to SHAKE256 results from `poly_getnoise_eta_init`
+ * @param[out] x11: dptr_output, dmem pointer to output polynomial
+ *
+ * clobbered registers: x4-x30, w0-w31
+ * clobbered flag groups: None
+ */
+
+.globl poly_getnoise_eta_1
+poly_getnoise_eta_1:
+  addi x2, x2, -8
+  sw   x11, 4(x2)
+  sw   x6, 0(x2)
 
   li x5, 8
   LOOPI LOOP_GETNOISE_1, 2
@@ -192,7 +212,9 @@ poly_getnoise_eta_1:
  *
  * Description: Sample a polynomial deterministically from a seed and a nonce,
  *              with output polynomial close to centered binomial distribution
- *              with parameter KYBER_ETA2
+ *              with parameter KYBER_ETA2; this function assumes
+ *              `poly_getnoise_eta_init` has been called first with the
+ *              appropriate seed and nonce
  *
  * Arguments:   - poly *r: pointer to output polynomial
  *              - const uint8_t *seed: pointer to input seed (of length KYBER_SYMBYTES bytes)
@@ -201,9 +223,7 @@ poly_getnoise_eta_1:
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
  * @param[in]  w31: all-zero
- * @param[in]  x10: dptr_input, dmem pointer to input seed
- * @param[in]  x13: STACK_NONCE
- * @param[in]  x6: dmem_ptr to SHAKE256 results
+ * @param[in]  x6: dmem_ptr to SHAKE256 results from `poly_getnoise_eta_init`
  * @param[out] x11: dptr_output, dmem pointer to output polynomial
  *
  * clobbered registers: x4-x30, w0-w31
@@ -215,19 +235,6 @@ poly_getnoise_eta_2:
   addi x2, x2, -8
   sw   x11, 4(x2)
   sw   x6, 0(x2)
-
-  /* Initialize a SHAKE256 operation. */
-  addi  x5, x0, 33
-  slli  x5, x5, 5
-  addi  x5, x5, SHAKE256_CFG
-  csrrw x0, KECCAK_CFG_REG, x5
-
-  /* Send the message to the Keccak core. */
-  bn.lid  x0, 0(x10)
-  bn.wsrw 0x9, w0
-  add     x10, x3, x13
-  bn.lid  x0, 0(x10)
-  bn.wsrw 0x9, w0
 
   li x5, 8
   LOOPI 4, 2

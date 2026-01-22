@@ -210,10 +210,11 @@ indcpa_keypair:
   add  a1, fp, a1
   li   a3, STACK_NONCE
   li   a2, 0
-  LOOPI KYBER_K, 5
+  LOOPI KYBER_K, 6
     add  t1, fp, a5
     addi a0, fp, STACK_NOISESEED
     sw   a2, STACK_NONCE(fp)
+    jal  x1, poly_getnoise_eta_init
     jal  x1, poly_getnoise_eta_1
     addi a2, a2, 1
 
@@ -289,10 +290,11 @@ indcpa_keypair:
   add  a1, fp, a1
   li   a3, STACK_NONCE
   li   a2, KYBER_K
-  LOOPI KYBER_K, 5
+  LOOPI KYBER_K, 6
     add  t1, fp, a5
     addi a0, fp, STACK_NOISESEED
     sw   a2, STACK_NONCE(fp)
+    jal  x1, poly_getnoise_eta_init
     jal  x1, poly_getnoise_eta_1
     addi a2, a2, 1
 
