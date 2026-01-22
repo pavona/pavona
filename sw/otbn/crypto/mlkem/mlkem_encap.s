@@ -34,6 +34,7 @@
   #define KYBER_CIPHERTEXT_WRS 24
   #define KYBER_GEN_MATRIX_NONCE 254
   #define KYBER_GEN_MATRIX_AT_NONCE -511
+  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 511
   #define POLY -512
   #define K_POLYS -1024
   #define K_SQUARED_POLYS -2048
@@ -58,6 +59,7 @@
   #define KYBER_CIPHERTEXT_WRS 34
   #define KYBER_GEN_MATRIX_NONCE 253
   #define KYBER_GEN_MATRIX_AT_NONCE -767
+  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 767
   #define POLY -512
   #define K_POLYS -1536
   #define K_SQUARED_POLYS -4608
@@ -82,6 +84,7 @@
   #define KYBER_CIPHERTEXT_WRS 49
   #define KYBER_GEN_MATRIX_NONCE 252
   #define KYBER_GEN_MATRIX_AT_NONCE -1023
+  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 1023
   #define POLY -512
   #define K_POLYS -2048
   #define K_SQUARED_POLYS -8192
@@ -314,8 +317,8 @@ indcpa_enc:
   jal  x1, poly_getnoise_eta_2
 
   /* Prepare for the first call to poly_gen_matrix. */
-  li   a2, 0
   addi a0, fp, STACK_ENC_SEED
+  bn.xor w30, w30, w30
   jal  x1, poly_gen_matrix_init
 
   /** v = v + k + epp **/
@@ -335,7 +338,6 @@ indcpa_enc:
   /*** Matrix vector multiplication ***/
   li   a1, STACK_ENC_AT
   add  a1, fp, a1
-  li   a2, 0
 
   /* Run rejection sampling to generate the public key. */
 
@@ -348,7 +350,7 @@ indcpa_enc:
     /* Gen 1st mat poly */
     addi a0, fp, STACK_ENC_SEED
     jal  x1, poly_gen_matrix
-    addi a2, a2, 0x0100
+    bn.addi w30, w30, 0x0100
     jal  x1, poly_gen_matrix_init
 
     /* Mutliply this generated poly with sk */
@@ -363,7 +365,7 @@ indcpa_enc:
       /* Gen next mat poly */
       addi a0, fp, STACK_ENC_SEED
       jal  x1, poly_gen_matrix
-      addi a2, a2, 0x0100
+      bn.addi w30, w30, 0x0100
       jal  x1, poly_gen_matrix_init
 
       /* Mutliply this generated poly with sk */
@@ -377,8 +379,8 @@ indcpa_enc:
     /* Gen next mat poly */
     addi a0, fp, STACK_ENC_SEED
     jal  x1, poly_gen_matrix
-    addi a2, a2, 0x0100
-    addi a2, a2, KYBER_GEN_MATRIX_AT_NONCE
+    bn.addi w30, w30, 0x0100
+    bn.subi w30, w30, KYBER_GEN_MATRIX_AT_NONCE_NEG
     jal  x1, poly_gen_matrix_init
 
     /* Mutliply this generated poly with sk */
@@ -392,7 +394,7 @@ indcpa_enc:
   /* Gen 1st mat poly */
   addi a0, fp, STACK_ENC_SEED
   jal  x1, poly_gen_matrix
-  addi a2, a2, 0x0100
+  bn.addi w30, w30, 0x0100
   jal  x1, poly_gen_matrix_init
 
   /* Mutliply this generated poly with sk */
@@ -407,7 +409,7 @@ indcpa_enc:
     /* Gen next mat poly */
     addi a0, fp, STACK_ENC_SEED
     jal  x1, poly_gen_matrix
-    addi a2, a2, 0x0100
+    bn.addi w30, w30, 0x0100
     jal  x1, poly_gen_matrix_init
 
     /* Mutliply this generated poly with sk */

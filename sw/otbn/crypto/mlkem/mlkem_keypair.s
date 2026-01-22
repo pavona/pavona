@@ -241,13 +241,13 @@ indcpa_keypair:
   /*** Matrix-vector multiplication ***/
   li   a1, STACK_A
   add  a1, fp, a1
-  li   a2, 0
+  bn.xor w30, w30, w30
   .rept KYBER_K
     /* Gen 1st mat poly */
     addi a0, fp, STACK_PUBLICSEED
     jal  x1, poly_gen_matrix_init
     jal  x1, poly_gen_matrix
-    addi a2, a2, 1
+    bn.addi w30, w30, 1
 
     /* Mutliply this generated poly with sk */
     addi a1, a1, POLY /* point back to A[0][0] */
@@ -262,7 +262,7 @@ indcpa_keypair:
       addi a0, fp, STACK_PUBLICSEED
       jal  x1, poly_gen_matrix_init
       jal  x1, poly_gen_matrix
-      addi a2, a2, 1
+      bn.addi w30, w30, 1
 
       /* Mutliply this generated poly with sk */
       addi a1, a1, POLY /* points back to A[0][1] */
@@ -271,7 +271,7 @@ indcpa_keypair:
       jal  x1, basemul_acc
       addi a1, a1, POLY /* points back to A[0][1] */
     .endr
-    addi a2, a2, KYBER_GEN_MATRIX_NONCE
+    bn.addi w30, w30, KYBER_GEN_MATRIX_NONCE
   .endr
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 

@@ -62,19 +62,13 @@
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
  * @param[in]  a0: pointer to seed (KYBER_SYMBYTES = 32)
- * @param[in]  a2: i||j (2 bytes)
+ * @param[in]  w30: i||j (2 bytes)
  *
  * clobbered registers: a0, t0, w0
  */
 
 .globl poly_gen_matrix_init
 poly_gen_matrix_init:
-  /* Space for the nonce */
-  #define STACK_NONCE -64
-
-  /* Store nonce to memory */
-  sw a2, STACK_NONCE(fp)
-
   /* Initialize a SHAKE128 operation. */
   addi  t0, zero, 34
   slli  t0, t0, 5
@@ -84,9 +78,7 @@ poly_gen_matrix_init:
   /* Send the message to the Keccak core. */
   bn.lid x0, 0(a0)             /* a0 still contains the input buffer */
   bn.wsrw 0x9, w0              /* Write to KECCAK_MSG_REG */
-  addi a0, fp, STACK_NONCE     /* Set a0 to point to the nonce in memory */
-  bn.lid x0, 0(a0)
-  bn.wsrw 0x9, w0              /* Write to KECCAK_MSG_REG */
+  bn.wsrw 0x9, w30             /* Write to KECCAK_MSG_REG */
 
   ret
 
@@ -104,7 +96,6 @@ poly_gen_matrix_init:
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
  * @param[in]  a0: pointer to seed (KYBER_SYMBYTES = 32)
- * @param[in]  a2: i||j (2 bytes)
  * @param[out] a1: dmem pointer to polynomial
  *
  * clobbered registers: a0-a5, t0-s4, w8, w14
