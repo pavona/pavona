@@ -27,8 +27,8 @@
   }
   "output": {
     "dmem": {
-      "ok": "0x00000739"  # HARDENED_TRUE
-      "x_r": "0x2ba3a8be6b94d5ec80a6d9d1190a436effe50d85a1eee859b8cc6af9bd5c2e18"
+      "ok": "0x39070000"  # HARDENED_TRUE
+      "x_r": "0xbea8a32becd5946bd1d9a6806e430a19850de5ff59e8eea1f96accb8182e5cbd"
     }
   }
 }

@@ -187,24 +187,21 @@ def main() -> int:
                            f"  Expected: {expected_str}\n"
                            f"  Actual:   {actual_str}")
 
-        if args.expected_dmem is not None:
-            elf_file = ELFFile(open(args.elf, 'rb'))
-            symbol_addr_map = _get_symbol_addr_map(elf_file)
-
-            for label, value in expected_dmem.items():
-                try:
-                    offset = symbol_addr_map[label]
-                    for i in range(0, len(value), 4):
-                        actual = actual_dmem[offset + i: offset + i + 4]
-                        expected = value[i: i + 4]
-                        if actual != expected:
-                            result.err(
-                                f"Mismatch for dmem {label} at word {i // 4}:\n"
-                                f"  Expected: {expected.hex()}\n"
-                                f"  Actual:   {actual.hex()}"
-                            )
-                except KeyError:
-                    result.err(f'No label "{label}" found in elf-file.')
+        for label, value in expected_dmem.items():
+            try:
+                print(symbols)
+                offset = symbols[label]
+                for i in range(0, len(value), 4):
+                    actual = actual_dmem[offset + i: offset + i + 4]
+                    expected = value[i: i + 4]
+                    if actual != expected:
+                        result.err(
+                            f"Mismatch for dmem {label} at word {i // 4}:\n"
+                            f"  Expected: {expected.hex()}\n"
+                            f"  Actual:   {actual.hex()}"
+                        )
+            except KeyError:
+                result.err(f'No label "{label}" found in elf-file.')
 
     if result.has_errors() or result.has_warnings() or args.verbose:
         print(result.report())

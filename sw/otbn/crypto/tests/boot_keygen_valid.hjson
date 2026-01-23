@@ -28,8 +28,8 @@
       # >>> P = ((seed ^^ key0 ^^ key1) & mask) * G
       # >>> print(hex(P.x()), hex(P.y()))
 
-      "x": "0x5868cc1d58a1ea20ee1cf22393d92a695e69ea89e85cbce80e94f900015ac2c4"
-      "y": "0x17749c44e6401eda1e71722402d940dceeeee6b7277dac6cbc9a02a44f66aa6f"
+      "x": "0x1dcc685820eaa15823f21cee692ad99389ea695ee8bc5ce800f9940ec4c25a01"
+      "y": "0x449c7417da1e40e62472711edc40d902b7e6eeee6cac7d27a4029abc6faa664f"
     }
   }
 }

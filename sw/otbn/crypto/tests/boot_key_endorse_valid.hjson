@@ -41,8 +41,8 @@
       # >>> sig = r.to_bytes(32, 'big') + s.to_bytes(32, 'big')
       # >>> p.verify(sig, msg, hashfunc=hashlib.sha256)
 
-      "r": "0x748aea2bcc338ac86f879e3cc6e438ea495b25d443c10682fb803a9d71b1394b"
-      "s": "0x02f72e11603b548fa5496da754d9cecdda277363f11e475492e8f62efcb766b9"
+      "r": "0x2bea8a74c88a33cc3c9e876fea38e4c6d4255b498206c1439d3a80fb4b39b171"
+      "s": "0x112ef7028f543b60a76d49a5cdced954637327da54471ef12ef6e892b966b7fc"
     }
   }
 }

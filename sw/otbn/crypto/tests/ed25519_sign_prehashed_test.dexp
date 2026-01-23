@@ -1,4 +1,4 @@
-# Note: bytes within 32-bit words are reversed here compared to the standard
-# bytewise representation of the signature.
-ed25519_sig_R: 41ae6d4eb99b493976f87f9c462b469e803f683d810fd3a91a12b8f02202a798
-ed25519_sig_S: 063408262a1cd1aa2a0636e6618c0ba1aaf5ad62d003205a352a3c464250f831
+# Note: bytes are reversed here compared to the standard bytewise
+# representation of the signature.
+ed25519_sig_R: 2202a7981a12b8f0810fd3a9803f683d462b469e76f87f9cb99b493941ae6d4e
+ed25519_sig_S: 4250f831352a3c46d003205aaaf5ad62618c0ba12a0636e62a1cd1aa06340826

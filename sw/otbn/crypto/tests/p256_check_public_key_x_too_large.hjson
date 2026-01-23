@@ -13,7 +13,7 @@
   }
   "output": {
     "dmem": {
-      "ok": "0x000001d4"  # HARDENED_FALSE
+      "ok": "0xd4010000"  # HARDENED_FALSE
     }
   }
 }

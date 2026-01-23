@@ -23,7 +23,7 @@
   "output": {
     "dmem": {
       # Status code
-      "ok": "0x000000739",
+      "ok": "0x39070000",
     },
     "regs": {
       # Expected values (x-coordinate of result):

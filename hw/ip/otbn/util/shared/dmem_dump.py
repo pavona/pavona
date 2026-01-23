@@ -53,6 +53,7 @@ def parse_actual_dmem(dump: bytes) -> bytes:
         tmp = []
         # discard byte indicating integrity status
         for v in struct.iter_unpack("<BI", w[0]):
-            dmem_bytes += v[1].to_bytes(4, "little")
+            tmp += [x for x in struct.unpack("4B", v[1].to_bytes(4, "big"))]
+        dmem_bytes += tmp
     assert len(dmem_bytes) == get_memory_layout().dmem_size_bytes
     return bytes(dmem_bytes)

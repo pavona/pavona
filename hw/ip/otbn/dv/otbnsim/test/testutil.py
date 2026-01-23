@@ -41,7 +41,7 @@ def prepare_sim_for_asm_file(asm_file: str, tmpdir: py.path.local,
     assert os.path.exists(asm_file)
     elf_file = asm_and_link_one_file(asm_file, tmpdir)
 
-    sim = StandaloneSim()
+    sim = StandaloneSim(False)
     load_elf(sim, elf_file)
 
     sim.state.ext_regs.commit()
