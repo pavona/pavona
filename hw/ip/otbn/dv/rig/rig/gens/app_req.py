@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import random
-from typing import Optional
+from typing import Optional, Tuple
 from enum import Enum, auto
 
 from shared.insn_yaml import InsnsFile
@@ -70,8 +70,8 @@ class KmacAppReqInsn(SnippetGen):
         # kmac msg configurations
         self._msg_size = 0
         self._pw_size = 0
-        self._sha3_mode = 0
-        self._keccak_strength = 0
+        self._sha3_mode = Sha3Mode.Sha3
+        self._keccak_strength = KeccakStrength.L128
         self._cfg_done = 0
 
         # li insn mode
@@ -161,7 +161,7 @@ class KmacAppReqInsn(SnippetGen):
 
         return (snippet, model)
 
-    def _gen(self, model: Model, program: Program):
+    def _gen(self, model: Model, program: Program) -> list[ProgInsn]:
         """ Helper function to build and return a full instruction list for the given message size.
             Attempts to regularly change the partial word size during the message.
         """
@@ -265,7 +265,9 @@ class KmacAppReqInsn(SnippetGen):
 
         csrrw_grd_val = 0x0
         while (csrrw_grd_val <= 0x1):
-            csrrw_grd_val = model.pick_operand_value(self.csrrw_grd_op_type)
+            grd_val_pick = model.pick_operand_value(self.csrrw_grd_op_type)
+            assert grd_val_pick is not None
+            csrrw_grd_val = grd_val_pick
 
         op_vals.append(csrrw_grd_val)
         csrrw_csr_val = model._kmac_csr_addr["KMAC_STATUS"]
@@ -287,7 +289,7 @@ class KmacAppReqInsn(SnippetGen):
 
         return insn_list
 
-    def fill_msg_insns(self, model: Model):
+    def fill_msg_insns(self, model: Model) -> list[ProgInsn]:
         insn_list = []
 
         self._fill_li_mode = FillLiMode.MSG
@@ -307,7 +309,7 @@ class KmacAppReqInsn(SnippetGen):
 
         return insn_list
 
-    def fill_cfg_insns(self, model: Model):
+    def fill_cfg_insns(self, model: Model) -> list[ProgInsn]:
         insn_list = []
 
         self._fill_li_mode = FillLiMode.CFG
@@ -320,7 +322,7 @@ class KmacAppReqInsn(SnippetGen):
 
         return insn_list
 
-    def fill_pw_insns(self, model: Model):
+    def fill_pw_insns(self, model: Model) -> list[ProgInsn]:
         insn_list = []
 
         addi_op_vals = []
@@ -328,10 +330,11 @@ class KmacAppReqInsn(SnippetGen):
         # Create the destination register operand
         while True:
             addi_grd_val = model.pick_operand_value(self.addi_grd_op_type)
-            if not model.is_const('gpr', addi_grd_val):
-                # 0x0 is not writeable and 0x1 is SP
-                if addi_grd_val != 0x0 and addi_grd_val != 0x1:
-                    break
+            if addi_grd_val is not None:
+                if not model.is_const('gpr', addi_grd_val):
+                    # 0x0 is not writeable and 0x1 is SP
+                    if addi_grd_val != 0x0 and addi_grd_val != 0x1:
+                        break
 
         addi_grs1_val = 0x0
         addi_imm_val = self._fill_li_pw()
@@ -351,7 +354,7 @@ class KmacAppReqInsn(SnippetGen):
 
         return insn_list
 
-    def fill_csrrw(self, model: Model) -> Optional[ProgInsn]:
+    def fill_csrrw(self, model: Model) -> ProgInsn:
         ''' Function to fill the opcode values for a csrrw insn '''
 
         # Initialize opcode vals for csrrw instruction
@@ -362,7 +365,7 @@ class KmacAppReqInsn(SnippetGen):
         csrrw_grd_val = model.pick_operand_value(self.csrrw_grd_op_type)
 
         # Dont want grd to be 0x1 to prevent call stack write
-        if (csrrw_grd_val <= 0x1):
+        if (csrrw_grd_val is not None and csrrw_grd_val <= 0x1):
             csrrw_grd_val = 0x2
 
         csrrw_grd_val = 0x0
@@ -385,7 +388,7 @@ class KmacAppReqInsn(SnippetGen):
         assert len(op_vals) == len(self.csrrw.operands)
         return ProgInsn(self.csrrw, op_vals, (mem_type, addr))
 
-    def fill_li(self, model: Model) -> Optional[ProgInsn]:
+    def fill_li(self, model: Model) -> Tuple[ProgInsn, ProgInsn]:
         ''' Function to fill the (lui + addi) instructions needed for li pseudo insn '''
 
         # TODO: Add model check to see if reg is const
@@ -397,10 +400,11 @@ class KmacAppReqInsn(SnippetGen):
         # Create the destination register operand
         while True:
             li_grd_val = model.pick_operand_value(self.li_grd_op_type)
-            if not model.is_const('gpr', li_grd_val):
-                # 0x0 is not writeable and 0x1 is SP
-                if li_grd_val != 0x0 and li_grd_val != 0x1:
-                    break
+            if li_grd_val is not None:
+                if not model.is_const('gpr', li_grd_val):
+                    # 0x0 is not writeable and 0x1 is SP
+                    if li_grd_val != 0x0 and li_grd_val != 0x1:
+                        break
 
         # Source reg for addi should be same as destination (addi x7, x7, 0x20) ex
         addi_grs1_val = li_grd_val
@@ -428,13 +432,13 @@ class KmacAppReqInsn(SnippetGen):
 
         return prog_lui_insn, prog_addi_insn
 
-    def _fill_li_pw(self) -> Optional[int]:
+    def _fill_li_pw(self) -> int:
         ''' Helper function to generate appropriate imm value for partial word insn '''
         addi_imm_op_val = self._pw_size & 0xFFF
 
         return addi_imm_op_val
 
-    def _fill_li_cfg(self) -> Optional[int]:
+    def _fill_li_cfg(self) -> Tuple[int, int]:
         ''' Helper function to generate appropriate imm value for kmac cfg '''
 
         # Create the destination register operand
@@ -458,15 +462,17 @@ class KmacAppReqInsn(SnippetGen):
 
         return lui_imm_op_val, addi_imm_op_val
 
-    def _fill_li_msg(self, model: Model) -> Optional[int]:
+    def _fill_li_msg(self, model: Model) -> Tuple[int, int]:
         ''' Helper function to generate random imm payload for kmac msg '''
 
         lui_imm_op_val = model.pick_operand_value(self.lui_imm_op_type)
         addi_imm_op_val = model.pick_operand_value(self.addi_imm_op_type)
 
+        if lui_imm_op_val is None or addi_imm_op_val is None:
+            raise ValueError("Unable to create immediate values")
         return lui_imm_op_val, addi_imm_op_val
 
-    def fill_bn_wsrr(self, model: Model) -> Optional[ProgInsn]:
+    def fill_bn_wsrr(self, model: Model) -> ProgInsn:
         ''' Function to generate wsrr insn opcode values '''
 
         # Intialize opcode vals for bn.wsrr instruction
@@ -475,6 +481,8 @@ class KmacAppReqInsn(SnippetGen):
 
         # Pick destination register
         bn_wsrr_wrd_val = model.pick_operand_value(self.bn_wsrr_wrd_op_type)
+        if bn_wsrr_wrd_val is None:
+            raise ValueError("Unable to generate bn.wsrr destination reg")
         op_vals.append(bn_wsrr_wrd_val)
 
         # Pick source WSR addr
@@ -489,7 +497,7 @@ class KmacAppReqInsn(SnippetGen):
         assert len(op_vals) == len(self.bn_wsrr.operands)
         return ProgInsn(self.bn_wsrr, op_vals, (mem_type, addr))
 
-    def fill_bn_wsrw(self, model: Model) -> Optional[ProgInsn]:
+    def fill_bn_wsrw(self, model: Model) -> ProgInsn:
         ''' Function to generate wsr insn opcode values '''
 
         # Intialize opcode vals for bn.wsrw instruction

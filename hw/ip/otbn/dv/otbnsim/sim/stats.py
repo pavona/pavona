@@ -6,7 +6,7 @@
 
 
 from collections import Counter, defaultdict, namedtuple
-from typing import Dict, Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional, Any
 import re
 
 from elftools.dwarf.dwarfinfo import DWARFInfo  # type: ignore
@@ -49,7 +49,9 @@ class ExecutionStats:
         '''Record a single stall cycle.'''
         self.stall_count += 1
 
-        mnemonic = self._insn_at_addr(state_bc.pc).insn.mnemonic
+        insn_at_addr = self._insn_at_addr(state_bc.pc)
+        assert insn_at_addr is not None
+        mnemonic = insn_at_addr.insn.mnemonic
 
         # [instruction count, stall count]
         if state_bc.pc in self.func_instrs:
@@ -218,9 +220,9 @@ class ExecutionStatAnalyzer:
         self._elf_file = ELFFile(open(elf_file_path, 'rb'))
         self._stats = stats
         self._addr_symbol_map = _get_addr_symbol_map(self._elf_file)
-        self.func_cycles = None
-        self.func_instrs = None
-        self.func_calls = {}
+        self.func_cycles: Optional[Dict[str, List[int]]] = None
+        self.func_instrs: Optional[Dict[str, Dict[Any, List[int]]]] = None
+        self.func_calls: Dict[str, Dict[str, int]] = {}
 
     def _describe_imem_addr(self, address: int, name_only: bool = False) -> str:
         symbol_name = None
@@ -290,7 +292,7 @@ class ExecutionStatAnalyzer:
 
         return out
 
-    def get_stat_data(self) -> Dict:
+    def get_stat_data(self) -> Dict[str, Any]:
         assert self.func_cycles is not None
         assert self.func_instrs is not None
         stat_data = {
@@ -474,7 +476,7 @@ class ExecutionStatAnalyzer:
         return '\n'.join(out) + '\n'
 
     def _dump_func_cycles(self) -> str:
-        accumulated = dict()
+        accumulated: Dict[str, List[int]] = dict()
         for func_addr, histdata in self._stats.func_instrs.items():
             # find the next label that does not start with an "_". By
             # convention, labels that do not start with an "_" are functions,
@@ -500,7 +502,7 @@ class ExecutionStatAnalyzer:
 
     def _dump_func_instrs(self) -> str:
         out = ''
-        accumulated = dict()
+        accumulated: Dict[str, Dict[str, List[int]]] = dict()
         for func_addr, histdata in self._stats.func_instrs.items():
             # find the next label that does not start with an "_". By
             # convention, labels that do not start with an "_" are functions,

@@ -191,27 +191,31 @@ class StraightLineInsn(SnippetGen):
         assert insn.lsu is None
         # For each operand, pick a value that's allowed by the model (i.e.
         # one that won't trigger any undefined behaviour)
-        op_vals = []
+        op_vals = []  # type: List[int]
         for operand in insn.operands:
             op_val = model.pick_operand_value(operand.op_type)
 
             if op_val is None:
-                return None
+                raise ValueError("Generated invalid mulv/mulvl operand")
 
             # Ensure a proper type enum for mulv/l
             if (
                 (insn.mnemonic == 'bn.mulv.l' or insn.mnemonic == "bn.mulv")
                 and (len(op_vals) == len(insn.operands) - 1)
             ):
-                while operand.op_type.items[op_val] == '""':  # Empty enum index contain ""
+                while operand.op_type.op_val_to_str(op_val, 0) == '""':  # Empty enums contain ""
                     op_val = model.pick_operand_value(operand.op_type)
+                    if op_val is None:
+                        raise ValueError("Generated invalid mulv/mulvl operand")
 
+            if op_val is None:
+                raise ValueError("Generated invalid mulv/mulvl operand")
             op_vals.append(op_val)
 
         # If out of range lane index take modulo to fit in bounds
         if (
             insn.mnemonic == "bn.mulv.l"
-            and operand.op_type.items[op_vals[-1]].startswith(".8")
+            and operand.op_type.op_val_to_str(op_vals[-1], 0).startswith(".8")
             and op_vals[-2] >= 8
         ):
             op_vals[-2] = op_vals[-2] % 8

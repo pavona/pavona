@@ -39,7 +39,7 @@ class BadDeepLoop(SnippetGen):
     def _pick_bodysize(self,
                        insn: Insn,
                        pc: int,
-                       program: Program) -> Tuple[int, int]:
+                       program: Program) -> Tuple[Optional[int], Optional[int]]:
         '''Pick the size of the loop body.
 
         Returns (enc_bodysize, end_addr).
@@ -105,7 +105,7 @@ class BadDeepLoop(SnippetGen):
 
     def _gen_loop_head(self,
                        model: Model,
-                       program: Program) -> Tuple[ProgInsn, int]:
+                       program: Program) -> Tuple[Optional[ProgInsn], Optional[int]]:
         '''Generate a LOOP or LOOPI instruction
 
         Returns (hd_insn, end_address).
@@ -140,7 +140,7 @@ class BadDeepLoop(SnippetGen):
 
     def _gen_loop_stack(self,
                         model: Model,
-                        program: Program) -> Tuple[Snippet, Model]:
+                        program: Program) -> Tuple[Optional[Snippet], Optional[Model]]:
         '''Generate stack of loop instructions, returning snippet and new model
 
         This also inserts the instructions into program.
@@ -192,6 +192,8 @@ class BadDeepLoop(SnippetGen):
         program.add_insns(hd_pc, [hd_insn])
         model.update_for_insn(hd_insn)
         model.pc += 4
+        if end_addr is None:
+            raise ValueError("Error generating end_addr for loop stack")
         model.loop_stack.push(end_addr)
 
         body_snippet = None  # type: Optional[Snippet]
@@ -212,7 +214,10 @@ class BadDeepLoop(SnippetGen):
             assert model.pc == gap_lo
             body_snippet = jump_snippet
 
-        real_body_snippet, model = self._gen_loop_stack(model, program)
+        real_body_snippet, new_model = self._gen_loop_stack(model, program)
+        if new_model is None:
+            return (None, None)
+        model = new_model
 
         # Required to prevent assembly gen build error due to IMEM size increase.
         # Refer to _pick_bodysize for description.
@@ -281,7 +286,10 @@ class BadDeepLoop(SnippetGen):
             return None
 
         # At this point, we *should* be able to make the loop unconditionally.
-        snippet, model = self._gen_loop_stack(model, program)
+        snippet, new_model = self._gen_loop_stack(model, program)
+        if new_model is None:
+            return None
+        model = new_model
 
         # Required to prevent assembly gen build error due to IMEM size increase.
         # Refer to _pick_bodysize for description.

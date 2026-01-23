@@ -18,7 +18,7 @@ from .kmac import KmacBlock
 DEBUG_KMAC = False
 
 
-def kmac_debug_print(text):
+def kmac_debug_print(text: str) -> None:
     if DEBUG_KMAC:
         print(text, file=sys.stderr)
 
@@ -366,10 +366,11 @@ class KmacPartialWriteISPR(WSR):
     def __init__(self, name: str, kmac: KmacBlock):
         super().__init__(name)
         self._kmac = kmac
-        self._value = None
-        self._next_value = None
+        self._value: Optional[int] = None
+        self._next_value: Optional[int] = None
 
     def read_unsigned(self) -> int:
+        assert self._value is not None
         return self._value
 
     def read_mask(self) -> int:
@@ -386,7 +387,6 @@ class KmacPartialWriteISPR(WSR):
     def commit(self) -> None:
         if self._pending_write:
             self._value = self._next_value
-            kmac_debug_print(f"\tREG -> KMAC_PARTIAL_WRITE reg: {hex(self._next_value)}")
         super().commit()
 
     def changes(self) -> Sequence[Trace]:
@@ -415,8 +415,8 @@ class KmacMsgWSR(WSR):
         self._pending_write_stall_pw = False
         self._start_cycle_fifo_ready = False
         self._prev_fifo_ready = True
-        self._next_value = None
-        self._value = None
+        self._next_value: Optional[int] = None
+        self._value: Optional[int] = None
         self._partial_ispr = partial_ispr
 
     def read_unsigned(self) -> int:
@@ -439,7 +439,7 @@ class KmacMsgWSR(WSR):
         if self._kmac._app_fifo_after_flush:
             self._pending_write_stall_pw = False
         # KMAC_MSG reg -> FIFO
-        if self._pending_write_to_app_intf:
+        if self._pending_write_to_app_intf and self._value is not None:
             strb_len = self._partial_ispr.read_mask()
             value_bytes = int.to_bytes(self._value, byteorder='little', length=32)[:strb_len]
             kmac_debug_print("\tPending write to App FIFO")
@@ -540,6 +540,7 @@ class KmacStatusWSR(WSR):
     def __init__(self, name: str, kmac: KmacBlock):
         super().__init__(name)
         self._kmac = kmac
+        self._next_value: Optional[int] = None
 
     def read_unsigned(self) -> int:
         value = self._kmac.get_undersized() << 4
@@ -547,6 +548,7 @@ class KmacStatusWSR(WSR):
         value += self._kmac.get_error() << 2
         value += self._kmac.get_ready() << 1
         value += self._kmac.get_done()
+        self._next_value = value
         return value
 
     def write_unsigned(self, value: int) -> None:
@@ -581,6 +583,7 @@ class KmacDigestWSR(WSR):
         self._kmac = kmac
         self._next_value = None
         self._has_value = False
+        self._value: Optional[int] = None
 
     def has_value(self) -> bool:
         return self._has_value

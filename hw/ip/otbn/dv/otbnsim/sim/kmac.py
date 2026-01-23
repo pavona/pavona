@@ -9,12 +9,13 @@
 # Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
 
 import sys
+from typing import Optional, Union
 from Crypto.Hash import cSHAKE128, cSHAKE256, SHAKE128, SHAKE256, SHA3_224, \
     SHA3_256, SHA3_384, SHA3_512
 DEBUG_KMAC = False
 
 
-def kmac_debug_print(text):
+def kmac_debug_print(text: str) -> None:
     if DEBUG_KMAC:
         print(text, file=sys.stderr)
 
@@ -84,16 +85,22 @@ class KmacBlock:
     _NEW_PERMUTATION_LATENCY = _KECCAK_CYCLES_PER_ROUND * _KECCAK_NUM_ROUNDS + \
         _KECCAK_LATENCY_DIGEST_EXPOSED + _SHIFT_DIGEST_LATENCY
 
-    def __init__(self):
+    # Set valid typing
+    _state: Union[SHA3_224.SHA3_224_Hash, SHA3_256.SHA3_256_Hash, SHA3_384.SHA3_384_Hash,
+                  SHA3_512.SHA3_512_Hash, cSHAKE128.cSHAKE_XOF, SHAKE128.SHAKE128_XOF,
+                  SHAKE256.SHAKE256_XOF, None] = None
+
+    def __init__(self) -> None:
         self._reset()
         self._status = self._STATUS_IDLE
+        self._core_cycles_remaining: Optional[int] = None
         self._mode = self._MODE_SHA3
         self._strength = self._STRENGTH_128
         self._read_offset = 0
         self._padded = False
         self._padding_only = False
         self._app_intf_ready = False
-        self._app_intf_ready_pending_ctr = None
+        self._app_intf_ready_pending_ctr: Optional[int] = None
         self._app_intf_fifo_ready = True
         self._app_intf_fifo_ready_next = True
         self._app_intf_fifo_flush = False
@@ -123,7 +130,7 @@ class KmacBlock:
         self._status = self._STATUS_IDLE
         self._core_cycles_remaining = None
         self._state = None
-        self._rate_bytes = None
+        self._rate_bytes = 0
         self._read_offset = 0
         self._strength = self._STRENGTH_128
         self._padded = False
@@ -376,7 +383,7 @@ class KmacBlock:
         self._app_intf_fifo += msg
         return True
 
-    def _start_keccak_core(self, absorbed) -> None:
+    def _start_keccak_core(self, absorbed: bool) -> None:
         kmac_debug_print("\tStarting round logic")
         if absorbed:
             self._core_cycles_remaining = self._KECCAK_NUM_ROUNDS * \
@@ -388,10 +395,10 @@ class KmacBlock:
                 self._KECCAK_CYCLES_PER_ROUND + self._KECCAK_LATENCY_DONE
             kmac_debug_print(f"Not Absorbed | remaining_cycles = {self._core_cycles_remaining}")
 
-    def _core_is_busy(self) -> None:
+    def _core_is_busy(self) -> bool:
         return self._core_cycles_remaining is not None and self._core_cycles_remaining > 0
 
-    def _core_can_absorb(self) -> None:
+    def _core_can_absorb(self) -> bool:
         # With _core_cycles_remaining we count the cycles for the Keccak round logic and
         # additional cycles for the application interface to propagate the digest. The core
         # is able to absorb new data into its state one cycle before the counter hits zero.
@@ -482,6 +489,8 @@ class KmacBlock:
                           {self._msg_fifo[:absorb_rate][::-1].hex()}")
                 # Absorb a new chunk of the message.
                 self._core_pending_bytes_next = self._core_pending_bytes + absorb_rate
+                if self._state is None:
+                    raise ValueError("KMAC: Hash state not initialized")
                 self._state.update(self._msg_fifo[:absorb_rate])
                 self._msg_fifo = self._msg_fifo[absorb_rate:]
             elif self._pending_process:
@@ -502,6 +511,8 @@ class KmacBlock:
                                   {self._msg_fifo[:absorb_rate][::-1].hex()}, \
                                   flush_ctr = {self._msg_fifo_flush_ctr}")
                         # model cycle for consuming the last data
+                        if self._state is None:
+                            raise ValueError("KMAC: Hash state not initialized")
                         self._state.update(self._msg_fifo)
                         self._core_pending_bytes_next = \
                             self._core_pending_bytes + len(self._msg_fifo)
@@ -664,7 +675,8 @@ class KmacBlock:
 
         # Either step the core or check if we can start it.
         if self._core_is_busy():
-            self._core_cycles_remaining -= 1
+            if self._core_cycles_remaining is not None:
+                self._core_cycles_remaining -= 1
             kmac_debug_print("\tProcessing")
         elif self._core_pending_bytes == self._rate_bytes:
             self._start_keccak_core(False)
@@ -717,7 +729,7 @@ class KmacBlock:
         else:
             self._pending_app_intf_last = False
 
-    def max_read_bytes(self) -> int:
+    def max_read_bytes(self) -> Optional[int]:
         '''Returns the maximum readable bytes before a `run` command.'''
         # SHA3
         if self._mode == self._MODE_SHA3:
@@ -729,14 +741,19 @@ class KmacBlock:
         return None
 
     def read(self, num_bytes: int) -> bytes:
-        if self.max_read_bytes() is not None and num_bytes > self.max_read_bytes():
+        if self._state is None:
+            raise ValueError("KMAC: Hash state not initialized")
+        max_bytes = self.max_read_bytes()
+        if max_bytes is not None and num_bytes > max_bytes:
             raise ValueError('KMAC: Read request exceeds Keccak rate.')
         if self._mode == self._MODE_SHAKE or self._mode == self._MODE_CSHAKE:
             # XOFs SHAKE and CSHAKE
             self._read_offset += num_bytes
-            ret = self._state.read(num_bytes)
+            if hasattr(self._state, "read"):
+                ret = self._state.read(num_bytes)
         else:
             # SHA3
-            ret = self._state.digest()[self._read_offset: self._read_offset + num_bytes]
+            if hasattr(self._state, "digest"):
+                ret = self._state.digest()[self._read_offset: self._read_offset + num_bytes]
             self._read_offset += num_bytes
         return ret

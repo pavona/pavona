@@ -636,7 +636,7 @@ class Transformer:
         # Strings that should be spat out verbatim
         self.acc = []   # type: List[str]
         self.macros = []  # type: List[str]
-        self.symbol_table = {}  # type: Dict[str, str]
+        self.symbol_table = {}  # type: Dict[str, List[str]]
         # The key symbol for this statement
         self.key_sym = None  # type: Optional[str]
 
@@ -1063,9 +1063,11 @@ class Transformer:
         self.state = 1
 
         if ".macro" in line:
-            self.macros.append(re.search(r"\.macro\s(\w+)", line).group(1))
+            line_match = re.search(r"\.macro\s(\w+)", line)
+            if line_match is not None:
+                self.macros.append(line_match.group(1))
 
-        def perform_replacement(line, symbol_table):
+        def perform_replacement(line: str, symbol_table: Dict[str, List[str]]) -> str:
             # Remove comment (only works single-line comments)
             line_new = re.sub(r"/\*.*\*/", "", line)
             # Check if the token is a symbol in the symbol table
@@ -1075,15 +1077,16 @@ class Transformer:
 
             return line_new
 
-        def process_equ_directive(line, symbol_table):
+        def process_equ_directive(line: str, symbol_table: Dict[str, List[str]]) -> None:
             # Parse the .equ directive line
             search = re.search(r"\.equ\s+(\w+),\s+(\w+)", line)
 
             # Update the symbol table with the new definition
-            if search.group(2) in symbol_table:
-                symbol_table[search.group(2)].append(search.group(1))
-            else:
-                symbol_table[search.group(2)] = [search.group(1)]
+            if search is not None:
+                if search.group(2) in symbol_table:
+                    symbol_table[search.group(2)].append(search.group(1))
+                else:
+                    symbol_table[search.group(2)] = [search.group(1)]
 
         if '.equ' in line:
             process_equ_directive(line, self.symbol_table)
@@ -1207,7 +1210,7 @@ def transform_inputs(out_dir: str, inputs: List[str], insns_file: InsnsFile,
     return out_paths
 
 
-def run_c_preprocessor(out_dir: str, inputs: List[str], copts: str) -> List[str]:
+def run_c_preprocessor(out_dir: str, inputs: List[str], copts: List[str]) -> List[str]:
     inputs_pre = []
     for idx, in_path in enumerate(inputs):
         out_path = os.path.join(out_dir, str(idx))

@@ -118,7 +118,7 @@ class CSRFile:
         if idx == 0x7d9:
             # KMAC_CFG register
             wsrs.KMAC_CFG.write_unsigned(value)
-            return 0
+            return
 
         if idx == 0x7e2:
             # KMAC_STATUS register
@@ -130,7 +130,7 @@ class CSRFile:
 
         if idx == 0x7f3:
             wsrs.KMAC_PARTIAL_WRITE.write_unsigned(value)
-            return 0
+            return
 
         if idx == 0xfc0:
             # RND register (which ignores writes)

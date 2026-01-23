@@ -454,8 +454,8 @@ def on_input(sim: OTBNSim, line: str) -> Optional[OTBNSim]:
     return ret
 
 
-def get_pqc_mode() -> int:
-    return int(os.environ.get("PQC_EN", '0'))
+def get_pqc_mode() -> bool:
+    return os.environ.get("PQC_EN", '0') == '1'
 
 
 def main() -> int:

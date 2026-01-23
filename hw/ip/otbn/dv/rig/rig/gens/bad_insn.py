@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import random
-from typing import Optional
+from typing import Optional, Union
 
 from shared.insn_yaml import InsnsFile
 
@@ -50,7 +50,7 @@ class BadInsn(SnippetGen):
         # assert that it doesn't happen.
         assert 0
 
-    def _gen_bad_pqc(self, model: Model):
+    def _gen_bad_pqc(self, model: Model) -> ProgInsn:
         weights = self.pqc_weights
         prog_insn = None
         while prog_insn is None:
@@ -62,27 +62,30 @@ class BadInsn(SnippetGen):
             # than outside the loop, because we don't expect this to happen
             # very often.
             insn = self.pqc_insns[idx]
-            op_vals = []
+            op_vals = []  # type: list[int]
             for operand in insn.operands:
                 op_val = model.pick_operand_value(operand.op_type)
 
                 if op_val is None:
-                    return None
+                    raise ValueError("Op Val produced for pqc instruction is not valid")
 
                 # Ensure a proper type enum for mulv/l
                 if (
                     (insn.mnemonic == 'bn.mulv.l' or insn.mnemonic == "bn.mulv")
                     and (len(op_vals) == len(insn.operands) - 1)
                 ):
-                    while operand.op_type.items[op_val] == '""':  # Empty enum index contain ""
+                    while operand.op_type.op_val_to_str(op_val, 0) == '""':  # Empty enum is ""
                         op_val = model.pick_operand_value(operand.op_type)
+                        if op_val is None:
+                            raise ValueError("Op Val produced for pqc instruction is not valid")
 
-                op_vals.append(op_val)
+                if op_val is not None:
+                    op_vals.append(op_val)
 
             # If out of range lane index take modulo to fit in bounds
             if (
                 insn.mnemonic == "bn.mulv.l"
-                and operand.op_type.items[op_vals[-1]].startswith(".8")
+                and operand.op_type.op_val_to_str(op_vals[-1], 0).startswith(".8")
                 and op_vals[-2] >= 8
             ):
                 op_vals[-2] = op_vals[-2] % 8
@@ -101,6 +104,9 @@ class BadInsn(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
+        # Create union of valid typing
+        prog_insn: Union[DummyProgInsn, ProgInsn]
+
         # If PQC is enabled only random bit insn will be illegal
         if model.pqc:
             prog_insn = DummyProgInsn(self._get_badbits())

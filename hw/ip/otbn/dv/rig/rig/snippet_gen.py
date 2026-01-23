@@ -35,7 +35,7 @@ GensRet = Tuple[Optional[Snippet], Model]
 # stuff. If the boolean argument is true, the continuation will try to generate
 # a snippet that causes OTBN to stop. In this case, the Snippet term in the
 # GensRet will not be None.
-GenCont = Callable[[Model, Program, bool], GensRet]
+GenCont = Callable[[Model, Program, bool, bool], GensRet]
 
 
 class SnippetGen:

@@ -31,25 +31,25 @@ STACK_BENCH = False
 STACK_SIZE = 20000
 
 
-def eprint(text):
+def eprint(text: str) -> None:
     print(text, file=sys.stderr)
 
 
-def cmod(n, q):
+def cmod(n: int, q: int) -> int:
     t = n % q
     # if t > floor(q / 2):
     #     t -= q
     return t
 
 
-def cmod_single_addv(n, q):
+def cmod_single_addv(n: int, q: int) -> int:
     if n >= q:
         return n - q
     else:
         return n
 
 
-def cmod_single_subv(n, q):
+def cmod_single_subv(n: int, q: int) -> int:
     if n < 0:
         return n + q
     else:
@@ -1794,7 +1794,7 @@ class BNWSRW(OTBNInsn):
         self.wsr = op_vals['wsr']
         self.wrs = op_vals['wrs']
 
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if DEBUG_KMAC:
             eprint(f"\tRun BNWSRW Address {self.wsr}")
         if not state.wsrs.check_idx(self.wsr):
@@ -1802,14 +1802,12 @@ class BNWSRW(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return None
 
-        dest_wsrs = state.wsrs._by_idx[self.wsr]
         if self.wsr == 0x9:
             # A write to KMAC_MSG might stall, if the register has not yet pushed
             # all its contents to the FIFO connected to the KMAC app interface.
             while not state.wsrs.KMAC_MSG.request_write():
                 if DEBUG_KMAC:
                     eprint("\tBNWSRW to KMAC_MSG stall")
-                dest_wsrs.stalled = True
                 yield None
 
         val = state.wdrs.get_reg(self.wrs).read_unsigned()
