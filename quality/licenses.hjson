@@ -45,7 +45,7 @@
         ''',
       match_regex: "false",
     },
-	// Single
+	  // Single
     {
       licence:
         '''
@@ -54,7 +54,94 @@
         SPDX-License-Identifier: Apache-2.0
         ''',
       match_regex: "false",
-    }
+    },
+    // Dual with Towards ML-KEM
+    {
+      licence:
+      '''
+      Copyright lowRISC contributors (OpenTitan project).
+      Copyright zeroRISC Inc.
+      Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+      Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+      Licensed under the Apache License, Version 2.0, see LICENSE for details.
+      SPDX-License-Identifier: Apache-2.0
+      '''
+      match_regex: "false",
+    },
+    // Dual with Improving ML-KEM
+    {
+      licence:
+      '''
+      Copyright lowRISC contributors (OpenTitan project).
+      Copyright zeroRISC Inc.
+      Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of
+      "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN"
+      (https://eprint.iacr.org/2025/2028).
+      Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
+      Licensed under the Apache License, Version 2.0, see LICENSE for details.
+      SPDX-License-Identifier: Apache-2.0
+      '''
+      match_regex: "false",
+    },
+    // Dual with Towards ML-KEM & Improving ML-KEM
+    {
+      licence:
+      '''
+      Copyright lowRISC contributors (OpenTitan project).
+      Copyright zeroRISC Inc.
+      Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+      Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+      Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of
+      "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN"
+      (https://eprint.iacr.org/2025/2028).
+      Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
+      Licensed under the Apache License, Version 2.0, see LICENSE for details.
+      SPDX-License-Identifier: Apache-2.0
+      '''
+      match_regex: "false",
+    },
+	  // Single with Towards ML-KEM
+    {
+      licence:
+        '''
+        Copyright zeroRISC Inc.
+        Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+        Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+        Licensed under the Apache License, Version 2.0, see LICENSE for details.
+        SPDX-License-Identifier: Apache-2.0
+        ''',
+      match_regex: "false",
+    },
+	  // Single with Improving ML-KEM
+    {
+      licence:
+        '''
+        Copyright zeroRISC Inc.
+        Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of
+        "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN"
+        (https://eprint.iacr.org/2025/2028).
+        Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
+        Licensed under the Apache License, Version 2.0, see LICENSE for details.
+        SPDX-License-Identifier: Apache-2.0
+        ''',
+      match_regex: "false",
+    },
+	  // Single with Towards ML-KEM & Improving ML-KEM
+    {
+      licence:
+        '''
+        Copyright zeroRISC Inc.
+        Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
+        Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors.
+        Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of
+        "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN"
+        (https://eprint.iacr.org/2025/2028).
+        Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
+        Licensed under the Apache License, Version 2.0, see LICENSE for details.
+        SPDX-License-Identifier: Apache-2.0
+        ''',
+      match_regex: "false",
+    },
   ],
 
   exclude_paths: [
@@ -139,6 +226,8 @@
     "sw/device/lib/crypto/impl/mlkem/mlkem_native_alloc.h",
     "sw/device/lib/crypto/impl/mlkem/mlkem_native_config.h",
     "sw/device/lib/crypto/impl/mlkem/fips202_glue.h",
+    "sw/device/lib/crypto/impl/mlkem/fips202x4_glue.h",
+    "sw/device/lib/crypto/impl/mlkem/config.h",
     "sw/device/tests/crypto/mlkem_functest.c",
     // Code contributed by mldsa-native authors
     "sw/device/lib/crypto/impl/mldsa.c",
