@@ -2753,6 +2753,10 @@ poly_make_hint:
     LOOPI 256, 21
         lw t0, 0(a1)
 
+        /* Collect the bit corresponding to whether the high part is nonzero,
+           and shift the wide register one place. */
+        bn.add  w0, w0, w0
+
         sub t5, t6, t0 /* Check t0 < (gamma2 + 1) <=> 0 < (gamma2 + 1) - t0 */
         srli t3, t5, 31
         beq t3, zero, _loop_end_poly_make_hint
@@ -2765,7 +2769,6 @@ poly_make_hint:
         li t3, 0
 
         /* Branch to the end if the high part coefficient is 0. */
-        bn.add  w0, w0, w0
         csrrs   t1, FG0, zero
         andi    t1, t1, 1
         beq t1, zero, _loop_end_poly_make_hint
