@@ -2540,7 +2540,7 @@
         "bzlTransitiveDigest": "o/whtsO23lJVry1VyWqgpH+wKL0qvCL0/hUtHawp+1A=",
         "usagesDigest": "tdFxsSLiRUnMAr6sM+iVki4hl8WLIChPzoBKi0CpPXU=",
         "recordedFileInputs": {
-          "@@//python-requirements.txt": "1806b19b0f983f83820dfaad16727ef93884397e9a58fa925ff5cd0186ff456b",
+          "@@//python-requirements.txt": "400ddddb0c3db7dc02e9abca9d9ab3268ffc2ef67e014a5545eaeb407df0570a",
           "@@lowrisc_misc_linters+//requirements.txt": "c6970973760040a085c07efdfd08dcadb7e052a18efa51f88a3eb19ab9f787c7",
           "@@protobuf+//python/requirements.txt": "983be60d3cec4b319dcab6d48aeb3f5b2f7c3350f26b3a9e97486c37967c73c5",
           "@@rules_fuzzing+//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
@@ -2689,6 +2689,15 @@
               "requirement": "cssutils==2.11.1 --hash=sha256:0563a76513b6af6eebbe788c3bf3d01c920e46b3f90c8416738c5cfc773ff8e2 --hash=sha256:a67bfdfdff4f3867fab43698ec4897c1a828eca5973f4073321b3bccaf1199b1"
             }
           },
+          "ot_python_deps_310_dilithium_py": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "dilithium-py==1.3.0 --hash=sha256:327f3a74e855349095d787afb8ebf1244080ee40a16e03611de3c982055f0d22 --hash=sha256:b48d76eaaf7c01412b2462b7936b6c7171d693af6c71372b545c20b11ba4df9a"
+            }
+          },
           "ot_python_deps_310_edalize": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -2831,6 +2840,15 @@
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
               "requirement": "jsonschema-specifications==2025.9.1 --hash=sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe --hash=sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d"
+            }
+          },
+          "ot_python_deps_310_kyber_py": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "kyber-py==1.0.1 --hash=sha256:5acfcc05f075ad050baf4b8d77a05eea768ec23d6196a613ad05743238c10ec6 --hash=sha256:9a643cca34163976788c8e7b5efec83c0d7360688c374fa98a437af26a9d9fae"
             }
           },
           "ot_python_deps_310_libclang": {
@@ -5945,6 +5963,7 @@
                 "crcmod": "{\"ot_python_deps_310_crcmod\":[{\"version\":\"3.10\"}]}",
                 "cssselect": "{\"ot_python_deps_310_cssselect\":[{\"version\":\"3.10\"}]}",
                 "cssutils": "{\"ot_python_deps_310_cssutils\":[{\"version\":\"3.10\"}]}",
+                "dilithium_py": "{\"ot_python_deps_310_dilithium_py\":[{\"version\":\"3.10\"}]}",
                 "edalize": "{\"ot_python_deps_310_edalize\":[{\"version\":\"3.10\"}]}",
                 "enlighten": "{\"ot_python_deps_310_enlighten\":[{\"version\":\"3.10\"}]}",
                 "exceptiongroup": "{\"ot_python_deps_310_exceptiongroup\":[{\"version\":\"3.10\"}]}",
@@ -5961,6 +5980,7 @@
                 "jsonschema": "{\"ot_python_deps_310_jsonschema\":[{\"version\":\"3.10\"}]}",
                 "jsonschema2md": "{\"ot_python_deps_310_jsonschema2md\":[{\"version\":\"3.10\"}]}",
                 "jsonschema_specifications": "{\"ot_python_deps_310_jsonschema_specifications\":[{\"version\":\"3.10\"}]}",
+                "kyber_py": "{\"ot_python_deps_310_kyber_py\":[{\"version\":\"3.10\"}]}",
                 "libclang": "{\"ot_python_deps_310_libclang\":[{\"version\":\"3.10\"}]}",
                 "libcst": "{\"ot_python_deps_310_libcst\":[{\"version\":\"3.10\"}]}",
                 "lizard": "{\"ot_python_deps_310_lizard\":[{\"version\":\"3.10\"}]}",
@@ -6043,6 +6063,7 @@
                 "crcmod",
                 "cssselect",
                 "cssutils",
+                "dilithium_py",
                 "edalize",
                 "enlighten",
                 "exceptiongroup",
@@ -6059,6 +6080,7 @@
                 "jsonschema",
                 "jsonschema2md",
                 "jsonschema_specifications",
+                "kyber_py",
                 "libclang",
                 "libcst",
                 "lizard",

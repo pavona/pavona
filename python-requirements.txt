@@ -160,6 +160,9 @@ cssselect==1.4.0 \
 cssutils==2.11.1 \
     --hash=sha256:0563a76513b6af6eebbe788c3bf3d01c920e46b3f90c8416738c5cfc773ff8e2 \
     --hash=sha256:a67bfdfdff4f3867fab43698ec4897c1a828eca5973f4073321b3bccaf1199b1
+dilithium-py==1.3.0 \
+    --hash=sha256:327f3a74e855349095d787afb8ebf1244080ee40a16e03611de3c982055f0d22 \
+    --hash=sha256:b48d76eaaf7c01412b2462b7936b6c7171d693af6c71372b545c20b11ba4df9a
 edalize==0.6.5 \
     --hash=sha256:331fb89854b008f6eebabaff6717197a5f431fca36f7ff21e4e1ff5cc80e9e63 \
     --hash=sha256:83da3654f85cc1e86af0a70ae21f25a71eabfe24b0d3b7a37b99df423ff45e31
@@ -208,6 +211,9 @@ jsonschema-specifications==2025.9.1 \
 jsonschema2md==1.5.2 \
     --hash=sha256:338cc3909a25d1424b6823b13e17782d40f0faed97be42ba8abb22b96a1d82f9 \
     --hash=sha256:50492b944514ceac69d979d410b1a8a865c6a05a9bbc65a6a277ce10a61a9cab
+kyber-py==1.0.1 \
+    --hash=sha256:5acfcc05f075ad050baf4b8d77a05eea768ec23d6196a613ad05743238c10ec6 \
+    --hash=sha256:9a643cca34163976788c8e7b5efec83c0d7360688c374fa98a437af26a9d9fae
 libclang==16.0.0 \
     --hash=sha256:2adce42ae652f312245b8f4eda6f30b4076fb61f7619f2dfd0a0c31dee4c32b9 \
     --hash=sha256:65258a6bb3e7dc31dc9b26f8d42f53c9d3b959643ade291fcd1aef4855303ca6 \

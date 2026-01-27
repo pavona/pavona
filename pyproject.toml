@@ -11,7 +11,9 @@ requires-python = ">=3.10"
 dependencies = [
   # Keep sorted
   "beautifulsoup4 ~= 4.12",
+  "dilithium-py==1.3.0",
   "hjson==3.1.0",
+  "kyber-py==1.0.1",
   "libclang==16.0.0",
   "libcst ~= 1.1",
   "lxml ~= 5.0",
