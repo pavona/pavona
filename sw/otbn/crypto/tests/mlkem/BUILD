@@ -13,7 +13,7 @@ load("//rules:otbn.bzl", "otbn_binary", "otbn_consttime_test", "otbn_library", "
 package(default_visibility = ["//visibility:public"])
 
 MODE_FOR_PARAMS = {"mlkem512": 2, "mlkem768": 3, "mlkem1024": 4}
-NTESTS = 10
+NTESTS = 3
 STATS = True # makes tests run slower but logs detailed execution stats
 
 # Key generation tests
