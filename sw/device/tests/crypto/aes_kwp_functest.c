@@ -48,7 +48,7 @@ static const otcrypto_key_config_t kWrappingKeyConfig256 = {
  */
 static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
                                 const otcrypto_blinded_key_t *key_kek,
-                                char* wrap_name, char*unwrap_name) {
+                                char *wrap_name, char *unwrap_name) {
   size_t wrapped_num_words;
   TRY(otcrypto_wrapped_key_len(key_to_wrap->config, &wrapped_num_words));
 
@@ -117,37 +117,43 @@ static status_t wrap_unwrap_random_test(void) {
   TRY(otcrypto_symmetric_keygen(personalization, &kmac_key));
 
   // Generate a random AES-KWP key (AES-128).
-  uint32_t kek128_keyblob[(kWrappingKeyConfig128.key_length * 2) / sizeof(uint32_t)];
+  uint32_t
+      kek128_keyblob[(kWrappingKeyConfig128.key_length * 2) / sizeof(uint32_t)];
   otcrypto_blinded_key_t kek128 = {
       .config = kWrappingKeyConfig128,
       .keyblob_length = sizeof(kek128_keyblob),
       .keyblob = kek128_keyblob,
   };
   TRY(otcrypto_symmetric_keygen(personalization, &kek128));
-  
-  TRY(run_wrap_unwrap(&kmac_key, &kek128, "aes128-kwp-wrap", "aes128-kwp-unwrap"));
+
+  TRY(run_wrap_unwrap(&kmac_key, &kek128, "aes128-kwp-wrap",
+                      "aes128-kwp-unwrap"));
 
   // Generate a random AES-KWP key (AES-192).
-  uint32_t kek192_keyblob[(kWrappingKeyConfig192.key_length * 2) / sizeof(uint32_t)];
+  uint32_t
+      kek192_keyblob[(kWrappingKeyConfig192.key_length * 2) / sizeof(uint32_t)];
   otcrypto_blinded_key_t kek192 = {
       .config = kWrappingKeyConfig192,
       .keyblob_length = sizeof(kek192_keyblob),
       .keyblob = kek192_keyblob,
   };
   TRY(otcrypto_symmetric_keygen(personalization, &kek192));
-  
-  TRY(run_wrap_unwrap(&kmac_key, &kek192, "aes192-kwp-wrap", "aes192-kwp-unwrap"));
+
+  TRY(run_wrap_unwrap(&kmac_key, &kek192, "aes192-kwp-wrap",
+                      "aes192-kwp-unwrap"));
 
   // Generate a random AES-KWP key (AES-256).
-  uint32_t kek256_keyblob[(kWrappingKeyConfig256.key_length * 2) / sizeof(uint32_t)];
+  uint32_t
+      kek256_keyblob[(kWrappingKeyConfig256.key_length * 2) / sizeof(uint32_t)];
   otcrypto_blinded_key_t kek256 = {
       .config = kWrappingKeyConfig256,
       .keyblob_length = sizeof(kek256_keyblob),
       .keyblob = kek256_keyblob,
   };
   TRY(otcrypto_symmetric_keygen(personalization, &kek256));
-  
-  return run_wrap_unwrap(&kmac_key, &kek256, "aes256-kwp-wrap", "aes256-kwp-unwrap");
+
+  return run_wrap_unwrap(&kmac_key, &kek256, "aes256-kwp-wrap",
+                         "aes256-kwp-unwrap");
 }
 
 OTTF_DEFINE_TEST_CONFIG();

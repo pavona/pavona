@@ -49,7 +49,7 @@ static aes_key_t make_aes_key(const uint32_t *key, size_t key_words) {
  * @param ctext_words Length of expected ciphertext in 32-bit words.
  */
 static status_t aes_kwp_wrap_kat(const uint32_t *kek, size_t kek_words,
-                                 const uint32_t *ptext, size_t ptext_bytes,
+                                 uint32_t *ptext, size_t ptext_bytes,
                                  const uint32_t *ctext, size_t ctext_words) {
   // Construct an AES key.
   aes_key_t aes_kek = make_aes_key(kek, kek_words);
@@ -60,7 +60,7 @@ static status_t aes_kwp_wrap_kat(const uint32_t *kek, size_t kek_words,
   uint64_t t = profile_start();
   status_t err = aes_kwp_wrap(aes_kek, ptext, ptext_bytes, act_ctext);
   profile_end_and_print(t, "aes_kwp_wrap");
-  TRY(err); 
+  TRY(err);
   TRY_CHECK_ARRAYS_EQ(act_ctext, ctext, ctext_words);
 
   // Check that the last word of the "actual ciphertext" buffer is still the
@@ -97,10 +97,10 @@ static status_t aes_kwp_unwrap_kat(const uint32_t *kek, size_t kek_words,
   uint32_t act_ptext[ptext_words];
   hardened_bool_t success;
   uint64_t t = profile_start();
-  status_t err = aes_kwp_unwrap(aes_kek, ctext, ctext_words * sizeof(uint32_t), &success,
-                     act_ptext);
+  status_t err = aes_kwp_unwrap(aes_kek, ctext, ctext_words * sizeof(uint32_t),
+                                &success, act_ptext);
   profile_end_and_print(t, "aes_kwp_unwrap");
-  TRY(err); 
+  TRY(err);
 
   // Check results.
   if (valid) {

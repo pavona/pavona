@@ -256,7 +256,6 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
 
   // Unwrap the key.
   uint32_t plaintext[wrapped_key.len];
-  hardened_memshred(plaintext, ARRAYSIZE(plaintext));
   HARDENED_TRY(aes_kwp_unwrap(kek, wrapped_key.data,
                               wrapped_key.len * sizeof(uint32_t), success,
                               plaintext));

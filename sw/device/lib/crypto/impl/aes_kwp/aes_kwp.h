@@ -25,9 +25,8 @@ extern "C" {
  * use an IV.
  *
  * The key material must be aligned to 32-bit word boundaries for hardening
- * purposes. The length is still given in bytes, and bytes higher than the
- * length are ignored (although they may be copied, so they should not be
- * uninitialized). The plaintext must be at least 16 bytes long, and must be
+ * purposes. The length is still given in bytes. Bytes higher than the length
+ * will be zeroed. The plaintext must be at least 16 bytes long, and must be
  * shorter than 2^32 bytes.
  *
  * The ciphertext buffer must be long enough to hold the *padded* version of
@@ -42,7 +41,7 @@ extern "C" {
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
+status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
                       const size_t plaintext_len, uint32_t *ciphertext);
 
 /**
@@ -58,10 +57,6 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
  * length are ignored (although they may be copied, so they should not be
  * uninitialized). The ciphertext must be at least 24 bytes long, and must be
  * shorter than 2^32 bytes.
- *
- * The output buffer should be the same length as the ciphertext, even if the
- * plaintext is not expected to be as long; this is because the implementation
- * will internally use it as a working buffer.
  *
  * An OK status from this routine does NOT mean that the unwrapping succeeded,
  * only that there were no errors during execution. The caller must check both
