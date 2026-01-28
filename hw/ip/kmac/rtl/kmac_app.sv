@@ -236,7 +236,10 @@ module kmac_app
   // Digest packer for OTBN app intf
   logic [255:0] digest_word_share_0, digest_word_share_1;
   logic [255:0] packed_digest_word_share_0, packed_digest_word_share_1;
-  logic packed_digest_word_valid, packed_digest_word_valid_share_0, packed_digest_word_valid_share_1;
+  logic [255:0] digest_word_share_valid_0, digest_word_share_valid_1;
+  logic app_rsp_err;
+  logic packed_digest_word_valid;
+  logic packed_digest_word_valid_share_0, packed_digest_word_valid_share_1;
   logic digest_packer_ready, digest_packer_ready_share_0, digest_packer_ready_share_1;
   logic digest_packer_error, digest_packer_error_share_0, digest_packer_error_share_1;
   logic req_packed_digest_word;
@@ -278,8 +281,9 @@ module kmac_app
   assign digest_word_idx_d = digest_word_idx_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) digest_word_idx_q <= 3'h0;
-    else if ((app_i[AppConfigDynamic].valid && set_appid) || reset_digest_word) digest_word_idx_q <= 3'h0;
-    else if (next_digest_word) digest_word_idx_q <= digest_word_idx_d + 3'h1;
+    else if ((app_i[AppConfigDynamic].valid && set_appid) || reset_digest_word) begin
+      digest_word_idx_q <= 3'h0;
+    end else if (next_digest_word) digest_word_idx_q <= digest_word_idx_d + 3'h1;
   end
 
   // Processing return data.
@@ -287,16 +291,21 @@ module kmac_app
   // clear digest right after done to not leak info to other interface
   // OTBN mode operates different with 256-bit digest being padded out of packer FIFO
   always_comb begin
+    app_rsp_err = error_i | fsm_digest_done_q | sparse_fsm_error_o | service_rejected_error;
+    digest_word_share_valid_0 = (app_rsp_err | !packed_digest_word_valid) ?
+                                  256'b0 : packed_digest_word_share_0;
+    digest_word_share_valid_1 = (app_rsp_err | !packed_digest_word_valid) ?
+                                  256'b0 : packed_digest_word_share_1;
     for (int unsigned i = 0 ; i < NumAppIntf; i++) begin
       if (i == app_id) begin
         app_o[i] = '{
           ready:         app_data_ready | fsm_data_ready,
-          done:          (AppCfg[app_id].Mode == AppConfigDynamic) ? otbn_app_intf_done
-                                                      : (app_digest_done | fsm_digest_done_q),
-          digest_share0: (AppCfg[app_id].Mode == AppConfigDynamic) ? {128'h0, packed_digest_word_share_0}
-                                                      : app_digest[0],
-          digest_share1: (AppCfg[app_id].Mode == AppConfigDynamic) ? {128'h0, packed_digest_word_share_1}
-                                                      : app_digest[1],
+          done:          (AppCfg[app_id].Mode == AppConfigDynamic) ?
+                            otbn_app_intf_done : (app_digest_done | fsm_digest_done_q),
+          digest_share0: (AppCfg[app_id].Mode == AppConfigDynamic) ?
+                            {128'h0, digest_word_share_valid_0} : app_digest[0],
+          digest_share1: (AppCfg[app_id].Mode == AppConfigDynamic) ?
+                            {128'h0, digest_word_share_valid_1} : app_digest[1],
           // if fsm asserts done, should be an error case.
           error:         error_i | fsm_digest_done_q | sparse_fsm_error_o
                          | service_rejected_error
