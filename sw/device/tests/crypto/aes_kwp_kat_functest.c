@@ -7,6 +7,7 @@
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -56,7 +57,10 @@ static status_t aes_kwp_wrap_kat(const uint32_t *kek, size_t kek_words,
   // Run key wrapping and check the result.
   uint32_t act_ctext[ctext_words + 1];
   act_ctext[ctext_words] = 0xffffffff;
-  TRY(aes_kwp_wrap(aes_kek, ptext, ptext_bytes, act_ctext));
+  uint64_t t = profile_start();
+  status_t err = aes_kwp_wrap(aes_kek, ptext, ptext_bytes, act_ctext);
+  profile_end_and_print(t, "aes_kwp_wrap");
+  TRY(err); 
   TRY_CHECK_ARRAYS_EQ(act_ctext, ctext, ctext_words);
 
   // Check that the last word of the "actual ciphertext" buffer is still the
@@ -92,8 +96,11 @@ static status_t aes_kwp_unwrap_kat(const uint32_t *kek, size_t kek_words,
   size_t ptext_words = (ptext_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t act_ptext[ptext_words];
   hardened_bool_t success;
-  TRY(aes_kwp_unwrap(aes_kek, ctext, ctext_words * sizeof(uint32_t), &success,
-                     act_ptext));
+  uint64_t t = profile_start();
+  status_t err = aes_kwp_unwrap(aes_kek, ctext, ctext_words * sizeof(uint32_t), &success,
+                     act_ptext);
+  profile_end_and_print(t, "aes_kwp_unwrap");
+  TRY(err); 
 
   // Check results.
   if (valid) {

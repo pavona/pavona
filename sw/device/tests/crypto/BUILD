@@ -81,6 +81,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/impl/aes_kwp",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -97,6 +98,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
