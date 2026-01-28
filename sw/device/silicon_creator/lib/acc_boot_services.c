@@ -8,12 +8,23 @@
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
-#include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/acc.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
+
+#if defined(OPENTITAN_IS_EARLGREY)
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
+
+#define sc_keymgr_key_type_t sc_keymgr_dpe_key_type_t
+#define sc_keymgr_diversification_t sc_keymgr_dpe_diversification_t
+#define sc_keymgr_ecc_key_t sc_keymgr_dpe_ecc_key_t
+#define sc_keymgr_generate_key_acc sc_keymgr_dpe_generate_key_acc
+#define sc_keymgr_state_check sc_keymgr_dpe_state_check
+#endif
 
 static_assert(kAttestationSeedWords <= 16,
               "Additional attestation seed needs must be <= 516 bits.");

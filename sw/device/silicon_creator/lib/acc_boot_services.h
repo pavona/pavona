@@ -10,9 +10,20 @@
 
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
+
+// TODO: A separate header should be made for the keymgr_dpe-based
+// implementations to make this a true multitop library.
+#if defined(OPENTITAN_IS_EARLGREY)
+#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
+
+#define sc_keymgr_key_type_t sc_keymgr_dpe_key_type_t
+#define sc_keymgr_diversification_t sc_keymgr_dpe_diversification_t
+#define sc_keymgr_ecc_key_t sc_keymgr_dpe_ecc_key_t
+#endif
 
 #ifdef __cplusplus
 extern "C" {
