@@ -654,7 +654,7 @@ This allows us to compute a safe and fixed timeout threshold based on design con
 
 <%text>### Low-power Management of Alert Channels</%text>
 
-Due to the various clock and reset domains in the OpenTitan system, the alert handler ping mechanism needs to have additional logic to deal with alert senders that are either held in reset, or that are clock gated.
+Due to the various clock and reset domains in a system, the alert handler ping mechanism needs to have additional logic to deal with alert senders that are either held in reset, or that are clock gated.
 This is needed to ensure that no false alarms are produced by the ping mechanism when an alert channel (sender / receiver pair) does not respond due to the sender being either in reset or clock gated.
 
 Since the FSMs associated with an alert channel may end up in an inconsistent state when the sender is reset or gated while an asynchronous event handshake is in progress, this logic also needs to be able to re-initialize affected alert channels whenever the channels comes back from reset / clock gated state.
