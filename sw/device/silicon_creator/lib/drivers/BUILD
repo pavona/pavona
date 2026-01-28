@@ -23,6 +23,7 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -112,14 +113,16 @@ cc_library(
     name = "ast",
     srcs = ["ast.c"],
     hdrs = ["ast.h"],
+    defines = select({
+        "//hw/top:earlgrey": {"TOP_EARLGREY": "1"},
+        "//hw/top:darjeeling": {"TOP_DARJEELING": "1"},
+    }),
     deps = [
         ":lifecycle",
         ":otp",
         "//hw/top:ast_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -128,7 +131,12 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:error",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": [
+            "//hw/top:sensor_ctrl_c_regs",
+        ],
+        "//hw/top:darjeeling": [],
+    }),
 )
 
 cc_test(
@@ -316,6 +324,7 @@ cc_library(
     name = "keymgr",
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top:keymgr_c_regs",
         "//hw/top/dt",
@@ -382,6 +391,23 @@ opentitan_test(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
+    name = "keymgr_dpe",
+    srcs = ["keymgr_dpe.c"],
+    hdrs = ["keymgr_dpe.h"],
+    target_compatible_with = opentitan_require_top("darjeeling"),
+    deps = [
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top/dt",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -539,14 +565,20 @@ cc_test(
 
 cc_library(
     name = "pinmux",
-    srcs = ["pinmux.c"],
+    srcs = select({
+        "//hw/top:earlgrey": ["pinmux.c"],
+        "//hw/top:darjeeling": ["pinmux_darjeeling.c"],
+    }),
     hdrs = ["pinmux.h"],
+    defines = select({
+        "//hw/top:earlgrey": {"TOP_EARLGREY": "1"},
+        "//hw/top:darjeeling": {"TOP_DARJEELING": "1"},
+    }),
     deps = [
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
@@ -806,13 +838,16 @@ cc_library(
     name = "watchdog",
     srcs = ["watchdog.c"],
     hdrs = ["watchdog.h"],
+    defines = select({
+        "//hw/top:earlgrey": {"TOP_EARLGREY": "1"},
+        "//hw/top:darjeeling": {"TOP_DARJEELING": "1"},
+    }),
     deps = [
         ":pwrmgr",
         "//hw/top:aon_timer_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",

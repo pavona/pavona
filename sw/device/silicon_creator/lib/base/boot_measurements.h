@@ -33,11 +33,17 @@ typedef struct boot_measurements {
    * ROM_EXT. Stored in a format that can be consumed by the key manager.
    */
   keymgr_binding_value_t bl0;
+
+  /**
+   * ROM patch for the second ROM in Darjeeling.
+   */
+  keymgr_binding_value_t rom_patch;
 } boot_measurements_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_measurements_t, rom_ext, 0);
 OT_ASSERT_MEMBER_OFFSET(boot_measurements_t, bl0, 32);
-OT_ASSERT_SIZE(boot_measurements_t, 64);
+OT_ASSERT_MEMBER_OFFSET(boot_measurements_t, rom_patch, 64);
+OT_ASSERT_SIZE(boot_measurements_t, 96);
 
 extern boot_measurements_t boot_measurements;
 

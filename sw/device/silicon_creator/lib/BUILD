@@ -6,7 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -20,12 +20,6 @@ load(
 load("//rules/opentitan:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
-
-opentitan_alias_top_attr(
-    name = "silicon_creator_hooks",
-    attr_name = "silicon_creator_hooks",
-    required = True,
-)
 
 cc_library(
     name = "boot_data_header",
@@ -221,16 +215,25 @@ cc_test(
 
 cc_library(
     name = "irq_asm",
-    srcs = ["irq_asm.S"],
+    srcs = select({
+        "//hw/top:earlgrey": ["irq_asm_earlgrey.S"],
+        "//hw/top:darjeeling": ["irq_asm_darjeeling.S"],
+    }),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:aon_timer_c_regs",
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top:rstmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:multibits",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": [
+            "//hw/top:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        "//hw/top:darjeeling": [
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        ],
+    }),
 )
 
 opentitan_test(
@@ -523,7 +526,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":attestation",
-        ":silicon_creator_hooks",
         "//sw/acc/crypto:boot",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -532,12 +534,17 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/drivers:acc",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": [
+            "//sw/device/silicon_creator/lib/drivers:keymgr",
+        ],
+        "//hw/top:darjeeling": [
+            "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
+        ],
+    }),
 )
 
 opentitan_test(
@@ -561,12 +568,43 @@ opentitan_test(
     deps = [
         ":acc_boot_services",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+    ] + opentitan_if_ip(
+        "flash_ctrl",
+        [":attestation_keygen_seed_flash"],
+        [":attestation_keygen_seed_otp"],
+    ),
+)
+
+cc_library(
+    name = "attestation_keygen_seed_flash",
+    srcs = ["attestation_keygen_seed_flash.c"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_library(
+    name = "attestation_keygen_seed_otp",
+    srcs = ["attestation_keygen_seed_otp.c"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:otp_ctrl",
     ],
 )
 
@@ -579,5 +617,25 @@ cc_library(
     ],
     deps = [
         "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+)
+
+cc_library(
+    name = "rom_patch",
+    srcs = ["rom_patch.c"],
+    hdrs = ["rom_patch.h"],
+    target_compatible_with = opentitan_require_top("darjeeling"),
+    deps = [
+        ":error",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify",
     ],
 )
