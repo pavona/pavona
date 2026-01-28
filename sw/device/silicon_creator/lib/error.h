@@ -119,6 +119,8 @@ enum module_ {
   X(kErrorAlertBadCrc32,              ERROR_(5, kModuleAlertHandler, kInvalidArgument)), \
   \
   X(kErrorRomBootFailed,              ERROR_(1, kModuleRom, kFailedPrecondition)), \
+  X(kErrorRomPatchFailed,             ERROR_(1, kModuleRom, kInternal)), \
+  \
   X(kErrorRomResetReasonFault,        ERROR_(2, kModuleRom, kUnknown)), \
   X(kErrorRomImmSection,              ERROR_(3, kModuleRom, kInvalidArgument)), \
   \

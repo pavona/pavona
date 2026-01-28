@@ -15,9 +15,17 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otp_ctrl_regs.h"
-#if defined(OPENTITAN_IS_EGRET)
+#if HAS_SENSOR_CTRL
+#include "hw/top/dt/sensor_ctrl.h"
+
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
+
+/**
+ * Base address of the sensor_ctrl registers.
+ */
+static inline uint32_t sensor_ctrl_reg_base(void) {
+  return dt_sensor_ctrl_reg_block(kDtSensorCtrlAon, kDtSensorCtrlRegBlockCore);
+}
 #endif
 
 namespace ast_unittest {
@@ -35,11 +43,10 @@ class AstTest : public rom_test::RomTest {
    *
    */
   void ExpectStatusRead(bool done1, bool done2) {
-    // TODO: Dragonfly
-#if defined(OPENTITAN_IS_EGRET)
-    EXPECT_ABS_READ32(base_ + SENSOR_CTRL_STATUS_REG_OFFSET,
+#ifdef HAS_SENSOR_CTRL
+    EXPECT_ABS_READ32(sensor_ctrl_reg_base() + SENSOR_CTRL_STATUS_REG_OFFSET,
                       {{SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT, done1}});
-    EXPECT_ABS_READ32(base_ + SENSOR_CTRL_STATUS_REG_OFFSET,
+    EXPECT_ABS_READ32(sensor_ctrl_reg_base() + SENSOR_CTRL_STATUS_REG_OFFSET,
                       {{SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT, done2}});
 #endif
   }
@@ -50,16 +57,12 @@ class AstTest : public rom_test::RomTest {
    * @param val Value to return;
    */
   void ExpectOtpRead(multi_bit_bool_t val) {
-    // TODO: Dragonfly
-#if defined(OPENTITAN_IS_EGRET)
+#ifdef HAS_SENSOR_CTRL
     EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET))
         .WillOnce(Return(val));
 #endif
   }
 
-#if defined(OPENTITAN_IS_EGRET)
-  uint32_t base_ = TOP_EGRET_SENSOR_CTRL_AON_BASE_ADDR;
-#endif
   rom_test::MockAbsMmio mmio_;
   rom_test::MockOtp otp_;
   mock_csr::MockCsr csr_;
