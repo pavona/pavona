@@ -535,6 +535,9 @@ module otbn_alu_bignum
   logic                     kmac_pw_wr_en;
   logic [1:0]               kmac_pw_intg_err;
   logic [5:0]               kmac_pw_mask;
+
+  // Nets from other blocks needed to reset the partial write
+  logic                     kmac_msg_fifo_wvalid;
   logic                     kmac_msg_valid_q;
   logic                     kmac_sent_last;
 
@@ -566,7 +569,7 @@ module otbn_alu_bignum
   assign kmac_pw_wr_en = (ispr_init_i | kmac_pw_ispr_wr_en) & (~kmac_msg_valid_q | kmac_sent_last);
 
   always_ff @(posedge clk_i) begin
-    if (kmac_pw_wr_en | kmac_new_cfg_q) begin
+    if (kmac_pw_wr_en | kmac_new_cfg_q | kmac_msg_fifo_wvalid) begin
       kmac_pw_intg_q  <= kmac_pw_intg_d;
     end
   end
@@ -577,12 +580,16 @@ module otbn_alu_bignum
         kmac_pw_no_intg_d = 32'b0;
         kmac_pw_intg_d    = kmac_pw_intg_calc;
       end
-      ispr_base_wr_en_i[0]: begin
+      ispr_base_wr_en_i[0] & !kmac_msg_pending_write_o: begin
         kmac_pw_no_intg_d = ispr_base_wdata_i;
         kmac_pw_intg_d    = kmac_pw_intg_calc;
       end
       kmac_new_cfg_q: begin
         kmac_pw_no_intg_d = 32'h20; // Set to full length at the start of cfg
+        kmac_pw_intg_d    = kmac_pw_intg_calc;
+      end
+      kmac_msg_fifo_wvalid: begin // Reset the partial word at each write
+        kmac_pw_no_intg_d = 32'h20;
         kmac_pw_intg_d    = kmac_pw_intg_calc;
       end
       default: begin
@@ -804,7 +811,6 @@ module otbn_alu_bignum
 
   logic                           kmac_msg_err_clr;
   logic                           kmac_msg_err_clr_q;
-  logic                           kmac_msg_fifo_wvalid;
   logic                           kmac_msg_fifo_wready;
   logic [WLEN-1:0]                kmac_msg_fifo_wdata;
   logic [WLEN-1:0]                kmac_msg_fifo_wdata_mask;

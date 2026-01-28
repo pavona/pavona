@@ -249,6 +249,7 @@ class KmacAppReqInsn(SnippetGen):
             self._fill_wsrw_mode = FillWsrwMode.MSG
             prog_wsrw_msg = self.fill_bn_wsrw(model)
             remaining_bytes -= self._pw_size
+            self._pw_size = 32
             current_write_count += 1
             insn_list.append(prog_wsrw_msg)
 
