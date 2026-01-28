@@ -1476,6 +1476,38 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "rsa_4096_dec_test",
+    timeout = "eternal",
+    srcs = [
+        "rsa_4096_dec_test.s",
+    ],
+    exp = "rsa_4096_dec_test.exp",
+    tags = ["nightly"],  # slow, do not run in CI
+    deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_4096_dec_crt_test",
+    timeout = "eternal",
+    srcs = [
+        "rsa_4096_dec_crt_test.s",
+    ],
+    exp = "rsa_4096_dec_crt_test.exp",
+    tags = ["nightly"],  # slow, do not run in CI
+    deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+    ],
+)
+
+otbn_sim_test(
     name = "sha256_test",
     srcs = [
         "sha256_test.s",
