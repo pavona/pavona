@@ -1,16 +1,10 @@
 # Alert Handler Technical Specification
 
-[`alert_handler`](https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/alert_handler/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/code.svg)
-
 # Overview
 
 This document specifies the functionality of the alert handler mechanism.
 The alert handler is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
-It gathers alerts - defined as interrupt-type signals from other peripherals that are designated as potential security threats - throughout the design, and converts them to interrupts that the processor can handle.
+It gathers alerts---defined as interrupt-type signals from other peripherals that are designated as potential security threats---throughout the design, and converts them to interrupts that the processor can handle.
 If the processor does not handle them, the alert handler mechanism provides hardware responses to handle the threat.
 
 
@@ -19,8 +13,8 @@ If the processor does not handle them, the alert handler mechanism provides hard
 - Differentially-signaled, asynchronous alert inputs from `NAlerts` peripheral sources, where `NAlerts` is a function of the requirements of the peripherals.
 
 - Ping testing of alert sources:
-    - responder module requests periodic alert response from each source to ensure proper wiring.
-    - reset-asserted and clock-gated information is used to temporarily pause the ping mechanism on alert channels that are in a low-power state.
+    - Responder module requests periodic alert response from each source to ensure proper wiring.
+    - Reset-asserted and clock-gated information is used to temporarily pause the ping mechanism on alert channels that are in a low-power state.
 
 - Register locking on all configuration registers.
     - Once locked, can not be modified by software until next system reset.
