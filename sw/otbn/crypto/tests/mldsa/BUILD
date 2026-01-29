@@ -157,6 +157,27 @@ py_binary(
     for params in MLDSA_PARAMS
 ]
 
+[
+    otbn_sim_test(
+        name = params + "_poly_make_hint_test",
+        srcs = [
+            "poly_make_hint_test.s",
+        ],
+        copts = [
+            "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
+        ],
+        dexp = "poly_make_hint_test.dexp",
+        pqc = True,
+        deps = [
+            "//sw/otbn/crypto/mldsa:kmac_send_msg",
+            "//sw/otbn/crypto/mldsa:" + params + "_consts",
+            "//sw/otbn/crypto/mldsa:" + params + "_poly",
+            "//sw/otbn/crypto/mldsa:" + params + "_rounding",
+        ],
+    )
+    for params in MLDSA_PARAMS
+]
+
 otbn_sim_test(
     name = "poly_uniform_test",
     srcs = [
