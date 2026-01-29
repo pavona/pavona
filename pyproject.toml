@@ -30,6 +30,9 @@ dependencies = [
 
   # Dependencies: bitstreams cache
   "jsonschema ~= 4.17",
+  # Pin jsonschema2md to 1.5.2; version 1.7.0 causes build issues in user
+  # environments on Ubuntu 22.04.
+  "jsonschema2md==1.5.2",
 
   # Dependencies: gen-flash-img.py
   "pyfinite==1.9.1",
