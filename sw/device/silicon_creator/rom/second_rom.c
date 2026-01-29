@@ -34,7 +34,6 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom/second_rom_epmp.h"
@@ -85,10 +84,6 @@ CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = (lifecycle_state_t)0;
-// Boot data from flash.
-boot_data_t boot_data = {0};
-// First stage (ROM-->ROM_EXT) secure boot keys loaded from OTP.
-static sigverify_otp_key_ctx_t sigverify_ctx;
 
 OT_ALWAYS_INLINE
 OT_WARN_UNUSED_RESULT
@@ -116,7 +111,7 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
 
-  dbg_printf("starting 2nd stage rom\r\n");
+  dbg_printf("Starting 2nd stage ROM\r\n");
 
   // Reset MMIO counters
   sec_mmio_next_stage_init();
@@ -153,6 +148,20 @@ static rom_error_t rom_init(void) {
  */
 extern char _rom_ext_virtual_start[];
 extern char _rom_ext_virtual_size[];
+extern char _ctn_ram[];
+extern char _ctn_ram_size[];
+/**
+ * Compute the virtual address corresponding to the physical address `lma_addr`.
+ *
+ * @param manifest Pointer to the current manifest.
+ * @param lma_addr Load address or physical address.
+ * @return the computed virtual address.
+ */
+OT_WARN_UNUSED_RESULT
+static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
+                                        uintptr_t lma_addr) {
+  return (lma_addr - (uintptr_t)manifest + (uintptr_t)_rom_ext_virtual_start);
+}
 
 /**
  * Performs consistency checks before booting a ROM_EXT.
@@ -202,6 +211,16 @@ static void rom_pre_boot_check(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 7);
 }
 
+/* Function that alerts to the UART we are waiting for a JTAG bootstrap, and
+ * then busy waits to allow it to occur. This function never returns because we
+ * expect the host performing the bootstrap to reset the chip afterwards.
+ */
+void wait_for_jtag_bootstrap(void) {
+  dbg_printf("No valid ECDSA key found in CTN. Waiting for JTAG bootstrap.\n");
+  while (true) {
+  }
+}
+
 /**
  * Attempts to boot ROM_EXT.
  *
@@ -212,57 +231,31 @@ static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 1);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2,
                             kCfiRomPreBootCheck);
-  dbg_printf("Running pre-boot checks\n");
   rom_pre_boot_check();
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 8);
 
+  // TODO: Do not hardcode that.
   uintptr_t rom_ext_lma = 0x41080000;
-  const manifest_t *manifest = (const manifest_t *)rom_ext_lma;
+
+  // TODO: Load ROM extension from flash, through SPI host,
+  //       at rom_ext_lma (shared SRAM).
+
+  // TODO: Verify ROM extension.
+
+  // TODO: Remap the ROM ext virtual region to shared SRAM.
+  // Use a reserved remapper, that must not be used by ROM patches.
+  // HARDENED_RETURN_IF_ERROR(
+  //    ibex_addr_remap_set(1, (uintptr_t)_rom_ext_virtual_start, rom_ext_lma,
+  //                        (size_t)_rom_ext_virtual_size));
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
-
-  dbg_printf("Performing sigverify\n");
-  // Load secure boot keys from OTP into RAM.
-  HARDENED_RETURN_IF_ERROR(sigverify_otp_keys_init(&sigverify_ctx));
-
-  // ECDSA key.
-  const ecdsa_p256_public_key_t *ecdsa_key = NULL;
-  HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_key_get(
-      &sigverify_ctx,
-      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key), lc_state,
-      &ecdsa_key));
-
-  // Measure ROM_EXT and portions of manifest via SHA256 digest.
-  hmac_sha256_init();
-
-  // Add manifest usage constraints to the measurement.
-  manifest_usage_constraints_t usage_constraints_from_hw;
-  sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
-                                  &usage_constraints_from_hw);
-  hmac_sha256_update(&usage_constraints_from_hw,
-                     sizeof(usage_constraints_from_hw));
-
-  // Add remaining part of manifest / ROM_EXT image to the measurement.
-  manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
-  hmac_sha256_update(digest_region.start, digest_region.length);
-  hmac_sha256_process();
-  hmac_digest_t act_digest;
-  hmac_sha256_final(&act_digest);
-
-  // Actually verify the manifest / ROM_EXT
-  uint32_t flash_exec = 0;
-  HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
-      &manifest->ecdsa_signature, ecdsa_key, &act_digest, &flash_exec));
 
   // TODO: Do not hardcode the start and end offset for the ePMP region.
   second_rom_epmp_unlock_rom_ext(
-      (epmp_region_t){.start = (uintptr_t)_rom_ext_virtual_start + 0x400,
-                      .end = (uintptr_t)_rom_ext_virtual_start + 0x177c},
+      text_region,
       (epmp_region_t){.start = rom_ext_lma,
                       .end = rom_ext_lma + (uintptr_t)_rom_ext_virtual_size});
 
-  // TODO: Entry point should come from the manifest.
-  uintptr_t entry_point = (uintptr_t)_rom_ext_virtual_start + 0x480;
   dbg_printf("Jumping to ROM_EXT entry point at 0x%x\r\n",
              (unsigned)entry_point);
   ((rom_ext_entry_point *)entry_point)();

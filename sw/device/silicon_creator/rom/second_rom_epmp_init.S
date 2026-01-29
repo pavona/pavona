@@ -93,16 +93,13 @@ rom_epmp_init:
   csrw pmpaddr15, t0
 
   // Set PMP configuration registers.
-  //
-  // TODO: Change the RAM entry (15 % 4 row) from LRWX to LRW once ROM_EXT is
-  // moved from main SRAM to CTN.
   li   t0, CFG_INDEX(1  % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRX) | /* ROM TEXT    */ \
            CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* ROM         */
   li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
   li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
   li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM   */ \
            CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
-           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)   /* RAM         */
+           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
   csrw pmpcfg0, t0
   csrw pmpcfg1, t1
   csrw pmpcfg2, t2
