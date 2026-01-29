@@ -2732,10 +2732,10 @@ poly_decompose:
  * Returns: Number of one bits
  *
  * @param[out] a0: pointer to output hint polynomial
- * @param[in]  a1: a0 pointer to low part of input polynomial
+ * @param[in]  a1: pointer to low part of input polynomial
  * @param[in]  w0: 256b representative of nonzero values in high part of polynomial
  *
- * clobbered registers: t0-t2, t4-t6, a0-a2, a4-a7
+ * clobbered registers: t0-t2, t5-t6, a0-a2, a4-a7
  */
 .global poly_make_hint
 poly_make_hint:
@@ -2750,29 +2750,30 @@ poly_make_hint:
     sub a7, a6, t6 /* q - gamma2 */
 
     /* Loop over every coefficient pair of the input */
-    LOOPI 256, 21
+    LOOPI 256, 19
         lw t0, 0(a1)
 
-        /* Collect the bit corresponding to whether the high part is nonzero,
-           and shift the wide register one place. */
+        /* Collect the bit corresponding to whether the high part is nonzero in
+           FG0.C, and shift the wide register one place. */
         bn.add  w0, w0, w0
 
-        sub t5, t6, t0 /* Check t0 < (gamma2 + 1) <=> 0 < (gamma2 + 1) - t0 */
+        /* Return 0 if t0 <= gamma2 <=> 0 <= gamma2 - t0 */
+        sub t5, t6, t0
         srli t3, t5, 31
         beq t3, zero, _loop_end_poly_make_hint
 
-        sub t5, a7, t0 /* Check t0 > (q - gamma) <=> t0 - (q - gamma) > 0 */
+        /* Return 0 if q - gamma2 < t0 <=> (q - gamma2) - t0 < 0 */
+        sub t5, a7, t0
         srli t3, t5, 31
         beq t3, t4, _return0
 
+        /* Return 1 if t0 != q - gamma2 */
         bne t0, a7, _return1
-        li t3, 0
 
-        /* Branch to the end if the high part coefficient is 0. */
-        csrrs   t1, FG0, zero
-        andi    t1, t1, 1
-        beq t1, zero, _loop_end_poly_make_hint
-        jal x0, _return1
+        /* Return 1 if the high part of the coefficient is nonzero. */
+        csrrs   t3, FG0, zero
+        andi    t3, t3, 1
+        jal x0, _loop_end_poly_make_hint
 _return0:
         li t3, 0
         jal x0, _loop_end_poly_make_hint
