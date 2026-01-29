@@ -1,9 +1,4 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
-/* Copyright zeroRISC Inc. */
-/* Modified by Ruben Niederhagen and Hoang Nguyen Hien Pham - authors of */
-/* "Improving ML-KEM & ML-DSA on OpenTitan - Efficient Multiplication Vector Instructions for OTBN" */
-/* (https://eprint.iacr.org/2025/2028) */
-/* Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -118,6 +113,9 @@ li x23, 0x9866bb3b
 csrrw x0, mod1, x23
 li x23, 0x53769ada
 csrrw x0, mod0, x23
+
+# x22 = 0x89c9b54f
+csrrs x23, mod5, x0
 
 # Note that some instructions used the fixed inputs (from w1 and w2) others use
 # results from previous instructions. When debugging an failure it is recommended
@@ -450,19 +448,3 @@ gpr_state:
 .balign 32
 wdr_state:
   .zero (256 / 4) * 32
-
-.data
-.balign 32
-.globl operand1
-operand1:
-  .dword 0x6baa9455d82c07cd
-  .dword 0x7a02420482e2e662
-  .dword 0x81332876e87a1613
-  .dword 0xc17c627948268673
-
-.globl operand2
-operand2:
-  .dword 0x4f65d4d9e6f4590b
-  .dword 0xaf19922abad640fb
-  .dword 0x6f25e2a219c78df4
-  .dword 0x7a1d5006e9bb17bc
