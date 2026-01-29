@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:types.bzl", "types")
+load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
 load("@pavona_pavona//rules/pavona:providers.bzl", "OpenTitanBinaryInfo")
 load("@pavona_pavona//rules/pavona:util.bzl", "get_fallback", "get_files")
 load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -18,6 +19,7 @@ _FIELDS = {
     "spx_key": ("attr.spx_key", False),
     "manifest": ("file.manifest", False),
     "rom": ("attr.rom", False),
+    "second_rom": ("attr.second_rom", False),
     "rom_ext": ("attr.rom_ext", False),
     "otp": ("file.otp", False),
     "mmi": ("file.mmi", False),
@@ -393,6 +395,9 @@ def common_test_setup(ctx, exec_env, firmware):
         rom = get_fallback(ctx, "attr.rom", exec_env)
         update_file_attr(ctx, "rom", rom, exec_env, data_files, param, action_param, default = "rom")
 
+    second_rom = get_fallback(ctx, "attr.second_rom", exec_env)
+    update_file_attr(ctx, "second_rom", second_rom, exec_env, data_files, param, action_param)
+
     rom_ext = get_fallback(ctx, "attr.rom_ext", exec_env)
     update_file_attr(ctx, "rom_ext", rom_ext, exec_env, data_files, param, action_param)
 
@@ -424,5 +429,8 @@ def common_test_setup(ctx, exec_env, firmware):
     slot_spec.update(ctx.attr.slot_spec)
     action_param.update(slot_spec)
     param.update(slot_spec)
+
+    # Set the Vivado path for VCU118 environments.
+    param["vivado"] = BIN_PATHS["vivado"] + "/vivado"
 
     return test_harness, data_labels, data_files, param, action_param

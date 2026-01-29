@@ -224,6 +224,7 @@ def fpga_params(
         test_harness = None,
         binaries = {},
         rom = None,
+        second_rom = None,
         rom_ext = None,
         otp = None,
         bitstream = None,
@@ -241,6 +242,7 @@ def fpga_params(
       test_harness: Use an alternative test harness for this test.
       binaries: Dict of binary labels to substitution parameter names.
       rom: Use an alternate ROM for this test.
+      second_rom: Use an alternate second_rom for this test.
       rom_ext: Use an alternate ROM_EXT for this test.
       otp: Use an alternate OTP configuration for this test.
       bitstream: Use an alternate bitstream for this test.
@@ -270,6 +272,7 @@ def fpga_params(
         test_harness = test_harness,
         binaries = binaries,
         rom = rom,
+        second_rom = second_rom,
         rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,

@@ -446,9 +446,11 @@ pavona_binary = rv_rule(
 
 def _testing_bitstream_impl(settings, attr):
     rom = attr.rom if attr.rom else "//hw/bitstream/universal:none"
+    second_rom = attr.second_rom if attr.second_rom else "//hw/bitstream/universal:none"
     otp = attr.otp if attr.otp else "//hw/bitstream/universal:none"
     return {
         "//hw/bitstream/universal:rom": rom,
+        "//hw/bitstream/universal:second_rom": second_rom,
         "//hw/bitstream/universal:otp": otp,
         "//hw/bitstream/universal:env": attr.exec_env,
     }
@@ -458,6 +460,7 @@ _testing_bitstream = transition(
     inputs = [],
     outputs = [
         "//hw/bitstream/universal:rom",
+        "//hw/bitstream/universal:second_rom",
         "//hw/bitstream/universal:otp",
         "//hw/bitstream/universal:env",
     ],
@@ -510,6 +513,10 @@ pavona_test = rv_rule(
         "rom": attr.label(
             allow_files = True,
             doc = "ROM image override for this test",
+        ),
+        "second_rom": attr.label(
+            allow_files = True,
+            doc = "Second ROM image override for this test",
         ),
         "rom_ext": attr.label(
             allow_files = True,
