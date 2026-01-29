@@ -426,7 +426,7 @@ otbn_sim_test = rv_rule(
         "testcase": attr.label(allow_single_file = True),
         "copts": attr.string_list(),
         "pqc": attr.bool(default = False),
-        "stats": attr.bool(default=False),
+        "stats": attr.bool(default = False),
         "_riscv32_ar": attr.label(
             default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
             allow_single_file = True,
@@ -496,7 +496,7 @@ otbn_autogen_sim_test = rv_rule(
         "copts": attr.string_list(),
         "pqc": attr.bool(default = False),
         "testgen_args": attr.string_list(),
-        "stats": attr.bool(default=False),
+        "stats": attr.bool(default = False),
         "_riscv32_ar": attr.label(
             default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
             allow_single_file = True,

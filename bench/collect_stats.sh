@@ -25,7 +25,7 @@ do
     if grep -q "cycles" $logfile; then
       cp -f $logfile $statsfile
     else
-      echo "Target $shortname does not appear to include execution statistics. Is the 'stats' parameter set in the otbn_autogen_sim_test rule?" 
+      echo "Target $shortname does not appear to include execution statistics. Is the 'stats' parameter set in the otbn_autogen_sim_test rule?"
       exit 1
     fi
 done

@@ -6,16 +6,17 @@
 
 import argparse
 import random
-from typing import TextIO, Optional
+from typing import TextIO
 from kyber_py.ml_kem import ML_KEM_512, ML_KEM_768, ML_KEM_1024
 
 from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 INSTANCE_FOR_PARAMS = {
-  'mlkem512': ML_KEM_512,
-  'mlkem768': ML_KEM_768,
-  'mlkem1024': ML_KEM_1024,
+    'mlkem512': ML_KEM_512,
+    'mlkem768': ML_KEM_768,
+    'mlkem1024': ML_KEM_1024,
 }
+
 
 def gen_keypair_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     # Generate a random seed and expected keys.

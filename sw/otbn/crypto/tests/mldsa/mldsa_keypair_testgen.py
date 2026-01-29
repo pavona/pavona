@@ -6,16 +6,17 @@
 
 import argparse
 import random
-from typing import TextIO, Optional
+from typing import TextIO
 from dilithium_py.ml_dsa import ML_DSA_44, ML_DSA_65, ML_DSA_87
 
 from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 INSTANCE_FOR_PARAMS = {
-  'mldsa44': ML_DSA_44,
-  'mldsa65': ML_DSA_65,
-  'mldsa87': ML_DSA_87,
+    'mldsa44': ML_DSA_44,
+    'mldsa65': ML_DSA_65,
+    'mldsa87': ML_DSA_87,
 }
+
 
 def gen_keypair_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     # Generate a random seed and expected keys.

@@ -11,14 +11,25 @@
 
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//rules:otbn.bzl", "otbn_binary", "otbn_consttime_test", "otbn_library", "otbn_autogen_sim_test", "otbn_sim_test")
+load("//rules:otbn.bzl", "otbn_autogen_sim_test", "otbn_binary", "otbn_consttime_test", "otbn_library", "otbn_sim_test")
 
 package(default_visibility = ["//visibility:public"])
 
-MLDSA_PARAMS = ["mldsa44", "mldsa65", "mldsa87"]
-MODE_FOR_PARAMS = {"mldsa44": 2, "mldsa65": 3, "mldsa87": 5}
+MLDSA_PARAMS = [
+    "mldsa44",
+    "mldsa65",
+    "mldsa87",
+]
+
+MODE_FOR_PARAMS = {
+    "mldsa44": 2,
+    "mldsa65": 3,
+    "mldsa87": 5,
+}
+
 NTESTS = 3
-STATS = True # makes tests run slower but logs detailed execution stats
+
+STATS = True  # makes tests run slower but logs detailed execution stats
 
 # Key generation tests
 py_binary(
@@ -32,33 +43,34 @@ py_binary(
         requirement("dilithium-py"),
     ],
 )
+
 [
     otbn_autogen_sim_test(
         name = params + "_keypair_test" + str(i),
         srcs = ["mldsa_keypair_test.s"],
-        seed = i,
-        testgen = ":mldsa_keypair_testgen",
-        testgen_args = [params],
-        pqc = True,
-        stats = STATS,
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
         ],
+        pqc = True,
+        seed = i,
+        stats = STATS,
+        testgen = ":mldsa_keypair_testgen",
+        testgen_args = [params],
         deps = [
-        "//sw/otbn/crypto/mldsa:intt",
-        "//sw/otbn/crypto/mldsa:kmac_send_msg",
-        "//sw/otbn/crypto/mldsa:" + params + "_consts",
-        "//sw/otbn/crypto/mldsa:" + params + "_keypair",
-        "//sw/otbn/crypto/mldsa:" + params + "_poly",
-        "//sw/otbn/crypto/mldsa:" + params + "_rounding",
-        "//sw/otbn/crypto/mldsa:ntt",
-        "//sw/otbn/crypto/mldsa:poly_add",
-        "//sw/otbn/crypto/mldsa:poly_pointwise",
+            "//sw/otbn/crypto/mldsa:intt",
+            "//sw/otbn/crypto/mldsa:kmac_send_msg",
+            "//sw/otbn/crypto/mldsa:" + params + "_consts",
+            "//sw/otbn/crypto/mldsa:" + params + "_keypair",
+            "//sw/otbn/crypto/mldsa:" + params + "_poly",
+            "//sw/otbn/crypto/mldsa:" + params + "_rounding",
+            "//sw/otbn/crypto/mldsa:ntt",
+            "//sw/otbn/crypto/mldsa:poly_add",
+            "//sw/otbn/crypto/mldsa:poly_pointwise",
         ],
     )
-    for i in range(NTESTS) for params in MLDSA_PARAMS
+    for i in range(NTESTS)
+    for params in MLDSA_PARAMS
 ]
-
 
 # Signature generation tests
 py_binary(
@@ -72,35 +84,36 @@ py_binary(
         requirement("dilithium-py"),
     ],
 )
+
 [
     otbn_autogen_sim_test(
         name = params + "_sign_test" + str(i),
-        srcs = ["mldsa_sign_test.s"],
-        seed = i,
-        testgen = ":mldsa_sign_testgen",
-        testgen_args = [params],
         timeout = "long",
-        pqc = True,
-        stats = STATS,
+        srcs = ["mldsa_sign_test.s"],
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
         ],
+        pqc = True,
+        seed = i,
+        stats = STATS,
+        testgen = ":mldsa_sign_testgen",
+        testgen_args = [params],
         deps = [
-        "//sw/otbn/crypto/mldsa:intt",
-        "//sw/otbn/crypto/mldsa:kmac_send_msg",
-        "//sw/otbn/crypto/mldsa:" + params + "_consts",
-        "//sw/otbn/crypto/mldsa:" + params + "_poly",
-        "//sw/otbn/crypto/mldsa:" + params + "_rounding",
-        "//sw/otbn/crypto/mldsa:" + params + "_sign",
-        "//sw/otbn/crypto/mldsa:ntt",
-        "//sw/otbn/crypto/mldsa:poly_add",
-        "//sw/otbn/crypto/mldsa:poly_pointwise",
-        "//sw/otbn/crypto/mldsa:poly_sub",
+            "//sw/otbn/crypto/mldsa:intt",
+            "//sw/otbn/crypto/mldsa:kmac_send_msg",
+            "//sw/otbn/crypto/mldsa:" + params + "_consts",
+            "//sw/otbn/crypto/mldsa:" + params + "_poly",
+            "//sw/otbn/crypto/mldsa:" + params + "_rounding",
+            "//sw/otbn/crypto/mldsa:" + params + "_sign",
+            "//sw/otbn/crypto/mldsa:ntt",
+            "//sw/otbn/crypto/mldsa:poly_add",
+            "//sw/otbn/crypto/mldsa:poly_pointwise",
+            "//sw/otbn/crypto/mldsa:poly_sub",
         ],
     )
-    for i in range(NTESTS) for params in MLDSA_PARAMS
+    for i in range(NTESTS)
+    for params in MLDSA_PARAMS
 ]
-
 
 # Signature verification tests
 py_binary(
@@ -114,32 +127,34 @@ py_binary(
         requirement("dilithium-py"),
     ],
 )
+
 [
     otbn_autogen_sim_test(
         name = params + "_verify_test" + str(i),
         srcs = ["mldsa_verify_test.s"],
-        seed = i,
-        testgen = ":mldsa_verify_testgen",
-        testgen_args = [params],
-        pqc = True,
-        stats = STATS,
         copts = [
             "-DDILITHIUM_MODE=" + str(MODE_FOR_PARAMS[params]),
         ],
+        pqc = True,
+        seed = i,
+        stats = STATS,
+        testgen = ":mldsa_verify_testgen",
+        testgen_args = [params],
         deps = [
-        "//sw/otbn/crypto/mldsa:intt",
-        "//sw/otbn/crypto/mldsa:kmac_send_msg",
-        "//sw/otbn/crypto/mldsa:" + params + "_consts",
-        "//sw/otbn/crypto/mldsa:" + params + "_poly",
-        "//sw/otbn/crypto/mldsa:" + params + "_rounding",
-        "//sw/otbn/crypto/mldsa:" + params + "_verify",
-        "//sw/otbn/crypto/mldsa:ntt",
-        "//sw/otbn/crypto/mldsa:poly_add",
-        "//sw/otbn/crypto/mldsa:poly_pointwise",
-        "//sw/otbn/crypto/mldsa:poly_sub",
+            "//sw/otbn/crypto/mldsa:intt",
+            "//sw/otbn/crypto/mldsa:kmac_send_msg",
+            "//sw/otbn/crypto/mldsa:" + params + "_consts",
+            "//sw/otbn/crypto/mldsa:" + params + "_poly",
+            "//sw/otbn/crypto/mldsa:" + params + "_rounding",
+            "//sw/otbn/crypto/mldsa:" + params + "_verify",
+            "//sw/otbn/crypto/mldsa:ntt",
+            "//sw/otbn/crypto/mldsa:poly_add",
+            "//sw/otbn/crypto/mldsa:poly_pointwise",
+            "//sw/otbn/crypto/mldsa:poly_sub",
         ],
     )
-    for i in range(NTESTS) for params in MLDSA_PARAMS
+    for i in range(NTESTS)
+    for params in MLDSA_PARAMS
 ]
 
 otbn_sim_test(

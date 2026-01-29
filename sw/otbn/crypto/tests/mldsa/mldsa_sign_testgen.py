@@ -6,15 +6,15 @@
 
 import argparse
 import random
-from typing import TextIO, Optional
+from typing import TextIO
 from dilithium_py.ml_dsa import ML_DSA_44, ML_DSA_65, ML_DSA_87
 
 from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 INSTANCE_FOR_PARAMS = {
-  'mldsa44': ML_DSA_44,
-  'mldsa65': ML_DSA_65,
-  'mldsa87': ML_DSA_87,
+    'mldsa44': ML_DSA_44,
+    'mldsa65': ML_DSA_65,
+    'mldsa87': ML_DSA_87,
 }
 
 MIN_MSG_LEN = 0
@@ -23,13 +23,14 @@ MAX_MSG_LEN = 3072
 MIN_CTX_LEN = 0
 MAX_CTX_LEN = 255
 
+
 def gen_sign_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     # Generate a random key pair.
     pk, sk = mldsa.keygen()
 
     # Generate a random message and context.
-    msglen = random.randrange(MIN_MSG_LEN, MAX_MSG_LEN+1)
-    ctxlen = random.randrange(MIN_CTX_LEN, MAX_CTX_LEN+1)
+    msglen = random.randrange(MIN_MSG_LEN, MAX_MSG_LEN + 1)
+    ctxlen = random.randrange(MIN_CTX_LEN, MAX_CTX_LEN + 1)
     msg = random.randbytes(msglen)
     ctx = random.randbytes(ctxlen)
 
@@ -38,9 +39,9 @@ def gen_sign_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO)
 
     # Ensure ctx and message end up 32-byte aligned
     if ctxlen <= 4:
-      ctx += bytes([0] * (5 - ctxlen))
+        ctx += bytes([0] * (5 - ctxlen))
     if msglen <= 4:
-      msg += bytes([0] * (5 - msglen))
+        msg += bytes([0] * (5 - msglen))
 
     # Write input values.
     data = {

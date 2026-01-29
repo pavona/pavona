@@ -23,7 +23,7 @@ def parse_dir_stats(dirpath):
     out = {}
     for path in dirpath.iterdir():
         with path.open() as f:
-          out[path.name] = parse_file_stats(f)
+            out[path.name] = parse_file_stats(f)
     return out
 
 
@@ -38,7 +38,7 @@ def analyze_stats(file_stats):
             assert all(k in ops[op] for k in stats)
             assert all(k in stats for k in ops[op])
         else:
-            ops[op] = {k:[] for k in stats}
+            ops[op] = {k: [] for k in stats}
         for k, v in stats.items():
             ops[op][k].append(v)
 
@@ -70,7 +70,7 @@ def pretty_print_table(rows, aligns):
     ncols = len(rows[0])
     assert len(aligns) == ncols
     assert all([len(r) == ncols for r in rows])
-    assert all([x in ['l','r'] for x in aligns])
+    assert all([x in ['l', 'r'] for x in aligns])
     rows = [[str(x) for x in r] for r in rows]
     col_widths = [max([len(r[i]) for r in rows]) for i in range(ncols)]
     for r in rows:
@@ -124,18 +124,17 @@ def print_stats(stats):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'benchdir', type=pathlib.Path,
-         help=('Directory with collected execution stats.'))
+        'benchdir', type=pathlib.Path, help=('Directory with collected execution stats.'))
     parser.add_argument(
         '--compare', type=pathlib.Path, required=False,
-         help=('Second directory with collected execution stats, for comparison.'))
+        help=('Second directory with collected execution stats, for comparison.'))
     args = parser.parse_args()
 
-    files = parse_dir_stats(args.benchdir) 
+    files = parse_dir_stats(args.benchdir)
     stats = analyze_stats(files)
 
     if args.compare:
-        cfiles = parse_dir_stats(args.compare) 
+        cfiles = parse_dir_stats(args.compare)
         cstats = analyze_stats(cfiles)
         print(f'Comparing {args.benchdir.name} against baseline {args.compare.name}.')
         compare_stats(stats, cstats)

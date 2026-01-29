@@ -6,16 +6,17 @@
 
 import argparse
 import random
-from typing import TextIO, Optional
+from typing import TextIO
 from kyber_py.ml_kem import ML_KEM_512, ML_KEM_768, ML_KEM_1024
 
 from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 INSTANCE_FOR_PARAMS = {
-  'mlkem512': ML_KEM_512,
-  'mlkem768': ML_KEM_768,
-  'mlkem1024': ML_KEM_1024,
+    'mlkem512': ML_KEM_512,
+    'mlkem768': ML_KEM_768,
+    'mlkem1024': ML_KEM_1024,
 }
+
 
 def gen_decaps_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO, invalid=False):
     # Generate a random key pair.
@@ -25,9 +26,9 @@ def gen_decaps_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
     ss, ct = mlkem.encaps(ek)
 
     if invalid:
-      # Pick a random index in the ciphertext and modify a random byte.
-      idx = random.randrange(len(ct))
-      ct = ct[:idx] + bytes([ct[idx] ^ 1]) + ct[idx+1:]
+        # Pick a random index in the ciphertext and modify a random byte.
+        idx = random.randrange(len(ct))
+        ct = ct[:idx] + bytes([ct[idx] ^ 1]) + ct[idx + 1:]
 
     # Decapsulate (if invalid, output is garbage as specified by FIPS 203).
     ss = mlkem.decaps(dk, ct)
