@@ -452,13 +452,6 @@ module kmac_app
 
           service_rejected_error_set = 1'b 1;
 
-        end else if ((AppCfg[app_id].Mode == AppKMAC) &&
-          !keymgr_key_i.valid) begin
-            st_d = StKeyMgrErrKeyNotValid;
-
-            // As mux_sel is not set to SelApp, app_data_ready is still 0.
-            // This logic won't accept the requests from the selected App.
-
         end else if ((AppCfg[app_id].Mode == AppConfigDynamic)) begin
 
           st_d = StAppDynamicCfg;
@@ -1179,9 +1172,9 @@ module kmac_app
 
   // Error Reporting ==========================================================
   always_comb begin
-    priority casez ({fsm_err.valid, mux_err.valid, digest_packer_error})
-      3'b ?1: error_o = mux_err;
-      3'b 10: error_o = fsm_err;
+    priority casez ({digest_packer_error, fsm_err.valid, mux_err.valid})
+      3'b??1: error_o = mux_err;
+      3'b?10: error_o = fsm_err;
       3'b100: error_o = '{valid: 1'b0, code: ErrAppIntfPacker, info: '0};
       default: error_o = '{valid: 1'b0, code: ErrNone, info: '0};
     endcase
