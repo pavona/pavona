@@ -14,6 +14,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/static_critical_version.h"
@@ -34,6 +35,7 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom/second_rom_epmp.h"
@@ -84,6 +86,10 @@ CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = (lifecycle_state_t)0;
+// Boot data from flash.
+boot_data_t boot_data = {0};
+// First stage (ROM-->ROM_EXT) secure boot keys loaded from OTP.
+static sigverify_otp_key_ctx_t sigverify_ctx;
 
 OT_ALWAYS_INLINE
 OT_WARN_UNUSED_RESULT
@@ -234,20 +240,95 @@ static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 8);
 
   uintptr_t rom_ext_lma = TOP_DRAGONFLY_SOC_PROXY_RAM_CTN_BASE_ADDR;
+  const manifest_t *manifest = (const manifest_t *)rom_ext_lma;
 
-  // TODO: Load ROM extension from flash, through SPI host,
-  //       at rom_ext_lma (shared SRAM).
-
-  // TODO: Verify ROM extension.
-
-  // TODO: Remap the ROM ext virtual region to shared SRAM.
-  // Use a reserved remapper, that must not be used by ROM patches.
-  // HARDENED_RETURN_IF_ERROR(
-  //    ibex_addr_remap_set(1, (uintptr_t)_rom_ext_virtual_start, rom_ext_lma,
-  //                        (size_t)_rom_ext_virtual_size));
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
-  // TODO: Do not hardcode the start and end offset for the ePMP region.
+  // Load secure boot keys from OTP into RAM.
+  HARDENED_RETURN_IF_ERROR(sigverify_otp_keys_init(&sigverify_ctx));
+
+  // Load ACC boot services app.
+  //
+  // This will be reused by later boot stages.
+  HARDENED_RETURN_IF_ERROR(acc_boot_app_load());
+
+  // ECDSA key.
+  const ecdsa_p256_public_key_t *ecdsa_key = NULL;
+  rom_error_t err = sigverify_ecdsa_p256_key_get(
+      &sigverify_ctx,
+      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key), lc_state,
+      &ecdsa_key);
+  if (err != kErrorOk) {
+    HARDENED_CHECK_NE(err, kErrorOk);
+    switch (launder32(lc_state)) {
+      case kLcStateProd:
+        // No JTAG bootstrap available in PROD.
+        HARDENED_CHECK_EQ(lc_state, kLcStateProd);
+        return err;
+      case kLcStateProdEnd:
+        // No JTAG bootstrap available in PROD_END.
+        HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
+        return err;
+      case kLcStateTest:
+        HARDENED_CHECK_EQ(lc_state, kLcStateTest);
+        wait_for_jtag_bootstrap();
+        OT_UNREACHABLE();
+      case kLcStateDev:
+        HARDENED_CHECK_EQ(lc_state, kLcStateDev);
+        wait_for_jtag_bootstrap();
+        OT_UNREACHABLE();
+      case kLcStateRma:
+        HARDENED_CHECK_EQ(lc_state, kLcStateRma);
+        wait_for_jtag_bootstrap();
+        OT_UNREACHABLE();
+      default:
+        HARDENED_TRAP();
+        OT_UNREACHABLE();
+    }
+  }
+
+  // Measure ROM_EXT and portions of manifest via SHA256 digest.
+  hmac_sha256_init();
+
+  // Add manifest usage constraints to the measurement.
+  manifest_usage_constraints_t usage_constraints_from_hw;
+  sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
+                                  &usage_constraints_from_hw);
+  hmac_sha256_update(&usage_constraints_from_hw,
+                     sizeof(usage_constraints_from_hw));
+
+  // Add remaining part of manifest / ROM_EXT image to the measurement.
+  manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
+  hmac_sha256_update(digest_region.start, digest_region.length);
+  hmac_sha256_process();
+  hmac_digest_t act_digest;
+  hmac_sha256_final(&act_digest);
+
+  // Actually verify the manifest / ROM_EXT
+  uint32_t flash_exec = 0;
+  HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
+      &manifest->ecdsa_signature, ecdsa_key, &act_digest, &flash_exec));
+
+  // Set up virtual addressing for ROM_EXT.
+  if (manifest->address_translation != kHardenedBoolTrue) {
+    return kErrorRomBootFailed;
+  }
+  HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
+  epmp_region_t text_region = manifest_code_region_get(manifest);
+  uintptr_t entry_point = manifest_entry_point_get(manifest);
+  HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
+  ibex_addr_remap_set(0, (uintptr_t)_rom_ext_virtual_start, (uintptr_t)manifest,
+                      (size_t)_rom_ext_virtual_size);
+  SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
+
+  // Move the ROM_EXT execution section from the load address to the virtual
+  // address.
+  text_region.start = rom_ext_vma_get(manifest, text_region.start);
+  text_region.end = rom_ext_vma_get(manifest, text_region.end);
+  entry_point = rom_ext_vma_get(manifest, entry_point);
+
+  // Unlock read-only for the whole rom_ext virtual memory.
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
   second_rom_epmp_unlock_rom_ext(
       text_region,
       (epmp_region_t){.start = rom_ext_lma,
