@@ -14,16 +14,20 @@ load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
 
 DEFAULTS = struct(
     rom = "//hw/bitstream/universal:none",
+    second_rom = "//hw/bitstream/universal:none",
     otp = "//hw/bitstream/universal:none",
     env = "//hw/bitstream/universal:none",
 )
 
-def gen_vivado_mem_file(ctx, name, src, tool, otp_size, swap_nibbles = True):
+def gen_vivado_mem_file(ctx, name, src, tool, otp_size = 1024, otp_padding = 0, swap_nibbles = True, swap_crumbs = False):
     update = ctx.actions.declare_file("{}.update.mem".format(name))
     args = ctx.actions.args()
     if swap_nibbles:
         args.add("--swap-nibbles")
+    if swap_crumbs:
+        args.add("--swap-crumbs")
     args.add("--otp-size={}".format(otp_size))
+    args.add("--otp-padding={}".format(otp_padding))
     args.add_all([src, update])
     ctx.actions.run(
         mnemonic = "GenVivadoImage",
@@ -113,22 +117,25 @@ def _bitstream_splice_impl(ctx):
     if ctx.attr.skip:
         return [DefaultInfo(files = depset([src]))]
 
+    # OTP size in number of 2-byte words.
+    top_name = ctx.attr._top[BuildSettingInfo].value
+    if top_name == "egret":
+        # Earlgrey: 1024-word OTP memory map.
+        otp_size = 1024
+        otp_padding = 15
+    elif top_name == "dragonfly":
+        # Dragonfly: 10240-word OTP memory map.
+        otp_size = 10240
+        otp_padding = 0
+    else:
+        fail("Top name should be 'egret' or 'dragonfly' for bitstream splice; got `{}`".format(top_name))
+
     # Splice in a ROM image if we have one either in attrs or the exec_env.
     if not ctx.attr.rom or ctx.attr.rom.label.name == "none":
         rom = exec_env.rom
     else:
         rom = ctx.attr.rom
 
-    # OTP size in number of 2-byte words.
-    top_name = ctx.attr._top[BuildSettingInfo].value
-    if top_name == "egret":
-        # Egret: 2K OTP == 1024 2-byte words
-        otp_size = 1024
-    elif top_name == "dragonfly":
-        # Dragonfly: 16K OTP == 8192 2-byte words
-        otp_size = 8192
-    else:
-        fail("Top name should be 'egret' or 'dragonfly' for bitstream splice; got `{}`".format(top_name))
     if rom and rom.label.name != "none":
         rom = get_one_binary_file(rom, field = "rom", providers = [exec_env.provider])
         mem = gen_vivado_mem_file(
@@ -143,7 +150,33 @@ def _bitstream_splice_impl(ctx):
             ctx = ctx,
             name = "{}-rom".format(ctx.label.name),
             src = src,
-            instance = "rom",
+            instance = "rom0" if top_name == "dragonfly" else "rom",
+            mmi = get_fallback(ctx, "file.mmi", exec_env),
+            update = mem,
+            debug = ctx.attr.debug,
+        )
+
+    # Splice in a Second ROM image if we have one either in attrs or the exec_env.
+    if not ctx.attr.second_rom or ctx.attr.second_rom.label.name == "none":
+        second_rom = exec_env.second_rom
+    else:
+        second_rom = ctx.attr.second_rom
+
+    if second_rom and second_rom.label.name != "none":
+        second_rom = get_one_binary_file(second_rom, field = "rom", providers = [exec_env.provider])
+        mem = gen_vivado_mem_file(
+            ctx = ctx,
+            name = "{}-second-rom".format(ctx.label.name),
+            src = second_rom,
+            tool = tc.tools.gen_mem_image,
+            swap_nibbles = ctx.attr.swap_nibbles,
+            swap_crumbs = True,
+        )
+        src = vivado_updatemem(
+            ctx = ctx,
+            name = "{}-second-rom".format(ctx.label.name),
+            src = src,
+            instance = "rom1",
             mmi = get_fallback(ctx, "file.mmi", exec_env),
             update = mem,
             debug = ctx.attr.debug,
@@ -161,6 +194,7 @@ def _bitstream_splice_impl(ctx):
             src = otp,
             tool = tc.tools.gen_mem_image,
             otp_size = otp_size,
+            otp_padding = otp_padding,
             swap_nibbles = ctx.attr.swap_nibbles,
         )
         src = vivado_updatemem(
@@ -172,7 +206,6 @@ def _bitstream_splice_impl(ctx):
             update = mem,
             debug = ctx.attr.debug,
         )
-
     output = update_usr_access(
         ctx = ctx,
         name = ctx.label.name,
@@ -188,6 +221,7 @@ bitstream_splice_ = rule(
         "otp": attr.label(allow_single_file = True, doc = "The OTP image to splice into the bitstream"),
         "mmi": attr.label(allow_single_file = True, doc = "The meminfo file"),
         "rom": attr.label(doc = "The ROM image to splice into the bitstream"),
+        "second_rom": attr.label(doc = "The Second ROM image to splice into the bitstream"),
         "exec_env": attr.label(providers = [[ExecEnvInfo], [DefaultInfo]], mandatory = True, doc = "The exec_env to splice for"),
         "swap_nibbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = False, doc = "Emit debug info while updating"),
