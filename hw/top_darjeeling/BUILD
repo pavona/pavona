@@ -57,6 +57,7 @@ sim_verilator(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/top_darjeeling/data/otp:img_rma",
+    slot_spec = DARJEELING_SLOTS,
     test_cmd = "testing-not-supported",
 )
 
@@ -110,6 +111,7 @@ sim_dv(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp_mmap = "//hw/top_darjeeling/data/otp:otp_ctrl_mmap.hjson",
+    slot_spec = DARJEELING_SLOTS,
 )
 
 sim_dv(
