@@ -109,11 +109,11 @@ For example, a `rv_plic.core.tpl` file could look like this:
 
 ```yaml
 CAPI=2:
-name: ${instance_vlnv("lowrisc:ip:rv_plic")}
+name: ${instance_vlnv("pavona:ip:rv_plic")}
 ```
 
-If the top name was `earlgrey` and the uniquified names dictionary was `{'rv_plic': 'rv_plic_1'}`, the VLNV will become `lowrisc:earlgrey_ip:rv_plic_1`.
-Similarly, the VLNV `lowrisc:dv:rv_plic_sim` will become `lowrisc:earlgrey_dv:rv_plic_1_sim`.
+If the top name was `foo` and the uniquified names dictionary was `{'rv_plic': 'rv_plic_1'}`, the VLNV will become `pavona:foo_ip:rv_plic_1`.
+Similarly, the VLNV `pavona:dv:rv_plic_sim` will become `pavona:foo_dv:rv_plic_1_sim`.
 
 The following rules should be applied when creating IP templates:
 
