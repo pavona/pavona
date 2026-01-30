@@ -2,13 +2,13 @@
 
 Ipgen is a tool to produce IP blocks from IP templates.
 
-IP templates are highly customizable IP blocks which are pre-processed to render blocks that can be used in a hardware design.
+IP templates are pre-processed to render highly customizable IP blocks that can be used in a hardware design.
 The templates of the source files are written in the Mako templating language, and are rendered by the ipgen tool to become the actual source files.
 The templates can be customized through template parameters, which are available within the templates.
 
 Ipgen is a command-line tool and a library.
 Users wishing to instantiate an IP template or query it for template parameters will find the command-line application useful.
-For use in higher-level scripting, e.g. within [topgen](../topgen/README.md) using ipgen as Python library is recommended.
+For use in higher-level scripting, e.g. within [topgen](../topgen/README.md), using ipgen as Python library is recommended.
 
 ## Anatomy of an IP template
 
@@ -32,8 +32,9 @@ These objects are dictionaries with the following required keys:
 
 * `name` (string): Name of the template parameter.
 * `desc` (string): Human-readable description of the template parameter.
-* `type` (string): Data type of the parameter. Valid values: `bool`, `int`, `str`, `object`.
-* `default` (bool|string|int|dict): The default value of the parameter.
+* `type` (string): Data type of the parameter.
+  Valid values: `bool`, `int`, `str`, `object`.
+* `default` (bool | string | int | dict): The default value of the parameter.
   The type of this should match the `type` argument.
   For convenience, strings are converted into integers on demand (if possible).
 
@@ -47,7 +48,7 @@ An exemplary template description file with two parameters, `src` and `target` i
   template_param_list: [
     {
       name: "src"
-      desc: "Number of Interrupt Source"
+      desc: "Number of Interrupt Sources"
       type: "int"
       default: "32"
     }
@@ -73,34 +74,34 @@ FuseSoC core files should be written in a way that upholds the principle "same n
 This means if a FuseSoC core has the same name as another one containing code that became different after template processing, and will be part of the same device, it must also provide the same public interface.
 
 Since SystemVerilog does not provide strong control over which symbols become part of the public API, developers must carefully evaluate their source code.
-At least, the public interface is comprised of
-- module header(s), e.g. parameter names, ports (names, data types),
-- package names, and all identifiers within it, including enum values (but not the values assigned to them),
+The public interface includes
+- module header(s), e.g. parameter names, ports (names, data types)
+- package names and all identifiers within each package, including enum values (but not the values assigned to them)
 - defines
 
 If any of those aspects of a source file are templated differently within the same device, the core name referencing the files, the file name itself, and the name of the contained SystemVerilog construct must be made instance-specific.
-For example, if file `rtl/flash_ctrl.sv` contained within core `flash_ctrl.core` has two instances that diverge then the following should happen:
+For example, if file `rtl/flash_ctrl.sv` contained within core `flash_ctrl.core` has two instances that diverge, then the following should happen:
 - the core files for the two IPs will be renamed
-- the rtl files in question will be renamed
-- the module within the flash_ctrl.sv files will be renamed
+- the RTL files in question will be renamed
+- the module within `flash_ctrl.sv` will be renamed
 
-This is typically implemented via an extra parameter that holds the new name for the template objects, is named `module_instance_name`, and is passed to the template expansion.
+This is typically implemented via an extra parameter within the IP template that holds the new name for the template objects, named `module_instance_name`.
 This uniquification also needs to be handled by VLNV renaming as explained below.
 
 ### VLNV Renaming
 
-The `instance_vlnv` function is available to process VLNV strings, which is useful for template core files.
-It modifies the vlnv so it becomes top-specific, and also supports uniquification.
-A VLNV string has the form vendor:library:name[:version] where the version is optional.
-The `instance_vlnv` function is given a vlnv and has handles to objects that provide the `topname` and a dictionary holding new names for templates needing uniquification.
-Notice if the `module_instance_name` parameter is given, it should also be contained in the uniquification dictionary.
-The given vlnv is transformed as follows:
+The [`instance_vlnv`](./renderer.py) function is available to process VLNV (vendor, library, name, version) strings, which is useful for template core files.
+It modifies the VLNV so it becomes top-specific and also supports uniquification.
+A VLNV string has the form `<vendor>:<library>:<name>[:<version>]`, where the version is optional.
+The `instance_vlnv` function is given a VLNV and has handles to objects that provide the top name and a dictionary holding new names for templates needing uniquification.
+If the `module_instance_name` parameter is given, it should also be contained in the uniquification dictionary.
+The given VLNV is transformed as follows:
 
 - The vendor string is unchanged.
-- The library string gets `topname` as a prefix.
+- The library string gets `<topname>` as a prefix.
 - The name is processed as follows:
-  - If the name is a key in the uniquification dictionary it is replaced by the corresponding value.
-  - If the name starts with a string matching a key in the uniquification dictionary followed by `_`, the string is replaced by the corresponding value.
+  - If the name is a key in the uniquification dictionary, it is replaced by the corresponding uniquification dictionary value.
+  - If the name starts with a string matching a key in the uniquification dictionary and followed by `_`, the key-matching string is replaced by the corresponding uniquification dictionary value.
   - Otherwise the name stays the same.
 - The optional version is preserved.
 
@@ -111,19 +112,20 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:rv_plic")}
 ```
 
-If `topname` was `earlgrey` and the uniquified names dictionary was `{'rv_plic': 'rv_plic_1'}`, the VLNV will become `lowrisc:earlgrey_ip:rv_plic_1`.
+If the top name was `earlgrey` and the uniquified names dictionary was `{'rv_plic': 'rv_plic_1'}`, the VLNV will become `lowrisc:earlgrey_ip:rv_plic_1`.
 Similarly, the VLNV `lowrisc:dv:rv_plic_sim` will become `lowrisc:earlgrey_dv:rv_plic_1_sim`.
 
 The following rules should be applied when creating IP templates:
 
 * Template and use an instance-specific name for all FuseSoC cores which reference templated source files (e.g. SystemVerilog files).
-* Template and use an instance-specific name at least the top-level FuseSoC core.
+* Template and use an instance-specific name for at least the top-level FuseSoC core.
 * Avoid having generic IPs depend on top-specific core files, since that would require using virtual cores, which can be very problematic.
 
 ## Library usage
 
 Ipgen can be used as Python library by importing from the `ipgen` package.
 Refer to the comments within the source code for usage information.
+[Topgen](../topgen.py) (which [generates IP blocks alongside other top collateral](../topgen/README.md)) can also be considered as an example of using ipgen as a package.
 
 The following example shows how to produce an IP block from an IP template.
 
@@ -132,7 +134,7 @@ from pathlib import Path
 from ipgen import IpConfig, IpTemplate, IpBlockRenderer
 
 # Load the template
-ip_template = IpTemplate.from_template_path(Path('a/ip/template/directory'))
+ip_template = IpTemplate.from_template_path(Path('some/ip/template/directory'))
 
 # Prepare the IP template configuration
 params = {}
@@ -146,11 +148,11 @@ renderer.render(Path("path/to/the/output/directory"))
 
 The output produced by ipgen is determined by the chosen renderer.
 For most use cases the `IpBlockRenderer` is the right choice, as it produces a full IP block directory.
-Refer to the `ipgen.renderer` module for more renderers available with ipgen.
+Refer to the [`ipgen.renderer`](./renderer.py) module for more renderers available with ipgen.
 
 ## Command-line usage
 
-The ipgen command-line tool lives in `util/ipgen.py`.
+The ipgen command-line tool lives in [`util/ipgen.py`](../ipgen.py).
 The first argument is typically the action to be executed.
 
 ```console
@@ -169,7 +171,7 @@ actions:
     generate  Generate an IP block from an IP template
 ```
 
-## `ipgen generate`
+### `ipgen generate`
 
 ```console
 $ cd $REPO_TOP
@@ -190,7 +192,7 @@ optional arguments:
                         path to a configuration file
 ```
 
-## `ipgen describe`
+### `ipgen describe`
 
 ```console
 $ cd $REPO_TOP
@@ -222,7 +224,7 @@ What is supported and required for most IP templates is the modification of the 
 
 ### Each template may be used only once per (top-level) design
 
-Each template may be used to generate only once IP block for each top-level design.
+Each template may be generated only once for each top-level design.
 The generated IP block can still be instantiated multiple times from SystemVerilog, including with different SystemVerilog parameters passed to it.
 However, it is not possible to use one IP block template to produce two different flash controllers with different template parameters.
 
