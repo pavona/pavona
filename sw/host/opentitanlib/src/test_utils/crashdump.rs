@@ -133,6 +133,7 @@ pub fn read_reset_reason(transport: &TransportWrapper, jtag_params: &JtagParams)
         "  HwReq         = {:?}",
         (reset_reason & u32::from(DifRstmgrResetInfo::HwReq)) != 0
     );
+    #[cfg(feature = "earlgrey")]
     log::info!(
         "  SysRstCtrl    = {:?}",
         (reset_reason & u32::from(DifRstmgrResetInfo::SysRstCtrl)) != 0

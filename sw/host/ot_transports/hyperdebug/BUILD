@@ -41,6 +41,7 @@ rust_library(
         "@crate_index//:regex",
         "@crate_index//:rusb",
         "@crate_index//:serialport",
+        "@crate_index//:tempfile",
         "@crate_index//:zerocopy",
     ],
 )
