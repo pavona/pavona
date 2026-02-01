@@ -60,6 +60,7 @@ impl RstmgrAlertInfoCtrl {
     };
 }
 
+#[cfg(feature = "earlgrey")]
 with_unknown! {
     pub enum DifRstmgrResetInfo: u32 {
         Por = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoPor,
@@ -67,6 +68,20 @@ with_unknown! {
         Sw = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoSw,
         HwReq  = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoHwReq,
         SysRstCtrl  = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoSysRstCtrl,
+        Watchdog  = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoWatchdog,
+        PowerUnstable = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoPowerUnstable,
+        Escalation = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoEscalation,
+        Ndm = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoNdm,
+    }
+}
+
+#[cfg(feature = "darjeeling")]
+with_unknown! {
+    pub enum DifRstmgrResetInfo: u32 {
+        Por = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoPor,
+        LowPowerExit = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoLowPowerExit,
+        Sw = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoSw,
+        HwReq  = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoHwReq,
         Watchdog  = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoWatchdog,
         PowerUnstable = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoPowerUnstable,
         Escalation = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoEscalation,
