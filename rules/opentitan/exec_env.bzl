@@ -26,6 +26,7 @@ _FIELDS = {
     "base_bitstream": ("file.base_bitstream", False),
     "args": ("attr.args", False),
     "test_cmd": ("attr.test_cmd", False),
+    "needs_jtag": ("attr.needs_jtag", False),
     "param": ("attr.param", False),
     "data": ("attr.data", False),
     "extract_sw_logs": ("attr.extract_sw_logs", False),
@@ -184,6 +185,10 @@ def exec_env_common_attrs(**kwargs):
         "test_cmd": attr.string(
             default = kwargs.get("test_cmd", ""),
             doc = "Command to execute a test in this environment",
+        ),
+        "needs_jtag": attr.bool(
+            default = kwargs.get("needs_jtag", False),
+            doc = "Whether JTAG is always required by this execution environment (e.g. for bootstrap).",
         ),
         "param": attr.string_dict(
             default = kwargs.get("param", {}),
@@ -401,17 +406,23 @@ def common_test_setup(ctx, exec_env, firmware):
     rom_ext = get_fallback(ctx, "attr.rom_ext", exec_env)
     update_file_attr(ctx, "rom_ext", rom_ext, exec_env, data_files, param, action_param)
 
+    needs_jtag = get_fallback(ctx, "attr.needs_jtag", exec_env)
+
     # Add the binaries built by the test or added to the test.
     update_file_provider("firmware", firmware, data_files, param, action_param)
     for attr, name in ctx.attr.binaries.items():
         update_file_attr(ctx, name, attr, exec_env, data_files, param, action_param)
 
-    if ctx.attr.needs_jtag:
+    param["openocd"] = ""
+
+    if needs_jtag:
         openocd = exec_env.openocd
         jtag_data = [openocd]
-        jtag_test_cmd = '''
-            --openocd="$(rootpath {})"
-        '''.format(openocd.label)
+        openocd_arg = '--openocd="$(rootpath {})"'.format(openocd.label)
+        param["openocd"] = openocd_arg
+        jtag_test_cmd = """
+            {}
+        """.format(openocd_arg)
 
         openocd_adapter_config = get_fallback(ctx, "attr.openocd_adapter_config", exec_env)
         if openocd_adapter_config != None:
