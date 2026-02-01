@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(feature = "earlgrey")]
 use bitflags::bitflags;
 
 use ot_bindgen_dif as dif;
 
+#[cfg(feature = "earlgrey")]
 use crate::util::bitfield::BitField;
 
+#[cfg(feature = "earlgrey")]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u32)]
 pub enum ClkmgrReg {
@@ -35,6 +38,7 @@ pub enum ClkmgrReg {
     FatalErrCode = dif::CLKMGR_FATAL_ERR_CODE_REG_OFFSET,
 }
 
+#[cfg(feature = "earlgrey")]
 bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct ClkmgrExtclkCtrlRegwen: u32 {
@@ -43,8 +47,10 @@ bitflags! {
 }
 
 /// BitFields for the CLKMGR_EXTCLK_CTRL register.
+#[cfg(feature = "earlgrey")]
 pub struct ClkmgrExtclkCtrl;
 
+#[cfg(feature = "earlgrey")]
 impl ClkmgrExtclkCtrl {
     pub const HI_SPEED_SEL: BitField = BitField {
         offset: dif::CLKMGR_EXTCLK_CTRL_HI_SPEED_SEL_OFFSET,
@@ -57,4 +63,23 @@ impl ClkmgrExtclkCtrl {
         // Relies on mask being continuous
         size: dif::CLKMGR_EXTCLK_CTRL_SEL_MASK.count_ones(),
     };
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u32)]
+#[cfg(feature = "darjeeling")]
+pub enum ClkmgrReg {
+    AlertTest = dif::CLKMGR_ALERT_TEST_REG_OFFSET,
+    JitterRegwen = dif::CLKMGR_JITTER_REGWEN_REG_OFFSET,
+    JitterEnable = dif::CLKMGR_JITTER_ENABLE_REG_OFFSET,
+    ClkEnables = dif::CLKMGR_CLK_ENABLES_REG_OFFSET,
+    ClkHints = dif::CLKMGR_CLK_HINTS_REG_OFFSET,
+    ClkHintsStatus = dif::CLKMGR_CLK_HINTS_STATUS_REG_OFFSET,
+    MeasureCtrlRegwen = dif::CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET,
+    IoMeasCtrlEn = dif::CLKMGR_IO_MEAS_CTRL_EN_REG_OFFSET,
+    IoMeasCtrlShadowed = dif::CLKMGR_IO_MEAS_CTRL_SHADOWED_REG_OFFSET,
+    MainMeasCtrlEn = dif::CLKMGR_MAIN_MEAS_CTRL_EN_REG_OFFSET,
+    MainMeasCtrlShadowed = dif::CLKMGR_MAIN_MEAS_CTRL_SHADOWED_REG_OFFSET,
+    RecovErrCode = dif::CLKMGR_RECOV_ERR_CODE_REG_OFFSET,
+    FatalErrCode = dif::CLKMGR_FATAL_ERR_CODE_REG_OFFSET,
 }

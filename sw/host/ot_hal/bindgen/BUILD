@@ -53,7 +53,36 @@ _EARLGREY_DEPS = [
     "//sw/device/lib/dif:usbdev",
 ]
 
-_DEPS = _ENGLISH_BREAKFAST_DEPS if _TOPLEVEL == "englishbreakfast" else _EARLGREY_DEPS
+_DARJEELING_DEPS = [
+    "//sw/device/lib/dif:acc",
+    "//sw/device/lib/dif:aes",
+    "//sw/device/lib/dif:alert_handler",
+    "//sw/device/lib/dif:aon_timer",
+    "//sw/device/lib/dif:clkmgr",
+    "//sw/device/lib/dif:csrng",
+    "//sw/device/lib/dif:edn",
+    "//sw/device/lib/dif:entropy_src",
+    "//sw/device/lib/dif:gpio",
+    "//sw/device/lib/dif:hmac",
+    "//sw/device/lib/dif:i2c",
+    "//sw/device/lib/dif:keymgr_dpe",
+    "//sw/device/lib/dif:kmac",
+    "//sw/device/lib/dif:lc_ctrl",
+    "//sw/device/lib/dif:otp_ctrl",
+    "//sw/device/lib/dif:pinmux",
+    "//sw/device/lib/dif:pwrmgr",
+    "//sw/device/lib/dif:rstmgr",
+    "//sw/device/lib/dif:rv_timer",
+    "//sw/device/lib/dif:spi_device",
+    "//sw/device/lib/dif:spi_host",
+    "//sw/device/lib/dif:sram_ctrl",
+    "//sw/device/lib/dif:uart",
+]
+
+_DEPS = _ENGLISH_BREAKFAST_DEPS if _TOPLEVEL == "englishbreakfast" else select({
+    "//hw/top:earlgrey": _EARLGREY_DEPS,
+    "//hw/top:darjeeling": _DARJEELING_DEPS,
+})
 
 cc_library(
     name = "difs",
@@ -166,6 +195,33 @@ rust_bindgen_library(
 )
 
 rust_bindgen_library(
+    name = "darjeeling",
+    bindgen_flags = [
+        "--allowlist-type=top_darjeeling_alert_peripheral",
+        "--allowlist-type=top_darjeeling_alert_id",
+        "--allowlist-type=top_darjeeling_pinmux_peripheral_in",
+        "--allowlist-type=top_darjeeling_pinmux_insel",
+        "--allowlist-type=top_darjeeling_pinmux_mio_out",
+        "--allowlist-type=top_darjeeling_pinmux_outsel",
+        "--allowlist-type=top_darjeeling_direct_pads",
+        "--allowlist-type=top_darjeeling_muxed_pads",
+        "--allowlist-type=top_darjeeling_power_manager_wake_ups",
+        "--allowlist-type=top_darjeeling_reset_manager_sw_resets",
+        "--allowlist-type=top_darjeeling_power_manager_reset_requests",
+        "--allowlist-type=top_darjeeling_gateable_clocks",
+        "--allowlist-type=top_darjeeling_hintable_clocks",
+    ],
+    cc_lib = "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+    crate_name = "ot_bindgen_darjeeling",
+    header = "//hw/top_darjeeling/sw/autogen:top_darjeeling.h",
+    rustc_flags = [
+        "--allow=non_snake_case",
+        "--allow=non_upper_case_globals",
+        "--allow=non_camel_case_types",
+    ],
+)
+
+rust_bindgen_library(
     name = "multibits",
     bindgen_flags = [
         "--allowlist-type=multi_bit_bool",
@@ -185,7 +241,9 @@ rust_library_group(
     deps = [
         ":alert",
         ":dif",
-        ":earlgrey",
         ":multibits",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": [":earlgrey"],
+        "//hw/top:darjeeling": [":darjeeling"],
+    }),
 )

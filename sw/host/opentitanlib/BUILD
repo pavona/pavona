@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
 load("//rules:ujson.bzl", "ujson_rust")
 
@@ -48,6 +49,17 @@ ujson_rust(
     srcs = ["//sw/device/lib/testing/json:ottf"],
     defines = ["opentitanlib=crate"],
 )
+
+RUSTC_ENV = {
+    "e2e_command": "$(location :e2e_command)",
+    "gpio": "$(location :gpio)",
+    "i2c_target": "$(location :i2c_target)",
+    "mem": "$(location :mem)",
+    "pinmux_config": "$(location :pinmux_config)",
+    "rom_error_enum": "$(location //sw/host/opentitanlib/bindgen:rom_error_enum)",
+    "spi_passthru": "$(location :spi_passthru)",
+    "ottf": "$(location :ottf)",
+}
 
 # This is the catch-all "everything" crate.
 # Before adding things here, consider if it can be made a separate crate instead.
@@ -196,8 +208,11 @@ rust_library(
         "src/util/voltage.rs",
     ] + select({
         "//sw/device:is_english_breakfast": [],
-        "//conditions:default": [
+        "//hw/top:earlgrey": [
             "src/test_utils/extclk.rs",
+            "src/test_utils/pinmux_config.rs",
+        ],
+        "//hw/top:darjeeling": [
             "src/test_utils/pinmux_config.rs",
         ],
     }),
@@ -209,30 +224,43 @@ rust_library(
         ":pinmux_config",
         ":spi_passthru",
         ":ottf",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
-        "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
         "//sw/host/opentitanlib/bindgen:rom_error_enum",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": [
+            "//util/openocd/target:lowrisc-earlgrey.cfg",
+            "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
+        ],
+        "//hw/top:darjeeling": [
+            "//util/openocd/target:lowrisc-darjeeling.cfg",
+            "//util/openocd/target:lowrisc-darjeeling-lc.cfg",
+        ],
+    }),
     crate_features = select({
         "//sw/device:is_english_breakfast": ["english_breakfast"],
+        "//hw/top:earlgrey": ["earlgrey"],
+        "//hw/top:darjeeling": ["darjeeling"],
         "//conditions:default": [],
     }),
     crate_name = "opentitanlib",
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
-    rustc_env = {
-        "e2e_command": "$(location :e2e_command)",
-        "gpio": "$(location :gpio)",
-        "i2c_target": "$(location :i2c_target)",
-        "mem": "$(location :mem)",
-        "pinmux_config": "$(location :pinmux_config)",
-        "rom_error_enum": "$(location //sw/host/opentitanlib/bindgen:rom_error_enum)",
-        "spi_passthru": "$(location :spi_passthru)",
-        "ottf": "$(location :ottf)",
-        "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey.cfg)",
-        "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey-lc.cfg)",
-    },
+    rustc_env = select({
+        "//hw/top:earlgrey": dicts.add(
+            RUSTC_ENV,
+            {
+                "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey.cfg)",
+                "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey-lc.cfg)",
+            },
+        ),
+        "//hw/top:darjeeling": dicts.add(
+            RUSTC_ENV,
+            {
+                "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-darjeeling.cfg)",
+                "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-darjeeling-lc.cfg)",
+            },
+        ),
+    }),
     deps = [
         "//sw/host/opentitanlib/bindgen",
         "//sw/host/opentitanlib/util",
