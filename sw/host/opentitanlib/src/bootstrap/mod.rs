@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use clap::{Args, ValueEnum};
+use clap_num::maybe_hex;
 use humantime::parse_duration;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -13,11 +14,13 @@ use thiserror::Error;
 use crate::app::{NoProgressBar, TransportWrapper, UartRx};
 use crate::impl_serializable_error;
 use crate::io::gpio::GpioPin;
+use crate::io::jtag::JtagParams;
 use crate::io::spi::SpiParams;
 use crate::io::uart::UartParams;
 use crate::transport::{Capability, ProgressIndicator};
 
 mod eeprom;
+mod jtag;
 mod legacy;
 mod legacy_rescue;
 mod primitive;
@@ -37,6 +40,7 @@ impl_serializable_error!(BootstrapError);
 /// The `Legacy` SPI protocol is used by previous generations of Google Titan-class chips.
 /// The `LegacyRescue` UART protocol is used by previous generations of Google Titan-class chips.
 /// The `Eeprom` SPI protocol is planned to be implemented for OpenTitan.
+/// The `Jtag` protocol is used for integrated IP during development.
 /// The 'Emulator' value indicates that this tool has a direct way
 /// of communicating with the OpenTitan emulator, to replace the
 /// contents of the emulated flash storage.
@@ -46,6 +50,7 @@ pub enum BootstrapProtocol {
     Legacy,
     LegacyRescue,
     Eeprom,
+    Jtag,
     Emulator,
 }
 
@@ -79,12 +84,17 @@ pub struct BootstrapOptions {
     pub uart_params: UartParams,
     #[command(flatten)]
     pub spi_params: SpiParams,
+    #[command(flatten)]
+    pub jtag_params: JtagParams,
     /// Bootstrap protocol to use.
     #[arg(short, long, value_enum, ignore_case = true, default_value = "eeprom")]
     pub protocol: BootstrapProtocol,
     /// Whether to reset target and clear UART RX buffer after bootstrap. For Chip Whisperer board only.
     #[arg(long)]
     pub clear_uart: Option<bool>,
+    /// If `--protocol=jtag`, the address to begin writing the payload.
+    #[arg(long, value_parser=maybe_hex::<u32>)]
+    pub target_addr: Option<u32>,
     /// If set, keep the bootstrap strapping applied and do not perform the post-bootstrap reset
     /// sequence.
     #[arg(long)]
@@ -104,8 +114,10 @@ pub struct BootstrapOptions {
 pub struct Bootstrap<'a> {
     pub protocol: BootstrapProtocol,
     pub clear_uart_rx: bool,
+    pub target_addr: Option<u32>,
     pub uart_params: &'a UartParams,
     pub spi_params: &'a SpiParams,
+    pub jtag_params: &'a JtagParams,
     reset_pin: Rc<dyn GpioPin>,
     leave_in_reset: bool,
     leave_in_bootstrap: bool,
@@ -148,6 +160,7 @@ impl<'a> Bootstrap<'a> {
             BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(options)),
             BootstrapProtocol::LegacyRescue => Box::new(legacy_rescue::LegacyRescue::new(options)),
             BootstrapProtocol::Eeprom => Box::new(eeprom::Eeprom::new()),
+            BootstrapProtocol::Jtag => Box::new(jtag::Jtag::new()),
             BootstrapProtocol::Emulator => {
                 // Not intended to be implemented by this struct.
                 unimplemented!();
@@ -156,8 +169,10 @@ impl<'a> Bootstrap<'a> {
         Bootstrap {
             protocol: options.protocol,
             clear_uart_rx: options.clear_uart.unwrap_or(false),
+            target_addr: options.target_addr,
             uart_params: &options.uart_params,
             spi_params: &options.spi_params,
+            jtag_params: &options.jtag_params,
             reset_pin: transport.gpio_pin("RESET")?,
             leave_in_reset: options.leave_in_reset,
             leave_in_bootstrap: options.leave_in_bootstrap,
