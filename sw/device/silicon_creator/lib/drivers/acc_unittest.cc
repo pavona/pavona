@@ -14,7 +14,11 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
+#if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#endif
 
 namespace acc_unittest {
 namespace {
@@ -56,7 +60,11 @@ class AccTest : public rom_test::RomTest {
     }
   }
 
+#if defined(OPENTITAN_IS_EARLGREY)
   uint32_t base_ = TOP_EARLGREY_ACC_BASE_ADDR;
+#elif defined(OPENTITAN_IS_DARJEELING)
+  uint32_t base_ = TOP_DARJEELING_ACC_BASE_ADDR;
+#endif
   uint32_t err_bits_ok_ = 0;
   rom_test::MockAbsMmio abs_mmio_;
   rom_test::MockRnd rnd_;

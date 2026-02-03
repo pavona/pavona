@@ -13,7 +13,11 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/lc_ctrl_regs.h"
+#if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#endif
 
 namespace lifecycle_unittest {
 namespace {
@@ -21,7 +25,11 @@ using ::testing::ElementsAreArray;
 
 class LifecycleTest : public rom_test::RomTest {
  protected:
+#if defined(OPENTITAN_IS_EARLGREY)
   uint32_t base_ = TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR;
+#elif defined(OPENTITAN_IS_DARJEELING)
+  uint32_t base_ = TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR;
+#endif
   rom_test::MockSecMmio mmio_;
 };
 

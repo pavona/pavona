@@ -4,10 +4,16 @@
 
 mod autogen;
 
-pub mod earlgrey {
-    #[cfg(not(feature = "english_breakfast"))]
-    pub use super::autogen::earlgrey::{
-        DirectPads, MuxedPads, PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
-    };
-    pub use top_earlgrey::top_earlgrey::*;
-}
+#[cfg(feature = "earlgrey")]
+pub use autogen::earlgrey::{
+    DirectPads, MuxedPads, PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
+};
+#[cfg(feature = "earlgrey")]
+pub use top_earlgrey::top_earlgrey::*;
+
+#[cfg(feature = "darjeeling")]
+pub use autogen::darjeeling::{
+    DirectPads, MuxedPads, PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
+};
+#[cfg(feature = "darjeeling")]
+pub use top_darjeeling::top_darjeeling::*;

@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 
 package(default_visibility = ["//visibility:public"])
@@ -11,6 +12,7 @@ rust_binary(
     srcs = [
         "src/gpio_pinmux.rs",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",
@@ -27,6 +29,7 @@ rust_binary(
     srcs = [
         "src/gpio_intr.rs",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",

@@ -16,7 +16,7 @@ use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -82,8 +82,7 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Disable watchdog config
     dbg.write_u32(
-        top_earlgrey::AON_TIMER_AON_BASE_ADDR as u32
-            + ot_hal::dif::aon_timer::AonTimerReg::WdogCtrl as u32,
+        top::AON_TIMER_AON_BASE_ADDR as u32 + ot_hal::dif::aon_timer::AonTimerReg::WdogCtrl as u32,
         0,
     )?;
 
@@ -314,15 +313,15 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Read and write memory (both SRAM and device)
     // See hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
-    let sram_base = top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
-    let sram_len = top_earlgrey::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32;
+    let sram_base = top::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
+    let sram_len = top::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32;
 
     dbg.read_memory(sram_base, &mut [0; 16])?;
     dbg.read_memory(sram_base + sram_len / 2, &mut [0; 16])?;
     dbg.read_memory(sram_base + sram_len - 16, &mut [0; 16])?;
 
     // Manually write bytes to UART0
-    let uart_base = top_earlgrey::UART0_BASE_ADDR as u32;
+    let uart_base = top::UART0_BASE_ADDR as u32;
     let uart_wdata = ot_hal::dif::uart::UartReg::Wdata as u32;
 
     dbg.write_u32(uart_base + uart_wdata, 'O' as u32)?;

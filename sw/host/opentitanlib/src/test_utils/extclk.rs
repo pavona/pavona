@@ -9,7 +9,7 @@ use std::time::Duration;
 use thiserror::Error;
 
 use ot_hal::dif::clkmgr::{ClkmgrExtclkCtrl, ClkmgrReg};
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 use ot_hal::util::multibits::MultiBitBool4;
 
 use crate::io::jtag::Jtag;
@@ -29,7 +29,7 @@ pub struct ExternalClock;
 
 impl ExternalClock {
     /// Base address of the clock manager.
-    const CLKMGR_BASE_ADDR: u32 = top_earlgrey::CLKMGR_AON_BASE_ADDR as u32;
+    const CLKMGR_BASE_ADDR: u32 = top::CLKMGR_AON_BASE_ADDR as u32;
 
     /// Addresses of clock manager registers in memory.
     const EXTCLK_CTRL_REGWEN_ADDR: u32 =

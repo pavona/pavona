@@ -55,6 +55,7 @@ enum {
   kSecret0TestExitTokenSizeIn64BitWords =
       kSecret0TestExitTokenSizeInBytes / sizeof(uint64_t),
 
+#if defined(OPENTITAN_IS_EARLGREY)
   /**
    * SECRET1 partition OTP fields.
    */
@@ -67,7 +68,7 @@ enum {
       OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
   kSecret1FlashDataKeySeed64BitWords =
       OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE / sizeof(uint64_t),
-
+#endif
   kSecret1SramDataKeySeedOffset =
       OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
   kSecret1SramDataKeySeed64Bitwords =
