@@ -7,7 +7,6 @@
 #include <array>
 
 #include "gtest/gtest.h"
-#include "hw/top/dt/flash_ctrl.h"
 #include "hw/top/dt/lc_ctrl.h"
 #include "hw/top/dt/otp_ctrl.h"
 #include "hw/top/dt/rv_core_ibex.h"
@@ -22,10 +21,15 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/alert_handler_regs.h"
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/lc_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rv_core_ibex_regs.h"
+
+#if defined(OPENTITAN_IS_EARLGREY)
+#include "hw/top/dt/flash_ctrl.h"
+
+#include "hw/top/flash_ctrl_regs.h"
+#endif
 
 namespace shutdown_unittest {
 
@@ -178,6 +182,7 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("Dummy78",                        X, X, X, X), \
       Xmacro("Dummy79",                        X, X, X, X)
 
+#if defined(OPENTITAN_IS_EARLGREY)
 #define LOC_ALERTS(Xmacro) \
       Xmacro("LocAlertPingFail",               A, A, X, X), \
       Xmacro("LocEscPingFail",                 A, A, X, X), \
@@ -195,6 +200,18 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("LocDummy13",                     X, X, X, X), \
       Xmacro("LocDummy14",                     X, X, X, X), \
       Xmacro("LocDummy15",                     X, X, X, X),
+
+#elif defined(OPENTITAN_IS_DARJEELING)
+#define LOC_ALERTS(Xmacro) \
+      Xmacro("LocAlertPingFail",               A, A, X, X), \
+      Xmacro("LocEscPingFail",                 A, A, X, X), \
+      Xmacro("LocAlertIntegrityFail",          A, A, X, X), \
+      Xmacro("LocEscIntegrityFail",            A, A, X, X), \
+      Xmacro("LocBusIntegrityFail",            A, A, X, X), \
+      Xmacro("LocShadowRegUpdateFail",         A, A, X, X), \
+      Xmacro("LocShadowRegStorageError",       A, A, X, X),
+
+#endif
 // clang-format on
 
 struct OtpConfiguration {
@@ -595,9 +612,11 @@ TEST_F(ShutdownTest, ShutdownFinalize) {
 }
 
 TEST_F(ShutdownTest, FlashKill) {
+#if defined(OPENTITAN_IS_EARLGREY)
   const uint32_t flash_ctrl_base =
       dt_flash_ctrl_reg_block(kDtFlashCtrl, kDtFlashCtrlRegBlockCore);
   EXPECT_ABS_WRITE32(flash_ctrl_base + FLASH_CTRL_DIS_REG_OFFSET, 0);
+#endif
   unmocked_shutdown_flash_kill();
 }
 

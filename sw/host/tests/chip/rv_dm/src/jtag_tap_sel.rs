@@ -15,7 +15,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::util::parse_int::ParseInt;
 use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -78,7 +78,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     if let Ok(mut jtag) = jtag {
         let mut lc_state_rv = 0;
         jtag.read_memory32(
-            top_earlgrey::LC_CTRL_REGS_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
+            top::LC_CTRL_REGS_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
             core::slice::from_mut(&mut lc_state_rv),
         )?;
         let lc_state_rv = DifLcCtrlState::from_redundant_encoding(lc_state_rv)?;

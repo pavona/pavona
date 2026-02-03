@@ -15,8 +15,10 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otp_ctrl_regs.h"
+#if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#endif
 
 namespace ast_unittest {
 namespace {
@@ -33,10 +35,13 @@ class AstTest : public rom_test::RomTest {
    *
    */
   void ExpectStatusRead(bool done1, bool done2) {
+    // TODO: Darjeeling
+#if defined(OPENTITAN_IS_EARLGREY)
     EXPECT_ABS_READ32(base_ + SENSOR_CTRL_STATUS_REG_OFFSET,
                       {{SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT, done1}});
     EXPECT_ABS_READ32(base_ + SENSOR_CTRL_STATUS_REG_OFFSET,
                       {{SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT, done2}});
+#endif
   }
 
   /**
@@ -45,11 +50,16 @@ class AstTest : public rom_test::RomTest {
    * @param val Value to return;
    */
   void ExpectOtpRead(multi_bit_bool_t val) {
+    // TODO: Darjeeling
+#if defined(OPENTITAN_IS_EARLGREY)
     EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET))
         .WillOnce(Return(val));
+#endif
   }
 
+#if defined(OPENTITAN_IS_EARLGREY)
   uint32_t base_ = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR;
+#endif
   rom_test::MockAbsMmio mmio_;
   rom_test::MockOtp otp_;
   mock_csr::MockCsr csr_;

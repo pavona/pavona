@@ -12,7 +12,7 @@ use thiserror::Error;
 use ot_hal::dif::lc_ctrl::{
     DifLcCtrlState, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd, LcCtrlTransitionCtrl,
 };
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 use ot_hal::util::multibits::MultiBitBool8;
 
 use crate::app::{TransportWrapper, UartRx};
@@ -311,7 +311,7 @@ pub fn wait_for_status(jtag: &mut dyn Jtag, timeout: Duration, status: LcCtrlSta
             JtagTap::RiscvTap => {
                 let mut status = [0u32];
                 jtag.read_memory32(
-                    top_earlgrey::LC_CTRL_REGS_BASE_ADDR as u32 + LcCtrlReg::Status as u32,
+                    top::LC_CTRL_REGS_BASE_ADDR as u32 + LcCtrlReg::Status as u32,
                     &mut status,
                 )?;
                 status[0]

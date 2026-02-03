@@ -5,6 +5,7 @@
 #[cfg(feature = "earlgrey")]
 use bitflags::bitflags;
 
+#[cfg(any(feature = "earlgrey", feature = "darjeeling"))]
 use ot_bindgen_dif as dif;
 
 #[cfg(feature = "earlgrey")]

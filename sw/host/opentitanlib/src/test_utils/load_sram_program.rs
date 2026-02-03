@@ -18,7 +18,7 @@ use object::{Object, ObjectSection, ObjectSegment, SectionKind};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 use ot_hal::util::multibits::MultiBitBool4;
 
 use crate::impl_serializable_error;
@@ -362,8 +362,8 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG3), pmpcfg3)?;
     // Write pmpaddr15 to map the SRAM range.
     // hex((0x10000000 >> 2) | ((0x20000 - 1) >> 3)) = 0x4003fff
-    let base = top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
-    let size = top_earlgrey::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32;
+    let base = top::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
+    let size = top::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32;
     // Make sure that this is a power of two.
     assert!(size & (size - 1) == 0);
     let pmpaddr15 = (base >> 2) | ((size - 1) >> 3);
@@ -379,8 +379,14 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     log::info!("New value of pmpcfg2: {:x}", pmpcfg2);
     jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG2), pmpcfg2)?;
     // Write pmpaddr10 and pmpaddr11 to map the MMIO range.
-    let base = top_earlgrey::TOP_EARLGREY_MMIO_BASE_ADDR as u32;
-    let size = top_earlgrey::TOP_EARLGREY_MMIO_SIZE_BYTES as u32;
+    #[cfg(feature = "earlgrey")]
+    let base = top::TOP_EARLGREY_MMIO_BASE_ADDR as u32;
+    #[cfg(feature = "earlgrey")]
+    let size = top::TOP_EARLGREY_MMIO_SIZE_BYTES as u32;
+    #[cfg(feature = "darjeeling")]
+    let base = top::TOP_DARJEELING_MMIO_BASE_ADDR as u32;
+    #[cfg(feature = "darjeeling")]
+    let size = top::TOP_DARJEELING_MMIO_SIZE_BYTES as u32;
     // make sure that this is a power of two
     assert!(size & (size - 1) == 0);
     let pmpaddr10 = base >> 2;
@@ -395,8 +401,8 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
 
 /// Set up the sram_ctrl to execute code.
 pub fn prepare_sram_ctrl(jtag: &mut dyn Jtag) -> Result<()> {
-    const SRAM_CTRL_EXEC_REG_OFFSET: u32 = (top_earlgrey::SRAM_CTRL_MAIN_REGS_BASE_ADDR as u32)
-        + ot_bindgen_dif::SRAM_CTRL_EXEC_REG_OFFSET;
+    const SRAM_CTRL_EXEC_REG_OFFSET: u32 =
+        (top::SRAM_CTRL_MAIN_REGS_BASE_ADDR as u32) + ot_bindgen_dif::SRAM_CTRL_EXEC_REG_OFFSET;
     log::info!("Enabling execution from SRAM.");
     let mut sram_ctrl_exec = [0];
     jtag.read_memory32(SRAM_CTRL_EXEC_REG_OFFSET, &mut sram_ctrl_exec)?;

@@ -9,7 +9,7 @@ use std::time::Duration;
 use anyhow::Result;
 
 use ot_hal::dif::pinmux::PinmuxPadAttr;
-use ot_hal::top::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
+use ot_hal::top::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
 
 use crate::io::uart::Uart;
 use crate::test_utils::e2e_command::TestCommand;

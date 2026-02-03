@@ -17,7 +17,7 @@ use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::parse_int::ParseInt;
 
 use ot_bindgen_dif as dif;
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -42,8 +42,16 @@ struct Opts {
 
 const NUM_ACCESSES_PER_REGION: usize = 32;
 
+#[cfg(feature = "earlgrey")]
+const ROM_BASE_ADDR: u32 = top::ROM_CTRL_ROM_BASE_ADDR as u32;
 // The last 32 bytes of ROM (ROM digest) are not accessible.
-const ROM_ACCESSIBLE_BYTES: usize = top_earlgrey::ROM_CTRL_ROM_SIZE_BYTES - 32;
+#[cfg(feature = "earlgrey")]
+const ROM_ACCESSIBLE_BYTES: usize = top::ROM_CTRL_ROM_SIZE_BYTES - 32;
+
+#[cfg(feature = "darjeeling")]
+const ROM_BASE_ADDR: u32 = top::ROM_CTRL0_ROM_BASE_ADDR as u32;
+#[cfg(feature = "darjeeling")]
+const ROM_ACCESSIBLE_BYTES: usize = top::ROM_CTRL0_ROM_SIZE_BYTES - 32;
 
 fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let seed = opts.seed.unwrap_or_else(|| thread_rng().r#gen());
@@ -76,22 +84,22 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let rw_regions = [
         (
             "ram_ret",
-            top_earlgrey::SRAM_CTRL_RET_AON_RAM_BASE_ADDR as u32,
-            top_earlgrey::SRAM_CTRL_RET_AON_RAM_SIZE_BYTES as u32,
+            top::SRAM_CTRL_RET_AON_RAM_BASE_ADDR as u32,
+            top::SRAM_CTRL_RET_AON_RAM_SIZE_BYTES as u32,
         ),
         (
             "ram_main",
-            top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32,
-            top_earlgrey::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32,
+            top::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32,
+            top::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32,
         ),
         (
             "acc_imem",
-            top_earlgrey::ACC_BASE_ADDR as u32 + dif::ACC_IMEM_REG_OFFSET,
+            top::ACC_BASE_ADDR as u32 + dif::ACC_IMEM_REG_OFFSET,
             dif::ACC_IMEM_SIZE_BYTES,
         ),
         (
             "acc_dmem",
-            top_earlgrey::ACC_BASE_ADDR as u32 + dif::ACC_DMEM_REG_OFFSET,
+            top::ACC_BASE_ADDR as u32 + dif::ACC_DMEM_REG_OFFSET,
             dif::ACC_DMEM_SIZE_BYTES,
         ),
     ];
@@ -123,7 +131,7 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     {
         accesses.push((
             "rom",
-            top_earlgrey::ROM_CTRL_ROM_BASE_ADDR as u32,
+            ROM_BASE_ADDR,
             offset,
             if offset as usize <= rom_data.len() {
                 u32::from_le_bytes(rom_data[offset as usize..][..4].try_into().unwrap())

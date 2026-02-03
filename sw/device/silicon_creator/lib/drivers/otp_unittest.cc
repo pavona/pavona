@@ -14,7 +14,11 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
+#if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#endif
 
 namespace otp_unittest {
 namespace {
@@ -25,7 +29,11 @@ constexpr int kMaxOtpWordsToRead = 10;
 
 class OtpTest : public rom_test::RomTest {
  protected:
+#if defined(OPENTITAN_IS_EARLGREY)
   uint32_t base_ = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR;
+#elif defined(OPENTITAN_IS_DARJEELING)
+  uint32_t base_ = TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR;
+#endif
   rom_test::MockSecMmio mmio_;
   rom_test::MockAbsMmio abs_mmio_;
 };
@@ -106,6 +114,7 @@ TEST_P(OtpPartitionDigestTest, ReadDigest) {
             0x1234567887654321);
 }
 
+#if defined(OPENTITAN_IS_EARLGREY)
 INSTANTIATE_TEST_SUITE_P(
     ReadPartitionDigests, OtpPartitionDigestTest,
     testing::Values(
@@ -135,6 +144,55 @@ INSTANTIATE_TEST_SUITE_P(
             .partition = kOtpPartitionHwCfg1,
             .digest_offest = OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET,
         }));
+#elif defined(OPENTITAN_IS_DARJEELING)
+INSTANTIATE_TEST_SUITE_P(
+    ReadPartitionDigests, OtpPartitionDigestTest,
+    testing::Values(
+        DigestReadTestCase{
+            .partition = kOtpPartitionCreatorSwCfg,
+            .digest_offest = OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionOwnerSwCfg,
+            .digest_offest = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionRotCreatorIdentity,
+            .digest_offest = OTP_CTRL_ROT_CREATOR_IDENTITY_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionRotOwnerAuthSlot0,
+            .digest_offest = OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionRotOwnerAuthSlot1,
+            .digest_offest = OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionRomPatch,
+            .digest_offest = OTP_CTRL_ROM_PATCH_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionSocFusesCp,
+            .digest_offest = OTP_CTRL_SOC_FUSES_CP_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionSocFusesFt,
+            .digest_offest = OTP_CTRL_SOC_FUSES_FT_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionHwCfg0,
+            .digest_offest = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionHwCfg1,
+            .digest_offest = OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionHwCfg2,
+            .digest_offest = OTP_CTRL_HW_CFG2_DIGEST_0_REG_OFFSET,
+        }));
+#endif
 
 class OtpDaiReadTest : public OtpReadTest,
                        public testing::WithParamInterface<int> {};

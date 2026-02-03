@@ -15,7 +15,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
 use ot_bindgen_dif as dif;
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -78,171 +78,163 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .connect(JtagTap::RiscvTap)?;
 
     let mut tests = [
-        ("aes", top_earlgrey::AES_BASE_ADDR, dif::AES_IV_0_REG_OFFSET),
+        ("aes", top::AES_BASE_ADDR, dif::AES_IV_0_REG_OFFSET),
+        #[cfg(feature = "earlgrey")]
         (
             "adc_ctrl",
-            top_earlgrey::ADC_CTRL_AON_BASE_ADDR,
+            top::ADC_CTRL_AON_BASE_ADDR,
             dif::ADC_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "alert_handler",
-            top_earlgrey::ALERT_HANDLER_BASE_ADDR,
+            top::ALERT_HANDLER_BASE_ADDR,
             dif::ALERT_HANDLER_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "aon_timer",
-            top_earlgrey::AON_TIMER_AON_BASE_ADDR,
+            top::AON_TIMER_AON_BASE_ADDR,
             dif::AON_TIMER_WKUP_CTRL_REG_OFFSET,
         ),
         (
             "csrng",
-            top_earlgrey::CSRNG_BASE_ADDR,
+            top::CSRNG_BASE_ADDR,
             dif::CSRNG_INTR_ENABLE_REG_OFFSET,
         ),
-        (
-            "edn0",
-            top_earlgrey::EDN0_BASE_ADDR,
-            dif::EDN_INTR_ENABLE_REG_OFFSET,
-        ),
-        (
-            "edn1",
-            top_earlgrey::EDN1_BASE_ADDR,
-            dif::EDN_INTR_ENABLE_REG_OFFSET,
-        ),
+        ("edn0", top::EDN0_BASE_ADDR, dif::EDN_INTR_ENABLE_REG_OFFSET),
+        ("edn1", top::EDN1_BASE_ADDR, dif::EDN_INTR_ENABLE_REG_OFFSET),
         (
             "entropy_src",
-            top_earlgrey::ENTROPY_SRC_BASE_ADDR,
+            top::ENTROPY_SRC_BASE_ADDR,
             dif::ENTROPY_SRC_INTR_ENABLE_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "flash_ctrl",
-            top_earlgrey::FLASH_CTRL_CORE_BASE_ADDR,
+            top::FLASH_CTRL_CORE_BASE_ADDR,
             dif::FLASH_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "gpio",
-            top_earlgrey::GPIO_BASE_ADDR,
+            top::GPIO_BASE_ADDR,
             dif::GPIO_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "hmac",
-            top_earlgrey::HMAC_BASE_ADDR,
+            top::HMAC_BASE_ADDR,
             dif::HMAC_INTR_ENABLE_REG_OFFSET,
         ),
-        (
-            "i2c0",
-            top_earlgrey::I2C0_BASE_ADDR,
-            dif::I2C_INTR_ENABLE_REG_OFFSET,
-        ),
-        (
-            "i2c1",
-            top_earlgrey::I2C1_BASE_ADDR,
-            dif::I2C_INTR_ENABLE_REG_OFFSET,
-        ),
-        (
-            "i2c2",
-            top_earlgrey::I2C2_BASE_ADDR,
-            dif::I2C_INTR_ENABLE_REG_OFFSET,
-        ),
+        ("i2c0", top::I2C0_BASE_ADDR, dif::I2C_INTR_ENABLE_REG_OFFSET),
+        #[cfg(feature = "earlgrey")]
+        ("i2c1", top::I2C1_BASE_ADDR, dif::I2C_INTR_ENABLE_REG_OFFSET),
+        #[cfg(feature = "earlgrey")]
+        ("i2c2", top::I2C2_BASE_ADDR, dif::I2C_INTR_ENABLE_REG_OFFSET),
+        #[cfg(feature = "earlgrey")]
         (
             "keymgr",
-            top_earlgrey::KEYMGR_BASE_ADDR,
+            top::KEYMGR_BASE_ADDR,
             dif::KEYMGR_INTR_ENABLE_REG_OFFSET,
+        ),
+        #[cfg(feature = "darjeeling")]
+        (
+            "keymgr_dpe",
+            top::KEYMGR_DPE_BASE_ADDR,
+            dif::KEYMGR_DPE_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "kmac",
-            top_earlgrey::KMAC_BASE_ADDR,
+            top::KMAC_BASE_ADDR,
             dif::KMAC_INTR_ENABLE_REG_OFFSET,
         ),
-        (
-            "acc",
-            top_earlgrey::ACC_BASE_ADDR,
-            dif::ACC_INTR_ENABLE_REG_OFFSET,
-        ),
+        ("acc", top::ACC_BASE_ADDR, dif::ACC_INTR_ENABLE_REG_OFFSET),
         (
             "otp_ctrl",
-            top_earlgrey::OTP_CTRL_CORE_BASE_ADDR,
+            top::OTP_CTRL_CORE_BASE_ADDR,
             dif::OTP_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "pattgen",
-            top_earlgrey::PATTGEN_BASE_ADDR,
+            top::PATTGEN_BASE_ADDR,
             dif::PATTGEN_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "pinmux",
-            top_earlgrey::PINMUX_AON_BASE_ADDR,
+            top::PINMUX_AON_BASE_ADDR,
             dif::PINMUX_MIO_PAD_ATTR_0_REG_OFFSET,
         ),
-        (
-            "pwm",
-            top_earlgrey::PWM_AON_BASE_ADDR,
-            dif::PWM_INVERT_REG_OFFSET,
-        ),
+        #[cfg(feature = "earlgrey")]
+        ("pwm", top::PWM_AON_BASE_ADDR, dif::PWM_INVERT_REG_OFFSET),
         (
             "pwrmgr",
-            top_earlgrey::PWRMGR_AON_BASE_ADDR,
+            top::PWRMGR_AON_BASE_ADDR,
             dif::PWRMGR_INTR_ENABLE_REG_OFFSET,
         ),
         // Skip ROM_CTRL which does not have RW registers
         (
             "rstmgr",
-            top_earlgrey::RSTMGR_AON_BASE_ADDR,
+            top::RSTMGR_AON_BASE_ADDR,
             dif::RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
         ),
         (
             "rv_timer",
-            top_earlgrey::RV_TIMER_BASE_ADDR,
+            top::RV_TIMER_BASE_ADDR,
             dif::RV_TIMER_INTR_ENABLE0_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "sensor_ctrl",
-            top_earlgrey::SENSOR_CTRL_AON_BASE_ADDR,
+            top::SENSOR_CTRL_AON_BASE_ADDR,
             dif::SENSOR_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "spi_device",
-            top_earlgrey::SPI_DEVICE_BASE_ADDR,
+            top::SPI_DEVICE_BASE_ADDR,
             dif::SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "spi_host0",
-            top_earlgrey::SPI_HOST0_BASE_ADDR,
+            top::SPI_HOST0_BASE_ADDR,
             dif::SPI_HOST_INTR_ENABLE_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "spi_host1",
-            top_earlgrey::SPI_HOST1_BASE_ADDR,
+            top::SPI_HOST1_BASE_ADDR,
             dif::SPI_HOST_INTR_ENABLE_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "sysrst_ctrl",
-            top_earlgrey::SYSRST_CTRL_AON_BASE_ADDR,
+            top::SYSRST_CTRL_AON_BASE_ADDR,
             dif::SYSRST_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "uart0",
-            top_earlgrey::UART0_BASE_ADDR,
+            top::UART0_BASE_ADDR,
             dif::UART_INTR_ENABLE_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "uart1",
-            top_earlgrey::UART1_BASE_ADDR,
+            top::UART1_BASE_ADDR,
             dif::UART_INTR_ENABLE_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "uart2",
-            top_earlgrey::UART2_BASE_ADDR,
+            top::UART2_BASE_ADDR,
             dif::UART_INTR_ENABLE_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "uart3",
-            top_earlgrey::UART3_BASE_ADDR,
+            top::UART3_BASE_ADDR,
             dif::UART_INTR_ENABLE_REG_OFFSET,
         ),
+        #[cfg(feature = "earlgrey")]
         (
             "usbdev",
-            top_earlgrey::USBDEV_BASE_ADDR,
+            top::USBDEV_BASE_ADDR,
             dif::USBDEV_INTR_ENABLE_REG_OFFSET,
         ),
     ];

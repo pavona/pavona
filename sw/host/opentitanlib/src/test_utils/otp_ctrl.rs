@@ -18,7 +18,7 @@ use ot_hal::dif::otp_ctrl::{
     DaiParam, DirectAccessCmd, Granularity, OtpCtrlReg, OtpCtrlStatus, OtpParamMmap, Partition,
     SECRET_PARTITIONS,
 };
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 
 use crate::io::jtag::Jtag;
 use crate::test_utils::poll;
@@ -138,7 +138,7 @@ impl OtpPartition {
 struct OtpDai;
 impl OtpDai {
     /// Base address of the OTP controller in memory.
-    const OTP_CTRL_BASE_ADDR: u32 = top_earlgrey::OTP_CTRL_CORE_BASE_ADDR as u32;
+    const OTP_CTRL_BASE_ADDR: u32 = top::OTP_CTRL_CORE_BASE_ADDR as u32;
 
     // Polling timeout and delay while waiting on statuses.
     const POLL_TIMEOUT: Duration = Duration::from_millis(500);

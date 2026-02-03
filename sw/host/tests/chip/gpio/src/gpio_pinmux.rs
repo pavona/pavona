@@ -19,7 +19,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::pinmux_config::PinmuxConfig;
 use opentitanlib::uart::console::UartConsole;
 use ot_hal::dif::pinmux::PinmuxPadAttr;
-use ot_hal::top::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
+use ot_hal::top::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
 
 #[derive(Debug, Parser)]
 struct Opts {
