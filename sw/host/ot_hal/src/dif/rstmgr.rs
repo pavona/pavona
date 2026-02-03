@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::util::bitfield::BitField;
+#[cfg(any(feature = "earlgrey", feature = "darjeeling"))]
 use crate::with_unknown;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

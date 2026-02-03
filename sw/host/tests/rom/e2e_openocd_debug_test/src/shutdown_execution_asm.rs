@@ -14,7 +14,7 @@ use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 
-use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::top;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -46,7 +46,7 @@ fn shutdown_execution_asm(opts: &Opts, transport: &TransportWrapper) -> Result<(
     dbg.reset(false)?;
 
     // Reset PC to the start of main SRAM
-    dbg.set_pc(top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32)?;
+    dbg.set_pc(top::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32)?;
 
     // Check that the execution hits the exception handler
     dbg.run_until("_asm_exception_handler", opts.breakpoint_timeout)?;

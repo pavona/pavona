@@ -11,24 +11,32 @@
 
 #include "hw/top/otp_ctrl_regs.h"
 
+#ifdef OPENTITAN_IS_EARLGREY
 enum {
+  // Offset of the `ROT_CREATOR_AUTH_CODESIGN` partition.
+  kAuthcodesignPartitionOffset =
+      OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
+
   // The size of the `ROT_CREATOR_AUTH_CODESIGN` partition ignoring the size of
   // the partition digest.
-  kAuthCodesignParitionSize =
+  kAuthCodesignPartitionSize =
       OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
       OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
 
-  kAuthCodesignParitionSizeInWords =
-      kAuthCodesignParitionSize / sizeof(uint32_t),
+  kAuthCodesignPartitionSizeInWords =
+      kAuthCodesignPartitionSize / sizeof(uint32_t),
 
   // The size of the `ROT_CREATOR_AUTH_CODESIGN` region used to store the key
   // material. This is the size of the partition minus the size of the HMAC
   // digest used to measure the integrity of the keys.
   kAuthcodesignPartitionMsgSize =
-      kAuthCodesignParitionSize - sizeof(hmac_digest_t),
+      kAuthCodesignPartitionSize - sizeof(hmac_digest_t),
 
   kAuthcodesignPartitionMsgSizeInWords =
       kAuthcodesignPartitionMsgSize / sizeof(uint32_t),
+
+  // Offset of the `ROT_CREATOR_AUTH_STATE` partition.
+  kAuthStatePartitionOffset = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
 
   // The size of the `ROT_CREATOR_AUTH_STATE` partition ignoring the size of the
   // partition digest.
@@ -38,13 +46,31 @@ enum {
   kAuthStatePartitionSizeInWords = kAuthStatePartitionSize / sizeof(uint32_t),
 };
 
-static_assert(sizeof(sigverify_otp_keys_t) == kAuthCodesignParitionSize,
+static_assert(sizeof(sigverify_otp_keys_t) == kAuthCodesignPartitionSize,
               "Size of sigverify_otp_keys_t must match the size of the OTP "
               "partition");
 static_assert(
     sizeof(sigverify_otp_key_states_t) == kAuthStatePartitionSize,
     "Size of sigverify_otp_key_states_t must match the size of the OTP "
     "partition");
+#endif
+
+#ifdef OPENTITAN_IS_DARJEELING
+enum {
+  // Offset of the `ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN` partition.
+  kAuthcodesignPartitionOffset =
+      OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_TYPE_OFFSET,
+
+  // Size of the `ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN` partition.
+  kAuthCodesignPartitionSize =
+      OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_TYPE_SIZE +
+      OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_ROLE_SIZE +
+      OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_SIZE,
+
+  kAuthCodesignPartitionSizeInWords =
+      kAuthCodesignPartitionSize / sizeof(uint32_t),
+};
+#endif
 
 /**
  * Determines whether a key is valid in the RMA life cycle state.
@@ -187,22 +213,26 @@ static rom_error_t key_is_valid(sigverify_key_type_t key_type,
 rom_error_t sigverify_otp_keys_init(sigverify_otp_key_ctx_t *ctx) {
   uint32_t *raw_buffer = (uint32_t *)&ctx->keys;
   size_t i;
-  for (i = 0; launder32(i) < kAuthCodesignParitionSizeInWords; ++i) {
-    raw_buffer[i] = otp_read32(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET +
-                               i * sizeof(uint32_t));
+  for (i = 0; launder32(i) < kAuthCodesignPartitionSizeInWords; ++i) {
+    raw_buffer[i] =
+        otp_read32(kAuthcodesignPartitionOffset + i * sizeof(uint32_t));
   }
-  HARDENED_CHECK_EQ(i, kAuthCodesignParitionSizeInWords);
+  HARDENED_CHECK_EQ(i, kAuthCodesignPartitionSizeInWords);
 
+  // Darjeeling does not use an auth state structure.
+#ifdef OPENTITAN_IS_EARLGREY
   uint32_t *raw_state = (uint32_t *)&ctx->states;
   for (i = 0; launder32(i) < kAuthStatePartitionSizeInWords; ++i) {
-    raw_state[i] = otp_read32(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET +
-                              i * sizeof(uint32_t));
+    raw_state[i] = otp_read32(kAuthStatePartitionOffset + i * sizeof(uint32_t));
   }
   HARDENED_CHECK_EQ(i, kAuthStatePartitionSizeInWords);
+#endif
   return sigverify_otp_keys_check(ctx);
 }
 
 rom_error_t sigverify_otp_keys_check(sigverify_otp_key_ctx_t *ctx) {
+  // Darjeeling does not use digests over the signing keys.
+#if defined(OPENTITAN_IS_EARLGREY)
   hmac_digest_t got;
   hmac_sha256(&ctx->keys, kAuthcodesignPartitionMsgSize, &got);
   size_t i = 0;
@@ -212,6 +242,7 @@ rom_error_t sigverify_otp_keys_check(sigverify_otp_key_ctx_t *ctx) {
     }
   }
   HARDENED_CHECK_EQ(i, kHmacDigestNumWords);
+#endif
   return kErrorOk;
 }
 
@@ -251,7 +282,14 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
         array_get_generic(params.key_array, params.key_size, i);
     if (k->key_id == params.key_id) {
       HARDENED_CHECK_EQ(k->key_id, params.key_id);
-      if (params.key_states[i] == kSigVerifyKeyAuthStateProvisioned) {
+#if defined(OPENTITAN_IS_EARLGREY)
+      bool valid_auth_state =
+          params.key_states[i] == kSigVerifyKeyAuthStateProvisioned;
+#else
+      // Darjeeling does not use an auth state data structure.
+      bool valid_auth_state = true;
+#endif
+      if (valid_auth_state) {
         rom_error_t error = key_is_valid(k->key_type, params.lc_state);
         if (launder32(error) == kErrorOk) {
           HARDENED_CHECK_EQ(error, kErrorOk);
@@ -282,8 +320,14 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
     HARDENED_CHECK_LT(cand_key_index, params.key_cnt);
     const sigverify_rom_key_header_t *cand_key =
         array_get_generic(params.key_array, params.key_size, cand_key_index);
-    if (params.key_states[cand_key_index] ==
-        kSigVerifyKeyAuthStateProvisioned) {
+#if defined(OPENTITAN_IS_EARLGREY)
+    bool valid_auth_state =
+        params.key_states[cand_key_index] == kSigVerifyKeyAuthStateProvisioned;
+#else
+    // Darjeeling does not use an auth state data structure.
+    bool valid_auth_state = true;
+#endif
+    if (valid_auth_state) {
       rom_error_t error = key_is_valid(cand_key->key_type, params.lc_state);
       HARDENED_CHECK_EQ(error, kErrorOk);
       *key = cand_key;

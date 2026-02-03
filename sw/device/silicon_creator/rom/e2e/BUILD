@@ -45,17 +45,21 @@ otp_json(
     name = "otp_json_default",
     partitions = [
         otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {
-                "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
-            },
-        ),
-        otp_partition(
             name = "LIFE_CYCLE",
             count = 1,
             state = "TEST_UNLOCKED0",
         ),
-    ],
+    ] + select({
+        "//hw/top:earlgrey": [
+            otp_partition(
+                name = "CREATOR_SW_CFG",
+                items = {
+                    "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
+                },
+            ),
+        ],
+        "//hw/top:darjeeling": [],
+    }),
 )
 
 otp_image(

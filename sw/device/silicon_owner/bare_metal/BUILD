@@ -23,8 +23,10 @@ ld_library(
     script = "bare_metal_slot_a.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": ["//hw/top_earlgrey/sw/autogen:top_earlgrey_memory"],
+        "//hw/top:darjeeling": ["//hw/top_darjeeling/sw/autogen:top_darjeeling_memory"],
+    }),
 )
 
 ld_library(
@@ -32,8 +34,10 @@ ld_library(
     script = "bare_metal_slot_b.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": ["//hw/top_earlgrey/sw/autogen:top_earlgrey_memory"],
+        "//hw/top:darjeeling": ["//hw/top_darjeeling/sw/autogen:top_darjeeling_memory"],
+    }),
 )
 
 ld_library(
@@ -41,8 +45,10 @@ ld_library(
     script = "bare_metal_slot_virtual.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": ["//hw/top_earlgrey/sw/autogen:top_earlgrey_memory"],
+        "//hw/top:darjeeling": ["//hw/top_darjeeling/sw/autogen:top_darjeeling_memory"],
+    }),
 )
 
 cc_library(

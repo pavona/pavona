@@ -25,10 +25,15 @@ rust_library(
         "src/util/unknown.rs",
     ] + select({
         "//sw/device:is_english_breakfast": [],
-        "//conditions:default": [
+        "//hw/top:earlgrey": [
             "src/dif/clkmgr.rs",
             "src/dif/pinmux.rs",
             "src/top/autogen/earlgrey.rs",
+        ],
+        "//hw/top:darjeeling": [
+            "src/dif/clkmgr.rs",
+            "src/dif/pinmux.rs",
+            "src/top/autogen/darjeeling.rs",
         ],
     }),
     crate_features = select({
@@ -37,7 +42,6 @@ rust_library(
         "//hw/top:darjeeling": ["darjeeling"],
     }),
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/ot_hal/bindgen",
         "@crate_index//:anyhow",
         "@crate_index//:bitflags",
@@ -46,7 +50,10 @@ rust_library(
         "@crate_index//:serde_json",
         "@crate_index//:strum",
         "@crate_index//:thiserror",
-    ],
+    ] + select({
+        "//hw/top:earlgrey": ["//hw/top_earlgrey/sw/autogen/chip:top_earlgrey"],
+        "//hw/top:darjeeling": ["//hw/top_darjeeling/sw/autogen/chip:top_darjeeling"],
+    }),
 )
 
 rust_test(

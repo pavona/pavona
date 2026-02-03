@@ -6,7 +6,11 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
+#if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#endif
 
 void bare_metal_main(void) {
   dbg_printf("Bare metal PASS!\r\n");

@@ -12,14 +12,22 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/rv_core_ibex_regs.h"
+#if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#endif
 
 namespace ibex_unittest {
 namespace {
 
 class IbexTest : public rom_test::RomTest {
  protected:
+#if defined(OPENTITAN_IS_EARLGREY)
   uint32_t base_ = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR;
+#elif defined(OPENTITAN_IS_DARJEELING)
+  uint32_t base_ = TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR;
+#endif
   rom_test::MockSecMmio sec_;
   rom_test::MockAbsMmio mmio_;
 };

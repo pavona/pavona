@@ -11,6 +11,10 @@ rust_binary(
     srcs = [
         "src/csr_rw.rs",
     ],
+    crate_features = select({
+        "//hw/top:earlgrey": ["earlgrey"],
+        "//hw/top:darjeeling": ["darjeeling"],
+    }),
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",
@@ -29,6 +33,10 @@ rust_binary(
     srcs = [
         "src/mem_access.rs",
     ],
+    crate_features = select({
+        "//hw/top:earlgrey": ["earlgrey"],
+        "//hw/top:darjeeling": ["darjeeling"],
+    }),
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",
