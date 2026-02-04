@@ -1,8 +1,9 @@
-# Top Generation Tool
+# Architectural Composition Engine
 
-The top generation tool `topgen.py` is used to build top specific modules for a specific OpenTitan design - for example [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey).
+The Architectural Composition Engine tool [`topgen.py`](../topgen.py) is used to build top specific modules for a given design that can be flexibly defined and configured - for example [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey).
 Currently, as part of this generation process, the following top specific modules are created
 * Overall top module
+* Generic ip modules
 * Crossbars
 * A number of templated peripherals, which are expanded according to top specific configurations
 This document explains the overall generation process, the required inputs, the output locations, as well as how the tool should be invoked.
@@ -10,8 +11,8 @@ This document explains the overall generation process, the required inputs, the 
 ## Generation Process
 
 ### Overview
-The details of a particular OpenTitan variant is described in a top specific Hjson file.
-For example see [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/data/top_earlgrey.hjson).
+The details of a particular variant is described in a top specific Hjson file.
+For example see [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey/data/top_earlgrey.hjson).
 
 The top specific Hjson describes how the design looks and how it should connect, for example:
 * Overall fabric data width
@@ -22,6 +23,7 @@ The top specific Hjson describes how the design looks and how it should connect,
   * Module type of each peripheral (it is possible to have multiple instantiations of a particular module)
   * Clock / reset connectivity of each peripheral
   * Base address of each peripheral for each connected address space
+* List of instantiated crossbars
 * System memories
 * Fabric construction
   * Clock / reset connectivity of each fabric component
@@ -45,8 +47,8 @@ These are primarily located in the following places:
 * `hw/ip_templates/*/data/*.hjson.tpl` for ipgen peripherals
 * `hw/top_*/data/xbar_*.hjson` for crossbars which are also generated from templates
 
-In the process of gathering, each individual Hjson file is validated for input correctness and then merged into a final generated Hjson output that represents the complete information that makes up each OpenTitan design.
-For example, see [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson).
+In the process of gathering, each individual Hjson file is validated for input correctness and then merged into a final generated Hjson output that represents the complete information that makes up each design.
+For example, see [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson).
 Note specifically the generated interrupt list, the pinmux connections, and the port-to-net mapping of clocks and resets, all of which were not present in the original input.
 
 The purpose for this two step process, instead of describing the design completely inside one Hjson file, is to decouple the top and components development while allowing re-use of components by multiple tops.
@@ -61,11 +63,11 @@ In addition to design collateral, the tool also generates all the top level RAL 
 ### Validation, Merge and Output
 
 As stated previously, each of the gathered component Hjson files is validated for correctness.
-For the peripherals, this is done by invoking `util/reggen/validate.py`, while the  xbar components are validated through `util/tlgen/validate.py`.
-The peripheral and xbar components are then validated through `util/topgen/validate.py`.
+For the peripherals, this is done by invoking [`util/reggen/validate.py`](../reggen/validate.py), while the  xbar components are validated through [`util/tlgen/validate.py`](../tlgen/validate.py).
+The peripheral and xbar components are then validated through [`util/topgen/validate.py`](./validate.py).
 This performs extensive checks on the top configuration, for example interrupt, pinmux, clock and reset consistency.
 
-Once all validation is passed, the final Hjson is created by `util/topgen/merge.py`.
+Once all validation is passed, the final Hjson is created by [`util/topgen/merge.py`](./merge.py).
 This Hjson is then used to generate the final top RTL.
 
 As part of this process, topgen invokes other tools.
@@ -97,7 +99,7 @@ To make sure there are no mistakes in the order of ipgen peripherals the expansi
 #### Generating other Artifacts
 
 There is a large number of artifacts that are generated from the complete top config using topgen, including:
-* The templates of ipgen peripherals are expanded into directories specific to each top, for example `hw/top_darjeeling/ip_autogen/clkmgr`.
+* The templates of ipgen peripherals are expanded into directories specific to each top, for example [`hw/top_darjeeling/ip_autogen/clkmgr`](../../hw/top_darjeeling/ip_autogen/clkmgr/).
 * The crossbars are also expanded from templates into top-specific directories, for example `hw/top_earlgrey/ip/xbar_*/*/autogen`.
 * Part of the Bazel files necessary to register the top with build system, see [Creating a new top](../../hw/top/doc/create_top.md) for details.
 
