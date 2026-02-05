@@ -2758,27 +2758,27 @@ poly_make_hint:
         bn.add  w0, w0, w0
 
         /* Return 0 if t0 <= gamma2 <=> 0 <= gamma2 - t0 */
-        sub t5, t6, t0
+        sub  t5, t6, t0
         srli t3, t5, 31
-        beq t3, zero, _loop_end_poly_make_hint
+        beq  t3, zero, _loop_end_poly_make_hint
 
         /* Return 0 if q - gamma2 < t0 <=> (q - gamma2) - t0 < 0 */
-        sub t5, a7, t0
+        sub  t5, a7, t0
         srli t3, t5, 31
-        beq t3, t4, _return0
+        beq  t3, t4, _return0
 
         /* Return 1 if t0 != q - gamma2 */
-        bne t0, a7, _return1
+        bne  t0, a7, _return1
 
         /* Return 1 if the high part of the coefficient is nonzero. */
         csrrs   t3, FG0, zero
         andi    t3, t3, 1
-        jal x0, _loop_end_poly_make_hint
+        jal     x0, _loop_end_poly_make_hint
 _return0:
-        li t3, 0
+        li  t3, 0
         jal x0, _loop_end_poly_make_hint
 _return1:
-        li t3, 1
+        li  t3, 1
         /* Fall through to loop end */
 _loop_end_poly_make_hint:
         sw   t3, 0(a0) /* Write to output polynomial */
