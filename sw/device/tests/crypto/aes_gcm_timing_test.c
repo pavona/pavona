@@ -74,7 +74,7 @@ static status_t test_decrypt_timing(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
-  status_t result;
+  status_t result = OK_STATUS();
   CHECK_STATUS_OK(entropy_complex_init());
   for (size_t i = 0; i < ARRAYSIZE(kAesGcmTestvectors); i++) {
     current_test = &kAesGcmTestvectors[i];
