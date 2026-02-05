@@ -1,5 +1,6 @@
 CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ip:otbn_top_sim:0.1"
@@ -9,6 +10,7 @@ filesets:
   files_otbn:
     depend:
       - lowrisc:ip:otbn
+      - lowrisc:dv:otbn_pqc_off_env_pkg
       - lowrisc:dv:otbn_model
       - lowrisc:ip:otbn_tracer
       - lowrisc:ip:keymgr_pkg

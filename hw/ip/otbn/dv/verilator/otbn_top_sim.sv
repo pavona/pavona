@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +8,7 @@ module otbn_top_sim (
   input IO_RST_N
 );
   import otbn_pkg::*;
+  import otbn_pqc_env_pkg::*;
   import edn_pkg::*;
   import keymgr_pkg::otbn_key_req_t;
 
@@ -70,7 +72,8 @@ module otbn_top_sim (
     .ImemSizeByte             ( ImemSizeByte ),
     .DmemSizeByte             ( DmemSizeByte ),
     .SecMuteUrnd              ( 1'b0         ),
-    .SecSkipUrndReseedAtStart ( 1'b0         )
+    .SecSkipUrndReseedAtStart ( 1'b0         ),
+    .OtbnPQCEn                ( OtbnPQCEn    )
   ) u_otbn_core (
     .clk_i                       ( IO_CLK                     ),
     .rst_ni                      ( IO_RST_N                   ),
@@ -123,7 +126,10 @@ module otbn_top_sim (
     .software_errs_fatal_i       ( 1'b0                       ),
 
     .sideload_key_shares_i       ( sideload_key_shares        ),
-    .sideload_key_shares_valid_i ( 2'b11                      )
+    .sideload_key_shares_valid_i ( 2'b11                      ),
+
+    .kmac_app_req_o              (                            ),
+    .kmac_app_rsp_i              (                            )
   );
 
   // The values returned by the mock EDN must match those set in `standalonesim.py`.
