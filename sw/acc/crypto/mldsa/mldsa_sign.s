@@ -765,6 +765,9 @@ _rej_crypto_sign_signature_internal:
     /* Initialize the counter for the index in the hint vector. */
     li  s6, 0
 
+    /* Initialize the register that says whether the checks failed. */
+    li  s8, 0
+
     /* Normalize w0 to the [0, q) range (in-place). */
     addi   a0, s3, 0
     li     t1, 1
@@ -795,7 +798,12 @@ _rej_crypto_sign_signature_internal:
            reject
          make_hint(h, w0[i], w1[i]) # gets written directly into signature
      */
-    .rept K
+    loopi K, 73
+        /* If there was a failure, skip to the end of the
+           loop body (because of architectural loop rules, we have to complete
+           all iterations). */
+        bne  s8, x0, _mldsa_sign_hint_loop_end
+
         /* Unpack the next polynomial from s2. */
         addi a0, s10, 0
         addi a1, s2, 0
@@ -836,11 +844,13 @@ _rej_crypto_sign_signature_internal:
 
         /* chknorm(tmp, gamma2 - beta) */
         addi a0, s10, 0
-        li   t0, GAMMA2
-        li   t1, BETA
+        li   t0, GAMMA2 /* This li expands to 2 instructions */
+        addi t1, x0, BETA
         sub  a1, t0, t1
         jal  x1, poly_chknorm
-        bne  a0, zero, _rej_crypto_sign_signature_internal
+
+        /* Update the continuation register. */
+        or  s8, s8, a0
 
         /* Unpack the next polynomial from t0. */
         addi a0, s10, 0
@@ -881,10 +891,12 @@ _rej_crypto_sign_signature_internal:
         jal  x1, poly_reduce32
 
         /* chknorm(h, gamma2) */
-        li   a1, GAMMA2
+        li   a1, GAMMA2 /* This li expands to 2 instructions */
         addi a0, s1, 0
         jal  x1, poly_chknorm
-        bne  a0, zero, _rej_crypto_sign_signature_internal
+
+        /* Update the continuation register. */
+        or  s8, s8, a0
 
         /* h[i] = make_hint(w0[i], w1[i]) */
         addi   a0, s1, 0
@@ -897,10 +909,12 @@ _rej_crypto_sign_signature_internal:
         add  s4, s4, a0
 
         /* If the accumulator (# nonzero coeffs in h) is > omega, reject. */
-        li   t0, OMEGA
+        addi t0, x0, OMEGA
         sub  t0, t0, s4
         srli t0, t0, 31
-        bne  zero, t0, _rej_crypto_sign_signature_internal
+
+        /* Update the continuation register. */
+        or  s8, s8, t0
 
         /* Encode h[i] into the signature. */
         addi a0, s9, 0
@@ -910,9 +924,12 @@ _rej_crypto_sign_signature_internal:
 
         /* Increment i. */
         addi s6, s6, 1
+        _mldsa_sign_hint_loop_end:
         /* Update pointer into w0. */
         addi s3, s3, 1024
-    .endr
+
+    /* Reject the signature if any conditions failed in the hint loop. */
+    bne  s8, zero, _rej_crypto_sign_signature_internal
 
     /* Return success and signature length */
     li a0, 0
