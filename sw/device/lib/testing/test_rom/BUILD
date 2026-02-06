@@ -206,6 +206,11 @@ cc_library(
             "englishbreakfast": [],
         },
         ["HAS_RETENTION_RAM"],
+    ) + opentitan_select_top(
+        {
+            "darjeeling": ["HAS_ROM_CTRL1"],
+        },
+        [],
     ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
