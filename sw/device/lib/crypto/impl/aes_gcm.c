@@ -5,6 +5,7 @@
 
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
@@ -44,6 +45,38 @@ enum {
 };
 
 /**
+ * Compute the checksum of an AES-GCM context.
+ *
+ * Call this routine after creating or modifying the AES-GCM context.
+ *
+ * @param ctx AES-GCM context.
+ * @returns Checksum value.
+ */
+static inline uint32_t aes_gcm_context_integrity_checksum(
+    const otcrypto_aes_gcm_context_t *ctx) {
+  return crc32(ctx->data, sizeof(ctx->data));
+}
+
+/**
+ * Perform an integrity check on the AES-GCM context.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param ctx AES-GCM context.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+static hardened_bool_t aes_gcm_context_integrity_checksum_check(
+    const otcrypto_aes_gcm_context_t *ctx) {
+  if (ctx->checksum == launder32(aes_gcm_context_integrity_checksum(ctx))) {
+    HARDENED_CHECK_EQ(ctx->checksum, aes_gcm_context_integrity_checksum(ctx));
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
+
+/**
  * Save an AES-GCM context.
  *
  * @param internal_ctx Internal context object to save.
@@ -53,6 +86,7 @@ static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
                                     otcrypto_aes_gcm_context_t *api_ctx) {
   hardened_memcpy(api_ctx->data, (uint32_t *)internal_ctx,
                   kAesGcmContextNumWords);
+  api_ctx->checksum = aes_gcm_context_integrity_checksum(api_ctx);
 }
 
 /**
@@ -63,6 +97,8 @@ static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
  */
 static inline void gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
                                        aes_gcm_context_t *internal_ctx) {
+  HARDENED_CHECK_EQ(aes_gcm_context_integrity_checksum_check(api_ctx),
+                    kHardenedBoolTrue);
   hardened_memcpy((uint32_t *)internal_ctx, api_ctx->data,
                   kAesGcmContextNumWords);
 }

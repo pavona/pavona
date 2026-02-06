@@ -40,6 +40,7 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",

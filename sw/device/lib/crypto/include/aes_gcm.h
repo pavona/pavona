@@ -40,7 +40,10 @@ typedef enum otcrypto_aes_gcm_tag_len {
  * change.
  */
 typedef struct otcrypto_aes_gcm_context {
+  // Implementation specific, AES-GCM context data.
   uint32_t data[98];
+  // Implementation specific, checksum for this struct.
+  uint32_t checksum;
 } otcrypto_aes_gcm_context_t;
 
 /**
