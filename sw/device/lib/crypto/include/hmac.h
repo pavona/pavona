@@ -26,7 +26,10 @@ extern "C" {
  * with #otcrypto_hmac_init.
  */
 typedef struct otcrypto_hmac_context {
+  // Implementation specific, HMAC context data.
   uint32_t data[kOtcryptoSha2CtxStructWords];
+  // Implementation specific, checksum for this struct.
+  uint32_t checksum;
 } otcrypto_hmac_context_t;
 
 /**

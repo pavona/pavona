@@ -5,7 +5,9 @@
 
 #include "sw/device/lib/crypto/drivers/hmac.h"
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -138,6 +140,38 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
   return OTCRYPTO_OK;
 }
 
+/**
+ * Compute the checksum of an HMAC context.
+ *
+ * Call this routine after creating or modifying the HMAC context.
+ *
+ * @param ctx HMAC context.
+ * @returns Checksum value.
+ */
+static inline uint32_t hmac_context_integrity_checksum(
+    const otcrypto_hmac_context_t *ctx) {
+  return crc32(ctx->data, sizeof(ctx->data));
+}
+
+/**
+ * Perform an integrity check on the HMAC context.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param ctx HMAC context.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+static hardened_bool_t hmac_context_integrity_checksum_check(
+    const otcrypto_hmac_context_t *ctx) {
+  if (ctx->checksum == launder32(hmac_context_integrity_checksum(ctx))) {
+    HARDENED_CHECK_EQ(ctx->checksum, hmac_context_integrity_checksum(ctx));
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
+
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t input_message,
                                 otcrypto_word32_buf_t tag) {
@@ -212,6 +246,9 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   }
 
   memcpy(ctx->data, &hmac_ctx, sizeof(hmac_ctx));
+
+  // Compute the context integrity checksum.
+  ctx->checksum = hmac_context_integrity_checksum(ctx);
   return OTCRYPTO_OK;
 }
 
@@ -222,13 +259,21 @@ otcrypto_status_t otcrypto_hmac_update(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Check the context integrity checksum.
+  HARDENED_CHECK_EQ(hmac_context_integrity_checksum_check(ctx),
+                    kHardenedBoolTrue);
+
   // Check for null input message with nonzero length.
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
-  return hmac_update(hmac_ctx, input_message.data, input_message.len);
+  HARDENED_TRY(hmac_update(hmac_ctx, input_message.data, input_message.len));
+
+  // Compute the context integrity checksum.
+  ctx->checksum = hmac_context_integrity_checksum(ctx);
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
@@ -236,6 +281,10 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
   if (ctx == NULL || tag.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Check the context integrity checksum.
+  HARDENED_CHECK_EQ(hmac_context_integrity_checksum_check(ctx),
+                    kHardenedBoolTrue);
 
   // Check the digest length.
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
