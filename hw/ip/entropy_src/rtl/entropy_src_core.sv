@@ -1735,7 +1735,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.repcnts_total_fails.d = repcnts_total_fails;
 
   //--------------------------------------------
-  // adaptive proportion test
+  // Adaptive Proportion Test
   //--------------------------------------------
 
   // SEC_CM: RNG.BKGN_CHK
