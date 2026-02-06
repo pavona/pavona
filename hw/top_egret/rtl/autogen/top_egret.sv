@@ -2494,6 +2494,7 @@ module top_egret #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[45:44]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .AES192Enable(1'b1),
+    .AESGCMEnable(1'b1),
     .SecMasking(SecAesMasking),
     .SecSBoxImpl(SecAesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
