@@ -81,17 +81,25 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
 /**
  * Construct key manager diversification data from a raw keyblob.
  *
- * The keyblob must be exactly 8 32-bit words long. The first word is the
- * version and subsequent words are the salt. The key mode is appended to the
- * salt to prevent key manager keys being used for different modes.
+ * The first word is the version and subsequent words are concatenated with the
+ * key mode and then hashed (SHA-256) to produce the salt.
+ *
+ * This hashing step allows for arbitrary keyblob lengths at the cost of
+ * reducing the security of key mode domain separation to 128 bits (SHA-256
+ * collision resistance).
+ *
+ * This said, the security level for secure boot is also 128 bits, so an
+ * attacker who can break 128-bit security can bypass the kernel and cryptolib
+ * entirely, allowing them to pass arbitrary salt values to keymgr regardless.
  *
  * @param keyblob Pointer to the keyblob.
+ * @param keyblob_length Length of the keyblob in bytes.
  * @param mode Key mode to use in the diversification.
  * @param[out] Destination key manager diversification struct.
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_buffer_to_keymgr_diversification(
-    const uint32_t *keyblob, otcrypto_key_mode_t mode,
+    const uint32_t *keyblob, uint32_t keyblob_length, otcrypto_key_mode_t mode,
     keymgr_diversification_t *diversification);
 
 /**

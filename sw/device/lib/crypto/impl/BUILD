@@ -160,6 +160,7 @@ cc_library(
     hdrs = ["keyblob.h"],
     deps = [
         ":integrity",
+        ":sha2",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",

@@ -13,6 +13,7 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'b', 'b')
@@ -110,7 +111,7 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
 }
 
 status_t keyblob_buffer_to_keymgr_diversification(
-    const uint32_t *keyblob, otcrypto_key_mode_t mode,
+    const uint32_t *keyblob, uint32_t keyblob_length, otcrypto_key_mode_t mode,
     keymgr_diversification_t *diversification) {
   // Set the version to the first word of the keyblob.
   diversification->version = launder32(keyblob[0]);
@@ -118,17 +119,42 @@ status_t keyblob_buffer_to_keymgr_diversification(
   // Entropy complex must be initialized for `hardened_memcpy`.
   HARDENED_TRY(entropy_complex_check());
 
-  // Copy the remainder of the keyblob into the salt.
-  hardened_memcpy(diversification->salt, &keyblob[1], kKeymgrSaltNumWords - 1);
+  // Initialize a streaming SHA-256 operation.
+  otcrypto_sha2_context_t ctx;
+  HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
 
-  // Set the key mode as the last word of the salt.
-  diversification->salt[kKeymgrSaltNumWords - 1] = launder32(mode);
+  // Update the SHA-256 context with the provided keyblob.
+  const uint32_t *keyblob_rest = keyblob + 1;
+  uint32_t keyblob_rest_length = keyblob_length - sizeof(uint32_t);
+  otcrypto_const_byte_buf_t keyblob_rest_buf = {
+      .data = (uint8_t *)keyblob_rest,
+      .len = keyblob_rest_length,
+  };
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, keyblob_rest_buf));
+
+  // Update the SHA-256 context with the provided mode.
+  uint32_t mode_data = launder32(mode);
+  otcrypto_const_byte_buf_t mode_buf = {
+      .data = (uint8_t *)&mode_data,
+      .len = sizeof(uint32_t),
+  };
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, mode_buf));
+
+  // Finalize the SHA-256 operation.
+  uint32_t digest_data[kKeymgrSaltNumWords];
+  otcrypto_hash_digest_t digest_buf = {
+      .data = digest_data,
+      .len = ARRAYSIZE(digest_data),
+  };
+  HARDENED_TRY(otcrypto_sha2_final(&ctx, &digest_buf));
+
+  // Copy the resulting digest into the salt.
+  hardened_memcpy(diversification->salt, digest_data, kKeymgrSaltNumWords);
 
   HARDENED_CHECK_EQ(diversification->version, keyblob[0]);
-  HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &keyblob[1],
-                                   kKeymgrSaltNumWords - 1),
-                    kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(diversification->salt[kKeymgrSaltNumWords - 1], mode);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(diversification->salt, digest_data, kKeymgrSaltNumWords),
+      kHardenedBoolTrue);
   return OTCRYPTO_OK;
 }
 
@@ -146,7 +172,7 @@ status_t keyblob_to_keymgr_diversification(
   }
 
   return keyblob_buffer_to_keymgr_diversification(
-      key->keyblob, key->config.key_mode, diversification);
+      key->keyblob, key->keyblob_length, key->config.key_mode, diversification);
 }
 
 status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
