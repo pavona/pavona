@@ -31,7 +31,6 @@
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
  * @param[in]  x10: dptr_input, dmem pointer to first word of input polynomial
- * @param[in]  x11: dptr_tw, dmem pointer to array of twiddle factors
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
@@ -39,11 +38,13 @@
  */
 .globl ntt
 ntt:
-
     /* Save callee-saved registers */
     .irp reg,s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11
         push \reg
     .endr
+
+    /* Load twiddle factors. */
+    la   x11, twiddles_fwd
 
     /* Set up constants for input/state */
     li x4, 0

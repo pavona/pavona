@@ -420,9 +420,6 @@ _rej_crypto_sign_signature_internal:
     /* Load a pointer to the vectorized gamma1. */
     la   s7, gamma1_vec_const
 
-    /* Load a pointer to the NTT twiddles. */
-    la   s9, twiddles_fwd
-
     /* Load other pointers. */
     li   s8, STACK_Y
     add  s8, fp, s8
@@ -444,7 +441,7 @@ _rej_crypto_sign_signature_internal:
            for i in 0..k-1:
              w[i] += A[i][j] * yj
     */
-    loopi L, 38
+    loopi L, 37
         /* Zero the buffer for y[j]. */
         addi  t0, s8, 0
         loopi 32, 1
@@ -465,7 +462,6 @@ _rej_crypto_sign_signature_internal:
         bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
         /* Compute ntt(y[j]). */
         addi a0, s8, 0
-        addi a1, s9, 0
         addi a2, s8, 0
         jal x1, ntt
         loopi K, 13
@@ -500,12 +496,9 @@ _rej_crypto_sign_signature_internal:
     /* Inverse NTT on w */
     li  a0, STACK_W0
     add a0, fp, a0
-    la  a1, twiddles_inv
 
-    LOOPI K, 3
+    LOOPI K, 2
         jal x1, intt
-        /* Reset the twiddle pointer */
-        addi a1, a1, -960
         /* Go to next input polynomial */
         addi a0, a0, 1024
 
@@ -629,7 +622,6 @@ _rej_crypto_sign_signature_internal:
     li   a0, STACK_CP
     add  a0, fp, a0 /* Input */
     addi a2, a0, 0  /* Output inplace */
-    la   a1, twiddles_fwd
     jal  x1, ntt
 
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
@@ -659,9 +651,7 @@ _rej_crypto_sign_signature_internal:
     la   s10, gamma1_vec_const
 
     /* This loop computes z = (cp * s1) = y one element at a time, and does
-       rejection sampling on each element before packing it into the signature.
-       Cannot easily be a hardware loop because of the branch to
-       _rej_crypto_sign_signature_internal. */
+       rejection sampling on each element before packing it into the signature. */
     .rept L
         /* Unpack the next polynomial from s1. */
         addi a0, s1, 0
@@ -674,7 +664,6 @@ _rej_crypto_sign_signature_internal:
 
         /* Compute ntt(s1). */
         addi a0, s1, 0
-        la   a1, twiddles_fwd
         addi a2, s1, 0
         jal x1, ntt
         /* z = cp * s1 */
@@ -686,7 +675,6 @@ _rej_crypto_sign_signature_internal:
 
         /* Inverse NTT on z */
         addi a0, s2, 0
-        la  a1, twiddles_inv
         jal x1, intt
 
         bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
@@ -820,7 +808,6 @@ _rej_crypto_sign_signature_internal:
         bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
 
         /* Compute ntt(s2[i]) in-place. */
-        la   a1, twiddles_fwd
         addi a2, a0, 0
         jal x1, ntt
 
@@ -832,7 +819,6 @@ _rej_crypto_sign_signature_internal:
 
         /* Inverse NTT on tmp */
         addi a0, s10, 0
-        la  a1, twiddles_inv
         jal x1, intt
 
         bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
@@ -868,7 +854,6 @@ _rej_crypto_sign_signature_internal:
 
         /* Compute ntt(t0[i]) in-place. */
         addi a0, s10, 0
-        la   a1, twiddles_fwd
         addi a2, a0, 0
         jal x1, ntt
 
@@ -880,7 +865,6 @@ _rej_crypto_sign_signature_internal:
 
         /* Inverse NTT on tmp */
         addi a0, s10, 0
-        la  a1, twiddles_inv
         jal x1, intt
 
         bn.wsrw 0x0, w16 /* Restore MOD = R | Q */

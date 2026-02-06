@@ -30,8 +30,6 @@
  * Flags: -
  *
  * @param[in]  x10: dptr_input, dmem pointer to first word of input polynomial
- * @param[in]  x11: dptr_tw, dmem pointer to array of twiddle factors,
-                    last element is n^{-1} mod q
  * @param[in]  w31: all-zero
  * @param[out] x10: dmem pointer to result
  *
@@ -44,6 +42,9 @@ intt:
     .irp reg,s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11
         push \reg
     .endr
+
+    /* Load twiddle factors. */
+    la   x11, twiddles_inv
 
     /* Empty w20 */
     bn.xor w20, w20, w20
