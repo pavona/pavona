@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -15,8 +16,40 @@
 
 // Ensure that the hash context is large enough for HMAC driver struct.
 static_assert(
-    sizeof(otcrypto_sha2_context_t) == sizeof(hmac_ctx_t),
-    "`otcrypto_sha2_context_t` must be the same size as `hmac_ctx_t`.");
+    sizeof(otcrypto_sha2_context_t) >= sizeof(hmac_ctx_t),
+    "`otcrypto_sha2_context_t` must be big enough to hold `hmac_ctx_t`.");
+
+/**
+ * Compute the checksum of a SHA2 context.
+ *
+ * Call this routine after creating or modifying the SHA2 context.
+ *
+ * @param ctx SHA2 context.
+ * @returns Checksum value.
+ */
+static inline uint32_t sha2_context_integrity_checksum(
+    const otcrypto_sha2_context_t *ctx) {
+  return crc32(ctx->data, sizeof(ctx->data));
+}
+
+/**
+ * Perform an integrity check on the SHA2 context.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param ctx SHA2 context.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+static hardened_bool_t sha2_context_integrity_checksum_check(
+    const otcrypto_sha2_context_t *ctx) {
+  if (ctx->checksum == launder32(sha2_context_integrity_checksum(ctx))) {
+    HARDENED_CHECK_EQ(ctx->checksum, sha2_context_integrity_checksum(ctx));
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
 
 otcrypto_status_t otcrypto_sha2_256(otcrypto_const_byte_buf_t message,
                                     otcrypto_hash_digest_t *digest) {
@@ -92,6 +125,9 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
   }
 
   memcpy(ctx->data, &hmac_ctx, sizeof(hmac_ctx));
+
+  // Compute the context integrity checksum.
+  ctx->checksum = sha2_context_integrity_checksum(ctx);
   return OTCRYPTO_OK;
 }
 
@@ -127,9 +163,17 @@ otcrypto_status_t otcrypto_sha2_update(otcrypto_sha2_context_t *ctx,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Check the context integrity checksum.
+  HARDENED_CHECK_EQ(sha2_context_integrity_checksum_check(ctx),
+                    kHardenedBoolTrue);
+
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
   HARDENED_TRY(check_lengths(hmac_ctx));
-  return hmac_update(hmac_ctx, message.data, message.len);
+  HARDENED_TRY(hmac_update(hmac_ctx, message.data, message.len));
+
+  // Compute the context integrity checksum.
+  ctx->checksum = sha2_context_integrity_checksum(ctx);
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
@@ -137,6 +181,10 @@ otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
   if (ctx == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Check the context integrity checksum.
+  HARDENED_CHECK_EQ(sha2_context_integrity_checksum_check(ctx),
+                    kHardenedBoolTrue);
 
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
   HARDENED_TRY(check_lengths(hmac_ctx));
