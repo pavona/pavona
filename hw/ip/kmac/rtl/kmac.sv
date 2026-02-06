@@ -33,7 +33,8 @@ module kmac
   // Accept SW message when idle and before receiving a START command. Useful for SCA only.
   parameter bit SecIdleAcceptSwMsg          = 1'b0,
   parameter int unsigned NumAppIntf         = 4,
-  parameter app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl, AppCfgRomCtrl, AppCfgOTBN},
+  parameter app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl,
+                                                AppCfgRomCtrl, AppCfgOTBN},
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,

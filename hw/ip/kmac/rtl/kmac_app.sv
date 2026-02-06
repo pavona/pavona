@@ -17,7 +17,8 @@ module kmac_app
   localparam int          Share              = (EnMasking) ? 2 : 1, // derived parameter
   parameter  bit          SecIdleAcceptSwMsg = 1'b0,
   parameter  int unsigned NumAppIntf         = 4,
-  parameter  app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl, AppCfgRomCtrl, AppCfgOTBN}
+  parameter  app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl,
+                                                 AppCfgRomCtrl, AppCfgOTBN}
 ) (
   input clk_i,
   input rst_ni,
@@ -530,9 +531,12 @@ module kmac_app
       end
 
       StAppWait: begin
-        if (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) || prim_mubi_pkg::mubi4_test_true_strict(squeezing_i)) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) ||
+            prim_mubi_pkg::mubi4_test_true_strict(squeezing_i))
+        begin
           digest_valid = 1'b 1;
-          if (app_i[app_id].hold == 1'b0) begin // hold always 1'b0 for non-otbn modes maintaining normal behavior
+          // hold always 1'b0 for non-otbn modes maintaining normal behavior
+          if (app_i[app_id].hold == 1'b0) begin
             // Send digest to KeyMgr and complete the op
             st_d = StIdle;
             cmd_o = CmdDone;
@@ -886,14 +890,17 @@ module kmac_app
 
   // Set the final word size for SHAKE 128/256 modes given rate
   // SHA3 mode has fixed 256/512 bit sizes for OTBN
-  assign digest_word_mask = (dynamic_keccak_strength_q == sha3_pkg::L128 && digest_word_idx_q == 3'h5)  ? { {192{1'b0}}, {64{1'b1}} } :
-                            ((dynamic_keccak_strength_q == sha3_pkg::L256 && digest_word_idx_q == 3'h4) ? { {192{1'b0}}, {64{1'b1}} } : {256{1'b1}});
+  assign digest_word_mask = (dynamic_keccak_strength_q == sha3_pkg::L128 &&
+                            digest_word_idx_q == 3'h5) ? { {192{1'b0}}, {64{1'b1}} } :
+                            ((dynamic_keccak_strength_q == sha3_pkg::L256 &&
+                            digest_word_idx_q == 3'h4) ? { {192{1'b0}}, {64{1'b1}} } :
+                            {256{1'b1}});
 
   assign req_packed_digest_word = app_active_o && (AppCfg[app_id].Mode == AppConfigDynamic);
 
   // Set the digest shares based on masked mode and word index into keccak state
   generate
-  if (Share == 2) begin
+  if (Share == 2) begin : gen_masked_digest_word_assign
     always_comb begin
       unique case (digest_word_idx_q)
         3'h0: begin
@@ -926,7 +933,7 @@ module kmac_app
         end
       endcase
     end
-  end else begin
+  end else begin : gen_unmasked_digest_word_assign
     always_comb begin
       digest_word_share_1 = 256'h0;
       unique case (digest_word_idx_q)
@@ -968,10 +975,16 @@ module kmac_app
   end
 
   // Logic for digest share packer FIFOs in order to pack digest into 256-bit words
-  assign pack_digest_word = ((prim_mubi_pkg::mubi4_test_true_strict(squeezing_i) && !squeezing_q) || shift_and_pack_digest) && ~clr_appid && (AppCfg[app_id].Mode == AppConfigDynamic);
-  assign otbn_app_intf_done = packed_digest_word_valid && ~clr_appid && ((st == StAppWait) || (st == StAppShiftDigest) || (st == StAppManualRun));
+  // we are either squeezing from the input or shifting from FSM
+  assign pack_digest_word = ((prim_mubi_pkg::mubi4_test_true_strict(squeezing_i) && !squeezing_q)
+                            || shift_and_pack_digest) && ~clr_appid
+                            && (AppCfg[app_id].Mode == AppConfigDynamic);
+  // Assert done for digest when packer has valid word and we are in valid state to push
+  assign otbn_app_intf_done = packed_digest_word_valid && ~clr_appid && ((st == StAppWait) ||
+                              (st == StAppShiftDigest) || (st == StAppManualRun));
   assign digest_packer_ready = digest_packer_ready_share_0 & digest_packer_ready_share_1;
-  assign packed_digest_word_valid = packed_digest_word_valid_share_0 & packed_digest_word_valid_share_1;
+  assign packed_digest_word_valid = packed_digest_word_valid_share_0 &&
+                                    packed_digest_word_valid_share_1;
   assign digest_packer_error = digest_packer_error_share_0 | digest_packer_error_share_1;
 
   prim_packer #(
@@ -1016,7 +1029,8 @@ module kmac_app
 
   // Keccak state --> KeyMgr
 
-  assign sha3_digest_done = (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) || prim_mubi_pkg::mubi4_test_true_strict(squeezing_i)) && digest_valid;
+  assign sha3_digest_done = (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) ||
+                            prim_mubi_pkg::mubi4_test_true_strict(squeezing_i)) && digest_valid;
   always_comb begin
     app_digest_done = 1'b 0;
     app_digest = '{default:'0};

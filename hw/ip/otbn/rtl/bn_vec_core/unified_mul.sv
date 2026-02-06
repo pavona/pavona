@@ -27,14 +27,13 @@ module unified_mul #(
 );
 
   localparam int NHALF = WLEN / HLEN;  // 16
-  localparam int NSING = WLEN / SLEN;  // 8
   localparam int NDOUB = WLEN / DLEN;  // 4
 
   // -------------------------------------------------------------------
   // Input and intermediate arrays
   // -------------------------------------------------------------------
-  logic [HLEN-1:0] A16 [0:NHALF-1];
-  logic [HLEN-1:0] B16 [0:NHALF-1];
+  logic [HLEN-1:0] A16 [NHALF];
+  logic [HLEN-1:0] B16 [NHALF];
 
   logic [4*SLEN-1:0] A32;
   logic [4*SLEN-1:0] B32;
@@ -42,12 +41,12 @@ module unified_mul #(
   logic [WLEN-1:0] A_composed;
   logic [WLEN-1:0] B_composed;
 
-  logic [2*HLEN-1:0] products [0:NHALF-1];
-  logic [2*SLEN-1:0] partial32 [0:NDOUB-1];
+  logic [2*HLEN-1:0] products [NHALF];
+  logic [2*SLEN-1:0] partial32 [NDOUB];
 
-  localparam MODE_64 = 2'b00;
-  localparam MODE_32 = 2'b11;
-  localparam MODE_16 = 2'b10;
+  localparam logic [1:0] MODE_64 = 2'b00;
+  localparam logic [1:0] MODE_32 = 2'b11;
+  localparam logic [1:0] MODE_16 = 2'b10;
 
   logic [63:0] scalar64_A;
   logic [63:0] scalar64_B;
@@ -81,7 +80,8 @@ module unified_mul #(
               B_composed[i*HLEN +: HLEN] = (lane_mode == 1'b0) ? B[HLEN*i +: HLEN] : scalar16;
             end else begin
               A_composed[(i+1)*HLEN +: HLEN] = A[(i+1)*HLEN +: HLEN];
-              B_composed[(i+1)*HLEN +: HLEN] = (lane_mode == 1'b0) ? B[(i+1)*HLEN +: HLEN] : scalar16;
+              B_composed[(i+1)*HLEN +: HLEN] = (lane_mode == 1'b0) ?
+                                               B[(i+1)*HLEN +: HLEN] : scalar16;
             end
           end
         end else begin
@@ -251,6 +251,9 @@ module unified_mul #(
           2'd1: result[ 64 +: 128] = result_64;
           2'd2: result[128 +: 128] = result_64;
           2'd3: result[192 +: 128] = result_64;
+          default: begin
+            // Not possible to reach state
+          end
         endcase
       end
       MODE_32: begin

@@ -102,7 +102,8 @@ module otbn_mac_bignum
   generate
     if (OtbnPQCEn) begin : gen_mul_pqc
       unified_mul mul (
-        .word_mode         ({operation_i.mulv, operation_i.data_type}), // 00 = 64x64, 11 = 4x32x32, 10 = 16x16x16
+        // 00 = 64x64, 11 = 4x32x32, 10 = 16x16x16
+        .word_mode         ({operation_i.mulv, operation_i.data_type}),
         .word_sel_A        (operation_i.operand_a_qw_sel),
         .word_sel_B        (operation_i.operand_b_qw_sel),
         .exec_mode         (operation_i.exec_mode),
@@ -366,7 +367,8 @@ module otbn_mac_bignum
 
       // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occurring or secure
       // wipe of the internal state is occurring.
-      assign acch_en = (mac_en_i & mac_commit_i & operation_i.mulv) | ispr_acch_wr_en_i | sec_wipe_acch_urnd_i;
+      assign acch_en = (mac_en_i & mac_commit_i & operation_i.mulv) |
+                       ispr_acch_wr_en_i | sec_wipe_acch_urnd_i;
 
       always_ff @(posedge clk_i) begin
         if (acch_en) begin
@@ -426,6 +428,9 @@ module otbn_mac_bignum
                                               adder_result[128+64+:32], operand_a_blanked[ 64+:32],
                                               adder_result[  0+64+:32], operand_a_blanked[  0+:32]};
                       end
+                      default: begin
+                        // Not possible to reach this state
+                      end
                     endcase
                   end
                   1'b0 : begin
@@ -458,6 +463,9 @@ module otbn_mac_bignum
                                               adder_result[288+64+:32], operand_a_blanked[128+:32],
                                               adder_result[160+64+:32], operand_a_blanked[ 64+:32],
                                               adder_result[ 32+64+:32], operand_a_blanked[  0+:32]};
+                      end
+                      default: begin
+                        // Not possible to reach state
                       end
                     endcase
                   end
