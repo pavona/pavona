@@ -283,6 +283,9 @@ interface otbn_trace_if
                                                 u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
         assign ispr_read_data[IsprMod][i_word*32+:32] = u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
         assign ispr_write_data[IsprAcc][i_word*32+:32] = u_otbn_mac_bignum.acc_intg_d[i_word*39+:32];
+        assign ispr_write_data[IsprKmacMsg][i_word*32+:32] = 32'b0;
+        assign ispr_read_data[IsprKmacMsg][i_word*32+:32] = 32'b0;
+        assign ispr_write_data[IsprAccH][i_word*32+:32] = 32'b0;
       end
     end
   endgenerate
@@ -297,30 +300,54 @@ interface otbn_trace_if
       // KMAC MSG
       assign ispr_read[IsprKmacMsg] =
         (any_ispr_read & (ispr_addr == IsprKmacMsg));
-
       assign ispr_write[IsprKmacMsg] = u_otbn_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en & ~ispr_init;
-
       // KMAC CFG
       assign ispr_read[IsprKmacCfg] =
         (any_ispr_read & (ispr_addr == IsprKmacCfg));
-
       assign ispr_read_data[IsprKmacCfg]  = {224'b0, u_otbn_alu_bignum.gen_pqc_wsr.kmac_cfg_intg_q[31:0]};
       assign ispr_write[IsprKmacCfg]      = u_otbn_alu_bignum.gen_pqc_wsr.kmac_cfg_wr_en & ~ispr_init;
       assign ispr_write_data[IsprKmacCfg] = {224'b0, u_otbn_alu_bignum.gen_pqc_wsr.kmac_cfg_intg_d[31:0]};
-
       // KMAC PARTIAL WRITE
       assign ispr_read[IsprKmacPartialW] =
         (any_ispr_read & (ispr_addr == IsprKmacPartialW));
-
       assign ispr_read_data[IsprKmacPartialW]   = {224'b0, u_otbn_alu_bignum.gen_pqc_wsr.kmac_pw_intg_q[31:0]};
       assign ispr_write[IsprKmacPartialW]       = u_otbn_alu_bignum.gen_pqc_wsr.kmac_pw_wr_en & ~ispr_init;
       assign ispr_write_data[IsprKmacPartialW]  = {224'b0, u_otbn_alu_bignum.gen_pqc_wsr.kmac_pw_intg_d[31:0]};
-
+      // ACCH
       assign ispr_write[IsprAccH]     = u_otbn_mac_bignum.gen_acch_wr_en.acch_en & ~ispr_init;
       assign ispr_read[IsprAccH]      = (any_ispr_read & (ispr_addr == IsprAccH)) | mac_bignum_en;
       assign ispr_read_data[IsprAccH] =
           (any_ispr_read & (ispr_addr == IsprAccH)) ? u_otbn_mac_bignum.gen_acch_reg.acch_no_intg_q :
                                                       u_otbn_mac_bignum.gen_acch_blanker.acch_blanked;
+    end else begin : gen_ispr_read_write_blank
+      // Need to drive unused signals for verilator linting
+      // KMAC MSG
+      assign ispr_read[IsprKmacMsg]  = 1'b0;
+      assign ispr_write[IsprKmacMsg] = 1'b0;
+      // KMAC CFG
+      assign ispr_read[IsprKmacCfg]       = 1'b0;
+      assign ispr_read_data[IsprKmacCfg]  = 256'b0;
+      assign ispr_write[IsprKmacCfg]      = 1'b0;
+      assign ispr_write_data[IsprKmacCfg] = 256'b0;
+      // KMAC PARTIAL WRITE
+      assign ispr_read[IsprKmacPartialW]        = 1'b0;
+      assign ispr_read_data[IsprKmacPartialW]   = 256'b0;
+      assign ispr_write[IsprKmacPartialW]       = 1'b0;
+      assign ispr_write_data[IsprKmacPartialW]  = 256'b0;
+      // KMAC STATUS
+      assign ispr_read[IsprKmacStatus]       = 1'b0;
+      assign ispr_read_data[IsprKmacStatus]  = 256'b0;
+      assign ispr_write[IsprKmacStatus]      = 1'b0;
+      assign ispr_write_data[IsprKmacStatus] = 256'b0;
+      // KMAC DIGEST
+      assign ispr_read[IsprKmacDigest]       = 1'b0;
+      assign ispr_read_data[IsprKmacDigest]  = 256'b0;
+      assign ispr_write[IsprKmacDigest]      = 1'b0;
+      assign ispr_write_data[IsprKmacDigest] = 256'b0;
+      // ACCH
+      assign ispr_write[IsprAccH]     = 1'b0;
+      assign ispr_read[IsprAccH]      = 1'b0;
+      assign ispr_read_data[IsprAccH] = 256'b0;
     end
   endgenerate
 

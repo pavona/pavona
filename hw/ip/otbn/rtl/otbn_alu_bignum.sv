@@ -152,6 +152,8 @@ module otbn_alu_bignum
       assign kmac_msg_pending_write_o = '0;
       assign kmac_digest_valid_o      = '0;
       assign kmac_app_req_o           = '0;
+    end else begin : gen_unused_pqc_bits
+      logic unused_pqc_bits;
     end
   endgenerate
 
@@ -461,8 +463,8 @@ module otbn_alu_bignum
   //////////
   // KMAC //
   //////////
-  generate
-    if (OtbnPQCEn) begin : gen_pqc_wsr
+generate
+  if (OtbnPQCEn) begin : gen_pqc_wsr
   // CFG
   logic [BaseIntgWidth-1:0] kmac_cfg_intg_q;
   logic [31:0]              kmac_cfg_no_intg_d;
@@ -772,7 +774,8 @@ module otbn_alu_bignum
   end
 
   assign kmac_digest_valid_o = kmac_digest_valid_q;
-  assign kmac_digest_rd_next = kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
+  assign kmac_digest_rd_next = kmac_digest_valid_q &&
+                               ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -828,6 +831,8 @@ module otbn_alu_bignum
   logic [7:0] packer_rdata_mask;
   logic [3:0] packer_rdata_mask_cnt;
 
+  logic kmac_app_active;
+  logic kmac_app_last;
   logic kmac_msg_active_q;
   logic kmac_cfg_active_q;
   logic kmac_write_cfg_to_app;
@@ -836,7 +841,6 @@ module otbn_alu_bignum
   logic kmac_idle_q;
   logic kmac_cfg_done;
   logic kmac_app_cfg_sent;
-  logic kmac_msg_fifo_pending;
 
   // Oversized and undersized msg handling
   logic kmac_msg_req_err;
@@ -998,7 +1002,7 @@ module otbn_alu_bignum
       packer_rdata_mask[i] = |kmac_msg_fifo_rdata_mask[i*8 +: 8];
     end
     foreach (packer_rdata_mask[i]) begin
-      packer_rdata_mask_cnt += packer_rdata_mask[i];
+      packer_rdata_mask_cnt += {3'b0, packer_rdata_mask[i]};
     end
   end
 
@@ -1006,9 +1010,8 @@ module otbn_alu_bignum
   assign kmac_msg_wr_stall = (kmac_msg_write & (~kmac_msg_fifo_wready));
 
   // When reading the return digest the message has already been sent and any remainder is cleared
-  assign kmac_msg_fifo_clr = kmac_sent_last
-                             && (ispr_addr_i == IsprKmacDigest)
-                             && !kmac_msg_pending_write_o;
+  assign kmac_msg_fifo_clr = kmac_sent_last && (ispr_addr_i == IsprKmacDigest) &&
+                             !kmac_msg_pending_write_o;
 
   // Prim packer is used to send full words until the final word in msg request
   prim_packer #(
@@ -1058,35 +1061,41 @@ module otbn_alu_bignum
   );
 
   // Ensure that the read mask is at least the size of the cfg before asserting last
-  assign packer_ctr_last       = (packer_rdata_mask_cnt >= kmac_cfg_msg_len_bytes);
+  assign packer_ctr_last       = (packer_rdata_mask_cnt >= {1'b0, kmac_cfg_msg_len_bytes});
 
   // If it is time for the final word and there is a partial word we need to flush it out
-  assign kmac_msg_fifo_flush   = (kmac_msg_last && (kmac_cfg_msg_len_bytes != 3'h0)
-                                 && ~kmac_msg_fifo_rvalid);
+  assign kmac_msg_fifo_flush   = (kmac_msg_last && (kmac_cfg_msg_len_bytes != 3'h0) &&
+                                 ~kmac_msg_fifo_rvalid);
 
-  assign kmac_write_cfg_to_app =  kmac_cfg_active_q
-                                  && (~kmac_msg_active_q | ~kmac_app_cfg_sent)
-                                  && ~kmac_idle_q;
+  assign kmac_write_cfg_to_app =  kmac_cfg_active_q && (~kmac_msg_active_q | ~kmac_app_cfg_sent) &&
+                                  ~kmac_idle_q;
 
   // fifo write iface
-  assign kmac_msg_fifo_wdata      = kmac_msg_no_intg_q;
-  assign kmac_msg_fifo_wvalid     = kmac_cfg_active_q && kmac_msg_valid_q && kmac_msg_fifo_wready
-                                    && ~kmac_msg_fifo_flush && ~kmac_sent_last && (~kmac_msg_last);
+  assign kmac_msg_fifo_wdata  = kmac_msg_no_intg_q;
+  assign kmac_msg_fifo_wvalid = kmac_cfg_active_q && kmac_msg_valid_q && kmac_msg_fifo_wready &&
+                                ~kmac_msg_fifo_flush && ~kmac_sent_last && (~kmac_msg_last);
 
   assign kmac_msg_write_ready_o   = kmac_msg_fifo_wready;
   assign kmac_msg_pending_write_o = kmac_msg_valid_q && ~kmac_sent_last;
 
   // fifo read iface
-  assign kmac_msg_fifo_rready = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app)
-                                 | (kmac_sent_last | kmac_msg_err_clr_q);
-  assign kmac_msg_last        = (kmac_cfg_msg_len_bytes == 3'h0) ?
-                                (kmac_msg_ctr >= kmac_cfg_msg_len_words - 1) && kmac_msg_fifo_rvalid :
-                                ((kmac_msg_ctr >= kmac_cfg_msg_len_words) && packer_ctr_last);
+  assign kmac_msg_fifo_rready = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app) |
+                                (kmac_sent_last | kmac_msg_err_clr_q);
+
+  assign kmac_msg_last = (kmac_cfg_msg_len_bytes == 3'h0) ?
+                        (kmac_msg_ctr >= kmac_cfg_msg_len_words - 1) && kmac_msg_fifo_rvalid :
+                        ((kmac_msg_ctr >= kmac_cfg_msg_len_words) && packer_ctr_last);
+
+  // Compute the assignment for kmac_app_req_o.hold
+  assign kmac_app_active = kmac_cfg_active_q & ~kmac_new_cfg_q & ~kmac_cfg_done;
+
+  // Compute the assignment for kmac_app_req_o.last
+  assign kmac_app_last = kmac_inject_last_err | (kmac_msg_fifo_rvalid & kmac_msg_last);
 
   // When there is an undersized message we artificially inject a last valid to finish the message
   assign kmac_app_req_o.valid = (kmac_write_cfg_to_app || kmac_inject_last_err) ?
-                                1'b1 : kmac_msg_fifo_rvalid && ~kmac_new_cfg_q
-                                       && ~kmac_sent_last && ~kmac_msg_err_clr_q;
+                                1'b1 : kmac_msg_fifo_rvalid && ~kmac_new_cfg_q &&
+                                      ~kmac_sent_last && ~kmac_msg_err_clr_q;
 
   // The first word contains the cfg otherwise send the body
   assign kmac_app_req_o.data  = kmac_write_cfg_to_app ?
@@ -1095,11 +1104,11 @@ module otbn_alu_bignum
 
   // The strb will always be 8'hFF except for the CFG and last word
   assign kmac_app_req_o.strb  = kmac_write_cfg_to_app ?
-                                8'h01 : kmac_app_req_o.last ?
+                                8'h01 : kmac_app_last ?
                                 kmac_last_msg_strb : {(kmac_pkg::MsgStrbW){1'b1}};
 
   // When there is an undersized message we artifically inject a last signal to finish the message
-  assign kmac_app_req_o.last  = kmac_inject_last_err | (kmac_msg_fifo_rvalid & kmac_msg_last);
+  assign kmac_app_req_o.last  = kmac_app_last;
 
   // If we request an additional digest send a next to KMAC
   assign kmac_app_req_o.next  = kmac_digest_valid_o
@@ -1107,25 +1116,25 @@ module otbn_alu_bignum
                                 & kmac_next_sha;
 
   // Hold will remain active for duration of transaction unless an internal error occurs
-  assign kmac_app_req_o.hold  = kmac_cfg_active_q & ~kmac_new_cfg_q & ~kmac_cfg_done;
+  assign kmac_app_req_o.hold  = kmac_app_active;
 
   // check for incomplete msg with pending digest
   // Latch for last in current transaction
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      kmac_pending_last = 1'b0;
-      kmac_sent_last = 1'b0;
+      kmac_pending_last <= 1'b0;
+      kmac_sent_last <= 1'b0;
     end else begin
       // Either we observed a valid last or we artificially created a last
       if ((kmac_msg_fifo_rvalid & kmac_msg_last) | kmac_inject_last_err) begin
-        kmac_pending_last = 1'b1; // Prepared to send the final word
+        kmac_pending_last <= 1'b1; // Prepared to send the final word
         if (kmac_app_rsp_i.ready) begin
-          kmac_sent_last = 1'b1;
+          kmac_sent_last <= 1'b1;
         end
       end else if (kmac_cfg_wr_en) begin
         // Clear any last flags after a new cfg is written
-        kmac_pending_last = 1'b0;
-        kmac_sent_last = 1'b0;
+        kmac_pending_last <= 1'b0;
+        kmac_sent_last <= 1'b0;
       end
     end
   end
@@ -1136,9 +1145,9 @@ module otbn_alu_bignum
   // The FIFO should not be in a flush cycle
   always_comb begin
     kmac_msg_req_err = 1'b0;
-    if (ispr_addr_i == IsprKmacDigest && kmac_app_req_o.hold) begin
+    if (ispr_addr_i == IsprKmacDigest && kmac_app_active) begin
       kmac_msg_req_err = (!kmac_msg_pending_write_o && !kmac_msg_fifo_rvalid
-                         && !kmac_msg_fifo_flush && !kmac_msg_fifo_wvalid);
+                        && !kmac_msg_fifo_flush && !kmac_msg_fifo_wvalid);
     end
   end
 
@@ -1197,20 +1206,21 @@ module otbn_alu_bignum
 
   // The cfg reads 0 when it is a full word which means the mask is 8 so we must skip evaluation
   // at these sizes, otherwise check if mask is greater than the cfg
-  assign not_full_word          = ~(packer_rdata_mask_cnt == 4'h8 & kmac_cfg_msg_len_bytes == 4'h0);
-  assign packer_oversized_last  = not_full_word & (packer_rdata_mask_cnt > kmac_cfg_msg_len_bytes);
+  assign not_full_word         = ~(packer_rdata_mask_cnt == 4'h8 & kmac_cfg_msg_len_bytes == 3'h0);
+  assign packer_oversized_last =
+      not_full_word & (packer_rdata_mask_cnt > {1'b0, kmac_cfg_msg_len_bytes});
 
   assign last_word_oversized    = kmac_msg_last & packer_oversized_last;
   // Read or write to/from FIFO that occurs after last
   assign rw_after_last          = kmac_sent_last & (kmac_msg_fifo_rvalid | kmac_msg_valid_q);
   // There is still a pending write to the FIFO while last is being asserted after flush
-  assign write_during_last      = kmac_app_req_o.last & kmac_msg_valid_q;
+  assign write_during_last      = kmac_app_last & kmac_msg_valid_q;
   // Injecting an artificial last may impact the write_during_last flag so we check that the
   // message isn't undersized before raising this flag
   assign kmac_oversized_req_err = (rw_after_last | write_during_last)
                                   & ~kmac_undersized_req_err_latch | last_word_oversized;
-    end
-  endgenerate
+  end
+endgenerate
 
   /////////
   // ACC //
@@ -1291,25 +1301,30 @@ module otbn_alu_bignum
   assign ispr_rdata_no_intg_mux_in[IsprAcc]         = 0;
   generate
     if (OtbnPQCEn) begin : gen_ispr_no_intg_mux_pqc
-      assign ispr_rdata_no_intg_mux_in[IsprKmacMsg]     = 0;
-      assign ispr_rdata_no_intg_mux_in[IsprKmacCfg]     = {224'b0, gen_pqc_wsr.kmac_cfg_intg_q[31:0]};
-      assign ispr_rdata_no_intg_mux_in[IsprKmacStatus]  = {224'b0, gen_pqc_wsr.kmac_status_intg_q[31:0]};
-      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest]  = 0;
-      assign ispr_rdata_no_intg_mux_in[IsprAccH]        = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacMsg] = 0;
+
+      assign ispr_rdata_no_intg_mux_in[IsprKmacCfg] =
+          {224'b0, gen_pqc_wsr.kmac_cfg_intg_q[31:0]};
+
+      assign ispr_rdata_no_intg_mux_in[IsprKmacStatus] =
+          {224'b0, gen_pqc_wsr.kmac_status_intg_q[31:0]};
+
+      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest] = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprAccH]       = 0;
     end
   endgenerate
 
   assign ispr_rdata_no_intg_mux_in[IsprRnd]    = rnd_data_i;
   assign ispr_rdata_no_intg_mux_in[IsprUrnd]   = urnd_data_i;
   assign ispr_rdata_no_intg_mux_in[IsprFlags]  = {{(WLEN - (NFlagGroups * FlagsWidth)){1'b0}},
-                                                 flags_flattened};
+                                                flags_flattened};
   // SEC_CM: KEY.SIDELOAD
   assign ispr_rdata_no_intg_mux_in[IsprKeyS0L] = sideload_key_shares_i[0][255:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS0H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
-                                                  sideload_key_shares_i[0][SideloadKeyWidth-1:256]};
+                                                 sideload_key_shares_i[0][SideloadKeyWidth-1:256]};
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1L] = sideload_key_shares_i[1][255:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
-                                                  sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
+                                                 sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
 
   logic [WLEN-1:0]    ispr_rdata_no_intg;
   logic [ExtWLEN-1:0] ispr_rdata_intg_calc;
@@ -1340,8 +1355,10 @@ module otbn_alu_bignum
 
   generate
     if (OtbnPQCEn) begin : gen_ispr_intg_mux_pqc
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacMsgIntg]    = gen_pqc_wsr.kmac_msg_intg_q;
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigestIntg] = gen_pqc_wsr.kmac_digest_intg_q;
+      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacMsgIntg]    =
+          gen_pqc_wsr.kmac_msg_intg_q;
+      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigestIntg] =
+          gen_pqc_wsr.kmac_digest_intg_q;
       assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprAccHIntg]       = ispr_acch_intg_i;
     end
   endgenerate
@@ -1351,9 +1368,12 @@ module otbn_alu_bignum
 
   generate
     if (OtbnPQCEn) begin : gen_ispr_intg_mux_sel_pqc
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacMsgIntg]     = ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg];
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacDigestIntg]  = ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprAccHIntg]        = ispr_predec_bignum_i.ispr_rd_en[IsprAccH];
+      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacMsgIntg]    =
+          ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg];
+      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacDigestIntg] =
+          ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
+      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprAccHIntg]       =
+          ispr_predec_bignum_i.ispr_rd_en[IsprAccH];
     end
   endgenerate
 
@@ -1451,44 +1471,47 @@ module otbn_alu_bignum
     .out_o(shifter_operand_b_blanked)
   );
 
-  generate
-    if (OtbnPQCEn) begin : gen_shifter_pqc
-      logic [WLEN-1:0]   shifter_bignum_in_upper, shifter_bignum_in_lower, shifter_bignum_in_lower_reverse;
-      logic [WLEN*2-1:0] shifter_bignum_in;
-      logic [WLEN*2-1:0] shifter_bignum_out;
-      logic [WLEN-1:0]   shifter_bignum_out_lower_reverse;
-      logic [WLEN-1:0]   shifter_bignum_res;
-      logic [15:0]       shifter_vec_in [16:0];
-      logic [15:0]       shifter_vec_in_orig [15:0];
-      logic [15:0]       shifter_vec_in_reverse [15:0];
-      logic [15:0]       shifter_vec_out [15:0];
-      logic [31:0]       shifter_vec_tmp [15:0];
-      logic [31:0]       shifter_vec_tmp_shifted [15:0];
-      logic [15:0]       shifter_vec_out_reverse [15:0];
-      logic [WLEN-1:0]   shifter_vec_res;
-      logic              shifter_selvector_i;
+generate
+  if (OtbnPQCEn) begin : gen_shifter_pqc
+    logic [WLEN-1:0]   shifter_bignum_in_upper, shifter_bignum_in_lower;
+    logic [WLEN-1:0]   shifter_bignum_in_lower_reverse;
+    logic [WLEN*2-1:0] shifter_bignum_in;
+    logic [WLEN*2-1:0] shifter_bignum_out;
+    logic [WLEN-1:0]   shifter_bignum_out_lower_reverse;
+    logic [WLEN-1:0]   shifter_bignum_res;
+    logic [15:0]       shifter_vec_in [17];
+    logic [15:0]       shifter_vec_in_orig [16];
+    logic [15:0]       shifter_vec_in_reverse [16];
+    logic [15:0]       shifter_vec_out [16];
+    logic [31:0]       shifter_vec_tmp [16];
+    logic [31:0]       shifter_vec_tmp_shifted [16];
+    logic [15:0]       shifter_vec_out_reverse [16];
+    logic [WLEN-1:0]   shifter_vec_res;
+    logic              shifter_selvector_i;
 
-      // BIGNUM SHIFTER
-      // Operand A is only used for BN.RSHI, otherwise the upper input is 0. For all instructions other
-      // than BN.RHSI alu_predec_bignum_i.shifter_a_en will be 0, resulting in 0 for the upper input.
-      assign shifter_bignum_in_upper = shifter_operand_a_blanked;
-      assign shifter_bignum_in_lower = shifter_operand_b_blanked;
+    // BIGNUM SHIFTER
+    // Operand A is only used for BN.RSHI, otherwise the upper input is 0. For all insns other
+    // than BN.RHSI alu_predec_bignum_i.shifter_a_en will be 0, resulting in 0 for the upper input.
+    assign shifter_bignum_in_upper = shifter_operand_a_blanked;
+    assign shifter_bignum_in_lower = shifter_operand_b_blanked;
 
-      for (genvar i = 0; i < WLEN; i++) begin : g_shifter_bignum_in_lower_reverse
-        assign shifter_bignum_in_lower_reverse[i] = shifter_bignum_in_lower[WLEN-i-1];
-      end
+    for (genvar i = 0; i < WLEN; i++) begin : g_shifter_bignum_in_lower_reverse
+      assign shifter_bignum_in_lower_reverse[i] = shifter_bignum_in_lower[WLEN-i-1];
+    end
 
-      assign shifter_bignum_in = {shifter_bignum_in_upper,
-          alu_predec_bignum_i.shift_right ? shifter_bignum_in_lower : shifter_bignum_in_lower_reverse};
+    assign shifter_bignum_in = {shifter_bignum_in_upper,
+        alu_predec_bignum_i.shift_right ? shifter_bignum_in_lower
+                                        : shifter_bignum_in_lower_reverse};
 
-      assign shifter_bignum_out = shifter_bignum_in >> alu_predec_bignum_i.shift_amt;
+    assign shifter_bignum_out = shifter_bignum_in >> alu_predec_bignum_i.shift_amt;
 
       for (genvar i = 0; i < WLEN; i++) begin : g_shifter_bignum_out_lower_reverse
         assign shifter_bignum_out_lower_reverse[i] = shifter_bignum_out[WLEN-i-1];
       end
 
       assign shifter_bignum_res =
-          alu_predec_bignum_i.shift_right ? shifter_bignum_out[WLEN-1:0] : shifter_bignum_out_lower_reverse;
+          alu_predec_bignum_i.shift_right ? shifter_bignum_out[WLEN-1:0]
+                                          : shifter_bignum_out_lower_reverse;
 
       // VECTOR SHIFTER
       assign shifter_selvector_i = operation_i.vector_type[0];
@@ -1509,7 +1532,8 @@ module otbn_alu_bignum
         assign shifter_vec_tmp_shifted[i] = shifter_vec_tmp[i] >> alu_predec_bignum_i.shift_amt;
         assign shifter_vec_out[i] =
             (shifter_selvector_i | (i % 2 == 1)) ?
-                (shifter_vec_in[i] >> alu_predec_bignum_i.shift_amt) : shifter_vec_tmp_shifted[i][15:0];
+            (shifter_vec_in[i] >> alu_predec_bignum_i.shift_amt) :
+            shifter_vec_tmp_shifted[i][15:0];
 
         for (genvar j=0; j<WLEN/16; ++j) begin : g_shifter_vec_reverse_output
           assign shifter_vec_out_reverse[i][j] =
@@ -1521,7 +1545,8 @@ module otbn_alu_bignum
       end
 
       // SHIFTER RESULT
-      assign shifter_res = (operation_i.op == otbn_pkg::AluOpBignumShv) ? shifter_vec_res : shifter_bignum_res;
+      assign shifter_res = (operation_i.op == otbn_pkg::AluOpBignumShv) ? shifter_vec_res
+                                                                        : shifter_bignum_res;
 
       // Only the lower WLEN bits of the shift result are returned.
       assign unused_shifter_out_upper = shifter_bignum_out[WLEN*2-1:WLEN];
@@ -1565,15 +1590,15 @@ module otbn_alu_bignum
   ///////////////
   generate
     if (OtbnPQCEn) begin : gen_trn_pqc
-      logic [WLEN/16-1:0] trn_op0_16h [15:0];
-      logic [WLEN/8-1:0]  trn_op0_8s  [7:0];
-      logic [WLEN/4-1:0]  trn_op0_4d  [3:0];
-      logic [WLEN/2-1:0]  trn_op0_2q  [1:0];
+      logic [WLEN/16-1:0] trn_op0_16h [16];
+      logic [WLEN/8-1:0]  trn_op0_8s  [8];
+      logic [WLEN/4-1:0]  trn_op0_4d  [4];
+      logic [WLEN/2-1:0]  trn_op0_2q  [2];
 
-      logic [WLEN/16-1:0] trn_op1_16h [15:0];
-      logic [WLEN/8-1:0]  trn_op1_8s  [7:0];
-      logic [WLEN/4-1:0]  trn_op1_4d  [3:0];
-      logic [WLEN/2-1:0]  trn_op1_2q  [1:0];
+      logic [WLEN/16-1:0] trn_op1_16h [16];
+      logic [WLEN/8-1:0]  trn_op1_8s  [8];
+      logic [WLEN/4-1:0]  trn_op1_4d  [4];
+      logic [WLEN/2-1:0]  trn_op1_2q  [2];
 
       logic [WLEN-1:0]    trn_res;
 
@@ -1686,8 +1711,9 @@ module otbn_alu_bignum
       logic [WLEN-1:0]  adder_y_op_a, adder_y_op_b;
 
       vec_type_e mode;
-      assign mode = operation_i.vector_sel ? (operation_i.vector_type[0] == 1'b0 ? VecType_s32 : VecType_h16) :
-                                            VecType_v256;
+      assign mode = operation_i.vector_sel ?
+                    (operation_i.vector_type[0] == 1'b0 ? VecType_s32 : VecType_h16) :
+                    VecType_v256;
 
       // SEC_CM: DATA_REG_SW.SCA
       prim_blanker #(.Width(WLEN)) u_adder_x_op_a_blanked (
@@ -2299,19 +2325,20 @@ module otbn_alu_bignum
 
           // For pseudo-mod operations the result depends upon initial a + b / a - b result that is
           // computed in X. Operation to add/subtract mod (X + mod / X - mod) is computed in Y.
-          // Subtraction is computed using in the X & Y adders as a - b == a + ~b + 1. Note that for
-          // a - b the top bit of the result will be set if a - b >= 0 and otherwise clear.
+          // Subtraction is computed using in the X & Y adders as a - b == a + ~b + 1. Note that
+          // for a - b the top bit of the result will be set if a - b >= 0 and otherwise clear.
 
           // BN.ADDM - X = a + b, Y = X - mod, subtract mod if a + b >= mod
           // * If X generates carry a + b > mod (as mod is 256-bit) - Select Y result
-          // * If Y generates carry X - mod == (a + b) - mod >= 0 hence a + b >= mod, note this is only
-          //   valid if X does not generate carry - Select Y result
+          // * If Y generates carry X - mod == (a + b) - mod >= 0 hence a + b >= mod, note this is
+          // only valid if X does not generate carry - Select Y result
           // * If neither happen a + b < mod - Select X result
           AluOpBignumAddm: begin
-            // `adder_y_res` is always used: either as condition in the following `if` statement or, if
-            // the `if` statement short-circuits, in the body of the `if` statement.
+            // `adder_y_res` is always used: either as condition in the following `if` statement
+            // or, if the `if` statement short-circuits, in the body of the `if` statement.
             adder_y_res_used = 1'b1;
-            if (gen_adder_pqc.adder_x_carry_out[15] || gen_adder_y_res_pqc.adder_y_carry_out[15]) begin
+            if (gen_adder_pqc.adder_x_carry_out[15] || gen_adder_y_res_pqc.adder_y_carry_out[15])
+            begin
               operation_result_o = adder_y_res;
             end else begin
               operation_result_o = gen_adder_pqc.adder_x_res;
@@ -2323,18 +2350,20 @@ module otbn_alu_bignum
           end
 
           AluOpBignumAddvm: begin
-            // `adder_y_res` is always used: either as condition in the following `if` statement or, if
-            // the `if` statement short-circuits, in the body of the `if` statement.
+            // `adder_y_res` is always used: either as condition in the following `if` statement
+            // or, if the `if` statement short-circuits, in the body of the `if` statement.
             adder_y_res_used = 1'b1;
 
             for (int i = 0; i < 16; i += 2) begin
               operation_result_o[i*16 +: 16] = ((operation_i.vector_type[0]) ?
-                  (gen_adder_pqc.adder_x_carry_out[i] || gen_adder_y_res_pqc.adder_y_carry_out[i]) :
-                  (gen_adder_pqc.adder_x_carry_out[i + 1] || gen_adder_y_res_pqc.adder_y_carry_out[i + 1])) ?
-                      adder_y_res[i*16 +: 16] : gen_adder_pqc.adder_x_res[i*16 +: 16];
+                (gen_adder_pqc.adder_x_carry_out[i] || gen_adder_y_res_pqc.adder_y_carry_out[i]) :
+                (gen_adder_pqc.adder_x_carry_out[i + 1]
+                || gen_adder_y_res_pqc.adder_y_carry_out[i + 1])) ?
+                adder_y_res[i*16 +: 16] : gen_adder_pqc.adder_x_res[i*16 +: 16];
               operation_result_o[(i + 1)* 16 +: 16] =
-                (gen_adder_pqc.adder_x_carry_out[i + 1] || gen_adder_y_res_pqc.adder_y_carry_out[i + 1]) ?
-                    adder_y_res[(i + 1)*16 +: 16] : gen_adder_pqc.adder_x_res[(i + 1)*16 +: 16];
+                (gen_adder_pqc.adder_x_carry_out[i + 1]
+                || gen_adder_y_res_pqc.adder_y_carry_out[i + 1]) ?
+                adder_y_res[(i + 1)*16 +: 16] : gen_adder_pqc.adder_x_res[(i + 1)*16 +: 16];
             end
           end
 
@@ -2401,17 +2430,17 @@ module otbn_alu_bignum
 
           // For pseudo-mod operations the result depends upon initial a + b / a - b result that is
           // computed in X. Operation to add/subtract mod (X + mod / X - mod) is computed in Y.
-          // Subtraction is computed using in the X & Y adders as a - b == a + ~b + 1. Note that for
-          // a - b the top bit of the result will be set if a - b >= 0 and otherwise clear.
+          // Subtraction is computed using in the X & Y adders as a - b == a + ~b + 1. Note that
+          // for a - b the top bit of the result will be set if a - b >= 0 and otherwise clear.
 
           // BN.ADDM - X = a + b, Y = X - mod, subtract mod if a + b >= mod
           // * If X generates carry a + b > mod (as mod is 256-bit) - Select Y result
-          // * If Y generates carry X - mod == (a + b) - mod >= 0 hence a + b >= mod, note this is only
-          //   valid if X does not generate carry - Select Y result
+          // * If Y generates carry X - mod == (a + b) - mod >= 0 hence a + b >= mod, note this is
+          // only valid if X does not generate carry - Select Y result
           // * If neither happen a + b < mod - Select X result
           AluOpBignumAddm: begin
-            // `adder_y_res` is always used: either as condition in the following `if` statement or, if
-            // the `if` statement short-circuits, in the body of the `if` statement.
+            // `adder_y_res` is always used: either as condition in the following `if` statement
+            // or, if the `if` statement short-circuits, in the body of the `if` statement.
             adder_y_res_used = 1'b1;
             if (gen_adder.adder_x_res[WLEN+1] || adder_y_res[WLEN+1]) begin
               operation_result_o = adder_y_res[WLEN:1];
@@ -2455,6 +2484,17 @@ module otbn_alu_bignum
   logic unused_operation_commit;
   assign unused_operation_commit = operation_commit_i;
 
+  // Tie off unused bits from pqc signals
+  generate
+    if (OtbnPQCEn) begin : gen_tie_pqc_bits
+      assign gen_unused_pqc_bits.unused_pqc_bits =
+          ^{gen_pqc_wsr.ispr_kmac_cfg_bignum_wdata_intg_blanked[311:39],
+            gen_pqc_wsr.ispr_kmac_pw_bignum_wdata_intg_blanked[311:39],
+            gen_pqc_wsr.kmac_pw_intg_err,
+            gen_pqc_wsr.unmasked_digest_share[383:256]};
+    end
+  endgenerate
+
   // Determine if `mod_intg_q` is used.  The control signals are only valid if `operation_i.op` is
   // not none. If `shift_mod_sel` is low, `mod_intg_q` flows into `adder_y_op_b` and from there
   // into `adder_y_res`.  In this case, `mod_intg_q` is used iff  `adder_y_res` flows into
@@ -2468,24 +2508,27 @@ module otbn_alu_bignum
   generate
     if (OtbnPQCEn) begin : gen_reg_intg_err_pqc
       logic kmac_used;
-      assign kmac_used = operation_valid_i & (operation_i.op != AluOpBignumNone) & ( |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg])    |
-                                                                                    |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest]) |
-                                                                                    |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacCfg])    |
-                                                                                    |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacStatus]) );
+      assign kmac_used = operation_valid_i & (operation_i.op != AluOpBignumNone) &
+                         ( |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg])    |
+                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest]) |
+                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacCfg])    |
+                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacStatus]) );
       `ASSERT_KNOWN(KmacUsed_A, kmac_used)
 
-      // Raise a register integrity violation error iff `mod_intg_q` is used and (at least partially)
-      // invalid.
-      assign reg_intg_violation_err_o = (mod_used & |(mod_intg_err)) | (kmac_used & ( |(gen_pqc_wsr.kmac_msg_intg_err)    |
-                                                                                      |(gen_pqc_wsr.kmac_cfg_intg_err)    |
-                                                                                      |(gen_pqc_wsr.kmac_status_intg_err) |
-                                                                                      |(gen_pqc_wsr.kmac_digest_intg_err) ));
+      // Raise a register integrity violation error iff `mod_intg_q` is used
+      // and (at least partially) invalid.
+      assign reg_intg_violation_err_o = (mod_used & |(mod_intg_err)) |
+                                        (kmac_used & ( |(gen_pqc_wsr.kmac_msg_intg_err)    |
+                                                       |(gen_pqc_wsr.kmac_cfg_intg_err)    |
+                                                       |(gen_pqc_wsr.kmac_status_intg_err) |
+                                                       |(gen_pqc_wsr.kmac_digest_intg_err) ));
 
       // Detect and signal unexpected secure wipe signals.
-      assign sec_wipe_err_o = (sec_wipe_kmac_regs_urnd_i | sec_wipe_mod_urnd_i) & ~sec_wipe_running_i;
+      assign sec_wipe_err_o = (sec_wipe_kmac_regs_urnd_i | sec_wipe_mod_urnd_i)
+                              & ~sec_wipe_running_i;
     end else begin : gen_reg_intg_err
-      // Raise a register integrity violation error iff `mod_intg_q` is used and (at least partially)
-      // invalid.
+      // Raise a register integrity violation error iff `mod_intg_q` is used
+      // and (at least partially)invalid.
       assign reg_intg_violation_err_o = mod_used & |(mod_intg_err);
 
       // Detect and signal unexpected secure wipe signals.
@@ -2504,11 +2547,15 @@ module otbn_alu_bignum
   generate
     if (OtbnPQCEn) begin : gen_blanking_x_res_pqc
       `ASSERT(BlankingBignumAluXOp_A,
-              !expected_adder_x_en |-> {gen_adder_pqc.adder_x_op_a_blanked, gen_adder_pqc.adder_x_op_b_blanked,gen_adder_pqc.adder_x_res} == '0,
+              !expected_adder_x_en |->
+              {gen_adder_pqc.adder_x_op_a_blanked, gen_adder_pqc.adder_x_op_b_blanked,
+               gen_adder_pqc.adder_x_res} == '0,
               clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
     end else begin : gen_blanking_x_res
       `ASSERT(BlankingBignumAluXOp_A,
-              !expected_adder_x_en |-> {gen_adder.adder_x_op_a_blanked, gen_adder.adder_x_op_b_blanked,gen_adder.adder_x_res} == '0,
+              !expected_adder_x_en |->
+              {gen_adder.adder_x_op_a_blanked, gen_adder.adder_x_op_b_blanked,
+               gen_adder.adder_x_res} == '0,
               clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
     end
   endgenerate
@@ -2527,12 +2574,14 @@ module otbn_alu_bignum
   generate
     if (OtbnPQCEn) begin : gen_blanking_alu_y_res_pqc
       `ASSERT(BlankingBignumAluYResUsed_A,
-              !adder_y_res_used && !(operation_i.op == AluOpBignumSubm && gen_adder_pqc.adder_x_res[WLEN+1])
+              !adder_y_res_used
+              && !(operation_i.op == AluOpBignumSubm && gen_adder_pqc.adder_x_res[WLEN+1])
               |-> {x_res_operand_a_mux_out, gen_adder_pqc.adder_y_op_b} == '0,
               clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
     end else begin : gen_blanking_alu_y_res
       `ASSERT(BlankingBignumAluYResUsed_A,
-              !adder_y_res_used && !(operation_i.op == AluOpBignumSubm && gen_adder.adder_x_res[WLEN+1])
+              !adder_y_res_used
+              && !(operation_i.op == AluOpBignumSubm && gen_adder.adder_x_res[WLEN+1])
               |-> {x_res_operand_a_mux_out, gen_adder.adder_y_op_b} == '0,
               clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
     end
@@ -2574,12 +2623,14 @@ module otbn_alu_bignum
     if (OtbnPQCEn) begin : gen_kmac_ispr_blanking
       // KMAC CFG ISPR Blanking
       `ASSERT(BlankingIsprKmacCfg_A,
-              !(|gen_pqc_wsr.kmac_cfg_wr_en) |-> gen_pqc_wsr.ispr_kmac_cfg_bignum_wdata_intg_blanked == '0,
+              !(|gen_pqc_wsr.kmac_cfg_wr_en) |->
+              gen_pqc_wsr.ispr_kmac_cfg_bignum_wdata_intg_blanked == '0,
               clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
 
       // KMAC MSG ISPR Blanking
       `ASSERT(BlankingIsprKmacMsgA,
-              !((|gen_pqc_wsr.kmac_msg_wr_en) | ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg]) |-> gen_pqc_wsr.ispr_kmac_msg_bignum_wdata_intg_blanked == '0,
+              !((|gen_pqc_wsr.kmac_msg_wr_en) | ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg]) |->
+              gen_pqc_wsr.ispr_kmac_msg_bignum_wdata_intg_blanked == '0,
               clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
     end
   endgenerate

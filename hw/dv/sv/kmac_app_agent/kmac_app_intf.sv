@@ -75,8 +75,8 @@ interface kmac_app_intf (input clk, input rst_n);
 
   assign kmac_data_req = (if_mode == dv_utils_pkg::Host) ?
                          {req_data_if.valid, hold, next, req_data_if.h_data} : 'z;
-  assign {req_data_if.valid, hold_tmp, next_tmp, req_data_if.h_data} = (if_mode == dv_utils_pkg::Device) ?
-                                                   kmac_data_req : 'z;
+  assign {req_data_if.valid, hold_tmp, next_tmp, req_data_if.h_data} =
+      (if_mode == dv_utils_pkg::Device) ? kmac_data_req : 'z;
 
   assign {req_data_if.ready, rsp_done, rsp_digest_share0, rsp_digest_share1, rsp_error} =
          (if_mode == dv_utils_pkg::Host) ? kmac_data_rsp : 'z;
@@ -145,6 +145,9 @@ interface kmac_app_intf (input clk, input rst_n);
             end
           end
         end
+      end
+      default: begin
+        // This case shouldn't be reachable
       end
     endcase
   end

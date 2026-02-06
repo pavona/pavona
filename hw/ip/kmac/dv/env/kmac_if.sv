@@ -20,16 +20,20 @@ interface kmac_if(input clk_i, input rst_ni);
   `ASSERT(KmacMaskingO_A, `EN_MASKING == en_masking_o)
 
   `ASSERT(AppKeymgrErrOutputZeros_A, app_rsp[kmac_app_agent_pkg::AppKeymgr].error |->
-          app_rsp[kmac_app_agent_pkg::AppKeymgr].digest_share0 == 0 && app_rsp[kmac_app_agent_pkg::AppKeymgr].digest_share1 == 0)
+          app_rsp[kmac_app_agent_pkg::AppKeymgr].digest_share0 == 0 &&
+          app_rsp[kmac_app_agent_pkg::AppKeymgr].digest_share1 == 0)
 
   `ASSERT(AppLcErrOutputZeros_A, app_rsp[kmac_app_agent_pkg::AppLc].error |->
-          app_rsp[kmac_app_agent_pkg::AppLc].digest_share0 == 0 && app_rsp[kmac_app_agent_pkg::AppLc].digest_share1 == 0)
+          app_rsp[kmac_app_agent_pkg::AppLc].digest_share0 == 0 &&
+          app_rsp[kmac_app_agent_pkg::AppLc].digest_share1 == 0)
 
   `ASSERT(AppRomErrOutputZeros_A, app_rsp[kmac_app_agent_pkg::AppRom].error |->
-          app_rsp[kmac_app_agent_pkg::AppRom].digest_share0 == 0 && app_rsp[kmac_app_agent_pkg::AppRom].digest_share1 == 0)
+          app_rsp[kmac_app_agent_pkg::AppRom].digest_share0 == 0 &&
+          app_rsp[kmac_app_agent_pkg::AppRom].digest_share1 == 0)
 
   `ASSERT(AppOtbnErrOutputZeros_A, app_rsp[kmac_app_agent_pkg::AppOtbn].error |->
-          app_rsp[kmac_app_agent_pkg::AppOtbn].digest_share0 == 0 && app_rsp[kmac_app_agent_pkg::AppOtbn].digest_share1 == 0)
+          app_rsp[kmac_app_agent_pkg::AppOtbn].digest_share0 == 0 &&
+          app_rsp[kmac_app_agent_pkg::AppOtbn].digest_share1 == 0)
 
   // Assertions to check if hold is high outside of OTBN mode
   `ASSERT(AppKeymgrHoldNever_A, !app_req[kmac_app_agent_pkg::AppKeymgr].hold)

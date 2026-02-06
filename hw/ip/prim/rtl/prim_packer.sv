@@ -199,8 +199,10 @@ module prim_packer #(
       end
       2'b 11: begin
         // both : shift the concat_data
+        /* verilator lint_off WIDTH */
         stored_data_next = concat_data[ConcatW-1:OutW];
         stored_mask_next = concat_mask[ConcatW-1:OutW];
+        /* verilator lint_on WIDTH */
       end
       default: begin
         stored_data_next = stored_data;

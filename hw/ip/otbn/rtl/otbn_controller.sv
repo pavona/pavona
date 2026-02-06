@@ -404,10 +404,12 @@ module otbn_controller
   // allowed if it can accept new data.
   generate
     if (OtbnPQCEn) begin : gen_ispr_stall_pqc
-      assign ispr_stall = (rnd_req_raw & ~rnd_valid_i) | (gen_kmac_nets.kmac_digest_req_raw & ~kmac_digest_valid_i);
+      assign ispr_stall = (rnd_req_raw & ~rnd_valid_i) |
+                          (gen_kmac_nets.kmac_digest_req_raw & ~kmac_digest_valid_i);
 
-      assign gen_kmac_nets.kmac_write_stall = (gen_kmac_nets.kmac_msg_write_req_raw & ~kmac_msg_write_ready_i)
-                                | (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg_pending_write_i);
+      assign gen_kmac_nets.kmac_write_stall =
+              (gen_kmac_nets.kmac_msg_write_req_raw & ~kmac_msg_write_ready_i) |
+              (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg_pending_write_i);
 
       assign stall = mem_stall | ispr_stall | rf_indirect_stall | gen_kmac_nets.kmac_write_stall;
     end else begin : gen_ispr_stall
@@ -437,7 +439,7 @@ module otbn_controller
   assign start_secure_wipe = executing & (done_complete | err);
 
   assign jump_or_branch = (insn_valid_i &
-                           (insn_dec_shared_i.branch_insn | insn_dec_shared_i.jump_insn));
+                          (insn_dec_shared_i.branch_insn | insn_dec_shared_i.jump_insn));
 
   // Branch taken when there is a valid branch instruction and comparison passes or a valid jump
   // instruction (which is always taken)
@@ -1124,9 +1126,11 @@ module otbn_controller
         // By default write nothing
         rf_bignum_wr_en_unbuf = 2'b00;
 
-        // Only write if valid instruction wants a bignum rf write and it isn't stalled. If instruction
-        // doesn't execute (e.g. due to an error) the write won't commit.
-        if (insn_valid_i && insn_dec_bignum_i.rf_we && !rf_indirect_stall && !gen_kmac_nets.kmac_write_stall) begin
+        // Only write if valid instruction wants a bignum rf write and it isn't stalled.
+        // If instruction doesn't execute (e.g. due to an error) the write won't commit.
+        if (insn_valid_i && insn_dec_bignum_i.rf_we && !rf_indirect_stall &&
+           !gen_kmac_nets.kmac_write_stall)
+        begin
           if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
             // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
             // mac_wr_hw_sel_upper.
@@ -1142,8 +1146,8 @@ module otbn_controller
         // By default write nothing
         rf_bignum_wr_en_unbuf = 2'b00;
 
-        // Only write if valid instruction wants a bignum rf write and it isn't stalled. If instruction
-        // doesn't execute (e.g. due to an error) the write won't commit.
+        // Only write if valid instruction wants a bignum rf write and it isn't stalled.
+        // If instruction doesn't execute (e.g. due to an error) the write won't commit.
         if (insn_valid_i && insn_dec_bignum_i.rf_we && !rf_indirect_stall) begin
           if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
             // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
@@ -1160,8 +1164,8 @@ module otbn_controller
 
   // Bignum RF control signals from the controller aren't actually used, instead the predecoded
   // one-hot versions are. The predecoded versions get checked against the signals produced here.
-  // Buffer them to ensure they don't get optimised away (with a functionally correct OTBN they will
-  // always be identical).
+  // Buffer them to ensure they don't get optimised away (with a functionally correct OTBN they
+  // will always be identical).
   prim_buf #(
     .Width(2)
   ) u_bignum_wr_en_buf (
@@ -1695,9 +1699,12 @@ module otbn_controller
 
   generate
     if (OtbnPQCEn) begin : gen_kmac_raw
-      assign gen_kmac_nets.kmac_digest_req_raw = insn_valid_i & ispr_rd_insn & (ispr_addr_o == IsprKmacDigest);
-      assign gen_kmac_nets.kmac_msg_write_req_raw = insn_valid_i & ispr_wr_insn & (ispr_addr_o == IsprKmacMsg);
-      assign gen_kmac_nets.kmac_msg_partial_raw = insn_valid_i & ispr_wr_insn & (ispr_addr_o == IsprKmacPartialW);
+      assign gen_kmac_nets.kmac_digest_req_raw    = insn_valid_i & ispr_rd_insn &
+                                                    (ispr_addr_o == IsprKmacDigest);
+      assign gen_kmac_nets.kmac_msg_write_req_raw = insn_valid_i & ispr_wr_insn &
+                                                    (ispr_addr_o == IsprKmacMsg);
+      assign gen_kmac_nets.kmac_msg_partial_raw   = insn_valid_i & ispr_wr_insn &
+                                                    (ispr_addr_o == IsprKmacPartialW);
     end
   endgenerate
 

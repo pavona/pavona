@@ -31,12 +31,12 @@ module buffer_bit
   genvar i;
 
   generate
-    for (i = 0; i < 16; i++) begin
+    for (i = 0; i < 16; i++) begin : gen_a_b_buffed_init
       assign A_buffed[i*17 +: 16] = A[i*16 +: 16];
       assign B_buffed[i*17 +: 16] = B[i*16 +: 16];
     end
 
-    for (i = 1; i < 16; i += 1) begin
+    for (i = 1; i < 16; i += 1) begin : gen_a_b_buffed_res
       assign A_buffed[i*17 - 1] = (word_mode == VecType_h16) ? (((i*16) % 16) == 0 ? cin : 1'b0) :
                                   (word_mode == VecType_s32) ? (((i*16) % 32) == 0 ? cin : 1'b0) :
                                   (word_mode == VecType_d64) ? (((i*16) % 64) == 0 ? cin : 1'b0) :
@@ -51,7 +51,7 @@ module buffer_bit
   assign R_buffed = A_buffed + B_buffed + {271'b0, cin};
 
   generate
-    for(i = 0; i < 16; i++) begin
+    for(i = 0; i < 16; i++) begin : gen_result
       assign res[i*16 +: 16] = R_buffed[i*17 +: 16];
       assign cout[i] = R_buffed[i*17 + 16];
     end
