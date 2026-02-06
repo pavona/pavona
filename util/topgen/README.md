@@ -1,6 +1,6 @@
 # Top Generation Tool
 
-The top generation tool, [`topgen.py`](../topgen.py), is used to build top modules - for example, [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey).
+The top generation tool, [`topgen.py`](../topgen.py), is used to build top modules - for example, [`top_earlgrey`](../../hw/top_earlgrey).
 Currently, as part of this generation process, the following top-specific modules are created
 * Overall top module
 * Generic ip modules
@@ -18,7 +18,7 @@ Topgen relies on a number of other tools and libraries within ACE as well, so it
 
 ### Overview
 The details of a particular top variant are described in a top-specific Hjson file.
-For example see [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey/data/top_earlgrey.hjson).
+For example see [`top_earlgrey`](../../hw/top_earlgrey/data/top_earlgrey.hjson).
 For detailed information about how the top Hjson should be written, see the bottom section of this document, titled "Top Hjson Scheme".
 
 The top specific Hjson describes how the design looks and how it should connect, for example:
@@ -56,7 +56,7 @@ These are primarily located in the following places:
 * `hw/top_*/ip/*/data/*.hjson` for manually written (ie., non-ipgen) top-specific peripherals
 
 In the process of gathering, each individual Hjson file is validated for input correctness and then merged into a final generated Hjson output that represents the complete information that makes up each design.
-For example, see [`top_earlgrey`'s complete configuration](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson).
+For example, see [`top_earlgrey`'s complete configuration](../../hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson).
 Note specifically the generated interrupt list, the pinmux connections, and the port-to-net mapping of clocks and resets, all of which were not present in the original input.
 
 The purpose for this two step process, instead of describing the design completely inside one Hjson file, is to decouple the top and components development while allowing re-use of components by multiple tops.
