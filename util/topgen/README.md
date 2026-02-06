@@ -1,12 +1,18 @@
-# Architectural Composition Engine
+# Top Generation Tool
 
-The Architectural Composition Engine tool [`topgen.py`](../topgen.py) is used to build top specific modules for a given design that can be flexibly defined and configured - for example [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey).
-Currently, as part of this generation process, the following top specific modules are created
+The top generation tool, [`topgen.py`](../topgen.py), is used to build top modules - for example, [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey).
+Currently, as part of this generation process, the following top-specific modules are created
 * Overall top module
 * Generic ip modules
 * Crossbars
 * A number of templated peripherals, which are expanded according to top specific configurations
 This document explains the overall generation process, the required inputs, the output locations, as well as how the tool should be invoked.
+
+Topgen relies on a number of other tools and libraries within ACE as well, so it would be wise to refer to their respective sets of documentation as well.
+![Visual representing topgen's reliance on other ACE libraries](./doc/topgen_in_ace.svg)
+* [`ipgen`'s documentation](../ipgen/README.md) provides information on how to handle IP templates.
+* [`regtool`/`reggen`'s documentation](../reggen/README.md) provides information on how to specify individual IP blocks and their registers, valid data types.
+* [`tlgen`'s documentation](../tlgen/README.md) provides information on how to specify and generate TL-UL crossbars.
 
 ## Generation Process
 

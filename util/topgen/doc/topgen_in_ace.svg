@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1500"
+   height="1000"
+   viewBox="0 0 396.87501 264.58333"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   sodipodi:docname="topgen.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.53975219"
+     inkscape:cx="484.48159"
+     inkscape:cy="514.12483"
+     inkscape:window-width="1920"
+     inkscape:window-height="1080"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <rect
+       x="538.81536"
+       y="206.97709"
+       width="139.48456"
+       height="98.989044"
+       id="rect24" />
+    <marker
+       style="overflow:visible"
+       id="ConcaveTriangle"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Concave triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path7" />
+    </marker>
+    <rect
+       x="319.76721"
+       y="283.43002"
+       width="110.62654"
+       height="35.52969"
+       id="rect4" />
+    <rect
+       x="126.0243"
+       y="115.66614"
+       width="274.4913"
+       height="51.627415"
+       id="rect2" />
+    <rect
+       x="319.76721"
+       y="283.43002"
+       width="110.62654"
+       height="35.52969"
+       id="rect4-1" />
+    <rect
+       x="319.76721"
+       y="283.43002"
+       width="110.62654"
+       height="35.52969"
+       id="rect4-1-5" />
+    <rect
+       x="319.76721"
+       y="283.43002"
+       width="110.62654"
+       height="35.52969"
+       id="rect4-1-5-5" />
+    <rect
+       x="319.76721"
+       y="283.43002"
+       width="110.62654"
+       height="35.52969"
+       id="rect4-1-5-5-0" />
+    <rect
+       x="319.76721"
+       y="283.43002"
+       width="110.62654"
+       height="35.52969"
+       id="rect4-1-5-5-0-7" />
+    <rect
+       x="319.76721"
+       y="283.43002"
+       width="110.62654"
+       height="35.52969"
+       id="rect4-1-5-5-0-5" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-26.921579,-28.740747)">
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:1.36086;stroke-dasharray:5.44344, 5.44344;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect1"
+       width="313.2916"
+       height="215.0365"
+       x="68.71328"
+       y="56.29266" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.85740226,0,0,0.85740226,-40.017684,-56.99907)"
+       id="text1"
+       style="text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect2);fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.77953;stroke-dasharray:15.1181, 15.1181;stroke-dashoffset:0;stroke-opacity:1"><tspan
+         x="126.02344"
+         y="126.61398"
+         id="tspan3">Architectural Composition Engine (ACE)</tspan></text>
+    <g
+       id="g4"
+       transform="matrix(2.1730337,0,0,2.1730337,93.15777,-5.6374171)">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect3"
+         width="25.684299"
+         height="34.167191"
+         x="47.995056"
+         y="60.894176" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.30012838,0,0,0.30012838,-44.93636,-10.656675)"
+         id="text3"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4);fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.88976;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"><tspan
+           x="319.76758"
+           y="294.04688"
+           id="tspan5">topgen.py</tspan></text>
+    </g>
+    <g
+       id="g6"
+       transform="matrix(1.6582907,0,0,1.6582907,40.513531,-35.756598)">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect3-0"
+         width="25.684299"
+         height="34.167191"
+         x="47.995056"
+         y="60.894176" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.30012838,0,0,0.30012838,-40.510052,-9.2874857)"
+         id="text3-0"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4-1);fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.88976;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"><tspan
+           x="319.76758"
+           y="294.04688"
+           id="tspan6">tlgen</tspan></text>
+    </g>
+    <g
+       id="g5"
+       transform="matrix(1.6582907,0,0,1.6582907,150.35713,-46.928016)">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect3-0-0"
+         width="25.684299"
+         height="34.167191"
+         x="80.69709"
+         y="70.622459" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.30012838,0,0,0.30012838,-9.0952871,0.07589508)"
+         id="text3-0-6"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4-1-5);fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.88976;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"><tspan
+           x="319.76758"
+           y="294.04688"
+           id="tspan7">reggen</tspan></text>
+    </g>
+    <g
+       id="g7"
+       transform="matrix(1.6582907,0,0,1.6582907,14.568533,-27.777982)">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect3-0-0-3"
+         width="25.684299"
+         height="34.167191"
+         x="47.995056"
+         y="101.61058" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.30012838,0,0,0.30012838,-40.604135,31.419246)"
+         id="text3-0-6-2"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4-1-5-5);fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.88976;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"><tspan
+           x="319.76758"
+           y="294.04688"
+           id="tspan8">ipgen</tspan></text>
+    </g>
+    <g
+       id="g8"
+       transform="matrix(1.6582907,0,0,1.6582907,2.1589323,25.579975)">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect3-0-0-3-1"
+         width="25.684299"
+         height="34.167191"
+         x="80.697098"
+         y="111.3137" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.30012838,0,0,0.30012838,-10.179435,41.132036)"
+         id="text3-0-6-2-7"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4-1-5-5-0);fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.88976;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"><tspan
+           x="319.76758"
+           y="294.04688"
+           id="tspan9">raclgen</tspan></text>
+    </g>
+    <g
+       id="g10"
+       transform="matrix(1.6582907,0,0,1.6582907,69.248988,21.999394)">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect3-0-0-3-1-3"
+         width="25.684299"
+         height="34.167191"
+         x="123.02631"
+         y="111.3137" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.30012838,0,0,0.30012838,33.444085,41.12676)"
+         id="text3-0-6-2-7-4"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4-1-5-5-0-7);fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.88976;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"><tspan
+           x="319.76758"
+           y="294.04688"
+           id="tspan10">design</tspan></text>
+    </g>
+    <g
+       id="g9"
+       transform="matrix(1.6582907,0,0,1.6582907,125.31683,38.541355)">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect3-0-0-3-1-6"
+         width="25.684299"
+         height="34.167191"
+         x="118.89622"
+         y="65.950668" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.30012838,0,0,0.30012838,28.168284,-4.2362695)"
+         id="text3-0-6-2-7-6"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4-1-5-5-0-5);fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.88976;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"><tspan
+           x="319.76758"
+           y="294.04688"
+           id="tspan11">basegen</tspan></text>
+    </g>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       d="m 197.45264,165.14156 -60.70232,2.89445"
+       id="path19"
+       inkscape:connector-type="polyline"
+       inkscape:connector-curvature="0"
+       inkscape:connection-start="#g4"
+       inkscape:connection-end="#g7" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       d="m 197.45264,140.45876 -34.75732,-29.085"
+       id="path20"
+       inkscape:connector-type="polyline"
+       inkscape:connector-curvature="0"
+       inkscape:connection-start="#g4"
+       inkscape:connection-end="#g6" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       d="m 253.26549,141.06563 30.91087,-25.19408"
+       id="path21"
+       inkscape:connector-type="polyline"
+       inkscape:connector-curvature="0"
+       inkscape:connection-start="#g4"
+       inkscape:connection-end="#g5" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       d="m 253.26549,166.73907 69.21583,7.26268"
+       id="path22"
+       inkscape:connector-type="polyline"
+       inkscape:connector-curvature="0"
+       inkscape:connection-start="#g4"
+       inkscape:connection-end="#g9" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       d="m 253.26549,192.48726 19.99689,20.5486"
+       id="path23"
+       inkscape:connector-type="polyline"
+       inkscape:connector-curvature="0"
+       inkscape:connection-start="#g4"
+       inkscape:connection-end="#g10" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       d="m 197.45264,194.42426 -18.88243,20.71402"
+       id="path24"
+       inkscape:connector-type="polyline"
+       inkscape:connector-curvature="0"
+       inkscape:connection-start="#g4"
+       inkscape:connection-end="#g8" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,26.921579,28.740747)"
+       id="text24"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect24);fill:none;fill-opacity:1;stroke:#000000;stroke-width:4.72441;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.00523px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="172.29459"
+       y="110.11063"
+       id="text25"><tspan
+         sodipodi:role="line"
+         id="tspan25"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="172.29459"
+         y="110.11063">crossbar</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="172.29459"
+         y="116.36717"
+         id="tspan26">generation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.00523px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="248.76419"
+       y="111.8522"
+       id="text25-4"><tspan
+         sodipodi:role="line"
+         id="tspan25-5"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="248.76419"
+         y="111.8522">register</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="248.76419"
+         y="118.10874"
+         id="tspan26-1">generation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.00523px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="275.4924"
+       y="154.94493"
+       id="text25-8"><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="275.4924"
+         y="154.94493"
+         id="tspan26-7">common typing</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="275.4924"
+         y="161.20146"
+         id="tspan30">and naming</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="275.4924"
+         y="167.45801"
+         id="tspan31">conventions</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.00523px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="265.11099"
+       y="189.86835"
+       id="text25-7"><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="265.11099"
+         y="189.86835"
+         id="tspan26-5">miscellaneous</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="265.11099"
+         y="196.12488"
+         id="tspan28">design-related</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="265.11099"
+         y="202.38142"
+         id="tspan29">scripting</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.00523px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="186.20592"
+       y="213.84711"
+       id="text25-2"><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="186.20592"
+         y="213.84711"
+         id="tspan26-2">RACL output</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="186.20592"
+         y="220.10364"
+         id="tspan27">to Markdown</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.00523px;font-family:Menlo;-inkscape-font-specification:'Menlo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="146.41484"
+       y="173.10838"
+       id="text25-6"><tspan
+         sodipodi:role="line"
+         id="tspan25-0"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="146.41484"
+         y="173.10838">IP template</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.236467;stroke-dasharray:none"
+         x="146.41484"
+         y="179.36491"
+         id="tspan26-3">instantiation</tspan></text>
+  </g>
+</svg>
