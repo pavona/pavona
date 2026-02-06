@@ -17,7 +17,7 @@ Topgen relies on a number of other tools and libraries within ACE as well, so it
 ## Generation Process
 
 ### Overview
-The details of a particular variant is described in a top specific Hjson file.
+The details of a particular top variant are described in a top-specific Hjson file.
 For example see [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey/data/top_earlgrey.hjson).
 For detailed information about how the top Hjson should be written, see the bottom section of this document, titled "Top Hjson Scheme".
 
@@ -51,11 +51,12 @@ There are two kinds of peripherals:
 The topgen tool thus hierarchically gathers and generates the missing information from additional Hjson files that describe the detail of each component.
 These are primarily located in the following places:
 * `hw/ip/*/data/*.hjson` for generic peripherals
-* `hw/ip_templates/*/data/*.hjson.tpl` for ipgen peripherals
+* `hw/ip_templates/*/data/*.hjson.tpl` for ipgen peripherals (after top generation, these Hjson templates are used to generate `hw/top_*/ip_autogen/*/data/*.hjson`)
 * `hw/top_*/data/xbar_*.hjson` for crossbars which are also generated from templates
+* `hw/top_*/ip/*/data/*.hjson` for manually written (ie., non-ipgen) top-specific peripherals
 
 In the process of gathering, each individual Hjson file is validated for input correctness and then merged into a final generated Hjson output that represents the complete information that makes up each design.
-For example, see [`top_earlgrey`](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson).
+For example, see [`top_earlgrey`'s complete configuration](https://github.com/pavona/pavona/tree/master/hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson).
 Note specifically the generated interrupt list, the pinmux connections, and the port-to-net mapping of clocks and resets, all of which were not present in the original input.
 
 The purpose for this two step process, instead of describing the design completely inside one Hjson file, is to decouple the top and components development while allowing re-use of components by multiple tops.
@@ -70,28 +71,28 @@ In addition to design collateral, the tool also generates all the top level RAL 
 ### Validation, Merge and Output
 
 As stated previously, each of the gathered component Hjson files is validated for correctness.
-For the peripherals, this is done by invoking [`util/reggen/validate.py`](../reggen/validate.py), while the  xbar components are validated through [`util/tlgen/validate.py`](../tlgen/validate.py).
+For the peripherals, this is done by invoking [`util/reggen/validate.py`](../reggen/validate.py), while the xbar components are validated through [`util/tlgen/validate.py`](../tlgen/validate.py).
 The peripheral and xbar components are then validated through [`util/topgen/validate.py`](./validate.py).
-This performs extensive checks on the top configuration, for example interrupt, pinmux, clock and reset consistency.
+Topgen's validation also performs extensive checks on the top configuration; for example on interrupts, pinmuxes, clocks, and reset consistency.
 
 Once all validation is passed, the final Hjson is created by [`util/topgen/merge.py`](./merge.py).
-This Hjson is then used to generate the final top RTL.
+This Hjson is then used to generate the final top RTL and/or other selected outputs.
 
 As part of this process, topgen invokes other tools.
-Please see the documentation for [`ipgen`](../ipgen/README.md), [`reggen`](../reggen/README.md), and [`tlgen`](../tlgen/README.md) for more tool specific details.
+Please see the documentation for [`ipgen`](../ipgen/README.md), [`reggen`](../reggen/README.md), and [`tlgen`](../tlgen/README.md) for more tool-specific details.
 
 ### Generation Flow
 
-In order to generate the complete set of artifacts for a given top the first step is to generate the complete top configuration file (named `top_*/data/autogen/top_*.gen.hjson` as mentioned above).
+In order to generate the complete set of artifacts for a given top, the first step is to generate the complete top configuration file (named `top_*/data/autogen/top_*.gen.hjson` as mentioned above).
 Most other artifacts, like the top-level module(s), ipgen peripherals, and top-level SV and software collateral require this file for generation.
-These artifacts can be generated independently and concurrently from the complete top configuration.
+These artifacts can be generated independent from and concurrent with the complete top configuration.
 
 #### Generating the Complete Top Configuration
 
 The generation of ipgen peripherals is delicate since they depend on each other.
 All these dependencies are captured in the top configuration as it is completed.
-As ipgen peripherals are expanded they provide information that will be used for expanding other ipgen peripherals.
-This means the order in which ipgen peripherals are expanded needs to be carefully chosen in order to avoid multiple generation passes.
+As ipgen peripherals are expanded, they provide information that will be used for expanding other ipgen peripherals.
+This means the order in which ipgen peripherals are expanded needs to be carefully chosen in order to avoid divergent/inconsistent generation results.
 The top configuration is completed progressively as individual peripherals are processed.
 All this is done in-memory, and the individual peripherals are added in the following order:
 * The generic peripherals
@@ -99,16 +100,16 @@ All this is done in-memory, and the individual peripherals are added in the foll
 * The crossbars
 
 It is important to progressively complete the top config with the most up-to-date data specific to each ipgen peripheral before expanding it.
-The completion is done using functions that are called in merge_top, except they get an extra argument to allow incomplete configuration since not all ipgen peripherals will have been expanded.
-Once all ipgen peripherals are expanded one last merge is performed, this time not allowing incomplete configurations.
-To make sure there are no mistakes in the order of ipgen peripherals the expansion can make multiple generation passes, stopping when the complete top configuration is stable.
+The completion is done using functions that are called in [`merge_top`](../topgen.py), except they get an extra argument to allow incomplete configuration since not all ipgen peripherals will have been expanded.
+Once all ipgen peripherals are expanded, one last merge is performed, this time not allowing incomplete configurations.
+To make sure there are no mistakes in the order of ipgen peripherals, the expansion can make multiple generation passes, stopping when the complete top configuration is stable.
 
 #### Generating other Artifacts
 
 There is a large number of artifacts that are generated from the complete top config using topgen, including:
 * The templates of ipgen peripherals are expanded into directories specific to each top, for example [`hw/top_darjeeling/ip_autogen/clkmgr`](../../hw/top_darjeeling/ip_autogen/clkmgr/).
 * The crossbars are also expanded from templates into top-specific directories, for example `hw/top_earlgrey/ip/xbar_*/*/autogen`.
-* Part of the Bazel files necessary to register the top with build system, see [Creating a new top](../../hw/top/doc/create_top.md) for details.
+* Part of the Bazel files necessary to register the top with build system; see [Creating a new top](../../hw/top/doc/create_top.md) for details.
 
 ## Usage
 
@@ -125,30 +126,42 @@ It is possible to restrict what the tool should generate.
 ```console
 $ cd ${REPO_TOP}
 $ ./util/topgen.py -h
-usage: topgen [-h] --topcfg TOPCFG [--outdir OUTDIR] [--verbose] [--no-top]
-              [--no-xbar] [--no-plic] [--no-gen-hjson] [--top-only] [--xbar-only]
-              [--plic-only] [--hjson-only] [--top_ral]
+usage: topgen [-h] --topcfg TOPCFG --seedcfg SEEDCFG [--outdir OUTDIR] [--hjson-path HJSON_PATH] [--verbose] [--version-stamp VERSION_STAMP] [--no-top] [--no-xbar]
+              [--no-plic] [--no-rust] [--top-only] [--check-cm] [--xbar-only] [--plic-only] [--alert-handler-only] [--rust-only] [--top_ral]
+              [--alias-files ALIAS_FILES [ALIAS_FILES ...]] [--dv-base-names DV_BASE_NAMES [DV_BASE_NAMES ...]] [--get_blocks]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --topcfg TOPCFG, -t TOPCFG
                         `top_{name}.hjson` file.
+  --seedcfg SEEDCFG, -s SEEDCFG
+                        top_{name} seed configuration file.
   --outdir OUTDIR, -o OUTDIR
-                        Target TOP directory. Module is created under rtl/. (default:
-                        dir(topcfg)/..)
+                        Target TOP directory. Module is created under rtl/. (default: dir(topcfg)/..)
+  --hjson-path HJSON_PATH
+                        If defined, topgen uses supplied path to search for ip hjson. This applies only to ip's with the `reggen_only` attribute. If an hjson is located
+                        both in the conventional path and the alternate path, the alternate path has priority.
   --verbose, -v         Verbose
+  --version-stamp VERSION_STAMP
+                        If version stamping, the location of workspace version stamp file.
   --no-top              If defined, topgen doesn't generate top_{name} RTLs.
   --no-xbar             If defined, topgen doesn't generate crossbar RTLs.
   --no-plic             If defined, topgen doesn't generate the interrupt controller RTLs.
-  --no-gen-hjson        If defined, the tool assumes topcfg as a generated hjson. So it
-                        bypasses the validation step and doesn't read ip and xbar
-                        configurations
+  --no-rust             If defined, topgen doesn't generate Rust code.
   --top-only            If defined, the tool generates top RTL only
+  --check-cm            Check countermeasures. Check countermeasures of all modules in the top config. All countermeasures declared in the module's hjson file should be
+                        implemented in the RTL, and the RTL should only contain countermeasures declared there.
   --xbar-only           If defined, the tool generates crossbar RTLs only
   --plic-only           If defined, the tool generates RV_PLIC RTL and Hjson only
-  --hjson-only          If defined, the tool generates complete Hjson only
+  --alert-handler-only  If defined, the tool generates alert handler hjson only
+  --rust-only           If defined, the tool generates top Rust code only
   --top_ral, -r         If set, the tool generates top level RAL model for DV
-
+  --alias-files ALIAS_FILES [ALIAS_FILES ...]
+                        If defined, topgen uses supplied alias hjson file(s) to override the generic register definitions when building the RAL model. This argument is
+                        only relevant in conjunction with the `--top_ral` switch.
+  --dv-base-names DV_BASE_NAMES [DV_BASE_NAMES ...]
+                        Names or prefix for the DV register classes from which the register models are derived.
+  --get_blocks          Only return the list of blocks and exit.
 ```
 
 ## Top Hjson Scheme
