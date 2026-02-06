@@ -183,44 +183,46 @@ polyt1_unpack:
     la t6, polyt1_unpack_mask
     bn.lid t5, 0(t6)
     li t6, 6
-    .rept 2
-    /* Start unpacking */
-    bn.lid t1, 0(a1++)
-    jal    x1, _inner_polyt1_unpack
 
-    /* Current state: w1 = 0|w1[160:256] */
-    bn.lid t6, 0(a1++)      /* Load new WLEN word to w6 */
-    bn.or  w1, w1, w6 << 96 /* w1 = w6[0:160]|w1[160:256] */
-    jal    x1, _inner_polyt1_unpack
+    loopi 2, 23
+        /* Start unpacking */
+        bn.lid t1, 0(a1++)
+        jal    x1, _inner_polyt1_unpack
 
-    /* Current state: w1 = 0|w6[64:160] */
-    bn.rshi w6, bn0, w6 >> 160
-    bn.or   w1, w1, w6 << 96 /* w1 = 0[64]|w6[160:256]|w6[64:160] */
-    jal     x1, _inner_polyt1_unpack
+        /* Current state: w1 = 0|w1[160:256] */
+        bn.lid t6, 0(a1++)      /* Load new WLEN word to w6 */
+        bn.or  w1, w1, w6 << 96 /* w1 = w6[0:160]|w1[160:256] */
+        jal    x1, _inner_polyt1_unpack
 
-    /* Current state: w1 = 0|w6[224:256] */
-    bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
-    bn.or  w1, w1, w6 << 32  /* w1 = w6[0:224]|w6_prev[224:256] */
-    jal    x1, _inner_polyt1_unpack
+        /* Current state: w1 = 0|w6[64:160] */
+        bn.rshi w6, bn0, w6 >> 160
+        bn.or   w1, w1, w6 << 96 /* w1 = 0[64]|w6[160:256]|w6[64:160] */
+        jal     x1, _inner_polyt1_unpack
 
-    /* Current state: w1 = 0|w6[128:224] */
-    bn.or  w1, bn0, w6 >> 128
-    bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
-    bn.or  w1, w1, w6 << 128 /* w1 = w6[0:128]|w6_prev[128:256] */
-    jal    x1, _inner_polyt1_unpack
+        /* Current state: w1 = 0|w6[224:256] */
+        bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
+        bn.or  w1, w1, w6 << 32  /* w1 = w6[0:224]|w6_prev[224:256] */
+        jal    x1, _inner_polyt1_unpack
 
-    /* Current state: w1 = 0|w6[32:128] */
-    bn.or w1, bn0, w6 >> 32 /* w1 = 0[32]|w6[128:256]|w6[32:128] */
-    jal   x1, _inner_polyt1_unpack
+        /* Current state: w1 = 0|w6[128:224] */
+        bn.or  w1, bn0, w6 >> 128
+        bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
+        bn.or  w1, w1, w6 << 128 /* w1 = w6[0:128]|w6_prev[128:256] */
+        jal    x1, _inner_polyt1_unpack
 
-    /* Current state: w1 = 0|w6[192:256] */
-    bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
-    bn.or  w1, w1, w6 << 64 /* w1 = w6[0:192]|w6_prev[192:256] */
-    jal    x1, _inner_polyt1_unpack
+        /* Current state: w1 = 0|w6[32:128] */
+        bn.or w1, bn0, w6 >> 32 /* w1 = 0[32]|w6[128:256]|w6[32:128] */
+        jal   x1, _inner_polyt1_unpack
 
-    bn.or w1, bn0, w6 >> 96 /* w1 = w6[96:256] */
-    jal   x1, _inner_polyt1_unpack
-    .endr
+        /* Current state: w1 = 0|w6[192:256] */
+        bn.lid t6, 0(a1++)       /* Load new WLEN word to w6 */
+        bn.or  w1, w1, w6 << 64 /* w1 = w6[0:192]|w6_prev[192:256] */
+        jal    x1, _inner_polyt1_unpack
+
+        bn.or w1, bn0, w6 >> 96 /* w1 = w6[96:256] */
+        jal   x1, _inner_polyt1_unpack
+
+        nop
 
     ret
 
@@ -351,14 +353,13 @@ polyz_unpack:
  */
 _inner_polyz_unpack:
     /* Unpack 8 coefficients in one go */
-    .rept 8
+    loopi 8, 2
         /* Shift one coefficient into the output register, ignoring the
             upper 14 bits of other coefficient data */
         bn.rshi w2, w1, w2 >> 32
         /* Advance the input register such that the next coefficient is
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 18
-    .endr
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
@@ -422,14 +423,13 @@ _inner_polyz_unpack:
  */
 _inner_polyz_unpack:
     /* Unpack 8 coefficients in one go */
-    .rept 8
+    loopi 8, 2
         /* Shift one coefficient into the output register, ignoring the
             upper 14 bits of other coefficient data */
         bn.rshi w2, w1, w2 >> 32
         /* Advance the input register such that the next coefficient is
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 20
-    .endr
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
@@ -1632,12 +1632,12 @@ polyt1_pack:
     ret
 
 _inner_polyt1_pack:
-    LOOPI 2, 17
+    LOOPI 2, 5
         bn.lid t1, 0(a1++)
-        .rept 8
+        loopi 8, 2
             bn.rshi w2, w1, w2 >> 10 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-        .endr
+        nop
     bn.rshi w2, bn0, w2 >> 96 /* Shift the 160 bits of data to the bottom of the
                                  WDR */
     ret
@@ -1677,20 +1677,18 @@ polyeta_pack:
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
     bn.subvm.8S w1, w3, w1
-    .rept 5
+    loopi 5, 2
         bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-    .endr
     /* Handle split coefficient */
     bn.rshi w2, w1, w2 >> 1 /* Get one more bit to fill w2 */
     bn.sid t2, 0(a0++)
     bn.rshi w2, w1, w2 >> 3 /* Use up two remaining bits */
     bn.rshi w1, bn0, w1 >> 32 /* Coeff done, goto next */
     /* Do the rest of the register */
-    .rept 2
+    loopi 2, 2
         bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-    .endr
 
     /* 2 */
     jal x1, _inner_polyeta_pack
@@ -1698,20 +1696,18 @@ polyeta_pack:
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
     bn.subvm.8S w1, w3, w1
-    .rept 2
+    loopi 2, 2
         bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-    .endr
     /* Handle split coefficient */
     bn.rshi w2, w1, w2 >> 2 /* Get two more bits to fill w2 */
     bn.sid t2, 0(a0++)
     bn.rshi w2, w1, w2 >> 3 /* Use up one remaining bits */
     bn.rshi w1, bn0, w1 >> 32 /* Coeff done, goto next */
     /* Do the rest of the register */
-    .rept 5
+    loopi 5, 2
         bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-    .endr
 
     /* 3 */
     jal x1, _inner_polyeta_pack
@@ -1734,7 +1730,6 @@ _inner_polyeta_pack:
             bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
-
     ret
 #else
     /* Compute ETA - coeff */
@@ -1774,7 +1769,6 @@ _inner_polyeta_pack:
             bn.rshi w2, w1, w2 >> 4 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
-
     ret
 #endif
 /**
@@ -1884,14 +1878,14 @@ polyt0_pack:
     ret
 
 _inner_polyt0_pack:
-    LOOPI 2, 18
+    LOOPI 2, 6
         bn.lid t1, 0(a1++)
         /* w1 <= eta - w1 */
         bn.subv.8S w1, w3, w1
-        .rept 8
+        loopi 8, 2
             bn.rshi w2, w1, w2 >> 13 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-        .endr
+        nop
     bn.rshi w2, bn0, w2 >> 48 /* Shift the 208 bits of data to the bottom of the
                                  WDR */
     ret
@@ -1990,12 +1984,12 @@ polyw1_pack:
     ret
 
 _inner_polyw1_pack:
-    LOOPI 4, 17
+    LOOPI 4, 5
         bn.lid t1, 0(a1++)
-        .rept 8
+        loopi 8, 2
             bn.rshi w2, w1, w2 >> 6 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-        .endr
+        nop
     bn.rshi w2, bn0, w2 >> 64 /* Shift the 192 bits of data to the bottom of the
                                  WDR */
     ret
@@ -2003,16 +1997,15 @@ _inner_polyw1_pack:
     LOOPI 4, 2
         jal     x1, _inner_polyw1_pack
         bn.sid t2, 0(a0++)
-
     ret
 
 _inner_polyw1_pack:
-    LOOPI 8, 17
+    LOOPI 8, 5
         bn.lid t1, 0(a1++)
-        .rept 8
+        loopi 8, 2
             bn.rshi w2, w1, w2 >> 4 /* Write one coefficient into the output WDR */
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-        .endr
+        nop
     ret
 #endif
 /**
@@ -2544,14 +2537,13 @@ poly_uniform_gamma_1:
 
 _inner_poly_uniform_gamma_1:
     /* Unpack 8 coefficients in one go */
-    .rept 8
+    loopi 8, 2
         /* Shift one coefficient into the output register, ignoring the
             upper 14 bits of other coefficient data */
         bn.rshi w2, w1, w2 >> 32
         /* Advance the input register such that the next coefficient is
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 18
-    .endr
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
@@ -2636,14 +2628,13 @@ _inner_poly_uniform_gamma_1:
 
 _inner_poly_uniform_gamma_1:
     /* Unpack 8 coefficients in one go */
-    .rept 8
+    loopi 8, 2
         /* Shift one coefficient into the output register, ignoring the
             upper 14 bits of other coefficient data */
         bn.rshi w2, w1, w2 >> 32
         /* Advance the input register such that the next coefficient is
             in the lower 18 bits */
         bn.rshi w1, bn0, w1 >> 20
-    .endr
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 20 bit */
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
@@ -2984,10 +2975,9 @@ _inner_polyz_pack:
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
     bn.subv.8S w1, w3, w1
-    .rept 8
+    loopi 8, 2
         bn.rshi w2, w1, w2 >> 18 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-    .endr
     bn.rshi w2, bn0, w2 >> 112 /* Shift the 144 bits of data to the bottom of the
                                  WDR */
     ret
@@ -3045,10 +3035,9 @@ _inner_polyz_pack:
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
     bn.subv.8S w1, w3, w1
-    .rept 8
+    loopi 8, 2
         bn.rshi w2, w1, w2 >> 20 /* Write one coefficient into the output WDR */
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
-    .endr
     bn.rshi w2, bn0, w2 >> 96 /* Shift the 96 bits of data to the bottom of the
                                  WDR */
     ret
