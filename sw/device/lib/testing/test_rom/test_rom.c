@@ -72,7 +72,13 @@ static const dt_otp_ctrl_t kOtpCtrlDt = kDtOtpCtrl;
  */
 extern char _rom_ext_virtual_start_address[];
 extern char _rom_ext_virtual_size[];
+#ifdef OPENTITAN_IS_EARLGREY
 extern char _manifest_address[];
+#endif
+#ifdef OPENTITAN_IS_DARJEELING
+// _second_rom_address is defined in test_rom.ld.
+extern uintptr_t _second_rom_address;
+#endif
 
 /**
  * Type alias for the OTTF entry point.
@@ -87,6 +93,7 @@ static dif_rstmgr_t rstmgr;
 static dif_uart_t uart0;
 static dif_rv_core_ibex_t ibex;
 
+#ifndef OPENTITAN_IS_DARJEELING
 /**
  * Compute the virtual address corresponding to the physical address `lma_addr`.
  *
@@ -99,6 +106,7 @@ static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
   return (lma_addr - (uintptr_t)manifest +
           (uintptr_t)_rom_ext_virtual_start_address);
 }
+#endif
 
 // `test_in_rom = True` tests can override this symbol to provide their own
 // rom tests. By default, it simply jumps into the OTTF's flash.
@@ -238,7 +246,6 @@ bool rom_test_main(void) {
 #ifdef OPENTITAN_IS_EARLGREY
   CHECK_DIF_OK(
       dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
-#endif
 
   const manifest_t *manifest = (const manifest_t *)_manifest_address;
 
@@ -269,6 +276,13 @@ bool rom_test_main(void) {
   // responsibily of the OTTF to set up its own stack, and to never return.
   LOG_INFO("Test ROM complete, jumping to flash (addr: %x)!", entry_point);
   ((ottf_entry_point *)entry_point)();
+#elif defined(OPENTITAN_IS_DARJEELING)
+  // Jump to second ROM.
+  uintptr_t entry_point = ((uintptr_t)&_second_rom_address);
+  LOG_INFO("Test ROM complete, jumping to second ROM (addr: 0x%x)!",
+           entry_point);
+  ((ottf_entry_point *)entry_point)();
+#endif
 
   // If the flash image returns, we should abort anyway.
   abort();

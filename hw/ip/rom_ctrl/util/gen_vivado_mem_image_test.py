@@ -14,13 +14,13 @@ EARLGREY_OTP_SIZE = 1024
 class TestGenVivadoMemImage(unittest.TestCase):
 
     def test_swap_bytes(self) -> None:
-        swapped = swap_bytes(39, 0x01, swap_nibbles=False)
+        swapped = swap_bytes(39, 0x01, swap_nibbles=False, swap_crumbs=False)
         self.assertEqual(swapped, 0x0100000000)
 
-        swapped = swap_bytes(39, 0x0102030405, swap_nibbles=False)
+        swapped = swap_bytes(39, 0x0102030405, swap_nibbles=False, swap_crumbs=False)
         self.assertEqual(swapped, 0x0504030201)
 
-        swapped = swap_bytes(39, 0x0102030405, swap_nibbles=True)
+        swapped = swap_bytes(39, 0x0102030405, swap_nibbles=True, swap_crumbs=False)
         self.assertEqual(swapped, 0x5040302010)
 
 

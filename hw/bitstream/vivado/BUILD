@@ -31,6 +31,10 @@ _CW340_TESTROM_PATH = _CW310_TESTROM_PATH
 
 _OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _OTP_RMA)
 
+_EARLGREY_OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _EARLGREY_OTP_RMA)
+
+_DARJEELING_OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _DARJEELING_OTP_RMA)
+
 _FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
 
 # Note: all of the targets are tagged with "manual" to prevent them from being

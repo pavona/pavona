@@ -184,13 +184,17 @@ def otp_words_to_updatemem_pieces(otp_size: int, words: List[int]) -> List[str]:
     return mem_pieces
 
 
-def swap_bytes(width: int, orig: int, swap_nibbles: bool) -> int:
+def swap_bytes(width: int, orig: int, swap_nibbles: bool, swap_crumbs: bool) -> int:
     num_bytes = math.ceil(width / 8)
     swapped = 0
     for i in range(num_bytes):
         byte_value = ((orig >> (i * 8)) & 0xFF)
         if swap_nibbles:
             byte_value = ((byte_value << 4) | (byte_value >> 4)) & 0xFF
+        if swap_crumbs:
+            mask_evens = 0x33333333
+            mask_odds = 0xCCCCCCCC
+            byte_value = ((byte_value & mask_evens) << 2) | ((byte_value & mask_odds) >> 2)
         swapped |= (byte_value << ((num_bytes - i - 1) * 8))
     return swapped
 
@@ -242,7 +246,7 @@ def main() -> int:
         # Generate the address.
         addr = idx * math.ceil(width / 8)
         # Convert endianness.
-        data = swap_bytes(width, word, args.swap_nibbles)
+        data = swap_bytes(width, word, args.swap_nibbles, args.swap_crumbs)
         # Check for contiguous addresses. If any are found, omit this word's
         # address to speed up `updatemem` operation.
         toks = []

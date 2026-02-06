@@ -20,43 +20,32 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
 #include "ottf_ld_top_config.ld"
 
 /**
- * Region aliases.
+ * Region alias. This linker script only makes sense on tops with two ROM
+ * stages.
  */
-#ifdef OPENTITAN_IS_DARJEELING
-REGION_ALIAS("test_rom", rom0)
-/**
- * Origin of the second ROM binary.
- */
-_second_rom_address = ORIGIN(rom1);
-#else
-REGION_ALIAS("test_rom", rom)
-/**
- * Location of the manifest.
- */
-_manifest_address = ORIGIN(ottf_storage);
-#endif
+REGION_ALIAS("test_second_rom", rom1)
 
 /**
  * The boot address, which indicates the location of the initial interrupt
  * vector.
  */
-_boot_address = ORIGIN(test_rom);
+_boot_address = ORIGIN(test_second_rom);
 
+/**
+ * Location of the manifest.
+ */
+_manifest_address = ORIGIN(ottf_storage);
 
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
-#ifdef OPENTITAN_IS_EARLGREY
-/* TODO: Check the virtual memory size for Darjeeling once we migrate from main
- * SRAM to CTN. */
 ASSERT((_rom_ext_virtual_size <= (LENGTH(ottf_storage) / 2)),
   "Error: rom ext flash is bigger than slot.");
-#endif
 
 _rom_digest_size = 32;
-_chip_info_start = ORIGIN(test_rom) + LENGTH(test_rom) - _rom_digest_size - _chip_info_size;
+_chip_info_start = ORIGIN(test_second_rom) + LENGTH(test_second_rom) - _rom_digest_size - _chip_info_size;
 
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
@@ -66,7 +55,7 @@ _dv_log_offset = 0x0;
  * erroring). In reality, we don't use this information within the ROM image, as
  * we start at a fixed offset.
  */
-ENTRY(_reset_start);
+ENTRY(_start);
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
@@ -74,21 +63,21 @@ ENTRY(_reset_start);
  */
 SECTIONS {
   /**
-   * Ibex interrupt vector. See test_rom_start.S for more information.
+   * Ibex interrupt vector. See test_second_rom_start.S for more information.
    *
    * This has to be set up at the boot address, so that execution jumps to the
    * reset handler correctly.
    */
   .vectors _boot_address : ALIGN(4) {
     KEEP(*(.vectors))
-  } > test_rom
+  } > test_second_rom
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > test_rom
+  } > test_second_rom
 
   /**
    * Standard text section, containing program code.
@@ -96,7 +85,7 @@ SECTIONS {
   .text : ALIGN(4) {
     *(.text)
     *(.text.*)
-  } > test_rom
+  } > test_second_rom
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -109,7 +98,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > test_rom
+  } > test_second_rom
 
   /**
    * Critical static data that is accessible by both the ROM and the ROM
@@ -152,14 +141,14 @@ SECTIONS {
     /* This puts it in ram_main at runtime (for the VMA), but puts the section
      * into rom for load time (for the LMA). This is why `_data_init_*` uses
      * `LOADADDR`. */
-  } > ram_main AT> test_rom
+  } > ram_main AT> test_second_rom
 
   /**
    * Immutable chip_info data, containing build-time-recorded information.
    */
   .chip_info _chip_info_start : ALIGN(4) {
     KEEP(*(.chip_info))
-  } > test_rom
+  } > test_second_rom
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
