@@ -502,10 +502,6 @@ _rej_crypto_sign_signature_internal:
     add a0, fp, a0
     la  a1, twiddles_inv
 
-    .irp reg,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7
-        push \reg
-    .endr
-
     LOOPI K, 3
         jal x1, intt
         /* Reset the twiddle pointer */
@@ -513,9 +509,6 @@ _rej_crypto_sign_signature_internal:
         /* Go to next input polynomial */
         addi a0, a0, 1024
 
-    .irp reg,a7,a6,a5,a4,a3,a2,a1,a0,t6,t5,t4,t3,t2,t1,t0
-        pop \reg
-    .endr
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
     /* Random oracle */
