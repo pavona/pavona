@@ -17,16 +17,10 @@
 
 #if DILITHIUM_MODE == 2
 #define CRYPTO_BYTES 2420
-#define STACK_SIZE 6624 /* minimum 7KB */
-
 #elif DILITHIUM_MODE == 3
 #define CRYPTO_BYTES 3309
-#define STACK_SIZE 8736 /* minimum 9KB */
-
 #elif DILITHIUM_MODE == 5
 #define CRYPTO_BYTES 4627
-#define STACK_SIZE 10848 /* minimum 11KB */
-
 #endif
 
 /* Entry point. */
@@ -112,26 +106,19 @@ main:
   /* Write back MOD */
   bn.wsrw 0x0, w2
 
-  /* Load stack address */
-  la x2, stack_end
   /* Load parameters */
-  la x10, signature
-  la x11, message
-  la x12, messagelen
-  lw x12, 0(x12) /* msglen */
-  la x13, sk
-  /* Prepare context */
-  la x14, ctx
-  la x15, ctxlen
-  lw x15, 0(x15)
-  la x16, rnd
+  la x10, sig
+  la x11, msglen
+  lw x11, 0(x11)
+  la x12, ctxlen
+  lw x12, 0(x12)
 
   jal x1, crypto_sign_signature_internal
 
 #if DILITHIUM_MODE == 3
   li   x10, CRYPTO_BYTES
   addi x10, x10, -1
-  la   x11, signature
+  la   x11, sig
   add  x11, x11, x10
   lw   x10, 0(x11)
   slli x10, x10, 24
@@ -142,24 +129,20 @@ main:
   ecall
 
 .data
-.balign 32
-/* Stack (labelled at the end). */
-.zero STACK_SIZE
-stack_end:
 
 .balign 32
-.globl signature
+.globl sig
 #if DILITHIUM_MODE == 3
 /* In case of Dilithium3, CTILDEBYTES is 48, not divisible by 32.
    To make the packing easier, we dis-align the start of the signature buffer
    because we will simply need to write C to the beginning, which is much easier
    than dealing with the disalignment later on in the signature. */
   .zero 16
-signature:
+sig:
   .zero CRYPTO_BYTES
   .zero 3
 #else
-signature:
+sig:
   .zero CRYPTO_BYTES
   .zero 12
 #endif

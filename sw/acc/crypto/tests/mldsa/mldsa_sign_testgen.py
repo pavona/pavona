@@ -47,9 +47,9 @@ def gen_sign_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO)
     # Write input values.
     data = {
         'ctxlen': int.to_bytes(ctxlen, length=4, byteorder='little'),
-        'messagelen': int.to_bytes(msglen, length=4, byteorder='little'),
+        'msglen': int.to_bytes(msglen, length=4, byteorder='little'),
         'ctx': ctx,
-        'message': msg,
+        'msg': msg,
         'sk': sk,
         'rnd': rnd,
     }
@@ -59,7 +59,7 @@ def gen_sign_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO)
     write_test_exp({}, exp_file)
 
     # Write expected dmem values.
-    write_test_dexp({'signature': sig}, dexp_file)
+    write_test_dexp({'sig': sig}, dexp_file)
 
 
 if __name__ == '__main__':
