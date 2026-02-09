@@ -34,7 +34,7 @@
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4-x27, w0-w15, w17-w19, w24-w30
+ * clobbered registers: x4, x10-x12, x23-x27, w0-w15, w17-w19, w24-w30
  */
 .globl ntt
 ntt:
@@ -46,24 +46,6 @@ ntt:
     /* Load twiddle factors. */
     la   x11, twiddles_fwd
 
-    /* Set up constants for input/state */
-    li x4, 0
-    li x5, 1
-    li x6, 2
-    li x7, 3
-    li x8, 4
-    li x9, 5
-    li x13, 6
-    li x14, 7
-    li x15, 8
-    li x16, 9
-    li x17, 10
-    li x18, 11
-    li x19, 12
-    li x20, 13
-    li x21, 14
-    li x22, 15
-
     /* Set up constants for input/twiddle factors */
     li x23, 17
     li x24, 18
@@ -73,24 +55,25 @@ ntt:
     bn.lid x24, 32(x11) /* w18 */
     bn.mov w19, w17 /* Save first batch of Twiddle factors */
 
-    LOOPI 2, 292
+    LOOPI 2, 294
         /* Load input data */
-        bn.lid x4, 0(x10)
-        bn.lid x5, 64(x10)
-        bn.lid x6, 128(x10)
-        bn.lid x7, 192(x10)
-        bn.lid x8, 256(x10)
-        bn.lid x9, 320(x10)
-        bn.lid x13, 384(x10)
-        bn.lid x14, 448(x10)
-        bn.lid x15, 512(x10)
-        bn.lid x16, 576(x10)
-        bn.lid x17, 640(x10)
-        bn.lid x18, 704(x10)
-        bn.lid x19, 768(x10)
-        bn.lid x20, 832(x10)
-        bn.lid x21, 896(x10)
-        bn.lid x22, 960(x10)
+        addi   x4, x0, 0
+        bn.lid x4++, 0(x10)
+        bn.lid x4++, 64(x10)
+        bn.lid x4++, 128(x10)
+        bn.lid x4++, 192(x10)
+        bn.lid x4++, 256(x10)
+        bn.lid x4++, 320(x10)
+        bn.lid x4++, 384(x10)
+        bn.lid x4++, 448(x10)
+        bn.lid x4++, 512(x10)
+        bn.lid x4++, 576(x10)
+        bn.lid x4++, 640(x10)
+        bn.lid x4++, 704(x10)
+        bn.lid x4++, 768(x10)
+        bn.lid x4++, 832(x10)
+        bn.lid x4++, 896(x10)
+        bn.lid x4++, 960(x10)
 
         /* Layer 1, stride 128 */
 
@@ -404,22 +387,23 @@ ntt:
         bn.mov w17, w19 /* Copy the first batch of Twiddle factors back for next loop. */
 
         /* Store output data */
-        bn.sid x4,  0(x12)
-        bn.sid x5, 64(x12)
-        bn.sid x6, 128(x12)
-        bn.sid x7, 192(x12)
-        bn.sid x8, 256(x12)
-        bn.sid x9, 320(x12)
-        bn.sid x13, 384(x12)
-        bn.sid x14, 448(x12)
-        bn.sid x15, 512(x12)
-        bn.sid x16, 576(x12)
-        bn.sid x17, 640(x12)
-        bn.sid x18, 704(x12)
-        bn.sid x19, 768(x12)
-        bn.sid x20, 832(x12)
-        bn.sid x21, 896(x12)
-        bn.sid x22, 960(x12)
+        addi   x4, x0, 0
+        bn.sid x4++, 0(x12)
+        bn.sid x4++, 64(x12)
+        bn.sid x4++, 128(x12)
+        bn.sid x4++, 192(x12)
+        bn.sid x4++, 256(x12)
+        bn.sid x4++, 320(x12)
+        bn.sid x4++, 384(x12)
+        bn.sid x4++, 448(x12)
+        bn.sid x4++, 512(x12)
+        bn.sid x4++, 576(x12)
+        bn.sid x4++, 640(x12)
+        bn.sid x4++, 704(x12)
+        bn.sid x4++, 768(x12)
+        bn.sid x4++, 832(x12)
+        bn.sid x4++, 896(x12)
+        bn.sid x4++, 960(x12)
 
         addi x10, x10, 32
         addi x12, x12, 32
@@ -433,24 +417,25 @@ ntt:
     addi x11, x11, 64
 
     /* w16--w23 are used for the twiddle factors on layers 5--8 */
-    LOOPI 2, 401
+    LOOPI 2, 403
         /* Load input data */
-        bn.lid x4, 0(x12)
-        bn.lid x5, 32(x12)
-        bn.lid x6, 64(x12)
-        bn.lid x7, 96(x12)
-        bn.lid x8, 128(x12)
-        bn.lid x9, 160(x12)
-        bn.lid x13, 192(x12)
-        bn.lid x14, 224(x12)
-        bn.lid x15, 256(x12)
-        bn.lid x16, 288(x12)
-        bn.lid x17, 320(x12)
-        bn.lid x18, 352(x12)
-        bn.lid x19, 384(x12)
-        bn.lid x20, 416(x12)
-        bn.lid x21, 448(x12)
-        bn.lid x22, 480(x12)
+        addi   x4, x0, 0
+        bn.lid x4++, 0(x12)
+        bn.lid x4++, 32(x12)
+        bn.lid x4++, 64(x12)
+        bn.lid x4++, 96(x12)
+        bn.lid x4++, 128(x12)
+        bn.lid x4++, 160(x12)
+        bn.lid x4++, 192(x12)
+        bn.lid x4++, 224(x12)
+        bn.lid x4++, 256(x12)
+        bn.lid x4++, 288(x12)
+        bn.lid x4++, 320(x12)
+        bn.lid x4++, 352(x12)
+        bn.lid x4++, 384(x12)
+        bn.lid x4++, 416(x12)
+        bn.lid x4++, 448(x12)
+        bn.lid x4++, 480(x12)
 
         /* Layer 5, stride 8 */
 
@@ -900,24 +885,23 @@ ntt:
         bn.trn1.2Q w3, w27, w31
         bn.trn2.2Q w7, w27, w31
 
-
-        bn.sid x4, 0(x12)
-        bn.sid x5, 32(x12)
-        bn.sid x6, 64(x12)
-        bn.sid x7, 96(x12)
-        bn.sid x8, 128(x12)
-        bn.sid x9, 160(x12)
-        bn.sid x13, 192(x12)
-        bn.sid x14, 224(x12)
-
-        bn.sid x15, 256(x12)
-        bn.sid x16, 288(x12)
-        bn.sid x17, 320(x12)
-        bn.sid x18, 352(x12)
-        bn.sid x19, 384(x12)
-        bn.sid x20, 416(x12)
-        bn.sid x21, 448(x12)
-        bn.sid x22, 480(x12)
+        addi   x4, x0, 0
+        bn.sid x4++, 0(x12)
+        bn.sid x4++, 32(x12)
+        bn.sid x4++, 64(x12)
+        bn.sid x4++, 96(x12)
+        bn.sid x4++, 128(x12)
+        bn.sid x4++, 160(x12)
+        bn.sid x4++, 192(x12)
+        bn.sid x4++, 224(x12)
+        bn.sid x4++, 256(x12)
+        bn.sid x4++, 288(x12)
+        bn.sid x4++, 320(x12)
+        bn.sid x4++, 352(x12)
+        bn.sid x4++, 384(x12)
+        bn.sid x4++, 416(x12)
+        bn.sid x4++, 448(x12)
+        bn.sid x4++, 480(x12)
 
         addi x10, x10, 512
         addi x12, x12, 512
