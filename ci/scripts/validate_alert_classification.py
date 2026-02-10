@@ -82,7 +82,10 @@ def validate_alert_classification(alert_cfg: Dict[str, Any], owner_cfg: Dict[str
 
 
 def validate_digest_values(
-    alert_handler_file: Path, owner_sw_cfg_file: Path, owner_cfg: Dict[str, Any]
+    alert_handler_file: Path,
+    owner_sw_cfg_file: Path,
+    owner_cfg: Dict[str, Any],
+    top_name: str,
 ) -> Tuple[bool, Dict[str, str]]:
     """Validates digest values using pre-parsed HJSON data.
 
@@ -143,6 +146,7 @@ def validate_digest_values(
         cmd = [
             "./bazelisk.sh",
             "run",
+            "--//hw/top={}".format(top_name),
             "//sw/host/opentitantool",
             "--",
             "--rcfile=''",
@@ -251,6 +255,9 @@ def main():
         action="store_true",
         help="Update the digest values in the owner_sw_cfg.hjson file.",
     )
+    parser.add_argument("top_name",
+                        type=str,
+                        help="Name of the hardware top.")
     parser.add_argument("alert_handler_file",
                         type=Path,
                         help="Path to alert_handler_ipconfig.hjson file.")
@@ -277,7 +284,7 @@ def main():
         sys.exit(1)
 
     digest_match, expected_digests = validate_digest_values(
-        args.alert_handler_file, args.owner_sw_cfg_file, owner_cfg_data
+        args.alert_handler_file, args.owner_sw_cfg_file, owner_cfg_data, args.top_name,
     )
 
     if digest_match:

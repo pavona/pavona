@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod alert_handler;
+#[rustfmt::skip]
 pub mod alert_handler_regs;
 pub mod lc_state;
 // TODO(lowRISC/opentitan#15443): Fix this lint.

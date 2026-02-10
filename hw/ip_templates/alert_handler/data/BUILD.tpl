@@ -4,7 +4,10 @@
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["top_${topname}_${module_instance_name}.ipconfig.hjson"])
+exports_files([
+    "top_${topname}_${module_instance_name}.ipconfig.hjson",
+    "alert_handler.hjson",
+])
 
 filegroup(
     name = "doc_files",
