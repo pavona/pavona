@@ -43,6 +43,18 @@ typedef struct otcrypto_aes_gcm_context {
   // Implementation specific, AES-GCM context data.
   uint32_t data[98];
   // Implementation specific, checksum for this struct.
+  //
+  // Note that, as implemented presently, this function computes nothing more
+  // than a simple CRC-32 checksum. Anyone with access to the AES-GCM context
+  // prior to an operation, or who otherwise has knowledge of what the AES-GCM
+  // state should be, can forge this checksum trivially.
+  //
+  // This checksum is intended purely as a FI countermeasure, not to provide
+  // any degree of authentication. We could instead compute a KMAC tag with a
+  // device-bound key over the context for authentication, but we have opted
+  // against this due to the underlying performance cost. Authentication must be
+  // handled by the cryptolib client, who in any case must authenticate clients
+  // to prevent them from accessing each other's context objects.
   uint32_t checksum;
 } otcrypto_aes_gcm_context_t;
 
