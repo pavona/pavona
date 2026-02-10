@@ -83,6 +83,58 @@ OT_WARN_UNUSED_RESULT
 status_t kmac_hwip_default_configure(void);
 
 /**
+ * Start a SHA-3-224 operation.
+ *
+ * Blocks until KMAC is idle.
+ *
+ * Make sure to call `kmac_process` and `kmac_squeeze_end` at some later point
+ * to return the block to an idle state.
+ *
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_sha3_224_begin(void);
+
+/**
+ * Start a SHA-3-245 operation.
+ *
+ * Blocks until KMAC is idle.
+ *
+ * Make sure to call `kmac_process` and `kmac_squeeze_end` at some later point
+ * to return the block to an idle state.
+ *
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_sha3_256_begin(void);
+
+/**
+ * Start a SHA-3-384 operation.
+ *
+ * Blocks until KMAC is idle.
+ *
+ * Make sure to call `kmac_process` and `kmac_squeeze_end` at some later point
+ * to return the block to an idle state.
+ *
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_sha3_384_begin(void);
+
+/**
+ * Start a SHA-3-512 operation.
+ *
+ * Blocks until KMAC is idle.
+ *
+ * Make sure to call `kmac_process` and `kmac_squeeze_end` at some later point
+ * to return the block to an idle state.
+ *
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_sha3_512_begin(void);
+
+/**
  * Start a SHAKE-128 operation.
  *
  * Blocks until KMAC is idle.

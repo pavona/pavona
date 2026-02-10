@@ -778,6 +778,26 @@ status_t kmac_squeeze_end(size_t digest_wordlen, hardened_bool_t read_masked,
   return OTCRYPTO_OK;
 }
 
+status_t kmac_sha3_224_begin(void) {
+  return start(kKmacOperationSha3, kKmacSecurityStrength224,
+               /*hw_backed=*/kHardenedBoolFalse);
+}
+
+status_t kmac_sha3_256_begin(void) {
+  return start(kKmacOperationSha3, kKmacSecurityStrength256,
+               /*hw_backed=*/kHardenedBoolFalse);
+}
+
+status_t kmac_sha3_384_begin(void) {
+  return start(kKmacOperationSha3, kKmacSecurityStrength384,
+               /*hw_backed=*/kHardenedBoolFalse);
+}
+
+status_t kmac_sha3_512_begin(void) {
+  return start(kKmacOperationSha3, kKmacSecurityStrength512,
+               /*hw_backed=*/kHardenedBoolFalse);
+}
+
 status_t kmac_shake128_begin(void) {
   return start(kKmacOperationShake, kKmacSecurityStrength128,
                /*hw_backed=*/kHardenedBoolFalse);
