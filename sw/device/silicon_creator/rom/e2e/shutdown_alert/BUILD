@@ -2,14 +2,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
+    "DARJEELING_LOC_ALERTS",
     "EARLGREY_LOC_ALERTS",
     "get_lc_items",
 )
 load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
+load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING_ALERTS")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
@@ -87,66 +90,98 @@ test_suite(
     ],
 )
 
+OWNER_SW_CFG_ITEMS = {
+    # Enable bootstrap.
+    "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
+    # Report errors without any redaction.
+    "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
+    # Enable class A alerts.
+    "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": otp_per_class_bytes(
+        A = CONST.ALERT.ENABLE,
+        B = CONST.ALERT.NONE,
+        C = CONST.ALERT.NONE,
+        D = CONST.ALERT.NONE,
+    ),
+    # Configure class A to escalate until phase 3 and disable other classes.
+    "OWNER_SW_CFG_ROM_ALERT_ESCALATION": otp_per_class_bytes(
+        A = CONST.ALERT.ESC_PHASE_3,
+        B = CONST.ALERT.ESC_NONE,
+        C = CONST.ALERT.ESC_NONE,
+        D = CONST.ALERT.ESC_NONE,
+    ),
+    # Set the alert accumulation thresholds to 0.
+    "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH": otp_per_class_ints(
+        A = 0,
+        B = 0,
+        C = 0,
+        D = 0,
+    ),
+    # Set the alert timeout cycles to 0.
+    "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES": otp_per_class_ints(
+        A = 0,
+        B = 0,
+        C = 0,
+        D = 0,
+    ),
+    # Set the alert phase cycles to 0.
+    "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES": otp_per_class_lists(
+        A = "0, 0, 0, 0",
+        B = "0, 0, 0, 0",
+        C = "0, 0, 0, 0",
+        D = "0, 0, 0, 0",
+    ),
+}
+
 otp_json(
     name = "shutdown_alert_owner_sw_cfg",
-    partitions = [
-        otp_partition(
-            name = "OWNER_SW_CFG",
-            items = {
-                # Enable bootstrap.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
-                # Report errors without any redaction.
-                "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
-                # Enable class A alerts.
-                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": otp_per_class_bytes(
-                    A = CONST.ALERT.ENABLE,
-                    B = CONST.ALERT.NONE,
-                    C = CONST.ALERT.NONE,
-                    D = CONST.ALERT.NONE,
+    partitions = select({
+        "//hw/top:earlgrey": [
+            otp_partition(
+                name = "OWNER_SW_CFG",
+                items = dicts.add(
+                    OWNER_SW_CFG_ITEMS,
+                    {
+                        # Classify UART0 alerts (alert source 0) as class A and
+                        # leave others as unconfigured.
+                        "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
+                            alert_list = EARLGREY_ALERTS,
+                            # The ordering is "prod, prod_end, dev, rma"
+                            default = "          X, X, X, X",
+                            uart0_fatal_fault = "A, A, A, A",
+                        ),
+                        # Leave local alert classification as unconfigured.
+                        "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
+                            alert_list = EARLGREY_LOC_ALERTS,
+                            default = "X, X, X, X",
+                        ),
+                    },
                 ),
-                # Configure class A to escalate until phase 3 and disable other classes.
-                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": otp_per_class_bytes(
-                    A = CONST.ALERT.ESC_PHASE_3,
-                    B = CONST.ALERT.ESC_NONE,
-                    C = CONST.ALERT.ESC_NONE,
-                    D = CONST.ALERT.ESC_NONE,
+            ),
+        ],
+        "//hw/top:darjeeling": [
+            otp_partition(
+                name = "OWNER_SW_CFG",
+                items = dicts.add(
+                    OWNER_SW_CFG_ITEMS,
+                    {
+                        # Classify UART0 alerts (alert source 0) as class A and
+                        # leave others as unconfigured.
+                        "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
+                            alert_list = DARJEELING_ALERTS,
+                            # The ordering is "prod, prod_end, dev, rma"
+                            default = "          X, X, X, X",
+                            uart0_fatal_fault = "A, A, A, A",
+                        ),
+                        # Leave local alert classification as unconfigured.
+                        "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
+                            alert_list = DARJEELING_LOC_ALERTS,
+                            default = "X, X, X, X",
+                        ),
+                    },
                 ),
-                # Classify UART0 alerts (alert source 0) as class A and leave others as unconfigured.
-                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
-                    alert_list = EARLGREY_ALERTS,
-                    # The ordering is "prod, prod_end, dev, rma"
-                    default = "          X, X, X, X",
-                    uart0_fatal_fault = "A, A, A, A",
-                ),
-                # Leave local alert classification as unconfigured.
-                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
-                    alert_list = EARLGREY_LOC_ALERTS,
-                    default = "X, X, X, X",
-                ),
-                # Set the alert accumulation thresholds to 0.
-                "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH": otp_per_class_ints(
-                    A = 0,
-                    B = 0,
-                    C = 0,
-                    D = 0,
-                ),
-                # Set the alert timeout cycles to 0.
-                "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES": otp_per_class_ints(
-                    A = 0,
-                    B = 0,
-                    C = 0,
-                    D = 0,
-                ),
-                # Set the alert phase cycles to 0.
-                "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES": otp_per_class_lists(
-                    A = "0, 0, 0, 0",
-                    B = "0, 0, 0, 0",
-                    C = "0, 0, 0, 0",
-                    D = "0, 0, 0, 0",
-                ),
-            },
-        ),
-    ],
+            ),
+        ],
+    }),
 )
 
 otp_alert_digest(

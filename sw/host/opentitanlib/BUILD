@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
 load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
 load("//rules:ujson.bzl", "ujson_rust")
 
@@ -60,6 +61,24 @@ RUSTC_ENV = {
     "spi_passthru": "$(location :spi_passthru)",
     "ottf": "$(location :ottf)",
 }
+
+run_binary(
+    name = "alert_handler_rust_regs",
+    srcs = select({
+        "//hw/top:earlgrey": ["//hw/top_earlgrey/ip_autogen/alert_handler/data:alert_handler.hjson"],
+        "//hw/top:darjeeling": ["//hw/top_darjeeling/ip_autogen/alert_handler/data:alert_handler.hjson"],
+    }),
+    outs = ["src/otp/alert_handler_regs.rs"],
+    args = [
+        "--rust",
+        "--outfile",
+        "$(location :src/otp/alert_handler_regs.rs)",
+    ] + select({
+        "//hw/top:earlgrey": ["$(location //hw/top_earlgrey/ip_autogen/alert_handler/data:alert_handler.hjson)"],
+        "//hw/top:darjeeling": ["$(location //hw/top_darjeeling/ip_autogen/alert_handler/data:alert_handler.hjson)"],
+    }),
+    tool = "//util:regtool",
+)
 
 # This is the catch-all "everything" crate.
 # Before adding things here, consider if it can be made a separate crate instead.
@@ -121,7 +140,6 @@ rust_library(
         "src/io/uart/serial.rs",
         "src/lib.rs",
         "src/otp/alert_handler.rs",
-        "src/otp/alert_handler_regs.rs",
         "src/otp/lc_state.rs",
         "src/otp/mod.rs",
         "src/otp/otp_img.rs",
@@ -206,6 +224,7 @@ rust_library(
         "src/util/vmem/mod.rs",
         "src/util/vmem/parser.rs",
         "src/util/voltage.rs",
+        ":src/otp/alert_handler_regs.rs",
     ] + select({
         "//sw/device:is_english_breakfast": [],
         "//hw/top:earlgrey": [
