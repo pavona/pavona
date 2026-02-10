@@ -146,6 +146,14 @@ module otbn_alu_bignum
   // Tie unused ports to '0
   generate
     if (!OtbnPQCEn) begin : gen_unused_outputs
+      // Tie off unused inputs
+      logic unused_bits;
+      assign unused_bits = ^{operation_i.trn_type, operation_i.vector_sel, operation_i.vector_type,
+                             alu_predec_bignum_i.trn_type, alu_predec_bignum_i.vector_sel,
+                             alu_predec_bignum_i.vector_type, ispr_acch_intg_i,
+                             sec_wipe_kmac_regs_urnd_i, kmac_app_rsp_i};
+
+      // Drive outputs to 0
       assign ispr_acch_wr_data_intg_o = '0;
       assign ispr_acch_wr_en_o        = '0;
       assign kmac_msg_write_ready_o   = '0;

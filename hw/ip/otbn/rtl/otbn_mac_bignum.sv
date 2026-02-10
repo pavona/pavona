@@ -54,6 +54,14 @@ module otbn_mac_bignum
   // Tie unused ports to '0
   generate
     if (!OtbnPQCEn) begin : gen_unused_outputs
+      // Tie off unused inputs
+      logic unused_bits;
+      assign unused_bits = ^{operation_i.sel, operation_i.lane_mode, operation_i.lane_word_32,
+                             operation_i.lane_word_16, operation_i.exec_mode,
+                             operation_i.data_type,sec_wipe_acch_urnd_i,
+                             ispr_acch_wr_data_intg_i, ispr_acch_wr_en_i};
+
+      // Drive outputs to 0
       assign ispr_acch_intg_o = '0;
     end
   endgenerate

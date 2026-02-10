@@ -189,6 +189,15 @@ module otbn_controller
 );
   import prim_mubi_pkg::*;
 
+  generate
+    if (!OtbnPQCEn) begin : gen_unused_ports
+      // Tie off unused inputs
+      logic unused_bits;
+      assign unused_bits = ^{kmac_msg_write_ready_i, kmac_msg_pending_write_i,
+                             kmac_digest_valid_i};
+    end
+  endgenerate
+
   otbn_state_e state_q, state_d;
 
 
