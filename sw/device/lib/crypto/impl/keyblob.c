@@ -10,10 +10,10 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/device/lib/crypto/include/sha2.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'b', 'b')
@@ -120,40 +120,29 @@ status_t keyblob_buffer_to_keymgr_diversification(
   HARDENED_TRY(entropy_complex_check());
 
   // Initialize a streaming SHA-256 operation.
-  otcrypto_sha2_context_t ctx;
-  HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
+  HARDENED_TRY(kmac_sha3_256_begin());
 
   // Update the SHA-256 context with the provided keyblob.
   const uint32_t *keyblob_rest = keyblob + 1;
   uint32_t keyblob_rest_length = keyblob_length - sizeof(uint32_t);
-  otcrypto_const_byte_buf_t keyblob_rest_buf = {
-      .data = (uint8_t *)keyblob_rest,
-      .len = keyblob_rest_length,
-  };
-  HARDENED_TRY(otcrypto_sha2_update(&ctx, keyblob_rest_buf));
+  HARDENED_TRY(kmac_absorb((uint8_t *)keyblob_rest, keyblob_rest_length));
 
   // Update the SHA-256 context with the provided mode.
   uint32_t mode_data = launder32(mode);
-  otcrypto_const_byte_buf_t mode_buf = {
-      .data = (uint8_t *)&mode_data,
-      .len = sizeof(uint32_t),
-  };
-  HARDENED_TRY(otcrypto_sha2_update(&ctx, mode_buf));
+  HARDENED_TRY(kmac_absorb((uint8_t *)&mode_data, sizeof(uint32_t)));
 
   // Finalize the SHA-256 operation.
-  uint32_t digest_data[kKeymgrSaltNumWords];
-  otcrypto_hash_digest_t digest_buf = {
-      .data = digest_data,
-      .len = ARRAYSIZE(digest_data),
-  };
-  HARDENED_TRY(otcrypto_sha2_final(&ctx, &digest_buf));
+  uint32_t digest[kKeymgrSaltNumWords];
+  kmac_process();
+  HARDENED_TRY(kmac_squeeze_end(
+      kKeymgrSaltNumWords, /*read_masked=*/kHardenedBoolFalse, digest, NULL));
 
   // Copy the resulting digest into the salt.
-  hardened_memcpy(diversification->salt, digest_data, kKeymgrSaltNumWords);
+  hardened_memcpy(diversification->salt, digest, kKeymgrSaltNumWords);
 
   HARDENED_CHECK_EQ(diversification->version, keyblob[0]);
   HARDENED_CHECK_EQ(
-      hardened_memeq(diversification->salt, digest_data, kKeymgrSaltNumWords),
+      hardened_memeq(diversification->salt, digest, kKeymgrSaltNumWords),
       kHardenedBoolTrue);
   return OTCRYPTO_OK;
 }
