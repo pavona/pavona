@@ -15,13 +15,10 @@
 .section .text.start
 #if DILITHIUM_MODE == 2
     #define CRYPTO_BYTES 2420
-    #define STACK_SIZE 10528
 #elif DILITHIUM_MODE == 3
     #define CRYPTO_BYTES 3309
-    #define STACK_SIZE 13632
 #elif DILITHIUM_MODE == 5
     #define CRYPTO_BYTES 4627
-    #define STACK_SIZE 17728
 #endif
 
 /* Entry point. */
@@ -107,36 +104,22 @@ main:
   /* Write back MOD */
   bn.wsrw 0x0, w2
 
-  /* Load stack address */
-  la    x2, stack_end
   /* Load parameters */
-  la    x10, signature
+  la    x10, sig
 #if DILITHIUM_MODE == 3
   /* ML-DSA-65 alignment hack. */
   addi  x10, x10, 16
 #endif
-  li    x11, CRYPTO_BYTES  /* siglen */
-  la    x12, message
-  la    x13, messagelen
-  lw    x13, 0(x13) /* msglen */
-  /* addi  x13, x0, 33   */
-  la    x14, pk
-  /* Prepare context */
-  la x15, ctx
-  la x16, ctxlen
-  lw x16, 0(x16)
+  la    x11, msglen
+  lw    x11, 0(x11)
+  la    x12, ctxlen
+  lw    x12, 0(x12)
 
   jal x1, crypto_sign_verify_internal
 
   ecall
 
 .data
-.balign 32
-.globl stack
-stack:
-    .zero STACK_SIZE
-stack_end:
-
 .balign 32
 .globl result
 result:

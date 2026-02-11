@@ -50,10 +50,10 @@ def gen_verify_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
     # Write input values.
     data = {
         'ctxlen': int.to_bytes(ctxlen, length=4, byteorder='little'),
-        'messagelen': int.to_bytes(msglen, length=4, byteorder='little'),
+        'msglen': int.to_bytes(msglen, length=4, byteorder='little'),
         'ctx': ctx,
-        'message': msg,
-        'signature': sig,
+        'msg': msg,
+        'sig': sig,
         'pk': pk,
     }
     write_test_data(data, data_file)
