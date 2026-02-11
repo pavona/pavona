@@ -43,6 +43,11 @@ CONST = struct(
             DEV = 0x7a01a471,
             PROD = 0x43a839ad,
         ),
+        KEY_ROLE = struct(
+            FIRMWARE_SIGNING = 0x1da3b74f,
+            RELINQUISH_OWNERSHIP = 0x427c7871,
+            DEBUG_AUTHORIZATION = 0x31bf03ba,
+        ),
         KEY_STATE = struct(
             BLANK = 0x0,
             PROVISIONED = 0xe8a16781,
