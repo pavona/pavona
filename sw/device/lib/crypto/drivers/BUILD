@@ -115,25 +115,32 @@ opentitan_test(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "kmac",
-    srcs = ["kmac.c"],
+    srcs = dual_inputs(
+        device = ["kmac.c"],
+        host = ["mock_kmac.cc"],
+    ),
     hdrs = [
         "kmac.h",
         "//sw/device/lib/crypto/include:datatypes.h",
     ],
-    deps = [
-        ":entropy",
-        ":rv_core_ibex",
-        "//hw/top:dt_kmac",
-        "//hw/top:kmac_c_regs",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/crypto/impl:status",
-    ],
+    deps = dual_inputs(
+        device = [
+            ":entropy",
+            ":rv_core_ibex",
+            "//hw/top:dt_kmac",
+            "//hw/top:kmac_c_regs",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened_memory",
+            "//sw/device/lib/base:macros",
+        ],
+        shared = [
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/crypto/impl:status",
+        ]
+    ),
 )
 
 dual_cc_library(
