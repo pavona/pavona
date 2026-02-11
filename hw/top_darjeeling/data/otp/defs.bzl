@@ -2,7 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# The following overlays are used to generate a generic OTP image with fake
+# keys. This is useful for testing in dv_sim, fpga and verilator
+# environments.
 DARJEELING_OTP_SIGVERIFY_FAKE_KEYS = [
+    "@//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
 ]
 
 # This is a set of overlays to generate a generic, standard OTP image.

@@ -69,7 +69,11 @@ impl UpdateProtocol for Jtag {
                 target_addr.saturating_add(current_u32),
             );
             // Check if chunk is all 1s. We can skip it if it is.
-            if payload[current..end].iter().any(|v| *v != 0xff) {
+            if (&payload[current..end])
+                .iter()
+                .find(|v| **v != 0xff)
+                .is_some()
+            {
                 jtag.write_memory(
                     target_addr.saturating_add(current_u32),
                     &payload[current..end],
