@@ -157,6 +157,12 @@ typedef struct sigverify_rom_key_header {
    * Type of the key.
    */
   sigverify_key_type_t key_type;
+#if defined(OPENTITAN_IS_DARJEELING)
+  /**
+   * [Darjeeling only] Role of the key.
+   */
+  sigverify_key_role_t key_role;
+#endif
   /**
    * ID of the key.
    */
@@ -164,8 +170,14 @@ typedef struct sigverify_rom_key_header {
 } sigverify_rom_key_header_t;
 
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_type, 0);
+#if defined(OPENTITAN_IS_EARLGREY)
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_id, 4);
 OT_ASSERT_SIZE(sigverify_rom_key_header_t, 8);
+#elif defined(OPENTITAN_IS_DARJEELING)
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_role, 4);
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_id, 8);
+OT_ASSERT_SIZE(sigverify_rom_key_header_t, 12);
+#endif
 
 /**
  * An ECDSA P256 public key stored in ROM.
@@ -179,16 +191,32 @@ typedef struct sigverify_rom_ecdsa_p256_key_entry {
    * Type of the key.
    */
   sigverify_key_type_t key_type;
+#if defined(OPENTITAN_IS_DARJEELING)
+  /**
+   * [Darjeeling only] Role of the key.
+   */
+  sigverify_key_role_t key_role;
+#endif
   /**
    * An ECDSA P256 public key.
    */
   ecdsa_p256_public_key_t key;
 } sigverify_rom_ecdsa_p256_key_entry_t;
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key_type, 0);
+#if defined(OPENTITAN_IS_EARLGREY)
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key.x[0], 4);
+#elif defined(OPENTITAN_IS_DARJEELING)
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key_role, 4);
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key.x[0], 8);
+#endif
 static_assert(offsetof(sigverify_rom_key_header_t, key_type) ==
                   offsetof(sigverify_rom_ecdsa_p256_key_entry_t, key_type),
               "Invalid key_type offset.");
+#if defined(OPENTITAN_IS_DARJEELING)
+static_assert(offsetof(sigverify_rom_key_header_t, key_role) ==
+                  offsetof(sigverify_rom_ecdsa_p256_key_entry_t, key_role),
+              "Invalid key_role offset.");
+#endif
 static_assert(offsetof(sigverify_rom_key_header_t, key_id) ==
                   offsetof(sigverify_rom_ecdsa_p256_key_entry_t, key.x[0]),
               "Invalid key_id offset.");
@@ -224,16 +252,32 @@ typedef struct sigverify_rom_rsa_key_entry {
    * Type of the key.
    */
   sigverify_key_type_t key_type;
+#if defined(OPENTITAN_IS_DARJEELING)
+  /**
+   * [Darjeeling only] Role of the key.
+   */
+  sigverify_key_role_t key_role;
+#endif
   /**
    * An RSA public key.
    */
   sigverify_rsa_key_t key;
 } sigverify_rom_rsa_key_entry_t;
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_rsa_key_entry_t, key_type, 0);
+#if defined(OPENTITAN_IS_EARLGREY)
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_rsa_key_entry_t, key.n.data[0], 4);
+#elif defined(OPENTITAN_IS_DARJEELING)
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_rsa_key_entry_t, key_role, 4);
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_rsa_key_entry_t, key.n.data[0], 8);
+#endif
 static_assert(offsetof(sigverify_rom_key_header_t, key_type) ==
                   offsetof(sigverify_rom_rsa_key_entry_t, key_type),
               "Invalid key_type offset.");
+#if defined(OPENTITAN_IS_DARJEELING)
+static_assert(offsetof(sigverify_rom_key_header_t, key_role) ==
+                  offsetof(sigverify_rom_rsa_key_entry_t, key_role),
+              "Invalid key_role offset.");
+#endif
 static_assert(offsetof(sigverify_rom_key_header_t, key_id) ==
                   offsetof(sigverify_rom_rsa_key_entry_t, key.n.data[0]),
               "Invalid key_id offset.");
@@ -268,6 +312,12 @@ typedef struct sigverify_rom_spx_key_entry {
    * Type of the key.
    */
   sigverify_key_type_t key_type;
+#if defined(OPENTITAN_IS_DARJEELING)
+  /**
+   * [Darjeeling only] Role of the key.
+   */
+  sigverify_key_role_t key_role;
+#endif
   /**
    * An SPX public key.
    */
@@ -279,10 +329,20 @@ typedef struct sigverify_rom_spx_key_entry {
 } sigverify_rom_spx_key_entry_t;
 
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_spx_key_entry_t, key_type, 0);
+#if defined(OPENTITAN_IS_EARLGREY)
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_spx_key_entry_t, key.data[0], 4);
+#elif defined(OPENTITAN_IS_DARJEELING)
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_spx_key_entry_t, key_role, 4);
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_spx_key_entry_t, key.data[0], 8);
+#endif
 static_assert(offsetof(sigverify_rom_key_header_t, key_type) ==
                   offsetof(sigverify_rom_spx_key_entry_t, key_type),
               "Invalid key_type offset.");
+#if defined(OPENTITAN_IS_DARJEELING)
+static_assert(offsetof(sigverify_rom_key_header_t, key_role) ==
+                  offsetof(sigverify_rom_spx_key_entry_t, key_role),
+              "Invalid key_role offset.");
+#endif
 static_assert(offsetof(sigverify_rom_key_header_t, key_id) ==
                   offsetof(sigverify_rom_spx_key_entry_t, key.data[0]),
               "Invalid key_id offset.");
