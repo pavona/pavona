@@ -1,32 +1,32 @@
 # Software
 
-This is the landing spot for software documentation within the OpenTitan project.
+This is the landing spot for software documentation within the Pavona project.
 More description and information can be found within the [Reference Manual](../util/README.md) and [User Guide](../doc/getting_started/README.md) areas.
 
-There are three major parts to the OpenTitan software stack:
+There are three major parts to the software stack:
 
-*   The _device_ software, which runs on the primary core within the OpenTitan platform chip.
-*   The _acc_ software, which runs on the ACC cryptographic co-processor within the OpenTitan platform chip.
-*   The _host_ software, which is run on a host device and interacts with an OpenTitan device.
+*   The _device_ software, which runs on the primary core within the Pavona device.
+*   The _acc_ software, which runs on the cryptographic co-processor within the Pavona device.
+*   The _host_ software, which runs on a host device and interacts with a Pavona device.
 
-We use the term "image" to denote a complete, standalone executable which has been prepared for the OpenTitan platform chip.
+We use the term "image" to denote a complete, standalone executable which has been prepared for the Pavona device.
 This is to differentiate from a "library", which is a collection of functions that are not complete enough to run on their own.
 
 # Device Software
 
-This software runs on the primary core within the OpenTitan platform chip itself.
+This software runs on the primary core within the Pavona platform chip itself.
 You can find all the device software in the `sw/device` directory of the repository.
 
 The device software is split into two parts:
 *   The reference firmware images, which is the project's reference implementation of the Secure Boot system.
-    Not all OpenTitan chips will use exactly the same firmware images.
+    Not all Pavona chips will use exactly the same firmware images.
 *   The firmware libraries, which can be used by any software built for the device.
 
 Device software must be written in C, Assembly, or Rust.
 
 # ACC Software
 
-This software runs on the ACC cryptographic co-processor within the OpenTitan platform chip.
+This software runs on the ACC cryptographic co-processor within the Pavona device.
 You can find all the ACC software in the `sw/acc` directory of the repository.
 
 This software consists of a number of hand-written assembly routines which can be run on the ACC co-processor.
@@ -37,16 +37,16 @@ ACC Software must only be written in Assembly.
 
 # Host Software
 
-This software is for host-side use, either in preparing images or interacting with a running OpenTitan platform chip.
+This software is for host-side use, either in preparing images or interacting with a running Pavona device.
 You can find all the host software in the `sw/host` directory of the repository.
 
 Host software must be written in C++ or Rust.
 
 # Other Documentation
 
-## OpenTitan Software API Documentation
+## Pavona Software API Documentation
 
-The [OpenTitan Software API Documentation](https://opentitan.org/gen/doxy/) contains automatically generated documentation for the public software APIs.
+The [Pavona Software API Documentation]() contains automatically generated documentation for the public software APIs.
 This includes the Device Interface Functions (DIFs).
 
 All DIFs are also documented on their respective [Hardware IP Specification](../hw/README.md)
