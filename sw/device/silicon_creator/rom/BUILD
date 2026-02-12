@@ -434,6 +434,12 @@ cc_library(
 cc_library(
     name = "sigverify_key_types",
     hdrs = ["sigverify_key_types.h"],
+    defines = pavona_select_top(
+        {
+            "dragonfly": ["OTP_KEY_ROLE"],
+        },
+        [],
+    ),
     deps = [
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
