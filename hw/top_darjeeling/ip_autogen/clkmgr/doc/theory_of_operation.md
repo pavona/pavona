@@ -203,7 +203,7 @@ There are two occasions where this is required:
 -  Software request for external clocks during normal functional mode.
 
 
-### Clock Frequency / Time-out Measurements
+### Clock Frequency Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
 This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).

@@ -1,14 +1,9 @@
 # ROM Controller Technical Specification
 
-[`rom_ctrl`](https://reports.opentitan.org/hw/ip/rom_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/code.svg)
-
 # Overview
 
 The ROM controller (`rom_ctrl`) is the connection between the chip and its ROM.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 It has three main tasks:
 - Pass read requests to the ROM and respond with the memory contents.
 - Generate a checksum of the ROM contents and feed its value to [keymgr](../keymgr/README.md) to be included in the device identity.
@@ -17,7 +12,6 @@ It has three main tasks:
   The instantiation in Earlgrey is documented [here](../../top_earlgrey/ip_autogen/pwrmgr/README.md).
 
 In order to fulfil the first task, the ROM controller attaches as a peripheral to the system bus.
-As a peripheral on the system bus, it follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 The contents of the ROM are laid out in a scrambled order.
 The addresses are scrambled with a substitution-permutation network and `rom_ctrl` is responsible for scrambling addresses when doing memory reads.
 See the [theory of operation](./doc/theory_of_operation.md#rom-access-when-chip-is-in-operation) document for more information.

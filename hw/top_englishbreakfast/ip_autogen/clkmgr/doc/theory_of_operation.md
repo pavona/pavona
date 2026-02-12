@@ -257,7 +257,7 @@ This table also assumes that high speed external clock is 96MHz, while low speed
 As can be seen from the table, the external clock switch scheme prioritizes the stability of the divided clocks, while allowing the undivided clocks to slow down.
 
 
-### Clock Frequency / Time-out Measurements
+### Clock Frequency Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
 This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).

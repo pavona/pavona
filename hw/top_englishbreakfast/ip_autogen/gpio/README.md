@@ -1,18 +1,9 @@
 # GPIO HWIP Technical Specification
 
-[`gpio`](https://reports.opentitan.org/hw/ip/gpio/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/gpio/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/code.svg)
-
 # Overview
 
-This document specifies GPIO hardware IP functionality. This
-module conforms to the [Comportable guideline for peripheral device
-functionality](../../../../doc/contributing/hw/comportability/README.md)
-See that document for integration overview within the broader top
-level system.
+This document specifies GPIO hardware functionality.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
 
 ## Features
 
@@ -36,9 +27,9 @@ GPIO value using direct write. This mode allows software to control all
 GPIO bits simultaneously. Alternately, this module provides masked writes
 to half of the bits at a time, allowing software to affect the output
 value of a subset of the bits without requiring a read-modify-write.
-In this mode the user provides a mask of which of the 16 bits are to be
+In this mode the user provides a mask specifying which of the 16 bits are to be
 modified, along with their new value. The details of this mode are given
-in the [Programmers Guide](#programmers-guide) below.
+in the [Programmers Guide](doc/programmers_guide.md) document.
 
 In the input direction, software can read the contents of any of the GPIO
 peripheral inputs.  In addition, software can request the detection of an
@@ -50,5 +41,3 @@ module clock before the input register reflects the change and interrupt
 generation is evaluated. Note that if the filter is enabled and the pin
 is set to output then there will be a corresponding delay in a change
 in output value being reflected in the input register.
-
-See the Design Details section for more details on the features.

@@ -1,12 +1,11 @@
 # Pinmux Technical Specification
 
-
 # Overview
 
 This document specifies the functionality of the pin multiplexer (`pinmux`) peripheral.
-This module conforms to the [OpenTitan guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability).
-See that document for integration overview within the broader OpenTitan top level system.
-The module provides a mechanism to reconfigure the peripheral-to-pin mapping at runtime, which greatly enhances the system flexibility.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
+
+The pinmux module provides a mechanism to reconfigure the peripheral-to-pin mapping at runtime, which greatly enhances the system flexibility.
 In addition to that, the `pinmux` also allows the user to control pad attributes (such as pull-up, pull-down, open-drain, drive-strength, keeper and inversion), and it contains features that facilitate low-power modes of the system.
 For example, the sleep behavior of each pad can be programmed individually, and the module contains additional pattern detectors that can listen on any IO and wake up the system if a specific pattern has been detected.
 

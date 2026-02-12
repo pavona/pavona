@@ -1,18 +1,9 @@
-# Timer HWIP Technical Specification
-
-[`rv_timer`](https://reports.opentitan.org/hw/ip/rv_timer/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rv_timer/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_timer/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_timer/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_timer/code.svg)
+# RISC-V Timer HWIP Technical Specification
 
 # Overview
 
-This document specifies RISC-V Timer hardware IP functionality. This module
-conforms to the
-[Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
-See that document for integration overview within the broader top level
-system.
+This document specifies the RISC-V Timer hardware IP functionality.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 
 ## Features

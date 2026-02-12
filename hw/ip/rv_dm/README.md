@@ -1,18 +1,13 @@
 # RISC-V Debug System Wrapper Technical Specification
 
-[`rv_dm`](https://reports.opentitan.org/hw/ip/rv_dm/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/code.svg)
-
 # Overview
 
 This document specifies the RISC-V Debug System wrapper functionality.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 ## Features
 
-The debug system follows the execution-based debug approach described in the [RISC-V Debug Specification 0.13.2](https://github.com/riscv/riscv-debug-spec/raw/4e0bb0fc2d843473db2356623792c6b7603b94d4/riscv-debug-release.pdf) and provides the following features.
+The debug system follows the execution-based debug approach described in the [RISC-V Debug Specification 0.13.2](https://github.com/riscv/riscv-debug-spec/raw/4e0bb0fc2d843473db2356623792c6b7603b94d4/riscv-debug-release.pdf) and provides the following features:
 
 - JTAG Test Access Port (TAP)
 - Run-control debug features (in cooperation with the CPU core), including breakpoints, single-stepping through code, and reading core registers
@@ -27,7 +22,7 @@ This module provides a RISC-V Debug Specification-compliant debug system with Ti
 The main functionality is provided by the [PULP RISC-V Debug System](https://github.com/pulp-platform/riscv-dbg), which is instantiated by this module.
 All bus interfaces are converted into TL-UL.
 
-See the [PULP RISC-V Debug System Documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/pulp_riscv_dbg/doc/debug-system.md) for a full list of features and further design documentation.
+See the [PULP RISC-V Debug System Documentation](../../../hw/vendor/pulp_riscv_dbg/doc/debug-system.md) for a full list of features and further design documentation.
 This document only describes the additional logic provided on top of the PULP RISC-V Debug System.
 
 ## Compatibility

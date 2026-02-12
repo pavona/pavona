@@ -1,16 +1,10 @@
 # USB 2.0 Full-Speed Device HWIP Technical Specification
 
-[`usbdev`](https://reports.opentitan.org/hw/ip/usbdev/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/code.svg)
-
 # Overview
 
 This document specifies the USB device hardware IP functionality.
 This IP block implements a Full-Speed device according to the [USB 2.0 specification.](https://www.usb.org/document-library/usb-20-specification)
-It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 
 ## Features

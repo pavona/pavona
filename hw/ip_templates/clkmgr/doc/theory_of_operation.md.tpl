@@ -266,7 +266,7 @@ As can be seen from the table, the external clock switch scheme prioritizes the 
 
 % endif
 
-<%text>### Clock Frequency / Time-out Measurements</%text>
+<%text>### Clock Frequency Measurements</%text>
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
 This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).

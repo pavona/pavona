@@ -1,18 +1,12 @@
 # Clock Manager HWIP Technical Specification
 
-[`clkmgr`](https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/clkmgr/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/clkmgr/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/clkmgr/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/clkmgr/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/clkmgr/code.svg)
-
 # Overview
-
-This document specifies the functionality of the OpenTitan clock manager.
+This document specifies Clock Manager hardware IP (HWIP) functionality.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
 
 ## Features
 
-- Attribute based controls of OpenTitan clocks.
+- Attribute-based controls of clocks.
 - Minimal software clock controls to reduce risks in clock manipulation.
 - External clock switch support
-- Clock frequency /time-out measurement
+- Clock frequency measurement

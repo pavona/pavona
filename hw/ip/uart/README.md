@@ -1,18 +1,9 @@
 # UART HWIP Technical Specification
 
-[`uart`](https://reports.opentitan.org/hw/ip/uart/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/uart/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/uart/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/uart/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/uart/code.svg)
-
 # Overview
 
-This document specifies UART hardware IP functionality. This module
-conforms to the
-[Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
-See that document for integration overview within the broader
-top level system.
+This document specifies UART hardware IP functionality.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 
 ## Features
@@ -37,5 +28,5 @@ to 1Mbps.
 
 ## Compatibility
 
-The OpenTitan UART is feature compatible to a specific implementation in [Chromium EC](https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/uart.c).
+The Pavona UART is feature compatible to a specific implementation in [Chromium EC](https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/uart.c).
 Additional features such as parity have been added.

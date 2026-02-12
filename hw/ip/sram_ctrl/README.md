@@ -1,24 +1,12 @@
 # SRAM Controller Technical Specification
 
-[`sram_ctrl/main`](https://reports.opentitan.org/hw/ip/sram_ctrl_main/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/code.svg)
-
-[`sram_ctrl/ret`](https://reports.opentitan.org/hw/ip/sram_ctrl_ret/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/code.svg)
-
 # Overview
 
 This document specifies the functionality of the SRAM memory controller.
-The SRAM controller is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 
-The SRAM controller contains the SRAM data and address scrambling device and provides CSRs for requesting the scrambling keys and triggering the hardware initialization feature.
+The SRAM controller contains the SRAM data and address scrambling devices, and provides CSRs for requesting the scrambling keys and triggering the hardware initialization feature.
 
 ## Features
 

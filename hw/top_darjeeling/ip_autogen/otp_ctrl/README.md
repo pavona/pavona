@@ -1,15 +1,9 @@
 # OTP Controller Technical Specification
 
-[`otp_ctrl`](https://reports.opentitan.org/hw/top_darjeeling/ip_autogen/otp_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/otp_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otp_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otp_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otp_ctrl/code.svg)
-
 # Overview
 
 This document specifies the functionality of the one time programmable (OTP) memory controller.
-The OTP controller is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
 
 The OTP is a module that provides a device with one-time-programming functionality.
 The result of this programming is non-volatile, and unlike flash, cannot be reversed.
@@ -56,8 +50,8 @@ Finally, the open-source controller provides a high level of security for specif
 
 The proprietary IP on the other hand translates a common access interface to the technology-specific OTP interface, both for functional and debug accesses (for example register accesses to the macro-internal control structure).
 
-This split implies that every proprietary OTP IP must implement a translation layer from a standardized OpenTitan interface to the module underneath.
+This split implies that every proprietary OTP IP must implement a translation layer from a standardized Pavona interface to the module underneath.
 It also implies that no matter how the OTP storage or word size may change underneath, the open-source controller must present a consistent and coherent software and hardware interface.
-This standardized interface is defined further below, and the wrapper leverages the same [technology primitive mechanism](../../../ip/prim/README.md) that is employed in other parts of OpenTitan in order to wrap and abstract technology-specific macros (such as memories and clocking cells) that are potentially closed-source.
+This standardized interface is defined further below, and the wrapper leverages the same [technology primitive mechanism](../../../ip/prim/README.md) that is employed in other parts of Pavona in order to wrap and abstract technology-specific macros (such as memories and clocking cells) that are potentially closed-source.
 
-In order to enable simulation and FPGA emulation of the OTP controller even without access to the proprietary OTP IP, a generalized and synthesizable model of the OTP IP is provided in the form of a [OTP MACRO hardware IP](https://github.com/lowRISC/opentitan/blob/master/hw/ip/otp_macro/rtl/otp_macro.sv).
+In order to enable simulation and FPGA emulation of the OTP controller even without access to the proprietary OTP IP, a generalized and synthesizable model of the OTP IP is provided in the form of a [OTP MACRO hardware IP](../../../../hw/ip/otp_macro/rtl/otp_macro.sv).

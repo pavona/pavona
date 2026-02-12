@@ -2,17 +2,14 @@
 
 # Overview
 
-This document specifies the Interrupt Controller (RV_PLIC) functionality. This
-module conforms to the
-[Comportable guideline for peripheral functionality](../../../../doc/contributing/hw/comportability/README.md).
-See that document for integration overview within the broader top level system.
-
+This document specifies the Interrupt Controller (RV_PLIC) functionality.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
 
 ## Features
 
 - RISC-V Platform-Level Interrupt Controller (PLIC) compliant interrupt controller
-- Support arbitrary number of interrupt vectors (up to 1023) and targets
-- Support interrupt enable, interrupt status registers
+- Support for arbitrary number of interrupt vectors (up to 1023) and targets
+- Support for interrupt enable, interrupt status registers
 - Memory-mapped MSIP register per HART for software interrupt control.
 
 ## Description

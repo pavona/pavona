@@ -1,13 +1,9 @@
 # Power Manager HWIP Technical Specification
-[`pwrmgr`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/pwrmgr/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/code.svg)
 
 # Overview
 
-This document specifies the functionality of the OpenTitan power manager.
+This document specifies Power Manger hardware IP (HWIP) functionality.
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
 
 ${"##"} Features
 

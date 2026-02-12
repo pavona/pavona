@@ -2,9 +2,9 @@ ${"#"} RACL Control Technical specification
 
 ${"#"} Overview
 
-This document specifies the functionality of the RACL control permission IP.
+This document specifies the functionality of the Register Access Control List (RACL) control permission IP.
 RACL Control is an interface between the TileLink bus and RACL policy distribution and error logs.
-As a peripheral on the chip interconnect bus, it follows the [Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
+As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
 
 RACL itself is specified at [RACL: Register Access Control Architecture](../../../../doc/contributing/hw/racl/README.md).
 

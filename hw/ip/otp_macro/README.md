@@ -4,7 +4,7 @@
 
 This document specifies the OTP MACRO hardware IP functionality.
 The OTP MACRO is a comportable IP that wraps an OTP macro.
-This block is expected to be used in conjunction with an OTP Controller, and most of the features of the macro correspond to features of the controller.
+This block is expected to be used in conjunction with an OTP Controller, and most of the features of the macro correspond to features of the controller. As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 ## Features
 
