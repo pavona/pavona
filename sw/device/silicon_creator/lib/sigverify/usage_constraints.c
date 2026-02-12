@@ -17,7 +17,7 @@ void sigverify_usage_constraints_get(
 
 #if defined(OPENTITAN_IS_EARLGREY)
   usage_constraints->manuf_state_creator =
-      otp_read32(OTP_CTRL_PARAM_MANUF_STATE_OFFSET);
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET);
   usage_constraints->manuf_state_owner =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_MANUF_STATE_OFFSET);
 #elif defined(OPENTITAN_IS_DARJEELING)

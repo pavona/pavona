@@ -58,10 +58,10 @@ otp_json_rot_keys(
             otp_partition(
                 name = "ROT_OWNER_AUTH_SLOT0",
                 items = {
-                    # //sw/device/silicon_creator/rom/keys/real/spx:test_key_0_spx
-                    "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_TYPE": otp_hex(CONST.SIGVERIFY.KEY_TYPE.TEST),
+                    # //sw/device/silicon_creator/rom/keys/real/spx:prod_key_0_spx
+                    "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_TYPE": otp_hex(CONST.SIGVERIFY.KEY_TYPE.PROD),
                     "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_ROLE": otp_hex(CONST.SIGVERIFY.KEY_ROLE.FIRMWARE_SIGNING),
-                    "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY": "0x2BB062EECDAFCD22015BA9BB38E0A97FFD0F8D4CD416672ABE0FA6069D629D35",
+                    "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY": 0xAA68F9D4D64FF84C32185CB4F80EBA3924E9351B3C0A258DCE66247AC310E733,
                 },
             ),
         ],
