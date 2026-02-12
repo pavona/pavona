@@ -443,70 +443,75 @@ _inner_polyz_unpack:
  * Check infinity norm of polynomial against given bound.
  * Assumes input coefficients were reduced by reduce32().
  *
+ * The bound should be <= (Q - 1) / 8; we do not check that here, since in
+ * practice the bound is always a compile-time constant.
+ *
+ * Increments the input pointer in place.
+ *
  * Returns: 0 if norm is strictly smaller than B <= (Q-1)/8 and 1 otherwise.
  *
  * Flags: -
  *
  * @param[in]     a1: norm bound
- * @param[in]     a0: pointer to polynomial
+ * @param[in,out] a0: pointer to polynomial
+ * @param[out]    a2: 0 on success, 1 on failure
  *
- * clobbered registers: a0-a1, t0-t5, w1-w2
+ * clobbered registers: a0, a2, t0-t2, w0-w4
  */
  .global poly_chknorm
 poly_chknorm:
-    /* Load modulus Q */
-    la   t0, modulus
-    lw   t1, 0(t0)
-    /* Compute (Q-1)/8 */
-    addi t1, t1, -1
-    srli t1, t1, 3 /* /8 */
+    /* Load the bound into a wide register. */
+    la      t2, poly_wdr2gpr
+    sw      a1, 0(t2)
+    bn.lid  x0, 0(t2)
+    bn.rshi w0, w0, w0 >> 32
+    bn.rshi w0, w31, w0 >> 224
 
-    /* (Q-1)/8 <? B  */
-    sub t2, t1, a1
-    srli t2, t2, 31
-    bne zero, t2, _ret1_poly_chknorm
+    /* Vectorize the bound. */
+    bn.or w0, w0, w0 << 128
+    bn.or w0, w0, w0 << 64
+    bn.or w0, w0, w0 << 32
 
-    /* Set end address */
-    addi t0, a0, 1024
+    /* Load a vectorized 1 for comparison. */
+    bn.addi w4, w31, 1
+    bn.or   w4, w4, w4 << 128
+    bn.or   w4, w4, w4 << 64
+    bn.or   w4, w4, w4 << 32
+
+    /* Initialize success flag (0 = failure, 8 = success). */
+    li t0, 8
+
     /* Setup WDRs */
     li t1, 1
-    li t2, 2
-_loop_poly_chknorm:
-    bn.lid      t1, 0(a0++)
-    /* constant time absolute value
-       t = a->coeffs[i] >> 31;
-       t = a->coeffs[i] - (t & 2*a->coeffs[i]);
-    */
-    /* Get the mask */
-    /* w2 <= 0, if w1 >=? 0, else 0xFFFFFFFF */
-    bn.shv.8S  w2, w1 >> 31
-    bn.subv.8S w2, bn0, w2 /* Build mask from MSBs */
-    /* w2 <= w2 & (2 * w1) */
-    bn.shv.8S  w3, w1 << 1
-    bn.and     w2, w2, w3
-    /* w2 <= w1 - w2 */
-    bn.subv.8S  w2, w1, w2
-    la          t4, poly_wdr2gpr
-    bn.sid      t2, 0(t4)
+    loopi  32, 11
+        bn.lid      t1, 0(a0++)
+        /* constant time absolute value
+           t = a->coeffs[i] >> 31;
+           t = a->coeffs[i] - (t & 2*a->coeffs[i]);
+        */
+        /* Get the mask */
+        /* w2 <= 0, if w1 >=? 0, else 0xFFFFFFFF */
+        bn.shv.8S  w2, w1 >> 31
+        bn.subv.8S w2, bn0, w2 /* Build mask from MSBs */
+        /* w2 <= w2 & (2 * w1) */
+        bn.shv.8S  w3, w1 << 1
+        bn.and     w2, w2, w3
+        /* w2 <= w1 - w2 */
+        bn.subv.8S w2, w1, w2
 
-    /* Check bound */
-    .irp    offset,0,4,8,12,16,20,24,28
-        lw  t3, \offset(t4)
-        /* t5 <= 1, if t3 <? a1, else 0 with a1 the bound */
-        sub t5, t3, a1
-        srli t5, t5, 31
-        beq t5, zero, _ret1_poly_chknorm
-    .endr
+        /* Compare to the bound. */
+        /* w2 <= w2 <? w0  */
+        bn.subv.8S w2, w2, w0
+        bn.shv.8S  w2, w2 >> 31
 
-    bne a0, t0, _loop_poly_chknorm
+        /* Check that all underflow bits are 1 (w2 == w4, Z = 1). */
+        bn.cmp w2, w4
+        csrrs  t2, FG0, x0
+        and    t0, t0, t2
 
-_ret0_poly_chknorm:
-    /* return success */
-    li a0, 0
-    ret
-_ret1_poly_chknorm:
-    /* return fail */
-    li a0, 1
+    /* Return 0 on success, 1 on failure. */
+    srli a2, t0, 3
+    xori a2, a2, 1
     ret
 
 /**

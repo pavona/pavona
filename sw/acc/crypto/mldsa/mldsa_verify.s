@@ -311,19 +311,17 @@ crypto_sign_verify_internal:
         nop
 
     /* chknorm */
-    li  t0, GAMMA1
-    li  t1, BETA
-    sub a1, t0, t1
-    li  a0, STACK_W1
-    add a0, fp, a0
-    addi s0, a0, 0
+    li   t0, GAMMA1
+    li   t1, BETA
+    sub  a1, t0, t1
+    li   a0, STACK_W1
+    add  a0, fp, a0
+    li   s2, 0
 
-    .rept L
-        addi a0, s0, 0 /* Copy back input pointer */
+    loopi L, 2
         jal x1, poly_chknorm
-        bne a0, zero, _fail_crypto_sign_verify_internal /* Raise error */
-        addi s0, s0, 1024 /* Increment input pointer */
-    .endr
+        or  s2, s2, a2
+    bne s2, x0, _fail_crypto_sign_verify_internal /* Raise error */
 
     /* Compute H(rho, t1) */
     /* Load pointer to pk */
