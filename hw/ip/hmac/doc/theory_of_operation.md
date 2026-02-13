@@ -13,7 +13,7 @@ See [Design Details](#design-details) for more information.
 
 [sha256-spec]: https://csrc.nist.gov/publications/detail/fips/180/4/final
 
-The SHA-2 engine block diagram shows the message scheduling FIFO array, hash registers, digest registers, and SHA-2 compression function inside SHA-2 engine.
+The SHA-2 engine block diagram shows the message scheduling FIFO array, hash registers, digest registers, and SHA-2 compression module inside the SHA-2 engine.
 The message scheduling FIFO is not software accessible but is fed from the 32x32b message FIFO seen in the HMAC block diagram via the HMAC core.
 The HMAC core can forward the message directly from the 32x32b message FIFO if HMAC is not enabled.
 The message words are padded with the message length appended to fit either the 512-bit or 1024-bit block size (depending on the configured digest size) as described in the [SHA-256
@@ -78,8 +78,8 @@ This similarly occurs for SHA-2 384/512 but with a 128-bit message length and bl
 
 ### SHA-2 computation
 
-For SHA-2 256, the SHA-2 engine receives 16 32-bit words from the message FIFO or the HMAC core, which get padded into 16 64-bit words for the SHA-2 engine (upper 32 bits of each data word are all-zero padded), and then begin 64 rounds of the hash computation which is also called *compression*.
-Alternatively for SHA-2 384/512, the SHA-2 engine receives 32 32-bit words from message FIFO, which get packed into 16 64-bit words for the SHA-2 engine, and then begin the 80 compression rounds.
+For SHA-2 256, the SHA-2 engine receives 16 32-bit words from the message FIFO or the HMAC core, which get padded into 16 64-bit words for the SHA-2 engine (upper 32 bits of each data word are all-zero padded), and then begin 64 rounds of the hash computation which is also called *compression* after direct loading of the block.
+Alternatively for SHA-2 384/512, the SHA-2 engine receives 32 32-bit words from message FIFO, which get packed into 16 64-bit words for the SHA-2 engine, directly loaded into the compression core, and then begin the 80 compression rounds.
 In each round, the compression function fetches a 64-bit word from the buffer and computes the internal variables.
 The first 16 rounds are fed by the words from the message FIFO or the HMAC core.
 Input for later rounds comes from shuffling the given 512/1024-bit block.

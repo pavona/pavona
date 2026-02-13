@@ -1,16 +1,10 @@
 # HMAC HWIP Technical Specification
 
-[`hmac`](https://reports.opentitan.org/hw/ip/hmac/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/hmac/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/hmac/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/hmac/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/hmac/code.svg)
-
 # Overview
 
-This document specifies HMAC hardware IP functionality. This module conforms to
-the [OpenTitan guideline for peripheral device functionality.](../../../doc/contributing/hw/comportability/README.md)
-See that document for integration overview within the broader OpenTitan top level system.
+This document specifies HMAC hardware IP functionality.
+HMAC follows the [comportability guidelines for peripheral device functionality.](../../../doc/contributing/hw/comportability/README.md)
+Refer to the guidelines for an integration requirements overview within a broader top level system.
 
 
 ## Features
@@ -27,7 +21,7 @@ See that document for integration overview within the broader OpenTitan top leve
 
 The HMAC module is a [SHA-2][sha256-spec] hash-based authentication code generator to check the integrity of an incoming message and a signature signed with the same secret key.
 It supports SHA-2 256/384/512 and 128/256/384/512/1024-bit keys in HMAC mode, so long as the key length does not exceed the block size of the configured SHA-2 digest size, i.e., 1024-bit keys are not supported for SHA-2 256 where the block size is 512-bit.
-It generates a different authentication code with the same message if the secret key is different.
+It generates a different authentication code for the same message if the secret key is different.
 
 This HMAC implementation is not hardened against side channel or fault injection attacks.
 It is meant purely for hashing acceleration.
@@ -46,12 +40,11 @@ The same digest registers above are used to hold the final hash result.
 SHA-2 mode does not use the given secret key.
 It generates the same result with the same message every time.
 
-The software does not need to provide the message length. The HMAC IP
-will calculate the length of the message received between **1** being written to
-[`CMD.hash_start`](doc/registers.md#cmd) and **1** being written to [`CMD.hash_process`](doc/registers.md#cmd).
+The software does not need to provide the message length.
+The HMAC IP will calculate the length of the message received between **1** being written to [`CMD.hash_start`](doc/registers.md#cmd) and **1** being written to [`CMD.hash_process`](doc/registers.md#cmd).
 
-This version does not have many defense mechanisms but is able to wipe internal variables such as the secret key, intermediate hash results, digest and the internal message scheduling array.
-It does not wipe the message FIFO, which SW writes the message to (but cannot read from).
+This version does not have many defense mechanisms but is able to wipe internal variables such as the secret key, intermediate hash results, digest, and the internal message scheduling array.
+It does not wipe the message FIFO, which software writes the message to (but cannot read from).
 The software can wipe the internal variables and secret key by writing a 32-bit random value into [`WIPE_SECRET`](doc/registers.md#wipe_secret) register.
 The internal variables and secret key will be reset to the written value.
 For SHA-2 384/512 modes that operate on 64-bit words, the 32-bit random value is replicated and concatenated to create the 64-bit value.
