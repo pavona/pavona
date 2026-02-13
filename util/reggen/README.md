@@ -424,7 +424,7 @@ The next register will immediately follow the window, so will be at the window b
 Sometimes the window may need to map a structure that is not a full word wide (for example providing debug access to a the memory in a 12-bit wide FIFO).
 In this case it may be convenient to have only the low bits of each word valid and use the word address directly as an index (rather than presenting a "packed" structure with the sub-word items packed into as few words as possible).
 The window declaration can be annotated to document this.
-For example debug access to a 64 entry 12-bit wide FIFO could use a window:
+For example, debug access to a 64-entry, 12-bit wide FIFO could use a window:
 
 ```hjson
     { window: {
@@ -444,7 +444,7 @@ For example debug access to a 64 entry 12-bit wide FIFO could use a window:
 The tool can generate registers that follow a base pattern, for example when there are configuration fields for multiple instances.
 The base pattern defines the bits (which need not be contiguous) used for the first instance and the tool uses this to pack the required number of instances into one or more registers.
 
-For example a fancy GPIO interrupt configuration may have 4 bits per GPIO to allow generation on rising and falling edge and a two bit enum to determine the interrupt severity.
+For example, a fancy GPIO interrupt configuration may have 4 bits per GPIO to allow generation on rising and falling edge and a two bit enum to determine the interrupt severity.
 In this case the multireg can be used to build the multiple registers needed.
 The description below shows the fields given for GPIO0 and requests generation of 32 instances.
 If the registers are 32 bits wide then the tool will pack the four bit instances into four registers `INT_CTRL_0`, `INT_CTRL_1`, `INT_CTRL_2` and `INT_CTRL_3`.
@@ -479,7 +479,7 @@ If the registers are 32 bits wide then the tool will pack the four bit instances
 
 Note that the definition bits for the base instance need not be contiguous.
 In this case the tool will match the pattern for the other instances.
-For example the data bits and mask bits could be in the lower and upper parts of a register:
+For example, the data bits and mask bits could be in the lower and upper parts of a register:
 
 ```hjson
     { multireg: {
@@ -501,13 +501,13 @@ For example the data bits and mask bits could be in the lower and upper parts of
 ```
 
 In this case instance 1 will use bits 1 and 17, instance 2 will use 2 and 18 and so on.
-Instance 16 does not fit, so will start a new register.
+Instance 16 does not fit, so will start a new register (and use bits 0 and 16 of it).
 
 ### Verification Tags Definition and Format
 
 This section documents the usage of tags in the register Hjson file.
 `Tags` is a list of strings that could add into a register, field, or memory.
-It can store special information such as csr register/field exclusion, memory exclusion, reset test exclusion, etc.
+It can store special information such as CSR register/field exclusion, memory exclusion, reset test exclusion, etc.
 Adding a tag follows the string format `"tag_name:item1:item2..."`.
 For example:
 ```hjson
@@ -607,19 +607,19 @@ Writes that match an address create an internal write enable to an individual re
 Reads that match an address return the associated data content for that register.
 See the section below on requests that don't match any register address.
 
-In the middle are the collections of registers, which are a function of the `hjson` input, and a definition of the functionality of each register (read-only, read-write, etc), detailed below.
-These are instantiations of the primitives `prim_subreg`, `prim_subreg_ext` and `prim_subreg_shadow` found in the lowRISC primitive library (lowrisc:prim:all).
+In the middle are the collections of registers, which are a function of the Hjson input, and a definition of the functionality of each register (read-only, read-write, etc.), detailed below.
+These are instantiations of the primitives `prim_subreg`, `prim_subreg_ext` and `prim_subreg_shadow` found in the [primitive library](../../hw/ip/prim).
 These take as inputs the write requests from the bus as well as the hardware struct inputs associated with that register.
 They create as output the current state of the register and a potential write enable.
 The `prim_subreg` module takes a parameter `SwAccess` that is used to adjust the implementation to the access type required.
 
-On the right are the typedef structs that gather the `q` and `qe`s into one output bundle, and receive the bundled `d` and `de` inputs.
+On the right are the typedef structs that gather all the `q` and `qe` signals into one output bundle, and receive the bundled `d` and `de` inputs.
 
-The address decode and TL-UL 1:N adapter shown at the bottom are created only if the register definition includes one or more `window:` descriptions.
+The address decode and TL-UL 1:N adapter shown at the bottom are created only if the register definition includes one or more `window` descriptions.
 Each window is given its own TL-UL connection and the implementation must provide a device interface.
 
 It is notable that in the current definition, each field of a register has its own register instantiation.
-This is required because the definitions allow unique `swaccess` and `hwaccess` values per field, but could be done at the register level otherwise.
+This is required because the definitions allow unique `swaccess` and `hwaccess` values per field, but also allow them at the register level otherwise.
 The individual bundled wires are associated with the fields rather than the full register, so the designer of the rest of the peripheral does not need to know the bit range association of the individual fields.
 
 ### Error responses
@@ -652,7 +652,7 @@ Reads response data is always in its byte-channel, i.e. a one-byte read to `addr
 Note with the windowing option, a new TL-UL bus (or more) is spawned and managed outside of this register module.
 Any window that makes use of the byte masks will include the `byte-write: "true"` keyword in their definition.
 Error handling by that TL-UL bus is **completely under the control of the logic that manages this bus.**
-It is recommended to follow the above error rules based on the declared number of `validbits`: for the window, but there are some cases where this might be relaxed.
+It is recommended to follow the above error rules based on the declared number of `validbits` for the window, but there are some cases where this might be relaxed.
 For example, if the termination of the TL-UL bus is a memory that handles byte and halfword writes via masking, errors do not need be returned for unaligned sub-word writes.
 
 ## Register definitions per type
@@ -661,9 +661,10 @@ The definition of what exactly is in each register type is described in this sec
 As shown above, the maximally featured register has inputs and outputs to/from both the bus interface side of the design as well as the hardware interface side.
 Some register types don't require all of these inputs and outputs.
 For instance, a read-only register does not require write data from the bus interface (this is configured by the `SwAccess` parameter to the `prim_subreg` module).
-The maximally defined inputs to this register block (termed the `subreg` from here forward) are given in the table below.
+
+The maximally defined inputs to this register block (termed the "subreg" from here forward) are given in the table below.
 Note that these are instantiated per field, not per register, so the width is the width of the field.
-The direction is the Verilog signal definition of `subreg` for that type.
+The direction is the Verilog signal definition of a subreg for that type.
 
 <table>
   <tr>
@@ -744,8 +745,8 @@ The direction is the Verilog signal definition of `subreg` for that type.
 
 ### Type RW
 
-The first register type is the read-write register, invoked with an `hjson` attribute `swaccess` type of `rw`.
-There is a variant of this below, this is the default variant.
+The first register type is the read-write register, invoked with an Hjson attribute `swaccess` type of `rw`.
+The variant of this below is the default variant.
 This uses the `prim_subreg` with the connections shown.
 The connectivity to the hardware struct bundles are a function of the `hwaccess` and `hwqe` attributes, and will be discussed here as well.
 
@@ -761,13 +762,13 @@ If the data enable is true, the register content is updated with the update data
 If both software and hardware request an update in the same clock cycle (i.e. both `de` and `we` are true), the software updated value is used, as shown in the diagram.
 
 The `hwaccess` attribute value does not change the contents of the subreg, but the connections are potentially modified.
-The attribute `hwaccess` has four potential values, as shown earlier in the document: `hrw, hro, hwo, none`.
+The attribute `hwaccess` has four potential values, as shown earlier in the document: `hrw`, `hro`, `hwo`, `none`.
 A `hwaccess` value of `hrw` means that the hardware wants the ability to update the register content (i.e. needs connection to `d` and `de`), as well as see the updated output (`q`).
 `hwo` doesn't care about the output `q`, but wants to update the register value.
 This is the default for registers marked for software read-only access.
 `hro` conversely indicates the hardware doesn't need to update the content, but just wants to see the value written by software.
 This is the default for fields where the software access is read-write or write-only.
-Finally an attribute value of `none` asks for no interface to the hardware, and might be used for things like scratch registers or DV test registers where only software can modify the value, or informational registers like version numbers that are read-only by the software.
+Finally an attribute value of `none` asks for no interface to the hardware and might be used for things like scratch registers, DV test registers (where only software can modify the value), or informational registers (like version numbers that are read-only by the software).
 
 Another attribute in the register description `hwqe`, when true indicates that the hardware wants to see the software write enable exported to the peripheral logic.
 This is just a registered version of the bus side write-enable `we` so that its rising edge aligns with the change in the `q` output.
@@ -793,7 +794,7 @@ Note the timing of `qe` is one cycle earlier in this model than in the non-hwext
 
 ### Type RO, with hwext and zero-gate options
 
-Read-only type registers can be thought of as identical as `RW` types with no `wd` and `we` input.
+Read-only type registers can be thought of as identical to `RW` types with no `wd` and `we` input.
 They are implemented as `prim_subreg` with those inputs disabled.
 Similarly `hwext RO` registers simply pass the d input from the outside world to the data mux for software read response.
 
@@ -802,7 +803,7 @@ In this case, a hardwired value is returned for a software read equal to the def
 
 ### Type RC
 
-Registers of software access type `rc` are special cases of `RO`, but require an additional signal from the address decode logic.
+Registers of software access type `rc` (read clears) are special cases of `RO`, but require an additional signal from the address decode logic.
 This signal `re` indicates that this register is being read, in which case the contents should be set to zero.
 Note this register is not recommended but might be required for backwards compatibility to other IP functionality.
 At the moment `hwext` is not allowed to be true for `RC` since there is no exporting of the `re` signal.
@@ -845,33 +846,33 @@ So if the hardware accidentally clears fields that the software hasn't cleared y
 The recommendation is that the hardware feed the `q` value back into `d`, only setting bits with new events.
 Then there will be no "collision" between hardware setting events and software clearing events.
 The HW could have chosen to simply treat `d` and `de` as set-only, but the preference is to leave the `subreg` simple and allow the hardware to do either "the right thing" or whatever it feels is appropriate for its needs.
-(Perhaps it is a feature to clear all events in the hardware.)
+(Perhaps it may be a feature to clear all events in the hardware.)
 
 The one "conflict" that is common and worth mentioning is `RW1C` on an interrupt vector.
 This is the typical scenario where hardware sets bits (representing an interrupt event), and software clears bits (indicating the event has been handled).
 The assumption is that between the hardware setting and software clearing, **software has cleaned up whatever caused the event in the first place**.
 But if the event is still true (the HW `d` input is still `1`) then the clear should still have effect for one cycle in order to create a new interrupt edge.
-Since `d` is still `1` the `q` will return to `1` after one cycle, since the clean up was not successful.
+Since `d` is still `1`, the `q` will return to `1` after one cycle, as the clean up was not successful.
 
-#### HWExt RW1C etc.
+#### HWExt RW1C, etc.
 
 It is legal to create `RW1C`, `RW1S`, etc. with `hwext` true.
-In these cases the auto-generated hardware is simply the same as the hwext `RW` register shown earlier.
-This causes all of the implementation to be done outside of the generated register block.
-There is no way to guarantee that hardware is doing the right thing, but at least the `RW1C` conveys the notion to software the intended effect.
+In these cases the auto-generated hardware is simply the same as the `hwext` `RW` register shown earlier.
+This causes all of the implementation is to be done outside of the generated register block.
+There is no way to guarantee that hardware is doing the right thing, but at least the `RW1C` conveys the intended effect to software.
 
 Similarly it is legal to set `hwqe` true for any of these register types if the clearing wants to be monitored by the hardware outside.
 
 ## Shadow Registers
 
-If in the `.hjson` file the optional key `shadowed` is set to `true` for a particular register group, the register tool will implement the corresponding registers including all fields as shadow registers using the `prim_subreg_shadow` module.
+If in the Hjson file the optional key `shadowed` is set to `true` for a particular register group, the register tool will implement the corresponding registers including all fields as shadow registers using the `prim_subreg_shadow` module.
 The following section describes the concept in detail.
 
 ### Overview
 
-For Comportable designs used in sensitive security environments, for example AES or HMAC peripherals, there may be a need to guard against fault injection attacks.
+For Comportable designs used in sensitive security environments (for example AES or HMAC peripherals), there may be a need to guard against fault injection attacks.
 One of the surfaces under threat are critical configuration settings that may be used to control keys, region access control and system security configuration.
-These registers do not typically contain secret values, but can be vulnerable to fault attacks if a fault can alter the state of a register to a specific state.
+These registers do not typically contain secret values but can be vulnerable to fault attacks if a fault can alter the state of a register.
 
 The fault attacks targeting these registers can come in a few forms:
 - A fault attack directly on the storage element.
@@ -879,7 +880,7 @@ The fault attacks targeting these registers can come in a few forms:
 - A fault attack during the process of the write to disrupt the actual written value.
 
 Shadow registers are a mechanism to guard sensitive registers against this specific type of attack.
-They come at a cost of increased area, and a modified SW interaction, see below.
+They come at a cost of increased area and a modified SW interaction (see below).
 Usage of shadow registers should be evaluated with this impact in mind.
 
 ### Description
@@ -952,14 +953,15 @@ The following aspects need to be considered when integrating shadow registers in
   It is thus **highly recommended** to use non-permissive reset values and use software for configuring more permissive values.
 
 - Error hook-ups:
-  - Storage errors signaled to the hardware in `err_storage` are fatal, and should be hooked up directly into the [alert system](../../hw/top_earlgrey/ip_autogen/alert_handler/README.md).
-  - Update errors signaled to the hardware in `err_update` may be software errors and do not affect the current committed value; thus they can be considered informational bugs that are collected into error status or interrupts, and optionally alerts.
+  - Storage errors signaled to the hardware in `err_storage` are fatal, and should be hooked up directly into the [alert system](../../hw/ip_templates/alert_handler/README.md).
+  - Update errors signaled to the hardware in `err_update` may be software errors and do not affect the current committed value; thus they can be considered informational bugs that are collected into error status or [interrupts](../../hw/ip_templates/rv_plic/README.md), and optionally alerts.
     They do not generate error responses on the TL-UL system bus interface.
 
 - Hardware and software cost:
 
-  Shadow registers are costly as they imply considerable overheads in terms of circuit area as well as software complexity and performance.
+  Shadow registers are costly, as they imply considerable overheads in terms of circuit area as well as software complexity and performance.
   They should not be used lightly nor extensively.
+
   For example, if a register is reconfigured frequently, using restrictive reset values, possibly combined with parity bits and/or with verification of the register value after writing, might be more suitable.
   In contrast, for registers that are more static the performance overhead of shadow registers is negligible.
   Also, for some registers it is not possible to define restrictive reset values, e.g., due to process variation.
@@ -1009,7 +1011,7 @@ The following features are currently not implemented but might be added in the f
   Depending on the design, the reset propagation **may** be multi-cycle, and thus it is possible for the shadow register and committed register to not be reset at the same time when resets are asserted.
   This may manifest as an issue if the reset skews are **not** balanced, and may cause register outputs to change on the opposite sides of a clock edge for the receiving domain.
   It is thus important to ensure the skews of the committed and shadow reset lines to be roughly balanced and/or downstream logic to correctly ignore errors when this happens.
-  Note that a module may need to be reset during operation of the system, i.e., when the [alert system](../../hw/top_earlgrey/ip_autogen/alert_handler/README.md) is running.
+  Note that a module may need to be reset during operation of the system, i.e., when the alert system is running.
 
   Software-controllable resets should be avoided.
   If a single reset bit drives both normal and shadow resets, then the problem is simply moved to a different place.
@@ -1024,7 +1026,7 @@ It is intended that there will be several generators to output different formats
 
 The register generation tool will generate simple headers if it is invoked with the `-D` flag.
 The `-o <file.h>` flag may be used to specify the output file.
-As an example the tool can be invoked from the top project directory to generate the uart headers with:
+As an example, the tool can be invoked from the top project directory to generate the UART headers with:
 
 ```console
 $ ./util/regtool.py -D -o hw/ip/uart.h hw/ip/uart/data/uart.hjson
@@ -1033,7 +1035,7 @@ $ ./util/regtool.py -D -o hw/ip/uart.h hw/ip/uart/data/uart.hjson
 This format assumes that there is a base address `NAME`n`_BASE_ADDR` defined where n is an identifying number to allow for multiple instantiations of peripherals.
 It provides a definition `NAME_REG(n)` that provides the address of the register in instantiation n.
 Single-bit fields have a define with their bit offset.
-Multi-bit fields have a define for the bit offset and an mask and may have defines giving the enumerated names and values.
+Multi-bit fields have a define for the bit offset and mask and may have defines giving the enumerated names and values.
 For example:
 
 ```c
