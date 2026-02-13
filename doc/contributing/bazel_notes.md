@@ -1,6 +1,6 @@
 # Bazel Notes
 
-Both Pavona hardware and software is built with Bazel.
+Both Pavona software and some hardware models are built with Bazel.
 While our [Getting Started](../../doc/getting_started/README.md) guides detail some of the Bazel commands that can be used to build both types of artifacts, below are detailed notes on:
 * how Bazel is configured for our project, and
 * brief examples of Bazel commands that are useful for:
@@ -377,9 +377,7 @@ One issue encountered while using bazel is the following error message when atte
           compilation terminated.
 ```
 
-The reason this occurs is related to these issues:
-* [opentitan issue](https://github.com/lowRISC/opentitan/issues/12448)
-* [rust issue](https://github.com/bazelbuild/rules_rust/issues/1114)
+The reason this occurs is related to this issue: [bazelbuild/rules_rust#1114](https://github.com/bazelbuild/rules_rust/issues/1114)
 
 Specifically, when the rustc compiler is invoked, it uses the LLVM linker that is not managed by the bazel flow.
 This means bazel cannot ensure it is installed at a specific location, and instead just uses whatever is available on the host machine.
