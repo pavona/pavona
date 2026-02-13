@@ -400,13 +400,13 @@ If byte writes are supported the `byte-write: "True"` flag can be given.
 The tool will normally increment the offset to align the region based on its size.
 
 ```hjson
-    {window: {
-         name: "win1"
-         items: "64"
-         swaccess: "rw"
-         desc: '''
-               A simple 256 byte window that will be aligned.
-           '''
+    { window: {
+        name: "win1"
+        items: "64"
+        swaccess: "rw"
+        desc: '''
+              A simple 256 byte window that will be aligned.
+        '''
       }
     },
 
@@ -427,15 +427,15 @@ The window declaration can be annotated to document this.
 For example debug access to a 64 entry 12-bit wide FIFO could use a window:
 
 ```hjson
-    {window: {
-         name: "fifodebug"
-         items: "64"
-         validbits: "12"
-         swaccess: "ro"
-         desc: '''
-               The 64 entry FIFO is mapped into the low 12-bits
-               of each regwidth bit wide word.
-           '''
+    { window: {
+        name: "fifodebug"
+        items: "64"
+        validbits: "12"
+        swaccess: "ro"
+        desc: '''
+              The 64 entry FIFO is mapped into the low 12-bits
+              of each regwidth bit wide word.
+        '''
       }
     },
 
@@ -451,12 +451,12 @@ If the registers are 32 bits wide then the tool will pack the four bit instances
 
 ```hjson
     { multireg: {
-          name: "INT_CTRL",
-      desc: "GPIO Interrupt control",
-      count: "32",
-      cname: "GPIO",
-      swaccess: "rw",
-      fields: [
+        name: "INT_CTRL",
+        desc: "GPIO Interrupt control",
+        count: "32",
+        cname: "GPIO",
+        swaccess: "rw",
+        fields: [
           { bits: "0", name: "POS", resval: "0",
             desc: "Set to interrupt on rising edge"
           }
@@ -464,18 +464,17 @@ If the registers are 32 bits wide then the tool will pack the four bit instances
             desc: "Set to interrupt on falling edge"
           }
           { bits: "3:2", name: "TYPE", resval: "0",
-            desc: "Type of interrupt to raise"
-        enum: [
-          {value: "0", name: "none", desc: "no interrupt, only log" },
-          {value: "1", name: "low", desc: "low priotiry interrupt" },
-          {value: "2", name: "high", desc: "high priotiry interrupt" },
-          {value: "3", name: "nmi", desc: "non maskable interrupt" }
-        ]
+            desc: "Type of interrupt to raise",
+            enum: [
+              {value: "0", name: "none", desc: "no interrupt, only log" },
+              {value: "1", name: "low", desc: "low priotiry interrupt" },
+              {value: "2", name: "high", desc: "high priotiry interrupt" },
+              {value: "3", name: "nmi", desc: "non maskable interrupt" }
+            ]
           }
-      ]
+        ]
       }
     },
-
 ```
 
 Note that the definition bits for the base instance need not be contiguous.
@@ -484,19 +483,19 @@ For example the data bits and mask bits could be in the lower and upper parts of
 
 ```hjson
     { multireg: {
-          name: "WDATA",
-      desc: "Write with mask to GPIO out register",
-      count: "32",
-      cname: "GPIO",
-      swaccess: "rw",
-      fields: [
+        name: "WDATA",
+        desc: "Write with mask to GPIO out register",
+        count: "32",
+        cname: "GPIO",
+        swaccess: "rw",
+        fields: [
           { bits: "0", name: "D", resval: "0",
             desc: "Data to write if mask bit is 1"
           }
           { bits: "16", name: "M", resval: "0",
             desc: "Mask, set to allow data write"
           }
-      ]
+        ]
       }
     }
 ```
