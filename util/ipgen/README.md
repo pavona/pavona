@@ -105,15 +105,15 @@ The given VLNV is transformed as follows:
   - Otherwise the name stays the same.
 - The optional version is preserved.
 
-For example, a `rv_plic.core.tpl` file could look like this:
+For example, a `bar_baz.core.tpl` file could look like this:
 
 ```yaml
 CAPI=2:
-name: ${instance_vlnv("pavona:ip:rv_plic")}
+name: ${instance_vlnv("pavona:ip:bar_baz")}
 ```
 
-If the top name was `foo` and the uniquified names dictionary was `{'rv_plic': 'rv_plic_1'}`, the VLNV will become `pavona:foo_ip:rv_plic_1`.
-Similarly, the VLNV `pavona:dv:rv_plic_sim` will become `pavona:foo_dv:rv_plic_1_sim`.
+If the top name was `foo` and the uniquified names dictionary was `{'bar_baz': 'bar_baz_1'}`, the VLNV will become `pavona:foo_ip:bar_baz_1`.
+Similarly, the VLNV `pavona:dv:bar_baz_sim` will become `pavona:foo_dv:bar_baz_1_sim`.
 
 The following rules should be applied when creating IP templates:
 
