@@ -795,10 +795,12 @@ Note the timing of `qe` is one cycle earlier in this model than in the non-hwext
 
 Read-only type registers can be thought of as identical to `RW` types with no `wd` and `we` input.
 They are implemented as `prim_subreg` with those inputs disabled.
-Similarly `hwext RO` registers simply pass the d input from the outside world to the data mux for software read response.
+Similarly `hwext` `RO` registers simply pass the `d` input from the outside world to the data mux for software read response.
 
-There is one special case here [not yet implemented] where `swaccess` is `ro` and `hwaccess` is `none` or `hro` and `hwext` is true.
-In this case, a hardwired value is returned for a software read equal to the default value assigned to the register this can be useful for auto-generated register values with no storage register required.
+There is one special case here that is not yet implemented: where `swaccess` is `ro`, `hwaccess` is `none` or `hro`, and `hwext` is true.
+In this case, a hardwired value should be returned for a software read equal to the default value assigned to the register this can be useful for auto-generated register values with no storage register required.
+
+For now, register generation will error out if there is a register that is `hwext`, is readable by software, and has `hwaccess == hro` (see [`util/reggen/register.py`](./register.py)).
 
 ### Type RC
 
@@ -807,6 +809,8 @@ This signal `re` indicates that this register is being read, in which case the c
 Note this register is not recommended but might be required for backwards compatibility to other IP functionality.
 At the moment `hwext` is not allowed to be true for `RC` since there is no exporting of the `re` signal.
 If this is required, please add a feature request.
+
+In the event that hardware writes collide with software `rc` reads from the register, the software will read in the value from hardware, but the register will still be cleared.
 
 ### Type WO
 
@@ -1059,3 +1063,9 @@ For example:
 
 The register tool can be used standalone to generate HTML documentation of the registers.
 However, this is normally done as part of the Markdown documentation using the special tags to include the register definition file and insert the configuration and register information.
+
+To generate documentation, pass in the flags:
+- `-d` for register tables in Markdown
+- `--interfaces` for hardware interface documentation in Markdown
+- `--doc` for documentation of the register tool itself (in Markdown)
+- `--doc_html_old` for register documentation in HTML (this is deprecated)
