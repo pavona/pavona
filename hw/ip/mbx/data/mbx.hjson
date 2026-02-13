@@ -6,7 +6,7 @@
 {
   name:               "mbx"
   human_name:         "DOE Mailbox"
-  one_line_desc:      "DOE mailbox for use as an integrated OpenTitan communication channel."
+  one_line_desc:      "DOE mailbox for use as an integrated system communication channel"
   one_paragraph_desc: '''
   The SoC (i.e., the SoC Host CPU or other SoC Execution Engines) may request security services from OpenTitan.
   This means that pre-defined control information must be passed to OpenTitan from the security service requester.

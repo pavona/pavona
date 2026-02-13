@@ -6,7 +6,7 @@
 {
   name:               "dma"
   human_name:         "DMA Controller"
-  one_line_desc:      "DMA Controller for the integrated OpenTitan."
+  one_line_desc:      "DMA Controller for integrated systems"
   one_paragraph_desc: '''
   The secure DMA controller provides OpenTitan with the ability to move data blobs securely in and out of the OpenTitan memory while offloading the Ibex core to focus on security critical tasks.
   The secure DMA provides an hardware isolation layer between OpenTitan and the rest of the SoC.
