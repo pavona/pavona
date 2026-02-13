@@ -199,22 +199,22 @@ typedef struct acc_app {
  * @param expr_ An expression that evaluates to a `status_t`.
  */
 #ifndef OT_DISABLE_HARDENING
-#define ACC_WIPE_IF_ERROR(expr_)                                       \
+#define ACC_WIPE_IF_ERROR(expr_)                                        \
   do {                                                                  \
     status_t status_ = expr_;                                           \
     if (launder32(OT_UNSIGNED(status_.value)) != kHardenedBoolTrue) {   \
-      acc_dmem_sec_wipe_nofail();                                      \
+      acc_dmem_sec_wipe_nofail();                                       \
       return (status_t){                                                \
           .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
     }                                                                   \
     HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);                \
   } while (false)
 #else  // OT_DISABLE_HARDENING
-#define ACC_WIPE_IF_ERROR(expr_)                                       \
+#define ACC_WIPE_IF_ERROR(expr_)                                        \
   do {                                                                  \
     status_t status_ = expr_;                                           \
     if (status_.value != kHardenedBoolTrue) {                           \
-      acc_dmem_sec_wipe_nofail();                                      \
+      acc_dmem_sec_wipe_nofail();                                       \
       return (status_t){                                                \
           .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
     }                                                                   \
@@ -228,22 +228,22 @@ typedef struct acc_app {
  *        constants created by `autogen_acc_insn_count_header`.
  */
 #ifndef OT_DISABLE_HARDENING
-#define ACC_CHECK_INSN_COUNT(min_count_, max_count_)         \
+#define ACC_CHECK_INSN_COUNT(min_count_, max_count_)          \
   do {                                                        \
-    uint32_t insn_count = acc_instruction_count_get();       \
+    uint32_t insn_count = acc_instruction_count_get();        \
     if (insn_count < min_count_ || insn_count > max_count_) { \
-      acc_dmem_sec_wipe_nofail();                            \
+      acc_dmem_sec_wipe_nofail();                             \
       return OTCRYPTO_FATAL_ERR;                              \
     }                                                         \
     HARDENED_CHECK_GE(insn_count, min_count_);                \
     HARDENED_CHECK_LE(insn_count, max_count_);                \
   } while (false)
 #else  // OT_DISABLE_HARDENING
-#define ACC_CHECK_INSN_COUNT(min_count_, max_count_)         \
+#define ACC_CHECK_INSN_COUNT(min_count_, max_count_)          \
   do {                                                        \
-    uint32_t insn_count = acc_instruction_count_get();       \
+    uint32_t insn_count = acc_instruction_count_get();        \
     if (insn_count < min_count_ || insn_count > max_count_) { \
-      acc_dmem_sec_wipe_nofail();                            \
+      acc_dmem_sec_wipe_nofail();                             \
       return OTCRYPTO_FATAL_ERR;                              \
     }                                                         \
   } while (false)
@@ -267,8 +267,7 @@ typedef struct acc_app {
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t acc_dmem_write(size_t num_words, const uint32_t *src,
-                         acc_addr_t dest);
+status_t acc_dmem_write(size_t num_words, const uint32_t *src, acc_addr_t dest);
 
 /**
  * Set a range of ACC's data memory (DMEM) to a particular value.

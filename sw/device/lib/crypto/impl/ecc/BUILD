@@ -18,12 +18,12 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":p256_insn_counts",
+        "//sw/acc/crypto:run_p256",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/acc/crypto:run_p256",
     ],
 )
 
@@ -34,12 +34,12 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":p384_insn_counts",
+        "//sw/acc/crypto:run_p384",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/acc/crypto:run_p384",
     ],
 )
 
@@ -50,12 +50,12 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":ed25519_insn_counts",
+        "//sw/acc/crypto:run_ed25519",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/acc/crypto:run_ed25519",
     ],
 )
 

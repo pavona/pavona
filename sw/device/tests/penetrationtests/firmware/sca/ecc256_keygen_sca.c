@@ -61,8 +61,7 @@ enum {
 /**
  * App configuration for p256_key_from_seed_sca
  */
-const acc_app_t kAccAppP256KeyFromSeed =
-    ACC_APP_T_INIT(p256_key_from_seed_sca);
+const acc_app_t kAccAppP256KeyFromSeed = ACC_APP_T_INIT(p256_key_from_seed_sca);
 
 static const acc_addr_t kAccVarMode =
     ACC_ADDR_T_INIT(p256_key_from_seed_sca, mode);
@@ -70,10 +69,8 @@ static const acc_addr_t kAccVarSeed0 =
     ACC_ADDR_T_INIT(p256_key_from_seed_sca, seed0);
 static const acc_addr_t kAccVarSeed1 =
     ACC_ADDR_T_INIT(p256_key_from_seed_sca, seed1);
-static const acc_addr_t kAccVarD0 =
-    ACC_ADDR_T_INIT(p256_key_from_seed_sca, d0);
-static const acc_addr_t kAccVarD1 =
-    ACC_ADDR_T_INIT(p256_key_from_seed_sca, d1);
+static const acc_addr_t kAccVarD0 = ACC_ADDR_T_INIT(p256_key_from_seed_sca, d0);
+static const acc_addr_t kAccVarD1 = ACC_ADDR_T_INIT(p256_key_from_seed_sca, d1);
 
 /**
  * An array of seeds to be used in a batch

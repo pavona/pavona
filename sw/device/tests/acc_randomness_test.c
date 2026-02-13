@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_acc.h"     // Generated
+#include "hw/top/dt/dt_acc.h"      // Generated
 #include "hw/top/dt/dt_rv_plic.h"  // Generated
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -77,8 +77,7 @@ static void acc_wait_for_done_irq(dif_acc_t *acc) {
   // we see the Done interrupt fire.
   irq = UINT32_MAX;
   plic_peripheral = kDtInstanceIdUnknown;
-  CHECK_DIF_OK(
-      dif_acc_irq_set_enabled(acc, kDifAccIrqDone, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_acc_irq_set_enabled(acc, kDifAccIrqDone, kDifToggleEnabled));
 
   // ACC should be running. Wait for an interrupt that says
   // it's done.

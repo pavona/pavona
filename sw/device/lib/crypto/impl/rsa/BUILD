@@ -36,12 +36,12 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rsa_datatypes",
+        "//sw/acc/crypto:run_rsa_keygen",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/acc/crypto:run_rsa_keygen",
     ],
 )
 
@@ -53,8 +53,8 @@ cc_library(
     deps = [
         ":rsa_datatypes",
         ":rsa_modexp_insn_counts",
-        "//sw/device/lib/crypto/drivers:acc",
         "//sw/acc/crypto:run_rsa_modexp",
+        "//sw/device/lib/crypto/drivers:acc",
     ],
 )
 

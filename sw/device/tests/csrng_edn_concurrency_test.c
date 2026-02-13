@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_aes.h"
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
 #include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_core_ibex.h"
 #include "hw/top/dt/dt_rv_plic.h"
 #include "sw/device/lib/base/macros.h"
@@ -19,10 +19,10 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/edn_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"

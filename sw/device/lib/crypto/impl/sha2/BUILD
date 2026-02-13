@@ -19,14 +19,14 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":sha256_insn_counts",
+        "//sw/acc/crypto:run_sha256",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:acc",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/acc/crypto:run_sha256",
     ],
 )
 
@@ -37,14 +37,14 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":sha512_insn_counts",
+        "//sw/acc/crypto:run_sha512",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:acc",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/acc/crypto:run_sha512",
     ],
 )
 

@@ -33,12 +33,12 @@ int acc_model_edn_flush(AccModel *model);
 
 // Call edn_rnd_step function of AccModel. Returns 0 on success; -1 on error.
 int acc_model_edn_rnd_step(AccModel *model,
-                            svLogicVecVal *edn_rnd_data /* logic [31:0] */,
-                            unsigned char fips_err);
+                           svLogicVecVal *edn_rnd_data /* logic [31:0] */,
+                           unsigned char fips_err);
 
 // Call edn_urnd_step function of AccModel. Returns 0 on success; -1 on error.
 int acc_model_edn_urnd_step(AccModel *model,
-                             svLogicVecVal *edn_urnd_data /* logic [31:0] */);
+                            svLogicVecVal *edn_urnd_data /* logic [31:0] */);
 
 // Signal RTL is finished processing RND data to Model. Returns 0 on success;
 // -1 on error.
@@ -54,7 +54,7 @@ int acc_model_otp_key_cdc_done(AccModel *model);
 
 // Pass keymgr data to model. Returns 0 on success; -1 on error.
 int acc_model_set_keymgr_value(AccModel *model, svLogicVecVal *key0,
-                                svLogicVecVal *key1, unsigned char valid);
+                               svLogicVecVal *key1, unsigned char valid);
 
 // The main entry point to the ACC model, exported from here and used in
 // acc_core_model.sv.
@@ -81,12 +81,12 @@ int acc_model_set_keymgr_value(AccModel *model, svLogicVecVal *key0,
 // runs on the next negedge of the clock.
 //
 unsigned acc_model_step(AccModel *model, unsigned model_state,
-                         svBitVecVal *cmd /* bit [7:0] */,
-                         svBitVecVal *status /* bit [7:0] */,
-                         svBitVecVal *insn_cnt /* bit [31:0] */,
-                         svBitVecVal *rnd_req /* bit [0:0] */,
-                         svBitVecVal *err_bits /* bit [31:0] */,
-                         svBitVecVal *stop_pc /* bit [31:0] */);
+                        svBitVecVal *cmd /* bit [7:0] */,
+                        svBitVecVal *status /* bit [7:0] */,
+                        svBitVecVal *insn_cnt /* bit [31:0] */,
+                        svBitVecVal *rnd_req /* bit [0:0] */,
+                        svBitVecVal *err_bits /* bit [31:0] */,
+                        svBitVecVal *stop_pc /* bit [31:0] */);
 
 // This gets run if the acc_model_step function sets the check_due bit in its
 // model_state bitfield (see above). If the model's design_scope is non-empty,
@@ -125,23 +125,23 @@ int acc_disable_stack_check(AccModel *model);
 // a "pure" function: there isn't actually any model state that gets
 // updated by calling it. Returns 0 on success or -1 on failure.
 int acc_model_step_crc(AccModel *model, svBitVecVal *item /* bit [47:0] */,
-                        svBitVecVal *state /* inout bit [31:0] */);
+                       svBitVecVal *state /* inout bit [31:0] */);
 
 // Flush any information in the model. Returns 0 on success; -1 on error.
 int acc_model_reset(AccModel *model, svBitVecVal *status /* bit [7:0] */,
-                     svBitVecVal *insn_cnt /* bit [31:0] */,
-                     svBitVecVal *rnd_req /* bit [0:0] */,
-                     svBitVecVal *err_bits /* bit [31:0] */,
-                     svBitVecVal *stop_pc /* bit [31:0] */);
+                    svBitVecVal *insn_cnt /* bit [31:0] */,
+                    svBitVecVal *rnd_req /* bit [0:0] */,
+                    svBitVecVal *err_bits /* bit [31:0] */,
+                    svBitVecVal *stop_pc /* bit [31:0] */);
 
 // React to an error escalation. Returns 0 on success or -1 on failure.
 int acc_model_send_err_escalation(AccModel *model,
-                                   svBitVecVal *err_val /* bit [31:0] */,
-                                   svBit lock_immediately);
+                                  svBitVecVal *err_val /* bit [31:0] */,
+                                  svBit lock_immediately);
 
 // Send an RMA request value to the model
 int acc_model_set_rma_req(AccModel *model,
-                           svBitVecVal *rma_req /* bit [3:0] */);
+                          svBitVecVal *rma_req /* bit [3:0] */);
 
 // Trigger initial secure wipe.
 int acc_model_initial_secure_wipe(AccModel *model);

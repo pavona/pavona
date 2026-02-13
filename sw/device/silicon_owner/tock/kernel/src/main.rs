@@ -14,8 +14,8 @@
 #![test_runner(test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-use crate::hil::symmetric_encryption::AES128_BLOCK_SIZE;
 use crate::acc::AccComponent;
+use crate::hil::symmetric_encryption::AES128_BLOCK_SIZE;
 use capsules_aes_gcm::aes_gcm;
 use capsules_core::virtualizers::virtual_aes_ccm;
 use capsules_core::virtualizers::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
@@ -40,8 +40,8 @@ use kernel::{create_capability, debug, static_init};
 use lowrisc::flash_ctrl::FlashMPConfig;
 use rv32i::csr;
 
-pub mod io;
 mod acc;
+pub mod io;
 
 const NUM_PROCS: usize = 4;
 
@@ -611,8 +611,8 @@ unsafe fn setup() -> (
         >
     ));
 
-    let mux_acc = crate::acc::AccelMuxComponent::new(&peripherals.acc)
-        .finalize(acc_mux_component_static!());
+    let mux_acc =
+        crate::acc::AccelMuxComponent::new(&peripherals.acc).finalize(acc_mux_component_static!());
 
     let acc = AccComponent::new(&mux_acc).finalize(crate::acc_component_static!());
 

@@ -41,9 +41,9 @@ status_t acc_testutils_rsa_load(dif_acc_t *acc);
  *                   32 byte-steps (i.e. RSA 256 to RSA 4096).
  */
 status_t acc_testutils_rsa_modexp_f4_start(dif_acc_t *acc,
-                                            const uint8_t *modulus,
-                                            const uint8_t *in,
-                                            size_t size_bytes);
+                                           const uint8_t *modulus,
+                                           const uint8_t *in,
+                                           size_t size_bytes);
 
 /**
  * Finish modular exponentiation with the exponent 65537.
@@ -58,7 +58,7 @@ status_t acc_testutils_rsa_modexp_f4_start(dif_acc_t *acc,
  *                   32 byte-steps (i.e. RSA 256 to RSA 4096).
  */
 status_t acc_testutils_rsa_modexp_f4_finalize(dif_acc_t *acc, uint8_t *out,
-                                               size_t size_bytes);
+                                              size_t size_bytes);
 
 /**
  * Start a constant-time modular exponentiation.
@@ -94,7 +94,7 @@ status_t acc_testutils_rsa_modexp_consttime_start(
  *                   32 byte-steps (i.e. RSA 256 to RSA 4096).
  */
 status_t acc_testutils_rsa_modexp_consttime_finalize(dif_acc_t *acc,
-                                                      uint8_t *out,
-                                                      size_t size_bytes);
+                                                     uint8_t *out,
+                                                     size_t size_bytes);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ACC_TESTUTILS_RSA_H_

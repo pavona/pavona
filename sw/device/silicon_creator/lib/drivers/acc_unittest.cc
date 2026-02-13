@@ -111,12 +111,9 @@ TEST_F(ExecuteTest, ExecuteBlockUntilIdle) {
   // Test assumption.
   static_assert(ACC_IMEM_SIZE_BYTES >= 8, "ACC IMEM size too small.");
 
-  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET,
-                    kScAccStatusBusySecWipeDmem);
-  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET,
-                    kScAccStatusBusySecWipeDmem);
-  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET,
-                    kScAccStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusySecWipeDmem);
 
   // Read twice for hardening.
   EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
@@ -183,8 +180,7 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
 
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr, test_data[0]);
-  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr + 4,
-                     test_data[1]);
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr + 4, test_data[1]);
 
   EXPECT_EQ(sc_acc_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
 }
@@ -198,8 +194,7 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
 
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr, test_data[0]);
-  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr + 4,
-                     test_data[1]);
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr + 4, test_data[1]);
 
   EXPECT_EQ(sc_acc_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
 }
@@ -285,8 +280,7 @@ TEST_F(AccAppTest, AccLoadAppSuccess) {
   // `sc_acc_busy_wait_for_done` - begin with busy to ensure we wait until
   // idle.
   EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusyExecute);
-  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET,
-                    kScAccStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusySecWipeDmem);
   // Read twice for hardening.
   EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
   EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
@@ -334,8 +328,8 @@ TEST_F(AccAppTest, AccLoadInvalidAppEmptyImem) {
 
 TEST_F(AccAppTest, AccLoadInvalidAppImemOutOfRange) {
   // Create an invalid app with a too-large IMEM range.
-  std::array<uint32_t, (ACC_IMEM_SIZE_BYTES / sizeof(uint32_t)) + 1>
-      imem_data = {0};
+  std::array<uint32_t, (ACC_IMEM_SIZE_BYTES / sizeof(uint32_t)) + 1> imem_data =
+      {0};
   std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
   sc_acc_addr_t dmem_data_offset = 0x12;
   sc_acc_app_t app = {
@@ -370,9 +364,8 @@ TEST_F(AccWriteTest, Success) {
 
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + kDestAddr, test_data[0]);
-  EXPECT_ABS_WRITE32(
-      base_ + ACC_DMEM_REG_OFFSET + kDestAddr + sizeof(uint32_t),
-      test_data[1]);
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + kDestAddr + sizeof(uint32_t),
+                     test_data[1]);
 
   EXPECT_EQ(sc_acc_dmem_write(2, test_data.data(), kDestAddr), kErrorOk);
 }

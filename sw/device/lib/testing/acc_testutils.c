@@ -5,8 +5,8 @@
 #include "sw/device/lib/testing/acc_testutils.h"
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_acc.h"
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
@@ -20,7 +20,7 @@ enum {
 };
 
 status_t acc_testutils_wait_for_done(const dif_acc_t *acc,
-                                      dif_acc_err_bits_t expected_err_bits) {
+                                     dif_acc_err_bits_t expected_err_bits) {
   bool busy = true;
   dif_acc_status_t status;
   while (busy) {
@@ -90,13 +90,13 @@ status_t acc_testutils_execute(const dif_acc_t *acc) {
 }
 
 status_t acc_testutils_write_data(const dif_acc_t *acc, size_t len_bytes,
-                                   const void *src, acc_addr_t dest) {
+                                  const void *src, acc_addr_t dest) {
   TRY(dif_acc_dmem_write(acc, dest, src, len_bytes));
   return OK_STATUS();
 }
 
 status_t acc_testutils_read_data(const dif_acc_t *acc, size_t len_bytes,
-                                  acc_addr_t src, void *dest) {
+                                 acc_addr_t src, void *dest) {
   TRY(dif_acc_dmem_read(acc, src, dest, len_bytes));
   return OK_STATUS();
 }

@@ -2,20 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_plic.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -259,7 +259,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   // following the end of the ACC test. The ACC test reads `RND` 5 times
   // and each read consumes 256b of entropy. The EDN1 generates entropy per
   // blocks of 128b so we need to generate 10 blocks.
-  const size_t kEdnBlockSizeBits = 128;     // Each EDN block contains 128b.
+  const size_t kEdnBlockSizeBits = 128;    // Each EDN block contains 128b.
   const size_t kAccRequestSizeBits = 256;  // Each ACC request requires 256b.
   const size_t kAccTestRequestCount =
       5;  // The number of `RND` reads in the randomness test.

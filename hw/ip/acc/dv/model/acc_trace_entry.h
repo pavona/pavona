@@ -80,8 +80,8 @@ class AccTraceEntry {
   static bool check_entries_compatible(
       trace_type_t type, const std::string &key,
       const std::vector<AccTraceBodyLine> &rtl_lines,
-      const std::vector<AccTraceBodyLine> &iss_lines,
-      bool no_sec_wipe_data_chk, std::string *err_desc);
+      const std::vector<AccTraceBodyLine> &iss_lines, bool no_sec_wipe_data_chk,
+      std::string *err_desc);
 
   static trace_type_t hdr_to_trace_type(const std::string &hdr);
 

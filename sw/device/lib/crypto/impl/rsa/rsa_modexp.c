@@ -26,8 +26,7 @@ ACC_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d_q);    // CRT component d_q.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_modexp, i_q);    // CRT coefficient i_q.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_modexp, inout);  // Input/output buffer.
 
-static const acc_addr_t kAccVarRsaMode =
-    ACC_ADDR_T_INIT(run_rsa_modexp, mode);
+static const acc_addr_t kAccVarRsaMode = ACC_ADDR_T_INIT(run_rsa_modexp, mode);
 static const acc_addr_t kAccVarRsaN = ACC_ADDR_T_INIT(run_rsa_modexp, n);
 static const acc_addr_t kAccVarRsaP = ACC_ADDR_T_INIT(run_rsa_modexp, p);
 static const acc_addr_t kAccVarRsaQ = ACC_ADDR_T_INIT(run_rsa_modexp, q);
@@ -153,8 +152,7 @@ status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(acc_dmem_write(kRsa2048NumWords, base->data, kAccVarRsaInOut));
   HARDENED_TRY(acc_dmem_write(kRsa2048NumWords, modulus->data, kAccVarRsaN));
-  ACC_WIPE_IF_ERROR(
-      acc_dmem_write(kRsa2048NumWords, exp->data, kAccVarRsaD));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kRsa2048NumWords, exp->data, kAccVarRsaD));
 
   // Start ACC.
   ACC_WIPE_IF_ERROR(acc_execute());
@@ -255,8 +253,7 @@ status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(acc_dmem_write(kRsa3072NumWords, base->data, kAccVarRsaInOut));
   HARDENED_TRY(acc_dmem_write(kRsa3072NumWords, modulus->data, kAccVarRsaN));
-  ACC_WIPE_IF_ERROR(
-      acc_dmem_write(kRsa3072NumWords, exp->data, kAccVarRsaD));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kRsa3072NumWords, exp->data, kAccVarRsaD));
 
   // Start ACC.
   ACC_WIPE_IF_ERROR(acc_execute());
@@ -357,8 +354,7 @@ status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(acc_dmem_write(kRsa4096NumWords, base->data, kAccVarRsaInOut));
   HARDENED_TRY(acc_dmem_write(kRsa4096NumWords, modulus->data, kAccVarRsaN));
-  ACC_WIPE_IF_ERROR(
-      acc_dmem_write(kRsa4096NumWords, exp->data, kAccVarRsaD));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kRsa4096NumWords, exp->data, kAccVarRsaD));
 
   // Start ACC.
   ACC_WIPE_IF_ERROR(acc_execute());

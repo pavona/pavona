@@ -27,15 +27,14 @@ void AccTraceSource::RemoveListener(const AccTraceListener *listener) {
   listeners_.erase(it);
 }
 
-void AccTraceSource::Broadcast(const std::string &trace,
-                                unsigned cycle_count) {
+void AccTraceSource::Broadcast(const std::string &trace, unsigned cycle_count) {
   for (AccTraceListener *listener : listeners_) {
     listener->AcceptTraceString(trace, cycle_count);
   }
 }
 
 extern "C" void accept_acc_trace_string(const char *trace,
-                                         unsigned int cycle_count) {
+                                        unsigned int cycle_count) {
   assert(trace != nullptr);
   AccTraceSource::get().Broadcast(trace, cycle_count);
 }

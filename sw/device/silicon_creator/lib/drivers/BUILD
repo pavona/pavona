@@ -437,8 +437,8 @@ cc_library(
     srcs = ["acc.c"],
     hdrs = ["acc.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:acc_c_regs",
+        "//hw/top:dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib:error",

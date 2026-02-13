@@ -4,12 +4,12 @@
 
 #include <string.h>
 
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_aes.h"
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
 #include "hw/top/dt/dt_entropy_src.h"
 #include "hw/top/dt/dt_kmac.h"
-#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_core_ibex.h"
 #include "hw/top/dt/dt_rv_plic.h"
 #include "sw/device/lib/base/memory.h"

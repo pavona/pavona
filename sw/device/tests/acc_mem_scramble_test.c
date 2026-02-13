@@ -2,16 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_acc.h"
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-static_assert(kDtAccCount >= 1,
-              "This test requires at least one ACC instance");
+static_assert(kDtAccCount >= 1, "This test requires at least one ACC instance");
 // rv_core_ibex wrapper around the Ibex CPU provides additional functionality.
 static_assert(kDtRvCoreIbexCount >= 1,
               "This test requires at least one rv_core_ibex instance");
@@ -21,13 +20,11 @@ static dt_rv_core_ibex_t kTestRvCoreIbex = (dt_rv_core_ibex_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
-typedef dif_result_t (*acc_read_t)(const dif_acc_t *acc,
-                                    uint32_t offset_bytes, void *dest,
-                                    size_t len_bytes);
+typedef dif_result_t (*acc_read_t)(const dif_acc_t *acc, uint32_t offset_bytes,
+                                   void *dest, size_t len_bytes);
 
-typedef dif_result_t (*acc_write_t)(const dif_acc_t *acc,
-                                     uint32_t offset_bytes, const void *src,
-                                     size_t len_bytes);
+typedef dif_result_t (*acc_write_t)(const dif_acc_t *acc, uint32_t offset_bytes,
+                                    const void *src, size_t len_bytes);
 
 enum {
   /**
@@ -135,11 +132,11 @@ static void get_rand_words(dif_rv_core_ibex_t *ibex, int num, uint32_t *rnd_buf,
  *                   either `dif_acc_imem_write` or `dif_acc_dmem_write`.
  */
 static void acc_write_mem_words(const dif_acc_t *acc, const int num,
-                                 const uint32_t *word_addrs,
-                                 acc_write_t acc_write) {
+                                const uint32_t *word_addrs,
+                                acc_write_t acc_write) {
   for (int i = 0; i < num; ++i) {
     acc_write(acc, word_addrs[i] * sizeof(uint32_t), (void *)&word_addrs[i],
-               sizeof(uint32_t));
+              sizeof(uint32_t));
   }
 }
 
@@ -157,9 +154,8 @@ static void acc_write_mem_words(const dif_acc_t *acc, const int num,
  *             errors.
  */
 static void acc_check_mem_words(const dif_acc_t *acc, const int num,
-                                 const uint32_t *word_addrs,
-                                 acc_read_t acc_read, int *num_matches,
-                                 int *num_intg_errors) {
+                                const uint32_t *word_addrs, acc_read_t acc_read,
+                                int *num_matches, int *num_intg_errors) {
   *num_matches = 0;
   *num_intg_errors = 0;
 
@@ -170,7 +166,7 @@ static void acc_check_mem_words(const dif_acc_t *acc, const int num,
     // integrity error.
     has_irq_fired = false;
     acc_read(acc, word_addrs[i] * sizeof(uint32_t), (void *)&word,
-              sizeof(uint32_t));
+             sizeof(uint32_t));
     match = (word_addrs[i] == word);
     if (match) {
       *num_matches += 1;
@@ -220,14 +216,14 @@ bool test_main(void) {
   // Read back and check random address offsets. All values must match, we must
   // not see any integrity errors.
   acc_check_mem_words(&acc, kNumAddrs, imem_offsets, dif_acc_imem_read,
-                       &num_matches_imem, &num_intg_errors_imem);
+                      &num_matches_imem, &num_intg_errors_imem);
   CHECK(num_matches_imem == kNumAddrs, "%i unexpected IMEM mismatches",
         kNumAddrs - num_matches_imem);
   CHECK(!num_intg_errors_imem, "%i unexpected IMEM integrity errors",
         num_intg_errors_imem);
 
   acc_check_mem_words(&acc, kNumAddrs, dmem_offsets, dif_acc_dmem_read,
-                       &num_matches_dmem, &num_intg_errors_dmem);
+                      &num_matches_dmem, &num_intg_errors_dmem);
   CHECK(num_matches_dmem == kNumAddrs, "%i unexpected DMEM mismatches",
         kNumAddrs - num_matches_dmem);
   CHECK(!num_intg_errors_dmem, "%i unexpected DMEM integrity errors",
@@ -242,12 +238,12 @@ bool test_main(void) {
   // Read back and check random address offsets. We don't care about the values.
   // "Most" reads should trigger integrity errors.
   acc_check_mem_words(&acc, kNumAddrs, imem_offsets, dif_acc_imem_read,
-                       &num_matches_imem, &num_intg_errors_imem);
+                      &num_matches_imem, &num_intg_errors_imem);
   CHECK(num_intg_errors_imem >= kNumIntgErrorsThreshold,
         "Expecting at least %i IMEM integrity errors, got %i",
         kNumIntgErrorsThreshold, num_intg_errors_imem);
   acc_check_mem_words(&acc, kNumAddrs, dmem_offsets, dif_acc_dmem_read,
-                       &num_matches_dmem, &num_intg_errors_dmem);
+                      &num_matches_dmem, &num_intg_errors_dmem);
   CHECK(num_intg_errors_dmem >= kNumIntgErrorsThreshold,
         "Expecting at least %i DMEM integrity errors, got %i",
         kNumIntgErrorsThreshold, num_intg_errors_dmem);

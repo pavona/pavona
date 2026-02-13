@@ -249,8 +249,8 @@ static void ecc384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
                          size_t secret_k_len) {
   LOG_INFO("SSECDSA starting...");
   SS_CHECK_STATUS_OK(acc_load_app(kAccAppP384Ecdsa));
-  LOG_INFO("acc_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_ACC_BASE_ADDR +
-                                                  ACC_STATUS_REG_OFFSET));
+  LOG_INFO("acc_status: 0x%08x",
+           abs_mmio_read32(TOP_EARLGREY_ACC_BASE_ADDR + ACC_STATUS_REG_OFFSET));
 
   uint32_t ecc384_signature_r[kEcc384NumWords];
   uint32_t ecc384_signature_s[kEcc384NumWords];

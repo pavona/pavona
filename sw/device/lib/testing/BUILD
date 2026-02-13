@@ -305,9 +305,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":acc_testutils",
+        "//sw/acc/crypto:rsa",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:acc",
-        "//sw/acc/crypto:rsa",
     ],
 )
 

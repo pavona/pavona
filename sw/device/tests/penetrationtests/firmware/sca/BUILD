@@ -121,6 +121,7 @@ cc_library(
     hdrs = ["ecc256_keygen_sca.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/acc/crypto:p256_key_from_seed_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:acc",
@@ -132,7 +133,6 @@ cc_library(
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:acc_sca_commands",
-        "//sw/acc/crypto:p256_key_from_seed_sca",
     ],
 )
 
@@ -184,10 +184,10 @@ cc_library(
         ":ecc256_keygen_sca",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
@@ -223,6 +223,8 @@ cc_library(
     hdrs = ["acc_sca.h"],
     deps = [
         ":ecc256_keygen_sca",
+        "//sw/acc/crypto:p256_ecdsa_sca",
+        "//sw/acc/crypto:rsa",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:keymgr",
@@ -239,8 +241,6 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/sca/acc:acc_insn_combi_ops",
         "//sw/device/tests/penetrationtests/firmware/sca/acc:acc_key_sideload_sca",
         "//sw/device/tests/penetrationtests/json:acc_sca_commands",
-        "//sw/acc/crypto:p256_ecdsa_sca",
-        "//sw/acc/crypto:rsa",
     ],
 )
 

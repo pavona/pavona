@@ -7,9 +7,9 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
-#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"

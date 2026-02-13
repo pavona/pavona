@@ -9,10 +9,10 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
+#include "sw/device/silicon_creator/lib/drivers/acc.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
-#include "sw/device/silicon_creator/lib/drivers/acc.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
 
@@ -145,9 +145,9 @@ rom_error_t acc_boot_attestation_keygen(
 
   // Retrieve the public key.
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_read(kEcdsaP256PublicKeyCoordWords,
-                                             kAccVarBootX, public_key->x));
+                                            kAccVarBootX, public_key->x));
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_read(kEcdsaP256PublicKeyCoordWords,
-                                             kAccVarBootY, public_key->y));
+                                            kAccVarBootY, public_key->y));
 
   return kErrorOk;
 }
@@ -162,8 +162,8 @@ static void pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
 }
 
 rom_error_t acc_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
-                                           hmac_digest_t *pubkey_id,
-                                           ecdsa_p256_public_key_t *pubkey) {
+                                          hmac_digest_t *pubkey_id,
+                                          ecdsa_p256_public_key_t *pubkey) {
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(key.required_keymgr_state));
 
   // Generate / sideload key material into ACC, and generate the ECC keypair.
@@ -239,13 +239,13 @@ rom_error_t acc_boot_attestation_key_clear(void) {
   if (data_num_words > 0) {
     HARDENED_RETURN_IF_ERROR(
         sc_acc_dmem_write(data_num_words, kAccAppBoot.dmem_data_start,
-                           kAccAppBoot.dmem_data_start_addr));
+                          kAccAppBoot.dmem_data_start_addr));
   }
   return kErrorOk;
 }
 
 rom_error_t acc_boot_attestation_endorse(const hmac_digest_t *digest,
-                                          ecdsa_p256_signature_t *sig) {
+                                         ecdsa_p256_signature_t *sig) {
   // Write the mode.
   uint32_t mode = kAccBootModeAttestationEndorse;
   HARDENED_RETURN_IF_ERROR(
@@ -263,17 +263,17 @@ rom_error_t acc_boot_attestation_endorse(const hmac_digest_t *digest,
 
   // Retrieve the signature (in two parts, r and s).
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_read(kEcdsaP256SignatureComponentWords,
-                                             kAccVarBootR, sig->r));
+                                            kAccVarBootR, sig->r));
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_read(kEcdsaP256SignatureComponentWords,
-                                             kAccVarBootS, sig->s));
+                                            kAccVarBootS, sig->s));
 
   return kErrorOk;
 }
 
 rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
-                                const ecdsa_p256_signature_t *sig,
-                                const hmac_digest_t *digest,
-                                uint32_t *recovered_r) {
+                               const ecdsa_p256_signature_t *sig,
+                               const hmac_digest_t *digest,
+                               uint32_t *recovered_r) {
   // Write the mode.
   uint32_t mode = kAccBootModeSigverify;
   HARDENED_RETURN_IF_ERROR(
@@ -291,9 +291,9 @@ rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
 
   // Write the signature.
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_write(kEcdsaP256SignatureComponentWords,
-                                              sig->r, kAccVarBootR));
+                                             sig->r, kAccVarBootR));
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_write(kEcdsaP256SignatureComponentWords,
-                                              sig->s, kAccVarBootS));
+                                             sig->s, kAccVarBootS));
 
   // Start the ACC routine.
   HARDENED_RETURN_IF_ERROR(sc_acc_execute());
@@ -314,5 +314,5 @@ rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
 
   // Read the recovered `r` value from DMEM.
   return sc_acc_dmem_read(kEcdsaP256SignatureComponentWords, kAccVarBootXr,
-                           recovered_r);
+                          recovered_r);
 }

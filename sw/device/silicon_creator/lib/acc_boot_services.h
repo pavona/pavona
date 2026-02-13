@@ -115,8 +115,8 @@ rom_error_t acc_boot_attestation_keygen(
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t acc_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
-                                           hmac_digest_t *pubkey_id,
-                                           ecdsa_p256_public_key_t *pubkey);
+                                          hmac_digest_t *pubkey_id,
+                                          ecdsa_p256_public_key_t *pubkey);
 
 /**
  * Saves an attestation private key to ACC's scratchpad.
@@ -175,7 +175,7 @@ rom_error_t acc_boot_attestation_key_clear(void);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t acc_boot_attestation_endorse(const hmac_digest_t *digest,
-                                          ecdsa_p256_signature_t *sig);
+                                         ecdsa_p256_signature_t *sig);
 
 /**
  * Computes an ECDSA-P256 signature verification on ACC.
@@ -196,9 +196,9 @@ rom_error_t acc_boot_attestation_endorse(const hmac_digest_t *digest,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
-                                const ecdsa_p256_signature_t *sig,
-                                const hmac_digest_t *digest,
-                                uint32_t *recovered_r);
+                               const ecdsa_p256_signature_t *sig,
+                               const hmac_digest_t *digest,
+                               uint32_t *recovered_r);
 
 #ifdef __cplusplus
 }  // extern "C"

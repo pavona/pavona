@@ -11,13 +11,13 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 // Include commands
+#include "sw/device/tests/penetrationtests/json/acc_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/edn_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/hmac_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/kmac_sca_commands.h"
-#include "sw/device/tests/penetrationtests/json/acc_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/pentest_lib_commands.h"
 #include "sw/device/tests/penetrationtests/json/prng_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
@@ -26,12 +26,12 @@
 // Include handlers
 #include "sw/device/tests/penetrationtests/firmware/lib/extclk_sca_fi.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/acc_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/aes_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/edn_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/hmac_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/ibex_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/kmac_sca.h"
-#include "sw/device/tests/penetrationtests/firmware/sca/acc_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/rng_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/sha3_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/trigger_sca.h"

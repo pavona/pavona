@@ -20,6 +20,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -37,7 +38,6 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
-#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
@@ -501,12 +501,11 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   // Generate UDS keys and (TBS) cert.
   curr_cert_size = kUdsMaxTbsSizeBytes;
-  TRY(acc_boot_cert_ecc_p256_keygen(kDiceKeyUds, &uds_pubkey_id,
-                                     &curr_pubkey));
+  TRY(acc_boot_cert_ecc_p256_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
   memcpy(&uds_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
   TRY(acc_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
-                                     kDiceKeyUds.type,
-                                     *kDiceKeyUds.keymgr_diversifier));
+                                    kDiceKeyUds.type,
+                                    *kDiceKeyUds.keymgr_diversifier));
 
   // Build the certificate in a temp buffer, use all_certs for that.
   TRY(dice_uds_tbs_cert_build(
@@ -533,7 +532,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                   &attestation_binding_value,
                                   /*max_key_version=*/0));
   TRY(acc_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
-                                     &curr_pubkey));
+                                    &curr_pubkey));
   TRY(dice_cdi_0_cert_build((hmac_digest_t *)certgen_inputs.rom_ext_measurement,
                             certgen_inputs.rom_ext_security_version,
                             &cdi_0_key_ids, &curr_pubkey, all_certs,
@@ -553,7 +552,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                               &attestation_binding_value,
                               /*max_key_version=*/0));
   TRY(acc_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
-                                     &curr_pubkey));
+                                    &curr_pubkey));
   TRY(dice_cdi_1_cert_build(
       (hmac_digest_t *)certgen_inputs.owner_measurement,
       (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,

@@ -14,6 +14,7 @@ filegroup(
             "*/README.md",
         ],
     ) + [
+        "//hw/ip/acc:rtl_files",
         "//hw/ip/adc_ctrl:rtl_files",
         "//hw/ip/aes:rtl_files",
         "//hw/ip/aon_timer:rtl_files",
@@ -28,7 +29,6 @@ filegroup(
         "//hw/ip/kmac:rtl_files",
         "//hw/ip/lc_ctrl:rtl_files",
         "//hw/ip/mbx:rtl_files",
-        "//hw/ip/acc:rtl_files",
         "//hw/ip/otp_ctrl:rtl_files",
         "//hw/ip/otp_macro:rtl_files",
         "//hw/ip/pattgen:rtl_files",
@@ -61,6 +61,7 @@ filegroup(
 filegroup(
     name = "doc_files",
     srcs = glob(["**/*.md"]) + [
+        "//hw/ip/acc:doc_files",
         "//hw/ip/adc_ctrl:doc_files",
         "//hw/ip/aes:doc_files",
         "//hw/ip/aon_timer:doc_files",
@@ -76,7 +77,6 @@ filegroup(
         "//hw/ip/kmac:doc_files",
         "//hw/ip/lc_ctrl:doc_files",
         "//hw/ip/mbx:doc_files",
-        "//hw/ip/acc:doc_files",
         "//hw/ip/pattgen:doc_files",
         "//hw/ip/prim:doc_files",
         "//hw/ip/rom_ctrl:doc_files",

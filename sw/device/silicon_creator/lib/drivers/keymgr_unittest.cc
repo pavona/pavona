@@ -237,7 +237,7 @@ TEST_F(KeymgrTest, GenAccAttestationKey) {
                       KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
 
   EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
-                                        test_diversification),
+                                       test_diversification),
             kErrorOk);
 }
 
@@ -266,9 +266,9 @@ TEST_F(KeymgrTest, GenAccSealingKey) {
   ExpectWaitUntilDone(/*busy_cycles=*/2,
                       KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
 
-  EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeSealing,
-                                        test_diversification),
-            kErrorOk);
+  EXPECT_EQ(
+      sc_keymgr_generate_key_acc(kScKeymgrKeyTypeSealing, test_diversification),
+      kErrorOk);
 }
 
 TEST_F(KeymgrTest, GenAccKeyNotIdle) {
@@ -280,15 +280,15 @@ TEST_F(KeymgrTest, GenAccKeyNotIdle) {
 
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
   EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
-                                        test_diversification),
+                                       test_diversification),
             kErrorKeymgrInternal);
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
   EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
-                                        test_diversification),
+                                       test_diversification),
             kErrorKeymgrInternal);
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
   EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
-                                        test_diversification),
+                                       test_diversification),
             kErrorKeymgrInternal);
 }
 
@@ -321,7 +321,7 @@ TEST_F(KeymgrTest, GenAccKeyError) {
   EXPECT_ABS_WRITE32(base_ + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
 
   EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
-                                        test_diversification),
+                                       test_diversification),
             kErrorKeymgrInternal);
 }
 

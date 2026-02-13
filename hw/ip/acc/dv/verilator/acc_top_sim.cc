@@ -11,11 +11,11 @@
 #include <svdpi.h>
 
 #include "Vacc_top_sim__Syms.h"
-#include "log_trace_listener.h"
 #include "acc_memutil.h"
 #include "acc_model.h"
 #include "acc_trace_checker.h"
 #include "acc_trace_source.h"
+#include "log_trace_listener.h"
 #include "sv_scoped.h"
 #include "verilated_toplevel.h"
 #include "verilator_memutil.h"

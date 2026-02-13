@@ -59,8 +59,7 @@ enum {
 /**
  * App configuration for p256_key_from_seed_sca
  */
-const acc_app_t kAccAppP256KeyFromSeed =
-    ACC_APP_T_INIT(p256_key_from_seed_sca);
+const acc_app_t kAccAppP256KeyFromSeed = ACC_APP_T_INIT(p256_key_from_seed_sca);
 
 static const acc_addr_t kAccVarMode =
     ACC_ADDR_T_INIT(p256_key_from_seed_sca, mode);
@@ -68,14 +67,10 @@ static const acc_addr_t kAccVarSeed0 =
     ACC_ADDR_T_INIT(p256_key_from_seed_sca, seed0);
 static const acc_addr_t kAccVarSeed1 =
     ACC_ADDR_T_INIT(p256_key_from_seed_sca, seed1);
-static const acc_addr_t kAccVarD0 =
-    ACC_ADDR_T_INIT(p256_key_from_seed_sca, d0);
-static const acc_addr_t kAccVarD1 =
-    ACC_ADDR_T_INIT(p256_key_from_seed_sca, d1);
-static const acc_addr_t kAccVarX =
-    ACC_ADDR_T_INIT(p256_key_from_seed_sca, x);
-static const acc_addr_t kAccVarY =
-    ACC_ADDR_T_INIT(p256_key_from_seed_sca, y);
+static const acc_addr_t kAccVarD0 = ACC_ADDR_T_INIT(p256_key_from_seed_sca, d0);
+static const acc_addr_t kAccVarD1 = ACC_ADDR_T_INIT(p256_key_from_seed_sca, d1);
+static const acc_addr_t kAccVarX = ACC_ADDR_T_INIT(p256_key_from_seed_sca, x);
+static const acc_addr_t kAccVarY = ACC_ADDR_T_INIT(p256_key_from_seed_sca, y);
 
 /**
  * An array of seeds to be used in a batch
@@ -197,15 +192,12 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *share0,
   SS_CHECK_STATUS_OK(acc_dmem_write(/*num_words=*/1, &mode, kAccVarMode));
 
   // Write seed shares.
-  SS_CHECK_STATUS_OK(
-      acc_dmem_write(kEcc256SeedNumWords, share0, kAccVarSeed0));
-  SS_CHECK_STATUS_OK(
-      acc_dmem_write(kEcc256SeedNumWords, share1, kAccVarSeed1));
+  SS_CHECK_STATUS_OK(acc_dmem_write(kEcc256SeedNumWords, share0, kAccVarSeed0));
+  SS_CHECK_STATUS_OK(acc_dmem_write(kEcc256SeedNumWords, share1, kAccVarSeed1));
 
   // Execute program.
   pentest_set_trigger_high();
-  pentest_call_and_sleep(acc_manual_trigger, kIbexAccSleepCycles, false,
-                         false);
+  pentest_call_and_sleep(acc_manual_trigger, kIbexAccSleepCycles, false, false);
   SS_CHECK_STATUS_OK(acc_busy_wait_for_done());
   pentest_set_trigger_low();
 }
@@ -253,10 +245,8 @@ void ecc256_ecdsa_keygen_fvsr_seed_batch(const uint8_t *data, size_t data_len) {
                     batch_share1[i]);
 
     // Read results.
-    SS_CHECK_STATUS_OK(
-        acc_dmem_read(kEcc256SeedNumWords, kAccVarD0, d0_batch));
-    SS_CHECK_STATUS_OK(
-        acc_dmem_read(kEcc256SeedNumWords, kAccVarD1, d1_batch));
+    SS_CHECK_STATUS_OK(acc_dmem_read(kEcc256SeedNumWords, kAccVarD0, d0_batch));
+    SS_CHECK_STATUS_OK(acc_dmem_read(kEcc256SeedNumWords, kAccVarD1, d1_batch));
 
     // The correctness of each batch is verified by computing and sending
     // the batch digest. This digest is computed by XORing all d0 shares of
@@ -351,10 +341,8 @@ void ecc256_ecdsa_keygen_fvsr_key_batch(const uint8_t *data, size_t data_len) {
                     batch_share1[i]);
 
     // Read results.
-    SS_CHECK_STATUS_OK(
-        acc_dmem_read(kEcc256SeedNumWords, kAccVarD0, d0_batch));
-    SS_CHECK_STATUS_OK(
-        acc_dmem_read(kEcc256SeedNumWords, kAccVarD1, d1_batch));
+    SS_CHECK_STATUS_OK(acc_dmem_read(kEcc256SeedNumWords, kAccVarD0, d0_batch));
+    SS_CHECK_STATUS_OK(acc_dmem_read(kEcc256SeedNumWords, kAccVarD1, d1_batch));
 
     // The correctness of each batch is verified by computing and sending
     // the batch digest. This digest is computed by XORing all d0 shares of

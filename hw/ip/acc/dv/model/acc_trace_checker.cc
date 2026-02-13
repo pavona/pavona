@@ -41,7 +41,7 @@ AccTraceChecker &AccTraceChecker::get() {
 }
 
 void AccTraceChecker::AcceptTraceString(const std::string &trace,
-                                         unsigned int cycle_count) {
+                                        unsigned int cycle_count) {
   assert(!(rtl_pending_ && iss_pending_));
 
   if (seen_err_)
@@ -286,8 +286,8 @@ bool AccTraceChecker::MatchPair() {
 // Any string output argument will stay unchanged until the next call to this
 // function.
 
-extern "C" unsigned char acc_trace_checker_pop_iss_insn(
-    svBitVecVal *insn_addr, const char **mnemonic) {
+extern "C" unsigned char acc_trace_checker_pop_iss_insn(svBitVecVal *insn_addr,
+                                                        const char **mnemonic) {
   static char mnemonic_buf[16];
 
   const AccIssTraceEntry::IssData *iss_data =

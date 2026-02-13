@@ -6,6 +6,7 @@
 
 #include "include/dice/cbor_reader.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cbor.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
@@ -19,7 +20,6 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"

@@ -20,8 +20,7 @@ static_assert(kDifAccErrBitsBadInsnAddr ==
               "Layout of error bits changed.");
 static_assert(kDifAccErrBitsCallStack == (1 << ACC_ERR_BITS_CALL_STACK_BIT),
               "Layout of error bits changed.");
-static_assert(kDifAccErrBitsIllegalInsn ==
-                  (1 << ACC_ERR_BITS_ILLEGAL_INSN_BIT),
+static_assert(kDifAccErrBitsIllegalInsn == (1 << ACC_ERR_BITS_ILLEGAL_INSN_BIT),
               "Layout of error bits changed.");
 static_assert(kDifAccErrBitsLoop == (1 << ACC_ERR_BITS_LOOP_BIT),
               "Layout of error bits changed.");
@@ -91,7 +90,7 @@ dif_result_t dif_acc_write_cmd(const dif_acc_t *acc, dif_acc_cmd_t cmd) {
 }
 
 dif_result_t dif_acc_get_status(const dif_acc_t *acc,
-                                 dif_acc_status_t *status) {
+                                dif_acc_status_t *status) {
   if (acc == NULL || status == NULL) {
     return kDifBadArg;
   }
@@ -102,7 +101,7 @@ dif_result_t dif_acc_get_status(const dif_acc_t *acc,
 }
 
 dif_result_t dif_acc_get_err_bits(const dif_acc_t *acc,
-                                   dif_acc_err_bits_t *err_bits) {
+                                  dif_acc_err_bits_t *err_bits) {
   if (acc == NULL || err_bits == NULL) {
     return kDifBadArg;
   }
@@ -124,13 +123,12 @@ dif_result_t dif_acc_get_insn_cnt(const dif_acc_t *acc, uint32_t *insn_cnt) {
 }
 
 dif_result_t dif_acc_get_load_checksum(const dif_acc_t *acc,
-                                        uint32_t *checksum) {
+                                       uint32_t *checksum) {
   if (acc == NULL || checksum == NULL) {
     return kDifBadArg;
   }
 
-  *checksum =
-      mmio_region_read32(acc->base_addr, ACC_LOAD_CHECKSUM_REG_OFFSET);
+  *checksum = mmio_region_read32(acc->base_addr, ACC_LOAD_CHECKSUM_REG_OFFSET);
   return kDifOk;
 }
 
@@ -145,7 +143,7 @@ dif_result_t dif_acc_clear_load_checksum(const dif_acc_t *acc) {
 }
 
 dif_result_t dif_acc_imem_write(const dif_acc_t *acc, uint32_t offset_bytes,
-                                 const void *src, size_t len_bytes) {
+                                const void *src, size_t len_bytes) {
   if (acc == NULL || src == NULL ||
       !check_offset_len(offset_bytes, len_bytes, ACC_IMEM_SIZE_BYTES)) {
     return kDifBadArg;
@@ -158,7 +156,7 @@ dif_result_t dif_acc_imem_write(const dif_acc_t *acc, uint32_t offset_bytes,
 }
 
 dif_result_t dif_acc_imem_read(const dif_acc_t *acc, uint32_t offset_bytes,
-                                void *dest, size_t len_bytes) {
+                               void *dest, size_t len_bytes) {
   if (acc == NULL || dest == NULL ||
       !check_offset_len(offset_bytes, len_bytes, ACC_IMEM_SIZE_BYTES)) {
     return kDifBadArg;
@@ -171,7 +169,7 @@ dif_result_t dif_acc_imem_read(const dif_acc_t *acc, uint32_t offset_bytes,
 }
 
 dif_result_t dif_acc_dmem_write(const dif_acc_t *acc, uint32_t offset_bytes,
-                                 const void *src, size_t len_bytes) {
+                                const void *src, size_t len_bytes) {
   if (acc == NULL || src == NULL ||
       !check_offset_len(offset_bytes, len_bytes, ACC_DMEM_SIZE_BYTES)) {
     return kDifBadArg;
@@ -184,7 +182,7 @@ dif_result_t dif_acc_dmem_write(const dif_acc_t *acc, uint32_t offset_bytes,
 }
 
 dif_result_t dif_acc_dmem_read(const dif_acc_t *acc, uint32_t offset_bytes,
-                                void *dest, size_t len_bytes) {
+                               void *dest, size_t len_bytes) {
   if (acc == NULL || dest == NULL ||
       !check_offset_len(offset_bytes, len_bytes, ACC_DMEM_SIZE_BYTES)) {
     return kDifBadArg;
@@ -197,7 +195,7 @@ dif_result_t dif_acc_dmem_read(const dif_acc_t *acc, uint32_t offset_bytes,
 }
 
 dif_result_t dif_acc_set_ctrl_software_errs_fatal(const dif_acc_t *acc,
-                                                   bool enable) {
+                                                  bool enable) {
   if (acc == NULL) {
     return kDifBadArg;
   }

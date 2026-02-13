@@ -112,7 +112,7 @@ void AccMemUtil::OnSymbol(const std::string &name, uint32_t value) {
 }
 
 void AccMemUtil::AddLoopWarp(uint32_t addr, uint32_t from_cnt,
-                              uint32_t to_cnt) {
+                             uint32_t to_cnt) {
   auto key = std::make_pair(addr, from_cnt);
   auto pr = loop_warp_.insert(std::make_pair(key, to_cnt));
   if (!pr.second) {
@@ -138,8 +138,7 @@ extern "C" AccMemUtil *AccMemUtilMake(const char *top_scope) {
 
 extern "C" void AccMemUtilFree(AccMemUtil *mem_util) { delete mem_util; }
 
-extern "C" svBit AccMemUtilLoadElf(AccMemUtil *mem_util,
-                                    const char *elf_path) {
+extern "C" svBit AccMemUtilLoadElf(AccMemUtil *mem_util, const char *elf_path) {
   assert(mem_util);
   assert(elf_path);
   try {
@@ -153,7 +152,7 @@ extern "C" svBit AccMemUtilLoadElf(AccMemUtil *mem_util,
 }
 
 extern "C" svBit AccMemUtilStageElf(AccMemUtil *mem_util,
-                                     const char *elf_path) {
+                                    const char *elf_path) {
   assert(mem_util);
   assert(elf_path);
   try {
@@ -182,8 +181,8 @@ extern "C" int AccMemUtilGetSegCount(AccMemUtil *mem_util, svBit is_imem) {
 }
 
 extern "C" svBit AccMemUtilGetSegInfo(AccMemUtil *mem_util, svBit is_imem,
-                                       int seg_idx, svBitVecVal *seg_off,
-                                       svBitVecVal *seg_size) {
+                                      int seg_idx, svBitVecVal *seg_off,
+                                      svBitVecVal *seg_size) {
   assert(mem_util);
   assert(seg_off);
   assert(seg_size);
@@ -279,9 +278,9 @@ int AccMemUtilGetExpEndAddr(AccMemUtil *mem_util) {
 }
 
 svBit AccMemUtilGetLoopWarp(AccMemUtil *mem_util,
-                             /* bit [31:0] */ const svBitVecVal *addr,
-                             /* bit [31:0] */ const svBitVecVal *from_cnt,
-                             /* output bit [31:0] */ svBitVecVal *to_cnt) {
+                            /* bit [31:0] */ const svBitVecVal *addr,
+                            /* bit [31:0] */ const svBitVecVal *from_cnt,
+                            /* output bit [31:0] */ svBitVecVal *to_cnt) {
   assert(mem_util);
   uint32_t addr32 = get_sv_u32(addr);
   uint32_t from32 = get_sv_u32(from_cnt);
@@ -299,11 +298,10 @@ int AccMemUtilGetNumLoopWarps(AccMemUtil *mem_util) {
   return sz;
 }
 
-void AccMemUtilGetLoopWarpByIndex(
-    AccMemUtil *mem_util, int idx,
-    /* output bit [31:0] */ svBitVecVal *addr,
-    /* output bit [31:0] */ svBitVecVal *from_cnt,
-    /* output bit [31:0] */ svBitVecVal *to_cnt) {
+void AccMemUtilGetLoopWarpByIndex(AccMemUtil *mem_util, int idx,
+                                  /* output bit [31:0] */ svBitVecVal *addr,
+                                  /* output bit [31:0] */ svBitVecVal *from_cnt,
+                                  /* output bit [31:0] */ svBitVecVal *to_cnt) {
   assert(mem_util);
   assert(0 <= idx);
 

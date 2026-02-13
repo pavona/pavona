@@ -9,12 +9,12 @@
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
@@ -31,12 +31,12 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/acc_regs.h"
 #include "hw/top/aes_regs.h"
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/hmac_regs.h"
 #include "hw/top/i2c_regs.h"
 #include "hw/top/kmac_regs.h"
-#include "hw/top/acc_regs.h"
 #include "hw/top/spi_host_regs.h"
 #include "hw/top/usbdev_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -123,7 +123,7 @@ static const uint32_t kmac_alerts[] = {
     kTopEarlgreyAlertIdKmacFatalFaultErr,
     kTopEarlgreyAlertIdKmacRecovOperationErr};
 static const uint32_t acc_alerts[] = {kTopEarlgreyAlertIdAccFatal,
-                                       kTopEarlgreyAlertIdAccRecov};
+                                      kTopEarlgreyAlertIdAccRecov};
 static const uint32_t spihost0_alerts[] = {
     kTopEarlgreyAlertIdSpiHost0FatalFault};
 static const uint32_t spihost1_alerts[] = {

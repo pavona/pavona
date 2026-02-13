@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_acc.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/acc_testutils.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -131,13 +131,13 @@ bool test_main(void) {
   // Check the GPR registers of interest hold the expected values.
   uint32_t gpr_state[kNumExpectedGprs];
   CHECK_STATUS_OK(acc_testutils_read_data(&acc, sizeof(kExpectedGprs),
-                                           kGprState, &gpr_state));
+                                          kGprState, &gpr_state));
   CHECK_ARRAYS_EQ(gpr_state, kExpectedGprs, kNumExpectedGprs);
 
   // Check the WDR registers of interest hold the expected values.
   uint32_t wdr_state[kNumExpectedWdrs][8];
   CHECK_STATUS_OK(acc_testutils_read_data(&acc, sizeof(kExpectedWdrs),
-                                           kWdrState, &wdr_state));
+                                          kWdrState, &wdr_state));
 
   CHECK_ARRAYS_EQ(wdr_state[0], kExpectedWdrs[0], 8,
                   "w0 didn't match the expected value.");

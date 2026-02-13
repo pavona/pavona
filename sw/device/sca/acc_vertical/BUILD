@@ -12,6 +12,7 @@ cc_library(
     hdrs = ["ecc256_keygen_serial.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/acc/crypto:p256_key_from_seed_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:acc",
@@ -23,7 +24,6 @@ cc_library(
         "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:simple_serial",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/acc/crypto:p256_key_from_seed_sca",
     ],
 )
 
@@ -33,6 +33,7 @@ cc_library(
     hdrs = ["ecc256_modinv_serial.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/acc/crypto:p256_mod_inv_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:acc",
@@ -44,7 +45,6 @@ cc_library(
         "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:simple_serial",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/acc/crypto:p256_mod_inv_sca",
     ],
 )
 
@@ -58,6 +58,7 @@ opentitan_binary(
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/acc/crypto:p256_mod_inv_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:acc",
@@ -66,11 +67,10 @@ opentitan_binary(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/sca/lib:prng",
-        "//sw/device/sca/lib:simple_serial",
         "//sw/device/sca/acc_vertical:ecc256_keygen_serial",
         "//sw/device/sca/acc_vertical:ecc256_modinv_serial",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:simple_serial",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/acc/crypto:p256_mod_inv_sca",
     ],
 )

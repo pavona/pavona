@@ -36,9 +36,9 @@ status_t acc_testutils_rsa_load(dif_acc_t *acc) {
 }
 
 status_t acc_testutils_rsa_modexp_f4_start(dif_acc_t *acc,
-                                            const uint8_t *modulus,
-                                            const uint8_t *in,
-                                            size_t size_bytes) {
+                                           const uint8_t *modulus,
+                                           const uint8_t *in,
+                                           size_t size_bytes) {
   if (acc == NULL || size_bytes % kAccWideWordBytes != 0) {
     return INVALID_ARGUMENT();
   }
@@ -50,10 +50,9 @@ status_t acc_testutils_rsa_modexp_f4_start(dif_acc_t *acc,
 
   // Write input arguments.
   uint32_t mode = kModeEncrypt;
-  TRY(acc_testutils_write_data(acc, sizeof(uint32_t), &mode,
-                                kAccVarRsaMode));
+  TRY(acc_testutils_write_data(acc, sizeof(uint32_t), &mode, kAccVarRsaMode));
   TRY(acc_testutils_write_data(acc, sizeof(uint32_t), &n_limbs,
-                                kAccVarRsaNLimbs));
+                               kAccVarRsaNLimbs));
   TRY(acc_testutils_write_data(acc, size_bytes, modulus, kAccVarRsaModulus));
   TRY(acc_testutils_write_data(acc, size_bytes, in, kAccVarRsaInOut));
 
@@ -77,10 +76,10 @@ status_t acc_testutils_rsa_modexp_consttime_start(
   uint32_t mode = kModeDecrypt;
   TRY(acc_testutils_write_data(acc, sizeof(mode), &mode, kAccVarRsaMode));
   TRY(acc_testutils_write_data(acc, sizeof(n_limbs), &n_limbs,
-                                kAccVarRsaNLimbs));
+                               kAccVarRsaNLimbs));
   TRY(acc_testutils_write_data(acc, size_bytes, modulus, kAccVarRsaModulus));
   TRY(acc_testutils_write_data(acc, size_bytes, private_exponent,
-                                kAccVarRsaExp));
+                               kAccVarRsaExp));
   TRY(acc_testutils_write_data(acc, size_bytes, in, kAccVarRsaInOut));
 
   // Call ACC to start the operation.
@@ -106,12 +105,12 @@ static status_t modexp_finalize(dif_acc_t *acc, uint8_t *out,
 }
 
 status_t acc_testutils_rsa_modexp_f4_finalize(dif_acc_t *acc, uint8_t *out,
-                                               size_t size_bytes) {
+                                              size_t size_bytes) {
   return modexp_finalize(acc, out, size_bytes);
 }
 
 status_t acc_testutils_rsa_modexp_consttime_finalize(dif_acc_t *acc,
-                                                      uint8_t *out,
-                                                      size_t size_bytes) {
+                                                     uint8_t *out,
+                                                     size_t size_bytes) {
   return modexp_finalize(acc, out, size_bytes);
 }

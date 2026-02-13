@@ -100,9 +100,9 @@ static status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
   // Write trailing 0s so that ACC's 256-bit read of the second share does not
   // cause an error.
   ACC_WIPE_IF_ERROR(acc_dmem_set(kMaskedScalarPaddingWords, 0,
-                                   share0_addr + kP256MaskedScalarShareBytes));
+                                 share0_addr + kP256MaskedScalarShareBytes));
   return acc_dmem_set(kMaskedScalarPaddingWords, 0,
-                       share1_addr + kP256MaskedScalarShareBytes);
+                      share1_addr + kP256MaskedScalarShareBytes);
 }
 
 status_t p256_keygen_start(void) {
@@ -136,13 +136,13 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256KeygenMinInstructionCount,
-                        kP256KeygenMaxInstructionCount);
+                       kP256KeygenMaxInstructionCount);
 
   // Read the masked private key from ACC dmem.
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP256MaskedScalarShareWords, kAccVarD0,
-                                    private_key->share0));
+                                  private_key->share0));
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP256MaskedScalarShareWords, kAccVarD1,
-                                    private_key->share1));
+                                  private_key->share1));
 
   // Read the public key from ACC dmem.
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP256CoordWords, kAccVarX, public_key->x));
@@ -158,7 +158,7 @@ status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256SideloadKeygenMinInstructionCount,
-                        kP256SideloadKeygenMaxInstructionCount);
+                       kP256SideloadKeygenMaxInstructionCount);
 
   // Read the public key from ACC dmem.
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP256CoordWords, kAccVarX, public_key->x));
@@ -266,7 +266,7 @@ status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256SignMinInstructionCount,
-                        kP256SignMaxInstructionCount);
+                       kP256SignMaxInstructionCount);
 
   // Read signature R out of ACC dmem.
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP256ScalarWords, kAccVarR, result->r));
@@ -323,7 +323,7 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256VerifyMinInstructionCount,
-                        kP256VerifyMaxInstructionCount);
+                       kP256VerifyMaxInstructionCount);
 
   // Read x_r (recovered R) out of ACC dmem.
   uint32_t x_r[kP256ScalarWords];
@@ -373,7 +373,7 @@ status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256EcdhMinInstructionCount,
-                        kP256EcdhMaxInstructionCount);
+                       kP256EcdhMaxInstructionCount);
 
   // Read the shares of the key from ACC dmem (at vars x and y).
   ACC_WIPE_IF_ERROR(
@@ -417,7 +417,7 @@ status_t p256_sideload_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256SideloadEcdhMinInstructionCount,
-                        kP256SideloadEcdhMaxInstructionCount);
+                       kP256SideloadEcdhMaxInstructionCount);
 
   // Read the shares of the key from ACC dmem (at vars x and y).
   ACC_WIPE_IF_ERROR(

@@ -10,7 +10,7 @@
 #include <sstream>
 
 bool AccTraceBodyLine::fill_from_string(const std::string &src,
-                                         const std::string &line) {
+                                        const std::string &line) {
   // A valid line matches the following regex
   std::regex re("(.) ([^:]+): (.+)");
   std::smatch match;
@@ -89,8 +89,8 @@ bool AccTraceEntry::from_rtl_trace(const std::string &trace) {
 }
 
 bool AccTraceEntry::compare_rtl_iss_entries(const AccTraceEntry &other,
-                                             bool no_sec_wipe_data_chk,
-                                             std::string *err_desc) const {
+                                            bool no_sec_wipe_data_chk,
+                                            std::string *err_desc) const {
   assert(err_desc);
 
   if (hdr_ != other.hdr_) {
@@ -134,8 +134,7 @@ void AccTraceEntry::print(const std::string &indent, std::ostream &os) const {
   }
 }
 
-void AccTraceEntry::take_writes(const AccTraceEntry &other,
-                                 bool other_first) {
+void AccTraceEntry::take_writes(const AccTraceEntry &other, bool other_first) {
   for (const auto &pr : other.writes_) {
     std::vector<AccTraceBodyLine> &so_far = writes_[pr.first];
     if (other_first) {

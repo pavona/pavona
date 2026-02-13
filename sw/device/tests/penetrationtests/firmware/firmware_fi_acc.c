@@ -11,8 +11,8 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 // Include commands
-#include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/acc_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/pentest_lib_commands.h"
 
 // Include handlers

@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_api.h"
 #include "hw/top/dt/dt_acc.h"
+#include "hw/top/dt/dt_api.h"
 #include "hw/top/dt/dt_rv_plic.h"
 #include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/acc_testutils.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -30,7 +30,7 @@ static volatile bool acc_finished;
  * Get ACC error bits; check they match expected_err_bits.
  */
 static void check_acc_err_bits(dif_acc_t *acc,
-                                dif_acc_err_bits_t expected_err_bits) {
+                               dif_acc_err_bits_t expected_err_bits) {
   dif_acc_err_bits_t acc_err_bits;
   CHECK_DIF_OK(dif_acc_get_err_bits(acc, &acc_err_bits));
   CHECK(acc_err_bits == expected_err_bits,
@@ -52,8 +52,7 @@ static void check_acc_insn_cnt(dif_acc_t *acc, uint32_t expected_insn_cnt) {
 /**
  * Get ACC's status; check that it matches expected_status.
  */
-static void check_acc_status(dif_acc_t *acc,
-                              dif_acc_status_t expected_status) {
+static void check_acc_status(dif_acc_t *acc, dif_acc_status_t expected_status) {
   dif_acc_status_t status;
   CHECK_DIF_OK(dif_acc_get_status(acc, &status));
   CHECK(status == expected_status, "Unexpected status: expected %d but got %d.",
@@ -82,8 +81,7 @@ static void run_test_with_irqs(dif_acc_t *acc, acc_app_t app,
   CHECK(dif_acc_set_ctrl_software_errs_fatal(acc, false) == kDifOk);
 
   // Enable Done interrupt
-  CHECK_DIF_OK(
-      dif_acc_irq_set_enabled(acc, kDifAccIrqDone, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_acc_irq_set_enabled(acc, kDifAccIrqDone, kDifToggleEnabled));
 
   // Start ACC
   CHECK_STATUS_OK(acc_testutils_execute(acc));

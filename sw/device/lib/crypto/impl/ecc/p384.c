@@ -110,9 +110,9 @@ static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
   // Write trailing 0s so that ACC's 384-bit read of the second share does not
   // cause an error.
   HARDENED_TRY(acc_dmem_set(kMaskedScalarPaddingWords, 0,
-                             share0_addr + kP384MaskedScalarShareBytes));
+                            share0_addr + kP384MaskedScalarShareBytes));
   return acc_dmem_set(kMaskedScalarPaddingWords, 0,
-                       share1_addr + kP384MaskedScalarShareBytes);
+                      share1_addr + kP384MaskedScalarShareBytes);
 }
 
 /**
@@ -139,8 +139,7 @@ static status_t set_public_key(const p384_point_t *p) {
   HARDENED_TRY(acc_dmem_write(kP384CoordWords, p->x, kAccVarX));
   HARDENED_TRY(acc_dmem_write(kP384CoordWords, p->y, kAccVarY));
 
-  HARDENED_TRY(
-      acc_dmem_set(kCoordPaddingWords, 0, kAccVarX + kP384CoordBytes));
+  HARDENED_TRY(acc_dmem_set(kCoordPaddingWords, 0, kAccVarX + kP384CoordBytes));
   return acc_dmem_set(kCoordPaddingWords, 0, kAccVarY + kP384CoordBytes);
 }
 
@@ -180,13 +179,13 @@ status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384KeygenMinInstructionCount,
-                        kP384KeygenMaxInstructionCount);
+                       kP384KeygenMaxInstructionCount);
 
   // Read the masked private key from ACC dmem.
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP384MaskedScalarShareWords, kAccVarD0,
-                                    private_key->share0));
+                                  private_key->share0));
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP384MaskedScalarShareWords, kAccVarD1,
-                                    private_key->share1));
+                                  private_key->share1));
 
   // Read the public key from ACC dmem.
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP384CoordWords, kAccVarX, public_key->x));
@@ -214,7 +213,7 @@ status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384SideloadKeygenMinInstructionCount,
-                        kP384SideloadKeygenMaxInstructionCount);
+                       kP384SideloadKeygenMaxInstructionCount);
 
   // Read the public key from ACC dmem.
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP384CoordWords, kAccVarX, public_key->x));
@@ -294,7 +293,7 @@ status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384SignMinInstructionCount,
-                        kP384SignMaxInstructionCount);
+                       kP384SignMaxInstructionCount);
 
   // Read signature R out of ACC dmem.
   ACC_WIPE_IF_ERROR(acc_dmem_read(kP384ScalarWords, kAccVarR, result->r));
@@ -348,7 +347,7 @@ status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384VerifyMinInstructionCount,
-                        kP384VerifyMaxInstructionCount);
+                       kP384VerifyMaxInstructionCount);
 
   // Read x_r (recovered R) out of ACC dmem.
   uint32_t x_r[kP384ScalarWords];
@@ -396,7 +395,7 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384EcdhMinInstructionCount,
-                        kP384EcdhMaxInstructionCount);
+                       kP384EcdhMaxInstructionCount);
 
   // Read the shares of the key from ACC dmem (at vars x and y).
   ACC_WIPE_IF_ERROR(
@@ -438,7 +437,7 @@ status_t p384_sideload_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384SideloadEcdhMinInstructionCount,
-                        kP384SideloadEcdhMaxInstructionCount);
+                       kP384SideloadEcdhMaxInstructionCount);
 
   // Read the shares of the key from ACC dmem (at vars x and y).
   ACC_WIPE_IF_ERROR(

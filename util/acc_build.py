@@ -108,7 +108,7 @@ def call_acc_as(src_file: Path, out_file: Path):
 
 
 def call_acc_ld(src_files: List[Path], out_file: Path,
-                 linker_script: Optional[Path]):
+                linker_script: Optional[Path]):
 
     args = ['-gc-sections', '-gc-keep-exported']
     if linker_script:

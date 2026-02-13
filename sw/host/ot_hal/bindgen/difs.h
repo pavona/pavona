@@ -21,6 +21,7 @@
 
 #else
 
+#include "hw/top/acc_regs.h"            // Generated.
 #include "hw/top/adc_ctrl_regs.h"       // Generated.
 #include "hw/top/aes_regs.h"            // Generated.
 #include "hw/top/alert_handler_regs.h"  // Generated.
@@ -36,7 +37,6 @@
 #include "hw/top/keymgr_regs.h"         // Generated.
 #include "hw/top/kmac_regs.h"           // Generated.
 #include "hw/top/lc_ctrl_regs.h"        // Generated.
-#include "hw/top/acc_regs.h"           // Generated.
 #include "hw/top/otp_ctrl_regs.h"       // Generated.
 #include "hw/top/pattgen_regs.h"        // Generated.
 #include "hw/top/pinmux_regs.h"         // Generated.

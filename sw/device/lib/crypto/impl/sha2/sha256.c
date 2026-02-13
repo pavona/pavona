@@ -12,8 +12,8 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/sha2/sha256_insn_counts.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -62,11 +62,10 @@ ACC_DECLARE_APP_SYMBOLS(run_sha256);         // The ACC SHA-256 app.
 ACC_DECLARE_SYMBOL_ADDR(run_sha256, state);  // Hash state.
 ACC_DECLARE_SYMBOL_ADDR(run_sha256, msg);    // Input message.
 ACC_DECLARE_SYMBOL_ADDR(run_sha256,
-                         num_msg_chunks);  // Message length in blocks.
+                        num_msg_chunks);  // Message length in blocks.
 
 static const acc_app_t kAccAppSha256 = ACC_APP_T_INIT(run_sha256);
-static const acc_addr_t kAccVarSha256State =
-    ACC_ADDR_T_INIT(run_sha256, state);
+static const acc_addr_t kAccVarSha256State = ACC_ADDR_T_INIT(run_sha256, state);
 static const acc_addr_t kAccVarSha256Msg = ACC_ADDR_T_INIT(run_sha256, msg);
 static const acc_addr_t kAccVarSha256NumMsgChunks =
     ACC_ADDR_T_INIT(run_sha256, num_msg_chunks);
@@ -89,8 +88,7 @@ void sha256_init(sha256_state_t *state) {
 OT_WARN_UNUSED_RESULT
 static status_t process_message_buffer(sha256_acc_ctx_t *ctx) {
   // Write the number of blocks to DMEM.
-  HARDENED_TRY(
-      acc_dmem_write(1, &ctx->num_blocks, kAccVarSha256NumMsgChunks));
+  HARDENED_TRY(acc_dmem_write(1, &ctx->num_blocks, kAccVarSha256NumMsgChunks));
 
   // Run the ACC program.
   HARDENED_TRY(acc_execute());
@@ -149,8 +147,7 @@ static status_t process_block(sha256_acc_ctx_t *ctx,
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t process_padding(sha256_acc_ctx_t *ctx,
-                                const uint64_t total_len,
+static status_t process_padding(sha256_acc_ctx_t *ctx, const uint64_t total_len,
                                 sha256_message_block_t *block) {
   size_t partial_block_len = (total_len >> 3) % kSha256MessageBlockBytes;
 

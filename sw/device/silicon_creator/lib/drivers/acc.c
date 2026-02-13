@@ -76,7 +76,7 @@ rom_error_t sc_acc_busy_wait_for_done(void) {
  * @param num_words Number of words to copy.
  */
 static void sc_acc_write(uint32_t dest_addr, const uint32_t *src,
-                          size_t num_words) {
+                         size_t num_words) {
   // Start from a random index less than `num_words`.
   uint32_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_words) >> 32;
   enum { kStep = 1 };
@@ -96,7 +96,7 @@ static void sc_acc_write(uint32_t dest_addr, const uint32_t *src,
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t sc_acc_imem_write(size_t num_words, const uint32_t *src,
-                                      sc_acc_addr_t dest) {
+                                     sc_acc_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, ACC_IMEM_SIZE_BYTES));
   sc_acc_write(acc_base() + ACC_IMEM_REG_OFFSET + dest, src, num_words);
@@ -104,7 +104,7 @@ static rom_error_t sc_acc_imem_write(size_t num_words, const uint32_t *src,
 }
 
 rom_error_t sc_acc_dmem_write(size_t num_words, const uint32_t *src,
-                               sc_acc_addr_t dest) {
+                              sc_acc_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, ACC_DMEM_SIZE_BYTES));
   sc_acc_write(acc_base() + ACC_DMEM_REG_OFFSET + dest, src, num_words);
@@ -112,7 +112,7 @@ rom_error_t sc_acc_dmem_write(size_t num_words, const uint32_t *src,
 }
 
 rom_error_t sc_acc_dmem_read(size_t num_words, sc_acc_addr_t src,
-                              uint32_t *dest) {
+                             uint32_t *dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(src, num_words, ACC_DMEM_SIZE_BYTES));
   uint32_t i = 0, r = num_words - 1;

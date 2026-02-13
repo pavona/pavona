@@ -112,8 +112,7 @@ dif_result_t dif_acc_write_cmd(const dif_acc_t *acc, dif_acc_cmd_t cmd);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_acc_get_status(const dif_acc_t *acc,
-                                 dif_acc_status_t *status);
+dif_result_t dif_acc_get_status(const dif_acc_t *acc, dif_acc_status_t *status);
 
 /**
  * Get the error bits set by the device if the operation failed.
@@ -124,7 +123,7 @@ dif_result_t dif_acc_get_status(const dif_acc_t *acc,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_acc_get_err_bits(const dif_acc_t *acc,
-                                   dif_acc_err_bits_t *err_bits);
+                                  dif_acc_err_bits_t *err_bits);
 
 /**
  * Gets the number of executed ACC instructions.
@@ -151,7 +150,7 @@ dif_result_t dif_acc_get_insn_cnt(const dif_acc_t *acc, uint32_t *insn_cnt);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_acc_get_load_checksum(const dif_acc_t *acc,
-                                        uint32_t *insn_cnt);
+                                       uint32_t *insn_cnt);
 
 /**
  * Clears the load checksum register.
@@ -177,7 +176,7 @@ dif_result_t dif_acc_clear_load_checksum(const dif_acc_t *acc);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_acc_imem_write(const dif_acc_t *acc, uint32_t offset_bytes,
-                                 const void *src, size_t len_bytes);
+                                const void *src, size_t len_bytes);
 
 /**
  * Read from ACC's instruction memory (IMEM).
@@ -192,7 +191,7 @@ dif_result_t dif_acc_imem_write(const dif_acc_t *acc, uint32_t offset_bytes,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_acc_imem_read(const dif_acc_t *acc, uint32_t offset_bytes,
-                                void *dest, size_t len_bytes);
+                               void *dest, size_t len_bytes);
 
 /**
  * Write to ACC's data memory (DMEM).
@@ -207,7 +206,7 @@ dif_result_t dif_acc_imem_read(const dif_acc_t *acc, uint32_t offset_bytes,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_acc_dmem_write(const dif_acc_t *acc, uint32_t offset_bytes,
-                                 const void *src, size_t len_bytes);
+                                const void *src, size_t len_bytes);
 
 /**
  * Read from ACC's data memory (DMEM).
@@ -222,7 +221,7 @@ dif_result_t dif_acc_dmem_write(const dif_acc_t *acc, uint32_t offset_bytes,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_acc_dmem_read(const dif_acc_t *acc, uint32_t offset_bytes,
-                                void *dest, size_t len_bytes);
+                               void *dest, size_t len_bytes);
 
 /**
  * Sets the software errors are fatal bit in the control register.
@@ -237,7 +236,7 @@ dif_result_t dif_acc_dmem_read(const dif_acc_t *acc, uint32_t offset_bytes,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_acc_set_ctrl_software_errs_fatal(const dif_acc_t *acc,
-                                                   bool enable);
+                                                  bool enable);
 
 /**
  * Get the size of ACC's data memory in bytes.

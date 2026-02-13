@@ -2,22 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
 #include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/edn_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -128,8 +128,7 @@ static status_t entropy_config(unsigned int round) {
   return OK_STATUS();
 }
 
-static void consume_entropy(unsigned int round,
-                            dif_acc_err_bits_t acc_err_val,
+static void consume_entropy(unsigned int round, dif_acc_err_bits_t acc_err_val,
                             dif_rv_core_ibex_rnd_status_t ibex_rnd_fips) {
   uint32_t ibex_rnd_data;
   dif_rv_core_ibex_rnd_status_t ibex_rnd_status;

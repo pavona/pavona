@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "lowrisc_defs",
     srcs = [
+        "//hw/top:acc_rust_regs",
         "//hw/top:adc_ctrl_rust_regs",
         "//hw/top:aes_rust_regs",
         "//hw/top:aon_timer_rust_regs",
@@ -21,7 +22,6 @@ filegroup(
         "//hw/top:keymgr_rust_regs",
         "//hw/top:kmac_rust_regs",
         "//hw/top:lc_ctrl_rust_regs",
-        "//hw/top:acc_rust_regs",
         "//hw/top:otp_ctrl_rust_regs",
         "//hw/top:pattgen_rust_regs",
         "//hw/top:pwm_rust_regs",

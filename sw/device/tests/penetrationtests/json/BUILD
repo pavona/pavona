@@ -9,6 +9,8 @@ cc_library(
     srcs = ["commands.c"],
     hdrs = ["commands.h"],
     deps = [
+        ":acc_fi_commands",
+        ":acc_sca_commands",
         ":aes_sca_commands",
         ":alert_fi_commands",
         ":crypto_fi_commands",
@@ -22,8 +24,6 @@ cc_library(
         ":ibex_fi_commands",
         ":kmac_sca_commands",
         ":lc_ctrl_fi_commands",
-        ":acc_fi_commands",
-        ":acc_sca_commands",
         ":otp_fi_commands",
         ":prng_sca_commands",
         ":rom_fi_commands",

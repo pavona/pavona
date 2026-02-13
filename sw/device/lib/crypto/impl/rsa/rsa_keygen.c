@@ -23,24 +23,20 @@ ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_n);  // Modulus n.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_p);  // Cofactor p.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_q);  // Cofactor q.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen,
-                         rsa_d_p);  // Private exponent component d_p.
+                        rsa_d_p);  // Private exponent component d_p.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen,
-                         rsa_d_q);  // Private exponent component d_p.
+                        rsa_d_q);  // Private exponent component d_p.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_i_q);       // CRT coefficient i_p.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_cofactor);  // Cofactor p or q.
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_e);         // Public exponent e.
 
-static const acc_addr_t kAccVarRsaMode =
-    ACC_ADDR_T_INIT(run_rsa_keygen, mode);
+static const acc_addr_t kAccVarRsaMode = ACC_ADDR_T_INIT(run_rsa_keygen, mode);
 static const acc_addr_t kAccVarRsaN = ACC_ADDR_T_INIT(run_rsa_keygen, rsa_n);
 static const acc_addr_t kAccVarRsaP = ACC_ADDR_T_INIT(run_rsa_keygen, rsa_p);
 static const acc_addr_t kAccVarRsaQ = ACC_ADDR_T_INIT(run_rsa_keygen, rsa_q);
-static const acc_addr_t kAccVarRsaDp =
-    ACC_ADDR_T_INIT(run_rsa_keygen, rsa_d_p);
-static const acc_addr_t kAccVarRsaDq =
-    ACC_ADDR_T_INIT(run_rsa_keygen, rsa_d_q);
-static const acc_addr_t kAccVarRsaIq =
-    ACC_ADDR_T_INIT(run_rsa_keygen, rsa_i_q);
+static const acc_addr_t kAccVarRsaDp = ACC_ADDR_T_INIT(run_rsa_keygen, rsa_d_p);
+static const acc_addr_t kAccVarRsaDq = ACC_ADDR_T_INIT(run_rsa_keygen, rsa_d_q);
+static const acc_addr_t kAccVarRsaIq = ACC_ADDR_T_INIT(run_rsa_keygen, rsa_i_q);
 static const acc_addr_t kAccVarRsaCofactor =
     ACC_ADDR_T_INIT(run_rsa_keygen, rsa_cofactor);
 static const acc_addr_t kAccVarRsaE = ACC_ADDR_T_INIT(run_rsa_keygen, rsa_e);
@@ -233,10 +229,10 @@ status_t rsa_keygen_from_cofactor_2048_start(
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
 
   // Write the modulus and cofactor into DMEM.
-  HARDENED_TRY(acc_dmem_write(ARRAYSIZE(public_key->n.data),
-                               public_key->n.data, kAccVarRsaN));
+  HARDENED_TRY(acc_dmem_write(ARRAYSIZE(public_key->n.data), public_key->n.data,
+                              kAccVarRsaN));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(cofactor->data), cofactor->data,
-                               kAccVarRsaCofactor));
+                              kAccVarRsaCofactor));
 
   // Set mode and start ACC.
   uint32_t mode = kAccRsaModeCofactor2048;
@@ -269,10 +265,10 @@ status_t rsa_keygen_from_cofactor_3072_start(
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
 
   // Write the modulus and cofactor into DMEM.
-  HARDENED_TRY(acc_dmem_write(ARRAYSIZE(public_key->n.data),
-                               public_key->n.data, kAccVarRsaN));
+  HARDENED_TRY(acc_dmem_write(ARRAYSIZE(public_key->n.data), public_key->n.data,
+                              kAccVarRsaN));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(cofactor->data), cofactor->data,
-                               kAccVarRsaCofactor));
+                              kAccVarRsaCofactor));
 
   // Set mode and start ACC.
   uint32_t mode = kAccRsaModeCofactor3072;
@@ -305,10 +301,10 @@ status_t rsa_keygen_from_cofactor_4096_start(
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
 
   // Write the modulus and cofactor into DMEM.
-  HARDENED_TRY(acc_dmem_write(ARRAYSIZE(public_key->n.data),
-                               public_key->n.data, kAccVarRsaN));
+  HARDENED_TRY(acc_dmem_write(ARRAYSIZE(public_key->n.data), public_key->n.data,
+                              kAccVarRsaN));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(cofactor->data), cofactor->data,
-                               kAccVarRsaCofactor));
+                              kAccVarRsaCofactor));
 
   // Set mode and start ACC.
   uint32_t mode = kAccRsaModeCofactor4096;
@@ -343,15 +339,15 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
   // Write the primes, CRT components of the private exponent, and CRT
   // coefficient into DMEM.
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->p.data),
-                               private_key->p.data, kAccVarRsaP));
+                              private_key->p.data, kAccVarRsaP));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->q.data),
-                               private_key->q.data, kAccVarRsaQ));
+                              private_key->q.data, kAccVarRsaQ));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->d_p.data),
-                               private_key->d_p.data, kAccVarRsaDp));
+                              private_key->d_p.data, kAccVarRsaDp));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->d_q.data),
-                               private_key->d_q.data, kAccVarRsaDq));
+                              private_key->d_q.data, kAccVarRsaDq));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->i_q.data),
-                               private_key->i_q.data, kAccVarRsaIq));
+                              private_key->i_q.data, kAccVarRsaIq));
 
   // Select mode based on whether we should perform primality checks.
   uint32_t mode;
@@ -432,8 +428,7 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
 
   // Read the recovered public modulus (n) from ACC dmem.
   uint32_t recovered_n[kRsa2048NumWords];
-  ACC_WIPE_IF_ERROR(
-      acc_dmem_read(kRsa2048NumWords, kAccVarRsaN, recovered_n));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kRsa2048NumWords, kAccVarRsaN, recovered_n));
 
   // Check that this matches the public key modulus, and update the validity.
   hardened_bool_t n_valid =
@@ -520,15 +515,15 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
   // Write the primes, CRT components of the private exponent, and CRT
   // coefficient into DMEM.
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->p.data),
-                               private_key->p.data, kAccVarRsaP));
+                              private_key->p.data, kAccVarRsaP));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->q.data),
-                               private_key->q.data, kAccVarRsaQ));
+                              private_key->q.data, kAccVarRsaQ));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->d_p.data),
-                               private_key->d_p.data, kAccVarRsaDp));
+                              private_key->d_p.data, kAccVarRsaDp));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->d_q.data),
-                               private_key->d_q.data, kAccVarRsaDq));
+                              private_key->d_q.data, kAccVarRsaDq));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->i_q.data),
-                               private_key->i_q.data, kAccVarRsaIq));
+                              private_key->i_q.data, kAccVarRsaIq));
 
   // Select mode based on whether we should perform primality checks.
   uint32_t mode;
@@ -609,8 +604,7 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
 
   // Read the recovered public modulus (n) from ACC dmem.
   uint32_t recovered_n[kRsa3072NumWords];
-  ACC_WIPE_IF_ERROR(
-      acc_dmem_read(kRsa3072NumWords, kAccVarRsaN, recovered_n));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kRsa3072NumWords, kAccVarRsaN, recovered_n));
 
   // Check that this matches the public key modulus, and update the validity.
   hardened_bool_t n_valid =
@@ -697,15 +691,15 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
   // Write the primes, CRT components of the private exponent, and CRT
   // coefficient into DMEM.
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->p.data),
-                               private_key->p.data, kAccVarRsaP));
+                              private_key->p.data, kAccVarRsaP));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->q.data),
-                               private_key->q.data, kAccVarRsaQ));
+                              private_key->q.data, kAccVarRsaQ));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->d_p.data),
-                               private_key->d_p.data, kAccVarRsaDp));
+                              private_key->d_p.data, kAccVarRsaDp));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->d_q.data),
-                               private_key->d_q.data, kAccVarRsaDq));
+                              private_key->d_q.data, kAccVarRsaDq));
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->i_q.data),
-                               private_key->i_q.data, kAccVarRsaIq));
+                              private_key->i_q.data, kAccVarRsaIq));
 
   // Select mode based on whether we should perform primality checks.
   uint32_t mode;
@@ -786,8 +780,7 @@ status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
 
   // Read the recovered public modulus (n) from ACC dmem.
   uint32_t recovered_n[kRsa4096NumWords];
-  ACC_WIPE_IF_ERROR(
-      acc_dmem_read(kRsa4096NumWords, kAccVarRsaN, recovered_n));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kRsa4096NumWords, kAccVarRsaN, recovered_n));
 
   // Check that this matches the public key modulus, and update the validity.
   hardened_bool_t n_valid =

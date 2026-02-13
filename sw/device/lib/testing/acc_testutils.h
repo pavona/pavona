@@ -7,8 +7,8 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_acc.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 /**
  * @file
@@ -179,7 +179,7 @@ status_t acc_testutils_execute(const dif_acc_t *acc);
  */
 OT_WARN_UNUSED_RESULT
 status_t acc_testutils_wait_for_done(const dif_acc_t *acc,
-                                      dif_acc_err_bits_t expected_err_bits);
+                                     dif_acc_err_bits_t expected_err_bits);
 
 /**
  * Copies data from the CPU memory to ACC data memory.
@@ -192,7 +192,7 @@ status_t acc_testutils_wait_for_done(const dif_acc_t *acc,
  */
 OT_WARN_UNUSED_RESULT
 status_t acc_testutils_write_data(const dif_acc_t *acc, size_t len_bytes,
-                                   const void *src, acc_addr_t dest);
+                                  const void *src, acc_addr_t dest);
 
 /**
  * Copies data from ACC's data memory to CPU memory.
@@ -206,7 +206,7 @@ status_t acc_testutils_write_data(const dif_acc_t *acc, size_t len_bytes,
  */
 OT_WARN_UNUSED_RESULT
 status_t acc_testutils_read_data(const dif_acc_t *acc, size_t len_bytes,
-                                  acc_addr_t src, void *dest);
+                                 acc_addr_t src, void *dest);
 
 /**
  * Writes a LOG_INFO message with the contents of each 256b DMEM word.

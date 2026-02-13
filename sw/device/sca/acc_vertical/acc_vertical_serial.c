@@ -10,10 +10,10 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/simple_serial.h"
 #include "sw/device/sca/acc_vertical/ecc256_keygen_serial.h"
 #include "sw/device/sca/acc_vertical/ecc256_modinv_serial.h"
+#include "sw/device/sca/lib/prng.h"
+#include "sw/device/sca/lib/simple_serial.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top/acc_regs.h"

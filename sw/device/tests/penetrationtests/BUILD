@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_acc", "pentest_sca")
+load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_acc", "pentest_fi_ibex", "pentest_sca")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])

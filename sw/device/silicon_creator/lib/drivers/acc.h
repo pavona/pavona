@@ -231,7 +231,7 @@ rom_error_t sc_acc_load_app(const sc_acc_app_t app);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_acc_dmem_write(size_t num_words, const uint32_t *src,
-                               sc_acc_addr_t dest);
+                              sc_acc_addr_t dest);
 
 /**
  * Copies data from ACC's data memory to CPU memory.
@@ -244,7 +244,7 @@ rom_error_t sc_acc_dmem_write(size_t num_words, const uint32_t *src,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_acc_dmem_read(size_t num_words, const sc_acc_addr_t src,
-                              uint32_t *dest);
+                             uint32_t *dest);
 
 /**
  * Start the execution of the application loaded into ACC.

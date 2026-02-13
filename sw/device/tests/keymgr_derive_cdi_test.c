@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/acc_testutils.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
@@ -66,8 +66,7 @@ ACC_DECLARE_APP_SYMBOLS(x25519_sideload);
 ACC_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_u);
 ACC_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_result);
 static const acc_app_t kAccAppX25519 = ACC_APP_T_INIT(x25519_sideload);
-static const acc_addr_t kAccVarEncU =
-    ACC_ADDR_T_INIT(x25519_sideload, enc_u);
+static const acc_addr_t kAccVarEncU = ACC_ADDR_T_INIT(x25519_sideload, enc_u);
 static const acc_addr_t kAccVarEncResult =
     ACC_ADDR_T_INIT(x25519_sideload, enc_result);
 
@@ -211,7 +210,7 @@ static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
  * @param The destination of the read X25519 public key.
  */
 static void derive_sideload_acc_key(const char *state_name,
-                                     uint32_t key[kKeymgrOutputSizeWords]) {
+                                    uint32_t key[kKeymgrOutputSizeWords]) {
   uint32_t max_version;
   CHECK_STATUS_OK(keymgr_testutils_max_key_version_get(&keymgr, &max_version));
 
@@ -231,14 +230,14 @@ static void derive_sideload_acc_key(const char *state_name,
       // Montgomery u-Coordinate.
       0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
   };
-  CHECK_STATUS_OK(acc_testutils_write_data(&acc, sizeof(kEncodedU),
-                                            &kEncodedU, kAccVarEncU));
+  CHECK_STATUS_OK(acc_testutils_write_data(&acc, sizeof(kEncodedU), &kEncodedU,
+                                           kAccVarEncU));
   LOG_INFO("Starting ACC program...");
   CHECK_DIF_OK(dif_acc_set_ctrl_software_errs_fatal(&acc, false));
   CHECK_STATUS_OK(acc_testutils_execute(&acc));
   CHECK_STATUS_OK(acc_testutils_wait_for_done(&acc, 0));
   CHECK_STATUS_OK(acc_testutils_read_data(&acc, kX2551PublicKeySizeBytes,
-                                           kAccVarEncResult, key));
+                                          kAccVarEncResult, key));
 
 #ifndef DERIVE_ATTESTATION
   // If the key version is larger than the permitted maximum version, then

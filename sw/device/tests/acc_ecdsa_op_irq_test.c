@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_acc.h"     // Generated
+#include "hw/top/dt/dt_acc.h"      // Generated
 #include "hw/top/dt/dt_rv_plic.h"  // Generated
 #include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/acc_testutils.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -129,8 +129,7 @@ static void acc_wait_for_done_irq(dif_acc_t *acc) {
   irq_id = UINT32_MAX;
   plic_peripheral = kDtInstanceIdUnknown;
   // Enable Done interrupt.
-  CHECK_DIF_OK(
-      dif_acc_irq_set_enabled(acc, kDifAccIrqDone, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_acc_irq_set_enabled(acc, kDifAccIrqDone, kDifToggleEnabled));
 
   // At this point, ACC should be running. Wait for an interrupt that says
   // it's done.
@@ -218,13 +217,13 @@ static void p256_ecdsa_sign(dif_acc_t *acc, const uint8_t *msg,
       acc_testutils_write_data(acc, sizeof(uint32_t), &mode, kAccVarMode));
   CHECK_STATUS_OK(
       acc_testutils_write_data(acc, /*len_bytes=*/32, msg, kAccVarMsg));
-  CHECK_STATUS_OK(acc_testutils_write_data(acc, /*len_bytes=*/32,
-                                            private_key_d, kAccVarD0));
+  CHECK_STATUS_OK(acc_testutils_write_data(acc, /*len_bytes=*/32, private_key_d,
+                                           kAccVarD0));
 
   // Write redundant upper bits of d (all-zero for this test).
   uint8_t d0_high[32] = {0};
-  CHECK_STATUS_OK(acc_testutils_write_data(acc, /*len_bytes=*/32, d0_high,
-                                            kAccVarD0 + 32));
+  CHECK_STATUS_OK(
+      acc_testutils_write_data(acc, /*len_bytes=*/32, d0_high, kAccVarD0 + 32));
 
   // Write second share of d (all-zero for this test).
   uint8_t d1[64] = {0};
@@ -268,22 +267,22 @@ static void p256_ecdsa_verify(dif_acc_t *acc, const uint8_t *msg,
       acc_testutils_write_data(acc, sizeof(uint32_t), &mode, kAccVarMode));
   CHECK_STATUS_OK(
       acc_testutils_write_data(acc, /*len_bytes=*/32, msg, kAccVarMsg));
-  CHECK_STATUS_OK(acc_testutils_write_data(acc, /*len_bytes=*/32, signature_r,
-                                            kAccVarR));
-  CHECK_STATUS_OK(acc_testutils_write_data(acc, /*len_bytes=*/32, signature_s,
-                                            kAccVarS));
-  CHECK_STATUS_OK(acc_testutils_write_data(acc, /*len_bytes=*/32,
-                                            public_key_x, kAccVarX));
-  CHECK_STATUS_OK(acc_testutils_write_data(acc, /*len_bytes=*/32,
-                                            public_key_y, kAccVarY));
+  CHECK_STATUS_OK(
+      acc_testutils_write_data(acc, /*len_bytes=*/32, signature_r, kAccVarR));
+  CHECK_STATUS_OK(
+      acc_testutils_write_data(acc, /*len_bytes=*/32, signature_s, kAccVarS));
+  CHECK_STATUS_OK(
+      acc_testutils_write_data(acc, /*len_bytes=*/32, public_key_x, kAccVarX));
+  CHECK_STATUS_OK(
+      acc_testutils_write_data(acc, /*len_bytes=*/32, public_key_y, kAccVarY));
 
   // Call ACC to perform operation, and wait for it to complete.
   CHECK_STATUS_OK(acc_testutils_execute(acc));
   acc_wait_for_done_irq(acc);
 
   // Read back results.
-  CHECK_STATUS_OK(acc_testutils_read_data(acc, /*len_bytes=*/32, kAccVarXR,
-                                           signature_x_r));
+  CHECK_STATUS_OK(
+      acc_testutils_read_data(acc, /*len_bytes=*/32, kAccVarXR, signature_x_r));
 }
 
 /**

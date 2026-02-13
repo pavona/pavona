@@ -78,8 +78,8 @@ int AccMemUtilGetSegCount(AccMemUtil *mem_util, svBit is_imem);
 // in imem/dmem. Both are returned with output arguments. Returns 1'b1 on
 // success. Prints a message to stderr and returns 1'b0 on failure.
 svBit AccMemUtilGetSegInfo(AccMemUtil *mem_util, svBit is_imem, int seg_idx,
-                            /* output bit[31:0] */ svBitVecVal *seg_off,
-                            /* output bit[31:0] */ svBitVecVal *seg_size);
+                           /* output bit[31:0] */ svBitVecVal *seg_off,
+                           /* output bit[31:0] */ svBitVecVal *seg_size);
 
 // Gets a word of data from segments currently staged in imem/dmem. If there
 // is a word at that address, the function writes its value to the output
@@ -89,7 +89,7 @@ svBit AccMemUtilGetSegInfo(AccMemUtil *mem_util, svBit is_imem, int seg_idx,
 // If word_off is invalid (negative or enormous), the function writes a
 // message to stderr and returns 1'b0.
 svBit AccMemUtilGetSegData(AccMemUtil *mem_util, svBit is_imem, int word_off,
-                            /* output bit[31:0] */ svBitVecVal *data_value);
+                           /* output bit[31:0] */ svBitVecVal *data_value);
 
 // Get an "expected end address". This is a belt-and-braces check, where the
 // producer of the ELF file knows what address they expect to finish at (either
@@ -111,20 +111,19 @@ int AccMemUtilGetExpEndAddr(AccMemUtil *mem_util);
 // Returns 1'b0 if there is no matching entry. On a matching entry,
 // returns 1'b1 and writes the new count to to_cnt.
 svBit AccMemUtilGetLoopWarp(AccMemUtil *mem_util,
-                             /* bit [31:0] */ const svBitVecVal *addr,
-                             /* bit [31:0] */ const svBitVecVal *from_cnt,
-                             /* output bit [31:0] */ svBitVecVal *to_cnt);
+                            /* bit [31:0] */ const svBitVecVal *addr,
+                            /* bit [31:0] */ const svBitVecVal *from_cnt,
+                            /* output bit [31:0] */ svBitVecVal *to_cnt);
 
 // Get the number of loop warps
 int AccMemUtilGetNumLoopWarps(AccMemUtil *mem_util);
 
 // Get a loop warp by index (should be less than returned by
 // AccMemUtilGetNumLoopWarps).
-void AccMemUtilGetLoopWarpByIndex(
-    AccMemUtil *mem_util, int idx,
-    /* output bit [31:0] */ svBitVecVal *addr,
-    /* output bit [31:0] */ svBitVecVal *from_cnt,
-    /* output bit [31:0] */ svBitVecVal *to_cnt);
+void AccMemUtilGetLoopWarpByIndex(AccMemUtil *mem_util, int idx,
+                                  /* output bit [31:0] */ svBitVecVal *addr,
+                                  /* output bit [31:0] */ svBitVecVal *from_cnt,
+                                  /* output bit [31:0] */ svBitVecVal *to_cnt);
 }
 
 #endif  // OPENTITAN_HW_IP_ACC_DV_MEMUTIL_ACC_MEMUTIL_H_

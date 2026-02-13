@@ -25,9 +25,9 @@ cc_library(
 rust_binary(
     name = "kernel",
     srcs = [
+        "src/acc.rs",
         "src/io.rs",
         "src/main.rs",
-        "src/acc.rs",
     ],
     rustc_flags = [
         "-g",

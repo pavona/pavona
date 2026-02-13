@@ -7,14 +7,14 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_acc.h"
+#include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -30,8 +30,7 @@ ACC_DECLARE_APP_SYMBOLS(x25519_sideload);
 ACC_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_u);
 ACC_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_result);
 static const acc_app_t kAccAppX25519 = ACC_APP_T_INIT(x25519_sideload);
-static const acc_addr_t kAccVarEncU =
-    ACC_ADDR_T_INIT(x25519_sideload, enc_u);
+static const acc_addr_t kAccVarEncU = ACC_ADDR_T_INIT(x25519_sideload, enc_u);
 static const acc_addr_t kAccVarEncResult =
     ACC_ADDR_T_INIT(x25519_sideload, enc_result);
 
@@ -81,7 +80,7 @@ static void run_x25519_app(dif_acc_t *acc, uint32_t *result,
 
   // Copy the input argument (Montgomery u-coordinate).
   CHECK_STATUS_OK(acc_testutils_write_data(acc, sizeof(kEncodedU), &kEncodedU,
-                                            kAccVarEncU));
+                                           kAccVarEncU));
 
   // Run the ACC program and wait for it to complete. Clear software
   // error fatal flag as the test expects an intermediate error state.
@@ -91,8 +90,7 @@ static void run_x25519_app(dif_acc_t *acc, uint32_t *result,
   CHECK_STATUS_OK(acc_testutils_wait_for_done(acc, expect_err_bits));
 
   // Copy the result (also a 256-bit Montgomery u-coordinate).
-  CHECK_STATUS_OK(
-      acc_testutils_read_data(acc, 32, kAccVarEncResult, result));
+  CHECK_STATUS_OK(acc_testutils_read_data(acc, 32, kAccVarEncResult, result));
 }
 
 /**
@@ -100,8 +98,7 @@ static void run_x25519_app(dif_acc_t *acc, uint32_t *result,
  * This routine does not check the correctness of results, merely sideloads the
  * key from keymgr to ACC and then runs the X25519 program.
  */
-static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr,
-                                          dif_acc_t *acc) {
+static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
   // Generate the sideloaded key.
   // TODO(weicai): also check in SV sequence that the key is correct.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;

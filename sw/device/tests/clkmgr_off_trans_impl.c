@@ -5,13 +5,13 @@
 #include "sw/device/tests/clkmgr_off_trans_impl.h"
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
@@ -21,10 +21,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/acc_regs.h"
 #include "hw/top/aes_regs.h"
 #include "hw/top/hmac_regs.h"
 #include "hw/top/kmac_regs.h"
-#include "hw/top/acc_regs.h"
 
 static_assert(kDtAesCount >= 1, "This test requires at least one AES instance");
 static_assert(kDtAonTimerCount >= 1,
@@ -35,8 +35,7 @@ static_assert(kDtHmacCount >= 1,
               "This test requires at least one HMAC instance");
 static_assert(kDtKmacCount >= 1,
               "This test requires at least one KMAC instance");
-static_assert(kDtAccCount >= 1,
-              "This test requires at least one ACC instance");
+static_assert(kDtAccCount >= 1, "This test requires at least one ACC instance");
 static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
 static_assert(kDtRstmgrCount >= 1,
               "This test requires at least one Rstmgr instance");

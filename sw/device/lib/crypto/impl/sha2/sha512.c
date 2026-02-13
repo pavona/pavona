@@ -13,8 +13,8 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/sha2/sha512_insn_counts.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -71,8 +71,7 @@ ACC_DECLARE_SYMBOL_ADDR(run_sha512, msg);       // Input message.
 ACC_DECLARE_SYMBOL_ADDR(run_sha512, n_chunks);  // Message length in blocks.
 
 static const acc_app_t kAccAppSha512 = ACC_APP_T_INIT(run_sha512);
-static const acc_addr_t kAccVarSha512State =
-    ACC_ADDR_T_INIT(run_sha512, state);
+static const acc_addr_t kAccVarSha512State = ACC_ADDR_T_INIT(run_sha512, state);
 static const acc_addr_t kAccVarSha512Msg = ACC_ADDR_T_INIT(run_sha512, msg);
 static const acc_addr_t kAccVarSha512NChunks =
     ACC_ADDR_T_INIT(run_sha512, n_chunks);

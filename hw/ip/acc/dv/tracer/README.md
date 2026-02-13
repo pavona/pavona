@@ -118,7 +118,7 @@ Register x26 was read and contained value 0x00000018:
 ```
 
 Register w24 had value
-`0xcccccccc_bbbbbbbb_aaaaaaaa_facefeed_deadbeef_cafed00d_d0beb533_1234abcd` 
+`0xcccccccc_bbbbbbbb_aaaaaaaa_facefeed_deadbeef_cafed00d_d0beb533_1234abcd`
 written to it:
 ```
 > w24: 0xcccccccc_bbbbbbbb_aaaaaaaa_facefeed_deadbeef_cafed00d_d0beb533_1234abcd

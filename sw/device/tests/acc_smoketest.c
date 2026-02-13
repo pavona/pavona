@@ -6,8 +6,8 @@
 #include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/acc_testutils.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -29,8 +29,7 @@ ACC_DECLARE_APP_SYMBOLS(err_test);
 
 static const acc_app_t kAppErrTest = ACC_APP_T_INIT(err_test);
 
-static_assert(kDtAccCount >= 1,
-              "This test requires at least one ACC instance");
+static_assert(kDtAccCount >= 1, "This test requires at least one ACC instance");
 
 static dt_acc_t kTestAcc = (dt_acc_t)0;
 
@@ -132,8 +131,7 @@ static void test_err_test(dif_acc_t *acc) {
   // model.
   CHECK_DIF_OK(dif_acc_set_ctrl_software_errs_fatal(acc, false));
   CHECK_STATUS_OK(acc_testutils_execute(acc));
-  CHECK_STATUS_OK(
-      acc_testutils_wait_for_done(acc, kDifAccErrBitsBadDataAddr));
+  CHECK_STATUS_OK(acc_testutils_wait_for_done(acc, kDifAccErrBitsBadDataAddr));
 
   check_acc_insn_cnt(acc, 1);
 }

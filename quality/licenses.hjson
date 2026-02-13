@@ -216,6 +216,10 @@
     "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp",
     "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sub_bytes.cpp",
     "hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_keccak_2share.cpp",
+    // Existing __init__ from ACC
+    "hw/ip/acc/dv/rig/rig/__init__.py",
+    "hw/ip/acc/dv/rig/rig/gens/__init__.py",
+    "hw/ip/acc/util/docs/__init__.py",
     // Code contributed by mlkem-native authors
     "sw/device/lib/crypto/impl/mlkem.c",
     "sw/device/lib/crypto/include/mlkem.h",

@@ -7,13 +7,13 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/tpm.h"
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 

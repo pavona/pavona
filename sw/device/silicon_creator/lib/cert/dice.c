@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
@@ -18,7 +19,6 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"

@@ -132,7 +132,7 @@ static void update_checksum_for_write(uint32_t *checksum, uint32_t addr,
 }
 
 status_t acc_dmem_write(size_t num_words, const uint32_t *src,
-                         acc_addr_t dest) {
+                        acc_addr_t dest) {
   // Check that the write fits in DMEM.
   HARDENED_TRY(check_offset_len(dest, num_words, kAccDMemSizeBytes));
 

@@ -3,28 +3,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_aes.h"
 #include "hw/top/dt/dt_alert_handler.h"
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
 #include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_acc.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/acc_randomness_impl.h"
@@ -739,9 +739,9 @@ status_t test_and_verify_acc_operation(void) {
     TRY(dif_acc_get_status(&acc, &acc_status));
 
     // Check if any of the busy status flags are set
-    acc_busy = (acc_status &
-                 (kDifAccStatusBusyExecute | kDifAccStatusBusySecWipeDmem |
-                  kDifAccStatusBusySecWipeImem)) != 0;
+    acc_busy =
+        (acc_status & (kDifAccStatusBusyExecute | kDifAccStatusBusySecWipeDmem |
+                       kDifAccStatusBusySecWipeImem)) != 0;
     // If ACC is no longer busy, it has completed successfully
     // Break the loop
     if (!acc_busy) {

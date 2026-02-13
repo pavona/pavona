@@ -49,7 +49,7 @@ static const acc_addr_t kAccVarEd25519VerifyResult =
 // Declare mode constants.
 ACC_DECLARE_SYMBOL_ADDR(run_ed25519, ED25519_MODE_SIGN);  // Ed25519 signing.
 ACC_DECLARE_SYMBOL_ADDR(run_ed25519,
-                         ED25519_MODE_VERIFY);  // Ed25519 verification.
+                        ED25519_MODE_VERIFY);  // Ed25519 verification.
 
 static const uint32_t kAccEd25519ModeSign =
     ACC_ADDR_T_INIT(run_ed25519, ED25519_MODE_SIGN);
@@ -95,8 +95,7 @@ status_t ed25519_sign_start(
 
   // Set mode so start() will jump into signing.
   uint32_t mode = kAccEd25519ModeSign;
-  HARDENED_TRY(
-      acc_dmem_write(kAccEd25519ModeWords, &mode, kAccVarEd25519Mode));
+  HARDENED_TRY(acc_dmem_write(kAccEd25519ModeWords, &mode, kAccVarEd25519Mode));
 
   // Set the precomputed private key hash h.
   HARDENED_TRY(
@@ -107,7 +106,7 @@ status_t ed25519_sign_start(
 
   // Set the pre-hashed message.
   HARDENED_TRY(acc_dmem_write(kEd25519HashWords, prehashed_message,
-                               kAccVarEd25519Message));
+                              kAccVarEd25519Message));
 
   // Start the ACC routine.
   return acc_execute();
@@ -119,7 +118,7 @@ status_t ed25519_sign_finalize(ed25519_signature_t *result) {
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kEd25519SignMinInstructionCount,
-                        kEd25519SignMaxInstructionCount);
+                       kEd25519SignMaxInstructionCount);
 
   // Read signature R out of ACC dmem.
   HARDENED_TRY(acc_dmem_read(8, kAccVarEd25519SigR, result->r));
@@ -142,16 +141,14 @@ status_t ed25519_verify_start(
 
   // Set mode so start() will jump into verifying.
   uint32_t mode = kAccEd25519ModeVerify;
-  HARDENED_TRY(
-      acc_dmem_write(kAccEd25519ModeWords, &mode, kAccVarEd25519Mode));
+  HARDENED_TRY(acc_dmem_write(kAccEd25519ModeWords, &mode, kAccVarEd25519Mode));
 
   // Set the pre-hashed message to the provided digest.
   HARDENED_TRY(acc_dmem_write(kEd25519HashWords, prehashed_message,
-                               kAccVarEd25519Message));
+                              kAccVarEd25519Message));
 
   // Set the precomputed hash value k.
-  HARDENED_TRY(
-      acc_dmem_write(kEd25519HashWords, hash_k, kAccVarEd25519HashK));
+  HARDENED_TRY(acc_dmem_write(kEd25519HashWords, hash_k, kAccVarEd25519HashK));
 
   // Set the context string.
   HARDENED_TRY(set_context(context, context_length));
@@ -166,7 +163,7 @@ status_t ed25519_verify_start(
 
   // Set the public key.
   HARDENED_TRY(acc_dmem_write(kEd25519PointWords, public_key->data,
-                               kAccVarEd25519PublicKey));
+                              kAccVarEd25519PublicKey));
 
   // Start the ACC routine.
   return acc_execute();
@@ -179,7 +176,7 @@ status_t ed25519_verify_finalize(const ed25519_signature_t *signature,
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kEd25519VerifyMinInstructionCount,
-                        kEd25519VerifyMaxInstructionCount);
+                       kEd25519VerifyMaxInstructionCount);
 
   // Read verification result out of ACC dmem.
   uint32_t verify_result;

@@ -184,6 +184,7 @@ cc_test(
             "//hw/top:dt",
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:sram_ctrl_c_regs",
+            "//sw/acc/crypto:boot",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/base:macros",
@@ -220,7 +221,6 @@ cc_test(
             "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
             "//sw/device/silicon_creator/lib/sigverify",
             "//sw/device/silicon_creator/rom_ext/imm_section:imm_section_version",
-            "//sw/acc/crypto:boot",
         ] + variation_deps,
     )
     for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()

@@ -62,10 +62,8 @@ enum {
  */
 const acc_app_t kAccAppP256ModInv = ACC_APP_T_INIT(p256_mod_inv_sca);
 
-static const acc_addr_t kAccVarModInvK0 =
-    ACC_ADDR_T_INIT(p256_mod_inv_sca, k0);
-static const acc_addr_t kAccVarModInvK1 =
-    ACC_ADDR_T_INIT(p256_mod_inv_sca, k1);
+static const acc_addr_t kAccVarModInvK0 = ACC_ADDR_T_INIT(p256_mod_inv_sca, k0);
+static const acc_addr_t kAccVarModInvK1 = ACC_ADDR_T_INIT(p256_mod_inv_sca, k1);
 static const acc_addr_t kAccVarModInvKAplhaInv =
     ACC_ADDR_T_INIT(p256_mod_inv_sca, kalpha_inv);
 static const acc_addr_t kAccVarModInvAlpha =
@@ -92,8 +90,7 @@ static void p256_run_modinv(uint32_t *k0, uint32_t *k1) {
 
   // Execute program.
   pentest_set_trigger_high();
-  pentest_call_and_sleep(acc_manual_trigger, kIbexAccSleepCycles, false,
-                         false);
+  pentest_call_and_sleep(acc_manual_trigger, kIbexAccSleepCycles, false, false);
   SS_CHECK_STATUS_OK(acc_busy_wait_for_done());
   pentest_set_trigger_low();
 }
@@ -118,10 +115,9 @@ void ecc256_modinv(const uint8_t *k0_k1, size_t k0_k1_len) {
   uint32_t modinv_kalpha_inv[kEcc256ModInvOutputKAlphaInvNumWords];
   uint32_t modinv_alpha[kEcc256ModInvOutputAlphaNumWords];
   SS_CHECK_STATUS_OK(acc_dmem_read(kEcc256ModInvOutputKAlphaInvNumWords,
-                                    kAccVarModInvKAplhaInv,
-                                    modinv_kalpha_inv));
+                                   kAccVarModInvKAplhaInv, modinv_kalpha_inv));
   SS_CHECK_STATUS_OK(acc_dmem_read(kEcc256ModInvOutputAlphaNumWords,
-                                    kAccVarModInvAlpha, modinv_alpha));
+                                   kAccVarModInvAlpha, modinv_alpha));
 
   simple_serial_send_packet('r', (unsigned char *)modinv_kalpha_inv,
                             kEcc256ModInvOutputKAlphaInvNumBytes);

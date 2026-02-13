@@ -277,8 +277,8 @@ cc_library(
     hdrs = ["acc.h"],
     deps = [
         ":entropy",
-        "//hw/top:dt_acc",
         "//hw/top:acc_c_regs",
+        "//hw/top:dt_acc",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",

@@ -46,6 +46,7 @@
 #error "all_escalation_resets_test does not support this top"
 #endif
 
+#include "hw/top/dt/dt_acc.h"            // Generated
 #include "hw/top/dt/dt_aes.h"            // Generated
 #include "hw/top/dt/dt_alert_handler.h"  // Generated
 #include "hw/top/dt/dt_aon_timer.h"      // Generated
@@ -58,7 +59,6 @@
 #include "hw/top/dt/dt_i2c.h"            // Generated
 #include "hw/top/dt/dt_kmac.h"           // Generated
 #include "hw/top/dt/dt_lc_ctrl.h"        // Generated
-#include "hw/top/dt/dt_acc.h"           // Generated
 #include "hw/top/dt/dt_otp_ctrl.h"       // Generated
 #include "hw/top/dt/dt_pinmux.h"         // Generated
 #include "hw/top/dt/dt_pwrmgr.h"         // Generated
@@ -539,7 +539,7 @@ static void acc_ctrl_fault_checker(bool enable) {
 */
 
 static void acc_fault_checker(bool enable, const char *ip_inst,
-                               const char *type) {
+                              const char *type) {
   // TODO(#14518)
   LOG_INFO("Expected alert %d acc fault check is yet unimplemented",
            kDtAccAlertFatal);

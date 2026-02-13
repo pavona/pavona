@@ -59,8 +59,7 @@ ACC_DECLARE_SYMBOL_ADDR(acc_key_sideload_sca, k_s1_l);
 ACC_DECLARE_SYMBOL_ADDR(acc_key_sideload_sca, k_s1_h);
 ACC_DECLARE_SYMBOL_ADDR(acc_key_sideload_sca, k_l);
 ACC_DECLARE_SYMBOL_ADDR(acc_key_sideload_sca, k_h);
-const acc_app_t kAccAppKeySideloadSca =
-    ACC_APP_T_INIT(acc_key_sideload_sca);
+const acc_app_t kAccAppKeySideloadSca = ACC_APP_T_INIT(acc_key_sideload_sca);
 static const acc_addr_t kAccAppKeySideloadks0l =
     ACC_ADDR_T_INIT(acc_key_sideload_sca, k_s0_l);
 static const acc_addr_t kAccAppKeySideloadks0h =
@@ -198,7 +197,7 @@ static status_t p256_ecdsa_sign(const uint32_t *msg,
   // Send two shares of private_key_d to ACC
   TRY(acc_dmem_write(kEcc256NumWords, private_key_d, kAccVarD0));
   TRY(acc_dmem_write(kEcc256NumWords, private_key_d + kEcc256NumWords,
-                      kAccVarD1));
+                     kAccVarD1));
   // Send two shares of secret_k to ACC
   TRY(acc_dmem_write(kEcc256NumWords, k, kAccVarK0));
   TRY(acc_dmem_write(kEcc256NumWords, k + kEcc256NumWords, kAccVarK1));
@@ -221,13 +220,12 @@ static status_t p256_ecdsa_sign(const uint32_t *msg,
 status_t handle_acc_sca_ecdsa_p256_sign(ujson_t *uj) {
   // Get masks off or on.
   penetrationtest_acc_sca_en_masks_t uj_data_masks;
-  TRY(ujson_deserialize_penetrationtest_acc_sca_en_masks_t(uj,
-                                                            &uj_data_masks));
+  TRY(ujson_deserialize_penetrationtest_acc_sca_en_masks_t(uj, &uj_data_masks));
 
   // Get message and key.
   penetrationtest_acc_sca_ecdsa_p256_sign_t uj_data;
   TRY(ujson_deserialize_penetrationtest_acc_sca_ecdsa_p256_sign_t(uj,
-                                                                   &uj_data));
+                                                                  &uj_data));
 
   // Set of share d1 for masking.
   uint32_t ecc256_private_key_d1[kEcc256NumWords];
@@ -298,8 +296,7 @@ status_t handle_acc_sca_ecdsa_p256_sign_batch(ujson_t *uj) {
 
   // Get masks off or on.
   penetrationtest_acc_sca_en_masks_t uj_data_masks;
-  TRY(ujson_deserialize_penetrationtest_acc_sca_en_masks_t(uj,
-                                                            &uj_data_masks));
+  TRY(ujson_deserialize_penetrationtest_acc_sca_en_masks_t(uj, &uj_data_masks));
 
   // Create random message, k, and d.
   uint32_t ecc256_message_batch[kNumBatchOpsMax][kEcc256NumWords];
@@ -384,13 +381,12 @@ status_t handle_acc_sca_ecdsa_p256_sign_fvsr_batch(ujson_t *uj) {
 
   // Get masks off or on.
   penetrationtest_acc_sca_en_masks_t uj_data_masks;
-  TRY(ujson_deserialize_penetrationtest_acc_sca_en_masks_t(uj,
-                                                            &uj_data_masks));
+  TRY(ujson_deserialize_penetrationtest_acc_sca_en_masks_t(uj, &uj_data_masks));
 
   // Get fixed message and key.
   penetrationtest_acc_sca_ecdsa_p256_sign_t uj_data;
   TRY(ujson_deserialize_penetrationtest_acc_sca_ecdsa_p256_sign_t(uj,
-                                                                   &uj_data));
+                                                                  &uj_data));
 
   uint32_t ecc256_message_batch[kNumBatchOpsMax][kEcc256NumWords];
 
@@ -563,7 +559,7 @@ status_t handle_acc_sca_insn_carry_flag(ujson_t *uj) {
   // Load app and write received big_num into DMEM.
   TRY(acc_load_app(kAccAppInsnCarryFlag));
   TRY(dif_acc_dmem_write(&acc, kAccVarInsnCarryFlagBigNum, uj_data.big_num,
-                          sizeof(uj_data.big_num)));
+                         sizeof(uj_data.big_num)));
 
   pentest_set_trigger_high();
   TRY(acc_execute());
@@ -572,8 +568,8 @@ status_t handle_acc_sca_insn_carry_flag(ujson_t *uj) {
 
   penetrationtest_acc_sca_big_num_t uj_output;
   memset(uj_output.big_num, 0, sizeof(uj_output.big_num));
-  TRY(dif_acc_dmem_read(&acc, kAccVarInsnCarryFlagBigNumOut,
-                         uj_output.big_num, sizeof(uj_output.big_num)));
+  TRY(dif_acc_dmem_read(&acc, kAccVarInsnCarryFlagBigNumOut, uj_output.big_num,
+                        sizeof(uj_output.big_num)));
 
   RESP_OK(ujson_serialize_penetrationtest_acc_sca_big_num_t, uj, &uj_output);
 
@@ -624,9 +620,9 @@ status_t trigger_acc_sca_combi_operations(
   // Load app and write received big_num into DMEM.
   TRY(acc_load_app(kAccAppInsnCombiOps));
   TRY(dif_acc_dmem_write(&acc, kAccVarInsnCombiOpsValue1, &value1,
-                          sizeof(value1)));
+                         sizeof(value1)));
   TRY(dif_acc_dmem_write(&acc, kAccVarInsnCombiOpsValue2, &value2,
-                          sizeof(value2)));
+                         sizeof(value2)));
 
   if (trigger & 0x1)
     pentest_set_trigger_high();
@@ -636,21 +632,21 @@ status_t trigger_acc_sca_combi_operations(
     pentest_set_trigger_low();
 
   TRY(dif_acc_dmem_read(&acc, kAccVarInsnCombiOpsResult1, &result1[0],
-                         BYTES_IN_WDR));
+                        BYTES_IN_WDR));
   TRY(dif_acc_dmem_read(&acc, kAccVarInsnCombiOpsResult2, &result2[0],
-                         BYTES_IN_WDR));
+                        BYTES_IN_WDR));
   TRY(dif_acc_dmem_read(&acc, kAccVarInsnCombiOpsResult3, &result3[0],
-                         BYTES_IN_WDR));
+                        BYTES_IN_WDR));
   TRY(dif_acc_dmem_read(&acc, kAccVarInsnCombiOpsResult4, &result4[0],
-                         BYTES_IN_WDR));
+                        BYTES_IN_WDR));
   TRY(dif_acc_dmem_read(&acc, kAccVarInsnCombiOpsResult5, &result5[0],
-                         BYTES_IN_WDR));
+                        BYTES_IN_WDR));
   TRY(dif_acc_dmem_read(&acc, kAccVarInsnCombiOpsResult6, &result6[0],
-                         BYTES_IN_WDR));
+                        BYTES_IN_WDR));
   TRY(dif_acc_dmem_read(&acc, kAccVarInsnCombiOpsResult7, &result7[0],
-                         BYTES_IN_WDR));
+                        BYTES_IN_WDR));
   TRY(dif_acc_dmem_read(&acc, kAccVarInsnCombiOpsResult8, &result8[0],
-                         sizeof(*result8)));
+                        sizeof(*result8)));
 
   if (trigger & 0x2)
     pentest_set_trigger_high();
@@ -778,11 +774,11 @@ status_t handle_acc_sca_rsa512_decrypt(ujson_t *uj) {
   TRY(dif_acc_dmem_write(&acc, kAccVarRsaMode, &mode, sizeof(mode)));
   TRY(dif_acc_dmem_write(&acc, kAccVarRsaNLimbs, &n_limbs, sizeof(n_limbs)));
   TRY(dif_acc_dmem_write(&acc, kAccVarRsaModulus, uj_data.modu,
-                          sizeof(uj_data.modu)));
+                         sizeof(uj_data.modu)));
   TRY(dif_acc_dmem_write(&acc, kAccVarRsaExp, uj_data.exp,
-                          sizeof(uj_data.exp)));
+                         sizeof(uj_data.exp)));
   TRY(dif_acc_dmem_write(&acc, kAccVarRsaInOut, uj_data.msg,
-                          sizeof(uj_data.msg)));
+                         sizeof(uj_data.msg)));
 
   pentest_set_trigger_high();
   // Give the trigger time to rise.
@@ -794,7 +790,7 @@ status_t handle_acc_sca_rsa512_decrypt(ujson_t *uj) {
   // Send back decryption result to host.
   penetrationtest_acc_sca_rsa512_dec_out_t uj_output;
   TRY(dif_acc_dmem_read(&acc, kAccVarRsaInOut, uj_output.out,
-                         sizeof(uj_output.out)));
+                        sizeof(uj_output.out)));
   RESP_OK(ujson_serialize_penetrationtest_acc_sca_rsa512_dec_out_t, uj,
           &uj_output);
   return OK_STATUS();

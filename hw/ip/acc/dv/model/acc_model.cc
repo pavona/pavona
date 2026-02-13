@@ -12,9 +12,9 @@
 #include <iostream>
 #include <sstream>
 
-#include "iss_wrapper.h"
 #include "acc_model_dpi.h"
 #include "acc_trace_checker.h"
+#include "iss_wrapper.h"
 #include "sv_scoped.h"
 #include "sv_utils.h"
 
@@ -190,7 +190,7 @@ static std::vector<T> get_stack(const std::string &stack_scope) {
 }
 
 AccModel::AccModel(const std::string &mem_scope,
-                     const std::string &design_scope)
+                   const std::string &design_scope)
     : mem_util_(mem_scope), design_scope_(design_scope) {
   assert(mem_scope.size() && design_scope.size());
 }
@@ -289,7 +289,7 @@ int AccModel::edn_flush() {
 }
 
 int AccModel::edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */,
-                            unsigned char fips_err) {
+                           unsigned char fips_err) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
@@ -369,8 +369,8 @@ int AccModel::otp_key_cdc_done() {
 }
 
 int AccModel::set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
-                                svLogicVecVal *key1 /* logic [383:0] */,
-                                unsigned char valid) {
+                               svLogicVecVal *key1 /* logic [383:0] */,
+                               unsigned char valid) {
   ISSWrapper *iss = ensure_wrapper();
 
   std::array<uint32_t, 12> key0_arr;
@@ -392,10 +392,10 @@ int AccModel::set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
 }
 
 int AccModel::step(svBitVecVal *status /* bit [7:0] */,
-                    svBitVecVal *insn_cnt /* bit [31:0] */,
-                    svBitVecVal *rnd_req /* bit [0:0] */,
-                    svBitVecVal *err_bits /* bit [31:0] */,
-                    svBitVecVal *stop_pc /* bit [31:0] */) {
+                   svBitVecVal *insn_cnt /* bit [31:0] */,
+                   svBitVecVal *rnd_req /* bit [0:0] */,
+                   svBitVecVal *err_bits /* bit [31:0] */,
+                   svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(insn_cnt && err_bits && stop_pc);
 
   ISSWrapper *iss = ensure_wrapper();
@@ -572,7 +572,7 @@ int AccModel::disable_stack_check() {
 }
 
 int AccModel::step_crc(const svBitVecVal *item /* bit [47:0] */,
-                        svBitVecVal *state /* bit [31:0] */) {
+                       svBitVecVal *state /* bit [31:0] */) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
@@ -597,10 +597,10 @@ int AccModel::step_crc(const svBitVecVal *item /* bit [47:0] */,
 }
 
 int AccModel::reset(svBitVecVal *status /* bit [7:0] */,
-                     svBitVecVal *insn_cnt /* bit [31:0] */,
-                     svBitVecVal *rnd_req /* bit [0:0] */,
-                     svBitVecVal *err_bits /* bit [31:0] */,
-                     svBitVecVal *stop_pc /* bit [31:0] */) {
+                    svBitVecVal *insn_cnt /* bit [31:0] */,
+                    svBitVecVal *rnd_req /* bit [0:0] */,
+                    svBitVecVal *err_bits /* bit [31:0] */,
+                    svBitVecVal *stop_pc /* bit [31:0] */) {
   ISSWrapper *iss = iss_.get();
   if (!iss)
     return 0;
@@ -622,7 +622,7 @@ int AccModel::reset(svBitVecVal *status /* bit [7:0] */,
 }
 
 int AccModel::send_err_escalation(svBitVecVal *err_val /* bit [31:0] */,
-                                   svBit lock_immediately) {
+                                  svBit lock_immediately) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
@@ -678,7 +678,7 @@ Ecc32MemArea::EccWords AccModel::get_sim_memory(bool is_imem) const {
 }
 
 void AccModel::set_sim_memory(bool is_imem,
-                               const Ecc32MemArea::EccWords &words) {
+                              const Ecc32MemArea::EccWords &words) {
   mem_util_.GetMemArea(is_imem).WriteWithIntegrity(0, words);
 }
 
@@ -876,14 +876,14 @@ int acc_model_edn_flush(AccModel *model) {
 }
 
 int acc_model_edn_rnd_step(AccModel *model,
-                            svLogicVecVal *edn_rnd_data /* logic [31:0] */,
-                            unsigned char fips_err) {
+                           svLogicVecVal *edn_rnd_data /* logic [31:0] */,
+                           unsigned char fips_err) {
   assert(model && edn_rnd_data);
   return model->edn_rnd_step(edn_rnd_data, fips_err);
 }
 
 int acc_model_edn_urnd_step(AccModel *model,
-                             svLogicVecVal *edn_urnd_data /* logic [31:0] */) {
+                            svLogicVecVal *edn_urnd_data /* logic [31:0] */) {
   assert(model && edn_urnd_data);
   return model->edn_urnd_step(edn_urnd_data);
 }
@@ -904,18 +904,18 @@ int acc_model_otp_key_cdc_done(AccModel *model) {
 }
 
 int acc_model_set_keymgr_value(AccModel *model, svLogicVecVal *key0,
-                                svLogicVecVal *key1, unsigned char valid) {
+                               svLogicVecVal *key1, unsigned char valid) {
   assert(model && key0 && key1);
   return model->set_keymgr_value(key0, key1, valid);
 }
 
 unsigned acc_model_step(AccModel *model, unsigned model_state,
-                         svBitVecVal *cmd /* bit [7:0] */,
-                         svBitVecVal *status /* bit [7:0] */,
-                         svBitVecVal *insn_cnt /* bit [31:0] */,
-                         svBitVecVal *rnd_req /* bit [0:0] */,
-                         svBitVecVal *err_bits /* bit [31:0] */,
-                         svBitVecVal *stop_pc /* bit [31:0] */) {
+                        svBitVecVal *cmd /* bit [7:0] */,
+                        svBitVecVal *status /* bit [7:0] */,
+                        svBitVecVal *insn_cnt /* bit [31:0] */,
+                        svBitVecVal *rnd_req /* bit [0:0] */,
+                        svBitVecVal *err_bits /* bit [31:0] */,
+                        svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(model && status && insn_cnt && err_bits && stop_pc);
 
   // Clear any check due bit (we hopefully ran the check on the previous
@@ -1023,8 +1023,7 @@ int acc_model_invalidate_dmem(AccModel *model) {
   return model->invalidate_dmem();
 }
 
-int acc_model_set_software_errs_fatal(AccModel *model,
-                                       unsigned char new_val) {
+int acc_model_set_software_errs_fatal(AccModel *model, unsigned char new_val) {
   assert(model);
   return model->set_software_errs_fatal(new_val);
 }
@@ -1040,29 +1039,29 @@ int acc_disable_stack_check(AccModel *model) {
 }
 
 int acc_model_step_crc(AccModel *model, svBitVecVal *item /* bit [47:0] */,
-                        svBitVecVal *state /* inout bit [31:0] */) {
+                       svBitVecVal *state /* inout bit [31:0] */) {
   assert(model && item && state);
   return model->step_crc(item, state);
 }
 
 int acc_model_reset(AccModel *model, svBitVecVal *status /* bit [7:0] */,
-                     svBitVecVal *insn_cnt /* bit [31:0] */,
-                     svBitVecVal *rnd_req /* bit [0:0] */,
-                     svBitVecVal *err_bits /* bit [31:0] */,
-                     svBitVecVal *stop_pc /* bit [31:0] */) {
+                    svBitVecVal *insn_cnt /* bit [31:0] */,
+                    svBitVecVal *rnd_req /* bit [0:0] */,
+                    svBitVecVal *err_bits /* bit [31:0] */,
+                    svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(model);
   return model->reset(status, insn_cnt, rnd_req, err_bits, stop_pc);
 }
 
 int acc_model_send_err_escalation(AccModel *model,
-                                   svBitVecVal *err_val /* bit [31:0] */,
-                                   svBit lock_immediately) {
+                                  svBitVecVal *err_val /* bit [31:0] */,
+                                  svBit lock_immediately) {
   assert(model);
   return model->send_err_escalation(err_val, lock_immediately);
 }
 
 int acc_model_set_rma_req(AccModel *model,
-                           svBitVecVal *rma_req /* bit [3:0] */) {
+                          svBitVecVal *rma_req /* bit [3:0] */) {
   assert(model);
   return model->set_rma_req(rma_req);
 }

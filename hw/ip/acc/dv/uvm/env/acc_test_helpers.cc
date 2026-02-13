@@ -123,7 +123,7 @@ extern "C" int AccTestHelperCountFilesInDir(AccTestHelper *helper) {
 // stepping through the directory with readdir(). On success, returns the path.
 // On failure, returns an empty string.
 extern "C" const char *AccTestHelperGetFilePath(AccTestHelper *helper,
-                                                 int index) {
+                                                int index) {
   assert(helper != nullptr);
   assert(index >= 0);
 

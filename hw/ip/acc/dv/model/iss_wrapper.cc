@@ -99,8 +99,8 @@ struct TmpDir {
     // stderr to tell the user what's going on.
     struct stat statbuf;
     if (stat(path.c_str(), &statbuf) == 0) {
-      std::cerr << "ERROR: Failed to delete ACC temporary directory at "
-                << path << ".\n";
+      std::cerr << "ERROR: Failed to delete ACC temporary directory at " << path
+                << ".\n";
     }
   }
 };

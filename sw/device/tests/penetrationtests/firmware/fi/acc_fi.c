@@ -6,8 +6,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
+#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
@@ -221,7 +221,7 @@ status_t handle_acc_fi_char_bn_rshi(ujson_t *uj) {
   // Load app and write received big_num into DMEM.
   TRY(acc_load_app(kAccAppCharBnRshi));
   TRY(dif_acc_dmem_write(&acc, kAccAppCharBnRshiBigNum, uj_data.big_num,
-                          sizeof(uj_data.big_num)));
+                         sizeof(uj_data.big_num)));
 
   // FI code target.
   pentest_set_trigger_high();
@@ -237,7 +237,7 @@ status_t handle_acc_fi_char_bn_rshi(ujson_t *uj) {
   acc_fi_big_num_out_t uj_output;
   memset(uj_output.big_num, 0, sizeof(uj_output.big_num));
   TRY(dif_acc_dmem_read(&acc, kAccAppCharBnRshiBigNumOut, uj_output.big_num,
-                         sizeof(uj_output.big_num)));
+                        sizeof(uj_output.big_num)));
 
   // Read ACC instruction counter.
   TRY(dif_acc_get_insn_cnt(&acc, &uj_output.insn_cnt));
@@ -286,7 +286,7 @@ status_t handle_acc_fi_char_bn_sel(ujson_t *uj) {
   // Load app and write received big_num into DMEM.
   TRY(acc_load_app(kAccAppCharBnSel));
   TRY(dif_acc_dmem_write(&acc, kAccAppCharBnSelBigNum, uj_data.big_num,
-                          sizeof(uj_data.big_num)));
+                         sizeof(uj_data.big_num)));
 
   // FI code target.
   pentest_set_trigger_high();
@@ -302,7 +302,7 @@ status_t handle_acc_fi_char_bn_sel(ujson_t *uj) {
   acc_fi_big_num_out_t uj_output;
   memset(uj_output.big_num, 0, sizeof(uj_output.big_num));
   TRY(dif_acc_dmem_read(&acc, kAccAppCharBnSelBigNumOut, uj_output.big_num,
-                         sizeof(uj_output.big_num)));
+                        sizeof(uj_output.big_num)));
 
   // Read ACC instruction counter.
   TRY(dif_acc_get_insn_cnt(&acc, &uj_output.insn_cnt));
@@ -368,7 +368,7 @@ status_t handle_acc_fi_char_bn_wsrr(ujson_t *uj) {
   uj_output.res = 0;
   memset(uj_output.data, 0, sizeof(uj_output.data));
   TRY(dif_acc_dmem_read(&acc, kAccAppCharBnWsrrResValuesWDR, uj_output.data,
-                         sizeof(uj_output.data)));
+                        sizeof(uj_output.data)));
   // Read ACC instruction counter
   TRY(dif_acc_get_insn_cnt(&acc, &uj_output.insn_cnt));
 
@@ -478,7 +478,7 @@ status_t handle_acc_fi_char_dmem_access(ujson_t *uj) {
   uj_output.res = 0;
   memset(uj_output.data, 0, sizeof(uj_output.data));
   TRY(dif_acc_dmem_read(&acc, kAccVarCharDmemAccessValues, uj_output.data,
-                         sizeof(uj_output.data)));
+                        sizeof(uj_output.data)));
   // Read ACC instruction counter
   TRY(dif_acc_get_insn_cnt(&acc, &uj_output.insn_cnt));
 
@@ -515,8 +515,7 @@ status_t handle_acc_fi_char_dmem_write(ujson_t *uj) {
   asm volatile(NOP30);
   // Unrolled instruction sequence.
   mmio_region_write32(
-      acc.base_addr,
-      (ptrdiff_t)(ACC_DMEM_REG_OFFSET + kAccVarCharDmemWriteMem),
+      acc.base_addr, (ptrdiff_t)(ACC_DMEM_REG_OFFSET + kAccVarCharDmemWriteMem),
       ref_values[0]);
   mmio_region_write32(
       acc.base_addr,
@@ -667,7 +666,7 @@ status_t handle_acc_fi_char_dmem_write(ujson_t *uj) {
   uint32_t res_values[ARRAYSIZE(ref_values)];
   memset(res_values, 0, sizeof(res_values));
   TRY(dif_acc_dmem_read(&acc, kAccVarCharDmemWriteMem, res_values,
-                         sizeof(res_values)));
+                        sizeof(res_values)));
   for (size_t it = 0; it < ARRAYSIZE(ref_values); it++) {
     uj_output.result[it] = res_values[it] ^ ref_values[it];
   }
@@ -860,8 +859,7 @@ status_t handle_acc_fi_char_lw(ujson_t *uj) {
   ACC_DECLARE_SYMBOL_ADDR(acc_char_lw, mem_out);
   const acc_app_t kAccAppCharLw = ACC_APP_T_INIT(acc_char_lw);
   static const acc_addr_t kAccMemIn = ACC_ADDR_T_INIT(acc_char_lw, mem_in);
-  static const acc_addr_t kAccMemOut =
-      ACC_ADDR_T_INIT(acc_char_lw, mem_out);
+  static const acc_addr_t kAccMemOut = ACC_ADDR_T_INIT(acc_char_lw, mem_out);
 
   // Load app and write reference values into mem_in DMEM.
   TRY(acc_load_app(kAccAppCharLw));
@@ -944,11 +942,11 @@ status_t handle_acc_fi_char_mem(ujson_t *uj) {
   if (!char_mem_init) {
     if (char_mem_dmem) {
       TRY(dif_acc_dmem_write(&acc, char_mem_byte_offset, dmem_array_ref,
-                              sizeof(dmem_array_ref)));
+                             sizeof(dmem_array_ref)));
     }
     if (char_mem_imem) {
       TRY(dif_acc_imem_write(&acc, char_mem_byte_offset, imem_array_ref,
-                              sizeof(imem_array_ref)));
+                             sizeof(imem_array_ref)));
     }
     char_mem_init = true;
   }
@@ -984,7 +982,7 @@ status_t handle_acc_fi_char_mem(ujson_t *uj) {
   if (char_mem_dmem) {
     uint32_t dmem_array_res[char_mem_num_words];
     TRY(dif_acc_dmem_read(&acc, char_mem_byte_offset, dmem_array_res,
-                           sizeof(dmem_array_ref)));
+                          sizeof(dmem_array_ref)));
     for (size_t it = 0; it < char_mem_num_words; it++) {
       if (dmem_array_res[it] != dmem_array_ref[it] &&
           fault_pos < ARRAYSIZE(uj_output.dmem_data)) {
@@ -1002,7 +1000,7 @@ status_t handle_acc_fi_char_mem(ujson_t *uj) {
   uint32_t imem_array_res[char_mem_num_words];
   if (char_mem_imem) {
     TRY(dif_acc_imem_read(&acc, char_mem_byte_offset, imem_array_res,
-                           sizeof(imem_array_ref)));
+                          sizeof(imem_array_ref)));
     fault_pos = 0;
     for (size_t it = 0; it < char_mem_num_words; it++) {
       if (imem_array_res[it] != imem_array_ref[it] &&
@@ -1051,7 +1049,7 @@ status_t handle_acc_fi_char_register_file(ujson_t *uj) {
   // Init application and load reference values into DMEM.
   TRY(acc_load_app(kAccAppCharRF));
   TRY(dif_acc_dmem_write(&acc, kAccVarCharRFRefValues, ref_values,
-                          sizeof(ref_values)));
+                         sizeof(ref_values)));
 
   pentest_set_trigger_high();
   TRY(acc_execute());
@@ -1075,7 +1073,7 @@ status_t handle_acc_fi_char_register_file(ujson_t *uj) {
   uint32_t res_values_gpr[29];
   memset(res_values_gpr, 0, sizeof(res_values_gpr));
   TRY(dif_acc_dmem_read(&acc, kAccVarCharRFResValuesGPR, res_values_gpr,
-                         sizeof(res_values_gpr)));
+                        sizeof(res_values_gpr)));
 
   // Compare GPR RF values to reference values.
   acc_fi_rf_char_t uj_output;
@@ -1094,7 +1092,7 @@ status_t handle_acc_fi_char_register_file(ujson_t *uj) {
   uint32_t res_values_wdr[256];
   memset(res_values_wdr, 0, sizeof(res_values_wdr));
   TRY(dif_acc_dmem_read(&acc, kAccVarCharRFResValuesWDR, res_values_wdr,
-                         sizeof(res_values_wdr)));
+                        sizeof(res_values_wdr)));
 
   // Compare WDR RF values to reference values.
   memset(uj_output.faulty_wdr, 0, sizeof(uj_output.faulty_wdr));
@@ -1503,9 +1501,9 @@ status_t handle_acc_fi_pc(ujson_t *uj) {
   // Read pc_out from ACC data memory.
   acc_fi_pc_out_t uj_output;
   TRY(dif_acc_dmem_read(&acc, kAccPcOut, &uj_output.pc_acc,
-                         sizeof(uj_output.pc_acc)));
+                        sizeof(uj_output.pc_acc)));
   TRY(dif_acc_dmem_read(&acc, kAccPc, &uj_output.pc_dmem,
-                         sizeof(uj_output.pc_dmem)));
+                        sizeof(uj_output.pc_dmem)));
 
   // Read ACC instruction counter.
   TRY(dif_acc_get_insn_cnt(&acc, &uj_output.insn_cnt));
