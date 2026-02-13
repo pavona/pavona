@@ -446,7 +446,7 @@ The base pattern defines the bits (which need not be contiguous) used for the fi
 
 For example, a fancy GPIO interrupt configuration may have 4 bits per GPIO to allow generation on rising and falling edge and a two bit enum to determine the interrupt severity.
 In this case the multireg can be used to build the multiple registers needed.
-The description below shows the fields given for GPIO0 and requests generation of 32 instances.
+The description below shows the fields given for `GPIO0` and requests generation of 32 instances.
 If the registers are 32 bits wide then the tool will pack the four bit instances into four registers `INT_CTRL_0`, `INT_CTRL_1`, `INT_CTRL_2` and `INT_CTRL_3`.
 
 ```hjson
@@ -561,18 +561,18 @@ As an example the tool can be invoked from the top project directory to generate
 $ ./util/regtool.py -r -t hw/ip/uart/rtl hw/ip/uart/data/uart.hjson
 ```
 
-The first created file (`name_reg_pkg.sv`, from `name.hjson`) contains a SystemVerilog package definition that includes type definitions for two packed structures that have details of the registers and fields (all names are converted to lowercase).
-The `name_reg2hw_t` structure contains the signals that are driven from the register module to the rest of the hardware (this contains any required `.q, .qe`, and `.re` signals described below).
-The `name_hw2reg_t` structure contains the signals that are driven from the rest of the hardware to the register module (this contains any required `.d` and `.de` signals described below).
-The file also contains parameters giving the byte address offsets of the registers (these are prefixed with the peripheral `name` and converted to uppercase).
+The first created file (`<name>_reg_pkg.sv`, from `<name>.hjson`) contains a SystemVerilog package definition that includes type definitions for two packed structures that have details of the registers and fields (all names are converted to lowercase).
+The `<name>_reg2hw_t` structure contains the signals that are driven from the register module to the rest of the hardware (this contains any required `.q, .qe`, and `.re` signals described below).
+The `<name>_hw2reg_t` structure contains the signals that are driven from the rest of the hardware to the register module (this contains any required `.d` and `.de` signals described below).
+The file also contains parameters giving the byte address offsets of the registers (these are prefixed with the peripheral `<name>` and converted to uppercase).
 
-The second file (`name_reg_top.sv`) is a SystemVerilog file that contains a module (`name_reg_top`) that instantiates the registers.
+The second file (`<name>_reg_top.sv`) is a SystemVerilog file that contains a module (`<name>_reg_top`) that instantiates the registers.
 This module connects to the TL-UL system bus interface and provides the register connections to the rest of the hardware.
 If the register definition contains memory windows then there will be subordinate TL-UL bus connections for each window.
 The module signature is:
 
 ```systemverilog
-module name_reg_top (
+module <name>_reg_top (
   input clk_i,
   input rst_ni,
 
@@ -588,8 +588,8 @@ module name_reg_top (
   input  tlul_pkg::tl_d2h_t tl_win_i  [1],
 
   // To HW
-  output uart_reg_pkg::uart_reg2hw_t reg2hw, // Write
-  input  uart_reg_pkg::uart_hw2reg_t hw2reg  // Read
+  output <name>_reg_pkg::<name>_reg2hw_t reg2hw, // Write
+  input  <name>_reg_pkg::<name>_hw2reg_t hw2reg  // Read
 );
 ```
 
@@ -597,7 +597,7 @@ The sections below describe the hardware functionality of each register type bot
 
 ## Overall block diagram
 
-The diagram below gives an overview of the register module, `name_reg_top`.
+The diagram below gives an overview of the register module, `<name>_reg_top`.
 
 ![reg_top](./doc/reg_top.svg)
 
@@ -752,8 +752,7 @@ The connectivity to the hardware struct bundles are a function of the `hwaccess`
 
 ![subreg_rw](./doc/subreg_rw.svg)
 
-
-In this diagram, the maximum connection for subreg_rw is shown.
+In this diagram, the maximum connection for `subreg_rw` is shown.
 Coming in from the left (bus) are the software write enable and write data, which has the highest priority in modifying the register contents.
 These are present for all RW types.
 The "final answer" for the register content is stored in the subreg module, and presented to the peripheral hardware as the output `q` and to bus reads as the output `qs`.
@@ -772,7 +771,7 @@ Finally an attribute value of `none` asks for no interface to the hardware and m
 
 Another attribute in the register description `hwqe`, when true indicates that the hardware wants to see the software write enable exported to the peripheral logic.
 This is just a registered version of the bus side write-enable `we` so that its rising edge aligns with the change in the `q` output.
-There only needs to be one instantiated `qe` flop per register, but it is provided in the reg2hw structure for each field.
+There only needs to be one instantiated `qe` flop per register, but it is provided in the `reg2hw` structure for each field.
 
 ### Type RW HWExt
 
@@ -818,8 +817,8 @@ If there is no storage required, only an indication of the act of writing, then 
 
 Certain `RW` register types must be implemented with special configuration of `prim_subreg` since the act of writing causes the values to be set in unique ways.
 These types are shown in the block diagrams below.
-Type `R0W1C` not shown is just a special case of `RW1C` where the q output is not sent back to the software read response mux, but the value `0` is sent instead.
-Note the `qe` is removed for readability but is available with the hwqe attribute.
+Type `R0W1C` (not shown) is just a special case of `RW1C` where the `q` output is not sent back to the software read response mux, but the value `0` is sent instead.
+Note the `qe` is removed for readability but is available with the `hwqe` attribute.
 
 ![subreg_rw1c](./doc/subreg_rw1c.svg)
 
@@ -831,11 +830,11 @@ Note the `qe` is removed for readability but is available with the hwqe attribut
 #### Simultaneous SW and HW access
 
 As shown in the module descriptions, the subreg needs to handle the case when both hardware and software attempt to write at the same time.
-As is true with the RW type, the software has precedence, but it is more tricky here.
+As is true with the `RW` type, the software has precedence, but it is more tricky here.
 The goal for these types of registers is to have software clear or set certain bits at the same time hardware is clearing or setting other bits.
 So in theory what software is clearing, hardware is setting, or vice-versa.
-An example would be where hardware is setting interrupt status bits, and software is clearing them, using RW1C.
-The logic for RW1C shows how this is implemented in the module:
+An example would be where hardware is setting interrupt status bits, and software is clearing them, using `RW1C`.
+The logic for `RW1C` shows how this is implemented in the module:
 
 ```systemverilog
 q <= (de ? d : q) & (we ? ~wd : '1)
@@ -975,9 +974,9 @@ The following aspects need to be considered when integrating shadow registers in
 ### DV shadow register alert test automation
 
 In DV, the `shadow_reg_errors` automated test will check if shadow registers' update and storage errors trigger the correct alerts.
-This alert automation test requires the user to add the following items in `.hjson` file under each shadow register:
-- Update_err_alert: Alert triggered by a shadow register's update error
-- Storage_err_alert: Alert triggered by a shadow register's storage error
+This alert automation test requires the user to add the following items in the register-defining Hjson file under each shadow register:
+- `update_err_alert`: Alert triggered by a shadow register's update error
+- `storage_err_alert`: Alert triggered by a shadow register's storage error
 
 ### Future enhancements
 
@@ -1022,7 +1021,7 @@ The following features are currently not implemented but might be added in the f
 The register tool can be used to generate C header files.
 It is intended that there will be several generators to output different formats of header file.
 
-### Simple hello_world test headers
+### Simple `hello_world` test headers
 
 The register generation tool will generate simple headers if it is invoked with the `-D` flag.
 The `-o <file.h>` flag may be used to specify the output file.
@@ -1032,8 +1031,8 @@ As an example, the tool can be invoked from the top project directory to generat
 $ ./util/regtool.py -D -o hw/ip/uart.h hw/ip/uart/data/uart.hjson
 ```
 
-This format assumes that there is a base address `NAME`n`_BASE_ADDR` defined where n is an identifying number to allow for multiple instantiations of peripherals.
-It provides a definition `NAME_REG(n)` that provides the address of the register in instantiation n.
+This format assumes that there is a base address `<NAME><n>_BASE_ADDR` defined where `<n>` is an identifying number to allow for multiple instantiations of peripherals.
+It provides a definition `<NAME>_REG(<n>)` that provides the address of the register in instantiation `<n>`.
 Single-bit fields have a define with their bit offset.
 Multi-bit fields have a define for the bit offset and mask and may have defines giving the enumerated names and values.
 For example:
