@@ -463,22 +463,22 @@ extern "C" {
 #define TOP_DARJEELING_KMAC_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for otbn in top darjeeling.
+ * Peripheral base address for acc in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_OTBN_BASE_ADDR 0x22100000u
+#define TOP_DARJEELING_ACC_BASE_ADDR 0x22100000u
 
 /**
- * Peripheral size for otbn in top darjeeling.
+ * Peripheral size for acc in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_OTBN_BASE_ADDR and
- * `TOP_DARJEELING_OTBN_BASE_ADDR + TOP_DARJEELING_OTBN_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_ACC_BASE_ADDR and
+ * `TOP_DARJEELING_ACC_BASE_ADDR + TOP_DARJEELING_ACC_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_OTBN_SIZE_BYTES 0x20000u
+#define TOP_DARJEELING_ACC_SIZE_BYTES 0x20000u
 
 /**
  * Peripheral base address for keymgr_dpe in top darjeeling.
@@ -958,7 +958,7 @@ typedef enum top_darjeeling_plic_peripheral {
   kTopDarjeelingPlicPeripheralAonTimerAon = 10, /**< aon_timer_aon */
   kTopDarjeelingPlicPeripheralHmac = 11, /**< hmac */
   kTopDarjeelingPlicPeripheralKmac = 12, /**< kmac */
-  kTopDarjeelingPlicPeripheralOtbn = 13, /**< otbn */
+  kTopDarjeelingPlicPeripheralAcc = 13, /**< acc */
   kTopDarjeelingPlicPeripheralKeymgrDpe = 14, /**< keymgr_dpe */
   kTopDarjeelingPlicPeripheralCsrng = 15, /**< csrng */
   kTopDarjeelingPlicPeripheralEntropySrc = 16, /**< entropy_src */
@@ -1070,7 +1070,7 @@ typedef enum top_darjeeling_plic_irq_id {
   kTopDarjeelingPlicIrqIdKmacKmacDone = 80, /**< kmac_kmac_done */
   kTopDarjeelingPlicIrqIdKmacFifoEmpty = 81, /**< kmac_fifo_empty */
   kTopDarjeelingPlicIrqIdKmacKmacErr = 82, /**< kmac_kmac_err */
-  kTopDarjeelingPlicIrqIdOtbnDone = 83, /**< otbn_done */
+  kTopDarjeelingPlicIrqIdAccDone = 83, /**< acc_done */
   kTopDarjeelingPlicIrqIdKeymgrDpeOpDone = 84, /**< keymgr_dpe_op_done */
   kTopDarjeelingPlicIrqIdCsrngCsCmdReqDone = 85, /**< csrng_cs_cmd_req_done */
   kTopDarjeelingPlicIrqIdCsrngCsEntropyReq = 86, /**< csrng_cs_entropy_req */
@@ -1171,7 +1171,7 @@ typedef enum top_darjeeling_alert_peripheral {
   kTopDarjeelingAlertPeripheralAes = 18, /**< aes */
   kTopDarjeelingAlertPeripheralHmac = 19, /**< hmac */
   kTopDarjeelingAlertPeripheralKmac = 20, /**< kmac */
-  kTopDarjeelingAlertPeripheralOtbn = 21, /**< otbn */
+  kTopDarjeelingAlertPeripheralAcc = 21, /**< acc */
   kTopDarjeelingAlertPeripheralKeymgrDpe = 22, /**< keymgr_dpe */
   kTopDarjeelingAlertPeripheralCsrng = 23, /**< csrng */
   kTopDarjeelingAlertPeripheralEntropySrc = 24, /**< entropy_src */
@@ -1236,8 +1236,8 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdHmacFatalFault = 27, /**< hmac_fatal_fault */
   kTopDarjeelingAlertIdKmacRecovOperationErr = 28, /**< kmac_recov_operation_err */
   kTopDarjeelingAlertIdKmacFatalFaultErr = 29, /**< kmac_fatal_fault_err */
-  kTopDarjeelingAlertIdOtbnFatal = 30, /**< otbn_fatal */
-  kTopDarjeelingAlertIdOtbnRecov = 31, /**< otbn_recov */
+  kTopDarjeelingAlertIdAccFatal = 30, /**< acc_fatal */
+  kTopDarjeelingAlertIdAccRecov = 31, /**< acc_recov */
   kTopDarjeelingAlertIdKeymgrDpeRecovOperationErr = 32, /**< keymgr_dpe_recov_operation_err */
   kTopDarjeelingAlertIdKeymgrDpeFatalFaultErr = 33, /**< keymgr_dpe_fatal_fault_err */
   kTopDarjeelingAlertIdCsrngRecovAlert = 34, /**< csrng_recov_alert */
@@ -1518,7 +1518,7 @@ typedef enum top_darjeeling_hintable_clocks {
   kTopDarjeelingHintableClocksMainAes = 0, /**< Clock clk_main_aes in group trans */
   kTopDarjeelingHintableClocksMainHmac = 1, /**< Clock clk_main_hmac in group trans */
   kTopDarjeelingHintableClocksMainKmac = 2, /**< Clock clk_main_kmac in group trans */
-  kTopDarjeelingHintableClocksMainOtbn = 3, /**< Clock clk_main_otbn in group trans */
+  kTopDarjeelingHintableClocksMainAcc = 3, /**< Clock clk_main_acc in group trans */
   kTopDarjeelingHintableClocksLast = 3, /**< \internal Last Valid Hintable Clock */
 } top_darjeeling_hintable_clocks_t;
 

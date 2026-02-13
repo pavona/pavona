@@ -10,7 +10,7 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
@@ -22,22 +22,22 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 
-#include "hw/top/otbn_regs.h"  // Generated.
+#include "hw/top/acc_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 
 #define MAX_BATCH_SIZE 256
 
-// OTBN symbols used by the combinatorial test.
-OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, msg);
-static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
+// ACC symbols used by the combinatorial test.
+ACC_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, msg);
+static const acc_app_t kAccAppP256Ecdsa = ACC_APP_T_INIT(p256_ecdsa_sca);
+static const acc_addr_t kAccVarMsg = ACC_ADDR_T_INIT(p256_ecdsa_sca, msg);
 
 // Enum for the triggers of the combinatorial test.
 typedef enum combi_operations_trigger_t {
@@ -52,7 +52,7 @@ typedef enum combi_operations_trigger_t {
   kCombiOpsTriggerCp = 256,
   kCombiOpsTriggerAes = 512,
   kCombiOpsTriggerHmac = 1024,
-  kCombiOpsTriggerOtbn = 2048,
+  kCombiOpsTriggerAcc = 2048,
   kCombiOpsNumResults = 12,
 } combi_operations_trigger_t;
 
@@ -143,7 +143,7 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
-                   kPentestPeripheralOtbn | kPentestPeripheralCsrng |
+                   kPentestPeripheralAcc | kPentestPeripheralCsrng |
                    kPentestPeripheralEdn | kPentestPeripheralHmac |
                    kPentestPeripheralKmac | kPentestPeripheralAes,
                uj_sensor_data.sensor_ctrl_enable,
@@ -172,12 +172,12 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
   TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
   TRY(dif_aes_reset(&aes));
 
-  // Init OTBN.
-  TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  // Init ACC.
+  TRY(dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
 
-  // Load p256 keygen from seed app into OTBN.
+  // Load p256 keygen from seed app into ACC.
   // This is not used, but just set so it receives input,
-  TRY(otbn_load_app(kOtbnAppP256Ecdsa));
+  TRY(acc_load_app(kAccAppP256Ecdsa));
 
   // Read rom digest.
   TRY(pentest_read_rom_digest(uj_output.rom_digest));
@@ -408,12 +408,12 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
     result[10] = value1;
   }
 
-  if (trigger & kCombiOpsTriggerOtbn) {
-    // Write to the OTBN.
+  if (trigger & kCombiOpsTriggerAcc) {
+    // Write to the ACC.
     uint32_t msg[8];
     memset(msg, (int)value1, sizeof(msg));
     pentest_set_trigger_high();
-    TRY(otbn_dmem_write(8, msg, kOtbnVarMsg));
+    TRY(acc_dmem_write(8, msg, kAccVarMsg));
     pentest_set_trigger_low();
     result[11] = value1;
   }

@@ -115,7 +115,7 @@ module tb;
         reg2hw.clk_enables.clk_io_div2_peri_en.q,
         reg2hw.clk_enables.clk_io_div4_peri_en.q}),
     .clk_hints({
-        reg2hw.clk_hints.clk_main_otbn_hint.q,
+        reg2hw.clk_hints.clk_main_acc_hint.q,
         reg2hw.clk_hints.clk_main_kmac_hint.q,
         reg2hw.clk_hints.clk_main_hmac_hint.q,
         reg2hw.clk_hints.clk_main_aes_hint.q})

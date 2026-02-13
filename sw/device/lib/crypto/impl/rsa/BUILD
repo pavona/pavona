@@ -6,7 +6,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
-load("//rules:autogen.bzl", "autogen_otbn_insn_count_header")
+load("//rules:autogen.bzl", "autogen_acc_insn_count_header")
 
 cc_library(
     name = "rsa_datatypes",
@@ -39,9 +39,9 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/otbn/crypto:run_rsa_keygen",
+        "//sw/acc/crypto:run_rsa_keygen",
     ],
 )
 
@@ -53,8 +53,8 @@ cc_library(
     deps = [
         ":rsa_datatypes",
         ":rsa_modexp_insn_counts",
-        "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/otbn/crypto:run_rsa_modexp",
+        "//sw/device/lib/crypto/drivers:acc",
+        "//sw/acc/crypto:run_rsa_modexp",
     ],
 )
 
@@ -94,11 +94,11 @@ cc_library(
     ],
 )
 
-autogen_otbn_insn_count_header(
+autogen_acc_insn_count_header(
     name = "rsa_modexp_insn_counts",
     hjson = "rsa_modexp_modes.hjson",
     template = "rsa_modexp_insn_counts.h.tpl",
     deps = [
-        "//sw/otbn/crypto:run_rsa_modexp",
+        "//sw/acc/crypto:run_rsa_modexp",
     ],
 )

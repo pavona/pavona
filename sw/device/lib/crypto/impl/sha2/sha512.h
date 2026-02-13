@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_SHA2_SHA512_H_
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -121,7 +121,7 @@ typedef sha512_state_t sha384_state_t;
 /**
  * One-shot SHA-384 hash computation.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param msg Input message
  * @param msg_len Input message length in bytes
@@ -151,7 +151,7 @@ void sha384_init(sha384_state_t *state);
  *
  * Incorporates the new message data into the hash context.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param state Hash context object; updated in-place.
  * @param msg Input message.
@@ -171,7 +171,7 @@ status_t sha384_update(sha384_state_t *state, const uint8_t *msg,
  * The caller must ensure that at least `kSha384DigestBytes` bytes of space are
  * available at the location pointed to by `digest`.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param state Hash context object.
  * @param msg Input message
@@ -185,7 +185,7 @@ status_t sha384_final(sha384_state_t *state, uint32_t *digest);
 /**
  * One-shot SHA-512 hash computation.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param msg Input message
  * @param msg_len Input message length in bytes
@@ -215,7 +215,7 @@ void sha512_init(sha512_state_t *state);
  *
  * Incorporates the new message data into the hash context.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param state Hash context object; updated in-place.
  * @param msg Input message.
@@ -235,7 +235,7 @@ status_t sha512_update(sha512_state_t *state, const uint8_t *msg,
  * The caller must ensure that at least `kSha512DigestBytes` bytes of space are
  * available at the location pointed to by `digest`.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param state Hash context object.
  * @param msg Input message

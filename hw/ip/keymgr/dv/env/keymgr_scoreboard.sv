@@ -426,7 +426,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                                         get_operation(),
                                         cfg.keymgr_vif.aes_sideload_status == SideLoadAvail,
                                         cfg.keymgr_vif.kmac_sideload_status == SideLoadAvail,
-                                        cfg.keymgr_vif.otbn_sideload_status == SideLoadAvail,
+                                        cfg.keymgr_vif.acc_sideload_status == SideLoadAvail,
                                         cfg_regwen);
           end else if (csr.get_name() != "control_shadowed") begin
             cov.sw_input_cg_wrap[csr.get_name()].sample(item.a_data, cfg_regwen);
@@ -1182,7 +1182,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     case (dest)
       keymgr_pkg::Kmac: exp.KeyID = keymgr_pkg::RndCnstKmacSeedDefault;
       keymgr_pkg::Aes:  exp.KeyID = keymgr_pkg::RndCnstAesSeedDefault;
-      keymgr_pkg::Otbn: exp.KeyID = keymgr_pkg::RndCnstOtbnSeedDefault;
+      keymgr_pkg::Acc: exp.KeyID = keymgr_pkg::RndCnstAccSeedDefault;
       keymgr_pkg::None: exp.KeyID = keymgr_pkg::RndCnstNoneSeedDefault;
       default: `uvm_fatal(`gfn, $sformatf("Unexpected dest_sel: %0s", dest.name))
     endcase

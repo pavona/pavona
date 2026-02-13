@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,11 +111,11 @@ typedef struct p256_ecdh_shared_key {
 } p256_ecdh_shared_key_t;
 
 /**
- * Start an async P-256 keypair generation operation on OTBN.
+ * Start an async P-256 keypair generation operation on ACC.
  *
  * Appropriate for both ECDSA and ECDH; the key-generation process is the same.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @return Result of the operation (OK or error).
  */
@@ -123,9 +123,9 @@ OT_WARN_UNUSED_RESULT
 status_t p256_keygen_start(void);
 
 /**
- * Finish an async P-256 keypair generation operation on OTBN.
+ * Finish an async P-256 keypair generation operation on ACC.
  *
- * Blocks until OTBN is idle.
+ * Blocks until ACC is idle.
  *
  * @param[out] private_key Generated private key.
  * @param[out] public_key Generated public key.
@@ -136,12 +136,12 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
                               p256_point_t *public_key);
 
 /**
- * Start an async P-256 sideloaded keypair generation operation on OTBN.
+ * Start an async P-256 sideloaded keypair generation operation on ACC.
  *
  * Appropriate for both ECDSA and ECDH; the key-generation process is the same.
  *
- * Expects a sideloaded key from keymgr to be already loaded on OTBN. Returns
- * an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Expects a sideloaded key from keymgr to be already loaded on ACC. Returns
+ * an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @return Result of the operation (OK or error).
  */
@@ -149,10 +149,10 @@ OT_WARN_UNUSED_RESULT
 status_t p256_sideload_keygen_start(void);
 
 /**
- * Finish an async P-256 sideloaded keypair generation operation on OTBN.
+ * Finish an async P-256 sideloaded keypair generation operation on ACC.
  *
  * This routine will only read back the public key, instead of both public and
- * private as with `p256_ecdsa_keygen_finalize`. Blocks until OTBN is idle.
+ * private as with `p256_ecdsa_keygen_finalize`. Blocks until ACC is idle.
  *
  * @param[out] public_key Public key.
  * @return Result of the operation (OK or error).
@@ -161,9 +161,9 @@ OT_WARN_UNUSED_RESULT
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key);
 
 /**
- * Start a P-256 public key on-curve check on OTBN.
+ * Start a P-256 public key on-curve check on ACC.
  *
- * Blocks until OTBN is idle.
+ * Blocks until ACC is idle.
  *
  * @param[in] public_key Generated public key.
  * @return Result of the operation (OK or error).
@@ -172,9 +172,9 @@ OT_WARN_UNUSED_RESULT
 status_t p256_public_key_check_start(p256_point_t *public_key);
 
 /**
- * Finish a P-256 public key on-curve check on OTBN.
+ * Finish a P-256 public key on-curve check on ACC.
  *
- * Blocks until OTBN is idle.
+ * Blocks until ACC is idle.
  *
  * @param[out] reuslt Result of on-curve check.
  * @return Result of the operation (OK or error).
@@ -183,9 +183,9 @@ OT_WARN_UNUSED_RESULT
 status_t p256_public_key_check_finalize(hardened_bool_t *result);
 
 /**
- * Start an async ECDSA/P-256 signature generation operation on OTBN.
+ * Start an async ECDSA/P-256 signature generation operation on ACC.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param digest Digest of the message to sign.
  * @param private_key Secret key to sign the message with.
@@ -196,10 +196,10 @@ status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
                                const p256_masked_scalar_t *private_key);
 
 /**
- * Start an async ECDSA/P-256 signature generation operation on OTBN.
+ * Start an async ECDSA/P-256 signature generation operation on ACC.
  *
- * Expects a sideloaded key from keymgr to be already loaded on OTBN. Returns
- * an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Expects a sideloaded key from keymgr to be already loaded on ACC. Returns
+ * an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param digest Digest of the message to sign.
  * @return Result of the operation (OK or error).
@@ -209,11 +209,11 @@ status_t p256_ecdsa_sideload_sign_start(
     const uint32_t digest[kP256ScalarWords]);
 
 /**
- * Finish an async ECDSA/P-256 signature generation operation on OTBN.
+ * Finish an async ECDSA/P-256 signature generation operation on ACC.
  *
  * See the documentation of `p256_ecdsa_sign` for details.
  *
- * Blocks until OTBN is idle.
+ * Blocks until ACC is idle.
  *
  * @param[out] result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
@@ -222,11 +222,11 @@ OT_WARN_UNUSED_RESULT
 status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result);
 
 /**
- * Start an async ECDSA/P-256 signature verification operation on OTBN.
+ * Start an async ECDSA/P-256 signature verification operation on ACC.
  *
  * See the documentation of `p256_ecdsa_verify` for details.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param signature Signature to be verified.
  * @param digest Digest of the message to check the signature against.
@@ -239,11 +239,11 @@ status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
                                  const p256_point_t *public_key);
 
 /**
- * Finish an async ECDSA/P-256 signature verification operation on OTBN.
+ * Finish an async ECDSA/P-256 signature verification operation on ACC.
  *
  * See the documentation of `p256_ecdsa_verify` for details.
  *
- * Blocks until OTBN is idle.
+ * Blocks until ACC is idle.
  *
  * If the signature is valid, writes `kHardenedBoolTrue` to `result`;
  * otherwise, writes `kHardenedBoolFalse`.
@@ -263,9 +263,9 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
                                     hardened_bool_t *result);
 
 /**
- * Start an async ECDH/P-256 shared key generation operation on OTBN.
+ * Start an async ECDH/P-256 shared key generation operation on ACC.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param private_key Private key (d).
  * @param public_key Public key (Q).
@@ -276,9 +276,9 @@ status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
                          const p256_point_t *public_key);
 
 /**
- * Finish an async ECDH/P-256 shared key generation operation on OTBN.
+ * Finish an async ECDH/P-256 shared key generation operation on ACC.
  *
- * Blocks until OTBN is idle.
+ * Blocks until ACC is idle.
  *
  * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
  * @return Result of the operation (OK or error).
@@ -287,12 +287,12 @@ OT_WARN_UNUSED_RESULT
 status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key);
 
 /**
- * Start an async ECDH/P-256 shared key generation operation on OTBN.
+ * Start an async ECDH/P-256 shared key generation operation on ACC.
  *
  * Uses a private key generated from a key manager seed. The key manager should
- * already have sideloaded the key into OTBN before this operation is called.
+ * already have sideloaded the key into ACC before this operation is called.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key Public key (Q).
  * @return Result of the operation (OK or error).
@@ -301,12 +301,12 @@ OT_WARN_UNUSED_RESULT
 status_t p256_sideload_ecdh_start(const p256_point_t *public_key);
 
 /**
- * Finish an async ECDH/P-256 shared key generation operation on OTBN.
+ * Finish an async ECDH/P-256 shared key generation operation on ACC.
  *
  * Uses a private key generated from a key manager seed. The key manager should
- * already have sideloaded the key into OTBN before this operation is called.
+ * already have sideloaded the key into ACC before this operation is called.
  *
- * Blocks until OTBN is idle.
+ * Blocks until ACC is idle.
  *
  * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
  * @return Result of the operation (OK or error).

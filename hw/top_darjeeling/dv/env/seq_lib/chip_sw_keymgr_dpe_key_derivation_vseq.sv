@@ -15,8 +15,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   typedef bit [TL_DW-1:0]                                     tl_data_t;
   typedef bit [keymgr_pkg::KeyWidth-1:0]                      key_t;
   typedef key_t [keymgr_pkg::Shares-1:0]                      key_shares_t;
-  typedef bit [keymgr_pkg::OtbnKeyWidth-1:0]                  otbn_key_t;
-  typedef otbn_key_t [keymgr_pkg::Shares-1:0]                 otbn_key_shares_t;
+  typedef bit [keymgr_pkg::AccKeyWidth-1:0]                  acc_key_t;
+  typedef acc_key_t [keymgr_pkg::Shares-1:0]                 acc_key_shares_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSaltReg-1:0]      salt_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0] sw_binding_t;
 
@@ -96,12 +96,12 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // Verify that the outputs generated from the boot stage 0 key match the expectation.
     // Note that the values for version and salt must match those passed in SW. (Ideally, we would
     // backdoor-load them into SW to remove the redundancy, but that's no immediate priority.)
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from boot stage 0")
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated ACC output from boot stage 0")
     check_generated_output(.key_shares(stage_0_key),
                            // These values must match those passed in SW. (Ideally, we would
                            // backdoor-load them into SW to remove the redundancy, but that's no
                            // immediate priority.)
-                           .dest(keymgr_pkg::Otbn),
+                           .dest(keymgr_pkg::Acc),
                            .version('d0),
                            .salt({32'h49379059, 32'hff523992, 32'h75666880, 32'hc0e44716,
                                   32'h999612df, 32'h80f1a9de, 32'h481eae40, 32'h45e2c7f0}));
@@ -175,9 +175,9 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version('d2),
                            .salt({32'h72d5886b, 32'h4e359e52, 32'h0d7ff336, 32'h267773cf,
                                   32'h00c7d10c, 32'h6dea4fb9, 32'h77fa328a, 32'h15779805}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from boot stage 1")
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated ACC output from boot stage 1")
     check_generated_output(.key_shares(stage_1_key),
-                           .dest(keymgr_pkg::Otbn),
+                           .dest(keymgr_pkg::Acc),
                            .version('d3),
                            .salt({32'h564712d4, 32'h7ab745f5, 32'h5fa8faa9, 32'h77fce728,
                                   32'hffa3fd3c, 32'h876930f2, 32'h593b54d4, 32'ha75e231b}));
@@ -224,9 +224,9 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version('d2),
                            .salt({32'hb31031a3, 32'h59fe6e8e, 32'h4171de6b, 32'ha3f3d397,
                                   32'h7bb7800b, 32'h8f8f8cda, 32'hb697609d, 32'h122eb3b7}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from boot stage 2")
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated ACC output from boot stage 2")
     check_generated_output(.key_shares(stage_2_key),
-                           .dest(keymgr_pkg::Otbn),
+                           .dest(keymgr_pkg::Acc),
                            .version('d3),
                            .salt({32'h3f184f9b, 32'hd4af6765, 32'h8abeb221, 32'haae3ca52,
                                   32'h29f7114f, 32'hf5bf3e01, 32'h6a961bc2, 32'hec932d64}));
@@ -269,9 +269,9 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version(32'h10),
                            .salt({32'h30059d96, 32'h97436d9c, 32'hf539a20a, 32'h6838564e,
                                   32'h74ad4bb7, 32'h78000277, 32'h423025af, 32'h732e53a9}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from boot stage 3")
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated ACC output from boot stage 3")
     check_generated_output(.key_shares(stage_3_key),
-                           .dest(keymgr_pkg::Otbn),
+                           .dest(keymgr_pkg::Acc),
                            .version(32'h20),
                            .salt({32'h2cd82d66, 32'h24275e98, 32'he0344ab2, 32'hc048d59e,
                                   32'h139694c3, 32'h0043f9b4, 32'h413a2212, 32'hc2dcfbc8}));
@@ -298,9 +298,9 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version(32'd42),
                            .salt({32'h2488d617, 32'h99227306, 32'hcd789bc0, 32'h9787039b,
                                   32'h9869544a, 32'hb28b9fc7, 32'h69ab6f9d, 32'hfb11f188}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from boot stage 2")
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated ACC output from boot stage 2")
     check_generated_output(.key_shares(stage_2_key),
-                           .dest(keymgr_pkg::Otbn),
+                           .dest(keymgr_pkg::Acc),
                            .version(32'd7),
                            .salt({32'hfa94162c, 32'hd039a40f, 32'hc2b81d98, 32'h999ce18d,
                                   32'hbf8fb838, 32'h589544ce, 32'hee7790c4, 32'h0de6bdcf}));
@@ -470,8 +470,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
         gen_data.OutputSeed = top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrDpeHardOutputSeed;
       end
 
-      keymgr_pkg::Otbn: begin // HW -> OTBN
-        gen_data.HwDestSeed = top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrDpeOtbnSeed;
+      keymgr_pkg::Acc: begin // HW -> ACC
+        gen_data.HwDestSeed = top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrDpeAccSeed;
         gen_data.OutputSeed = top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrDpeHardOutputSeed;
       end
 
@@ -490,11 +490,11 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                  act_digest)
   endfunction
 
-  // Same as `check_kmac_digest` but for OTBN, which uses wider values.
-  virtual function void check_kmac_otbn_digest(key_t      kmac_key,
+  // Same as `check_kmac_digest` but for ACC, which uses wider values.
+  virtual function void check_kmac_acc_digest(key_t      kmac_key,
                                                bit [7:0]  data_arr[],
-                                               otbn_key_t act_digest);
-    `DV_CHECK_EQ(keymgr_pkg::OtbnKeyWidth'(get_kmac_digest(kmac_key, data_arr)),
+                                               acc_key_t act_digest);
+    `DV_CHECK_EQ(keymgr_pkg::AccKeyWidth'(get_kmac_digest(kmac_key, data_arr)),
                  act_digest)
   endfunction
 
@@ -537,10 +537,10 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                                                salt_t                        salt);
     bit [7:0] data_arr[];
     {<< byte {data_arr}} = get_gen_data(.key_version(version), .salt(salt), .dest(dest));
-    if (dest == keymgr_pkg::Otbn) begin
-      // Outputs generated for OTBN have a different width.
-      otbn_key_shares_t output_shares = get_output_otbn();
-      check_kmac_otbn_digest(get_unmasked_key(key_shares),
+    if (dest == keymgr_pkg::Acc) begin
+      // Outputs generated for ACC have a different width.
+      acc_key_shares_t output_shares = get_output_acc();
+      check_kmac_acc_digest(get_unmasked_key(key_shares),
                              data_arr,
                              output_shares[1] ^ output_shares[0]);
     end else begin
@@ -556,7 +556,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
       keymgr_pkg::None: return get_sw_output();
       keymgr_pkg::Aes:  return get_hw_output("tb.dut.top_darjeeling.u_keymgr_dpe.aes_key_o");
       keymgr_pkg::Kmac: return get_hw_output("tb.dut.top_darjeeling.u_keymgr_dpe.kmac_key_o");
-      keymgr_pkg::Otbn: `dv_fatal("Illegal use of this function; use `get_output_otbn` instead!")
+      keymgr_pkg::Acc: `dv_fatal("Illegal use of this function; use `get_output_acc` instead!")
       default: `dv_fatal("Illegal destination (DV bug)!")
     endcase
   endfunction
@@ -583,14 +583,14 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     return hw_key.key;
   endfunction
 
-  virtual function otbn_key_shares_t get_output_otbn();
-    string path = "tb.dut.top_darjeeling.u_keymgr_dpe.otbn_key_o";
-    keymgr_pkg::otbn_key_req_t otbn_key;
-    `DV_CHECK_FATAL(uvm_hdl_read(path, otbn_key))
-    `DV_CHECK_EQ(otbn_key.valid, 1, "Expected OTBN output key to be valid")
-    `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, otbn_key_shares_str(otbn_key.key)),
+  virtual function acc_key_shares_t get_output_acc();
+    string path = "tb.dut.top_darjeeling.u_keymgr_dpe.acc_key_o";
+    keymgr_pkg::acc_key_req_t acc_key;
+    `DV_CHECK_FATAL(uvm_hdl_read(path, acc_key))
+    `DV_CHECK_EQ(acc_key.valid, 1, "Expected ACC output key to be valid")
+    `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, acc_key_shares_str(acc_key.key)),
               UVM_LOW)
-    return otbn_key.key;
+    return acc_key.key;
   endfunction
 
   // Format a key.
@@ -603,8 +603,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     return $sformatf("%s%s%s", key_str(key_shares[0]), separator, key_str(key_shares[1]));
   endfunction
 
-  // Format two shares of an OTBN key.
-  virtual function string otbn_key_shares_str(otbn_key_shares_t shares, string separator = "\n");
+  // Format two shares of an ACC key.
+  virtual function string acc_key_shares_str(acc_key_shares_t shares, string separator = "\n");
     return $sformatf("384'h%096h%s384'h%096h", shares[0], separator, shares[1]);
   endfunction
 

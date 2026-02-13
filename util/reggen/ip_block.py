@@ -39,7 +39,7 @@ KNOWN_CIP_IDS = {
     12: 'keymgr',
     13: 'kmac',
     14: 'lc_ctrl',
-    15: 'otbn',
+    15: 'acc',
     16: 'otp_ctrl',
     17: 'pattgen',
     18: 'pinmux',

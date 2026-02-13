@@ -83,13 +83,13 @@ status_t kmac_basic_test(void) {
 }
 
 /**
- * Test generating a single sideloaded OTBN key.
+ * Test generating a single sideloaded ACC key.
  *
  * This test just checks that the key generation process finished without
  * errors, without actually attempting to use the key.
  */
-status_t otbn_basic_test(void) {
-  return keymgr_generate_key_otbn(kTestDiversification);
+status_t acc_basic_test(void) {
+  return keymgr_generate_key_acc(kTestDiversification);
 }
 
 /**
@@ -200,7 +200,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, sw_keys_change_version_test);
   EXECUTE_TEST(result, aes_basic_test);
   EXECUTE_TEST(result, kmac_basic_test);
-  EXECUTE_TEST(result, otbn_basic_test);
+  EXECUTE_TEST(result, acc_basic_test);
 
   return status_ok(result);
 }

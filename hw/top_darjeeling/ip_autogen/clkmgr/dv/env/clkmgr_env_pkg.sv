@@ -64,10 +64,10 @@ package clkmgr_env_pkg;
     TransAes,
     TransHmac,
     TransKmac,
-    TransOtbn
+    TransAcc
   } trans_e;
   typedef struct packed {
-    logic otbn;
+    logic acc;
     logic kmac;
     logic hmac;
     logic aes;

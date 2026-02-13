@@ -19,7 +19,7 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
@@ -240,7 +240,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   hmac_digest_t tbs_digest;
   hmac_sha256(cert, cdi0_entry_input_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
+      acc_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
   util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
                                        curr_tbs_signature.s);
 
@@ -253,8 +253,8 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_build(
       &cwt_dice_chain_entry_params, cert, cert_size));
 
-  // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+  // Save the CDI_0 private key to ACC DMEM so it can endorse the next stage.
+  HARDENED_RETURN_IF_ERROR(acc_boot_attestation_key_save(
       kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
       *kDiceKeyCdi0.keymgr_diversifier));
   return kErrorOk;
@@ -338,7 +338,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   hmac_digest_t tbs_digest;
   hmac_sha256(cert, cdi1_entry_input_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
+      acc_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
   util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
                                        curr_tbs_signature.s);
 
@@ -351,8 +351,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_build(
       &cwt_dice_chain_entry_params, cert, cert_size));
 
-  // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+  // Save the CDI_1 private key to ACC DMEM so it can endorse the next stage.
+  HARDENED_RETURN_IF_ERROR(acc_boot_attestation_key_save(
       kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
       *kDiceKeyCdi1.keymgr_diversifier));
 

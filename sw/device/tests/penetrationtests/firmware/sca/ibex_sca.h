@@ -34,7 +34,7 @@ status_t handle_ibex_pentest_init(ujson_t *uj);
  *  - Copy values from SRAM to another address
  *  - Send data to the AES
  *  - Send data to the HMAC
- *  - Send data to the OTBN
+ *  - Send data to the ACC
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
@@ -60,7 +60,7 @@ status_t handle_ibex_sca_combi_operations_batch(ujson_t *uj);
  *  - Copy values from SRAM to another address
  *  - Send data to the AES
  *  - Send data to the HMAC
- *  - Send data to the OTBN
+ *  - Send data to the ACC
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.

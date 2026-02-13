@@ -155,9 +155,9 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::KMAC_INTR_ENABLE_REG_OFFSET,
         ),
         (
-            "otbn",
-            top_earlgrey::OTBN_BASE_ADDR,
-            dif::OTBN_INTR_ENABLE_REG_OFFSET,
+            "acc",
+            top_earlgrey::ACC_BASE_ADDR,
+            dif::ACC_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "otp_ctrl",

@@ -19,7 +19,7 @@ The table shows the group name, the modules that belong to each group, and wheth
 | Group           | Frequencies                    | Modules                                                        | Software       | Wait for Interrupt |
 | -------------   | ------------------------------ | -------------------------------------------------------------- | -------------- | ------------------ |
 | Power-up        | 100~200KHz, 24MHz              | Clock Manager, Power Manager, Reset Manager, Pinmux            | No             | No                 |
-| Transactional   | ~100MHz                        | Aes, Kmac, Hmac, Key Manager, Otbn                             | Yes (1)        | Yes (2)            |
+| Transactional   | ~100MHz                        | Aes, Kmac, Hmac, Key Manager, Acc                             | Yes (1)        | Yes (2)            |
 | Infrastructural | 24MHz, ~100MHz                 | Fabric, Fabric gaskets (iopmp), Memories                       | No             | Yes (3)            |
 | Security        | 24MHz, ~100MHz                 | Alert handler, Entropy, Life cycle, Plic, Sensors              | No             | No                 |
 | Peripheral      | 24MHz, 48MHz, 96MHz            | I2c, Spi, Uart, Usb, others                                    | Yes            | Yes                |
@@ -177,7 +177,7 @@ Note, the power manager's request to turn off clocks supersedes all other local 
 This means even if a particular clock is turned on by the clock manager (for example a transactional unit that is ongoing or a peripheral that is enabled), the power manager requests will still turn clocks on / off at the root.
 
 This makes it software's responsibility to ensure low power entry requests (which can only be initiated by software) do not conflict with any ongoing activities controlled by software.
-For example, software should ensure that Aes / Otbn activities have completed before initializing a low power entry process.
+For example, software should ensure that Aes / Acc activities have completed before initializing a low power entry process.
 
 <%text>### Clock Division</%text>
 

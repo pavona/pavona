@@ -400,14 +400,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_KMAC_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for otbn in top earlgrey.
+   * Peripheral base address for acc in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTBN_BASE_ADDR = 32'h41300000;
+  parameter int unsigned TOP_EARLGREY_ACC_BASE_ADDR = 32'h41300000;
 
   /**
-   * Peripheral size in bytes for otbn in top earlgrey.
+   * Peripheral size in bytes for acc in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h20000;
+  parameter int unsigned TOP_EARLGREY_ACC_SIZE_BYTES = 32'h20000;
 
   /**
    * Peripheral base address for keymgr in top earlgrey.
@@ -564,7 +564,7 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertPeripheralAes = 29,
     TopEarlgreyAlertPeripheralHmac = 30,
     TopEarlgreyAlertPeripheralKmac = 31,
-    TopEarlgreyAlertPeripheralOtbn = 32,
+    TopEarlgreyAlertPeripheralAcc = 32,
     TopEarlgreyAlertPeripheralKeymgr = 33,
     TopEarlgreyAlertPeripheralCsrng = 34,
     TopEarlgreyAlertPeripheralEntropySrc = 35,
@@ -625,8 +625,8 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertIdHmacFatalFault = 44,
     TopEarlgreyAlertIdKmacRecovOperationErr = 45,
     TopEarlgreyAlertIdKmacFatalFaultErr = 46,
-    TopEarlgreyAlertIdOtbnFatal = 47,
-    TopEarlgreyAlertIdOtbnRecov = 48,
+    TopEarlgreyAlertIdAccFatal = 47,
+    TopEarlgreyAlertIdAccRecov = 48,
     TopEarlgreyAlertIdKeymgrRecovOperationErr = 49,
     TopEarlgreyAlertIdKeymgrFatalFaultErr = 50,
     TopEarlgreyAlertIdCsrngRecovAlert = 51,
@@ -820,7 +820,7 @@ package top_earlgrey_pkg;
     TopEarlgreyPlicIrqIdKmacKmacDone = 169,
     TopEarlgreyPlicIrqIdKmacFifoEmpty = 170,
     TopEarlgreyPlicIrqIdKmacKmacErr = 171,
-    TopEarlgreyPlicIrqIdOtbnDone = 172,
+    TopEarlgreyPlicIrqIdAccDone = 172,
     TopEarlgreyPlicIrqIdKeymgrOpDone = 173,
     TopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 174,
     TopEarlgreyPlicIrqIdCsrngCsEntropyReq = 175,
@@ -1118,7 +1118,7 @@ package top_earlgrey_pkg;
     PeripheralKeymgr,
     PeripheralKmac,
     PeripheralLcCtrl,
-    PeripheralOtbn,
+    PeripheralAcc,
     PeripheralOtpCtrl,
     PeripheralOtpMacro,
     PeripheralPattgen,

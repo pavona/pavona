@@ -91,15 +91,15 @@ package otp_ctrl_pkg;
   parameter int FlashKeyWidth     = 128;
   parameter int SramKeyWidth      = 128;
   parameter int SramNonceWidth    = 128;
-  parameter int OtbnKeyWidth      = 128;
-  parameter int OtbnNonceWidth    = 64;
+  parameter int AccKeyWidth      = 128;
+  parameter int AccNonceWidth    = 64;
 
   typedef logic [SramKeyWidth-1:0]   sram_key_t;
   typedef logic [SramNonceWidth-1:0] sram_nonce_t;
-  typedef logic [OtbnKeyWidth-1:0]   otbn_key_t;
-  typedef logic [OtbnNonceWidth-1:0] otbn_nonce_t;
+  typedef logic [AccKeyWidth-1:0]   acc_key_t;
+  typedef logic [AccNonceWidth-1:0] acc_nonce_t;
 
-  localparam int OtbnNonceSel  = OtbnNonceWidth / ScrmblBlockWidth;
+  localparam int AccNonceSel  = AccNonceWidth / ScrmblBlockWidth;
   localparam int FlashNonceSel = FlashKeyWidth / ScrmblBlockWidth;
   localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
 
@@ -136,7 +136,7 @@ package otp_ctrl_pkg;
 
   typedef struct packed {
     logic req; // Requests ephemeral scrambling key and nonce.
-  } otbn_otp_key_req_t;
+  } acc_otp_key_req_t;
 
   typedef struct packed {
     logic data_ack;                    // Ack for data key.
@@ -173,10 +173,10 @@ package otp_ctrl_pkg;
 
   typedef struct packed {
     logic        ack;        // Ack for key.
-    otbn_key_t   key;        // 128bit ephemeral scrambling key.
-    otbn_nonce_t nonce;      // 256bit nonce.
+    acc_key_t   key;        // 128bit ephemeral scrambling key.
+    acc_nonce_t nonce;      // 256bit nonce.
     logic        seed_valid; // Set to 1 if the key seed has been provisioned and is valid.
-  } otbn_otp_key_rsp_t;
+  } acc_otp_key_rsp_t;
 
   ////////////////////////////////
   // Power/Reset Ctrl Interface //

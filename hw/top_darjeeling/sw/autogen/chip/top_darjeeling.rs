@@ -357,19 +357,19 @@ pub const KMAC_BASE_ADDR: usize = 0x21120000;
 /// `KMAC_BASE_ADDR + KMAC_SIZE_BYTES`.
 pub const KMAC_SIZE_BYTES: usize = 0x1000;
 
-/// Peripheral base address for otbn in top darjeeling.
+/// Peripheral base address for acc in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const OTBN_BASE_ADDR: usize = 0x22100000;
+pub const ACC_BASE_ADDR: usize = 0x22100000;
 
-/// Peripheral size for otbn in top darjeeling.
+/// Peripheral size for acc in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #OTBN_BASE_ADDR and
-/// `OTBN_BASE_ADDR + OTBN_SIZE_BYTES`.
-pub const OTBN_SIZE_BYTES: usize = 0x20000;
+/// address between #ACC_BASE_ADDR and
+/// `ACC_BASE_ADDR + ACC_SIZE_BYTES`.
+pub const ACC_SIZE_BYTES: usize = 0x20000;
 
 /// Peripheral base address for keymgr_dpe in top darjeeling.
 ///
@@ -748,8 +748,8 @@ pub enum PlicPeripheral {
     Hmac = 11,
     /// kmac
     Kmac = 12,
-    /// otbn
-    Otbn = 13,
+    /// acc
+    Acc = 13,
     /// keymgr_dpe
     KeymgrDpe = 14,
     /// csrng
@@ -805,7 +805,7 @@ impl TryFrom<u32> for PlicPeripheral {
             10 => Ok(Self::AonTimerAon),
             11 => Ok(Self::Hmac),
             12 => Ok(Self::Kmac),
-            13 => Ok(Self::Otbn),
+            13 => Ok(Self::Acc),
             14 => Ok(Self::KeymgrDpe),
             15 => Ok(Self::Csrng),
             16 => Ok(Self::EntropySrc),
@@ -1002,8 +1002,8 @@ pub enum PlicIrqId {
     KmacFifoEmpty = 81,
     /// kmac_kmac_err
     KmacKmacErr = 82,
-    /// otbn_done
-    OtbnDone = 83,
+    /// acc_done
+    AccDone = 83,
     /// keymgr_dpe_op_done
     KeymgrDpeOpDone = 84,
     /// csrng_cs_cmd_req_done
@@ -1189,7 +1189,7 @@ impl TryFrom<u32> for PlicIrqId {
             80 => Ok(Self::KmacKmacDone),
             81 => Ok(Self::KmacFifoEmpty),
             82 => Ok(Self::KmacKmacErr),
-            83 => Ok(Self::OtbnDone),
+            83 => Ok(Self::AccDone),
             84 => Ok(Self::KeymgrDpeOpDone),
             85 => Ok(Self::CsrngCsCmdReqDone),
             86 => Ok(Self::CsrngCsEntropyReq),
@@ -1425,8 +1425,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 132] = [
     PlicPeripheral::Kmac,
     // KmacKmacErr -> PlicPeripheral::Kmac
     PlicPeripheral::Kmac,
-    // OtbnDone -> PlicPeripheral::Otbn
-    PlicPeripheral::Otbn,
+    // AccDone -> PlicPeripheral::Acc
+    PlicPeripheral::Acc,
     // KeymgrDpeOpDone -> PlicPeripheral::KeymgrDpe
     PlicPeripheral::KeymgrDpe,
     // CsrngCsCmdReqDone -> PlicPeripheral::Csrng
@@ -1574,8 +1574,8 @@ pub enum AlertPeripheral {
     Hmac = 19,
     /// kmac
     Kmac = 20,
-    /// otbn
-    Otbn = 21,
+    /// acc
+    Acc = 21,
     /// keymgr_dpe
     KeymgrDpe = 22,
     /// csrng
@@ -1693,10 +1693,10 @@ pub enum AlertId {
     KmacRecovOperationErr = 28,
     /// kmac_fatal_fault_err
     KmacFatalFaultErr = 29,
-    /// otbn_fatal
-    OtbnFatal = 30,
-    /// otbn_recov
-    OtbnRecov = 31,
+    /// acc_fatal
+    AccFatal = 30,
+    /// acc_recov
+    AccRecov = 31,
     /// keymgr_dpe_recov_operation_err
     KeymgrDpeRecovOperationErr = 32,
     /// keymgr_dpe_fatal_fault_err
@@ -1823,8 +1823,8 @@ impl TryFrom<u32> for AlertId {
             27 => Ok(Self::HmacFatalFault),
             28 => Ok(Self::KmacRecovOperationErr),
             29 => Ok(Self::KmacFatalFaultErr),
-            30 => Ok(Self::OtbnFatal),
-            31 => Ok(Self::OtbnRecov),
+            30 => Ok(Self::AccFatal),
+            31 => Ok(Self::AccRecov),
             32 => Ok(Self::KeymgrDpeRecovOperationErr),
             33 => Ok(Self::KeymgrDpeFatalFaultErr),
             34 => Ok(Self::CsrngRecovAlert),
@@ -1940,10 +1940,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 77] = [
     AlertPeripheral::Kmac,
     // KmacFatalFaultErr -> AlertPeripheral::Kmac
     AlertPeripheral::Kmac,
-    // OtbnFatal -> AlertPeripheral::Otbn
-    AlertPeripheral::Otbn,
-    // OtbnRecov -> AlertPeripheral::Otbn
-    AlertPeripheral::Otbn,
+    // AccFatal -> AlertPeripheral::Acc
+    AlertPeripheral::Acc,
+    // AccRecov -> AlertPeripheral::Acc
+    AlertPeripheral::Acc,
     // KeymgrDpeRecovOperationErr -> AlertPeripheral::KeymgrDpe
     AlertPeripheral::KeymgrDpe,
     // KeymgrDpeFatalFaultErr -> AlertPeripheral::KeymgrDpe
@@ -2467,8 +2467,8 @@ pub enum HintableClocks {
     MainHmac = 1,
     /// Clock clk_main_kmac in group trans
     MainKmac = 2,
-    /// Clock clk_main_otbn in group trans
-    MainOtbn = 3,
+    /// Clock clk_main_acc in group trans
+    MainAcc = 3,
 }
 
 /// MMIO Region

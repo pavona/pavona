@@ -199,13 +199,13 @@ opentitan_test(
     deps = [
         ":entropy",
         ":entropy_kat",
-        "//hw/top:dt_otbn",
+        "//hw/top:dt_acc",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/tests:otbn_randomness_impl",
+        "//sw/device/tests:acc_randomness_impl",
     ],
 )
 
@@ -272,13 +272,13 @@ opentitan_test(
 )
 
 cc_library(
-    name = "otbn",
-    srcs = ["otbn.c"],
-    hdrs = ["otbn.h"],
+    name = "acc",
+    srcs = ["acc.c"],
+    hdrs = ["acc.h"],
     deps = [
         ":entropy",
-        "//hw/top:dt_otbn",
-        "//hw/top:otbn_c_regs",
+        "//hw/top:dt_acc",
+        "//hw/top:acc_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",

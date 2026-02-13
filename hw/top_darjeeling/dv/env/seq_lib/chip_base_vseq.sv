@@ -175,11 +175,11 @@ class chip_base_vseq #(
     initialize_otp_sig_verify();
     initialize_otp_creator_sw_cfg_ast_cfg();
     // Initialize selected memories to all 0. This is required for some chip-level tests such as
-    // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
+    // acc_mem_scramble that may intentionally read memories before writing them. Reading these
     // memories still triggers ECC integrity errors that need to be handled by the test.
-    cfg.mem_bkdr_util_h[OtbnImem].clear_mem();
-    for (int ram_idx = 0; ram_idx < cfg.num_otbn_dmem_tiles; ram_idx++) begin
-      cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
+    cfg.mem_bkdr_util_h[AccImem].clear_mem();
+    for (int ram_idx = 0; ram_idx < cfg.num_acc_dmem_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(AccDmem0 + ram_idx)].clear_mem();
     end
     // Early cpu init
     if (early_cpu_init) cpu_init();
@@ -315,9 +315,9 @@ class chip_base_vseq #(
     end
   endtask : alert_ping_en_shorten
 
-  // Initialize the OTP creator SW cfg region to use otbn for signature verification.
+  // Initialize the OTP creator SW cfg region to use acc for signature verification.
   virtual function void initialize_otp_sig_verify();
-    // Use otbn mod_exp implementation for signature
+    // Use acc mod_exp implementation for signature
     // verification. See the definition of `hardened_bool_t` in
     // sw/lib/sw/device/base/hardened.h.
     cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgSigverifyRsaModExpIbexEnOffset,

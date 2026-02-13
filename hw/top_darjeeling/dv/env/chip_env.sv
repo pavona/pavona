@@ -53,8 +53,8 @@ class chip_env extends cip_base_env #(
       is_invalid |= mem inside {[RamMbox0:RamMbox15]} && (int'(mem - RamMbox0) >
                                                         cfg.num_ram_mbox_tiles - 1);
 
-      is_invalid |= mem inside {[OtbnDmem0:OtbnDmem15]} && (int'(mem - OtbnDmem0) >
-                                                            cfg.num_otbn_dmem_tiles - 1);
+      is_invalid |= mem inside {[AccDmem0:AccDmem15]} && (int'(mem - AccDmem0) >
+                                                            cfg.num_acc_dmem_tiles - 1);
 
       is_invalid |= mem inside {[RamCtn0:RamCtn15]} && (int'(mem - RamCtn0) >
                                                         cfg.num_ram_ctn_tiles - 1);

@@ -9,7 +9,7 @@
 #include "hw/top/dt/dt_entropy_src.h"
 #include "hw/top/dt/dt_keymgr.h"
 #include "hw/top/dt/dt_kmac.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_otp_ctrl.h"
 #include "hw/top/dt/dt_pwrmgr.h"
 #include "hw/top/dt/dt_rv_core_ibex.h"
@@ -21,7 +21,7 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
@@ -35,7 +35,7 @@
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/otbn_randomness_impl.h"
+#include "sw/device/tests/acc_randomness_impl.h"
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
 
@@ -46,7 +46,7 @@ static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
 static dif_kmac_t kmac;
 static dif_keymgr_t kmgr;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_otp_ctrl_t otp;
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_core_ibex_t ibex;
@@ -217,7 +217,7 @@ void test_initialize(void) {
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &ibex));
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
   CHECK_DIF_OK(dif_keymgr_init_from_dt(kDtKeymgr, &kmgr));
-  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
   CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
   CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
@@ -232,7 +232,7 @@ status_t execute_test(void) {
     LOG_INFO("Entropy src test %d/%d", i, loop);
     alert_handler_test(&pwrmgr);
     aes_test(&aes);
-    otbn_randomness_test_start(&otbn, /*iters=*/0);
+    acc_randomness_test_start(&acc, /*iters=*/0);
     keymgr_test(&kmgr);
     otp_ctrl_test(&otp);
     kmac_test(&kmac);
@@ -240,7 +240,7 @@ status_t execute_test(void) {
 
     AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, /*value=*/true,
                                   /*timeout_usec=*/100000);
-    CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
+    CHECK(acc_randomness_test_end(&acc, /*skip_acc_done_check=*/false));
     CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
   }
 

@@ -22,7 +22,7 @@
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -70,7 +70,7 @@ static dif_i2c_t i2c2;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux_aon;
@@ -152,8 +152,8 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
   TRY(dif_lc_ctrl_init(base_addr, &lc_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-  TRY(dif_otbn_init(base_addr, &otbn));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR);
+  TRY(dif_acc_init(base_addr, &acc));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   TRY(dif_otp_ctrl_init(base_addr, &otp_ctrl));
@@ -341,10 +341,10 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
       TRY(dif_lc_ctrl_alert_force(&lc_ctrl, kDifLcCtrlAlertFatalBusIntegError));
       break;
     case 30:
-      TRY(dif_otbn_alert_force(&otbn, kDifOtbnAlertFatal));
+      TRY(dif_acc_alert_force(&acc, kDifAccAlertFatal));
       break;
     case 31:
-      TRY(dif_otbn_alert_force(&otbn, kDifOtbnAlertRecov));
+      TRY(dif_acc_alert_force(&acc, kDifAccAlertRecov));
       break;
     case 32:
       TRY(dif_otp_ctrl_alert_force(&otp_ctrl, kDifOtpCtrlAlertFatalMacroError));
@@ -618,7 +618,7 @@ status_t handle_alert_fi_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
                    kPentestPeripheralCsrng | kPentestPeripheralEntropy |
                    kPentestPeripheralAes | kPentestPeripheralHmac |
-                   kPentestPeripheralKmac | kPentestPeripheralOtbn,
+                   kPentestPeripheralKmac | kPentestPeripheralAcc,
                uj_sensor_data.sensor_ctrl_enable,
                uj_sensor_data.sensor_ctrl_en_fatal);
 

@@ -11,7 +11,7 @@ interface otp_ctrl_cov_if
    input otp_ctrl_pkg::lc_otp_program_req_t                        lc_otp_program_i,
    input bit [3:0]                                                 lc_escalate_en_i,
    input otp_ctrl_pkg::sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
-   input otp_ctrl_pkg::otbn_otp_key_req_t                          otbn_otp_key_i
+   input otp_ctrl_pkg::acc_otp_key_req_t                          acc_otp_key_i
    );
 
   import uvm_pkg::*;
@@ -21,7 +21,7 @@ interface otp_ctrl_cov_if
   covergroup lc_esc_en_condition_cg @(lc_escalate_en_i == lc_ctrl_pkg::On);
     lc_esc_during_sram_0_req:      coverpoint sram_otp_key_i[0].req;
     lc_esc_during_sram_1_req:      coverpoint sram_otp_key_i[1].req;
-    lc_esc_during_otbn_req:        coverpoint otbn_otp_key_i.req;
+    lc_esc_during_acc_req:        coverpoint acc_otp_key_i.req;
     lc_esc_during_otp_idle:        coverpoint pwr_otp_o.otp_idle;
     lc_esc_during_lc_otp_prog_req: coverpoint lc_otp_program_i.req;
   endgroup
@@ -33,7 +33,7 @@ interface otp_ctrl_cov_if
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
     sram_0_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
-    sram_0_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
+    sram_0_req_during_acc_req:       coverpoint acc_otp_key_i.req;
     sram_0_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
   endgroup
 
@@ -43,18 +43,18 @@ interface otp_ctrl_cov_if
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
     sram_1_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
-    sram_1_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
+    sram_1_req_during_acc_req:       coverpoint acc_otp_key_i.req;
     sram_1_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
   endgroup
 
-  covergroup otbn_req_condition_cg @(otbn_otp_key_i.req);
-    otbn_req_during_lc_esc: coverpoint lc_escalate_en_i {
+  covergroup acc_req_condition_cg @(acc_otp_key_i.req);
+    acc_req_during_lc_esc: coverpoint lc_escalate_en_i {
       bins lc_esc_on  = {lc_ctrl_pkg::On};
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
-    otbn_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
-    otbn_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
-    otbn_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
+    acc_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
+    acc_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
+    acc_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
   endgroup
 
   covergroup lc_prog_req_condition_cg @(lc_otp_program_i.req);
@@ -64,14 +64,14 @@ interface otp_ctrl_cov_if
     }
     lc_prog_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
     lc_prog_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
-    lc_prog_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
+    lc_prog_req_during_acc_req:       coverpoint acc_otp_key_i.req;
     lc_prog_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
   endgroup
 
   `DV_FCOV_INSTANTIATE_CG(lc_esc_en_condition_cg)
   `DV_FCOV_INSTANTIATE_CG(sram_0_req_condition_cg)
   `DV_FCOV_INSTANTIATE_CG(sram_1_req_condition_cg)
-  `DV_FCOV_INSTANTIATE_CG(otbn_req_condition_cg)
+  `DV_FCOV_INSTANTIATE_CG(acc_req_condition_cg)
   `DV_FCOV_INSTANTIATE_CG(lc_prog_req_condition_cg)
 
 endinterface

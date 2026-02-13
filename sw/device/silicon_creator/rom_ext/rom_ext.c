@@ -345,7 +345,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
              kOwnershipKeyAlgCategoryHybrid) {
     // Hybrid signatures check both ECDSA and SPX+ signatures.
     // TODO: as a future optimization, start the ECDSA verify operation on
-    // OTBN and compute the SPX+ verify in parallel on Ibex.
+    // ACC and compute the SPX+ verify in parallel on Ibex.
     HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
         &manifest->ecdsa_signature, &keyring.key[verify_key]->data.hybrid.ecdsa,
         &act_digest, &flash_exec));

@@ -9,7 +9,7 @@
 #include "hw/top/dt/dt_edn.h"
 #include "hw/top/dt/dt_entropy_src.h"
 #include "hw/top/dt/dt_kmac.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_core_ibex.h"
 #include "hw/top/dt/dt_rv_plic.h"
 #include "sw/device/lib/base/memory.h"
@@ -31,7 +31,7 @@
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/otbn_randomness_impl.h"
+#include "sw/device/tests/acc_randomness_impl.h"
 
 #include "hw/top/entropy_src_regs.h"  // Generated.
 
@@ -110,7 +110,7 @@ static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
 static dif_kmac_t kmac;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 
@@ -475,9 +475,9 @@ status_t firmware_override_extract_insert(
                           /*message=*/"hello", /*message_len=*/6,
                           ARRAYSIZE(output), output, /*capacity=*/NULL));
 
-  LOG_INFO("Running OTBN...");
-  otbn_randomness_test_start(&otbn, /*iters=*/10);
-  TRY_CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
+  LOG_INFO("Running ACC...");
+  acc_randomness_test_start(&acc, /*iters=*/10);
+  TRY_CHECK(acc_randomness_test_end(&acc, /*skip_acc_done_check=*/false));
 
   return OK_STATUS();
 }
@@ -489,7 +489,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
   CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
   CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
-  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
 

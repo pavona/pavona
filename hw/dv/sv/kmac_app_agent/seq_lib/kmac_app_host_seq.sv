@@ -50,7 +50,7 @@ class kmac_app_host_seq extends kmac_app_base_seq;
   endfunction
 
 
-  // Send the OTBN-specific header word
+  // Send the ACC-specific header word
   virtual task send_header();
 
     // Create the CFG msg req with only first byte valid
@@ -82,9 +82,9 @@ class kmac_app_host_seq extends kmac_app_base_seq;
 
     init_msg_size_bytes = msg_size_bytes;
 
-    // If mode is OTBN send CFG
-    if (mode == AppOtbn) begin
-      cfg.vif.otbn_start = 1'b1;
+    // If mode is ACC send CFG
+    if (mode == AppAcc) begin
+      cfg.vif.acc_start = 1'b1;
       cfg.vif.max_per = max_digest_word;
       send_header();
     end

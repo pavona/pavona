@@ -8,7 +8,7 @@ package clkmgr_pkg;
     HintMainAes = 0,
     HintMainHmac = 1,
     HintMainKmac = 2,
-    HintMainOtbn = 3
+    HintMainAcc = 3
   } hint_names_e;
 
   // clocks generated and broadcast
@@ -25,7 +25,7 @@ package clkmgr_pkg;
     logic clk_main_aes;
     logic clk_main_hmac;
     logic clk_main_kmac;
-    logic clk_main_otbn;
+    logic clk_main_acc;
     logic clk_io_div4_infra;
     logic clk_main_infra;
     logic clk_usb_infra;
@@ -54,7 +54,7 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t main_aes;
     prim_mubi_pkg::mubi4_t main_hmac;
     prim_mubi_pkg::mubi4_t main_kmac;
-    prim_mubi_pkg::mubi4_t main_otbn;
+    prim_mubi_pkg::mubi4_t main_acc;
     prim_mubi_pkg::mubi4_t io_div4_infra;
     prim_mubi_pkg::mubi4_t main_infra;
     prim_mubi_pkg::mubi4_t usb_infra;

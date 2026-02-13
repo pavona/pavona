@@ -170,7 +170,7 @@ The generate output command is composed of 2 options
 *  Generate output key for hardware, referred to as `generate-output-hw`
 
 The hardware option is meant specifically for symmetric sideload use cases.
-When this option is issued, the output of the KMAC invocation is not stored in software visible registers, but instead in hardware registers that directly output to symmetric primitives such as AES, KMAC and OTBN.
+When this option is issued, the output of the KMAC invocation is not stored in software visible registers, but instead in hardware registers that directly output to symmetric primitives such as AES, KMAC and ACC.
 
 ## KMAC Operations
 All invoked KMAC operations expect the key in two shares.
@@ -405,7 +405,7 @@ See diagram below for an example transfer:
 ### Sideload Keys
 
 There are three sideload keys.
-One for AES, one for KMAC and one for OTBN.
+One for AES, one for KMAC and one for ACC.
 When a sideload key is generated successfully through the `generate-output-hw` command, the derived data is loaded into key storage registers.
 There is a set of storage registers for each destination.
 

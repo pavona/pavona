@@ -26,13 +26,13 @@ filegroup(
 )
 
 py_binary(
-    name = "otbn_build",
-    srcs = ["otbn_build.py"],
-    imports = ["../hw/ip/otbn/util/"],
+    name = "acc_build",
+    srcs = ["acc_build.py"],
+    imports = ["../hw/ip/acc/util/"],
     deps = [
         requirement("pyelftools"),
-        "//hw/ip/otbn/util:otbn_as",
-        "//hw/ip/otbn/util:otbn_ld",
+        "//hw/ip/acc/util:acc_as",
+        "//hw/ip/acc/util:acc_ld",
     ],
 )
 
@@ -159,7 +159,7 @@ cc_library(
         "code_snippet",
         "dashboard",
         "doxygen",
-        "otbn",
+        "acc",
         "readme2index",
         "reggen",
         "testplan",

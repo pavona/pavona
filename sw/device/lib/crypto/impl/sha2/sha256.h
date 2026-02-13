@@ -7,7 +7,7 @@
 
 #include "stdint.h"
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,7 +82,7 @@ typedef struct sha256_state {
 /**
  * One-shot SHA-256 hash computation.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param msg Input message
  * @param msg_len Input message length in bytes
@@ -112,7 +112,7 @@ void sha256_init(sha256_state_t *state);
  *
  * Incorporates the new message data into the hash context.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param state Hash context object; updated in-place.
  * @param msg Input message.
@@ -132,7 +132,7 @@ status_t sha256_update(sha256_state_t *state, const uint8_t *msg,
  * The caller must ensure that at least `kSha256DigestBytes` bytes of space are
  * available at the location pointed to by `digest`.
  *
- * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param state Hash context object.
  * @param msg Input message

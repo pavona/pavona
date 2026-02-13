@@ -26,7 +26,7 @@
 `define SPI_DEVICE_HIER       `CHIP_HIER.u_spi_device
 `define UART_HIER             `CHIP_HIER.u_uart
 `define PWRMGR_HIER           `CHIP_HIER.u_pwrmgr_aon
-`define OTBN_HIER             `CHIP_HIER.u_otbn
+`define ACC_HIER             `CHIP_HIER.u_acc
 
 // The path to the actual memory array in rom_ctrl. This is a bit of a hack to allow a long path
 // without overflowing 100 characters or including any whitespace (which breaks a DV_STRINGIFY call
@@ -56,5 +56,5 @@
 `define SPI_DEVICE_EGRESS_HIER  `SPI_DEVICE_HIER.u_spid_dpram.gen_ram1r1w.u_sys2spi_mem.u_mem.`MEM_ARRAY_SUB
 `define SPI_DEVICE_INGRESS_HIER `SPI_DEVICE_HIER.u_spid_dpram.gen_ram1r1w.u_spi2sys_mem.u_mem.`MEM_ARRAY_SUB
 `define OTP_MEM_HIER          `OTP_MACRO_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define OTBN_DMEM_HIER        `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
+`define ACC_IMEM_HIER        `ACC_HIER.u_imem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
+`define ACC_DMEM_HIER        `ACC_HIER.u_dmem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB

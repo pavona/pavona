@@ -265,7 +265,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib:attestation",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib:acc_boot_services",
         "//sw/device/silicon_creator/lib/cert",
         "//sw/device/silicon_creator/lib/cert:tpm",
         "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
@@ -289,7 +289,7 @@ cc_library(
 
 # Need a separate library for the headers, because adding a dependency on
 #//sw/device/silicon_creator/lib/cert required by perso_tlv_data above causes
-# bindgen failures due to otbn (which is a cert dependency) requiring risc32
+# bindgen failures due to acc (which is a cert dependency) requiring risc32
 # environment.
 cc_library(
     name = "perso_tlv_headers",
@@ -343,7 +343,7 @@ manifest(d = {
             "//sw/device/lib/testing/test_framework:ujson_ottf",
             "//sw/device/silicon_creator/lib:attestation",
             "//sw/device/silicon_creator/lib:boot_data",
-            "//sw/device/silicon_creator/lib:otbn_boot_services",
+            "//sw/device/silicon_creator/lib:acc_boot_services",
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib/base:util",
             "//sw/device/silicon_creator/lib/cert",

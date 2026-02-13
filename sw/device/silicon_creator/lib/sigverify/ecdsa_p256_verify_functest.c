@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_verify.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -113,7 +113,7 @@ rom_error_t ecdsa_p256_verify_negative_test(void) {
 }
 
 bool test_main(void) {
-  CHECK(otbn_boot_app_load() == kErrorOk);
+  CHECK(acc_boot_app_load() == kErrorOk);
 
   status_t result = OK_STATUS();
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);

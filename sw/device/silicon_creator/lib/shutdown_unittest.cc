@@ -155,8 +155,8 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("Edn1FatalAlert",                 A, A, X, X), \
       Xmacro("SramCtrlMainFatalIntgError",     A, A, X, X), \
       Xmacro("SramCtrlMainFatalParityError",   A, A, X, X), \
-      Xmacro("OtbnFatal",                      A, A, X, X), \
-      Xmacro("OtbnRecov",                      D, D, X, X), \
+      Xmacro("AccFatal",                      A, A, X, X), \
+      Xmacro("AccRecov",                      D, D, X, X), \
       Xmacro("RomCtrlFatal",                   A, A, X, X), \
       Xmacro("Dummy61",                        X, X, X, X), \
       Xmacro("Dummy62",                        X, X, X, X), \

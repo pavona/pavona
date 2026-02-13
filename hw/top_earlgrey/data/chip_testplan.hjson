@@ -37,7 +37,7 @@
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
-    "hw/top_earlgrey/data/ip/chip_otbn_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_acc_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_otp_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwm_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
@@ -397,7 +397,7 @@
       tests: ["chip_sw_clkmgr_jitter",
               "chip_sw_flash_ctrl_ops_jitter_en",
               "chip_sw_flash_ctrl_access_jitter_en",
-              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_acc_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
               "chip_sw_keymgr_key_derivation_jitter_en",
@@ -516,7 +516,7 @@
               "chip_sw_gpio_smoketest",
               "chip_sw_hmac_smoketest",
               "chip_sw_kmac_smoketest",
-              "chip_sw_otbn_smoketest",
+              "chip_sw_acc_smoketest",
               "chip_sw_pwrmgr_smoketest",
               "chip_sw_pwrmgr_usbdev_smoketest",
               "chip_sw_rv_plic_smoketest",
@@ -535,7 +535,7 @@
         "//sw/device/tests:gpio_smoketest",
         "//sw/device/tests:hmac_smoketest",
         "//sw/device/tests:kmac_smoketest",
-        "//sw/device/tests:otbn_smoketest",
+        "//sw/device/tests:acc_smoketest",
         "//sw/device/tests:pmp_smoketest_napot",
         "//sw/device/tests:pmp_smoketest_tor",
         "//sw/device/tests:pwrmgr_smoketest",
@@ -626,7 +626,7 @@
                RAW_UNLOCK mode of operation.
              - Switch TAP interface to rv_dm and configure the ROM_EXEC_EN OTP to enable ROM
                execution.
-             - If running with the production ROM, enable signature verification via OTBN to
+             - If running with the production ROM, enable signature verification via ACC to
                improve simulation time.
              - Perform POR to apply OTP changes.
              - With rv_dm TAP still selected, switch to external clock via clkmgr using extclk
@@ -657,11 +657,11 @@
       Blocks / functionality to run simultaneously in this test:
 
         - The ADC is continuously sampling new data
-        - Staggered activation of OTBN, aes, KMAC/HMAC.
+        - Staggered activation of ACC, aes, KMAC/HMAC.
           - KMAC / aes would need to take turns being fed data
           - KMAC activation should be a combination of otp background, key
             manager background and software
-          - for OTBN, any signature verification / signing event is sufficient
+          - for ACC, any signature verification / signing event is sufficient
         - Entropy complex ongoing
           - reseed / update operation ongoing
         - Flash scramble ongoing (ideally both instruction and data, but data should be sufficient

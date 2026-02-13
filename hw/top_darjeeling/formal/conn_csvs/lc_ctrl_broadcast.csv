@@ -15,7 +15,7 @@ CONNECTION, LC_ESCALATE_EN_SRAM_RET,  top_darjeeling.u_lc_ctrl, lc_escalate_en_o
 CONNECTION, LC_ESCALATE_EN_FLASH,     top_darjeeling.u_lc_ctrl, lc_escalate_en_o, top_darjeeling.u_flash_ctrl,        lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_AES,       top_darjeeling.u_lc_ctrl, lc_escalate_en_o, top_darjeeling.u_aes,               lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_KMAC,      top_darjeeling.u_lc_ctrl, lc_escalate_en_o, top_darjeeling.u_kmac,              lc_escalate_en_i
-CONNECTION, LC_ESCALATE_EN_OTBN,      top_darjeeling.u_lc_ctrl, lc_escalate_en_o, top_darjeeling.u_otbn,              lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_ACC,      top_darjeeling.u_lc_ctrl, lc_escalate_en_o, top_darjeeling.u_acc,              lc_escalate_en_i
 
 # Verify that lc_ctrl's keymanager enable signal and diversification value are correctly connected to the keymgr.
 CONNECTION, LC_KEYMGR_EN_KEYMGR, top_darjeeling.u_lc_ctrl,  lc_keymgr_en_o,  top_darjeeling.u_keymgr, lc_keymgr_en_i
@@ -44,8 +44,8 @@ CONNECTION, LC_DFT_EN_AST,    top_darjeeling.u_lc_ctrl, lc_dft_en_o, u_ast,     
 # Verify lc_ctrl's RMA request connections.
 CONNECTION, LC_RMA_SEED_FLASH_CTRL,  top_darjeeling.u_lc_ctrl,    lc_flash_rma_seed_o, top_darjeeling.u_flash_ctrl, rma_seed_i
 CONNECTION, LC_RMA_REQ_FLASH_CTRL,   top_darjeeling.u_lc_ctrl,    lc_flash_rma_req_o,  top_darjeeling.u_flash_ctrl, rma_req_i
-CONNECTION, FLASH_CTRL_RMA_ACK_OTBN, top_darjeeling.u_flash_ctrl, rma_ack_o,           top_darjeeling.u_otbn,       lc_rma_req_i
-CONNECTION, OTBN_RMA_ACK_LC,         top_darjeeling.u_otbn,       lc_rma_ack_o,        top_darjeeling.u_lc_ctrl,    lc_flash_rma_ack_i
+CONNECTION, FLASH_CTRL_RMA_ACK_ACC, top_darjeeling.u_flash_ctrl, rma_ack_o,           top_darjeeling.u_acc,       lc_rma_req_i
+CONNECTION, ACC_RMA_ACK_LC,         top_darjeeling.u_acc,       lc_rma_ack_o,        top_darjeeling.u_lc_ctrl,    lc_flash_rma_ack_i
 
 # Verify lc_ctrl's clock bypass request connections.
 CONNECTION, LC_CLK_BYP_REQ_CLKMGR,  top_darjeeling.u_lc_ctrl,     lc_clk_byp_req_o,    top_darjeeling.u_clkmgr_aon, lc_clk_byp_req_i

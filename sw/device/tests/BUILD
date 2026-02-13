@@ -407,7 +407,7 @@ opentitan_test(
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_host",
@@ -965,7 +965,7 @@ cc_library(
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
@@ -1022,8 +1022,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "clkmgr_off_otbn_trans_test",
-    srcs = ["clkmgr_off_otbn_trans_test.c"],
+    name = "clkmgr_off_acc_trans_test",
+    srcs = ["clkmgr_off_acc_trans_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1189,7 +1189,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        ":otbn_randomness_impl",
+        ":acc_randomness_impl",
         "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -1204,7 +1204,7 @@ opentitan_test(
         "//sw/device/lib/testing:edn_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1280,22 +1280,22 @@ opentitan_test(
         "//hw/top:dt",
         "//hw/top:edn_c_regs",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:edn_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/tests:otbn_randomness_impl",
+        "//sw/device/tests:acc_randomness_impl",
     ],
 )
 
@@ -1320,17 +1320,17 @@ opentitan_test(
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:edn_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/tests:otbn_randomness_impl",
+        "//sw/device/tests:acc_randomness_impl",
     ],
 )
 
@@ -1533,7 +1533,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        ":otbn_randomness_impl",
+        ":acc_randomness_impl",
         "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -1541,12 +1541,12 @@ opentitan_test(
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1599,7 +1599,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        ":otbn_randomness_impl",
+        ":acc_randomness_impl",
         "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -1608,7 +1608,7 @@ opentitan_test(
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_core_ibex",
@@ -1641,7 +1641,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        ":otbn_randomness_impl",
+        ":acc_randomness_impl",
         "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -1650,7 +1650,7 @@ opentitan_test(
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_core_ibex",
@@ -1693,7 +1693,7 @@ opentitan_test(
     silicon = silicon_params(tags = ["flaky"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        ":otbn_randomness_impl",
+        ":acc_randomness_impl",
         "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -1703,7 +1703,7 @@ opentitan_test(
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_core_ibex",
@@ -2381,13 +2381,13 @@ opentitan_test(
     verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/otbn/crypto:x25519_sideload",
+        "//sw/acc/crypto:x25519_sideload",
     ],
 )
 
@@ -2412,13 +2412,13 @@ opentitan_test(
     verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/otbn/crypto:x25519_sideload",
+        "//sw/acc/crypto:x25519_sideload",
     ],
 )
 
@@ -2593,8 +2593,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "keymgr_sideload_otbn_test",
-    srcs = ["keymgr_sideload_otbn_test.c"],
+    name = "keymgr_sideload_acc_test",
+    srcs = ["keymgr_sideload_acc_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2610,25 +2610,25 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:otbn_c_regs",
+        "//hw/top:acc_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/crypto:x25519_sideload",
+        "//sw/acc/crypto:x25519_sideload",
     ],
 )
 
 opentitan_test(
-    name = "keymgr_sideload_otbn_simple_test",
-    srcs = ["keymgr_sideload_otbn_test.c"],
+    name = "keymgr_sideload_acc_simple_test",
+    srcs = ["keymgr_sideload_acc_test.c"],
     copts = ["-DTEST_SIMPLE_CASE_ONLY"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
@@ -2647,19 +2647,19 @@ opentitan_test(
     silicon = silicon_params(tags = ["broken"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:otbn_c_regs",
+        "//hw/top:acc_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/crypto:x25519_sideload",
+        "//sw/acc/crypto:x25519_sideload",
     ],
 )
 
@@ -2969,8 +2969,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "otbn_ecdsa_op_irq_test",
-    srcs = ["otbn_ecdsa_op_irq_test.c"],
+    name = "acc_ecdsa_op_irq_test",
+    srcs = ["acc_ecdsa_op_irq_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2982,22 +2982,22 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:dt",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/crypto:run_p256",
+        "//sw/acc/crypto:run_p256",
     ],
 )
 
 opentitan_test(
-    name = "otbn_irq_test",
-    srcs = ["otbn_irq_test.c"],
+    name = "acc_irq_test",
+    srcs = ["acc_irq_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -3011,21 +3011,21 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:dt",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/code-snippets:err_test",
+        "//sw/acc/code-snippets:err_test",
     ],
 )
 
 opentitan_test(
-    name = "otbn_mem_scramble_test",
-    srcs = ["otbn_mem_scramble_test.c"],
+    name = "acc_mem_scramble_test",
+    srcs = ["acc_mem_scramble_test.c"],
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         DARJEELING_TEST_ENVS,
@@ -3040,32 +3040,32 @@ opentitan_test(
     deps = [
         "//hw/top:dt",
         "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 cc_library(
-    name = "otbn_randomness_impl",
-    srcs = ["otbn_randomness_impl.c"],
-    hdrs = ["otbn_randomness_impl.h"],
+    name = "acc_randomness_impl",
+    srcs = ["acc_randomness_impl.c"],
+    hdrs = ["acc_randomness_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/otbn/code-snippets:randomness",
+        "//sw/acc/code-snippets:randomness",
     ],
 )
 
 opentitan_test(
-    name = "otbn_randomness_test",
-    srcs = ["otbn_randomness_test.c"],
+    name = "acc_randomness_test",
+    srcs = ["acc_randomness_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -3077,16 +3077,16 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        ":otbn_randomness_impl",
+        ":acc_randomness_impl",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -3094,8 +3094,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "otbn_rsa_test",
-    srcs = ["otbn_rsa_test.c"],
+    name = "acc_rsa_test",
+    srcs = ["acc_rsa_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -3107,19 +3107,19 @@ opentitan_test(
     verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//hw/top:dt",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:otbn_testutils_rsa",
+        "//sw/device/lib/testing:acc_testutils_rsa",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 opentitan_test(
-    name = "otbn_smoketest",
-    srcs = ["otbn_smoketest.c"],
+    name = "acc_smoketest",
+    srcs = ["acc_smoketest.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -3132,20 +3132,20 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:dt",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/code-snippets:barrett384",
-        "//sw/otbn/code-snippets:err_test",
+        "//sw/acc/code-snippets:barrett384",
+        "//sw/acc/code-snippets:err_test",
     ],
 )
 
 opentitan_test(
-    name = "otbn_isa_test",
-    srcs = ["otbn_isa_test.c"],
+    name = "acc_isa_test",
+    srcs = ["acc_isa_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -3156,11 +3156,11 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/ip/otbn/dv/smoke:smoke_test",
+        "//hw/ip/acc/dv/smoke:smoke_test",
         "//hw/top:dt",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -5883,7 +5883,7 @@ opentitan_test(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/dif:pattgen",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwm",
@@ -5897,7 +5897,7 @@ opentitan_test(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing:i2c_testutils",
-        "//sw/device/lib/testing:otbn_testutils_rsa",
+        "//sw/device/lib/testing:acc_testutils_rsa",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing:spi_host_testutils",
@@ -7487,7 +7487,7 @@ opentitan_test(
     # run manually for debugging purposes.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        ":otbn_randomness_impl",
+        ":acc_randomness_impl",
         "//hw/top:dt",
         "//hw/top:entropy_src_c_regs",
         "//sw/device/lib/base:memory",

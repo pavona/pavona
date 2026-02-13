@@ -63,8 +63,8 @@ FIRMWARE_DEPS_FI_IBEX = [
     "//sw/device/tests/penetrationtests/json:commands",
 ]
 
-FIRMWARE_DEPS_FI_OTBN = [
-    "//sw/device/tests/penetrationtests/firmware/fi:otbn_fi",
+FIRMWARE_DEPS_FI_ACC = [
+    "//sw/device/tests/penetrationtests/firmware/fi:acc_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
@@ -84,7 +84,7 @@ FIRMWARE_DEPS_SCA = [
     "//sw/device/tests/penetrationtests/firmware/sca:hmac_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:ibex_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:kmac_sca",
-    "//sw/device/tests/penetrationtests/firmware/sca:otbn_sca",
+    "//sw/device/tests/penetrationtests/firmware/sca:acc_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:sha3_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
@@ -212,8 +212,8 @@ opentitan_test(
 
 # Not an actual test, only for building purposes
 opentitan_test(
-    name = "pen_test_fi_otbn",
-    srcs = [":firmware_fi_otbn.c"],
+    name = "pen_test_fi_acc",
+    srcs = [":firmware_fi_acc.c"],
     exec_env = PENTEST_EXEC_ENVS,
     # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
     fpga = fpga_params(tags = [
@@ -226,7 +226,7 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
-    deps = FIRMWARE_DEPS_FI_OTBN,
+    deps = FIRMWARE_DEPS_FI_ACC,
 )
 
 # Not an actual test, only for building purposes

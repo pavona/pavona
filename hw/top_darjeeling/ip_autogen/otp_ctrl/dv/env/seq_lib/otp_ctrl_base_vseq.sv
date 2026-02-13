@@ -750,15 +750,15 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     for (int i = 0; i < NumSramKeyReqSlots; i++) req_sram_key(i, blocking);
   endtask
 
-  virtual task req_otbn_key(bit blocking = default_req_blocking);
-    if (cfg.m_otbn_pull_agent_cfg.vif.req === 1'b1) return;
+  virtual task req_acc_key(bit blocking = default_req_blocking);
+    if (cfg.m_acc_pull_agent_cfg.vif.req === 1'b1) return;
 
     if (blocking) begin
-      req_otbn_key_sub();
+      req_acc_key_sub();
     end else begin
       fork
         begin
-          req_otbn_key_sub();
+          req_acc_key_sub();
         end
       join_none;
       // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -766,12 +766,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task req_otbn_key_sub();
-    push_pull_host_seq#(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_pull_seq;
+  virtual task req_acc_key_sub();
+    push_pull_host_seq#(.DeviceDataWidth(ACC_DATA_SIZE)) acc_pull_seq;
     wait(cfg.under_reset == 0);
-    `uvm_create_on(otbn_pull_seq, p_sequencer.otbn_pull_sequencer_h);
-    `DV_CHECK_RANDOMIZE_FATAL(otbn_pull_seq)
-    `uvm_send(otbn_pull_seq)
+    `uvm_create_on(acc_pull_seq, p_sequencer.acc_pull_sequencer_h);
+    `DV_CHECK_RANDOMIZE_FATAL(acc_pull_seq)
+    `uvm_send(acc_pull_seq)
   endtask
 
   virtual task req_lc_transition(bit check_intr = 0,

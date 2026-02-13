@@ -118,8 +118,8 @@ static_assert(kDifKeymgrDpeKeyDestAes ==
 static_assert(kDifKeymgrDpeKeyDestKmac ==
                   KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC,
               "Key destination macros must match the values from its enum.");
-static_assert(kDifKeymgrDpeKeyDestOtbn ==
-                  KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN,
+static_assert(kDifKeymgrDpeKeyDestAcc ==
+                  KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_ACC,
               "Key destination macros must match the values from its enum.");
 
 /**

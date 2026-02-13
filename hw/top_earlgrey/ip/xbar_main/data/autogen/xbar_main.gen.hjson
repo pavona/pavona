@@ -88,7 +88,7 @@
       edn1
       hmac
       rv_plic
-      otbn
+      acc
       keymgr
       kmac
       sram_ctrl_main.regs
@@ -115,7 +115,7 @@
       edn1
       hmac
       rv_plic
-      otbn
+      acc
       keymgr
       kmac
       sram_ctrl_main.regs
@@ -589,13 +589,13 @@
       pipeline: true
     }
     {
-      name: otbn
+      name: acc
       type: device
       clock: clk_main_i
       reset: rst_main_ni
       req_fifo_pass: false
       rsp_fifo_pass: false
-      inst_type: otbn
+      inst_type: acc
       addr_range:
       [
         {
@@ -975,7 +975,7 @@
       index: -1
     }
     {
-      name: tl_otbn
+      name: tl_acc
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -983,7 +983,7 @@
       inst_name: main
       width: 1
       default: ""
-      top_signame: otbn_tl
+      top_signame: acc_tl
       index: -1
     }
     {

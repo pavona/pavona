@@ -721,9 +721,9 @@ autogen_stamp_include = rule(
     attrs = stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-def _autogen_otbn_insn_count_header(ctx):
+def _autogen_acc_insn_count_header(ctx):
     """This rule generates a header containing min/max instruciton counts for
-    each mode of a top-level OTBN program.
+    each mode of a top-level ACC program.
     """
 
     # Fetch paths and declare files we'll need.
@@ -767,14 +767,14 @@ def _autogen_otbn_insn_count_header(ctx):
         ),
     ]
 
-autogen_otbn_insn_count_header = rule(
-    implementation = _autogen_otbn_insn_count_header,
+autogen_acc_insn_count_header = rule(
+    implementation = _autogen_acc_insn_count_header,
     attrs = {
         "deps": attr.label_list(providers = [OutputGroupInfo]),
         "template": attr.label(mandatory = True, allow_single_file = [".tpl"]),
         "hjson": attr.label(mandatory = True, allow_single_file = [".hjson"]),
         "_generator": attr.label(
-            default = "//hw/ip/otbn/util:gen_instruction_count_header",
+            default = "//hw/ip/acc/util:gen_instruction_count_header",
             executable = True,
             cfg = "exec",
         ),

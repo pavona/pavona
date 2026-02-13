@@ -56,7 +56,7 @@
         // needed as a run time switch to Verilator.
         '''{eval_cmd} \
         opts=;  \
-        types=(rom flash otbn otp); \
+        types=(rom flash acc otp); \
         exts=(scr.39.vmem elf elf vmem); \
         images=`echo {sw_images}`; \
         for image in $images; do \
@@ -80,7 +80,7 @@
   // to know what type of image is it:
   // - 0 for Boot ROM,
   // - 1 for SW test (loaded in flash),
-  // - 2 for OTBN test,
+  // - 2 for ACC test,
   // - 3 for OTP.
   // This allows an arbitrary number of SW images to be supplied to the TB.
   //
@@ -135,8 +135,8 @@
       sw_images: ["//sw/device/tests:crt_test:1"]
     }
     {
-      name: otbn_smoketest_rtl
-      sw_images: ["//sw/device/tests:otbn_smoketest:1"]
+      name: acc_smoketest_rtl
+      sw_images: ["//sw/device/tests:acc_smoketest:1"]
     }
     {
       name: otp_ctrl_smoketest

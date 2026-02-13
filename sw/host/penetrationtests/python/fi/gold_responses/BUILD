@@ -15,8 +15,8 @@ filegroup(
 )
 
 filegroup(
-    name = "fi_otbn",
-    srcs = ["fi_otbn.json"],
+    name = "fi_acc",
+    srcs = ["fi_acc.json"],
 )
 
 filegroup(

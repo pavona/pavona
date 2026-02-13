@@ -38,8 +38,8 @@ ujson_rust(
 )
 
 ujson_rust(
-    name = "fi_otbn_commands_rust",
-    srcs = ["//sw/device/tests/penetrationtests/json:otbn_fi_commands"],
+    name = "fi_acc_commands_rust",
+    srcs = ["//sw/device/tests/penetrationtests/json:acc_fi_commands"],
 )
 
 ujson_rust(
@@ -98,8 +98,8 @@ ujson_rust(
 )
 
 ujson_rust(
-    name = "sca_otbn_commands_rust",
-    srcs = ["//sw/device/tests/penetrationtests/json:otbn_sca_commands"],
+    name = "sca_acc_commands_rust",
+    srcs = ["//sw/device/tests/penetrationtests/json:acc_sca_commands"],
 )
 
 ujson_rust(
@@ -115,7 +115,7 @@ rust_library(
         "src/fi_crypto_commands.rs",
         "src/fi_ibex_commands.rs",
         "src/fi_lc_ctrl_commands.rs",
-        "src/fi_otbn_commands.rs",
+        "src/fi_acc_commands.rs",
         "src/fi_otp_commands.rs",
         "src/fi_rng_commands.rs",
         "src/fi_rom_commands.rs",
@@ -128,7 +128,7 @@ rust_library(
         "src/sca_hmac_commands.rs",
         "src/sca_ibex_commands.rs",
         "src/sca_kmac_commands.rs",
-        "src/sca_otbn_commands.rs",
+        "src/sca_acc_commands.rs",
         "src/sca_sha3_commands.rs",
         "src/sca_sym_cryptolib_commands.rs",
     ],
@@ -139,7 +139,7 @@ rust_library(
         ":fi_asym_cryptolib_commands_rust",
         ":fi_ibex_commands_rust",
         ":fi_lc_ctrl_commands_rust",
-        ":fi_otbn_commands_rust",
+        ":fi_acc_commands_rust",
         ":fi_otp_commands_rust",
         ":fi_rng_commands_rust",
         ":fi_rom_commands_rust",
@@ -151,7 +151,7 @@ rust_library(
         ":sca_hmac_commands_rust",
         ":sca_ibex_commands_rust",
         ":sca_kmac_commands_rust",
-        ":sca_otbn_commands_rust",
+        ":sca_acc_commands_rust",
         ":sca_sha3_commands_rust",
     ],
     rustc_env = {
@@ -161,7 +161,7 @@ rust_library(
         "fi_asym_cryptolib_commands_loc": "$(execpath :fi_asym_cryptolib_commands_rust)",
         "fi_ibex_commands_loc": "$(execpath :fi_ibex_commands_rust)",
         "fi_lc_ctrl_commands_loc": "$(execpath :fi_lc_ctrl_commands_rust)",
-        "fi_otbn_commands_loc": "$(execpath :fi_otbn_commands_rust)",
+        "fi_acc_commands_loc": "$(execpath :fi_acc_commands_rust)",
         "fi_otp_commands_loc": "$(execpath :fi_otp_commands_rust)",
         "fi_rng_commands_loc": "$(execpath :fi_rng_commands_rust)",
         "fi_rom_commands_loc": "$(execpath :fi_rom_commands_rust)",
@@ -173,7 +173,7 @@ rust_library(
         "sca_hmac_commands_loc": "$(execpath :sca_hmac_commands_rust)",
         "sca_ibex_commands_loc": "$(execpath :sca_ibex_commands_rust)",
         "sca_kmac_commands_loc": "$(execpath :sca_kmac_commands_rust)",
-        "sca_otbn_commands_loc": "$(execpath :sca_otbn_commands_rust)",
+        "sca_acc_commands_loc": "$(execpath :sca_acc_commands_rust)",
         "sca_sha3_commands_loc": "$(execpath :sca_sha3_commands_rust)",
     },
     deps = [

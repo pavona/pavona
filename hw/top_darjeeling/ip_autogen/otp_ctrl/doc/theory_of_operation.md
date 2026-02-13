@@ -426,7 +426,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 ![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
-Once it is in the idle state, key derivation can be requested via the [flash](interfaces.md#interface-to-flash-scrambler) and [sram](interfaces.md#interface-to-sram-and-otbn-scramblers) interfaces.
+Once it is in the idle state, key derivation can be requested via the [flash](interfaces.md#interface-to-flash-scrambler) and [sram](interfaces.md#interface-to-sram-and-acc-scramblers) interfaces.
 Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
 
 ### Scrambling Datapath

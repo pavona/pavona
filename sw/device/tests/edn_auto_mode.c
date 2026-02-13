@@ -6,31 +6,31 @@
 #include "hw/top/dt/dt_aes.h"
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/edn_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/otbn_randomness_impl.h"
+#include "sw/device/tests/acc_randomness_impl.h"
 
 #include "hw/top/edn_regs.h"  // Generated
 
 enum {
   kTimeout = (10 * 1000 * 1000),
-  kOtbnRounds = 2,
-  kOtbnRandomnessIterations = 1,
+  kAccRounds = 2,
+  kAccRandomnessIterations = 1,
   kTestProcedureRepetitions = 2,
 };
 
@@ -38,7 +38,7 @@ static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_aes_t aes;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_rv_core_ibex_t rv_core_ibex;
 
 // AES ECB encryption transaction.
@@ -61,12 +61,12 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
   CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
-  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
 }
 
-static void configure_otbn(void) {
-  otbn_randomness_test_prepare(&otbn, kOtbnRandomnessIterations);
+static void configure_acc(void) {
+  acc_randomness_test_prepare(&acc, kAccRandomnessIterations);
 }
 
 // configure the entropy complex
@@ -88,27 +88,27 @@ static void entropy_config(void) {
 }
 
 static status_t stress_test_edns(void) {
-  int otbn_execute_rounds = kOtbnRounds;
+  int acc_execute_rounds = kAccRounds;
   dif_rv_core_ibex_rnd_status_t ibex_rnd_status;
-  dif_otbn_status_t otbn_status;
+  dif_acc_status_t acc_status;
   uint32_t ibex_rnd_data;
   dif_aes_data_t out_data;
   // Start AES at least once.
-  LOG_INFO("aes_testutils_setup_encryption round %d", otbn_execute_rounds);
+  LOG_INFO("aes_testutils_setup_encryption round %d", acc_execute_rounds);
   CHECK_STATUS_OK(aes_testutils_setup_encryption(transaction, &aes));
-  while (otbn_execute_rounds) {
-    LOG_INFO("dif_otbn_get_status round %d", otbn_execute_rounds);
-    CHECK_DIF_OK(dif_otbn_get_status(&otbn, &otbn_status));
-    if (otbn_status == kDifOtbnStatusIdle) {
-      LOG_INFO("otbn_testutils_execute round %d", otbn_execute_rounds);
-      CHECK_STATUS_OK(otbn_testutils_execute(&otbn));
-      otbn_execute_rounds--;
+  while (acc_execute_rounds) {
+    LOG_INFO("dif_acc_get_status round %d", acc_execute_rounds);
+    CHECK_DIF_OK(dif_acc_get_status(&acc, &acc_status));
+    if (acc_status == kDifAccStatusIdle) {
+      LOG_INFO("acc_testutils_execute round %d", acc_execute_rounds);
+      CHECK_STATUS_OK(acc_testutils_execute(&acc));
+      acc_execute_rounds--;
     }
     if (aes_testutils_get_status(&aes, kDifAesStatusOutputValid)) {
-      LOG_INFO("dif_aes_read_output round %d", otbn_execute_rounds);
+      LOG_INFO("dif_aes_read_output round %d", acc_execute_rounds);
       // Read out the produced cipher text.
       CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data));
-      LOG_INFO("aes_testutils_setup_encryption round %d", otbn_execute_rounds);
+      LOG_INFO("aes_testutils_setup_encryption round %d", acc_execute_rounds);
       // Start a new AES encryption.
       CHECK_STATUS_OK(aes_testutils_setup_encryption(transaction, &aes));
     }
@@ -121,7 +121,7 @@ static status_t stress_test_edns(void) {
   }
   // Verify that all entropy consuming endpoints can finish their operations
   // and do not hang.
-  CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError));
+  CHECK_STATUS_OK(acc_testutils_wait_for_done(&acc, kDifAccErrBitsNoError));
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true, kTimeout);
   IBEX_TRY_SPIN_FOR(rv_core_ibex_testutils_is_rnd_data_valid(&rv_core_ibex),
                     kTimeout);
@@ -133,14 +133,14 @@ bool test_main(void) {
   int repetitions = kTestProcedureRepetitions;
   LOG_INFO("init_peripherals start");
   init_peripherals();
-  // Prepare the OTBN for execution.
-  configure_otbn();
+  // Prepare the ACC for execution.
+  configure_acc();
   // Start the procedure multiple times, with different EDN configurations.
   while (repetitions) {
     // Disable and restart the entropy complex.
     LOG_INFO("entropy_config start");
     entropy_config();
-    // Trigger the execution of the OTBN, AES and IBEX, consuming entropy
+    // Trigger the execution of the ACC, AES and IBEX, consuming entropy
     // to stress test the EDNs.
     LOG_INFO("stress_test_edns start");
     stress_test_edns();

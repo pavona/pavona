@@ -196,7 +196,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
       write_sw_digests();
 
       // Access OTP via app interface.
-      if ($urandom_range(0, 1)) req_otbn_key(0);
+      if ($urandom_range(0, 1)) req_acc_key(0);
     % if enable_flash_key:
       if ($urandom_range(0, 1)) req_flash_addr_key(0);
       if ($urandom_range(0, 1)) req_flash_data_key(0);

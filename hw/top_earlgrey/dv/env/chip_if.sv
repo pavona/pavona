@@ -59,7 +59,7 @@ interface chip_if;
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
-`define OTBN_HIER           `TOP_HIER.u_otbn
+`define ACC_HIER           `TOP_HIER.u_acc
 `define PATTGEN_HIER        `TOP_HIER.u_pattgen
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
 `define PWM_HIER            `TOP_HIER.u_pwm_aon
@@ -770,7 +770,7 @@ interface chip_if;
   wire aes_clk_is_enabled = 0;
   wire hmac_clk_is_enabled = 0;
   wire kmac_clk_is_enabled = 0;
-  wire otbn_clk_is_enabled = 0;
+  wire acc_clk_is_enabled = 0;
 
   wire usbdev_clk_is_enabled = 0;
   wire io_clk_is_enabled = 0;
@@ -780,7 +780,7 @@ interface chip_if;
   wire aes_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_aes_val.d;
   wire hmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_hmac_val.d;
   wire kmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_kmac_val.d;
-  wire otbn_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_otbn_val.d;
+  wire acc_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_acc_val.d;
 
   wire usbdev_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_usb_peri_en.q;
   wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
@@ -1099,7 +1099,7 @@ interface chip_if;
       PeripheralKeymgr:         path = {path, ".", `DV_STRINGIFY(`KEYMGR_HIER)};
       PeripheralKmac:           path = {path, ".", `DV_STRINGIFY(`KMAC_HIER)};
       PeripheralLcCtrl:         path = {path, ".", `DV_STRINGIFY(`LC_CTRL_HIER)};
-      PeripheralOtbn:           path = {path, ".", `DV_STRINGIFY(`OTBN_HIER)};
+      PeripheralAcc:           path = {path, ".", `DV_STRINGIFY(`ACC_HIER)};
       PeripheralOtpCtrl:        path = {path, ".", `DV_STRINGIFY(`OTP_CTRL_HIER)};
       PeripheralPattgen:        path = {path, ".", `DV_STRINGIFY(`PATTGEN_HIER)};
       PeripheralPinmuxAon:      path = {path, ".", `DV_STRINGIFY(`PINMUX_HIER)};
@@ -1336,11 +1336,11 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_kmac_fsm_state,
       kmac_fsm_state, 6)
 
-  // Signal probe function for `state_q` OTBN_START_STOP_CONTROL
-  wire [6:0] otbn_fsm_state;
-  assign otbn_fsm_state = `OTBN_HIER.u_otbn_core.u_otbn_start_stop_control.u_state_regs.state_o;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otbn_fsm_state,
-      otbn_fsm_state, 7)
+  // Signal probe function for `state_q` ACC_START_STOP_CONTROL
+  wire [6:0] acc_fsm_state;
+  assign acc_fsm_state = `ACC_HIER.u_acc_core.u_acc_start_stop_control.u_state_regs.state_o;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_acc_fsm_state,
+      acc_fsm_state, 7)
 
   // Signal probe function for `state_q` of EDN_0_MAIN_SM
   wire [8:0] edn_0_fsm_state;
@@ -1417,7 +1417,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef LC_CTRL_HIER
 `undef OTP_CTRL_HIER
 `undef OTP_MACRO_HIER
-`undef OTBN_HIER
+`undef ACC_HIER
 `undef PATTGEN_HIER
 `undef PINMUX_HIER
 `undef PWM_HIER

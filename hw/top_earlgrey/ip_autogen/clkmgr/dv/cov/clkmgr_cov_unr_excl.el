@@ -25,7 +25,7 @@ INSTANCE: tb.dut.u_reg.u_clk_hints_status_clk_main_kmac_val
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2397158838" "(wr_en ? wr_data : qs) 1 -1" (1 "0")
 CHECKSUM: "2972535896 3274445021"
-INSTANCE: tb.dut.u_reg.u_clk_hints_status_clk_main_otbn_val
+INSTANCE: tb.dut.u_reg.u_clk_hints_status_clk_main_acc_val
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2397158838" "(wr_en ? wr_data : qs) 1 -1" (1 "0")
 CHECKSUM: "2972535896 3554514034"
@@ -47,7 +47,7 @@ Branch 0 "3759852512" "wr_en" (1) "wr_en 0"
 ANNOTATION: "VC_COV_UNR"
 Branch 1 "1017474648" "(!rst_ni)" (2) "(!rst_ni) 0,0"
 CHECKSUM: "2972535896 3554514034"
-INSTANCE: tb.dut.u_reg.u_clk_hints_status_clk_main_otbn_val
+INSTANCE: tb.dut.u_reg.u_clk_hints_status_clk_main_acc_val
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "3759852512" "wr_en" (1) "wr_en 0"
 ANNOTATION: "VC_COV_UNR"

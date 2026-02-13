@@ -49,7 +49,7 @@ typedef struct sigverify_rsa_key {
   /**
    * Negative of the multiplicative inverse of n modulo 2^256, little-endian.
    *
-   * Calculations performed on OTBN (word size: 256 bits) use the whole array
+   * Calculations performed on ACC (word size: 256 bits) use the whole array
    * while calculations performed on Ibex (word size: 32 bits) use only the
    * first word, which is equal to -n^-1 mod 2^32.
    */

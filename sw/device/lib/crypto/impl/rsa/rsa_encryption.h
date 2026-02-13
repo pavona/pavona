@@ -25,7 +25,7 @@ extern "C" {
  * the hash function indicated by `hash_mode` and a salt the same length as the
  * hash function output.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key RSA public key.
  * @param hash_mode Hash function to use for message encoding.
@@ -45,7 +45,7 @@ status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
  * Waits for an RSA-2048 encryption to complete.
  *
  * Should be invoked only after a `rsa_encrypt_2048_start` call. Blocks until
- * OTBN is done processing.
+ * ACC is done processing.
  *
  * @param[out] ciphertext Encrypted message.
  * @return Result of the operation (OK or error).
@@ -57,7 +57,7 @@ status_t rsa_encrypt_2048_finalize(const rsa_2048_public_key_t *public_key,
 /**
  * Start decrypting a message with RSA-2048; returns immediately.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param private_key RSA private key.
  * @param ciphertext Encrypted message.
@@ -71,8 +71,8 @@ status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
  * Waits for an RSA decryption to complete.
  *
  * Should be invoked only after an `rsa_decrypt_{size}_start`, but works for
- * any RSA size. Blocks until OTBN is done processing, and then infers the size
- * from the OTBN application mode.
+ * any RSA size. Blocks until ACC is done processing, and then infers the size
+ * from the ACC application mode.
  *
  * The only supported padding mode is OAEP (see IETF RFC 8017, section 7.1.2).
  * Only fixed-length hash functions (i.e. the SHA-2 or SHA-3 families) are
@@ -113,7 +113,7 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
  * the hash function indicated by `hash_mode` and a salt the same length as the
  * hash function output.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key RSA public key.
  * @param hash_mode Hash function to use for message encoding.
@@ -133,7 +133,7 @@ status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
  * Waits for an RSA-3072 encryption to complete.
  *
  * Should be invoked only after a `rsa_encrypt_3072_start` call. Blocks until
- * OTBN is done processing.
+ * ACC is done processing.
  *
  * @param[out] ciphertext Encrypted message.
  * @return Result of the operation (OK or error).
@@ -145,7 +145,7 @@ status_t rsa_encrypt_3072_finalize(const rsa_3072_public_key_t *public_key,
 /**
  * Start decrypting a message with RSA-3072; returns immediately.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param private_key RSA private key.
  * @param ciphertext Encrypted message.
@@ -163,7 +163,7 @@ status_t rsa_decrypt_3072_start(const rsa_3072_private_key_t *private_key,
  * the hash function indicated by `hash_mode` and a salt the same length as the
  * hash function output.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key RSA public key.
  * @param hash_mode Hash function to use for message encoding.
@@ -183,7 +183,7 @@ status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
  * Waits for an RSA-4096 encryption to complete.
  *
  * Should be invoked only after a `rsa_encrypt_4096_start` call. Blocks until
- * OTBN is done processing.
+ * ACC is done processing.
  *
  * @param[out] ciphertext Encrypted message.
  * @return Result of the operation (OK or error).
@@ -195,7 +195,7 @@ status_t rsa_encrypt_4096_finalize(const rsa_4096_public_key_t *public_key,
 /**
  * Start decrypting a message with RSA-4096; returns immediately.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param private_key RSA private key.
  * @param ciphertext Encrypted message.

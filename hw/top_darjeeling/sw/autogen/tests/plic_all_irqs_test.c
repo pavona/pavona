@@ -40,7 +40,7 @@
 #include "sw/device/lib/dif/autogen/dif_keymgr_dpe_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_mbx_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_otbn_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_acc_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rv_plic_autogen.h"
@@ -147,7 +147,7 @@ static dif_mbx_t mbx_pcie1;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -254,8 +254,8 @@ static volatile dif_mbx_irq_t mbx_irq_serviced;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-static volatile dif_otbn_irq_t otbn_irq_expected;
-static volatile dif_otbn_irq_t otbn_irq_serviced;
+static volatile dif_acc_irq_t acc_irq_expected;
+static volatile dif_acc_irq_t acc_irq_serviced;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -871,24 +871,24 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopDarjeelingPlicPeripheralOtbn: {
-      dif_otbn_irq_t irq =
-          (dif_otbn_irq_t)(plic_irq_id -
+    case kTopDarjeelingPlicPeripheralAcc: {
+      dif_acc_irq_t irq =
+          (dif_acc_irq_t)(plic_irq_id -
                            (dif_rv_plic_irq_id_t)
-                               kTopDarjeelingPlicIrqIdOtbnDone);
-      CHECK(irq == otbn_irq_expected,
-            "Incorrect otbn IRQ triggered: exp = %d, obs = %d",
-            otbn_irq_expected, irq);
-      otbn_irq_serviced = irq;
+                               kTopDarjeelingPlicIrqIdAccDone);
+      CHECK(irq == acc_irq_expected,
+            "Incorrect acc IRQ triggered: exp = %d, obs = %d",
+            acc_irq_expected, irq);
+      acc_irq_serviced = irq;
 
-      dif_otbn_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_otbn_irq_get_state(&otbn, &snapshot));
-      CHECK(snapshot == (dif_otbn_irq_state_snapshot_t)(1 << irq),
-            "Only otbn IRQ %d expected to fire. Actual interrupt "
+      dif_acc_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_acc_irq_get_state(&acc, &snapshot));
+      CHECK(snapshot == (dif_acc_irq_state_snapshot_t)(1 << irq),
+            "Only acc IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
-      CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, irq));
+      CHECK_DIF_OK(dif_acc_irq_acknowledge(&acc, irq));
       break;
     }
 #endif
@@ -1195,8 +1195,8 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR);
-  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ACC_BASE_ADDR);
+  CHECK_DIF_OK(dif_acc_init(base_addr, &acc));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -1326,7 +1326,7 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_otbn_irq_acknowledge_all(&otbn));
+  CHECK_DIF_OK(dif_acc_irq_acknowledge_all(&acc));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -1416,8 +1416,8 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  dif_otbn_irq_state_snapshot_t otbn_irqs =
-      (dif_otbn_irq_state_snapshot_t)0xffffffff;
+  dif_acc_irq_state_snapshot_t acc_irqs =
+      (dif_acc_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -1539,7 +1539,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_otbn_irq_restore_all(&otbn, &otbn_irqs));
+  CHECK_DIF_OK(dif_acc_irq_restore_all(&acc, &acc_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -1962,17 +1962,17 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopDarjeelingPlicPeripheralOtbn;
-  for (dif_otbn_irq_t irq = kDifOtbnIrqDone; irq <= kDifOtbnIrqDone;
+  peripheral_expected = kTopDarjeelingPlicPeripheralAcc;
+  for (dif_acc_irq_t irq = kDifAccIrqDone; irq <= kDifAccIrqDone;
        ++irq) {
-    otbn_irq_expected = irq;
-    LOG_INFO("Triggering otbn IRQ %d.", irq);
-    CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq, true));
+    acc_irq_expected = irq;
+    LOG_INFO("Triggering acc IRQ %d.", irq);
+    CHECK_DIF_OK(dif_acc_irq_force(&acc, irq, true));
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
-    IBEX_SPIN_FOR(otbn_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from otbn is serviced.", irq);
+    IBEX_SPIN_FOR(acc_irq_serviced == irq, 1);
+    LOG_INFO("IRQ %d from acc is serviced.", irq);
   }
 #endif
 

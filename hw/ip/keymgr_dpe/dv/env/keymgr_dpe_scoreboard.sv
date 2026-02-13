@@ -481,7 +481,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                                         get_operation(),
                                         cfg.keymgr_dpe_vif.aes_sideload_status == SideLoadAvail,
                                         cfg.keymgr_dpe_vif.kmac_sideload_status == SideLoadAvail,
-                                        cfg.keymgr_dpe_vif.otbn_sideload_status == SideLoadAvail,
+                                        cfg.keymgr_dpe_vif.acc_sideload_status == SideLoadAvail,
                                         cfg_regwen);
           end else if (csr.get_name() != "control_shadowed") begin
             cov.sw_input_cg_wrap[csr.get_name()].sample(item.a_data, cfg_regwen);
@@ -572,11 +572,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   cfg.keymgr_dpe_vif.aes_key_exp, cfg.keymgr_dpe_vif.aes_key))
             end
 
-            if (cfg.keymgr_dpe_vif.otbn_key_exp != cfg.keymgr_dpe_vif.otbn_key) begin
+            if (cfg.keymgr_dpe_vif.acc_key_exp != cfg.keymgr_dpe_vif.acc_key) begin
                 `uvm_error(`gfn,
-                  $sformatf({"After a disable otbn sideload key was not preseved",
+                  $sformatf({"After a disable acc sideload key was not preseved",
                     "exp 'h%0h vs. act 'h%0h"},
-                  cfg.keymgr_dpe_vif.otbn_key_exp, cfg.keymgr_dpe_vif.otbn_key))
+                  cfg.keymgr_dpe_vif.acc_key_exp, cfg.keymgr_dpe_vif.acc_key))
             end
 
             if (cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin
@@ -1401,7 +1401,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     case (dest)
       keymgr_pkg::Kmac: exp.KeyID = keymgr_pkg::RndCnstKmacSeedDefault;
       keymgr_pkg::Aes:  exp.KeyID = keymgr_pkg::RndCnstAesSeedDefault;
-      keymgr_pkg::Otbn: exp.KeyID = keymgr_pkg::RndCnstOtbnSeedDefault;
+      keymgr_pkg::Acc: exp.KeyID = keymgr_pkg::RndCnstAccSeedDefault;
       keymgr_pkg::None: exp.KeyID = keymgr_pkg::RndCnstNoneSeedDefault;
       default: `uvm_fatal(`gfn, $sformatf("Unexpected dest_sel: %0s", dest.name))
     endcase

@@ -20,13 +20,13 @@ extern "C" {
 /**
  * Check that a modexp operation is complete and get the result size.
  *
- * After OTBN finishes processing, this function reads the mode and infers the
+ * After ACC finishes processing, this function reads the mode and infers the
  * size of the modulus/signature for the just-finished operation. It then
  * populates the `num_words` parameter with this size (expressed in 32b words).
  * This is designed so that callers can call `rsa_modexp_wait()` and then use
  * the size to select the appropriate `finalize()` call.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param[out] num_words Number of words for result buffers.
  * @return Status of the operation (OK or error).
@@ -40,7 +40,7 @@ status_t rsa_modexp_get_result_size(size_t *num_words);
  * This construct is for secret exponents, and is much slower than the
  * variable-time version.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
@@ -67,7 +67,7 @@ status_t rsa_modexp_consttime_2048_finalize(rsa_2048_int_t *result);
  * This construct is for secret exponents, and is faster than the non-CRT
  * constant-time version.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp_p First CRT component of exponent to raise the base to.
@@ -100,7 +100,7 @@ status_t rsa_modexp_consttime_crt_2048_finalize(rsa_2048_int_t *result);
  * Do not use this construct with secret exponents; its timing depends on the
  * exponent.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
@@ -129,7 +129,7 @@ status_t rsa_modexp_vartime_2048_finalize(const uint32_t exp,
  * This construct is for secret exponents, and is much slower than the
  * variable-time version.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
@@ -156,7 +156,7 @@ status_t rsa_modexp_consttime_3072_finalize(rsa_3072_int_t *result);
  * This construct is for secret exponents, and is faster than the non-CRT
  * constant-time version.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp_p First CRT component of exponent to raise the base to.
@@ -189,7 +189,7 @@ status_t rsa_modexp_consttime_crt_3072_finalize(rsa_3072_int_t *result);
  * Do not use this construct with secret exponents; its timing depends on the
  * exponent.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
@@ -218,7 +218,7 @@ status_t rsa_modexp_vartime_3072_finalize(const uint32_t exp,
  * This construct is for secret exponents, and is much slower than the
  * variable-time version.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
@@ -245,7 +245,7 @@ status_t rsa_modexp_consttime_4096_finalize(rsa_4096_int_t *result);
  * This construct is for secret exponents, and is faster than the non-CRT
  * constant-time version.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp_p First CRT component of exponent to raise the base to.
@@ -278,7 +278,7 @@ status_t rsa_modexp_consttime_crt_4096_finalize(rsa_4096_int_t *result);
  * Do not use this construct with secret exponents; its timing depends on the
  * exponent.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.

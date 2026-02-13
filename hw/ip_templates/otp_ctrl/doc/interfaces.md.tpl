@@ -120,21 +120,21 @@ Otherwise, this signal is tied to a random netlist constant.
 
 Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `otp_keymgr_key_o` signals.
 
-${"###"} Interfaces to SRAM and OTBN Scramblers
+${"###"} Interfaces to SRAM and ACC Scramblers
 
-The interfaces to the SRAM and OTBN scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_i[*]`, `otbn_otp_key_i`).
+The interfaces to the SRAM and ACC scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_i[*]`, `acc_otp_key_i`).
 The OTP controller then fetches entropy from EDN and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path](#scrambling-datapath).
-Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
-The wave diagram below illustrates this process for the OTBN scrambling device.
+Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `acc_otp_key_o`), which complete the req / ack handshake.
+The wave diagram below illustrates this process for the ACC scrambling device.
 
 ```wavejson
 {signal: [
   {name: 'clk_i',                     wave: 'p.......'},
-  {name: 'otbn_otp_key_i.req',        wave: '01.|..0.'},
-  {name: 'otbn_otp_key_o.ack',        wave: '0..|.10.'},
-  {name: 'otbn_otp_key_o.nonce',      wave: '0..|.30.'},
-  {name: 'otbn_otp_key_o.key',        wave: '0..|.30.'},
-  {name: 'otbn_otp_key_o.seed_valid', wave: '0..|.10.'},
+  {name: 'acc_otp_key_i.req',        wave: '01.|..0.'},
+  {name: 'acc_otp_key_o.ack',        wave: '0..|.10.'},
+  {name: 'acc_otp_key_o.nonce',      wave: '0..|.30.'},
+  {name: 'acc_otp_key_o.key',        wave: '0..|.30.'},
+  {name: 'acc_otp_key_o.seed_valid', wave: '0..|.10.'},
 ]}
 ```
 
@@ -175,7 +175,7 @@ If the key seeds have not yet been provisioned, the keys are derived from all-ze
 The resulting scrambling key is still ephemeral (i.e., it is derived using entropy from CSRNG) and okay to be used.
 
 Note that the req/ack protocol runs on the OTP clock.
-It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [interface to SRAM and OTBN scramblers](#interface-to-sram-and-otbn-scramblers).
+It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [interface to SRAM and ACC scramblers](#interface-to-sram-and-acc-scramblers).
 
 % endif
 ${"###"} Hardware Config Bits

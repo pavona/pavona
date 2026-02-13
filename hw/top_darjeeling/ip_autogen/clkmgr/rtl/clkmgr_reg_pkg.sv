@@ -50,7 +50,7 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_main_otbn_hint;
+    } clk_main_acc_hint;
     struct packed {
       logic        q;
     } clk_main_kmac_hint;
@@ -108,7 +108,7 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } clk_main_otbn_val;
+    } clk_main_acc_val;
     struct packed {
       logic        d;
       logic        de;

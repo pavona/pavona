@@ -40,8 +40,8 @@ module tb;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
 % endif
-  wire otp_ctrl_pkg::otbn_otp_key_req_t  otbn_req;
-  wire otp_ctrl_pkg::otbn_otp_key_rsp_t  otbn_rsp;
+  wire otp_ctrl_pkg::acc_otp_key_req_t  acc_req;
+  wire otp_ctrl_pkg::acc_otp_key_rsp_t  acc_rsp;
   wire otp_ctrl_pkg::sram_otp_key_req_t[NumSramKeyReqSlots-1:0] sram_req;
   wire otp_ctrl_pkg::sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0] sram_rsp;
 
@@ -63,7 +63,7 @@ module tb;
                lc_prog_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))
                sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(ACC_DATA_SIZE)) acc_if(.clk(clk), .rst_n(rst_n));
 % if enable_flash_key:
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
@@ -87,7 +87,7 @@ module tb;
 % if enable_flash_key:
   assign otp_ctrl_if.flash_acks = flash_data_if.ack;
 % endif
-  assign otp_ctrl_if.otbn_ack  = otbn_if.ack;
+  assign otp_ctrl_if.acc_ack  = acc_if.ack;
 
   // This signal probes design's alert request to avoid additional logic for triggering alert and
   // disable assertions.
@@ -150,9 +150,9 @@ module tb;
     // sram
     .sram_otp_key_i             (sram_req),
     .sram_otp_key_o             (sram_rsp),
-    // otbn
-    .otbn_otp_key_i             (otbn_req),
-    .otbn_otp_key_o             (otbn_rsp),
+    // acc
+    .acc_otp_key_i             (acc_req),
+    .acc_otp_key_o             (acc_rsp),
 
     .otp_broadcast_o            (otp_ctrl_if.otp_broadcast_o),
 
@@ -207,9 +207,9 @@ module tb;
                      $sformatf("*env.m_sram_pull_agent[%0d]*", i), "vif", sram_if[i]);
     end
   end
-  assign otbn_req       = otbn_if.req;
-  assign otbn_if.ack    = otbn_rsp.ack;
-  assign otbn_if.d_data = {otbn_rsp.key, otbn_rsp.nonce, otbn_rsp.seed_valid};
+  assign acc_req       = acc_if.req;
+  assign acc_if.ack    = acc_rsp.ack;
+  assign acc_if.d_data = {acc_rsp.key, acc_rsp.nonce, acc_rsp.seed_valid};
 
 % if enable_flash_key:
   assign flash_req            = {flash_data_if.req, flash_addr_if.req};
@@ -266,8 +266,8 @@ module tb;
                                        "vif", tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_otp_macro_prim_reg_block",
                                        "vif", prim_tl_if);
-    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(OTBN_DATA_SIZE)))::set(null,
-                   "*env.m_otbn_pull_agent*", "vif", otbn_if);
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(ACC_DATA_SIZE)))::set(null,
+                   "*env.m_acc_pull_agent*", "vif", acc_if);
   % if enable_flash_key:
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_data_pull_agent*", "vif", flash_data_if);

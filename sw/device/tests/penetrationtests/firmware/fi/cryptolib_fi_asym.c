@@ -470,7 +470,7 @@ status_t handle_cryptolib_fi_asym_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
                    kPentestPeripheralCsrng | kPentestPeripheralEntropy |
                    kPentestPeripheralAes | kPentestPeripheralHmac |
-                   kPentestPeripheralKmac | kPentestPeripheralOtbn,
+                   kPentestPeripheralKmac | kPentestPeripheralAcc,
                uj_sensor_data.sensor_ctrl_enable,
                uj_sensor_data.sensor_ctrl_en_fatal);
 

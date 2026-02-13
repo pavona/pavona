@@ -148,12 +148,12 @@ module clkmgr_reg_top (
   logic clk_hints_clk_main_hmac_hint_wd;
   logic clk_hints_clk_main_kmac_hint_qs;
   logic clk_hints_clk_main_kmac_hint_wd;
-  logic clk_hints_clk_main_otbn_hint_qs;
-  logic clk_hints_clk_main_otbn_hint_wd;
+  logic clk_hints_clk_main_acc_hint_qs;
+  logic clk_hints_clk_main_acc_hint_wd;
   logic clk_hints_status_clk_main_aes_val_qs;
   logic clk_hints_status_clk_main_hmac_val_qs;
   logic clk_hints_status_clk_main_kmac_val_qs;
-  logic clk_hints_status_clk_main_otbn_val_qs;
+  logic clk_hints_status_clk_main_acc_val_qs;
   logic measure_ctrl_regwen_we;
   logic measure_ctrl_regwen_qs;
   logic measure_ctrl_regwen_wd;
@@ -575,19 +575,19 @@ module clkmgr_reg_top (
     .qs     (clk_hints_clk_main_kmac_hint_qs)
   );
 
-  //   F[clk_main_otbn_hint]: 3:3
+  //   F[clk_main_acc_hint]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_clk_hints_clk_main_otbn_hint (
+  ) u_clk_hints_clk_main_acc_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clk_hints_we),
-    .wd     (clk_hints_clk_main_otbn_hint_wd),
+    .wd     (clk_hints_clk_main_acc_hint_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -595,11 +595,11 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clk_hints.clk_main_otbn_hint.q),
+    .q      (reg2hw.clk_hints.clk_main_acc_hint.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (clk_hints_clk_main_otbn_hint_qs)
+    .qs     (clk_hints_clk_main_acc_hint_qs)
   );
 
 
@@ -685,13 +685,13 @@ module clkmgr_reg_top (
     .qs     (clk_hints_status_clk_main_kmac_val_qs)
   );
 
-  //   F[clk_main_otbn_val]: 3:3
+  //   F[clk_main_acc_val]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_clk_hints_status_clk_main_otbn_val (
+  ) u_clk_hints_status_clk_main_acc_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -700,8 +700,8 @@ module clkmgr_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.clk_hints_status.clk_main_otbn_val.de),
-    .d      (hw2reg.clk_hints_status.clk_main_otbn_val.d),
+    .de     (hw2reg.clk_hints_status.clk_main_acc_val.de),
+    .d      (hw2reg.clk_hints_status.clk_main_acc_val.d),
 
     // to internal hardware
     .qe     (),
@@ -709,7 +709,7 @@ module clkmgr_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (clk_hints_status_clk_main_otbn_val_qs)
+    .qs     (clk_hints_status_clk_main_acc_val_qs)
   );
 
 
@@ -1337,7 +1337,7 @@ module clkmgr_reg_top (
 
   assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[2];
 
-  assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[3];
+  assign clk_hints_clk_main_acc_hint_wd = reg_wdata[3];
   assign measure_ctrl_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
   assign measure_ctrl_regwen_wd = reg_wdata[0];
@@ -1407,14 +1407,14 @@ module clkmgr_reg_top (
         reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
         reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
         reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
-        reg_rdata_next[3] = clk_hints_clk_main_otbn_hint_qs;
+        reg_rdata_next[3] = clk_hints_clk_main_acc_hint_qs;
       end
 
       addr_hit[5]: begin
         reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
         reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
         reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;
-        reg_rdata_next[3] = clk_hints_status_clk_main_otbn_val_qs;
+        reg_rdata_next[3] = clk_hints_status_clk_main_acc_val_qs;
       end
 
       addr_hit[6]: begin

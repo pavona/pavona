@@ -182,7 +182,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
 
 
   bit_toggle_cg_wrap lc_prog_cg;
-  bit_toggle_cg_wrap otbn_req_cg;
+  bit_toggle_cg_wrap acc_req_cg;
   bit_toggle_cg_wrap status_csr_cg[OtpStatusFieldSize];
 
   // covergroups
@@ -493,7 +493,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     super.build_phase(phase);
     // Create instances from bit_toggle_cg_wrapper.
     lc_prog_cg  = new("lc_prog_cg", "", 0);
-    otbn_req_cg = new("otbn_req_cg", "", 0);
+    acc_req_cg = new("acc_req_cg", "", 0);
     foreach (status_csr_cg[i]) begin
       otp_status_e index = otp_status_e'(i);
       status_csr_cg[i]= new(index.name, "status_csr_cg", 0);

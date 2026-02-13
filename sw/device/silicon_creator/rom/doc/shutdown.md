@@ -143,8 +143,8 @@ The suggested default classification is detailed in the following table.
 | Edn1FatalAlert               | 48   | X          | A      | A          | D     | X     | X       |
 | Edn1RecovAlert               | 49   | X          | D      | D          | D     | X     | X       |
 | SramCtrlMainFatalError       | 50   | X          | A      | A          | D     | X     | X       |
-| OtbnFatal                    | 51   | X          | A      | A          | D     | X     | X       |
-| OtbnRecov                    | 52   | X          | D      | D          | D     | X     | X       |
+| AccFatal                     | 51   | X          | A      | A          | D     | X     | X       |
+| AccRecov                     | 52   | X          | D      | D          | D     | X     | X       |
 | RomCtrlFatal                 | 53   | X          | A      | A          | D     | X     | X       |
 | RvCoreIbexFatalSwErr         | 54   | X          | A      | A          | D     | X     | X       |
 | RvCoreIbexRecovSwErr         | 55   | X          | D      | D          | D     | X     | X       |

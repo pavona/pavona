@@ -28,7 +28,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     // TODO TopDarjeelingAlertIdLcCtrlFatalProgError: done in sw/device/tests/sim_dv/lc_ctrl_program_error.c?
     '{"*lc_ctrl*state_regs*", TopDarjeelingAlertIdLcCtrlFatalStateError},
     '{"*lc_ctrl*prim_reg_we_check*", TopDarjeelingAlertIdLcCtrlFatalBusIntegError},
-    '{"*otbn*prim_reg_we_check*", TopDarjeelingAlertIdOtbnFatal},
+    '{"*acc*prim_reg_we_check*", TopDarjeelingAlertIdAccFatal},
     // TopDarjeelingAlertIdOtpCtrlFatalMacroError: done in chip_sw_otp_ctrl_escalation_vseq
     '{"*otp_ctrl.u_otp.*u_state_regs", TopDarjeelingAlertIdOtpCtrlFatalPrimOtpAlert},
     '{"*otp_ctrl*u_otp_ctrl_dai*", TopDarjeelingAlertIdOtpCtrlFatalCheckError},

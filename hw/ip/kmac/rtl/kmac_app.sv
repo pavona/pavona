@@ -18,7 +18,7 @@ module kmac_app
   parameter  bit          SecIdleAcceptSwMsg = 1'b0,
   parameter  int unsigned NumAppIntf         = 4,
   parameter  app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl,
-                                                 AppCfgRomCtrl, AppCfgOTBN}
+                                                 AppCfgRomCtrl, AppCfgACC}
 ) (
   input clk_i,
   input rst_ni,
@@ -204,7 +204,7 @@ module kmac_app
   logic [AppIdxW-1:0] app_id, app_id_d;
   logic               clr_appid, set_appid;
 
-  // AppIntf OTBN signals
+  // AppIntf ACC signals
   logic                       set_dynamic_sha_mode;
   sha3_pkg::sha3_mode_e       dynamic_sha3_mode_q;
   sha3_pkg::keccak_strength_e dynamic_keccak_strength_q;
@@ -234,7 +234,7 @@ module kmac_app
   logic service_rejected_error_set, service_rejected_error_clr;
   logic err_during_sw_d, err_during_sw_q;
 
-  // Digest packer for OTBN app intf
+  // Digest packer for ACC app intf
   logic [255:0] digest_word_share_0, digest_word_share_1;
   logic [255:0] packed_digest_word_share_0, packed_digest_word_share_1;
   logic [255:0] digest_word_share_valid_0, digest_word_share_valid_1;
@@ -247,7 +247,7 @@ module kmac_app
   logic [255:0] digest_word_mask;
   logic [1:0] permutation_ctr;
   logic incr_permutation_ctr, reset_permutation_ctr;
-  logic otbn_app_intf_done;
+  logic acc_app_intf_done;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)                         service_rejected_error <= 1'b 0;
@@ -259,7 +259,7 @@ module kmac_app
   // Application Mux/ Demux //
   ////////////////////////////
 
-  // Set SHA3 mode and Keccak strength if OTBN mode
+  // Set SHA3 mode and Keccak strength if ACC mode
   always_ff @(posedge clk_i) begin
     if (app_i[AppConfigDynamic].valid && set_appid) begin
       dynamic_sha3_mode_q <= sha3_pkg::sha3_mode_e'(app_i[AppConfigDynamic].data[1:0]);
@@ -267,7 +267,7 @@ module kmac_app
     end
   end
 
-  // Control the permutation index for keccak states and XOFs with OTBN
+  // Control the permutation index for keccak states and XOFs with ACC
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       permutation_ctr <= 2'h0;
@@ -278,7 +278,7 @@ module kmac_app
     end
   end
 
-  // Control the word index for XOFs with OTBN
+  // Control the word index for XOFs with ACC
   assign digest_word_idx_d = digest_word_idx_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) digest_word_idx_q <= 3'h0;
@@ -290,7 +290,7 @@ module kmac_app
   // Processing return data.
   // sends to only selected app intf.
   // clear digest right after done to not leak info to other interface
-  // OTBN mode operates different with 256-bit digest being padded out of packer FIFO
+  // ACC mode operates different with 256-bit digest being padded out of packer FIFO
   always_comb begin
     app_rsp_err = error_i | fsm_digest_done_q | sparse_fsm_error_o | service_rejected_error;
     digest_word_share_valid_0 = (app_rsp_err | !packed_digest_word_valid) ?
@@ -302,7 +302,7 @@ module kmac_app
         app_o[i] = '{
           ready:         app_data_ready | fsm_data_ready,
           done:          (AppCfg[app_id].Mode == AppConfigDynamic) ?
-                            otbn_app_intf_done : (app_digest_done | fsm_digest_done_q),
+                            acc_app_intf_done : (app_digest_done | fsm_digest_done_q),
           digest_share0: (AppCfg[app_id].Mode == AppConfigDynamic) ?
                             {128'h0, digest_word_share_valid_0} : app_digest[0],
           digest_share1: (AppCfg[app_id].Mode == AppConfigDynamic) ?
@@ -502,7 +502,7 @@ module kmac_app
         st_d = StAppWait;
       end
 
-      // Used to control packing into fifo for OTBN return digest
+      // Used to control packing into fifo for ACC return digest
       StAppShiftDigest: begin
         st_d = StAppShiftDigest;
         if (digest_packer_ready) begin
@@ -535,7 +535,7 @@ module kmac_app
             prim_mubi_pkg::mubi4_test_true_strict(squeezing_i))
         begin
           digest_valid = 1'b 1;
-          // hold always 1'b0 for non-otbn modes maintaining normal behavior
+          // hold always 1'b0 for non-acc modes maintaining normal behavior
           if (app_i[app_id].hold == 1'b0) begin
             // Send digest to KeyMgr and complete the op
             st_d = StIdle;
@@ -889,7 +889,7 @@ module kmac_app
   end
 
   // Set the final word size for SHAKE 128/256 modes given rate
-  // SHA3 mode has fixed 256/512 bit sizes for OTBN
+  // SHA3 mode has fixed 256/512 bit sizes for ACC
   assign digest_word_mask = (dynamic_keccak_strength_q == sha3_pkg::L128 &&
                             digest_word_idx_q == 3'h5) ? { {192{1'b0}}, {64{1'b1}} } :
                             ((dynamic_keccak_strength_q == sha3_pkg::L256 &&
@@ -980,7 +980,7 @@ module kmac_app
                             || shift_and_pack_digest) && ~clr_appid
                             && (AppCfg[app_id].Mode == AppConfigDynamic);
   // Assert done for digest when packer has valid word and we are in valid state to push
-  assign otbn_app_intf_done = packed_digest_word_valid && ~clr_appid && ((st == StAppWait) ||
+  assign acc_app_intf_done = packed_digest_word_valid && ~clr_appid && ((st == StAppWait) ||
                               (st == StAppShiftDigest) || (st == StAppManualRun));
   assign digest_packer_ready = digest_packer_ready_share_0 & digest_packer_ready_share_1;
   assign packed_digest_word_valid = packed_digest_word_valid_share_0 &&

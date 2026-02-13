@@ -63,7 +63,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
                         sram_fifos[NumSramKeyReqSlots];
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(OTBN_DATA_SIZE)))  otbn_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(ACC_DATA_SIZE)))  acc_fifo;
 % if enable_flash_key:
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_addr_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_data_fifo;
@@ -80,7 +80,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       sram_fifos[i] = new($sformatf("sram_fifos[%0d]", i), this);
     end
-    otbn_fifo       = new("otbn_fifo", this);
+    acc_fifo       = new("acc_fifo", this);
   % if enable_flash_key:
     flash_addr_fifo = new("flash_addr_fifo", this);
     flash_data_fifo = new("flash_data_fifo", this);
@@ -100,7 +100,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       process_lc_esc();
       process_lc_prog_req();
       process_edn_req();
-      check_otbn_rsp();
+      check_acc_rsp();
     % if enable_flash_key:
       check_flash_rsps();
     % endif
@@ -412,32 +412,32 @@ else:
     end
   endtask
 
-  virtual task check_otbn_rsp();
+  virtual task check_acc_rsp();
     forever begin
-      push_pull_item#(.DeviceDataWidth(OTBN_DATA_SIZE)) rcv_item;
+      push_pull_item#(.DeviceDataWidth(ACC_DATA_SIZE)) rcv_item;
       bit [SCRAMBLE_KEY_SIZE-1:0]  edn_key2, edn_key1;
       bit [SCRAMBLE_KEY_SIZE-1:0]  sram_key;
       bit [SCRAMBLE_DATA_SIZE-1:0] exp_key_lower, exp_key_higher;
-      bit [OtbnKeyWidth-1:0]       key, exp_key;
-      bit [OtbnNonceWidth-1:0]     nonce, exp_nonce;
+      bit [AccKeyWidth-1:0]       key, exp_key;
+      bit [AccNonceWidth-1:0]     nonce, exp_nonce;
       bit                          seed_valid;
       bit                          part_locked;
 
-      otbn_fifo.get(rcv_item);
+      acc_fifo.get(rcv_item);
       seed_valid  = rcv_item.d_data[0];
-      nonce       = rcv_item.d_data[1+:OtbnNonceWidth];
-      key         = rcv_item.d_data[OtbnNonceWidth+1+:OtbnKeyWidth];
+      nonce       = rcv_item.d_data[1+:AccNonceWidth];
+      key         = rcv_item.d_data[AccNonceWidth+1+:AccKeyWidth];
       part_locked = {`gmv(ral.secret1_digest[0]), `gmv(ral.secret1_digest[1])} != '0;
 
       // seed is valid as long as secret1 is locked
-      `DV_CHECK_EQ(seed_valid, part_locked, "otbn seed_valid mismatch")
+      `DV_CHECK_EQ(seed_valid, part_locked, "acc seed_valid mismatch")
 
-      // If edn_data_q matches the OTBN requested size, check OTBN outputs
-      if (edn_data_q.size() == NUM_OTBN_EDN_REQ) begin
+      // If edn_data_q matches the ACC requested size, check ACC outputs
+      if (edn_data_q.size() == NUM_ACC_EDN_REQ) begin
         {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
 
         // check nonce value
-        `DV_CHECK_EQ(nonce, exp_nonce, "otbn nonce mismatch")
+        `DV_CHECK_EQ(nonce, exp_nonce, "acc nonce mismatch")
 
         // calculate key
         sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
@@ -455,16 +455,16 @@ else:
                          .second_key(edn_key2),
                          .num_round(2));
         exp_key = {exp_key_higher, exp_key_lower};
-        `DV_CHECK_EQ(key, exp_key, "otbn key mismatch")
+        `DV_CHECK_EQ(key, exp_key, "acc key mismatch")
 
-        if (cfg.en_cov) cov.otbn_req_cg.sample(part_locked);
+        if (cfg.en_cov) cov.acc_req_cg.sample(part_locked);
 
-      // If during OTBN key request, the LFSR timer expired and trigger an EDN request to acquire
-      // two EDN keys, then ignore the OTBN output checking, because scb did not know which EDN
+      // If during ACC key request, the LFSR timer expired and trigger an EDN request to acquire
+      // two EDN keys, then ignore the ACC output checking, because scb did not know which EDN
       // keys are used for LFSR.
       // Thus any edn_data_q size equal to (16+2*N) is exempted from checking.
-      end else if ((edn_data_q.size() - NUM_OTBN_EDN_REQ) % 2 != 0) begin
-        `uvm_error(`gfn, $sformatf("Unexpected edn_data_q size (%0d) during OTBN request",
+      end else if ((edn_data_q.size() - NUM_ACC_EDN_REQ) % 2 != 0) begin
+        `uvm_error(`gfn, $sformatf("Unexpected edn_data_q size (%0d) during ACC request",
                                    edn_data_q.size()))
       end
       edn_data_q.delete();
@@ -541,7 +541,7 @@ else:
           // seed is valid as long as secret1 is locked
           `DV_CHECK_EQ(seed_valid, part_locked, $sformatf("sram_%0d seed_valid mismatch", index))
 
-          // If edn_data_q matches the OTBN requested size, check OTBN outputs
+          // If edn_data_q matches the ACC requested size, check ACC outputs
           if (edn_data_q.size() == NUM_SRAM_EDN_REQ) begin
             {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
 
@@ -1328,7 +1328,7 @@ else:
     recover_interrupted_op();
     super.reset(kind);
     // flush fifos
-    otbn_fifo.flush();
+    acc_fifo.flush();
   % if enable_flash_key:
     flash_addr_fifo.flush();
     flash_data_fifo.flush();
@@ -1368,7 +1368,7 @@ else:
                  // write secret until KDI request is completed. Since the KDI process time could
                  // vary depends on the push-pull-agent, we are going to ignore the checking if
                  // this scenario happens.
-                 cfg.m_otbn_pull_agent_cfg.vif.req ||
+                 cfg.m_acc_pull_agent_cfg.vif.req ||
                 % if enable_flash_key:
                  cfg.m_flash_data_pull_agent_cfg.vif.req ||
                  cfg.m_flash_addr_pull_agent_cfg.vif.req ||

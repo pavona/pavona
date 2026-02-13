@@ -433,12 +433,12 @@ cc_test(
 )
 
 cc_library(
-    name = "otbn",
-    srcs = ["otbn.c"],
-    hdrs = ["otbn.h"],
+    name = "acc",
+    srcs = ["acc.c"],
+    hdrs = ["acc.h"],
     deps = [
         "//hw/top:dt",
-        "//hw/top:otbn_c_regs",
+        "//hw/top:acc_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib:error",
@@ -448,10 +448,10 @@ cc_library(
 )
 
 cc_test(
-    name = "otbn_unittest",
-    srcs = ["otbn_unittest.cc"],
+    name = "acc_unittest",
+    srcs = ["acc_unittest.cc"],
     deps = [
-        ":otbn",
+        ":acc",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

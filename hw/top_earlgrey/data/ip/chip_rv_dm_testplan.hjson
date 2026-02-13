@@ -39,7 +39,7 @@
             Verify accessibility of all the memories in the chip over JTAG.
 
             This test will target the following memories in the chip:
-              sram_main, sram_ret, otbn i|dmem, ROM
+              sram_main, sram_ret, acc i|dmem, ROM
 
             - Shuffle the list of memories first to remove the effect of ordering.
             - Write a location in a randomly chosen set of addresses within each memory via JTAG

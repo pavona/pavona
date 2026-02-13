@@ -114,10 +114,10 @@ hw/ip/kmac/dv/tests/kmac_test_pkg.sv
 hw/ip/lc_ctrl/dv/env/seq_lib/lc_ctrl_errors_vseq.sv
 hw/ip/lc_ctrl/dv/env/seq_lib/lc_ctrl_vseq_list.sv
 hw/ip/lc_ctrl/dv/tests/lc_ctrl_test_pkg.sv
-hw/ip/otbn/dv/uvm/env/seq_lib/otbn_reset_vseq.sv
-hw/ip/otbn/dv/uvm/env/seq_lib/otbn_vseq_list.sv
-hw/ip/otbn/dv/uvm/tests/otbn_test_pkg.sv
-hw/ip/otbn/dv/verilator/otbn_mock_edn.sv
+hw/ip/acc/dv/uvm/env/seq_lib/acc_reset_vseq.sv
+hw/ip/acc/dv/uvm/env/seq_lib/acc_vseq_list.sv
+hw/ip/acc/dv/uvm/tests/acc_test_pkg.sv
+hw/ip/acc/dv/verilator/acc_mock_edn.sv
 hw/ip/pattgen/dv/cov/pattgen_cov_bind.sv
 hw/ip/pattgen/dv/env/seq_lib/pattgen_error_vseq.sv
 hw/ip/pattgen/dv/env/seq_lib/pattgen_smoke_vseq.sv

@@ -28,7 +28,7 @@ While most of these tests are top-level agnostic, some are not.
     *   ({toplevel}-specific) **sw/device/tests/{toplevel}/**
 *   IP Integration tests will be placed in the same folders as above.
 *   System-level tests will be placed in the same folders as above.
-*   IP Integration Test data (some tests, e.g. OTBN, load data files): **sw/device/tests/{IP}\_data/**
+*   IP Integration Test data (some tests, e.g. ACC, load data files): **sw/device/tests/{IP}\_data/**
 *   Target-specific tests will be subfoldered by target (see below).
 
 #### Subfoldering Target-Specific Tests

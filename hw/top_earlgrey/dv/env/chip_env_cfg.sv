@@ -87,7 +87,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Number of RAM tiles for each RAM instance.
   uint num_ram_main_tiles;
   uint num_ram_ret_tiles;
-  uint num_otbn_dmem_tiles;
+  uint num_acc_dmem_tiles;
 
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
@@ -235,7 +235,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
-    `DV_CHECK_LE_FATAL(num_otbn_dmem_tiles, 16)
+    `DV_CHECK_LE_FATAL(num_acc_dmem_tiles, 16)
 
     // ral_model_names = chip_reg_block // 1 entry
     if (use_jtag_dmi == 1) begin
@@ -272,7 +272,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // Set the number of RAM tiles (1 each).
     num_ram_main_tiles = 1;
     num_ram_ret_tiles = 1;
-    num_otbn_dmem_tiles = 1;
+    num_acc_dmem_tiles = 1;
   endfunction
 
   // Disable functional coverage of comportable IP-specific specialized registers.

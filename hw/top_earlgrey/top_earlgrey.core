@@ -27,7 +27,7 @@ filesets:
       - lowrisc:ip:edn
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
-      - lowrisc:ip:otbn
+      - lowrisc:ip:acc
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:flash
       - lowrisc:ip:sram_ctrl

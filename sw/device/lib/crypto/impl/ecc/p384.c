@@ -10,7 +10,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/impl/ecc/p384_insn_counts.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -18,54 +18,54 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'r')
 
-// Declare the OTBN app.
-OTBN_DECLARE_APP_SYMBOLS(run_p384);
-static const otbn_app_t kOtbnAppP384 = OTBN_APP_T_INIT(run_p384);
+// Declare the ACC app.
+ACC_DECLARE_APP_SYMBOLS(run_p384);
+static const acc_app_t kAccAppP384 = ACC_APP_T_INIT(run_p384);
 
 // Declare offsets for input and output buffers.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, mode);   // Mode of operation.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, msg);    // ECDSA message digest.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, r);      // ECDSA signature scalar R.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, s);      // ECDSA signature scalar S.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, x);      // Public key x-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, y);      // Public key y-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, d0_io);  // Private key scalar d (share 0).
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, d1_io);  // Private key scalar d (share 1).
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, x_r);    // ECDSA verification result.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, ok);     // Status code.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, mode);   // Mode of operation.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, msg);    // ECDSA message digest.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, r);      // ECDSA signature scalar R.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, s);      // ECDSA signature scalar S.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, x);      // Public key x-coordinate.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, y);      // Public key y-coordinate.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, d0_io);  // Private key scalar d (share 0).
+ACC_DECLARE_SYMBOL_ADDR(run_p384, d1_io);  // Private key scalar d (share 1).
+ACC_DECLARE_SYMBOL_ADDR(run_p384, x_r);    // ECDSA verification result.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, ok);     // Status code.
 
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p384, mode);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p384, msg);
-static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(run_p384, r);
-static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(run_p384, s);
-static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
-static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
-static const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p384, x_r);
-static const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p384, ok);
+static const acc_addr_t kAccVarMode = ACC_ADDR_T_INIT(run_p384, mode);
+static const acc_addr_t kAccVarMsg = ACC_ADDR_T_INIT(run_p384, msg);
+static const acc_addr_t kAccVarR = ACC_ADDR_T_INIT(run_p384, r);
+static const acc_addr_t kAccVarS = ACC_ADDR_T_INIT(run_p384, s);
+static const acc_addr_t kAccVarX = ACC_ADDR_T_INIT(run_p384, x);
+static const acc_addr_t kAccVarY = ACC_ADDR_T_INIT(run_p384, y);
+static const acc_addr_t kAccVarD0 = ACC_ADDR_T_INIT(run_p384, d0_io);
+static const acc_addr_t kAccVarD1 = ACC_ADDR_T_INIT(run_p384, d1_io);
+static const acc_addr_t kAccVarXr = ACC_ADDR_T_INIT(run_p384, x_r);
+static const acc_addr_t kAccVarOk = ACC_ADDR_T_INIT(run_p384, ok);
 
 // Declare mode constants.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEYGEN);
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEY_CHECK);
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIGN);
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_VERIFY);
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_ECDH);
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_KEYGEN);
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_SIGN);
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_ECDH);
-static const uint32_t kP384ModeKeygen = OTBN_ADDR_T_INIT(run_p384, MODE_KEYGEN);
+ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEYGEN);
+ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEY_CHECK);
+ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIGN);
+ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_VERIFY);
+ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_ECDH);
+ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_KEYGEN);
+ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_SIGN);
+ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_ECDH);
+static const uint32_t kP384ModeKeygen = ACC_ADDR_T_INIT(run_p384, MODE_KEYGEN);
 static const uint32_t kP384ModeKeyCheck =
-    OTBN_ADDR_T_INIT(run_p384, MODE_KEY_CHECK);
-static const uint32_t kP384ModeSign = OTBN_ADDR_T_INIT(run_p384, MODE_SIGN);
-static const uint32_t kP384ModeVerify = OTBN_ADDR_T_INIT(run_p384, MODE_VERIFY);
-static const uint32_t kP384ModeEcdh = OTBN_ADDR_T_INIT(run_p384, MODE_ECDH);
+    ACC_ADDR_T_INIT(run_p384, MODE_KEY_CHECK);
+static const uint32_t kP384ModeSign = ACC_ADDR_T_INIT(run_p384, MODE_SIGN);
+static const uint32_t kP384ModeVerify = ACC_ADDR_T_INIT(run_p384, MODE_VERIFY);
+static const uint32_t kP384ModeEcdh = ACC_ADDR_T_INIT(run_p384, MODE_ECDH);
 static const uint32_t kP384ModeSideloadKeygen =
-    OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_KEYGEN);
+    ACC_ADDR_T_INIT(run_p384, MODE_SIDELOAD_KEYGEN);
 static const uint32_t kP384ModeSideloadSign =
-    OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_SIGN);
+    ACC_ADDR_T_INIT(run_p384, MODE_SIDELOAD_SIGN);
 static const uint32_t kP384ModeSideloadEcdh =
-    OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_ECDH);
+    ACC_ADDR_T_INIT(run_p384, MODE_SIDELOAD_ECDH);
 
 enum {
   /*
@@ -81,37 +81,37 @@ enum {
    * The extra outer "% W" ensures that the padding is 0 if (S % W) is 0.
    */
   kMaskedScalarPaddingWords =
-      (kOtbnWideWordNumWords -
-       (kP384MaskedScalarShareWords % kOtbnWideWordNumWords)) %
-      kOtbnWideWordNumWords,
+      (kAccWideWordNumWords -
+       (kP384MaskedScalarShareWords % kAccWideWordNumWords)) %
+      kAccWideWordNumWords,
   /**
    * Number of extra padding words needed for unmasked scalars.
    */
   kScalarPaddingWords =
-      (kOtbnWideWordNumWords - (kP384ScalarWords % kOtbnWideWordNumWords)) %
-      kOtbnWideWordNumWords,
+      (kAccWideWordNumWords - (kP384ScalarWords % kAccWideWordNumWords)) %
+      kAccWideWordNumWords,
   /**
    * Number of extra padding words needed for unmasked coordinates.
    */
   kCoordPaddingWords =
-      (kOtbnWideWordNumWords - (kP384CoordWords % kOtbnWideWordNumWords)) %
-      kOtbnWideWordNumWords,
+      (kAccWideWordNumWords - (kP384CoordWords % kAccWideWordNumWords)) %
+      kAccWideWordNumWords,
 };
 
 OT_WARN_UNUSED_RESULT
 static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
-                                         const otbn_addr_t share0_addr,
-                                         const otbn_addr_t share1_addr) {
+                                         const acc_addr_t share0_addr,
+                                         const acc_addr_t share1_addr) {
   HARDENED_TRY(
-      otbn_dmem_write(kP384MaskedScalarShareWords, src->share0, share0_addr));
+      acc_dmem_write(kP384MaskedScalarShareWords, src->share0, share0_addr));
   HARDENED_TRY(
-      otbn_dmem_write(kP384MaskedScalarShareWords, src->share1, share1_addr));
+      acc_dmem_write(kP384MaskedScalarShareWords, src->share1, share1_addr));
 
-  // Write trailing 0s so that OTBN's 384-bit read of the second share does not
+  // Write trailing 0s so that ACC's 384-bit read of the second share does not
   // cause an error.
-  HARDENED_TRY(otbn_dmem_set(kMaskedScalarPaddingWords, 0,
+  HARDENED_TRY(acc_dmem_set(kMaskedScalarPaddingWords, 0,
                              share0_addr + kP384MaskedScalarShareBytes));
-  return otbn_dmem_set(kMaskedScalarPaddingWords, 0,
+  return acc_dmem_set(kMaskedScalarPaddingWords, 0,
                        share1_addr + kP384MaskedScalarShareBytes);
 }
 
@@ -123,10 +123,10 @@ static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
  */
 OT_WARN_UNUSED_RESULT
 static status_t p384_scalar_write(const uint32_t src[kP384ScalarWords],
-                                  const otbn_addr_t addr) {
-  HARDENED_TRY(otbn_dmem_write(kP384ScalarWords, src, addr));
+                                  const acc_addr_t addr) {
+  HARDENED_TRY(acc_dmem_write(kP384ScalarWords, src, addr));
 
-  return otbn_dmem_set(kScalarPaddingWords, 0, addr + kP384ScalarBytes);
+  return acc_dmem_set(kScalarPaddingWords, 0, addr + kP384ScalarBytes);
 }
 
 /**
@@ -136,18 +136,18 @@ static status_t p384_scalar_write(const uint32_t src[kP384ScalarWords],
  */
 OT_WARN_UNUSED_RESULT
 static status_t set_public_key(const p384_point_t *p) {
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->x, kOtbnVarX));
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->y, kOtbnVarY));
+  HARDENED_TRY(acc_dmem_write(kP384CoordWords, p->x, kAccVarX));
+  HARDENED_TRY(acc_dmem_write(kP384CoordWords, p->y, kAccVarY));
 
   HARDENED_TRY(
-      otbn_dmem_set(kCoordPaddingWords, 0, kOtbnVarX + kP384CoordBytes));
-  return otbn_dmem_set(kCoordPaddingWords, 0, kOtbnVarY + kP384CoordBytes);
+      acc_dmem_set(kCoordPaddingWords, 0, kAccVarX + kP384CoordBytes));
+  return acc_dmem_set(kCoordPaddingWords, 0, kAccVarY + kP384CoordBytes);
 }
 
 OT_WARN_UNUSED_RESULT
 static status_t set_message_digest(const uint32_t digest[kP384ScalarWords],
-                                   const otbn_addr_t dst) {
-  // Set the message digest. We swap all the bytes so that OTBN can interpret
+                                   const acc_addr_t dst) {
+  // Set the message digest. We swap all the bytes so that ACC can interpret
   // the digest as a little-endian integer, which is a more natural fit for the
   // architecture than the big-endian form requested by the specification (FIPS
   // 186-5, section B.2.1).
@@ -162,290 +162,290 @@ static status_t set_message_digest(const uint32_t digest[kP384ScalarWords],
 }
 
 status_t p384_keygen_start(void) {
-  // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  // Load the ECDH/P-384 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppP384));
 
   // Set mode so start() will jump into keygen.
   uint32_t mode = kP384ModeKeygen;
-  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+  HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
-  // Start the OTBN routine.
-  return otbn_execute();
+  // Start the ACC routine.
+  return acc_execute();
 }
 
 status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
                               p384_point_t *public_key) {
-  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
-  HARDENED_TRY(otbn_assert_idle());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
+  HARDENED_TRY(acc_assert_idle());
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kP384KeygenMinInstructionCount,
+  ACC_CHECK_INSN_COUNT(kP384KeygenMinInstructionCount,
                         kP384KeygenMaxInstructionCount);
 
-  // Read the masked private key from OTBN dmem.
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD0,
+  // Read the masked private key from ACC dmem.
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kP384MaskedScalarShareWords, kAccVarD0,
                                     private_key->share0));
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD1,
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kP384MaskedScalarShareWords, kAccVarD1,
                                     private_key->share1));
 
-  // Read the public key from OTBN dmem.
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarX, public_key->x));
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
+  // Read the public key from ACC dmem.
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kP384CoordWords, kAccVarX, public_key->x));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kP384CoordWords, kAccVarY, public_key->y));
 
   // Wipe DMEM.
-  return otbn_dmem_sec_wipe();
+  return acc_dmem_sec_wipe();
 }
 
 status_t p384_sideload_keygen_start(void) {
-  // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  // Load the ECDH/P-384 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppP384));
 
   // Set mode so start() will jump into keygen.
   uint32_t mode = kP384ModeSideloadKeygen;
-  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+  HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
-  // Start the OTBN routine.
-  return otbn_execute();
+  // Start the ACC routine.
+  return acc_execute();
 }
 
 status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
-  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
-  HARDENED_TRY(otbn_assert_idle());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
+  HARDENED_TRY(acc_assert_idle());
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kP384SideloadKeygenMinInstructionCount,
+  ACC_CHECK_INSN_COUNT(kP384SideloadKeygenMinInstructionCount,
                         kP384SideloadKeygenMaxInstructionCount);
 
-  // Read the public key from OTBN dmem.
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarX, public_key->x));
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
+  // Read the public key from ACC dmem.
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kP384CoordWords, kAccVarX, public_key->x));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kP384CoordWords, kAccVarY, public_key->y));
 
   // Wipe DMEM.
-  return otbn_dmem_sec_wipe();
+  return acc_dmem_sec_wipe();
 }
 
 status_t p384_public_key_check_start(p384_point_t *public_key) {
-  // Load the P-384 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  // Load the P-384 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppP384));
 
   // Set mode so start() will jump into signing.
   uint32_t mode = kP384ModeKeyCheck;
-  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+  HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
 
-  // Start the OTBN routine.
-  OTBN_WIPE_IF_ERROR(otbn_execute());
+  // Start the ACC routine.
+  ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
 status_t p384_public_key_check_finalize(hardened_bool_t *result) {
-  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
-  HARDENED_TRY(otbn_assert_idle());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
+  HARDENED_TRY(acc_assert_idle());
 
   // Read the status code out of DMEM (false if the public key is invalid)
-  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, result));
+  HARDENED_TRY(acc_dmem_read(1, kAccVarOk, result));
 
   // Wipe DMEM.
-  return otbn_dmem_sec_wipe();
+  return acc_dmem_sec_wipe();
 }
 
 status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
                                const p384_masked_scalar_t *private_key) {
-  // Load the ECDSA/P-384 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  // Load the ECDSA/P-384 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppP384));
 
   // Set mode so start() will jump into sideloaded signing.
   uint32_t mode = kP384ModeSign;
-  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+  HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
   // Set the message digest.
-  HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
+  HARDENED_TRY(set_message_digest(digest, kAccVarMsg));
 
   // Set the private key shares.
-  OTBN_WIPE_IF_ERROR(
-      p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
+  ACC_WIPE_IF_ERROR(
+      p384_masked_scalar_write(private_key, kAccVarD0, kAccVarD1));
 
-  // Start the OTBN routine.
-  OTBN_WIPE_IF_ERROR(otbn_execute());
+  // Start the ACC routine.
+  ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
 status_t p384_ecdsa_sideload_sign_start(
     const uint32_t digest[kP384ScalarWords]) {
-  // Load the ECDSA/P-384 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  // Load the ECDSA/P-384 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppP384));
 
   // Set mode so start() will jump into sideloaded signing.
   uint32_t mode = kP384ModeSideloadSign;
-  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+  HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
   // Set the message digest.
-  HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
+  HARDENED_TRY(set_message_digest(digest, kAccVarMsg));
 
-  // Start the OTBN routine.
-  return otbn_execute();
+  // Start the ACC routine.
+  return acc_execute();
 }
 
 status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
-  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
-  HARDENED_TRY(otbn_assert_idle());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
+  HARDENED_TRY(acc_assert_idle());
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kP384SignMinInstructionCount,
+  ACC_CHECK_INSN_COUNT(kP384SignMinInstructionCount,
                         kP384SignMaxInstructionCount);
 
-  // Read signature R out of OTBN dmem.
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384ScalarWords, kOtbnVarR, result->r));
+  // Read signature R out of ACC dmem.
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kP384ScalarWords, kAccVarR, result->r));
 
-  // Read signature S out of OTBN dmem.
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(kP384ScalarWords, kOtbnVarS, result->s));
+  // Read signature S out of ACC dmem.
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kP384ScalarWords, kAccVarS, result->s));
 
   // Wipe DMEM.
-  return otbn_dmem_sec_wipe();
+  return acc_dmem_sec_wipe();
 }
 
 status_t p384_ecdsa_verify_start(const p384_ecdsa_signature_t *signature,
                                  const uint32_t digest[kP384ScalarWords],
                                  const p384_point_t *public_key) {
   // Load the ECDSA/P-384 app
-  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  HARDENED_TRY(acc_load_app(kAccAppP384));
 
   // Set mode so start() will jump into ECDSA verify.
   uint32_t mode = kP384ModeVerify;
-  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+  HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
   // Set the message digest.
-  HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
+  HARDENED_TRY(set_message_digest(digest, kAccVarMsg));
 
   // Set the signature R.
-  HARDENED_TRY(p384_scalar_write(signature->r, kOtbnVarR));
+  HARDENED_TRY(p384_scalar_write(signature->r, kAccVarR));
 
   // Set the signature S.
-  HARDENED_TRY(p384_scalar_write(signature->s, kOtbnVarS));
+  HARDENED_TRY(p384_scalar_write(signature->s, kAccVarS));
 
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
 
-  // Start the OTBN routine.
-  return otbn_execute();
+  // Start the ACC routine.
+  return acc_execute();
 }
 
 status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
                                     hardened_bool_t *result) {
-  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
-  HARDENED_TRY(otbn_assert_idle());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
+  HARDENED_TRY(acc_assert_idle());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
   uint32_t ok;
-  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, &ok));
+  HARDENED_TRY(acc_dmem_read(1, kAccVarOk, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kP384VerifyMinInstructionCount,
+  ACC_CHECK_INSN_COUNT(kP384VerifyMinInstructionCount,
                         kP384VerifyMaxInstructionCount);
 
-  // Read x_r (recovered R) out of OTBN dmem.
+  // Read x_r (recovered R) out of ACC dmem.
   uint32_t x_r[kP384ScalarWords];
-  HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarXr, x_r));
+  HARDENED_TRY(acc_dmem_read(kP384ScalarWords, kAccVarXr, x_r));
 
   *result = hardened_memeq(x_r, signature->r, kP384ScalarWords);
 
   // Wipe DMEM.
-  return otbn_dmem_sec_wipe();
+  return acc_dmem_sec_wipe();
 }
 
 status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
                          const p384_point_t *public_key) {
-  // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  // Load the ECDH/P-384 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppP384));
 
   // Set mode so start() will jump into shared-key generation.
   uint32_t mode = kP384ModeEcdh;
-  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+  HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
 
   // Set the private key shares.
-  OTBN_WIPE_IF_ERROR(
-      p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
+  ACC_WIPE_IF_ERROR(
+      p384_masked_scalar_write(private_key, kAccVarD0, kAccVarD1));
 
-  // Start the OTBN routine.
-  OTBN_WIPE_IF_ERROR(otbn_execute());
+  // Start the ACC routine.
+  ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
 status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
-  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
-  HARDENED_TRY(otbn_assert_idle());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
+  HARDENED_TRY(acc_assert_idle());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
   uint32_t ok;
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(1, kOtbnVarOk, &ok));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarOk, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kP384EcdhMinInstructionCount,
+  ACC_CHECK_INSN_COUNT(kP384EcdhMinInstructionCount,
                         kP384EcdhMaxInstructionCount);
 
-  // Read the shares of the key from OTBN dmem (at vars x and y).
-  OTBN_WIPE_IF_ERROR(
-      otbn_dmem_read(kP384CoordWords, kOtbnVarX, shared_key->share0));
-  OTBN_WIPE_IF_ERROR(
-      otbn_dmem_read(kP384CoordWords, kOtbnVarY, shared_key->share1));
+  // Read the shares of the key from ACC dmem (at vars x and y).
+  ACC_WIPE_IF_ERROR(
+      acc_dmem_read(kP384CoordWords, kAccVarX, shared_key->share0));
+  ACC_WIPE_IF_ERROR(
+      acc_dmem_read(kP384CoordWords, kAccVarY, shared_key->share1));
 
   // Wipe DMEM.
-  return otbn_dmem_sec_wipe();
+  return acc_dmem_sec_wipe();
 }
 
 status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {
-  // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  // Load the ECDH/P-384 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppP384));
 
   // Set mode so start() will jump into shared-key generation.
   uint32_t mode = kP384ModeSideloadEcdh;
-  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+  HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
 
-  // Start the OTBN routine.
-  return otbn_execute();
+  // Start the ACC routine.
+  return acc_execute();
 }
 
 status_t p384_sideload_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
-  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if OTBN not done.
-  HARDENED_TRY(otbn_assert_idle());
+  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
+  HARDENED_TRY(acc_assert_idle());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
   uint32_t ok;
-  OTBN_WIPE_IF_ERROR(otbn_dmem_read(1, kOtbnVarOk, &ok));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarOk, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kP384SideloadEcdhMinInstructionCount,
+  ACC_CHECK_INSN_COUNT(kP384SideloadEcdhMinInstructionCount,
                         kP384SideloadEcdhMaxInstructionCount);
 
-  // Read the shares of the key from OTBN dmem (at vars x and y).
-  OTBN_WIPE_IF_ERROR(
-      otbn_dmem_read(kP384CoordWords, kOtbnVarX, shared_key->share0));
-  OTBN_WIPE_IF_ERROR(
-      otbn_dmem_read(kP384CoordWords, kOtbnVarY, shared_key->share1));
+  // Read the shares of the key from ACC dmem (at vars x and y).
+  ACC_WIPE_IF_ERROR(
+      acc_dmem_read(kP384CoordWords, kAccVarX, shared_key->share0));
+  ACC_WIPE_IF_ERROR(
+      acc_dmem_read(kP384CoordWords, kAccVarY, shared_key->share1));
 
   // Wipe DMEM.
-  return otbn_dmem_sec_wipe();
+  return acc_dmem_sec_wipe();
 }

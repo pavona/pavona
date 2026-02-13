@@ -1,0 +1,29 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Additional build-time options needed to compile C++ sources in
+  // simulators such as VCS and Xcelium for anything that uses
+  // acc_memutil.
+  // In addition to the build options here the user also must include the
+  // hw/dv/verilator/memutil_dpi_scrambled_opts.hjson file.
+  acc_memutil_core: "lowrisc:dv:acc_memutil:0"
+  acc_memutil_src_dir: "{eval_cmd} echo \"{acc_memutil_core}\" | tr ':' '_'"
+
+  build_modes: [
+    {
+      name: vcs_acc_memutil_build_opts
+      build_opts: ["-CFLAGS -I{build_dir}/fusesoc-work/src/{acc_memutil_src_dir}"]
+    }
+
+    {
+      name: xcelium_acc_memutil_build_opts
+      build_opts: ["-I{build_dir}/fusesoc-work/src/{acc_memutil_src_dir}"]
+    }
+
+    {
+      name: dsim_acc_memutil_build_opts
+      build_opts: ["-c-opts -I{build_dir}/fusesoc-work/src/{acc_memutil_src_dir}"]
+    }
+  ]
+}

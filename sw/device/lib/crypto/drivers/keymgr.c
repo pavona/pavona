@@ -136,7 +136,7 @@ static status_t keymgr_wait_until_done(void) {
  * The CDI select bit is always set to false for this driver (i.e. Sealing
  * CDI). The driver does not support attestation CDI.
  *
- * @param dest (NONE, AES, OTBN, or KMAC)
+ * @param dest (NONE, AES, ACC, or KMAC)
  * @param operation (GENERATE_SW or GENERATE_HW)
  */
 #define WRITE_CTRL(dest, operation)                                            \
@@ -156,7 +156,7 @@ static status_t keymgr_wait_until_done(void) {
 /**
  * Verify the control register of the key manager.
  *
- * @param dest (NONE, AES, OTBN, or KMAC)
+ * @param dest (NONE, AES, ACC, or KMAC)
  * @param operation (GENERATE_SW or GENERATE_HW)
  */
 #define VERIFY_CTRL(dest, operation)                                           \
@@ -238,19 +238,19 @@ status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
   return OTCRYPTO_OK;
 }
 
-status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification) {
+status_t keymgr_generate_key_acc(keymgr_diversification_t diversification) {
   // Ensure that the entropy complex has been initialized and keymgr is idle.
   HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
-  // Set the control register to generate an OTBN key.
-  WRITE_CTRL(OTBN, GENERATE_HW);
+  // Set the control register to generate an ACC key.
+  WRITE_CTRL(ACC, GENERATE_HW);
 
   // Start the operation and wait for it to complete.
   keymgr_start(diversification);
   HARDENED_TRY(keymgr_wait_until_done());
   // Check the control register.
-  VERIFY_CTRL(OTBN, GENERATE_HW);
+  VERIFY_CTRL(ACC, GENERATE_HW);
   return OTCRYPTO_OK;
 }
 
@@ -260,7 +260,7 @@ status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification) {
  * The `slot` parameter should be one of:
  *   - KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_AES
  *   - KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_KMAC
- *   - KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN
+ *   - KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_ACC
  *
  * @param slot Value to write to the SIDELOAD_CLEAR register.
  */
@@ -302,6 +302,6 @@ status_t keymgr_sideload_clear_kmac(void) {
   return keymgr_sideload_clear(KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_KMAC);
 }
 
-status_t keymgr_sideload_clear_otbn(void) {
-  return keymgr_sideload_clear(KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN);
+status_t keymgr_sideload_clear_acc(void) {
+  return keymgr_sideload_clear(KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_ACC);
 }

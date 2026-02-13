@@ -90,7 +90,7 @@ Signal                     | Direction        | Type                            
 
 The interface to the key derivation interface inside the OTP controller follows a simple req / ack protocol, where the SRAM controller first requests an updated ephemeral key by asserting the `sram_otp_key_i.req`.
 The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the PRESENT scrambling data path as described in the earlgrey's [OTP controller spec](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#scrambling-datapath) for example.
-Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
+Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `acc_otp_key_o`), which complete the req / ack handshake.
 The key and nonce are made available to the scrambling primitive in the subsequent cycle.
 The wave diagram below illustrates this process.
 

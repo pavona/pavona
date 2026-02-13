@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -135,9 +135,9 @@ typedef struct ed25519_signature {
 ;
 
 /**
- * Start an async Ed25519ph signature generation operation on OTBN.
+ * Start an async Ed25519ph signature generation operation on ACC.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param prehashed_message Prehashed (SHA-512) message to sign.
  * @param hash_h SHA-512 hash of the Ed25519 private key to sign with.
@@ -153,11 +153,11 @@ status_t ed25519_sign_start(
     const uint32_t context_length);
 
 /**
- * Finish an async Ed25519 signature generation operation on OTBN.
+ * Finish an async Ed25519 signature generation operation on ACC.
  *
  * See the documentation of `p256_ecdsa_sign` for details.
  *
- * Blocks until OTBN is idle.
+ * Blocks until ACC is idle.
  *
  * @param[out] result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
@@ -166,7 +166,7 @@ OT_WARN_UNUSED_RESULT
 status_t ed25519_sign_finalize(ed25519_signature_t *result);
 
 /**
- * Start an async Ed25519 signature verification operation on OTBN.
+ * Start an async Ed25519 signature verification operation on ACC.
  *
  * This function expects the scalar value k as computed in RFC 8032 section
  * 5.2.6 step 2 to be pre-computed and provided as a little-endian value to this
@@ -188,7 +188,7 @@ status_t ed25519_verify_start(
     const uint32_t context_length);
 
 /**
- * Finish an async Ed25519 signature verification operation on OTBN.
+ * Finish an async Ed25519 signature verification operation on ACC.
  *
  * @param signature Signature to be verified.
  * @param[out] result Result of verification.

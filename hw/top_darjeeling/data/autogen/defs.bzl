@@ -24,7 +24,7 @@ load("//hw/ip/keymgr_dpe:defs.bzl", "KEYMGR_DPE")
 load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
 load("//hw/ip/mbx:defs.bzl", "MBX")
-load("//hw/ip/otbn:defs.bzl", "OTBN")
+load("//hw/ip/acc:defs.bzl", "ACC")
 load("//hw/top_darjeeling/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
 load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/top_darjeeling/ip_autogen/pinmux:defs.bzl", "PINMUX")
@@ -61,7 +61,7 @@ DARJEELING_IPS = [
     KMAC,
     LC_CTRL,
     MBX,
-    OTBN,
+    ACC,
     OTP_CTRL,
     OTP_MACRO,
     PINMUX,
@@ -112,8 +112,8 @@ DARJEELING_ALERTS = [
     "hmac_fatal_fault",
     "kmac_recov_operation_err",
     "kmac_fatal_fault_err",
-    "otbn_fatal",
-    "otbn_recov",
+    "acc_fatal",
+    "acc_recov",
     "keymgr_dpe_recov_operation_err",
     "keymgr_dpe_fatal_fault_err",
     "csrng_recov_alert",

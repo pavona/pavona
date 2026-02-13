@@ -8,7 +8,7 @@
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
 #include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/dt_acc.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -18,7 +18,7 @@
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -26,10 +26,10 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/otbn_randomness_impl.h"
+#include "sw/device/tests/acc_randomness_impl.h"
 
 #include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
 
@@ -43,19 +43,19 @@ static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_aes_t aes;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_alert_handler_t alert_handler;
 
 status_t init_test_environment(void) {
   LOG_INFO(
-      "Initializing modules sntropy_src, csrng, edn0, edn1, aes, otbn and "
+      "Initializing modules sntropy_src, csrng, edn0, edn1, aes, acc and "
       "alert_handler...");
   TRY(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
   TRY(dif_csrng_init_from_dt(kDtCsrng, &csrng));
   TRY(dif_edn_init_from_dt(kDtEdn0, &edn0));
   TRY(dif_edn_init_from_dt(kDtEdn1, &edn1));
   TRY(dif_aes_init_from_dt(kDtAes, &aes));
-  TRY(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  TRY(dif_acc_init_from_dt(kDtAcc, &acc));
   TRY(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
   return OK_STATUS();
 }
@@ -207,78 +207,78 @@ status_t test_and_verify_aes_operation(void) {
   return OK_STATUS();
 }
 
-status_t start_otbn_program(void) {
-  LOG_INFO("Starting OTBN randomness test...");
+status_t start_acc_program(void) {
+  LOG_INFO("Starting ACC randomness test...");
 
-  // Start the OTBN randomness test with one iteration
-  otbn_randomness_test_start(&otbn, 1);
+  // Start the ACC randomness test with one iteration
+  acc_randomness_test_start(&acc, 1);
 
-  LOG_INFO("OTBN randomness test started");
+  LOG_INFO("ACC randomness test started");
   return OK_STATUS();
 }
 
-status_t verify_otbn_hang(void) {
-  LOG_INFO("Verifying OTBN program hang...");
+status_t verify_acc_hang(void) {
+  LOG_INFO("Verifying ACC program hang...");
 
-  // Wait for a timeout period to check if OTBN is still busy
+  // Wait for a timeout period to check if ACC is still busy
   const uint32_t kIterateMaxRetries = 1000000;
-  bool otbn_busy = true;
+  bool acc_busy = true;
   uint32_t iter_cntr = kIterateMaxRetries;
 
-  dif_otbn_status_t otbn_status;
+  dif_acc_status_t acc_status;
 
   while (iter_cntr > 0) {
-    // Check if OTBN is still busy
-    TRY(dif_otbn_get_status(&otbn, &otbn_status));
+    // Check if ACC is still busy
+    TRY(dif_acc_get_status(&acc, &acc_status));
 
     // Check if any of the busy status flags are set
-    otbn_busy = (otbn_status &
-                 (kDifOtbnStatusBusyExecute | kDifOtbnStatusBusySecWipeDmem |
-                  kDifOtbnStatusBusySecWipeImem)) != 0;
-    TRY_CHECK(otbn_busy,
-              "OTBN program completed unexpectedly; expected it to hang");
+    acc_busy = (acc_status &
+                 (kDifAccStatusBusyExecute | kDifAccStatusBusySecWipeDmem |
+                  kDifAccStatusBusySecWipeImem)) != 0;
+    TRY_CHECK(acc_busy,
+              "ACC program completed unexpectedly; expected it to hang");
     iter_cntr--;
   }
 
-  // After timeout, if OTBN is still busy, we shall conclude it's hanging as
+  // After timeout, if ACC is still busy, we shall conclude it's hanging as
   // expected
-  if (otbn_busy) {
-    LOG_INFO("OTBN program is still running as expected (hang detected)");
+  if (acc_busy) {
+    LOG_INFO("ACC program is still running as expected (hang detected)");
 
-    // Print OTBN status and error bits
-    dif_otbn_err_bits_t otbn_err_bits;
-    TRY(dif_otbn_get_err_bits(&otbn, &otbn_err_bits));
-    LOG_INFO("OTBN status: 0x%x", otbn_status);
-    LOG_INFO("OTBN error bits: 0x%x", otbn_err_bits);
+    // Print ACC status and error bits
+    dif_acc_err_bits_t acc_err_bits;
+    TRY(dif_acc_get_err_bits(&acc, &acc_err_bits));
+    LOG_INFO("ACC status: 0x%x", acc_status);
+    LOG_INFO("ACC error bits: 0x%x", acc_err_bits);
 
     // Double check to confirm no other unexpected errors are
     // present leading to hang
-    if (otbn_err_bits != kDifOtbnErrBitsNoError) {
-      LOG_ERROR("OTBN encountered unexpected errors");
+    if (acc_err_bits != kDifAccErrBitsNoError) {
+      LOG_ERROR("ACC encountered unexpected errors");
 
       // Optionally, decode and print specific error bits
-      if (otbn_err_bits & kDifOtbnErrBitsBadDataAddr) {
+      if (acc_err_bits & kDifAccErrBitsBadDataAddr) {
         LOG_ERROR("A BAD_DATA_ADDR error was observed");
       }
-      if (otbn_err_bits & kDifOtbnErrBitsBadInsnAddr) {
+      if (acc_err_bits & kDifAccErrBitsBadInsnAddr) {
         LOG_ERROR("A BAD_INSN_ADDR error was observed");
       }
-      if (otbn_err_bits & kDifOtbnErrBitsCallStack) {
+      if (acc_err_bits & kDifAccErrBitsCallStack) {
         LOG_ERROR("A CALL_STACK error was observed");
       }
-      if (otbn_err_bits & kDifOtbnErrBitsIllegalInsn) {
+      if (acc_err_bits & kDifAccErrBitsIllegalInsn) {
         LOG_ERROR("An ILLEGAL_INSN error was observed");
       }
-      if (otbn_err_bits & kDifOtbnErrBitsLoop) {
+      if (acc_err_bits & kDifAccErrBitsLoop) {
         LOG_ERROR("A LOOP error was observed");
       }
 
-      otbn_randomness_test_end(&otbn, 1);
+      acc_randomness_test_end(&acc, 1);
       return INTERNAL();
     }
     return OK_STATUS();
   } else {
-    LOG_ERROR("OTBN program did not hang as expected");
+    LOG_ERROR("ACC program did not hang as expected");
     return INTERNAL();
   }
 }
@@ -434,12 +434,12 @@ status_t execute_test(void) {
   // endpoint(e.g. AES) finishes its operation
   CHECK_STATUS_OK(test_and_verify_aes_operation());
 
-  // Step 8: Trigger the execution of an OTBN program requiring entropy from
+  // Step 8: Trigger the execution of an ACC program requiring entropy from
   // both EDN1 and EDN0
-  CHECK_STATUS_OK(start_otbn_program());
+  CHECK_STATUS_OK(start_acc_program());
 
-  // Step 9: Verify the OTBN program hangs
-  CHECK_STATUS_OK(verify_otbn_hang());
+  // Step 9: Verify the ACC program hangs
+  CHECK_STATUS_OK(verify_acc_hang());
 
   // Step 10: Disable the entropy complex again
   CHECK_STATUS_OK(disable_entropy_complex());

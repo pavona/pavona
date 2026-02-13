@@ -393,7 +393,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
 /**
  * Starts the asynchronous RSA key generation function.
  *
- * Initializes OTBN and starts the OTBN routine to compute the RSA
+ * Initializes ACC and starts the ACC routine to compute the RSA
  * private key (d), RSA public key exponent (e) and modulus (n).
  *
  * @param size RSA size parameter.
@@ -458,7 +458,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
 /**
  * Starts the asynchronous digital signature generation function.
  *
- * Initializes OTBN and starts the OTBN routine to compute the digital
+ * Initializes ACC and starts the ACC routine to compute the digital
  * signature on the input message.
  *
  * @param private_key Pointer to blinded private key struct.
@@ -487,7 +487,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
 /**
  * Starts the asynchronous signature verification function.
  *
- * Initializes OTBN and starts the OTBN routine to recover the message
+ * Initializes ACC and starts the ACC routine to recover the message
  * from the input signature.
  *
  * @param public_key Pointer to public key struct.
@@ -540,7 +540,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
  *
  * See `otcrypto_rsa_encrypt` for details on the length requirements for
  * `ciphertext`. Infers the RSA size from `ciphertext`'s length, and will
- * return an error if this does not match the RSA size for the current OTBN
+ * return an error if this does not match the RSA size for the current ACC
  * data.
  *
  * @param[out] ciphertext Buffer for the ciphertext.

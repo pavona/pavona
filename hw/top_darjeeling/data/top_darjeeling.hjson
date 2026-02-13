@@ -227,7 +227,7 @@
             "rv_plic",
             "aes",
             "hmac",
-            "otbn",
+            "acc",
             "keymgr_dpe"
             "csrng",
             "entropy_src",
@@ -701,7 +701,7 @@
       param_decl: {
         EnMasking: "1",
         NumAppIntf: 5,
-        AppCfg: "'{kmac_pkg::AppCfgKeyMgr,\n        kmac_pkg::AppCfgLcCtrl,\n        kmac_pkg::AppCfgRomCtrl,\n        kmac_pkg::AppCfgRomCtrl,\n        kmac_pkg::AppCfgOTBN}"
+        AppCfg: "'{kmac_pkg::AppCfgKeyMgr,\n        kmac_pkg::AppCfgLcCtrl,\n        kmac_pkg::AppCfgRomCtrl,\n        kmac_pkg::AppCfgRomCtrl,\n        kmac_pkg::AppCfgACC}"
       }
       clock_srcs: {clk_i: "main", clk_edn_i: "main"}
       clock_group: "trans"
@@ -710,10 +710,10 @@
         hart: "0x21120000",
       }
     },
-    { name: "otbn",
-      type: "otbn",
+    { name: "acc",
+      type: "acc",
       param_decl: {
-        OtbnPQCEn: "0"
+        AccPQCEn: "0"
       }
       clock_srcs: {
         clk_i: {
@@ -1216,26 +1216,26 @@
       'spi_host0.lsio_trigger'  : ['soc_proxy.spi_host_lsio_trigger'],
       'uart0.lsio_trigger'      : ['soc_proxy.uart_lsio_trigger'],
 
-      // LC RMA req/ack interface: LC -> OTBN
+      // LC RMA req/ack interface: LC -> ACC
       // Note: this RoT configuration has no embedded flash, hence
-      // the RMA request is just routed to OTBN directly.
-      'lc_ctrl.lc_flash_rma_req' : ['otbn.lc_rma_req'],
-      'otbn.lc_rma_ack'          : ['lc_ctrl.lc_flash_rma_ack'],
+      // the RMA request is just routed to ACC directly.
+      'lc_ctrl.lc_flash_rma_req' : ['acc.lc_rma_req'],
+      'acc.lc_rma_ack'          : ['lc_ctrl.lc_flash_rma_ack'],
 
       // Edn connections
       'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'kmac.entropy',
-                                 'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd',
+                                 'alert_handler.edn', 'aes.edn', 'acc.edn_urnd',
                                  'rv_core_ibex.edn'],
-      'edn1.edn'              : ['otbn.edn_rnd'],
+      'edn1.edn'              : ['acc.edn_rnd'],
 
-      // OTBN OTP scramble key
-      'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
+      // ACC OTP scramble key
+      'otp_ctrl.acc_otp_key' : ['acc.acc_otp_key'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr_dpe.otp_key'],
       'keymgr_dpe.aes_key'      : ['aes.keymgr_key'],
       'keymgr_dpe.kmac_key'     : ['kmac.keymgr_key'],
-      'keymgr_dpe.otbn_key'     : ['otbn.keymgr_key'],
+      'keymgr_dpe.acc_key'     : ['acc.keymgr_key'],
 
       // KMAC Application Interface
       // Note that arbitration is fixed priority top to bottom.
@@ -1243,7 +1243,7 @@
                                    'lc_ctrl.kmac_data',     // LC needs to be at index 1
                                    'rom_ctrl0.kmac_data',   // ROM needs to be at index 2 or 3
                                    'rom_ctrl1.kmac_data',   // ROM needs to be at index 2 or 3
-                                   'otbn.kmac_data'],       // OTBN needs to be at index 4
+                                   'acc.kmac_data'],       // ACC needs to be at index 4
       'kmac.en_masking'         : ['keymgr_dpe.kmac_en_masking']
 
       // The idle connection is automatically connected through topgen.
@@ -1284,7 +1284,7 @@
       'lc_ctrl.lc_keymgr_en'       : ['keymgr_dpe.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'kmac.lc_escalate_en',
-                                      'otbn.lc_escalate_en',
+                                      'acc.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
                                       'sram_ctrl_ret_aon.lc_escalate_en',
@@ -1392,10 +1392,10 @@
         'sram_ctrl_main.cfg_rsp'               : 'sram_ctrl_main_ram_1p_cfg_rsp',
         'sram_ctrl_mbox.cfg'                   : 'sram_ctrl_mbox_ram_1p_cfg',
         'sram_ctrl_mbox.cfg_rsp'               : 'sram_ctrl_mbox_ram_1p_cfg_rsp',
-        'otbn.ram_cfg_imem'                    : 'otbn_imem_ram_1p_cfg',
-        'otbn.ram_cfg_rsp_imem'                : 'otbn_imem_ram_1p_cfg_rsp',
-        'otbn.ram_cfg_dmem'                    : 'otbn_dmem_ram_1p_cfg',
-        'otbn.ram_cfg_rsp_dmem'                : 'otbn_dmem_ram_1p_cfg_rsp',
+        'acc.ram_cfg_imem'                    : 'acc_imem_ram_1p_cfg',
+        'acc.ram_cfg_rsp_imem'                : 'acc_imem_ram_1p_cfg_rsp',
+        'acc.ram_cfg_dmem'                    : 'acc_dmem_ram_1p_cfg',
+        'acc.ram_cfg_rsp_dmem'                : 'acc_dmem_ram_1p_cfg_rsp',
         'rv_core_ibex.ram_cfg_icache_tag'      : 'rv_core_ibex_icache_tag_ram_1p_cfg',
         'rv_core_ibex.ram_cfg_rsp_icache_tag'  : 'rv_core_ibex_icache_tag_ram_1p_cfg_rsp',
         'rv_core_ibex.ram_cfg_icache_data'     : 'rv_core_ibex_icache_data_ram_1p_cfg',

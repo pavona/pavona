@@ -83,7 +83,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit sha3_squeeze;
   bit sha3_manual;
 
-  // OTBN AppIntf status
+  // ACC AppIntf status
   bit [2:0] digest_word_idx, max_digest_words;
   bit [2:0] permutation_ctr_idx;
   bit [3:0] digest_word_ctr;
@@ -330,7 +330,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                  (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
                   `KMAC_APP_VALID_TRANS(AppLc) ||
                   `KMAC_APP_VALID_TRANS(AppRom) ||
-                  `KMAC_APP_VALID_TRANS(AppOtbn)));
+                  `KMAC_APP_VALID_TRANS(AppAcc)));
             in_kmac_app = 1;
             sha3_idle = 0;
             sha3_absorb = 1;
@@ -348,13 +348,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
               app_mode = AppRom;
               strength = sha3_pkg::L256;
-            end else if (`KMAC_APP_VALID_TRANS(AppOtbn)) begin
-              app_mode = AppOtbn;
+            end else if (`KMAC_APP_VALID_TRANS(AppAcc)) begin
+              app_mode = AppAcc;
               // Set the sha3 mode and keccak strength from cfg word
               // Bits [8:0] contain strb and last
               // Bits [72:9] contain the msg/cfg
-              strength = cfg.m_kmac_app_agent_cfg[AppOtbn].vif.req_data_if.h_data[13:11];
-              dynamic_hash_mode = cfg.m_kmac_app_agent_cfg[AppOtbn].vif.req_data_if.h_data[10:9];
+              strength = cfg.m_kmac_app_agent_cfg[AppAcc].vif.req_data_if.h_data[13:11];
+              dynamic_hash_mode = cfg.m_kmac_app_agent_cfg[AppAcc].vif.req_data_if.h_data[10:9];
               max_digest_words = kmac_pkg::compute_max_digest(strength);
               //compute_max_digest(strength, max_digest_words);
             end
@@ -415,7 +415,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.req_data_if.valid ||
                      cfg.m_kmac_app_agent_cfg[AppLc].vif.req_data_if.valid ||
                      cfg.m_kmac_app_agent_cfg[AppRom].vif.req_data_if.valid ||
-                     cfg.m_kmac_app_agent_cfg[AppOtbn].vif.req_data_if.valid)) begin
+                     cfg.m_kmac_app_agent_cfg[AppAcc].vif.req_data_if.valid)) begin
                   app_st = StAppCfg;
                   app_fsm_active = 1;
                 end else if (checked_kmac_cmd == CmdStart) begin
@@ -426,7 +426,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 if (app_mode == AppKeymgr &&
                     !cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid) begin
                   app_st = StKeyMgrErrKeyNotValid;
-                end else if (app_mode == AppOtbn) begin
+                end else if (app_mode == AppAcc) begin
                   app_st = StAppDynamicCfg;
                 end else begin
                   app_st = StAppMsg;
@@ -547,13 +547,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     push_pull_agent_pkg::push_pull_item#(
       .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)) kmac_app_block_item;
 
-    bit otbn_mode_skip = 0;
+    bit acc_mode_skip = 0;
 
     forever begin
         wait(!cfg.under_reset);
         @(posedge in_kmac_app);
         `uvm_info(`gfn, $sformatf("req app_mode: %0s", app_mode.name()), UVM_HIGH)
-        otbn_mode_skip = (app_mode == AppOtbn);
+        acc_mode_skip = (app_mode == AppAcc);
         `DV_SPINWAIT_EXIT(
             forever begin
               kmac_app_req_fifo[app_mode].get(kmac_app_block_item);
@@ -574,8 +574,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     in_keccak_rounds);
               end
 
-              // first word in AppOtbn is configuration not msg
-              if (!otbn_mode_skip) begin
+              // first word in AppAcc is configuration not msg
+              if (!acc_mode_skip) begin
                 while (kmac_app_block_strb > 0) begin
                   if (kmac_app_block_strb[0]) begin
                     kmac_app_msg.push_back(kmac_app_block_data[7:0]);
@@ -584,7 +584,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   kmac_app_block_strb = kmac_app_block_strb >> 1;
                 end
               end else begin
-                otbn_mode_skip = 0;
+                acc_mode_skip = 0;
               end
 
               `uvm_info(`gfn, $sformatf("kmac_app_msg: %0p", kmac_app_msg), UVM_HIGH)
@@ -670,20 +670,20 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     if (do_check_digest) check_digest();
                   end
 
-                  // Check if in OTBN mode a new rsp is captured before hold is asserted low
+                  // Check if in ACC mode a new rsp is captured before hold is asserted low
                   // When hold == 0 transaction is over
-                  if (app_mode == AppOtbn) begin
+                  if (app_mode == AppAcc) begin
                     fork
                       begin
-                        @(posedge cfg.m_kmac_app_agent_cfg[AppOtbn].vif.rsp_done);
+                        @(posedge cfg.m_kmac_app_agent_cfg[AppAcc].vif.rsp_done);
                       end
                       begin
-                        wait (cfg.m_kmac_app_agent_cfg[AppOtbn].vif.hold == 0);
+                        wait (cfg.m_kmac_app_agent_cfg[AppAcc].vif.hold == 0);
                       end
                     join_any
                     disable fork;
                   end
-                end while (cfg.m_kmac_app_agent_cfg[AppOtbn].vif.hold == 1); // Non-OTBN modes are always 1'b0 and will run once
+                end while (cfg.m_kmac_app_agent_cfg[AppAcc].vif.hold == 1); // Non-ACC modes are always 1'b0 and will run once
 
                 in_kmac_app = 0;
                 sha3_squeeze = 0;
@@ -1519,8 +1519,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // Array to hold the expected digest calculated by DPI model
     bit [7:0] dpi_digest[];
 
-    // Otbn mode flag
-    bit otbn_mode;
+    // Acc mode flag
+    bit acc_mode;
 
     // Length of produced dpi digest
     int loop_len;
@@ -1550,7 +1550,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     int key_word_len, key_byte_len;
 
     // Actual hash_mode based on interface or SW register
-    sha3_pkg::sha3_mode_e actual_hash_mode = in_kmac_app ? ((app_mode == AppOtbn) ? dynamic_hash_mode : sha3_pkg::CShake ) : hash_mode;
+    sha3_pkg::sha3_mode_e actual_hash_mode = in_kmac_app ? ((app_mode == AppAcc) ? dynamic_hash_mode : sha3_pkg::CShake ) : hash_mode;
 
     bit use_keymgr_keys = sideload_en || (in_kmac_app && app_mode == AppKeymgr);
 
@@ -1567,8 +1567,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // - the expected output length in bytes
     // - if we are using the xof version of kmac
     if (in_kmac_app) begin
-      // KMAC_APP output will always be 384 bits (48 bytes) unless AppOtbn
-      if (app_mode == AppOtbn) begin
+      // KMAC_APP output will always be 384 bits (48 bytes) unless AppAcc
+      if (app_mode == AppAcc) begin
         output_len_bytes = 32 * digest_word_ctr;
       end else begin
         output_len_bytes = AppDigestW / 8;
@@ -1761,9 +1761,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     /////////////////////////////////////////
     // Compare actual and expected digests //
     /////////////////////////////////////////
-    otbn_mode = (app_mode == AppOtbn && in_kmac_app);
-    loop_len  = otbn_mode ? 32 : output_len_bytes;
-    base_idx  = otbn_mode ? (32 * (digest_word_ctr -1)) : 0;
+    acc_mode = (app_mode == AppAcc && in_kmac_app);
+    loop_len  = acc_mode ? 32 : output_len_bytes;
+    base_idx  = acc_mode ? (32 * (digest_word_ctr -1)) : 0;
 
     for (int i = 0; i < loop_len; i++) begin
       dpi_idx = base_idx + i;

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
+load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_acc", "pentest_sca")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
@@ -109,21 +109,21 @@ pentest_fi(
     test_vectors = ROM_FI_TESTVECTOR_TARGETS,
 )
 
-OTBN_FI_TESTVECTOR_TARGETS = [
-    "//sw/host/penetrationtests/testvectors/data:fi_otbn",
+ACC_FI_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_acc",
 ]
 
-OTBN_FI_TESTVECTOR_ARGS = " ".join([
-    "--fi-otbn-json=\"$(rootpath {})\"".format(target)
-    for target in OTBN_FI_TESTVECTOR_TARGETS
+ACC_FI_TESTVECTOR_ARGS = " ".join([
+    "--fi-acc-json=\"$(rootpath {})\"".format(target)
+    for target in ACC_FI_TESTVECTOR_TARGETS
 ])
 
-pentest_fi_otbn(
-    name = "fi_otbn",
+pentest_fi_acc(
+    name = "fi_acc",
     tags = [],
-    test_args = OTBN_FI_TESTVECTOR_ARGS,
-    test_harness = "//sw/host/tests/penetrationtests/fi_otbn:harness",
-    test_vectors = OTBN_FI_TESTVECTOR_TARGETS,
+    test_args = ACC_FI_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_acc:harness",
+    test_vectors = ACC_FI_TESTVECTOR_TARGETS,
 )
 
 AES_SCA_TESTVECTOR_TARGETS = [
@@ -211,21 +211,21 @@ pentest_sca(
     test_vectors = KMAC_SCA_TESTVECTOR_TARGETS,
 )
 
-OTBN_SCA_TESTVECTOR_TARGETS = [
-    "//sw/host/penetrationtests/testvectors/data:sca_otbn",
+ACC_SCA_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_acc",
 ]
 
-OTBN_SCA_TESTVECTOR_ARGS = " ".join([
-    "--sca-otbn-json=\"$(rootpath {})\"".format(target)
-    for target in OTBN_SCA_TESTVECTOR_TARGETS
+ACC_SCA_TESTVECTOR_ARGS = " ".join([
+    "--sca-acc-json=\"$(rootpath {})\"".format(target)
+    for target in ACC_SCA_TESTVECTOR_TARGETS
 ])
 
 pentest_sca(
-    name = "sca_otbn",
+    name = "sca_acc",
     tags = [],
-    test_args = OTBN_SCA_TESTVECTOR_ARGS,
-    test_harness = "//sw/host/tests/penetrationtests/sca_otbn:harness",
-    test_vectors = OTBN_SCA_TESTVECTOR_TARGETS,
+    test_args = ACC_SCA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_acc:harness",
+    test_vectors = ACC_SCA_TESTVECTOR_TARGETS,
 )
 
 SHA3_SCA_TESTVECTOR_TARGETS = [
@@ -400,10 +400,10 @@ pentest_sca(
 )
 
 pentest_sca(
-    name = "sca_otbn_python_test",
+    name = "sca_acc_python_test",
     tags = [],
     test_args = "",
-    test_harness = "//sw/host/penetrationtests/python/sca:sca_otbn_python_test",
+    test_harness = "//sw/host/penetrationtests/python/sca:sca_acc_python_test",
     test_vectors = [],
 )
 
@@ -431,11 +431,11 @@ pentest_fi(
     test_vectors = [],
 )
 
-pentest_fi_otbn(
-    name = "fi_otbn_python_test",
+pentest_fi_acc(
+    name = "fi_acc_python_test",
     tags = [],
     test_args = "",
-    test_harness = "//sw/host/penetrationtests/python/fi:fi_otbn_python_test",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_acc_python_test",
     test_vectors = [],
 )
 

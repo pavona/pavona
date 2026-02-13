@@ -29,7 +29,7 @@ interface kmac_app_intf (input clk, input rst_n);
   wire hold_tmp;
   logic next_d;
   logic hold_d;
-  logic otbn_start_d, otbn_start;
+  logic acc_start_d, acc_start;
   logic [3:0] per_ctr_d, per_ctr;
   logic [3:0] max_per;
 
@@ -42,9 +42,9 @@ interface kmac_app_intf (input clk, input rst_n);
     StStart,
     StWait,
     StNext
-  } otbn_state_e;
+  } acc_state_e;
 
-  otbn_state_e otbn_state_d, otbn_state;
+  acc_state_e acc_state_d, acc_state;
 
   // all the host pins are handled by push_pull driver, only include clk and rst here
   clocking host_cb @(posedge clk);
@@ -85,12 +85,12 @@ interface kmac_app_intf (input clk, input rst_n);
 
   // The following fsm is temporary for driving next/hold in the interface
   // It should be removed once the restructuring of the sequencer/driver is complete
-  // Hold is asserted 1'b1 at the start of the OTBN app req and returns to 1'b0 after last rsp
+  // Hold is asserted 1'b1 at the start of the ACC app req and returns to 1'b0 after last rsp
   // Hold is asserted 1'b0 on the cycle immediately following last rsp_done
   // Combinational decode of the state
   always_comb begin
-    otbn_state_d = otbn_state;
-    otbn_start_d = otbn_start;
+    acc_state_d = acc_state;
+    acc_start_d = acc_start;
 
     // Set next/hold default
     hold_d = 1'b0;
@@ -99,12 +99,12 @@ interface kmac_app_intf (input clk, input rst_n);
     // Default the counters
     per_ctr_d = '0;
 
-    unique case (otbn_state)
+    unique case (acc_state)
 
       // Set hold at start of req
       StIdle: begin
-        if (otbn_start) begin
-          otbn_state_d = StWait;
+        if (acc_start) begin
+          acc_state_d = StWait;
           hold_d    = 1'b1;
         end
       end
@@ -112,11 +112,11 @@ interface kmac_app_intf (input clk, input rst_n);
       // Wait until first rsp to determine if more are needed
       // Counters are constrained in kmac_app_host_seq
       StWait: begin
-        if (otbn_start) begin
+        if (acc_start) begin
           hold_d    = 1'b1;
           per_ctr_d = per_ctr;
           if (rsp_done == 1'b1) begin
-            otbn_state_d = StNext;
+            acc_state_d = StNext;
             per_ctr_d = per_ctr + 1'b1;
             if ((per_ctr + 1) < max_per) begin
               next_d = 1'b1;
@@ -130,18 +130,18 @@ interface kmac_app_intf (input clk, input rst_n);
       // Next should only be high for a single clock cycle
       // If response has reached total word len end FSM cycle
       StNext: begin
-        if (otbn_start) begin
+        if (acc_start) begin
           hold_d    = 1'b1;
           next_d    = 1'b0;
           per_ctr_d = per_ctr;
           if (per_ctr == max_per) begin
-            otbn_state_d = StIdle;
-            otbn_start_d = 1'b0;
+            acc_state_d = StIdle;
+            acc_start_d = 1'b0;
             per_ctr_d    = '0;
             hold_d       = 1'b0;
           end else begin
             if (rsp_done == 1'b0) begin
-              otbn_state_d = StWait;
+              acc_state_d = StWait;
             end
           end
         end
@@ -155,17 +155,17 @@ interface kmac_app_intf (input clk, input rst_n);
   // Register the state
   always_ff @(posedge clk) begin
     if (!rst_n) begin
-      otbn_state <= StIdle;
+      acc_state <= StIdle;
       hold       <= 1'b0;
       next       <= 1'b0;
       per_ctr    <= 1'b0;
-      otbn_start <= 1'b0;
+      acc_start <= 1'b0;
     end else begin
-      otbn_state <= otbn_state_d;
+      acc_state <= acc_state_d;
       hold       <= hold_d;
       next       <= next_d;
       per_ctr    <= per_ctr_d;
-      otbn_start <= otbn_start_d;
+      acc_start <= acc_start_d;
     end
   end
 

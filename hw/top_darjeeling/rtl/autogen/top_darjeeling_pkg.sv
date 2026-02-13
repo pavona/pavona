@@ -250,14 +250,14 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_KMAC_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for otbn in top darjeeling.
+   * Peripheral base address for acc in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_OTBN_BASE_ADDR = 32'h22100000;
+  parameter int unsigned TOP_DARJEELING_ACC_BASE_ADDR = 32'h22100000;
 
   /**
-   * Peripheral size in bytes for otbn in top darjeeling.
+   * Peripheral size in bytes for acc in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_OTBN_SIZE_BYTES = 32'h20000;
+  parameter int unsigned TOP_DARJEELING_ACC_SIZE_BYTES = 32'h20000;
 
   /**
    * Peripheral base address for keymgr_dpe in top darjeeling.
@@ -572,7 +572,7 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralAes = 17,
     TopDarjeelingAlertPeripheralHmac = 18,
     TopDarjeelingAlertPeripheralKmac = 19,
-    TopDarjeelingAlertPeripheralOtbn = 20,
+    TopDarjeelingAlertPeripheralAcc = 20,
     TopDarjeelingAlertPeripheralKeymgrDpe = 21,
     TopDarjeelingAlertPeripheralCsrng = 22,
     TopDarjeelingAlertPeripheralEntropySrc = 23,
@@ -632,8 +632,8 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdHmacFatalFault = 27,
     TopDarjeelingAlertIdKmacRecovOperationErr = 28,
     TopDarjeelingAlertIdKmacFatalFaultErr = 29,
-    TopDarjeelingAlertIdOtbnFatal = 30,
-    TopDarjeelingAlertIdOtbnRecov = 31,
+    TopDarjeelingAlertIdAccFatal = 30,
+    TopDarjeelingAlertIdAccRecov = 31,
     TopDarjeelingAlertIdKeymgrDpeRecovOperationErr = 32,
     TopDarjeelingAlertIdKeymgrDpeFatalFaultErr = 33,
     TopDarjeelingAlertIdCsrngRecovAlert = 34,
@@ -767,7 +767,7 @@ package top_darjeeling_pkg;
     TopDarjeelingPlicIrqIdKmacKmacDone = 80,
     TopDarjeelingPlicIrqIdKmacFifoEmpty = 81,
     TopDarjeelingPlicIrqIdKmacKmacErr = 82,
-    TopDarjeelingPlicIrqIdOtbnDone = 83,
+    TopDarjeelingPlicIrqIdAccDone = 83,
     TopDarjeelingPlicIrqIdKeymgrDpeOpDone = 84,
     TopDarjeelingPlicIrqIdCsrngCsCmdReqDone = 85,
     TopDarjeelingPlicIrqIdCsrngCsEntropyReq = 86,
@@ -1060,7 +1060,7 @@ package top_darjeeling_pkg;
     PeripheralMbxJtag,
     PeripheralMbxPcie0,
     PeripheralMbxPcie1,
-    PeripheralOtbn,
+    PeripheralAcc,
     PeripheralOtpCtrl,
     PeripheralOtpMacro,
     PeripheralPinmuxAon,

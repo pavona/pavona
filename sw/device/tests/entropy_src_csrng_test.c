@@ -4,30 +4,30 @@
 
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_plic.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/otbn_randomness_impl.h"
+#include "sw/device/tests/acc_randomness_impl.h"
 
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_rv_plic_t plic;
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -72,7 +72,7 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
-  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 }
 
@@ -233,7 +233,7 @@ static void edn_configure(const dif_edn_t *edn, irq_flag_id_t irq_flag_id,
 }
 
 /**
- * Initializes EDN instances using the `SW_CMD_REQ` interface and runs the OTBN
+ * Initializes EDN instances using the `SW_CMD_REQ` interface and runs the ACC
  * randomness test to verify the entropy delivered by EDN0 and EDN1.
  *
  * @param seed_material Seed material used in EDN instantiate and reseed
@@ -251,17 +251,17 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   plic_interrupts_enable();
 
   // The EDN0 is connected to other peripherals that regularly request entropy
-  // so we keep generating entropy on the EDN0 to make sure that the OTBN
-  // gets enough to finish the test. The EDN1 is only connected to the OTBN
+  // so we keep generating entropy on the EDN0 to make sure that the ACC
+  // gets enough to finish the test. The EDN1 is only connected to the ACC
   // so we generate exactly the amount of entropy necessary for the test and not
   // more otherwise the Generate command will
   // not be fully executed, causing a hang in the `irq_block_wait()` calls
-  // following the end of the OTBN test. The OTBN test reads `RND` 5 times
+  // following the end of the ACC test. The ACC test reads `RND` 5 times
   // and each read consumes 256b of entropy. The EDN1 generates entropy per
   // blocks of 128b so we need to generate 10 blocks.
   const size_t kEdnBlockSizeBits = 128;     // Each EDN block contains 128b.
-  const size_t kOtbnRequestSizeBits = 256;  // Each OTBN request requires 256b.
-  const size_t kOtbnTestRequestCount =
+  const size_t kAccRequestSizeBits = 256;  // Each ACC request requires 256b.
+  const size_t kAccTestRequestCount =
       5;  // The number of `RND` reads in the randomness test.
 
   // Number of blocks generated on the EDN1.
@@ -274,8 +274,8 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   edn_ready_wait(&edn1);
   CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
 
-  LOG_INFO("OTBN:START");
-  otbn_randomness_test_start(&otbn, /*iters=*/0);
+  LOG_INFO("ACC:START");
+  acc_randomness_test_start(&acc, /*iters=*/0);
 
   bool busy = true;
   while (busy) {
@@ -288,20 +288,20 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
     if (irq_flags[kTestIrqFlagIdEdn1CmdDone]) {
       edn1_generated_blocks++;
       if (edn1_generated_blocks <
-          kOtbnTestRequestCount * kOtbnRequestSizeBits / kEdnBlockSizeBits) {
+          kAccTestRequestCount * kAccRequestSizeBits / kEdnBlockSizeBits) {
         irq_flags[kTestIrqFlagIdEdn1CmdDone] = false;
         // Warning: `dif_edn_generate_start` takes a length in words (32b).
         CHECK_DIF_OK(dif_edn_generate_start(&edn1, kEdnBlockSizeBits / 32));
       }
     }
-    // Check if OTBN is still running.
-    dif_otbn_status_t status;
-    CHECK_DIF_OK(dif_otbn_get_status(&otbn, &status));
-    busy = status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked;
+    // Check if ACC is still running.
+    dif_acc_status_t status;
+    CHECK_DIF_OK(dif_acc_get_status(&acc, &status));
+    busy = status != kDifAccStatusIdle && status != kDifAccStatusLocked;
   }
 
-  CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
-  LOG_INFO("OTBN:END");
+  CHECK(acc_randomness_test_end(&acc, /*skip_acc_done_check=*/false));
+  LOG_INFO("ACC:END");
 
   // See comment above regarding generate command length and potential test
   // locking issues for EDN1.

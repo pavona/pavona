@@ -39,7 +39,7 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/lib/stack_utilization.h"
@@ -326,10 +326,10 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   *flash_exec = 0;
   HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(manifest, &boot_data));
 
-  // Load OTBN boot services app.
+  // Load ACC boot services app.
   //
   // This will be reused by later boot stages.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
+  HARDENED_RETURN_IF_ERROR(acc_boot_app_load());
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 1);
 
   // Load secure boot keys from OTP into RAM.

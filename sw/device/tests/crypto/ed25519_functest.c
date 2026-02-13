@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -121,9 +121,9 @@ bool test_main(void) {
   hardened_bool_t verificationResult;
   status_t err = sign_then_verify_test(&verificationResult);
   if (!status_ok(err)) {
-    // If there was an error, print the OTBN error bits and instruction count.
-    LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
-    LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
+    // If there was an error, print the ACC error bits and instruction count.
+    LOG_INFO("ACC error bits: 0x%08x", acc_err_bits_get());
+    LOG_INFO("ACC instruction count: 0x%08x", acc_instruction_count_get());
     // Print the error.
     CHECK_STATUS_OK(err);
     return false;

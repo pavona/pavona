@@ -45,7 +45,7 @@ typedef enum rsa_signature_padding {
  *
  * The key exponent must be F4=65537; no other exponents are supported.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param private_key RSA private key.
  * @param message_digest Message digest to sign.
@@ -61,7 +61,7 @@ status_t rsa_signature_generate_2048_start(
 /**
  * Waits for an RSA-2048 signature generation to complete.
  *
- * Should be invoked only after `rsa_2048_sign_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_2048_sign_start`. Blocks until ACC is
  * done processing.
  *
  * @param[out] signature Generated signature.
@@ -73,7 +73,7 @@ status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature);
 /**
  * Starts verifying an RSA-2048 signature; returns immediately.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key RSA public key.
  * @param signature Signature to verify.
@@ -87,7 +87,7 @@ status_t rsa_signature_verify_2048_start(
  * Waits for a RSA-2048 signature verification to complete.
  *
  * Should be invoked only after a `rsa_signature_verify_2048_start` call.
- * Blocks until OTBN is done processing.
+ * Blocks until ACC is done processing.
  *
  * The caller must check the `result` parameter to see if the signature passed
  * or failed verification; the return value of this function will always return
@@ -112,7 +112,7 @@ status_t rsa_signature_verify_2048_finalize(
  *
  * The key exponent must be F4=65537; no other exponents are supported.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param private_key RSA private key.
  * @param message_digest Message digest to sign.
@@ -129,7 +129,7 @@ status_t rsa_signature_generate_3072_start(
  * Waits for a RSA-3072 signature verification to complete.
  *
  * Should be invoked only after a `rsa_signature_verify_3072_start` call.
- * Blocks until OTBN is done processing.
+ * Blocks until ACC is done processing.
  *
  * The caller must check the `result` parameter to see if the signature passed
  * or failed verification; the return value of this function will always return
@@ -152,7 +152,7 @@ status_t rsa_signature_verify_3072_finalize(
 /**
  * Waits for an RSA-3072 signature generation to complete.
  *
- * Should be invoked only after `rsa_3072_sign_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_3072_sign_start`. Blocks until ACC is
  * done processing.
  *
  * @param[out] signature Generated signature.
@@ -164,7 +164,7 @@ status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature);
 /**
  * Starts verifying an RSA-3072 signature; returns immediately.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key RSA public key.
  * @param signature Signature to verify.
@@ -179,7 +179,7 @@ status_t rsa_signature_verify_3072_start(
  *
  * The key exponent must be F4=65537; no other exponents are supported.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param private_key RSA private key.
  * @param message_digest Message digest to sign.
@@ -195,7 +195,7 @@ status_t rsa_signature_generate_4096_start(
 /**
  * Waits for an RSA-4096 signature generation to complete.
  *
- * Should be invoked only after `rsa_4096_sign_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_4096_sign_start`. Blocks until ACC is
  * done processing.
  *
  * @param[out] signature Generated signature.
@@ -207,7 +207,7 @@ status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature);
 /**
  * Starts verifying an RSA-4096 signature; returns immediately.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key RSA public key.
  * @param signature Signature to verify.
@@ -221,7 +221,7 @@ status_t rsa_signature_verify_4096_start(
  * Waits for a RSA-4096 signature verification to complete.
  *
  * Should be invoked only after a `rsa_signature_verify_4096_start` call.
- * Blocks until OTBN is done processing.
+ * Blocks until ACC is done processing.
  *
  * The caller must check the `result` parameter to see if the signature passed
  * or failed verification; the return value of this function will always return

@@ -11,12 +11,12 @@
 
             - Have each EDN instance issue an instantiate, reseed and generate command to CSRNG.
             - On each command done, verify the reception of edn_cmd_req_done interrupt.
-            - Run OTBN randomness test to test the output from EDN0 and EDN1.
+            - Run ACC randomness test to test the output from EDN0 and EDN1.
             - Check the data returned to EDN via connectivity assertion checks.
 
             Notes for silicon targets:
             - In silicon, the connectivity cannot be checked using assertions.
-              However, checking that the OTBN randomness test finishes allows to quickly assess if both EDNs deliver any entropy which is very fundamental.
+              However, checking that the ACC randomness test finishes allows to quickly assess if both EDNs deliver any entropy which is very fundamental.
             '''
       features: [
         "CSRNG.INTERFACE.HARDWARE0",

@@ -89,7 +89,7 @@
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_otbn: main
+          clk_main_acc: main
         }
       }
       {
@@ -392,7 +392,7 @@
             rv_plic
             aes
             hmac
-            otbn
+            acc
             keymgr_dpe
             csrng
             entropy_src
@@ -1299,9 +1299,9 @@
           index: -1
         }
         {
-          name: otbn_otp_key
-          desc: Key derivation interface for OTBN scrambling devices.
-          struct: otbn_otp_key
+          name: acc_otp_key
+          desc: Key derivation interface for ACC scrambling devices.
+          struct: acc_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
           act: rsp
@@ -1309,7 +1309,7 @@
           default: "'0"
           inst_name: otp_ctrl
           end_idx: -1
-          top_signame: otp_ctrl_otbn_otp_key
+          top_signame: otp_ctrl_acc_otp_key
           index: -1
         }
         {
@@ -2100,7 +2100,7 @@
           width: 2
           default: lc_ctrl_pkg::On
           inst_name: lc_ctrl
-          top_signame: otbn_lc_rma_ack
+          top_signame: acc_lc_rma_ack
           index: -1
         }
         {
@@ -5047,7 +5047,7 @@
                   kmac_pkg::AppCfgLcCtrl,
                   kmac_pkg::AppCfgRomCtrl,
                   kmac_pkg::AppCfgRomCtrl,
-                  kmac_pkg::AppCfgOTBN}
+                  kmac_pkg::AppCfgACC}
           '''
       }
       clock_srcs:
@@ -5154,7 +5154,7 @@
                     kmac_pkg::AppCfgLcCtrl,
                     kmac_pkg::AppCfgRomCtrl,
                     kmac_pkg::AppCfgRomCtrl,
-                    kmac_pkg::AppCfgOTBN}
+                    kmac_pkg::AppCfgACC}
             '''
           local: "false"
           expose: "true"
@@ -5277,11 +5277,11 @@
       ]
     }
     {
-      name: otbn
-      type: otbn
+      name: acc
+      type: acc
       param_decl:
       {
-        OtbnPQCEn: "0"
+        AccPQCEn: "0"
       }
       clock_srcs:
       {
@@ -5322,7 +5322,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_main_otbn
+        clk_i: clkmgr_aon_clocks.clk_main_acc
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
         clk_otp_i: clkmgr_aon_clocks.clk_io_secure
       }
@@ -5331,21 +5331,21 @@
       [
         {
           name: Stub
-          desc: Stub out the core of Otbn logic
+          desc: Stub out the core of Acc logic
           type: bit
           default: "0"
           local: "false"
           expose: "true"
-          name_top: OtbnStub
+          name_top: AccStub
         }
         {
           name: RegFile
-          desc: Selection of the register file implementation. See otbn_pkg.sv.
-          type: otbn_pkg::regfile_e
-          default: otbn_pkg::RegFileFF
+          desc: Selection of the register file implementation. See acc_pkg.sv.
+          type: acc_pkg::regfile_e
+          default: acc_pkg::RegFileFF
           local: "false"
           expose: "true"
-          name_top: OtbnRegFile
+          name_top: AccRegFile
         }
         {
           name: SecMuteUrnd
@@ -5359,7 +5359,7 @@
           default: "0"
           local: "false"
           expose: "true"
-          name_top: SecOtbnMuteUrnd
+          name_top: SecAccMuteUrnd
         }
         {
           name: SecSkipUrndReseedAtStart
@@ -5373,30 +5373,30 @@
           default: "0"
           local: "false"
           expose: "true"
-          name_top: SecOtbnSkipUrndReseedAtStart
+          name_top: SecAccSkipUrndReseedAtStart
         }
         {
-          name: OtbnPQCEn
+          name: AccPQCEn
           desc: If enabled (1), vector ISA extension for PQC is enabled.
           type: bit
           default: "0"
           local: "false"
           expose: "true"
-          name_top: OtbnOtbnPQCEn
+          name_top: AccAccPQCEn
         }
       ]
       inter_signal_list:
       [
         {
-          name: otbn_otp_key
-          struct: otbn_otp_key
+          name: acc_otp_key
+          struct: acc_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
           act: req
           width: 1
           default: "'0"
-          inst_name: otbn
-          top_signame: otp_ctrl_otbn_otp_key
+          inst_name: acc
+          top_signame: otp_ctrl_acc_otp_key
           index: -1
         }
         {
@@ -5406,7 +5406,7 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           top_signame: edn1_edn
           index: 0
@@ -5418,7 +5418,7 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           top_signame: edn0_edn
           index: 5
@@ -5430,7 +5430,7 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           top_signame: kmac_app
           index: 4
@@ -5442,7 +5442,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           top_signame: clkmgr_aon_idle
           index: 3
@@ -5454,10 +5454,10 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           external: true
-          top_signame: otbn_imem_ram_1p_cfg
+          top_signame: acc_imem_ram_1p_cfg
           conn_type: false
           index: -1
         }
@@ -5468,10 +5468,10 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           external: true
-          top_signame: otbn_dmem_ram_1p_cfg
+          top_signame: acc_dmem_ram_1p_cfg
           conn_type: false
           index: -1
         }
@@ -5482,10 +5482,10 @@
           type: uni
           act: req
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           external: true
-          top_signame: otbn_imem_ram_1p_cfg_rsp
+          top_signame: acc_imem_ram_1p_cfg_rsp
           conn_type: false
           index: -1
         }
@@ -5496,10 +5496,10 @@
           type: uni
           act: req
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           external: true
-          top_signame: otbn_dmem_ram_1p_cfg_rsp
+          top_signame: acc_dmem_ram_1p_cfg_rsp
           conn_type: false
           index: -1
         }
@@ -5511,7 +5511,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
-          inst_name: otbn
+          inst_name: acc
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
         }
@@ -5523,7 +5523,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
-          inst_name: otbn
+          inst_name: acc
           top_signame: lc_ctrl_lc_flash_rma_req
           index: -1
         }
@@ -5535,22 +5535,22 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
-          inst_name: otbn
+          inst_name: acc
           end_idx: -1
           top_type: broadcast
-          top_signame: otbn_lc_rma_ack
+          top_signame: acc_lc_rma_ack
           index: -1
         }
         {
           name: keymgr_key
-          struct: otbn_key_req
+          struct: acc_key_req
           package: keymgr_pkg
           type: uni
           act: rcv
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
-          top_signame: keymgr_dpe_otbn_key
+          top_signame: keymgr_dpe_acc_key
           index: -1
         }
         {
@@ -5560,10 +5560,10 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: otbn
+          inst_name: acc
           default: ""
           end_idx: -1
-          top_signame: otbn_tl
+          top_signame: acc_tl
           index: -1
         }
       ]
@@ -5664,8 +5664,8 @@
           index: -1
         }
         {
-          name: otbn_key
-          struct: otbn_key_req
+          name: acc_key
+          struct: acc_key_req
           package: keymgr_pkg
           type: uni
           act: req
@@ -5674,7 +5674,7 @@
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: keymgr_dpe_otbn_key
+          top_signame: keymgr_dpe_acc_key
           index: -1
         }
         {
@@ -11084,9 +11084,9 @@
       ]
       lc_ctrl.lc_flash_rma_req:
       [
-        otbn.lc_rma_req
+        acc.lc_rma_req
       ]
-      otbn.lc_rma_ack:
+      acc.lc_rma_ack:
       [
         lc_ctrl.lc_flash_rma_ack
       ]
@@ -11097,16 +11097,16 @@
         kmac.entropy
         alert_handler.edn
         aes.edn
-        otbn.edn_urnd
+        acc.edn_urnd
         rv_core_ibex.edn
       ]
       edn1.edn:
       [
-        otbn.edn_rnd
+        acc.edn_rnd
       ]
-      otp_ctrl.otbn_otp_key:
+      otp_ctrl.acc_otp_key:
       [
-        otbn.otbn_otp_key
+        acc.acc_otp_key
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -11120,9 +11120,9 @@
       [
         kmac.keymgr_key
       ]
-      keymgr_dpe.otbn_key:
+      keymgr_dpe.acc_key:
       [
-        otbn.keymgr_key
+        acc.keymgr_key
       ]
       kmac.app:
       [
@@ -11130,7 +11130,7 @@
         lc_ctrl.kmac_data
         rom_ctrl0.kmac_data
         rom_ctrl1.kmac_data
-        otbn.kmac_data
+        acc.kmac_data
       ]
       kmac.en_masking:
       [
@@ -11141,7 +11141,7 @@
         aes.idle
         hmac.idle
         kmac.idle
-        otbn.idle
+        acc.idle
       ]
       otp_ctrl.otp_lc_data:
       [
@@ -11205,7 +11205,7 @@
       [
         aes.lc_escalate_en
         kmac.lc_escalate_en
-        otbn.lc_escalate_en
+        acc.lc_escalate_en
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_ret_aon.lc_escalate_en
@@ -11382,9 +11382,9 @@
       [
         main.tl_rv_plic
       ]
-      otbn.tl:
+      acc.tl:
       [
-        main.tl_otbn
+        main.tl_acc
       ]
       keymgr_dpe.tl:
       [
@@ -11692,10 +11692,10 @@
       sram_ctrl_main.cfg_rsp: sram_ctrl_main_ram_1p_cfg_rsp
       sram_ctrl_mbox.cfg: sram_ctrl_mbox_ram_1p_cfg
       sram_ctrl_mbox.cfg_rsp: sram_ctrl_mbox_ram_1p_cfg_rsp
-      otbn.ram_cfg_imem: otbn_imem_ram_1p_cfg
-      otbn.ram_cfg_rsp_imem: otbn_imem_ram_1p_cfg_rsp
-      otbn.ram_cfg_dmem: otbn_dmem_ram_1p_cfg
-      otbn.ram_cfg_rsp_dmem: otbn_dmem_ram_1p_cfg_rsp
+      acc.ram_cfg_imem: acc_imem_ram_1p_cfg
+      acc.ram_cfg_rsp_imem: acc_imem_ram_1p_cfg_rsp
+      acc.ram_cfg_dmem: acc_dmem_ram_1p_cfg
+      acc.ram_cfg_rsp_dmem: acc_dmem_ram_1p_cfg_rsp
       rv_core_ibex.ram_cfg_icache_tag: rv_core_ibex_icache_tag_ram_1p_cfg
       rv_core_ibex.ram_cfg_rsp_icache_tag: rv_core_ibex_icache_tag_ram_1p_cfg_rsp
       rv_core_ibex.ram_cfg_icache_data: rv_core_ibex_icache_data_ram_1p_cfg
@@ -11842,7 +11842,7 @@
           edn1
           hmac
           rv_plic
-          otbn
+          acc
           keymgr_dpe
           kmac
           sram_ctrl_main.regs
@@ -11880,7 +11880,7 @@
           edn1
           hmac
           rv_plic
-          otbn
+          acc
           keymgr_dpe
           kmac
           sram_ctrl_main.regs
@@ -11907,7 +11907,7 @@
           sram_ctrl_mbox.ram
           aes
           hmac
-          otbn
+          acc
           keymgr_dpe
           kmac
           soc_proxy.ctn
@@ -12369,13 +12369,13 @@
           pipeline: true
         }
         {
-          name: otbn
+          name: acc
           type: device
           clock: clk_main_i
           reset: rst_main_ni
           req_fifo_pass: false
           rsp_fifo_pass: false
-          inst_type: otbn
+          inst_type: acc
           addr_range:
           [
             {
@@ -13301,7 +13301,7 @@
           index: -1
         }
         {
-          name: tl_otbn
+          name: tl_acc
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -13309,7 +13309,7 @@
           inst_name: main
           width: 1
           default: ""
-          top_signame: otbn_tl
+          top_signame: acc_tl
           index: -1
         }
         {
@@ -17784,25 +17784,25 @@
       lpg_idx: 16
     }
     {
-      name: otbn_fatal
+      name: acc_fatal
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: otbn
-      desc: otbn fatal alert
-      lpg_name: otbn_trans_lc_0
+      module_name: acc
+      desc: acc fatal alert
+      lpg_name: acc_trans_lc_0
       lpg_idx: 17
     }
     {
-      name: otbn_recov
+      name: acc_recov
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: otbn
-      desc: otbn recov alert
-      lpg_name: otbn_trans_lc_0
+      module_name: acc
+      desc: acc recov alert
+      lpg_name: acc_trans_lc_0
       lpg_idx: 17
     }
     {
@@ -18917,11 +18917,11 @@
       outgoing: false
     }
     {
-      name: otbn_done
+      name: acc_done
       width: 1
       type: interrupt
-      module_name: otbn
-      desc: otbn done interrupt
+      module_name: acc
+      desc: acc done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -19528,7 +19528,7 @@
     aes
     hmac
     kmac
-    otbn
+    acc
     keymgr_dpe
     csrng
     entropy_src
@@ -19766,7 +19766,7 @@
         alert_handler[29]: fatal_fault_err
       ]
     }
-    module_otbn:
+    module_acc:
     {
       tx_expr: alert_tx[31:30]
       rx_expr: alert_rx[31:30]
@@ -20053,7 +20053,7 @@
     aon_timer_aon
     hmac
     kmac
-    otbn
+    acc
     keymgr_dpe
     csrng
     entropy_src
@@ -20414,7 +20414,7 @@
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_otbn: main
+          clk_main_acc: main
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_aes
@@ -20439,7 +20439,7 @@
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_otbn: main
+          clk_main_acc: main
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_hmac
@@ -20464,7 +20464,7 @@
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_otbn: main
+          clk_main_acc: main
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_kmac
@@ -20477,7 +20477,7 @@
       }
     }
     {
-      name: otbn_trans_lc_0
+      name: acc_trans_lc_0
       clock_group:
       {
         name: trans
@@ -20489,10 +20489,10 @@
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_otbn: main
+          clk_main_acc: main
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_main_otbn
+      clock_connection: clkmgr_aon_clocks.clk_main_acc
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21080,9 +21080,9 @@
         index: -1
       }
       {
-        name: otbn_otp_key
-        desc: Key derivation interface for OTBN scrambling devices.
-        struct: otbn_otp_key
+        name: acc_otp_key
+        desc: Key derivation interface for ACC scrambling devices.
+        struct: acc_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
         act: rsp
@@ -21090,7 +21090,7 @@
         default: "'0"
         inst_name: otp_ctrl
         end_idx: -1
-        top_signame: otp_ctrl_otbn_otp_key
+        top_signame: otp_ctrl_acc_otp_key
         index: -1
       }
       {
@@ -21626,7 +21626,7 @@
         width: 2
         default: lc_ctrl_pkg::On
         inst_name: lc_ctrl
-        top_signame: otbn_lc_rma_ack
+        top_signame: acc_lc_rma_ack
         index: -1
       }
       {
@@ -23585,15 +23585,15 @@
         index: -1
       }
       {
-        name: otbn_otp_key
-        struct: otbn_otp_key
+        name: acc_otp_key
+        struct: acc_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
         act: req
         width: 1
         default: "'0"
-        inst_name: otbn
-        top_signame: otp_ctrl_otbn_otp_key
+        inst_name: acc
+        top_signame: otp_ctrl_acc_otp_key
         index: -1
       }
       {
@@ -23603,7 +23603,7 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         top_signame: edn1_edn
         index: 0
@@ -23615,7 +23615,7 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         top_signame: edn0_edn
         index: 5
@@ -23627,7 +23627,7 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         top_signame: kmac_app
         index: 4
@@ -23639,7 +23639,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         top_signame: clkmgr_aon_idle
         index: 3
@@ -23651,10 +23651,10 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         external: true
-        top_signame: otbn_imem_ram_1p_cfg
+        top_signame: acc_imem_ram_1p_cfg
         conn_type: false
         index: -1
       }
@@ -23665,10 +23665,10 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         external: true
-        top_signame: otbn_dmem_ram_1p_cfg
+        top_signame: acc_dmem_ram_1p_cfg
         conn_type: false
         index: -1
       }
@@ -23679,10 +23679,10 @@
         type: uni
         act: req
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         external: true
-        top_signame: otbn_imem_ram_1p_cfg_rsp
+        top_signame: acc_imem_ram_1p_cfg_rsp
         conn_type: false
         index: -1
       }
@@ -23693,10 +23693,10 @@
         type: uni
         act: req
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         external: true
-        top_signame: otbn_dmem_ram_1p_cfg_rsp
+        top_signame: acc_dmem_ram_1p_cfg_rsp
         conn_type: false
         index: -1
       }
@@ -23708,7 +23708,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
-        inst_name: otbn
+        inst_name: acc
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
       }
@@ -23720,7 +23720,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
-        inst_name: otbn
+        inst_name: acc
         top_signame: lc_ctrl_lc_flash_rma_req
         index: -1
       }
@@ -23732,22 +23732,22 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
-        inst_name: otbn
+        inst_name: acc
         end_idx: -1
         top_type: broadcast
-        top_signame: otbn_lc_rma_ack
+        top_signame: acc_lc_rma_ack
         index: -1
       }
       {
         name: keymgr_key
-        struct: otbn_key_req
+        struct: acc_key_req
         package: keymgr_pkg
         type: uni
         act: rcv
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
-        top_signame: keymgr_dpe_otbn_key
+        top_signame: keymgr_dpe_acc_key
         index: -1
       }
       {
@@ -23757,10 +23757,10 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: otbn
+        inst_name: acc
         default: ""
         end_idx: -1
-        top_signame: otbn_tl
+        top_signame: acc_tl
         index: -1
       }
       {
@@ -23804,8 +23804,8 @@
         index: -1
       }
       {
-        name: otbn_key
-        struct: otbn_key_req
+        name: acc_key
+        struct: acc_key_req
         package: keymgr_pkg
         type: uni
         act: req
@@ -23814,7 +23814,7 @@
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: keymgr_dpe_otbn_key
+        top_signame: keymgr_dpe_acc_key
         index: -1
       }
       {
@@ -27244,7 +27244,7 @@
         index: -1
       }
       {
-        name: tl_otbn
+        name: tl_acc
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -27252,7 +27252,7 @@
         inst_name: main
         width: 1
         default: ""
-        top_signame: otbn_tl
+        top_signame: acc_tl
         index: -1
       }
       {
@@ -28175,50 +28175,50 @@
       {
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
-        signame: otbn_imem_ram_1p_cfg_i
+        signame: acc_imem_ram_1p_cfg_i
         width: 1
         type: uni
         default: ""
         direction: in
         conn_type: false
         index: -1
-        netname: otbn_imem_ram_1p_cfg
+        netname: acc_imem_ram_1p_cfg
       }
       {
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
-        signame: otbn_imem_ram_1p_cfg_rsp_o
+        signame: acc_imem_ram_1p_cfg_rsp_o
         width: 1
         type: uni
         default: ""
         direction: out
         conn_type: false
         index: -1
-        netname: otbn_imem_ram_1p_cfg_rsp
+        netname: acc_imem_ram_1p_cfg_rsp
       }
       {
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
-        signame: otbn_dmem_ram_1p_cfg_i
+        signame: acc_dmem_ram_1p_cfg_i
         width: 1
         type: uni
         default: ""
         direction: in
         conn_type: false
         index: -1
-        netname: otbn_dmem_ram_1p_cfg
+        netname: acc_dmem_ram_1p_cfg
       }
       {
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
-        signame: otbn_dmem_ram_1p_cfg_rsp_o
+        signame: acc_dmem_ram_1p_cfg_rsp_o
         width: 1
         type: uni
         default: ""
         direction: out
         conn_type: false
         index: -1
-        netname: otbn_dmem_ram_1p_cfg_rsp
+        netname: acc_dmem_ram_1p_cfg_rsp
       }
       {
         package: prim_ram_1p_pkg
@@ -29691,7 +29691,7 @@
       {
         package: lc_ctrl_pkg
         struct: lc_tx
-        signame: otbn_lc_rma_ack
+        signame: acc_lc_rma_ack
         width: 1
         type: uni
         end_idx: -1
@@ -29745,8 +29745,8 @@
       }
       {
         package: otp_ctrl_pkg
-        struct: otbn_otp_key_req
-        signame: otp_ctrl_otbn_otp_key_req
+        struct: acc_otp_key_req
+        signame: otp_ctrl_acc_otp_key_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -29756,8 +29756,8 @@
       }
       {
         package: otp_ctrl_pkg
-        struct: otbn_otp_key_rsp
-        signame: otp_ctrl_otbn_otp_key_rsp
+        struct: acc_otp_key_rsp
+        signame: otp_ctrl_acc_otp_key_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -29800,14 +29800,14 @@
       }
       {
         package: keymgr_pkg
-        struct: otbn_key_req
-        signame: keymgr_dpe_otbn_key
+        struct: acc_key_req
+        signame: keymgr_dpe_acc_key
         width: 1
         type: uni
         end_idx: -1
         act: req
         suffix: ""
-        default: keymgr_pkg::OTBN_KEY_REQ_DEFAULT
+        default: keymgr_pkg::ACC_KEY_REQ_DEFAULT
       }
       {
         package: kmac_pkg
@@ -30734,7 +30734,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: otbn_tl_req
+        signame: acc_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -30745,7 +30745,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: otbn_tl_rsp
+        signame: acc_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

@@ -21,8 +21,8 @@ OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearAes,
                      KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_AES);
 OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearKmac,
                      KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_KMAC);
-OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearOtbn,
-                     KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN);
+OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearAcc,
+                     KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_ACC);
 OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearAll,
                      KEYMGR_SIDELOAD_CLEAR_VAL_MASK);
 
@@ -518,9 +518,9 @@ dif_result_t dif_keymgr_generate_versioned_key(
           .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
           .cdi_type = params.cdi_type};
       break;
-    case kDifKeymgrVersionedKeyDestOtbn:
+    case kDifKeymgrVersionedKeyDestAcc:
       hw_op_params = (start_operation_params_t){
-          .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN,
+          .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_ACC,
           .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
           .cdi_type = params.cdi_type};
       break;

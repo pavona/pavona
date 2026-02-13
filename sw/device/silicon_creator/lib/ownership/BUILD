@@ -30,7 +30,7 @@ cc_library(
     srcs = ["ecdsa.c"],
     hdrs = ["ecdsa.h"],
     defines = [
-        "USE_OTBN=1",
+        "USE_ACC=1",
         #"USE_CRYPTOC=1",
     ],
     deps = [
@@ -41,7 +41,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib:acc_boot_services",
         #"//sw/vendor:cryptoc",
     ],
 )

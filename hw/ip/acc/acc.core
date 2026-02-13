@@ -1,0 +1,133 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:acc:0.1"
+description: "OpenTitan Big Number Accelerator (ACC)"
+
+filesets:
+  files_rtl_core:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim:util
+      - lowrisc:prim:lfsr
+      - lowrisc:prim:xoshiro256pp
+      - lowrisc:prim:cipher_pkg
+      - lowrisc:prim:mubi
+      - lowrisc:prim:crc32
+      - lowrisc:prim:sparse_fsm
+      - lowrisc:prim:onehot
+      - lowrisc:prim:blanker
+      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:edn_pkg
+      - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:acc_pkg
+      - lowrisc:prim:onehot_check
+    files:
+      - rtl/acc_controller.sv
+      - rtl/acc_decoder.sv
+      - rtl/acc_predecode.sv
+      - rtl/acc_instruction_fetch.sv
+      - rtl/acc_rf_base.sv
+      - rtl/acc_rf_bignum.sv
+      - rtl/acc_rf_base_ff.sv
+      - rtl/acc_rf_bignum_ff.sv
+      - rtl/acc_rf_base_fpga.sv
+      - rtl/acc_rf_bignum_fpga.sv
+      - rtl/acc_lsu.sv
+      - rtl/acc_alu_base.sv
+      - rtl/acc_alu_bignum.sv
+      - rtl/acc_mac_bignum.sv
+      - rtl/bn_vec_core/unified_mul.sv
+      - rtl/bn_vec_core/acc_bignum_mul.sv
+      - rtl/bn_vec_core/buffer_bit.sv
+      - rtl/acc_loop_controller.sv
+      - rtl/acc_stack.sv
+      - rtl/acc_rnd.sv
+      - rtl/acc_start_stop_control.sv
+      - rtl/acc_core.sv
+    file_type: systemVerilogSource
+
+  files_rtl_top:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:assert
+      - lowrisc:prim:util
+      - lowrisc:prim:ram_1p_scr
+      - lowrisc:prim:lc_sync
+      - lowrisc:ip:edn_pkg
+      - lowrisc:prim:edn_req
+      - lowrisc:ip:acc_pkg
+      - lowrisc:ip:otp_ctrl_pkg
+    files:
+      - rtl/acc_reg_top.sv
+      - rtl/acc_scramble_ctrl.sv
+      - rtl/acc.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/acc.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/acc.waiver
+    file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl_core
+      - files_rtl_top
+    toplevel: acc
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  lint-core:
+    filesets:
+      - files_rtl_core
+    toplevel: acc_core
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true

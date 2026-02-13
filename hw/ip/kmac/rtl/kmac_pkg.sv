@@ -266,8 +266,8 @@ package kmac_pkg;
     Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
   };
 
-  // OTBN
-  parameter app_config_t AppCfgOTBN = '{
+  // ACC
+  parameter app_config_t AppCfgACC = '{
     Mode: AppConfigDynamic,
     KeccakStrength: sha3_pkg::L256, // Ignored
     PrefixMode: 1'b0,               // No Prefix
@@ -482,7 +482,7 @@ package kmac_pkg;
     // Error due to the counter integrity check failure inside MsgFifo.Fifo
     ErrMsgFifoIntegrity = 8'h C3,
 
-    // Error in the packer that is connected for the app intf to OTBN
+    // Error in the packer that is connected for the app intf to ACC
     ErrAppIntfPacker = 8'hC4
   } err_code_e;
 
@@ -508,7 +508,7 @@ package kmac_pkg;
     conv_endian32 = (swap) ? conv_data : v ;
   endfunction : conv_endian32
 
-  // Function to compute the number of digest words for OTBN request
+  // Function to compute the number of digest words for ACC request
   // before starting a manual run
   function automatic logic [2:0] compute_max_digest (
     sha3_pkg::keccak_strength_e keccak_strength_i

@@ -34,7 +34,7 @@ enum module_ {
   kModuleInterrupt =       MODULE_CODE('I', 'R'),
   kModuleEpmp =            MODULE_CODE('E', 'P'),
   kModuleKmac =            MODULE_CODE('K', 'C'),
-  kModuleOtbn =            MODULE_CODE('B', 'N'),
+  kModuleAcc =            MODULE_CODE('B', 'N'),
   kModuleFlashCtrl =       MODULE_CODE('F', 'C'),
   kModuleBootPolicy =      MODULE_CODE('B', 'P'),
   kModuleBootstrap =       MODULE_CODE('B', 'S'),
@@ -124,13 +124,13 @@ enum module_ {
   X(kErrorKmacInvalidStatus,          ERROR_(1, kModuleKmac, kInternal)), \
   X(kErrorKmacInvalidKeySize,         ERROR_(2, kModuleKmac, kInvalidArgument)), \
   \
-  X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
-  X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
-  X(kErrorOtbnExecutionFailed,        ERROR_(3, kModuleOtbn, kInternal)), \
-  X(kErrorOtbnSecWipeImemFailed,      ERROR_(4, kModuleOtbn, kInternal)), \
-  X(kErrorOtbnSecWipeDmemFailed,      ERROR_(5, kModuleOtbn, kInternal)), \
-  X(kErrorOtbnBadInsnCount,           ERROR_(6, kModuleOtbn, kInternal)), \
-  X(kErrorOtbnUnavailable,            ERROR_(7, kModuleOtbn, kInternal)), \
+  X(kErrorAccInvalidArgument,        ERROR_(1, kModuleAcc, kInvalidArgument)), \
+  X(kErrorAccBadOffsetLen,           ERROR_(2, kModuleAcc, kInvalidArgument)), \
+  X(kErrorAccExecutionFailed,        ERROR_(3, kModuleAcc, kInternal)), \
+  X(kErrorAccSecWipeImemFailed,      ERROR_(4, kModuleAcc, kInternal)), \
+  X(kErrorAccSecWipeDmemFailed,      ERROR_(5, kModuleAcc, kInternal)), \
+  X(kErrorAccBadInsnCount,           ERROR_(6, kModuleAcc, kInternal)), \
+  X(kErrorAccUnavailable,            ERROR_(7, kModuleAcc, kInternal)), \
   \
   X(kErrorFlashCtrlDataRead,          ERROR_(1, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlInfoRead,          ERROR_(2, kModuleFlashCtrl, kInternal)), \

@@ -135,7 +135,7 @@ if {$env(DUT_TOP) == "aes"} {
   create_reset rst_ni -sense low
   create_clock clk_edn_i -period 100
   create_reset rst_edn_ni -sense low
-} elseif {$env(DUT_TOP) == "otbn"} {
+} elseif {$env(DUT_TOP) == "acc"} {
   create_clock clk_i -period 100
   create_reset rst_ni -sense low
   create_clock clk_edn_i -period 100

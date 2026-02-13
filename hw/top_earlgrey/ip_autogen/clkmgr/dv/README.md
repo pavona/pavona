@@ -57,7 +57,7 @@ All common types and methods defined at the package level can be found in
     PeriIo,
     PeriUsb
   } peri_e;
-  typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
+  typedef enum int {TransAes, TransHmac, TransKmac, TransAcc} trans_e;
 ```
 
 ### TL_agent

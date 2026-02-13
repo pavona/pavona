@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -153,7 +153,7 @@ otcrypto_status_t otcrypto_p256_public_key_construct_and_check(
     otcrypto_unblinded_key_t *public_key, hardened_bool_t *key_valid) {
   HARDENED_TRY(otcrypto_p256_public_key_construct_and_check_async_start(
       x, y, public_key, key_valid));
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   return otcrypto_p256_public_key_construct_and_check_async_finalize(key_valid);
 }
 
@@ -299,7 +299,7 @@ otcrypto_status_t otcrypto_p256_private_key_deconstruct(
 otcrypto_status_t otcrypto_ecdsa_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdsa_p256_keygen_async_start(private_key));
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
 }
 
@@ -309,7 +309,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
     otcrypto_word32_buf_t signature) {
   HARDENED_TRY(
       otcrypto_ecdsa_p256_sign_async_start(private_key, message_digest));
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   return otcrypto_ecdsa_p256_sign_async_finalize(signature);
 }
 
@@ -320,7 +320,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify(
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_ecdsa_p256_verify_async_start(
       public_key, message_digest, signature));
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   return otcrypto_ecdsa_p256_verify_async_finalize(signature,
                                                    verification_result);
 }
@@ -351,7 +351,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
 otcrypto_status_t otcrypto_ecdh_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdh_p256_keygen_async_start(private_key));
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   return otcrypto_ecdh_p256_keygen_async_finalize(private_key, public_key);
 }
 
@@ -359,7 +359,7 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
                                      const otcrypto_unblinded_key_t *public_key,
                                      otcrypto_blinded_key_t *shared_secret) {
   HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
-  OTBN_WIPE_IF_ERROR(otbn_busy_wait_for_done());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   return otcrypto_ecdh_p256_async_finalize(private_key, shared_secret);
 }
 
@@ -380,7 +380,7 @@ static status_t internal_p256_keygen_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
+    HARDENED_TRY(keyblob_sideload_key_acc(private_key));
     return p256_sideload_keygen_start();
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
@@ -455,8 +455,8 @@ static status_t internal_p256_keygen_finalize(
   private_key->checksum = integrity_blinded_checksum(private_key);
   public_key->checksum = integrity_unblinded_checksum(public_key);
 
-  // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return keymgr_sideload_clear_otbn();
+  // Clear the ACC sideload slot (in case the seed was sideloaded).
+  return keymgr_sideload_clear_acc();
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
@@ -519,7 +519,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
+    HARDENED_TRY(keyblob_sideload_key_acc(private_key));
     HARDENED_TRY(p256_ecdsa_sideload_sign_start(message_digest.data));
   } else {
     // Invalid value for private_key->hw_backed.
@@ -572,8 +572,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
   // last potentially error-causing line before returning to the caller.
   HARDENED_TRY(p256_ecdsa_sign_finalize(sig_p256));
 
-  // Clear the OTBN sideload slot (in case the key was sideloaded).
-  return keymgr_sideload_clear_otbn();
+  // Clear the ACC sideload slot (in case the key was sideloaded).
+  return keymgr_sideload_clear_acc();
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
@@ -711,7 +711,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
+    HARDENED_TRY(keyblob_sideload_key_acc(private_key));
     HARDENED_TRY(p256_sideload_ecdh_start(pk));
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
@@ -782,6 +782,6 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   // Set the checksum.
   shared_secret->checksum = integrity_blinded_checksum(shared_secret);
 
-  // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return keymgr_sideload_clear_otbn();
+  // Clear the ACC sideload slot (in case the seed was sideloaded).
+  return keymgr_sideload_clear_acc();
 }

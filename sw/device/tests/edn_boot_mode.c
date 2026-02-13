@@ -5,36 +5,36 @@
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
 #include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/edn_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/otbn_randomness_impl.h"
+#include "sw/device/tests/acc_randomness_impl.h"
 
 #include "hw/top/edn_regs.h"  // Generated
 
 enum {
   kEdnBootModeTimeout = (10 * 1000 * 1000),
-  kEdnBootModeOtbnRandomnessIterations = 1,
+  kEdnBootModeAccRandomnessIterations = 1,
 };
 
 static dif_entropy_src_t entropy_src;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_rv_core_ibex_t rv_core_ibex;
 
 dif_entropy_src_config_t entropy_src_config = {
@@ -56,12 +56,12 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
-  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
 }
 
-static void configure_otbn(void) {
-  otbn_randomness_test_prepare(&otbn, kEdnBootModeOtbnRandomnessIterations);
+static void configure_acc(void) {
+  acc_randomness_test_prepare(&acc, kEdnBootModeAccRandomnessIterations);
 }
 
 // configure the entropy complex
@@ -81,7 +81,7 @@ static status_t entropy_config(unsigned int round) {
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   if (round == 1) {
-    // Enable EDN1 (the one connected to OTBN RND) in boot-time request mode.
+    // Enable EDN1 (the one connected to ACC RND) in boot-time request mode.
     CHECK_DIF_OK(dif_edn_set_boot_mode(&edn1));
     CHECK_DIF_OK(dif_edn_configure(&edn1));
     EDN_TESTUTILS_WAIT_FOR_STATUS(&edn1, kDifEdnSmStateBootGenAckWait, true,
@@ -98,7 +98,7 @@ static status_t entropy_config(unsigned int round) {
   }
 
   if (round == 2) {
-    // Enable EDN1 (the one connected to OTBN RND) in auto request mode.
+    // Enable EDN1 (the one connected to ACC RND) in auto request mode.
     CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn_params1));
     EDN_TESTUTILS_WAIT_FOR_STATUS(&edn1, kDifEdnSmStateAutoAckWait, true,
                                   kEdnBootModeTimeout);
@@ -129,21 +129,21 @@ static status_t entropy_config(unsigned int round) {
 }
 
 static void consume_entropy(unsigned int round,
-                            dif_otbn_err_bits_t otbn_err_val,
+                            dif_acc_err_bits_t acc_err_val,
                             dif_rv_core_ibex_rnd_status_t ibex_rnd_fips) {
   uint32_t ibex_rnd_data;
   dif_rv_core_ibex_rnd_status_t ibex_rnd_status;
-  dif_otbn_irq_state_snapshot_t intr_state;
+  dif_acc_irq_state_snapshot_t intr_state;
   CHECK_STATUS_OK(entropy_config(round));
-  // Launch an OTBN program consuming entropy via both
+  // Launch an ACC program consuming entropy via both
   // the RND and the URND interface.
-  CHECK_STATUS_OK(otbn_testutils_execute(&otbn));
-  // Verify that the OTBN finishes with the expected error values
+  CHECK_STATUS_OK(acc_testutils_execute(&acc));
+  // Verify that the ACC finishes with the expected error values
   // and interrupt flags.
-  CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, otbn_err_val));
-  CHECK_DIF_OK(dif_otbn_irq_get_state(&otbn, &intr_state));
+  CHECK_STATUS_OK(acc_testutils_wait_for_done(&acc, acc_err_val));
+  CHECK_DIF_OK(dif_acc_irq_get_state(&acc, &intr_state));
   CHECK(intr_state & 0x1);
-  CHECK_DIF_OK(dif_otbn_irq_acknowledge_all(&otbn));
+  CHECK_DIF_OK(dif_acc_irq_acknowledge_all(&acc));
   // Read rnd data through the IBEX and verify if the FIPS compliance
   // status is as expected.
   // The first read gets rid of leftover entropy from previous configurations
@@ -161,15 +161,15 @@ static void consume_entropy(unsigned int round,
 
 bool test_main(void) {
   init_peripherals();
-  // Prepare the OTBN for execution.
-  configure_otbn();
+  // Prepare the ACC for execution.
+  configure_acc();
   // Run the Procedure and check if EDN1 produces FIPS non-compliant entropy.
-  consume_entropy(/*round=*/1, kDifOtbnErrBitsRndFipsChkFail,
+  consume_entropy(/*round=*/1, kDifAccErrBitsRndFipsChkFail,
                   kDifRvCoreIbexRndStatusFipsCompliant);
   // Run the Procedure and check if EDN0 produces FIPS non-compliant entropy.
-  consume_entropy(/*round=*/2, kDifOtbnErrBitsNoError, 0);
+  consume_entropy(/*round=*/2, kDifAccErrBitsNoError, 0);
   // Run the Procedure and check if both EDNs produce FIPS compliant entropy.
-  consume_entropy(/*round=*/3, kDifOtbnErrBitsNoError,
+  consume_entropy(/*round=*/3, kDifAccErrBitsNoError,
                   kDifRvCoreIbexRndStatusFipsCompliant);
 
   return true;

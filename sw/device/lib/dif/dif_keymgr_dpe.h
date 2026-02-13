@@ -100,10 +100,10 @@ typedef enum dif_keymgr_dpe_key_dest {
    */
   kDifKeymgrDpeKeyDestKmac = 2,
   /**
-   * Diversify the generated key for OTBN (and load it to OTBN peripheral port
+   * Diversify the generated key for ACC (and load it to ACC peripheral port
    * if sideload key).
    */
-  kDifKeymgrDpeKeyDestOtbn = 3,
+  kDifKeymgrDpeKeyDestAcc = 3,
 } dif_keymgr_dpe_key_dest_t;
 
 /**
@@ -111,7 +111,7 @@ typedef enum dif_keymgr_dpe_key_dest {
  */
 typedef struct dif_keymgr_dpe_generate_params {
   /**
-   * Destination for {AES, KMAC, OTBN}, which is used for diversification.
+   * Destination for {AES, KMAC, ACC}, which is used for diversification.
    */
   dif_keymgr_dpe_key_dest_t key_dest;
 

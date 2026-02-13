@@ -14,9 +14,9 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
-#include "sw/device/tests/penetrationtests/json/otbn_sca_commands.h"
+#include "sw/device/tests/penetrationtests/json/acc_sca_commands.h"
 
-#include "hw/top/otbn_regs.h"
+#include "hw/top/acc_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {
@@ -49,31 +49,31 @@ enum {
    */
   kNumBatchOpsMax = 256,
   /**
-   * Number of cycles that Ibex should sleep to minimize noise during OTBN
+   * Number of cycles that Ibex should sleep to minimize noise during ACC
    * operations. Caution: This number should be chosen to provide enough time
-   * to complete the operation. Otherwise, Ibex might wake up while OTBN is
+   * to complete the operation. Otherwise, Ibex might wake up while ACC is
    * still busy and disturb the capture. This was measured using mcycle_read
-   * when otbn_manual_trigger and otbn_busy_wait_for_done get executed.
+   * when acc_manual_trigger and acc_busy_wait_for_done get executed.
    */
-  kIbexOtbnSleepCycles = 1100,
+  kIbexAccSleepCycles = 1100,
 };
 
 /**
  * App configuration for p256_key_from_seed_sca
  */
-const otbn_app_t kOtbnAppP256KeyFromSeed =
-    OTBN_APP_T_INIT(p256_key_from_seed_sca);
+const acc_app_t kAccAppP256KeyFromSeed =
+    ACC_APP_T_INIT(p256_key_from_seed_sca);
 
-static const otbn_addr_t kOtbnVarMode =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, mode);
-static const otbn_addr_t kOtbnVarSeed0 =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, seed0);
-static const otbn_addr_t kOtbnVarSeed1 =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, seed1);
-static const otbn_addr_t kOtbnVarD0 =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d0);
-static const otbn_addr_t kOtbnVarD1 =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d1);
+static const acc_addr_t kAccVarMode =
+    ACC_ADDR_T_INIT(p256_key_from_seed_sca, mode);
+static const acc_addr_t kAccVarSeed0 =
+    ACC_ADDR_T_INIT(p256_key_from_seed_sca, seed0);
+static const acc_addr_t kAccVarSeed1 =
+    ACC_ADDR_T_INIT(p256_key_from_seed_sca, seed1);
+static const acc_addr_t kAccVarD0 =
+    ACC_ADDR_T_INIT(p256_key_from_seed_sca, d0);
+static const acc_addr_t kAccVarD1 =
+    ACC_ADDR_T_INIT(p256_key_from_seed_sca, d1);
 
 /**
  * An array of seeds to be used in a batch
@@ -146,12 +146,12 @@ static void add_arrays(uint8_t *dest, uint8_t *source, size_t dest_len,
 }
 
 /**
- * Callback wrapper for OTBN manual trigger function.
+ * Callback wrapper for ACC manual trigger function.
  */
-static void otbn_manual_trigger(void) { OT_DISCARD(otbn_execute().value); }
+static void acc_manual_trigger(void) { OT_DISCARD(acc_execute().value); }
 
 /**
- * Runs the OTBN key generation program.
+ * Runs the ACC key generation program.
  *
  * The seed shares must be `kEcc256SeedNumWords` words long.
  *
@@ -163,24 +163,24 @@ static void otbn_manual_trigger(void) { OT_DISCARD(otbn_execute().value); }
 static status_t p256_run_keygen(uint32_t mode, const uint32_t *share0,
                                 const uint32_t *share1) {
   // Secure wipe to scramble DMEM.
-  TRY(otbn_load_app(kOtbnAppP256KeyFromSeed));
+  TRY(acc_load_app(kAccAppP256KeyFromSeed));
 
   // Write mode.
-  TRY(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
+  TRY(acc_dmem_write(/*num_words=*/1, &mode, kAccVarMode));
 
   // Write seed shares.
-  TRY(otbn_dmem_write(kEcc256SeedNumWords, share0, kOtbnVarSeed0));
-  TRY(otbn_dmem_write(kEcc256SeedNumWords, share1, kOtbnVarSeed1));
+  TRY(acc_dmem_write(kEcc256SeedNumWords, share0, kAccVarSeed0));
+  TRY(acc_dmem_write(kEcc256SeedNumWords, share1, kAccVarSeed1));
 
   // Execute program. Trigger is set inside this function.
-  pentest_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, true, true);
+  pentest_call_and_sleep(acc_manual_trigger, kIbexAccSleepCycles, true, true);
 
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(ujson_t *uj) {
-  penetrationtest_otbn_sca_num_traces_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_num_traces_t(uj, &uj_data));
+status_t handle_acc_sca_ecc256_ecdsa_keygen_fvsr_key_batch(ujson_t *uj) {
+  penetrationtest_acc_sca_num_traces_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_acc_sca_num_traces_t(uj, &uj_data));
 
   uint32_t num_traces = uj_data.num_traces;
   uint32_t batch_digest[kEcc256SeedNumWords];
@@ -232,8 +232,8 @@ status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(ujson_t *uj) {
     TRY(p256_run_keygen(kEcc256ModeKeypair, batch_share0[i], batch_share1[i]));
 
     // Read results.
-    TRY(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0_batch));
-    TRY(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1_batch));
+    TRY(acc_dmem_read(kEcc256SeedNumWords, kAccVarD0, d0_batch));
+    TRY(acc_dmem_read(kEcc256SeedNumWords, kAccVarD1, d1_batch));
 
     // The correctness of each batch is verified by computing and sending
     // the batch digest. This digest is computed by XORing all d0 shares of
@@ -243,18 +243,18 @@ status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(ujson_t *uj) {
     }
   }
   // Send the batch digest to the host for verification.
-  penetrationtest_otbn_sca_batch_digest_t uj_output;
+  penetrationtest_acc_sca_batch_digest_t uj_output;
   memcpy(uj_output.batch_digest, (uint8_t *)batch_digest,
          kEcc256SeedNumWords * 4);
-  RESP_OK(ujson_serialize_penetrationtest_otbn_sca_batch_digest_t, uj,
+  RESP_OK(ujson_serialize_penetrationtest_acc_sca_batch_digest_t, uj,
           &uj_output);
 
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(ujson_t *uj) {
-  penetrationtest_otbn_sca_num_traces_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_num_traces_t(uj, &uj_data));
+status_t handle_acc_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(ujson_t *uj) {
+  penetrationtest_acc_sca_num_traces_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_acc_sca_num_traces_t(uj, &uj_data));
 
   uint32_t num_traces = uj_data.num_traces;
   uint32_t batch_digest[kEcc256SeedNumWords];
@@ -300,8 +300,8 @@ status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(ujson_t *uj) {
     TRY(p256_run_keygen(kEcc256ModeKeypair, batch_share0[i], batch_share1[i]));
 
     // Read results.
-    TRY(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0_batch));
-    TRY(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1_batch));
+    TRY(acc_dmem_read(kEcc256SeedNumWords, kAccVarD0, d0_batch));
+    TRY(acc_dmem_read(kEcc256SeedNumWords, kAccVarD1, d1_batch));
 
     // The correctness of each batch is verified by computing and sending
     // the batch digest. This digest is computed by XORing all d0 shares of
@@ -312,18 +312,18 @@ status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(ujson_t *uj) {
   }
 
   // Send the batch digest to the host for verification.
-  penetrationtest_otbn_sca_batch_digest_t uj_output;
+  penetrationtest_acc_sca_batch_digest_t uj_output;
   memcpy(uj_output.batch_digest, (uint8_t *)batch_digest,
          kEcc256SeedNumWords * 4);
-  RESP_OK(ujson_serialize_penetrationtest_otbn_sca_batch_digest_t, uj,
+  RESP_OK(ujson_serialize_penetrationtest_acc_sca_batch_digest_t, uj,
           &uj_output);
 
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_ecc256_en_masks(ujson_t *uj) {
-  penetrationtest_otbn_sca_en_masks_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_en_masks_t(uj, &uj_data));
+status_t handle_acc_sca_ecc256_en_masks(ujson_t *uj) {
+  penetrationtest_acc_sca_en_masks_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_acc_sca_en_masks_t(uj, &uj_data));
   if (uj_data.en_masks) {
     en_masks = true;
   } else {
@@ -332,18 +332,18 @@ status_t handle_otbn_sca_ecc256_en_masks(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_ecc256_set_c(ujson_t *uj) {
-  penetrationtest_otbn_sca_constant_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_constant_t(uj, &uj_data));
+status_t handle_acc_sca_ecc256_set_c(ujson_t *uj) {
+  penetrationtest_acc_sca_constant_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_acc_sca_constant_t(uj, &uj_data));
 
   memcpy(ecc256_C, uj_data.constant, kEcc256SeedNumBytes);
 
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_ecc256_set_seed(ujson_t *uj) {
-  penetrationtest_otbn_sca_seed_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_seed_t(uj, &uj_data));
+status_t handle_acc_sca_ecc256_set_seed(ujson_t *uj) {
+  penetrationtest_acc_sca_seed_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_acc_sca_seed_t(uj, &uj_data));
 
   memcpy(ecc256_seed, uj_data.seed, kEcc256SeedNumBytes);
 

@@ -117,7 +117,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     logic [5:0] aes_ctrl_fsm_state;
     logic [2:0] hmac_fsm_state;
     logic [5:0] kmac_fsm_state;
-    logic [6:0] otbn_fsm_state;
+    logic [6:0] acc_fsm_state;
     logic [8:0] edn_0_fsm_state;
     logic [8:0] edn_1_fsm_state;
 
@@ -132,7 +132,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     `_DV_PROBE_AND_CHECK_IDLE(aes_ctrl_fsm_state, aes_pkg::CTRL_IDLE)
     `_DV_PROBE_AND_CHECK_IDLE(hmac_fsm_state, 3'b000)
     `_DV_PROBE_AND_CHECK_IDLE(kmac_fsm_state, 6'b011000)
-    `_DV_PROBE_AND_CHECK_IDLE(otbn_fsm_state, otbn_pkg::OtbnStartStopStateInitial)
+    `_DV_PROBE_AND_CHECK_IDLE(acc_fsm_state, acc_pkg::AccStartStopStateInitial)
     `_DV_PROBE_AND_CHECK_IDLE(edn_0_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(edn_1_fsm_state, edn_pkg::Idle)
   endtask

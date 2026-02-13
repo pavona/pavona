@@ -22,7 +22,7 @@ typedef enum test_trans_block {
   kTestTransAes = kTestTransFirst,
   kTestTransHmac,
   kTestTransKmac,
-  kTestTransOtbn,
+  kTestTransAcc,
   // Number of types of IP block.
   kTestTransCount
 } test_trans_block_t;

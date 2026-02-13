@@ -67,7 +67,7 @@ DIFS = {
     "mbx": {
         "deps": ["//sw/device/lib/base:abs_mmio"],
     },
-    "otbn": {},
+    "acc": {},
     "otp_ctrl": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },

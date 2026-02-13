@@ -73,7 +73,7 @@
     {
       name: sideload
       desc: '''
-            Keymgr contains HW sideload interfaces to output keys for KMAC, AES, OTBN.
+            Keymgr contains HW sideload interfaces to output keys for KMAC, AES, ACC.
 
             Stimulus:
             - Generate a keymgr output to HW sideload interface, exercising all the sideload
@@ -85,7 +85,7 @@
             '''
       stage: V2
       tests: ["keymgr_sideload", "keymgr_sideload_kmac",
-              "keymgr_sideload_aes", "keymgr_sideload_otbn"]
+              "keymgr_sideload_aes", "keymgr_sideload_acc"]
     }
     {
       name: direct_to_disabled_state

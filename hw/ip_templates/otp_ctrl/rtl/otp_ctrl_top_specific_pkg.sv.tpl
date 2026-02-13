@@ -98,12 +98,12 @@ package otp_ctrl_top_specific_pkg;
   // Get maximum nonce width
 % if enable_flash_key:
   localparam int NumNonceChunks =
-    (OtbnNonceWidth > FlashKeyWidth) ?
-    ((OtbnNonceWidth > SramNonceWidth) ? OtbnNonceSel : SramNonceSel) :
+    (AccNonceWidth > FlashKeyWidth) ?
+    ((AccNonceWidth > SramNonceWidth) ? AccNonceSel : SramNonceSel) :
     ((FlashKeyWidth > SramNonceWidth)  ? FlashNonceSel  : SramNonceSel);
 % else:
   localparam int NumNonceChunks =
-    (OtbnNonceWidth > SramNonceWidth) ? OtbnNonceSel : SramNonceSel;
+    (AccNonceWidth > SramNonceWidth) ? AccNonceSel : SramNonceSel;
 % endif
 
   ///////////////////////////////////////////

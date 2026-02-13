@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:acc_model_agent:0.1"
+description: "Agent for ACC model interface"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:acc_model
+      - lowrisc:ip:acc_pkg
+      - lowrisc:ip:keymgr_pkg
+    files:
+      - acc_model_if.sv
+      - acc_model_agent_pkg.sv
+      - acc_model_item.sv: {is_include_file: true}
+      - acc_model_agent_cfg.sv: {is_include_file: true}
+      - acc_model_monitor.sv: {is_include_file: true}
+      - acc_model_agent.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

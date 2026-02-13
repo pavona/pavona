@@ -1,0 +1,35 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:acc_model:0.1"
+description: "OpenTitan Big Number Accelerator (ACC)"
+
+filesets:
+  files_model:
+    depend:
+      - lowrisc:ip:acc_pkg
+      - lowrisc:dv_verilator:memutil_dpi
+      - lowrisc:dv:acc_memutil
+      - lowrisc:ip:acc_tracer
+    files:
+      - acc_model.cc: { file_type: cppSource }
+      - acc_model.h: { file_type: cppSource, is_include_file: true }
+      - acc_model_dpi.h: { file_type: cppSource, is_include_file: true }
+      - acc_model_dpi.svh: { is_include_file: true }
+      - iss_wrapper.cc: { file_type: cppSource }
+      - iss_wrapper.h: { file_type: cppSource, is_include_file: true }
+      - acc_trace_checker.h: { file_type: cppSource, is_include_file: true }
+      - acc_trace_checker.cc: { file_type: cppSource }
+      - acc_trace_entry.h: { file_type: cppSource, is_include_file: true }
+      - acc_trace_entry.cc: { file_type: cppSource }
+      - acc_core_model.sv
+      - acc_rf_snooper_if.sv
+      - acc_stack_snooper_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_model
+    toplevel: acc_core_model

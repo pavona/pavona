@@ -156,8 +156,8 @@
       name: ast_dft_ram_1p_cfg
       desc: '''Verify ast model's single port configuration bits are connected to the single port
             RAMs in the following blocks:
-            - otbn_imem
-            - otbn_dmem
+            - acc_imem
+            - acc_dmem
             - rv_core_ibex_tag0
             - rv_core_ibex_tag1
             - rv_core_ibex_data0
@@ -167,8 +167,8 @@
             - rom
             '''
       stage: V2
-      tests: ["ast_dft_otbn_imem_ram_1p_cfg",
-              "ast_dft_otbn_dmem_ram_1p_cfg",
+      tests: ["ast_dft_acc_imem_ram_1p_cfg",
+              "ast_dft_acc_dmem_ram_1p_cfg",
               "ast_dft_rv_core_ibex_tag0_ram_1p_cfg",
               "ast_dft_rv_core_ibex_tag1_ram_1p_cfg",
               "ast_dft_rv_core_ibex_data0_ram_1p_cfg",
@@ -310,7 +310,7 @@
               - index 0 to aes's `idle_o`
               - index 1 to hmac's `idle_o`
               - index 2 to kmac's `idle_o`
-              - index 3 to otbn's `idle_o`
+              - index 3 to acc's `idle_o`
               '''
       stage: V2
       tests: ["clkmgr_idle0", "clkmgr_idle1", "clkmgr_idle2", "clkmgr_idle3"]
@@ -479,7 +479,7 @@
             input:
             - alert_handler clk_i
             - lc_ctrl clk_i
-            - otbn clk_otp_i
+            - acc clk_otp_i
             - otp_ctrl clk_i
             - pwrmgr clk_lc_i
             - rv_core_ibex clk_esc_i
@@ -489,7 +489,7 @@
       stage: V2
       tests: ["clkmgr_secure_clk_alert_handler_clk",
               "clkmgr_secure_clk_lc_ctrl_clk",
-              "clkmgr_secure_clk_otbn_otp_clk",
+              "clkmgr_secure_clk_acc_otp_clk",
               "clkmgr_secure_clk_otp_ctrl_clk",
               "clkmgr_secure_clk_rv_core_ibex_clk",
               "clkmgr_secure_clk_rv_core_ibex_otp_clk",
@@ -506,7 +506,7 @@
             - keymgr clk_i
             - keymgr clk_edn_i
             - lc_ctrl clk_kmac_i
-            - otbn clk_edn_i
+            - acc clk_edn_i
             - otp_ctrl clk_edn_i
             - rv_plic clk_i
             '''
@@ -518,7 +518,7 @@
               "clkmgr_secure_clk_keymgr_clk",
               "clkmgr_secure_clk_keymgr_edn_clk",
               "clkmgr_secure_clk_lc_ctrl_kmac_clk",
-              "clkmgr_secure_clk_otbn_edn_clk",
+              "clkmgr_secure_clk_acc_edn_clk",
               "clkmgr_secure_clk_otp_ctrl_edn_clk",
               "clkmgr_secure_clk_rv_plic_clk"]
       tags: ["conn"]
@@ -583,10 +583,10 @@
       tags: ["conn"]
     }
     {
-      name: clk_main_otbn
-      desc: '''Verify clkmgr's clk_main_otbn is connected to otbn's clk_i.'''
+      name: clk_main_acc
+      desc: '''Verify clkmgr's clk_main_acc is connected to acc's clk_i.'''
       stage: V2
-      tests: ["clkmgr_trans_otbn"]
+      tests: ["clkmgr_trans_acc"]
       tags: ["conn"]
     }
 
@@ -639,7 +639,7 @@
             - flash_ctrl
             - aes
             - kmac
-            - otbn
+            - acc
             '''
       stage: V2
       tests: ["lc_escalate_en_otp",
@@ -649,7 +649,7 @@
               "lc_escalate_en_flash",
               "lc_escalate_en_aes",
               "lc_escalate_en_kmac",
-              "lc_escalate_en_otbn"]
+              "lc_escalate_en_acc"]
       tags: ["conn"]
     }
     {
@@ -697,13 +697,13 @@
       tags: ["conn"]
     }
     {
-      name: lc_flash_otbn_rma
+      name: lc_flash_acc_rma
       desc: "Verify lc_ctrl's RMA request connections."
       stage: V2
       tests: ["lc_rma_seed_flash_ctrl",
               "lc_rma_req_flash_ctrl",
-              "flash_ctrl_rma_ack_otbn",
-              "otbn_rma_ack_lc"]
+              "flash_ctrl_rma_ack_acc",
+              "acc_rma_ack_lc"]
       tags: ["conn"]
     }
     {
@@ -823,7 +823,7 @@
       desc: '''Verify rstmgr's rst_lc_io_n[1] is connected to the following:
             - alert_handler's rst_ni
             - lc_ctrl's rst_ni
-            - otbn's rst_otp_ni
+            - acc's rst_otp_ni
             - otp_ctrl's rst_ni
             - pwrmgr's rst_lc_ni
             - rv_core_ibex's rst_esc_ni
@@ -833,7 +833,7 @@
       stage: V2
       tests: ["rstmgr_lc_io_d0_alert_handler_rst_ni",
               "rstmgr_lc_io_d0_lc_ctrl_rst_ni",
-              "rstmgr_lc_io_d0_otbn_rst_otp_ni",
+              "rstmgr_lc_io_d0_acc_rst_otp_ni",
               "rstmgr_lc_io_d0_otp_ctrl_rst_ni",
               "rstmgr_lc_io_d0_rv_core_ibex_rst_esc_ni",
               "rstmgr_lc_io_d0_rv_core_ibex_rst_otp_ni",
@@ -984,8 +984,8 @@
             - keymgr's rst_ni
             - kmac's rst_edn_ni
             - kmac's rst_ni
-            - otbn's rst_edn_ni
-            - otbn's rst_ni
+            - acc's rst_edn_ni
+            - acc's rst_ni
             - lc_ctrl's rst_kmac_ni
             - otp_ctrl's rst_edn_ni
             - rv_core_ibex's rst_edn_ni
@@ -1007,8 +1007,8 @@
               "rstmgr_sys_d0_keymgr_rst_ni",
               "rstmgr_sys_d0_kmac_rst_edn_ni",
               "rstmgr_sys_d0_kmac_rst_ni",
-              "rstmgr_sys_d0_otbn_rst_edn_ni",
-              "rstmgr_sys_d0_otbn_rst_ni",
+              "rstmgr_sys_d0_acc_rst_edn_ni",
+              "rstmgr_sys_d0_acc_rst_ni",
               "rstmgr_sys_d0_lc_ctrl_rst_kmac_ni",
               "rstmgr_sys_d0_otp_ctrl_rst_edn_ni",
               "rstmgr_sys_d0_rv_core_ibex_rst_edn_ni",

@@ -1054,7 +1054,7 @@ module chip_englishbreakfast_cw305 #(
   //  AES            -   00       -  0
   //  HMAC           -   01       -  1 - not implemented on CW305
   //  KMAC           -   10       -  2 - not implemented on CW305
-  //  OTBN           -   11       -  3 - not implemented on CW305
+  //  ACC           -   11       -  3 - not implemented on CW305
   //
   // GPIO9 is used for gating the selected capture trigger in software. Alternatively, GPIO8
   // can be used to implement a less precise but fully software-controlled capture trigger

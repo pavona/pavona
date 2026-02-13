@@ -58,7 +58,7 @@
 #include "hw/top/dt/dt_i2c.h"            // Generated
 #include "hw/top/dt/dt_kmac.h"           // Generated
 #include "hw/top/dt/dt_lc_ctrl.h"        // Generated
-#include "hw/top/dt/dt_otbn.h"           // Generated
+#include "hw/top/dt/dt_acc.h"           // Generated
 #include "hw/top/dt/dt_otp_ctrl.h"       // Generated
 #include "hw/top/dt/dt_pinmux.h"         // Generated
 #include "hw/top/dt/dt_pwrmgr.h"         // Generated
@@ -314,7 +314,7 @@ static const char *i2c0_inst_name = "i2c0";
 static const char *kmac_inst_name = "kmac";
 // TODO: test lc_ctrl fatal_state, alert 17.
 static const char *lc_ctrl_inst_name = "lc_ctrl";
-static const char *otbn_inst_name = "otbn";
+static const char *acc_inst_name = "acc";
 static const char *otp_ctrl_inst_name = "otp_ctrl";
 static const char *pinmux_inst_name = "pinmux";
 static const char *pwrmgr_inst_name = "pwrmgr";
@@ -524,25 +524,25 @@ static void lc_ctrl_fault_checker(bool enable, const char *ip_inst,
 }
 
 /*
-// TODO(#14518) otbn cannot read fault_status register.
-static void otbn_ctrl_fault_checker(bool enable) {
-  // Check the otbn integrity fatal error code.
-  dif_otbn_err_bits_t codes;
+// TODO(#14518) acc cannot read fault_status register.
+static void acc_ctrl_fault_checker(bool enable) {
+  // Check the acc integrity fatal error code.
+  dif_acc_err_bits_t codes;
   // TODO we seem to be missing a dif to read FATAL_ALERT_CAUSE.
-  CHECK_DIF_OK(dif_otbn_get_err_bits(&otbn, &codes));
+  CHECK_DIF_OK(dif_acc_get_err_bits(&acc, &codes));
   if (enable) {
-    CHECK(status.codes == kDifOtbn??, "Got codes 0x%x", codes);
+    CHECK(status.codes == kDifAcc??, "Got codes 0x%x", codes);
   } else {
     CHECK(codes == 0, "Got codes 0x%x", codes);
   }
 }
 */
 
-static void otbn_fault_checker(bool enable, const char *ip_inst,
+static void acc_fault_checker(bool enable, const char *ip_inst,
                                const char *type) {
   // TODO(#14518)
-  LOG_INFO("Expected alert %d otbn fault check is yet unimplemented",
-           kDtOtbnAlertFatal);
+  LOG_INFO("Expected alert %d acc fault check is yet unimplemented",
+           kDtAccAlertFatal);
   trivial_fault_checker(enable, ip_inst, type);
 }
 
@@ -1017,9 +1017,9 @@ static void init_fault_checkers(fault_checker_t *checkers) {
                                         kDtLcCtrlAlertFatalBusIntegError)] =
       (fault_checker_t){lc_ctrl_fault_checker, lc_ctrl_inst_name, we_check};
 
-  checkers[dt_otbn_alert_to_alert_id((dt_otbn_t)0, kDtOtbnAlertFatal)] =
-      (fault_checker_t){otbn_fault_checker, otbn_inst_name, we_check};
-  static_assert(kDtOtbnCount >= 1, "This test needs at least 1 OTBN instance");
+  checkers[dt_acc_alert_to_alert_id((dt_acc_t)0, kDtAccAlertFatal)] =
+      (fault_checker_t){acc_fault_checker, acc_inst_name, we_check};
+  static_assert(kDtAccCount >= 1, "This test needs at least 1 ACC instance");
 
   // TODO add mechanism to inject:
   // forcing otp_prog_err_o from lc_ctrl_fsm and

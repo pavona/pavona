@@ -1,0 +1,86 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:acc_env:0.1"
+description: "ACC DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:acc_pqc_env_pkg
+      - lowrisc:ip:acc
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:sram_ctrl_bkdr_util
+      - lowrisc:dv:acc_app_agent:0.1
+      - lowrisc:dv:tl_agent
+      - lowrisc:dv:alert_esc_agent
+      - lowrisc:dv:acc_model_agent
+      - lowrisc:dv:key_sideload_agent
+    files:
+      - acc_env_pkg.sv
+      - acc_loop_if.sv
+      - acc_alu_bignum_if.sv
+      - acc_controller_if.sv
+      - acc_mac_bignum_if.sv
+      - acc_rf_base_if.sv
+      - acc_insn_cnt_if.sv
+      - acc_rnd_if.sv
+      - acc_escalate_if.sv
+      - acc_ssctrl_if.sv
+      - acc_trace_item.sv: {is_include_file: true}
+      - acc_trace_monitor.sv: {is_include_file: true}
+      - acc_env_cfg.sv: {is_include_file: true}
+      - acc_env_cov.sv: {is_include_file: true}
+      - acc_virtual_sequencer.sv: {is_include_file: true}
+      - acc_scoreboard.sv: {is_include_file: true}
+      - acc_env.sv: {is_include_file: true}
+      - acc_test_helpers.cc: {file_type: cppSource}
+      - seq_lib/acc_vseq_list.sv: {is_include_file: true}
+      - seq_lib/acc_base_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_common_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_multi_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_sequential_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_imem_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_dmem_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_single_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_escalate_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_zero_state_err_urnd_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_illegal_mem_acc_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_rnd_sec_cm_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_sw_errs_fatal_chk_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_intg_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_alu_bignum_mod_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_controller_ispr_rdata_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_mac_bignum_acc_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_rf_base_intg_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_rf_bignum_intg_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_pc_ctrl_flow_redun_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_ctrl_redun_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_sec_wipe_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_urnd_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_sw_no_acc_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_mem_gnt_acc_err_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_stack_addr_integ_chk_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_partial_wipe_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: acc
+      ip_hjson: ../../../data/acc.hjson
+    position: prepend
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral

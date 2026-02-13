@@ -438,7 +438,7 @@
             Verify accessibility of all the memories in the chip over JTAG.
 
             This test will target the following memories in the chip:
-              sram_main, sram_ret, otbn i|dmem, ROM
+              sram_main, sram_ret, acc i|dmem, ROM
 
             - Shuffle the list of memories first to remove the effect of ordering.
             - Write a location in a randomly chosen set of addresses within each memory via JTAG
@@ -714,7 +714,7 @@
       tests: ["chip_sw_aes_idle",
               "chip_sw_hmac_enc_idle",
               "chip_sw_kmac_idle",
-              "chip_sw_otbn_randomness"]
+              "chip_sw_acc_randomness"]
     }
     {
       name: chip_sw_clkmgr_off_trans
@@ -731,7 +731,7 @@
       tests: ["chip_sw_clkmgr_off_aes_trans",
               "chip_sw_clkmgr_off_hmac_trans",
               "chip_sw_clkmgr_off_kmac_trans",
-              "chip_sw_clkmgr_off_otbn_trans"]
+              "chip_sw_clkmgr_off_acc_trans"]
     }
     {
       name: chip_sw_clkmgr_off_peri
@@ -756,7 +756,7 @@
             '''
       stage: V2
       tests: ["chip_sw_clkmgr_jitter",
-              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_acc_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
               "chip_sw_keymgr_dpe_key_derivation_jitter_en",
@@ -779,14 +779,14 @@
 
             Test the following functionalities with reduced clock:
 
-            - AES, HMAC, KMAC and OTBN operations
+            - AES, HMAC, KMAC and ACC operations
             - Keymgr key derivation
             - Scramble-enabled access from the main SRAM
             - Csrng edn concurrency
             '''
       stage: V2
       tests: ["chip_sw_clkmgr_jitter_reduced_freq",
-              "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
+              "chip_sw_acc_ecdsa_op_irq_jitter_en_reduced_freq",
               "chip_sw_aes_enc_jitter_en_reduced_freq",
               "chip_sw_hmac_enc_jitter_en_reduced_freq",
               "chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq",
@@ -1526,7 +1526,7 @@
 
     ///////////////////////////////////////////////////////
     // Security Peripherals                              //
-    // AES, HMAC, KMAC, CSRNG, ENTROPY_SRC, KEYMGR, OTBN //
+    // AES, HMAC, KMAC, CSRNG, ENTROPY_SRC, KEYMGR, ACC //
     ///////////////////////////////////////////////////////
 
     // AES (pre-verified IP) integration tests:
@@ -1783,7 +1783,7 @@
 
             - Have each EDN instance issue an instantiate, reseed and generate command to CSRNG.
             - On each command done, verify the reception of edn cmd req done interrupt.
-            - Run OTBN randomness test to test the output from EDN0 and EDN1.
+            - Run ACC randomness test to test the output from EDN0 and EDN1.
             - Check the data returned to EDN via connectivity assertion checks.
             '''
       stage: V2
@@ -1911,16 +1911,16 @@
       tests: ["chip_sw_keymgr_sideload_aes"]
     }
     {
-      name: chip_sw_keymgr_sideload_otbn
-      desc: '''Verify the keymgr sideload interface to OTBN.
+      name: chip_sw_keymgr_sideload_acc
+      desc: '''Verify the keymgr sideload interface to ACC.
 
-               Load OTBN binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
-               sideloading to otbn.
+               Load ACC binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
+               sideloading to acc.
 
                Clear the sideload key once done.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_sideload_otbn"]
+      tests: ["chip_sw_keymgr_sideload_acc"]
     }
     {
       name: chip_sw_keymgr_sideload_kmac_error
@@ -1940,73 +1940,73 @@
       tests: []
     }
 
-    // OTBN (pre-verified IP) integration tests:
+    // ACC (pre-verified IP) integration tests:
     {
-      name: chip_sw_otbn_op
-      desc: '''Verify an OTBN operation.
+      name: chip_sw_acc_op
+      desc: '''Verify an ACC operation.
 
-            - SW test directs the OTBN engine to perform an ECDSA operation.
-            - SW validates the reception of the otbn done interrupt once the operation is complete.
+            - SW test directs the ACC engine to perform an ECDSA operation.
+            - SW validates the reception of the acc done interrupt once the operation is complete.
             - SW verifies the correctness of the result with the expected value which is
               pre-computed using a reference model.
             '''
       stage: V2
-      tests: ["chip_sw_otbn_ecdsa_op_irq",
-              "chip_sw_otbn_ecdsa_op_irq_jitter_en"]
+      tests: ["chip_sw_acc_ecdsa_op_irq",
+              "chip_sw_acc_ecdsa_op_irq_jitter_en"]
     }
     {
-      name: chip_sw_otbn_rnd_entropy
-      desc: '''Verify OTBN can fetch RND numbers from the entropy src.
+      name: chip_sw_acc_rnd_entropy
+      desc: '''Verify ACC can fetch RND numbers from the entropy src.
 
             - SW initializes the entropy subsystem to generate randomness.
-            - SW loads an OTBN app that executes instructions to read the RND bits.
-            - The OTBN app ensures that the values when read consecutively do not match, and it's
+            - SW loads an ACC app that executes instructions to read the RND bits.
+            - The ACC app ensures that the values when read consecutively do not match, and it's
               not all 0s or all 1s, as a basic measure to ensure that the entropy subsystem is
               returning some data.
             '''
       stage: V2
-      tests: ["chip_sw_otbn_randomness"]
+      tests: ["chip_sw_acc_randomness"]
     }
     {
-      name: chip_sw_otbn_urnd_entropy
-      desc: '''Verify OTBN can fetch URND numbers from the entropy src.
+      name: chip_sw_acc_urnd_entropy
+      desc: '''Verify ACC can fetch URND numbers from the entropy src.
 
-            - Similar to chip_otbn_rnd_entropy, but verifies the URND bits.
+            - Similar to chip_acc_rnd_entropy, but verifies the URND bits.
             '''
       stage: V2
-      tests:  ["chip_sw_otbn_randomness"]
+      tests:  ["chip_sw_acc_randomness"]
     }
     {
-      name: chip_sw_otbn_idle
-      desc: '''Verify the OTBN idle signal to clkmgr.
+      name: chip_sw_acc_idle
+      desc: '''Verify the ACC idle signal to clkmgr.
 
-            - Write the OTBN clk hint to 0 within clkmgr to indicate OTBN clk can be gated
-              and verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is disabled).
-            - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk can be enabled.
-              Verify that the OTBN clk hint status within clkmgr reads 1 (OTBN is enabled).
-            - Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and verify that
-              the OTBN clk hint status within clkmgr reads 1 (OTBN is enabled) before the
-              OTBN operation is complete.
-            - After the OTBN operation is complete, verify that the OTBN clk hint status within
-              clkmgr now reads 0 again (OTBN is disabled).
-            - Write the OTBN clk hint to 1, read and check the OTBN output for correctness.
+            - Write the ACC clk hint to 0 within clkmgr to indicate ACC clk can be gated
+              and verify that the ACC clk hint status within clkmgr reads 0 (ACC is disabled).
+            - Write the ACC clk hint to 1 within clkmgr to indicate ACC clk can be enabled.
+              Verify that the ACC clk hint status within clkmgr reads 1 (ACC is enabled).
+            - Start an ACC operation, write the ACC clk hint to 0 within clkmgr and verify that
+              the ACC clk hint status within clkmgr reads 1 (ACC is enabled) before the
+              ACC operation is complete.
+            - After the ACC operation is complete, verify that the ACC clk hint status within
+              clkmgr now reads 0 again (ACC is disabled).
+            - Write the ACC clk hint to 1, read and check the ACC output for correctness.
             '''
       stage: V2
-      tests: ["chip_sw_otbn_randomness"]
+      tests: ["chip_sw_acc_randomness"]
     }
     {
-      name: chip_sw_otbn_mem_scramble
-      desc: '''Verify the OTBN can receive keys from the OTP to scramble the OTBN imem and dmem.
+      name: chip_sw_acc_mem_scramble
+      desc: '''Verify the ACC can receive keys from the OTP to scramble the ACC imem and dmem.
 
             - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
               done by the test_rom startup code).
             - Extract random address offsets from RV_CORE_IBEX_RND_DATA.
-            - Wait for OTBN to be idle.
-            - Write random address offsets in OTBN imem and dmem.
+            - Wait for ACC to be idle.
+            - Write random address offsets in ACC imem and dmem.
             - Read back the written address offsets and compare against expected values. All values
               must match, no integrity errors must be triggered.
-            - Have OTBN fetch new keys and nonces from the OTP_CTRL.
-            - Wait for OTBN to be idle.
+            - Have ACC fetch new keys and nonces from the OTP_CTRL.
+            - Wait for ACC to be idle.
             - Read back the written address offsets. Most reads should trigger integrity errors. It
               is possible that after re-scrambling the integrity bits are still valid. But this is
               expected to happen rarely. If the number of observed integrity errors is below a
@@ -2015,7 +2015,7 @@
               (unique, non-zero data).
             '''
       stage: V2
-      tests: ["chip_sw_otbn_mem_scramble"]
+      tests: ["chip_sw_acc_mem_scramble"]
     }
 
     /////////////////////////////////////////////////////
@@ -2170,20 +2170,20 @@
       desc: '''Verify the proliferation of keys to security peripherals.
 
             - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
-              (note that keymgr does not have handshake), OTBN and the CPU instruction cache.
+              (note that keymgr does not have handshake), ACC and the CPU instruction cache.
             - Ensure that the test requests a new key and verifies the previously written
               data to an address now returns a garbage value.
 
             X-ref'ed with the following IP tests that consume these signals:
             - chip_sw_sram_scrambled_access
             - chip_sw_keymgr_key_derivation
-            - chip_sw_otbn_mem_scramble
+            - chip_sw_acc_mem_scramble
             '''
       stage: V2
       tests: [// Verifies both, main and retention SRAM scrambling.
               "chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_keymgr_dpe_key_derivation",
-              "chip_sw_otbn_mem_scramble",
+              "chip_sw_acc_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
     }
     {
@@ -2191,12 +2191,12 @@
       desc: '''Verify the entropy interface from OTP ctrl to EDN.
 
             This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
-            to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
+            to receive some entropy bits before the keys for SRAM ctrl and ACC are computed.
             '''
       stage: V2
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_keymgr_dpe_key_derivation",
-              "chip_sw_otbn_mem_scramble",
+              "chip_sw_acc_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
     }
     {
@@ -2401,7 +2401,7 @@
             '''
       stage: V2
       tests: ["chip_sw_clkmgr_jitter",
-              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_acc_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
               "chip_sw_keymgr_dpe_key_derivation_jitter_en",
@@ -2667,7 +2667,7 @@
               "chip_sw_gpio_smoketest",
               "chip_sw_hmac_smoketest",
               "chip_sw_kmac_smoketest",
-              "chip_sw_otbn_smoketest",
+              "chip_sw_acc_smoketest",
               "chip_sw_otp_ctrl_smoketest",
               "chip_sw_pwrmgr_smoketest",
               "chip_sw_rv_plic_smoketest",
@@ -2827,7 +2827,7 @@
                RAW_UNLOCK mode of operation.
              - Switch TAP interface to rv_dm and configure the ROM_EXEC_EN OTP to enable ROM
                execution.
-             - If running with the production ROM, enable signature verification via OTBN to
+             - If running with the production ROM, enable signature verification via ACC to
                improve simulation time.
              - Perform POR to apply OTP changes.
              - With rv_dm TAP still selected, switch to external clock via clkmgr using extclk
@@ -2856,11 +2856,11 @@
 
       Blocks / functionality to run simultaneously in this test:
 
-        - Staggered activation of OTBN, aes, KMAC/HMAC.
+        - Staggered activation of ACC, aes, KMAC/HMAC.
           - KMAC / aes would need to take turns being fed data
           - KMAC activation should be a combination of otp background, key
             manager background and software
-          - for OTBN, any signature verification / signing event is sufficient
+          - for ACC, any signature verification / signing event is sufficient
         - Entropy complex ongoing
           - reseed / update operation ongoing
         - Flash scramble ongoing (ideally both instruction and data, but data should be sufficient

@@ -17,7 +17,7 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwm.h"
@@ -31,7 +31,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/i2c_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils_rsa.h"
+#include "sw/device/lib/testing/acc_testutils_rsa.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/spi_host_testutils.h"
@@ -73,7 +73,7 @@ static dif_i2c_t i2c_0;
 static dif_i2c_t i2c_1;
 static dif_i2c_t i2c_2;
 static dif_kmac_t kmac;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux;
 static dif_pwm_t pwm;
@@ -392,7 +392,7 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host_1));
   CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+      dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
   CHECK_DIF_OK(dif_pattgen_init(
       mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR), &pattgen));
   CHECK_DIF_OK(dif_pwm_init(
@@ -1031,8 +1031,8 @@ void configure_pwm(void) {
       /*channels*/ (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleEnabled));
 }
 
-static void configure_otbn(void) {
-  CHECK_STATUS_OK(otbn_testutils_rsa_load(&otbn));
+static void configure_acc(void) {
+  CHECK_STATUS_OK(acc_testutils_rsa_load(&acc));
 }
 
 static void check_crypto_blocks_idle(void) {
@@ -1046,10 +1046,10 @@ static void check_crypto_blocks_idle(void) {
   dif_kmac_status_t kmac_status;
   CHECK_DIF_OK(dif_kmac_get_status(&kmac, &kmac_status));
   CHECK(kmac_status.sha3_state == kDifKmacSha3StateAbsorbing);
-  // OTBN
-  dif_otbn_status_t otbn_status;
-  CHECK_DIF_OK(dif_otbn_get_status(&otbn, &otbn_status));
-  CHECK(otbn_status == kDifOtbnStatusIdle);
+  // ACC
+  dif_acc_status_t acc_status;
+  CHECK_DIF_OK(dif_acc_get_status(&acc, &acc_status));
+  CHECK(acc_status == kDifAccStatusIdle);
 }
 
 static void complete_kmac_operations(uint32_t *digest) {
@@ -1278,9 +1278,9 @@ static void max_power(void) {
   mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
 
-  // Issue OTBN start command.
-  CHECK_STATUS_OK(otbn_testutils_rsa_modexp_f4_start(
-      &otbn, (unsigned char *)kRsa2KModulus, (unsigned char *)kRsa2KSignature,
+  // Issue ACC start command.
+  CHECK_STATUS_OK(acc_testutils_rsa_modexp_f4_start(
+      &acc, (unsigned char *)kRsa2KModulus, (unsigned char *)kRsa2KSignature,
       sizeof(kRsa2KModulus)));
 
   // Enable pattgen.
@@ -1351,10 +1351,10 @@ static void max_power(void) {
   CHECK(kKmacDigestLength == ARRAYSIZE(kKmacDigest));
   CHECK_ARRAYS_EQ(kmac_digest, kKmacDigest, ARRAYSIZE(kKmacDigest));
 
-  // Check OTBN operations.
+  // Check ACC operations.
   uint32_t rsa_recovered_message[ARRAYSIZE(kRsa2KEncodedMessage)];
-  CHECK_STATUS_OK(otbn_testutils_rsa_modexp_f4_finalize(
-      &otbn, (unsigned char *)rsa_recovered_message,
+  CHECK_STATUS_OK(acc_testutils_rsa_modexp_f4_finalize(
+      &acc, (unsigned char *)rsa_recovered_message,
       sizeof(rsa_recovered_message)));
   CHECK_ARRAYS_EQ(rsa_recovered_message, kRsa2KEncodedMessage,
                   ARRAYSIZE(kRsa2KEncodedMessage));
@@ -1475,7 +1475,7 @@ bool test_main(void) {
       dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
-  configure_otbn();
+  configure_acc();
   configure_uart(&uart_1);
   configure_uart(&uart_2);
   configure_uart(&uart_3);

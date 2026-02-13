@@ -25,7 +25,7 @@ enum {
 /**
  * Verifies an RSASSA-PKCS1-v1_5 signature.
  *
- * The actual implementation that is used (software or OTBN) is determined by
+ * The actual implementation that is used (software or ACC) is determined by
  * the life cycle state of the device and the OTP value.
  *
  * @param signature Signature to be verified.

@@ -10,7 +10,7 @@ Regardless of the validity of the command, the hardware sequences are triggered 
 
 The software is able to read the current state of key manager, however it never has access to the associated internal key.
 
-When issuing the `generate-output-hw` command, software must select a destination primitive (AES, KMAC or OTBN).
+When issuing the `generate-output-hw` command, software must select a destination primitive (AES, KMAC or ACC).
 At the conclusion of the command, key and valid signals are forwarded by the key manager to the selected destination primitive.
 The key and valid signals remain asserted to the selected destination until software explicitly disables the output via another command, or issues another `generate-output-hw` command with a different destination primitive.
 

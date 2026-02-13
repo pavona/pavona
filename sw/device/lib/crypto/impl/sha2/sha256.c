@@ -13,7 +13,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/sha2/sha256_insn_counts.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -23,12 +23,12 @@
 
 enum {
   /**
-   * Maximum number of message chunks that the OTBN app can accept.
+   * Maximum number of message chunks that the ACC app can accept.
    *
    * This number is based on the DMEM size limit and usage by the SHA-256 app
    * itself; see `run_sha256.s` for the detailed calculation.
    */
-  kSha256MaxMessageChunksPerOtbnRun = 41,
+  kSha256MaxMessageChunksPerAccRun = 41,
 };
 
 /**
@@ -39,16 +39,16 @@ typedef struct sha256_message_block {
 } sha256_message_block_t;
 
 /**
- * Context object for the OTBN message buffer.
+ * Context object for the ACC message buffer.
  */
-typedef struct sha256_otbn_ctx {
+typedef struct sha256_acc_ctx {
   /**
    * Number of message blocks currently loaded.
    */
   size_t num_blocks;
-} sha256_otbn_ctx_t;
+} sha256_acc_ctx_t;
 
-// Initial state for SHA-256 (see FIPS 180-4, section 5.3.3). The SHA-256 OTBN
+// Initial state for SHA-256 (see FIPS 180-4, section 5.3.3). The SHA-256 ACC
 // app represents the state with little-endian words and in reverse word-order
 // compared with FIPS 180-4.
 static const uint32_t kSha256InitialState[kSha256StateWords] = {
@@ -58,18 +58,18 @@ static const uint32_t kSha256InitialState[kSha256StateWords] = {
 static_assert(sizeof(kSha256InitialState) == kSha256StateBytes,
               "Initial state for SHA-256 has an unexpected size.");
 
-OTBN_DECLARE_APP_SYMBOLS(run_sha256);         // The OTBN SHA-256 app.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha256, state);  // Hash state.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha256, msg);    // Input message.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha256,
+ACC_DECLARE_APP_SYMBOLS(run_sha256);         // The ACC SHA-256 app.
+ACC_DECLARE_SYMBOL_ADDR(run_sha256, state);  // Hash state.
+ACC_DECLARE_SYMBOL_ADDR(run_sha256, msg);    // Input message.
+ACC_DECLARE_SYMBOL_ADDR(run_sha256,
                          num_msg_chunks);  // Message length in blocks.
 
-static const otbn_app_t kOtbnAppSha256 = OTBN_APP_T_INIT(run_sha256);
-static const otbn_addr_t kOtbnVarSha256State =
-    OTBN_ADDR_T_INIT(run_sha256, state);
-static const otbn_addr_t kOtbnVarSha256Msg = OTBN_ADDR_T_INIT(run_sha256, msg);
-static const otbn_addr_t kOtbnVarSha256NumMsgChunks =
-    OTBN_ADDR_T_INIT(run_sha256, num_msg_chunks);
+static const acc_app_t kAccAppSha256 = ACC_APP_T_INIT(run_sha256);
+static const acc_addr_t kAccVarSha256State =
+    ACC_ADDR_T_INIT(run_sha256, state);
+static const acc_addr_t kAccVarSha256Msg = ACC_ADDR_T_INIT(run_sha256, msg);
+static const acc_addr_t kAccVarSha256NumMsgChunks =
+    ACC_ADDR_T_INIT(run_sha256, num_msg_chunks);
 
 void sha256_init(sha256_state_t *state) {
   // Set the initial state.
@@ -81,23 +81,23 @@ void sha256_init(sha256_state_t *state) {
 }
 
 /**
- * Run OTBN to process the data currently in DMEM.
+ * Run ACC to process the data currently in DMEM.
  *
- * @param ctx OTBN message buffer context information (updated in place).
+ * @param ctx ACC message buffer context information (updated in place).
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
+static status_t process_message_buffer(sha256_acc_ctx_t *ctx) {
   // Write the number of blocks to DMEM.
   HARDENED_TRY(
-      otbn_dmem_write(1, &ctx->num_blocks, kOtbnVarSha256NumMsgChunks));
+      acc_dmem_write(1, &ctx->num_blocks, kAccVarSha256NumMsgChunks));
 
-  // Run the OTBN program.
-  HARDENED_TRY(otbn_execute());
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Run the ACC program.
+  HARDENED_TRY(acc_execute());
+  HARDENED_TRY(acc_busy_wait_for_done());
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kSha256MinInstructionCount, kSha256MaxInstructionCount);
+  ACC_CHECK_INSN_COUNT(kSha256MinInstructionCount, kSha256MaxInstructionCount);
 
   // Reset the message buffer counter.
   ctx->num_blocks = 0;
@@ -107,28 +107,28 @@ static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
 /**
  * Add a single message block to the processing buffer.
  *
- * Runs OTBN if the maximum number of message blocks has been reached.
+ * Runs ACC if the maximum number of message blocks has been reached.
  *
- * @param ctx OTBN message buffer context information (updated in place).
+ * @param ctx ACC message buffer context information (updated in place).
  * @param block Block to write.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t process_block(sha256_otbn_ctx_t *ctx,
+static status_t process_block(sha256_acc_ctx_t *ctx,
                               const sha256_message_block_t *block) {
   // Calculate the offset within the message buffer.
   size_t offset = ctx->num_blocks * kSha256MessageBlockBytes;
-  otbn_addr_t dst = kOtbnVarSha256Msg + offset;
+  acc_addr_t dst = kAccVarSha256Msg + offset;
 
   // Copy the message block into DMEM.
-  HARDENED_TRY(otbn_dmem_write(kSha256MessageBlockWords, block->data, dst));
+  HARDENED_TRY(acc_dmem_write(kSha256MessageBlockWords, block->data, dst));
   ctx->num_blocks += 1;
 
   // If we've reached the maximum number of message chunks for a single run,
-  // then run the OTBN program to update the state in-place. Note that there
+  // then run the ACC program to update the state in-place. Note that there
   // is no need to read back and then re-write the state; it'll stay updated
   // in DMEM for the next run.
-  if (ctx->num_blocks == kSha256MaxMessageChunksPerOtbnRun) {
+  if (ctx->num_blocks == kSha256MaxMessageChunksPerAccRun) {
     HARDENED_TRY(process_message_buffer(ctx));
   }
   return OTCRYPTO_OK;
@@ -138,18 +138,18 @@ static status_t process_block(sha256_otbn_ctx_t *ctx,
  * Pad the block as described in FIPS 180-4, section 5.1.1.
  *
  * Padding fills the current block and may require one additional block. This
- * function calls `process_block` to load the padded block(s) into OTBN.
+ * function calls `process_block` to load the padded block(s) into ACC.
  *
  * The length of real data in the partial block should be the byte-length of
  * the message so far (total_len >> 3) modulo `kSha256MessageBlockBytes`.
  *
- * @param ctx OTBN message buffer context information (updated in place).
+ * @param ctx ACC message buffer context information (updated in place).
  * @param total_len Total length of message so far.
  * @param block Current (partial) block.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t process_padding(sha256_otbn_ctx_t *ctx,
+static status_t process_padding(sha256_acc_ctx_t *ctx,
                                 const uint64_t total_len,
                                 sha256_message_block_t *block) {
   size_t partial_block_len = (total_len >> 3) % kSha256MessageBlockBytes;
@@ -198,8 +198,8 @@ OT_WARN_UNUSED_RESULT
 static status_t process_message(sha256_state_t *state, const uint8_t *msg,
                                 size_t msg_len,
                                 hardened_bool_t padding_needed) {
-  // Load the SHA-256 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppSha256));
+  // Load the SHA-256 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppSha256));
 
   // Check the message length. SHA-256 messages must be less than 2^64 bits
   // long in total.
@@ -210,14 +210,14 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
   }
 
   // Calculate the new value of state->total_len. Do NOT update the state yet
-  // (because if we get an OTBN error, it would become out of sync).
+  // (because if we get an ACC error, it would become out of sync).
   sha256_state_t new_state;
   new_state.total_len = state->total_len + msg_bits;
 
   // Set the initial state if at least one block has been received before now.
   if (state->total_len >= kSha256MessageBlockBytes) {
     HARDENED_TRY(
-        otbn_dmem_write(kSha256StateWords, state->H, kOtbnVarSha256State));
+        acc_dmem_write(kSha256StateWords, state->H, kAccVarSha256State));
   }
 
   // Start computing the first block for the hash computation by simply copying
@@ -227,8 +227,8 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
   size_t partial_block_len = (state->total_len >> 3) % kSha256MessageBlockBytes;
   memcpy(block.data, state->partial_block, partial_block_len);
 
-  // Initialize the context for the OTBN message buffer.
-  sha256_otbn_ctx_t ctx = {.num_blocks = 0};
+  // Initialize the context for the ACC message buffer.
+  sha256_acc_ctx_t ctx = {.num_blocks = 0};
 
   // Process the message one block at a time, including partial data if it is
   // present (which is only possible on the first iteration).
@@ -257,12 +257,12 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
     HARDENED_TRY(process_message_buffer(&ctx));
   }
 
-  // Read the final state from OTBN dmem.
+  // Read the final state from ACC dmem.
   HARDENED_TRY(
-      otbn_dmem_read(kSha256StateWords, kOtbnVarSha256State, new_state.H));
+      acc_dmem_read(kSha256StateWords, kAccVarSha256State, new_state.H));
 
-  // Clear OTBN's memory.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
+  // Clear ACC's memory.
+  HARDENED_TRY(acc_dmem_sec_wipe());
 
   // At this point, no more errors are possible; it is safe to update the
   // context object.

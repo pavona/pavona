@@ -103,12 +103,12 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
     (MetaStableFlop=~"*u_clk_main_kmac_trans.u_cg.*en_latch")} \
   -comment {POR_N resets KMAC module too.}
 
-# OTBN Clock Gating
+# ACC Clock Gating
 set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(SourceReset=="POR_N") && \
-    (ResetFlop=~"*clk_main_otbn_trans*") && \
-    (MetaStableFlop=~"*u_clk_main_otbn_trans.u_cg.*en_latch")} \
-  -comment {POR_N resets OTBN module too.}
+    (ResetFlop=~"*clk_main_acc_trans*") && \
+    (MetaStableFlop=~"*u_clk_main_acc_trans.u_cg.*en_latch")} \
+  -comment {POR_N resets ACC module too.}
 
 # SW_EN to CG
 create_view_criteria -name PorNSwEnCg -rule E_RST_METASTABILITY \

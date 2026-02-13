@@ -88,7 +88,7 @@ def write_split(testvecs, filename, max_tests_per_file):
 def main() -> int:
     parser = argparse.ArgumentParser(
         description='Analyze whether secret data affects the control flow of '
-        'an OTBN program or subroutine.')
+        'an ACC program or subroutine.')
     parser.add_argument('src',
                         metavar='FILE',
                         type=argparse.FileType('r'),

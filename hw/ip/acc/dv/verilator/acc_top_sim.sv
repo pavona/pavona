@@ -1,0 +1,535 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+module acc_top_sim (
+  input IO_CLK,
+  input IO_RST_N
+);
+  import acc_pkg::*;
+  import acc_pqc_env_pkg::*;
+  import edn_pkg::*;
+  import keymgr_pkg::acc_key_req_t;
+
+  // Size of the instruction memory, in bytes
+  parameter int ImemSizeByte = acc_reg_pkg::ACC_IMEM_SIZE;
+  // Size of the data memory, in bytes
+  parameter int DmemSizeByte = acc_reg_pkg::ACC_DMEM_SIZE + acc_pkg::DmemScratchSizeByte;
+
+  localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
+  localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
+
+  // Fixed key and nonce for scrambling in verilator environment
+  localparam logic [127:0] TestScrambleKey   = 128'h48ecf6c738f0f108a5b08620695ffd4d;
+  localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
+
+  logic      acc_done, acc_done_r, acc_done_rr;
+  core_err_bits_t core_err_bits;
+  err_bits_t acc_err_bits, acc_err_bits_r, acc_err_bits_rr;
+  logic      acc_start, acc_start_r;
+
+  // Initialise acc_start_done to 1 so that we only signal acc_start after we have seen a reset. If
+  // you don't do this, we start ACC before the reset, which can generate confusing trace messages.
+  logic      acc_start_done = 1'b1;
+
+  // Instruction memory (IMEM) signals
+  logic                     imem_req;
+  logic [ImemAddrWidth-1:0] imem_addr;
+  logic [38:0]              imem_rdata;
+  logic                     imem_rvalid;
+
+  // Data memory (DMEM) signals
+  logic                     dmem_req;
+  logic                     dmem_write;
+  logic [DmemAddrWidth-1:0] dmem_addr;
+  logic [ExtWLEN-1:0]       dmem_wdata;
+  logic [ExtWLEN-1:0]       dmem_wmask;
+  logic [ExtWLEN-1:0]       dmem_rdata;
+  logic                     dmem_rvalid;
+  logic                     dmem_rerror;
+
+  // Entropy Distribution Network (EDN)
+  logic                     edn_rnd_req, edn_urnd_req;
+  logic                     edn_rnd_ack, edn_urnd_ack;
+  logic [EdnDataWidth-1:0]  edn_rnd_data, edn_urnd_data;
+  logic                     edn_rnd_data_valid;
+  logic                     edn_urnd_data_valid;
+
+  // Instruction counter (feeds into acc.INSN_CNT in full block)
+  logic [31:0]              insn_cnt;
+  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares;
+  assign sideload_key_shares[0] = {12{32'hDEADBEEF}};
+  assign sideload_key_shares[1] = {12{32'hBAADF00D}};
+  acc_key_req_t keymgr_key;
+  assign keymgr_key.key[0] = sideload_key_shares[0];
+  assign keymgr_key.key[1] = sideload_key_shares[1];
+  assign keymgr_key.valid  = 1'b1;
+
+  logic secure_wipe_running;
+
+  acc_core #(
+    .ImemSizeByte             ( ImemSizeByte ),
+    .DmemSizeByte             ( DmemSizeByte ),
+    .SecMuteUrnd              ( 1'b0         ),
+    .SecSkipUrndReseedAtStart ( 1'b0         ),
+    .AccPQCEn                ( AccPQCEn    )
+  ) u_acc_core (
+    .clk_i                       ( IO_CLK                     ),
+    .rst_ni                      ( IO_RST_N                   ),
+
+    .start_i                     ( acc_start_r               ),
+    .done_o                      ( acc_done                  ),
+    .locking_o                   (                            ),
+    .secure_wipe_running_o       ( secure_wipe_running        ),
+
+    .err_bits_o                  ( core_err_bits              ),
+    .recoverable_err_o           (                            ),
+
+    .imem_req_o                  ( imem_req                   ),
+    .imem_addr_o                 ( imem_addr                  ),
+    .imem_rdata_i                ( imem_rdata                 ),
+    .imem_rvalid_i               ( imem_rvalid                ),
+
+    .dmem_req_o                  ( dmem_req                   ),
+    .dmem_write_o                ( dmem_write                 ),
+    .dmem_addr_o                 ( dmem_addr                  ),
+    .dmem_wdata_o                ( dmem_wdata                 ),
+    .dmem_wmask_o                ( dmem_wmask                 ),
+    .dmem_rmask_o                ( ),
+    .dmem_rdata_i                ( dmem_rdata                 ),
+    .dmem_rvalid_i               ( dmem_rvalid                ),
+    .dmem_rerror_i               ( dmem_rerror                ),
+
+    .edn_rnd_req_o               ( edn_rnd_req                ),
+    .edn_rnd_ack_i               ( edn_rnd_ack                ),
+    .edn_rnd_data_i              ( edn_rnd_data               ),
+    .edn_rnd_fips_i              ( 1'b1                       ),
+    .edn_rnd_err_i               ( 1'b0                       ),
+
+    .edn_urnd_req_o              ( edn_urnd_req               ),
+    .edn_urnd_ack_i              ( edn_urnd_ack               ),
+    .edn_urnd_data_i             ( edn_urnd_data              ),
+
+    .insn_cnt_o                  ( insn_cnt                   ),
+    .insn_cnt_clear_i            ( 1'b0                       ),
+
+    .mems_sec_wipe_o             (                            ),
+    .dmem_sec_wipe_urnd_key_o    (                            ),
+    .imem_sec_wipe_urnd_key_o    (                            ),
+    .req_sec_wipe_urnd_keys_i    ( 1'b0                       ),
+
+    .escalate_en_i               ( prim_mubi_pkg::MuBi4False  ),
+    .rma_req_i                   ( prim_mubi_pkg::MuBi4False  ),
+    .rma_ack_o                   (                            ),
+
+    .software_errs_fatal_i       ( 1'b0                       ),
+
+    .sideload_key_shares_i       ( sideload_key_shares        ),
+    .sideload_key_shares_valid_i ( 2'b11                      ),
+
+    .kmac_app_req_o              (                            ),
+    .kmac_app_rsp_i              (                            )
+  );
+
+  // The values returned by the mock EDN must match those set in `standalonesim.py`.
+  localparam logic [1:0][WLEN-1:0] FixedEdnVals = {{4{64'hCCCC_CCCC_BBBB_BBBB}},
+                                                   {4{64'hAAAA_AAAA_9999_9999}}};
+
+  edn_req_t rnd_req;
+  edn_rsp_t rnd_rsp;
+
+  assign rnd_req.edn_req = edn_rnd_req;
+
+  acc_mock_edn #(
+    .Width        ( WLEN         ),
+    .FixedEdnVals ( FixedEdnVals )
+  ) u_mock_rnd_edn(
+    .clk_i      ( IO_CLK       ),
+    .rst_ni     ( IO_RST_N     ),
+
+    .edn_req_i  ( rnd_req  ),
+    .edn_rsp_o  ( rnd_rsp  ),
+
+    .edn_data_o ( edn_rnd_data ),
+    .edn_ack_o  ( edn_rnd_ack  )
+  );
+
+  assign edn_rnd_data_valid = edn_rnd_req & edn_rnd_ack;
+
+  edn_req_t urnd_req;
+  edn_rsp_t urnd_rsp;
+
+  assign urnd_req.edn_req = edn_urnd_req;
+
+  acc_mock_edn #(
+    .Width        ( WLEN         ),
+    .FixedEdnVals ( FixedEdnVals )
+  ) u_mock_urnd_edn(
+    .clk_i      ( IO_CLK       ),
+    .rst_ni     ( IO_RST_N     ),
+
+    .edn_req_i  ( urnd_req ),
+    .edn_rsp_o  ( urnd_rsp ),
+
+    .edn_ack_o  ( edn_urnd_ack  ),
+    .edn_data_o ( edn_urnd_data )
+  );
+
+  assign edn_urnd_data_valid = edn_urnd_req & edn_urnd_ack;
+
+  bind acc_core acc_trace_if #(.ImemAddrWidth, .DmemAddrWidth) i_acc_trace_if (.*);
+  bind acc_core acc_tracer u_acc_tracer(.*, .acc_trace(i_acc_trace_if));
+
+  assign u_acc_core.i_acc_trace_if.scramble_state_err_i = '0;
+  assign u_acc_core.i_acc_trace_if.missed_gnt_i = '0;
+
+  // Convert from core_err_bits_t to err_bits_t
+  assign acc_err_bits = '{
+    fatal_software:       core_err_bits.fatal_software,
+    lifecycle_escalation: 0,
+    illegal_bus_access:   0,
+    bad_internal_state:   core_err_bits.bad_internal_state,
+    bus_intg_violation:   0,
+    reg_intg_violation:   core_err_bits.reg_intg_violation,
+    dmem_intg_violation:  core_err_bits.dmem_intg_violation,
+    imem_intg_violation:  core_err_bits.imem_intg_violation,
+    rnd_fips_chk_fail:    core_err_bits.rnd_fips_chk_fail,
+    rnd_rep_chk_fail:     core_err_bits.rnd_rep_chk_fail,
+    key_invalid:          core_err_bits.key_invalid,
+    loop:                 core_err_bits.loop,
+    illegal_insn:         core_err_bits.illegal_insn,
+    call_stack:           core_err_bits.call_stack,
+    bad_insn_addr:        core_err_bits.bad_insn_addr,
+    bad_data_addr:        core_err_bits.bad_data_addr
+  };
+
+  // Track when ACC is done with its initial secure wipe of the internal state.  We use this to
+  // wait for the ACC core to complete the initial secure wipe before we send it the start signal.
+  // Also keep a delayed copy of the done signal.  This is necessary to align with the status of
+  // ACC and the model, which lags one cycle behind the completion of the ACC core.
+  logic init_sec_wipe_done_q, init_sec_wipe_done_qq;
+  always_ff @(posedge IO_CLK, negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      init_sec_wipe_done_q  <= 1'b0;
+      init_sec_wipe_done_qq <= 1'b0;
+    end else begin
+      init_sec_wipe_done_qq <= init_sec_wipe_done_q;
+      if (!secure_wipe_running) init_sec_wipe_done_q <= 1'b1;
+    end
+  end
+
+  // Pulse acc_start for 1 cycle after the initial secure wipe is done.
+  // Flop `done_o` from acc_core to match up with model done signal.
+  always @(posedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      acc_start       <= 1'b0;
+      acc_start_r     <= 1'b0;
+      acc_start_done  <= 1'b0;
+      acc_done_r      <= 1'b0;
+      acc_done_rr     <= 1'b0;
+      acc_err_bits_r  <= '0;
+      acc_err_bits_rr <= '0;
+    end else begin
+      if (!acc_start_done && init_sec_wipe_done_q) begin
+        acc_start      <= 1'b1;
+        acc_start_done <= 1'b1;
+      end else if (acc_start) begin
+        acc_start <= 1'b0;
+      end
+
+      acc_start_r <= acc_start;
+      acc_done_r <= acc_done;
+      acc_done_rr <= acc_done_r;
+      acc_err_bits_r <= acc_err_bits;
+      acc_err_bits_rr <= acc_err_bits_r;
+    end
+  end
+
+  localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
+  localparam int DmemIndexWidth = prim_util_pkg::vbits(DmemSizeWords);
+
+  logic [DmemIndexWidth-1:0] dmem_index;
+  logic [DmemAddrWidth-DmemIndexWidth-1:0] unused_dmem_addr;
+
+  assign dmem_index = dmem_addr[DmemAddrWidth-1:DmemAddrWidth-DmemIndexWidth];
+  assign unused_dmem_addr = dmem_addr[DmemAddrWidth-DmemIndexWidth-1:0];
+
+  prim_ram_1p_scr #(
+    .Width              ( ExtWLEN       ),
+    .Depth              ( DmemSizeWords ),
+    .InstDepth          ( DmemSizeWords ),
+    .DataBitsPerMask    ( 39            ),
+    .EnableParity       ( 0             ),
+    .ReplicateKeyStream ( 1             )
+  ) u_dmem (
+    .clk_i            ( IO_CLK            ),
+    .rst_ni           ( IO_RST_N          ),
+
+    .key_valid_i      ( 1'b1              ),
+    .key_i            ( TestScrambleKey   ),
+    .nonce_i          ( TestScrambleNonce ),
+
+    .req_i            ( dmem_req          ),
+    .gnt_o            (                   ),
+    .write_i          ( dmem_write        ),
+    .addr_i           ( dmem_index        ),
+    .wdata_i          ( dmem_wdata        ),
+    .wmask_i          ( dmem_wmask        ),
+    .intg_error_i     ( 1'b0              ),
+
+    .rdata_o          ( dmem_rdata        ),
+    .rvalid_o         ( dmem_rvalid       ),
+    .raddr_o          (                   ),
+    .rerror_o         (                   ),
+    .cfg_i            ( '0                ),
+    .cfg_rsp_o        (                   ),
+
+    .wr_collision_o   (                   ),
+    .write_pending_o  (                   ),
+
+    .alert_o          (                   )
+  );
+
+  // No integrity errors in Verilator testbench
+  assign dmem_rerror = 1'b0;
+
+  localparam int ImemSizeWords = ImemSizeByte / 4;
+  localparam int ImemIndexWidth = prim_util_pkg::vbits(ImemSizeWords);
+
+  logic [ImemIndexWidth-1:0] imem_index;
+  logic [1:0] unused_imem_addr;
+
+  assign imem_index = imem_addr[ImemAddrWidth-1:2];
+  assign unused_imem_addr = imem_addr[1:0];
+
+  prim_ram_1p_scr #(
+    .Width           ( 39            ),
+    .Depth           ( ImemSizeWords ),
+    .InstDepth       ( ImemSizeWords ),
+    .DataBitsPerMask ( 39            ),
+    .EnableParity    ( 0             )
+  ) u_imem (
+    .clk_i            ( IO_CLK                  ),
+    .rst_ni           ( IO_RST_N                ),
+
+    .key_valid_i      ( 1'b1                    ),
+    .key_i            ( TestScrambleKey         ),
+    .nonce_i          ( TestScrambleNonce       ),
+
+    .req_i            ( imem_req                ),
+    .gnt_o            (                         ),
+    .write_i          ( 1'b0                    ),
+    .addr_i           ( imem_index              ),
+    .wdata_i          ( '0                      ),
+    .wmask_i          ( '0                      ),
+    .intg_error_i     ( 1'b0                    ),
+
+    .rdata_o          ( imem_rdata              ),
+    .rvalid_o         ( imem_rvalid             ),
+    .raddr_o          (                         ),
+    .rerror_o         (                         ),
+    .cfg_i            ( '0                      ),
+    .cfg_rsp_o        (                         ),
+
+    .wr_collision_o   (                         ),
+    .write_pending_o  (                         ),
+
+    .alert_o          (                         )
+  );
+
+  // When ACC is done let a few more cycles run then finish simulation
+  logic [1:0] finish_counter;
+
+  always @(posedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      finish_counter <= 2'd0;
+    end else begin
+      if (acc_done_r) begin
+        finish_counter <= 2'd1;
+      end
+
+      if (finish_counter != 0) begin
+        finish_counter <= finish_counter + 2'd1;
+      end
+
+      if (finish_counter == 2'd3) begin
+        $finish;
+      end
+    end
+  end
+
+  // The model
+  //
+  // This runs in parallel with the real core above, with consistency checks between the two.
+
+  localparam string DesignScope = "..u_acc_core";
+
+  err_bits_t acc_model_err_bits;
+  bit [31:0] acc_model_insn_cnt;
+  bit        acc_model_done_rr;
+  bit        acc_model_err;
+
+  acc_core_model #(
+    .MemScope        ( ".." ),
+    .DesignScope     ( DesignScope )
+  ) u_acc_core_model (
+    .clk_i                 ( IO_CLK ),
+    .clk_edn_i             ( IO_CLK ),
+    .rst_ni                ( IO_RST_N ),
+    .rst_edn_ni            ( IO_RST_N ),
+
+    .cmd_i                 ( acc_pkg::CmdExecute ),
+    .cmd_en_i              ( acc_start ),
+
+    .lc_escalate_en_i      ( lc_ctrl_pkg::Off ),
+    .lc_rma_req_i          ( lc_ctrl_pkg::Off ),
+
+    .err_bits_o            ( acc_model_err_bits ),
+
+    .edn_rnd_i             ( rnd_rsp ),
+    .edn_rnd_o             ( ),
+    .edn_rnd_cdc_done_i    ( edn_rnd_data_valid ),
+
+    .edn_urnd_i            ( urnd_rsp ),
+    .edn_urnd_o            ( ),
+    .edn_urnd_cdc_done_i   ( edn_urnd_data_valid ),
+
+    .init_sec_wipe_done_i  ( init_sec_wipe_done_qq ),
+
+    .otp_key_cdc_done_i    ( 1'b0 ),
+
+    .status_o              ( ),
+    .insn_cnt_o            ( acc_model_insn_cnt ),
+
+    .keymgr_key_i          ( keymgr_key),
+
+    .done_rr_o             ( acc_model_done_rr ),
+
+    .err_o                 ( acc_model_err )
+  );
+
+  bit done_mismatch_latched, err_bits_mismatch_latched, cnt_mismatch_latched;
+  bit model_err_latched, loop_warp_model_err;
+
+  always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      done_mismatch_latched     <= 1'b0;
+      err_bits_mismatch_latched <= 1'b0;
+      cnt_mismatch_latched      <= 1'b0;
+      model_err_latched         <= 1'b0;
+    end else begin
+      // Check that the 'done_o' output from the RTL matches the 'done_rr_o' output from the model
+      // (with two cycles' delay).
+      if (acc_done_rr && !acc_model_done_rr) begin
+        $display("ERROR: At time %0t, RTL done on previous cycle, but model still busy.", $time);
+        done_mismatch_latched <= 1'b1;
+      end
+      if (acc_model_done_rr && !acc_done_rr) begin
+        $display("ERROR: At time %0t, model finished, but RTL not done in time.", $time);
+        done_mismatch_latched <= 1'b1;
+      end
+      if (acc_model_done_rr && acc_done_rr) begin
+        if (acc_err_bits_rr != acc_model_err_bits) begin
+          $display("ERROR: At time %0t, acc_err_bits != acc_model_err_bits (0x%0x != 0x%0x).",
+                   $time, acc_err_bits_rr, acc_model_err_bits);
+          err_bits_mismatch_latched <= 1'b1;
+        end
+      end
+      if (insn_cnt != acc_model_insn_cnt) begin
+        if (!cnt_mismatch_latched) begin
+          $display("ERROR: At time %0t, insn_cnt != acc_model_insn_cnt (0x%0x != 0x%0x).",
+                   $time, insn_cnt, acc_model_insn_cnt);
+        end
+        cnt_mismatch_latched <= 1'b1;
+      end
+      model_err_latched <= model_err_latched | acc_model_err | loop_warp_model_err;
+    end
+  end
+
+  bit err_latched;
+  assign err_latched = |{done_mismatch_latched, err_bits_mismatch_latched, cnt_mismatch_latched,
+                         model_err_latched};
+
+  int bad_cycles;
+  always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      bad_cycles <= 0;
+    end else begin
+      if (err_latched) begin
+        bad_cycles <= bad_cycles + 1;
+      end
+      if (bad_cycles >= 3) begin
+        $error("Mismatch or model error (see message above)");
+      end
+    end
+  end
+
+  // Defined in acc_top_sim.cc
+  import "DPI-C" context function int AccTopInstallLoopWarps();
+  import "DPI-C" context function void AccTopApplyLoopWarp();
+  import "DPI-C" context function void AccTopDumpState();
+  bit warps_installed;
+
+  always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      warps_installed <= 1'b0;
+    end else begin
+      if (!warps_installed) begin
+        if (AccTopInstallLoopWarps() != 0) begin
+          $display("ERROR: At time %0t, AccTopInstallLoopWarps() failed.", $time);
+          loop_warp_model_err <= 1'b1;
+        end
+      end
+      warps_installed <= 1'b1;
+    end
+  end
+  always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
+    if (IO_RST_N) begin
+      AccTopApplyLoopWarp();
+    end
+  end
+  always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
+    if (IO_RST_N && u_acc_core.u_acc_controller.start_secure_wipe) begin
+      // When ACC starts a secure wipe this indicates the program has either terminated (executed
+      // 'ecall') or hit an error, either way the execution is done. The state must be dumped as the
+      // secure wipe is started so we can dump the final execution state not the all zeros state
+      // that will be present once a secure wipe is finished.
+      AccTopDumpState();
+    end
+  end
+
+  export "DPI-C" function acc_base_call_stack_get_size;
+
+  function automatic int unsigned acc_base_call_stack_get_size();
+    // Explicit zero extension required because Verilator (tested with v4.216) otherwise raises
+    // a `WIDTH` warning (which is promoted to an error).
+    return {{(32-$bits(u_acc_core.u_acc_rf_base.u_call_stack.stack_wr_ptr)){1'b0}},
+            u_acc_core.u_acc_rf_base.u_call_stack.stack_wr_ptr};
+  endfunction
+
+  export "DPI-C" function acc_base_call_stack_get_element;
+
+  function automatic int unsigned acc_base_call_stack_get_element(int index);
+    return u_acc_core.u_acc_rf_base.u_call_stack.stack_storage[index][31:0];
+  endfunction
+
+  export "DPI-C" function acc_base_reg_get;
+
+  function automatic int unsigned acc_base_reg_get(int index);
+    return u_acc_core.u_acc_rf_base.gen_rf_base_ff.u_acc_rf_base_inner.rf_reg[index][31:0];
+  endfunction
+
+  export "DPI-C" function acc_bignum_reg_get;
+
+  function automatic int unsigned acc_bignum_reg_get(int index, int word);
+    return u_acc_core.u_acc_rf_bignum.gen_rf_bignum_ff.u_acc_rf_bignum_inner.rf[index][word*39+:32];
+  endfunction
+
+  export "DPI-C" function acc_err_get;
+
+  function automatic bit acc_err_get();
+    return err_latched;
+  endfunction
+
+endmodule

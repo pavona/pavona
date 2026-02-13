@@ -333,7 +333,7 @@ module sram_ctrl
   // case. For one example, see
   //
   // https://opentitan.org/book/hw/top_earlgrey/
-  //    ip_autogen/otp_ctrl/doc/interfaces.html#interfaces-to-sram-and-otbn-scramblers
+  //    ip_autogen/otp_ctrl/doc/interfaces.html#interfaces-to-sram-and-acc-scramblers
   logic key_req, key_ack;
   assign key_req = reg2hw.ctrl.renew_scr_key.q &&
                    reg2hw.ctrl.renew_scr_key.qe &&

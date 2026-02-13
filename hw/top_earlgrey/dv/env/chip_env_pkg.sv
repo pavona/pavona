@@ -92,21 +92,21 @@ package chip_env_pkg;
     ICacheWay0Data,
     ICacheWay1Data,
     UsbdevBuf,
-    OtbnDmem[16],
-    OtbnImem,
+    AccDmem[16],
+    AccImem,
     Otp,
     RamMain[16],
     RamRet[16],
     Rom
   } chip_mem_e;
 
-  // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the OTBN test and the OTP image.
+  // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the ACC test and the OTP image.
   // This basically puts these SW types into 'slots' that the external regression tool can set.
   typedef enum {
     SwTypeRom       = 0, // Ibex SW - first stage boot ROM.
     SwTypeTestSlotA = 1, // Ibex SW - test SW in (flash) slot A.
     SwTypeTestSlotB = 2, // Ibex SW - test SW in (flash) slot B.
-    SwTypeOtbn      = 3, // Otbn SW
+    SwTypeAcc      = 3, // Acc SW
     SwTypeOtp       = 4, // Customized OTP image
     SwTypeDebug     = 5  // Debug SW - injected into SRAM.
   } sw_type_e;

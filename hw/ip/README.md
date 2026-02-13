@@ -19,7 +19,7 @@
 | [`kmac`]         | Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures     |
 | [`lc_ctrl`]      | Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access                          |
 | [`mbx`]          | DOE mailbox for use as an integrated OpenTitan communication channel.                                                             |
-| [`otbn`]         | Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures                                              |
+| [`acc`]         | Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures                                              |
 | [`otp_macro`]    | OTP macro simulation model and CSR block                                                                                          |
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
 | [`rom_ctrl`]     | Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset                                       |
@@ -51,7 +51,7 @@
 [`kmac`]: ./kmac/README.md
 [`lc_ctrl`]: ./lc_ctrl/README.md
 [`mbx`]: ./mbx/README.md
-[`otbn`]: ./otbn/README.md
+[`acc`]: ./acc/README.md
 [`otp_macro`]: ./otp_macro/README.md
 [`pattgen`]: ./pattgen/README.md
 [`rom_ctrl`]: ./rom_ctrl/README.md

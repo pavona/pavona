@@ -24,7 +24,7 @@ extern "C" {
  * The caller must ensure that `encoded_message_len` 32-bit words are allocated
  * in the output buffer.
  *
- * We encode the message in reversed byte-order from the RFC because OTBN
+ * We encode the message in reversed byte-order from the RFC because ACC
  * interprets the message as a fully little-endian integer.
  *
  * @param message_digest Message digest to encode.
@@ -67,7 +67,7 @@ status_t rsa_padding_pkcs1v15_verify(
  * The caller must ensure that `encoded_message_len` 32-bit words are allocated
  * in the output buffer.
  *
- * We encode the message in reversed byte-order from the RFC because OTBN
+ * We encode the message in reversed byte-order from the RFC because ACC
  * interprets the message as a fully little-endian integer.
  *
  * @param message_digest Message digest to encode.
@@ -96,7 +96,7 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
  * or logical error codes.
  *
  * Note that this function expects the encoded message in reversed byte-order
- * compared to the RFC, since OTBN is little-endian.
+ * compared to the RFC, since ACC is little-endian.
  *
  * Warning: modifies the encoded message in-place during comparison
  * (specifically, reverses the byte-order).
@@ -148,7 +148,7 @@ status_t rsa_padding_oaep_max_message_bytelen(
  * The hash function must be a fixed-length (SHA-2 or SHA-3) hash function. The
  * MGF will always be MGF1 with the same hash function.
  *
- * We encode the message in reversed byte-order from the RFC because OTBN
+ * We encode the message in reversed byte-order from the RFC because ACC
  * interprets the message as a fully little-endian integer.
  *
  * @param hash_mode Hash function to use.
@@ -180,7 +180,7 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
  * MGF will always be MGF1 with the same hash function.
  *
  * Note that this function expects the encoded message in reversed byte-order
- * compared to the RFC, since OTBN is little-endian.
+ * compared to the RFC, since ACC is little-endian.
  *
  * Warning: modifies the encoded message in-place during comparison
  * (specifically, reverses the byte-order).

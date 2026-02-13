@@ -123,11 +123,11 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/ip/keymgr_dpe/lint/{tool}"
              },
-             {    name: otbn
-                  fusesoc_core: lowrisc:ip:otbn
+             {    name: acc
+                  fusesoc_core: lowrisc:ip:acc
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
-                  rel_path: "hw/ip/otbn/lint/{tool}"
+                  rel_path: "hw/ip/acc/lint/{tool}"
              },
              {    name: otp_ctrl
                   fusesoc_core: lowrisc:darjeeling_ip:otp_ctrl

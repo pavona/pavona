@@ -10,7 +10,7 @@ package keymgr_pkg;
   parameter int KeyWidth = 256;
   parameter int CDIs = 2; // 2 different CDIs, sealing / attestation
   parameter int CdiWidth = prim_util_pkg::vbits(CDIs);
-  parameter int OtbnKeyWidth = 384;
+  parameter int AccKeyWidth = 384;
   parameter int DigestWidth = 128;     // uses truncated hash
   parameter int KmacDataIfWidth = 64;  // KMAC interface data width
   parameter int KeyMgrStages = 3; // Number of key manager stages (creator, ownerInt, owner)
@@ -51,7 +51,7 @@ package keymgr_pkg;
     256'he16a8fa9_5b613cd5_fb9ad23f_bd8347e1_64e45dac_5d08a41b_e83caa37_e03d9482;
   parameter seed_t RndCnstKmacSeedDefault =
     256'hc57f4c0b_b308e83f_3fc4bc63_d87dd67d_9071dc1c_e19484c8_3c94fb97_dd634369;
-  parameter seed_t RndCnstOtbnSeedDefault =
+  parameter seed_t RndCnstAccSeedDefault =
     256'hcbcb4d2d_0abeb81b_ca7451ae_d1e2479d_ba13530a_d046b945_646aa127_bd4f6a38;
   parameter seed_t RndCnstCdiDefault =
     256'h54180905_d14c1d2f_2dda1522_f332bc0e_fcd6b92f_f0f9db75_3a9a9544_26a42eab;
@@ -101,14 +101,14 @@ package keymgr_pkg;
     None,
     Aes,
     Kmac,
-    Otbn
+    Acc
   } keymgr_key_dest_e;
 
   // Enumeration for actual key slot idx
   typedef enum logic [1:0] {
     AesIdx,
     KmacIdx,
-    OtbnIdx,
+    AccIdx,
     LastIdx
   } keymgr_sideload_slot_idx_e;
 
@@ -226,7 +226,7 @@ package keymgr_pkg;
     SideLoadClrIdle,
     SideLoadClrAes,
     SideLoadClrKmac,
-    SideLoadClrOtbn
+    SideLoadClrAcc
   } keymgr_sideload_clr_e;
 
   // Key connection to various symmetric modules
@@ -235,20 +235,20 @@ package keymgr_pkg;
     logic [Shares-1:0][KeyWidth-1:0] key;
   } hw_key_req_t;
 
-  // Key connection to otbn
+  // Key connection to acc
   typedef struct packed {
     logic valid;
-    logic [Shares-1:0][OtbnKeyWidth-1:0] key;
-  } otbn_key_req_t;
+    logic [Shares-1:0][AccKeyWidth-1:0] key;
+  } acc_key_req_t;
 
   parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
     valid: 1'b0,
     key: {Shares{KeyWidth'(32'hDEADBEEF)}}
   };
 
-  parameter otbn_key_req_t OTBN_KEY_REQ_DEFAULT = '{
+  parameter acc_key_req_t ACC_KEY_REQ_DEFAULT = '{
     valid: 1'b0,
-    key: {Shares{OtbnKeyWidth'(32'hDEADBEEF)}}
+    key: {Shares{AccKeyWidth'(32'hDEADBEEF)}}
   };
 
   // The following structs should be sourced from other modules

@@ -120,8 +120,8 @@
             - Enable both EDNs in boot-time request mode.
             - Trigger the execution of a cryptographic hardware block consuming entropy (e.g. AES) to test EDN0.
             - Verify the entropy consuming endpoint finishes its operation.
-            - Trigger the execution of an OTBN program requiring entropy from both EDN1 and EDN0.
-            - Verify the OTBN program hangs.
+            - Trigger the execution of an ACC program requiring entropy from both EDN1 and EDN0.
+            - Verify the ACC program hangs.
             - Disable the entropy complex.
             - Configure unrealistically stringent health test threshold values for boot-time / bypass mode.
             - Configure an alert threshold value of 1 in the ALERT_THRESHOLD register.

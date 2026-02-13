@@ -55,10 +55,10 @@
                 // "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 // xbar tests
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson",
-                // Config files to get the correct flags for otbn_memutil and otbn_tracer
+                // Config files to get the correct flags for acc_memutil and acc_tracer
                 "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
-                "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
-                "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
+                "{proj_root}/hw/ip/acc/dv/memutil/acc_memutil_sim_opts.hjson",
+                "{proj_root}/hw/ip/acc/dv/tracer/acc_tracer_sim_opts.hjson",
 //                "{proj_root}/hw/{top_chip}/data/chip_cfg.hjson",
                 "{top_dv_path}/chip_smoketests.hjson",
                 "{top_dv_path}/chip_rom_tests.hjson",
@@ -228,10 +228,10 @@
     }
   ]
 
-  // Add options needed to compile against otbn_memutil, otbn_tracer,
+  // Add options needed to compile against acc_memutil, acc_tracer,
   // memutil_dpi_scrambled, and AES C model
-  en_build_modes: ["{tool}_otbn_memutil_build_opts",
-                   "{tool}_otbn_tracer_build_opts",
+  en_build_modes: ["{tool}_acc_memutil_build_opts",
+                   "{tool}_acc_tracer_build_opts",
                    "{tool}_memutil_dpi_scrambled_build_opts",
                    "{tool}_aes_model_build_opts"]
 
@@ -401,7 +401,7 @@
   // to know what type of image is it:
   // - 0 for Boot ROM,
   // - 1 for SW test (loaded in flash),
-  // - 2 for OTBN test, and
+  // - 2 for ACC test, and
   // - 3 for OTP.
   // This allows an arbitrary number of SW images to be supplied to the TB.
   //
@@ -940,32 +940,32 @@
       run_opts: ["+sw_test_timeout_ns=18_000_000"]
     }
     {
-      name: chip_sw_otbn_randomness
+      name: chip_sw_acc_randomness
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otbn_randomness_test:6:new_rules"]
+      sw_images: ["//sw/device/tests:acc_randomness_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=18_000_000","+rng_srate_value=30"]
     }
     {
-      name: chip_sw_otbn_ecdsa_op_irq
+      name: chip_sw_acc_ecdsa_op_irq
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:6:new_rules"]
+      sw_images: ["//sw/device/tests:acc_ecdsa_op_irq_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=28_000_000", "+rng_srate_value=30"]
       run_timeout_mins: 300
     }
     {
-      name: chip_sw_otbn_ecdsa_op_irq_jitter_en
+      name: chip_sw_acc_ecdsa_op_irq_jitter_en
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:6:new_rules"]
+      sw_images: ["//sw/device/tests:acc_ecdsa_op_irq_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=33_000_000", "+rng_srate_value=30", "+en_jitter=1"]
       run_timeout_mins: 300
     }
     {
-      name: chip_sw_otbn_mem_scramble
+      name: chip_sw_acc_mem_scramble
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otbn_mem_scramble_test:6:new_rules"]
+      sw_images: ["//sw/device/tests:acc_mem_scramble_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=15_000_000", "+en_scb_tl_err_chk=0",
                  "+bypass_alert_ready_to_end_check=1"]
@@ -1210,9 +1210,9 @@
     //   run_opts: ["+sw_test_timeout_ns=20_000_000"]
     // }
     // {
-    //   name: chip_sw_keymgr_sideload_otbn
+    //   name: chip_sw_keymgr_sideload_acc
     //   uvm_test_seq: chip_sw_base_vseq
-    //   sw_images: ["//sw/device/tests:keymgr_sideload_otbn_test:6:new_rules"]
+    //   sw_images: ["//sw/device/tests:keymgr_sideload_acc_test:6:new_rules"]
     //   en_run_modes: ["sw_test_mode_test_rom"]
     //   run_opts: ["+sw_test_timeout_ns=20_000_000"]
     //   run_timeout_mins: 180
@@ -1368,9 +1368,9 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_clkmgr_off_otbn_trans
+      name: chip_sw_clkmgr_off_acc_trans
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:clkmgr_off_otbn_trans_test:6:new_rules"]
+      sw_images: ["//sw/device/tests:clkmgr_off_acc_trans_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -1511,9 +1511,9 @@
       run_opts: ["+cal_sys_clk_70mhz=1"]
     }
     {
-      name: chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq
+      name: chip_sw_acc_ecdsa_op_irq_jitter_en_reduced_freq
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:6:new_rules"]
+      sw_images: ["//sw/device/tests:acc_ecdsa_op_irq_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=33_000_000", "+rng_srate_value=30", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
       run_timeout_mins: 1000
@@ -1623,7 +1623,7 @@
               "chip_sw_gpio_smoketest"
               "chip_sw_hmac_smoketest",
               "chip_sw_kmac_smoketest",
-              "chip_sw_otbn_smoketest",
+              "chip_sw_acc_smoketest",
               "chip_sw_otp_ctrl_smoketest",
               "chip_sw_rstmgr_smoketest",
               "chip_sw_rv_plic_smoketest",
@@ -1639,7 +1639,7 @@
     {
       name: jitter
       tests: ["chip_sw_clkmgr_jitter",
-              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_acc_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
               "chip_sw_keymgr_key_derivation_jitter_en",
@@ -1649,7 +1649,7 @@
     {
       name: jitter_reduced_freq
       tests: ["chip_sw_clkmgr_jitter_reduced_freq",
-              "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
+              "chip_sw_acc_ecdsa_op_irq_jitter_en_reduced_freq",
               "chip_sw_aes_enc_jitter_en_reduced_freq",
               "chip_sw_hmac_enc_jitter_en_reduced_freq",
               "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",

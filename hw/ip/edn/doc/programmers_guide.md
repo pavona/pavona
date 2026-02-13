@@ -42,8 +42,8 @@ Notes:
   To accelerate this process, firmware can for example do the following:
   - For EDN0, repeatedly trigger reseeding operations of the AES PRNGs via the [`PRNG_RESEED` bit of the AES `TRIGGER` register](../../aes/doc/registers.md#trigger--prng_reseed).
     Once all entropy is consumed, the reseed operation doesn't finish anymore and the [`IDLE` bit of the AES `STATUS` register](../../aes/doc/registers.md#status--idle) remains de-asserted.
-  - For EDN1 which only interfaces the RND port of OTBN, load and repeatedly run an OTBN program snippet that reads from the RND port such as [`randomness.s`](https://github.com/lowRISC/opentitan/blob/master/sw/otbn/code-snippets/randomness.s).
-    Once all entropy is consumed, the program doesn't finish anymore and the [`STATUS` register](../../otbn/doc/registers.md#status) remains at `BUSY_EXECUTE`.
+  - For EDN1 which only interfaces the RND port of ACC, load and repeatedly run an ACC program snippet that reads from the RND port such as [`randomness.s`](https://github.com/lowRISC/opentitan/blob/master/sw/acc/code-snippets/randomness.s).
+    Once all entropy is consumed, the program doesn't finish anymore and the [`STATUS` register](../../acc/doc/registers.md#status) remains at `BUSY_EXECUTE`.
 
   Future versions of EDN will likely support an automated way for consuming any remaining entropy, see also [Issue #22850](https://github.com/lowRISC/opentitan/issues/22850).
 

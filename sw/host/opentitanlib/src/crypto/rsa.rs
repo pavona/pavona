@@ -27,13 +27,13 @@ const MODULUS_BIT_LEN: usize = 3072;
 const EXPONENT_BIT_LEN: usize = 17;
 const SIGNATURE_BIT_LEN: usize = 3072;
 const RR_BIT_LEN: usize = 3072;
-const OTBN_BITS: usize = 256;
+const ACC_BITS: usize = 256;
 
 fixed_size_bigint!(Modulus, MODULUS_BIT_LEN);
 fixed_size_bigint!(Exponent, EXPONENT_BIT_LEN);
 fixed_size_bigint!(Signature, at_most SIGNATURE_BIT_LEN);
 fixed_size_bigint!(RR, at_most RR_BIT_LEN);
-fixed_size_bigint!(N0Inv, at_most OTBN_BITS);
+fixed_size_bigint!(N0Inv, at_most ACC_BITS);
 
 /// Ensure the components of `key` have the correct bit length.
 fn validate_key(key: &impl PublicKeyParts) -> Result<()> {
@@ -117,9 +117,9 @@ impl RsaPublicKey {
         Exponent::from_le_bytes(self.key.e().to_bytes_le()).unwrap()
     }
 
-    /// Computes the OTBN montgomery parameter: -1 / n\[0\] mod 2^256.
+    /// Computes the ACC montgomery parameter: -1 / n\[0\] mod 2^256.
     pub fn n0_inv(&self) -> Result<N0Inv> {
-        let base = BigInt::from(1u8) << OTBN_BITS;
+        let base = BigInt::from(1u8) << ACC_BITS;
         let n_neg = BigInt::from_biguint(Minus, self.key.n().to_owned());
         let n0_inv = n_neg
             .mod_inverse(&base)

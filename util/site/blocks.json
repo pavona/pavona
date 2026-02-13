@@ -34,10 +34,10 @@
         "data_file": "hw/ip/keymgr/data/keymgr.hjson",
         "report": "/hw/ip/keymgr/dv"
     },
-    "otbn": {
-        "name": "OTBN",
-        "data_file": "hw/ip/otbn/data/otbn.hjson",
-        "report": "/hw/ip/otbn/dv/uvm"
+    "acc": {
+        "name": "ACC",
+        "data_file": "hw/ip/acc/data/acc.hjson",
+        "report": "/hw/ip/acc/dv/uvm"
     },
     "aes": {
         "name": "AES",

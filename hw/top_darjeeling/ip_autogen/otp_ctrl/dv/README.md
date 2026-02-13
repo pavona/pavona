@@ -64,7 +64,7 @@ fatal_check_alert and fatal_macro_alert.
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in OTP_CTRL device.
 
 ### OTP_CTRL interface
-OTP_CTRL design has specific inputs and outputs to communicate with other IPs including LC_CTRL, OTBN, SRAM, FLASH etc.
+OTP_CTRL design has specific inputs and outputs to communicate with other IPs including LC_CTRL, ACC, SRAM, FLASH etc.
 This interface is created to initialize, use simple task to drive, and use assertions to monitor these signals.
 
 ### Memory backdoor interface
@@ -107,7 +107,7 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * tl_d_chan_fifo: tl data channel
 * alert_fifos: alert handshakes
 * sram_fifos: sram requests
-* otbn_fifo: otbn request
+* acc_fifo: acc request
 * lc_prog_fifo: life cycle programming request
 * lc_token_fifo: life cycle token request
 * edn_fifo: edn response to OTP_CTRL

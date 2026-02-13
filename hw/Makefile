@@ -33,7 +33,7 @@ IPS ?= aes           \
        kmac          \
        lc_ctrl       \
        mbx           \
-       otbn          \
+       acc          \
        otp_macro     \
        pattgen       \
        pwm           \

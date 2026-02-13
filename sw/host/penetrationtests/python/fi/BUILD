@@ -44,16 +44,16 @@ py_binary(
 )
 
 py_binary(
-    name = "fi_otbn_python_test",
+    name = "fi_acc_python_test",
     testonly = True,
-    srcs = ["test_scripts/fi_otbn_python_test.py"],
+    srcs = ["test_scripts/fi_acc_python_test.py"],
     data = [
         "//sw/host/opentitantool",
-        "//sw/host/penetrationtests/python/fi/gold_responses:fi_otbn",
+        "//sw/host/penetrationtests/python/fi/gold_responses:fi_acc",
     ],
     deps = [
-        "//sw/host/penetrationtests/python/fi:fi_otbn_commands",
-        "//sw/host/penetrationtests/python/fi:fi_otbn_functions",
+        "//sw/host/penetrationtests/python/fi:fi_acc_commands",
+        "//sw/host/penetrationtests/python/fi:fi_acc_functions",
         "//sw/host/penetrationtests/python/util:common_library",
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
@@ -233,10 +233,10 @@ py_library(
 )
 
 py_library(
-    name = "fi_otbn_functions",
-    srcs = ["host_scripts/fi_otbn_functions.py"],
+    name = "fi_acc_functions",
+    srcs = ["host_scripts/fi_acc_functions.py"],
     deps = [
-        ":fi_otbn_commands",
+        ":fi_acc_commands",
         "//sw/host/penetrationtests/python/util:common_library",
         "//sw/host/penetrationtests/python/util:targets",
     ],
@@ -315,8 +315,8 @@ py_library(
 )
 
 py_library(
-    name = "fi_otbn_commands",
-    srcs = ["communication/fi_otbn_commands.py"],
+    name = "fi_acc_commands",
+    srcs = ["communication/fi_acc_commands.py"],
     deps = ["//sw/host/penetrationtests/python/util:common_library"],
 )
 

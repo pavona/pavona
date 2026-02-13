@@ -494,10 +494,10 @@ cc_library(
 )
 
 cc_library(
-    name = "otbn_boot_services",
-    srcs = ["otbn_boot_services.c"],
-    hdrs = ["otbn_boot_services.h"],
-    # This target uses OTBN pointers internally, so it cannot work host-side.
+    name = "acc_boot_services",
+    srcs = ["acc_boot_services.c"],
+    hdrs = ["acc_boot_services.h"],
+    # This target uses ACC pointers internally, so it cannot work host-side.
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":attestation",
@@ -510,16 +510,16 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
-        "//sw/device/silicon_creator/lib/drivers:otbn",
+        "//sw/device/silicon_creator/lib/drivers:acc",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-        "//sw/otbn/crypto:boot",
+        "//sw/acc/crypto:boot",
     ],
 )
 
 opentitan_test(
-    name = "otbn_boot_services_functest",
-    srcs = ["otbn_boot_services_functest.c"],
+    name = "acc_boot_services_functest",
+    srcs = ["acc_boot_services_functest.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
@@ -532,9 +532,9 @@ opentitan_test(
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
-    # This target uses OTBN pointers internally, so it cannot work host-side.
+    # This target uses ACC pointers internally, so it cannot work host-side.
     deps = [
-        ":otbn_boot_services",
+        ":acc_boot_services",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:keymgr_testutils",

@@ -1146,9 +1146,9 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
-    .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .SecOtbnMuteUrnd(1'b0),
-    .SecOtbnSkipUrndReseedAtStart(1'b0),
+    .AccRegFile(acc_pkg::RegFileFPGA),
+    .SecAccMuteUrnd(1'b0),
+    .SecAccSkipUrndReseedAtStart(1'b0),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
@@ -1173,8 +1173,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .SramCtrlRetAonInstrExec(0),
     .EntropySrcStub(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
-    .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .OtbnStub(1'b1),
+    .AccRegFile(acc_pkg::RegFileFPGA),
+    .AccStub(1'b1),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
 % endif
@@ -1305,7 +1305,7 @@ module chip_${top["name"]}_${target["name"]} #(
   //  AES            -   00       -  0
   //  HMAC           -   01       -  1 - not implemented on CW305
   //  KMAC           -   10       -  2 - not implemented on CW305
-  //  OTBN           -   11       -  3 - not implemented on CW305
+  //  ACC           -   11       -  3 - not implemented on CW305
   //
   // GPIO9 is used for gating the selected capture trigger in software. Alternatively, GPIO8
   // can be used to implement a less precise but fully software-controlled capture trigger
@@ -1324,7 +1324,7 @@ module chip_${top["name"]}_${target["name"]} #(
       2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
       2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
-      2'b11:   trigger_sel = clkmgr_pkg::HintMainOtbn;
+      2'b11:   trigger_sel = clkmgr_pkg::HintMainAcc;
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end

@@ -24,7 +24,7 @@ package kmac_app_agent_pkg;
     AppKeymgr,
     AppLc,
     AppRom,
-    AppOtbn
+    AppAcc
   } kmac_app_e;
 
   // Create enum to determine size for NUM_APP_INTF

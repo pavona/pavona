@@ -220,8 +220,8 @@ jobs:
           config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
 
-  otbn_standalone_tests:
-    name: Run OTBN smoke Test
+  acc_standalone_tests:
+    name: Run ACC smoke Test
     needs: quick_lint
     runs-on:
       group: zerorisc-none
@@ -246,15 +246,15 @@ jobs:
           python3 --version
           fusesoc --version
           verilator --version
-      - name: OTBN ISS test
-        run: make -C hw/ip/otbn/dv/otbnsim test
+      - name: ACC ISS test
+        run: make -C hw/ip/acc/dv/accsim test
       - name: OBTN smoke test
-        run: ./hw/ip/otbn/dv/smoke/run_smoke.sh
+        run: ./hw/ip/acc/dv/smoke/run_smoke.sh
       - name: Assemble & link code snippets
-        run: make -C hw/ip/otbn/util asm-check
+        run: make -C hw/ip/acc/util asm-check
 
-  otbn_crypto_tests:
-    name: Run OTBN crypto tests
+  acc_crypto_tests:
+    name: Run ACC crypto tests
     needs: quick_lint
     runs-on:
       group: zerorisc-none
@@ -267,7 +267,7 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Execute tests
-        run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
+        run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/acc/crypto/...
 
   verilator_earlgrey:
     name: Verilated Earl Grey
@@ -358,12 +358,12 @@ jobs:
           #
           # 1. `//hw/...` is out of scope.
           # 2. `//quality/...` is tested by the lint jobs.
-          # 3. `//sw/otbn/crypto/...` is tested by the OTBN job.
+          # 3. `//sw/acc/crypto/...` is tested by the ACC job.
           # 4. `//third_party/...` which is not our code.
           printf "%s\n"             \
             "-//hw/..."             \
             "-//quality/..."        \
-            "-//sw/otbn/crypto/..." \
+            "-//sw/acc/crypto/..." \
             "-//third_party/..."    \
             >> "$target_pattern_file"
           # Exclude anything that requires a bitstream splice.

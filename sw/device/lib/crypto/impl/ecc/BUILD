@@ -9,7 +9,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
-load("//rules:autogen.bzl", "autogen_otbn_insn_count_header")
+load("//rules:autogen.bzl", "autogen_acc_insn_count_header")
 
 cc_library(
     name = "p256",
@@ -20,10 +20,10 @@ cc_library(
         ":p256_insn_counts",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/otbn/crypto:run_p256",
+        "//sw/acc/crypto:run_p256",
     ],
 )
 
@@ -36,10 +36,10 @@ cc_library(
         ":p384_insn_counts",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/otbn/crypto:run_p384",
+        "//sw/acc/crypto:run_p384",
     ],
 )
 
@@ -52,36 +52,36 @@ cc_library(
         ":ed25519_insn_counts",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/otbn/crypto:run_ed25519",
+        "//sw/acc/crypto:run_ed25519",
     ],
 )
 
-autogen_otbn_insn_count_header(
+autogen_acc_insn_count_header(
     name = "p256_insn_counts",
     hjson = "p256_modes.hjson",
     template = "p256_insn_counts.h.tpl",
     deps = [
-        "//sw/otbn/crypto:run_p256",
+        "//sw/acc/crypto:run_p256",
     ],
 )
 
-autogen_otbn_insn_count_header(
+autogen_acc_insn_count_header(
     name = "p384_insn_counts",
     hjson = "p384_modes.hjson",
     template = "p384_insn_counts.h.tpl",
     deps = [
-        "//sw/otbn/crypto:run_p384",
+        "//sw/acc/crypto:run_p384",
     ],
 )
 
-autogen_otbn_insn_count_header(
+autogen_acc_insn_count_header(
     name = "ed25519_insn_counts",
     hjson = "ed25519_modes.hjson",
     template = "ed25519_insn_counts.h.tpl",
     deps = [
-        "//sw/otbn/crypto:run_ed25519",
+        "//sw/acc/crypto:run_ed25519",
     ],
 )

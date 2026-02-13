@@ -226,7 +226,7 @@ rom_error_t sc_keymgr_generate_key(
 
   uint32_t ctrl = 0;
 
-  // Select OTBN as the destination.
+  // Select ACC as the destination.
   ctrl = bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
                                 destination);
 
@@ -330,6 +330,6 @@ void sc_keymgr_disable(void) {
   abs_mmio_write32(sc_keymgr_base() + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET, 1);
 }
 
-extern rom_error_t sc_keymgr_generate_key_otbn(
+extern rom_error_t sc_keymgr_generate_key_acc(
     sc_keymgr_key_type_t key_type, sc_keymgr_diversification_t diversification);
-extern rom_error_t sc_keymgr_sideload_clear_otbn(void);
+extern rom_error_t sc_keymgr_sideload_clear_acc(void);

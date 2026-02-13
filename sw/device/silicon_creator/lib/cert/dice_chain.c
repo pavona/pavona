@@ -18,7 +18,7 @@
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
-#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
@@ -291,12 +291,12 @@ rom_error_t dice_chain_attestation_silicon(void) {
   // Generate UDS keys.
   sc_keymgr_advance_state();
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
-  HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
+  HARDENED_RETURN_IF_ERROR(acc_boot_cert_ecc_p256_keygen(
       kDiceKeyUds, &static_dice_cdi_0.uds_pubkey_id,
       &static_dice_cdi_0.uds_pubkey));
 
   // Save UDS key for signing next stage cert.
-  RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+  RETURN_IF_ERROR(acc_boot_attestation_key_save(
       kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
       *kDiceKeyUds.keymgr_diversifier));
 
@@ -315,7 +315,7 @@ rom_error_t dice_chain_attestation_creator(
       /*sealing_binding=*/&seal_binding_value,
       /*attest_binding=*/rom_ext_measurement,
       rom_ext_manifest->max_key_version));
-  HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
+  HARDENED_RETURN_IF_ERROR(acc_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi0, &static_dice_cdi_0.cdi_0_pubkey_id,
       &static_dice_cdi_0.cdi_0_pubkey));
 
@@ -337,7 +337,7 @@ rom_error_t dice_chain_attestation_creator(
         &static_dice_cdi_0.cert_size));
   } else {
     // Replace UDS with CDI_0 key for endorsing next stage cert.
-    HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+    HARDENED_RETURN_IF_ERROR(acc_boot_attestation_key_save(
         kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
         *kDiceKeyCdi0.keymgr_diversifier));
   }
@@ -431,7 +431,7 @@ rom_error_t dice_chain_attestation_owner(
       /*sealing_binding=*/sealing_binding,
       /*attest_binding=*/(keymgr_binding_value_t *)&attest_measurement,
       owner_manifest->max_key_version));
-  HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
+  HARDENED_RETURN_IF_ERROR(acc_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi1, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
 
   // Check if the current CDI_1 cert is valid.
@@ -453,7 +453,7 @@ rom_error_t dice_chain_attestation_owner(
     dice_chain_next_cert_obj();
 
     // Replace CDI_0 with CDI_1 key for endorsing next stage cert.
-    HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+    HARDENED_RETURN_IF_ERROR(acc_boot_attestation_key_save(
         kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
         *kDiceKeyCdi1.keymgr_diversifier));
   }

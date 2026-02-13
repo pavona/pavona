@@ -18,8 +18,8 @@ echo "./bazelisk.sh test $bzlpath"
 ./bazelisk.sh test $bzlpath
 
 # Collect the test logs for each target.
-echo "Collecting logs for all otbn_autogen_sim_test targets..."
-targets=$(./bazelisk.sh query "kind(otbn_autogen_sim_test, $bzlpath)")
+echo "Collecting logs for all acc_autogen_sim_test targets..."
+targets=$(./bazelisk.sh query "kind(acc_autogen_sim_test, $bzlpath)")
 for target in $targets
 do
     shortname=$(echo $target | cut -d ":" -f 2)
@@ -29,7 +29,7 @@ do
     if grep -q "cycles" $logfile; then
       cp -f $logfile $statsfile
     else
-      echo "Target $shortname does not appear to include execution statistics. Is the 'stats' parameter set in the otbn_autogen_sim_test rule?"
+      echo "Target $shortname does not appear to include execution statistics. Is the 'stats' parameter set in the acc_autogen_sim_test rule?"
       exit 1
     fi
 done

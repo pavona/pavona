@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -13,11 +13,11 @@
 #include "sw/device/sca/lib/simple_serial.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
-#include "hw/top/otbn_regs.h"
+#include "hw/top/acc_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
- * OpenTitan program for OTBN ECDSA-P384 side-channel analysis.
+ * OpenTitan program for ACC ECDSA-P384 side-channel analysis.
  *
  * This program implements the following simple serial commands:
  *   - Set ephemeral secret key ('k')*,
@@ -44,9 +44,9 @@ enum {
    * Number of 32b words for ECDSA P-384 private keys, message digests, and
    * point coordinates.
    *
-   * Note: Since this is not an even multiple of `kOtbnWideWordNumWords`, the
-   * caller needs to write zeroes to OTBN to fill out the last wide word.
-   * Otherwise, OTBN will encounter an error when it tries to read the
+   * Note: Since this is not an even multiple of `kAccWideWordNumWords`, the
+   * caller needs to write zeroes to ACC to fill out the last wide word.
+   * Otherwise, ACC will encounter an error when it tries to read the
    * uninitialized data.
    */
   kEcc384NumWords = kEcc384NumBytes / sizeof(uint32_t),
@@ -97,31 +97,31 @@ uint32_t ecc384_msg[kEcc384NumWords] = {
 };
 
 // p384_ecdsa_sca has randomnization removed.
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sca);
+ACC_DECLARE_APP_SYMBOLS(p384_ecdsa_sca);
 
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, mode);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, msg);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, r);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, s);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, x);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, y);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, d0);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, d1);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k0);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k1);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, mode);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, msg);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, r);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, s);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, x);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, y);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, d0);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, d1);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k0);
+ACC_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k1);
 
-static const otbn_app_t kOtbnAppP384Ecdsa = OTBN_APP_T_INIT(p384_ecdsa_sca);
+static const acc_app_t kAccAppP384Ecdsa = ACC_APP_T_INIT(p384_ecdsa_sca);
 
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p384_ecdsa_sca, mode);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p384_ecdsa_sca, msg);
-static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p384_ecdsa_sca, r);
-static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p384_ecdsa_sca, s);
-static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p384_ecdsa_sca, x);
-static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p384_ecdsa_sca, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d0);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d1);
-static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k0);
-static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k1);
+static const acc_addr_t kAccVarMode = ACC_ADDR_T_INIT(p384_ecdsa_sca, mode);
+static const acc_addr_t kAccVarMsg = ACC_ADDR_T_INIT(p384_ecdsa_sca, msg);
+static const acc_addr_t kAccVarR = ACC_ADDR_T_INIT(p384_ecdsa_sca, r);
+static const acc_addr_t kAccVarS = ACC_ADDR_T_INIT(p384_ecdsa_sca, s);
+static const acc_addr_t kAccVarX = ACC_ADDR_T_INIT(p384_ecdsa_sca, x);
+static const acc_addr_t kAccVarY = ACC_ADDR_T_INIT(p384_ecdsa_sca, y);
+static const acc_addr_t kAccVarD0 = ACC_ADDR_T_INIT(p384_ecdsa_sca, d0);
+static const acc_addr_t kAccVarD1 = ACC_ADDR_T_INIT(p384_ecdsa_sca, d1);
+static const acc_addr_t kAccVarK0 = ACC_ADDR_T_INIT(p384_ecdsa_sca, k0);
+static const acc_addr_t kAccVarK1 = ACC_ADDR_T_INIT(p384_ecdsa_sca, k1);
 
 /**
  * Simple serial 'k' (set ephemeral key) command handler.
@@ -182,17 +182,17 @@ static void ecc384_set_msg(const uint8_t *msg, size_t msg_len) {
 }
 
 /**
- * Write a 384-bit value to OTBN.
+ * Write a 384-bit value to ACC.
  *
  * This function actually writes 512 bits -- 384 bits with the real data and
  * the rest with zeroes -- to avoid read-of-uninitialized-data errors during
- * OTBN execution.
+ * ACC execution.
  */
 static void p384_dmem_write(const uint32_t src[kEcc384NumWords],
-                            const otbn_addr_t dest) {
-  static const uint32_t zero[kEcc384NumWords % kOtbnWideWordNumWords] = {0};
-  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc384NumWords, src, dest));
-  SS_CHECK_STATUS_OK(otbn_dmem_write(ARRAYSIZE(zero), zero, dest));
+                            const acc_addr_t dest) {
+  static const uint32_t zero[kEcc384NumWords % kAccWideWordNumWords] = {0};
+  SS_CHECK_STATUS_OK(acc_dmem_write(kEcc384NumWords, src, dest));
+  SS_CHECK_STATUS_OK(acc_dmem_write(ARRAYSIZE(zero), zero, dest));
 }
 
 /**
@@ -202,7 +202,7 @@ static void p384_dmem_write(const uint32_t src[kEcc384NumWords],
  * r = x-coordinate of R
  * s = k^(-1)(msg + r*d)  mod n
  *
- * @param otbn_ctx            The OTBN context object.
+ * @param acc_ctx            The ACC context object.
  * @param msg                 The message to sign, msg (48B).
  * @param private_key_d       The private key d (48B).
  * @param k                   The ephemeral key k (random scalar) (48B).
@@ -216,27 +216,27 @@ static void p384_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
                             const uint32_t *k) {
   uint32_t mode = 1;  // mode 1 => sign
   // LOG_INFO("Copy data");
-  SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
-  p384_dmem_write(msg, kOtbnVarMsg);
-  p384_dmem_write(private_key_d, kOtbnVarD0);
-  p384_dmem_write(private_key_d + kEcc384NumWords, kOtbnVarD1);
+  SS_CHECK_STATUS_OK(acc_dmem_write(/*num_words=*/1, &mode, kAccVarMode));
+  p384_dmem_write(msg, kAccVarMsg);
+  p384_dmem_write(private_key_d, kAccVarD0);
+  p384_dmem_write(private_key_d + kEcc384NumWords, kAccVarD1);
 
-  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc384NumWords, k, kOtbnVarK0));
+  SS_CHECK_STATUS_OK(acc_dmem_write(kEcc384NumWords, k, kAccVarK0));
   SS_CHECK_STATUS_OK(
-      otbn_dmem_write(kEcc384NumWords, k + kEcc384NumWords, kOtbnVarK1));
+      acc_dmem_write(kEcc384NumWords, k + kEcc384NumWords, kAccVarK1));
 
-  SS_CHECK_STATUS_OK(otbn_execute());
-  SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
+  SS_CHECK_STATUS_OK(acc_execute());
+  SS_CHECK_STATUS_OK(acc_busy_wait_for_done());
 
-  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc384NumWords, kOtbnVarR, signature_r));
-  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc384NumWords, kOtbnVarS, signature_s));
+  SS_CHECK_STATUS_OK(acc_dmem_read(kEcc384NumWords, kAccVarR, signature_r));
+  SS_CHECK_STATUS_OK(acc_dmem_read(kEcc384NumWords, kAccVarS, signature_s));
 }
 
 /**
  * Simple serial 'p' (sign) command handler.
  *
  * Takes the scalar value from the simple serial UART and triggers
- * OTBN_P384_sign operation.
+ * ACC_P384_sign operation.
  *
  * To overwrite the message, use the simpleserial command 'n'
  * To overwrite the private key value, use the simpleserial command 'd'
@@ -248,9 +248,9 @@ static void p384_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
 static void ecc384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
                          size_t secret_k_len) {
   LOG_INFO("SSECDSA starting...");
-  SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP384Ecdsa));
-  LOG_INFO("otbn_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR +
-                                                  OTBN_STATUS_REG_OFFSET));
+  SS_CHECK_STATUS_OK(acc_load_app(kAccAppP384Ecdsa));
+  LOG_INFO("acc_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_ACC_BASE_ADDR +
+                                                  ACC_STATUS_REG_OFFSET));
 
   uint32_t ecc384_signature_r[kEcc384NumWords];
   uint32_t ecc384_signature_s[kEcc384NumWords];
@@ -277,9 +277,9 @@ static void ecc384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
   simple_serial_send_packet('r', ecc384_signature_r_bytes, kEcc384NumBytes);
   simple_serial_send_packet('r', ecc384_signature_s_bytes, kEcc384NumBytes);
 
-  // Clear OTBN memory
-  SS_CHECK_STATUS_OK(otbn_dmem_sec_wipe());
-  SS_CHECK_STATUS_OK(otbn_imem_sec_wipe());
+  // Clear ACC memory
+  SS_CHECK_STATUS_OK(acc_dmem_sec_wipe());
+  SS_CHECK_STATUS_OK(acc_imem_sec_wipe());
 }
 
 /**
@@ -290,9 +290,9 @@ static void simple_serial_main(void) {
   SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   bool sensor_ctrl_enable = false;
   bool sensor_ctrl_en_fatal[SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS] = {false};
-  pentest_init(kPentestTriggerSourceOtbn,
+  pentest_init(kPentestTriggerSourceAcc,
                kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
-                   kPentestPeripheralOtbn | kPentestPeripheralCsrng |
+                   kPentestPeripheralAcc | kPentestPeripheralCsrng |
                    kPentestPeripheralEdn | kPentestPeripheralHmac,
                sensor_ctrl_enable, sensor_ctrl_en_fatal);
 
@@ -316,8 +316,8 @@ static void simple_serial_main(void) {
 }
 
 bool test_main(void) {
-  (void)kOtbnVarX;
-  (void)kOtbnVarY;
+  (void)kAccVarX;
+  (void)kAccVarY;
 
   simple_serial_main();
   return true;

@@ -28,7 +28,7 @@ filesets:
       - lowrisc:ip:dma
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
-      - lowrisc:ip:otbn
+      - lowrisc:ip:acc
       - lowrisc:ip:otp_macro
       - lowrisc:prim:ram_1p_scr
       - lowrisc:ip:sram_ctrl

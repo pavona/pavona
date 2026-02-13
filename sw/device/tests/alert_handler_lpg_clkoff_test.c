@@ -14,7 +14,7 @@
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
@@ -36,7 +36,7 @@
 #include "hw/top/hmac_regs.h"
 #include "hw/top/i2c_regs.h"
 #include "hw/top/kmac_regs.h"
-#include "hw/top/otbn_regs.h"
+#include "hw/top/acc_regs.h"
 #include "hw/top/spi_host_regs.h"
 #include "hw/top/usbdev_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -53,7 +53,7 @@ static dif_usbdev_t usbdev;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_kmac_t kmac;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_rstmgr_t rstmgr;
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
@@ -109,7 +109,7 @@ static void init_peripherals(void) {
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
   CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+      dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
@@ -122,8 +122,8 @@ static const uint32_t hmac_alerts[] = {kTopEarlgreyAlertIdHmacFatalFault};
 static const uint32_t kmac_alerts[] = {
     kTopEarlgreyAlertIdKmacFatalFaultErr,
     kTopEarlgreyAlertIdKmacRecovOperationErr};
-static const uint32_t otbn_alerts[] = {kTopEarlgreyAlertIdOtbnFatal,
-                                       kTopEarlgreyAlertIdOtbnRecov};
+static const uint32_t acc_alerts[] = {kTopEarlgreyAlertIdAccFatal,
+                                       kTopEarlgreyAlertIdAccRecov};
 static const uint32_t spihost0_alerts[] = {
     kTopEarlgreyAlertIdSpiHost0FatalFault};
 static const uint32_t spihost1_alerts[] = {
@@ -133,14 +133,14 @@ static const uint32_t usbdev_alerts[] = {kTopEarlgreyAlertIdUsbdevFatalFault};
 static const uint32_t num_aes_alerts = ARRAYSIZE(aes_alerts);
 static const uint32_t num_hmac_alerts = ARRAYSIZE(hmac_alerts);
 static const uint32_t num_kmac_alerts = ARRAYSIZE(kmac_alerts);
-static const uint32_t num_otbn_alerts = ARRAYSIZE(otbn_alerts);
+static const uint32_t num_acc_alerts = ARRAYSIZE(acc_alerts);
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
 static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
 static const uint32_t num_usbdev_alerts = ARRAYSIZE(usbdev_alerts);
 
 static const size_t num_alerts =
     ARRAYSIZE(aes_alerts) + ARRAYSIZE(hmac_alerts) + ARRAYSIZE(kmac_alerts) +
-    ARRAYSIZE(otbn_alerts) + ARRAYSIZE(spihost0_alerts) +
+    ARRAYSIZE(acc_alerts) + ARRAYSIZE(spihost0_alerts) +
     ARRAYSIZE(spihost1_alerts) + ARRAYSIZE(usbdev_alerts);
 
 /**
@@ -222,14 +222,14 @@ static const test_t kPeripherals[] = {
         .is_hintable = true,
     },
     {
-        .name = "OTBN",
-        .base = TOP_EARLGREY_OTBN_BASE_ADDR,
-        .offset = OTBN_ALERT_TEST_REG_OFFSET,
-        .dif = &otbn,
-        .fatal_alert_bit = kDifOtbnAlertFatal,
-        .alert_ids = otbn_alerts,
-        .num_alert_peri = num_otbn_alerts,
-        .clk_index = kTopEarlgreyHintableClocksMainOtbn,
+        .name = "ACC",
+        .base = TOP_EARLGREY_ACC_BASE_ADDR,
+        .offset = ACC_ALERT_TEST_REG_OFFSET,
+        .dif = &acc,
+        .fatal_alert_bit = kDifAccAlertFatal,
+        .alert_ids = acc_alerts,
+        .num_alert_peri = num_acc_alerts,
+        .clk_index = kTopEarlgreyHintableClocksMainAcc,
         .is_hintable = true,
     },
     // Gateable clock IPs

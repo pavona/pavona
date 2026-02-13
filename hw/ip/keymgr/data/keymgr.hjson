@@ -9,7 +9,7 @@
   Key Manager implements the hardware component of the identities and root keys strategy of OpenTitan.
   It shields confidential assets from direct software access and provides an interface for software to use derived keys and identity outputs.
   The key derivation functionality interfaces KMAC Accelerator.
-  Key Manager provides AES Accelerator, OTBN, and KMAC Accelerator with confidential keys over sideload interfaces that are not accessible from software.
+  Key Manager provides AES Accelerator, ACC, and KMAC Accelerator with confidential keys over sideload interfaces that are not accessible from software.
   In addition, it supports the [Open Profile for DICE][pigweed-open-dice].
 
   [pigweed-open-dice]: https://pigweed.googlesource.com/open-dice/+/HEAD/docs/specification.md#Open-Profile-for-DICE
@@ -70,9 +70,9 @@
       act:     "req",
       package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "otbn_key_req",
+    { struct:  "acc_key_req",
       type:    "uni",
-      name:    "otbn_key",
+      name:    "acc_key",
       act:     "req",
       package: "keymgr_pkg",
     },
@@ -221,8 +221,8 @@
       randtype:  "data",
     },
 
-    { name:      "RndCnstOtbnSeed",
-      desc:      "Compile-time random bits for generation seed when otbn destination selected",
+    { name:      "RndCnstAccSeed",
+      desc:      "Compile-time random bits for generation seed when acc destination selected",
       type:      "keymgr_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
@@ -279,15 +279,15 @@
             '''
     }
     {
-      name: "KEYMGR.SIDELOAD.OTBN",
-      desc: '''Generation of keys for KMAC. The key is only visible to hardware and OTBN code.
+      name: "KEYMGR.SIDELOAD.ACC",
+      desc: '''Generation of keys for KMAC. The key is only visible to hardware and ACC code.
             '''
     }
     {
       name: "KEYMGR.DERIVE.ATTESTATION",
       desc: '''DICE compliant key derivation. Used to generate attestation keys. Derived keys can
-            be directed to registers exposed to software, or sideloaded to OTBN
-            (KEYMGR.SIDELOAD.OTBN). 256Bit measurements can be provided to the key derivation
+            be directed to registers exposed to software, or sideloaded to ACC
+            (KEYMGR.SIDELOAD.ACC). 256Bit measurements can be provided to the key derivation
             function using a dedicated set of registers.
             '''
     }
@@ -621,12 +621,12 @@
                 '''
             },
             { value: "3",
-              name: "OTBN",
+              name: "ACC",
               desc: '''
-                OTBN selected.  Note for OTBN hardware operations, the generated output is 384-bits, while for all
-                other operations (including OTBN software), it is 256-bits.
+                ACC selected.  Note for ACC hardware operations, the generated output is 384-bits, while for all
+                other operations (including ACC software), it is 256-bits.
 
-                Generating a hardware 384-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion.
+                Generating a hardware 384-bit seed directly for ACC sideload reduces some of the ACC code burden for entropy expansion.
                 When generating for software, this is not a concern.
                 '''
             },
@@ -670,9 +670,9 @@
                 '''
             },
             { value: "3",
-              name: "OTBN",
+              name: "ACC",
               desc: '''
-                The OTBN sideload key is continuously cleared with entropy.
+                The ACC sideload key is continuously cleared with entropy.
                 '''
             },
           ]

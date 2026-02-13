@@ -151,11 +151,11 @@ class chip_base_vseq #(
     initialize_otp_lc_state();
     initialize_otp_creator_sw_cfg_ast_cfg();
     // Initialize selected memories to all 0. This is required for some chip-level tests such as
-    // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
+    // acc_mem_scramble that may intentionally read memories before writing them. Reading these
     // memories still triggers ECC integrity errors that need to be handled by the test.
-    cfg.mem_bkdr_util_h[OtbnImem].clear_mem();
-    for (int ram_idx = 0; ram_idx < cfg.num_otbn_dmem_tiles; ram_idx++) begin
-      cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
+    cfg.mem_bkdr_util_h[AccImem].clear_mem();
+    for (int ram_idx = 0; ram_idx < cfg.num_acc_dmem_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(AccDmem0 + ram_idx)].clear_mem();
     end
     // Early cpu init
     if (cfg.early_cpu_init) cpu_init();

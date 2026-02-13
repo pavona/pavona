@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -13,11 +13,11 @@
 #include "sw/device/sca/lib/simple_serial.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
-#include "hw/top/otbn_regs.h"
+#include "hw/top/acc_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
- * OpenTitan program for OTBN ECDSA-P256 side-channel analysis.
+ * OpenTitan program for ACC ECDSA-P256 side-channel analysis.
  *
  * This program implements the following simple serial commands:
  *   - Set ephemeral secret key ('k')*,
@@ -30,7 +30,7 @@
  * implemented in the simple serial library.
  * See https://wiki.newae.com/SimpleSerial for details on the protocol.
  *
- * The OTBN-related code was developed based on
+ * The ACC-related code was developed based on
  * https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/ecc/ecdsa_p256.c
  * and
  * https://github.com/lowRISC/opentitan/blob/master/sw/device/tests/crypto/ecdsa_p256_functest.c
@@ -71,7 +71,7 @@ uint32_t ecc256_secret_k[2 * kEcc256NumWords] = {
  * Private key d
  * This is the default value used by NewAE in their experiments
  * https://github.com/newaetech/ot-sca/blob/ecc-analysis/reports/ecc/REPORT.md
- * https://github.com/newaetech/opentitan/tree/sca_otbninst
+ * https://github.com/newaetech/opentitan/tree/sca_accinst
  *
  *
  * The value of this variable can be overwritten via
@@ -96,33 +96,33 @@ uint32_t ecc256_msg[kEcc256NumWords] = {
 };
 
 // p256_ecdsa_sca has randomnization removed.
-OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
+ACC_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
 
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, mode);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, msg);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, r);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, s);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, y);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, d0);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, d1);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k0);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k1);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x_r);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, mode);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, msg);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, r);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, s);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, y);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, d0);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, d1);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k0);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k1);
+ACC_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x_r);
 
-static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
+static const acc_app_t kAccAppP256Ecdsa = ACC_APP_T_INIT(p256_ecdsa_sca);
 
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p256_ecdsa_sca, mode);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
-static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, r);
-static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa_sca, s);
-static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p256_ecdsa_sca, x);
-static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_ecdsa_sca, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d0);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d1);
-static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, x_r);
-static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k0);
-static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k1);
+static const acc_addr_t kAccVarMode = ACC_ADDR_T_INIT(p256_ecdsa_sca, mode);
+static const acc_addr_t kAccVarMsg = ACC_ADDR_T_INIT(p256_ecdsa_sca, msg);
+static const acc_addr_t kAccVarR = ACC_ADDR_T_INIT(p256_ecdsa_sca, r);
+static const acc_addr_t kAccVarS = ACC_ADDR_T_INIT(p256_ecdsa_sca, s);
+static const acc_addr_t kAccVarX = ACC_ADDR_T_INIT(p256_ecdsa_sca, x);
+static const acc_addr_t kAccVarY = ACC_ADDR_T_INIT(p256_ecdsa_sca, y);
+static const acc_addr_t kAccVarD0 = ACC_ADDR_T_INIT(p256_ecdsa_sca, d0);
+static const acc_addr_t kAccVarD1 = ACC_ADDR_T_INIT(p256_ecdsa_sca, d1);
+static const acc_addr_t kAccVarXR = ACC_ADDR_T_INIT(p256_ecdsa_sca, x_r);
+static const acc_addr_t kAccVarK0 = ACC_ADDR_T_INIT(p256_ecdsa_sca, k0);
+static const acc_addr_t kAccVarK1 = ACC_ADDR_T_INIT(p256_ecdsa_sca, k1);
 
 /**
  * Simple serial 'k' (set ephemeral key) command handler.
@@ -189,7 +189,7 @@ static void ecc256_set_msg(const uint8_t *msg, size_t msg_len) {
  * r = x-coordinate of R
  * s = k^(-1)(msg + r*d)  mod n
  *
- * @param otbn_ctx            The OTBN context object.
+ * @param acc_ctx            The ACC context object.
  * @param msg                 The message to sign, msg (32B).
  * @param private_key_d       The private key, d (32B).
  * @param k                   The ephemeral key,  k (random scalar) (32B).
@@ -202,40 +202,40 @@ static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
                             uint32_t *signature_r, uint32_t *signature_s,
                             const uint32_t *k) {
   uint32_t mode = 1;  // mode 1 => sign
-  // Send operation mode to OTBN
-  SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
-  // Send Msg to OTBN
-  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc256NumWords, msg, kOtbnVarMsg));
-  // Send two shares of private_key_d to OTBN
+  // Send operation mode to ACC
+  SS_CHECK_STATUS_OK(acc_dmem_write(/*num_words=*/1, &mode, kAccVarMode));
+  // Send Msg to ACC
+  SS_CHECK_STATUS_OK(acc_dmem_write(kEcc256NumWords, msg, kAccVarMsg));
+  // Send two shares of private_key_d to ACC
   SS_CHECK_STATUS_OK(
-      otbn_dmem_write(kEcc256NumWords, private_key_d, kOtbnVarD0));
-  SS_CHECK_STATUS_OK(otbn_dmem_write(
-      kEcc256NumWords, private_key_d + kEcc256NumWords, kOtbnVarD1));
-  // Send two shares of secret_k to OTBN
-  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc256NumWords, k, kOtbnVarK0));
+      acc_dmem_write(kEcc256NumWords, private_key_d, kAccVarD0));
+  SS_CHECK_STATUS_OK(acc_dmem_write(
+      kEcc256NumWords, private_key_d + kEcc256NumWords, kAccVarD1));
+  // Send two shares of secret_k to ACC
+  SS_CHECK_STATUS_OK(acc_dmem_write(kEcc256NumWords, k, kAccVarK0));
   SS_CHECK_STATUS_OK(
-      otbn_dmem_write(kEcc256NumWords, k + kEcc256NumWords, kOtbnVarK1));
+      acc_dmem_write(kEcc256NumWords, k + kEcc256NumWords, kAccVarK1));
 
-  // Start OTBN execution
-  SS_CHECK_STATUS_OK(otbn_execute());
-  SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
+  // Start ACC execution
+  SS_CHECK_STATUS_OK(acc_execute());
+  SS_CHECK_STATUS_OK(acc_busy_wait_for_done());
 
   // Read the results back (sig_r, sig_s)
-  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256NumWords, kOtbnVarR, signature_r));
-  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256NumWords, kOtbnVarS, signature_s));
+  SS_CHECK_STATUS_OK(acc_dmem_read(kEcc256NumWords, kAccVarR, signature_r));
+  SS_CHECK_STATUS_OK(acc_dmem_read(kEcc256NumWords, kAccVarS, signature_s));
 }
 
 /**
  * Simple serial 'p' (sign) command handler.
  *
- * Triggers OTBN_P256_sign operation.
+ * Triggers ACC_P256_sign operation.
  *
  */
 static void ecc256_ecdsa(const uint8_t *arg, size_t len) {
   LOG_INFO("SSECDSA starting...");
-  SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256Ecdsa));
-  LOG_INFO("otbn_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR +
-                                                  OTBN_STATUS_REG_OFFSET));
+  SS_CHECK_STATUS_OK(acc_load_app(kAccAppP256Ecdsa));
+  LOG_INFO("acc_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_ACC_BASE_ADDR +
+                                                  ACC_STATUS_REG_OFFSET));
 
   uint32_t ecc256_signature_r[kEcc256NumWords];
   uint32_t ecc256_signature_s[kEcc256NumWords];
@@ -258,9 +258,9 @@ static void ecc256_ecdsa(const uint8_t *arg, size_t len) {
   simple_serial_send_packet('r', ecc256_signature_r_bytes, kEcc256NumBytes);
   simple_serial_send_packet('r', ecc256_signature_s_bytes, kEcc256NumBytes);
 
-  // Clear OTBN memory
-  SS_CHECK_STATUS_OK(otbn_dmem_sec_wipe());
-  SS_CHECK_STATUS_OK(otbn_imem_sec_wipe());
+  // Clear ACC memory
+  SS_CHECK_STATUS_OK(acc_dmem_sec_wipe());
+  SS_CHECK_STATUS_OK(acc_imem_sec_wipe());
 }
 
 /**
@@ -271,9 +271,9 @@ static void simple_serial_main(void) {
   SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   bool sensor_ctrl_enable = false;
   bool sensor_ctrl_en_fatal[SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS] = {false};
-  pentest_init(kPentestTriggerSourceOtbn,
+  pentest_init(kPentestTriggerSourceAcc,
                kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
-                   kPentestPeripheralOtbn | kPentestPeripheralCsrng |
+                   kPentestPeripheralAcc | kPentestPeripheralCsrng |
                    kPentestPeripheralEdn | kPentestPeripheralHmac,
                sensor_ctrl_enable, sensor_ctrl_en_fatal);
 
@@ -297,9 +297,9 @@ static void simple_serial_main(void) {
 }
 
 bool test_main(void) {
-  (void)kOtbnVarX;
-  (void)kOtbnVarY;
-  (void)kOtbnVarXR;
+  (void)kAccVarX;
+  (void)kAccVarY;
+  (void)kAccVarXR;
 
   simple_serial_main();
   return true;

@@ -211,13 +211,13 @@ feedback in this case.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CLK_MAIN_AES_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_HMAC_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_KMAC_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_OTBN_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "CLK_MAIN_AES_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_HMAC_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_KMAC_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_ACC_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name               | Description                                                  |
 |:------:|:------:|:-------:|:-------------------|:-------------------------------------------------------------|
 |  31:4  |        |         |                    | Reserved                                                     |
-|   3    |   rw   |   0x1   | CLK_MAIN_OTBN_HINT | 0 CLK_MAIN_OTBN can be disabled. 1 CLK_MAIN_OTBN is enabled. |
+|   3    |   rw   |   0x1   | CLK_MAIN_ACC_HINT | 0 CLK_MAIN_ACC can be disabled. 1 CLK_MAIN_ACC is enabled. |
 |   2    |   rw   |   0x1   | CLK_MAIN_KMAC_HINT | 0 CLK_MAIN_KMAC can be disabled. 1 CLK_MAIN_KMAC is enabled. |
 |   1    |   rw   |   0x1   | CLK_MAIN_HMAC_HINT | 0 CLK_MAIN_HMAC can be disabled. 1 CLK_MAIN_HMAC is enabled. |
 |   0    |   rw   |   0x1   | CLK_MAIN_AES_HINT  | 0 CLK_MAIN_AES can be disabled. 1 CLK_MAIN_AES is enabled.   |
@@ -233,13 +233,13 @@ this register provides read feedback for the current clock state.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CLK_MAIN_AES_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_HMAC_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_KMAC_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_OTBN_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
+{"reg": [{"name": "CLK_MAIN_AES_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_HMAC_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_KMAC_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_ACC_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name              | Description                                              |
 |:------:|:------:|:-------:|:------------------|:---------------------------------------------------------|
 |  31:4  |        |         |                   | Reserved                                                 |
-|   3    |   ro   |   0x1   | CLK_MAIN_OTBN_VAL | 0 CLK_MAIN_OTBN is disabled. 1 CLK_MAIN_OTBN is enabled. |
+|   3    |   ro   |   0x1   | CLK_MAIN_ACC_VAL | 0 CLK_MAIN_ACC is disabled. 1 CLK_MAIN_ACC is enabled. |
 |   2    |   ro   |   0x1   | CLK_MAIN_KMAC_VAL | 0 CLK_MAIN_KMAC is disabled. 1 CLK_MAIN_KMAC is enabled. |
 |   1    |   ro   |   0x1   | CLK_MAIN_HMAC_VAL | 0 CLK_MAIN_HMAC is disabled. 1 CLK_MAIN_HMAC is enabled. |
 |   0    |   ro   |   0x1   | CLK_MAIN_AES_VAL  | 0 CLK_MAIN_AES is disabled. 1 CLK_MAIN_AES is enabled.   |

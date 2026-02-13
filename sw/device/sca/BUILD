@@ -92,7 +92,7 @@ opentitan_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -101,7 +101,7 @@ opentitan_binary(
         "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:simple_serial",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/otbn/crypto:p384_ecdsa_sca",
+        "//sw/acc/crypto:p384_ecdsa_sca",
     ],
 )
 
@@ -117,7 +117,7 @@ opentitan_binary(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -126,6 +126,6 @@ opentitan_binary(
         "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:simple_serial",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/otbn/crypto:p256_ecdsa_sca",
+        "//sw/acc/crypto:p256_ecdsa_sca",
     ],
 )

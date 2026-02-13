@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv:acc_pqc_on_env_pkg"
+description: "Environment parameters for PQC mode enabled on ACC"
+virtual:
+  - lowrisc:dv:acc_pqc_env_pkg
+
+filesets:
+  files_rtl:
+    files:
+      - acc_pqc_env_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

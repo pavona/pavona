@@ -137,7 +137,7 @@
                            '''
       type:                "kmac_pkg::app_config_t"
       unpacked_dimensions: "[KmacNumAppIntf]"
-      default:             "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOTBN}"
+      default:             "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgACC}"
       local:               "false"
       expose:              "true"
     }

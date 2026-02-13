@@ -26,7 +26,7 @@ class SwType(Enum):
     ROM = 0  # Ibex SW - first stage boot ROM.
     TEST_SLOT_A = 1  # Ibex SW - test SW in (flash) slot A.
     TEST_SLOT_B = 2  # Ibex SW - test SW in (flash) slot B.
-    OTBN = 3  # Otbn SW
+    ACC = 3  # Acc SW
     OTP = 4  # Customized OTP image
     DEBUG = 5  # Debug SW - injected into SRAM.
 

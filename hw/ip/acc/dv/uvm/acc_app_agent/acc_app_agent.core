@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:acc_app_agent:0.1"
+description: "acc_app DV UVM agent"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:kmac_pkg
+      - lowrisc:dv:kmac_app_agent:0.1
+    files:
+      - acc_app_agent_pkg.sv
+      - acc_app_intf.sv
+      - acc_app_item.sv: {is_include_file: true}
+      - acc_app_agent_cfg.sv: {is_include_file: true}
+      - acc_app_sequencer.sv: {is_include_file: true}
+      - acc_app_base_seq.sv: {is_include_file: true}
+      - acc_app_agent_cov.sv: {is_include_file: true}
+      - acc_app_driver.sv: {is_include_file: true}
+      - acc_app_monitor.sv: {is_include_file: true}
+      - acc_app_agent.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

@@ -9,8 +9,8 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#if USE_OTBN == 1
-#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#if USE_ACC == 1
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #elif USE_CRYPTOC == 1
 // TODO(cfrantz): Replace the CryptoC implementation with a native OpenTitan
 // implementation.
@@ -29,8 +29,8 @@ OT_WEAK void __assert_func(const char *file, int line, const char *func,
 #endif
 
 rom_error_t ecdsa_init(void) {
-#if USE_OTBN == 1
-  return otbn_boot_app_load();
+#if USE_ACC == 1
+  return acc_boot_app_load();
 #elif USE_CRYPTOC == 1
   return kErrorOk;
 #endif
@@ -39,9 +39,9 @@ rom_error_t ecdsa_init(void) {
 hardened_bool_t ecdsa_verify_digest(const ecdsa_p256_public_key_t *pubkey,
                                     const ecdsa_p256_signature_t *signature,
                                     const hmac_digest_t *digest) {
-#if USE_OTBN == 1
+#if USE_ACC == 1
   uint32_t rr[8];
-  rom_error_t error = otbn_boot_sigverify(pubkey, signature, digest, rr);
+  rom_error_t error = acc_boot_sigverify(pubkey, signature, digest, rr);
   if (error != kErrorOk) {
     return kHardenedBoolFalse;
   }

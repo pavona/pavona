@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
@@ -24,7 +24,7 @@
 #include "hw/top/aes_regs.h"
 #include "hw/top/hmac_regs.h"
 #include "hw/top/kmac_regs.h"
-#include "hw/top/otbn_regs.h"
+#include "hw/top/acc_regs.h"
 
 static_assert(kDtAesCount >= 1, "This test requires at least one AES instance");
 static_assert(kDtAonTimerCount >= 1,
@@ -35,8 +35,8 @@ static_assert(kDtHmacCount >= 1,
               "This test requires at least one HMAC instance");
 static_assert(kDtKmacCount >= 1,
               "This test requires at least one KMAC instance");
-static_assert(kDtOtbnCount >= 1,
-              "This test requires at least one OTBN instance");
+static_assert(kDtAccCount >= 1,
+              "This test requires at least one ACC instance");
 static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
 static_assert(kDtRstmgrCount >= 1,
               "This test requires at least one Rstmgr instance");
@@ -46,7 +46,7 @@ static const dt_aon_timer_t kAonTimerDt = (dt_aon_timer_t)0;
 static const dt_clkmgr_t kClkmgrDt = (dt_clkmgr_t)0;
 static const dt_hmac_t kTestHmac = (dt_hmac_t)0;
 static const dt_kmac_t kTestKmac = (dt_kmac_t)0;
-static const dt_otbn_t kTestOtbn = (dt_otbn_t)0;
+static const dt_acc_t kTestAcc = (dt_acc_t)0;
 static const dt_pwrmgr_t kPwrmgrDt = (dt_pwrmgr_t)0;
 static const dt_rstmgr_t kRstmgrDt = (dt_rstmgr_t)0;
 
@@ -62,7 +62,7 @@ static dif_aon_timer_t aon_timer;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_kmac_t kmac;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 
 typedef struct clock_error_info {
   /**
@@ -127,9 +127,9 @@ OT_NOINLINE static void kmac_csr_access(void) {
   CHECK_DIF_OK(dif_kmac_get_status(&kmac, &status));
 }
 
-OT_NOINLINE static void otbn_csr_access(void) {
-  dif_otbn_err_bits_t err_bits;
-  CHECK_DIF_OK(dif_otbn_get_err_bits(&otbn, &err_bits));
+OT_NOINLINE static void acc_csr_access(void) {
+  dif_acc_err_bits_t err_bits;
+  CHECK_DIF_OK(dif_acc_get_err_bits(&acc, &err_bits));
 }
 
 /**
@@ -228,14 +228,14 @@ bool execute_off_trans_test(test_trans_block_t block) {
         info[trans].crash_function = kmac_csr_access;
         break;
 
-      case kTestTransOtbn:
-        // Initialize otbn.
-        CHECK_DIF_OK(dif_otbn_init_from_dt(kTestOtbn, &otbn));
-        inst = dt_otbn_instance_id(kTestOtbn);
-        info[trans].name = "otbn";
+      case kTestTransAcc:
+        // Initialize acc.
+        CHECK_DIF_OK(dif_acc_init_from_dt(kTestAcc, &acc));
+        inst = dt_acc_instance_id(kTestAcc);
+        info[trans].name = "acc";
         info[trans].csr_offset =
-            addr_as_offset(otbn.base_addr, OTBN_ERR_BITS_REG_OFFSET);
-        info[trans].crash_function = otbn_csr_access;
+            addr_as_offset(acc.base_addr, ACC_ERR_BITS_REG_OFFSET);
+        info[trans].crash_function = acc_csr_access;
         break;
 
       default:

@@ -211,7 +211,7 @@ TEST_F(KeymgrTest, CheckStateInvalidResponse) {
             kErrorKeymgrInternal);
 }
 
-TEST_F(KeymgrTest, GenOtbnAttestationKey) {
+TEST_F(KeymgrTest, GenAccAttestationKey) {
   sc_keymgr_diversification_t test_diversification = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
                0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
@@ -223,7 +223,7 @@ TEST_F(KeymgrTest, GenOtbnAttestationKey) {
       base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
       {
           {KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
-           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN},
+           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_ACC},
           {KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, true},
           {KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
            KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT},
@@ -236,12 +236,12 @@ TEST_F(KeymgrTest, GenOtbnAttestationKey) {
   ExpectWaitUntilDone(/*busy_cycles=*/2,
                       KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
 
-  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+  EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
                                         test_diversification),
             kErrorOk);
 }
 
-TEST_F(KeymgrTest, GenOtbnSealingKey) {
+TEST_F(KeymgrTest, GenAccSealingKey) {
   sc_keymgr_diversification_t test_diversification = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
                0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
@@ -253,7 +253,7 @@ TEST_F(KeymgrTest, GenOtbnSealingKey) {
       base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
       {
           {KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
-           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN},
+           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_ACC},
           {KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, false},
           {KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
            KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT},
@@ -266,12 +266,12 @@ TEST_F(KeymgrTest, GenOtbnSealingKey) {
   ExpectWaitUntilDone(/*busy_cycles=*/2,
                       KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
 
-  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeSealing,
+  EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeSealing,
                                         test_diversification),
             kErrorOk);
 }
 
-TEST_F(KeymgrTest, GenOtbnKeyNotIdle) {
+TEST_F(KeymgrTest, GenAccKeyNotIdle) {
   sc_keymgr_diversification_t test_diversification = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
                0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
@@ -279,20 +279,20 @@ TEST_F(KeymgrTest, GenOtbnKeyNotIdle) {
   };
 
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
-  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+  EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
                                         test_diversification),
             kErrorKeymgrInternal);
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
-  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+  EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
                                         test_diversification),
             kErrorKeymgrInternal);
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+  EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
                                         test_diversification),
             kErrorKeymgrInternal);
 }
 
-TEST_F(KeymgrTest, GenOtbnKeyError) {
+TEST_F(KeymgrTest, GenAccKeyError) {
   sc_keymgr_diversification_t test_diversification = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
                0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
@@ -305,7 +305,7 @@ TEST_F(KeymgrTest, GenOtbnKeyError) {
       base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
       {
           {KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
-           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN},
+           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_ACC},
           {KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, true},
           {KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
            KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT},
@@ -320,22 +320,22 @@ TEST_F(KeymgrTest, GenOtbnKeyError) {
   EXPECT_ABS_READ32(base_ + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
   EXPECT_ABS_WRITE32(base_ + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
 
-  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+  EXPECT_EQ(sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation,
                                         test_diversification),
             kErrorKeymgrInternal);
 }
 
-TEST_F(KeymgrTest, SideloadClearOtbn) {
+TEST_F(KeymgrTest, SideloadClearAcc) {
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
   EXPECT_ABS_WRITE32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                      {
                          {KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
-                          KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN},
+                          KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_ACC},
                      });
   EXPECT_ABS_READ32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                     {
                         {KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
-                         KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN},
+                         KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_ACC},
                     });
   EXPECT_ABS_WRITE32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                      {
@@ -343,24 +343,24 @@ TEST_F(KeymgrTest, SideloadClearOtbn) {
                           KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_NONE},
                      });
 
-  EXPECT_EQ(sc_keymgr_sideload_clear_otbn(), kErrorOk);
+  EXPECT_EQ(sc_keymgr_sideload_clear_acc(), kErrorOk);
 }
 
-TEST_F(KeymgrTest, SideloadClearOtbnNotIdle) {
+TEST_F(KeymgrTest, SideloadClearAccNotIdle) {
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
-  EXPECT_EQ(sc_keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
+  EXPECT_EQ(sc_keymgr_sideload_clear_acc(), kErrorKeymgrInternal);
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-  EXPECT_EQ(sc_keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
+  EXPECT_EQ(sc_keymgr_sideload_clear_acc(), kErrorKeymgrInternal);
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
-  EXPECT_EQ(sc_keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
+  EXPECT_EQ(sc_keymgr_sideload_clear_acc(), kErrorKeymgrInternal);
 }
 
-TEST_F(KeymgrTest, SideloadClearOtbnReadbackMismatch) {
+TEST_F(KeymgrTest, SideloadClearAccReadbackMismatch) {
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
   EXPECT_ABS_WRITE32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                      {
                          {KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
-                          KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN},
+                          KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_ACC},
                      });
 
   // Readback does not match the value written.
@@ -370,7 +370,7 @@ TEST_F(KeymgrTest, SideloadClearOtbnReadbackMismatch) {
                          KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_AES},
                     });
 
-  EXPECT_EQ(sc_keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
+  EXPECT_EQ(sc_keymgr_sideload_clear_acc(), kErrorKeymgrInternal);
 }
 
 TEST_F(KeymgrTest, OwnerIntAdvance) {

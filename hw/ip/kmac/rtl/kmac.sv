@@ -34,7 +34,7 @@ module kmac
   parameter bit SecIdleAcceptSwMsg          = 1'b0,
   parameter int unsigned NumAppIntf         = 4,
   parameter app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl,
-                                                AppCfgRomCtrl, AppCfgOTBN},
+                                                AppCfgRomCtrl, AppCfgACC},
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,

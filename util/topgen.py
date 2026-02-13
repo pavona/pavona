@@ -1844,7 +1844,7 @@ def main():
             "sram_ctrl": ["lowrisc:ip:sram_ctrl_pkg"],
             "aes": ["lowrisc:ip:aes"],
             "kmac": ["lowrisc:ip:kmac_pkg"],
-            "otbn": ["lowrisc:ip:otbn_pkg"],
+            "acc": ["lowrisc:ip:acc_pkg"],
             "keymgr": ["lowrisc:ip:keymgr_pkg"],
             "csrng": ["lowrisc:ip:csrng_pkg"],
         }

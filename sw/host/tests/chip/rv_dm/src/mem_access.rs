@@ -85,14 +85,14 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             top_earlgrey::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32,
         ),
         (
-            "otbn_imem",
-            top_earlgrey::OTBN_BASE_ADDR as u32 + dif::OTBN_IMEM_REG_OFFSET,
-            dif::OTBN_IMEM_SIZE_BYTES,
+            "acc_imem",
+            top_earlgrey::ACC_BASE_ADDR as u32 + dif::ACC_IMEM_REG_OFFSET,
+            dif::ACC_IMEM_SIZE_BYTES,
         ),
         (
-            "otbn_dmem",
-            top_earlgrey::OTBN_BASE_ADDR as u32 + dif::OTBN_DMEM_REG_OFFSET,
-            dif::OTBN_DMEM_SIZE_BYTES,
+            "acc_dmem",
+            top_earlgrey::ACC_BASE_ADDR as u32 + dif::ACC_DMEM_REG_OFFSET,
+            dif::ACC_DMEM_SIZE_BYTES,
         ),
     ];
 

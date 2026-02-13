@@ -24,11 +24,11 @@ interface keymgr_if(input clk, input rst_n);
 
   keymgr_pkg::hw_key_req_t kmac_key;
   keymgr_pkg::hw_key_req_t aes_key;
-  keymgr_pkg::otbn_key_req_t otbn_key;
+  keymgr_pkg::acc_key_req_t acc_key;
 
   keymgr_pkg::hw_key_req_t kmac_key_exp;
   keymgr_pkg::hw_key_req_t aes_key_exp;
-  keymgr_pkg::otbn_key_req_t otbn_key_exp;
+  keymgr_pkg::acc_key_req_t acc_key_exp;
 
   // connect KDF interface for assertion check
   wire kmac_pkg::app_req_t kmac_data_req;
@@ -54,7 +54,7 @@ interface keymgr_if(input clk, input rst_n);
 
   // sideload status
   keymgr_sideload_status_e aes_sideload_status;
-  keymgr_sideload_status_e otbn_sideload_status;
+  keymgr_sideload_status_e acc_sideload_status;
 
   // When kmac sideload key is generated, `kmac_key` becomes valid with the generated digest data.
   // If SW requests keymgr to do another operation, kmac_key will be updated to the internal key
@@ -133,12 +133,12 @@ interface keymgr_if(input clk, input rst_n);
     keymgr_en = lc_ctrl_pkg::lc_tx_t'($urandom);
     kmac_key_exp = '0;
     aes_key_exp  = '0;
-    otbn_key_exp = '0;
+    acc_key_exp = '0;
     is_kmac_key_good = 0;
     is_kmac_data_good = 0;
     kmac_sideload_status = SideLoadNotAvail;
     aes_sideload_status = SideLoadNotAvail;
-    otbn_sideload_status = SideLoadNotAvail;
+    acc_sideload_status = SideLoadNotAvail;
 
     // edn related
     edn_interval  = 'h100;
@@ -251,11 +251,11 @@ interface keymgr_if(input clk, input rst_n);
           aes_sideload_status <= SideLoadAvail;
         end
       end
-      keymgr_pkg::Otbn: begin
-        if (otbn_sideload_status != SideLoadClear) begin
-          // only otbn uses full 384 bits digest data
-          otbn_key_exp         <= '{1'b1, key_shares};
-          otbn_sideload_status <= SideLoadAvail;
+      keymgr_pkg::Acc: begin
+        if (acc_sideload_status != SideLoadClear) begin
+          // only acc uses full 384 bits digest data
+          acc_key_exp         <= '{1'b1, key_shares};
+          acc_sideload_status <= SideLoadAvail;
         end
       end
       default: `uvm_fatal("keymgr_if", $sformatf("Unexpect dest type %0s", dest.name))
@@ -268,17 +268,17 @@ interface keymgr_if(input clk, input rst_n);
     // reset from Clear to NotAvail
     if (kmac_sideload_status == SideLoadClear) kmac_sideload_status <= SideLoadNotAvail;
     if (aes_sideload_status == SideLoadClear)  aes_sideload_status  <= SideLoadNotAvail;
-    if (otbn_sideload_status == SideLoadClear) otbn_sideload_status <= SideLoadNotAvail;
+    if (acc_sideload_status == SideLoadClear) acc_sideload_status <= SideLoadNotAvail;
     case (clear_dest)
       keymgr_pkg::SideLoadClrIdle: ; // do nothing
-      keymgr_pkg::SideLoadClrAes, keymgr_pkg::SideLoadClrKmac, keymgr_pkg::SideLoadClrOtbn: begin
+      keymgr_pkg::SideLoadClrAes, keymgr_pkg::SideLoadClrKmac, keymgr_pkg::SideLoadClrAcc: begin
         clear_one_sideload_key(clear_dest);
       end
       // clear all
       default: begin
         clear_one_sideload_key(keymgr_pkg::SideLoadClrAes);
         clear_one_sideload_key(keymgr_pkg::SideLoadClrKmac);
-        clear_one_sideload_key(keymgr_pkg::SideLoadClrOtbn);
+        clear_one_sideload_key(keymgr_pkg::SideLoadClrAcc);
       end
     endcase
   endfunction
@@ -294,9 +294,9 @@ interface keymgr_if(input clk, input rst_n);
         kmac_key_exp.valid <= 0;
         kmac_sideload_status <= SideLoadClear;
       end
-      keymgr_pkg::SideLoadClrOtbn: begin
-        otbn_sideload_status <= SideLoadClear;
-        otbn_key_exp.valid <= 0;
+      keymgr_pkg::SideLoadClrAcc: begin
+        acc_sideload_status <= SideLoadClear;
+        acc_key_exp.valid <= 0;
       end
       default: begin
         `uvm_fatal(msg_id, $sformatf("Unexpected clear_dest %0d", clear_dest))
@@ -313,11 +313,11 @@ interface keymgr_if(input clk, input rst_n);
 
     aes_key_exp.valid  <= 0;
     kmac_key_exp.valid <= 0;
-    otbn_key_exp.valid <= 0;
+    acc_key_exp.valid <= 0;
 
     aes_sideload_status  <= SideLoadClear;
     kmac_sideload_status <= SideLoadClear;
-    otbn_sideload_status <= SideLoadClear;
+    acc_sideload_status <= SideLoadClear;
   endfunction
 
   function automatic void update_edn_tolerance_upd(int edn_clk, int main_clk);
@@ -543,10 +543,10 @@ interface keymgr_if(input clk, input rst_n);
         if (aes_sideload_status != SideLoadAvail) check_invalid_key(aes_key, "AES");
       end
       forever begin
-        @(otbn_key or otbn_sideload_status);
+        @(acc_key or acc_sideload_status);
         // one cycle to sync with clock, one cycle to allow design to clear the key
         repeat (2) @(posedge clk);
-        if (otbn_sideload_status != SideLoadAvail) check_invalid_key(otbn_key, "OTBN");
+        if (acc_sideload_status != SideLoadAvail) check_invalid_key(acc_key, "ACC");
       end
     join
   end
@@ -580,10 +580,10 @@ interface keymgr_if(input clk, input rst_n);
   `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKeyValid, aes_sideload_status != SideLoadClear ->
                            aes_key_exp.valid == aes_key.valid)
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKey, otbn_sideload_status == SideLoadAvail && otbn_key_exp.valid
-                           -> otbn_key == otbn_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKeyValid, otbn_sideload_status != SideLoadClear ->
-                           otbn_key_exp.valid == otbn_key.valid)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckAccKey, acc_sideload_status == SideLoadAvail && acc_key_exp.valid
+                           -> acc_key == acc_key_exp)
+  `ASSERT_IFF_KEYMGR_LEGAL(CheckAccKeyValid, acc_sideload_status != SideLoadClear ->
+                           acc_key_exp.valid == acc_key.valid)
 
   // for EDN assertion
   // sync req/ack to core clk domain

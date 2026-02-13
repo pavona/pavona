@@ -121,19 +121,19 @@
       ]
     }
     {
-      name: chip_sw_keymgr_sideload_otbn
-      desc: '''Verify the keymgr sideload interface to OTBN.
+      name: chip_sw_keymgr_sideload_acc
+      desc: '''Verify the keymgr sideload interface to ACC.
 
-               Load OTBN binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
-               sideloading to otbn.
+               Load ACC binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
+               sideloading to acc.
 
                Clear the sideload key once done.
             '''
-      features: ["KEYMGR.SIDELOAD.OTBN"]
+      features: ["KEYMGR.SIDELOAD.ACC"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_sw_keymgr_sideload_otbn"]
+      tests: ["chip_sw_keymgr_sideload_acc"]
       bazel: [
         "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
         "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
@@ -147,7 +147,7 @@
 
             - For each keymgr operational state: `CreatorRootKey`, `OwnerIntKey` and `OwnerKey`:
               - Generate identity SW output for the Attestation CDI.
-              - Generate OTBN sideload output for the Attestation CDI.
+              - Generate ACC sideload output for the Attestation CDI.
             - Ensure that the key output changes after calculating the previous steps after a
               keymgr advance operation.
             - The keymgr shall be able to reproduce the same keys for a give device configuration
@@ -176,7 +176,7 @@
             tests: ["chip_sw_keymgr_derive_attestation"]
             bazel: [
               // Covers all points in the test except for the software binding registers.
-              "//sw/device/silicon_creator/lib:otbn_boot_services_functest",
+              "//sw/device/silicon_creator/lib:acc_boot_services_functest",
               "//sw/device/tests:keymgr_derive_attestation_test",
             ]
     }

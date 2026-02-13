@@ -556,24 +556,24 @@
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
-  ) u_clk_main_otbn_trans (
+  ) u_clk_main_acc_trans (
     .clk_i(clk_main),
     .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
     .en_i(clk_main_en),
-    .idle_i(idle_i[HintMainOtbn]),
-    .sw_hint_i(reg2hw.clk_hints.clk_main_otbn_hint.q),
+    .idle_i(idle_i[HintMainAcc]),
+    .sw_hint_i(reg2hw.clk_hints.clk_main_acc_hint.q),
     .scanmode_i,
-    .alert_cg_en_o(cg_en_o.main_otbn),
-    .clk_o(clocks_o.clk_main_otbn),
+    .alert_cg_en_o(cg_en_o.main_acc),
+    .clk_o(clocks_o.clk_main_acc),
     .clk_reg_i(clk_i),
     .rst_reg_ni(rst_ni),
-    .reg_en_o(hw2reg.clk_hints_status.clk_main_otbn_val.d),
-    .reg_cnt_err_o(idle_cnt_err[HintMainOtbn])
+    .reg_en_o(hw2reg.clk_hints_status.clk_main_acc_val.d),
+    .reg_cnt_err_o(idle_cnt_err[HintMainAcc])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
-    ClkMainOtbnCountCheck_A,
-    u_clk_main_otbn_trans.u_idle_cnt,
+    ClkMainAccCountCheck_A,
+    u_clk_main_acc_trans.u_idle_cnt,
     alert_tx_o[1])
   assign hw2reg.fatal_err_code.idle_cnt.d = 1'b1;
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
@@ -582,7 +582,7 @@
   assign hw2reg.clk_hints_status.clk_main_aes_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_hmac_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_kmac_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.clk_main_acc_val.de = 1'b1;
 
   // SEC_CM: JITTER.CONFIG.MUBI
   assign jitter_en_o = mubi4_t'(reg2hw.jitter_enable.q);

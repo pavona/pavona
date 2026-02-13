@@ -31,16 +31,16 @@ interface kmac_if(input clk_i, input rst_ni);
           app_rsp[kmac_app_agent_pkg::AppRom].digest_share0 == 0 &&
           app_rsp[kmac_app_agent_pkg::AppRom].digest_share1 == 0)
 
-  `ASSERT(AppOtbnErrOutputZeros_A, app_rsp[kmac_app_agent_pkg::AppOtbn].error |->
-          app_rsp[kmac_app_agent_pkg::AppOtbn].digest_share0 == 0 &&
-          app_rsp[kmac_app_agent_pkg::AppOtbn].digest_share1 == 0)
+  `ASSERT(AppAccErrOutputZeros_A, app_rsp[kmac_app_agent_pkg::AppAcc].error |->
+          app_rsp[kmac_app_agent_pkg::AppAcc].digest_share0 == 0 &&
+          app_rsp[kmac_app_agent_pkg::AppAcc].digest_share1 == 0)
 
-  // Assertions to check if hold is high outside of OTBN mode
+  // Assertions to check if hold is high outside of ACC mode
   `ASSERT(AppKeymgrHoldNever_A, !app_req[kmac_app_agent_pkg::AppKeymgr].hold)
   `ASSERT(AppLcHoldNever_A,     !app_req[kmac_app_agent_pkg::AppLc].hold)
   `ASSERT(AppRomHoldNever_A,    !app_req[kmac_app_agent_pkg::AppRom].hold)
 
-  // Assertions to check if next is high outside of OTBN mode
+  // Assertions to check if next is high outside of ACC mode
   `ASSERT(AppKeymgrNextNever_A, !app_req[kmac_app_agent_pkg::AppKeymgr].next)
   `ASSERT(AppLcNextNever_A,     !app_req[kmac_app_agent_pkg::AppLc].next)
   `ASSERT(AppRomNextNever_A,    !app_req[kmac_app_agent_pkg::AppRom].next)

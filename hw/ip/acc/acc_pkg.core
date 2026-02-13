@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:acc_pkg:0.1"
+description: "Constants used by ACC"
+
+filesets:
+  files_pkg:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:ip:otp_ctrl_pkg
+    files:
+      - rtl/acc_reg_pkg.sv
+      - rtl/acc_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_pkg

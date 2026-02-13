@@ -23,19 +23,19 @@
         "CLKMGR.HINT.AES",
         "CLKMGR.HINT.HMAC",
         "CLKMGR.HINT.KMAC",
-        "CLKMGR.HINT.OTBN",
+        "CLKMGR.HINT.ACC",
       ]
       tests: [
         "chip_sw_aes_idle",
         "chip_sw_hmac_enc_idle",
         "chip_sw_kmac_idle",
-        "chip_sw_otbn_randomness",
+        "chip_sw_acc_randomness",
       ]
       bazel: [
         "//sw/device/tests:aes_idle_test",
         "//sw/device/tests:hmac_enc_idle_test",
         "//sw/device/tests:kmac_idle_test",
-        "//sw/device/tests:otbn_randomness_test",
+        "//sw/device/tests:acc_randomness_test",
       ]
     }
     {
@@ -57,19 +57,19 @@
         "CLKMGR.HINT.AES",
         "CLKMGR.HINT.HMAC",
         "CLKMGR.HINT.KMAC",
-        "CLKMGR.HINT.OTBN",
+        "CLKMGR.HINT.ACC",
       ]
       tests: [
         "chip_sw_clkmgr_off_aes_trans",
         "chip_sw_clkmgr_off_hmac_trans",
         "chip_sw_clkmgr_off_kmac_trans",
-        "chip_sw_clkmgr_off_otbn_trans",
+        "chip_sw_clkmgr_off_acc_trans",
       ]
       bazel: [
         "//sw/device/tests:clkmgr_off_aes_trans_test",
         "//sw/device/tests:clkmgr_off_hmac_trans_test",
         "//sw/device/tests:clkmgr_off_kmac_trans_test",
-        "//sw/device/tests:clkmgr_off_otbn_trans_test",
+        "//sw/device/tests:clkmgr_off_acc_trans_test",
       ]
     }
     {
@@ -200,7 +200,7 @@
         "chip_sw_clkmgr_jitter",
         "chip_sw_flash_ctrl_ops_jitter_en",
         "chip_sw_flash_ctrl_access_jitter_en",
-        "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+        "chip_sw_acc_ecdsa_op_irq_jitter_en",
         "chip_sw_aes_enc_jitter_en",
         "chip_sw_hmac_enc_jitter_en",
         "chip_sw_keymgr_key_derivation_jitter_en",
@@ -262,7 +262,7 @@
 
             - flash_ctrl initialization
             - flash_ctrl program, read and erase operations
-            - AES, HMAC, KMAC and OTBN operations
+            - AES, HMAC, KMAC and ACC operations
             - Keymgr key derivation
             - Scramble-enabled access from the main SRAM
             - Csrng edn concurrency
@@ -276,7 +276,7 @@
         "chip_sw_clkmgr_jitter_reduced_freq",
         "chip_sw_flash_ctrl_ops_jitter_en_reduced_freq",
         "chip_sw_flash_ctrl_access_jitter_en_reduced_freq",
-        "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
+        "chip_sw_acc_ecdsa_op_irq_jitter_en_reduced_freq",
         "chip_sw_aes_enc_jitter_en_reduced_freq",
         "chip_sw_hmac_enc_jitter_en_reduced_freq",
         "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",

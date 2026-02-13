@@ -26,8 +26,8 @@ extern "C" {
     value(_, IbexSca) \
     value(_, KmacSca) \
     value(_, LCCtrlFi) \
-    value(_, OtbnFi) \
-    value(_, OtbnSca) \
+    value(_, AccFi) \
+    value(_, AccSca) \
     value(_, OtpFi) \
     value(_, PrngSca) \
     value(_, RngFi) \

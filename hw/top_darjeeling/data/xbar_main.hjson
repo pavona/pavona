@@ -165,7 +165,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    { name:      "otbn",
+    { name:      "acc",
       type:      "device",
       clock:     "clk_main_i"
       reset:     "rst_main_ni"
@@ -375,7 +375,7 @@
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
-      "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs",
+      "rv_plic", "acc", "keymgr_dpe", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
       "soc_proxy.ctn", "soc_proxy.core", "dma", "mbx0.core", "mbx1.core",
       "mbx2.core", "mbx3.core", "mbx4.core", "mbx5.core", "mbx6.core",
@@ -385,7 +385,7 @@
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
-      "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs",
+      "rv_plic", "acc", "keymgr_dpe", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
       "soc_proxy.ctn", "soc_proxy.core", "dma", "mbx0.core", "mbx1.core",
       "mbx2.core", "mbx3.core", "mbx4.core", "mbx5.core", "mbx6.core",
@@ -395,7 +395,7 @@
     // but without ROM0/1 and RV_DM.
     dma.host: [
       "sram_ctrl_main.ram", "sram_ctrl_mbox.ram",
-      "aes", "hmac", "otbn", "keymgr_dpe", "kmac",
+      "aes", "hmac", "acc", "keymgr_dpe", "kmac",
       "soc_proxy.ctn", "peri"
     ],
     mbx0.sram: [

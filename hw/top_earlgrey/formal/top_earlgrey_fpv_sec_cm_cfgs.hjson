@@ -134,11 +134,11 @@
                task: "FpvSecCm"
              }
              {
-               name: otbn_sec_cm
-               dut: otbn
-               fusesoc_core: lowrisc:dv:otbn_sva
+               name: acc_sec_cm
+               dut: acc
+               fusesoc_core: lowrisc:dv:acc_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
+               rel_path: "hw/ip/acc/{sub_flow}/{tool}"
                stopats: ["*u_state_regs.state_o"]
                task: "FpvSecCm"
              }
@@ -174,7 +174,7 @@
                dut: rv_core_ibex
                fusesoc_core: lowrisc:earlgrey_dv:rv_core_ibex_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
+               rel_path: "hw/ip/acc/{sub_flow}/{tool}"
                stopats: ["*if_stage_i.pc_mismatch_alert_o",
                          "*icache_i.ecc_error_o",
                          "*gen_regfile_ecc.rf_ecc_err_a",

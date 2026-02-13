@@ -61,7 +61,7 @@ All common types and methods defined at the package level can be found in
     Peri${Name.to_camel_case(clk['src_name'])}${sep}
 % endfor
   } peri_e;
-  typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
+  typedef enum int {TransAes, TransHmac, TransKmac, TransAcc} trans_e;
 ```
 
 ${"###"} TL_agent

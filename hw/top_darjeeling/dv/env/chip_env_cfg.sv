@@ -80,7 +80,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   uint num_ram_ret_tiles;
   uint num_ram_mbox_tiles;
   uint num_ram_ctn_tiles;
-  uint num_otbn_dmem_tiles;
+  uint num_acc_dmem_tiles;
 
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
@@ -225,7 +225,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_mbox_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ctn_tiles, 16)
-    `DV_CHECK_LE_FATAL(num_otbn_dmem_tiles, 16)
+    `DV_CHECK_LE_FATAL(num_acc_dmem_tiles, 16)
 
     if (use_jtag_dmi == 1) begin
       jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
@@ -263,7 +263,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     num_ram_ret_tiles = 1;
     num_ram_mbox_tiles = 1;
     num_ram_ctn_tiles = 1;
-    num_otbn_dmem_tiles = 1;
+    num_acc_dmem_tiles = 1;
   endfunction
 
   // Disable functional coverage of comportable IP-specific specialized registers.

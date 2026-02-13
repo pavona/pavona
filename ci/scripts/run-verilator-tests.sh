@@ -19,8 +19,8 @@ set -e
     //sw/device/tests:aes_smoketest_sim_verilator \
     //sw/device/tests:uart_smoketest_sim_verilator \
     //sw/device/tests:crt_test_sim_verilator \
-    //sw/device/tests:otbn_randomness_test_sim_verilator \
-    //sw/device/tests:otbn_irq_test_sim_verilator \
+    //sw/device/tests:acc_randomness_test_sim_verilator \
+    //sw/device/tests:acc_irq_test_sim_verilator \
     //sw/device/tests:kmac_mode_cshake_test_sim_verilator \
     //sw/device/tests:kmac_mode_kmac_test_sim_verilator \
     //sw/device/tests:flash_ctrl_test_sim_verilator \

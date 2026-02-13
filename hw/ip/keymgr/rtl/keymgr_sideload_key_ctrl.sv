@@ -22,7 +22,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
-  output otbn_key_req_t otbn_key_o,
+  output acc_key_req_t acc_key_o,
   output logic sideload_sel_err_o,
   output logic fsm_err_o
 );
@@ -79,11 +79,11 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
                         !(clr_key_i inside {SideLoadClrIdle,
                                             SideLoadClrAes,
                                             SideLoadClrKmac,
-                                            SideLoadClrOtbn});
+                                            SideLoadClrAcc});
 
   assign slot_clr[AesIdx]  = clr_all_keys | (clr_key_i == SideLoadClrAes);
   assign slot_clr[KmacIdx] = clr_all_keys | (clr_key_i == SideLoadClrKmac);
-  assign slot_clr[OtbnIdx] = clr_all_keys | (clr_key_i == SideLoadClrOtbn);
+  assign slot_clr[AccIdx] = clr_all_keys | (clr_key_i == SideLoadClrAcc);
 
   logic clr;
   assign clr = |slot_clr;
@@ -143,7 +143,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   logic [LastIdx-1:0] slot_sel;
   assign slot_sel[AesIdx] = (dest_sel_i == Aes) & mubi4_test_true_strict(hw_key_sel[AesIdx]);
   assign slot_sel[KmacIdx] = (dest_sel_i == Kmac) & mubi4_test_true_strict(hw_key_sel[KmacIdx]);
-  assign slot_sel[OtbnIdx] = (dest_sel_i == Otbn) & mubi4_test_true_strict(hw_key_sel[OtbnIdx]);
+  assign slot_sel[AccIdx] = (dest_sel_i == Acc) & mubi4_test_true_strict(hw_key_sel[AccIdx]);
 
   keymgr_sideload_key u_aes_key (
     .clk_i,
@@ -159,18 +159,18 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   );
 
   keymgr_sideload_key #(
-    .Width(OtbnKeyWidth)
-  ) u_otbn_key (
+    .Width(AccKeyWidth)
+  ) u_acc_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
     .set_en_i(data_en_i),
-    .set_i(data_valid_i & slot_sel[OtbnIdx]),
-    .clr_i(slot_clr[OtbnIdx]),
+    .set_i(data_valid_i & slot_sel[AccIdx]),
+    .clr_i(slot_clr[AccIdx]),
     .entropy_i(entropy_i),
     .key_i(data_i),
-    .valid_o(otbn_key_o.valid),
-    .key_o(otbn_key_o.key)
+    .valid_o(acc_key_o.valid),
+    .key_o(acc_key_o.key)
   );
 
   hw_key_req_t kmac_sideload_key;
@@ -204,7 +204,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   logic [LastIdx-1:0] valids;
   assign valids[AesIdx] = aes_key_o.valid;
   assign valids[KmacIdx] = kmac_sideload_key.valid;
-  assign valids[OtbnIdx] = otbn_key_o.valid;
+  assign valids[AccIdx] = acc_key_o.valid;
 
   // If valid tracking claims a valid should be 0 but 1 is observed, it is
   // an error.

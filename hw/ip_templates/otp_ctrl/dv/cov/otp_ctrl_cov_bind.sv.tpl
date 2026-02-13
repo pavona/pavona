@@ -40,7 +40,7 @@ module otp_ctrl_cov_bind;
     .flash_otp_key_i  (flash_otp_key_i),
   % endif
     .sram_otp_key_i   (sram_otp_key_i),
-    .otbn_otp_key_i   (otbn_otp_key_i)
+    .acc_otp_key_i   (acc_otp_key_i)
   );
 
   bind otp_ctrl cip_lc_tx_cov_if u_lc_creator_seed_sw_rw_en_cov_if (

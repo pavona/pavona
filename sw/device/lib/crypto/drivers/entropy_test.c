@@ -4,15 +4,15 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/dt_acc.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/otbn_randomness_impl.h"
+#include "sw/device/tests/acc_randomness_impl.h"
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 't')
 
@@ -26,11 +26,11 @@ static status_t entropy_complex_init_test(void) {
   TRY(entropy_complex_check());
 
   // The following test requests entropy from both EDN0 and EDN1.
-  dif_otbn_t otbn;
-  TRY(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  dif_acc_t acc;
+  TRY(dif_acc_init_from_dt(kDtAcc, &acc));
 
-  otbn_randomness_test_start(&otbn, /*iters=*/0);
-  TRY_CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_don_check=*/false));
+  acc_randomness_test_start(&acc, /*iters=*/0);
+  TRY_CHECK(acc_randomness_test_end(&acc, /*skip_acc_don_check=*/false));
   return OK_STATUS();
 }
 

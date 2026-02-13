@@ -52,7 +52,7 @@
 //     -> sm1_67
 //       -> rv_plic
 //     -> sm1_68
-//       -> otbn
+//       -> acc
 //     -> sm1_69
 //       -> keymgr_dpe
 //     -> sm1_70
@@ -125,7 +125,7 @@
 //     -> sm1_67
 //       -> rv_plic
 //     -> sm1_68
-//       -> otbn
+//       -> acc
 //     -> sm1_69
 //       -> keymgr_dpe
 //     -> sm1_70
@@ -175,7 +175,7 @@
 //     -> sm1_66
 //       -> hmac
 //     -> sm1_68
-//       -> otbn
+//       -> acc
 //     -> sm1_69
 //       -> keymgr_dpe
 //     -> sm1_70
@@ -297,8 +297,8 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_edn1_i,
   output tlul_pkg::tl_h2d_t tl_rv_plic_o,
   input  tlul_pkg::tl_d2h_t tl_rv_plic_i,
-  output tlul_pkg::tl_h2d_t tl_otbn_o,
-  input  tlul_pkg::tl_d2h_t tl_otbn_i,
+  output tlul_pkg::tl_h2d_t tl_acc_o,
+  input  tlul_pkg::tl_d2h_t tl_acc_i,
   output tlul_pkg::tl_h2d_t tl_keymgr_dpe_o,
   input  tlul_pkg::tl_d2h_t tl_keymgr_dpe_i,
   output tlul_pkg::tl_h2d_t tl_rv_core_ibex__cfg_o,
@@ -1076,8 +1076,8 @@ module xbar_main (
   assign tl_rv_plic_o = tl_sm1_67_ds_h2d;
   assign tl_sm1_67_ds_d2h = tl_rv_plic_i;
 
-  assign tl_otbn_o = tl_sm1_68_ds_h2d;
-  assign tl_sm1_68_ds_d2h = tl_otbn_i;
+  assign tl_acc_o = tl_sm1_68_ds_h2d;
+  assign tl_sm1_68_ds_d2h = tl_acc_i;
 
   assign tl_keymgr_dpe_o = tl_sm1_69_ds_h2d;
   assign tl_sm1_69_ds_d2h = tl_keymgr_dpe_i;
@@ -1258,7 +1258,7 @@ end
       dev_sel_s1n_55 = 6'd14;
 
     end else if ((tl_s1n_55_us_h2d.a_address &
-                  ~(ADDR_MASK_OTBN)) == ADDR_SPACE_OTBN) begin
+                  ~(ADDR_MASK_ACC)) == ADDR_SPACE_ACC) begin
       dev_sel_s1n_55 = 6'd15;
 
     end else if ((tl_s1n_55_us_h2d.a_address &
@@ -1403,7 +1403,7 @@ end
       dev_sel_s1n_87 = 6'd14;
 
     end else if ((tl_s1n_87_us_h2d.a_address &
-                  ~(ADDR_MASK_OTBN)) == ADDR_SPACE_OTBN) begin
+                  ~(ADDR_MASK_ACC)) == ADDR_SPACE_ACC) begin
       dev_sel_s1n_87 = 6'd15;
 
     end else if ((tl_s1n_87_us_h2d.a_address &
@@ -1504,7 +1504,7 @@ end
       dev_sel_s1n_88 = 4'd3;
 
     end else if ((tl_s1n_88_us_h2d.a_address &
-                  ~(ADDR_MASK_OTBN)) == ADDR_SPACE_OTBN) begin
+                  ~(ADDR_MASK_ACC)) == ADDR_SPACE_ACC) begin
       dev_sel_s1n_88 = 4'd4;
 
     end else if ((tl_s1n_88_us_h2d.a_address &

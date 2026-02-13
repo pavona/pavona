@@ -21,7 +21,7 @@ filegroup(
         "//hw/top:keymgr_rust_regs",
         "//hw/top:kmac_rust_regs",
         "//hw/top:lc_ctrl_rust_regs",
-        "//hw/top:otbn_rust_regs",
+        "//hw/top:acc_rust_regs",
         "//hw/top:otp_ctrl_rust_regs",
         "//hw/top:pattgen_rust_regs",
         "//hw/top:pwm_rust_regs",

@@ -99,7 +99,7 @@ fusesoc_build(
     cores = [
         ":cores",
     ],
-    data = ["//hw/ip/otbn:rtl_files"],
+    data = ["//hw/ip/acc:rtl_files"],
     make_options = ":make_options",
     output_groups = opentitan_select_top_attr("top_verilator_binary"),
     systems = opentitan_select_top_attr("top_verilator_core"),

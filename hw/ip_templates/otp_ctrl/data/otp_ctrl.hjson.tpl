@@ -406,14 +406,14 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       package: "otp_ctrl_pkg"
       desc:    "Array with key derivation interfaces for SRAM scrambling devices."
     }
-    // Key request from OTBN RAM Scrambler
-    { struct:  "otbn_otp_key"
+    // Key request from ACC RAM Scrambler
+    { struct:  "acc_otp_key"
       type:    "req_rsp"
-      name:    "otbn_otp_key"
+      name:    "acc_otp_key"
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
-      desc:    "Key derivation interface for OTBN scrambling devices."
+      desc:    "Key derivation interface for ACC scrambling devices."
     }
     // Hardware config partition
     { struct:  "otp_broadcast"

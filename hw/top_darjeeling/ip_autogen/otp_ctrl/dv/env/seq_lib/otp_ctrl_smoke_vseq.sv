@@ -164,7 +164,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       force_mubi_part_access();
 
       if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs) begin
-        req_otbn_key();
+        req_acc_key();
         req_all_sram_keys();
       end
       if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
@@ -272,7 +272,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       end
 
       if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs && !cfg.smoke_test) begin
-        req_otbn_key();
+        req_acc_key();
         req_all_sram_keys();
       end
 

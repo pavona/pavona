@@ -6,7 +6,7 @@
 #include "hw/top/dt/dt_csrng.h"
 #include "hw/top/dt/dt_edn.h"
 #include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/dt_acc.h"
 #include "hw/top/dt/dt_rv_core_ibex.h"
 #include "hw/top/dt/dt_rv_plic.h"
 #include "sw/device/lib/base/macros.h"
@@ -22,18 +22,18 @@
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/edn_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/otbn_randomness_impl.h"
+#include "sw/device/tests/acc_randomness_impl.h"
 
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aes_t aes;
@@ -54,7 +54,7 @@ enum {
   /**
    * The number of test iterations per entropy consumer.
    */
-  kTestParamNumOtbnIterationsMax = 4,
+  kTestParamNumAccIterationsMax = 4,
   kTestParamNumIbexIterationsMax = 16,
   kTestParamNumAesIterationsMax = 32,
   kTestParamNumCsrngIterationsMax = 8,
@@ -109,9 +109,9 @@ typedef enum task_id {
    */
   kTestTaskIdMain,
   /**
-   * Assigned to `otbn_task()`.
+   * Assigned to `acc_task()`.
    */
-  kTestTaskIdOtbn,
+  kTestTaskIdAcc,
   /**
    * Assigned to `ibex_task()`.
    */
@@ -150,7 +150,7 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
-  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
   CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
 }
 
@@ -168,33 +168,33 @@ static void task_done_set_and_yield(task_id_t task_id) {
 }
 
 /**
- * OTBN task.
+ * ACC task.
  *
- * Executes OTBN randomness test, the test state is set to `kTestStateRun`.
+ * Executes ACC randomness test, the test state is set to `kTestStateRun`.
  *
  * @param task_parameters Unused. Set to NULL by ottf.
  */
-static void otbn_task(void *task_parameters) {
+static void acc_task(void *task_parameters) {
   while (true) {
     if (execution_state == kTestStateTearDown) {
       break;
     }
-    if (execution_state == kTestStateSetup || task_done[kTestTaskIdOtbn]) {
+    if (execution_state == kTestStateSetup || task_done[kTestTaskIdAcc]) {
       ottf_task_yield();
       continue;
     }
-    LOG_INFO("OTBN:START");
-    for (size_t i = 0; i < task_iter_count_max[kTestTaskIdOtbn]; ++i) {
-      otbn_randomness_test_start(&otbn, /*iters=*/0);
-      dif_otbn_status_t status;
+    LOG_INFO("ACC:START");
+    for (size_t i = 0; i < task_iter_count_max[kTestTaskIdAcc]; ++i) {
+      acc_randomness_test_start(&acc, /*iters=*/0);
+      dif_acc_status_t status;
       do {
-        CHECK_DIF_OK(dif_otbn_get_status(&otbn, &status));
+        CHECK_DIF_OK(dif_acc_get_status(&acc, &status));
         ottf_task_yield();
-      } while (status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked);
-      CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
+      } while (status != kDifAccStatusIdle && status != kDifAccStatusLocked);
+      CHECK(acc_randomness_test_end(&acc, /*skip_acc_done_check=*/false));
     }
-    LOG_INFO("OTBN:DONE");
-    task_done_set_and_yield(kTestTaskIdOtbn);
+    LOG_INFO("ACC:DONE");
+    task_done_set_and_yield(kTestTaskIdAcc);
   }
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
@@ -373,8 +373,8 @@ static void entropy_config(void) {
       /*glen_val=*/0, &sw_res_seed);
   sw_num_reqs_between_reseeds = rand_testutils_gen32_range(1, 10);
 
-  task_iter_count_max[kTestTaskIdOtbn] =
-      rand_testutils_gen32_range(/*min=*/1, kTestParamNumOtbnIterationsMax);
+  task_iter_count_max[kTestTaskIdAcc] =
+      rand_testutils_gen32_range(/*min=*/1, kTestParamNumAccIterationsMax);
   task_iter_count_max[kTestTaskIdIbex] =
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumIbexIterationsMax);
   task_iter_count_max[kTestTaskIdAes] =
@@ -486,7 +486,7 @@ bool test_main(void) {
   execution_state_update(kTestStateSetup);
 
   CHECK(ottf_task_create(main_task, "main", kOttfFreeRtosMinStackSize, 1));
-  CHECK(ottf_task_create(otbn_task, "otbn", kOttfFreeRtosMinStackSize, 1));
+  CHECK(ottf_task_create(acc_task, "acc", kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(ibex_task, "ibex", kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(aes_task, "aes", kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(csrng_task, "csrng", kOttfFreeRtosMinStackSize, 1));

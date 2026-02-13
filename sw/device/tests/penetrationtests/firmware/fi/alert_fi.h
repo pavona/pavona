@@ -62,7 +62,7 @@
  *  - FatalProgError [Case 27]
  *  - FatalStateError [Case 28]
  *  - FatalBusIntegError [Case 29]
- * OTBN: recoverable and fatal alerts for the OpenTitan Big Number accelerator.
+ * ACC: recoverable and fatal alerts for the OpenTitan Big Number accelerator.
  *  - FatalAlert [Case 30]
  *  - RecovAlert [Case 30]
  * OTP_CTRL: fatal macro, check, bus integrity errors, and primary OTP alerts

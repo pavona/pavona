@@ -77,9 +77,9 @@ CONNECTION, RSTMGR_LC_D0_HMAC_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc
 CONNECTION, RSTMGR_LC_D0_KMAC_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1], top_earlgrey.u_kmac, rst_ni
 CONNECTION, RSTMGR_LC_SHADOWED_D0_KMAC_RST_SHADOWED_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_shadowed_n[1], top_earlgrey.u_kmac, rst_shadowed_ni
 CONNECTION, RSTMGR_LC_D0_KMAC_RST_EDN_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1], top_earlgrey.u_kmac, rst_edn_ni
-CONNECTION, RSTMGR_LC_D0_OTBN_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1], top_earlgrey.u_otbn, rst_ni
-CONNECTION, RSTMGR_LC_D0_OTBN_RST_EDN_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1], top_earlgrey.u_otbn, rst_edn_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_D0_OTBN_RST_OTP_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], top_earlgrey.u_otbn, rst_otp_ni
+CONNECTION, RSTMGR_LC_D0_ACC_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1], top_earlgrey.u_acc, rst_ni
+CONNECTION, RSTMGR_LC_D0_ACC_RST_EDN_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1], top_earlgrey.u_acc, rst_edn_ni
+CONNECTION, RSTMGR_LC_IO_DIV4_D0_ACC_RST_OTP_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], top_earlgrey.u_acc, rst_otp_ni
 CONNECTION, RSTMGR_LC_D0_KEYMGR_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1], top_earlgrey.u_keymgr, rst_ni
 CONNECTION, RSTMGR_LC_SHADOWED_D0_KEYMGR_RST_SHADOWED_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_shadowed_n[1], top_earlgrey.u_keymgr, rst_shadowed_ni
 CONNECTION, RSTMGR_LC_D0_KEYMGR_RST_EDN_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1], top_earlgrey.u_keymgr, rst_edn_ni

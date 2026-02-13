@@ -42,9 +42,9 @@ class keymgr_sideload_protect_vseq extends keymgr_random_vseq;
       case (key_dest)
         keymgr_pkg::Aes:  hw_key = cfg.keymgr_vif.aes_key.key;
         keymgr_pkg::Kmac: hw_key = cfg.keymgr_vif.kmac_key.key;
-        keymgr_pkg::Otbn: begin
-          // truncate otbn key from 386 to 256 bits
-          foreach (hw_key.key[i]) hw_key.key[i] = cfg.keymgr_vif.otbn_key.key[i];
+        keymgr_pkg::Acc: begin
+          // truncate acc key from 386 to 256 bits
+          foreach (hw_key.key[i]) hw_key.key[i] = cfg.keymgr_vif.acc_key.key[i];
         end
         default: `uvm_fatal(`gfn, "invalid value")
       endcase

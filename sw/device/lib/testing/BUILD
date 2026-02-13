@@ -286,12 +286,12 @@ cc_library(
 )
 
 cc_library(
-    name = "otbn_testutils",
-    srcs = ["otbn_testutils.c"],
-    hdrs = ["otbn_testutils.h"],
+    name = "acc_testutils",
+    srcs = ["acc_testutils.c"],
+    hdrs = ["acc_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
@@ -299,15 +299,15 @@ cc_library(
 )
 
 cc_library(
-    name = "otbn_testutils_rsa",
-    srcs = ["otbn_testutils_rsa.c"],
-    hdrs = ["otbn_testutils_rsa.h"],
+    name = "acc_testutils_rsa",
+    srcs = ["acc_testutils_rsa.c"],
+    hdrs = ["acc_testutils_rsa.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":otbn_testutils",
+        ":acc_testutils",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:otbn",
-        "//sw/otbn/crypto:rsa",
+        "//sw/device/lib/dif:acc",
+        "//sw/acc/crypto:rsa",
     ],
 )
 

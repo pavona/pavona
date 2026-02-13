@@ -97,7 +97,7 @@ package otp_ctrl_top_specific_pkg;
 
   // Get maximum nonce width
   localparam int NumNonceChunks =
-    (OtbnNonceWidth > SramNonceWidth) ? OtbnNonceSel : SramNonceSel;
+    (AccNonceWidth > SramNonceWidth) ? AccNonceSel : SramNonceSel;
 
   ///////////////////////////////////////////
   // Defaults for random netlist constants //

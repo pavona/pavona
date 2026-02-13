@@ -123,7 +123,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -131,8 +131,8 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/device/tests/penetrationtests/json:otbn_sca_commands",
-        "//sw/otbn/crypto:p256_key_from_seed_sca",
+        "//sw/device/tests/penetrationtests/json:acc_sca_commands",
+        "//sw/acc/crypto:p256_key_from_seed_sca",
     ],
 )
 
@@ -187,7 +187,7 @@ cc_library(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
@@ -218,9 +218,9 @@ cc_library(
 )
 
 cc_library(
-    name = "otbn_sca",
-    srcs = ["otbn_sca.c"],
-    hdrs = ["otbn_sca.h"],
+    name = "acc_sca",
+    srcs = ["acc_sca.c"],
+    hdrs = ["acc_sca.h"],
     deps = [
         ":ecc256_keygen_sca",
         "//sw/device/lib/base:memory",
@@ -228,19 +228,19 @@ cc_library(
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_insn_carry_flag",
-        "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_insn_combi_ops",
-        "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_key_sideload_sca",
-        "//sw/device/tests/penetrationtests/json:otbn_sca_commands",
-        "//sw/otbn/crypto:p256_ecdsa_sca",
-        "//sw/otbn/crypto:rsa",
+        "//sw/device/tests/penetrationtests/firmware/sca/acc:acc_insn_carry_flag",
+        "//sw/device/tests/penetrationtests/firmware/sca/acc:acc_insn_combi_ops",
+        "//sw/device/tests/penetrationtests/firmware/sca/acc:acc_key_sideload_sca",
+        "//sw/device/tests/penetrationtests/json:acc_sca_commands",
+        "//sw/acc/crypto:p256_ecdsa_sca",
+        "//sw/acc/crypto:rsa",
     ],
 )
 

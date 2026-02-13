@@ -428,20 +428,20 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
-  // otbn
+  // acc
   ////////////////////////////////////////////
   // Default seed of the PRNG used for URND.
-  parameter otbn_pkg::urnd_prng_seed_t RndCnstOtbnUrndPrngSeed = {
+  parameter acc_pkg::urnd_prng_seed_t RndCnstAccUrndPrngSeed = {
     256'h9A07EFFE_E457DEE8_2B6E0666_3C291739_FF0E7D64_4758FEE1_C58564CF_346D9622
   };
 
   // Compile-time random reset value for IMem/DMem scrambling key.
-  parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnOtbnKey = {
+  parameter otp_ctrl_pkg::acc_key_t RndCnstAccAccKey = {
     128'hE5371091_366EFBD6_1B0CB470_B944EF80
   };
 
   // Compile-time random reset value for IMem/DMem scrambling nonce.
-  parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnOtbnNonce = {
+  parameter otp_ctrl_pkg::acc_nonce_t RndCnstAccAccNonce = {
     64'h6E573B44_B643EBF0
   };
 
@@ -504,8 +504,8 @@ package top_earlgrey_rnd_cnst_pkg;
     256'h1C31BBC9_A8C73FC4_CC3D14CA_6BC0B968_12DE7C77_5A54FF19_343CB320_40B34907
   };
 
-  // Compile-time random bits for generation seed when otbn destination selected
-  parameter keymgr_pkg::seed_t RndCnstKeymgrOtbnSeed = {
+  // Compile-time random bits for generation seed when acc destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrAccSeed = {
     256'h68889D27_E0BA8588_D34C05BC_F127DAE5_8B65D6A2_51088099_B37107B1_CCCF1A95
   };
 

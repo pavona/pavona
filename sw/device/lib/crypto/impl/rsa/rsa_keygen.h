@@ -22,7 +22,7 @@ extern "C" {
  *
  * The key exponent is always F4=65537; no other exponents are supported.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @return Result of the operation (OK or error).
  */
@@ -32,7 +32,7 @@ status_t rsa_keygen_2048_start(void);
 /**
  * Waits for an RSA-2048 key generation to complete.
  *
- * Should be invoked only after `rsa_keygen_2048_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_keygen_2048_start`. Blocks until ACC is
  * done processing.
  *
  * @param[out] public_key Generated public key (n, e).
@@ -48,7 +48,7 @@ status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
  *
  * The key exponent is always F4=65537; no other exponents are supported.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @return Result of the operation (OK or error).
  */
@@ -58,7 +58,7 @@ status_t rsa_keygen_3072_start(void);
 /**
  * Waits for an RSA-3072 key generation to complete.
  *
- * Should be invoked only after `rsa_keygen_3072_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_keygen_3072_start`. Blocks until ACC is
  * done processing.
  *
  * @param[out] public_key Generated public key (n, e).
@@ -74,7 +74,7 @@ status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
  *
  * The key exponent is always F4=65537; no other exponents are supported.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @return Result of the operation (OK or error).
  */
@@ -84,7 +84,7 @@ status_t rsa_keygen_4096_start(void);
 /**
  * Waits for an RSA-4096 key generation to complete.
  *
- * Should be invoked only after `rsa_keygen_4096_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_keygen_4096_start`. Blocks until ACC is
  * done processing.
  *
  * @param[out] public_key Generated public key (n, e).
@@ -102,7 +102,7 @@ status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
  * routine does not perform any checks on the generated keypair (e.g. primality
  * checks or even range checks).
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key Public key (n, e).
  * @param cofactor One of the prime cofactors (p or q).
@@ -116,11 +116,11 @@ status_t rsa_keygen_from_cofactor_2048_start(
  * Waits for an RSA-2048 key-from-cofactor operation to complete.
  *
  * Should be invoked only after `rsa_keygen_from_cofactor_2048_start`. Blocks
- * until OTBN is done processing.
+ * until ACC is done processing.
  *
- * The public key returned by this function is recomputed by OTBN; callers may
+ * The public key returned by this function is recomputed by ACC; callers may
  * find it helpful to compare the public key modulus returned to the one that
- * was passed to OTBN originally in order to check for errors.
+ * was passed to ACC originally in order to check for errors.
  *
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
@@ -137,7 +137,7 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
  * routine does not perform any checks on the generated keypair (e.g. primality
  * checks or even range checks).
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key Public key (n, e).
  * @param cofactor One of the prime cofactors (p or q).
@@ -151,11 +151,11 @@ status_t rsa_keygen_from_cofactor_3072_start(
  * Waits for an RSA-3072 key-from-cofactor operation to complete.
  *
  * Should be invoked only after `rsa_keygen_from_cofactor_3072_start`. Blocks
- * until OTBN is done processing.
+ * until ACC is done processing.
  *
- * The public key returned by this function is recomputed by OTBN; callers may
+ * The public key returned by this function is recomputed by ACC; callers may
  * find it helpful to compare the public key modulus returned to the one that
- * was passed to OTBN originally in order to check for errors.
+ * was passed to ACC originally in order to check for errors.
  *
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
@@ -172,7 +172,7 @@ status_t rsa_keygen_from_cofactor_3072_finalize(
  * routine does not perform any checks on the generated keypair (e.g. primality
  * checks or even range checks).
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key Public key (n, e).
  * @param cofactor One of the prime cofactors (p or q).
@@ -186,11 +186,11 @@ status_t rsa_keygen_from_cofactor_4096_start(
  * Waits for an RSA-4096 key-from-cofactor operation to complete.
  *
  * Should be invoked only after `rsa_keygen_from_cofactor_4096_start`. Blocks
- * until OTBN is done processing.
+ * until ACC is done processing.
  *
- * The public key returned by this function is recomputed by OTBN; callers may
+ * The public key returned by this function is recomputed by ACC; callers may
  * find it helpful to compare the public key modulus returned to the one that
- * was passed to OTBN originally in order to check for errors.
+ * was passed to ACC originally in order to check for errors.
  *
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
@@ -204,7 +204,7 @@ status_t rsa_keygen_from_cofactor_4096_finalize(
  * Checks the validity of a RSA-2048 private key with respect to a given
  * RSA-2048 public key.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * This method performs a series of checks to ensure that a private key is
  * internally consistent with a given public key. Namely, it checks that
@@ -222,7 +222,7 @@ status_t rsa_keygen_from_cofactor_4096_finalize(
  * also checks that both primes pass Miller-Rabin primality tests and that
  * the primes aren't too close.
  *
- * As part of performing these checks, check values are computed using the OTBN
+ * As part of performing these checks, check values are computed using the ACC
  * which are verified on the Ibex by performing hardened comparisons to expected
  * values.
  *
@@ -239,12 +239,12 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
 /*
  * Waits for an RSA-2048 private key check to complete.
  *
- * Should be invoked only after `rsa_key_check_2048_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_key_check_2048_start`. Blocks until ACC is
  * done processing.
  *
  * The `check_primes` flag should be provided exactly as it was to
  * `rsa_key_check_2048_start` in order to ensure that the correct set of check
- * values returned from the OTBN as a result of `rsa_key_check_2048_start` are
+ * values returned from the ACC as a result of `rsa_key_check_2048_start` are
  * verified by the Ibex.
  *
  * @param public_key Public key (n, e).
@@ -263,7 +263,7 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
  * Checks the validity of a RSA-3072 private key with respect to a given
  * RSA-3072 public key.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * This method performs a series of checks to ensure that a private key is
  * internally consistent with a given public key. Namely, it checks that
@@ -281,7 +281,7 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
  * also checks that both primes pass Miller-Rabin primality tests and that
  * the primes aren't too close.
  *
- * As part of performing these checks, check values are computed using the OTBN
+ * As part of performing these checks, check values are computed using the ACC
  * which are verified on the Ibex by performing hardened comparisons to expected
  * values.
  *
@@ -298,12 +298,12 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
 /*
  * Waits for an RSA-3072 private key check to complete.
  *
- * Should be invoked only after `rsa_key_check_3072_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_key_check_3072_start`. Blocks until ACC is
  * done processing.
  *
  * The `check_primes` flag should be provided exactly as it was to
  * `rsa_key_check_3072_start` in order to ensure that the correct set of check
- * values returned from the OTBN as a result of `rsa_key_check_3072_start` are
+ * values returned from the ACC as a result of `rsa_key_check_3072_start` are
  * verified by the Ibex.
  *
  * @param public_key Public key (n, e).
@@ -322,7 +322,7 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
  * Checks the validity of a RSA-4096 private key with respect to a given
  * RSA-4096 public key.
  *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * This method performs a series of checks to ensure that a private key is
  * internally consistent with a given public key. Namely, it checks that
@@ -340,7 +340,7 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
  * also checks that both primes pass Miller-Rabin primality tests and that
  * the primes aren't too close.
  *
- * As part of performing these checks, check values are computed using the OTBN
+ * As part of performing these checks, check values are computed using the ACC
  * which are verified on the Ibex by performing hardened comparisons to expected
  * values.
  *
@@ -357,12 +357,12 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
 /*
  * Waits for an RSA-4096 private key check to complete.
  *
- * Should be invoked only after `rsa_key_check_4096_start`. Blocks until OTBN is
+ * Should be invoked only after `rsa_key_check_4096_start`. Blocks until ACC is
  * done processing.
  *
  * The `check_primes` flag should be provided exactly as it was to
  * `rsa_key_check_4096_start` in order to ensure that the correct set of check
- * values returned from the OTBN as a result of `rsa_key_check_4096_start` are
+ * values returned from the ACC as a result of `rsa_key_check_4096_start` are
  * verified by the Ibex.
  *
  * @param public_key Public key (n, e).

@@ -20,7 +20,7 @@ filesets:
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip:otbn_pkg
+      - lowrisc:ip:acc_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:sram_ctrl_pkg
     files:

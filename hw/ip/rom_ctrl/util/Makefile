@@ -8,7 +8,7 @@ all: lint
 # We need a directory to build stuff and use the "rom_ctrl/util" namespace
 # in the top-level build-out directory.
 repo-top := ../../../..
-build-dir := $(repo-top)/build-out/otbn/util
+build-dir := $(repo-top)/build-out/acc/util
 lint-build-dir := $(build-dir)/lint
 
 $(build-dir) $(lint-build-dir):

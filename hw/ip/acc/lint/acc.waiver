@@ -1,0 +1,44 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for acc
+
+waive -rules {IFDEF_CODE} -location {acc.sv}  \
+      -regexp {'acc_core' instance 'u_acc_core' contained within `else block} \
+      -comment {It's true, and expected.}
+
+waive -rules {CLOCK_USE RESET_USE} -location {acc_core.sv} \
+      -regexp {'(clk_i|rst_ni)' is connected to 'acc_decoder'} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {CLOCK_USE RESET_USE} -location {acc_core.sv}  \
+      -regexp {'(clk_i|rst_ni)' is connected to 'acc_lsu'} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {CLOCK_USE RESET_USE} -location {acc_core.sv}  \
+      -regexp {'(clk_i|rst_ni)' is connected to 'acc_alu_base'} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {RESET_USE} -location {acc_core.sv}  \
+      -regexp {'rst_ni' is connected to 'acc_instruction_fetch'} \
+      -comment {The only flop in this module is not reset.}
+
+waive -rules {ONE_BRANCH} -location {acc_decoder.sv}  \
+      -comment {For consistency in the decoder some case statements have only one branch.}
+
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {acc.sv}  \
+      -regexp {(Net|Signal) 'imem_wmask_bus' is not read from} \
+      -comment {Signal is used in an assertion.}
+
+waive -rules {CLOCK_USE RESET_USE} -location {acc_alu_bignum.sv acc_rf_bignum_ff.sv acc_core.sv} \
+      -regexp {'(clk_i|rst_ni)' is connected to '(prim_onehot_mux|acc_mac_bignum)' port} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {CLOCK_USE RESET_USE} -location {acc_instruction_fetch.sv} \
+      -regexp {'(clk_i|rst_ni)' is connected to 'acc_predecode' port} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {ONE_BIT_MEM_WIDTH} -location {acc_alu_bignum.sv} \
+      -msg {Memory 'flag_mux_in' has word width which is single bit wide} \
+      -comment {The in_i input of prim_onehot_mux has an unpacked and a packed dimension where in this particular case the latter is 1.}

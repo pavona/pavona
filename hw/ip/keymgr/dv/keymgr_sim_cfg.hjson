@@ -86,9 +86,9 @@
     }
 
     {
-      name: keymgr_sideload_otbn
+      name: keymgr_sideload_acc
       uvm_test_seq: keymgr_sideload_one_intf_vseq
-      run_opts: ["+sideload_dest=Otbn"]
+      run_opts: ["+sideload_dest=Acc"]
     }
 
     {

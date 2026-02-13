@@ -27,7 +27,7 @@ rust_binary(
     srcs = [
         "src/io.rs",
         "src/main.rs",
-        "src/otbn.rs",
+        "src/acc.rs",
     ],
     rustc_flags = [
         "-g",

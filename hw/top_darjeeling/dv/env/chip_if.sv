@@ -54,7 +54,7 @@ interface chip_if;
 `define KMAC_HIER           `TOP_HIER.u_kmac
 `define KEYMGR_DPE_HIER     `TOP_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
-`define OTBN_HIER           `TOP_HIER.u_otbn
+`define ACC_HIER           `TOP_HIER.u_acc
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
@@ -572,14 +572,14 @@ interface chip_if;
   wire aes_clk_is_enabled = 0;
   wire hmac_clk_is_enabled = 0;
   wire kmac_clk_is_enabled = 0;
-  wire otbn_clk_is_enabled = 0;
+  wire acc_clk_is_enabled = 0;
 
   wire io_clk_is_enabled = 0;
 `else
   wire aes_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_aes_val.d;
   wire hmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_hmac_val.d;
   wire kmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_kmac_val.d;
-  wire otbn_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_otbn_val.d;
+  wire acc_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_acc_val.d;
 
 // TODO: Not used in DV simulation.
 // wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
@@ -816,7 +816,7 @@ interface chip_if;
       PeripheralKeymgrDpe:      path = {path, ".", `DV_STRINGIFY(`KEYMGR_DPE_HIER)};
       PeripheralKmac:           path = {path, ".", `DV_STRINGIFY(`KMAC_HIER)};
       PeripheralLcCtrl:         path = {path, ".", `DV_STRINGIFY(`LC_CTRL_HIER)};
-      PeripheralOtbn:           path = {path, ".", `DV_STRINGIFY(`OTBN_HIER)};
+      PeripheralAcc:           path = {path, ".", `DV_STRINGIFY(`ACC_HIER)};
       PeripheralOtpCtrl:        path = {path, ".", `DV_STRINGIFY(`OTP_CTRL_HIER)};
       PeripheralPinmuxAon:      path = {path, ".", `DV_STRINGIFY(`PINMUX_HIER)};
       PeripheralPwrmgrAon:      path = {path, ".", `DV_STRINGIFY(`PWRMGR_HIER)};
@@ -952,11 +952,11 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_kmac_fsm_state,
       kmac_fsm_state, 6)
 
-  // Signal probe function for `state_q` OTBN_START_STOP_CONTROL
-  wire [6:0] otbn_fsm_state;
-  assign otbn_fsm_state = `OTBN_HIER.u_otbn_core.u_otbn_start_stop_control.u_state_regs.state_o;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otbn_fsm_state,
-      otbn_fsm_state, 7)
+  // Signal probe function for `state_q` ACC_START_STOP_CONTROL
+  wire [6:0] acc_fsm_state;
+  assign acc_fsm_state = `ACC_HIER.u_acc_core.u_acc_start_stop_control.u_state_regs.state_o;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_acc_fsm_state,
+      acc_fsm_state, 7)
 
   // Signal probe function for `state_q` of EDN_0_MAIN_SM
   wire [8:0] edn_0_fsm_state;
@@ -1023,7 +1023,7 @@ interface chip_if;
 `undef KMAC_HIER
 `undef KEYMGR_DPE_HIER
 `undef LC_CTRL_HIER
-`undef OTBN_HIER
+`undef ACC_HIER
 `undef OTP_CTRL_HIER
 `undef OTP_MACRO_HIER
 `undef PINMUX_HIER

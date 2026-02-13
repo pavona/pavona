@@ -35,7 +35,7 @@ block_level_urls = {
     "key-manager": "hw/ip/keymgr/dv/latest/",
     "kmac": "hw/ip/kmac_masked/dv/latest/",
     "life-cycle": "hw/ip/lc_ctrl/dv/latest/",
-    "otbn": "hw/ip/otbn/dv/uvm/latest/",
+    "acc": "hw/ip/acc/dv/uvm/latest/",
     "otp-fuse-controller": "hw/top_earlgrey/ip_autogen/otp_ctrl/dv/latest/",
     "pattern-generators": "hw/ip/pattgen/dv/latest/",
     "pwm": "hw/top_earlgrey/ip_autogen/pwm/dv/latest/",

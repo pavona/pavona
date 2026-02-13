@@ -254,7 +254,7 @@
             "aes",
             "hmac",
             "kmac",
-            "otbn",
+            "acc",
             "keymgr",
             "csrng",
             "entropy_src",
@@ -886,10 +886,10 @@
         hart: "0x41120000",
       }
     },
-    { name: "otbn",
-      type: "otbn",
+    { name: "acc",
+      type: "acc",
       param_decl: {
-        OtbnPQCEn: "0"
+        AccPQCEn: "0"
       }
       clock_srcs: {
         clk_i: {
@@ -1149,8 +1149,8 @@
     'connect': {
       'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
                                    'otp_macro.obs_ctrl'],
-      'ast.ram_1p_cfg'          : ['otbn.ram_cfg_imem',
-                                   'otbn.ram_cfg_dmem',
+      'ast.ram_1p_cfg'          : ['acc.ram_cfg_imem',
+                                   'acc.ram_cfg_dmem',
                                    'i2c0.ram_cfg',
                                    'i2c1.ram_cfg',
                                    'i2c2.ram_cfg',
@@ -1194,9 +1194,9 @@
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
 
       // LC RMA req/ack interface: LC --> Flash -> LC
-      //                              |-> OTBN  -> LC
-      'lc_ctrl.lc_flash_rma_req' : ['flash_ctrl.rma_req', 'otbn.lc_rma_req'],
-      'lc_ctrl.lc_flash_rma_ack' : ['flash_ctrl.rma_ack', 'otbn.lc_rma_ack'],
+      //                              |-> ACC  -> LC
+      'lc_ctrl.lc_flash_rma_req' : ['flash_ctrl.rma_req', 'acc.lc_rma_req'],
+      'lc_ctrl.lc_flash_rma_ack' : ['flash_ctrl.rma_ack', 'acc.lc_rma_ack'],
 
       // usbdev connection to pinmux
       'usbdev.usb_dp_pullup'        : ['pinmux_aon.usbdev_dppullup_en'],
@@ -1210,24 +1210,24 @@
 
       // Edn connections
       'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
-                                 'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd',
+                                 'alert_handler.edn', 'aes.edn', 'acc.edn_urnd',
                                  'rv_core_ibex.edn'],
-      'edn1.edn'              : ['otbn.edn_rnd'],
+      'edn1.edn'              : ['acc.edn_rnd'],
 
-      // OTBN OTP scramble key
-      'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
+      // ACC OTP scramble key
+      'otp_ctrl.acc_otp_key' : ['acc.acc_otp_key'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
       'keymgr.aes_key'          : ['aes.keymgr_key'],
       'keymgr.kmac_key'         : ['kmac.keymgr_key'],
-      'keymgr.otbn_key'         : ['otbn.keymgr_key'],
+      'keymgr.acc_key'         : ['acc.keymgr_key'],
 
       // KMAC Application Interface
       'kmac.app'                : ['keymgr.kmac_data',    // Keymgr needs to be at index 0
                                    'lc_ctrl.kmac_data',   // LC needs to be at index 1
                                    'rom_ctrl.kmac_data',  // ROM needs to be at index 2
-                                   'otbn.kmac_data'],     // OTBN needs to be at index 3
+                                   'acc.kmac_data'],     // ACC needs to be at index 3
       'kmac.en_masking'         : ['keymgr.kmac_en_masking'],
 
       // The idle connection is automatically connected through topgen.
@@ -1276,7 +1276,7 @@
       'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'kmac.lc_escalate_en',
-                                      'otbn.lc_escalate_en',
+                                      'acc.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
                                       'sram_ctrl_ret_aon.lc_escalate_en',

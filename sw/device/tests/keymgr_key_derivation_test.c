@@ -46,7 +46,7 @@ bool test_main(void) {
       keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
   LOG_INFO("Keymgr generated SW output at %s State", state_name);
 
-  // Generate sideload keys for 3 HW interfaces - Kmac, Aes, Otbn.
+  // Generate sideload keys for 3 HW interfaces - Kmac, Aes, Acc.
   sideload_params.dest = kDifKeymgrVersionedKeyDestKmac;
   CHECK_STATUS_OK(
       keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
@@ -57,10 +57,10 @@ bool test_main(void) {
       keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Aes at %s State", state_name);
 
-  sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
+  sideload_params.dest = kDifKeymgrVersionedKeyDestAcc;
   CHECK_STATUS_OK(
       keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
-  LOG_INFO("Keymgr generated HW output for Otbn at %s State", state_name);
+  LOG_INFO("Keymgr generated HW output for Acc at %s State", state_name);
 
   CHECK_STATUS_OK(keymgr_testutils_disable(&keymgr));
   CHECK_STATUS_OK(

@@ -92,10 +92,10 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrAesSeed,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
 
-  localparam gen_out_data_t GenOtbnOutData = '{
+  localparam gen_out_data_t GenAccOutData = '{
       SwKeyVersion,
       Salt,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrOtbnSeed,
+      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrAccSeed,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
 
   bit lc_at_prod;
@@ -146,7 +146,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task check_op_in_owner_int_state(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
-    string path_otbn_key = "tb.dut.top_earlgrey.u_keymgr.otbn_key_o";
+    string path_acc_key = "tb.dut.top_earlgrey.u_keymgr.acc_key_o";
     bit [keymgr_pkg::KeyWidth-1:0]     exp_digest;
     bit [keymgr_pkg::KeyWidth-1:0]     unused_key;
 
@@ -162,20 +162,20 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
 
     check_aes_sideload(unmasked_key, unused_key);
 
-    // otbn sideload key is 384 bit, so it's treated a bit differently
+    // acc sideload key is 384 bit, so it's treated a bit differently
     begin
-      keymgr_pkg::otbn_key_req_t otbn_key;
+      keymgr_pkg::acc_key_req_t acc_key;
       bit [7:0] data_arr[];
       bit [kmac_pkg::AppDigestW-1:0] unmask_act_key, unmask_exp_key;
       `DV_WAIT(cfg.sw_logger_vif.printed_log ==
-            "Keymgr generated HW output for Otbn at OwnerIntKey State")
-      `DV_CHECK_FATAL(uvm_hdl_check_path(path_otbn_key))
-      `DV_CHECK_FATAL(uvm_hdl_read(path_otbn_key, otbn_key))
-      `DV_CHECK_EQ(otbn_key.valid, 1)
+            "Keymgr generated HW output for Acc at OwnerIntKey State")
+      `DV_CHECK_FATAL(uvm_hdl_check_path(path_acc_key))
+      `DV_CHECK_FATAL(uvm_hdl_read(path_acc_key, acc_key))
+      `DV_CHECK_EQ(acc_key.valid, 1)
 
-      unmask_act_key = otbn_key.key[0] ^ otbn_key.key[1];
+      unmask_act_key = acc_key.key[0] ^ acc_key.key[1];
 
-      {<< byte {data_arr}} = GenOtbnOutData;
+      {<< byte {data_arr}} = GenAccOutData;
       unmask_exp_key = get_kmac_digest(unmasked_key, data_arr);
 
       `DV_CHECK_EQ(unmask_act_key, unmask_exp_key)

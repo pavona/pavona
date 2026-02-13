@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -34,7 +34,7 @@ status_t ecdsa_p256_verify_test(
   TRY(p256_ecdsa_verify_start(&testvec->signature, digest.data,
                               &testvec->public_key));
   hardened_bool_t result;
-  TRY(otbn_busy_wait_for_done());
+  TRY(acc_busy_wait_for_done());
   TRY(p256_ecdsa_verify_finalize(&testvec->signature, &result));
 
   if (testvec->valid && result != kHardenedBoolTrue) {
@@ -69,10 +69,10 @@ bool test_main(void) {
     } else {
       LOG_ERROR("Finished ecdsa_p256_verify_test on test vector %d : error %r",
                 i + 1, err);
-      // For help with debugging, print the OTBN error bits, instruction
+      // For help with debugging, print the ACC error bits, instruction
       // count, and test vector notes.
-      LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
-      LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
+      LOG_INFO("ACC error bits: 0x%08x", acc_err_bits_get());
+      LOG_INFO("ACC instruction count: 0x%08x", acc_instruction_count_get());
       LOG_INFO("Test notes: %s", testvec.comment);
       result = false;
     }

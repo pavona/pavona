@@ -40,7 +40,7 @@
 
             - drive pwrmgr's request pin to trigger OTP initialization after reset, check status
               after OTP initialization
-            - randomly read out keys pertaining to `key_manager`, `flash`, `sram`, `otbn`
+            - randomly read out keys pertaining to `key_manager`, `flash`, `sram`, `acc`
             - randomly issue LC program request
             - write random values to random addresses within each OTP partition
             - read out the random selected write addresses, check if the readout values are expected
@@ -143,7 +143,7 @@
     {
       name: interface_key_check
       desc: '''
-            OTP_CTRL will generate keys to `flash`, `sram`, and `otbn` upon their requests.
+            OTP_CTRL will generate keys to `flash`, `sram`, and `acc` upon their requests.
             Based on the DAI access sequence, this test will run key requests sequence in
             parallel, and check if correct keys are generated.
             '''
@@ -273,8 +273,8 @@
       desc: '''Covers whether secret1 partition is locked during all `srams` key request.'''
     }
     {
-      name: otbn_req_cg
-      desc: '''Covers whether secret1 partition is locked during `otbn` key request.'''
+      name: acc_req_cg
+      desc: '''Covers whether secret1 partition is locked during `acc` key request.'''
     }
     {
       name: lc_prog_cg
@@ -389,7 +389,7 @@
             '''
     }
     {
-      name: otbn_req_condition_cg
+      name: acc_req_condition_cg
       desc: '''Covers the following conditions when `lc_escalation_en` is On:
             - whether any key requests is in progress
             - whether DAI interface is busy

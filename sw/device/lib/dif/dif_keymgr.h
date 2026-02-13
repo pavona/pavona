@@ -52,7 +52,7 @@ typedef enum dif_keymgr_sideload_clr {
   kDifKeyMgrSideLoadClearNone = 0,
   kDifKeyMgrSideLoadClearAes = 1,
   kDifKeyMgrSideLoadClearKmac = 2,
-  kDifKeyMgrSideLoadClearOtbn = 3,
+  kDifKeyMgrSideLoadClearAcc = 3,
   // Using different value than those enumerated above should clear all slots,
   // so we can use the mask value of this field to denote ALL case. This was
   // we can statically assert this value on the .c side of this DIF.
@@ -418,13 +418,13 @@ typedef enum dif_keymgr_versioned_key_dest {
    */
   kDifKeymgrVersionedKeyDestKmac,
   /**
-   * Sideload the generated versioned key to Otbn device.
+   * Sideload the generated versioned key to Acc device.
    */
-  kDifKeymgrVersionedKeyDestOtbn,
+  kDifKeymgrVersionedKeyDestAcc,
   /**
    * \internal Last key destination.
    */
-  kDifKeymgrVersionedKeyDestLast = kDifKeymgrVersionedKeyDestOtbn,
+  kDifKeymgrVersionedKeyDestLast = kDifKeymgrVersionedKeyDestAcc,
 } dif_keymgr_versioned_key_dest_t;
 
 /**

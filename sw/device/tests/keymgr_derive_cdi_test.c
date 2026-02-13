@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
@@ -18,7 +18,7 @@
 
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_rstmgr_t rstmgr;
 static dif_sram_ctrl_t sram_ctrl;
 
@@ -46,13 +46,13 @@ enum {
 
 /**
  * Grouping of the three CDI output variants that can be generated in
- * each key manager state (identity, versioned software key, sideload OTBN key).
+ * each key manager state (identity, versioned software key, sideload ACC key).
  *
- * Note that the sideload OTBN key is not visible to software. In order to
+ * Note that the sideload ACC key is not visible to software. In order to
  * run the same verification steps as for the identity and software keys, a
- * X25519 public key is generated in the OTBN and retrieved. For the sake of
+ * X25519 public key is generated in the ACC and retrieved. For the sake of
  * simplicity, and only in the confines of this test, we can assume that the
- * X25519 public key and the sideload OTBN key refer to the same thing.
+ * X25519 public key and the sideload ACC key refer to the same thing.
  */
 typedef struct cdi_outputs {
   dif_keymgr_output_t identity;
@@ -60,16 +60,16 @@ typedef struct cdi_outputs {
   uint32_t sideload_key[kX2551PublicKeySizeBytes];
 } cdi_outputs_t;
 
-// Symbols of the OTBN X22519 public key generation program.
-// See sw/otbn/crypto/x25519_sideload.s for the source code.
-OTBN_DECLARE_APP_SYMBOLS(x25519_sideload);
-OTBN_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_u);
-OTBN_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_result);
-static const otbn_app_t kOtbnAppX25519 = OTBN_APP_T_INIT(x25519_sideload);
-static const otbn_addr_t kOtbnVarEncU =
-    OTBN_ADDR_T_INIT(x25519_sideload, enc_u);
-static const otbn_addr_t kOtbnVarEncResult =
-    OTBN_ADDR_T_INIT(x25519_sideload, enc_result);
+// Symbols of the ACC X22519 public key generation program.
+// See sw/acc/crypto/x25519_sideload.s for the source code.
+ACC_DECLARE_APP_SYMBOLS(x25519_sideload);
+ACC_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_u);
+ACC_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_result);
+static const acc_app_t kAccAppX25519 = ACC_APP_T_INIT(x25519_sideload);
+static const acc_addr_t kAccVarEncU =
+    ACC_ADDR_T_INIT(x25519_sideload, enc_u);
+static const acc_addr_t kAccVarEncResult =
+    ACC_ADDR_T_INIT(x25519_sideload, enc_result);
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -95,7 +95,7 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
       &sram_ctrl));
   CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+      dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
 }
 
 /**
@@ -203,42 +203,42 @@ static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
 }
 
 /**
- * Invoke the generation of sideload OTBN key, run the X25519 OTBN program and
+ * Invoke the generation of sideload ACC key, run the X25519 ACC program and
  * read back the resulting public key. A second generation with an invalid key
  * version should fail.
  *
  * @param state_name The current key manager state string.
  * @param The destination of the read X25519 public key.
  */
-static void derive_sideload_otbn_key(const char *state_name,
+static void derive_sideload_acc_key(const char *state_name,
                                      uint32_t key[kKeymgrOutputSizeWords]) {
   uint32_t max_version;
   CHECK_STATUS_OK(keymgr_testutils_max_key_version_get(&keymgr, &max_version));
 
   dif_keymgr_versioned_key_params_t params = kKeyVersionedParams;
-  params.dest = kDifKeymgrVersionedKeyDestOtbn;
+  params.dest = kDifKeymgrVersionedKeyDestAcc;
   params.version = max_version;
 
   CHECK_STATUS_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
-  LOG_INFO("Keymgr generated HW output for Otbn at %s State", state_name);
+  LOG_INFO("Keymgr generated HW output for Acc at %s State", state_name);
 
-  // Run the X25519 public key generation. For more details, see the OTBN
-  // sideload test sw/device/tests/keymgr_sideload_otbn_test.c.
-  CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppX25519));
-  CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(&otbn, false));
+  // Run the X25519 public key generation. For more details, see the ACC
+  // sideload test sw/device/tests/keymgr_sideload_acc_test.c.
+  CHECK_STATUS_OK(acc_testutils_load_app(&acc, kAccAppX25519));
+  CHECK_DIF_OK(dif_acc_set_ctrl_software_errs_fatal(&acc, false));
 
   const uint32_t kEncodedU[8] = {
       // Montgomery u-Coordinate.
       0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
   };
-  CHECK_STATUS_OK(otbn_testutils_write_data(&otbn, sizeof(kEncodedU),
-                                            &kEncodedU, kOtbnVarEncU));
-  LOG_INFO("Starting OTBN program...");
-  CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(&otbn, false));
-  CHECK_STATUS_OK(otbn_testutils_execute(&otbn));
-  CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, 0));
-  CHECK_STATUS_OK(otbn_testutils_read_data(&otbn, kX2551PublicKeySizeBytes,
-                                           kOtbnVarEncResult, key));
+  CHECK_STATUS_OK(acc_testutils_write_data(&acc, sizeof(kEncodedU),
+                                            &kEncodedU, kAccVarEncU));
+  LOG_INFO("Starting ACC program...");
+  CHECK_DIF_OK(dif_acc_set_ctrl_software_errs_fatal(&acc, false));
+  CHECK_STATUS_OK(acc_testutils_execute(&acc));
+  CHECK_STATUS_OK(acc_testutils_wait_for_done(&acc, 0));
+  CHECK_STATUS_OK(acc_testutils_read_data(&acc, kX2551PublicKeySizeBytes,
+                                           kAccVarEncResult, key));
 
 #ifndef DERIVE_ATTESTATION
   // If the key version is larger than the permitted maximum version, then
@@ -249,7 +249,7 @@ static void derive_sideload_otbn_key(const char *state_name,
 }
 
 /**
- * Derive a CDI identity, software key and sideload OTBN key. If the `write`
+ * Derive a CDI identity, software key and sideload ACC key. If the `write`
  * flag is set, then the keys are written at specific offset in the retention
  * SRAM. In the other case, the generated outputs are compared against outputs
  * from the retention SRAM (corresponding to a run before the reset). Pre- and
@@ -267,7 +267,7 @@ static void derive_keys(const char *state_name,
                         bool write, cdi_outputs_t *next_outputs) {
   derive_identity(state_name, &next_outputs->identity);
   derive_sw_key(state_name, &next_outputs->sw_key);
-  derive_sideload_otbn_key(state_name, next_outputs->sideload_key);
+  derive_sideload_acc_key(state_name, next_outputs->sideload_key);
 
   if (prev_outputs) {
     CHECK(!compare_outputs(&prev_outputs->identity, &next_outputs->identity));
@@ -299,10 +299,10 @@ static void derive_keys(const char *state_name,
  *   `OwnerKey`:
  *   - Generate identity SW output for the Attestation CDI.
  *   - Generate SW output for the Attestation CDI.
- *   - Generate OTBN sideload output for the Attestation CDI.
+ *   - Generate ACC sideload output for the Attestation CDI.
  *
  * The creation of the three outputs is handled by the `derive_identity`,
- * `derive_sw_key` and `derive_sideload_otbn_key` functions, which are invoked
+ * `derive_sw_key` and `derive_sideload_acc_key` functions, which are invoked
  * by `derive_keys` through `test_derive_cdi` that traverses the three
  * operational states.
  *

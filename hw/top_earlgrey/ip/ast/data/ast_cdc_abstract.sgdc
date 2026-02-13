@@ -341,7 +341,7 @@ abstract_port -ports "sns_clks_i[clk_io_div2_infra]" -ignore -comment "hanging p
 abstract_port -ports "sns_clks_i[clk_io_infra]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_main_infra]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_io_div4_infra]" -ignore -comment "hanging path"
-abstract_port -ports "sns_clks_i[clk_main_otbn]" -ignore -comment "hanging path"
+abstract_port -ports "sns_clks_i[clk_main_acc]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_main_kmac]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_main_hmac]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_main_aes]" -ignore -comment "hanging path"

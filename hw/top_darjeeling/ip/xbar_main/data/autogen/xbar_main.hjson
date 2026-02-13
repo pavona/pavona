@@ -201,7 +201,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_otbn"
+      name:   "tl_acc"
       act:    "req"
       package: "tlul_pkg"
     }

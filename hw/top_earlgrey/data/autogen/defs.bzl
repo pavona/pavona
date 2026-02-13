@@ -23,7 +23,7 @@ load("//hw/ip/i2c:defs.bzl", "I2C")
 load("//hw/ip/keymgr:defs.bzl", "KEYMGR")
 load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
-load("//hw/ip/otbn:defs.bzl", "OTBN")
+load("//hw/ip/acc:defs.bzl", "ACC")
 load("//hw/top_earlgrey/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
 load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/ip/pattgen:defs.bzl", "PATTGEN")
@@ -61,7 +61,7 @@ EARLGREY_IPS = [
     KEYMGR,
     KMAC,
     LC_CTRL,
-    OTBN,
+    ACC,
     OTP_CTRL,
     OTP_MACRO,
     PATTGEN,
@@ -131,8 +131,8 @@ EARLGREY_ALERTS = [
     "hmac_fatal_fault",
     "kmac_recov_operation_err",
     "kmac_fatal_fault_err",
-    "otbn_fatal",
-    "otbn_recov",
+    "acc_fatal",
+    "acc_recov",
     "keymgr_recov_operation_err",
     "keymgr_fatal_fault_err",
     "csrng_recov_alert",

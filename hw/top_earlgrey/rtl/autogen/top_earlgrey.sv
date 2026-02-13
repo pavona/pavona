@@ -90,13 +90,13 @@ module top_earlgrey #(
   parameter bit SecKmacIdleAcceptSwMsg = 0,
   parameter int KmacNumAppIntf = 4,
   parameter kmac_pkg::app_config_t KmacAppCfg[KmacNumAppIntf] =
-      '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOTBN},
-  // parameters for otbn
-  parameter bit OtbnStub = 0,
-  parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
-  parameter bit SecOtbnMuteUrnd = 0,
-  parameter bit SecOtbnSkipUrndReseedAtStart = 0,
-  parameter bit OtbnOtbnPQCEn = 0,
+      '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgACC},
+  // parameters for acc
+  parameter bit AccStub = 0,
+  parameter acc_pkg::regfile_e AccRegFile = acc_pkg::RegFileFF,
+  parameter bit SecAccMuteUrnd = 0,
+  parameter bit SecAccSkipUrndReseedAtStart = 0,
+  parameter bit AccAccPQCEn = 0,
   // parameters for keymgr
   parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 0,
   parameter bit KeymgrKmacEnMasking = 1,
@@ -413,7 +413,7 @@ module top_earlgrey #(
   // aes
   // hmac
   // kmac
-  // otbn
+  // acc
   // keymgr
   // csrng
   // entropy_src
@@ -566,7 +566,7 @@ module top_earlgrey #(
   logic intr_kmac_kmac_done;
   logic intr_kmac_fifo_empty;
   logic intr_kmac_kmac_err;
-  logic intr_otbn_done;
+  logic intr_acc_done;
   logic intr_keymgr_op_done;
   logic intr_csrng_cs_cmd_req_done;
   logic intr_csrng_cs_entropy_req;
@@ -636,12 +636,12 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t [7:0] edn0_edn_rsp;
   edn_pkg::edn_req_t [7:0] edn1_edn_req;
   edn_pkg::edn_rsp_t [7:0] edn1_edn_rsp;
-  otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
-  otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
+  otp_ctrl_pkg::acc_otp_key_req_t       otp_ctrl_acc_otp_key_req;
+  otp_ctrl_pkg::acc_otp_key_rsp_t       otp_ctrl_acc_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_aes_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
-  keymgr_pkg::otbn_key_req_t       keymgr_otbn_key;
+  keymgr_pkg::acc_key_req_t       keymgr_acc_key;
   kmac_pkg::app_req_t [KmacNumAppIntf-1:0] kmac_app_req;
   kmac_pkg::app_rsp_t [KmacNumAppIntf-1:0] kmac_app_rsp;
   logic       kmac_en_masking;
@@ -732,8 +732,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       edn1_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_plic_tl_req;
   tlul_pkg::tl_d2h_t       rv_plic_tl_rsp;
-  tlul_pkg::tl_h2d_t       otbn_tl_req;
-  tlul_pkg::tl_d2h_t       otbn_tl_rsp;
+  tlul_pkg::tl_h2d_t       acc_tl_req;
+  tlul_pkg::tl_d2h_t       acc_tl_rsp;
   tlul_pkg::tl_h2d_t       keymgr_tl_req;
   tlul_pkg::tl_d2h_t       keymgr_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_core_ibex_cfg_tl_d_req;
@@ -973,8 +973,8 @@ module top_earlgrey #(
   // kmac_trans_lc_0
   assign lpg_cg_en[22] = clkmgr_aon_cg_en.main_kmac;
   assign lpg_rst_en[22] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
-  // otbn_trans_lc_0
-  assign lpg_cg_en[23] = clkmgr_aon_cg_en.main_otbn;
+  // acc_trans_lc_0
+  assign lpg_cg_en[23] = clkmgr_aon_cg_en.main_acc;
   assign lpg_rst_en[23] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
 
 
@@ -1559,8 +1559,8 @@ module top_earlgrey #(
       .flash_otp_key_o(flash_ctrl_otp_rsp),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
       .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
-      .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
-      .otbn_otp_key_o(otp_ctrl_otbn_otp_key_rsp),
+      .acc_otp_key_i(otp_ctrl_acc_otp_key_req),
+      .acc_otp_key_o(otp_ctrl_acc_otp_key_rsp),
       .otp_broadcast_o(otp_ctrl_otp_broadcast),
       .otp_macro_o(otp_ctrl_otp_macro_req),
       .otp_macro_i(otp_ctrl_otp_macro_rsp),
@@ -2530,29 +2530,29 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
-  otbn #(
+  acc #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[48:47]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .Stub(OtbnStub),
-    .RegFile(OtbnRegFile),
-    .RndCnstUrndPrngSeed(RndCnstOtbnUrndPrngSeed),
-    .SecMuteUrnd(SecOtbnMuteUrnd),
-    .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
-    .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
-    .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce),
-    .OtbnPQCEn(OtbnOtbnPQCEn)
-  ) u_otbn (
+    .Stub(AccStub),
+    .RegFile(AccRegFile),
+    .RndCnstUrndPrngSeed(RndCnstAccUrndPrngSeed),
+    .SecMuteUrnd(SecAccMuteUrnd),
+    .SecSkipUrndReseedAtStart(SecAccSkipUrndReseedAtStart),
+    .RndCnstAccKey(RndCnstAccAccKey),
+    .RndCnstAccNonce(RndCnstAccAccNonce),
+    .AccPQCEn(AccAccPQCEn)
+  ) u_acc (
 
       // Interrupt
-      .intr_done_o (intr_otbn_done),
+      .intr_done_o (intr_acc_done),
       // alert_handler[47]: fatal
       // alert_handler[48]: recov
       .alert_tx_o  ( alert_tx[48:47] ),
       .alert_rx_i  ( alert_rx[48:47] ),
 
       // Inter-module signals
-      .otbn_otp_key_o(otp_ctrl_otbn_otp_key_req),
-      .otbn_otp_key_i(otp_ctrl_otbn_otp_key_rsp),
+      .acc_otp_key_o(otp_ctrl_acc_otp_key_req),
+      .acc_otp_key_i(otp_ctrl_acc_otp_key_rsp),
       .edn_rnd_o(edn1_edn_req[0]),
       .edn_rnd_i(edn1_edn_rsp[0]),
       .edn_urnd_o(edn0_edn_req[6]),
@@ -2567,12 +2567,12 @@ module top_earlgrey #(
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
       .lc_rma_ack_o(lc_ctrl_lc_flash_rma_ack[1]),
-      .keymgr_key_i(keymgr_otbn_key),
-      .tl_i(otbn_tl_req),
-      .tl_o(otbn_tl_rsp),
+      .keymgr_key_i(keymgr_acc_key),
+      .tl_i(acc_tl_req),
+      .tl_o(acc_tl_rsp),
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_main_otbn),
+      .clk_i (clkmgr_aon_clocks.clk_main_acc),
       .clk_edn_i (clkmgr_aon_clocks.clk_main_secure),
       .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
@@ -2595,7 +2595,7 @@ module top_earlgrey #(
     .RndCnstHardOutputSeed(RndCnstKeymgrHardOutputSeed),
     .RndCnstAesSeed(RndCnstKeymgrAesSeed),
     .RndCnstKmacSeed(RndCnstKeymgrKmacSeed),
-    .RndCnstOtbnSeed(RndCnstKeymgrOtbnSeed),
+    .RndCnstAccSeed(RndCnstKeymgrAccSeed),
     .RndCnstCdi(RndCnstKeymgrCdi),
     .RndCnstNoneSeed(RndCnstKeymgrNoneSeed)
   ) u_keymgr (
@@ -2612,7 +2612,7 @@ module top_earlgrey #(
       .edn_i(edn0_edn_rsp[0]),
       .aes_key_o(keymgr_aes_key),
       .kmac_key_o(keymgr_kmac_key),
-      .otbn_key_o(keymgr_otbn_key),
+      .acc_key_o(keymgr_acc_key),
       .kmac_data_o(kmac_app_req[0]),
       .kmac_data_i(kmac_app_rsp[0]),
       .otp_key_i(otp_ctrl_otp_keymgr_key),
@@ -2941,7 +2941,7 @@ module top_earlgrey #(
       intr_csrng_cs_entropy_req, // IDs [175 +: 1]
       intr_csrng_cs_cmd_req_done, // IDs [174 +: 1]
       intr_keymgr_op_done, // IDs [173 +: 1]
-      intr_otbn_done, // IDs [172 +: 1]
+      intr_acc_done, // IDs [172 +: 1]
       intr_kmac_kmac_err, // IDs [171 +: 1]
       intr_kmac_fifo_empty, // IDs [170 +: 1]
       intr_kmac_kmac_done, // IDs [169 +: 1]
@@ -3186,9 +3186,9 @@ module top_earlgrey #(
     .tl_rv_plic_o(rv_plic_tl_req),
     .tl_rv_plic_i(rv_plic_tl_rsp),
 
-    // port: tl_otbn
-    .tl_otbn_o(otbn_tl_req),
-    .tl_otbn_i(otbn_tl_rsp),
+    // port: tl_acc
+    .tl_acc_o(acc_tl_req),
+    .tl_acc_i(acc_tl_rsp),
 
     // port: tl_keymgr
     .tl_keymgr_o(keymgr_tl_req),

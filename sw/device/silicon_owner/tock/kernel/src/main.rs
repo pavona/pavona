@@ -15,7 +15,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 use crate::hil::symmetric_encryption::AES128_BLOCK_SIZE;
-use crate::otbn::OtbnComponent;
+use crate::acc::AccComponent;
 use capsules_aes_gcm::aes_gcm;
 use capsules_core::virtualizers::virtual_aes_ccm;
 use capsules_core::virtualizers::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
@@ -41,7 +41,7 @@ use lowrisc::flash_ctrl::FlashMPConfig;
 use rv32i::csr;
 
 pub mod io;
-mod otbn;
+mod acc;
 
 const NUM_PROCS: usize = 4;
 
@@ -88,7 +88,7 @@ static mut AES: Option<
 // Test access to SipHash
 static mut SIPHASH: Option<&capsules_extra::sip_hash::SipHasher24<'static>> = None;
 // Test access to RSA
-static mut RSA_HARDWARE: Option<&lowrisc::rsa::OtbnRsa<'static>> = None;
+static mut RSA_HARDWARE: Option<&lowrisc::rsa::AccRsa<'static>> = None;
 
 // Test access to a software SHA256
 #[cfg(test)]
@@ -611,17 +611,17 @@ unsafe fn setup() -> (
         >
     ));
 
-    let mux_otbn = crate::otbn::AccelMuxComponent::new(&peripherals.otbn)
-        .finalize(otbn_mux_component_static!());
+    let mux_acc = crate::acc::AccelMuxComponent::new(&peripherals.acc)
+        .finalize(acc_mux_component_static!());
 
-    let otbn = OtbnComponent::new(&mux_otbn).finalize(crate::otbn_component_static!());
+    let acc = AccComponent::new(&mux_acc).finalize(crate::acc_component_static!());
 
-    let otbn_rsa_internal_buf = static_init!([u8; 512], [0; 512]);
+    let acc_rsa_internal_buf = static_init!([u8; 512], [0; 512]);
 
-    // Use the OTBN to create an RSA engine
+    // Use the ACC to create an RSA engine
     if let Ok((rsa_imem_start, rsa_imem_length, rsa_dmem_start, rsa_dmem_length)) =
-        crate::otbn::find_app(
-            "otbn-rsa",
+        crate::acc::find_app(
+            "acc-rsa",
             core::slice::from_raw_parts(
                 &_sapps as *const u8,
                 &_eapps as *const u8 as usize - &_sapps as *const u8 as usize,
@@ -629,22 +629,22 @@ unsafe fn setup() -> (
         )
     {
         let rsa_hardware = static_init!(
-            lowrisc::rsa::OtbnRsa<'static>,
-            lowrisc::rsa::OtbnRsa::new(
-                otbn,
+            lowrisc::rsa::AccRsa<'static>,
+            lowrisc::rsa::AccRsa::new(
+                acc,
                 lowrisc::rsa::AppAddresses {
                     imem_start: rsa_imem_start,
                     imem_size: rsa_imem_length,
                     dmem_start: rsa_dmem_start,
                     dmem_size: rsa_dmem_length
                 },
-                otbn_rsa_internal_buf,
+                acc_rsa_internal_buf,
             )
         );
-        peripherals.otbn.set_client(rsa_hardware);
+        peripherals.acc.set_client(rsa_hardware);
         RSA_HARDWARE = Some(rsa_hardware);
     } else {
-        debug!("Unable to find otbn-rsa, disabling RSA support");
+        debug!("Unable to find acc-rsa, disabling RSA support");
     }
 
     // Convert hardware RNG to the Random interface.

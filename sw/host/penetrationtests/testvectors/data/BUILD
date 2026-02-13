@@ -30,8 +30,8 @@ filegroup(
 )
 
 filegroup(
-    name = "fi_otbn",
-    srcs = ["fi_otbn.json"],
+    name = "fi_acc",
+    srcs = ["fi_acc.json"],
 )
 
 filegroup(
@@ -85,8 +85,8 @@ filegroup(
 )
 
 filegroup(
-    name = "sca_otbn",
-    srcs = ["sca_otbn.json"],
+    name = "sca_acc",
+    srcs = ["sca_acc.json"],
 )
 
 filegroup(

@@ -64,9 +64,9 @@
       run_opts: ["+use_mbx_if=1"]
     }
     {
-      name: chip_sw_otbn_smoketest
+      name: chip_sw_acc_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otbn_smoketest:6:new_rules"]
+      sw_images: ["//sw/device/tests:acc_smoketest:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -131,7 +131,7 @@
               "chip_sw_hmac_smoketest",
               "chip_sw_kmac_smoketest",
               "chip_sw_mbx_smoketest",
-              "chip_sw_otbn_smoketest",
+              "chip_sw_acc_smoketest",
               "chip_sw_otp_ctrl_smoketest",
               "chip_sw_rv_plic_smoketest",
               "chip_sw_pwrmgr_smoketest",

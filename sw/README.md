@@ -6,7 +6,7 @@ More description and information can be found within the [Reference Manual](../u
 There are three major parts to the OpenTitan software stack:
 
 *   The _device_ software, which runs on the primary core within the OpenTitan platform chip.
-*   The _otbn_ software, which runs on the OTBN cryptographic co-processor within the OpenTitan platform chip.
+*   The _acc_ software, which runs on the ACC cryptographic co-processor within the OpenTitan platform chip.
 *   The _host_ software, which is run on a host device and interacts with an OpenTitan device.
 
 We use the term "image" to denote a complete, standalone executable which has been prepared for the OpenTitan platform chip.
@@ -24,16 +24,16 @@ The device software is split into two parts:
 
 Device software must be written in C, Assembly, or Rust.
 
-# OTBN Software
+# ACC Software
 
-This software runs on the OTBN cryptographic co-processor within the OpenTitan platform chip.
-You can find all the OTBN software in the `sw/otbn` directory of the repository.
+This software runs on the ACC cryptographic co-processor within the OpenTitan platform chip.
+You can find all the ACC software in the `sw/acc` directory of the repository.
 
-This software consists of a number of hand-written assembly routines which can be run on the OTBN co-processor.
+This software consists of a number of hand-written assembly routines which can be run on the ACC co-processor.
 
-Normally, this software can not be run on its own, and the main processor has to set up the data and instructions for the OTBN co-processor before it triggers the start of execution.
+Normally, this software can not be run on its own, and the main processor has to set up the data and instructions for the ACC co-processor before it triggers the start of execution.
 
-OTBN Software must only be written in Assembly.
+ACC Software must only be written in Assembly.
 
 # Host Software
 

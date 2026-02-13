@@ -140,11 +140,11 @@ module xbar_main_bind;
     .h2d    (tl_rv_plic_o),
     .d2h    (tl_rv_plic_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_otbn (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_acc (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_otbn_o),
-    .d2h    (tl_otbn_i)
+    .h2d    (tl_acc_o),
+    .d2h    (tl_acc_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_keymgr (
     .clk_i  (clk_main_i),

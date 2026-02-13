@@ -70,10 +70,10 @@ bool test_main(void) {
 
   init_kmac_for_keymgr();
 
-  // Generate OTBN output from the boot stage 0 key.
+  // Generate ACC output from the boot stage 0 key.
   gen_params.slot_src_sel = 1;
   gen_params.sideload_key = true;  // HW key
-  gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
+  gen_params.key_dest = kDifKeymgrDpeKeyDestAcc;
   gen_params.version = 0;
   gen_params.salt[7] = 0x49379059;
   gen_params.salt[6] = 0xff523992;
@@ -84,7 +84,7 @@ bool test_main(void) {
   gen_params.salt[1] = 0x481eae40;
   gen_params.salt[0] = 0x45e2c7f0;
   generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 0");
+  LOG_INFO("KeymgrDpe generated ACC output from boot stage 0");
 
   // Generate SW output from boot stage 0 key.
   gen_params.slot_src_sel = 1;
@@ -200,10 +200,10 @@ bool test_main(void) {
   generate(&keymgr_dpe, &gen_params);
   LOG_INFO("KeymgrDpe generated SW output from boot stage 1");
 
-  // Generate OTBN output from the boot stage 1 key.
+  // Generate ACC output from the boot stage 1 key.
   gen_params.slot_src_sel = 1;
   gen_params.sideload_key = true;  // HW key
-  gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
+  gen_params.key_dest = kDifKeymgrDpeKeyDestAcc;
   gen_params.version = 3;
   gen_params.salt[7] = 0x564712d4;
   gen_params.salt[6] = 0x7ab745f5;
@@ -214,7 +214,7 @@ bool test_main(void) {
   gen_params.salt[1] = 0x593b54d4;
   gen_params.salt[0] = 0xa75e231b;
   generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 1");
+  LOG_INFO("KeymgrDpe generated ACC output from boot stage 1");
 
   // Derive a boot stage 2 key from the boot stage 1 key.
   adv_params.slot_dst_sel = 2;
@@ -285,10 +285,10 @@ bool test_main(void) {
   generate(&keymgr_dpe, &gen_params);
   LOG_INFO("KeymgrDpe generated KMAC output from boot stage 2");
 
-  // Generate OTBN output from the boot stage 2 key.
+  // Generate ACC output from the boot stage 2 key.
   gen_params.slot_src_sel = 2;
   gen_params.sideload_key = true;  // HW key
-  gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
+  gen_params.key_dest = kDifKeymgrDpeKeyDestAcc;
   gen_params.version = 3;
   gen_params.salt[7] = 0x3f184f9b;
   gen_params.salt[6] = 0xd4af6765;
@@ -299,7 +299,7 @@ bool test_main(void) {
   gen_params.salt[1] = 0x6a961bc2;
   gen_params.salt[0] = 0xec932d64;
   generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 2");
+  LOG_INFO("KeymgrDpe generated ACC output from boot stage 2");
 
   // Derive a boot stage 3 key from the boot stage 2 key.
   adv_params.slot_src_sel = 2;
@@ -331,10 +331,10 @@ bool test_main(void) {
   generate(&keymgr_dpe, &gen_params);
   LOG_INFO("KeymgrDpe generated AES output from boot stage 3");
 
-  // Generate OTBN output from the boot stage 3 key.
+  // Generate ACC output from the boot stage 3 key.
   gen_params.slot_src_sel = 3;
   gen_params.sideload_key = true;  // HW key
-  gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
+  gen_params.key_dest = kDifKeymgrDpeKeyDestAcc;
   gen_params.version = 0x20;
   gen_params.salt[7] = 0x2cd82d66;
   gen_params.salt[6] = 0x24275e98;
@@ -345,7 +345,7 @@ bool test_main(void) {
   gen_params.salt[1] = 0x413a2212;
   gen_params.salt[0] = 0xc2dcfbc8;
   generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 3");
+  LOG_INFO("KeymgrDpe generated ACC output from boot stage 3");
 
   // Generate SW output from the boot stage 3 key.
   gen_params.slot_src_sel = 3;
@@ -397,7 +397,7 @@ bool test_main(void) {
   LOG_INFO("KeymgrDpe generated SW output from boot stage 1");
   gen_params.slot_src_sel = 2;
   gen_params.sideload_key = true;  // HW key
-  gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
+  gen_params.key_dest = kDifKeymgrDpeKeyDestAcc;
   gen_params.version = 7;
   gen_params.salt[7] = 0xfa94162c;
   gen_params.salt[6] = 0xd039a40f;
@@ -408,7 +408,7 @@ bool test_main(void) {
   gen_params.salt[1] = 0xee7790c4;
   gen_params.salt[0] = 0x0de6bdcf;
   generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 2");
+  LOG_INFO("KeymgrDpe generated ACC output from boot stage 2");
 
   return true;
 }

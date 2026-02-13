@@ -264,9 +264,9 @@ TEST_F(HintableClockTest, GetHint) {
   {
     dif_toggle_t state = kDifToggleEnabled;
     EXPECT_READ32(CLKMGR_CLK_HINTS_REG_OFFSET,
-                  {{CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT, false}});
+                  {{CLKMGR_CLK_HINTS_CLK_MAIN_ACC_HINT_BIT, false}});
     EXPECT_DIF_OK(dif_clkmgr_hintable_clock_get_hint(
-        &clkmgr_, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT, &state));
+        &clkmgr_, CLKMGR_CLK_HINTS_CLK_MAIN_ACC_HINT_BIT, &state));
     EXPECT_EQ(state, kDifToggleDisabled);
   }
 }
@@ -305,9 +305,9 @@ TEST_F(HintableClockTest, GetEnabled) {
   {
     dif_toggle_t state = kDifToggleDisabled;
     EXPECT_READ32(CLKMGR_CLK_HINTS_STATUS_REG_OFFSET,
-                  {{CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT, true}});
+                  {{CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_ACC_VAL_BIT, true}});
     EXPECT_DIF_OK(dif_clkmgr_hintable_clock_get_enabled(
-        &clkmgr_, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT, &state));
+        &clkmgr_, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_ACC_VAL_BIT, &state));
     EXPECT_EQ(state, kDifToggleEnabled);
   }
 }

@@ -9,7 +9,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "1723488990 3787458315"
-INSTANCE: tb.dut.top_earlgrey.u_otbn
+INSTANCE: tb.dut.top_earlgrey.u_acc
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_earlgrey/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_cfg_i.ram_cfg.cfg_en "logic ram_cfg_i.ram_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_earlgrey/formal/conn_csvs/ast_mem_cfg.csv"

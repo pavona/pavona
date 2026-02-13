@@ -58,15 +58,15 @@ package otp_ctrl_env_pkg;
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint SRAM_DATA_SIZE = 1 + SramKeyWidth + SramNonceWidth;
-  // otbn rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint OTBN_DATA_SIZE = 1 + OtbnKeyWidth + OtbnNonceWidth;
+  // acc rsp data has 1 bit for seed_valid, the rest are for key and nonce
+  parameter uint ACC_DATA_SIZE = 1 + AccKeyWidth + AccNonceWidth;
   // flash rsp data has 1 bit for seed_valid, the rest are for key
   parameter uint FLASH_DATA_SIZE = 1 + FlashKeyWidth;
   // lc program data has lc_state data and lc_cnt data
   parameter uint LC_PROG_DATA_SIZE = LcStateWidth + LcCountWidth;
 
   parameter uint NUM_SRAM_EDN_REQ = 12;
-  parameter uint NUM_OTBN_EDN_REQ = 10;
+  parameter uint NUM_ACC_EDN_REQ = 10;
 
   // This is used to randomize CHECK_TIMEOUT in sequences, set to a low value
   // so it will certainly cause a check error due to a timeout.

@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_verify.h"
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
 #include "hw/top/otp_ctrl_regs.h"
@@ -124,7 +124,7 @@ rom_error_t sigverify_ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
                                         uint32_t *flash_exec) {
   ecdsa_p256_signature_t recovered_r;
   rom_error_t error =
-      otbn_boot_sigverify(key, signature, act_digest, (uint32_t *)&recovered_r);
+      acc_boot_sigverify(key, signature, act_digest, (uint32_t *)&recovered_r);
   if (launder32(error) != kErrorOk) {
     *flash_exec ^= UINT32_MAX;
     return error;

@@ -25,7 +25,7 @@
 #include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_otbn_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_acc_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pattgen_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pinmux_autogen.h"
@@ -71,7 +71,7 @@ static dif_i2c_t i2c2;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
-static dif_otbn_t otbn;
+static dif_acc_t acc;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux_aon;
@@ -154,8 +154,8 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(base_addr, &lc_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR);
+  CHECK_DIF_OK(dif_acc_init(base_addr, &acc));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(base_addr, &otp_ctrl));
@@ -536,12 +536,12 @@ static void trigger_alert_test(void) {
         &alert_handler, exp_alert));
   }
 
-  // Write otbn's alert_test reg and check alert_cause.
-  for (dif_otbn_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_otbn_alert_force(&otbn, kDifOtbnAlertFatal + i));
+  // Write acc's alert_test reg and check alert_cause.
+  for (dif_acc_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_acc_alert_force(&acc, kDifAccAlertFatal + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopEarlgreyAlertIdOtbnFatal + i;
+    exp_alert = kTopEarlgreyAlertIdAccFatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

@@ -46,7 +46,7 @@ fusesoc_build(
         _OTP_RMA,
     ],
     cores = ["//hw:cores"],
-    data = ["//hw/ip/otbn:rtl_files"],
+    data = ["//hw/ip/acc:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW310_TESTROM_PATH,
         "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
@@ -87,7 +87,7 @@ fusesoc_build(
         _OTP_RMA,
     ],
     cores = ["//hw:cores"],
-    data = ["//hw/ip/otbn:rtl_files"],
+    data = ["//hw/ip/acc:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW310_TESTROM_PATH,
         "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
@@ -128,7 +128,7 @@ fusesoc_build(
         _OTP_RMA,
     ],
     cores = ["//hw:cores"],
-    data = ["//hw/ip/otbn:rtl_files"],
+    data = ["//hw/ip/acc:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW340_TESTROM_PATH,
         "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,

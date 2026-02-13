@@ -495,22 +495,22 @@
  */
 #define TOP_DARJEELING_KMAC_SIZE_BYTES 0x1000
 /**
- * Peripheral base address for otbn in top darjeeling.
+ * Peripheral base address for acc in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_OTBN_BASE_ADDR 0x22100000
+#define TOP_DARJEELING_ACC_BASE_ADDR 0x22100000
 
 /**
- * Peripheral size for otbn in top darjeeling.
+ * Peripheral size for acc in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_OTBN_BASE_ADDR and
- * `TOP_DARJEELING_OTBN_BASE_ADDR + TOP_DARJEELING_OTBN_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_ACC_BASE_ADDR and
+ * `TOP_DARJEELING_ACC_BASE_ADDR + TOP_DARJEELING_ACC_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_OTBN_SIZE_BYTES 0x20000
+#define TOP_DARJEELING_ACC_SIZE_BYTES 0x20000
 /**
  * Peripheral base address for keymgr_dpe in top darjeeling.
  *

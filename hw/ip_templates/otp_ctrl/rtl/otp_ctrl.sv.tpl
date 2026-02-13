@@ -83,8 +83,8 @@ module otp_ctrl
 % endif
   input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
   output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_o,
-  input  otbn_otp_key_req_t                          otbn_otp_key_i,
-  output otbn_otp_key_rsp_t                          otbn_otp_key_o,
+  input  acc_otp_key_req_t                          acc_otp_key_i,
+  output acc_otp_key_rsp_t                          acc_otp_key_o,
 
   // Interface to OTP_MACRO
   output otp_ctrl_macro_pkg::otp_ctrl_macro_req_t    otp_macro_o,
@@ -910,7 +910,7 @@ end
   // case. For one example, see
   //
   // https://opentitan.org/book/hw/top_earlgrey/
-  //    ip_autogen/otp_ctrl/doc/interfaces.html#interfaces-to-sram-and-otbn-scramblers
+  //    ip_autogen/otp_ctrl/doc/interfaces.html#interfaces-to-sram-and-acc-scramblers
 
 
   // Note: as opposed to the OTP arbitration above, we do not perform cycle-wise arbitration, but
@@ -1150,8 +1150,8 @@ end
   % endif
     .sram_otp_key_i,
     .sram_otp_key_o,
-    .otbn_otp_key_i,
-    .otbn_otp_key_o,
+    .acc_otp_key_i,
+    .acc_otp_key_o,
     .scrmbl_mtx_req_o        ( part_scrmbl_mtx_req[KdiIdx]          ),
     .scrmbl_mtx_gnt_i        ( part_scrmbl_mtx_gnt[KdiIdx]          ),
     .scrmbl_cmd_o            ( part_scrmbl_req_bundle[KdiIdx].cmd   ),
@@ -1570,7 +1570,7 @@ end
   `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_o)
 % endif
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
-  `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
+  `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           acc_otp_key_o)
   `ASSERT_KNOWN(OtpBroadcastKnown_A,         otp_broadcast_o)
 
   // Alert assertions for sparse FSMs.

@@ -216,14 +216,14 @@ The type of the hashing operation is determined in the compile-time parameter `k
 | 0     | KeyMgr   | KMAC         | CSR prefix
 | 1     | LC_CTRL  | cSHAKE128    | "LC_CTRL"
 | 2     | ROM_CTRL | cSHAKE256    | "ROM_CTRL"
-| 3     | OTBN     | Configurable | N/A
+| 3     | ACC     | Configurable | N/A
 
-In the current version of IP, the IP has four application interfaces, which are KeyMgr, LC_CTRL, ROM_CTRL, and OTBN.
+In the current version of IP, the IP has four application interfaces, which are KeyMgr, LC_CTRL, ROM_CTRL, and ACC.
 KeyMgr uses the KMAC operation with CSR prefix value.
 LC_CTRL and ROM_CTRL use the cSHAKE operation with the compile-time parameter prefixes.
 
-The OTBN AppIntf does not use a prefix value but is configurable to select between different operations.
-OTBN will use the SHA3-256, SHA3-512, SHAKE128, and SHAKE256 algorithms.
+The ACC AppIntf does not use a prefix value but is configurable to select between different operations.
+ACC will use the SHA3-256, SHA3-512, SHAKE128, and SHAKE256 algorithms.
 Other configurations are considered invalid and KMAC will respond with the response error flag.
 
 The app sends 64-bit data (`MsgWidth`) in a beat with the message strobe signal.
@@ -232,12 +232,12 @@ The AppIntf module chooses the winner based on the following fixed priority:
 1. KeyMgr
 2. LC_CTRL
 3. ROM_CTRL
-4. OTBN
+4. ACC
 
 Then it forwards the selected App to the next stage.
 Because this logic sees the first valid data as an initiator, the Apps cannot run the hashing operation with an empty message.
 After the logic switches to accept the message bitstream from the selected App, if the hashing operation is KMAC, the logic forces the sideloaded key to be used as a secret.
-In OTBN mode the first word of the message request configures the drive strength and operation.
+In ACC mode the first word of the message request configures the drive strength and operation.
 Bits [4:2] configure the Keccak drive strength and bits [1:0] select the appropriate SHA3/cSHAKE/SHAKE operation.
 Also it ignores the command issued from the software.
 Instead it generates the commands and sends them to the KMAC core.
@@ -257,19 +257,19 @@ After hashing operation is completed, KMAC does not raise a `kmac_done` interrup
 The result digest always comes in two shares.
 If the `EnMasking` parameter is not set, the second share is always zero.
 
-#### OTBN Interface Connection
+#### ACC Interface Connection
 
-OTBN initiated SHA3/SHAKE algorithms over the AppIntf may require multiple permutations for the resulting digest with a single function call.
-Support for the OTBN application interface introduced the `next` and `hold` signals in the AppIntf request channel.
-The `hold` signal is asserted `1'b1` for the duration of an OTBN initiated operation. This prevents KMAC from finishing its hashing computation until OTBN has received enough digest words.
+ACC initiated SHA3/SHAKE algorithms over the AppIntf may require multiple permutations for the resulting digest with a single function call.
+Support for the ACC application interface introduced the `next` and `hold` signals in the AppIntf request channel.
+The `hold` signal is asserted `1'b1` for the duration of an ACC initiated operation. This prevents KMAC from finishing its hashing computation until ACC has received enough digest words.
 While remaining digest words exist, the `next` signal is asserted `1'b1` for a single clock cycle following a response `done` signal from KMAC.
-Given the `hold` and `next` signals are only required by the AppIntf state machine for OTBN initiated functions, both signals are held inactive for the three previously existing interfaces.
-The OTBN application interface uses the same AppIntf state machine as KeyMgr, LC_CTRL, and ROM_CTRL which a seperate internal state path.
+Given the `hold` and `next` signals are only required by the AppIntf state machine for ACC initiated functions, both signals are held inactive for the three previously existing interfaces.
+The ACC application interface uses the same AppIntf state machine as KeyMgr, LC_CTRL, and ROM_CTRL which a seperate internal state path.
 
-The OTBN expects a 256-bit digest in the response channel from KMAC.
+The ACC expects a 256-bit digest in the response channel from KMAC.
 The digest shares in `app_rsp_t` are both 384-bits wide.
 A 256-bit `prim_packer` FIFO takes the computed 256-bit digest from the Keccak state and buffers for sending it on the AppIntf response channel.
-The FIFO should only be read from when an AppIntf response is active for an OTBN request.
+The FIFO should only be read from when an AppIntf response is active for an ACC request.
 FIFO writes are controlled by the state machine and should occur when the FIFO is ready with an available digest.
 The Keccak state should not change while digest words from the current permutation are still being packed/squeezed into the FIFO.
 

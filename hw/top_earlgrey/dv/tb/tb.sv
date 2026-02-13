@@ -607,21 +607,21 @@ module tb;
         `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
       end
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN IMEM", UVM_MEDIUM)
-      m_mem_bkdr_util[OtbnImem] = new(.name  ("mem_bkdr_util[OtbnImem]"),
-                                      .path  (`DV_STRINGIFY(`OTBN_IMEM_HIER)),
-                                      .depth ($size(`OTBN_IMEM_HIER)),
-                                      .n_bits($bits(`OTBN_IMEM_HIER)),
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ACC IMEM", UVM_MEDIUM)
+      m_mem_bkdr_util[AccImem] = new(.name  ("mem_bkdr_util[AccImem]"),
+                                      .path  (`DV_STRINGIFY(`ACC_IMEM_HIER)),
+                                      .depth ($size(`ACC_IMEM_HIER)),
+                                      .n_bits($bits(`ACC_IMEM_HIER)),
                                       .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnImem], `OTBN_IMEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[AccImem], `ACC_IMEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN DMEM", UVM_MEDIUM)
-      m_mem_bkdr_util[OtbnDmem0] = new(.name  ("mem_bkdr_util[OtbnDmem0]"),
-                                       .path  (`DV_STRINGIFY(`OTBN_DMEM_HIER)),
-                                       .depth ($size(`OTBN_DMEM_HIER)),
-                                       .n_bits($bits(`OTBN_DMEM_HIER)),
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ACC DMEM", UVM_MEDIUM)
+      m_mem_bkdr_util[AccDmem0] = new(.name  ("mem_bkdr_util[AccDmem0]"),
+                                       .path  (`DV_STRINGIFY(`ACC_DMEM_HIER)),
+                                       .depth ($size(`ACC_DMEM_HIER)),
+                                       .n_bits($bits(`ACC_DMEM_HIER)),
                                        .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnDmem0], `OTBN_DMEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[AccDmem0], `ACC_DMEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for USBDEV BUFFER", UVM_MEDIUM)
       m_mem_bkdr_util[UsbdevBuf] = new(.name  ("mem_bkdr_util[UsbdevBuf]"),
@@ -634,7 +634,7 @@ module tb;
       do begin
         if (mem inside {[RamMain1:RamMain15]} ||
             mem inside {[RamRet1:RamRet15]} ||
-            mem inside {[OtbnDmem1:OtbnDmem15]}) begin
+            mem inside {[AccDmem1:AccDmem15]}) begin
           mem = mem.next();
           continue;
         end

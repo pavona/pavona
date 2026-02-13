@@ -65,7 +65,7 @@ tl_device_t xbar_devices[$] = '{
     '{"rv_plic", '{
         '{32'h48000000, 32'h4fffffff}
     }},
-    '{"otbn", '{
+    '{"acc", '{
         '{32'h41300000, 32'h4131ffff}
     }},
     '{"keymgr", '{
@@ -109,7 +109,7 @@ tl_host_t xbar_hosts[$] = '{
         "edn1",
         "hmac",
         "rv_plic",
-        "otbn",
+        "acc",
         "keymgr",
         "kmac",
         "sram_ctrl_main__regs",
@@ -135,7 +135,7 @@ tl_host_t xbar_hosts[$] = '{
         "edn1",
         "hmac",
         "rv_plic",
-        "otbn",
+        "acc",
         "keymgr",
         "kmac",
         "sram_ctrl_main__regs",

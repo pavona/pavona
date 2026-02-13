@@ -20,9 +20,9 @@
 CONNECTION, AST_DFT_SPI_DEVICE_RAM_2P_CFG, u_ast.u_ast_dft, "{10'h0, dpram_rml_o}", top_darjeeling.u_spi_device.u_memory_2p.u_mem, cfg_i
 
 # Single port RAMs.
-# To otbn.
-CONNECTION, AST_DFT_OTBN_IMEM_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_darjeeling.u_otbn.u_imem.u_prim_ram_1p_adv.u_mem, cfg_i
-CONNECTION, AST_DFT_OTBN_DMEM_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_darjeeling.u_otbn.u_dmem.u_prim_ram_1p_adv.u_mem, cfg_i
+# To acc.
+CONNECTION, AST_DFT_ACC_IMEM_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_darjeeling.u_acc.u_imem.u_prim_ram_1p_adv.u_mem, cfg_i
+CONNECTION, AST_DFT_ACC_DMEM_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_darjeeling.u_acc.u_dmem.u_prim_ram_1p_adv.u_mem, cfg_i
 
 # To rv_core_ibex.
 CONNECTION, AST_DFT_RV_CORE_IBEX_TAG0_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_darjeeling.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[0].gen_scramble_rams.tag_bank.u_prim_ram_1p_adv.u_mem, cfg_i

@@ -202,7 +202,7 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
                             size_t unmasked_key_len, uint32_t *unmasked_key);
 
 /**
- * Calls keymgr to sideload key material into OTBN.
+ * Calls keymgr to sideload key material into ACC.
  *
  * This routine should only ever be called on hardware-backed keys.
  *
@@ -210,7 +210,7 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_sideload_key_otbn(const otcrypto_blinded_key_t *key);
+status_t keyblob_sideload_key_acc(const otcrypto_blinded_key_t *key);
 
 #ifdef __cplusplus
 }  // extern "C"

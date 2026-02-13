@@ -14,7 +14,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/sha2/sha512_insn_counts.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -24,12 +24,12 @@
 
 enum {
   /**
-   * Maximum number of message chunks that the OTBN app can accept.
+   * Maximum number of message chunks that the ACC app can accept.
    *
    * This number is based on the DMEM size limit and usage by the SHA-512 app
    * itself; see `run_sha512.s` for the detailed calculation.
    */
-  kSha512MaxMessageChunksPerOtbnRun = 16,
+  kSha512MaxMessageChunksPerAccRun = 16,
 };
 
 /**
@@ -40,14 +40,14 @@ typedef struct sha512_message_block {
 } sha512_message_block_t;
 
 /**
- * Context object for the OTBN message buffer.
+ * Context object for the ACC message buffer.
  */
-typedef struct sha512_otbn_ctx {
+typedef struct sha512_acc_ctx {
   /**
    * Number of message blocks currently loaded.
    */
   size_t num_blocks;
-} sha512_otbn_ctx_t;
+} sha512_acc_ctx_t;
 
 // Initial state for SHA-384 (see FIPS 180-4, section 5.3.4).
 static const uint32_t kSha384InitialState[] = {
@@ -65,17 +65,17 @@ static const uint32_t kSha512InitialState[kSha512StateWords] = {
 static_assert(sizeof(kSha512InitialState) == kSha512StateBytes,
               "Initial state for SHA-512 has an unexpected size.");
 
-OTBN_DECLARE_APP_SYMBOLS(run_sha512);            // The OTBN SHA-512 app.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha512, state);     // Hash state.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha512, msg);       // Input message.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha512, n_chunks);  // Message length in blocks.
+ACC_DECLARE_APP_SYMBOLS(run_sha512);            // The ACC SHA-512 app.
+ACC_DECLARE_SYMBOL_ADDR(run_sha512, state);     // Hash state.
+ACC_DECLARE_SYMBOL_ADDR(run_sha512, msg);       // Input message.
+ACC_DECLARE_SYMBOL_ADDR(run_sha512, n_chunks);  // Message length in blocks.
 
-static const otbn_app_t kOtbnAppSha512 = OTBN_APP_T_INIT(run_sha512);
-static const otbn_addr_t kOtbnVarSha512State =
-    OTBN_ADDR_T_INIT(run_sha512, state);
-static const otbn_addr_t kOtbnVarSha512Msg = OTBN_ADDR_T_INIT(run_sha512, msg);
-static const otbn_addr_t kOtbnVarSha512NChunks =
-    OTBN_ADDR_T_INIT(run_sha512, n_chunks);
+static const acc_app_t kAccAppSha512 = ACC_APP_T_INIT(run_sha512);
+static const acc_addr_t kAccVarSha512State =
+    ACC_ADDR_T_INIT(run_sha512, state);
+static const acc_addr_t kAccVarSha512Msg = ACC_ADDR_T_INIT(run_sha512, msg);
+static const acc_addr_t kAccVarSha512NChunks =
+    ACC_ADDR_T_INIT(run_sha512, n_chunks);
 
 void sha512_init(sha512_state_t *state) {
   // Set the initial state.
@@ -104,7 +104,7 @@ void sha384_init(sha512_state_t *state) {
  * message length exceeds the SHA-512/SHA-384 maximum of 2^128 bits.
  *
  * This function is does not modify the state object; this is because in case
- * of OTBN errors partway through the operation, the state could get out of
+ * of ACC errors partway through the operation, the state could get out of
  * sync.
  *
  * @param state Context object.
@@ -132,22 +132,22 @@ static status_t get_new_total_len(const sha512_state_t *state, size_t msg_len,
 }
 
 /**
- * Run OTBN to process the data currently in DMEM.
+ * Run ACC to process the data currently in DMEM.
  *
- * @param ctx OTBN message buffer context information (updated in place).
+ * @param ctx ACC message buffer context information (updated in place).
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t process_message_buffer(sha512_otbn_ctx_t *ctx) {
+static status_t process_message_buffer(sha512_acc_ctx_t *ctx) {
   // Write the number of blocks to DMEM.
-  HARDENED_TRY(otbn_dmem_write(1, &ctx->num_blocks, kOtbnVarSha512NChunks));
+  HARDENED_TRY(acc_dmem_write(1, &ctx->num_blocks, kAccVarSha512NChunks));
 
-  // Run the OTBN program.
-  HARDENED_TRY(otbn_execute());
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Run the ACC program.
+  HARDENED_TRY(acc_execute());
+  HARDENED_TRY(acc_busy_wait_for_done());
 
   // Check instruction count.
-  OTBN_CHECK_INSN_COUNT(kSha512MinInstructionCount, kSha512MaxInstructionCount);
+  ACC_CHECK_INSN_COUNT(kSha512MinInstructionCount, kSha512MaxInstructionCount);
 
   // Reset the message buffer counter.
   ctx->num_blocks = 0;
@@ -157,18 +157,18 @@ static status_t process_message_buffer(sha512_otbn_ctx_t *ctx) {
 /**
  * Add a single message block to the processing buffer.
  *
- * Runs OTBN if the maximum number of message blocks has been reached.
+ * Runs ACC if the maximum number of message blocks has been reached.
  *
- * @param ctx OTBN message buffer context information (updated in place).
+ * @param ctx ACC message buffer context information (updated in place).
  * @param block Block to write.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t process_block(sha512_otbn_ctx_t *ctx,
+static status_t process_block(sha512_acc_ctx_t *ctx,
                               const sha512_message_block_t *block) {
   // Calculate the offset within the message buffer.
   size_t offset = ctx->num_blocks * kSha512MessageBlockBytes;
-  otbn_addr_t dst = kOtbnVarSha512Msg + offset;
+  acc_addr_t dst = kAccVarSha512Msg + offset;
 
   // Copy the message block into DMEM. The SHA-512 app expects 64-bit words
   // within the message in big-endian form, so we copy 64 bits at a time and
@@ -176,18 +176,18 @@ static status_t process_block(sha512_otbn_ctx_t *ctx,
   for (size_t i = 0; i + 1 < kSha512MessageBlockWords; i += 2) {
     uint32_t bytes_7to4 = __builtin_bswap32(block->data[i + 1]);
     uint32_t bytes_3to0 = __builtin_bswap32(block->data[i]);
-    HARDENED_TRY(otbn_dmem_write(1, &bytes_7to4, dst));
+    HARDENED_TRY(acc_dmem_write(1, &bytes_7to4, dst));
     dst += sizeof(uint32_t);
-    HARDENED_TRY(otbn_dmem_write(1, &bytes_3to0, dst));
+    HARDENED_TRY(acc_dmem_write(1, &bytes_3to0, dst));
     dst += sizeof(uint32_t);
   }
   ctx->num_blocks += 1;
 
   // If we've reached the maximum number of message chunks for a single run,
-  // then run the OTBN program to update the state in-place. Note that there
+  // then run the ACC program to update the state in-place. Note that there
   // is no need to read back and then re-write the state; it'll stay updated
   // in DMEM for the next run.
-  if (ctx->num_blocks == kSha512MaxMessageChunksPerOtbnRun) {
+  if (ctx->num_blocks == kSha512MaxMessageChunksPerAccRun) {
     HARDENED_TRY(process_message_buffer(ctx));
   }
   return OTCRYPTO_OK;
@@ -197,18 +197,18 @@ static status_t process_block(sha512_otbn_ctx_t *ctx,
  * Pad the block as described in FIPS 180-4, section 5.1.2.
  *
  * Padding fills the current block and may require one additional block. This
- * function calls `process_block` to load the padded block(s) into OTBN.
+ * function calls `process_block` to load the padded block(s) into ACC.
  *
  * The length of real data in the partial block should be the byte-length of
  * the message so far (total_len >> 3) modulo `kSha512MessageBlockBytes`.
  *
- * @param ctx OTBN message buffer context information (updated in place).
+ * @param ctx ACC message buffer context information (updated in place).
  * @param total_len Total length of message so far.
  * @param block Current (partial) block.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t process_padding(sha512_otbn_ctx_t *ctx,
+static status_t process_padding(sha512_acc_ctx_t *ctx,
                                 const sha512_message_length_t total_len,
                                 sha512_message_block_t *block) {
   size_t partial_block_len = (total_len.lower >> 3) % kSha512MessageBlockBytes;
@@ -261,22 +261,22 @@ OT_WARN_UNUSED_RESULT
 static status_t process_message(sha512_state_t *state, const uint8_t *msg,
                                 size_t msg_len,
                                 hardened_bool_t padding_needed) {
-  // Load the SHA-512 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppSha512));
+  // Load the SHA-512 app. Fails if ACC is non-idle.
+  HARDENED_TRY(acc_load_app(kAccAppSha512));
 
   // Calculate the new value of state->total_len. Do NOT update the state yet
-  // (because if we get an OTBN error, it would become out of sync).
+  // (because if we get an ACC error, it would become out of sync).
   sha512_state_t new_state;
   HARDENED_TRY(get_new_total_len(state, msg_len, &new_state.total_len));
 
-  // Set the initial state. The OTBN app expects the state in a pre-processed
+  // Set the initial state. The ACC app expects the state in a pre-processed
   // format, with the 64-bit state words aligned to wide-word boundaries.
-  otbn_addr_t state_write_addr = kOtbnVarSha512State;
+  acc_addr_t state_write_addr = kAccVarSha512State;
   for (size_t i = 0; i + 1 < kSha512StateWords; i += 2) {
-    HARDENED_TRY(otbn_dmem_write(1, &state->H[i + 1], state_write_addr));
+    HARDENED_TRY(acc_dmem_write(1, &state->H[i + 1], state_write_addr));
     HARDENED_TRY(
-        otbn_dmem_write(1, &state->H[i], state_write_addr + sizeof(uint32_t)));
-    state_write_addr += kOtbnWideWordNumBytes;
+        acc_dmem_write(1, &state->H[i], state_write_addr + sizeof(uint32_t)));
+    state_write_addr += kAccWideWordNumBytes;
   }
 
   // Start computing the first block for the hash computation by simply copying
@@ -287,8 +287,8 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
       (state->total_len.lower >> 3) % kSha512MessageBlockBytes;
   hardened_memcpy(block.data, state->partial_block, kSha512MessageBlockWords);
 
-  // Initialize the context for the OTBN message buffer.
-  sha512_otbn_ctx_t ctx = {.num_blocks = 0};
+  // Initialize the context for the ACC message buffer.
+  sha512_acc_ctx_t ctx = {.num_blocks = 0};
 
   // Process the message one block at a time, including partial data if it is
   // present (which is only possible on the first iteration).
@@ -317,19 +317,19 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
     HARDENED_TRY(process_message_buffer(&ctx));
   }
 
-  // Read the final state from OTBN dmem. The state is still in the special
-  // form the OTBN app uses, with the 64-bit state words aligned to wide-word
+  // Read the final state from ACC dmem. The state is still in the special
+  // form the ACC app uses, with the 64-bit state words aligned to wide-word
   // boundaries.
-  otbn_addr_t state_read_addr = kOtbnVarSha512State;
+  acc_addr_t state_read_addr = kAccVarSha512State;
   for (size_t i = 0; i + 1 < kSha512StateWords; i += 2) {
-    HARDENED_TRY(otbn_dmem_read(1, state_read_addr, &new_state.H[i + 1]));
+    HARDENED_TRY(acc_dmem_read(1, state_read_addr, &new_state.H[i + 1]));
     HARDENED_TRY(
-        otbn_dmem_read(1, state_read_addr + sizeof(uint32_t), &new_state.H[i]));
-    state_read_addr += kOtbnWideWordNumBytes;
+        acc_dmem_read(1, state_read_addr + sizeof(uint32_t), &new_state.H[i]));
+    state_read_addr += kAccWideWordNumBytes;
   }
 
-  // Clear OTBN's memory.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
+  // Clear ACC's memory.
+  HARDENED_TRY(acc_dmem_sec_wipe());
 
   // At this point, no more errors are possible; it is safe to update the
   // context object.

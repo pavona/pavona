@@ -73,7 +73,7 @@ interface clkmgr_if (
   clk_hints_t clk_hints_csr;
   always_comb
     clk_hints_csr = '{
-    otbn: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_otbn_hint.q,
+    acc: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_acc_hint.q,
     kmac: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_kmac_hint.q,
     hmac: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_hmac_hint.q,
     aes: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_aes_hint.q
@@ -82,7 +82,7 @@ interface clkmgr_if (
   clk_hints_t clk_hints_status_csr;
   always_comb
     clk_hints_status_csr = '{
-                             otbn: `CLKMGR_HIER.u_reg.clk_hints_status_clk_main_otbn_val_qs,
+                             acc: `CLKMGR_HIER.u_reg.clk_hints_status_clk_main_acc_val_qs,
                              kmac: `CLKMGR_HIER.u_reg.clk_hints_status_clk_main_kmac_val_qs,
                              hmac: `CLKMGR_HIER.u_reg.clk_hints_status_clk_main_hmac_val_qs,
                              aes: `CLKMGR_HIER.u_reg.clk_hints_status_clk_main_aes_val_qs

@@ -9,7 +9,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/acc_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_verify.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
@@ -182,7 +182,7 @@ status_t process_cmd(ujson_t *uj) {
 }
 
 bool test_main(void) {
-  CHECK(otbn_boot_app_load() == kErrorOk);
+  CHECK(acc_boot_app_load() == kErrorOk);
 
   ujson_t uj = ujson_ottf_console();
   return status_ok(process_cmd(&uj));

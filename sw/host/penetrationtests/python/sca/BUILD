@@ -75,15 +75,15 @@ py_binary(
 )
 
 py_binary(
-    name = "sca_otbn_python_test",
+    name = "sca_acc_python_test",
     testonly = True,
-    srcs = ["test_scripts/sca_otbn_python_test.py"],
+    srcs = ["test_scripts/sca_acc_python_test.py"],
     data = [
         "//sw/host/opentitantool",
     ],
     deps = [
-        "//sw/host/penetrationtests/python/sca:sca_otbn_commands",
-        "//sw/host/penetrationtests/python/sca:sca_otbn_functions",
+        "//sw/host/penetrationtests/python/sca:sca_acc_commands",
+        "//sw/host/penetrationtests/python/sca:sca_acc_functions",
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
@@ -185,10 +185,10 @@ py_library(
 )
 
 py_library(
-    name = "sca_otbn_functions",
-    srcs = ["host_scripts/sca_otbn_functions.py"],
+    name = "sca_acc_functions",
+    srcs = ["host_scripts/sca_acc_functions.py"],
     deps = [
-        ":sca_otbn_commands",
+        ":sca_acc_commands",
         "//sw/host/penetrationtests/python/util:targets",
     ],
 )
@@ -249,8 +249,8 @@ py_library(
 )
 
 py_library(
-    name = "sca_otbn_commands",
-    srcs = ["communication/sca_otbn_commands.py"],
+    name = "sca_acc_commands",
+    srcs = ["communication/sca_acc_commands.py"],
     deps = ["//sw/host/penetrationtests/python/util:common_library"],
 )
 

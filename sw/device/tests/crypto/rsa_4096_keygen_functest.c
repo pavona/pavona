@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -57,7 +57,7 @@ status_t keygen_then_sign_test(void) {
   LOG_INFO("Starting keypair generation...");
   TRY(otcrypto_rsa_keygen(kOtcryptoRsaSize4096, &public_key, &private_key));
   LOG_INFO("Keypair generation complete.");
-  LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
+  LOG_INFO("ACC instruction count: %u", acc_instruction_count_get());
 
   // Interpret public key using internal RSA datatype.
   TRY_CHECK(public_key.key_length == sizeof(rsa_4096_public_key_t));
@@ -96,7 +96,7 @@ status_t keygen_then_sign_test(void) {
   TRY(otcrypto_rsa_sign(&private_key, msg_digest, kOtcryptoRsaPaddingPkcs,
                         sig_buf));
   LOG_INFO("Signature generation complete.");
-  LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
+  LOG_INFO("ACC instruction count: %u", acc_instruction_count_get());
 
   // Try to verify the signature. If something is wrong with the key (nonprime p
   // and q, incorrect CRT components of d, etc.), then this is likely to fail.
@@ -105,7 +105,7 @@ status_t keygen_then_sign_test(void) {
   TRY(otcrypto_rsa_verify(&public_key, msg_digest, kOtcryptoRsaPaddingPkcs,
                           const_sig_buf, &verification_result));
   LOG_INFO("Signature verification complete.");
-  LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
+  LOG_INFO("ACC instruction count: %u", acc_instruction_count_get());
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);

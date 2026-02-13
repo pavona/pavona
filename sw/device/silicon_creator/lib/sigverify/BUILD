@@ -139,7 +139,7 @@ cc_library(
     deps = [
         ":ecdsa_p256_key",
         "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib:acc_boot_services",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )

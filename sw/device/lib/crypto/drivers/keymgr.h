@@ -89,16 +89,16 @@ status_t keymgr_generate_key_kmac(
     const keymgr_diversification_t diversification);
 
 /**
- * Derive a key manager key for the OTBN block.
+ * Derive a key manager key for the ACC block.
  *
- * Calls the key manager to sideload a key into the OTBN hardware block and
+ * Calls the key manager to sideload a key into the ACC hardware block and
  * waits until the operation is complete before returning.
  *
  * @param diversification Diversification input for the key derivation.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t keymgr_generate_key_otbn(
+status_t keymgr_generate_key_acc(
     const keymgr_diversification_t diversification);
 
 /**
@@ -118,12 +118,12 @@ OT_WARN_UNUSED_RESULT
 status_t keymgr_sideload_clear_kmac(void);
 
 /**
- * Clear the sideloaded OTBN key.
+ * Clear the sideloaded ACC key.
  *
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t keymgr_sideload_clear_otbn(void);
+status_t keymgr_sideload_clear_acc(void);
 
 #ifdef __cplusplus
 }

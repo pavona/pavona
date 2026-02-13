@@ -5,27 +5,27 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_ECC256_KEYGEN_SCA_H_
 #define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_ECC256_KEYGEN_SCA_H_
 
-#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/acc.h"
 
 /**
  * App configuration for p256_key_from_seed_sca
  */
-OTBN_DECLARE_APP_SYMBOLS(p256_key_from_seed_sca);
+ACC_DECLARE_APP_SYMBOLS(p256_key_from_seed_sca);
 
-OTBN_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, mode);
-OTBN_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, seed0);
-OTBN_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, seed1);
-OTBN_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, d0);
-OTBN_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, d1);
-OTBN_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, x);
-OTBN_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, y);
+ACC_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, mode);
+ACC_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, seed0);
+ACC_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, seed1);
+ACC_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, d0);
+ACC_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, d1);
+ACC_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, x);
+ACC_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, y);
 
-extern const otbn_app_t kOtbnAppP256KeyFromSeed;
+extern const acc_app_t kAccAppP256KeyFromSeed;
 
-static const otbn_addr_t kOtbnVarMode;
-static const otbn_addr_t kOtbnVarSeed0;
-static const otbn_addr_t kOtbnVarSeed1;
-static const otbn_addr_t kOtbnVarD0;
-static const otbn_addr_t kOtbnVarD1;
+static const acc_addr_t kAccVarMode;
+static const acc_addr_t kAccVarSeed0;
+static const acc_addr_t kAccVarSeed1;
+static const acc_addr_t kAccVarD0;
+static const acc_addr_t kAccVarD1;
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_ECC256_KEYGEN_SCA_H_

@@ -1,0 +1,399 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/silicon_creator/lib/drivers/acc.h"
+
+#include <array>
+#include <limits>
+
+#include "gtest/gtest.h"
+#include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
+
+#include "hw/top/acc_regs.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+namespace acc_unittest {
+namespace {
+using ::testing::ElementsAre;
+using ::testing::Return;
+
+class AccTest : public rom_test::RomTest {
+ protected:
+  /**
+   * Sets expectations for running an ACC command.
+   *
+   * @param cmd      Command expected to be run.
+   * @param err_bits Error bits to be returned.
+   * @param status   Status of ACC to be returned after the command is done.
+   */
+  void ExpectCmdRun(sc_acc_cmd_t cmd, uint32_t err_bits,
+                    sc_acc_status_t status) {
+    EXPECT_ABS_WRITE32(base_ + ACC_INTR_STATE_REG_OFFSET,
+                       {
+                           {ACC_INTR_COMMON_DONE_BIT, 1},
+                       });
+    EXPECT_ABS_WRITE32(base_ + ACC_CMD_REG_OFFSET, cmd);
+
+    EXPECT_ABS_READ32(base_ + ACC_INTR_STATE_REG_OFFSET, 0);
+    EXPECT_ABS_READ32(base_ + ACC_INTR_STATE_REG_OFFSET,
+                      {
+                          {ACC_INTR_COMMON_DONE_BIT, 1},
+                      });
+    EXPECT_ABS_WRITE32(base_ + ACC_INTR_STATE_REG_OFFSET,
+                       {
+                           {ACC_INTR_COMMON_DONE_BIT, 1},
+                       });
+
+    EXPECT_ABS_READ32(base_ + ACC_ERR_BITS_REG_OFFSET, err_bits);
+    EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, status);
+
+    if (err_bits == err_bits_ok_ && status == kScAccStatusIdle) {
+      EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, status);
+    }
+  }
+
+  uint32_t base_ = TOP_EARLGREY_ACC_BASE_ADDR;
+  uint32_t err_bits_ok_ = 0;
+  rom_test::MockAbsMmio abs_mmio_;
+  rom_test::MockRnd rnd_;
+  rom_test::MockSecMmio sec_mmio_;
+};
+
+class ExecuteTest : public AccTest {};
+
+TEST_F(ExecuteTest, ExecuteSuccess) {
+  // Test assumption.
+  static_assert(ACC_IMEM_SIZE_BYTES >= 8, "ACC IMEM size too small.");
+
+  // Read twice for hardening.
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+
+  EXPECT_SEC_WRITE32(base_ + ACC_CTRL_REG_OFFSET, 0x1);
+
+  ExpectCmdRun(kScAccCmdExecute, err_bits_ok_, kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_execute(), kErrorOk);
+}
+
+TEST_F(ExecuteTest, ExecuteError) {
+  // Read twice for hardening.
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+
+  EXPECT_SEC_WRITE32(base_ + ACC_CTRL_REG_OFFSET, 0x1);
+
+  // Nonzero error bits.
+  ExpectCmdRun(kScAccCmdExecute, 1 << ACC_ERR_BITS_FATAL_SOFTWARE_BIT,
+               kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_execute(), kErrorAccExecutionFailed);
+}
+
+TEST_F(ExecuteTest, ExecuteBusy) {
+  // Read twice for hardening.
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+
+  EXPECT_SEC_WRITE32(base_ + ACC_CTRL_REG_OFFSET, 0x01);
+
+  // Return a busy status after the `done` interrupt.
+  ExpectCmdRun(kScAccCmdExecute, err_bits_ok_, kScAccStatusBusyExecute);
+
+  EXPECT_EQ(sc_acc_execute(), kErrorAccExecutionFailed);
+}
+
+TEST_F(ExecuteTest, ExecuteBlockUntilIdle) {
+  // Test assumption.
+  static_assert(ACC_IMEM_SIZE_BYTES >= 8, "ACC IMEM size too small.");
+
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET,
+                    kScAccStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET,
+                    kScAccStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET,
+                    kScAccStatusBusySecWipeDmem);
+
+  // Read twice for hardening.
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+
+  EXPECT_SEC_WRITE32(base_ + ACC_CTRL_REG_OFFSET, 0x1);
+
+  ExpectCmdRun(kScAccCmdExecute, err_bits_ok_, kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_execute(), kErrorOk);
+}
+
+class IsBusyTest : public AccTest {};
+
+TEST_F(IsBusyTest, Success) {
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_busy_wait_for_done(), kErrorOk);
+}
+
+class ImemSecWipeTest : public AccTest {};
+
+TEST_F(ImemSecWipeTest, Success) {
+  ExpectCmdRun(kScAccCmdSecWipeImem, err_bits_ok_, kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_imem_sec_wipe(), kErrorOk);
+}
+
+TEST_F(ImemSecWipeTest, Failure) {
+  ExpectCmdRun(kScAccCmdSecWipeImem, 1 << ACC_ERR_BITS_FATAL_SOFTWARE_BIT,
+               kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_imem_sec_wipe(), kErrorAccSecWipeImemFailed);
+}
+
+class DmemSecWipeTest : public AccTest {};
+
+TEST_F(DmemSecWipeTest, Success) {
+  ExpectCmdRun(kScAccCmdSecWipeDmem, err_bits_ok_, kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_dmem_sec_wipe(), kErrorOk);
+}
+
+TEST_F(DmemSecWipeTest, Failure) {
+  ExpectCmdRun(kScAccCmdSecWipeDmem, 1 << ACC_ERR_BITS_FATAL_SOFTWARE_BIT,
+               kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_dmem_sec_wipe(), kErrorAccSecWipeDmemFailed);
+}
+
+class DmemWriteTest : public AccTest {};
+
+TEST_F(DmemWriteTest, SuccessWithoutOffset) {
+  // Test assumption.
+  static_assert(ACC_DMEM_SIZE_BYTES >= 8, "ACC DMEM size too small.");
+
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  sc_acc_addr_t dest_addr = 0;
+
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr, test_data[0]);
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr + 4,
+                     test_data[1]);
+
+  EXPECT_EQ(sc_acc_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
+}
+
+TEST_F(DmemWriteTest, SuccessWithOffset) {
+  // Test assumption.
+  static_assert(ACC_DMEM_SIZE_BYTES >= 12, "ACC DMEM size too small.");
+
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  sc_acc_addr_t dest_addr = 4;
+
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr, test_data[0]);
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dest_addr + 4,
+                     test_data[1]);
+
+  EXPECT_EQ(sc_acc_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
+}
+
+TEST_F(DmemWriteTest, FailureOutOfRange) {
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  sc_acc_addr_t dest_addr = ACC_DMEM_SIZE_BYTES;
+
+  EXPECT_EQ(sc_acc_dmem_write(2, test_data.data(), dest_addr),
+            kErrorAccBadOffsetLen);
+}
+
+TEST_F(DmemWriteTest, FailureOverflowNumWords) {
+  // Try to trigger an integer overflow with `num_words`.
+  size_t num_words =
+      (std::numeric_limits<size_t>::max() / sizeof(uint32_t)) + 1;
+  sc_acc_addr_t dest_addr = 0;
+
+  EXPECT_EQ(sc_acc_dmem_write(num_words, NULL, dest_addr),
+            kErrorAccBadOffsetLen);
+}
+
+TEST_F(DmemWriteTest, FailureOverflowOffset) {
+  // Try to trigger an integer overflow with `dest_addr`.
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  sc_acc_addr_t dest_addr = std::numeric_limits<uint32_t>::max();
+
+  EXPECT_EQ(sc_acc_dmem_write(test_data.size(), test_data.data(), dest_addr),
+            kErrorAccBadOffsetLen);
+}
+
+class DmemReadTest : public AccTest {};
+
+TEST_F(DmemReadTest, SuccessWithoutOffset) {
+  // Assumption in the test.
+  ASSERT_GE(ACC_DMEM_SIZE_BYTES, 8);
+  static_assert(ACC_DMEM_SIZE_BYTES >= 8, "ACC DMEM size too small.");
+
+  EXPECT_ABS_READ32(base_ + ACC_DMEM_REG_OFFSET, 0x12345678);
+  EXPECT_ABS_READ32(base_ + ACC_DMEM_REG_OFFSET + 4, 0xabcdef01);
+
+  std::array<uint32_t, 2> test_data = {0};
+
+  sc_acc_addr_t src_addr = 0;
+  EXPECT_EQ(sc_acc_dmem_read(2, src_addr, test_data.data()), kErrorOk);
+  EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
+}
+
+TEST_F(DmemReadTest, SuccessWithOffset) {
+  // Assumption in the test.
+  static_assert(ACC_DMEM_SIZE_BYTES >= 12, "ACC DMEM size too small.");
+
+  EXPECT_ABS_READ32(base_ + ACC_DMEM_REG_OFFSET + 4, 0x12345678);
+  EXPECT_ABS_READ32(base_ + ACC_DMEM_REG_OFFSET + 8, 0xabcdef01);
+
+  std::array<uint32_t, 2> test_data = {0};
+
+  sc_acc_addr_t src_addr = 4;
+  EXPECT_EQ(sc_acc_dmem_read(2, src_addr, test_data.data()), kErrorOk);
+  EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
+}
+
+class AccAppTest : public AccTest {};
+
+TEST_F(AccAppTest, AccLoadAppSuccess) {
+  std::array<uint32_t, 2> imem_data = {0x01234567, 0x89abcdef};
+  std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
+  sc_acc_addr_t dmem_data_offset = 0x12;
+  sc_acc_app_t app = {
+      .imem_start = imem_data.data(),
+      .imem_end = imem_data.data() + imem_data.size(),
+      .dmem_data_start = dmem_data.data(),
+      .dmem_data_end = dmem_data.data() + imem_data.size(),
+      .dmem_data_start_addr = dmem_data_offset,
+  };
+
+  // Test assumption.
+  static_assert(ACC_DMEM_SIZE_BYTES >= sizeof(uint32_t) * dmem_data.size(),
+                "ACC DMEM size too small");
+  static_assert(ACC_IMEM_SIZE_BYTES >= sizeof(uint32_t) * imem_data.size(),
+                "ACC IMEM size too small");
+
+  // `sc_acc_busy_wait_for_done` - begin with busy to ensure we wait until
+  // idle.
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET,
+                    kScAccStatusBusySecWipeDmem);
+  // Read twice for hardening.
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  // `sc_acc_dmem_sec_wipe`
+  ExpectCmdRun(kScAccCmdSecWipeDmem, err_bits_ok_, kScAccStatusIdle);
+  // `sc_acc_imem_sec_wipe`
+  ExpectCmdRun(kScAccCmdSecWipeImem, err_bits_ok_, kScAccStatusIdle);
+  // `acc_imem_write`
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
+  EXPECT_ABS_WRITE32(base_ + ACC_IMEM_REG_OFFSET, imem_data[0]);
+  EXPECT_ABS_WRITE32(base_ + ACC_IMEM_REG_OFFSET + sizeof(uint32_t),
+                     imem_data[1]);
+  // `sc_acc_dmem_write`
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + dmem_data_offset,
+                     dmem_data[0]);
+  EXPECT_ABS_WRITE32(
+      base_ + ACC_DMEM_REG_OFFSET + dmem_data_offset + sizeof(uint32_t),
+      dmem_data[1]);
+
+  EXPECT_EQ(sc_acc_load_app(app), kErrorOk);
+}
+
+TEST_F(AccAppTest, AccLoadInvalidAppEmptyImem) {
+  // Create an invalid app with an empty IMEM range.
+  std::array<uint32_t, 0> imem_data = {};
+  std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
+  sc_acc_addr_t dmem_data_offset = 0x12;
+  sc_acc_app_t app = {
+      .imem_start = imem_data.data(),
+      .imem_end = imem_data.data() + imem_data.size(),
+      .dmem_data_start = dmem_data.data(),
+      .dmem_data_end = dmem_data.data() + dmem_data.size(),
+      .dmem_data_start_addr = dmem_data_offset,
+  };
+
+  // Test assumption.
+  static_assert(ACC_DMEM_SIZE_BYTES >= sizeof(uint32_t) * dmem_data.size(),
+                "ACC DMEM size too small");
+  static_assert(ACC_IMEM_SIZE_BYTES >= sizeof(uint32_t) * imem_data.size(),
+                "ACC IMEM size too small");
+
+  EXPECT_EQ(sc_acc_load_app(app), kErrorAccInvalidArgument);
+}
+
+TEST_F(AccAppTest, AccLoadInvalidAppImemOutOfRange) {
+  // Create an invalid app with a too-large IMEM range.
+  std::array<uint32_t, (ACC_IMEM_SIZE_BYTES / sizeof(uint32_t)) + 1>
+      imem_data = {0};
+  std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
+  sc_acc_addr_t dmem_data_offset = 0x12;
+  sc_acc_app_t app = {
+      .imem_start = imem_data.data(),
+      .imem_end = imem_data.data() + imem_data.size(),
+      .dmem_data_start = dmem_data.data(),
+      .dmem_data_end = dmem_data.data() + dmem_data.size(),
+      .dmem_data_start_addr = dmem_data_offset,
+  };
+
+  // Read twice for hardening.
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  EXPECT_ABS_READ32(base_ + ACC_STATUS_REG_OFFSET, kScAccStatusIdle);
+  // `sc_acc_dmem_sec_wipe`
+  ExpectCmdRun(kScAccCmdSecWipeDmem, err_bits_ok_, kScAccStatusIdle);
+  // `sc_acc_imem_sec_wipe`
+  ExpectCmdRun(kScAccCmdSecWipeImem, err_bits_ok_, kScAccStatusIdle);
+
+  EXPECT_EQ(sc_acc_load_app(app), kErrorAccBadOffsetLen);
+}
+
+class AccWriteTest : public AccTest {};
+
+TEST_F(AccWriteTest, Success) {
+  constexpr uint32_t kDestAddr = 6;
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+
+  // Test assumption.
+  static_assert(
+      ACC_DMEM_SIZE_BYTES >= sizeof(uint32_t) * test_data.size() + kDestAddr,
+      "ACC DMEM size too small.");
+
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
+  EXPECT_ABS_WRITE32(base_ + ACC_DMEM_REG_OFFSET + kDestAddr, test_data[0]);
+  EXPECT_ABS_WRITE32(
+      base_ + ACC_DMEM_REG_OFFSET + kDestAddr + sizeof(uint32_t),
+      test_data[1]);
+
+  EXPECT_EQ(sc_acc_dmem_write(2, test_data.data(), kDestAddr), kErrorOk);
+}
+
+class AccReadTest : public AccTest {};
+
+TEST_F(AccReadTest, Success) {
+  constexpr uint32_t kSrcAddr = 6;
+  std::array<uint32_t, 2> test_data = {0};
+
+  // Test assumption.
+  static_assert(
+      ACC_DMEM_SIZE_BYTES >= sizeof(uint32_t) * test_data.size() + kSrcAddr,
+      "ACC DMEM size too small.");
+
+  EXPECT_ABS_READ32(base_ + ACC_DMEM_REG_OFFSET + kSrcAddr, 0x12345678);
+  EXPECT_ABS_READ32(base_ + ACC_DMEM_REG_OFFSET + kSrcAddr + sizeof(uint32_t),
+                    0xabcdef01);
+
+  EXPECT_EQ(sc_acc_dmem_read(2, kSrcAddr, test_data.data()), kErrorOk);
+  EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
+}
+}  // namespace
+}  // namespace acc_unittest
