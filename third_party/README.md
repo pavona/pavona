@@ -1,6 +1,6 @@
-# OpenTitan external dependencies
+# External dependencies
 
-OpenTitan depends on a number of third-party components.
+This repository depends on a number of third-party components.
 
 These include:
 
