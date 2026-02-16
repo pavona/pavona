@@ -66,12 +66,17 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 }
 
 otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
-                                         const uint32_t salt[7],
+                                         otcrypto_const_word32_buf_t salt,
                                          otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (key->keyblob_length != 8 * sizeof(uint32_t) ||
+
+  // Ensure that keyblob length is at least the minimum word count, that it
+  // makes exactly enough space for the salt and version, and that the keyblob
+  // config indicates a hardware backed key.
+  if (key->keyblob_length < kKeyblobHwBackedMinWords ||
+      key->keyblob_length != sizeof(version) + salt.len * sizeof(uint32_t) ||
       key->config.hw_backed != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -86,7 +91,7 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
 
   // Copy the version and salt into the keyblob.
   key->keyblob[0] = version;
-  memcpy(&key->keyblob[1], salt, 7 * sizeof(uint32_t));
+  memcpy(&key->keyblob[1], salt.data, salt.len * sizeof(uint32_t));
 
   // Set the checksum.
   key->checksum = integrity_blinded_checksum(key);

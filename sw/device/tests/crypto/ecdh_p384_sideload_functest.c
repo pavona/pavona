@@ -68,7 +68,11 @@ status_t key_exchange_test(void) {
       .keyblob_length = sizeof(keyblobA),
       .keyblob = keyblobA,
   };
-  TRY(otcrypto_hw_backed_key(kPrivateKeyAVersion, kPrivateKeyASalt,
+  otcrypto_const_word32_buf_t private_keyA_salt_buf = {
+      .data = (uint32_t *)kPrivateKeyASalt,
+      .len = sizeof(kPrivateKeyASalt) / sizeof(uint32_t),
+  };
+  TRY(otcrypto_hw_backed_key(kPrivateKeyAVersion, private_keyA_salt_buf,
                              &private_keyA));
   uint32_t keyblobB[(sizeof(kPrivateKeyBSalt) + sizeof(kPrivateKeyBVersion)) /
                     sizeof(uint32_t)];
@@ -77,7 +81,11 @@ status_t key_exchange_test(void) {
       .keyblob_length = sizeof(keyblobB),
       .keyblob = keyblobB,
   };
-  TRY(otcrypto_hw_backed_key(kPrivateKeyBVersion, kPrivateKeyBSalt,
+  otcrypto_const_word32_buf_t private_keyB_salt_buf = {
+      .data = (uint32_t *)kPrivateKeyBSalt,
+      .len = sizeof(kPrivateKeyASalt) / sizeof(uint32_t),
+  };
+  TRY(otcrypto_hw_backed_key(kPrivateKeyBVersion, private_keyB_salt_buf,
                              &private_keyB));
 
   // Allocate space for two public keys.

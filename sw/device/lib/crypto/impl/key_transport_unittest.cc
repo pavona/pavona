@@ -61,6 +61,10 @@ TEST(KeyTransport, HwBackedKeyToDiversificationData) {
   std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
                                        0x10111213};
+  otcrypto_const_word32_buf_t test_salt_buf = {
+      .data = test_salt.data(),
+      .len = test_salt.size(),
+  };
 
   // Create a key handle from the test data.
   uint32_t keyblob[32] = {0};
@@ -70,7 +74,7 @@ TEST(KeyTransport, HwBackedKeyToDiversificationData) {
       .keyblob = keyblob,
   };
   EXPECT_EQ(
-      status_ok(otcrypto_hw_backed_key(test_version, test_salt.data(), &key)),
+      status_ok(otcrypto_hw_backed_key(test_version, test_salt_buf, &key)),
       true);
 
   // Expect that converting to keymgr diversification data generates the same
@@ -92,6 +96,10 @@ TEST(KeyTransport, HwBackedRsaKeyFails) {
   std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
                                        0x10111213};
+  otcrypto_const_word32_buf_t test_salt_buf = {
+      .data = test_salt.data(),
+      .len = test_salt.size(),
+  };
 
   // Create a key handle from the test data.
   uint32_t keyblob[32] = {0};
@@ -103,7 +111,7 @@ TEST(KeyTransport, HwBackedRsaKeyFails) {
 
   // Expect the hardware-backed RSA key to be rejected.
   EXPECT_EQ(
-      status_ok(otcrypto_hw_backed_key(test_version, test_salt.data(), &key)),
+      status_ok(otcrypto_hw_backed_key(test_version, test_salt_buf, &key)),
       false);
 }
 

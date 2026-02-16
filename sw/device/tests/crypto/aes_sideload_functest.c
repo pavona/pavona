@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
@@ -64,10 +65,10 @@ static const uint32_t kAesPlaintextBlock[4] = {0};
  * @return OK or error.
  */
 static status_t run_aes(otcrypto_aes_operation_t operation,
-                        const uint32_t salt[7], const uint32_t *input,
+                        otcrypto_const_word32_buf_t salt, const uint32_t *input,
                         uint32_t *output) {
   // Construct the key.
-  uint32_t keyblob[8];
+  uint32_t keyblob[salt.len + 1];
   otcrypto_blinded_key_t key = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob),
@@ -109,7 +110,8 @@ static status_t run_aes(otcrypto_aes_operation_t operation,
  * @param[out] ciphertext Resulting encrypted output.
  * @return OK or error.
  */
-static status_t encrypt(const uint32_t *salt, uint32_t *ciphertext) {
+static status_t encrypt(otcrypto_const_word32_buf_t salt,
+                        uint32_t *ciphertext) {
   return run_aes(kOtcryptoAesOperationEncrypt, salt, kAesPlaintextBlock,
                  ciphertext);
 }
@@ -125,8 +127,8 @@ static status_t encrypt(const uint32_t *salt, uint32_t *ciphertext) {
  * @param[out] plaintext Resulting decrypted output.
  * @return OK or error.
  */
-static status_t decrypt(const uint32_t *salt, const uint32_t *ciphertext,
-                        uint32_t *plaintext) {
+static status_t decrypt(otcrypto_const_word32_buf_t salt,
+                        const uint32_t *ciphertext, uint32_t *plaintext) {
   return run_aes(kOtcryptoAesOperationDecrypt, salt, ciphertext, plaintext);
 }
 
@@ -168,11 +170,15 @@ status_t test_setup(void) {
 status_t basic_encrypt_decrypt_test(void) {
   // Encrypt the test plaintext.
   uint32_t ciphertext1[ARRAYSIZE(kAesPlaintextBlock)];
-  TRY(encrypt(kKeySalt1, ciphertext1));
+  otcrypto_const_word32_buf_t key_salt1_buf = {
+      .data = (uint32_t *)kKeySalt1,
+      .len = sizeof(kKeySalt1) / sizeof(uint32_t),
+  };
+  TRY(encrypt(key_salt1_buf, ciphertext1));
 
   // Decrypt the ciphertext.
   uint32_t recovered_plaintext[ARRAYSIZE(kAesPlaintextBlock)];
-  TRY(decrypt(kKeySalt1, ciphertext1, recovered_plaintext));
+  TRY(decrypt(key_salt1_buf, ciphertext1, recovered_plaintext));
 
   // Check that the recovered plaintext matches the original plaintext.
   TRY_CHECK_ARRAYS_EQ(recovered_plaintext, kAesPlaintextBlock,
@@ -190,18 +196,26 @@ status_t basic_encrypt_decrypt_test(void) {
 status_t sideload_update_test(void) {
   // Sideload the first key and encrypt the plaintext.
   uint32_t ciphertext1[ARRAYSIZE(kAesPlaintextBlock)];
-  TRY(encrypt(kKeySalt1, ciphertext1));
+  otcrypto_const_word32_buf_t key_salt1_buf = {
+      .data = (uint32_t *)kKeySalt1,
+      .len = sizeof(kKeySalt1) / sizeof(uint32_t),
+  };
+  TRY(encrypt(key_salt1_buf, ciphertext1));
 
   // Sideload the second key and encrypt the plaintext.
   uint32_t ciphertext2[ARRAYSIZE(kAesPlaintextBlock)];
-  TRY(encrypt(kKeySalt2, ciphertext2));
+  otcrypto_const_word32_buf_t key_salt2_buf = {
+      .data = (uint32_t *)kKeySalt2,
+      .len = sizeof(kKeySalt2) / sizeof(uint32_t),
+  };
+  TRY(encrypt(key_salt2_buf, ciphertext2));
 
   // Check that the ciphertexts are different.
   TRY_CHECK_ARRAYS_NE(ciphertext1, ciphertext2, ARRAYSIZE(ciphertext1));
 
   // Sideload the first key again and encrypt the plaintext.
   uint32_t ciphertext3[ARRAYSIZE(kAesPlaintextBlock)];
-  TRY(encrypt(kKeySalt1, ciphertext3));
+  TRY(encrypt(key_salt1_buf, ciphertext3));
 
   // Check that the ciphertexts are the same.
   TRY_CHECK_ARRAYS_EQ(ciphertext1, ciphertext3, ARRAYSIZE(ciphertext1));
@@ -217,7 +231,11 @@ status_t sideload_update_test(void) {
 status_t sideload_clear_test(void) {
   // Sideload the first key and encrypt the plaintext.
   uint32_t ciphertext1[ARRAYSIZE(kAesPlaintextBlock)];
-  TRY(encrypt(kKeySalt1, ciphertext1));
+  otcrypto_const_word32_buf_t key_salt1_buf = {
+      .data = (uint32_t *)kKeySalt1,
+      .len = sizeof(kKeySalt1) / sizeof(uint32_t),
+  };
+  TRY(encrypt(key_salt1_buf, ciphertext1));
 
   // Construct a mock key for the AES driver.
   uint32_t share0[256 / 32] = {0};

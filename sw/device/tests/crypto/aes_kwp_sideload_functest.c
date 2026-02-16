@@ -101,13 +101,18 @@ static status_t wrap_unwrap_random_test(void) {
   TRY(otcrypto_symmetric_keygen(personalization, &kmac_key));
 
   // Construct the sideloaded wrapping key.
-  uint32_t keyblob_kek[8];
+  uint32_t
+      keyblob_kek[(sizeof(kKeyVersion) + sizeof(kKeySalt)) / sizeof(uint32_t)];
   otcrypto_blinded_key_t kek = {
       .config = kWrappingKeyConfig,
       .keyblob_length = sizeof(keyblob_kek),
       .keyblob = keyblob_kek,
   };
-  TRY(otcrypto_hw_backed_key(kKeyVersion, kKeySalt, &kek));
+  otcrypto_const_word32_buf_t key_salt_buf = {
+      .data = (uint32_t *)kKeySalt,
+      .len = sizeof(kKeySalt) / sizeof(uint32_t),
+  };
+  TRY(otcrypto_hw_backed_key(kKeyVersion, key_salt_buf, &kek));
 
   return run_wrap_unwrap(&kmac_key, &kek);
 }

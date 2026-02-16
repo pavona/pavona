@@ -60,8 +60,10 @@ otcrypto_status_t otcrypto_symmetric_keygen(
  * some choices of algorithm may result in errors.
  *
  * The caller should partially populate the blinded key struct; they should set
- * the full key configuration and the keyblob length (always 32 bytes), and
- * then allocate 32 bytes of space for the keyblob and set the keyblob pointer.
+ * the full key configuration and the keyblob length (which may vary depending
+ * on the salt length), and then allocate the appropriate amount of space for
+ * the keyblob and set the keyblob pointer. The keyblob length should be equal
+ * to the length of the version (4 bytes) plus the length of the provided salt.
  *
  * This function will populate the `checksum` field and copy the salt/version
  * data into the keyblob buffer in the specific order that the rest of
@@ -74,7 +76,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
-                                         const uint32_t salt[7],
+                                         otcrypto_const_word32_buf_t salt,
                                          otcrypto_blinded_key_t *key);
 
 /**

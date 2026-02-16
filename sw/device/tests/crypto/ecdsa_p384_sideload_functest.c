@@ -53,7 +53,11 @@ status_t sign_then_verify_test(void) {
   };
 
   // Construct the private key handle.
-  TRY(otcrypto_hw_backed_key(kPrivateKeyVersion, kPrivateKeySalt,
+  otcrypto_const_word32_buf_t private_key_salt_buf = {
+      .data = (uint32_t *)kPrivateKeySalt,
+      .len = sizeof(kPrivateKeySalt) / sizeof(uint32_t),
+  };
+  TRY(otcrypto_hw_backed_key(kPrivateKeyVersion, private_key_salt_buf,
                              &private_key));
 
   // Allocate space for a public key.
