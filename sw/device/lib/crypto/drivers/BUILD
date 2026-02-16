@@ -139,7 +139,7 @@ dual_cc_library(
         shared = [
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/crypto/impl:status",
-        ]
+        ],
     ),
 )
 

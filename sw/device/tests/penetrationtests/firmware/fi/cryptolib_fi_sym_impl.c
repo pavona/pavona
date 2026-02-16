@@ -106,7 +106,9 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   memset(key_buf, 0, AES_CMD_MAX_KEY_BYTES);
   memcpy(key_buf, uj_input.key, uj_input.key_len);
   // Create keyblob.
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_words = 0;
+  TRY(keyblob_num_words(config, &keyblob_words));
+  uint32_t keyblob[keyblob_words];
   // Create blinded key.
   uint32_t aes_key_mask[kPentestAesMaxKeyWords];
   memset(aes_key_mask, 0, AES_CMD_MAX_KEY_BYTES);
@@ -234,7 +236,9 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
     aes_key_mask[it] = pentest_ibex_rnd32_read();
   }
 
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_words = 0;
+  TRY(keyblob_num_words(config, &keyblob_words));
+  uint32_t keyblob[keyblob_words];
   TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
 
   // Construct the blinded key.
@@ -357,7 +361,9 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   memset(key_buf, 0, HMAC_CMD_MAX_KEY_BYTES);
   memcpy(key_buf, uj_input.key, uj_input.key_len);
   // Create keyblob.
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_words = 0;
+  TRY(keyblob_num_words(config, &keyblob_words));
+  uint32_t keyblob[keyblob_words];
   // Create blinded key.
   uint32_t hmac_key_mask[kPentestHmacMaxKeyWords];
   memset(hmac_key_mask, 0, HMAC_CMD_MAX_KEY_BYTES);

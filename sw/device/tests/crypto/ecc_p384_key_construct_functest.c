@@ -175,7 +175,9 @@ status_t private_key_roundtrip_test(void) {
       .data = kTestScalarShare1,
       .len = ARRAYSIZE(kTestScalarShare1),
   };
-  uint32_t private_key_data[keyblob_num_words(kTestKeyConfig)];
+  size_t keyblob_words = 0;
+  keyblob_num_words(kTestKeyConfig, &keyblob_words);
+  uint32_t private_key_data[keyblob_words];
   otcrypto_blinded_key_t private_key = {
       .config = kTestKeyConfig,
       .keyblob_length = sizeof(private_key_data),

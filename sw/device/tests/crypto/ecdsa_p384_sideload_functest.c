@@ -44,7 +44,8 @@ static const uint32_t kPrivateKeyVersion = 0x0;
 
 status_t sign_then_verify_test(void) {
   // Allocate space for a hardware-backed key.
-  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  uint32_t keyblob[(sizeof(kPrivateKeySalt) + sizeof(kPrivateKeyVersion)) /
+                   sizeof(uint32_t)];
   otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob),

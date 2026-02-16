@@ -35,7 +35,9 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
 
 status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   // Allocate space for a masked private key.
-  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  size_t keyblob_words = 0;
+  keyblob_num_words(kPrivateKeyConfig, &keyblob_words);
+  uint32_t keyblob[keyblob_words];
   otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob),

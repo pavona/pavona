@@ -440,8 +440,9 @@ static status_t internal_p384_keygen_finalize(
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
 
     // Randomize the keyblob before writing secret data.
-    hardened_memshred(private_key->keyblob,
-                      keyblob_num_words(private_key->config));
+    size_t keyblob_words = 0;
+    HARDENED_TRY(keyblob_num_words(private_key->config, &keyblob_words));
+    hardened_memshred(private_key->keyblob, keyblob_words);
 
     // Note: This operation wipes DMEM after retrieving the keys, so if an error
     // occurs after this point then the keys would be unrecoverable. This should
@@ -756,13 +757,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(shared_secret->config.key_length, kP384CoordBytes);
-  if (launder32(shared_secret->keyblob_length) !=
-      keyblob_num_words(shared_secret->config) * sizeof(uint32_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(
-      shared_secret->keyblob_length,
-      keyblob_num_words(shared_secret->config) * sizeof(uint32_t));
+  HARDENED_TRY(check_keyblob_length(shared_secret));
 
   // Note: This operation wipes DMEM after retrieving the keys, so if an error
   // occurs after this point then the keys would be unrecoverable. This should

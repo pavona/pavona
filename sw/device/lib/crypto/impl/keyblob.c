@@ -55,31 +55,32 @@ size_t keyblob_share_num_words(const otcrypto_key_config_t config) {
   return ceil_div(len_bytes, sizeof(uint32_t));
 }
 
-size_t keyblob_num_words(const otcrypto_key_config_t config) {
+status_t keyblob_num_words(const otcrypto_key_config_t config,
+                           size_t *num_words) {
   if (launder32(config.hw_backed) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(config.hw_backed, kHardenedBoolTrue);
-    return kKeyblobHwBackedWords;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_NE(config.hw_backed, kHardenedBoolTrue);
-  return 2 * keyblob_share_num_words(config);
+  *num_words = 2 * keyblob_share_num_words(config);
+  return OTCRYPTO_OK;
 }
 
-/**
- * Check that the keyblob length matches expectations from the key config.
- *
- * Returns an OK status if the keyblob length is correct, a BAD_ARGS status
- * otherwise.
- *
- * @param key Blinded key.
- * @returns OK if the keyblob length is correct, BAD_ARGS otherwise.
- */
-OT_WARN_UNUSED_RESULT
-static status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
-  size_t num_words = keyblob_num_words(key->config);
-  if (launder32(key->keyblob_length) == num_words * sizeof(uint32_t)) {
-    HARDENED_CHECK_EQ(key->keyblob_length, num_words * sizeof(uint32_t));
-    HARDENED_CHECK_LE(key->keyblob_length / sizeof(uint32_t), num_words);
-    return OTCRYPTO_OK;
+status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
+  if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
+    if (launder32(key->keyblob_length) >= kKeyblobHwBackedMinBytes) {
+      HARDENED_CHECK_GE(key->keyblob_length, kKeyblobHwBackedMinBytes);
+      return OTCRYPTO_OK;
+    }
+  } else {
+    HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolFalse);
+    size_t num_words = 0;
+    keyblob_num_words(key->config, &num_words);
+    if (launder32(key->keyblob_length) == num_words * sizeof(uint32_t)) {
+      HARDENED_CHECK_EQ(key->keyblob_length, num_words * sizeof(uint32_t));
+      HARDENED_CHECK_LE(key->keyblob_length / sizeof(uint32_t), num_words);
+      return OTCRYPTO_OK;
+    }
   }
   return OTCRYPTO_BAD_ARGS;
 }
@@ -98,11 +99,19 @@ status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
 status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                              const otcrypto_key_config_t config,
                              uint32_t *keyblob) {
+  // Ensure the key config is for a non-hardware backed key.
+  if (launder32(config.hw_backed) == kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(config.hw_backed, kHardenedBoolTrue);
+
   // Entropy complex must be initialized for `hardened_memcpy`.
   HARDENED_TRY(entropy_complex_check());
 
   // Randomize the keyblob contents before writing shares.
-  hardened_memshred(keyblob, keyblob_num_words(config));
+  size_t num_words = 0;
+  HARDENED_TRY(keyblob_num_words(config, &num_words));
+  hardened_memshred(keyblob, num_words);
 
   size_t share_words = keyblob_share_num_words(config);
   hardened_memcpy(keyblob, share0, share_words);
@@ -156,7 +165,7 @@ status_t keyblob_to_keymgr_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
-  if (key->keyblob_length != kKeyblobHwBackedBytes) {
+  if (key->keyblob_length < kKeyblobHwBackedMinBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 

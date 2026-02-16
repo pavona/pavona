@@ -85,18 +85,22 @@ TEST(Keyblob, ShareNumWordsHuge) {
 }
 
 TEST(Keyblob, KeyblobNumWordsSimpleTest) {
-  EXPECT_EQ(keyblob_num_words(kConfigCtr128),
-            2 * keyblob_share_num_words(kConfigCtr128));
+  size_t num_words = 0;
+  EXPECT_OK(keyblob_num_words(kConfigCtr128, &num_words));
+
+  EXPECT_EQ(num_words, 2 * keyblob_share_num_words(kConfigCtr128));
 }
 
 TEST(Keyblob, KeyblobNumWordsOdd) {
-  EXPECT_EQ(keyblob_num_words(kConfigOddBytes),
-            2 * keyblob_share_num_words(kConfigOddBytes));
+  size_t num_words = 0;
+  EXPECT_OK(keyblob_num_words(kConfigOddBytes, &num_words));
+  EXPECT_EQ(num_words, 2 * keyblob_share_num_words(kConfigOddBytes));
 }
 
 TEST(Keyblob, KeyblobNumWordsHuge) {
-  EXPECT_EQ(keyblob_num_words(kConfigHuge),
-            2 * keyblob_share_num_words(kConfigHuge));
+  size_t num_words = 0;
+  EXPECT_OK(keyblob_num_words(kConfigHuge, &num_words));
+  EXPECT_EQ(num_words, 2 * keyblob_share_num_words(kConfigHuge));
 }
 
 TEST(Keyblob, FromSharesSimpleTest) {
@@ -110,7 +114,9 @@ TEST(Keyblob, FromSharesSimpleTest) {
   ASSERT_EQ(test_share1.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert shares to keyblob array.
-  size_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  size_t keyblob_words = 0;
+  EXPECT_OK(keyblob_num_words(kConfigCtr128, &keyblob_words));
+
   EXPECT_THAT(keyblob_share_num_words(kConfigCtr128), 4);
   uint32_t keyblob[keyblob_words] = {0};
   status_t err = keyblob_from_shares(test_share0.data(), test_share1.data(),
@@ -137,7 +143,8 @@ TEST(Keyblob, FromToSharesNoop) {
   ASSERT_EQ(test_share1.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert shares to keyblob array.
-  uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  size_t keyblob_words = 0;
+  EXPECT_OK(keyblob_num_words(kConfigCtr128, &keyblob_words));
   uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   uint32_t keyblob[keyblob_words] = {0};
   status_t err = keyblob_from_shares(test_share0.data(), test_share1.data(),
@@ -177,7 +184,8 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   ASSERT_EQ(test_mask.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert key/mask to keyblob array.
-  uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  size_t keyblob_words = 0;
+  EXPECT_OK(keyblob_num_words(kConfigCtr128, &keyblob_words));
   uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   uint32_t keyblob[keyblob_words] = {0};
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask.data(),
@@ -265,6 +273,33 @@ TEST(Keyblob, ToKeymgrDiversificationBadlength) {
   EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key, &diversification));
 }
 
+TEST(Keyblob, ToKeymgrDiversificationLonglength) {
+  // Salt and version for the hardware-backed keys.
+  std::array<uint32_t, 8> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+                                       0x04050607, 0x08090a0b, 0x0c0d0e0f,
+                                       0xffffffff, 0x0f0f0f0f};
+  uint32_t test_version = 0xdeadbeef;
+
+  // Pack (version, salt) into a keyblob array.
+  uint32_t keyblob[test_salt.size() + 1];
+  keyblob[0] = test_version;
+  for (size_t i = 0; i < test_salt.size(); i++) {
+    keyblob[i + 1] = test_salt[i];
+  }
+
+  // Construct blinded key.
+  otcrypto_blinded_key_t key = {
+      .config = kConfigCtrSideloaded,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+
+  // Try to extract the keymgr diversification data.
+  keymgr_diversification_t diversification;
+  EXPECT_OK(keyblob_to_keymgr_diversification(&key, &diversification));
+}
+
 TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
   // Salt for the hardware-backed key (one word too short).
   std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
@@ -322,7 +357,8 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
   ASSERT_EQ(test_mask.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert key and initial mask to keyblob array.
-  uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  size_t keyblob_words = 0;
+  EXPECT_OK(keyblob_num_words(kConfigCtr128, &keyblob_words));
   uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   uint32_t keyblob[keyblob_words] = {0};
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask.data(),
@@ -365,7 +401,8 @@ TEST(Keyblob, RemaskPassesIntegrity) {
   ASSERT_EQ(test_mask.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert key and initial mask to keyblob array.
-  uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  size_t keyblob_words = 0;
+  EXPECT_OK(keyblob_num_words(kConfigCtr128, &keyblob_words));
   uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   uint32_t keyblob[keyblob_words] = {0};
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask.data(),

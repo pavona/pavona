@@ -98,7 +98,9 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
                                            size_t *wrapped_num_words) {
   // Check that the total wrapped key length will fit in 32 bits.
   size_t config_num_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
-  if (keyblob_num_words(config) > UINT32_MAX - config_num_words - 2) {
+  size_t keyblob_words = 0;
+  TRY(keyblob_num_words(config, &keyblob_words));
+  if (keyblob_words > UINT32_MAX - config_num_words - 2) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -107,7 +109,7 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
   //   - The key checksum (32 bits)
   //   - The keyblob length (in words) as a 32-bit word
   //   - The keyblob
-  *wrapped_num_words = config_num_words + 2 + keyblob_num_words(config);
+  *wrapped_num_words = config_num_words + 2 + keyblob_words;
 
   // We need to add 64 bits for the AES-KWP prefix.
   *wrapped_num_words += 2;
@@ -203,10 +205,7 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   HARDENED_TRY(aes_kwp_key_construct(key_kek, &kek));
 
   // Check the keyblob length.
-  uint32_t keyblob_words = keyblob_num_words(key_to_wrap->config);
-  if (key_to_wrap->keyblob_length != keyblob_words * sizeof(uint32_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  HARDENED_TRY(check_keyblob_length(key_to_wrap));
 
   // Check that the configuration is aligned.
   if (misalignment32_of((uintptr_t)&key_to_wrap->config) != 0) {
@@ -216,6 +215,7 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   // Create the plaintext by copying the key configuration, checksum, keyblob
   // length, and keyblob into a buffer.
   uint32_t config_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
+  size_t keyblob_words = key_to_wrap->keyblob_length / sizeof(uint32_t);
   size_t plaintext_num_words = config_words + 2 + keyblob_words;
   uint32_t plaintext[plaintext_num_words];
   hardened_memshred(plaintext, ARRAYSIZE(plaintext));
@@ -276,7 +276,22 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
   // Extract the checksum and keyblob length.
   unwrapped_key->checksum = plaintext[config_words];
   uint32_t keyblob_words = plaintext[config_words + 1];
-  if (keyblob_words != keyblob_num_words(unwrapped_key->config)) {
+
+  // Check the that the keyblob word count in the plaintext is valid.
+  if (unwrapped_key->config.hw_backed == kHardenedBoolTrue) {
+    if (keyblob_words < kKeyblobHwBackedMinWords) {
+      *success = kHardenedBoolFalse;
+      return OTCRYPTO_OK;
+    }
+  } else if (unwrapped_key->config.hw_backed == kHardenedBoolFalse) {
+    size_t keyblob_exp_words = 0;
+    keyblob_num_words(unwrapped_key->config, &keyblob_exp_words);
+    if (keyblob_words != keyblob_exp_words) {
+      *success = kHardenedBoolFalse;
+      return OTCRYPTO_OK;
+    }
+  } else {
+    // Invalid value for hw_backed
     *success = kHardenedBoolFalse;
     return OTCRYPTO_OK;
   }
@@ -317,13 +332,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
                     keyblob_share_num_words(blinded_key->config));
 
   // Check the length of the keyblob.
-  size_t keyblob_words = launder32(keyblob_num_words(blinded_key->config));
-  if ((blinded_key->keyblob_length % sizeof(uint32_t) != 0) ||
-      (blinded_key->keyblob_length / sizeof(uint32_t) != keyblob_words)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(blinded_key->keyblob_length,
-                    keyblob_words * sizeof(uint32_t));
+  HARDENED_TRY(check_keyblob_length(blinded_key));
 
   // Construct the blinded key.
   HARDENED_TRY(keyblob_from_shares(key_share0.data, key_share1.data,
@@ -376,13 +385,7 @@ otcrypto_status_t otcrypto_export_blinded_key(
   hardened_memshred(key_share1.data, key_share1.len);
 
   // Check the length of the keyblob.
-  size_t keyblob_words = launder32(keyblob_num_words(blinded_key->config));
-  if ((blinded_key->keyblob_length % sizeof(uint32_t) != 0) ||
-      (blinded_key->keyblob_length / sizeof(uint32_t) != keyblob_words)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(blinded_key->keyblob_length,
-                    keyblob_words * sizeof(uint32_t));
+  HARDENED_TRY(check_keyblob_length(blinded_key));
 
   // Get pointers to the internal shares and copy them into output buffers.
   uint32_t *keyblob_share0;

@@ -15,22 +15,35 @@ extern "C" {
 
 enum {
   /**
-   * Number of 32-bit words in a hardware-backed key's keyblob.
+   * Minimum number of 32-bit words in a hardware-backed key's keyblob.
+   *
+   * The number of words in a keyblob can be larger, as the key manager
+   * diverification data is derived as a SHA-3 hash of the non-version words of
+   * the keyblob concatenated with the key mode.
    */
-  kKeyblobHwBackedWords = kKeymgrSaltNumWords,
+  kKeyblobHwBackedMinWords = kKeymgrSaltNumWords,
   /**
-   * Number of bytes in a hardware-backed key's keyblob.
+   * Minimum number of bytes in a hardware-backed key's keyblob.
+   *
+   * The number of bytes in a keyblob can be larger; see the documentation for
+   * the previous enum value.
    */
-  kKeyblobHwBackedBytes = kKeyblobHwBackedWords * sizeof(uint32_t),
+  kKeyblobHwBackedMinBytes = kKeyblobHwBackedMinWords * sizeof(uint32_t),
 };
 
 /**
  * Get the word-length of the full blinded keyblob for a given key length.
  *
+ * If a key configuration indicating a hardware-backed key is passed, then
+ * OTCRYPTO_BAD_ARGS is returned, as the keyblob used for diversification may be
+ * arbitrarily large.
+ *
  * @param config Key configuration.
- * @returns Word-length of the blinded keyblob.
+ * @param[out] num_words Word-length of the blinded keyblob.
+ * @return Result of the operation.
  */
-size_t keyblob_num_words(const otcrypto_key_config_t config);
+status_t keyblob_num_words(const otcrypto_key_config_t config,
+                           size_t *num_words);
 
 /**
  * Get the word-length of a single key share for a given key length.
@@ -44,6 +57,17 @@ size_t keyblob_num_words(const otcrypto_key_config_t config);
  */
 size_t keyblob_share_num_words(const otcrypto_key_config_t config);
 
+/**
+ * Check that the keyblob length matches expectations from the key config.
+ *
+ * Returns an OK status if the keyblob length is correct, a BAD_ARGS status
+ * otherwise.
+ *
+ * @param key Blinded key.
+ * @returns OK if the keyblob length is correct, BAD_ARGS otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+status_t check_keyblob_length(const otcrypto_blinded_key_t *key);
 /**
  * Return pointers to the separate shares within the blinded key.
  *

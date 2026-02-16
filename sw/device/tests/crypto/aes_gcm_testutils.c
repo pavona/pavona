@@ -133,7 +133,9 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   };
 
   // Construct blinded key from the key and testing mask.
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_words = 0;
+  TRY(keyblob_num_words(config, &keyblob_words));
+  uint32_t keyblob[keyblob_words];
   TRY(keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
 
   // Construct the blinded key.
@@ -230,7 +232,9 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   };
 
   // Construct blinded key from the key and testing mask.
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_words = 0;
+  TRY(keyblob_num_words(config, &keyblob_words));
+  uint32_t keyblob[keyblob_words];
   TRY(keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
 
   // Construct the blinded key.

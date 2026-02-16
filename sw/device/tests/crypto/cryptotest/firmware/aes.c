@@ -121,7 +121,9 @@ status_t handle_aes_block(ujson_t *uj) {
   uint32_t key_buf[kAesMaxKeyWords];
   memcpy(key_buf, uj_data.key, kAesMaxKeyBytes);
   // Create keyblob
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_words = 0;
+  TRY(keyblob_num_words(config, &keyblob_words));
+  uint32_t keyblob[keyblob_words];
   // Create blinded key
   TRY(keyblob_from_key_and_mask(key_buf, kKeyMask, config, keyblob));
   otcrypto_blinded_key_t key = {

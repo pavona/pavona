@@ -66,7 +66,8 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
       .exportable = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  size_t keyblob_wordlen = keyblob_num_words(prk_config);
+  size_t keyblob_wordlen = 0;
+  HARDENED_TRY(keyblob_num_words(prk_config, &keyblob_wordlen));
   uint32_t keyblob[keyblob_wordlen];
   otcrypto_blinded_key_t prk = {
       .config = prk_config,
@@ -107,11 +108,7 @@ static status_t hkdf_check_prk(size_t digest_words,
   HARDENED_CHECK_EQ(prk->config.key_length, digest_bytelen);
 
   // Check the keyblob length.
-  size_t keyblob_bytelen = keyblob_num_words(prk->config) * sizeof(uint32_t);
-  if (launder32(prk->keyblob_length) != keyblob_bytelen) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(prk->keyblob_length, keyblob_bytelen);
+  HARDENED_TRY(check_keyblob_length(prk));
 
   // Ensure that the PRK is a symmetric key masked with XOR and is not supposed
   // to be hardware-backed.
@@ -193,7 +190,9 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
       .exportable = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  uint32_t salt_keyblob[keyblob_num_words(salt_key_config)];
+  size_t keyblob_wordlen = 0;
+  HARDENED_TRY(keyblob_num_words(salt_key_config, &keyblob_wordlen));
+  uint32_t salt_keyblob[keyblob_wordlen];
   TRY(keyblob_from_key_and_mask(salt_aligned_data, salt_mask, salt_key_config,
                                 salt_keyblob));
   otcrypto_blinded_key_t salt_key = {
@@ -247,11 +246,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   HARDENED_TRY(keyblob_ensure_xor_masked(okm->config));
 
   // Check the keyblob length.
-  size_t keyblob_bytelen = keyblob_num_words(okm->config) * sizeof(uint32_t);
-  if (launder32(okm->keyblob_length) != keyblob_bytelen) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(okm->keyblob_length, keyblob_bytelen);
+  HARDENED_TRY(check_keyblob_length(okm));
 
   // Check that the unmasked key length is not too large for HKDF (see RFC
   // 5869, section 2.3).

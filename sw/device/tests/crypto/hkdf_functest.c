@@ -101,7 +101,9 @@ static status_t run_test(hkdf_test_vector_t *test) {
       .exportable = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  uint32_t ikm_keyblob[keyblob_num_words(ikm_config)];
+  size_t ikm_keyblob_words = 0;
+  TRY(keyblob_num_words(ikm_config, &ikm_keyblob_words));
+  uint32_t ikm_keyblob[ikm_keyblob_words];
   TRY(keyblob_from_key_and_mask(test->ikm, kTestMask, ikm_config, ikm_keyblob));
   otcrypto_blinded_key_t ikm = {
       .config = ikm_config,
@@ -119,7 +121,9 @@ static status_t run_test(hkdf_test_vector_t *test) {
       .exportable = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  uint32_t prk_keyblob[keyblob_num_words(prk_config)];
+  size_t prk_keyblob_words = 0;
+  TRY(keyblob_num_words(prk_config, &prk_keyblob_words));
+  uint32_t prk_keyblob[prk_keyblob_words];
   otcrypto_blinded_key_t prk = {
       .config = prk_config,
       .keyblob = prk_keyblob,
@@ -136,7 +140,9 @@ static status_t run_test(hkdf_test_vector_t *test) {
       .exportable = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  uint32_t okm_keyblob[keyblob_num_words(okm_config)];
+  size_t okm_keyblob_words = 0;
+  TRY(keyblob_num_words(okm_config, &okm_keyblob_words));
+  uint32_t okm_keyblob[okm_keyblob_words];
   otcrypto_blinded_key_t okm = {
       .config = okm_config,
       .keyblob = okm_keyblob,

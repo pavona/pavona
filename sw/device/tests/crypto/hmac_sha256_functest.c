@@ -63,7 +63,10 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_wordlen = 0;
+  TRY(keyblob_num_words(config, &keyblob_wordlen));
+  uint32_t keyblob[keyblob_wordlen];
+
   TRY(keyblob_from_key_and_mask(key, kTestMask, config, keyblob));
   otcrypto_blinded_key_t blinded_key = {
       .config = config,
@@ -167,7 +170,9 @@ static status_t streaming_test(void) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_wordlen = 0;
+  TRY(keyblob_num_words(config, &keyblob_wordlen));
+  uint32_t keyblob[keyblob_wordlen];
   TRY(keyblob_from_key_and_mask(kBasicTestKey, kTestMask, config, keyblob));
   otcrypto_blinded_key_t blinded_key = {
       .config = config,

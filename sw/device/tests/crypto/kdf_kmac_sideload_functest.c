@@ -311,8 +311,9 @@ static status_t run_test_vector(void) {
   // Below, `km` prefix refers to keying_material, and
   // `kdk` prefix refers to key derivation key
   size_t km_key_len = current_test_vector->keying_material.config.key_length;
-  size_t km_keyblob_len =
-      keyblob_num_words(current_test_vector->keying_material.config);
+  size_t km_keyblob_len = 0;
+  TRY(keyblob_num_words(current_test_vector->keying_material.config,
+                        &km_keyblob_len));
   size_t km_keyblob_share_len =
       keyblob_share_num_words(current_test_vector->keying_material.config);
   uint32_t km_buffer1[km_keyblob_len];

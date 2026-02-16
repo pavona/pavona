@@ -45,14 +45,16 @@ static const otcrypto_key_config_t kEcdhSharedKeyConfig = {
 
 status_t key_exchange_test(void) {
   // Allocate space for two private keys.
-  uint32_t keyblobA[keyblob_num_words(kEcdhPrivateKeyConfig)];
+  size_t private_keyblob_words = 0;
+  keyblob_num_words(kEcdhPrivateKeyConfig, &private_keyblob_words);
+  uint32_t keyblobA[private_keyblob_words];
   otcrypto_blinded_key_t private_keyA = {
       .config = kEcdhPrivateKeyConfig,
       .keyblob_length = sizeof(keyblobA),
       .keyblob = keyblobA,
       .checksum = 0,
   };
-  uint32_t keyblobB[keyblob_num_words(kEcdhPrivateKeyConfig)];
+  uint32_t keyblobB[private_keyblob_words];
   otcrypto_blinded_key_t private_keyB = {
       .config = kEcdhPrivateKeyConfig,
       .keyblob_length = sizeof(keyblobB),
@@ -88,14 +90,16 @@ status_t key_exchange_test(void) {
   CHECK_ARRAYS_NE(keyblobA, keyblobB, ARRAYSIZE(keyblobA));
 
   // Allocate space for two shared keys.
-  uint32_t shared_keyblobA[keyblob_num_words(kEcdhSharedKeyConfig)];
+  size_t shared_keyblob_words = 0;
+  keyblob_num_words(kEcdhSharedKeyConfig, &shared_keyblob_words);
+  uint32_t shared_keyblobA[shared_keyblob_words];
   otcrypto_blinded_key_t shared_keyA = {
       .config = kEcdhSharedKeyConfig,
       .keyblob_length = sizeof(shared_keyblobA),
       .keyblob = shared_keyblobA,
       .checksum = 0,
   };
-  uint32_t shared_keyblobB[keyblob_num_words(kEcdhSharedKeyConfig)];
+  uint32_t shared_keyblobB[shared_keyblob_words];
   otcrypto_blinded_key_t shared_keyB = {
       .config = kEcdhSharedKeyConfig,
       .keyblob_length = sizeof(shared_keyblobB),

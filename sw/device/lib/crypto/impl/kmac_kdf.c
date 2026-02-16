@@ -77,10 +77,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
     // Remask the key.
     HARDENED_TRY(keyblob_remask(key_derivation_key));
 
-    if (key_derivation_key->keyblob_length !=
-        keyblob_num_words(key_derivation_key->config) * sizeof(uint32_t)) {
-      return OTCRYPTO_BAD_ARGS;
-    }
+    HARDENED_TRY(check_keyblob_length(key_derivation_key));
     HARDENED_TRY(keyblob_to_shares(key_derivation_key, &kmac_key.share0,
                                    &kmac_key.share1));
   } else {
@@ -99,14 +96,12 @@ otcrypto_status_t otcrypto_kmac_kdf(
   HARDENED_CHECK_EQ(output_key_material->config.hw_backed, kHardenedBoolFalse);
 
   // Check the keyblob length.
-  if (output_key_material->keyblob_length !=
-      keyblob_num_words(output_key_material->config) * sizeof(uint32_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  HARDENED_TRY(check_keyblob_length(output_key_material));
 
   // Randomize the keyblob memory.
-  hardened_memshred(output_key_material->keyblob,
-                    keyblob_num_words(output_key_material->config));
+  size_t keyblob_words = 0;
+  HARDENED_TRY(keyblob_num_words(output_key_material->config, &keyblob_words));
+  hardened_memshred(output_key_material->keyblob, keyblob_words);
 
   switch (launder32(key_derivation_key->config.key_mode)) {
     case kOtcryptoKeyModeKdfKmac128: {

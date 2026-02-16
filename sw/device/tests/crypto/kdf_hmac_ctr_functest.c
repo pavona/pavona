@@ -89,7 +89,10 @@ static status_t run_test(kdf_test_vector_t *test) {
       .exportable = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  uint32_t kdk_keyblob[keyblob_num_words(kdk_config)];
+
+  size_t kdk_keyblob_wordlen = 0;
+  TRY(keyblob_num_words(kdk_config, &kdk_keyblob_wordlen));
+  uint32_t kdk_keyblob[kdk_keyblob_wordlen];
   TRY(keyblob_from_key_and_mask(test->key_derivation_key, kTestMask, kdk_config,
                                 kdk_keyblob));
   otcrypto_blinded_key_t kdk = {
@@ -109,7 +112,9 @@ static status_t run_test(kdf_test_vector_t *test) {
       .exportable = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  uint32_t km_keyblob[keyblob_num_words(km_config)];
+  size_t km_keyblob_wordlen = 0;
+  TRY(keyblob_num_words(km_config, &km_keyblob_wordlen));
+  uint32_t km_keyblob[km_keyblob_wordlen];
   otcrypto_blinded_key_t km = {
       .config = km_config,
       .keyblob = km_keyblob,

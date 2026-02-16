@@ -116,10 +116,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     // `otcrypto_hw_backed_key` function in `key_transport.h`.
     return OTCRYPTO_BAD_ARGS;
   } else if (output_key_material->config.hw_backed == kHardenedBoolFalse) {
-    if (output_key_material->keyblob_length !=
-        keyblob_num_words(output_key_material->config) * sizeof(uint32_t)) {
-      return OTCRYPTO_BAD_ARGS;
-    }
+    TRY(check_keyblob_length(output_key_material));
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
