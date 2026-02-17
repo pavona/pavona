@@ -2,7 +2,7 @@
 
 Ipgen is a tool to produce IP blocks from IP templates.
 
-IP templates are pre-processed to render highly customizable IP blocks that can be used in a hardware design.
+IP templates are pre-processed to render highly customized IP blocks that can be used in a hardware design.
 The templates of the source files are written in the Mako templating language, and are rendered by the ipgen tool to become the actual source files.
 The templates can be customized through template parameters, which are available within the templates.
 
