@@ -43,7 +43,7 @@ These objects are dictionaries with the following required keys:
 An exemplary template description file with two parameters, `src` and `target` is shown below.
 
 ```hjson
-// data/<templatename>.tpldesc.hjson
+// hw/ip_templates/<templatename>/data/<templatename>.tpldesc.hjson
 {
   template_param_list: [
     {
