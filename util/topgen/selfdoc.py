@@ -1,3 +1,9 @@
+# Copyright zeroRISC Inc.
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+
 from topgen.validate import (top_required, top_optional, top_added,
                              top_seed_required, top_seed_optional)
 from reggen.gen_selfdoc import doc_tbl_head, doc_tbl_line
