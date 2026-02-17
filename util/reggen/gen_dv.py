@@ -82,12 +82,12 @@ def gen_core_file(outdir: str, lblock: str, dv_base_names: List[str],
         # suffix.
         for block in blocks_base_names:
             pkg_name = blocks_base_names[block].pkg
-            depends.append("lowrisc:dv:{}".format(pkg_name[:-4]))
+            depends.append("pavona:dv:{}".format(pkg_name.removesuffix("_pkg")))
 
     # Generate a fusesoc core file that points at the files we've just
     # generated.
     core_data = {
-        'name': "lowrisc:dv:{}_ral_pkg".format(lblock),
+        'name': "pavona:dv:{}_ral_pkg".format(lblock),
         'filesets': {
             'files_dv': {
                 'depend': depends,

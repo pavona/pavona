@@ -55,8 +55,8 @@ $ ls /tmp/dv
     uart_ral_pkg.sv
 ```
 
-By default, the generated block, register and field models are derived from `dv_base_reg` classes provided at `hw/dv/sv/dv_base_reg`.
-If required, the user can supply the `--dv-base-names <block>:<type>:<entity-name>` switch to have the models derive from a custom, user-defined RAL classes instead:
+By default, the generated block, register and field models are derived from `dv_base_reg` classes provided at [`hw/dv/sv/dv_base_reg`](../../../hw/dv/sv/dv_base_reg/dv_base_reg.core).
+If required, the user can supply the `--dv-base-names <block>:<type>:<entity-name>` switch to have the models derive from custom, user-defined RAL classes instead:
 
 ```console
 $ cd $REPO_TOP/util
@@ -66,9 +66,11 @@ $ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson \
 $ ls /tmp/dv
     uart_ral_pkg.sv
 ```
+Multiple sources of DV base names may be passed in.
+`<type>` must be one of: `pkg`, `block`, `reg`, `field`, `mem`, `all`.
 
 This makes the following assumptions:
-- A FuseSoC core file aggregating the `<my_base>` RAL classes with the VLNV name `lowrisc:dv:<my_base>_reg` is provided in the cores search path.
+- A FuseSoC core file aggregating the `<my_base>` RAL classes with the VLNV name `pavona:dv:<my_base>_reg` is provided in the cores search path.
 - These custom classes are derived from the corresponding `dv_base_reg` classes and have the following names:
   - `<my_base>_reg_pkg.sv`: The RAL package that includes the below sources
   - `<my_base>_reg_block.sv`: The register block abstraction
