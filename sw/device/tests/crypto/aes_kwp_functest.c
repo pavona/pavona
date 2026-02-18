@@ -19,7 +19,7 @@ static const otcrypto_key_config_t kWrappingKeyConfig128 = {
     .key_mode = kOtcryptoKeyModeAesKwp,
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 // Key configuration for wrapping key (AES-192).
@@ -28,7 +28,7 @@ static const otcrypto_key_config_t kWrappingKeyConfig192 = {
     .key_mode = kOtcryptoKeyModeAesKwp,
     .key_length = 192 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 // Key configuration for wrapping key (AES-256).
@@ -37,7 +37,7 @@ static const otcrypto_key_config_t kWrappingKeyConfig256 = {
     .key_mode = kOtcryptoKeyModeAesKwp,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 /**
@@ -103,7 +103,7 @@ static status_t wrap_unwrap_random_test(void) {
       .key_mode = kOtcryptoKeyModeKmac128,
       .key_length = 128 / 8,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
 
   // Generate a random KMAC key.

@@ -104,7 +104,7 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
       .key_mode = key_mode,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
 
   // Create buffer to store key.
@@ -236,7 +236,7 @@ status_t cryptolib_sca_gcm_impl(
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
 
   // Construct blinded key from the key and mask.
@@ -370,7 +370,7 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
       .key_mode = key_mode,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
 
   // Create buffer to store key.

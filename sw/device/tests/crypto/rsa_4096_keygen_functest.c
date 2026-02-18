@@ -47,7 +47,7 @@ status_t keygen_then_sign_test(void) {
               .key_mode = kTestKeyMode,
               .key_length = kOtcryptoRsa4096PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
-              .security_level = kOtcryptoKeySecurityLevelLow,
+              .security_level = kOtcryptoKeySecurityLevelBase,
           },
       .keyblob_length = kOtcryptoRsa4096PrivateKeyblobBytes,
       .keyblob = keyblob,

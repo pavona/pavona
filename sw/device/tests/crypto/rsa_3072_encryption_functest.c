@@ -238,7 +238,7 @@ static status_t run_rsa_3072_decrypt(const uint8_t *label, size_t label_len,
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kOtcryptoRsa3072PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa3072PrivateKeyblobBytes, sizeof(uint32_t));

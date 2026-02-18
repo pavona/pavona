@@ -25,7 +25,7 @@ constexpr otcrypto_key_config_t kConfigCtr128 = {
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 // Key configuration for testing (31-byte key; not valid but helps test for
@@ -35,7 +35,7 @@ constexpr otcrypto_key_config_t kConfigOddBytes = {
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 31,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 // Key configuration for testing (key with a huge number of bytes; not valid
@@ -45,7 +45,7 @@ constexpr otcrypto_key_config_t kConfigHuge = {
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = UINT32_MAX,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 // Key configuration for testing (sideloaded AES-CTR key).
@@ -54,7 +54,7 @@ constexpr otcrypto_key_config_t kConfigCtrSideloaded = {
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 // Key configuration for testing (sideloaded AES-OFB key).
@@ -63,7 +63,7 @@ constexpr otcrypto_key_config_t kConfigOfbSideloaded = {
     .key_mode = kOtcryptoKeyModeAesOfb,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 TEST(Keyblob, ShareNumWordsSimpleTest) {

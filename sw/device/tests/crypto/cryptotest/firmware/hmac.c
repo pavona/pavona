@@ -70,7 +70,7 @@ status_t handle_hmac(ujson_t *uj) {
       .key_mode = key_mode,
       .key_length = uj_key.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
   // Create key shares.
   uint32_t key_buf[ceil_div(uj_key.key_len, sizeof(uint32_t))];

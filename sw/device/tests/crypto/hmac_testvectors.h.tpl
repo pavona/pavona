@@ -50,7 +50,7 @@ static hmac_test_vector_t kHmacTestVectors[${len(tests)}] = {
                 .key_length = ${t["key_len"]},
                 .hw_backed = kHardenedBoolFalse,
                 .exportable = kHardenedBoolFalse,
-                .security_level = kOtcryptoKeySecurityLevelLow,
+                .security_level = kOtcryptoKeySecurityLevelBase,
             },
             .keyblob_length = ${4 * len(t["keyblob"])},
             .keyblob = (uint32_t[]){

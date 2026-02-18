@@ -129,7 +129,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
 
   // Construct blinded key from the key and testing mask.
@@ -228,7 +228,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
 
   // Construct blinded key from the key and testing mask.

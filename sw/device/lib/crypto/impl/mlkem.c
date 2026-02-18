@@ -65,7 +65,7 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem512) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (secret_key->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -121,7 +121,7 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-  if (shared_secret->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (shared_secret->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -204,7 +204,7 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem512) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (secret_key->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -222,7 +222,7 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-  if (shared_secret->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (shared_secret->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -273,7 +273,7 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem768) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (secret_key->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -329,7 +329,7 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-  if (shared_secret->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (shared_secret->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -412,7 +412,7 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem768) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (secret_key->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -430,7 +430,7 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-  if (shared_secret->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (shared_secret->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -481,7 +481,7 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem1024) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (secret_key->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -537,7 +537,7 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-  if (shared_secret->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (shared_secret->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -620,7 +620,7 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem1024) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (secret_key->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
@@ -638,7 +638,7 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-  if (shared_secret->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+  if (shared_secret->config.security_level != kOtcryptoKeySecurityLevelBase) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;

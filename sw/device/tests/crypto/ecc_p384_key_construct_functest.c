@@ -51,7 +51,7 @@ static const otcrypto_key_config_t kTestKeyConfig = {
     .key_mode = kTestKeyMode,
     .key_length = kP384PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
     .exportable = kHardenedBoolTrue,
 };
 

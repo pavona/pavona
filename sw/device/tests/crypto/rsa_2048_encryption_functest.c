@@ -211,7 +211,7 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));

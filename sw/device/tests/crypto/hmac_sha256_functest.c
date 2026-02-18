@@ -60,7 +60,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
 
   size_t keyblob_wordlen = 0;
@@ -167,7 +167,7 @@ static status_t streaming_test(void) {
       .key_length = sizeof(kBasicTestKey),
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelBase,
   };
 
   size_t keyblob_wordlen = 0;

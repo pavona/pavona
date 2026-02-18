@@ -74,9 +74,9 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   }
 
   if (launder32(output_key_material->config.security_level) !=
-          kOtcryptoKeySecurityLevelLow ||
+          kOtcryptoKeySecurityLevelBase ||
       launder32(key_derivation_key->config.security_level) !=
-          kOtcryptoKeySecurityLevelLow) {
+          kOtcryptoKeySecurityLevelBase) {
     // The underlying HMAC implementation is not currently hardened.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }

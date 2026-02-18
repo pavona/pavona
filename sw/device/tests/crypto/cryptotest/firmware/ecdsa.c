@@ -31,7 +31,7 @@ static const otcrypto_key_config_t kP256PrivateKeyConfig = {
     .key_mode = kOtcryptoKeyModeEcdsaP256,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 static const otcrypto_key_config_t kP384PrivateKeyConfig = {
@@ -39,7 +39,7 @@ static const otcrypto_key_config_t kP384PrivateKeyConfig = {
     .key_mode = kOtcryptoKeyModeEcdsaP384,
     .key_length = kP384PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelBase,
 };
 
 int set_nist_p256_params(cryptotest_ecdsa_coordinate_t uj_qx,
