@@ -410,22 +410,39 @@ typedef enum otcrypto_key_mode {
 /**
  * Enum to denote key security level.
  *
- * At high security levels, the crypto library will prioritize
- * protecting the key from sophisticated attacks, even at large
- * performance costs. If the security level is low, the crypto
- * library will still try to protect the key, but may forgo the
- * most costly protections against e.g. sophisticated physical
- * attacks.
+ * Presently there are only two security levels, indicating whether or not
+ * potentially costly side channel analysis (SCA) and fault injection (FI)
+ * mitigations should be employed.
  *
- * Values are hardened.
+ * Note that the enum values in this struct utilize sparse encoding to prevent
+ * downgrading attacks via FI.
+ *
+ * In order to support introduction of additional key security levels in the
+ * future while (a) maintaining backwards compatibility with respect to enum
+ * values and (b) maintaining the same minimum Hamming distance between enum
+ * values, we designate reserved enum variants as well that can be repurposed
+ * as needed.
+ *
+ * Encoding generated with:
+ * $ ./util/design/sparse-fsm-encode.py -d 5 -m 4 -n 8 \
+ *     -s 3296918321 --language=sv
+ *
+ * Minimum Hamming distance: 6
+ * Maximum Hamming distance: 8
+ * Minimum Hamming weight: 4
+ * Maximum Hamming weight: 8
  */
 typedef enum otcrypto_key_security_level {
-  // Security level low.
-  kOtcryptoKeySecurityLevelLow = 0x1e9,
-  // Security level medium.
-  kOtcryptoKeySecurityLevelMedium = 0xeab,
-  // Security level high.
-  kOtcryptoKeySecurityLevelHigh = 0xa7e,
+  // Base security level: no SCA/FI mitigations.
+  kOtcryptoKeySecurityLevelBase = 0x7a8,
+  // Security level with SCA mitigations only.
+  kOtcryptoKeySecurityLevelSca = 0x775,
+  // Security level with SCA and FI mitigations.
+  kOtcryptoKeySecurityLevelScaFi = 0x870,
+  // Reserved security level 0.
+  kOtcryptoKeySecurityReserved0 = 0x4fe,
+  // Reserved security level 1.
+  kOtcryptoKeySecurityReserved1 = 0x123,
 } otcrypto_key_security_level_t;
 
 /**
