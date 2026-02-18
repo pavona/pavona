@@ -7,11 +7,11 @@ The terminology used in this document is covered in the [glossary](./glossary.md
 
 Hardware companies often invest in engineering resources to build and maintain custom tooling to manage EDA tool flows.
 It enables them to deploy and scale EDA workloads efficiently across their projects onto their compute infrastructure, monitor their execution, assess success and generate and publish queryable report to track the overall health and progress of their projects.
-These are often proprietary in nature, which makes them unsuitable for the development of open source projects such as OpenTitan.
+These are often proprietary in nature, which makes them unsuitable for the development of open source projects such as Pavona.
 
-DVSim is thus an attempt to make such a tool open and freely available with OpenTitan.
+DVSim is thus an attempt to make such a tool open and freely available with Pavona.
 It enables us to transcend organizational borders and collaborate effectively with a number of industry partners.
-It gives us the confidence to take our designs to production tape out, and transparency to potential new adopters of OpenTitan, by giving them the ability to immediately get started, run our flows, and validate our advertised levels of quality.
+It gives us the confidence to take our designs to production tape out, and transparency to potential new adopters of Pavona, by giving them the ability to immediately get started, run our flows, and validate our advertised levels of quality.
 
 # Goals
 
@@ -46,7 +46,7 @@ Some of the goals / usecases listed below are specific to an EDA tool flow (such
   - Provide ability to recursively substitute variables with their values to help reduce repetition.
   - Provide ability to override variable values, which will take the highest precedence.
   - Provide ability to evaluate a variable's value by executing a shell command snippet.
-  - Have a clean separation between code and data, so that it can be adapted and used for any ASIC project, not just OpenTitan.
+  - Have a clean separation between code and data, so that it can be adapted and used for any ASIC project, not just Pavona.
 
 - Readability
   - Describe testplans, tool configurations, build modes, run modes, test specifications, testplans and regressions in a human readable, but machine parsable format.
@@ -126,8 +126,8 @@ They are hence, also referred to as "jobs".
 
 ### Flow-specific Makefile
 
-Each of these steps may contain sub-steps, which are sequenced by a **flow-specific Makefile** ([example](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/sim.mk)).
-This Makefile is very lean, and has targets for each of the flow-specific steps.
+Each of these steps may contain sub-steps, which are sequenced by a **flow-specific Makefile** ([example](../../../hw/dv/tools/dvsim/sim.mk)).
+This Makefile has targets for each of the flow-specific steps. Most steps are simple, except for the generation of software images.
 It is a project-specific source, not maintained within the DVSim codebase, which allows a greater degree of flexibility for adoption.
 
 The recipe for executing the targets is represented with generic variables, which are set to the values extracted from the DUT configuration Hjson.
@@ -214,14 +214,14 @@ Python3 was chosen as the preferred language to design this tool due to its vers
 
 ## Configuration data
 
-Hjson was chosen as the de facto standard for maintaining configuration data for all tools and utilities developed in OpenTitan.
+Hjson was chosen as the de facto standard for maintaining configuration data for all tools and utilities developed in Pavona.
 DVSim, hence, also uses Hjson as the language for storing data.
 
 ## Other considerations
 
 ### Makefile based approach
 
-RTL simulations were the first to be developed at the commencement of the OpenTitan project.
+RTL simulations were the first to be developed at the commencement of the Pavona project.
 The initial setup used a Makefile-based approach, which sequenced the various steps that are required to be invoked to successfully run a simulation.
 As the number of DUTs and the number of tests for each DUT grew, and as the list of our requirements grew, the Makefile-based approach became harder to read and follow and maintain.
 It became clear that a better system was needed, one that scaled well with our growing list of requirements.
@@ -230,5 +230,5 @@ It became clear that a better system was needed, one that scaled well with our g
 
 [FuseSoC](https://fusesoc.readthedocs.io/en/stable/) is primarily designed to be a package management system.
 It lacked the necessary smarts to operate as a regression system capable of building once and running a large number of simulations at a time.
-In OpenTitan, FuseSoC is still in use, but only to generate the dependency-resolved [filelist](./glossary.md#filelist) of SystemVerilog sources.
+DVSim uses FuseSoC to generate the dependency-resolved [filelist](./glossary.md#filelist) of SystemVerilog sources.
 The filelist is then consumed as input by the EDA tools.

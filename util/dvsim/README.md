@@ -3,9 +3,9 @@
 DVSim is a build and run system written in Python that runs a variety of EDA tool flows.
 There are multiple steps involved in running EDA tool flows.
 DVSim encapsulates them all to provide a single, standardized command-line interface to launch them.
-While DVSim was written to support OpenTitan, it can be used for any ASIC project.
+While DVSim was written to support Pavona, it can be used for any ASIC project.
 
-All EDA tool flows on OpenTitan are launched using the DVSim tool.
+All EDA tool flows on Pavona are launched using the DVSim tool.
 The following flows are currently supported:
 
 * Simulations
@@ -18,8 +18,8 @@ The following flows are currently supported:
 
 ## Installation
 
-Clone the OpenTitan repository by following the [Getting Started](../../doc/getting_started/README.md) steps.
-The rest of the documentation will assume `$REPO_TOP` as the root of the local OpenTitan repository.
+Clone the Pavona repository by following the [Getting Started](../../doc/getting_started/README.md) steps.
+The rest of the documentation will assume `$REPO_TOP` as the root of the local Pavona repository.
 DVSim is located at `$REPO_TOP/util/dvsim/dvsim.py`.
 
 DVSim relies on the following third-party Python libraries:
@@ -45,4 +45,4 @@ Note that you may have already done this if you followed the getting started ste
 
 ## Bugs
 
-Please see [link](https://github.com/lowRISC/opentitan/issues?q=is%3Aopen+is%3Aissue+label%3ATool%3Advsim) for a list of open bugs and feature requests.
+Please see [link](https://github.com/zerorisc/wanta/issues) for a list of open bugs and feature requests.

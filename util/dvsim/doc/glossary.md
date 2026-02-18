@@ -3,9 +3,9 @@
 ## Build
 
 "Build" refers to the invocation of the EDA tool to compile and elaborate the provided top levels which results in the generation of an executable / database and all of its pre-requisites.
-In OpenTitan, the build stage broadly performs the following steps:
+In Pavona, the build stage broadly performs the following steps:
 - Create the build directory.
-- Execute an pre-build utility scripts, if provided.
+- Execute a pre-build utility script, if provided.
 - Invoke FuseSoC (or equivalent) to generate the filelist (it also autogenerates SystemVerilog sources, if configured).
 - Invoke the EDA tool to build the simulation executable / database.
 - Execute any post-build utility scripts, if provided.
@@ -25,14 +25,14 @@ It is hence, necessary to uniquely represent the list of builds, so that they ar
 A compute infrastructure refers to an organization's high-performance compute setup and the mechanism to launch jobs to it and monitor their status.
 Typically, this is a cluster of computers on an internal shared network with read / write access to a network drive.
 There are commercial products in the market that provide the load balancing mechanism to dispatch a large number of jobs into the cluster.
-The [IBM LSF](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=overview-lsf-introduction) and [Oracle Sun Grid](https://docs.oracle.com/cd/E19279-01/820-3257-12/n1ge.html) are the typical ones used in the industry.
+The [IBM LSF](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=overview-lsf-introduction) / [Oracle Sun Grid](https://docs.oracle.com/cd/E19279-01/820-3257-12/n1ge.html) / or open-source [slurm](https://slurm.schedmd.com/documentation.html) are the typical ones used in the industry.
 
 ## Design level
 
 EDA tool flows are run at various levels of the design:
 - **Primitives**:
   The most basic building blocks used to create hardware designs
-  OpenTitan provides a library of reusable [primitives](../../../hw/ip/prim/).
+  Pavona provides a library of reusable [primitives](../../../hw/ip/prim/).
 
 - **Modules**:
   A discrete entity that implements a specific feature of a larger design
@@ -47,7 +47,7 @@ EDA tool flows are run at various levels of the design:
 
 - **Subsystems**:
   A collection of IP blocks that closely interact with each other to form a larger, reusable module, such as the entropy subsystem.
-  OpenTitan does not have a subsystem level design yet.
+  Pavona does not have a subsystem level design yet.
 
 - **SoC** (a.k.a. chip):
   A system-on-a-chip (SoC) refers to the full chip level design which is eventually taped-out, i.e. manufactured into a discrete Silicon-based semiconductor IC.
@@ -60,7 +60,10 @@ It represents a design entity (an RTL module written in SystemVerilog) on which 
 ## DUT configuration file
 
 A DUT configuration file describes everything required to run a specific EDA tool flow on it.
-It is written in Hjson, and is consumed by DVSim as a mandatory input.
+It is written in Hjson, and is consumed by DVSim as a mandatory input. This file is typically located at `$REPO_TOP/hw/ip/<ip_block>/dv/<config_name>_sim_cfg.hjson` 
+or `$REPO_TOP/hw/<top>/ip_autogen/<ip_block>/dv/<config_name>_sim_cfg.hjson`
+
+
 Please see the [Hjson guide](../../../doc/contributing/style_guides/hjson_usage_style.md) for more details on what information a DUT configuration file is expected to capture.
 
 ## EDA tool flow
@@ -85,7 +88,7 @@ The following is a typical list of EDA tool flows commonly encountered in the de
 
 A filelist (a.k.a. "dot-f" file, since it typically has a `.f` extension) is a dependency-resolved list of SystemVerilog sources that is consumed by the EDA tool during the build stage.
 While it is not formalized into a standard, it is widely supported by most, if not all, EDA tool vendors.
-In OpenTitan, this step is accomplished by [FuseSoC](https://fusesoc.readthedocs.io/).
+In Pavona, this step is accomplished by [FuseSoC](https://fusesoc.readthedocs.io/).
 
 ## Random seed
 

@@ -280,8 +280,8 @@ This is done by invoking:
 ./util/site/build-docs.sh serve
 ```
 
-The `util/mdbook_testplan.py` preprocessor renders any testplan present the `SUMMARY.md` into the documentation.
-The complete OpenTitan documentation is rendered locally at `https://0.0.0.0:9000`.
+The `util/mdbook_testplan.py` preprocessor renders any testplan present in `SUMMARY.md` into the documentation.
+The complete Pavona documentation is rendered locally at `https://0.0.0.0:9000`.
 
 ## Future work
 * Allow DUT and its imported testplans to have the same testpoint name as long as they are in separate files.
