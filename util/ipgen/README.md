@@ -119,7 +119,7 @@ The following rules should be applied when creating IP templates:
 
 * Template and use an instance-specific name for all FuseSoC cores which reference templated source files (e.g. SystemVerilog files).
 * Template and use an instance-specific name for at least the top-level FuseSoC core.
-* Avoid having generic IPs depend on top-specific core files, since that would require using virtual cores, which can be very problematic.
+* Avoid having generic IPs depend on top-specific core files, since that would require using virtual cores, and may introduce subtle incompatibilities.
 
 ## Library usage
 
@@ -216,7 +216,7 @@ optional arguments:
 Every IP block has a name, which is reflected in many places: in the name of the directory containing the block, in the base name of various files (e.g. the Hjson files in the `data` directory), in the `name` key of the IP description file in `data/<ipname>.hjson`, and many more.
 
 To "rename" an IP block, the content of multiple files, and multiple file names, have to be adjusted to reflect the name of the IP block, while keeping cross-references intact.
-Doing that is possible but a non-trivial amount of work, which is currently not implemented.
+Doing that is possible but a non-trivial amount of work, and there is currently no tool support for this.
 This limitation is of lesser importance, as each template may be used only once in every toplevel design (see below).
 
 What is supported and required for most IP templates is the modification of the FuseSoC core name, which can be achieved by templating relevant `.core` files (see above).

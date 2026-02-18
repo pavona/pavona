@@ -19,7 +19,7 @@ Topgen relies on a number of other tools and libraries within ACE as well, so it
 ### Overview
 The details of a particular top variant are described in a top-specific Hjson file.
 For example see [`top_earlgrey`](../../hw/top_earlgrey/data/top_earlgrey.hjson).
-For detailed information about how the top Hjson should be written, see the bottom section of this document, titled "Top Hjson Scheme".
+For detailed information about how the top Hjson should be written, see the [Top Hjson Schema](#top-hjson-schema) section of this document.
 
 The top specific Hjson describes how the design looks and how it should connect, for example:
 * Overall fabric data width
@@ -51,7 +51,7 @@ There are two kinds of peripherals:
 The topgen tool thus hierarchically gathers and generates the missing information from additional Hjson files that describe the detail of each component.
 These are primarily located in the following places:
 * `hw/ip/*/data/*.hjson` for generic peripherals
-* `hw/ip_templates/*/data/*.hjson.tpl` for ipgen peripherals (after top generation, these Hjson templates are used to generate `hw/top_*/ip_autogen/*/data/*.hjson`)
+* `hw/ip_templates/*/data/*.hjson.tpl` for ipgen peripherals (during top generation, these Hjson templates are used to generate `hw/top_*/ip_autogen/*/data/*.hjson`)
 * `hw/top_*/data/xbar_*.hjson` for crossbars which are also generated from templates
 * `hw/top_*/ip/*/data/*.hjson` for manually written (ie., non-ipgen) top-specific peripherals
 
@@ -101,7 +101,7 @@ All this is done in-memory, and the individual peripherals are added in the foll
 
 It is important to progressively complete the top config with the most up-to-date data specific to each ipgen peripheral before expanding it.
 The completion is done using functions that are called in [`merge_top`](../topgen.py), except they get an extra argument to allow incomplete configuration since not all ipgen peripherals will have been expanded.
-Once all ipgen peripherals are expanded, one last merge is performed, this time not allowing incomplete configurations.
+Once all ipgen peripherals are expanded, one last merge is performed, with incomplete configurations causing an error.
 To make sure there are no mistakes in the order of ipgen peripherals, the expansion can make multiple generation passes, stopping when the complete top configuration is stable.
 
 #### Generating other Artifacts
@@ -164,7 +164,7 @@ options:
   --get_blocks          Only return the list of blocks and exit.
 ```
 
-## Top Hjson Scheme
+## Top Hjson Schema
 
 <!-- BEGIN CMDGEN util/selfdoc.py topgen -->
 
