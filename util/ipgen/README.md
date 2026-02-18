@@ -217,27 +217,5 @@ Every IP block has a name, which is reflected in many places: in the name of the
 
 To "rename" an IP block, the content of multiple files, and multiple file names, have to be adjusted to reflect the name of the IP block, while keeping cross-references intact.
 Doing that is possible but a non-trivial amount of work, and there is currently no tool support for this.
-This limitation is of lesser importance, as each template may be used only once in every toplevel design (see below).
 
 What is supported and required for most IP templates is the modification of the FuseSoC core name, which can be achieved by templating relevant `.core` files (see above).
-
-
-### Each template may be used only once per (top-level) design
-
-Each template may be generated only once for each top-level design.
-The generated IP block can still be instantiated multiple times from SystemVerilog, including with different SystemVerilog parameters passed to it.
-However, it is not possible to use one IP block template to produce two different flash controllers with different template parameters.
-
-IP templates generally contain code which exports symbols into the global namespace of the design: names of SystemVerilog modules and packages, defines, names of FuseSoC cores, etc.
-Such names need to be unique for each design, i.e. we cannot have multiple SystemVerilog modules with the same name in one design.
-To produce multiple IP blocks from the same IP template within a top-level design, exported symbols in generated IP blocks must be made "unique" within the design.
-Making symbols unique can be either done manually by the author of the template or automatically.
-
-In the manual approach, the template author writes all global identifiers in templates in a unique way, e.g. `module {prefix}_flash_ctrl` in SystemVerilog code, and with similar approaches wherever the name of the IP block is used (e.g. in cross-references in `top_<toplevelname>.hjson`).
-This is easy to implement in ipgen, but harder on the IP template authors, as it is easy to miss identifiers.
-
-In the automated approach, a tool that understands the source code transforms all identifiers.
-C++ name mangling uses a similar approach.
-The challenge is, however, to create a tool which can reliably do such source code transformations on a complex language like SystemVerilog.
-
-Finally, a third approach could be a combination of less frequently used/supported SystemVerilog language features like libraries, configs, and compilation units.

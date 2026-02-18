@@ -3,7 +3,6 @@
 The top generation tool, [`topgen.py`](../topgen.py), is used to build top modules - for example, [`top_earlgrey`](../../hw/top_earlgrey).
 Currently, as part of this generation process, the following top-specific modules are created
 * Overall top module
-* Generic ip modules
 * Crossbars
 * A number of templated peripherals, which are expanded according to top specific configurations
 This document explains the overall generation process, the required inputs, the output locations, as well as how the tool should be invoked.
@@ -85,7 +84,7 @@ Please see the documentation for [`ipgen`](../ipgen/README.md), [`reggen`](../re
 
 In order to generate the complete set of artifacts for a given top, the first step is to generate the complete top configuration file (named `top_*/data/autogen/top_*.gen.hjson` as mentioned above).
 Most other artifacts, like the top-level module(s), ipgen peripherals, and top-level SV and software collateral require this file for generation.
-These artifacts can be generated independent from and concurrent with the complete top configuration.
+These artifacts can be generated independently after the complete top configuration is created.
 
 #### Generating the Complete Top Configuration
 
@@ -103,6 +102,7 @@ It is important to progressively complete the top config with the most up-to-dat
 The completion is done using functions that are called in [`merge_top`](../topgen.py), except they get an extra argument to allow incomplete configuration since not all ipgen peripherals will have been expanded.
 Once all ipgen peripherals are expanded, one last merge is performed, with incomplete configurations causing an error.
 To make sure there are no mistakes in the order of ipgen peripherals, the expansion can make multiple generation passes, stopping when the complete top configuration is stable.
+Only one pass will be required when the order in which ipgen peripherals are generated is right.
 
 #### Generating other Artifacts
 
