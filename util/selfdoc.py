@@ -6,6 +6,7 @@
 import sys
 import reggen.gen_selfdoc as reggen_selfdoc
 import tlgen
+import topgen.selfdoc as topgen_selfdoc
 from typing import TextIO
 
 
@@ -18,6 +19,8 @@ def generate_selfdocs(tool: str, fout: TextIO):
         reggen_selfdoc.document(fout)
     elif tool == "tlgen":
         fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
+    elif tool == "topgen":
+        topgen_selfdoc.document(fout)
     else:
         sys.exit(f"unknown tool \"{tool}\"")
 
