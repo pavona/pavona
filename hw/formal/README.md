@@ -1,6 +1,6 @@
-# OpenTitan Assertions
+# Pavona Assertions
 
-# OpenTitan Assertions
+# Pavona Assertions
 
 
 ## What Are Assertions?
@@ -280,7 +280,7 @@ Adding a `--gui` option will open the JaperGold GUI.
 A [security countermeasure verification framework](../../doc/contributing/dv/sec_cm_dv_framework/README.md) is implemented in design and fpv tcl script to verify common countermeasure primitives in a semi-automated way.
 
 ### Common security assertion macros
-OpenTitan's security IP blocks have implemented assertions to check against common fault injections.
+Pavona's security IP blocks have implemented assertions to check against common fault injections.
 These assertions ensure if the security prim module returns an error, a corresponding alert should fire immediately without any gating conditions.
 There are three pre-defined assertion macros under file `hw/ip/prim/rtl/prim_assert_sec_cm.svh`:
 * ASSERT_PRIM_FSM_TRIGGER_ALERT: if design module `prim_sparse_fsm_flop` returns `state_o` value that is not one of the defined FSM states, which means the FSM state might be attacked, a fatal alert is expected to fire.
