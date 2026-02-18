@@ -58,13 +58,13 @@ top_optional = {
     'alerts': ['g', 'alert handler configuration'],
     'alert_module':
     ['l', 'list of the modules that connects to alert_handler'],
-    'datawidth': ['pn', "default data width"],
+    'datawidth': ['pi', "default data width"],
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
     'inter_module': ['g', 'define the signal connections between the modules'],
     'interrupts': ['g', 'interrupt controller configuration'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
-    'num_cores': ['pn', "number of computing units"],
+    'num_cores': ['pi', "number of computing units"],
     'outgoing_alert': ['g', 'the outgoing alert groups'],
     'outgoing_interrupt': ['g', 'the outgoing interrupt groups'],
     'power': ['g', 'power domains supported by the design'],
@@ -92,12 +92,12 @@ top_added = {
 # Required/optional field in top seeds hjson
 top_seed_required = {
     'name': ['s', 'Top name'],
-    'topgen_seed': ['int', "Seed for topgen generated random netlist constants"],
+    'topgen_seed': ['d', "Seed for topgen generated random netlist constants"],
 }
 
 top_seed_optional = {
-    'otp_img_seed': ['int', "Seed for OTP image generation"],
-    'lc_ctrl_seed': ['int', "Seed for lc_ctrl generated random netlist constants"],
+    'otp_img_seed': ['d', "Seed for OTP image generation"],
+    'lc_ctrl_seed': ['d', "Seed for lc_ctrl generated random netlist constants"],
 }
 
 pinmux_required = {
