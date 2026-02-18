@@ -73,7 +73,11 @@ class UpdatememSimulator:
         return line_groups
 
 
-def parse_otp_init_strings(otp_size: int, init_line_groups: List[List[str]]) -> List[int]:
+def parse_otp_init_strings(
+    otp_size: int,
+    otp_padding: int,
+    init_line_groups: List[List[str]],
+) -> List[int]:
     """Parse a sequence of 22-bit OTP words from Vivado INIT_XX lines.
 
     The data layout was determined by running a full Vivado bitstream build and
@@ -93,17 +97,16 @@ def parse_otp_init_strings(otp_size: int, init_line_groups: List[List[str]]) -> 
                 continue
 
             data = match.group(1)
-            bits = []
-            while len(data) > 0:
-                chunk = data[:4]
-                data = data[4:]
-                if chunk == '0000':
-                    bits.append(0)
-                elif chunk == '0001':
-                    bits.append(1)
+            bits: List[int] = []
+            padding_offset = 0
+            num = int(data, 16)
+            for i in range(4 * len(data)):
+                if padding_offset == 0:
+                    bits.insert(0, num & 1)
+                    padding_offset = otp_padding
                 else:
-                    raise Exception("Unexpected chunk in OTP init string:", chunk)
-
+                    padding_offset -= 1
+                num >>= 1
             bram_scratch.append(bits)
         brams.append(bram_scratch)
 
@@ -125,7 +128,7 @@ def parse_otp_init_strings(otp_size: int, init_line_groups: List[List[str]]) -> 
     return out
 
 
-def otp_words_to_updatemem_pieces(otp_size: int, words: List[int]) -> List[str]:
+def otp_words_to_updatemem_pieces(otp_size: int, otp_padding: int, words: List[int]) -> List[str]:
     """Transform `words` into pieces of an updatemem-compatible MEM file."""
 
     assert len(words) % 4 == 0
@@ -137,17 +140,20 @@ def otp_words_to_updatemem_pieces(otp_size: int, words: List[int]) -> List[str]:
     # simplicity and to make `updatemem` more efficient, we will not print
     # any subsequent addresses.
     mem_pieces = ['@0']
+    words_to_write = []
     for word in words:
         # Examining the INIT_XX strings from a full Vivado bitstream build, it
-        # appears that each 22-bit word has its bits reversed and is padded with
-        # 15 zeroes. As a result, the hexadecimal init strings will only contain
-        # '0' and '1' characters.
+        # appears that each 22-bit word has its bits reversed. Also, depending
+        # on the target, each word may be padded with some number of all-zero
+        # words. For example, Earlgrey on the CW310/CW340 pads with 15 all-zero
+        # words, so hexadecimal init strings will only contain '0' and '1'
+        # characters.
         rev = 0
         for _ in range(22):
             rev = (rev << 1) | (word & 1)
             word >>= 1
 
-        words_to_write = [rev] + [0] * 15
+        words_to_write += [rev] + [0] * otp_padding
 
         # Concatenate sequential pairs of OTP words before emitting a hex
         # string. If we naively encoded each 22-bit OTP word as a 6-digit hex
@@ -158,7 +164,7 @@ def otp_words_to_updatemem_pieces(otp_size: int, words: List[int]) -> List[str]:
         # Note that this complexity cannot be avoided by concatenating all the
         # words and emitting a single hex string because updatemem rejects long
         # hex strings, saying that they exceed data limits.
-        while len(words_to_write) > 0:
+        while len(words_to_write) > 1:
             word1, word2 = words_to_write[:2]
             words_to_write = words_to_write[2:]
 
@@ -177,9 +183,9 @@ def otp_words_to_updatemem_pieces(otp_size: int, words: List[int]) -> List[str]:
         updatemem_sim.write_updatemem_hex_string(piece)
     init_lines = updatemem_sim.render_init_lines()
 
-    reconstructed = parse_otp_init_strings(otp_size, init_lines)
-    if len(reconstructed) < len(words) or reconstructed[:len(words)] != words:
-        raise Exception("Generated updatemem data for OTP failed self-check")
+    reconstructed = parse_otp_init_strings(otp_size, otp_padding, init_lines)
+    if len(reconstructed) != len(words) or reconstructed[:len(words)] != words:
+        raise Exception("Generated updatemem data for OTP failed self-check.")
 
     return mem_pieces
 
@@ -208,6 +214,7 @@ def main() -> int:
     parser.add_argument('outfile', type=argparse.FileType('w'))
     parser.add_argument('--swap-nibbles', dest='swap_nibbles', action='store_true')
     parser.add_argument('--otp-size', dest='otp_size', type=int)
+    parser.add_argument('--otp-padding', dest='otp_padding', type=int)
 
     args = parser.parse_args()
 
@@ -228,7 +235,7 @@ def main() -> int:
 
     if width == 24:
         logger.info("Generating updatemem-compatible MEM file for OTP image.")
-        updatemem_pieces = otp_words_to_updatemem_pieces(args.otp_size, words)
+        updatemem_pieces = otp_words_to_updatemem_pieces(args.otp_size, args.otp_padding, words)
         updatemem_line = ' '.join(updatemem_pieces)
         args.outfile.write(updatemem_line + '\n')
         return 0
