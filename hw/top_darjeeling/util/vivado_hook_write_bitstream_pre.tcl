@@ -232,13 +232,10 @@ dict set memInfo rom0 [apply $gen_mem_info $rom0_brams $mem_type_regex 40 1 "Pro
 set rom1_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_rom_ctrl1*"] " "]
 dict set memInfo rom1 [apply $gen_mem_info $rom1_brams $mem_type_regex 40 1 "Processor"]
 
-# OTP does not require faking the word width, but it has its own quirk. It seems
-# each 22-bit OTP word is followed by 15 zero words. The MMI's <AddressSpace>
-# and <AddressRange> tags need to account for this or else updatemem will think
-# that its data input overruns the address space. The workaround is to pretend
-# the address space is 16 times larger than we would normally compute.
+# OTP does not require faking the word width. Also, unlike Earlgrey, OTP in
+# Darjeeling does not include the 15 all-zero words in between each word.
 set otp_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_otp_macro*"] " "]
-dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 16 "Processor"]
+dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 1 "Processor"]
 
 # The flash banks have 76-bit wide words. 64 bits are data, and 12 bits are metadata / integrity.
 for {set bank 0} {$bank < 2} {incr bank} {
