@@ -96,6 +96,9 @@
     { name: "CLKMGR.ENABLE.USB",
       desc: "Gating of USB peripheral clock."
     }
+    { name: "CLKMGR.HINT.ACC",
+      desc: "Gating of ACC transactional clock."
+    }
     { name: "CLKMGR.HINT.AES",
       desc: "Gating of AES transactional clock."
     }
@@ -104,9 +107,6 @@
     }
     { name: "CLKMGR.HINT.KMAC",
       desc: "Gating of KMAC transactional clock."
-    }
-    { name: "CLKMGR.HINT.ACC",
-      desc: "Gating of ACC transactional clock."
     }
     { name: "CLKMGR.MEAS_CTRL.REGWEN",
       desc: '''Control modification of all clock frequency and timeout
@@ -515,6 +515,15 @@
       fields: [
         {
           bits: "0",
+          name: "CLK_MAIN_ACC_HINT",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_ACC can be disabled.
+            1 CLK_MAIN_ACC is enabled.
+          '''
+        }
+        {
+          bits: "1",
           name: "CLK_MAIN_AES_HINT",
           resval: 1,
           desc: '''
@@ -523,7 +532,7 @@
           '''
         }
         {
-          bits: "1",
+          bits: "2",
           name: "CLK_MAIN_HMAC_HINT",
           resval: 1,
           desc: '''
@@ -532,21 +541,12 @@
           '''
         }
         {
-          bits: "2",
+          bits: "3",
           name: "CLK_MAIN_KMAC_HINT",
           resval: 1,
           desc: '''
             0 CLK_MAIN_KMAC can be disabled.
             1 CLK_MAIN_KMAC is enabled.
-          '''
-        }
-        {
-          bits: "3",
-          name: "CLK_MAIN_ACC_HINT",
-          resval: 1,
-          desc: '''
-            0 CLK_MAIN_ACC can be disabled.
-            1 CLK_MAIN_ACC is enabled.
           '''
         }
       ]
@@ -567,6 +567,15 @@
       fields: [
         {
           bits: "0",
+          name: "CLK_MAIN_ACC_VAL",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_ACC is disabled.
+            1 CLK_MAIN_ACC is enabled.
+          '''
+        }
+        {
+          bits: "1",
           name: "CLK_MAIN_AES_VAL",
           resval: 1,
           desc: '''
@@ -575,7 +584,7 @@
           '''
         }
         {
-          bits: "1",
+          bits: "2",
           name: "CLK_MAIN_HMAC_VAL",
           resval: 1,
           desc: '''
@@ -584,21 +593,12 @@
           '''
         }
         {
-          bits: "2",
+          bits: "3",
           name: "CLK_MAIN_KMAC_VAL",
           resval: 1,
           desc: '''
             0 CLK_MAIN_KMAC is disabled.
             1 CLK_MAIN_KMAC is enabled.
-          '''
-        }
-        {
-          bits: "3",
-          name: "CLK_MAIN_ACC_VAL",
-          resval: 1,
-          desc: '''
-            0 CLK_MAIN_ACC is disabled.
-            1 CLK_MAIN_ACC is enabled.
           '''
         }
       ]

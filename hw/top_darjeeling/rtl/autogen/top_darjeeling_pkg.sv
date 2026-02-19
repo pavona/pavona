@@ -220,6 +220,16 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_RV_PLIC_SIZE_BYTES = 32'h8000000;
 
   /**
+   * Peripheral base address for acc in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_ACC_BASE_ADDR = 32'h22100000;
+
+  /**
+   * Peripheral size in bytes for acc in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_ACC_SIZE_BYTES = 32'h20000;
+
+  /**
    * Peripheral base address for aes in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_AES_BASE_ADDR = 32'h21100000;
@@ -248,16 +258,6 @@ package top_darjeeling_pkg;
    * Peripheral size in bytes for kmac in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_KMAC_SIZE_BYTES = 32'h1000;
-
-  /**
-   * Peripheral base address for acc in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_ACC_BASE_ADDR = 32'h22100000;
-
-  /**
-   * Peripheral size in bytes for acc in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_ACC_SIZE_BYTES = 32'h20000;
 
   /**
    * Peripheral base address for keymgr_dpe in top darjeeling.
@@ -569,10 +569,10 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralSramCtrlRetAon = 14,
     TopDarjeelingAlertPeripheralRvDm = 15,
     TopDarjeelingAlertPeripheralRvPlic = 16,
-    TopDarjeelingAlertPeripheralAes = 17,
-    TopDarjeelingAlertPeripheralHmac = 18,
-    TopDarjeelingAlertPeripheralKmac = 19,
-    TopDarjeelingAlertPeripheralAcc = 20,
+    TopDarjeelingAlertPeripheralAcc = 17,
+    TopDarjeelingAlertPeripheralAes = 18,
+    TopDarjeelingAlertPeripheralHmac = 19,
+    TopDarjeelingAlertPeripheralKmac = 20,
     TopDarjeelingAlertPeripheralKeymgrDpe = 21,
     TopDarjeelingAlertPeripheralCsrng = 22,
     TopDarjeelingAlertPeripheralEntropySrc = 23,
@@ -627,13 +627,13 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdSramCtrlRetAonFatalError = 22,
     TopDarjeelingAlertIdRvDmFatalFault = 23,
     TopDarjeelingAlertIdRvPlicFatalFault = 24,
-    TopDarjeelingAlertIdAesRecovCtrlUpdateErr = 25,
-    TopDarjeelingAlertIdAesFatalFault = 26,
-    TopDarjeelingAlertIdHmacFatalFault = 27,
-    TopDarjeelingAlertIdKmacRecovOperationErr = 28,
-    TopDarjeelingAlertIdKmacFatalFaultErr = 29,
-    TopDarjeelingAlertIdAccFatal = 30,
-    TopDarjeelingAlertIdAccRecov = 31,
+    TopDarjeelingAlertIdAccFatal = 25,
+    TopDarjeelingAlertIdAccRecov = 26,
+    TopDarjeelingAlertIdAesRecovCtrlUpdateErr = 27,
+    TopDarjeelingAlertIdAesFatalFault = 28,
+    TopDarjeelingAlertIdHmacFatalFault = 29,
+    TopDarjeelingAlertIdKmacRecovOperationErr = 30,
+    TopDarjeelingAlertIdKmacFatalFaultErr = 31,
     TopDarjeelingAlertIdKeymgrDpeRecovOperationErr = 32,
     TopDarjeelingAlertIdKeymgrDpeFatalFaultErr = 33,
     TopDarjeelingAlertIdCsrngRecovAlert = 34,
@@ -761,13 +761,13 @@ package top_darjeeling_pkg;
     TopDarjeelingPlicIrqIdPwrmgrAonWakeup = 74,
     TopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired = 75,
     TopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark = 76,
-    TopDarjeelingPlicIrqIdHmacHmacDone = 77,
-    TopDarjeelingPlicIrqIdHmacFifoEmpty = 78,
-    TopDarjeelingPlicIrqIdHmacHmacErr = 79,
-    TopDarjeelingPlicIrqIdKmacKmacDone = 80,
-    TopDarjeelingPlicIrqIdKmacFifoEmpty = 81,
-    TopDarjeelingPlicIrqIdKmacKmacErr = 82,
-    TopDarjeelingPlicIrqIdAccDone = 83,
+    TopDarjeelingPlicIrqIdAccDone = 77,
+    TopDarjeelingPlicIrqIdHmacHmacDone = 78,
+    TopDarjeelingPlicIrqIdHmacFifoEmpty = 79,
+    TopDarjeelingPlicIrqIdHmacHmacErr = 80,
+    TopDarjeelingPlicIrqIdKmacKmacDone = 81,
+    TopDarjeelingPlicIrqIdKmacFifoEmpty = 82,
+    TopDarjeelingPlicIrqIdKmacKmacErr = 83,
     TopDarjeelingPlicIrqIdKeymgrDpeOpDone = 84,
     TopDarjeelingPlicIrqIdCsrngCsCmdReqDone = 85,
     TopDarjeelingPlicIrqIdCsrngCsEntropyReq = 86,
@@ -1034,6 +1034,7 @@ package top_darjeeling_pkg;
 
   // List of peripheral instantiated in this chip.
   typedef enum {
+    PeripheralAcc,
     PeripheralAes,
     PeripheralAlertHandler,
     PeripheralAonTimerAon,
@@ -1060,7 +1061,6 @@ package top_darjeeling_pkg;
     PeripheralMbxJtag,
     PeripheralMbxPcie0,
     PeripheralMbxPcie1,
-    PeripheralAcc,
     PeripheralOtpCtrl,
     PeripheralOtpMacro,
     PeripheralPinmuxAon,

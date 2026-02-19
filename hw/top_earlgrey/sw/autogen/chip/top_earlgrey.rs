@@ -525,6 +525,20 @@ pub const RV_PLIC_BASE_ADDR: usize = 0x48000000;
 /// `RV_PLIC_BASE_ADDR + RV_PLIC_SIZE_BYTES`.
 pub const RV_PLIC_SIZE_BYTES: usize = 0x8000000;
 
+/// Peripheral base address for acc in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const ACC_BASE_ADDR: usize = 0x41300000;
+
+/// Peripheral size for acc in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #ACC_BASE_ADDR and
+/// `ACC_BASE_ADDR + ACC_SIZE_BYTES`.
+pub const ACC_SIZE_BYTES: usize = 0x20000;
+
 /// Peripheral base address for aes in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -566,20 +580,6 @@ pub const KMAC_BASE_ADDR: usize = 0x41120000;
 /// address between #KMAC_BASE_ADDR and
 /// `KMAC_BASE_ADDR + KMAC_SIZE_BYTES`.
 pub const KMAC_SIZE_BYTES: usize = 0x1000;
-
-/// Peripheral base address for acc in top earlgrey.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const ACC_BASE_ADDR: usize = 0x41300000;
-
-/// Peripheral size for acc in top earlgrey.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #ACC_BASE_ADDR and
-/// `ACC_BASE_ADDR + ACC_SIZE_BYTES`.
-pub const ACC_SIZE_BYTES: usize = 0x20000;
 
 /// Peripheral base address for keymgr in top earlgrey.
 ///
@@ -770,12 +770,12 @@ pub enum PlicPeripheral {
     SensorCtrlAon = 21,
     /// flash_ctrl
     FlashCtrl = 22,
-    /// hmac
-    Hmac = 23,
-    /// kmac
-    Kmac = 24,
     /// acc
-    Acc = 25,
+    Acc = 23,
+    /// hmac
+    Hmac = 24,
+    /// kmac
+    Kmac = 25,
     /// keymgr
     Keymgr = 26,
     /// csrng
@@ -815,9 +815,9 @@ impl TryFrom<u32> for PlicPeripheral {
             20 => Ok(Self::AonTimerAon),
             21 => Ok(Self::SensorCtrlAon),
             22 => Ok(Self::FlashCtrl),
-            23 => Ok(Self::Hmac),
-            24 => Ok(Self::Kmac),
-            25 => Ok(Self::Acc),
+            23 => Ok(Self::Acc),
+            24 => Ok(Self::Hmac),
+            25 => Ok(Self::Kmac),
             26 => Ok(Self::Keymgr),
             27 => Ok(Self::Csrng),
             28 => Ok(Self::EntropySrc),
@@ -1167,20 +1167,20 @@ pub enum PlicIrqId {
     FlashCtrlOpDone = 164,
     /// flash_ctrl_corr_err
     FlashCtrlCorrErr = 165,
-    /// hmac_hmac_done
-    HmacHmacDone = 166,
-    /// hmac_fifo_empty
-    HmacFifoEmpty = 167,
-    /// hmac_hmac_err
-    HmacHmacErr = 168,
-    /// kmac_kmac_done
-    KmacKmacDone = 169,
-    /// kmac_fifo_empty
-    KmacFifoEmpty = 170,
-    /// kmac_kmac_err
-    KmacKmacErr = 171,
     /// acc_done
-    AccDone = 172,
+    AccDone = 166,
+    /// hmac_hmac_done
+    HmacHmacDone = 167,
+    /// hmac_fifo_empty
+    HmacFifoEmpty = 168,
+    /// hmac_hmac_err
+    HmacHmacErr = 169,
+    /// kmac_kmac_done
+    KmacKmacDone = 170,
+    /// kmac_fifo_empty
+    KmacFifoEmpty = 171,
+    /// kmac_kmac_err
+    KmacKmacErr = 172,
     /// keymgr_op_done
     KeymgrOpDone = 173,
     /// csrng_cs_cmd_req_done
@@ -1379,13 +1379,13 @@ impl TryFrom<u32> for PlicIrqId {
             163 => Ok(Self::FlashCtrlRdLvl),
             164 => Ok(Self::FlashCtrlOpDone),
             165 => Ok(Self::FlashCtrlCorrErr),
-            166 => Ok(Self::HmacHmacDone),
-            167 => Ok(Self::HmacFifoEmpty),
-            168 => Ok(Self::HmacHmacErr),
-            169 => Ok(Self::KmacKmacDone),
-            170 => Ok(Self::KmacFifoEmpty),
-            171 => Ok(Self::KmacKmacErr),
-            172 => Ok(Self::AccDone),
+            166 => Ok(Self::AccDone),
+            167 => Ok(Self::HmacHmacDone),
+            168 => Ok(Self::HmacFifoEmpty),
+            169 => Ok(Self::HmacHmacErr),
+            170 => Ok(Self::KmacKmacDone),
+            171 => Ok(Self::KmacFifoEmpty),
+            172 => Ok(Self::KmacKmacErr),
             173 => Ok(Self::KeymgrOpDone),
             174 => Ok(Self::CsrngCsCmdReqDone),
             175 => Ok(Self::CsrngCsEntropyReq),
@@ -1752,6 +1752,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 186] = [
     PlicPeripheral::FlashCtrl,
     // FlashCtrlCorrErr -> PlicPeripheral::FlashCtrl
     PlicPeripheral::FlashCtrl,
+    // AccDone -> PlicPeripheral::Acc
+    PlicPeripheral::Acc,
     // HmacHmacDone -> PlicPeripheral::Hmac
     PlicPeripheral::Hmac,
     // HmacFifoEmpty -> PlicPeripheral::Hmac
@@ -1764,8 +1766,6 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 186] = [
     PlicPeripheral::Kmac,
     // KmacKmacErr -> PlicPeripheral::Kmac
     PlicPeripheral::Kmac,
-    // AccDone -> PlicPeripheral::Acc
-    PlicPeripheral::Acc,
     // KeymgrOpDone -> PlicPeripheral::Keymgr
     PlicPeripheral::Keymgr,
     // CsrngCsCmdReqDone -> PlicPeripheral::Csrng
@@ -1861,14 +1861,14 @@ pub enum AlertPeripheral {
     RvDm = 28,
     /// rv_plic
     RvPlic = 29,
-    /// aes
-    Aes = 30,
-    /// hmac
-    Hmac = 31,
-    /// kmac
-    Kmac = 32,
     /// acc
-    Acc = 33,
+    Acc = 30,
+    /// aes
+    Aes = 31,
+    /// hmac
+    Hmac = 32,
+    /// kmac
+    Kmac = 33,
     /// keymgr
     Keymgr = 34,
     /// csrng
@@ -1978,20 +1978,20 @@ pub enum AlertId {
     RvDmFatalFault = 40,
     /// rv_plic_fatal_fault
     RvPlicFatalFault = 41,
-    /// aes_recov_ctrl_update_err
-    AesRecovCtrlUpdateErr = 42,
-    /// aes_fatal_fault
-    AesFatalFault = 43,
-    /// hmac_fatal_fault
-    HmacFatalFault = 44,
-    /// kmac_recov_operation_err
-    KmacRecovOperationErr = 45,
-    /// kmac_fatal_fault_err
-    KmacFatalFaultErr = 46,
     /// acc_fatal
-    AccFatal = 47,
+    AccFatal = 42,
     /// acc_recov
-    AccRecov = 48,
+    AccRecov = 43,
+    /// aes_recov_ctrl_update_err
+    AesRecovCtrlUpdateErr = 44,
+    /// aes_fatal_fault
+    AesFatalFault = 45,
+    /// hmac_fatal_fault
+    HmacFatalFault = 46,
+    /// kmac_recov_operation_err
+    KmacRecovOperationErr = 47,
+    /// kmac_fatal_fault_err
+    KmacFatalFaultErr = 48,
     /// keymgr_recov_operation_err
     KeymgrRecovOperationErr = 49,
     /// keymgr_fatal_fault_err
@@ -2072,13 +2072,13 @@ impl TryFrom<u32> for AlertId {
             39 => Ok(Self::FlashCtrlRecovPrimFlashAlert),
             40 => Ok(Self::RvDmFatalFault),
             41 => Ok(Self::RvPlicFatalFault),
-            42 => Ok(Self::AesRecovCtrlUpdateErr),
-            43 => Ok(Self::AesFatalFault),
-            44 => Ok(Self::HmacFatalFault),
-            45 => Ok(Self::KmacRecovOperationErr),
-            46 => Ok(Self::KmacFatalFaultErr),
-            47 => Ok(Self::AccFatal),
-            48 => Ok(Self::AccRecov),
+            42 => Ok(Self::AccFatal),
+            43 => Ok(Self::AccRecov),
+            44 => Ok(Self::AesRecovCtrlUpdateErr),
+            45 => Ok(Self::AesFatalFault),
+            46 => Ok(Self::HmacFatalFault),
+            47 => Ok(Self::KmacRecovOperationErr),
+            48 => Ok(Self::KmacFatalFaultErr),
             49 => Ok(Self::KeymgrRecovOperationErr),
             50 => Ok(Self::KeymgrFatalFaultErr),
             51 => Ok(Self::CsrngRecovAlert),
@@ -2189,6 +2189,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 65] = [
     AlertPeripheral::RvDm,
     // RvPlicFatalFault -> AlertPeripheral::RvPlic
     AlertPeripheral::RvPlic,
+    // AccFatal -> AlertPeripheral::Acc
+    AlertPeripheral::Acc,
+    // AccRecov -> AlertPeripheral::Acc
+    AlertPeripheral::Acc,
     // AesRecovCtrlUpdateErr -> AlertPeripheral::Aes
     AlertPeripheral::Aes,
     // AesFatalFault -> AlertPeripheral::Aes
@@ -2199,10 +2203,6 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 65] = [
     AlertPeripheral::Kmac,
     // KmacFatalFaultErr -> AlertPeripheral::Kmac
     AlertPeripheral::Kmac,
-    // AccFatal -> AlertPeripheral::Acc
-    AlertPeripheral::Acc,
-    // AccRecov -> AlertPeripheral::Acc
-    AlertPeripheral::Acc,
     // KeymgrRecovOperationErr -> AlertPeripheral::Keymgr
     AlertPeripheral::Keymgr,
     // KeymgrFatalFaultErr -> AlertPeripheral::Keymgr
@@ -3211,14 +3211,14 @@ pub enum GateableClocks {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum HintableClocks {
-    /// Clock clk_main_aes in group trans
-    MainAes = 0,
-    /// Clock clk_main_hmac in group trans
-    MainHmac = 1,
-    /// Clock clk_main_kmac in group trans
-    MainKmac = 2,
     /// Clock clk_main_acc in group trans
-    MainAcc = 3,
+    MainAcc = 0,
+    /// Clock clk_main_aes in group trans
+    MainAes = 1,
+    /// Clock clk_main_hmac in group trans
+    MainHmac = 2,
+    /// Clock clk_main_kmac in group trans
+    MainKmac = 3,
 }
 
 /// MMIO Region

@@ -14,11 +14,11 @@ filesets:
       - lowrisc:darjeeling_ip:alert_handler_pkg
       - lowrisc:darjeeling_ip:otp_ctrl_top_specific_pkg
       - lowrisc:ibex:ibex_pkg
+      - lowrisc:ip:acc_pkg
       - lowrisc:ip:aes
       - lowrisc:ip:csrng_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip:acc_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:sram_ctrl_pkg
     files:

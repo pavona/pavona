@@ -117,6 +117,11 @@
       }
       hint_clks:
       {
+        clk_main_acc:
+        {
+          src_name: main
+          endpoint_ip: acc
+        }
         clk_main_aes:
         {
           src_name: main
@@ -132,19 +137,14 @@
           src_name: main
           endpoint_ip: kmac
         }
-        clk_main_acc:
-        {
-          src_name: main
-          endpoint_ip: acc
-        }
       }
     }
     hint_names:
     {
+      clk_main_acc: HintMainAcc
       clk_main_aes: HintMainAes
       clk_main_hmac: HintMainHmac
       clk_main_kmac: HintMainKmac
-      clk_main_acc: HintMainAcc
     }
     parent_child_clks:
     {

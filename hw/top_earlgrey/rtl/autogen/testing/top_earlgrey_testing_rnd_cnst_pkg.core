@@ -15,12 +15,12 @@ filesets:
       - lowrisc:earlgrey_ip:flash_ctrl
       - lowrisc:earlgrey_ip:otp_ctrl_top_specific_pkg
       - lowrisc:ibex:ibex_pkg
+      - lowrisc:ip:acc_pkg
       - lowrisc:ip:aes
       - lowrisc:ip:csrng_pkg
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip:acc_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:sram_ctrl_pkg
     files:

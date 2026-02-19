@@ -15,7 +15,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | edn             | edn_pkg::edn                 | req_rsp | req   |       1 |               |
 | aes_key         | keymgr_pkg::hw_key_req       | uni     | req   |       1 |               |
 | kmac_key        | keymgr_pkg::hw_key_req       | uni     | req   |       1 |               |
-| acc_key        | keymgr_pkg::acc_key_req     | uni     | req   |       1 |               |
+| acc_key         | keymgr_pkg::acc_key_req      | uni     | req   |       1 |               |
 | kmac_data       | kmac_pkg::app                | req_rsp | req   |       1 |               |
 | otp_key         | otp_ctrl_pkg::otp_keymgr_key | uni     | rcv   |       1 |               |
 | otp_device_id   | otp_ctrl_pkg::otp_device_id  | uni     | rcv   |       1 |               |

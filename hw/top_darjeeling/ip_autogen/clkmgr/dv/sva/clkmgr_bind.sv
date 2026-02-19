@@ -37,6 +37,16 @@ module clkmgr_bind;
   );
 
   // Assertions for transactional clocks.
+  bind clkmgr clkmgr_trans_sva_if clkmgr_acc_trans_sva_if (
+    .clk(clk_main_i),
+    .rst_n(rst_main_ni),
+    .hint(reg2hw.clk_hints.clk_main_acc_hint.q),
+    .idle(idle_i[HintMainAcc] == prim_mubi_pkg::MuBi4True),
+    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
+    .status(hw2reg.clk_hints_status.clk_main_acc_val.d),
+    .trans_clk(clocks_o.clk_main_acc)
+  );
+
   bind clkmgr clkmgr_trans_sva_if clkmgr_aes_trans_sva_if (
     .clk(clk_main_i),
     .rst_n(rst_main_ni),
@@ -65,16 +75,6 @@ module clkmgr_bind;
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .status(hw2reg.clk_hints_status.clk_main_kmac_val.d),
     .trans_clk(clocks_o.clk_main_kmac)
-  );
-
-  bind clkmgr clkmgr_trans_sva_if clkmgr_acc_trans_sva_if (
-    .clk(clk_main_i),
-    .rst_n(rst_main_ni),
-    .hint(reg2hw.clk_hints.clk_main_acc_hint.q),
-    .idle(idle_i[HintMainAcc] == prim_mubi_pkg::MuBi4True),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
-    .status(hw2reg.clk_hints_status.clk_main_acc_val.d),
-    .trans_clk(clocks_o.clk_main_acc)
   );
 
 
@@ -156,6 +156,15 @@ module clkmgr_bind;
   );
 
   // Hint controlled gating enables.
+  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_main_acc (
+    .clk(clk_main_i),
+    .rst_n(rst_main_ni),
+    .ip_clk_en(clk_main_en),
+    .sw_clk_en(u_clk_main_acc_trans.sw_hint_synced || !u_clk_main_acc_trans.idle_valid),
+    .scanmode(prim_mubi_pkg::MuBi4False),
+    .cg_en(cg_en_o.main_acc == prim_mubi_pkg::MuBi4True)
+  );
+
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_main_aes (
     .clk(clk_main_i),
     .rst_n(rst_main_ni),
@@ -181,15 +190,6 @@ module clkmgr_bind;
     .sw_clk_en(u_clk_main_kmac_trans.sw_hint_synced || !u_clk_main_kmac_trans.idle_valid),
     .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.main_kmac == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_main_acc (
-    .clk(clk_main_i),
-    .rst_n(rst_main_ni),
-    .ip_clk_en(clk_main_en),
-    .sw_clk_en(u_clk_main_acc_trans.sw_hint_synced || !u_clk_main_acc_trans.idle_valid),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.main_acc == prim_mubi_pkg::MuBi4True)
   );
 
 `endif

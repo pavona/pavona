@@ -68,10 +68,10 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       uvm_reg_field value_bit;
     } trans_descriptor_t;
     trans_descriptor_t trans_descriptors[NUM_TRANS] = '{
+        '{TransAcc, ral.clk_hints.clk_main_acc_hint, ral.clk_hints_status.clk_main_acc_val},
         '{TransAes, ral.clk_hints.clk_main_aes_hint, ral.clk_hints_status.clk_main_aes_val},
         '{TransHmac, ral.clk_hints.clk_main_hmac_hint, ral.clk_hints_status.clk_main_hmac_val},
-        '{TransKmac, ral.clk_hints.clk_main_kmac_hint, ral.clk_hints_status.clk_main_kmac_val},
-        '{TransAcc, ral.clk_hints.clk_main_acc_hint, ral.clk_hints_status.clk_main_acc_val}
+        '{TransKmac, ral.clk_hints.clk_main_kmac_hint, ral.clk_hints_status.clk_main_kmac_val}
     };
     idle = 0;
     // Changes in idle take at least 10 cycles to stick.

@@ -7,6 +7,7 @@
 # util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
 #                -o hw/top_earlgrey/
 
+load("//hw/ip/acc:defs.bzl", "ACC")
 load("//hw/ip/adc_ctrl:defs.bzl", "ADC_CTRL")
 load("//hw/ip/aes:defs.bzl", "AES")
 load("//hw/top_earlgrey/ip_autogen/alert_handler:defs.bzl", "ALERT_HANDLER")
@@ -23,7 +24,6 @@ load("//hw/ip/i2c:defs.bzl", "I2C")
 load("//hw/ip/keymgr:defs.bzl", "KEYMGR")
 load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
-load("//hw/ip/acc:defs.bzl", "ACC")
 load("//hw/top_earlgrey/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
 load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/ip/pattgen:defs.bzl", "PATTGEN")
@@ -45,6 +45,7 @@ load("//hw/ip/uart:defs.bzl", "UART")
 load("//hw/ip/usbdev:defs.bzl", "USBDEV")
 
 EARLGREY_IPS = [
+    ACC,
     ADC_CTRL,
     AES,
     ALERT_HANDLER,
@@ -61,7 +62,6 @@ EARLGREY_IPS = [
     KEYMGR,
     KMAC,
     LC_CTRL,
-    ACC,
     OTP_CTRL,
     OTP_MACRO,
     PATTGEN,
@@ -126,13 +126,13 @@ EARLGREY_ALERTS = [
     "flash_ctrl_recov_prim_flash_alert",
     "rv_dm_fatal_fault",
     "rv_plic_fatal_fault",
+    "acc_fatal",
+    "acc_recov",
     "aes_recov_ctrl_update_err",
     "aes_fatal_fault",
     "hmac_fatal_fault",
     "kmac_recov_operation_err",
     "kmac_fatal_fault_err",
-    "acc_fatal",
-    "acc_recov",
     "keymgr_recov_operation_err",
     "keymgr_fatal_fault_err",
     "csrng_recov_alert",

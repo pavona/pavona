@@ -19,7 +19,7 @@ The table shows the group name, the modules that belong to each group, and wheth
 | Group           | Frequencies                    | Modules                                                        | Software       | Wait for Interrupt |
 | -------------   | ------------------------------ | -------------------------------------------------------------- | -------------- | ------------------ |
 | Power-up        | 100~200KHz, 24MHz              | Clock Manager, Power Manager, Reset Manager, Pinmux            | No             | No                 |
-| Transactional   | ~100MHz                        | Aes, Kmac, Hmac, Key Manager, Acc                             | Yes (1)        | Yes (2)            |
+| Transactional   | ~100MHz                        | Acc, Aes, Kmac, Hmac, Key Manager                              | Yes (1)        | Yes (2)            |
 | Infrastructural | 24MHz, ~100MHz                 | Fabric, Fabric gaskets (iopmp), Memories                       | No             | Yes (3)            |
 | Security        | 24MHz, ~100MHz                 | Alert handler, Entropy, Life cycle, Plic, Sensors              | No             | No                 |
 | Peripheral      | 24MHz, 48MHz, 96MHz            | I2c, Spi, Uart, Usb, others                                    | Yes            | Yes                |

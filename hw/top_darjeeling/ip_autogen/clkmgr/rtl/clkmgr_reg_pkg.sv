@@ -50,9 +50,6 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_main_acc_hint;
-    struct packed {
-      logic        q;
     } clk_main_kmac_hint;
     struct packed {
       logic        q;
@@ -60,6 +57,9 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        q;
     } clk_main_aes_hint;
+    struct packed {
+      logic        q;
+    } clk_main_acc_hint;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
   typedef struct packed {
@@ -108,10 +108,6 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } clk_main_acc_val;
-    struct packed {
-      logic        d;
-      logic        de;
     } clk_main_kmac_val;
     struct packed {
       logic        d;
@@ -121,6 +117,10 @@ package clkmgr_reg_pkg;
       logic        d;
       logic        de;
     } clk_main_aes_val;
+    struct packed {
+      logic        d;
+      logic        de;
+    } clk_main_acc_val;
   } clkmgr_hw2reg_clk_hints_status_reg_t;
 
   typedef struct packed {

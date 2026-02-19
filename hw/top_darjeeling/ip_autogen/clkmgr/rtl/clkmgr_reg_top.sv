@@ -142,18 +142,18 @@ module clkmgr_reg_top (
   logic clk_enables_qs;
   logic clk_enables_wd;
   logic clk_hints_we;
+  logic clk_hints_clk_main_acc_hint_qs;
+  logic clk_hints_clk_main_acc_hint_wd;
   logic clk_hints_clk_main_aes_hint_qs;
   logic clk_hints_clk_main_aes_hint_wd;
   logic clk_hints_clk_main_hmac_hint_qs;
   logic clk_hints_clk_main_hmac_hint_wd;
   logic clk_hints_clk_main_kmac_hint_qs;
   logic clk_hints_clk_main_kmac_hint_wd;
-  logic clk_hints_clk_main_acc_hint_qs;
-  logic clk_hints_clk_main_acc_hint_wd;
+  logic clk_hints_status_clk_main_acc_val_qs;
   logic clk_hints_status_clk_main_aes_val_qs;
   logic clk_hints_status_clk_main_hmac_val_qs;
   logic clk_hints_status_clk_main_kmac_val_qs;
-  logic clk_hints_status_clk_main_acc_val_qs;
   logic measure_ctrl_regwen_we;
   logic measure_ctrl_regwen_qs;
   logic measure_ctrl_regwen_wd;
@@ -494,88 +494,7 @@ module clkmgr_reg_top (
 
 
   // R[clk_hints]: V(False)
-  //   F[clk_main_aes_hint]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
-  ) u_clk_hints_clk_main_aes_hint (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (clk_hints_we),
-    .wd     (clk_hints_clk_main_aes_hint_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.clk_hints.clk_main_aes_hint.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (clk_hints_clk_main_aes_hint_qs)
-  );
-
-  //   F[clk_main_hmac_hint]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
-  ) u_clk_hints_clk_main_hmac_hint (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (clk_hints_we),
-    .wd     (clk_hints_clk_main_hmac_hint_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.clk_hints.clk_main_hmac_hint.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (clk_hints_clk_main_hmac_hint_qs)
-  );
-
-  //   F[clk_main_kmac_hint]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
-  ) u_clk_hints_clk_main_kmac_hint (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (clk_hints_we),
-    .wd     (clk_hints_clk_main_kmac_hint_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.clk_hints.clk_main_kmac_hint.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (clk_hints_clk_main_kmac_hint_qs)
-  );
-
-  //   F[clk_main_acc_hint]: 3:3
+  //   F[clk_main_acc_hint]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -602,9 +521,117 @@ module clkmgr_reg_top (
     .qs     (clk_hints_clk_main_acc_hint_qs)
   );
 
+  //   F[clk_main_aes_hint]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_clk_hints_clk_main_aes_hint (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clk_hints_we),
+    .wd     (clk_hints_clk_main_aes_hint_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_hints.clk_main_aes_hint.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clk_hints_clk_main_aes_hint_qs)
+  );
+
+  //   F[clk_main_hmac_hint]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_clk_hints_clk_main_hmac_hint (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clk_hints_we),
+    .wd     (clk_hints_clk_main_hmac_hint_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_hints.clk_main_hmac_hint.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clk_hints_clk_main_hmac_hint_qs)
+  );
+
+  //   F[clk_main_kmac_hint]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_clk_hints_clk_main_kmac_hint (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clk_hints_we),
+    .wd     (clk_hints_clk_main_kmac_hint_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_hints.clk_main_kmac_hint.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clk_hints_clk_main_kmac_hint_qs)
+  );
+
 
   // R[clk_hints_status]: V(False)
-  //   F[clk_main_aes_val]: 0:0
+  //   F[clk_main_acc_val]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_clk_hints_status_clk_main_acc_val (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.clk_hints_status.clk_main_acc_val.de),
+    .d      (hw2reg.clk_hints_status.clk_main_acc_val.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clk_hints_status_clk_main_acc_val_qs)
+  );
+
+  //   F[clk_main_aes_val]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -631,7 +658,7 @@ module clkmgr_reg_top (
     .qs     (clk_hints_status_clk_main_aes_val_qs)
   );
 
-  //   F[clk_main_hmac_val]: 1:1
+  //   F[clk_main_hmac_val]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -658,7 +685,7 @@ module clkmgr_reg_top (
     .qs     (clk_hints_status_clk_main_hmac_val_qs)
   );
 
-  //   F[clk_main_kmac_val]: 2:2
+  //   F[clk_main_kmac_val]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -683,33 +710,6 @@ module clkmgr_reg_top (
 
     // to register interface (read)
     .qs     (clk_hints_status_clk_main_kmac_val_qs)
-  );
-
-  //   F[clk_main_acc_val]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
-  ) u_clk_hints_status_clk_main_acc_val (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.clk_hints_status.clk_main_acc_val.de),
-    .d      (hw2reg.clk_hints_status.clk_main_acc_val.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (clk_hints_status_clk_main_acc_val_qs)
   );
 
 
@@ -1331,13 +1331,13 @@ module clkmgr_reg_top (
   assign clk_enables_wd = reg_wdata[0];
   assign clk_hints_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
+  assign clk_hints_clk_main_acc_hint_wd = reg_wdata[0];
 
-  assign clk_hints_clk_main_hmac_hint_wd = reg_wdata[1];
+  assign clk_hints_clk_main_aes_hint_wd = reg_wdata[1];
 
-  assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[2];
+  assign clk_hints_clk_main_hmac_hint_wd = reg_wdata[2];
 
-  assign clk_hints_clk_main_acc_hint_wd = reg_wdata[3];
+  assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[3];
   assign measure_ctrl_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
   assign measure_ctrl_regwen_wd = reg_wdata[0];
@@ -1404,17 +1404,17 @@ module clkmgr_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
-        reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
-        reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
-        reg_rdata_next[3] = clk_hints_clk_main_acc_hint_qs;
+        reg_rdata_next[0] = clk_hints_clk_main_acc_hint_qs;
+        reg_rdata_next[1] = clk_hints_clk_main_aes_hint_qs;
+        reg_rdata_next[2] = clk_hints_clk_main_hmac_hint_qs;
+        reg_rdata_next[3] = clk_hints_clk_main_kmac_hint_qs;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
-        reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
-        reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;
-        reg_rdata_next[3] = clk_hints_status_clk_main_acc_val_qs;
+        reg_rdata_next[0] = clk_hints_status_clk_main_acc_val_qs;
+        reg_rdata_next[1] = clk_hints_status_clk_main_aes_val_qs;
+        reg_rdata_next[2] = clk_hints_status_clk_main_hmac_val_qs;
+        reg_rdata_next[3] = clk_hints_status_clk_main_kmac_val_qs;
       end
 
       addr_hit[6]: begin

@@ -61,16 +61,16 @@ package clkmgr_env_pkg;
   } clk_enables_t;
 
   typedef enum int {
+    TransAcc,
     TransAes,
     TransHmac,
-    TransKmac,
-    TransAcc
+    TransKmac
   } trans_e;
   typedef struct packed {
-    logic acc;
     logic kmac;
     logic hmac;
     logic aes;
+    logic acc;
   } clk_hints_t;
 
   typedef struct {
