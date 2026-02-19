@@ -8,6 +8,7 @@
 #                -o hw/top_darjeeling/
 
 load("//hw/top_darjeeling/ip_autogen/ac_range_check:defs.bzl", "AC_RANGE_CHECK")
+load("//hw/ip/acc:defs.bzl", "ACC")
 load("//hw/ip/aes:defs.bzl", "AES")
 load("//hw/top_darjeeling/ip_autogen/alert_handler:defs.bzl", "ALERT_HANDLER")
 load("//hw/ip/aon_timer:defs.bzl", "AON_TIMER")
@@ -24,7 +25,6 @@ load("//hw/ip/keymgr_dpe:defs.bzl", "KEYMGR_DPE")
 load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
 load("//hw/ip/mbx:defs.bzl", "MBX")
-load("//hw/ip/acc:defs.bzl", "ACC")
 load("//hw/top_darjeeling/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
 load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/top_darjeeling/ip_autogen/pinmux:defs.bzl", "PINMUX")
@@ -45,6 +45,7 @@ load("//hw/ip/uart:defs.bzl", "UART")
 
 DARJEELING_IPS = [
     AC_RANGE_CHECK,
+    ACC,
     AES,
     ALERT_HANDLER,
     AON_TIMER,
@@ -61,7 +62,6 @@ DARJEELING_IPS = [
     KMAC,
     LC_CTRL,
     MBX,
-    ACC,
     OTP_CTRL,
     OTP_MACRO,
     PINMUX,
@@ -107,13 +107,13 @@ DARJEELING_ALERTS = [
     "sram_ctrl_ret_aon_fatal_error",
     "rv_dm_fatal_fault",
     "rv_plic_fatal_fault",
+    "acc_fatal",
+    "acc_recov",
     "aes_recov_ctrl_update_err",
     "aes_fatal_fault",
     "hmac_fatal_fault",
     "kmac_recov_operation_err",
     "kmac_fatal_fault_err",
-    "acc_fatal",
-    "acc_recov",
     "keymgr_dpe_recov_operation_err",
     "keymgr_dpe_fatal_fault_err",
     "csrng_recov_alert",

@@ -86,10 +86,10 @@
         unique: yes
         clocks:
         {
+          clk_main_acc: main
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_acc: main
         }
       }
       {
@@ -4786,6 +4786,310 @@
       ]
     }
     {
+      name: acc
+      type: acc
+      param_decl:
+      {
+        AccPQCEn: "0"
+      }
+      clock_srcs:
+      {
+        clk_i:
+        {
+          clock: main
+          group: trans
+        }
+        clk_edn_i:
+        {
+          clock: main
+          group: secure
+        }
+        clk_otp_i:
+        {
+          clock: io
+          group: secure
+        }
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+        rst_edn_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+        rst_otp_ni:
+        {
+          name: lc_io
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_acc
+        clk_edn_i: clkmgr_aon_clocks.clk_main_secure
+        clk_otp_i: clkmgr_aon_clocks.clk_io_secure
+      }
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out the core of Acc logic
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: AccStub
+        }
+        {
+          name: RegFile
+          desc: Selection of the register file implementation. See acc_pkg.sv.
+          type: acc_pkg::regfile_e
+          default: acc_pkg::RegFileFF
+          local: "false"
+          expose: "true"
+          name_top: AccRegFile
+        }
+        {
+          name: SecMuteUrnd
+          desc:
+            '''
+            If enabled (1), URND is advanced only when data is needed.
+            Disabled (0) by default.
+            Useful for SCA measurements only.
+            '''
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SecAccMuteUrnd
+        }
+        {
+          name: SecSkipUrndReseedAtStart
+          desc:
+            '''
+            If enabled (1), URND reseed is skipped at the start of an operation.
+            Disabled (0) by default.
+            Useful for SCA measurements only.
+            '''
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SecAccSkipUrndReseedAtStart
+        }
+        {
+          name: AccPQCEn
+          desc: If enabled (1), vector ISA extension for PQC is enabled.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: AccAccPQCEn
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: acc_otp_key
+          struct: acc_otp_key
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: acc
+          top_signame: otp_ctrl_acc_otp_key
+          index: -1
+        }
+        {
+          name: edn_rnd
+          struct: edn
+          package: edn_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: acc
+          default: ""
+          top_signame: edn1_edn
+          index: 0
+        }
+        {
+          name: edn_urnd
+          struct: edn
+          package: edn_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: acc
+          default: ""
+          top_signame: edn0_edn
+          index: 5
+        }
+        {
+          name: kmac_data
+          struct: app
+          package: kmac_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: acc
+          default: ""
+          top_signame: kmac_app
+          index: 4
+        }
+        {
+          name: idle
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: acc
+          default: ""
+          top_signame: clkmgr_aon_idle
+          index: 0
+        }
+        {
+          name: ram_cfg_imem
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: acc
+          default: ""
+          external: true
+          top_signame: acc_imem_ram_1p_cfg
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ram_cfg_dmem
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: acc
+          default: ""
+          external: true
+          top_signame: acc_dmem_ram_1p_cfg
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_imem
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: acc
+          default: ""
+          external: true
+          top_signame: acc_imem_ram_1p_cfg_rsp
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_dmem
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: acc
+          default: ""
+          external: true
+          top_signame: acc_dmem_ram_1p_cfg_rsp
+          conn_type: false
+          index: -1
+        }
+        {
+          name: lc_escalate_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: acc
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_rma_req
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: acc
+          top_signame: lc_ctrl_lc_flash_rma_req
+          index: -1
+        }
+        {
+          name: lc_rma_ack
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: acc
+          end_idx: -1
+          top_type: broadcast
+          top_signame: acc_lc_rma_ack
+          index: -1
+        }
+        {
+          name: keymgr_key
+          struct: acc_key_req
+          package: keymgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: acc
+          default: ""
+          top_signame: keymgr_dpe_acc_key
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: acc
+          default: ""
+          end_idx: -1
+          top_signame: acc_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null:
+        {
+          hart: 0x22100000
+        }
+      }
+      generate_dif: true
+      domain:
+      [
+        "0"
+      ]
+    }
+    {
       name: aes
       type: aes
       clock_srcs:
@@ -4905,7 +5209,7 @@
           inst_name: aes
           default: ""
           top_signame: clkmgr_aon_idle
-          index: 0
+          index: 1
         }
         {
           name: lc_escalate_en
@@ -5005,7 +5309,7 @@
           inst_name: hmac
           default: ""
           top_signame: clkmgr_aon_idle
-          index: 1
+          index: 2
         }
         {
           name: tl
@@ -5221,7 +5525,7 @@
           inst_name: kmac
           default: ""
           top_signame: clkmgr_aon_idle
-          index: 2
+          index: 3
         }
         {
           name: en_masking
@@ -5268,310 +5572,6 @@
         null:
         {
           hart: 0x21120000
-        }
-      }
-      generate_dif: true
-      domain:
-      [
-        "0"
-      ]
-    }
-    {
-      name: acc
-      type: acc
-      param_decl:
-      {
-        AccPQCEn: "0"
-      }
-      clock_srcs:
-      {
-        clk_i:
-        {
-          clock: main
-          group: trans
-        }
-        clk_edn_i:
-        {
-          clock: main
-          group: secure
-        }
-        clk_otp_i:
-        {
-          clock: io
-          group: secure
-        }
-      }
-      clock_group: trans
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc
-          domain: "0"
-        }
-        rst_edn_ni:
-        {
-          name: lc
-          domain: "0"
-        }
-        rst_otp_ni:
-        {
-          name: lc_io
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_main_acc
-        clk_edn_i: clkmgr_aon_clocks.clk_main_secure
-        clk_otp_i: clkmgr_aon_clocks.clk_io_secure
-      }
-      memory: {}
-      param_list:
-      [
-        {
-          name: Stub
-          desc: Stub out the core of Acc logic
-          type: bit
-          default: "0"
-          local: "false"
-          expose: "true"
-          name_top: AccStub
-        }
-        {
-          name: RegFile
-          desc: Selection of the register file implementation. See acc_pkg.sv.
-          type: acc_pkg::regfile_e
-          default: acc_pkg::RegFileFF
-          local: "false"
-          expose: "true"
-          name_top: AccRegFile
-        }
-        {
-          name: SecMuteUrnd
-          desc:
-            '''
-            If enabled (1), URND is advanced only when data is needed.
-            Disabled (0) by default.
-            Useful for SCA measurements only.
-            '''
-          type: bit
-          default: "0"
-          local: "false"
-          expose: "true"
-          name_top: SecAccMuteUrnd
-        }
-        {
-          name: SecSkipUrndReseedAtStart
-          desc:
-            '''
-            If enabled (1), URND reseed is skipped at the start of an operation.
-            Disabled (0) by default.
-            Useful for SCA measurements only.
-            '''
-          type: bit
-          default: "0"
-          local: "false"
-          expose: "true"
-          name_top: SecAccSkipUrndReseedAtStart
-        }
-        {
-          name: AccPQCEn
-          desc: If enabled (1), vector ISA extension for PQC is enabled.
-          type: bit
-          default: "0"
-          local: "false"
-          expose: "true"
-          name_top: AccAccPQCEn
-        }
-      ]
-      inter_signal_list:
-      [
-        {
-          name: acc_otp_key
-          struct: acc_otp_key
-          package: otp_ctrl_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          default: "'0"
-          inst_name: acc
-          top_signame: otp_ctrl_acc_otp_key
-          index: -1
-        }
-        {
-          name: edn_rnd
-          struct: edn
-          package: edn_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: acc
-          default: ""
-          top_signame: edn1_edn
-          index: 0
-        }
-        {
-          name: edn_urnd
-          struct: edn
-          package: edn_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: acc
-          default: ""
-          top_signame: edn0_edn
-          index: 5
-        }
-        {
-          name: kmac_data
-          struct: app
-          package: kmac_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: acc
-          default: ""
-          top_signame: kmac_app
-          index: 4
-        }
-        {
-          name: idle
-          struct: mubi4
-          package: prim_mubi_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: acc
-          default: ""
-          top_signame: clkmgr_aon_idle
-          index: 3
-        }
-        {
-          name: ram_cfg_imem
-          struct: ram_1p_cfg
-          package: prim_ram_1p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: acc
-          default: ""
-          external: true
-          top_signame: acc_imem_ram_1p_cfg
-          conn_type: false
-          index: -1
-        }
-        {
-          name: ram_cfg_dmem
-          struct: ram_1p_cfg
-          package: prim_ram_1p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: acc
-          default: ""
-          external: true
-          top_signame: acc_dmem_ram_1p_cfg
-          conn_type: false
-          index: -1
-        }
-        {
-          name: ram_cfg_rsp_imem
-          struct: ram_1p_cfg_rsp
-          package: prim_ram_1p_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: acc
-          default: ""
-          external: true
-          top_signame: acc_imem_ram_1p_cfg_rsp
-          conn_type: false
-          index: -1
-        }
-        {
-          name: ram_cfg_rsp_dmem
-          struct: ram_1p_cfg_rsp
-          package: prim_ram_1p_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: acc
-          default: ""
-          external: true
-          top_signame: acc_dmem_ram_1p_cfg_rsp
-          conn_type: false
-          index: -1
-        }
-        {
-          name: lc_escalate_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: lc_ctrl_pkg::Off
-          inst_name: acc
-          top_signame: lc_ctrl_lc_escalate_en
-          index: -1
-        }
-        {
-          name: lc_rma_req
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: lc_ctrl_pkg::Off
-          inst_name: acc
-          top_signame: lc_ctrl_lc_flash_rma_req
-          index: -1
-        }
-        {
-          name: lc_rma_ack
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: req
-          width: 1
-          default: lc_ctrl_pkg::Off
-          inst_name: acc
-          end_idx: -1
-          top_type: broadcast
-          top_signame: acc_lc_rma_ack
-          index: -1
-        }
-        {
-          name: keymgr_key
-          struct: acc_key_req
-          package: keymgr_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: acc
-          default: ""
-          top_signame: keymgr_dpe_acc_key
-          index: -1
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: acc
-          default: ""
-          end_idx: -1
-          top_signame: acc_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x22100000
         }
       }
       generate_dif: true
@@ -11138,10 +11138,10 @@
       ]
       clkmgr_aon.idle:
       [
+        acc.idle
         aes.idle
         hmac.idle
         kmac.idle
-        acc.idle
       ]
       otp_ctrl.otp_lc_data:
       [
@@ -17729,61 +17729,6 @@
       lpg_idx: 13
     }
     {
-      name: aes_recov_ctrl_update_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: aes
-      desc: aes recov_ctrl_update_err alert
-      lpg_name: aes_trans_lc_0
-      lpg_idx: 14
-    }
-    {
-      name: aes_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: aes
-      desc: aes fatal_fault alert
-      lpg_name: aes_trans_lc_0
-      lpg_idx: 14
-    }
-    {
-      name: hmac_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: hmac
-      desc: hmac fatal_fault alert
-      lpg_name: hmac_trans_lc_0
-      lpg_idx: 15
-    }
-    {
-      name: kmac_recov_operation_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: kmac
-      desc: kmac recov_operation_err alert
-      lpg_name: kmac_trans_lc_0
-      lpg_idx: 16
-    }
-    {
-      name: kmac_fatal_fault_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: kmac
-      desc: kmac fatal_fault_err alert
-      lpg_name: kmac_trans_lc_0
-      lpg_idx: 16
-    }
-    {
       name: acc_fatal
       width: 1
       type: alert
@@ -17792,7 +17737,7 @@
       module_name: acc
       desc: acc fatal alert
       lpg_name: acc_trans_lc_0
-      lpg_idx: 17
+      lpg_idx: 14
     }
     {
       name: acc_recov
@@ -17803,6 +17748,61 @@
       module_name: acc
       desc: acc recov alert
       lpg_name: acc_trans_lc_0
+      lpg_idx: 14
+    }
+    {
+      name: aes_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: aes
+      desc: aes recov_ctrl_update_err alert
+      lpg_name: aes_trans_lc_0
+      lpg_idx: 15
+    }
+    {
+      name: aes_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: aes
+      desc: aes fatal_fault alert
+      lpg_name: aes_trans_lc_0
+      lpg_idx: 15
+    }
+    {
+      name: hmac_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: hmac
+      desc: hmac fatal_fault alert
+      lpg_name: hmac_trans_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: kmac_recov_operation_err
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: kmac
+      desc: kmac recov_operation_err alert
+      lpg_name: kmac_trans_lc_0
+      lpg_idx: 17
+    }
+    {
+      name: kmac_fatal_fault_err
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: kmac
+      desc: kmac fatal_fault_err alert
+      lpg_name: kmac_trans_lc_0
       lpg_idx: 17
     }
     {
@@ -18845,6 +18845,18 @@
       outgoing: false
     }
     {
+      name: acc_done
+      width: 1
+      type: interrupt
+      module_name: acc
+      desc: acc done interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+      plic: rv_plic
+      outgoing: false
+    }
+    {
       name: hmac_hmac_done
       width: 1
       type: interrupt
@@ -18910,18 +18922,6 @@
       type: interrupt
       module_name: kmac
       desc: kmac kmac_err interrupt
-      intr_type: IntrType.Event
-      default_val: false
-      incoming: false
-      plic: rv_plic
-      outgoing: false
-    }
-    {
-      name: acc_done
-      width: 1
-      type: interrupt
-      module_name: acc
-      desc: acc done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -19525,10 +19525,10 @@
     sram_ctrl_ret_aon
     rv_dm
     rv_plic
+    acc
     aes
     hmac
     kmac
-    acc
     keymgr_dpe
     csrng
     entropy_src
@@ -19734,47 +19734,47 @@
         alert_handler[24]: fatal_fault
       ]
     }
-    module_aes:
+    module_acc:
     {
       tx_expr: alert_tx[26:25]
       rx_expr: alert_rx[26:25]
       async_expr: alert_handler_reg_pkg::AsyncOn[26:25]
       comments:
       [
-        alert_handler[25]: recov_ctrl_update_err
-        alert_handler[26]: fatal_fault
+        alert_handler[25]: fatal
+        alert_handler[26]: recov
+      ]
+    }
+    module_aes:
+    {
+      tx_expr: alert_tx[28:27]
+      rx_expr: alert_rx[28:27]
+      async_expr: alert_handler_reg_pkg::AsyncOn[28:27]
+      comments:
+      [
+        alert_handler[27]: recov_ctrl_update_err
+        alert_handler[28]: fatal_fault
       ]
     }
     module_hmac:
     {
-      tx_expr: alert_tx[27:27]
-      rx_expr: alert_rx[27:27]
-      async_expr: alert_handler_reg_pkg::AsyncOn[27:27]
+      tx_expr: alert_tx[29:29]
+      rx_expr: alert_rx[29:29]
+      async_expr: alert_handler_reg_pkg::AsyncOn[29:29]
       comments:
       [
-        alert_handler[27]: fatal_fault
+        alert_handler[29]: fatal_fault
       ]
     }
     module_kmac:
-    {
-      tx_expr: alert_tx[29:28]
-      rx_expr: alert_rx[29:28]
-      async_expr: alert_handler_reg_pkg::AsyncOn[29:28]
-      comments:
-      [
-        alert_handler[28]: recov_operation_err
-        alert_handler[29]: fatal_fault_err
-      ]
-    }
-    module_acc:
     {
       tx_expr: alert_tx[31:30]
       rx_expr: alert_rx[31:30]
       async_expr: alert_handler_reg_pkg::AsyncOn[31:30]
       comments:
       [
-        alert_handler[30]: fatal
-        alert_handler[31]: recov
+        alert_handler[30]: recov_operation_err
+        alert_handler[31]: fatal_fault_err
       ]
     }
     module_keymgr_dpe:
@@ -20051,9 +20051,9 @@
     spi_host0
     pwrmgr_aon
     aon_timer_aon
+    acc
     hmac
     kmac
-    acc
     keymgr_dpe
     csrng
     entropy_src
@@ -20402,6 +20402,31 @@
       }
     }
     {
+      name: acc_trans_lc_0
+      clock_group:
+      {
+        name: trans
+        src: top
+        sw_cg: hint
+        unique: yes
+        clocks:
+        {
+          clk_main_acc: main
+          clk_main_aes: main
+          clk_main_hmac: main
+          clk_main_kmac: main
+        }
+      }
+      clock_connection: clkmgr_aon_clocks.clk_main_acc
+      unmanaged_clock: false
+      unmanaged_reset: false
+      reset_connection:
+      {
+        name: lc
+        domain: "0"
+      }
+    }
+    {
       name: aes_trans_lc_0
       clock_group:
       {
@@ -20411,10 +20436,10 @@
         unique: yes
         clocks:
         {
+          clk_main_acc: main
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_acc: main
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_aes
@@ -20436,10 +20461,10 @@
         unique: yes
         clocks:
         {
+          clk_main_acc: main
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_acc: main
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_hmac
@@ -20461,38 +20486,13 @@
         unique: yes
         clocks:
         {
+          clk_main_acc: main
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_kmac: main
-          clk_main_acc: main
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_kmac
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: lc
-        domain: "0"
-      }
-    }
-    {
-      name: acc_trans_lc_0
-      clock_group:
-      {
-        name: trans
-        src: top
-        sw_cg: hint
-        unique: yes
-        clocks:
-        {
-          clk_main_aes: main
-          clk_main_hmac: main
-          clk_main_kmac: main
-          clk_main_acc: main
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_main_acc
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -23400,191 +23400,6 @@
         index: -1
       }
       {
-        name: idle
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: aes
-        default: ""
-        top_signame: clkmgr_aon_idle
-        index: 0
-      }
-      {
-        name: lc_escalate_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: lc_ctrl_pkg::Off
-        inst_name: aes
-        top_signame: lc_ctrl_lc_escalate_en
-        index: -1
-      }
-      {
-        name: edn
-        struct: edn
-        package: edn_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: aes
-        default: ""
-        top_signame: edn0_edn
-        index: 4
-      }
-      {
-        name: keymgr_key
-        struct: hw_key_req
-        package: keymgr_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: aes
-        default: ""
-        top_signame: keymgr_dpe_aes_key
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: aes
-        default: ""
-        end_idx: -1
-        top_signame: aes_tl
-        index: -1
-      }
-      {
-        name: idle
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: hmac
-        default: ""
-        top_signame: clkmgr_aon_idle
-        index: 1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: hmac
-        default: ""
-        end_idx: -1
-        top_signame: hmac_tl
-        index: -1
-      }
-      {
-        name: keymgr_key
-        struct: hw_key_req
-        package: keymgr_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: kmac
-        default: ""
-        top_signame: keymgr_dpe_kmac_key
-        index: -1
-      }
-      {
-        name: app
-        struct: app
-        package: kmac_pkg
-        type: req_rsp
-        act: rsp
-        width:
-        {
-          name: NumAppIntf
-          desc: Number of application interfaces
-          param_type: int
-          unpacked_dimensions: null
-          default: 4
-          local: false
-          expose: true
-          name_top: KmacNumAppIntf
-        }
-        inst_name: kmac
-        default: ""
-        end_idx: -1
-        top_type: one-to-N
-        top_signame: kmac_app
-        index: -1
-      }
-      {
-        name: entropy
-        struct: edn
-        package: edn_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: kmac
-        default: ""
-        top_signame: edn0_edn
-        index: 2
-      }
-      {
-        name: idle
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: kmac
-        default: ""
-        top_signame: clkmgr_aon_idle
-        index: 2
-      }
-      {
-        name: en_masking
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: kmac
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: kmac_en_masking
-        index: -1
-      }
-      {
-        name: lc_escalate_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: lc_ctrl_pkg::Off
-        inst_name: kmac
-        top_signame: lc_ctrl_lc_escalate_en
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: kmac
-        default: ""
-        end_idx: -1
-        top_signame: kmac_tl
-        index: -1
-      }
-      {
         name: acc_otp_key
         struct: acc_otp_key
         package: otp_ctrl_pkg
@@ -23642,7 +23457,7 @@
         inst_name: acc
         default: ""
         top_signame: clkmgr_aon_idle
-        index: 3
+        index: 0
       }
       {
         name: ram_cfg_imem
@@ -23761,6 +23576,191 @@
         default: ""
         end_idx: -1
         top_signame: acc_tl
+        index: -1
+      }
+      {
+        name: idle
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: aes
+        default: ""
+        top_signame: clkmgr_aon_idle
+        index: 1
+      }
+      {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: aes
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: edn
+        struct: edn
+        package: edn_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: aes
+        default: ""
+        top_signame: edn0_edn
+        index: 4
+      }
+      {
+        name: keymgr_key
+        struct: hw_key_req
+        package: keymgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: aes
+        default: ""
+        top_signame: keymgr_dpe_aes_key
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: aes
+        default: ""
+        end_idx: -1
+        top_signame: aes_tl
+        index: -1
+      }
+      {
+        name: idle
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: hmac
+        default: ""
+        top_signame: clkmgr_aon_idle
+        index: 2
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: hmac
+        default: ""
+        end_idx: -1
+        top_signame: hmac_tl
+        index: -1
+      }
+      {
+        name: keymgr_key
+        struct: hw_key_req
+        package: keymgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: kmac
+        default: ""
+        top_signame: keymgr_dpe_kmac_key
+        index: -1
+      }
+      {
+        name: app
+        struct: app
+        package: kmac_pkg
+        type: req_rsp
+        act: rsp
+        width:
+        {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          param_type: int
+          unpacked_dimensions: null
+          default: 4
+          local: false
+          expose: true
+          name_top: KmacNumAppIntf
+        }
+        inst_name: kmac
+        default: ""
+        end_idx: -1
+        top_type: one-to-N
+        top_signame: kmac_app
+        index: -1
+      }
+      {
+        name: entropy
+        struct: edn
+        package: edn_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: kmac
+        default: ""
+        top_signame: edn0_edn
+        index: 2
+      }
+      {
+        name: idle
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: kmac
+        default: ""
+        top_signame: clkmgr_aon_idle
+        index: 3
+      }
+      {
+        name: en_masking
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: kmac
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: kmac_en_masking
+        index: -1
+      }
+      {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: kmac
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: kmac
+        default: ""
+        end_idx: -1
+        top_signame: kmac_tl
         index: -1
       }
       {

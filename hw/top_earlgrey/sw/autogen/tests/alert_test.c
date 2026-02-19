@@ -10,6 +10,7 @@
 //                -o hw/top_earlgrey/
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/autogen/dif_acc_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_alert_handler_autogen.h"
@@ -25,7 +26,6 @@
 #include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_acc_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pattgen_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pinmux_autogen.h"
@@ -54,6 +54,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_alert_handler_t alert_handler;
+static dif_acc_t acc;
 static dif_adc_ctrl_t adc_ctrl_aon;
 static dif_aes_t aes;
 static dif_aon_timer_t aon_timer_aon;
@@ -71,7 +72,6 @@ static dif_i2c_t i2c2;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
-static dif_acc_t acc;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux_aon;
@@ -102,6 +102,9 @@ static void init_peripherals(void) {
   mmio_region_t base_addr;
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR);
+  CHECK_DIF_OK(dif_acc_init(base_addr, &acc));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
@@ -153,9 +156,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(base_addr, &lc_ctrl));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR);
-  CHECK_DIF_OK(dif_acc_init(base_addr, &acc));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(base_addr, &otp_ctrl));
@@ -280,6 +280,21 @@ static void alert_handler_config(void) {
 static void trigger_alert_test(void) {
   bool is_cause;
   dif_alert_handler_alert_t exp_alert;
+
+  // Write acc's alert_test reg and check alert_cause.
+  for (dif_acc_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_acc_alert_force(&acc, kDifAccAlertFatal + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopEarlgreyAlertIdAccFatal + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
 
   // Write adc_ctrl's alert_test reg and check alert_cause.
   for (dif_adc_ctrl_alert_t i = 0; i < 1; ++i) {
@@ -527,21 +542,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopEarlgreyAlertIdLcCtrlFatalProgError + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write acc's alert_test reg and check alert_cause.
-  for (dif_acc_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_acc_alert_force(&acc, kDifAccAlertFatal + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopEarlgreyAlertIdAccFatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

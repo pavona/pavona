@@ -35,10 +35,10 @@ The main address space, shared between the CPU and DM
 | rv_dm             | regs        | `0x21200000`   | `0x10`         | `0x4`          | regs device on rv_dm             |
 | rv_dm             | mem         | `0x40000`      | `0x1000`       | `0x400`        | mem device on rv_dm              |
 | rv_plic           | default     | `0x28000000`   | `0x8000000`    | `0x2000000`    | rv_plic                          |
+| acc               | default     | `0x22100000`   | `0x20000`      | `0x8000`       | acc                              |
 | aes               | default     | `0x21100000`   | `0x100`        | `0x40`         | aes                              |
 | hmac              | default     | `0x21110000`   | `0x2000`       | `0x800`        | hmac                             |
 | kmac              | default     | `0x21120000`   | `0x1000`       | `0x400`        | kmac                             |
-| acc              | default     | `0x22100000`   | `0x20000`      | `0x8000`       | acc                             |
 | keymgr_dpe        | default     | `0x21140000`   | `0x100`        | `0x40`         | keymgr_dpe                       |
 | csrng             | default     | `0x21150000`   | `0x80`         | `0x20`         | csrng                            |
 | entropy_src       | default     | `0x21160000`   | `0x100`        | `0x40`         | entropy_src                      |

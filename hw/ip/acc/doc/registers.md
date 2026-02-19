@@ -3,8 +3,8 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/acc/data/acc.hjson -->
 ## Summary
 
-| Name                                           | Offset   |   Length | Description                                     |
-|:-----------------------------------------------|:---------|---------:|:------------------------------------------------|
+| Name                                          | Offset   |   Length | Description                                     |
+|:----------------------------------------------|:---------|---------:|:------------------------------------------------|
 | acc.[`INTR_STATE`](#intr_state)               | 0x0      |        4 | Interrupt State Register                        |
 | acc.[`INTR_ENABLE`](#intr_enable)             | 0x4      |        4 | Interrupt Enable Register                       |
 | acc.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                         |
@@ -31,9 +31,9 @@ Interrupt State Register
 {"reg": [{"name": "done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                       |
-|:------:|:------:|:-------:|:-------|:----------------------------------|
-|  31:1  |        |         |        | Reserved                          |
+|  Bits  |  Type  |  Reset  | Name   | Description                      |
+|:------:|:------:|:-------:|:-------|:---------------------------------|
+|  31:1  |        |         |        | Reserved                         |
 |   0    |  rw1c  |   0x0   | done   | ACC has completed the operation. |
 
 ## INTR_ENABLE
@@ -135,9 +135,9 @@ Control Register
 {"reg": [{"name": "software_errs_fatal", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                      |
-|:------:|:------:|:-------:|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                     | Reserved                                                                                                                                                         |
+|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                     |
+|:------:|:------:|:-------:|:--------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                     | Reserved                                                                                                                                                        |
 |   0    |   rw   |   0x0   | software_errs_fatal | Controls the reaction to software errors. When set software errors produce fatal errors, rather than recoverable errors. Writes are ignored if ACC is not idle. |
 
 ## STATUS

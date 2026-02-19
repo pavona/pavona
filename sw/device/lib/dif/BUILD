@@ -38,6 +38,7 @@ cc_library(
 
 DIFS = {
     "adc_ctrl": {},
+    "acc": {},
     "aes": {},
     "alert_handler": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
@@ -67,7 +68,6 @@ DIFS = {
     "mbx": {
         "deps": ["//sw/device/lib/base:abs_mmio"],
     },
-    "acc": {},
     "otp_ctrl": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },

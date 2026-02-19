@@ -210,12 +210,12 @@ the appropriate crypto cipher target.
 
 This field should be programmed for both hw / sw generation, as this helps diversifies the output.
 
-| Value   | Name   | Description                                                                                                                                                                                                                                                                                                                                   |
-|:--------|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | None   | No target selected                                                                                                                                                                                                                                                                                                                            |
-| 0x1     | AES    | AES selected                                                                                                                                                                                                                                                                                                                                  |
-| 0x2     | KMAC   | KMAC selected                                                                                                                                                                                                                                                                                                                                 |
-| 0x3     | ACC   | ACC selected.  Note for ACC hardware operations, the generated output is 384-bits, while for all other operations (including ACC software), it is 256-bits. Generating a hardware 384-bit seed directly for ACC sideload reduces some of the ACC code burden for entropy expansion. When generating for software, this is not a concern. |
+| Value   | Name   | Description                                                                                                                                                                                                                                                                                                                              |
+|:--------|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | None   | No target selected                                                                                                                                                                                                                                                                                                                       |
+| 0x1     | AES    | AES selected                                                                                                                                                                                                                                                                                                                             |
+| 0x2     | KMAC   | KMAC selected                                                                                                                                                                                                                                                                                                                            |
+| 0x3     | ACC    | ACC selected.  Note for ACC hardware operations, the generated output is 384-bits, while for all other operations (including ACC software), it is 256-bits. Generating a hardware 384-bit seed directly for ACC sideload reduces some of the ACC code burden for entropy expansion. When generating for software, this is not a concern. |
 
 
 ### CONTROL_SHADOWED . CDI_SEL
@@ -272,7 +272,7 @@ toggle the clear bit again (i.e. disable continuous clearing).
 | 0x0     | None   | No sideload keys cleared.                                   |
 | 0x1     | AES    | The AES sideload key is continuously cleared with entropy.  |
 | 0x2     | KMAC   | The KMAC sideload key is continuously cleared with entropy. |
-| 0x3     | ACC   | The ACC sideload key is continuously cleared with entropy. |
+| 0x3     | ACC    | The ACC sideload key is continuously cleared with entropy.  |
 
 Other values are reserved.
 

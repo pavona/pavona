@@ -28,6 +28,7 @@
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/autogen/dif_acc_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_alert_handler_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_aon_timer_autogen.h"
@@ -40,7 +41,6 @@
 #include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_acc_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pattgen_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
@@ -63,67 +63,67 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-static dif_adc_ctrl_t adc_ctrl_aon;
+static dif_acc_t acc;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
-static dif_alert_handler_t alert_handler;
+static dif_adc_ctrl_t adc_ctrl_aon;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
-static dif_aon_timer_t aon_timer_aon;
+static dif_alert_handler_t alert_handler;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+static dif_aon_timer_t aon_timer_aon;
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
 static dif_csrng_t csrng;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
 static dif_edn_t edn0;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
 static dif_edn_t edn1;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
 static dif_entropy_src_t entropy_src;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
 static dif_flash_ctrl_t flash_ctrl;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
 static dif_gpio_t gpio;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
 static dif_hmac_t hmac;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
 static dif_i2c_t i2c0;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
 static dif_i2c_t i2c1;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
 static dif_i2c_t i2c2;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
 static dif_keymgr_t keymgr;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
-static dif_kmac_t kmac;
-#endif
-
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-static dif_acc_t acc;
+static dif_kmac_t kmac;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -202,68 +202,68 @@ static volatile top_earlgrey_plic_peripheral_t peripheral_expected;
  */
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
+static volatile dif_acc_irq_t acc_irq_expected;
+static volatile dif_acc_irq_t acc_irq_serviced;
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_expected;
 static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_alert_handler_irq_t alert_handler_irq_expected;
 static volatile dif_alert_handler_irq_t alert_handler_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_aon_timer_irq_t aon_timer_irq_expected;
 static volatile dif_aon_timer_irq_t aon_timer_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_csrng_irq_t csrng_irq_expected;
 static volatile dif_csrng_irq_t csrng_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_edn_irq_t edn_irq_expected;
 static volatile dif_edn_irq_t edn_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_entropy_src_irq_t entropy_src_irq_expected;
 static volatile dif_entropy_src_irq_t entropy_src_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_flash_ctrl_irq_t flash_ctrl_irq_expected;
 static volatile dif_flash_ctrl_irq_t flash_ctrl_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_gpio_irq_t gpio_irq_expected;
 static volatile dif_gpio_irq_t gpio_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_hmac_irq_t hmac_irq_expected;
 static volatile dif_hmac_irq_t hmac_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_i2c_irq_t i2c_irq_expected;
 static volatile dif_i2c_irq_t i2c_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_keymgr_irq_t keymgr_irq_expected;
 static volatile dif_keymgr_irq_t keymgr_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_kmac_irq_t kmac_irq_expected;
 static volatile dif_kmac_irq_t kmac_irq_serviced;
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-static volatile dif_acc_irq_t acc_irq_expected;
-static volatile dif_acc_irq_t acc_irq_serviced;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -341,6 +341,29 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   switch (peripheral) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
+    case kTopEarlgreyPlicPeripheralAcc: {
+      dif_acc_irq_t irq =
+          (dif_acc_irq_t)(plic_irq_id -
+                          (dif_rv_plic_irq_id_t)
+                              kTopEarlgreyPlicIrqIdAccDone);
+      CHECK(irq == acc_irq_expected,
+            "Incorrect acc IRQ triggered: exp = %d, obs = %d",
+            acc_irq_expected, irq);
+      acc_irq_serviced = irq;
+
+      dif_acc_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_acc_irq_get_state(&acc, &snapshot));
+      CHECK(snapshot == (dif_acc_irq_state_snapshot_t)(1 << irq),
+            "Only acc IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_acc_irq_acknowledge(&acc, irq));
+      break;
+    }
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralAdcCtrlAon: {
       dif_adc_ctrl_irq_t irq =
           (dif_adc_ctrl_irq_t)(plic_irq_id -
@@ -376,7 +399,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralAlertHandler: {
       dif_alert_handler_irq_t irq =
           (dif_alert_handler_irq_t)(plic_irq_id -
@@ -399,7 +422,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralAonTimerAon: {
       dif_aon_timer_irq_t irq =
           (dif_aon_timer_irq_t)(plic_irq_id -
@@ -422,7 +445,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralCsrng: {
       dif_csrng_irq_t irq =
           (dif_csrng_irq_t)(plic_irq_id -
@@ -445,7 +468,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralEdn0: {
       dif_edn_irq_t irq =
           (dif_edn_irq_t)(plic_irq_id -
@@ -468,7 +491,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralEdn1: {
       dif_edn_irq_t irq =
           (dif_edn_irq_t)(plic_irq_id -
@@ -491,7 +514,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralEntropySrc: {
       dif_entropy_src_irq_t irq =
           (dif_entropy_src_irq_t)(plic_irq_id -
@@ -514,7 +537,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralFlashCtrl: {
       dif_flash_ctrl_irq_t irq =
           (dif_flash_ctrl_irq_t)(plic_irq_id -
@@ -550,7 +573,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralGpio: {
       dif_gpio_irq_t irq =
           (dif_gpio_irq_t)(plic_irq_id -
@@ -573,7 +596,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralHmac: {
       dif_hmac_irq_t irq =
           (dif_hmac_irq_t)(plic_irq_id -
@@ -609,7 +632,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralI2c0: {
       dif_i2c_irq_t irq =
           (dif_i2c_irq_t)(plic_irq_id -
@@ -645,7 +668,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralI2c1: {
       dif_i2c_irq_t irq =
           (dif_i2c_irq_t)(plic_irq_id -
@@ -681,7 +704,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralI2c2: {
       dif_i2c_irq_t irq =
           (dif_i2c_irq_t)(plic_irq_id -
@@ -717,7 +740,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralKeymgr: {
       dif_keymgr_irq_t irq =
           (dif_keymgr_irq_t)(plic_irq_id -
@@ -740,7 +763,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
     case kTopEarlgreyPlicPeripheralKmac: {
       dif_kmac_irq_t irq =
           (dif_kmac_irq_t)(plic_irq_id -
@@ -772,29 +795,6 @@ void ottf_external_isr(uint32_t *exc_info) {
         // We acknowledge event type interrupt.
         CHECK_DIF_OK(dif_kmac_irq_acknowledge(&kmac, irq));
       }
-      break;
-    }
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralAcc: {
-      dif_acc_irq_t irq =
-          (dif_acc_irq_t)(plic_irq_id -
-                           (dif_rv_plic_irq_id_t)
-                               kTopEarlgreyPlicIrqIdAccDone);
-      CHECK(irq == acc_irq_expected,
-            "Incorrect acc IRQ triggered: exp = %d, obs = %d",
-            acc_irq_expected, irq);
-      acc_irq_serviced = irq;
-
-      dif_acc_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_acc_irq_get_state(&acc, &snapshot));
-      CHECK(snapshot == (dif_acc_irq_state_snapshot_t)(1 << irq),
-            "Only acc IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      CHECK_DIF_OK(dif_acc_irq_acknowledge(&acc, irq));
       break;
     }
 #endif
@@ -1253,83 +1253,83 @@ static void peripherals_init(void) {
   mmio_region_t base_addr;
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR);
+  CHECK_DIF_OK(dif_acc_init(base_addr, &acc));
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer_aon));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR);
   CHECK_DIF_OK(dif_edn_init(base_addr, &edn0));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR);
   CHECK_DIF_OK(dif_edn_init(base_addr, &edn1));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
   CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, &flash_ctrl));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
   CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c0));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c1));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
   CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_kmac_init(base_addr, &kmac));
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR);
-  CHECK_DIF_OK(dif_acc_init(base_addr, &acc));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -1411,67 +1411,67 @@ static void peripherals_init(void) {
  */
 static void peripheral_irqs_clear(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl_aon));
+  CHECK_DIF_OK(dif_acc_irq_acknowledge_all(&acc));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_alert_handler_irq_acknowledge_all(&alert_handler));
+  CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl_aon));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer_aon));
+  CHECK_DIF_OK(dif_alert_handler_irq_acknowledge_all(&alert_handler));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer_aon));
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_csrng_irq_acknowledge_all(&csrng));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_edn_irq_acknowledge_all(&edn0));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_edn_irq_acknowledge_all(&edn1));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_entropy_src_irq_acknowledge_all(&entropy_src));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge_all(&flash_ctrl));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_gpio_irq_acknowledge_all(&gpio));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_hmac_irq_acknowledge_all(&hmac));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c0));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c1));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c2));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_keymgr_irq_acknowledge_all(&keymgr));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_kmac_irq_acknowledge_all(&kmac));
-#endif
-
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_acc_irq_acknowledge_all(&acc));
+  CHECK_DIF_OK(dif_kmac_irq_acknowledge_all(&kmac));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -1538,31 +1538,36 @@ static void peripheral_irqs_clear(void) {
  */
 static void peripheral_irqs_enable(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
+  dif_acc_irq_state_snapshot_t acc_irqs =
+      (dif_acc_irq_state_snapshot_t)0xffffffff;
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
   dif_adc_ctrl_irq_state_snapshot_t adc_ctrl_irqs =
       (dif_adc_ctrl_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
   dif_alert_handler_irq_state_snapshot_t alert_handler_irqs =
       (dif_alert_handler_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
   dif_csrng_irq_state_snapshot_t csrng_irqs =
       (dif_csrng_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   dif_edn_irq_state_snapshot_t edn_irqs =
       (dif_edn_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
   dif_entropy_src_irq_state_snapshot_t entropy_src_irqs =
       (dif_entropy_src_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
   // Note: this peripheral contains status interrupts that are asserted by
   // default. Therefore, not all interrupts are enabled here, since that
   // would interfere with this test. Instead, these interrupts are enabled on
@@ -1571,34 +1576,29 @@ static void peripheral_irqs_enable(void) {
       (dif_flash_ctrl_irq_state_snapshot_t)0xfffffffc;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
   dif_gpio_irq_state_snapshot_t gpio_irqs =
       (dif_gpio_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   dif_hmac_irq_state_snapshot_t hmac_irqs =
       (dif_hmac_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   dif_i2c_irq_state_snapshot_t i2c_irqs =
       (dif_i2c_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
   dif_keymgr_irq_state_snapshot_t keymgr_irqs =
       (dif_keymgr_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
   dif_kmac_irq_state_snapshot_t kmac_irqs =
       (dif_kmac_irq_state_snapshot_t)0xffffffff;
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  dif_acc_irq_state_snapshot_t acc_irqs =
-      (dif_acc_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -1656,63 +1656,63 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irqs));
+  CHECK_DIF_OK(dif_acc_irq_restore_all(&acc, &acc_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
+  CHECK_DIF_OK(dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irqs));
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_alert_handler_irq_restore_all(&alert_handler, &alert_handler_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_csrng_irq_restore_all(&csrng, &csrng_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_edn_irq_restore_all(&edn0, &edn_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_edn_irq_restore_all(&edn1, &edn_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_entropy_src_irq_restore_all(&entropy_src, &entropy_src_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_flash_ctrl_irq_restore_all(&flash_ctrl, &flash_ctrl_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_gpio_irq_restore_all(&gpio, &gpio_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_hmac_irq_restore_all(&hmac, &hmac_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c0, &i2c_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c1, &i2c_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c2, &i2c_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_keymgr_irq_restore_all(&keymgr, &keymgr_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_kmac_irq_restore_all(&kmac, &kmac_irqs));
-#endif
-
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_acc_irq_restore_all(&acc, &acc_irqs));
+  CHECK_DIF_OK(dif_kmac_irq_restore_all(&kmac, &kmac_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
@@ -1794,6 +1794,21 @@ static void peripheral_irqs_trigger(void) {
   (void)status_default_mask;
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
+  peripheral_expected = kTopEarlgreyPlicPeripheralAcc;
+  for (dif_acc_irq_t irq = kDifAccIrqDone; irq <= kDifAccIrqDone;
+       ++irq) {
+    acc_irq_expected = irq;
+    LOG_INFO("Triggering acc IRQ %d.", irq);
+    CHECK_DIF_OK(dif_acc_irq_force(&acc, irq, true));
+
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(acc_irq_serviced == irq, 1);
+    LOG_INFO("IRQ %d from acc is serviced.", irq);
+  }
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralAdcCtrlAon;
   status_default_mask = 0x0;
   for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqMatchPending; irq <= kDifAdcCtrlIrqMatchPending;
@@ -1817,7 +1832,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralAlertHandler;
   for (dif_alert_handler_irq_t irq = kDifAlertHandlerIrqClassa; irq <= kDifAlertHandlerIrqClassd;
        ++irq) {
@@ -1832,7 +1847,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
   // from the logging facility.
   // aon_timer may generate a NMI instead of a PLIC IRQ depending on the ROM.
@@ -1854,7 +1869,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralCsrng;
   for (dif_csrng_irq_t irq = kDifCsrngIrqCsCmdReqDone; irq <= kDifCsrngIrqCsFatalErr;
        ++irq) {
@@ -1869,7 +1884,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralEdn0;
   for (dif_edn_irq_t irq = kDifEdnIrqEdnCmdReqDone; irq <= kDifEdnIrqEdnFatalErr;
        ++irq) {
@@ -1884,7 +1899,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralEdn1;
   for (dif_edn_irq_t irq = kDifEdnIrqEdnCmdReqDone; irq <= kDifEdnIrqEdnFatalErr;
        ++irq) {
@@ -1899,7 +1914,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralEntropySrc;
   for (dif_entropy_src_irq_t irq = kDifEntropySrcIrqEsEntropyValid; irq <= kDifEntropySrcIrqEsFatalErr;
        ++irq) {
@@ -1914,7 +1929,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralFlashCtrl;
   status_default_mask = 0x3;
   for (dif_flash_ctrl_irq_t irq = kDifFlashCtrlIrqProgEmpty; irq <= kDifFlashCtrlIrqCorrErr;
@@ -1938,7 +1953,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralGpio;
   for (dif_gpio_irq_t irq = kDifGpioIrqGpio0; irq <= kDifGpioIrqGpio31;
        ++irq) {
@@ -1953,7 +1968,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralHmac;
   status_default_mask = 0x0;
   for (dif_hmac_irq_t irq = kDifHmacIrqHmacDone; irq <= kDifHmacIrqHmacErr;
@@ -1977,7 +1992,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c0;
   status_default_mask = 0x0;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold; irq <= kDifI2cIrqHostTimeout;
@@ -2001,7 +2016,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c1;
   status_default_mask = 0x0;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold; irq <= kDifI2cIrqHostTimeout;
@@ -2025,7 +2040,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c2;
   status_default_mask = 0x0;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold; irq <= kDifI2cIrqHostTimeout;
@@ -2049,7 +2064,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralKeymgr;
   for (dif_keymgr_irq_t irq = kDifKeymgrIrqOpDone; irq <= kDifKeymgrIrqOpDone;
        ++irq) {
@@ -2064,7 +2079,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralKmac;
   status_default_mask = 0x0;
   for (dif_kmac_irq_t irq = kDifKmacIrqKmacDone; irq <= kDifKmacIrqKmacErr;
@@ -2085,21 +2100,6 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(kmac_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from kmac is serviced.", irq);
-  }
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralAcc;
-  for (dif_acc_irq_t irq = kDifAccIrqDone; irq <= kDifAccIrqDone;
-       ++irq) {
-    acc_irq_expected = irq;
-    LOG_INFO("Triggering acc IRQ %d.", irq);
-    CHECK_DIF_OK(dif_acc_irq_force(&acc, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(acc_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from acc is serviced.", irq);
   }
 #endif
 

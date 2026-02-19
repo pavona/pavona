@@ -76,6 +76,12 @@ module top_earlgrey #(
   parameter bit SecRvDmVolatileRawUnlockEn = 1'b0,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvDmTlulHostUserRsvdBits = '0,
   // parameters for rv_plic
+  // parameters for acc
+  parameter bit AccStub = 0,
+  parameter acc_pkg::regfile_e AccRegFile = acc_pkg::RegFileFF,
+  parameter bit SecAccMuteUrnd = 0,
+  parameter bit SecAccSkipUrndReseedAtStart = 0,
+  parameter bit AccAccPQCEn = 0,
   // parameters for aes
   parameter bit SecAesMasking = 1,
   parameter aes_pkg::sbox_impl_e SecAesSBoxImpl = aes_pkg::SBoxImplDom,
@@ -91,12 +97,6 @@ module top_earlgrey #(
   parameter int KmacNumAppIntf = 4,
   parameter kmac_pkg::app_config_t KmacAppCfg[KmacNumAppIntf] =
       '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgACC},
-  // parameters for acc
-  parameter bit AccStub = 0,
-  parameter acc_pkg::regfile_e AccRegFile = acc_pkg::RegFileFF,
-  parameter bit SecAccMuteUrnd = 0,
-  parameter bit SecAccSkipUrndReseedAtStart = 0,
-  parameter bit AccAccPQCEn = 0,
   // parameters for keymgr
   parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 0,
   parameter bit KeymgrKmacEnMasking = 1,
@@ -410,10 +410,10 @@ module top_earlgrey #(
   logic        cio_flash_ctrl_tdo_en_d2p;
   // rv_dm
   // rv_plic
+  // acc
   // aes
   // hmac
   // kmac
-  // acc
   // keymgr
   // csrng
   // entropy_src
@@ -560,13 +560,13 @@ module top_earlgrey #(
   logic intr_flash_ctrl_rd_lvl;
   logic intr_flash_ctrl_op_done;
   logic intr_flash_ctrl_corr_err;
+  logic intr_acc_done;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
   logic intr_kmac_kmac_done;
   logic intr_kmac_fifo_empty;
   logic intr_kmac_kmac_err;
-  logic intr_acc_done;
   logic intr_keymgr_op_done;
   logic intr_csrng_cs_cmd_req_done;
   logic intr_csrng_cs_entropy_req;
@@ -964,17 +964,17 @@ module top_earlgrey #(
   // secure_lc_0
   assign lpg_cg_en[19] = clkmgr_aon_cg_en.main_secure;
   assign lpg_rst_en[19] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
-  // aes_trans_lc_0
-  assign lpg_cg_en[20] = clkmgr_aon_cg_en.main_aes;
-  assign lpg_rst_en[20] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
-  // hmac_trans_lc_0
-  assign lpg_cg_en[21] = clkmgr_aon_cg_en.main_hmac;
-  assign lpg_rst_en[21] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
-  // kmac_trans_lc_0
-  assign lpg_cg_en[22] = clkmgr_aon_cg_en.main_kmac;
-  assign lpg_rst_en[22] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
   // acc_trans_lc_0
-  assign lpg_cg_en[23] = clkmgr_aon_cg_en.main_acc;
+  assign lpg_cg_en[20] = clkmgr_aon_cg_en.main_acc;
+  assign lpg_rst_en[20] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
+  // aes_trans_lc_0
+  assign lpg_cg_en[21] = clkmgr_aon_cg_en.main_aes;
+  assign lpg_rst_en[21] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
+  // hmac_trans_lc_0
+  assign lpg_cg_en[22] = clkmgr_aon_cg_en.main_hmac;
+  assign lpg_rst_en[22] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
+  // kmac_trans_lc_0
+  assign lpg_cg_en[23] = clkmgr_aon_cg_en.main_kmac;
   assign lpg_rst_en[23] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
 
 
@@ -2429,109 +2429,8 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
-  aes #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[43:42]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .AES192Enable(1'b1),
-    .SecMasking(SecAesMasking),
-    .SecSBoxImpl(SecAesSBoxImpl),
-    .SecStartTriggerDelay(SecAesStartTriggerDelay),
-    .SecAllowForcingMasks(SecAesAllowForcingMasks),
-    .SecSkipPRNGReseeding(SecAesSkipPRNGReseeding),
-    .RndCnstClearingLfsrSeed(RndCnstAesClearingLfsrSeed),
-    .RndCnstClearingLfsrPerm(RndCnstAesClearingLfsrPerm),
-    .RndCnstClearingSharePerm(RndCnstAesClearingSharePerm),
-    .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
-    .RndCnstMaskingLfsrPerm(RndCnstAesMaskingLfsrPerm)
-  ) u_aes (
-      // alert_handler[42]: recov_ctrl_update_err
-      // alert_handler[43]: fatal_fault
-      .alert_tx_o  ( alert_tx[43:42] ),
-      .alert_rx_i  ( alert_rx[43:42] ),
-
-      // Inter-module signals
-      .idle_o(clkmgr_aon_idle[0]),
-      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .edn_o(edn0_edn_req[5]),
-      .edn_i(edn0_edn_rsp[5]),
-      .keymgr_key_i(keymgr_aes_key),
-      .tl_i(aes_tl_req),
-      .tl_o(aes_tl_rsp),
-
-      // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_main_aes),
-      .clk_edn_i (clkmgr_aon_clocks.clk_main_aes),
-      .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel]),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-      .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
-  );
-  hmac #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[44:44]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles)
-  ) u_hmac (
-
-      // Interrupt
-      .intr_hmac_done_o  (intr_hmac_hmac_done),
-      .intr_fifo_empty_o (intr_hmac_fifo_empty),
-      .intr_hmac_err_o   (intr_hmac_hmac_err),
-      // alert_handler[44]: fatal_fault
-      .alert_tx_o  ( alert_tx[44:44] ),
-      .alert_rx_i  ( alert_rx[44:44] ),
-
-      // Inter-module signals
-      .idle_o(clkmgr_aon_idle[1]),
-      .tl_i(hmac_tl_req),
-      .tl_o(hmac_tl_rsp),
-
-      // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_main_hmac),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
-  );
-  kmac #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[46:45]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .EnMasking(KmacEnMasking),
-    .SwKeyMasked(KmacSwKeyMasked),
-    .SecCmdDelay(SecKmacCmdDelay),
-    .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
-    .NumAppIntf(KmacNumAppIntf),
-    .AppCfg(KmacAppCfg),
-    .RndCnstLfsrSeed(RndCnstKmacLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstKmacLfsrPerm),
-    .RndCnstBufferLfsrSeed(RndCnstKmacBufferLfsrSeed),
-    .RndCnstMsgPerm(RndCnstKmacMsgPerm)
-  ) u_kmac (
-
-      // Interrupt
-      .intr_kmac_done_o  (intr_kmac_kmac_done),
-      .intr_fifo_empty_o (intr_kmac_fifo_empty),
-      .intr_kmac_err_o   (intr_kmac_kmac_err),
-      // alert_handler[45]: recov_operation_err
-      // alert_handler[46]: fatal_fault_err
-      .alert_tx_o  ( alert_tx[46:45] ),
-      .alert_rx_i  ( alert_rx[46:45] ),
-
-      // Inter-module signals
-      .keymgr_key_i(keymgr_kmac_key),
-      .app_i(kmac_app_req),
-      .app_o(kmac_app_rsp),
-      .entropy_o(edn0_edn_req[3]),
-      .entropy_i(edn0_edn_rsp[3]),
-      .idle_o(clkmgr_aon_idle[2]),
-      .en_masking_o(kmac_en_masking),
-      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .tl_i(kmac_tl_req),
-      .tl_o(kmac_tl_rsp),
-
-      // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_main_kmac),
-      .clk_edn_i (clkmgr_aon_clocks.clk_main_kmac),
-      .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel]),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-      .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
-  );
   acc #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[48:47]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[43:42]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .Stub(AccStub),
     .RegFile(AccRegFile),
@@ -2545,10 +2444,10 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_done_o (intr_acc_done),
-      // alert_handler[47]: fatal
-      // alert_handler[48]: recov
-      .alert_tx_o  ( alert_tx[48:47] ),
-      .alert_rx_i  ( alert_rx[48:47] ),
+      // alert_handler[42]: fatal
+      // alert_handler[43]: recov
+      .alert_tx_o  ( alert_tx[43:42] ),
+      .alert_rx_i  ( alert_rx[43:42] ),
 
       // Inter-module signals
       .acc_otp_key_o(otp_ctrl_acc_otp_key_req),
@@ -2559,7 +2458,7 @@ module top_earlgrey #(
       .edn_urnd_i(edn0_edn_rsp[6]),
       .kmac_data_o(kmac_app_req[3]),
       .kmac_data_i(kmac_app_rsp[3]),
-      .idle_o(clkmgr_aon_idle[3]),
+      .idle_o(clkmgr_aon_idle[0]),
       .ram_cfg_imem_i(ast_ram_1p_cfg),
       .ram_cfg_dmem_i(ast_ram_1p_cfg),
       .ram_cfg_rsp_imem_o(),
@@ -2578,6 +2477,107 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+  );
+  aes #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[45:44]),
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .AES192Enable(1'b1),
+    .SecMasking(SecAesMasking),
+    .SecSBoxImpl(SecAesSBoxImpl),
+    .SecStartTriggerDelay(SecAesStartTriggerDelay),
+    .SecAllowForcingMasks(SecAesAllowForcingMasks),
+    .SecSkipPRNGReseeding(SecAesSkipPRNGReseeding),
+    .RndCnstClearingLfsrSeed(RndCnstAesClearingLfsrSeed),
+    .RndCnstClearingLfsrPerm(RndCnstAesClearingLfsrPerm),
+    .RndCnstClearingSharePerm(RndCnstAesClearingSharePerm),
+    .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
+    .RndCnstMaskingLfsrPerm(RndCnstAesMaskingLfsrPerm)
+  ) u_aes (
+      // alert_handler[44]: recov_ctrl_update_err
+      // alert_handler[45]: fatal_fault
+      .alert_tx_o  ( alert_tx[45:44] ),
+      .alert_rx_i  ( alert_rx[45:44] ),
+
+      // Inter-module signals
+      .idle_o(clkmgr_aon_idle[1]),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .edn_o(edn0_edn_req[5]),
+      .edn_i(edn0_edn_rsp[5]),
+      .keymgr_key_i(keymgr_aes_key),
+      .tl_i(aes_tl_req),
+      .tl_o(aes_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_aes),
+      .clk_edn_i (clkmgr_aon_clocks.clk_main_aes),
+      .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel]),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+  );
+  hmac #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[46:46]),
+    .AlertSkewCycles(top_pkg::AlertSkewCycles)
+  ) u_hmac (
+
+      // Interrupt
+      .intr_hmac_done_o  (intr_hmac_hmac_done),
+      .intr_fifo_empty_o (intr_hmac_fifo_empty),
+      .intr_hmac_err_o   (intr_hmac_hmac_err),
+      // alert_handler[46]: fatal_fault
+      .alert_tx_o  ( alert_tx[46:46] ),
+      .alert_rx_i  ( alert_rx[46:46] ),
+
+      // Inter-module signals
+      .idle_o(clkmgr_aon_idle[2]),
+      .tl_i(hmac_tl_req),
+      .tl_o(hmac_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_hmac),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+  );
+  kmac #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[48:47]),
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .EnMasking(KmacEnMasking),
+    .SwKeyMasked(KmacSwKeyMasked),
+    .SecCmdDelay(SecKmacCmdDelay),
+    .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
+    .NumAppIntf(KmacNumAppIntf),
+    .AppCfg(KmacAppCfg),
+    .RndCnstLfsrSeed(RndCnstKmacLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstKmacLfsrPerm),
+    .RndCnstBufferLfsrSeed(RndCnstKmacBufferLfsrSeed),
+    .RndCnstMsgPerm(RndCnstKmacMsgPerm)
+  ) u_kmac (
+
+      // Interrupt
+      .intr_kmac_done_o  (intr_kmac_kmac_done),
+      .intr_fifo_empty_o (intr_kmac_fifo_empty),
+      .intr_kmac_err_o   (intr_kmac_kmac_err),
+      // alert_handler[47]: recov_operation_err
+      // alert_handler[48]: fatal_fault_err
+      .alert_tx_o  ( alert_tx[48:47] ),
+      .alert_rx_i  ( alert_rx[48:47] ),
+
+      // Inter-module signals
+      .keymgr_key_i(keymgr_kmac_key),
+      .app_i(kmac_app_req),
+      .app_o(kmac_app_rsp),
+      .entropy_o(edn0_edn_req[3]),
+      .entropy_i(edn0_edn_rsp[3]),
+      .idle_o(clkmgr_aon_idle[3]),
+      .en_masking_o(kmac_en_masking),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .tl_i(kmac_tl_req),
+      .tl_o(kmac_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_kmac),
+      .clk_edn_i (clkmgr_aon_clocks.clk_main_kmac),
+      .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel]),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   keymgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[50:49]),
@@ -2941,13 +2941,13 @@ module top_earlgrey #(
       intr_csrng_cs_entropy_req, // IDs [175 +: 1]
       intr_csrng_cs_cmd_req_done, // IDs [174 +: 1]
       intr_keymgr_op_done, // IDs [173 +: 1]
-      intr_acc_done, // IDs [172 +: 1]
-      intr_kmac_kmac_err, // IDs [171 +: 1]
-      intr_kmac_fifo_empty, // IDs [170 +: 1]
-      intr_kmac_kmac_done, // IDs [169 +: 1]
-      intr_hmac_hmac_err, // IDs [168 +: 1]
-      intr_hmac_fifo_empty, // IDs [167 +: 1]
-      intr_hmac_hmac_done, // IDs [166 +: 1]
+      intr_kmac_kmac_err, // IDs [172 +: 1]
+      intr_kmac_fifo_empty, // IDs [171 +: 1]
+      intr_kmac_kmac_done, // IDs [170 +: 1]
+      intr_hmac_hmac_err, // IDs [169 +: 1]
+      intr_hmac_fifo_empty, // IDs [168 +: 1]
+      intr_hmac_hmac_done, // IDs [167 +: 1]
+      intr_acc_done, // IDs [166 +: 1]
       intr_flash_ctrl_corr_err, // IDs [165 +: 1]
       intr_flash_ctrl_op_done, // IDs [164 +: 1]
       intr_flash_ctrl_rd_lvl, // IDs [163 +: 1]

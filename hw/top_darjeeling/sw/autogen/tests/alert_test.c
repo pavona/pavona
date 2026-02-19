@@ -10,6 +10,7 @@
 //                -o hw/top_darjeeling/
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/autogen/dif_acc_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_alert_handler_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_aon_timer_autogen.h"
@@ -25,7 +26,6 @@
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_mbx_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_acc_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pinmux_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
@@ -51,6 +51,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_alert_handler_t alert_handler;
+static dif_acc_t acc;
 static dif_aes_t aes;
 static dif_aon_timer_t aon_timer_aon;
 static dif_clkmgr_t clkmgr_aon;
@@ -75,7 +76,6 @@ static dif_mbx_t mbx6;
 static dif_mbx_t mbx_jtag;
 static dif_mbx_t mbx_pcie0;
 static dif_mbx_t mbx_pcie1;
-static dif_acc_t acc;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux_aon;
 static dif_pwrmgr_t pwrmgr_aon;
@@ -101,6 +101,9 @@ static void init_peripherals(void) {
   mmio_region_t base_addr;
   base_addr = mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ACC_BASE_ADDR);
+  CHECK_DIF_OK(dif_acc_init(base_addr, &acc));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR);
   CHECK_DIF_OK(dif_aes_init(base_addr, &aes));
@@ -173,9 +176,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_PCIE1_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx_pcie1));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_ACC_BASE_ADDR);
-  CHECK_DIF_OK(dif_acc_init(base_addr, &acc));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(base_addr, &otp_ctrl));
@@ -285,6 +285,21 @@ static void alert_handler_config(void) {
 static void trigger_alert_test(void) {
   bool is_cause;
   dif_alert_handler_alert_t exp_alert;
+
+  // Write acc's alert_test reg and check alert_cause.
+  for (dif_acc_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_acc_alert_force(&acc, kDifAccAlertFatal + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdAccFatal + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
 
   // Write aes's alert_test reg and check alert_cause.
   for (dif_aes_alert_t i = 0; i < 2; ++i) {
@@ -637,21 +652,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdMbxPcie1FatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write acc's alert_test reg and check alert_cause.
-  for (dif_acc_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_acc_alert_force(&acc, kDifAccAlertFatal + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdAccFatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

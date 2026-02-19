@@ -19,10 +19,10 @@
 typedef enum test_trans_block {
   kTestTransFirst = 0u,
   // List of types of IP block with hintable clocks.
-  kTestTransAes = kTestTransFirst,
+  kTestTransAcc = kTestTransFirst,
+  kTestTransAes,
   kTestTransHmac,
   kTestTransKmac,
-  kTestTransAcc,
   // Number of types of IP block.
   kTestTransCount
 } test_trans_block_t;
