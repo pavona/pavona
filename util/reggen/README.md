@@ -666,81 +666,16 @@ The maximally defined inputs to this register block (termed the "subreg" from he
 Note that these are instantiated per field, not per register, so the width is the width of the field.
 The direction is the Verilog signal definition of a subreg for that type.
 
-<table>
-  <tr>
-   <td><strong>name</strong>
-   </td>
-   <td><strong>direction</strong>
-   </td>
-   <td><strong>description</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><code>we</code>
-   </td>
-   <td>input
-   </td>
-   <td>Write enable from the bus interface, scalar
-   </td>
-  </tr>
-  <tr>
-   <td><code>wd[]</code>
-   </td>
-   <td>input
-   </td>
-   <td>Write data from the bus interface, size == field size
-   </td>
-  </tr>
-  <tr>
-   <td><code>qs[]</code>
-   </td>
-   <td>output
-   </td>
-   <td>Output to read response data mux, size == field_size. This is typically the same as <code>q[]</code> except for <code>hwext</code> registers.
-   </td>
-  </tr>
-  <tr>
-   <td><code>de</code>
-   </td>
-   <td>input
-   </td>
-   <td>Hardware data enable from peripheral logic, scalar, should be set when the hardware wishes to update the register field
-   </td>
-  </tr>
-  <tr>
-   <td><code>d[]</code>
-   </td>
-   <td>input
-   </td>
-   <td>Hardware data from peripheral logic, size == field size
-   </td>
-  </tr>
-  <tr>
-   <td><code>qe</code>
-   </td>
-   <td>output
-   </td>
-   <td>Output register enable, scalar, true when bus interface writes to subreg
-   </td>
-  </tr>
-  <tr>
-   <td><code>q[]</code>
-   </td>
-   <td>output
-   </td>
-   <td>Output register content, size == field size. This output typically goes to both the hardware bundle output <code>q</code> as well as the software read response mux output <code>qs[]</code>.
-   </td>
-  </tr>
-  <tr>
-   <td><code>re</code>
-   </td>
-   <td>output
-   </td>
-   <td>Indicates to hwext registers that the bus is reading the register.
-   </td>
-  </tr>
-</table>
-
+| **name**   | **direction** | **description**                                                                                                                                                        |
+| ---------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `we`       | input         | Write enable from the bus interface, scalar                                                                                                                            |
+| `wd[]`     | input         | Write data from the bus interface, size == field size                                                                                                                  |
+| `qs[]`     | output        | Output to read response data mux, size == field_size; this is typically the same as `q[]` except for `hwext` registers                                                 |
+| `de`       | input         | Hardware data enable from peripheral logic, scalar, should be set when the hardware wishes to update the register field                                                |
+| `d[]`      | input         | Hardware data from peripheral logic, size == field size                                                                                                                |
+| `qe`       | output        | Output register enable, scalar, true when bus interface writes to subreg                                                                                               |
+| `q[]`      | output        | Output register content, size == field size; this output typically goes to both the hardware bundle output `q` as well as the software read response mux output `qs[]` |
+| `re`       | output        | Indicates to hwext registers that the bus is reading the register                                                                                                      |
 
 
 ### Type RW
