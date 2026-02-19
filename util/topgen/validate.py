@@ -79,7 +79,7 @@ top_optional = {
 
 top_added = {
     'alert': ['l', 'alerts'],
-    'exported_rsts': ['g', 'external resets grouped by something (TODO)'],
+    'exported_rsts': ['g', 'external resets grouped by each module\'s `clock_reset_export` field'],
     'incoming_alert': ['g', 'Parsed incoming alerts'],
     'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
     'interrupt': ['l', 'interrupts'],
