@@ -299,7 +299,7 @@ module prim_sha2_compression import prim_sha2_pkg::*;
          ((digest_mode_flag_q == SHA2_384) || (digest_mode_flag_q == SHA2_512)))) begin
         round_d = '0;
       end else begin
-        round_d = round_q + 1;
+        round_d = round_q + RndWidth512'(1);
       end
     end
   end

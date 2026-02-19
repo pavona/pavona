@@ -90,7 +90,7 @@ module prim_gf_mult #(
   assign first = cnt == 0;
 
   if (StagesPerCycle == Width) begin : gen_all_combo
-
+    logic unused_ins = ^{clk_i, rst_ni, req_i};
     assign ack_o = 1'b1;
     assign cnt = '0;
     assign prod_q = '0;
