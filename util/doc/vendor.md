@@ -38,18 +38,18 @@ Optional parts can be removed if they are not used.
 ```
 {
   // Name of the vendored-in project
-  name: "pulp_riscv_dbg",
+  name: "other_project",
 
   // Target directory: typically equal to the name
   // All imported code is copied into this directory
-  target_dir: "pulp_riscv_dbg",
+  target_dir: "other_project",
 
   // Git upstream source code repository
   upstream: {
     // Upstream Git repository URL. HTTPS URLs are preferred.
-    url: "https://github.com/pulp-platform/riscv-dbg",
+    url: "https://github.com/vendor-org/other-project",
     // Upstream revision or branch. Can be a commit hash or a branch name.
-    rev: "pulpissimo_integration",
+    rev: "my-branch-foo",
   },
 
   // Optional: Pick specific files or subdirectories from upstream and
@@ -61,22 +61,22 @@ Optional parts can be removed if they are not used.
 
   // Optional: Apply patches from the following directory to the upstream
   // sources
-  patch_dir: "patches/pulp_riscv_dbg",
+  patch_dir: "patches/other_project",
 
   // Optional: Update patches in |patch_dir| from a Git repository
   // If util/vendor is run with --refresh-patches, all commits in the repository
   // at |url| between |rev_base| and |rev_patched| are exported into the
   // |patch_dir|, replacing all existing patches.
   patch_repo: {
-    url: "git@github.com:lowRISC/riscv-dbg.git",
-    rev_base: "pulpissimo_integration",
-    rev_patched: "ot",
+    url: "git@github.com:pavona/other-patch.git",
+    rev_base: "3aa544f6",
+    rev_patched: "ee041e0",
   },
 
   // Optional: Exclude files or directories from the upstream sources
   // The standard glob wildcards (*, ?, etc.) are supported.
   exclude_from_upstream: [
-    "src/dm_top.sv",
+    "src/top.sv",
     "src_files.yml",
   ]
 }
