@@ -232,10 +232,10 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
       *index =
           OTP_CTRL_OWNERSHIP_SLOT_STATE_READ_LOCK_OWNERSHIP_SLOT_STATE_READ_LOCK_BIT;
       break;
-    case kDifOtpCtrlPartitionRotCreatorAuth:
-      *reg_offset = OTP_CTRL_ROT_CREATOR_AUTH_READ_LOCK_REG_OFFSET;
+    case kDifOtpCtrlPartitionRotCreatorIdentity:
+      *reg_offset = OTP_CTRL_ROT_CREATOR_IDENTITY_READ_LOCK_REG_OFFSET;
       *index =
-          OTP_CTRL_ROT_CREATOR_AUTH_READ_LOCK_ROT_CREATOR_AUTH_READ_LOCK_BIT;
+          OTP_CTRL_ROT_CREATOR_IDENTITY_READ_LOCK_ROT_CREATOR_IDENTITY_READ_LOCK_BIT;
       break;
     case kDifOtpCtrlPartitionRotOwnerAuthSlot0:
       *reg_offset = OTP_CTRL_ROT_OWNER_AUTH_SLOT0_READ_LOCK_REG_OFFSET;
@@ -284,6 +284,18 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
     case kDifOtpCtrlPartitionRomPatch:
       *reg_offset = OTP_CTRL_ROM_PATCH_READ_LOCK_REG_OFFSET;
       *index = OTP_CTRL_ROM_PATCH_READ_LOCK_ROM_PATCH_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionSocFusesCp:
+      *reg_offset = OTP_CTRL_SOC_FUSES_CP_READ_LOCK_REG_OFFSET;
+      *index = OTP_CTRL_SOC_FUSES_CP_READ_LOCK_SOC_FUSES_CP_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionSocFusesFt:
+      *reg_offset = OTP_CTRL_SOC_FUSES_FT_READ_LOCK_REG_OFFSET;
+      *index = OTP_CTRL_SOC_FUSES_FT_READ_LOCK_SOC_FUSES_FT_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionScratchFuses:
+      *reg_offset = OTP_CTRL_SCRATCH_FUSES_READ_LOCK_REG_OFFSET;
+      *index = OTP_CTRL_SCRATCH_FUSES_READ_LOCK_SCRATCH_FUSES_READ_LOCK_BIT;
       break;
 #else
 #error "dif_otp_ctrl does not support this top"
@@ -506,9 +518,9 @@ static const partition_info_t kPartitions[] = {
         .is_software = true,
         .has_digest = false,
         .is_lifecycle = false},
-    [kDifOtpCtrlPartitionRotCreatorAuth] = {
-        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_OFFSET,
-        .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_SIZE,
+    [kDifOtpCtrlPartitionRotCreatorIdentity] = {
+        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_IDENTITY_OFFSET,
+        .len = OTP_CTRL_PARAM_ROT_CREATOR_IDENTITY_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
@@ -877,9 +889,9 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_REG_OFFSET;
       break;
 #elif defined(OPENTITAN_IS_DARJEELING)
-    case kDifOtpCtrlPartitionRotCreatorAuth:
-      *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_0_REG_OFFSET;
-      *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_1_REG_OFFSET;
+    case kDifOtpCtrlPartitionRotCreatorIdentity:
+      *reg0 = OTP_CTRL_ROT_CREATOR_IDENTITY_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROT_CREATOR_IDENTITY_DIGEST_1_REG_OFFSET;
       break;
     case kDifOtpCtrlPartitionRotOwnerAuthSlot0:
       *reg0 = OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_0_REG_OFFSET;
