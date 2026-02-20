@@ -210,20 +210,27 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("LocBusIntegrityFail",            A, A, X, X), \
       Xmacro("LocShadowRegUpdateFail",         A, A, X, X), \
       Xmacro("LocShadowRegStorageError",       A, A, X, X),
-
 #endif
 // clang-format on
 
 struct OtpConfiguration {
   uint32_t rom_error_reporting;
+#if defined(OPENTITAN_IS_EARLGREY)
+  // Darjeeling does not include this value in its OTP memory map.
   uint32_t rom_bootstrap_en;
+#endif
   uint32_t rom_alert_class_en;
   uint32_t rom_alert_escalation;
-  uint32_t rom_alert_classification[80];
-  uint32_t rom_local_alert_classification[16];
-  uint32_t rom_alert_accum_thresh[4];
-  uint32_t rom_alert_timeout_cycles[4];
-  uint32_t rom_alert_phase_cycles[4][4];
+  uint32_t rom_alert_classification
+      [OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION_SIZE / 4];
+  uint32_t rom_local_alert_classification
+      [OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION_SIZE / 4];
+  uint32_t rom_alert_accum_thresh
+      [OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH_SIZE / 4];
+  uint32_t rom_alert_timeout_cycles
+      [OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES_SIZE / 4];
+  uint32_t rom_alert_phase_cycles
+      [OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES_SIZE / 16][4];
 };
 
 struct DefaultAlertClassification {
@@ -236,7 +243,9 @@ struct DefaultAlertClassification {
 
 constexpr OtpConfiguration kOtpConfig = {
     .rom_error_reporting = (uint32_t)kShutdownErrorRedactNone,
+#if defined(OPENTITAN_IS_EARLGREY)
     .rom_bootstrap_en = 1,
+#endif
     .rom_alert_class_en = Pack32(kAlertEnableLocked, kAlertEnableEnabled,
                                  kAlertEnableNone, kAlertEnableNone),
     .rom_alert_escalation = Pack32(kAlertEscalatePhase3, kAlertEscalatePhase3,
