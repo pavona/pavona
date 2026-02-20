@@ -177,10 +177,6 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
   if (launder32(blinded_key->config.hw_backed) == kHardenedBoolTrue) {
     // In this case, we use an implementation-specific representation; the
     // first "share" is the keyblob and the second share is ignored.
-    if (launder32(blinded_key->keyblob_length) < kKeyblobHwBackedMinBytes) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-    HARDENED_CHECK_GE(blinded_key->keyblob_length, kKeyblobHwBackedMinBytes);
     aes_key->key_shares[0] = blinded_key->keyblob;
     aes_key->key_shares[1] = NULL;
     aes_key->sideload = launder32(kHardenedBoolTrue);

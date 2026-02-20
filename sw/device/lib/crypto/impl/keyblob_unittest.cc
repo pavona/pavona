@@ -247,32 +247,6 @@ TEST(Keyblob, ToKeymgrDiversificationSimple) {
   EXPECT_EQ(diversification.salt[test_salt.size()], key.config.key_mode);
 }
 
-TEST(Keyblob, ToKeymgrDiversificationBadlength) {
-  // Salt and version for the hardware-backed keys.
-  std::array<uint32_t, 6> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
-                                       0x04050607, 0x08090a0b, 0x0c0d0e0f};
-  uint32_t test_version = 0xdeadbeef;
-
-  // Pack (version, salt) into a keyblob array.
-  uint32_t keyblob[test_salt.size() + 1];
-  keyblob[0] = test_version;
-  for (size_t i = 0; i < test_salt.size(); i++) {
-    keyblob[i + 1] = test_salt[i];
-  }
-
-  // Construct blinded key.
-  otcrypto_blinded_key_t key = {
-      .config = kConfigCtrSideloaded,
-      .keyblob_length = sizeof(keyblob),
-      .keyblob = keyblob,
-      .checksum = 0,
-  };
-
-  // Try to extract the keymgr diversification data.
-  keymgr_diversification_t diversification;
-  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key, &diversification));
-}
-
 TEST(Keyblob, ToKeymgrDiversificationLonglength) {
   // Salt and version for the hardware-backed keys.
   std::array<uint32_t, 8> test_salt = {0x01234567, 0x89abcdef, 0x00010203,

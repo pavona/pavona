@@ -75,8 +75,7 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
   // Ensure that keyblob length is at least the minimum word count, that it
   // makes exactly enough space for the salt and version, and that the keyblob
   // config indicates a hardware backed key.
-  if (key->keyblob_length < kKeyblobHwBackedMinWords ||
-      key->keyblob_length != sizeof(version) + salt.len * sizeof(uint32_t) ||
+  if (key->keyblob_length != sizeof(version) + salt.len * sizeof(uint32_t) ||
       key->config.hw_backed != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -283,12 +282,7 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
   uint32_t keyblob_words = plaintext[config_words + 1];
 
   // Check the that the keyblob word count in the plaintext is valid.
-  if (unwrapped_key->config.hw_backed == kHardenedBoolTrue) {
-    if (keyblob_words < kKeyblobHwBackedMinWords) {
-      *success = kHardenedBoolFalse;
-      return OTCRYPTO_OK;
-    }
-  } else if (unwrapped_key->config.hw_backed == kHardenedBoolFalse) {
+  if (unwrapped_key->config.hw_backed == kHardenedBoolFalse) {
     size_t keyblob_exp_words = 0;
     keyblob_num_words(unwrapped_key->config, &keyblob_exp_words);
     if (keyblob_words != keyblob_exp_words) {

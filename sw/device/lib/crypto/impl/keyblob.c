@@ -68,10 +68,7 @@ status_t keyblob_num_words(const otcrypto_key_config_t config,
 status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
-    if (launder32(key->keyblob_length) >= kKeyblobHwBackedMinBytes) {
-      HARDENED_CHECK_GE(key->keyblob_length, kKeyblobHwBackedMinBytes);
-      return OTCRYPTO_OK;
-    }
+    return OTCRYPTO_OK;
   } else {
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolFalse);
     size_t num_words = 0;
@@ -164,10 +161,6 @@ status_t keyblob_to_keymgr_diversification(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
-
-  if (key->keyblob_length < kKeyblobHwBackedMinBytes) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   return keyblob_buffer_to_keymgr_diversification(
       key->keyblob, key->keyblob_length, key->config.key_mode, diversification);

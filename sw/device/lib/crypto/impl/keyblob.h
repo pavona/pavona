@@ -13,24 +13,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-enum {
-  /**
-   * Minimum number of 32-bit words in a hardware-backed key's keyblob.
-   *
-   * The number of words in a keyblob can be larger, as the key manager
-   * diverification data is derived as a SHA-3 hash of the non-version words of
-   * the keyblob concatenated with the key mode.
-   */
-  kKeyblobHwBackedMinWords = kKeymgrSaltNumWords,
-  /**
-   * Minimum number of bytes in a hardware-backed key's keyblob.
-   *
-   * The number of bytes in a keyblob can be larger; see the documentation for
-   * the previous enum value.
-   */
-  kKeyblobHwBackedMinBytes = kKeyblobHwBackedMinWords * sizeof(uint32_t),
-};
-
 /**
  * Get the word-length of the full blinded keyblob for a given key length.
  *
