@@ -108,7 +108,7 @@ typedef enum dif_otp_ctrl_partition {
    * Software managed creator partition.
    *
    */
-  kDifOtpCtrlPartitionRotCreatorAuth,
+  kDifOtpCtrlPartitionRotCreatorIdentity,
   /**
    * Software managed owner slot 0 partition.
    *
@@ -160,6 +160,21 @@ typedef enum dif_otp_ctrl_partition {
    * May contain multiple signed ROM2 patches.
    */
   kDifOtpCtrlPartitionRomPatch,
+  /**
+   * SoC Fuses CP section.
+   *
+   */
+  kDifOtpCtrlPartitionSocFusesCp,
+  /**
+   * SoC Fuses FT section.
+   *
+   */
+  kDifOtpCtrlPartitionSocFusesFt,
+  /**
+   * Scratch Fuses section.
+   *
+   */
+  kDifOtpCtrlPartitionScratchFuses,
 #else
 #error "dif_otp_ctrl does not support this top"
 #endif
