@@ -294,7 +294,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 
 The [VLNV](https://fusesoc.readthedocs.io/en/stable/user/build_system/core_files.html#naming-the-core-file)
 name in the generated FuseSoC core files is set using the `--vendor` switch for
-the 'vendor' field. By default, it is set to "lowrisc". It can be overridden
+the 'vendor' field. By default, it is set to "pavona". It can be overridden
 by supplying the `--vendor <vendor-name>` switch on the command line.
 
 #### Examples

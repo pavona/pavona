@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:${name}_sva:0.1"
+name: "${vendor}:dv:${name}_sva:0.1"
 description: "${name.upper()} assertion modules and bind file."
 filesets:
   files_dv:
