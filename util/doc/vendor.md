@@ -36,9 +36,6 @@ All relative paths are relative to the description file.
 Optional parts can be removed if they are not used.
 
 ```
-// Copyright lowRISC contributors (OpenTitan project).
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
 {
   // Name of the vendored-in project
   name: "pulp_riscv_dbg",
@@ -101,9 +98,6 @@ The value at that key is a directory, relative to the global `patch_dir` and pat
 In the example vendor description file below, the mpsse directory is populated from the chromiumos platform2 repository, extracting just the few files in the trunks/ftdi subdirectory.
 
 ```
-// Copyright lowRISC contributors (OpenTitan project).
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
 {
   name: "mpsse",
   target_dir: "mpsse",
