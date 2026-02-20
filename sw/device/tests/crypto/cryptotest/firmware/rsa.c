@@ -153,7 +153,7 @@ status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
       .key_mode = key_mode,
       .key_length = key_length,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   uint32_t n[key_length / sizeof(uint32_t)];
   memset(n, 0, sizeof(n));
@@ -601,7 +601,7 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = key_length,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   uint32_t n[key_length / sizeof(uint32_t)];
   memset(n, 0, sizeof(n));

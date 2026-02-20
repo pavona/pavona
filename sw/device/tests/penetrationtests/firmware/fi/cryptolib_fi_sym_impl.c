@@ -98,7 +98,7 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
       .key_mode = key_mode,
       .key_length = uj_input.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
 
   // Create buffer to store key.
@@ -221,7 +221,7 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = uj_input.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
 
   // Construct blinded key from the key and testing mask.
@@ -351,7 +351,7 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
       .key_mode = key_mode,
       .key_length = uj_input.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
 
   // Create buffer to store key.

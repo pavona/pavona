@@ -73,7 +73,8 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .key_mode = kOtcryptoKeyModeKdfKmac128,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
-                        .security_level = kOtcryptoKeySecurityLevelBase,
+                        .security_level =
+                            kOtcryptoKeySecurityLevelPassiveRemote,
                         .exportable = kHardenedBoolFalse,
                     },
                 .keyblob_length = 32,
@@ -132,7 +133,8 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .key_mode = kOtcryptoKeyModeKdfKmac128,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
-                        .security_level = kOtcryptoKeySecurityLevelBase,
+                        .security_level =
+                            kOtcryptoKeySecurityLevelPassiveRemote,
                         .exportable = kHardenedBoolFalse,
                     },
                 .keyblob_length = 32,
@@ -215,7 +217,8 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .key_mode = kOtcryptoKeyModeKdfKmac256,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
-                        .security_level = kOtcryptoKeySecurityLevelBase,
+                        .security_level =
+                            kOtcryptoKeySecurityLevelPassiveRemote,
                         .exportable = kHardenedBoolFalse,
                     },
                 .keyblob_length = 32,
@@ -329,7 +332,7 @@ static status_t run_test_vector(void) {
       .key_mode = kOtcryptoKeyModeKdfKmac128,
       .key_length = km_key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
       .exportable = kHardenedBoolTrue,
   };
 

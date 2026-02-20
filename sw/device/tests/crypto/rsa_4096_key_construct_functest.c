@@ -196,7 +196,7 @@ status_t private_key_roundtrip_test(void) {
       .key_mode = kTestKeyMode,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa4096PrivateKeyblobBytes, sizeof(uint32_t));
@@ -300,7 +300,7 @@ status_t private_key_check_valid_roundtrip_inner(hardened_bool_t check_primes) {
       .key_mode = kTestKeyMode,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa4096PrivateKeyblobBytes, sizeof(uint32_t));
@@ -419,7 +419,7 @@ status_t private_key_check_invalid(void) {
       .key_mode = kTestKeyMode,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa4096PrivateKeyblobBytes, sizeof(uint32_t));

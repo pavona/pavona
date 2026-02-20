@@ -58,7 +58,8 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
                         .exportable = kHardenedBoolFalse,
-                        .security_level = kOtcryptoKeySecurityLevelBase,
+                        .security_level =
+                            kOtcryptoKeySecurityLevelPassiveRemote,
                     },
                 .keyblob_length = 32,
                 .keyblob =
@@ -114,7 +115,8 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
                         .exportable = kHardenedBoolFalse,
-                        .security_level = kOtcryptoKeySecurityLevelBase,
+                        .security_level =
+                            kOtcryptoKeySecurityLevelPassiveRemote,
                     },
                 .keyblob_length = 32,
                 .keyblob =
@@ -194,7 +196,8 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
                         .exportable = kHardenedBoolFalse,
-                        .security_level = kOtcryptoKeySecurityLevelBase,
+                        .security_level =
+                            kOtcryptoKeySecurityLevelPassiveRemote,
                     },
                 .keyblob_length = 32,
                 .keyblob =

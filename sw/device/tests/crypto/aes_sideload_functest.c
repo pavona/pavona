@@ -38,7 +38,7 @@ static const otcrypto_key_config_t kAesKeyConfig = {
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 // AES IV testing data.

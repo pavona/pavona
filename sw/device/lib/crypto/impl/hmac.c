@@ -127,7 +127,7 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
   // The underlying HMAC hardware is unmasked, and does not have sideload
   // support.
   if (key->config.hw_backed != kHardenedBoolFalse ||
-      key->config.security_level != kOtcryptoKeySecurityLevelBase) {
+      key->config.security_level != kOtcryptoKeySecurityLevelPassiveRemote) {
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 

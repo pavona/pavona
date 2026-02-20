@@ -23,7 +23,7 @@ static const otcrypto_key_config_t kMlkem512SecretKeyConfig = {
     .key_mode = kOtcryptoKeyModeMlkem512,
     .key_length = kOtcryptoMlkem512SecretKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 static const otcrypto_key_config_t kMlkem512SharedSecretConfig = {
@@ -31,7 +31,7 @@ static const otcrypto_key_config_t kMlkem512SharedSecretConfig = {
     .key_mode = kOtcryptoKeyModeAesCtr,  // mode doesn't matter
     .key_length = kOtcryptoMlkem512SharedSecretBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 static const otcrypto_key_config_t kMlkem768SecretKeyConfig = {
@@ -39,7 +39,7 @@ static const otcrypto_key_config_t kMlkem768SecretKeyConfig = {
     .key_mode = kOtcryptoKeyModeMlkem768,
     .key_length = kOtcryptoMlkem768SecretKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 static const otcrypto_key_config_t kMlkem768SharedSecretConfig = {
@@ -47,7 +47,7 @@ static const otcrypto_key_config_t kMlkem768SharedSecretConfig = {
     .key_mode = kOtcryptoKeyModeAesCtr,  // mode doesn't matter
     .key_length = kOtcryptoMlkem768SharedSecretBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 static const otcrypto_key_config_t kMlkem1024SecretKeyConfig = {
@@ -55,7 +55,7 @@ static const otcrypto_key_config_t kMlkem1024SecretKeyConfig = {
     .key_mode = kOtcryptoKeyModeMlkem1024,
     .key_length = kOtcryptoMlkem1024SecretKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 static const otcrypto_key_config_t kMlkem1024SharedSecretConfig = {
@@ -63,7 +63,7 @@ static const otcrypto_key_config_t kMlkem1024SharedSecretConfig = {
     .key_mode = kOtcryptoKeyModeAesCtr,  // mode doesn't matter
     .key_length = kOtcryptoMlkem1024SharedSecretBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 // Static work buffer for all ML-KEM operations

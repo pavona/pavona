@@ -33,7 +33,7 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
     .key_mode = kOtcryptoKeyModeEcdsaP384,
     .key_length = kP384PrivateKeyBytes,
     .hw_backed = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 static const uint32_t kPrivateKeySalt[7] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef,

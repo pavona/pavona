@@ -266,7 +266,7 @@ static status_t run_rsa_4096_decrypt(const uint8_t *label, size_t label_len,
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa4096PrivateKeyblobBytes, sizeof(uint32_t));

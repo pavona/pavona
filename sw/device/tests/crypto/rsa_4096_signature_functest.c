@@ -247,7 +247,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
       .key_mode = key_mode,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa4096PrivateKeyblobBytes, sizeof(uint32_t));

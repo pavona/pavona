@@ -62,7 +62,7 @@ static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
       .key_mode = key_mode,
       .key_length = test->key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
 }
 

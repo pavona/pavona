@@ -115,7 +115,7 @@ status_t handle_aes_block(ujson_t *uj) {
       .key_mode = key_mode,
       .key_length = uj_data.key_length,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   // Create buffer to store key
   uint32_t key_buf[kAesMaxKeyWords];

@@ -51,7 +51,7 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
                 .key_mode = ${"kOtcryptoKeyModeKmac" + str(t["security_str"])},
                 .key_length = ${t["key_len"]},
                 .hw_backed = kHardenedBoolFalse,
-                .security_level = kOtcryptoKeySecurityLevelBase,
+                .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
                 .exportable = kHardenedBoolTrue,
             },
             .keyblob_length = ${4 * len(t["keyblob"])},

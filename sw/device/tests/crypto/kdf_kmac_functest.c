@@ -39,7 +39,7 @@ static status_t run_test_vector(void) {
               .version = kOtcryptoLibVersion1,
               .key_length = km_num_words * sizeof(uint32_t),
               .hw_backed = kHardenedBoolFalse,
-              .security_level = kOtcryptoKeySecurityLevelBase,
+              .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
               .exportable = kHardenedBoolTrue,
           },
       .keyblob = km_buffer,

@@ -47,7 +47,7 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
     .key_mode = kOtcryptoKeyModeEd25519,
     .key_length = kEd25519PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelBase,
+    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
 status_t sign_then_verify_test(hardened_bool_t *verification_result) {

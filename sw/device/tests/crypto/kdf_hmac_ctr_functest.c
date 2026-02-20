@@ -87,7 +87,7 @@ static status_t run_test(kdf_test_vector_t *test) {
       .key_length = test->kdk_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
 
   size_t kdk_keyblob_wordlen = 0;
@@ -110,7 +110,7 @@ static status_t run_test(kdf_test_vector_t *test) {
       .key_length = test->km_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   size_t km_keyblob_wordlen = 0;
   TRY(keyblob_num_words(km_config, &km_keyblob_wordlen));

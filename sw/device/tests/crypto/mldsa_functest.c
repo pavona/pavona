@@ -151,7 +151,7 @@ static void test_mldsa44_derand(void) {
       .key_length = kOtcryptoMldsa44SecretKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   otcrypto_blinded_key_t secret_key = {
       .config = secret_key_config,
@@ -250,7 +250,7 @@ static void test_mldsa65_derand(void) {
       .key_length = kOtcryptoMldsa65SecretKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   otcrypto_blinded_key_t secret_key = {
       .config = secret_key_config,
@@ -349,7 +349,7 @@ static void test_mldsa87_derand(void) {
       .key_length = kOtcryptoMldsa87SecretKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelBase,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   otcrypto_blinded_key_t secret_key = {
       .config = secret_key_config,
