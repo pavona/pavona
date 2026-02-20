@@ -7,7 +7,7 @@ will read default.yml.
 # Inheritance
 
 Configurations can inherit from one another. There are two uses for
-this. Firstly, it allows us to define customised versions of a more
+this. Firstly, it allows us to define customized versions of a more
 standard configuration. For example, you might have a configuration
 that's just like the normal one but with many more loop instructions.
 

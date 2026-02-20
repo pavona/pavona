@@ -39,7 +39,7 @@ Here, there is no strict limit on the size of the logic inside a primitive, but 
 Examples include fifos, counters, arbiters, synchronizers and codecs.
 
 There may be different implementations of primitives that achieve the same fixed function, but with different trade-offs in how this is achieved.
-Modules can contain additional metadata that informs and specializes the process of lowering abstract RTL descriptions of behaviour into hardware that implements the equivalent function.
+Modules can contain additional metadata that informs and specializes the process of lowering abstract RTL descriptions of behavior into hardware that implements the equivalent function.
 Tools that perform this lowering undertake a mapping process where higher-level functionality is decomposed into lower and lower level components.
 These components exist in, or can be created in, the physical hardware or technology that is being targeted.
 In ASIC or FPGA targets, the lower level components may be macro cells or other fixed-function hardware blocks.
@@ -246,7 +246,7 @@ To create a technology library follow these steps:
    `mytech` will be used as a placeholder name in the examples.
 2. Create a directory in `hw/ip` with the prefix `prim_` followed by the name of your technology library.
 3. Copy `hw/ip/prim_generic/prim_generic.core` into the new directory renaming it to match your primitive library, e.g. `hw/ip/prim_mytech/prim_mytech.core`
-   Change the vendor and name in this file, e.g. `lowrisc:prim_generic` would become `partner:prim_mytech` where your organisation's name can be used in the place of 'partner'.
+   Change the vendor and name in this file, e.g. `lowrisc:prim_generic` would become `partner:prim_mytech` where your organization's name can be used in the place of 'partner'.
    Also, edit the description to better describe the specific implementation.
 4. For every primitive implemented by your library:
    1. Copy across the generic implementation into your library, e.g. `cp hw/ip/prim_generic/rtl/prim_flop.sv hw/ip/prim_mytech/rtl/prim_flop.sv`.

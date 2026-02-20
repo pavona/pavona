@@ -6,7 +6,7 @@ The OpenTitan repository contains device libraries which are used within our
 Reference Firmware Images, and can (and should) be used by other OpenTitan
 device software.
 
-These are organised into the `sw/device/lib` directory.
+These are organized into the `sw/device/lib` directory.
 
 -   [`sw/device/lib/base`](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/base)
     contains the Base Libraries, including

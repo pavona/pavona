@@ -67,7 +67,7 @@ two 32-bit writes required to set the 64-bit timer value.
 If the value of `mtime` is modified in this manner then `mtimecmp` shall be
 written after `mtime` in order to clear any pending interrupt condition.
 
-## Timer behaviour close to 2^64
+## Timer behavior close to 2^64
 
 There are some peculiarities when `mtime` and `mtimecmp` get close to the end of
 the 64-bit integer range. In particular, because an unsigned comparison is done

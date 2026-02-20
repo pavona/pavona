@@ -68,7 +68,7 @@ As such, if the pre-divider has value `N` then `pcl` will have a period of `2*N`
 The count is configured a bit like the length and repeat count mentioned [above](#patterns).
 A field value of zero means that the pre-divider counts to zero and alternates every cycle.
 This gives a `pcl` frequency of half the main clock frequency.
-In pictures, this is the behaviour:
+In pictures, this is the behavior:
 ```wavejson
 {
   signal: [
@@ -89,7 +89,7 @@ When a pattern completes, the associated [interrupt line](doc/interfaces.md#inte
 
 ## Inactive level
 
-While a pattern is being transmitted, the exact behaviour of the `pcl` and `pda` outputs is governed by the polarity.
+While a pattern is being transmitted, the exact behavior of the `pcl` and `pda` outputs is governed by the polarity.
 In times when a pattern is not being transmitted, the channel is considered inactive.
 At those times, the `pcl` and `pda` outputs are constant, set to a level that can be configured.
 This configuration is controlled by single-bit fields in the [`CTRL`](doc/registers.md#ctrl) register.
@@ -112,7 +112,7 @@ The only field that has an effect when the channel is enabled is the associated 
 In order to ensure that the output signals switch cleanly, they are driven straight from flops.
 This ensures that they cannot "glitch", no matter how the registers are controlled.
 
-## Alert behaviour
+## Alert behavior
 
 Although `pattgen` is not really a security block, it is still connected to the alert system.
 This connection is just that it generates alerts if it detects signal integrity problems on the TileLink bus.

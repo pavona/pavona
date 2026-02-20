@@ -72,7 +72,7 @@ All test sequences are extended from `usbdev_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simply use / call.
 
 USBDEV virtual sequences normally also run a `usbdev_init` task at the start of the simulation.
-This does basic USB device initialization and is only disabled for `usbdev_common_vseq` (which tests CSR behaviour and doesn't need to enable USB itself).
+This does basic USB device initialization and is only disabled for `usbdev_common_vseq` (which tests CSR behavior and doesn't need to enable USB itself).
 
 #### Functional coverage
 

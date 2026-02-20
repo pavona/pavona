@@ -9,7 +9,7 @@ Each test is divided into components:
  - **OTP image**, contains HW and SW configurations, some of which control execution paths in the ROM, such as the lifecycle stage.
    As a result, we run some tests with several different OTP images to increase coverage of ROM execution paths.
    There is more information in the documentation for the OTP layout.
-   That documentation is specialised for the different tops.
+   That documentation is specialized for the different tops.
    For an example, see earlgrey's [OTP memory map](../../../../../hw/top_earlgrey/ip_autogen/otp_ctrl/README.md#direct-access-memory-map).
  - **FPGA bitstream**, Opentitan Hardware implementation synthesized for the FPGA built by `bazel` and `vivado`.
  - **Device test firmware**, a C program (built by bazel to run on an OpenTitan device) that is loaded into flash, and booted by the ROM stage. It checks the HW registers and/or memory configurations performed by the ROM and relays information to the Host test software.

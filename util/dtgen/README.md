@@ -6,7 +6,7 @@ See:
 - Doxygen documentation: look for the `(<topname>)/hw/top/dt/` directories.
 
 In addition to the standard definitions generated for each top/IP, `dtgen` supports extensions.
-Extensions can be used to add extra definitions to the generated artefacts such as IP-specific constructs.
+Extensions can be used to add extra definitions to the generated artifacts such as IP-specific constructs.
 
 ## Python-based extensions
 

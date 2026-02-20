@@ -33,7 +33,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * A [Pins inteface](../../../dv/sv/common_ifs/README.md) for the LC escalate input
 
 
-The AON timer uses three clock domains (`async`, `clk_i` and `clk_aon_i`), with synchronisation logic between them.
+The AON timer uses three clock domains (`async`, `clk_i` and `clk_aon_i`), with synchronization logic between them.
 The following diagram shows the different inputs and outputs for the module and in which clock domain each resides.
 
 ![Design timing domains](./doc/domains.svg)
@@ -76,7 +76,7 @@ base vseq called `aon_timer_base_vseq` and from which most of the child sequence
 The sequences available are:
  - aon_timer_base_vseq: does not have a body and rather defines common functionality to be used in child Vseqs
  - aon_timer_smoke_vseq: extends from base vseq and serves as stimuli for the TB.
-   This sequence initialises, configures the counters and waits for an interrupt disabling the counters.
+   This sequence initializes, configures the counters and waits for an interrupt disabling the counters.
    This Vseq also tests the `pause_in_sleep` feature.
  - aon_timer_jump_vseq: similar to the smoke vseq, but without testing the `pause_in_sleep` feature.
  - aon_timer_prescaler_vseq: similar to the smoke vseq, but also configuring the prescaler for the WKUP counter.
@@ -228,7 +228,7 @@ This does not include precise modelling for the CDC timing.
 
 The second part of the self-checking logic looks at the configuration registers of the timers.
 After calculating the amount of clock cycles, it starts checking for an interrupt from either wake-up timer or watchdog timer.
-Here, there is a single clock domain (the AON clock) and easily predictable behaviour.
+Here, there is a single clock domain (the AON clock) and easily predictable behavior.
 The scoreboard contains an exact model of how the interrupts generated from this specific configuration.
 
 Putting the two parts of the scoreboard together gives a full checker for the block.

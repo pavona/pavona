@@ -131,7 +131,7 @@ This number is close to the maximum achievable number for Ibex with an ideal sin
 When switching to GCC and combining the Ibex configuration used in OpenTitan Earl Grey with an idealistic single-cycle access Flash memory, a CoreMark/MHz number of 3.07 is achievable.
 To achieve this performance, CoreMark can be compiled with GCC 9.2.0 and with the following flags: `-march=rv32imc -mabi=ilp32 -mcmodel=medany -mtune=sifive-3-series -O3 -falign-functions=16 -funroll-all-loops -finline-functions -falign-jumps=4 -mstrict-align` .
 
-The Ibex documentation has more details on the current pipeline operation, including stall behaviour for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/latest/03_reference/pipeline_details.html) section.
+The Ibex documentation has more details on the current pipeline operation, including stall behavior for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/latest/03_reference/pipeline_details.html) section.
 
 ### Memory
 

@@ -98,7 +98,7 @@ Software should then clear the [`CONTROLLER_EVENTS.NACK`](registers.md#controlle
 The `controller_halt` interrupt is a CIP status type, so it doesn't clear by writing to the [`INTR_STATE.CONTROLLER_HALT`](registers.md#intr_state) bit.
 Instead, the `CONTROLLER_EVENTS` CSR tracks the contributing events, and all must be cleared for the interrupt to de-assert.
 
-The Halt-on-NACK behaviour may be problematic if SW is not responsive, so there is a timeout mechanism that can automatically end the transaction by creating a STOP condition and returning to halt in an idle state.
+The Halt-on-NACK behavior may be problematic if SW is not responsive, so there is a timeout mechanism that can automatically end the transaction by creating a STOP condition and returning to halt in an idle state.
 This is configured using the [`HOST_NACK_HANDLER_TIMEOUT`](registers.md#host_nack_handler_timeout) CSR, which allows software to configure the delay before hardware will terminate the transaction.
 When the timeout occurs, the [`CONTROLLER_EVENTS.UNHANDLED_NACK_TIMEOUT`] bit will set, and this condition will also cause the `controller_halt` interrupt to assert (or remain asserted).
 Like the original NACK event, the timeout bit will cause the Controller Module to remain halted until it is cleared.
@@ -368,7 +368,7 @@ If the RX FIFO receives an additional write request when its FIFO is full, the i
 
 If the module transmits a byte and the 9th bit is a NACK from the Target/Bus, the `controller_halt` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
 If the `controller_halt` interrupt is asserted, the Controller Module FSM will halt until the interrupt has been acknowledged.
-See [the Controller NACK handling section](#controller-nack-handling) above for more details on this behaviour.
+See [the Controller NACK handling section](#controller-nack-handling) above for more details on this behavior.
 In addition, the interrupt will be asserted if any of the other halt-causing events occur, such as a bus timeout or a loss of arbitration.
 This interrupt is a status type that requires clearing all triggering event latches before it will deassert.
 
@@ -427,7 +427,7 @@ As mentioned above, the interrupt `cmd_complete` is asserted whenever a RESTART 
 
 The interrupt `tx_stretch` is asserted whenever the Target Module intends to transmit data but cannot.
 If software sets the bit [`CTRL.TX_STRETCH_CTRL_EN`](registers.md#ctrl), the Target Module will require software to confirm release of the TX FIFO at the beginning of every read transfer addressed to it.
-This behaviour may be useful to software, as any remaining data in the TX FIFO after a Sr/P condition may no longer apply to the next transfer, so it may have to be cleared out via [`FIFO_CTRL.TXRST`](registers.md#fifo_ctrl).
+This behavior may be useful to software, as any remaining data in the TX FIFO after a Sr/P condition may no longer apply to the next transfer, so it may have to be cleared out via [`FIFO_CTRL.TXRST`](registers.md#fifo_ctrl).
 For more on stretching on read transfers, see [stretching during read]({{< relref "#stretching-during-read" >}}).
 
 When a controller receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.

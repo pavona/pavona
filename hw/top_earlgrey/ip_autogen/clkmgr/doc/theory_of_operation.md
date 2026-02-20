@@ -239,7 +239,7 @@ There is currently no support in hardware to dynamically synchronize a threshold
 
 #### Clock Frequency Summary
 
-The table below summarises the valid modes and the settings required.
+The table below summarizes the valid modes and the settings required.
 
 | Mode                                            | `lc_clk_byp_req_i`     | `extclk_ctrl.sel` | `extclk_ctrl.hi_speed_sel`  | life cycle state               |
 | -------------                                   | ---------------------  | ----------------- | ----------------------------| -------------------------------|

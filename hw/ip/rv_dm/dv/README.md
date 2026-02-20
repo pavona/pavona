@@ -144,7 +144,7 @@ All test sequences extend from `rv_dm_base_vseq`.
 
 #### Functional coverage
 
-The DV environment for rv_dm doesn't currently contain any specialised covergroups.
+The DV environment for rv_dm doesn't currently contain any specialized covergroups.
 This is a state that could be improved in the future, but signoff is currently mostly based on code coverage and functional coverage from generic agents that have been instantiated.
 
 ### Self-checking strategy
@@ -153,14 +153,14 @@ This is a state that could be improved in the future, but signoff is currently m
 
 The DV environment for rv_dm currently has a very minimal scoreboard.
 In particular, there is not currently a functional model against which the design can be checked.
-Instead, the testing that exists comes from randomised directed testing where vseqs run with expectations about how the design state will change based on what they do.
+Instead, the testing that exists comes from randomized directed testing where vseqs run with expectations about how the design state will change based on what they do.
 
 #### Assertions
 
 Assertion checks for rv_dm currently come from four places.
 * Assertions that are found in the design itself.
-* Assertions about the behaviour of CSRs, implemented by `rv_dm_regs_csr_assert_fpv` and bound in by `tb/rv_dm_bind`.
-* Assertions about TLUL behaviour for the register, memory and sba interfaces.
+* Assertions about the behavior of CSRs, implemented by `rv_dm_regs_csr_assert_fpv` and bound in by `tb/rv_dm_bind`.
+* Assertions about TLUL behavior for the register, memory and sba interfaces.
   These are implemented by `tlul_assert` and bound in by `tb/rv_dm_bind`.
 * Assertions about the debug enable signals and what functionality they should control.
   These are implemented by `rv_dm_enable_checker` and bound in by `rv_dm_bind`.

@@ -92,7 +92,7 @@ should be set to true by environments for IPs that support resets when CSR
 accesses are in flight. For this to work properly, the environment must avoid
 checking correctness of CSR reads if a reset happens while the read is in
 progress. Any vseqs must also make sure to complete when a reset is asserted.
-This flag governs the behaviour of `run_seq_with_rand_reset_vseq`, described
+This flag governs the behavior of `run_seq_with_rand_reset_vseq`, described
 below.
 
 The base class provides a virtual method called `initialize()` which is called
@@ -225,13 +225,13 @@ Some examples:
   such as `ERR_CODE`. The list of CSRs that are impacted by this alert event, maintained
   in `cfg.tl_intg_alert_fields`, are also checked for correctness.
 * **task run_seq_with_rand_reset_vseq**: This task runs a provided sequence
-  while injecting TL errors with `run_tl_errors_vseq`. After a randomised wait,
+  while injecting TL errors with `run_tl_errors_vseq`. After a randomized wait,
   it injects a reset. Once the reset is complete, it reads all the CSRs to check
   that they contain their expected reset values.
 
   The provided sequence must make sure not to drive a reset itself. The reset
   that would be driven in `dut_init` is disabled in this task by setting the
-  sequence's `do_apply_reset` value to zero, but this behaviour needs to be
+  sequence's `do_apply_reset` value to zero, but this behavior needs to be
   passed on to any sub-sequence that it wishes to spawn by ensuring that they
   also have `do_apply_reset=0`. An example from `hmac_stress_all_vseq.sv`:
   ```
