@@ -35,6 +35,27 @@ string_flag(
     values = ALL_TOP_NAMES,
 )
 
+config_setting(
+    name = "englishbreakfast",
+    flag_values = {
+        "top": "englishbreakfast",
+    },
+)
+
+config_setting(
+    name = "earlgrey",
+    flag_values = {
+        "top": "earlgrey",
+    },
+)
+
+config_setting(
+    name = "darjeeling",
+    flag_values = {
+        "top": "darjeeling",
+    },
+)
+
 # Use this flag to select the seed.
 string_flag(
     name = "seed",
