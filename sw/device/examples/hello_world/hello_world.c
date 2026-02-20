@@ -14,13 +14,24 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
+// TODO: Use dt and IP selectors instead of top names for the #if's in this
+// file.
+#if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#endif
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_gpio_t gpio;
-static dif_pinmux_t pinmux;
 static dif_uart_t uart;
+
+#if defined(OPENTITAN_IS_EARLGREY)
+static dif_pinmux_t pinmux;
+
+static uintptr_t kUart0BaseAddr = TOP_EARLGREY_UART0_BASE_ADDR;
+static uintptr_t kGpioBaseAddr = TOP_EARLGREY_GPIO_BASE_ADDR;
 
 static dif_pinmux_index_t leds[] = {
     kTopEarlgreyPinmuxMioOutIor10,
@@ -49,14 +60,21 @@ void configure_pinmux(void) {
     CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, switches[i]));
   }
 }
+#endif
+
+#if defined(OPENTITAN_IS_DARJEELING)
+static uintptr_t kUart0BaseAddr = TOP_DARJEELING_UART0_BASE_ADDR;
+static uintptr_t kGpioBaseAddr = TOP_DARJEELING_GPIO_BASE_ADDR;
+#endif
 
 void _ottf_main(void) {
+#if defined(OPENTITAN_IS_EARLGREY)
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   configure_pinmux();
+#endif
 
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
+  CHECK_DIF_OK(dif_uart_init(mmio_region_from_addr(kUart0BaseAddr), &uart));
 
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
@@ -72,8 +90,7 @@ void _ottf_main(void) {
              }));
   base_uart_stdout(&uart);
 
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(mmio_region_from_addr(kGpioBaseAddr), &gpio));
   // Enable GPIO: 0-3 is output; 8-11 is input.
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0xF));
 
@@ -91,6 +108,8 @@ void _ottf_main(void) {
   LOG_INFO(
       "The LEDs show the lower nibble of the ASCII code of the last "
       "character.");
+
+  LOG_INFO("PASSED");
 
   uint32_t gpio_state = 0;
   while (true) {
