@@ -2,7 +2,7 @@
 
 ## Objective
 
-The Shutdown module is responsible for securely shutting down the OpenTitan chip in the event of an unrecoverable fault during the secure boot process.
+The Shutdown module is responsible for securely shutting down a chip in the event of an unrecoverable fault during the secure boot process.
 A secure shutdown should result in a system end-state where a chip reset is the only viable option.
 
 ## Dependencies
@@ -57,7 +57,7 @@ It refers to a configuration where an alert is neither classified nor armed.
 
 The alert handler allows each alert class to enable a number of escalation phases which map to certain actions.
 The specific action at each escalation phase (0-3) is left as a top-level integration decision.
-In the OpenTitan first silicon, the escalation actions are detailed in the following table.
+The escalation actions are detailed in the following table.
 
 | Escalation Phase   | Action        |
 |--------------------|---------------|

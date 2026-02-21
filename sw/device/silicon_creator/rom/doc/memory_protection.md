@@ -10,7 +10,7 @@ The overall goal of the Memory Protection Module is to minimize risk of unverifi
 
 # Requirements
 
-There are four types of memory mapped to address spaces in OpenTitan:
+Consider a device with four types of memory mapped to address spaces:
 
  * Read-Only Memory (ROM)
  * Random Access Memory (RAM)

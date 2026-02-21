@@ -2,8 +2,8 @@
 
 ## Introduction
 
-The OpenTitan bootstrap protocol should conform to well-known standards which can be driven by commonly available equipment.
-Given the available I/O interfaces on the OpenTitan chip, we can choose between protocols implemented on TTL-level serial (e.g. XMODEM or parsing of S-records), SPI (e.g. the SPI EEPROM protocol), I2C (e.g. the I2C EEPROM protocol) or USB (e.g. choose a standard USB protocol).
+The bootstrap protocol should conform to well-known standards which can be driven by commonly available equipment.
+Given the available I/O interfaces on a chip, we can choose between protocols implemented on TTL-level serial (e.g. XMODEM or parsing of S-records), SPI (e.g. the SPI EEPROM protocol), I2C (e.g. the I2C EEPROM protocol) or USB (e.g. choose a standard USB protocol).
 
 ## Requirements
 
@@ -14,7 +14,7 @@ Assumptions:
 *   Bootstrap may be used in failure analysis situations by the silicon owner.
 *   Bootstrap _is not_ a mechanism by which an ownership transfer may be performed.
 
-The OpenTitan bootstrap protocol should:
+The bootstrap protocol should:
 *   Be implemented via the typical SPI flash EEPROM command set.
 *   Be driven by commonly available SPI flash programmers (e.g. the [Dediprog SF100](https://www.dediprog.com/product/SF100))
 *   Require no custom modifications to the SPI flash programmer's client software.

@@ -2,7 +2,7 @@
 
 The ROM is the first boot stage in the Reference Secure Boot implementation, and starts executing at device reset.
 The ROM is programmed into the chip's ROM during wafer manufacturing, and cannot be changed.
-The ROM needs to prepare the OpenTitan chip for executing a ROM_EXT, including ensuring the loaded ROM_EXT is allowed to be executed on this chip.
+The ROM needs to prepare the system for executing a ROM_EXT, including ensuring the loaded ROM_EXT is allowed to be executed on this chip.
 
 # References
 

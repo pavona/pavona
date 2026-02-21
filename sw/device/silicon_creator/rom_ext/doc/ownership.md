@@ -1,12 +1,12 @@
-# OpenTitan Ownership Transfer
+# Ownership Transfer
 
 > [!NOTE]
 > This document is a draft.
 
 ## Introduction
 
-This document discusses the OpenTitan Ownership Transfer protocol, including the commands, operations, data and data structures needed for ownership transfer.
-Ownership Transfer allows the owner of the chip to securely root an OpenTitan chip to their own public key infrastructure and to transfer the chip to a new owner when they no longer want or need to be the owner of the chip (e.g. reselling used equipment or transferring equipment among different security domains within the same organization).
+This document discusses the Ownership Transfer protocol, including the commands, operations, data and data structures needed for ownership transfer.
+Ownership Transfer allows the owner of the chip to securely root a chip to their own public key infrastructure and to transfer the chip to a new owner when they no longer want or need to be the owner of the chip (e.g. reselling used equipment or transferring equipment among different security domains within the same organization).
 
 ### Definitions
 
@@ -28,7 +28,7 @@ Ownership Transfer allows the owner of the chip to securely root an OpenTitan ch
 
 ## Ownership Transfer
 
-Ownership Transfer allows owners of OpenTitan chips to securely transfer chips and OpenTitan devices between different public key infrastructures (PKIs) without assistance (or interference) from the manufacturer of the chip.
+Ownership Transfer allows owners of chips to securely transfer chips and devices between different public key infrastructures (PKIs) without assistance (or interference) from the manufacturer of the chip.
 
 Ownership Transfer gives each owner of a chip the ability to specify their own application firmware keys, key domains and chip configurations.
 
@@ -70,7 +70,7 @@ The configuration allows the owner to control the flash configuration, applicati
 
 - The flash configuration allows the owner to set access control (read, program, erase) and storage policy (ECC, scrambling, high endurance) of various regions and INFO pages of flash.
 - The owner may add a number of application verification keys that permit code execution.
-  The application key configuration includes an execution domain (e.g. `prod`, `dev` or `test`) and a key diversifier constant allowing the owner to control the derivation of sealing keys by the OpenTitan key manager.
+  The application key configuration includes an execution domain (e.g. `prod`, `dev` or `test`) and a key diversifier constant allowing the owner to control the derivation of sealing keys by the key manager.
 - The rescue configuration allows the owner to configure the operation of the rescue mode.
   The configuration allows protecting flash regions from erasure during rescue and designating the allowed set of rescue commands (an owner may want to disable certain rescue commands if they feel those commands represent an attack or denial of service vector in their use case).
 - The miscellaneous configuration contains configuration for features that aren't well categorized into one of the above configurations:
@@ -480,7 +480,7 @@ The owner configuration contains the following items:
 - Activation Key:  This key is used to authenticate an `OwnershipActivate` command.
 - Unlock Key:  This key is used to authenticate an `OwnershipUnlock` command.
 - Owner Application Keys:  These keys are used to authenticate the owner's firmware payload.
-   The keys also carry some additional metadata used to configure the OpenTitan key manager.
+   The keys also carry some additional metadata used to configure the key manager.
 - EFLASH configuration.
   The EFLASH configuration sets the desired properties on ranges of flash data pages (such as access permissions and error correction properties).
 - EFLASH-INFO configuration: The EFLASH-INFO configuration sets the desired properties on flash info pages.

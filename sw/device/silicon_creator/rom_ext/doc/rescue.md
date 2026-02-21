@@ -160,9 +160,9 @@ The ROM_EXT will then transmit the request owner page to the user via the Xmodem
 After completing this action, the ROM_EXT will switch back to firmware rescue mode.
 
 
-#### Get OpenTitan Device ID (`OTID`)
+#### Get Device ID (`OTID`)
 
-The user may request the OpenTitan Device ID with the 4-byte code `OTID`.
+The user may request the Device ID with the 4-byte code `OTID`.
 The ROM_EXT will acknowledge this request with the following message:
 
 ```
