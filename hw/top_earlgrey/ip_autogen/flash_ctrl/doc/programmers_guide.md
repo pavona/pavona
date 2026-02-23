@@ -2,14 +2,14 @@
 
 ## Issuing a Controller Read
 
-To issue a flash read, the programmer must
-*  Specify the address of the first flash word to read
-*  Specify the number of total flash words to read, beginning at the supplied address
-*  Specify the operation to be 'READ' type
-*  Set the 'START' bit for the operation to begin
+To issue a flash read, the programmer must:
+*  Specify the address of the first flash word to read.
+*  Specify the number of total flash words to read, beginning at the supplied address.
+*  Specify the operation to be 'READ' type.
+*  Set the 'START' bit for the operation to begin.
 
 The above fields can be set in the [`CONTROL`](registers.md#control) and [`ADDR`](registers.md#addr) registers.
-See [library code](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/dif/dif_flash_ctrl.c) for implementation.
+See [library code](../../../../../sw/device/lib/dif/dif_flash_ctrl.c) for implementation.
 
 It is acceptable for total number of flash words to be significantly greater than the depth of the read FIFO.
 In this situation, the read FIFO will fill up (or hit programmable fill value), pause the flash read and trigger an interrupt to software.
@@ -43,7 +43,7 @@ Once the address is discovered, further steps can be taken to triage the issue.
 
 ### Hardware Initiated Reads
 
-If the root secrets have been provisioned and the life cycle state is in either DEV, PROD* or RMA, the special info pages holding the creator and owner seeds will be read out automatically by the flash controller and sent to the keymanager upon flash initialization.
+If the root secrets have been provisioned and the life cycle state is in either DEV, PROD* or RMA, the special info pages holding the creator and owner seeds will be read out automatically by the Flash Controller and sent to the key manager upon flash initialization.
 Hence, it is important that these pages are initialized with valid data, since otherwise the hardware will likely encounter ECC errors during the automatic readout.
 
 Note that by default, hardware assumes that scrambling and ECC is enabled on these special info pages.
@@ -53,7 +53,7 @@ Otherwise, a configuration mismatch between hardware interface and the software 
 ### Correctable ECC Errors
 Correctable ECC errors are by nature not fatal errors and do not stop operation.
 Instead, if the error is correctable, the flash controller fixes the issue and registers the last address where a single bit error was seen.
-See [`ECC_SINGLE_ERR_CNT`](registers.md#ecc_single_err_cnt) and [`ECC_SINGLE_ERR_ADDR`](registers.md#ecc_single_err_addr)
+See [`ECC_SINGLE_ERR_CNT`](registers.md#ecc_single_err_cnt) and [`ECC_SINGLE_ERR_ADDR`](registers.md#ecc_single_err_addr).
 
 ### Errors during Multi-Word Controller Reads
 
@@ -63,7 +63,7 @@ For subsequent words, the flash controller may return:
 - An all-one word in case of an access permission error.
 - An all-zero word in case of a flash read error (e.g. reliability ECC and ICV errors) and if the flash read pipeline remains idle.
 - The data belonging to other read operations in case of a flash read error and if the flash read pipeline continues doing, e.g., host initiated read operations.
-  In this case, the data returned for the subsequent words may contain further ECC and ICV errors.
+In this case, the data returned for the subsequent words may contain further ECC and ICV errors.
 
 ## Granularity of Scrambling and Reliability ECC
 

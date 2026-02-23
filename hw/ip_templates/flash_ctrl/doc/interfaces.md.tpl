@@ -9,14 +9,14 @@ In addition to the interrupts and bus signals, the tables below lists the flash 
 
 Signal                     | Direction      | Description
 ------------------------   |-----------     |---------------
-`lc_creator_seed_sw_rw_en` | `input`        | Indication from `lc_ctrl` that software is allowed to read/write creator seed.
-`lc_owner_seed_sw_rw_en`   | `input`        | Indication from `lc_ctrl` that software is allowed to read/write owner seed.
-`lc_seed_hw_rd_en`         | `input`        | Indication from `lc_ctrl` that hardware is allowed to read creator / owner seeds.
+`lc_creator_seed_sw_rw_en` | `input`        | Indication from `lc_ctrl` that software is allowed to read or write creator seed.
+`lc_owner_seed_sw_rw_en`   | `input`        | Indication from `lc_ctrl` that software is allowed to read or write owner seed.
+`lc_seed_hw_rd_en`         | `input`        | Indication from `lc_ctrl` that hardware is allowed to read creator or owner seeds.
 `lc_iso_part_sw_rd_en`     | `input`        | Indication from `lc_ctrl` that software is allowed to read the isolated partition.
 `lc_iso_part_sw_wr_en`     | `input`        | Indication from `lc_ctrl` that software is allowed to write the isolated partition.
 `lc_escalate_en`           | `input`        | Escalation indication from `lc_ctrl`.
 `lc_nvm_debug_en`          | `input`        | Indication from lc_ctrl that non-volatile memory debug is allowed.
-`core_tl`                  | `input/output` | TL-UL interface used to access `flash_ctrl` registers for activating program / erase and reads to information partitions/
+`core_tl`                  | `input/output` | TL-UL interface used to access `flash_ctrl` [CSRs](registers.md).
 `prim_tl`                  | `input/output` | TL-UL interface used to access the vendor flash memory proprietary registers.
 `mem_tl`                   | `input/output` | TL-UL interface used by host to access the vendor flash memory directly.
 `OTP`                      | `input/output` | Interface used to request scrambling keys from `otp_ctrl`.

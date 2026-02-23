@@ -715,8 +715,7 @@ module flash_ctrl_lcmgr
   assign err_sts_d = err_sts_set && lc_ctrl_pkg::lc_tx_test_true_loose(err_sts_q) ?
                      lc_ctrl_pkg::Off : err_sts_q;
   // This primitive is used to place a size-only constraint on the flops in order to prevent
-  // optimizations. Without this Vivado may infer combo loops. For details, see
-  // https://github.com/lowRISC/opentitan/issues/10204
+  // optimizations. Without this Vivado may infer combo loops.
   prim_flop #(
     .Width(lc_ctrl_pkg::TxWidth),
     .ResetValue(lc_ctrl_pkg::TxWidth'(lc_ctrl_pkg::On))

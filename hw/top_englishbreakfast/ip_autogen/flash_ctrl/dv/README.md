@@ -2,22 +2,21 @@
 
 ## Goals
 * **DV**
-  * Verify all `flash_ctrl` IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Verify all `flash_ctrl` IP features by running dynamic simulations with a SV/UVM based testbench.
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules.
 * **FPV**
-  * Verify TileLink device protocol compliance with an SVA based testbench
+  * Verify TileLink device protocol compliance with an SVA based testbench.
 
 ## Current status
 * [Design & verification stage](../../../../README.md)
   * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/latest/report.html)
+<!-- TODO: Put the simulation results back with the reports link once they become available.--> 
 
 ## Design features
 For detailed information on `flash_ctrl` design features, please see the [`flash_ctrl` HWIP technical specification](../README.md).
-The design-under-test (DUT) wraps the `flash_ctrl` IP, `flash_phy` and the TLUL SRAM adapter that converts the incoming TL accesses from the from host (CPU) interface into flash requests.
+The design-under-test (DUT) wraps the `flash_ctrl` IP, `flash_phy` and the TL-UL SRAM adapter that converts the incoming TL accesses from the from host (CPU) interface into flash requests.
 These modules are instantiated and connected to each other and to the rest of the design at the top level.
-For the IP level DV, we replicate the instantiations and connections in `flash_ctrl_wrapper` module maintained in DV, located at `hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/tb/flash_ctrl_wrapper.sv`.
-In future, we will consider having the wrapper maintained in the RTL area instead.
+For the IP level DV, we replicate the instantiations and connections in `flash_macro_wrapper`.
 
 ## Testbench architecture
 The `flash_ctrl` UVM DV testbench has been constructed based on the [CIP testbench architecture](../../../../dv/sv/cip_lib/README.md).
@@ -33,7 +32,7 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [TileLink host interface for the flash controller](../../../../dv/sv/tl_agent/README.md)
 * [TileLink host interface for the eflash](../../../../dv/sv/tl_agent/README.md)
 * TileLink host interface for the prim registers
-* Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md)
+* Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
 * [Memory backdoor utility](../../../../dv/sv/mem_bkdr_util/README.md)
 * Secret key interface from the OTP
 * Interface from the life cycle manager
@@ -85,44 +84,44 @@ All test sequences reside in `hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/e
 The `flash_ctrl_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `flash_ctrl_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows: From `hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/env/seq/flash_ctrl_base_vseq.sv`,
-* reset_flash
+Some of the most commonly used tasks / functions are as follows:
+* `reset_flash`:
   Reset flash controller and initialize flash device using back door interface.
-* flash_ctrl_start_op
+* `flash_ctrl_start_op`:
   Start operation on the flash controller
-* flash_ctrl_write
+* `flash_ctrl_write`:
   Send data to `prog_fifo`. This task is used for `program operation` from controller combined with `flash_ctrl_start_op`.
-* flash_ctrl_read
+* `flash_ctrl_read`:
   Read data from `rd_fifo`. This task is used for `read operation` from controller combined with `flash_ctrl_start_op`.
-* wait_flash_op_done
+* `wait_flash_op_done`:
   Polling `op_status` until op_status.done is set.
-* do_direct_read
+* `do_direct_read`:
   Task to read flash from the host interface. Transaction size is 4 byte per transaction.
-* flash_ctrl_intr_read
+* `flash_ctrl_intr_read`:
   Task to read flash with interrupt mode.
-* flash_ctrl_intr_write
+* `flash_ctrl_intr_write`:
   Task to program flash with interrupt mode.
-* send_rma_req
-  Task to initiate rma request. Once rma started, task polls `rma ack` until it completes.
+* `send_rma_req`:
+  Task to initiate rma request. Once RMA started, task polls `rma ack` until it completes.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
+This coverage model is described in `hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/env/flash_ctrl_env_cov.sv`.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-`hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/env/flash_ctrl_env_cov.sv`
-* control_cg
+* `control_cg`:
   Collects operation types, partition and cross coverage of both.
-* erase_susp_cg
+* `erase_susp_cg`:
   Check if request of erase suspension occurred.
-* msgfifo_level_cg
+* `msgfifo_level_cg`:
   Covers all possible fifo status to generate interrupt for read / program.
-* eviction_cg
+* `eviction_cg`:
   Check whether eviction happens at all 4 caches with write / erase operation.
   Also check each address belongs to randomly enabled scramble and ecc.
-* error_cg
+* `error_cg`:
   Check errors defined in error code registers.
 ### Self-checking strategy
 #### Scoreboard
-The `flash_ctrl_scoreboard` is primarily used for csr transaction integrity.
+The `flash_ctrl_scoreboard` is primarily used for CSR transaction integrity, as well as comparing TL-UL response data and monitoring transport commands (i.e. read, write, and erase).
 Test bench also maintains a reference memory model (associative array) per partition.
 The reference model is updated on each operation and used for expected partition values at the end of test check.
 Given large memory size (mega bytes), maintaining an associative array per operation until the end of the test causes huge simulation overhead.
@@ -130,15 +129,15 @@ Also, this model is not suitable for read only test, same address write test, de
 To address such issues, `on-the-fly` method is also used on top of legacy test component.
 In `on-the-fly` test mode, test does not rely on reference memory mode.
 Instead, it creates reference data for each operation.
-For the program(write) operation, rtl output is collected from flash phy interface and compared with each operation's pre calculated write data.
+For the program (write) operation, RTL output is collected from `flash_phy` interface and compared with each operation's pre calculated write data.
 For the read operation, the expected data is written via memory backdoor interface, read back, and compared.
-The `flash_ctrl_otf_scoreboard` is used for `on-the-fly` mode flash transaction integrity check, while `flash_ctrl_scoreboard` is still used for csr transaction integrity check.
+The `flash_ctrl_otf_scoreboard` is used for `on-the-fly` mode flash transaction integrity check, while `flash_ctrl_scoreboard` is still used for CSR transaction integrity check.
 Since there is still uncovered logic within the model before data reaches the actual device, we add extra scoreboard to check that path and call it `last mile scoreboard`.
 The `last mile scoreboard` is added to compensate `on-the-fly` model.
 For the write transaction, `on-the-fly` model collects rtl data at the boundary of the controller and flash model.
 
 #### Assertions
-* TLUL assertions: The `hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/sva/flash_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TL-UL assertions: The `hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/sva/flash_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ### Global types and methods
