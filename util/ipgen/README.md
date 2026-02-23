@@ -85,7 +85,7 @@ For example, if file `rtl/flash_ctrl.sv` contained within core `flash_ctrl.core`
 - the RTL files in question will be renamed
 - the module within `flash_ctrl.sv` will be renamed
 
-This is typically implemented via an extra parameter within the IP template that holds the new name for the template objects, named `module_instance_name`.
+This is implemented via an extra parameter within the IP template that holds the new name for the template objects, named `module_instance_name`.
 This uniquification also needs to be handled by VLNV renaming as explained below.
 
 ### VLNV Renaming
