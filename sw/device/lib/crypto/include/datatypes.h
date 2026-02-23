@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -81,6 +82,24 @@ typedef enum otcrypto_status_value {
   // implementations that are not yet complete.
   kOtcryptoStatusValueNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
 } otcrypto_status_value_t;
+
+/**
+ * A session token for an asynchronous operation.
+ *
+ * These tokens are randomly generated as part of ACC-backed async start
+ * operations, held separately during ACC computation by both the cryptolib
+ * client and the ACC DMEM, and compared by cryptolib on finalize to ensure
+ * that the client for each ACC-backed async start and finalize operation
+ * correspond.
+ *
+ * Note that it is explicitly the responsibility of any system brokering
+ * cryptolib access to multiple clients (e.g. a multitenant embedded OS)
+ * to restrict any other clients from using cryptolib during a client's
+ * asynchronous operation. The session token mechanism which makes use of this
+ * type is purely a defense-in-depth measure, and should NOT be relied on to
+ * enforce exclusive access to cryptolib.
+ */
+typedef uint32_t otcrypto_session_token_t;
 
 /**
  * Struct to hold a fixed-length byte array.
