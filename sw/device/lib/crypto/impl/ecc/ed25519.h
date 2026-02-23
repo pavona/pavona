@@ -143,14 +143,15 @@ typedef struct ed25519_signature {
  * @param hash_h SHA-512 hash of the Ed25519 private key to sign with.
  * @param context Context to use for signing.
  * @param context_length Length of the provided context.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t ed25519_sign_start(
     const uint32_t prehashed_message[kEd25519PreHashWords],
     const uint32_t hash_h[kEd25519HashWords],
-    const uint32_t context[kEd25519ContextWords],
-    const uint32_t context_length);
+    const uint32_t context[kEd25519ContextWords], const uint32_t context_length,
+    uint32_t *session_token);
 
 /**
  * Finish an async Ed25519 signature generation operation on ACC.
@@ -159,11 +160,13 @@ status_t ed25519_sign_start(
  *
  * Blocks until ACC is idle.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t ed25519_sign_finalize(ed25519_signature_t *result);
+status_t ed25519_sign_finalize(uint32_t session_token,
+                               ed25519_signature_t *result);
 
 /**
  * Start an async Ed25519 signature verification operation on ACC.
@@ -177,6 +180,7 @@ status_t ed25519_sign_finalize(ed25519_signature_t *result);
  * @param hash_k Pre-computed scalar value k for verification.
  * @param context Context to use for signing.
  * @param context_length Length of the provided context.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
@@ -184,18 +188,20 @@ status_t ed25519_verify_start(
     const ed25519_signature_t *signature,
     const uint32_t prehashed_message[kEd25519PreHashWords],
     const uint32_t hash_k[kEd25519HashWords], const ed25519_point_t *public_key,
-    const uint32_t context[kEd25519ContextWords],
-    const uint32_t context_length);
+    const uint32_t context[kEd25519ContextWords], const uint32_t context_length,
+    uint32_t *session_token);
 
 /**
  * Finish an async Ed25519 signature verification operation on ACC.
  *
  * @param signature Signature to be verified.
+ * @param session_token ACC session token for the operation.
  * @param[out] result Result of verification.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t ed25519_verify_finalize(const ed25519_signature_t *signature,
+                                 uint32_t session_token,
                                  hardened_bool_t *result);
 
 #ifdef __cplusplus

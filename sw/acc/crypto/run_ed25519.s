@@ -110,6 +110,12 @@ ed25519_ctx_len:
 ed25519_verify_result:
   .zero 4
 
+/* Session token for ensuring async start and initialize calls correspond. */
+.globl ed25519_session_token
+.balign 4
+ed25519_session_token:
+  .zero 4
+
 /* Signature point R (256 bits). Input for verify and output for sign. */
 .globl ed25519_sig_R
 .balign 32

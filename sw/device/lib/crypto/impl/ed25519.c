@@ -29,10 +29,12 @@ otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature) {
-  HARDENED_TRY(otcrypto_ed25519_sign_async_start(
-      private_key, input_message, context, sign_mode, signature));
+  otcrypto_session_token_t session_token = 0;
+  HARDENED_TRY(otcrypto_ed25519_sign_async_start(private_key, input_message,
+                                                 context, sign_mode, signature,
+                                                 &session_token));
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
-  return otcrypto_ed25519_sign_async_finalize(signature);
+  return otcrypto_ed25519_sign_async_finalize(session_token, signature);
 }
 
 otcrypto_status_t otcrypto_ed25519_verify(
@@ -40,19 +42,24 @@ otcrypto_status_t otcrypto_ed25519_verify(
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result) {
-  HARDENED_TRY(otcrypto_ed25519_verify_async_start(
-      public_key, input_message, context, sign_mode, signature));
+  otcrypto_session_token_t session_token = 0;
+  HARDENED_TRY(otcrypto_ed25519_verify_async_start(public_key, input_message,
+                                                   context, sign_mode,
+                                                   signature, &session_token));
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
-  return otcrypto_ed25519_verify_async_finalize(signature, verification_result);
+  return otcrypto_ed25519_verify_async_finalize(signature, session_token,
+                                                verification_result);
 }
 
 otcrypto_status_t otcrypto_ed25519_keygen_async_start(
-    const otcrypto_blinded_key_t *private_key) {
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_session_token_t *session_token) {
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+    otcrypto_session_token_t session_token, otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key) {
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
@@ -127,7 +134,8 @@ static status_t construct_hash_h(uint32_t hash_h[kEd25519HashWords],
 otcrypto_status_t otcrypto_ed25519_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature) {
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature,
+    otcrypto_session_token_t *session_token) {
   if (private_key == NULL || private_key->keyblob == NULL ||
       input_message.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -189,11 +197,11 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
 
   // Start the asynchronous signature-generation routine.
   return ed25519_sign_start(input_message_aligned, hash_h, context_aligned,
-                            context.len);
+                            context.len, session_token);
 }
 
 otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
-    otcrypto_word32_buf_t signature) {
+    otcrypto_session_token_t session_token, otcrypto_word32_buf_t signature) {
   if (signature.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -208,7 +216,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
   // Note: This operation wipes DMEM, so if an error occurs after this
   // point then the signature would be unrecoverable. This should be the
   // last potentially error-causing line before returning to the caller.
-  return ed25519_sign_finalize(sig_ed25519);
+  return ed25519_sign_finalize(session_token, sig_ed25519);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -277,8 +285,8 @@ static status_t construct_hash_k(uint32_t hash_k[kEd25519HashWords],
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
-    otcrypto_eddsa_sign_mode_t sign_mode,
-    otcrypto_const_word32_buf_t signature) {
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_const_word32_buf_t signature,
+    otcrypto_session_token_t *session_token) {
   if (public_key == NULL || signature.data == NULL ||
       input_message.data == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -334,11 +342,12 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 
   // Start the asynchronous signature-verification routine.
   return ed25519_verify_start(sig, input_message_aligned, hash_k, pk,
-                              context_aligned, context.len);
+                              context_aligned, context.len, session_token);
 }
 
 otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
     otcrypto_const_word32_buf_t signature,
+    otcrypto_session_token_t session_token,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -349,5 +358,6 @@ otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
 
   HARDENED_TRY(ed25519_signature_length_check(signature.len));
   ed25519_signature_t *sig_ed25519 = (ed25519_signature_t *)signature.data;
-  return ed25519_verify_finalize(sig_ed25519, verification_result);
+  return ed25519_verify_finalize(sig_ed25519, session_token,
+                                 verification_result);
 }

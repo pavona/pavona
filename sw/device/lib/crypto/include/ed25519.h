@@ -1,8 +1,5 @@
-// Copyright zeroRISC Inc.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -95,11 +92,13 @@ otcrypto_status_t otcrypto_ed25519_verify(
  * See `otcrypto_ed25519_keygen` for requirements on input values.
  *
  * @param private_key Destination structure for private key, or key handle.
+ * @param[out] session_token Session token for this operation.
  * @return Result of asynchronous Ed25519 keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_keygen_async_start(
-    const otcrypto_blinded_key_t *private_key);
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes asynchronous key generation for Ed25519.
@@ -111,13 +110,15 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
  * The caller should ensure that the private key configuration matches that
  * passed to the `_start` function.
  *
+ * @param session_token Session token for this operation.
  * @param[out] private_key Pointer to the blinded private key struct.
  * @param[out] public_key Pointer to the unblinded public key struct.
  * @return Result of asynchronous ed25519 keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+    otcrypto_session_token_t session_token, otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key);
 
 /**
  * Starts asynchronous signature generation for Ed25519.
@@ -129,13 +130,15 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * @param context Context for signing.
  * @param sign_mode EdDSA signature hashing mode.
  * @param[out] signature Pointer to the EdDSA signature to get (r) value.
+ * @param[out] session_token Session token for this operation.
  * @return Result of async Ed25519 start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature);
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes asynchronous signature generation for Ed25519.
@@ -144,12 +147,13 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
  *
  * May block until the operation is complete.
  *
+ * @param session_token Session token for this operation.
  * @param[out] signature Pointer to the EdDSA signature to get (s) value.
  * @return Result of async Ed25519 finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
-    otcrypto_word32_buf_t signature);
+    otcrypto_session_token_t session_token, otcrypto_word32_buf_t signature);
 
 /**
  * Starts asynchronous signature verification for Ed25519.
@@ -161,14 +165,15 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
  * @param context Context for signing.
  * @param sign_mode EdDSA signature hashing mode.
  * @param signature Pointer to the signature to be verified.
+ * @param[out] session_token Session token for this operation.
  * @return Result of async Ed25519 verification start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
-    otcrypto_eddsa_sign_mode_t sign_mode,
-    otcrypto_const_word32_buf_t signature);
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_const_word32_buf_t signature,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes asynchronous signature verification for Ed25519.
@@ -183,12 +188,14 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
  * encountered, and may return OK even when the signature is invalid.
  *
  * @param signature Pointer to the signature being verified.
+ * @param session_token Session token for this operation.
  * @param[out] verification_result Whether the signature passed verification.
  * @return Result of async Ed25519 verification finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
     otcrypto_const_word32_buf_t signature,
+    otcrypto_session_token_t session_token,
     hardened_bool_t *verification_result);
 
 #ifdef __cplusplus

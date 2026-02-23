@@ -4,7 +4,10 @@
 
 #include "sw/device/lib/crypto/impl/ecc/ed25519.h"
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/ecc/ed25519_insn_counts.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('e', '2', 'r')
@@ -24,6 +27,7 @@ ACC_DECLARE_SYMBOL_ADDR(run_ed25519, ed25519_ctx);      // Context string.
 ACC_DECLARE_SYMBOL_ADDR(run_ed25519, ed25519_ctx_len);  // Context length.
 ACC_DECLARE_SYMBOL_ADDR(run_ed25519, ed25519_public_key);     // Public key.
 ACC_DECLARE_SYMBOL_ADDR(run_ed25519, ed25519_verify_result);  // Verify result.
+ACC_DECLARE_SYMBOL_ADDR(run_ed25519, ed25519_session_token);  // Session token.
 
 static const acc_addr_t kAccVarEd25519Mode =
     ACC_ADDR_T_INIT(run_ed25519, ed25519_mode);
@@ -45,6 +49,8 @@ static const acc_addr_t kAccVarEd25519PublicKey =
     ACC_ADDR_T_INIT(run_ed25519, ed25519_public_key);
 static const acc_addr_t kAccVarEd25519VerifyResult =
     ACC_ADDR_T_INIT(run_ed25519, ed25519_verify_result);
+static const acc_addr_t kAccVarEd25519SessionToken =
+    ACC_ADDR_T_INIT(run_ed25519, ed25519_session_token);
 
 // Declare mode constants.
 ACC_DECLARE_SYMBOL_ADDR(run_ed25519, ED25519_MODE_SIGN);  // Ed25519 signing.
@@ -88,8 +94,8 @@ static status_t set_context(const uint32_t context[kEd25519ContextWords],
 status_t ed25519_sign_start(
     const uint32_t prehashed_message[kEd25519PreHashWords],
     const uint32_t hash_h[kEd25519HashWords],
-    const uint32_t context[kEd25519ContextWords],
-    const uint32_t context_length) {
+    const uint32_t context[kEd25519ContextWords], const uint32_t context_length,
+    uint32_t *session_token) {
   // Load the Ed25519 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppEd25519));
 
@@ -108,13 +114,32 @@ status_t ed25519_sign_start(
   HARDENED_TRY(acc_dmem_write(kEd25519HashWords, prehashed_message,
                               kAccVarEd25519Message));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarEd25519SessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t ed25519_sign_finalize(ed25519_signature_t *result) {
+status_t ed25519_sign_finalize(uint32_t session_token,
+                               ed25519_signature_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarEd25519SessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kEd25519SignMinInstructionCount,
@@ -134,8 +159,8 @@ status_t ed25519_verify_start(
     const ed25519_signature_t *signature,
     const uint32_t prehashed_message[kEd25519PreHashWords],
     const uint32_t hash_k[kEd25519HashWords], const ed25519_point_t *public_key,
-    const uint32_t context[kEd25519ContextWords],
-    const uint32_t context_length) {
+    const uint32_t context[kEd25519ContextWords], const uint32_t context_length,
+    uint32_t *session_token) {
   // Load the P-256 app and set up data pointers
   HARDENED_TRY(acc_load_app(kAccAppEd25519));
 
@@ -165,14 +190,33 @@ status_t ed25519_verify_start(
   HARDENED_TRY(acc_dmem_write(kEd25519PointWords, public_key->data,
                               kAccVarEd25519PublicKey));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarEd25519SessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
 status_t ed25519_verify_finalize(const ed25519_signature_t *signature,
+                                 uint32_t session_token,
                                  hardened_bool_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarEd25519SessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kEd25519VerifyMinInstructionCount,
