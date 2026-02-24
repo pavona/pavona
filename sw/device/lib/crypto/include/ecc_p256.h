@@ -62,11 +62,13 @@ otcrypto_status_t otcrypto_p256_public_key_construct_and_check(
  * @param y Second affine coordinate of public key (y).
  * @param[out] public_key Destination public key struct.
  * @param[out] key_valid Whether the constructed key is valid.
+ * @param[out] session_token Session token for this operation.
  * @return Result of the P-256 key construction.
  */
 otcrypto_status_t otcrypto_p256_public_key_construct_and_check_async_start(
     otcrypto_const_word32_buf_t x, otcrypto_const_word32_buf_t y,
-    otcrypto_unblinded_key_t *public_key, hardened_bool_t *key_valid);
+    otcrypto_unblinded_key_t *public_key, hardened_bool_t *key_valid,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes an asynchronous public key check for ECDSA/P-256.
@@ -74,11 +76,12 @@ otcrypto_status_t otcrypto_p256_public_key_construct_and_check_async_start(
  * See `otcrypto_p256_public_key_construct_and_check` for requirements on input
  * and output values.
  *
+ * @param session_token Session token for this operation.
  * @param[out] key_valid Whether the constructed key is valid.
  * @return Result of the P-256 key construction.
  */
 otcrypto_status_t otcrypto_p256_public_key_construct_and_check_async_finalize(
-    hardened_bool_t *key_valid);
+    otcrypto_session_token_t session_token, hardened_bool_t *key_valid);
 
 /**
  * Deconstructs an ECDSA/ECDH P-256 public key into affine coordinates.
@@ -249,11 +252,13 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
  * See `otcrypto_ecdsa_p256_keygen` for requirements on input values.
  *
  * @param private_key Destination structure for private key, or key handle.
+ * @param[out] session_token Session token for this operation.
  * @return Result of asynchronous ECDSA keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
-    const otcrypto_blinded_key_t *private_key);
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes asynchronous key generation for ECDSA/P-256.
@@ -265,13 +270,15 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
  * The caller should ensure that the private key configuration matches that
  * passed to the `_start` function.
  *
+ * @param session_token Session token for this operation.
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of asynchronous ECDSA keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+    otcrypto_session_token_t session_token, otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key);
 
 /**
  * Starts asynchronous signature generation for ECDSA/P-256.
@@ -280,12 +287,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
+ * @param[out] session_token Session token for this operation.
  * @return Result of async ECDSA start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t message_digest);
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes asynchronous signature generation for ECDSA/P-256.
@@ -294,12 +303,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
  *
  * May block until the operation is complete.
  *
+ * @param session_token Session token for this operation.
  * @param[out] signature Pointer to the signature struct with (r,s) values.
  * @return Result of async ECDSA finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
-    otcrypto_word32_buf_t signature);
+    otcrypto_session_token_t session_token, otcrypto_word32_buf_t signature);
 
 /**
  * Starts asynchronous signature verification for ECDSA/P-256.
@@ -309,13 +319,15 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param message_digest Message digest to be verified (pre-hashed).
  * @param signature Pointer to the signature to be verified.
+ * @param[out] session_token Session token for this operation.
  * @return Result of async ECDSA verify start function.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature);
+    otcrypto_const_word32_buf_t signature,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes asynchronous signature verification for ECDSA/P-256.
@@ -329,12 +341,15 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
  * status code, as for other operations, only indicates whether errors were
  * encountered, and may return OK even when the signature is invalid.
  *
+ * @param signature Pointer to the signature which was verified.
+ * @param session_token Session token for this operation.
  * @param[out] verification_result Whether the signature passed verification.
  * @return Result of async ECDSA verify finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
     otcrypto_const_word32_buf_t signature,
+    otcrypto_session_token_t session_token,
     hardened_bool_t *verification_result);
 
 /**
@@ -343,11 +358,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
  * See `otcrypto_ecdh_p256_keygen` for requirements on input values.
  *
  * @param private_key Destination structure for private key, or key handle.
+ * @param[out] session_token Session token for this operation.
  * @return Result of asynchronous ECDH keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256_keygen_async_start(
-    const otcrypto_blinded_key_t *private_key);
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes asynchronous key generation for ECDH/P-256.
@@ -359,13 +376,15 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_start(
  * The caller should ensure that the private key configuration matches that
  * passed to the `_start` function.
  *
+ * @param session_token Session token for this operation.
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of asynchronous ECDH keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+    otcrypto_session_token_t session_token, otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key);
 
 /**
  * Starts asynchronous shared secret generation for ECDH/P-256.
@@ -374,12 +393,14 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param[out] session_token Session token for this operation.
  * @return Result of async ECDH start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key);
+    const otcrypto_unblinded_key_t *public_key,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes asynchronous shared secret generation for ECDH/P-256.
@@ -388,12 +409,15 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
  *
  * May block until the operation is complete.
  *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param session_token Session token for this operation.
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
  * @return Result of async ECDH finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
     const otcrypto_blinded_key_t *private_key,
+    otcrypto_session_token_t session_token,
     otcrypto_blinded_key_t *shared_secret);
 
 #ifdef __cplusplus

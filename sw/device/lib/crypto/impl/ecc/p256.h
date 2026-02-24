@@ -117,22 +117,25 @@ typedef struct p256_ecdh_shared_key {
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_keygen_start(void);
+status_t p256_keygen_start(uint32_t *session_token);
 
 /**
  * Finish an async P-256 keypair generation operation on ACC.
  *
  * Blocks until ACC is idle.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] private_key Generated private key.
  * @param[out] public_key Generated public key.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
+status_t p256_keygen_finalize(uint32_t session_token,
+                              p256_masked_scalar_t *private_key,
                               p256_point_t *public_key);
 
 /**
@@ -143,10 +146,11 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
  * Expects a sideloaded key from keymgr to be already loaded on ACC. Returns
  * an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_sideload_keygen_start(void);
+status_t p256_sideload_keygen_start(uint32_t *session_token);
 
 /**
  * Finish an async P-256 sideloaded keypair generation operation on ACC.
@@ -154,11 +158,13 @@ status_t p256_sideload_keygen_start(void);
  * This routine will only read back the public key, instead of both public and
  * private as with `p256_ecdsa_keygen_finalize`. Blocks until ACC is idle.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] public_key Public key.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_sideload_keygen_finalize(p256_point_t *public_key);
+status_t p256_sideload_keygen_finalize(uint32_t session_token,
+                                       p256_point_t *public_key);
 
 /**
  * Start a P-256 public key on-curve check on ACC.
@@ -166,21 +172,25 @@ status_t p256_sideload_keygen_finalize(p256_point_t *public_key);
  * Blocks until ACC is idle.
  *
  * @param[in] public_key Generated public key.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_public_key_check_start(p256_point_t *public_key);
+status_t p256_public_key_check_start(p256_point_t *public_key,
+                                     uint32_t *session_token);
 
 /**
  * Finish a P-256 public key on-curve check on ACC.
  *
  * Blocks until ACC is idle.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] reuslt Result of on-curve check.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_public_key_check_finalize(hardened_bool_t *result);
+status_t p256_public_key_check_finalize(uint32_t session_token,
+                                        hardened_bool_t *result);
 
 /**
  * Start an async ECDSA/P-256 signature generation operation on ACC.
@@ -189,11 +199,13 @@ status_t p256_public_key_check_finalize(hardened_bool_t *result);
  *
  * @param digest Digest of the message to sign.
  * @param private_key Secret key to sign the message with.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
-                               const p256_masked_scalar_t *private_key);
+                               const p256_masked_scalar_t *private_key,
+                               uint32_t *session_token);
 
 /**
  * Start an async ECDSA/P-256 signature generation operation on ACC.
@@ -202,11 +214,12 @@ status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
  * an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param digest Digest of the message to sign.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_ecdsa_sideload_sign_start(
-    const uint32_t digest[kP256ScalarWords]);
+status_t p256_ecdsa_sideload_sign_start(const uint32_t digest[kP256ScalarWords],
+                                        uint32_t *session_token);
 
 /**
  * Finish an async ECDSA/P-256 signature generation operation on ACC.
@@ -215,11 +228,13 @@ status_t p256_ecdsa_sideload_sign_start(
  *
  * Blocks until ACC is idle.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result);
+status_t p256_ecdsa_sign_finalize(uint32_t session_token,
+                                  p256_ecdsa_signature_t *result);
 
 /**
  * Start an async ECDSA/P-256 signature verification operation on ACC.
@@ -231,12 +246,14 @@ status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result);
  * @param signature Signature to be verified.
  * @param digest Digest of the message to check the signature against.
  * @param public_key Key to check the signature against.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
                                  const uint32_t digest[kP256ScalarWords],
-                                 const p256_point_t *public_key);
+                                 const p256_point_t *public_key,
+                                 uint32_t *session_token);
 
 /**
  * Finish an async ECDSA/P-256 signature verification operation on ACC.
@@ -254,12 +271,14 @@ status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
  * status will be OK but `result` will be `kHardenedBoolFalse`.
  *
  * @param signature Signature to be verified.
+ * @param session_token ACC session token for the operation.
  * @param[out] result Output buffer (true if signature is valid, false
  * otherwise)
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
+                                    uint32_t session_token,
                                     hardened_bool_t *result);
 
 /**
@@ -269,22 +288,26 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
  *
  * @param private_key Private key (d).
  * @param public_key Public key (Q).
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
-                         const p256_point_t *public_key);
+                         const p256_point_t *public_key,
+                         uint32_t *session_token);
 
 /**
  * Finish an async ECDH/P-256 shared key generation operation on ACC.
  *
  * Blocks until ACC is idle.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key);
+status_t p256_ecdh_finalize(uint32_t session_token,
+                            p256_ecdh_shared_key_t *shared_key);
 
 /**
  * Start an async ECDH/P-256 shared key generation operation on ACC.
@@ -295,10 +318,12 @@ status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key);
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
  * @param public_key Public key (Q).
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_sideload_ecdh_start(const p256_point_t *public_key);
+status_t p256_sideload_ecdh_start(const p256_point_t *public_key,
+                                  uint32_t *session_token);
 
 /**
  * Finish an async ECDH/P-256 shared key generation operation on ACC.
@@ -308,11 +333,13 @@ status_t p256_sideload_ecdh_start(const p256_point_t *public_key);
  *
  * Blocks until ACC is idle.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_sideload_ecdh_finalize(p256_ecdh_shared_key_t *shared_key);
+status_t p256_sideload_ecdh_finalize(uint32_t session_token,
+                                     p256_ecdh_shared_key_t *shared_key);
 
 #ifdef __cplusplus
 }  // extern "C"

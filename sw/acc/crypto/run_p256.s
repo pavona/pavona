@@ -393,6 +393,12 @@ mode:
 ok:
   .zero 4
 
+/* Session token for ensuring async start and initialize calls correspond. */
+.globl session_token
+.balign 4
+session_token:
+  .zero 4
+
 /* Message digest. */
 .globl msg
 .balign 32

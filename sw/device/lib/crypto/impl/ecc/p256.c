@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/ecc/p256_insn_counts.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -33,6 +34,7 @@ ACC_DECLARE_SYMBOL_ADDR(run_p256, d0_io);  // Private key scalar d (share 0).
 ACC_DECLARE_SYMBOL_ADDR(run_p256, d1_io);  // Private key scalar d (share 1).
 ACC_DECLARE_SYMBOL_ADDR(run_p256, x_r);    // ECDSA verification result.
 ACC_DECLARE_SYMBOL_ADDR(run_p256, ok);     // Status code.
+ACC_DECLARE_SYMBOL_ADDR(run_p256, session_token);  // Session token.
 
 static const acc_addr_t kAccVarMode = ACC_ADDR_T_INIT(run_p256, mode);
 static const acc_addr_t kAccVarMsg = ACC_ADDR_T_INIT(run_p256, msg);
@@ -44,6 +46,8 @@ static const acc_addr_t kAccVarD0 = ACC_ADDR_T_INIT(run_p256, d0_io);
 static const acc_addr_t kAccVarD1 = ACC_ADDR_T_INIT(run_p256, d1_io);
 static const acc_addr_t kAccVarXr = ACC_ADDR_T_INIT(run_p256, x_r);
 static const acc_addr_t kAccVarOk = ACC_ADDR_T_INIT(run_p256, ok);
+static const acc_addr_t kAccVarSessionToken =
+    ACC_ADDR_T_INIT(run_p256, session_token);
 
 // Declare mode constants.
 ACC_DECLARE_SYMBOL_ADDR(run_p256, MODE_KEYGEN);
@@ -105,7 +109,7 @@ static status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
                       share1_addr + kP256MaskedScalarShareBytes);
 }
 
-status_t p256_keygen_start(void) {
+status_t p256_keygen_start(uint32_t *session_token) {
   // Load the P-256 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP256));
 
@@ -113,11 +117,16 @@ status_t p256_keygen_start(void) {
   uint32_t mode = kAccP256ModeKeygen;
   HARDENED_TRY(acc_dmem_write(kAccP256ModeWords, &mode, kAccVarMode));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t p256_sideload_keygen_start(void) {
+status_t p256_sideload_keygen_start(uint32_t *session_token) {
   // Load the P-256 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP256));
 
@@ -125,14 +134,33 @@ status_t p256_sideload_keygen_start(void) {
   uint32_t mode = kAccP256ModeSideloadKeygen;
   HARDENED_TRY(acc_dmem_write(kAccP256ModeWords, &mode, kAccVarMode));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
+status_t p256_keygen_finalize(uint32_t session_token,
+                              p256_masked_scalar_t *private_key,
                               p256_point_t *public_key) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256KeygenMinInstructionCount,
@@ -152,9 +180,23 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
   return acc_dmem_sec_wipe();
 }
 
-status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
+status_t p256_sideload_keygen_finalize(uint32_t session_token,
+                                       p256_point_t *public_key) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256SideloadKeygenMinInstructionCount,
@@ -193,7 +235,8 @@ static status_t set_message_digest(const uint32_t digest[kP256ScalarWords]) {
   return acc_dmem_write(kP256ScalarWords, digest_little_endian, kAccVarMsg);
 }
 
-status_t p256_public_key_check_start(p256_point_t *public_key) {
+status_t p256_public_key_check_start(p256_point_t *public_key,
+                                     uint32_t *session_token) {
   // Load the P-256 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP256));
 
@@ -207,14 +250,33 @@ status_t p256_public_key_check_start(p256_point_t *public_key) {
   // Set the public key y coordinate.
   HARDENED_TRY(acc_dmem_write(kP256CoordWords, public_key->y, kAccVarY));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
-status_t p256_public_key_check_finalize(hardened_bool_t *result) {
+status_t p256_public_key_check_finalize(uint32_t session_token,
+                                        hardened_bool_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Read the status code out of DMEM (false if the public key is invalid)
   HARDENED_TRY(acc_dmem_read(1, kAccVarOk, result));
@@ -224,7 +286,8 @@ status_t p256_public_key_check_finalize(hardened_bool_t *result) {
 }
 
 status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
-                               const p256_masked_scalar_t *private_key) {
+                               const p256_masked_scalar_t *private_key,
+                               uint32_t *session_token) {
   // Load the P-256 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP256));
 
@@ -239,13 +302,18 @@ status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
   ACC_WIPE_IF_ERROR(
       p256_masked_scalar_write(private_key, kAccVarD0, kAccVarD1));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
-status_t p256_ecdsa_sideload_sign_start(
-    const uint32_t digest[kP256ScalarWords]) {
+status_t p256_ecdsa_sideload_sign_start(const uint32_t digest[kP256ScalarWords],
+                                        uint32_t *session_token) {
   // Load the P-256 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP256));
 
@@ -256,13 +324,32 @@ status_t p256_ecdsa_sideload_sign_start(
   // Set the message digest.
   HARDENED_TRY(set_message_digest(digest));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
+status_t p256_ecdsa_sign_finalize(uint32_t session_token,
+                                  p256_ecdsa_signature_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP256SignMinInstructionCount,
@@ -280,7 +367,8 @@ status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
 
 status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
                                  const uint32_t digest[kP256ScalarWords],
-                                 const p256_point_t *public_key) {
+                                 const p256_point_t *public_key,
+                                 uint32_t *session_token) {
   // Load the P-256 app and set up data pointers
   HARDENED_TRY(acc_load_app(kAccAppP256));
 
@@ -303,14 +391,33 @@ status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
   // Set the public key y coordinate.
   HARDENED_TRY(acc_dmem_write(kP256CoordWords, public_key->y, kAccVarY));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
 status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
+                                    uint32_t session_token,
                                     hardened_bool_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
@@ -336,7 +443,8 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
 }
 
 status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
-                         const p256_point_t *public_key) {
+                         const p256_point_t *public_key,
+                         uint32_t *session_token) {
   // Load the P-256 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP256));
 
@@ -354,14 +462,30 @@ status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
   ACC_WIPE_IF_ERROR(
       p256_masked_scalar_write(private_key, kAccVarD0, kAccVarD1));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
-status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
-  // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
-  HARDENED_TRY(acc_assert_idle());
+status_t p256_ecdh_finalize(uint32_t session_token,
+                            p256_ecdh_shared_key_t *shared_key) {
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Read the code indicating if the public key is valid.
   uint32_t ok;
@@ -385,7 +509,8 @@ status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
   return acc_dmem_sec_wipe();
 }
 
-status_t p256_sideload_ecdh_start(const p256_point_t *public_key) {
+status_t p256_sideload_ecdh_start(const p256_point_t *public_key,
+                                  uint32_t *session_token) {
   // Load the P-256 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP256));
 
@@ -399,13 +524,32 @@ status_t p256_sideload_ecdh_start(const p256_point_t *public_key) {
   // Set the public key y coordinate.
   HARDENED_TRY(acc_dmem_write(kP256CoordWords, public_key->y, kAccVarY));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t p256_sideload_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
+status_t p256_sideload_ecdh_finalize(uint32_t session_token,
+                                     p256_ecdh_shared_key_t *shared_key) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Read the code indicating if the public key is valid.
   uint32_t ok;

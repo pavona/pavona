@@ -1,10 +1,12 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -31,11 +33,12 @@ status_t ecdsa_p256_verify_test(
   TRY(otcrypto_sha2_256(msg_buf, &digest));
 
   // Attempt to verify signature.
+  otcrypto_session_token_t session_token = 0;
   TRY(p256_ecdsa_verify_start(&testvec->signature, digest.data,
-                              &testvec->public_key));
+                              &testvec->public_key, &session_token));
   hardened_bool_t result;
   TRY(acc_busy_wait_for_done());
-  TRY(p256_ecdsa_verify_finalize(&testvec->signature, &result));
+  TRY(p256_ecdsa_verify_finalize(&testvec->signature, session_token, &result));
 
   if (testvec->valid && result != kHardenedBoolTrue) {
     LOG_ERROR("Valid signature failed verification.");
