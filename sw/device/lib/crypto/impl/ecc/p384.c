@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/ecc/p384_insn_counts.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -33,6 +34,7 @@ ACC_DECLARE_SYMBOL_ADDR(run_p384, d0_io);  // Private key scalar d (share 0).
 ACC_DECLARE_SYMBOL_ADDR(run_p384, d1_io);  // Private key scalar d (share 1).
 ACC_DECLARE_SYMBOL_ADDR(run_p384, x_r);    // ECDSA verification result.
 ACC_DECLARE_SYMBOL_ADDR(run_p384, ok);     // Status code.
+ACC_DECLARE_SYMBOL_ADDR(run_p384, session_token);  // Session token.
 
 static const acc_addr_t kAccVarMode = ACC_ADDR_T_INIT(run_p384, mode);
 static const acc_addr_t kAccVarMsg = ACC_ADDR_T_INIT(run_p384, msg);
@@ -44,6 +46,8 @@ static const acc_addr_t kAccVarD0 = ACC_ADDR_T_INIT(run_p384, d0_io);
 static const acc_addr_t kAccVarD1 = ACC_ADDR_T_INIT(run_p384, d1_io);
 static const acc_addr_t kAccVarXr = ACC_ADDR_T_INIT(run_p384, x_r);
 static const acc_addr_t kAccVarOk = ACC_ADDR_T_INIT(run_p384, ok);
+static const acc_addr_t kAccVarSessionToken =
+    ACC_ADDR_T_INIT(run_p384, session_token);
 
 // Declare mode constants.
 ACC_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEYGEN);
@@ -160,7 +164,7 @@ static status_t set_message_digest(const uint32_t digest[kP384ScalarWords],
   return p384_scalar_write(digest_little_endian, dst);
 }
 
-status_t p384_keygen_start(void) {
+status_t p384_keygen_start(uint32_t *session_token) {
   // Load the ECDH/P-384 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP384));
 
@@ -168,14 +172,33 @@ status_t p384_keygen_start(void) {
   uint32_t mode = kP384ModeKeygen;
   HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
+status_t p384_keygen_finalize(uint32_t session_token,
+                              p384_masked_scalar_t *private_key,
                               p384_point_t *public_key) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384KeygenMinInstructionCount,
@@ -195,7 +218,7 @@ status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
   return acc_dmem_sec_wipe();
 }
 
-status_t p384_sideload_keygen_start(void) {
+status_t p384_sideload_keygen_start(uint32_t *session_token) {
   // Load the ECDH/P-384 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP384));
 
@@ -203,13 +226,32 @@ status_t p384_sideload_keygen_start(void) {
   uint32_t mode = kP384ModeSideloadKeygen;
   HARDENED_TRY(acc_dmem_write(kP384ModeWords, &mode, kAccVarMode));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
+status_t p384_sideload_keygen_finalize(uint32_t session_token,
+                                       p384_point_t *public_key) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384SideloadKeygenMinInstructionCount,
@@ -223,7 +265,8 @@ status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
   return acc_dmem_sec_wipe();
 }
 
-status_t p384_public_key_check_start(p384_point_t *public_key) {
+status_t p384_public_key_check_start(p384_point_t *public_key,
+                                     uint32_t *session_token) {
   // Load the P-384 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP384));
 
@@ -234,14 +277,33 @@ status_t p384_public_key_check_start(p384_point_t *public_key) {
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
-status_t p384_public_key_check_finalize(hardened_bool_t *result) {
+status_t p384_public_key_check_finalize(uint32_t session_token,
+                                        hardened_bool_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Read the status code out of DMEM (false if the public key is invalid)
   HARDENED_TRY(acc_dmem_read(1, kAccVarOk, result));
@@ -251,7 +313,8 @@ status_t p384_public_key_check_finalize(hardened_bool_t *result) {
 }
 
 status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
-                               const p384_masked_scalar_t *private_key) {
+                               const p384_masked_scalar_t *private_key,
+                               uint32_t *session_token) {
   // Load the ECDSA/P-384 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP384));
 
@@ -266,13 +329,18 @@ status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
   ACC_WIPE_IF_ERROR(
       p384_masked_scalar_write(private_key, kAccVarD0, kAccVarD1));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
-status_t p384_ecdsa_sideload_sign_start(
-    const uint32_t digest[kP384ScalarWords]) {
+status_t p384_ecdsa_sideload_sign_start(const uint32_t digest[kP384ScalarWords],
+                                        uint32_t *session_token) {
   // Load the ECDSA/P-384 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP384));
 
@@ -283,13 +351,32 @@ status_t p384_ecdsa_sideload_sign_start(
   // Set the message digest.
   HARDENED_TRY(set_message_digest(digest, kAccVarMsg));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
+status_t p384_ecdsa_sign_finalize(uint32_t session_token,
+                                  p384_ecdsa_signature_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Check instruction count.
   ACC_CHECK_INSN_COUNT(kP384SignMinInstructionCount,
@@ -307,7 +394,8 @@ status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
 
 status_t p384_ecdsa_verify_start(const p384_ecdsa_signature_t *signature,
                                  const uint32_t digest[kP384ScalarWords],
-                                 const p384_point_t *public_key) {
+                                 const p384_point_t *public_key,
+                                 uint32_t *session_token) {
   // Load the ECDSA/P-384 app
   HARDENED_TRY(acc_load_app(kAccAppP384));
 
@@ -327,14 +415,33 @@ status_t p384_ecdsa_verify_start(const p384_ecdsa_signature_t *signature,
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
 status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
+                                    uint32_t session_token,
                                     hardened_bool_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
@@ -360,7 +467,8 @@ status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
 }
 
 status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
-                         const p384_point_t *public_key) {
+                         const p384_point_t *public_key,
+                         uint32_t *session_token) {
   // Load the ECDH/P-384 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP384));
 
@@ -375,14 +483,33 @@ status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
   ACC_WIPE_IF_ERROR(
       p384_masked_scalar_write(private_key, kAccVarD0, kAccVarD1));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   ACC_WIPE_IF_ERROR(acc_execute());
   return OTCRYPTO_OK;
 }
 
-status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
+status_t p384_ecdh_finalize(uint32_t session_token,
+                            p384_ecdh_shared_key_t *shared_key) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
@@ -407,7 +534,8 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
   return acc_dmem_sec_wipe();
 }
 
-status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {
+status_t p384_sideload_ecdh_start(const p384_point_t *public_key,
+                                  uint32_t *session_token) {
   // Load the ECDH/P-384 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppP384));
 
@@ -418,13 +546,32 @@ status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
 
+  // Generate a fresh session token, and store it in DMEM.
+  uint32_t token = ibex_rnd32_read();
+  HARDENED_TRY(acc_dmem_write(1, &token, kAccVarSessionToken));
+  *session_token = token;
+
   // Start the ACC routine.
   return acc_execute();
 }
 
-status_t p384_sideload_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
+status_t p384_sideload_ecdh_finalize(uint32_t session_token,
+                                     p384_ecdh_shared_key_t *shared_key) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Check the session token matches the expected one.
+  // If this check fails, either the cryptolib client's logic is broken and
+  // providing an incorrect value for the token, or another cryptolib client
+  // (e.g. in a multitenant OS) has erroneously been allowed to access the ACC
+  // before the client which started the operation can clear the results. To
+  // maintain security, both of these must be treated as unrecoverable errors.
+  uint32_t stored_token = 0;
+  HARDENED_TRY(acc_dmem_read(1, kAccVarSessionToken, &stored_token));
+  if (launder32(stored_token) != session_token) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(stored_token, session_token);
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
