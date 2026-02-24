@@ -78,6 +78,7 @@ The public interface includes
 - module header(s), e.g. parameter names, ports (names, data types)
 - package names and all identifiers within each package, including enum values (but not the values assigned to them)
 - defines
+While package names and their identifiers are both part of the public interface, uniquification only implies changes to package names because their identifiers are scoped.
 
 If any of those aspects of a source file are templated differently within the same device, the core name referencing the files, the file name itself, and the name of the contained SystemVerilog construct must be made instance-specific.
 For example, if file `rtl/flash_ctrl.sv` contained within core `flash_ctrl.core` has two instances that diverge, then the following should happen:
