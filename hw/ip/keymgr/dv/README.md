@@ -10,7 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/keymgr/dv/latest/report.html)
+<!-- TODO: Include Simulation Results hyperlink to a reports page.-->
 
 ## Design features
 For detailed information on KEYMGR design features, please see the [KEYMGR HWIP technical specification](../README.md).
@@ -35,15 +35,23 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
 * [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
+<!--
+TODO: Develop this section?
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
+-->
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
-`keymgr_env_pkg`. Some of them in use are:
+`keymgr_env_pkg`.
+<!--
+TODO: Develop this section?
+Some of them in use are:
 ```systemverilog
 [list a few parameters, types & methods; no need to mention all]
 ```
+-->
+
 ### TL_agent
 KEYMGR testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via
@@ -61,8 +69,11 @@ The KEYMGR RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/REA
 
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
+<!--
+TODO: Develop this section?
 ### Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]
+-->
 
 ### Stimulus strategy
 #### Test sequences
@@ -71,9 +82,9 @@ The `keymgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and ser
 All test sequences are extended from `keymgr_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* keymgr_operations: This task issues operations as set in the inputs, such as advance operation, generating sw/hw output.
-* wait_op_done: This task polls the `op_status` until it returns success / fail status, as well as checking if the status is expected.
-* keymgr_rd_clr: This reads `sw_share_output` to allow scoreboard to check the values.
+* `keymgr_operations`: This task issues operations as set in the inputs, such as advance operation, generating sw/hw output.
+* `wait_op_done`: This task polls the `op_status` until it returns success / fail status, as well as checking if the status is expected.
+* `keymgr_rd_clr`: This reads `sw_share_output` to allow scoreboard to check the values.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
@@ -83,11 +94,11 @@ The covergroups defined in testplan have been developed to prove that the test i
 #### Scoreboard
 The `keymgr_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: An analysis FIFO to hold transactions from TL address channel.
-* tl_d_chan_fifo: An analysis FIFO to hold transactions from TL data channel.
-* req_fifo: An analysis FIFO to hold request data sent to KMAC.
-* rsp_fifo: An analysis FIFO to hold response digests received from KMAC.
-* edn_fifo: An analysis FIFO to hold transactions coming from the EDN interface.
+* `tl_a_chan_fifo`: An analysis FIFO to hold transactions from TL address channel.
+* `tl_d_chan_fifo`: An analysis FIFO to hold transactions from TL data channel.
+* `req_fifo`: An analysis FIFO to hold request data sent to KMAC.
+* `rsp_fifo`: An analysis FIFO to hold response digests received from KMAC.
+* `edn_fifo`: An analysis FIFO to hold transactions coming from the EDN interface.
 
 #### Assertions
 * TLUL assertions: The `tb/keymgr_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.

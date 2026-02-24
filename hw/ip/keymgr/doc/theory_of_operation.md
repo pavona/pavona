@@ -6,7 +6,7 @@ Key manager behavior can be summarized by the functional model below.
 
 In the diagram, the red boxes represent the working state and the associated internal key, the black ovals represent derivation functions, the green squares represent software inputs, and the remaining green / purple shapes represent outputs to both software and hardware.
 
-In OpenTitan, the derivation method selected is [KMAC](../../kmac/README.md).
+In Pavona, the derivation method selected is [KMAC](../../kmac/README.md).
 Each valid operation involves a KMAC invocation using the key manager internal key and other HW / SW supplied inputs as data.
 While KMAC can generate outputs of arbitrary length, this design fixes the size to 256b.
 
@@ -70,7 +70,7 @@ The key used for all 3 functions is the `CreatorRootKey`.
 
 The advancement from `CreatorRootKey` to the `OwnerIntermediateKey` is irreversible during the current power cycle.
 
-Keymgr reads the root key from OTP in a single clock cycle. It assumes that when keymgr's internal FSM reaches to this clock cycle, OTP root key is already available (`valid` is set to 1). Otherwise, keymgr skips loading the root key.
+Key Manager reads the root key from OTP in a single clock cycle. It assumes that when `keymgr`'s internal FSM reaches to this clock cycle, OTP root key is already available (`valid` is set to 1). Otherwise, `keymgr` skips loading the root key.
 
 ### OwnerIntermediateKey
 
@@ -311,7 +311,7 @@ See the tables below for an enumeration.
 *  During `Reset` state, the KMAC module is never invoked, thus certain errors are not possible.
 *  During `Initialized`, `CreatorRootKey`, `OwnerIntermediateKey` and `OwnerRootKey` states, a fault error causes the relevant key / outputs to be updated; however an operational error does not.
 *  During `Invalid` and `Disabled` states, the relevant key / outputs are updated regardless of the error.
-*  Only the relevant collateral is updated -> ie, advance / disable command leads to working key update, and generate command leads to software or sideload key update.
+*  Only the relevant collateral is updated -> i.e. advance / disable command leads to working key update, and generate command leads to software or sideload key update.
 *  During `Disabled` state, if life cycle deactivation or an operational fault is encountered, the key manager transitions to `Invalid` state, see [here](#invalid-and-disabled-state)
 
 ## DICE Support
@@ -475,7 +475,7 @@ This allows the next stage of software to re-use the binding registers.
 
 ### Custom Security Checks
 
-The keymgr has several custom security checks.
+The key manager has several custom security checks.
 
 #### One-Hot Command Check
 The command received by the KMAC interface must always be in one-hot form and unchanging during the life time of a KMAC transaction.
