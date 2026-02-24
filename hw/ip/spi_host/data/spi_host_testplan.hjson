@@ -281,8 +281,8 @@
             - constraint the Sequence to create well-formed transactions that the model understands
 
           Checking:
-            - Verify the DUT against the WindBond bfm by making the spi agent passive
-              to verify that we comply with the spi targeted for opentitan
+            - Verify the DUT against the WindBond bfm by making the SPI agent passive
+              to verify that we comply with the SPI targeted for Pavona
             '''
       stage: V3
       tests: []

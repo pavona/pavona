@@ -1,11 +1,5 @@
 # SPI_HOST HWIP Technical Specification
 
-[`spi_host`](https://reports.opentitan.org/hw/ip/spi_host/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/spi_host/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_host/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_host/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_host/code.svg)
-
 # Overview
 
 This document specifies SPI_HOST hardware IP (HWIP) functionality.
@@ -24,7 +18,7 @@ See that document for integration overview within the broader top-level system.
    - 288 bytes for TX data, 256 bytes for RX data
    - FIFOs loaded/unloaded via 32-bit TL-UL registers
    - Support for arbitrary byte-count in each transaction
-   - Parametrizable support for Big- or Little-Endian systems in ordering I/O bytes within 32-bit words.
+   - Parameterizable support for Big-Endian or Little-Endian systems in ordering I/O bytes within 32-bit words.
 - SPI clock rate controlled by separate input clock to core
    - SPI SCK line typically toggles at 1/2 the core clock frequency
    - An additional clock rate divider exists to reduce the frequency if needed
@@ -43,7 +37,7 @@ The Serial Peripheral Interface (SPI) is a synchronous serial interface, commonl
 
 The interface is a *de facto* standard (not a formal one), so there is no definitive reference or established compliance criteria.
 It is therefore important to consult the data sheets for the desired peripheral devices in order to ensure compatibility.
-The OpenTitan SPI_HOST IP is primarily designed for controlling Quad SPI NOR flash devices, such as the [W25Q01JV Serial NOR flash from Winbond](https://www.winbond.com/resource-files/W25Q01JV%20SPI%20RevB%2011132019.pdf) or the [1 Gb M25QL NOR flash from Micron](https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-b/mt25q_qlkt_l_01g_bbb_0.pdf?rev=43d124f03bbf4ef0962435e9ec63a185).
+The Pavona SPI_HOST IP is primarily designed for controlling Quad SPI NOR flash devices, such as the [W25Q01JV Serial NOR flash from Winbond](https://www.winbond.com/resource-files/W25Q01JV%20SPI%20RevB%2011132019.pdf) or the [1 Gb M25QL NOR flash from Micron](https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-b/mt25q_qlkt_l_01g_bbb_0.pdf?rev=43d124f03bbf4ef0962435e9ec63a185).
 The implementation however is runtime-configurable to support a wide variety of devices, although the Winbond serial flash device is used as the primary reference for understanding our host requirements.
 
 There are also a number of good references describing legacy host implementations for this protocol, which are useful for understanding some of the general needs for a wider range of target devices.

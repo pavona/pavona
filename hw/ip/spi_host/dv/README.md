@@ -10,6 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
+<!-- TODO: Include Simulation results hyperlink pointing to a reports page-->
 * [Simulation results](https://reports.opentitan.org/hw/ip/spi_host/dv/latest/report.html)
 
 ## Design features
