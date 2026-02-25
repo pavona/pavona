@@ -1,7 +1,7 @@
 # Hardware Interfaces
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/spi_device/data/spi_device.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`spi_device`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../doc/contributing/hw/comportability), the module **`spi_device`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`scan_clk_i`**
 - Bus Device Interfaces (TL-UL): **`tl`**
@@ -16,7 +16,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | tpm_csb    | input       | TPM Chip Select#                               |
 | sd[3:0]    | inout       | SPI IO, IO2/IO3 has multi-purpose (/WP, /HOLD) |
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name           | Package::Struct                 | Type    | Act   |   Width | Description                                                                                                                          |
 |:--------------------|:--------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|

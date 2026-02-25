@@ -1,7 +1,7 @@
 # Hardware Interfaces
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/pattgen/data/pattgen.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`pattgen`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../doc/contributing/hw/comportability), the module **`pattgen`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: *none*
 - Bus Device Interfaces (TL-UL): **`tl`**
@@ -16,7 +16,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | pda1_tx    | output      | Serial output data bit for pattern generation on Channel 1 |
 | pcl1_tx    | output      | Clock corresponding to pattern data on Channel 1           |
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name   | Package::Struct   | Type    | Act   |   Width | Description   |
 |:------------|:------------------|:--------|:------|--------:|:--------------|

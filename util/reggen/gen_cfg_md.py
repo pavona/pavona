@@ -14,11 +14,19 @@ from reggen.params import Parameter
 
 def gen_cfg_md(cfgs: IpBlock,
                output: TextIO,
+               templatized: bool,
                register_file: Optional[str] = None) -> None:
-    comport_url = url(
-        "Comportable guideline for peripheral device functionality",
-        "https://opentitan.org/book/doc/contributing/hw/comportability",
-    )
+    if templatized:
+        comport_url = url(
+            "Comportable guideline for peripheral device functionality",
+            "../../../../../doc/contributing/hw/comportability",
+        )
+    else:
+        comport_url = url(
+            "Comportable guideline for peripheral device functionality",
+            "../../../../doc/contributing/hw/comportability",
+        )
+
     output.write(
         f'Referring to the {comport_url}, the module '
         f'{coderef(cfgs.name)} has the following hardware interfaces defined\n',
@@ -87,11 +95,14 @@ def gen_cfg_md(cfgs: IpBlock,
             desc = ims.desc if ims.desc is not None else ""
             rows.append([name, pkg_struct, sig_type, act, width, desc])
 
-        comportibility_url = (
-            "https://opentitan.org/book/doc/contributing/hw/comportability/index.html"
-            "#inter-signal-handling")
+        if templatized:
+            comportability_url = "../../../../../doc/contributing/hw/comportability#inter-signal-handling"
+            
+        else:
+            comportability_url = "../../../../doc/contributing/hw/comportability#inter-signal-handling"
+
         tables.append((
-            url("Inter-Module Signals", comportibility_url),
+            url("Inter-Module Signals", comportability_url),
             [
                 "Port Name", "Package::Struct", "Type", "Act", "Width",
                 "Description"

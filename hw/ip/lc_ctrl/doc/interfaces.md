@@ -17,7 +17,7 @@ Parameter                        | Default (Max)  | Top Earlgrey   | Description
 ### Signals
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/lc_ctrl/data/lc_ctrl.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`lc_ctrl`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../doc/contributing/hw/comportability), the module **`lc_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_kmac_i`**
 - Bus Device Interfaces (TL-UL): **`regs_tl`**, **`dmi_tl`**
@@ -25,7 +25,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Peripheral Pins for Chip IO: *none*
 - Interrupts: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name                | Package::Struct                | Type    | Act   |   Width | Description                                                                                                                                                                                                                                                                                                                                            |
 |:-------------------------|:-------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

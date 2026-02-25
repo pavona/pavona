@@ -1,7 +1,7 @@
 # Hardware Interfaces
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/i2c/data/i2c.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`i2c`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../doc/contributing/hw/comportability), the module **`i2c`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: *none*
 - Bus Device Interfaces (TL-UL): **`tl`**
@@ -14,7 +14,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | sda        | inout       | Serial input data bit  |
 | scl        | inout       | Serial input clock bit |
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name     | Package::Struct                 | Type    | Act   |   Width | Description                                                                                                                              |
 |:--------------|:--------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------------------|

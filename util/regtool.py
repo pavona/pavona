@@ -304,7 +304,8 @@ def main():
                 # Assumes the registers will be in a file called `registers.md`
                 # and within the same location as the output's destination.
                 # Exposing this as an option would nice to do.
-                return gen_cfg_md.gen_cfg_md(obj, outfile, "registers.md")
+                templatized = "ip_autogen" in infile.name or re.search(r"/top_[^/]+/", infile.name)
+                return gen_cfg_md.gen_cfg_md(obj, outfile, templatized, "registers.md")
             elif fmt == 'doc_html_old':
                 return gen_html.gen_html(obj, outfile)
             elif fmt == 'cdh':

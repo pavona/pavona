@@ -50,7 +50,9 @@ def main() -> None:
             "file at {}/{}".format(context["root"], chapter["source_path"]))
         buffer = io.StringIO()
         buffer.write("# Hardware Interfaces\n")
-        gen_cfg_md.gen_cfg_md(block, buffer)
+        templatized = ("ip_autogen" in chapter["source_path"] 
+                       or re.search(r"/top_[^/]+/", chapter["source_path"]))
+        gen_cfg_md.gen_cfg_md(block, buffer, templatized)
 
         buffer.write("# Registers\n")
         gen_md.gen_md(block, buffer)

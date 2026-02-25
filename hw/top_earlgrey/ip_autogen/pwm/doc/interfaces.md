@@ -1,7 +1,7 @@
 # Hardware Interfaces
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`pwm`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../../doc/contributing/hw/comportability), the module **`pwm`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_core_i`**
 - Bus Device Interfaces (TL-UL): **`tl`**
@@ -14,7 +14,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:-----------|:------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | pwm[5:0]   | output      | Pulse output.  Note that though this output is always enabled, there is a formal set of enable pins (pwm_en_o) which are required for top-level integration of comportable IPs. |
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name     | Package::Struct               | Type    | Act   |   Width | Description                                                                                                                          |
 |:--------------|:------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|

@@ -1,14 +1,14 @@
 # Hardware Interfaces
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/hmac/data/hmac.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`hmac`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../doc/contributing/hw/comportability), the module **`hmac`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: *none*
 - Bus Device Interfaces (TL-UL): **`tl`**
 - Bus Host Interfaces (TL-UL): *none*
 - Peripheral Pins for Chip IO: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name   | Package::Struct      | Type    | Act   |   Width | Description   |
 |:------------|:---------------------|:--------|:------|--------:|:--------------|

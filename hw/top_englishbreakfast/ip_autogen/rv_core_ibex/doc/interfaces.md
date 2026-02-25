@@ -2,7 +2,7 @@
 
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_englishbreakfast/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`rv_core_ibex`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../../doc/contributing/hw/comportability), the module **`rv_core_ibex`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_edn_i`**, **`clk_esc_i`**, **`clk_otp_i`**
 - Bus Device Interfaces (TL-UL): **`cfg_tl_d`**
@@ -10,7 +10,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Peripheral Pins for Chip IO: *none*
 - Interrupts: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name               | Package::Struct                  | Type    | Act   | Width       | Description   |
 |:------------------------|:---------------------------------|:--------|:------|:------------|:--------------|

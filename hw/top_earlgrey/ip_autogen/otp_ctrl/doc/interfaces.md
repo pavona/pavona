@@ -16,14 +16,14 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 `RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../../../../ip/lc_ctrl/doc/theory_of_operation.md#conditional-transitions).
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`otp_ctrl`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../../doc/contributing/hw/comportability), the module **`otp_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_edn_i`**
 - Bus Device Interfaces (TL-UL): **`core_tl`**
 - Bus Host Interfaces (TL-UL): *none*
 - Peripheral Pins for Chip IO: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name                | Package::Struct                    | Type    | Act   |   Width | Description                                                                                                                                                                                                     |
 |:-------------------------|:-----------------------------------|:--------|:------|--------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

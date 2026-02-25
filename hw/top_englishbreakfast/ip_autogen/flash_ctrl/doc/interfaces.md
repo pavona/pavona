@@ -1,7 +1,7 @@
 # Interfaces
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_englishbreakfast/ip_autogen/flash_ctrl/data/flash_ctrl.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`flash_ctrl`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../../doc/contributing/hw/comportability), the module **`flash_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_otp_i`**
 - Bus Device Interfaces (TL-UL): **`core_tl`**, **`prim_tl`**, **`mem_tl`**
@@ -16,7 +16,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | tdi        | input       | jtag input    |
 | tdo        | output      | jtag output   |
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name                | Package::Struct                | Type    | Act   |   Width | Description   |
 |:-------------------------|:-------------------------------|:--------|:------|--------:|:--------------|

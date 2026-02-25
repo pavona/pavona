@@ -11,7 +11,7 @@ Parameter                   | Default       | Description
 
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`rstmgr`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../../doc/contributing/hw/comportability), the module **`rstmgr`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_aon_i`**, **`clk_io_div4_i`**, **`clk_main_i`**, **`clk_io_i`**, **`clk_io_div2_i`**, **`clk_usb_i`**, **`clk_por_i`**
 - Bus Device Interfaces (TL-UL): **`tl`**
@@ -19,7 +19,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Peripheral Pins for Chip IO: *none*
 - Interrupts: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name   | Package::Struct                    | Type    | Act   |   Width | Description                                                                                                                  |
 |:------------|:-----------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------|

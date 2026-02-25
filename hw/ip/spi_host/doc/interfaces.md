@@ -1,7 +1,7 @@
 # Hardware Interfaces
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/spi_host/data/spi_host.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`spi_host`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](../../../../doc/contributing/hw/comportability), the module **`spi_host`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: *none*
 - Bus Device Interfaces (TL-UL): **`tl`**
@@ -15,7 +15,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | csb        | output      | Chip Select# (One hot, active low).  The size of this port should match NumCS. |
 | sd[3:0]    | inout       | SPI data bus                                                                   |
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+## [Inter-Module Signals](../../../../doc/contributing/hw/comportability#inter-signal-handling)
 
 | Port Name     | Package::Struct               | Type    | Act   |   Width | Description                                                                                                                                    |
 |:--------------|:------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------|
