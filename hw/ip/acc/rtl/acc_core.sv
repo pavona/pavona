@@ -12,7 +12,7 @@
 `include "prim_assert.sv"
 
 /**
- * OpenTitan Big Number Accelerator (ACC) Core
+ * Asymmetric Cryptographic Coprocessor (ACC) Core
  *
  * This module is the top-level of the ACC processing core.
  */

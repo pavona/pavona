@@ -1,4 +1,4 @@
-# OpenTitan Big Number Accelerator (ACC) Instruction Set Architecture
+# Asymmetric Cryptographic Coprocessor (ACC) Instruction Set Architecture
 
 This document describes the instruction set for ACC.
 For more details about the processor itself, see the [ACC Technical Specification](../README.md).

@@ -12,7 +12,7 @@
 
 /**
  * @file
- * @brief OpenTitan Big Number Accelerator (ACC) driver
+ * @brief Asymmetric Cryptographic Coprocessor (ACC) driver
  */
 
 /**

@@ -15,7 +15,7 @@
 
 ## Design features
 
-ACC, the OpenTitan Big Number accelerator, is a cryptographic accelerator.
+ACC, the Asymmetric Cryptographic Coprocessor, is a cryptographic accelerator.
 For detailed information on ACC design features, see the [ACC HWIP technical specification](../README.md).
 
 ## Testbench architecture

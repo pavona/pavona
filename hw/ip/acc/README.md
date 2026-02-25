@@ -1,4 +1,4 @@
-# OpenTitan Big Number Accelerator (ACC) Technical Specification
+# Asymmetric Cryptographic Coprocessor (ACC) Technical Specification
 
 [`acc`](https://reports.opentitan.org/hw/ip/acc/dv/uvm/latest/report.html):
 ![](https://dashboards.lowrisc.org/badges/dv/acc/test.svg)
@@ -8,7 +8,7 @@
 
 # Overview
 
-This document specifies functionality of the OpenTitan Big Number Accelerator, or ACC.
+This document specifies functionality of the Asymmetric Cryptographic Coprocessor, or ACC.
 ACC is a coprocessor for asymmetric cryptographic operations like RSA or Elliptic Curve Cryptography (ECC).
 
 This module conforms to the [Comportable guideline for peripheral functionality](../../../doc/contributing/hw/comportability/README.md).

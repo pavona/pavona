@@ -5,10 +5,10 @@
 // Copyright "Towards ML-KEM & ML-DSA on OpenTitan" Authors
 {
   name:               "acc",
-  human_name:         "OpenTitan Big Number Accelerator",
+  human_name:         "Asymmetric Cryptographic Coprocessor",
   one_line_desc:      "Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures",
   one_paragraph_desc: '''
-  OpenTitan Big Number Accelerator (ACC) is a programmable coprocessor for asymmetric cryptographic algorithms such as RSA or elliptic curve cryptography (ECC).
+  Asymmetric Cryptographic Coprocessor (ACC) is a programmable coprocessor for asymmetric cryptographic algorithms such as RSA or elliptic curve cryptography (ECC).
   Such algorithms are dominated by wide integer arithmetic, which are executed on ACC's 256-bit-wide data path.
   The data ACC processes is often security sensitive, and ACC is designed to reduce the attack surface by
   (1) keeping the instruction set and the processor design as simple as possible to aid verification,

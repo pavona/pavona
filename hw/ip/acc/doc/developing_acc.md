@@ -1,7 +1,7 @@
-# OpenTitan Big Number Accelerator (ACC)
+# Asymmetric Cryptographic Coprocessor (ACC)
 
-This directory contains the implementation of the OpenTitan Big Number
-Accelerator (ACC). ACC is a coprocessor for asymmetric cryptographic
+This directory contains the implementation of the Asymmetric Cryptographic Coprocessor (ACC).
+ACC is a coprocessor for asymmetric cryptographic
 operations like RSA or Elliptic Curve Cryptography (ECC).
 
 See [here](../README.md) for documentation on

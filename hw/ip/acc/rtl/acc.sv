@@ -13,7 +13,7 @@
 `include "prim_fifo_assert.svh"
 
 /**
- * OpenTitan Big Number Accelerator (ACC)
+ * Asymmetric Cryptographic Coprocessor (ACC)
  */
 module acc
   import prim_alert_pkg::*;
