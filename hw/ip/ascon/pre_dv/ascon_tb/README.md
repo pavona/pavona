@@ -1,14 +1,13 @@
 Ascon Verilator Testbench
 =======================
 
-This directory contains a basic Verilator testbench in C++ targeting functional
-verification of the Ascon unit during the design phase.
+This directory contains a basic Verilator testbench in C++ targeting functional verification of the Ascon unit during the design phase.
 
 
 How to build and run the example
 --------------------------------
 
-From the OpenTitan top level:
+From the repository top level:
 
    ```sh
    fusesoc --cores-root=. run --setup --build lowrisc:dv_verilator:ascon_sim

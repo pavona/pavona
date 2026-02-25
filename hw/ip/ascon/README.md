@@ -2,7 +2,7 @@
 
 This document specifies the [Ascon](https://ascon.iaik.tugraz.at/) hardware IP functionality.
 Ascon is a sponge-based, single pass, online Authenticated Encryption Scheme (that can also be used for hashing).
-It was selected by [NIST as the winner](https://www.nist.gov/news-events/news/2023/02/nist-selects-lightweight-cryptography-algorithms-protect-small-devices) of the NIST lightweight cryptography competition and is soon to be standardized.
+It was selected by [NIST as the winner](https://www.nist.gov/news-events/news/2023/02/nist-selects-lightweight-cryptography-algorithms-protect-small-devices) of the NIST lightweight cryptography competition, and later standardized in [SP 800-232, Ascon-Based Lightweight Cryptography Standards for Constrained Devices](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-232.pdf).
 
 
 ## Features
@@ -45,7 +45,8 @@ The Ascon unit is attached to the chip interconnect bus as a peripheral module.
 Communication with the processor happens through a set of control and status registers (CSRs).
 This includes the input/output data, key, nonce, as well as status and control information.
 
-[^1]: There are two main variants: Ascon128 and Ascon 128a. Both variants use 12 rounds for initialization and finalization. They differ in the input block size and the rounds per update.
+[^1]: There are two main variants: Ascon-128 and Ascon-128a. Both variants use 12 rounds for initialization and finalization. They differ in the input block size and the rounds per update.
     "Ascon v1.2. Submission to NIST." [https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/ascon-spec-round2.pdf](https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/ascon-spec-round2.pdf). Accessed 21 Aug. 2023.
-    According to [https://csrc.nist.gov/csrc/media/Presentations/2023/update-on-standardization-of-ascon-family/images-media/sess-6-turan-bcm-workshop-2023.pdf](https://csrc.nist.gov/csrc/media/Presentations/2023/update-on-standardization-of-ascon-family/images-media/sess-6-turan-bcm-workshop-2023.pdf) either both or only Ascon-128 will be standardized. Further, there might be no dedicated Hash function but only a standardized XOF form.
-    Non standardized extensions like a PRF could be implemented with a marginal overhead in a future version.
+    According to [Ascon-Based Lightweight Cryptography Standards for Constrained Devices](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-232.pdf) both Ascon-128 and Ascon-128a have been standardized.
+    Further, Ascon-Hash and Ascon-XOF were standardized as dedicated hash functions.
+    Non standardized extensions like a PRF could be implemented with a marginal overhead in a future version according to the Third NIST Workshop on Block Cipher Modes of Operation talk [Update on Standardization of Ascon family](https://csrc.nist.gov/csrc/media/Presentations/2023/update-on-standardization-of-ascon-family/images-media/sess-6-turan-bcm-workshop-2023.pdf).

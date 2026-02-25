@@ -4,15 +4,15 @@
 ## Data Flow
 
 The internal Ascon core (we shall refer to as “core”) remains idle, until the FSM receives a start signal with either an encrypt or decrypt command.
-The core expects that the key and nonce inputs have been initialized and uses them to initialize the duplex state and run P12.
+The core expects that the key and nonce inputs have been initialized and uses them to initialize the duplex state and run Ascon-p[12].
 
-If associated data (AD) is of non-zero length, it absorbs a sequence of blocks of A and runs Pr in between.
-It waits between Pr calls in case the next block is not available.
+If associated data (AD) is of non-zero length, it absorbs a sequence of blocks of A and runs Ascon-p[8] in between.
+It waits between Ascon-p[8] calls in case the next block is not available.
 If adlen=0 (advalid = 1) it skips to the next phase.
 
 If AD is skipped or finished, the core performs domain separation and expects plaintext blocks.
 If the message length is zero, it still needs to insert one empty (1||0^{63/127}) block and mask the state as in Fig 2.
-Finally, P12 is applied one more time and the tag is extracted.
+Finally, Ascon-p[12] is applied one more time and the tag is extracted.
 
 When the tag and/or ciphertext/plaintext are not being outputted, their respective buses must be all 0s.
 
@@ -39,7 +39,8 @@ This section discusses different design details of the Ascon module.
 
 As a first version, we propose an unhardened **320-bit data-path 1 round/cycle hardware implementation**.
 This version can then be extended to a hardened one in a second step.
-DOM seems very promising due to the relatively low area overhead for first order masking. However this is still TBD.
+DOM seems very promising due to the relatively low area overhead for first order masking.
+However this is still TBD.
 
 Reason for 1 round/cycle architecture:
 
@@ -66,7 +67,7 @@ For the unhardened version we expect the following area and throughput results:
 * Area estimation: From prior experiments and FPGA synthesis we derive that an ASCON-128 based PRF requires 391 FFs plus 128 bit for key.
     * Based on a factor of 4.7 GE per FF and a x2.5 factor from sequential to total area, an area estimation leads to: 6098 GE which is very small compared to our protected AES core at 110 kGE.
 * Throughput estimation (based on one block in a long message so that overhead of initialization and finalization is disregarded):
-    * At 1 GHz, target throughput requirement could be in the range of 200-400 Mbit/s (QSPI clocked at 50-100 MHz; see [this google doc](https://docs.google.com/document/d/1CNwS8OiEX3GJMBKVt5GXsaVuTNvCLiqly4vU8QOrftI/edit#heading=h.mxfutee66933)). This means for
+    * At 1 GHz, target throughput requirement could be in the range of 200-400 Mbit/s (QSPI clocked at 50-100 MHz). This means for
         * one block of 64 bits, we have 160-320 clock cycles.
         * One block of 128 bits, we have 320-640 clock cycles.
     * With a 1 round per cycle implementation, we can process 64 bits in 6 cycles and 128 in 8 cycles.
@@ -193,8 +194,7 @@ Alternatively, the processor can configure the Ascon unit to use an initial key 
 To this end, the processor has to set the CTRL.sideload_key bit to 1.
 Any write operations of the processor to the Initial Key registers KEY_SHARE0 and KEY_SHARE1 are then ignored.
 In normal/automatic mode, the Ascon unit only starts encryption/decryption if the sideload key is marked as valid.
-To update the sideload key, the processor has to 1) wait for the Ascon unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal,
-and 3) write to the CTRL.sideload_key register to start a new message.
+To update the sideload key, the processor has to 1) wait for the Ascon unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the CTRL.sideload_key register to start a new message.
 After using a sideload key, the processor has to trigger the wiping of all key registers inside the Ascon unit.
 
 
