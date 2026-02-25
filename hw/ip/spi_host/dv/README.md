@@ -10,8 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-<!-- TODO: Include Simulation results hyperlink pointing to a reports page-->
-* [Simulation results](https://reports.opentitan.org/hw/ip/spi_host/dv/latest/report.html)
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ## Design features
 For detailed information on SPI_HOST design features, please see the

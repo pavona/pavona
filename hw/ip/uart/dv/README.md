@@ -11,7 +11,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/uart/dv/latest/report.html)
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ## Design features
 For detailed information on UART design features, please see the [UART design specification](../README.md).

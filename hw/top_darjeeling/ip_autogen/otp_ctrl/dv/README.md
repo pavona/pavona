@@ -10,7 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../../README.md)
   * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/top_darjeeling/ip_autogen/otp_ctrl/dv/latest/report.html)
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ## Design features
 For detailed information on OTP_CTRL design features, please see the [OTP_CTRL HW IP technical specification](../README.md).

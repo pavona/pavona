@@ -10,7 +10,7 @@
 ## Current status
 * [Design & verification stage](../doc/checklist.md)
   * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/top_englishbreakfast/ip_autogen/pwrmgr/dv/latest/report.html)
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ## Design features
 For detailed information on PWRMGR design features, please see the [PWRMGR HWIP technical specification](../README.md).
