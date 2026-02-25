@@ -97,7 +97,7 @@ This flow does not address how to synthesize a netlist, it rather assumes that t
 
 Before running the flow, environment variables that define necessary paths must be loaded.
 Based on the local installation, a few variables might require fixing:
-  * `REPO_TOP` should refer to the top directory of opentitan-discrete.
+  * `REPO_TOP` should refer to the top directory of the repository.
   * `ASIC_TOP` should refer to the shared ASIC technology library repo (with limited access).
   * `ALMA_TOP` should refer to the top directory of CocoAlma.
 

@@ -1,15 +1,13 @@
 AES Cipher Core Verilator Testbench
 ===================================
 
-This directory contains a very basic, scratch Verilator testbench of the AES
-cipher core. The main use of this testbench is to help understanding how
-to operate and properly interface the AES cipher core, e.g., for evaluating
-security properties.
+This directory contains a very basic, scratch Verilator testbench of the AES cipher core.
+The main use of this testbench is to help understanding how to operate and properly interface the AES cipher core, e.g., for evaluating security properties.
 
 How to build and run the testbench
 ----------------------------------
 
-From the OpenTitan top level execute
+From the repository top level execute
 
    ```sh
    fusesoc --cores-root=. run --setup \
@@ -26,9 +24,5 @@ to run it.
 Details of the testbench
 ------------------------
 
-- `rtl/aes_cipher_core_tb.sv`: SystemVerilog testbench, instantiates and drives
-  the AES cipher core, compares outputs, signals test end and result
-  (pass/fail) to C++ via output ports.
-- `cpp/aes_cipher_core_tb.cc`: Contains main function and instantiation of
-  SimCtrl, reads output ports of DUT and signals simulation termination to
-  Verilator.
+- `rtl/aes_cipher_core_tb.sv`: SystemVerilog testbench, instantiates and drives the AES cipher core, compares outputs, signals test end and result (pass/fail) to C++ via output ports.
+- `cpp/aes_cipher_core_tb.cc`: Contains main function and instantiation of SimCtrl, reads output ports of DUT and signals simulation termination to Verilator.

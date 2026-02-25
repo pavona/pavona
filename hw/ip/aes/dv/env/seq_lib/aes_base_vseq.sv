@@ -663,8 +663,7 @@ class aes_base_vseq extends cip_base_vseq #(
     check_fatal_alert_nonblocking("fatal_fault");
     // Reset and re-initialize the DUT.
     // To avoid assertions firing erroneously due to resetting AES prior to the EDN
-    // interface, pull all resets concurrently. See
-    // https://github.com/lowRISC/opentitan/issues/13573 for details.
+    // interface, pull all resets concurrently.
     apply_resets_concurrently();
     dut_init("HARD");
   endtask

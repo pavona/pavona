@@ -18,9 +18,9 @@ check_file_exists () {
     fi
 }
 
-# `REPO_TOP` should be the top folder for OpenTitan repository and it
+# `REPO_TOP` should be the top folder of the repository and it
 # can be sourced from util/build_consts.sh.
-check_dir_exists ${REPO_TOP} "REPO_TOP" "OpenTitan repo"
+check_dir_exists ${REPO_TOP} "REPO_TOP" "Pavona repo"
 
 # Set the top folder for foundry repo
 export ASIC_TOP="/usr/local/google/home/fatihballi/Documents/asic"

@@ -93,7 +93,7 @@ interface fi_control_if
       // main control FSM.
       //
       // Therefore, this test only attemps to stall the main control FSM by forcing this signal
-      // to 0. For reference, see https://github.com/lowRISC/opentitan/issues/13572 .
+      // to 0.
       value = 0;
     end else begin
       // Read the current value.
