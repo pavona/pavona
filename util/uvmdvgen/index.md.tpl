@@ -21,7 +21,7 @@ ${'##'} Goals
 ${'##'} Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/${name}/dv/latest/report.html)
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ${'##'} Design features
 For detailed information on ${name.upper()} design features, please see the [${name.upper()} HWIP technical specification]({{< relref "hw/ip/${name}/doc" >}}).

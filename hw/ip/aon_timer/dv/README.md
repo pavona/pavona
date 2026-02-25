@@ -5,7 +5,7 @@ This documents describes the verification for AON_TIMER as a block-level IP.
 ## Useful links
 * [AON Timer HWIP technical specification](../README.md).
 * [Testplan](#testplan)
-* [Simulation results](https://reports.opentitan.org/hw/ip/aon_timer/dv/latest/report.html)
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 * [HW landing page](../../../README.md)
 * [HW/DV development stages](../../../../doc/project_governance/development_stages.md)
 

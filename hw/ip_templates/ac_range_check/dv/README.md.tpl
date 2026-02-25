@@ -10,7 +10,7 @@ ${"##"} Goals
 ${"##"} Current status
 * [Design & verification stage](../../../../README.md)
   * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/ac_range_check/dv/latest/report.html)
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ${"##"} Design features
 For detailed information on `ac_range_check` design features, please see the [`ac_range_check` HWIP technical specification](../README.md).

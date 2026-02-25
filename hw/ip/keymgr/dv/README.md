@@ -10,7 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-<!-- TODO: Include Simulation Results hyperlink to a reports page.-->
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ## Design features
 For detailed information on KEYMGR design features, please see the [KEYMGR HWIP technical specification](../README.md).

@@ -10,7 +10,7 @@ ${"##"} Goals
 ${"##"} Current status
 * [Design & verification stage](../../../../README.md)
   * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-<!-- TODO: Put the simulation results back with the reports link once they become available.--> 
+<!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ${"##"} Design features
 For detailed information on `flash_ctrl` design features, please see the [`flash_ctrl` HWIP technical specification](../README.md).
