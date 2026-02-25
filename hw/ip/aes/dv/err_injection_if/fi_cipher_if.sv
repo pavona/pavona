@@ -102,7 +102,6 @@ interface fi_cipher_if
       // make the cipher core advance faster (also depends on cyc_ctr_q).
       //
       // Therefore, this test only attempts to stall the cipher core by forcing these signals to 0.
-      // For reference, see https://github.com/lowRISC/opentitan/issues/13572 .
       value = 0;
     end else begin
       // Read the current value.

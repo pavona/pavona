@@ -75,8 +75,6 @@ class aes_common_vseq extends aes_base_vseq;
   // - Fatal alerts inside AES don't generally block write access to the aux control register.
   // - A fatal storage error in one field of the shadowed aux control register doesn't block write
   //   access to other fields in the same register.
-  //
-  // For further details, refer to lowRISC/OpenTitan#8460 and lowRISC/OpenTitan#10617.
   virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
                                                   bit predict_storage_err = 0);
     super.predict_shadow_reg_status(predict_update_err, predict_storage_err);

@@ -30,8 +30,8 @@ Other versions of these tools might not be compatible.
 
 1. Generate a Verilog netlist
 
-   A netlist of the AES cipher core can be generated using the Yosys synthesis flow from the OpenTitan repository.
-   From the OpenTitan top level, run
+   A netlist of the AES cipher core can be generated using the Yosys synthesis flow from the repository.
+   From the repository top level, run
    ```sh
    cd hw/ip/aes/pre_syn
    ```
@@ -55,8 +55,7 @@ Other versions of these tools might not be compatible.
 
 After downloading and building the PROLEAD tool, and synthesizing the AES cipher core, the masking together with the PRNG can finally be evaluated.
 
-1. Make sure to source the `build_consts.sh` script from the OpenTitan
-   repository
+1. Make sure to source the `build_consts.sh` script from the repository
    ```sh
    source util/build_consts.sh
    ```
@@ -77,7 +76,7 @@ After downloading and building the PROLEAD tool, and synthesizing the AES cipher
 
    Library file:   library.lib
    Library name:   NANG45
-   Design file:    opentitan/hw/ip/aes/pre_syn/syn_out/latest/generated/aes_cipher_core_netlist.v
+   Design file:    hw/ip/aes/pre_syn/syn_out/latest/generated/aes_cipher_core_netlist.v
    Module name:    aes_cipher_core
    Linker file:    linker.ld
    Settings file:  aes_cipher_core_config.set

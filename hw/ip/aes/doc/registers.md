@@ -6,11 +6,11 @@ Compared to first-in, first-out (FIFO) interfaces, having separate registers has
 
 - Supported out-of-the-box by the register tool (the FIFO would have to be implemented separately).
 - Usability: critical corner cases where software updates input data or the key partially only are easier to avoid using separate registers and the `hwqe`-signals provided by the Register Tool.
-- Easier interaction with DMA engines
+- Easier interaction with DMA engines.
 
 Also, using a FIFO interface for something that is not actually FIFO (internally, 16B of input/output data are consumed/produced at once) is less natural.
 
-For a detailed overview of the register tool, please refer to the [Register Tool documentation.](../../../../util/reggen/README.md)
+For a detailed overview of the register tool, please refer to the [Register Tool documentation](../../../../util/reggen/README.md).
 
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/aes/data/aes.hjson -->
 ## Summary

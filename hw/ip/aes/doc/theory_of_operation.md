@@ -51,7 +51,7 @@ High-speed, single-cycle operation for high-bandwidth data streaming is not requ
 
 Therefore, the AES unit uses an iterative cipher core architecture with a 128-bit wide data path as shown in the figure below.
 Note that for the sake of simplicity, the figure shows the unmasked implementation.
-For details on the masked implementation of the cipher core refer to [Security Hardening below](#security-hardening)).
+For details on the masked implementation of the cipher core refer to [Security Hardening below](#security-hardening).
 Using an iterative architecture allows for a smaller circuit area at the cost of throughput.
 Employing a 128-bit wide data path allows to achieve the latency requirements of 12/14/16 clock cycles per 16B data block in AES-128/192/256 mode in the unmasked implementation, respectively.
 
@@ -249,7 +249,7 @@ Having a KEM that supports 128-bit key expansion, support for the 256-bit mode c
 In contrast, the 192-bit mode requires much larger muxes.
 Support for this mode is thus optional and can be enabled/disabled via a design-time parameter.
 
-Once we have cost estimates in terms of gate count increase for 192-bit mode, we can decide on whether or not to use it in OpenTitan.
+Once we have cost estimates in terms of gate count increase for 192-bit mode, we can decide on whether or not to use it.
 Typically, systems requiring security above AES-128 go directly for AES-256.
 
 ### System Key-Manager Interface
@@ -309,7 +309,7 @@ When disabling masking, it is recommended to use the unmasked Canright or LUT S-
 Both are fully combinational and allow for one S-Box evaluation every clock cycle.
 
 It's worth noting that since input/output data are provided/retrieved via register interface in unmasked form, the AES unit should not be used to form an identity ladder where the output of one AES operation is used to form the key for the next AES operation in the ladder.
-In OpenTitan, the [Keccak Message Authentication Code (KMAC) unit](../../kmac/README.md) is used for that purpose.
+In Pavona, the [Keccak Message Authentication Code (KMAC) unit](../../kmac/README.md) is used for that purpose.
 
 ### Fully-Parallel Data Path
 
@@ -325,7 +325,8 @@ To interface the data paths with the S-Boxes, a handshake protocol is used.
 ### Note on Reset vs. Non-Reset Flip-Flops
 
 The choice of flip-flop type for registering sensitive assets such as keys can have implications on the vulnerability against e.g. combined reset glitch attacks and SCA.
-Following the [OpenTitan non-reset vs. reset flops rationale](https://github.com/lowRISC/opentitan/issues/2603), the following observations can be made:
+Flip-flop type decisions should be made by considering all countermeasures at a sub-IP level.
+Following this methodology, the following observations can be made:
 - If masking is enabled, key and state values are stored in two shares inside the AES unit.
   Neither the Hamming weights of the individual shares nor the summed Hamming weight are proportional to the Hamming weight of the secret asset.
 - Input/output data and IV values are (currently) not stored in multiple shares but these are less critical as they are used only once.
@@ -358,7 +359,7 @@ To protect against FI attacks on the control path, the AES unit implements the f
   The main control register is implemented as a shadow register.
   This means software has to perform two subsequent write operations to perform an update.
   Internally, a shadow copy is used that is constantly compared with the actual register.
-  For further details, refer to the [Register Tool documentation.](../../../../util/reggen/README.md#shadow-registers)
+  For further details, refer to the [Register Tool documentation.](../../../../util/reggen/README.md#shadow-registers).
 
 - Sparse encodings of FSM states:
   All FSMs inside the AES unit use sparse state encodings.

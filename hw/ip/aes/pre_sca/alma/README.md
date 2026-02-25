@@ -1,21 +1,17 @@
 # AES Formal Masking Verification Using Alma
 
-This directory contains support files to formally verify the masking employed
-inside AES unit using the tool [Alma:
-Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
+This directory contains support files to formally verify the masking employed inside AES unit using the tool [Alma: Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
 
 ## Prerequisites
 
-Note that this flow is experimental. It has been developed using Yosys 0.9+4306
-(git sha1 3931b3a03) and sv2v v0.0.9-24-gf868f06. Other tool versions might not
-be compatible.
+Note that this flow is experimental.
+It has been developed using Yosys 0.9+4306 (git sha1 3931b3a03) and sv2v v0.0.9-24-gf868f06.
+Other tool versions might not be compatible.
 
 1. Download the Alma tool
 
-   Note that since we are primarily interested in verifying the masking of a
-   hardware implementation, we are using the `hw-verif` branch of the tool. In
-   addition, we currently need to use a patched version of the tool, to work
-   around a limitation.
+   Note that since we are primarily interested in verifying the masking of a hardware implementation, we are using the `hw-verif` branch of the tool.
+   In addition, we currently need to use a patched version of the tool, to work around a limitation.
    ```sh
    git clone git@github.com:vogelpi/coco-alma.git alma -b fix-yosys-synth-template
    ```
@@ -37,13 +33,13 @@ be compatible.
 
 1. Generate a Verilog netlist
 
-   A netlist of the DUT can be generated using the Yosys synthesis flow from
-   the OpenTitan repository. From the OpenTitan top level, run
+   A netlist of the DUT can be generated using the Yosys synthesis flow from the repository.
+   From the repository top level, run
    ```sh
    cd hw/ip/aes/pre_syn
    ```
-   Set up the synthesis flow as described in the corresponding README. Then,
-   make sure to change the line in `syn_setup.sh`
+   Set up the synthesis flow as described in the corresponding README.
+   Then, make sure to change the line in `syn_setup.sh`
    ```sh
    export LR_SYNTH_TOP_MODULE=aes
    ```
@@ -51,11 +47,8 @@ be compatible.
    ```sh
    export LR_SYNTH_TOP_MODULE=aes_sbox
    ```
-   to only synthesize an individual AES S-Box as formally verifying the entire
-   AES unit or the AES cipher core is currently out of scope from a tool run
-   time point of view. Alternatively, it is possible to verify `aes_sub_bytes`
-   containing all 16 S-Boxes of the data path or even `aes_reduced_round` which
-   besides the S-Boxes also includes the ShiftRows and MixColumns operations.
+   to only synthesize an individual AES S-Box as formally verifying the entire AES unit or the AES cipher core is currently out of scope from a tool run time point of view.
+   Alternatively, it is possible to verify `aes_sub_bytes` containing all 16 S-Boxes of the data path or even `aes_reduced_round` which besides the S-Boxes also includes the ShiftRows and MixColumns operations.
 
    Then run the synthesis
    ```sh
@@ -64,25 +57,22 @@ be compatible.
 
 ## Formally verifying the masking of the AES unit
 
-After downloading the Alma tool, installing dependencies and synthesizing AES,
-the masking can finally be formally verified.
+After downloading the Alma tool, installing dependencies and synthesizing AES, the masking can finally be formally verified.
 
-1. Make sure to source the `build_consts.sh` script from the OpenTitan
-   repository
+1. Make sure to source the `build_consts.sh` script from the repository
    ```sh
    source util/build_consts.sh
    ```
    in order to set up some shell variables.
 
-1. Enter the directory where you have downloaded Alma and load the virtual
-   Python environment
+1. Enter the directory where you have downloaded Alma and load the virtual Python environment
    ```sh
    source dev/bin/activate
    ```
 
-1. Launch the Alma tool to parse, trace (simulate) and formally verify the
-   netlist. For simplicity, a single script is provided to launch all the
-   required steps with a single command. Simply run
+1. Launch the Alma tool to parse, trace (simulate) and formally verify the netlist.
+   For simplicity, a single script is provided to launch all the required steps with a single command.
+   Simply run
    ```sh
    ${REPO_TOP}/hw/ip/aes/pre_sca/alma/verify_aes.sh
    ```
@@ -135,9 +125,9 @@ the masking can finally be formally verified.
    Finished in 50.74
    The execution is secure
    ```
-   By default, this script will verify the AES S-Box. But you can actually
-   specify the top module to verify. For example, to verify a single, reduced
-   AES round without AddKey operation, first re-run the Yosys synthesis with
+   By default, this script will verify the AES S-Box.
+   But you can actually specify the top module to verify.
+   For example, to verify a single, reduced AES round without AddKey operation, first re-run the Yosys synthesis with
    ```sh
    export LR_SYNTH_TOP_MODULE=aes_reduced_round
    ```
@@ -150,8 +140,7 @@ the masking can finally be formally verified.
 
 Below we outline the individual steps performed by the `verify_aes.sh` script.
 This is useful if you, e.g., want to verify the masking of your own module.
-For this how to, we focus on the most simple case, i.e., the formal
-verification of a single AES S-Box.
+For this how to, we focus on the most simple case, i.e., the formal verification of a single AES S-Box.
 
 For more details, please refer to the [Alma tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage).
 
@@ -162,10 +151,9 @@ For more details, please refer to the [Alma tutorial](https://github.com/IAIK/co
       --netlist tmp/circuit.v --log-yosys
    ```
 
-1. Next, the automatically generated labeling file `tmp/labels.txt` needs to be
-   adapted. This file tells Alma which inputs of the DUT correspond to the
-   secret shares and which ones are used to provide randomness for
-   (re-)masking. Open the file and change the lines
+1. Next, the automatically generated labeling file `tmp/labels.txt` needs to be adapted.
+   This file tells Alma which inputs of the DUT correspond to the secret shares and which ones are used to provide randomness for (re-)masking.
+   Open the file and change the lines
    ```
    data_i [7:0] = unimportant
    mask_i [7:0] = unimportant
@@ -178,8 +166,7 @@ For more details, please refer to the [Alma tutorial](https://github.com/IAIK/co
    prd_i [27:0] = random
    ```
 
-1. Then the Verilator testbench can be compiled and run required to identify
-   control signals and the like
+1. Then the Verilator testbench can be compiled and run required to identify control signals and the like
    ```sh
    ./trace.py --testbench ${REPO_TOP}/hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp \
      --netlist tmp/circuit.v -o tmp/circuit
@@ -201,7 +188,5 @@ For more details, please refer to the [Alma tutorial](https://github.com/IAIK/co
 
 ## Details of the provided support files
 
-- `cpp`: SystemVerilog testbench, instantiates and drives the synthesized
-  netlist of the DUT.
-- `verify_aes.sh`: Script to run the parse, trace and compile steps with
-  one single command.
+- `cpp`: SystemVerilog testbench, instantiates and drives the synthesized netlist of the DUT.
+- `verify_aes.sh`: Script to run the parse, trace and compile steps with one single command.
