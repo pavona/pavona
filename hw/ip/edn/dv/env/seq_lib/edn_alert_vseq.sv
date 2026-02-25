@@ -507,7 +507,7 @@ class edn_alert_vseq extends edn_base_vseq;
     // CSRNG requests can drop if the EDN is disabled.
     // The corresponding assertions can be disabled shortly since CSRNG must be disabled
     // any time the EDN is disabled according to specification.
-    // https://opentitan.org/book/hw/ip/edn/doc/programmers_guide.html
+    // hw/ip/edn/doc/programmers_guide.md
     $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
     $assertoff(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
     // Set the CTRL register fields back to some valid MuBi4 value.

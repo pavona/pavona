@@ -42,16 +42,16 @@ Notes:
   To accelerate this process, firmware can for example do the following:
   - For EDN0, repeatedly trigger reseeding operations of the AES PRNGs via the [`PRNG_RESEED` bit of the AES `TRIGGER` register](../../aes/doc/registers.md#trigger--prng_reseed).
     Once all entropy is consumed, the reseed operation doesn't finish anymore and the [`IDLE` bit of the AES `STATUS` register](../../aes/doc/registers.md#status--idle) remains de-asserted.
-  - For EDN1 which only interfaces the RND port of ACC, load and repeatedly run an ACC program snippet that reads from the RND port such as [`randomness.s`](https://github.com/lowRISC/opentitan/blob/master/sw/acc/code-snippets/randomness.s).
+  - For EDN1 which only interfaces the RND port of ACC, load and repeatedly run an ACC program snippet that reads from the RND port such as [`randomness.s`](../../../../sw/acc/code-snippets/randomness.s).
     Once all entropy is consumed, the program doesn't finish anymore and the [`STATUS` register](../../acc/doc/registers.md#status) remains at `BUSY_EXECUTE`.
 
-  Future versions of EDN will likely support an automated way for consuming any remaining entropy, see also [Issue #22850](https://github.com/lowRISC/opentitan/issues/22850).
+  Future versions of EDN will likely support an automated way for consuming any remaining entropy.
 
 ## Running EDN in Auto Request Mode with ENTROPY_SRC disabled
 
 Once the entropy complex has been enabled and all configured CSRNG instances have been seeded with entropy, firmware can again disable ENTROPY_SRC (and the PTRNG noise source to e.g. save power) while CSRNG and EDN remain running to keep serving entropy to consumers.
 
-Depending on the mode in which EDN and the associated CSRNG instance are running, firmware can use a different mechanism to efficiently operate the entropy complex without having the ENTROPY_SRC continuously running:
+Depending on the mode in which EDN and the associated CSRNG instance are running, firmware can use a different mechanism to efficiently operate the entropy complex without having the ENTROPY_SRC continuously running.
 
 ### Regular, non-deterministic mode
 

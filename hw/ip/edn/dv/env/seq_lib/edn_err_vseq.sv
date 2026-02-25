@@ -214,7 +214,7 @@ class edn_err_vseq extends edn_base_vseq;
     // CSRNG requests will drop if disablement is sent.
     // The corresponding assertions can be disabled shortly since CSRNG must be disabled
     // any time the EDN is disabled according to specification.
-    // https://opentitan.org/book/hw/ip/edn/doc/programmers_guide.html
+    // hw/ip/edn/doc/programmers_guide.md
     $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
     $assertoff(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
     ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);
@@ -268,7 +268,7 @@ class edn_err_vseq extends edn_base_vseq;
     // CSRNG requests can drop if the SM reaches an error state.
     // The corresponding assertions can be disabled shortly since CSRNG must be disabled
     // any time the EDN is disabled according to specification.
-    // https://opentitan.org/book/hw/ip/edn/doc/programmers_guide.html
+    // hw/ip/edn/doc/programmers_guide.md
     $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
     $assertoff(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
     case (cfg.which_err_code) inside

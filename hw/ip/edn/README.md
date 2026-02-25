@@ -1,15 +1,12 @@
 # EDN HWIP Technical Specification
 
-[`edn`](https://reports.opentitan.org/hw/ip/edn/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/edn/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/code.svg)
+[`Pavona Glossary`](../../../doc/glossary.md).
 
 # Overview
 
 This document specifies EDN hardware IP functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
+EDN follows the [comportability guidelines for peripheral device functionality](../../../doc/contributing/hw/comportability/README.md).
+Refer to the guidelines for an integration requirements overview within a broader top level system.
 
 ## Features
 
@@ -78,14 +75,14 @@ Labels for each instance of asset and countermeasure are located throughout the 
 
 The receiving FIFO for genbits from CSRNG will have a hardware check on the output bus.
 This is done to make sure repeated values are not occurring.
-Only 64 bits (out of 128 bits) are checked, since this is statistically significant, and more checking would cost more silicon.
+Only 64 bits (out of 128 bits) are checked, since this is statistically significant, and checking more bits comes at a larger physical silicon area cost.
 It is expected that an endpoint requiring high-quality entropy will do an additional consistency hardware check on the 32 bit data bus.
-Additionally the FIPS signal on the endpoint bus should also be checked for high-quality entropy consumers.
-Boot request mode is an example where the FIPS signal will not be ever be set, and consuming endpoint of low-quality entropy do not need to check this signal.
+Additionally, the FIPS signal on the endpoint bus should also be checked for high-quality entropy consumers.
+Boot request mode is an example where the FIPS signal will not ever be set, and consuming endpoint of low-quality entropy does not need to check this signal.
 
 
 ## Example Topology
-In general, the OpenTitan random number subsystem consists of one `entropy_src`, one CSRNG, and one or more EDNs.
+In general, the top-level random number subsystem consists of one `entropy_src`, one CSRNG, and one or more EDNs.
 The `entropy_src` only supports one connection to a CSRNG, but the CSRNG has multiple application interface ports for connecting to EDN's or other hardware blocks.
 In the example below, two EDN modules are used to distribute `genbits` from the CSRNG to peripheral modules.
 (Note that this is just an example; consult the specification of a specific top-level design for the specific configuration used there.)
