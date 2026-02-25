@@ -6,8 +6,6 @@ CUR_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PRJ_DIR := $(realpath ${CUR_DIR}/../)
 SEED_MODE := testing
 
-REG_OUTPUT_AUTOGEN_DIR ?= ${PRJ_DIR}/build/autogen
-
 # macOS has a different implementation of xargs
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
@@ -51,9 +49,7 @@ IPS ?= aes           \
 
 TOPS ?= top_darjeeling top_earlgrey top_englishbreakfast
 
-USE_BUFFER ?= 0
-
-# conditional flags
+# Conditional flags: use VERBOSE=1 for adding -v flag.
 VERBOSE ?= 0
 toolflags ?=
 ifeq ($(VERBOSE),1)
@@ -61,7 +57,6 @@ ifeq ($(VERBOSE),1)
 endif
 
 dir_hjson = data
-
 hjson_for_ip = ${PRJ_DIR}/hw/ip/$(1)/$(dir_hjson)/$(1).hjson
 
 # IPs that have a directory in hw/ip and are not generated
@@ -73,52 +68,10 @@ ips_reg        = $(addsuffix _reg, $(local_ips))
 
 # Per-top targets (all phonies)
 tops_gen = $(addsuffix _gen,$(TOPS))
-tops_rust_gen = $(addsuffix _gen,$(TOPS))
-
-# Targets for installing files into TOCK_ROOT (empty if TOCK_ROOT is not defined)
-ifneq ($(TOCK_ROOT),)
-tock_rust_destdir    := $(TOCK_ROOT)/chips/lowrisc/src/reg_constants
-ips_reg_rust_install := $(addprefix $(tock_rust_destdir)/,$(notdir $(ips_reg_rust)))
-
-$(tock_rust_destdir):
-	mkdir -p $@
-endif
-
-.PHONY: $(ips_reg) $(tops_gen)
-
-all: $(ips_reg) $(tops_gen) cmdgen
-
-regs: $(ips_reg)
-
-blk-gen-script = $(PRJ_DIR)/hw/ip/$*/util/$*_gen.py
 blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
-
-# If the ip has a local generation script, run it first. This will
-# require all blocks to use a consistent naming. This should be hooked
-# into ipgen (see #5636) for completeness.
-$(ips_reg): %_reg:
-	$(if $(wildcard $(blk-gen-script)),$(blk-gen-script))
-	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
-	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
-
 top_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*.hjson
 top_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*_seed.$(SEED_MODE).hjson
-version_out_dir = $(PRJ_DIR)/build
-version_path = $(version_out_dir)/workspace_status.txt
 top_chip_hjson = $(PRJ_DIR)/hw/$(TOPS)/$(dir_hjson)/$(TOPS).hjson
-
-$(version_out_dir):
-	mkdir -p $@
-
-workspace_status: $(version_out_dir)
-	${PRJ_DIR}/util/get_workspace_status.sh > ${version_path}
-
-topgen_rust: workspace_status
-	mkdir -p ${REG_OUTPUT_AUTOGEN_DIR}
-	${PRJ_DIR}/util/topgen.py -t $(top_chip_hjson) -s $(top_seed_hjson) --rust-only -o ${REG_OUTPUT_AUTOGEN_DIR}/ --version-stamp ${version_path} ${toolflags}
-
-topgen_rust_pkg: topgen_rust
-	tar -C ${REG_OUTPUT_AUTOGEN_DIR}/sw/autogen/ -cvf ${REG_OUTPUT_AUTOGEN_DIR}/chip_${TOPS}.tar chip
 
 top: $(tops_gen)
 $(tops_gen): %_gen:
@@ -129,6 +82,13 @@ cmdgen:
 	(cd ${PRJ_DIR}; find . -name "*.md" -print0 | \
 	 xargs -0 -P 8 $(XARGS_REPLACE) ./util/cmdgen.py -u {})
 
+regs:
+$(ips_reg): %_reg:
+	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
+	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
+
 top_and_cmdgen: top cmdgen
+
+all: top cmdgen regs
 
 .PHONY: all
