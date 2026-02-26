@@ -349,8 +349,11 @@ module otp_ctrl_dai
           //   which is only updated after reset);
           // - the read doesn't address the zeroization marker (which means the zeroization marker
           //   can always be read without risking fatal integrity errors).
-          if (PartInfo[part_idx].integrity && mubi8_test_false_loose(zer_i[part_idx]) &&
-              !(otp_addr_o[OtpAddrWidth-1:2] == zeroize_addr_lut[part_idx][OtpAddrWidth-1:2])) begin
+          if (PartInfo[part_idx].integrity &&
+              (!PartInfo[part_idx].zeroizable ||
+               (mubi8_test_false_loose(zer_i[part_idx]) &&
+                !(otp_addr_o[OtpAddrWidth-1:2] ==
+                  zeroize_addr_lut[part_idx][OtpAddrWidth-1:2])))) begin
             otp_cmd_o = otp_ctrl_macro_pkg::Read;
           end else begin
             otp_cmd_o = otp_ctrl_macro_pkg::ReadRaw;
