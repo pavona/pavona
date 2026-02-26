@@ -17,15 +17,12 @@
 #if DILITHIUM_MODE == 2
     #define CRYPTO_PUBLICKEYBYTES 1312
     #define CRYPTO_SECRETKEYBYTES 2560
-    #define STACK_SIZE 6528
 #elif DILITHIUM_MODE == 3
     #define CRYPTO_PUBLICKEYBYTES 1952
     #define CRYPTO_SECRETKEYBYTES 4032
-    #define STACK_SIZE 8576
 #elif DILITHIUM_MODE == 5
     #define CRYPTO_PUBLICKEYBYTES 2592
     #define CRYPTO_SECRETKEYBYTES 4896
-    #define STACK_SIZE 10624
 #endif
 
 /* Entry point. */
@@ -111,22 +108,11 @@ main:
   /* Write back MOD */
   bn.wsrw 0x0, w2
 
-  /* Loadf stack address */
-  la  x2, stack_end
-  la  x10, zeta
-  la  x11, pk
-  la  x12, sk
   jal x1, crypto_sign_keypair
 
   ecall
 
-.data
-.balign 32
-.globl stack
-stack:
-    .zero STACK_SIZE
-stack_end:
-
+.bss
 .balign 32
 .globl pk
 pk:

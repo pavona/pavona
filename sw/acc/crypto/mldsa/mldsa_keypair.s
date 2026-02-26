@@ -9,7 +9,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .text
-/* #define SWSHAKE */
 
 #define SEEDBYTES 32
 #define CRHBYTES 64
@@ -99,7 +98,6 @@
 #endif
 
 /* Register aliases */
-.equ x0, zero
 .equ x2, sp
 .equ x3, fp
 
@@ -138,8 +136,6 @@
 
 .equ w31, bn0
 
-/* Index of the Keccak command special register. */
-#define KECCAK_CFG_REG 0x7d9
 /* Config to start a SHAKE-128 operation. */
 #define SHAKE128_CFG 0x2
 /* Config to start a SHAKE-256 operation. */
@@ -154,91 +150,46 @@
  *
  * Returns: 0 on success
  *
- * @param[in]  x10: zeta (random bytes)
- * @param[in]  x31: dptr_tw, dmem pointer to array of twiddle factors
- * @param[out] x10: dmem pointer to public key
- * @param[out] x11: dmem pointer to private key
+ * @param[in]  dmem[zeta]: 32 random bytes
+ * @param[out] dmem[pk]: public key
+ * @param[out] dmem[sk]: secret key
  *
  * clobbered registers: a0-a6, t0-t5, s1, w0-w30
  */
 .globl crypto_sign_keypair
 crypto_sign_keypair:
-    /* Stack address mapping */
-    #define STACK_SEEDBUF -160
-        #define STACK_RHO -160
-        #define STACK_RHOPRIME -128
-        #define STACK_KEY -64
-    #define STACK_PK_ADDR -164
-    #define STACK_SK_ADDR -168
-    #define STACK_TR      -256
-    #define STACK_TMP    -1280 /* Prev - 1024 */
-    #define STACK_S1     -2304 /* Prev - 1024 */
-#if DILITHIUM_MODE == 2
-    #define STACK_T -6400 /* Prev - K*1024 */
-    #define INIT_SP -6400
-    #define STACK_SIZE 6528 /* Expected stack size for reference (unused). */
-#elif DILITHIUM_MODE == 3
-    #define STACK_T -8448 /* Prev - K*1024 */
-    #define INIT_SP -8448
-    #define STACK_SIZE 8576 /* Expected stack size for reference (unused). */
-#elif DILITHIUM_MODE == 5
-    #define STACK_T -10496 /* Prev - K*1024 */
-    #define INIT_SP -10496
-    #define STACK_SIZE 10624 /* Expected stack size for reference (unused). */
-#endif
-    /* Initialize the frame pointer */
-    addi fp, sp, 0
-
-    /* Reserve space on the stack */
-    li  t0, INIT_SP
-    add sp, sp, t0
-
-    /* Store parameters to stack */
-    li  t0, STACK_PK_ADDR
-    add t0, fp, t0
-    sw  a1, 0(t0)
-    li  t0, STACK_SK_ADDR
-    add t0, fp, t0
-    sw  a2, 0(t0)
-
-    /* Copy zeta to seedbuf */
-    li t1, 0
-    bn.lid t1, 0(a0) /* load zeta */
-    addi a0, fp, STACK_SEEDBUF /* load seedbuf address */
-    bn.sid t1, 0(a0)
-
-    /* Insert K, L at end of seedbuf */
-    li t2, 0xFFFF
-    lw t3, SEEDBYTES(a0)
-    and t3, t3, t2
-    li t4, K
-    or t3, t3, t4
-    li t4, L
-    slli t4, t4, 8
-    or t3, t3, t4
-    sw t3, SEEDBYTES(a0)
-
     /* Initialize a SHAKE256 operation. */
-    addi  a1, zero, SEEDBYTES
+    li    a1, SEEDBYTES
     addi  a1, a1, 2 /* SEEDBYTES+2 */
     slli  t0, a1, 5
     addi  t0, t0, SHAKE256_CFG
-    csrrw zero, KECCAK_CFG_REG, t0
+    csrrw x0, kmac_cfg, t0
 
-    /* Send the message to the Keccak core. */
-    /* a0 already contains *seedbuf */
-    /* a1 already contains SEEDBYTES + 2 */
+    /* Send zeta to KMAC block. */
+    la a0, zeta
+    li a1, 32
     jal  x1, keccak_send_message
 
-    /* Squeeze into output buffer */
-    addi t1, fp, STACK_SEEDBUF /* load seedbuf address */
-    /* Read the digest and store to memory.
-       dmem[STACK_SEEDBUF] <= SHAKE256(zeta, 1024) */
-    li t0, 8
-    /* This gets 2*SEEDBYTES + CRHBYTES of data */
-    LOOPI 4, 2
-        bn.wsrr w8, 0xA /* KECCAK_DIGEST */
-        bn.sid  t0, 0(t1++) /* Store into buffer */
+    /* Send K, L to KMAC block. */
+    li      t0, 1
+    csrrw   x0, kmac_partial_write, t0
+    bn.addi w0, w31, K
+    bn.wsrw kmac_msg, w0
+    csrrw   x0, kmac_partial_write, t0
+    bn.addi w0, w31, L
+    bn.wsrw kmac_msg, w0
+
+    /* Squeeze into output buffers. Store rho and the key in sk. */
+    la      t0, sk
+    bn.wsrr w0, kmac_digest
+    bn.sid  x0, 0(t0++)
+    la      t1, rhoprime
+    bn.wsrr w0, kmac_digest
+    bn.sid  x0, 0(t1++)
+    bn.wsrr w0, kmac_digest
+    bn.sid  x0, 0(t1)
+    bn.wsrr w0, kmac_digest
+    bn.sid  x0, 0(t0)
 
     /* Finish the SHAKE-256 operation. */
 
@@ -247,14 +198,11 @@ crypto_sign_keypair:
     bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
 
     /* Load source pointers for matrix-vector multiplication. */
-    li  s0, STACK_S1
-    add s0, fp, s0
-    li  s1, STACK_TMP
-    add s1, fp, s1
+    la  s0, s1_poly
+    la  s1, tmp_poly
 
     /* Load destination pointer for matrix-vector multiplication. */
-    li  s2, STACK_T
-    add s2, fp, s2
+    la  s2, t_polyvec
 
     /* Zero the destination buffer. */
     li t0, 31
@@ -272,20 +220,19 @@ crypto_sign_keypair:
        for entry A[i][j]. */
     bn.xor w23, w23, w23
 
-    /* Load pointer to twiddle factors for NTT */
-    la  s5, twiddles_fwd
+    /* Load pointers to rho and rho'. */
+    la  s8, sk
+    la  s5, rhoprime
 
     /* Initialize the nonce for sampling s1. */
     li   s6, 0
 
     /* Load the destination for packed s1 within the secret key. */
-    li   t1, STACK_SK_ADDR
-    add  t1, fp, t1
-    lw   s7, 0(t1)
+    la   s7, sk
     addi s7, s7, 128
 
     /* Precompute the SHAKE128 configuration for poly_uniform. */
-    addi  s4, zero, 34
+    addi  s4, x0, 34
     slli  s4, s4, 5
     addi  s4, s4, SHAKE128_CFG
 
@@ -299,17 +246,17 @@ crypto_sign_keypair:
            for i in 0..k-1:
              t[i] += A[i][j] * s1j
     */
-    loopi L, 38
+    loopi L, 37
         bn.wsrw   mod, w16 /* MOD = R | Q */
         /* Sample the next polynomial from s1. */
-        addi a0, fp, STACK_RHOPRIME
+        addi a0, s5, 0
         addi a1, s0, 0
         addi a2, s6, 0
         jal  x1, poly_uniform_eta
         addi s6, s6, 1
         /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
-        csrrw zero, kmac_cfg, s4
-        addi  a0, fp, STACK_RHO
+        csrrw x0, kmac_cfg, s4
+        addi  a0, s8, 0
         bn.lid    x0, 0(a0)
         bn.wsrw   kmac_msg, w0
         bn.wsrw   kmac_msg, w23
@@ -321,7 +268,6 @@ crypto_sign_keypair:
         bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
         /* Compute ntt(s1[j]). */
         addi a0, s0, 0
-        addi a1, s5, 0
         addi a2, s0, 0
         jal  x1, ntt
         loopi K, 13
@@ -331,8 +277,8 @@ crypto_sign_keypair:
             /* Increment the row in the matrix nonce (upper byte). */
             bn.addi w23, w23, 256
             /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
-            csrrw zero, kmac_cfg, s4
-            addi  a0, fp, STACK_RHO
+            csrrw x0, kmac_cfg, s4
+            addi  a0, s8, 0
             bn.lid    x0, 0(a0)
             bn.wsrw   kmac_msg, w0
             bn.wsrw   kmac_msg, w23
@@ -353,21 +299,17 @@ crypto_sign_keypair:
 
     /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* Inverse NTT on t=A*s1 */
-    li  a0, STACK_T
-    add a0, fp, a0
-    la  a1, twiddles_inv
+    la  a0, t_polyvec
 
-    LOOPI K, 3
+    LOOPI K, 2
         jal  x1, intt
-        addi a1, a1, -960 /* Reset the twiddle pointer */
         addi a0, a0, 1024 /* Go to next input polynomial */
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
     /* Load pointers for loop. */
-    li  s0, STACK_TMP
-    add s0, fp, s0
-    li  s1, STACK_T
-    add s1, fp, s1
+    la  s0, tmp_poly
+    la  s1, t_polyvec
+    la  s3, rhoprime
 
     /* Initialize the nonce for sampling s2. */
     li s6, L
@@ -375,7 +317,7 @@ crypto_sign_keypair:
     /* This loop samples s2 and adds it to A*s1 (currently in the t buffer). */
     LOOPI K, 14
         /* Sample the next polynomial from s2 and store in temp buffer. */
-        addi a0, fp, STACK_RHOPRIME
+        addi a0, s3, 0
         addi a1, s0, 0
         addi a2, s6, 0
         jal  x1, poly_uniform_eta
@@ -394,8 +336,7 @@ crypto_sign_keypair:
         addi s1, s1, 1024
 
     /* Reset t pointer for power2round loop. */
-    li  s1, STACK_T
-    add s1, fp, s1
+    la  s1, t_polyvec
 
     LOOPI K, 9
         /* Split t polynomial into t0 (tmp buffer) and t1 (t buffer). */
@@ -411,25 +352,16 @@ crypto_sign_keypair:
         /* Increment polyvec pointer *t. */
         addi s1, s1, 1024
 
-    /* Pack pk */
+    /* Pack pk. */
+    la a0, pk
 
-    /* Load rho pointer */
-    li t1, STACK_RHO
-    add t1, fp, t1
-
-    /* w0 <= rho */
-    addi   t0, zero, 0
-    bn.lid t0, 0(t1)
-    /* Load pk pointer */
-    li     t1, STACK_PK_ADDR
-    add    t1, fp, t1
-    lw     a0, 0(t1)
-    /* Store rho */
-    bn.sid t0, 0(a0++)
+    /* Copy rho from secret key. */
+    la     t1, sk
+    bn.lid x0, 0(t1)
+    bn.sid x0, 0(a0++)
 
     /* Load pointer to t1 */
-    li  a1, STACK_T
-    add a1, fp, a1
+    la  a1, t_polyvec
 
     /* Pack t1 */
     LOOPI K, 2
@@ -442,67 +374,44 @@ crypto_sign_keypair:
     li    a1, CRYPTO_PUBLICKEYBYTES
     slli  t0, a1, 5
     addi  t0, t0, SHAKE256_CFG
-    csrrw zero, KECCAK_CFG_REG, t0
+    csrrw x0, kmac_cfg, t0
 
     /* Send the message to the Keccak core. */
     /* Load pk pointer */
-    li     t1, STACK_PK_ADDR
-    add    t1, fp, t1
-    lw     a0, 0(t1)
+    la     a0, pk
     /* a1 already contains CRYPTO_PUBLICKEYBYTES */
     jal  x1, keccak_send_message
 
-    /* Squeeze into output buffer */
-    /* load seedbuf address */
-    li  t0, STACK_TR
-    add t1, fp, t0
-
-    /* Read the digest.
-       dmem[STACK_SEEDBUF] <= SHAKE256(zeta, 1024) */
-    li      t0, 0
-    bn.wsrr w0, 0xA /* KECCAK_DIGEST */
-    bn.sid  t0, 0(t1++) /* Store into buffer */
-    bn.wsrr w0, 0xA /* KECCAK_DIGEST */
-    bn.sid  t0, 0(t1) /* Store into buffer */
+    /* Read the digest (tr) into the secret key.
+       dmem[sk+64] <= SHAKE256(pk, 64) */
+    la      t0, sk
+    bn.wsrr w0, kmac_digest
+    bn.sid  x0, 64(t0)
+    bn.wsrr w0, kmac_digest
+    bn.sid  x0, 96(t0)
 
     /* Finish the SHAKE-256 operation. */
 
-    /* Pack sk */
-
-    /* Load sk pointer */
-    li  t1, STACK_SK_ADDR
-    add t1, fp, t1
-    lw  a0, 0(t1)
-
-    /* Load rho pointer */
-    li     t1, STACK_RHO
-    add    t1, fp, t1
-    /* w0 <= rho */
-    li     t0, 0
-    bn.lid t0, 0(t1)
-    /* Store rho */
-    bn.sid t0, 0(a0++)
-
-    /* Load key pointer */
-    li     t1, STACK_KEY
-    add    t1, fp, t1
-    /* w0 <= key */
-    addi   t0, zero, 0
-    bn.lid t0, 0(t1)
-    /* Store key */
-    bn.sid t0, 0(a0++)
-
-    /* Load tr pointer */
-    li     t1, STACK_TR
-    add    t1, fp, t1
-    /* w0 <= tr */
-    addi   t0, zero, 0
-    bn.lid t0, 0(t1++)
-    /* Store tr */
-    bn.sid t0, 0(a0++)
-    bn.lid t0, 0(t1++)
-    bn.sid t0, 0(a0++)
-
-    /* Free space on the stack */
-    addi sp, fp, 0
     ret
+
+.bss
+
+/* rho' intermediate value (64B). */
+.balign 32
+rhoprime:
+.zero 64
+
+/* Temporary polynomial buffer (1024B). */
+.balign 32
+tmp_poly:
+.zero 1024
+
+/* s1 intermediate polynomial buffer (1024B). */
+.balign 32
+s1_poly:
+.zero 1024
+
+/* t polynomial vector (K*1024B). */
+.balign 32
+t_polyvec:
+.zero POLYVECK_BYTES
