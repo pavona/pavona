@@ -189,7 +189,6 @@ def main() -> int:
 
         for label, value in expected_dmem.items():
             try:
-                print(symbols)
                 offset = symbols[label]
                 for i in range(0, len(value), 4):
                     actual = actual_dmem[offset + i: offset + i + 4]
