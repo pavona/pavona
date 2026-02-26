@@ -54,8 +54,6 @@ Code Quality  | [AREA_CHECK][]            | Done        |
 Code Quality  | [TIMING_CHECK][]          | Done        | Fmax @ 50MHz on NexysVideo
 Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
 
-[#761]: https://github.com/loWRISC/opentitan/issues/761
-
 [NEW_FEATURES]:        ../../../../doc/contributing/hw/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:       ../../../../doc/contributing/hw/checklist/README.md#block_diagram
 [DOC_INTERFACE]:       ../../../../doc/contributing/hw/checklist/README.md#doc_interface

@@ -1,5 +1,7 @@
 # HMAC HWIP Technical Specification
 
+[`Pavona Glossary`](../../../doc/glossary.md).
+
 # Overview
 
 This document specifies HMAC hardware IP functionality.
