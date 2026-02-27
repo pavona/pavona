@@ -27,8 +27,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * CSRNG IOs
-* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
-* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
+* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -66,23 +66,23 @@ The `csrng_base_vseq` virtual sequence is extended from `cip_base_vseq` and serv
 All test sequences are extended from `csrng_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* csrng_init:     Initialize the CSRNG module from the randomized environment variables in the config.
+* `csrng_init`:     Initialize the CSRNG module from the randomized environment variables in the config.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
+* Common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
 
 ### Self-checking strategy
 #### Scoreboard
 The `csrng_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo, tl_d_chan_fifo:  These 2 FIFOs provide transaction items at the end of Tilelink address channel and data channel respectively
-* entropy_src_fifo, genbits_fifo:  The entropy_src_fifo provides transaction items from the predictor and the genbits_fifo provide actual post-entropy_src transaction items to compare
+* `tl_a_chan_fifo`, `tl_d_chan_fifo`:  These 2 FIFOs provide transaction items at the end of Tilelink address channel and data channel respectively
+* `entropy_src_fifo`, `genbits_fifo`:  The `entropy_src_fifo` provides transaction items from the predictor and the `genbits_fifo` provide actual post-`entropy_src` transaction items to compare
 
 
 #### Assertions
-* TLUL assertions: The `tb/csrng_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TL-UL assertions: The `tb/csrng_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests

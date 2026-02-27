@@ -39,7 +39,7 @@ Consider a byte string B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>n</sub> as defin
 Providing this sequence as additional data to CSRNG requires software to write the following 32-bit words to [`CMD_REQ`](registers.md#cmd_req) in the following order:
 
 <table>
-<caption>Byte order when writing to [`CMD_REQ`](data/csrng.hjson#cmd_req)</caption>
+<caption>Byte order when writing to <a href="./registers.md#cmd_req"><tt>CMD_REQ</tt></a></caption>
 <thead>
   <tr>
     <th>Word Index</th>
@@ -67,7 +67,7 @@ Providing this sequence as additional data to CSRNG requires software to write t
 
 When reading the internal state from [`INT_STATE_VAL`](registers.md#int_state_val), CSRNG returns the bytes of V and Key in the following order:
 <table>
-<caption>Byte order when reading from [`INT_STATE_VAL`](data/csrng.hjson#int_state_val)</caption>
+<caption>Byte order when reading from <a href="./registers.md#int_state_val"><tt>INT_STATE_VAL</tt></a></caption>
 <thead>
   <tr>
     <th>Word Index</th>
@@ -111,7 +111,7 @@ Within each block, the least significant bytes are returned first and the most s
 In particular, the most significant byte B<sub>1</sub> of the string is read in Word 4 and the least significant byte B<sub>64</sub> of the string is read in Word 13.
 
 <table>
-<caption>Byte order when reading from [`GENBITS`](data/csrng.hjson#genbits)</caption>
+<caption>Byte order when reading from <a href="./registers.md#genbits"><tt>GENBITS</tt></a></caption>
 <thead>
   <tr>
     <th>Word Index</th>

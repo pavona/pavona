@@ -14,8 +14,8 @@
       name: smoke
       desc: '''
             Verify that sending an instantiate command via the SW path returns OK.
-            Instantiate the CSRNG with flag0 set to true and clen set to 12.
-            Verify that sending a generate command via the SW path returns glen=1 number of words followed by an OK.
+            Instantiate the CSRNG with `flag0` set to `true` and `clen` set to 12.
+            Verify that sending a generate command via the SW path returns `glen=1` number of words followed by an OK.
             '''
       stage: V1
       tests: ["csrng_smoke"]
