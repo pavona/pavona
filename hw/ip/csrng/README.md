@@ -1,11 +1,5 @@
 # CSRNG HWIP Technical Specification
 
-[`csrng`](https://reports.opentitan.org/hw/ip/csrng/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/csrng/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/code.svg)
-
 # Overview
 
 This document specifies the Cryptographically Secure Random Number Generator (CSRNG) hardware IP functionality.
@@ -19,7 +13,7 @@ In this document the terms "DRNG" and "TRNG" are used most generally to refer to
 However, the terms "DRBG" or "NRBG" are specifically used when respectively referring to SP 800-90A or SP 800-90C requirements.
 Meanwhile, when addressing requirements which originate from AIS31 we refer to the specific DRG.3 or PTG.3 classes of RNGs.
 
-This IP block is attached to the chip interconnect bus as a peripheral module conforming to the [comportability definition and specification](../../../doc/contributing/hw/comportability/README.md), but also has direct hardware links to other IPs for secure and software-inaccessible transmission of random numbers.
+This IP block is attached to the chip interconnect bus as a peripheral module conforming to the [Comportability definition and specification](../../../doc/contributing/hw/comportability/README.md), but also has direct hardware links to other IPs for secure and software-inaccessible transmission of random numbers.
 The bus connections to peripheral modules are done using the CSRNG application interface.
 This interface allows peripherals to manage CSRNG instances, and request the CSRNG module to return obfuscated entropy.
 
@@ -65,7 +59,7 @@ These include:
     1. **The Reseed Routine:**
        Combines the previous seed material with external entropy and/or additional data (personalization string) to generate a new seed.
     1. **The Generate Routine:**
-       Generates up to 4095 * 128 random bits, which is less than the maximum 2<sup>19</sup> bits allowed by NIST (referenced to as <tt>max_number_of_bits_per_request</tt>).
+       Generates up to 4095 * 128 random bits, which is less than the maximum 2<sup>19</sup> bits allowed by NIST (referenced to as `max_number_of_bits_per_request`).
     1. **The Update Routine:**
        Updates the internal state of the DRNG instance.
        It is automatically executed during instantiate, reseed and generate calls, but can also be explicitly called to combine additional data with the internal state of the DRNG instance.
@@ -97,15 +91,15 @@ In AIS31 terms, "entropy strings" (when used in this document without a qualifie
 
 ### Security
 
-All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
+All module assets and countermeasures performed by hardware are listed in the `hjson` countermeasures section.
 Labels for each instance of asset and countermeasure are located throughout the RTL source code.
 
-The bus integrity checking for genbits is different for software and hardware.
-Only the application interface software port will have a hardware check on the genbits data bus.
+The bus integrity checking for `genbits` is different for software and hardware.
+Only the application interface software port will have a hardware check on the `genbits` data bus.
 This is done to make sure repeated values are not occurring.
 Only 64 bits (out of 128 bits) are checked, since this is statistically significant, and more checking would cost more silicon.
 The application interface hardware port will not have this check.
-It is expected that the requesting block (EDN) will do an additional hardware check on the genbits data bus.
+It is expected that the requesting block (EDN) will do an additional hardware check on the `genbits` data bus.
 
 ## Compatibility
 This block is compatible with NIST's SP 800-90A and BSI's AIS31 recommendations for Common Criteria.

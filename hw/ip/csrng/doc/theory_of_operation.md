@@ -29,7 +29,7 @@ The command field called `ccmd` (for current command) is sent along the pipeline
 Once the command has traversed through all of the CTR_DRBG blocks, the result will eventually land into the `state_db` block.
 This block will hold the instance state for each application interface.
 The specific state information held in the instance is documented below.
-If the command was a `generate` command, the genbits data word will be returned to the requesting `cmd_stage` block.
+If the command was a `generate` command, the `genbits` data word will be returned to the requesting `cmd_stage` block.
 Finally, an `ack` response and status will be returned to the application interface once the command has been completely processed.
 
 
@@ -154,7 +154,7 @@ Below is a description of the fields of this header:
 <tbody>
   <tr>
     <td>3:0</td>
-    <td>acmd</td>
+    <td><tt>acmd</tt></td>
     <td> Application Command: Selects one of five operations to perform.
          The commands supported are <tt>instantiate</tt>, <tt>reseed</tt>, <tt>generate</tt>, <tt>update</tt>, and <tt>uninstantiate</tt>.
          Each application interface port used by peripheral hardware commands a unique instance number in CSRNG.
@@ -162,7 +162,7 @@ Below is a description of the fields of this header:
   </tr>
   <tr>
     <td>7:4</td>
-    <td>clen</td>
+    <td><tt>clen</tt></td>
     <td> Command Length: Number of 32-bit words that can optionally be appended to the command.
          A value of zero will only transfer the command header.
          A value of <tt>4'hc</tt> will transfer the header plus an additional twelve 32-bit words of data.
@@ -170,7 +170,7 @@ Below is a description of the fields of this header:
   </tr>
   <tr>
     <td>11:8</td>
-    <td>flag0</td>
+    <td><tt>flag0</tt></td>
     <td> Command Flag0: flag0 is associated with current command.
          Setting this field to kMultiBitBool4True will enable flag0 to be enabled.
          Note that <tt>flag0</tt> is used for the <tt>instantiate</tt> and  <tt>reseed</tt> commands only, for all other commands its value is ignored.
@@ -178,7 +178,7 @@ Below is a description of the fields of this header:
   </tr>
   <tr>
     <td>23:12</td>
-    <td>glen</td>
+    <td><tt>glen</tt></td>
     <td> Generate Length: Only defined for the generate command, this field is the total number of cryptographic entropy blocks requested.
          Each unit represents 128 bits of entropy returned.
          This field allows values between 1 and 4095.
@@ -188,7 +188,7 @@ Below is a description of the fields of this header:
   </tr>
   <tr>
     <td>31:24</td>
-    <td>resv</td>
+    <td><tt>resv</tt></td>
     <td> Unused and reserved.
     </td>
   </tr>
@@ -214,7 +214,7 @@ The actions performed by each command, as well as which flags are supported, are
     <td> Initializes an instance in CSRNG.
          When seeding, the following table describes how the seed is determined based on <tt>flag0</tt> and the <tt>clen</tt> field.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
-        WARNING: Though <tt>flag0</tt> may be useful for generating fully-deterministic bit sequences, the use of this flag will render the instance non-FIPS compliant until it is re-instantiated.
+        <b>WARNING:</b> Though <tt>flag0</tt> may be useful for generating fully-deterministic bit sequences, the use of this flag will render the instance non-FIPS compliant until it is re-instantiated.
          When the <tt>Instantiate</tt> command is completed, the active bit in the CSRNG working state will be set.
         <table>
           <thead>
@@ -257,8 +257,8 @@ The actions performed by each command, as well as which flags are supported, are
     <td> Updates an existing instance in CSRNG.
          This command does the same function as the <tt>Reseed</tt> command, except that:
          <ol>
-         <li>only the additional data provided will be used in the update function (i.e. no physical entropy is gathered), and
-         <li>the <tt>Update</tt> command does not reset the reseed counter.
+         <li>Only the additional data provided will be used in the update function (i.e. no physical entropy is gathered), and
+         <li>The <tt>Update</tt> command does not reset the reseed counter.
          </ol>
          When the <tt>Update</tt> command is completed, the results will be reflected in the CSRNG working state.
     </td>
