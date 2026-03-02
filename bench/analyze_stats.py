@@ -1,11 +1,12 @@
 #! /usr/bin/env python3
-#
 # Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import csv
 import pathlib
+import math
 import re
 
 CYCLES_PAT = re.compile(r'.*instructions in ([0-9]+) cycles.')
@@ -64,38 +65,84 @@ def analyze_stats(file_stats):
             above = total_cycles[(count // 2)]
             median_cycles = (below + above) // 2
         out[op]['median_cycles'] = median_cycles
+        out[op]['stddev'] = round(get_stddev(total_cycles))
 
     return out
 
 
-def pretty_print_table(rows, aligns):
+def pretty_print_table(rows):
     if len(rows) == 0:
         return None
     ncols = len(rows[0])
-    assert len(aligns) == ncols
     assert all([len(r) == ncols for r in rows])
-    assert all([x in ['l', 'r'] for x in aligns])
     rows = [[str(x) for x in r] for r in rows]
     col_widths = [max([len(r[i]) for r in rows]) for i in range(ncols)]
     for r in rows:
         line = ''
         for i in range(ncols):
-            if aligns[i] == 'l':
+            padding = ' ' * (col_widths[i] - len(r[i]))
+            if i == 0:
+                # first column is left-aligned
                 line += r[i]
-            line += ' ' * (col_widths[i] - len(r[i]))
-            if aligns[i] == 'r':
+                line += padding
+            else:
+                # introduce separator
+                line += ' | '
+                # non-first columns are right-aligned
+                line += padding
                 line += r[i]
         print(line)
 
 
-def format_change(new, base, statname):
-    '''Represents change in benchmark values as a table row.'''
-    newval = new[statname]
-    baseval = base[statname]
-    diff = newval - baseval
-    sign = '' if diff < 0 else '+'
-    pct = (diff / baseval) * 100
-    return [baseval, ' -> ', newval, f' ({sign}{diff},', f'{sign}{pct:.02f}%)']
+def get_variance(nums):
+    '''Calculates the statistical variance of a set of numbers.
+
+    The variance is the average squared distance from the mean.
+    '''
+    mean = sum(nums) / len(nums)
+    sqdiff = [(mean - n)**2 for n in nums]
+    return sum(sqdiff) / len(sqdiff)
+
+
+def get_stddev(nums):
+    '''Calculates the standard deviation of a set of numbers.
+
+    The standard deviation is the square root of the variance.
+    '''
+    return math.sqrt(get_variance(nums))
+
+
+def evaluate_samples(samples):
+    '''Given a set of statistical samples, determine the quality of the sampling.'''
+    # Find operations that appear in all samples.
+    ops = None
+    for stats in samples:
+        if ops is None:
+            ops = set(stats.keys())
+        else:
+            ops &= set(stats.keys())
+
+    for op in ops:
+        counts = [stats[op]['count'] for stats in samples]
+        if len(set(counts)) != 1:
+            print(f'Warning: test counts for {op} differ across samples: {counts}')
+
+    rows = [['Operation', 'Weighted avg cycles', 'Stddev of avg cycles', 'Relative stdddev']]
+    means = {}
+    for op in sorted(list(ops)):
+        weighted_avgs = [stats[op]['count'] * stats[op]['avg_cycles'] for stats in samples]
+        counts = [stats[op]['count'] for stats in samples]
+        means[op] = sum(weighted_avgs) / sum(counts)
+
+    # Get the average cycles for each operation across the samples and
+    # calculate the standard deviation.
+    for op in sorted(list(ops)):
+        avgs = [stats[op]['avg_cycles'] for stats in samples]
+        stddev = round(get_stddev(avgs))
+        mean = round(means[op])
+        stddev_pct = (100 * stddev) / mean
+        rows.append([f'{op}', f'{mean}', f'{stddev}', f'{stddev_pct:.02f}'])
+    return rows
 
 
 def compare_stats(stats1, stats2):
@@ -106,41 +153,77 @@ def compare_stats(stats1, stats2):
     if diff:
         print(f'Warning: skipping operations that only appear in one dataset: {diff}')
 
+    rows = [['Measurement', 'Baseline', 'New', 'Percentage change']]
     for op in sorted(list(ops)):
-        print(f'--- {op} ---')
-        rows = []
-        rows.append(['Average cycles: '] + format_change(stats1[op], stats2[op], 'avg_cycles'))
-        rows.append(['Median cycles: '] + format_change(stats1[op], stats2[op], 'median_cycles'))
-        aligns = ['l', 'r', 'r', 'r', 'r', 'r']
-        pretty_print_table(rows, aligns)
+        for stat in ['avg_cycles', 'median_cycles']:
+            new = stats1[op][stat]
+            base = stats2[op][stat]
+            diff = new - base
+            pct = (diff / base) * 100
+            rows.append([f'{op} {stat}', f'{base}', f'{new}', f'{pct:.02f}'])
+    return rows
 
 
-def print_stats(stats):
+def get_stats(stats):
+    rows = [['Operation', 'Measurement', 'Value']]
+    measurements = [
+        'count',
+        'avg_cycles',
+        'median_cycles',
+        'min_cycles',
+        'max_cycles',
+        'stddev']
     for op in sorted(stats.keys()):
         op_stats = stats[op]
-        print(f'--- {op} ({op_stats["count"]} tests) ---')
-        print('Average cycles:', op_stats['avg_cycles'])
-        print('Median cycles: ', op_stats['median_cycles'])
-        print('Minimum cycles:', op_stats['min_cycles'])
-        print('Maximum cycles:', op_stats['max_cycles'])
+        for measurement in measurements:
+            rows.append([f'{op}', measurement, op_stats[measurement]])
+    return rows
+
+
+def write_csv(samples, csvpath):
+    measurements = ['count', 'avg_cycles', 'median_cycles', 'min_cycles', 'max_cycles']
+    header = ['operation'] + measurements
+    with csvpath.open('w') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for stats in samples:
+            for op in stats:
+                writer.writerow([op] + [stats[op][m] for m in measurements])
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Analyze and compare collected execution stats for OTBN programs.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='The number of directories determines the type of analysis.\n'
+        '- 1 directory: print aggregate statistics for the sample.\n'
+        '- 2 directories: compare the first measurements against the second.\n'
+        '- 3+ directories: analyze the quality (e.g. stddev) of the sampling method.')
     parser.add_argument(
-        'benchdir', type=pathlib.Path, help=('Directory with collected execution stats.'))
+        'benchdir', nargs='+', type=pathlib.Path,
+        help=('Directories with stat logs to analyze.'))
     parser.add_argument(
-        '--compare', type=pathlib.Path, required=False,
-        help=('Second directory with collected execution stats, for comparison.'))
+        '--csv', required=False, type=pathlib.Path,
+        help=('CSV file for results.'))
     args = parser.parse_args()
 
-    files = parse_dir_stats(args.benchdir)
-    stats = analyze_stats(files)
+    samples = []
+    for d in args.benchdir:
+        files = parse_dir_stats(d)
+        samples.append(analyze_stats(files))
 
-    if args.compare:
-        cfiles = parse_dir_stats(args.compare)
-        cstats = analyze_stats(cfiles)
-        print(f'Comparing {args.benchdir.name} against baseline {args.compare.name}.')
-        compare_stats(stats, cstats)
+    if args.csv is not None:
+        write_csv(samples, args.csv)
+
+    if len(args.benchdir) == 0:
+        raise ValueError('Must specify at least one statistics directory.')
+    elif len(args.benchdir) == 1:
+        pretty_print_table(get_stats(samples[0]))
+    elif len(args.benchdir) == 2:
+        print(f'Comparing {args.benchdir[0].name} against baseline {args.benchdir[1].name}.')
+        table = compare_stats(*samples)
+        pretty_print_table(table)
     else:
-        print_stats(stats)
+        print(f'Evaluating {len(samples)} samples...')
+        table = evaluate_samples(samples)
+        pretty_print_table(table)
