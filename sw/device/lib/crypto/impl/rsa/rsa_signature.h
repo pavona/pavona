@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -50,13 +51,14 @@ typedef enum rsa_signature_padding {
  * @param private_key RSA private key.
  * @param message_digest Message digest to sign.
  * @param padding_mode Signature padding mode.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_2048_start(
     const rsa_2048_private_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode);
+    const rsa_signature_padding_t padding_mode, uint32_t *session_token);
 
 /**
  * Waits for an RSA-2048 signature generation to complete.
@@ -64,11 +66,13 @@ status_t rsa_signature_generate_2048_start(
  * Should be invoked only after `rsa_2048_sign_start`. Blocks until ACC is
  * done processing.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] signature Generated signature.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature);
+status_t rsa_signature_generate_2048_finalize(uint32_t session_token,
+                                              rsa_2048_int_t *signature);
 
 /**
  * Starts verifying an RSA-2048 signature; returns immediately.
@@ -77,11 +81,13 @@ status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature);
  *
  * @param public_key RSA public key.
  * @param signature Signature to verify.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_2048_start(
-    const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature);
+    const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature,
+    uint32_t *session_token);
 
 /**
  * Waits for a RSA-2048 signature verification to complete.
@@ -97,6 +103,7 @@ status_t rsa_signature_verify_2048_start(
  * @param public_key Public key used to verify the signature.
  * @param message_digest Message digest to verify the signature against.
  * @param padding_mode Signature padding mode.
+ * @param session_token ACC session token for the operation.
  * @param[out] verification_result Whether verification succeeded or failed.
  * @return Result of the operation (OK or error).
  */
@@ -104,7 +111,7 @@ OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_2048_finalize(
     const rsa_2048_public_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode,
+    const rsa_signature_padding_t padding_mode, uint32_t session_token,
     hardened_bool_t *verification_result);
 
 /**
@@ -117,13 +124,14 @@ status_t rsa_signature_verify_2048_finalize(
  * @param private_key RSA private key.
  * @param message_digest Message digest to sign.
  * @param padding_mode Signature padding mode.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_3072_start(
     const rsa_3072_private_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode);
+    const rsa_signature_padding_t padding_mode, uint32_t *session_token);
 
 /**
  * Waits for a RSA-3072 signature verification to complete.
@@ -139,6 +147,7 @@ status_t rsa_signature_generate_3072_start(
  * @param public_key Public key used to verify the signature.
  * @param message_digest Message digest to verify the signature against.
  * @param padding_mode Signature padding mode.
+ * @param session_token ACC session token for the operation.
  * @param[out] verification_result Whether verification succeeded or failed.
  * @return Result of the operation (OK or error).
  */
@@ -146,7 +155,7 @@ OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_3072_finalize(
     const rsa_3072_public_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode,
+    const rsa_signature_padding_t padding_mode, uint32_t session_token,
     hardened_bool_t *verification_result);
 
 /**
@@ -155,11 +164,13 @@ status_t rsa_signature_verify_3072_finalize(
  * Should be invoked only after `rsa_3072_sign_start`. Blocks until ACC is
  * done processing.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] signature Generated signature.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature);
+status_t rsa_signature_generate_3072_finalize(uint32_t session_token,
+                                              rsa_3072_int_t *signature);
 
 /**
  * Starts verifying an RSA-3072 signature; returns immediately.
@@ -168,11 +179,13 @@ status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature);
  *
  * @param public_key RSA public key.
  * @param signature Signature to verify.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_3072_start(
-    const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature);
+    const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature,
+    uint32_t *session_token);
 
 /**
  * Starts generating an RSA-4096 signature; returns immediately.
@@ -184,13 +197,14 @@ status_t rsa_signature_verify_3072_start(
  * @param private_key RSA private key.
  * @param message_digest Message digest to sign.
  * @param padding_mode Signature padding mode.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_4096_start(
     const rsa_4096_private_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode);
+    const rsa_signature_padding_t padding_mode, uint32_t *session_token);
 
 /**
  * Waits for an RSA-4096 signature generation to complete.
@@ -198,11 +212,13 @@ status_t rsa_signature_generate_4096_start(
  * Should be invoked only after `rsa_4096_sign_start`. Blocks until ACC is
  * done processing.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] signature Generated signature.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature);
+status_t rsa_signature_generate_4096_finalize(uint32_t session_token,
+                                              rsa_4096_int_t *signature);
 
 /**
  * Starts verifying an RSA-4096 signature; returns immediately.
@@ -211,11 +227,13 @@ status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature);
  *
  * @param public_key RSA public key.
  * @param signature Signature to verify.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_4096_start(
-    const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature);
+    const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature,
+    uint32_t *session_token);
 
 /**
  * Waits for a RSA-4096 signature verification to complete.
@@ -231,6 +249,7 @@ status_t rsa_signature_verify_4096_start(
  * @param public_key Public key used to verify the signature.
  * @param message_digest Message digest to verify the signature against.
  * @param padding_mode Signature padding mode.
+ * @param session_token ACC session token for the operation.
  * @param[out] verification_result Whether verification succeeded or failed.
  * @return Result of the operation (OK or error).
  */
@@ -238,7 +257,7 @@ OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_4096_finalize(
     const rsa_4096_public_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode,
+    const rsa_signature_padding_t padding_mode, uint32_t session_token,
     hardened_bool_t *verification_result);
 
 #ifdef __cplusplus

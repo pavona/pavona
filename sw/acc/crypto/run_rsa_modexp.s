@@ -287,6 +287,12 @@ do_modexp_f4:
 mode:
 .zero 4
 
+/* Session token for ensuring async start and initialize calls correspond. */
+.globl session_token
+.balign 4
+session_token:
+  .zero 4
+
 /* RSA modulus (n), up to 4096 bits. */
 .globl n
 .balign 32

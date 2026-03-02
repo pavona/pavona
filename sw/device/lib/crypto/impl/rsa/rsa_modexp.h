@@ -28,11 +28,12 @@ extern "C" {
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] num_words Number of words for result buffers.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_get_result_size(size_t *num_words);
+status_t rsa_modexp_get_result_size(uint32_t session_token, size_t *num_words);
 
 /**
  * Start a constant-time RSA-2048 modular exponentiation.
@@ -45,21 +46,25 @@ status_t rsa_modexp_get_result_size(size_t *num_words);
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
  * @param modulus Modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
                                          const rsa_2048_int_t *exp,
-                                         const rsa_2048_int_t *modulus);
+                                         const rsa_2048_int_t *modulus,
+                                         uint32_t *session_token);
 
 /**
  * Waits for an RSA-2048 modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_consttime_2048_finalize(rsa_2048_int_t *result);
+status_t rsa_modexp_consttime_2048_finalize(uint32_t session_token,
+                                            rsa_2048_int_t *result);
 
 /**
  * Start a constant-time CRT RSA-2048 modular exponentiation.
@@ -75,6 +80,7 @@ status_t rsa_modexp_consttime_2048_finalize(rsa_2048_int_t *result);
  * @param crt_coeff CRT coefficient for exponentiation (inverse of q mod p).
  * @param modulus_p First cofactor of modulus for exponentiation.
  * @param modulus_q Second cofactor of modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
@@ -83,16 +89,19 @@ status_t rsa_modexp_consttime_crt_2048_start(const rsa_2048_int_t *base,
                                              const rsa_2048_short_t *exp_q,
                                              const rsa_2048_short_t *crt_coeff,
                                              const rsa_2048_short_t *modulus_p,
-                                             const rsa_2048_short_t *modulus_q);
+                                             const rsa_2048_short_t *modulus_q,
+                                             uint32_t *session_token);
 
 /**
  * Waits for an RSA-2048 CRT modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_consttime_crt_2048_finalize(rsa_2048_int_t *result);
+status_t rsa_modexp_consttime_crt_2048_finalize(uint32_t session_token,
+                                                rsa_2048_int_t *result);
 
 /**
  * Start a variable-time RSA-2048 modular exponentiation.
@@ -105,22 +114,26 @@ status_t rsa_modexp_consttime_crt_2048_finalize(rsa_2048_int_t *result);
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
  * @param modulus Modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
                                        const uint32_t exp,
-                                       const rsa_2048_int_t *modulus);
+                                       const rsa_2048_int_t *modulus,
+                                       uint32_t *session_token);
 
 /**
  * Waits for an RSA-2048 modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @param exp Exponent base was raised to.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_vartime_2048_finalize(const uint32_t exp,
+status_t rsa_modexp_vartime_2048_finalize(uint32_t session_token,
+                                          const uint32_t exp,
                                           rsa_2048_int_t *result);
 
 /**
@@ -134,21 +147,25 @@ status_t rsa_modexp_vartime_2048_finalize(const uint32_t exp,
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
  * @param modulus Modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
                                          const rsa_3072_int_t *exp,
-                                         const rsa_3072_int_t *modulus);
+                                         const rsa_3072_int_t *modulus,
+                                         uint32_t *session_token);
 
 /**
  * Waits for an RSA-3072 modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_consttime_3072_finalize(rsa_3072_int_t *result);
+status_t rsa_modexp_consttime_3072_finalize(uint32_t session_token,
+                                            rsa_3072_int_t *result);
 
 /**
  * Start a constant-time CRT RSA-3072 modular exponentiation.
@@ -164,6 +181,7 @@ status_t rsa_modexp_consttime_3072_finalize(rsa_3072_int_t *result);
  * @param crt_coeff CRT coefficient for exponentiation (inverse of q mod p).
  * @param modulus_p First cofactor of modulus for exponentiation.
  * @param modulus_q Second cofactor of modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
@@ -172,16 +190,19 @@ status_t rsa_modexp_consttime_crt_3072_start(const rsa_3072_int_t *base,
                                              const rsa_3072_short_t *exp_q,
                                              const rsa_3072_short_t *crt_coeff,
                                              const rsa_3072_short_t *modulus_p,
-                                             const rsa_3072_short_t *modulus_q);
+                                             const rsa_3072_short_t *modulus_q,
+                                             uint32_t *session_token);
 
 /**
  * Waits for an RSA-3072 CRT modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_consttime_crt_3072_finalize(rsa_3072_int_t *result);
+status_t rsa_modexp_consttime_crt_3072_finalize(uint32_t session_token,
+                                                rsa_3072_int_t *result);
 
 /**
  * Start a variable-time RSA-3072 modular exponentiation.
@@ -194,22 +215,26 @@ status_t rsa_modexp_consttime_crt_3072_finalize(rsa_3072_int_t *result);
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
  * @param modulus Modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
                                        const uint32_t exp,
-                                       const rsa_3072_int_t *modulus);
+                                       const rsa_3072_int_t *modulus,
+                                       uint32_t *session_token);
 
 /**
  * Waits for an RSA-3072 modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @param exp Exponent base was raised to.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_vartime_3072_finalize(const uint32_t exp,
+status_t rsa_modexp_vartime_3072_finalize(uint32_t session_token,
+                                          const uint32_t exp,
                                           rsa_3072_int_t *result);
 
 /**
@@ -223,21 +248,25 @@ status_t rsa_modexp_vartime_3072_finalize(const uint32_t exp,
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
  * @param modulus Modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
                                          const rsa_4096_int_t *exp,
-                                         const rsa_4096_int_t *modulus);
+                                         const rsa_4096_int_t *modulus,
+                                         uint32_t *session_token);
 
 /**
  * Waits for an RSA-4096 modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_consttime_4096_finalize(rsa_4096_int_t *result);
+status_t rsa_modexp_consttime_4096_finalize(uint32_t session_token,
+                                            rsa_4096_int_t *result);
 
 /**
  * Start a constant-time CRT RSA-4096 modular exponentiation.
@@ -253,6 +282,7 @@ status_t rsa_modexp_consttime_4096_finalize(rsa_4096_int_t *result);
  * @param crt_coeff CRT coefficient for exponentiation (inverse of q mod p).
  * @param modulus_p First cofactor of modulus for exponentiation.
  * @param modulus_q Second cofactor of modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
@@ -261,16 +291,19 @@ status_t rsa_modexp_consttime_crt_4096_start(const rsa_4096_int_t *base,
                                              const rsa_4096_short_t *exp_q,
                                              const rsa_4096_short_t *crt_coeff,
                                              const rsa_4096_short_t *modulus_p,
-                                             const rsa_4096_short_t *modulus_q);
+                                             const rsa_4096_short_t *modulus_q,
+                                             uint32_t *session_token);
 
 /**
  * Waits for an RSA-4096 CRT modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_consttime_crt_4096_finalize(rsa_4096_int_t *result);
+status_t rsa_modexp_consttime_crt_4096_finalize(uint32_t session_token,
+                                                rsa_4096_int_t *result);
 
 /**
  * Start a variable-time RSA-4096 modular exponentiation.
@@ -283,22 +316,26 @@ status_t rsa_modexp_consttime_crt_4096_finalize(rsa_4096_int_t *result);
  * @param base Exponentiation base.
  * @param exp Exponent to raise the base to.
  * @param modulus Modulus for exponentiation.
+ * @param[out] session_token ACC session token for the operation.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
                                        const uint32_t exp,
-                                       const rsa_4096_int_t *modulus);
+                                       const rsa_4096_int_t *modulus,
+                                       uint32_t *session_token);
 
 /**
  * Waits for an RSA-4096 modular exponentiation to complete.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @param exp Exponent base was raised to.
  * @return Status of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_vartime_4096_finalize(const uint32_t exp,
+status_t rsa_modexp_vartime_4096_finalize(uint32_t session_token,
+                                          const uint32_t exp,
                                           rsa_4096_int_t *result);
 
 #ifdef __cplusplus

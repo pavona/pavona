@@ -23,7 +23,8 @@
 status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
                                 const otcrypto_hash_mode_t hash_mode,
                                 const uint8_t *message, size_t message_bytelen,
-                                const uint8_t *label, size_t label_bytelen) {
+                                const uint8_t *label, size_t label_bytelen,
+                                uint32_t *session_token) {
   // Encode the message.
   rsa_2048_int_t encoded_message;
   hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
@@ -34,12 +35,14 @@ status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
   // Start computing (encoded_message ^ e) mod n with a variable-time
   // exponentiation.
   return rsa_modexp_vartime_2048_start(&encoded_message, public_key->e,
-                                       &public_key->n);
+                                       &public_key->n, session_token);
 }
 
 status_t rsa_encrypt_2048_finalize(const rsa_2048_public_key_t *public_key,
+                                   uint32_t session_token,
                                    rsa_2048_int_t *ciphertext) {
-  return rsa_modexp_vartime_2048_finalize(public_key->e, ciphertext);
+  return rsa_modexp_vartime_2048_finalize(session_token, public_key->e,
+                                          ciphertext);
 }
 
 /**
@@ -97,23 +100,25 @@ static status_t rsa_ciphertext_reduced_check_2048(
 }
 
 status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
-                                const rsa_2048_int_t *ciphertext) {
+                                const rsa_2048_int_t *ciphertext,
+                                uint32_t *session_token) {
   // Verify that the ciphertext is reduced
   HARDENED_TRY(rsa_ciphertext_reduced_check_2048(private_key, ciphertext));
 
   // Start computing (ciphertext ^ d) mod n.
   return rsa_modexp_consttime_crt_2048_start(
       ciphertext, &private_key->d_p, &private_key->d_q, &private_key->i_q,
-      &private_key->p, &private_key->q);
+      &private_key->p, &private_key->q, session_token);
 }
 
 status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
                               const uint8_t *label, size_t label_bytelen,
-                              size_t plaintext_max_bytelen, uint8_t *plaintext,
-                              size_t *plaintext_len) {
+                              size_t plaintext_max_bytelen,
+                              uint32_t session_token, uint8_t *plaintext,
+                              size_t *plaintext_bytelen) {
   // Get the result size, failing if the ACC isn't done.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
+  HARDENED_TRY(rsa_modexp_get_result_size(session_token, &num_words));
 
   // Check that enough space has been allocated for the plaintext.
   size_t max_plaintext_bytelen = 0;
@@ -139,24 +144,27 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   switch (num_words) {
     case kRsa2048NumWords: {
       rsa_2048_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_consttime_crt_2048_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_consttime_crt_2048_finalize(session_token,
+                                                          &recovered_message));
       return rsa_padding_oaep_decode(
           hash_mode, label, label_bytelen, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
+          ARRAYSIZE(recovered_message.data), plaintext, plaintext_bytelen);
     }
     case kRsa3072NumWords: {
       rsa_3072_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_consttime_crt_3072_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_consttime_crt_3072_finalize(session_token,
+                                                          &recovered_message));
       return rsa_padding_oaep_decode(
           hash_mode, label, label_bytelen, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
+          ARRAYSIZE(recovered_message.data), plaintext, plaintext_bytelen);
     }
     case kRsa4096NumWords: {
       rsa_4096_int_t recovered_message;
-      HARDENED_TRY(rsa_modexp_consttime_crt_4096_finalize(&recovered_message));
+      HARDENED_TRY(rsa_modexp_consttime_crt_4096_finalize(session_token,
+                                                          &recovered_message));
       return rsa_padding_oaep_decode(
           hash_mode, label, label_bytelen, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
+          ARRAYSIZE(recovered_message.data), plaintext, plaintext_bytelen);
     }
     default:
       // Unexpected number of words; should never get here.
@@ -171,7 +179,8 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
 status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
                                 const otcrypto_hash_mode_t hash_mode,
                                 const uint8_t *message, size_t message_bytelen,
-                                const uint8_t *label, size_t label_bytelen) {
+                                const uint8_t *label, size_t label_bytelen,
+                                uint32_t *session_token) {
   // Encode the message.
   rsa_3072_int_t encoded_message;
   hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
@@ -182,12 +191,14 @@ status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
   // Start computing (encoded_message ^ e) mod n with a variable-time
   // exponentiation.
   return rsa_modexp_vartime_3072_start(&encoded_message, public_key->e,
-                                       &public_key->n);
+                                       &public_key->n, session_token);
 }
 
 status_t rsa_encrypt_3072_finalize(const rsa_3072_public_key_t *public_key,
+                                   uint32_t session_token,
                                    rsa_3072_int_t *ciphertext) {
-  return rsa_modexp_vartime_3072_finalize(public_key->e, ciphertext);
+  return rsa_modexp_vartime_3072_finalize(session_token, public_key->e,
+                                          ciphertext);
 }
 
 /**
@@ -245,20 +256,22 @@ static status_t rsa_ciphertext_reduced_check_3072(
 }
 
 status_t rsa_decrypt_3072_start(const rsa_3072_private_key_t *private_key,
-                                const rsa_3072_int_t *ciphertext) {
+                                const rsa_3072_int_t *ciphertext,
+                                uint32_t *session_token) {
   // Verify that the ciphertext is reduced
   HARDENED_TRY(rsa_ciphertext_reduced_check_3072(private_key, ciphertext));
 
   // Start computing (ciphertext ^ d) mod n.
   return rsa_modexp_consttime_crt_3072_start(
       ciphertext, &private_key->d_p, &private_key->d_q, &private_key->i_q,
-      &private_key->p, &private_key->q);
+      &private_key->p, &private_key->q, session_token);
 }
 
 status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
                                 const otcrypto_hash_mode_t hash_mode,
                                 const uint8_t *message, size_t message_bytelen,
-                                const uint8_t *label, size_t label_bytelen) {
+                                const uint8_t *label, size_t label_bytelen,
+                                uint32_t *session_token) {
   // Encode the message.
   rsa_4096_int_t encoded_message;
   hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
@@ -269,12 +282,14 @@ status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
   // Start computing (encoded_message ^ e) mod n with a variable-time
   // exponentiation.
   return rsa_modexp_vartime_4096_start(&encoded_message, public_key->e,
-                                       &public_key->n);
+                                       &public_key->n, session_token);
 }
 
 status_t rsa_encrypt_4096_finalize(const rsa_4096_public_key_t *public_key,
+                                   uint32_t session_token,
                                    rsa_4096_int_t *ciphertext) {
-  return rsa_modexp_vartime_4096_finalize(public_key->e, ciphertext);
+  return rsa_modexp_vartime_4096_finalize(session_token, public_key->e,
+                                          ciphertext);
 }
 
 /**
@@ -332,12 +347,13 @@ static status_t rsa_ciphertext_reduced_check_4096(
 }
 
 status_t rsa_decrypt_4096_start(const rsa_4096_private_key_t *private_key,
-                                const rsa_4096_int_t *ciphertext) {
+                                const rsa_4096_int_t *ciphertext,
+                                uint32_t *session_token) {
   // Verify that the ciphertext is reduced
   HARDENED_TRY(rsa_ciphertext_reduced_check_4096(private_key, ciphertext));
 
   // Start computing (ciphertext ^ d) mod n.
   return rsa_modexp_consttime_crt_4096_start(
       ciphertext, &private_key->d_p, &private_key->d_q, &private_key->i_q,
-      &private_key->p, &private_key->q);
+      &private_key->p, &private_key->q, session_token);
 }

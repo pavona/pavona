@@ -55,6 +55,7 @@ cc_library(
         ":rsa_modexp_insn_counts",
         "//sw/acc/crypto:run_rsa_modexp",
         "//sw/device/lib/crypto/drivers:acc",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
 )
 

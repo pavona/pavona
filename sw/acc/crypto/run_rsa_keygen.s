@@ -225,3 +225,9 @@ rsa_check_key_with_primes_4096:
 .balign 4
 mode:
 .zero 4
+
+/* Session token for ensuring async start and initialize calls correspond. */
+.globl session_token
+.balign 4
+session_token:
+  .zero 4

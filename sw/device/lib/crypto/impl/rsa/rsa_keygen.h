@@ -24,10 +24,11 @@ extern "C" {
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_keygen_2048_start(void);
+status_t rsa_keygen_2048_start(uint32_t *session_token);
 
 /**
  * Waits for an RSA-2048 key generation to complete.
@@ -35,12 +36,14 @@ status_t rsa_keygen_2048_start(void);
  * Should be invoked only after `rsa_keygen_2048_start`. Blocks until ACC is
  * done processing.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
+status_t rsa_keygen_2048_finalize(uint32_t session_token,
+                                  rsa_2048_public_key_t *public_key,
                                   rsa_2048_private_key_t *private_key);
 
 /**
@@ -50,10 +53,11 @@ status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_keygen_3072_start(void);
+status_t rsa_keygen_3072_start(uint32_t *session_token);
 
 /**
  * Waits for an RSA-3072 key generation to complete.
@@ -61,12 +65,14 @@ status_t rsa_keygen_3072_start(void);
  * Should be invoked only after `rsa_keygen_3072_start`. Blocks until ACC is
  * done processing.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
+status_t rsa_keygen_3072_finalize(uint32_t session_token,
+                                  rsa_3072_public_key_t *public_key,
                                   rsa_3072_private_key_t *private_key);
 
 /**
@@ -76,10 +82,12 @@ status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
+
 OT_WARN_UNUSED_RESULT
-status_t rsa_keygen_4096_start(void);
+status_t rsa_keygen_4096_start(uint32_t *session_token);
 
 /**
  * Waits for an RSA-4096 key generation to complete.
@@ -87,12 +95,14 @@ status_t rsa_keygen_4096_start(void);
  * Should be invoked only after `rsa_keygen_4096_start`. Blocks until ACC is
  * done processing.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
+status_t rsa_keygen_4096_finalize(uint32_t session_token,
+                                  rsa_4096_public_key_t *public_key,
                                   rsa_4096_private_key_t *private_key);
 
 /**
@@ -106,11 +116,13 @@ status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
  *
  * @param public_key Public key (n, e).
  * @param cofactor One of the prime cofactors (p or q).
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_2048_start(
-    const rsa_2048_public_key_t *public_key, const rsa_2048_short_t *cofactor);
+    const rsa_2048_public_key_t *public_key, const rsa_2048_short_t *cofactor,
+    uint32_t *session_token);
 
 /**
  * Waits for an RSA-2048 key-from-cofactor operation to complete.
@@ -122,13 +134,15 @@ status_t rsa_keygen_from_cofactor_2048_start(
  * find it helpful to compare the public key modulus returned to the one that
  * was passed to ACC originally in order to check for errors.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_2048_finalize(
-    rsa_2048_public_key_t *public_key, rsa_2048_private_key_t *private_key);
+    uint32_t session_token, rsa_2048_public_key_t *public_key,
+    rsa_2048_private_key_t *private_key);
 
 /**
  * Starts an RSA-3072 key-from-cofactor operation; returns immediately.
@@ -141,11 +155,13 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
  *
  * @param public_key Public key (n, e).
  * @param cofactor One of the prime cofactors (p or q).
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_3072_start(
-    const rsa_3072_public_key_t *public_key, const rsa_3072_short_t *cofactor);
+    const rsa_3072_public_key_t *public_key, const rsa_3072_short_t *cofactor,
+    uint32_t *session_token);
 
 /**
  * Waits for an RSA-3072 key-from-cofactor operation to complete.
@@ -157,13 +173,15 @@ status_t rsa_keygen_from_cofactor_3072_start(
  * find it helpful to compare the public key modulus returned to the one that
  * was passed to ACC originally in order to check for errors.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_3072_finalize(
-    rsa_3072_public_key_t *public_key, rsa_3072_private_key_t *private_key);
+    uint32_t session_token, rsa_3072_public_key_t *public_key,
+    rsa_3072_private_key_t *private_key);
 
 /**
  * Starts an RSA-4096 key-from-cofactor operation; returns immediately.
@@ -176,11 +194,13 @@ status_t rsa_keygen_from_cofactor_3072_finalize(
  *
  * @param public_key Public key (n, e).
  * @param cofactor One of the prime cofactors (p or q).
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_4096_start(
-    const rsa_4096_public_key_t *public_key, const rsa_4096_short_t *cofactor);
+    const rsa_4096_public_key_t *public_key, const rsa_4096_short_t *cofactor,
+    uint32_t *session_token);
 
 /**
  * Waits for an RSA-4096 key-from-cofactor operation to complete.
@@ -192,13 +212,15 @@ status_t rsa_keygen_from_cofactor_4096_start(
  * find it helpful to compare the public key modulus returned to the one that
  * was passed to ACC originally in order to check for errors.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] public_key Generated public key (n, e).
  * @param[out] private_key Generated private key (p, q, d_p, d_q, i_q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_keygen_from_cofactor_4096_finalize(
-    rsa_4096_public_key_t *public_key, rsa_4096_private_key_t *private_key);
+    uint32_t session_token, rsa_4096_public_key_t *public_key,
+    rsa_4096_private_key_t *private_key);
 
 /**
  * Checks the validity of a RSA-2048 private key with respect to a given
@@ -229,12 +251,14 @@ status_t rsa_keygen_from_cofactor_4096_finalize(
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param check_primes Whether to perform checks on the private key primes.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
                                   const rsa_2048_private_key_t *private_key,
-                                  hardened_bool_t check_primes);
+                                  hardened_bool_t check_primes,
+                                  uint32_t *session_token);
 
 /*
  * Waits for an RSA-2048 private key check to complete.
@@ -250,6 +274,7 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param check_primes Whether to perform checks on the private key primes.
+ * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
@@ -257,6 +282,7 @@ OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
                                      const rsa_2048_private_key_t *private_key,
                                      hardened_bool_t check_primes,
+                                     uint32_t session_token,
                                      hardened_bool_t *key_valid);
 
 /**
@@ -288,12 +314,14 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param check_primes Whether to perform checks on the private key primes.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
                                   const rsa_3072_private_key_t *private_key,
-                                  hardened_bool_t check_primes);
+                                  hardened_bool_t check_primes,
+                                  uint32_t *session_token);
 
 /*
  * Waits for an RSA-3072 private key check to complete.
@@ -309,6 +337,7 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param check_primes Whether to perform checks on the private key primes.
+ * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
@@ -316,6 +345,7 @@ OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
                                      const rsa_3072_private_key_t *private_key,
                                      hardened_bool_t check_primes,
+                                     uint32_t session_token,
                                      hardened_bool_t *key_valid);
 
 /**
@@ -347,12 +377,14 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param check_primes Whether to perform checks on the private key primes.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
                                   const rsa_4096_private_key_t *private_key,
-                                  hardened_bool_t check_primes);
+                                  hardened_bool_t check_primes,
+                                  uint32_t *session_token);
 
 /*
  * Waits for an RSA-4096 private key check to complete.
@@ -368,6 +400,7 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param check_primes Whether to perform checks on the private key primes.
+ * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
@@ -375,6 +408,7 @@ OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
                                      const rsa_4096_private_key_t *private_key,
                                      hardened_bool_t check_primes,
+                                     uint32_t session_token,
                                      hardened_bool_t *key_valid);
 
 #ifdef __cplusplus

@@ -1,7 +1,3 @@
-// Copyright zeroRISC Inc.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
 // Copyright lowRISC contributors (OpenTitan project).
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -156,7 +152,7 @@ static status_t encoded_message_verify(
 status_t rsa_signature_generate_2048_start(
     const rsa_2048_private_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode) {
+    const rsa_signature_padding_t padding_mode, uint32_t *session_token) {
   // Encode the message.
   rsa_2048_int_t encoded_message;
   HARDENED_TRY(message_encode(message_digest, padding_mode,
@@ -166,11 +162,12 @@ status_t rsa_signature_generate_2048_start(
   // Start computing (encoded_message ^ d) mod n.
   return rsa_modexp_consttime_crt_2048_start(
       &encoded_message, &private_key->d_p, &private_key->d_q, &private_key->i_q,
-      &private_key->p, &private_key->q);
+      &private_key->p, &private_key->q, session_token);
 }
 
-status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature) {
-  return rsa_modexp_consttime_crt_2048_finalize(signature);
+status_t rsa_signature_generate_2048_finalize(uint32_t session_token,
+                                              rsa_2048_int_t *signature) {
+  return rsa_modexp_consttime_crt_2048_finalize(session_token, signature);
 }
 
 /**
@@ -207,23 +204,24 @@ static status_t rsa_signature_reduced_check_2048(
 }
 
 status_t rsa_signature_verify_2048_start(
-    const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature) {
+    const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature,
+    uint32_t *session_token) {
   // Verify that the signature is reduced
   HARDENED_TRY(rsa_signature_reduced_check_2048(public_key, signature));
 
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_2048_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_2048_start(signature, public_key->e, &public_key->n,
+                                       session_token);
 }
 
 status_t rsa_signature_verify_2048_finalize(
     const rsa_2048_public_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode,
+    const rsa_signature_padding_t padding_mode, uint32_t session_token,
     hardened_bool_t *verification_result) {
   // Get the result size, failing if the ACC isn't done.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
+  HARDENED_TRY(rsa_modexp_get_result_size(session_token, &num_words));
 
   // Check that the inferred result size matches expectations.
   if (num_words != kRsa2048NumWords) {
@@ -234,8 +232,8 @@ status_t rsa_signature_verify_2048_finalize(
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
   rsa_2048_int_t recovered_message;
-  HARDENED_TRY(
-      rsa_modexp_vartime_2048_finalize(public_key->e, &recovered_message));
+  HARDENED_TRY(rsa_modexp_vartime_2048_finalize(session_token, public_key->e,
+                                                &recovered_message));
   return encoded_message_verify(
       message_digest, padding_mode, recovered_message.data,
       ARRAYSIZE(recovered_message.data), verification_result);
@@ -248,11 +246,11 @@ status_t rsa_signature_verify_2048_finalize(
 status_t rsa_signature_verify_3072_finalize(
     const rsa_3072_public_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode,
+    const rsa_signature_padding_t padding_mode, uint32_t session_token,
     hardened_bool_t *verification_result) {
   // Get the result size, failing if the ACC isn't done.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
+  HARDENED_TRY(rsa_modexp_get_result_size(session_token, &num_words));
 
   // Check that the inferred result size matches expectations.
   if (num_words != kRsa3072NumWords) {
@@ -263,8 +261,8 @@ status_t rsa_signature_verify_3072_finalize(
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
   rsa_3072_int_t recovered_message;
-  HARDENED_TRY(
-      rsa_modexp_vartime_3072_finalize(public_key->e, &recovered_message));
+  HARDENED_TRY(rsa_modexp_vartime_3072_finalize(session_token, public_key->e,
+                                                &recovered_message));
   return encoded_message_verify(
       message_digest, padding_mode, recovered_message.data,
       ARRAYSIZE(recovered_message.data), verification_result);
@@ -277,11 +275,11 @@ status_t rsa_signature_verify_3072_finalize(
 status_t rsa_signature_verify_4096_finalize(
     const rsa_4096_public_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode,
+    const rsa_signature_padding_t padding_mode, uint32_t session_token,
     hardened_bool_t *verification_result) {
   // Get the result size, failing if the ACC isn't done.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_get_result_size(&num_words));
+  HARDENED_TRY(rsa_modexp_get_result_size(session_token, &num_words));
 
   // Check that the inferred result size matches expectations.
   if (num_words != kRsa4096NumWords) {
@@ -292,8 +290,8 @@ status_t rsa_signature_verify_4096_finalize(
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
   rsa_4096_int_t recovered_message;
-  HARDENED_TRY(
-      rsa_modexp_vartime_4096_finalize(public_key->e, &recovered_message));
+  HARDENED_TRY(rsa_modexp_vartime_4096_finalize(session_token, public_key->e,
+                                                &recovered_message));
   return encoded_message_verify(
       message_digest, padding_mode, recovered_message.data,
       ARRAYSIZE(recovered_message.data), verification_result);
@@ -306,7 +304,7 @@ status_t rsa_signature_verify_4096_finalize(
 status_t rsa_signature_generate_3072_start(
     const rsa_3072_private_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode) {
+    const rsa_signature_padding_t padding_mode, uint32_t *session_token) {
   // Encode the message.
   rsa_3072_int_t encoded_message;
   HARDENED_TRY(message_encode(message_digest, padding_mode,
@@ -316,11 +314,12 @@ status_t rsa_signature_generate_3072_start(
   // Start computing (encoded_message ^ d) mod n.
   return rsa_modexp_consttime_crt_3072_start(
       &encoded_message, &private_key->d_p, &private_key->d_q, &private_key->i_q,
-      &private_key->p, &private_key->q);
+      &private_key->p, &private_key->q, session_token);
 }
 
-status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature) {
-  return rsa_modexp_consttime_crt_3072_finalize(signature);
+status_t rsa_signature_generate_3072_finalize(uint32_t session_token,
+                                              rsa_3072_int_t *signature) {
+  return rsa_modexp_consttime_crt_3072_finalize(session_token, signature);
 }
 
 /**
@@ -357,19 +356,20 @@ static status_t rsa_signature_reduced_check_3072(
 }
 
 status_t rsa_signature_verify_3072_start(
-    const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature) {
+    const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature,
+    uint32_t *session_token) {
   // Verify that the signature is reduced
   HARDENED_TRY(rsa_signature_reduced_check_3072(public_key, signature));
 
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_3072_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_3072_start(signature, public_key->e, &public_key->n,
+                                       session_token);
 }
 
 status_t rsa_signature_generate_4096_start(
     const rsa_4096_private_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    const rsa_signature_padding_t padding_mode) {
+    const rsa_signature_padding_t padding_mode, uint32_t *session_token) {
   // Encode the message.
   rsa_4096_int_t encoded_message;
   HARDENED_TRY(message_encode(message_digest, padding_mode,
@@ -379,11 +379,12 @@ status_t rsa_signature_generate_4096_start(
   // Start computing (encoded_message ^ d) mod n.
   return rsa_modexp_consttime_crt_4096_start(
       &encoded_message, &private_key->d_p, &private_key->d_q, &private_key->i_q,
-      &private_key->p, &private_key->q);
+      &private_key->p, &private_key->q, session_token);
 }
 
-status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature) {
-  return rsa_modexp_consttime_crt_4096_finalize(signature);
+status_t rsa_signature_generate_4096_finalize(uint32_t session_token,
+                                              rsa_4096_int_t *signature) {
+  return rsa_modexp_consttime_crt_4096_finalize(session_token, signature);
 }
 
 /**
@@ -420,11 +421,12 @@ static status_t rsa_signature_reduced_check_4096(
 }
 
 status_t rsa_signature_verify_4096_start(
-    const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature) {
+    const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature,
+    uint32_t *session_token) {
   // Verify that the signature is reduced
   HARDENED_TRY(rsa_signature_reduced_check_4096(public_key, signature));
 
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_4096_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_4096_start(signature, public_key->e, &public_key->n,
+                                       session_token);
 }

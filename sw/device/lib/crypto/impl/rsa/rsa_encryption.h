@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -33,13 +34,15 @@ extern "C" {
  * @param message_bytelen Message length in bytes.
  * @param label Label for OAEP padding.
  * @param label_bytelen Length of label in bytes.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
                                 const otcrypto_hash_mode_t hash_mode,
                                 const uint8_t *message, size_t message_bytelen,
-                                const uint8_t *label, size_t label_bytelen);
+                                const uint8_t *label, size_t label_bytelen,
+                                uint32_t *session_token);
 
 /**
  * Waits for an RSA-2048 encryption to complete.
@@ -47,11 +50,14 @@ status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
  * Should be invoked only after a `rsa_encrypt_2048_start` call. Blocks until
  * ACC is done processing.
  *
+ * @param public_key RSA public key.
+ * @param session_token ACC session token for the operation.
  * @param[out] ciphertext Encrypted message.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_encrypt_2048_finalize(const rsa_2048_public_key_t *public_key,
+                                   uint32_t session_token,
                                    rsa_2048_int_t *ciphertext);
 
 /**
@@ -61,11 +67,13 @@ status_t rsa_encrypt_2048_finalize(const rsa_2048_public_key_t *public_key,
  *
  * @param private_key RSA private key.
  * @param ciphertext Encrypted message.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
-                                const rsa_2048_int_t *ciphertext);
+                                const rsa_2048_int_t *ciphertext,
+                                uint32_t *session_token);
 
 /**
  * Waits for an RSA decryption to complete.
@@ -95,6 +103,7 @@ status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
  * @param label Label for OAEP padding.
  * @param label_bytelen Length of label in bytes.
  * @param plaintext_max_bytelen Space allocated for the plaintext in bytes.
+ * @param session_token ACC session token for the operation.
  * @param[out] plaintext Decrypted message.
  * @param[out] plaintext_bytelen Length of plaintext in bytes.
  * @return Result of the operation (OK or error).
@@ -102,7 +111,8 @@ status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
 OT_WARN_UNUSED_RESULT
 status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
                               const uint8_t *label, size_t label_bytelen,
-                              size_t plaintext_max_bytelen, uint8_t *plaintext,
+                              size_t plaintext_max_bytelen,
+                              uint32_t session_token, uint8_t *plaintext,
                               size_t *plaintext_bytelen);
 
 /**
@@ -121,13 +131,15 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
  * @param message_bytelen Message length in bytes.
  * @param label Label for OAEP padding.
  * @param label_bytelen Length of label in bytes.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
                                 const otcrypto_hash_mode_t hash_mode,
                                 const uint8_t *message, size_t message_bytelen,
-                                const uint8_t *label, size_t label_bytelen);
+                                const uint8_t *label, size_t label_bytelen,
+                                uint32_t *session_token);
 
 /**
  * Waits for an RSA-3072 encryption to complete.
@@ -135,11 +147,14 @@ status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
  * Should be invoked only after a `rsa_encrypt_3072_start` call. Blocks until
  * ACC is done processing.
  *
+ * @param public_key RSA public key.
+ * @param session_token ACC session token for the operation.
  * @param[out] ciphertext Encrypted message.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_encrypt_3072_finalize(const rsa_3072_public_key_t *public_key,
+                                   uint32_t session_token,
                                    rsa_3072_int_t *ciphertext);
 
 /**
@@ -149,11 +164,13 @@ status_t rsa_encrypt_3072_finalize(const rsa_3072_public_key_t *public_key,
  *
  * @param private_key RSA private key.
  * @param ciphertext Encrypted message.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_decrypt_3072_start(const rsa_3072_private_key_t *private_key,
-                                const rsa_3072_int_t *ciphertext);
+                                const rsa_3072_int_t *ciphertext,
+                                uint32_t *session_token);
 
 /**
  * Starts encrypting a message with RSA-4096; returns immediately.
@@ -171,13 +188,15 @@ status_t rsa_decrypt_3072_start(const rsa_3072_private_key_t *private_key,
  * @param message_bytelen Message length in bytes.
  * @param label Label for OAEP padding.
  * @param label_bytelen Length of label in bytes.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
                                 const otcrypto_hash_mode_t hash_mode,
                                 const uint8_t *message, size_t message_bytelen,
-                                const uint8_t *label, size_t label_bytelen);
+                                const uint8_t *label, size_t label_bytelen,
+                                uint32_t *session_token);
 
 /**
  * Waits for an RSA-4096 encryption to complete.
@@ -185,11 +204,14 @@ status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
  * Should be invoked only after a `rsa_encrypt_4096_start` call. Blocks until
  * ACC is done processing.
  *
+ * @param public_key RSA public key.
+ * @param session_token ACC session token for the operation.
  * @param[out] ciphertext Encrypted message.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_encrypt_4096_finalize(const rsa_4096_public_key_t *public_key,
+                                   uint32_t session_token,
                                    rsa_4096_int_t *ciphertext);
 
 /**
@@ -199,11 +221,13 @@ status_t rsa_encrypt_4096_finalize(const rsa_4096_public_key_t *public_key,
  *
  * @param private_key RSA private key.
  * @param ciphertext Encrypted message.
+ * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_decrypt_4096_start(const rsa_4096_private_key_t *private_key,
-                                const rsa_4096_int_t *ciphertext);
+                                const rsa_4096_int_t *ciphertext,
+                                uint32_t *session_token);
 
 #ifdef __cplusplus
 }  // extern "C"
