@@ -94,6 +94,7 @@ jobs:
     name: Verify FPGA jobs
     uses: ./.github/workflows/verify-fpga.yml
     with:
+      test_group: "hyper310-pr"
       tag_filters: "cw310"
     needs:
       - execute_test_rom_fpga_tests_cw310

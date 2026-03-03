@@ -6,6 +6,10 @@ name: Verify FPGA jobs
 on:
   workflow_call:
     inputs:
+      test_group:
+        required: true
+        type: string
+        description: Unique name for the test suite to use in the artifact name.
       tag_filters:
         required: true
         type: string
@@ -66,3 +70,8 @@ jobs:
             cat missing.txt
             false
           fi
+      - name: Upload complete target list
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.test_group }}-fpga_targets
+          path: all_fpga.txt
