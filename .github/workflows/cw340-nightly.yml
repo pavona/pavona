@@ -100,6 +100,7 @@ jobs:
     name: Verify FPGA jobs
     uses: ./.github/workflows/verify-fpga.yml
     with:
+      test_group: "cw340-nightly"
       tag_filters: "cw340"
       timeout_filters: 'long,eternal'
     needs:

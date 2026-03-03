@@ -99,6 +99,7 @@ jobs:
     name: Verify FPGA jobs
     uses: ./.github/workflows/verify-fpga.yml
     with:
+      test_group: "hyper310-nightly"
       tag_filters: "cw310"
       timeout_filters: 'long,eternal'
     needs:

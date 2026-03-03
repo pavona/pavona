@@ -94,6 +94,7 @@ jobs:
     name: Verify FPGA jobs
     uses: ./.github/workflows/verify-fpga.yml
     with:
+      test_group: "cw340-pr"
       tag_filters: "cw340"
     needs:
       - execute_test_rom_fpga_tests_cw340
