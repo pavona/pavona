@@ -1,5 +1,13 @@
 # Glossary
 
+#### ACC
+
+Asymmetric Cryptographic Coprocessor, a RISC-V-like programmable coprocessor for cyptographic algorithms.
+
+#### ACE
+
+Architectural Composition Engine, the tooling in Pavona that generates a system from its component specifications.
+
 #### ADC
 
 Analog-to-Digital Converter.
@@ -74,7 +82,7 @@ A protocol for authentication devices to communicate with a host computer.
 
 #### Darjeeling
 
-A work-in-progress integrated OpenTitan top level.
+A reference top-level system that can be integrated into a larger SOC.
 
 #### DD
 
@@ -98,7 +106,7 @@ End-to-End.
 
 #### Earl Grey
 
-The first discrete OpenTitan top level.
+A reference top-level system intended for implementation as a discrete chip.
 See [Earl Grey](../hw/top_earlgrey/README.md) for a the full specification.
 
 #### EDA
@@ -176,7 +184,7 @@ Hardware Security Module.
 
 #### HyperDebug
 
-A custom OpenTitan development harness for testing and debugging deployments on CW310 and CW340 FPGA boards.
+A custom development harness for testing and debugging deployments on CW310 and CW340 FPGA boards.
 
 #### I<sup>2</sup>C
 
@@ -184,7 +192,7 @@ Inter-Integrated Circuit.
 
 #### Ibex
 
-The 32-bit RISC-V core used in OpenTitan chips.
+A 32-bit RISC-V core.
 
 #### IP
 
@@ -192,7 +200,7 @@ Intellectual Property.
 
 #### IRQ
 
-Interrupt.
+Interrupt (request).
 
 #### IV
 
@@ -229,10 +237,6 @@ A list of connections between nodes of a circuit.
 #### NMI
 
 Non-Maskable Interrupt.
-
-#### OTBN
-
-OpenTitan Big Number accelerator - a RISC-V-like programmable coprocessor for asymmetric cryptographic algorithms.
 
 #### OTP
 
@@ -284,7 +288,7 @@ Request For Comments.
 
 #### RISC-V
 
-The open source instruction set architecture used for OpenTitan cores.
+An open source instruction set architecture.
 
 #### RNG
 
@@ -336,7 +340,7 @@ Static Random-Access Memory.
 
 #### Configuration Straps / Pin Straps
 
-Externally-exposed pins used to provide early-boot configuration to OpenTitan.
+Externally-exposed pins used to provide early-boot configuration.
 
 #### TAP
 
