@@ -943,8 +943,8 @@ end
   // This is specialised for different tops that use it but the req/ack protocol is the same in each
   // case. For one example, see
   //
-  // https://opentitan.org/book/hw/top_earlgrey/
-  //    ip_autogen/otp_ctrl/doc/interfaces.html#interfaces-to-sram-and-acc-scramblers
+  // hw/top_earlgrey/
+  //    ip_autogen/otp_ctrl/doc/interfaces.md#interfaces-to-sram-and-acc-scramblers
 
 
   // Note: as opposed to the OTP arbitration above, we do not perform cycle-wise arbitration, but

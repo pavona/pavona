@@ -27,7 +27,7 @@ enum {
 /**
  * Supported CSRNG application commands.
  * See
- * https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-header
+ * hw/ip/csrng/doc/theory_of_operation.md#command-header
  * for details.
  */
 typedef enum csrng_app_cmd_id {

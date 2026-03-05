@@ -445,7 +445,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   }
 
   // Build and write application command header. For details see
-  // https://docs.opentitan.org/hw/ip/csrng/doc/#command-header
+  // hw/ip/csrng/doc/theory_of_operation.md#command-header
   uint32_t cmd_reg = 0;
   switch (launder32(cmd.id)) {
     case kEntropyDrbgOpInstantiate:

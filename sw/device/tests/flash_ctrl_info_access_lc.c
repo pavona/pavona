@@ -244,7 +244,7 @@ bool test_main(void) {
 
   // Read lc state and execute info part access test.
   // Life cycle controlled info partition access is summarized in
-  // (https://opentitan.org/book/hw/ip/lc_ctrl/doc/theory_of_operation.html#
+  // (hw/ip/lc_ctrl/doc/theory_of_operation.md#
   // life-cycle-access-control-signals)
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &lc_state));
   CHECK_STATUS_OK(lc_ctrl_testutils_lc_state_log(&lc_state));

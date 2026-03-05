@@ -308,7 +308,7 @@ void kmac_shake256_absorb(const uint8_t *in, size_t inlen) {
   // produce entropy requests anyway). Since KMAC will therefore not block on
   // EDN, it is guaranteed to keep processing message blocks. For more details,
   // see the KMAC documentation:
-  // https://opentitan.org/book/hw/ip/kmac/doc/theory_of_operation.html#fifo-depth-and-empty-status
+  // hw/ip/kmac/doc/theory_of_operation.md#fifo-depth-and-empty-status
 
   // Use byte-wide writes until the input pointer is aligned.
   // Note: writes to the KMAC message FIFO are not required to be aligned.
@@ -338,7 +338,7 @@ void kmac_shake256_absorb_words(const uint32_t *in, size_t inlen) {
   // produce entropy requests anyway). Since KMAC will therefore not block on
   // EDN, it is guaranteed to keep processing message blocks. For more details,
   // see the KMAC documentation:
-  // https://opentitan.org/book/hw/ip/kmac/doc/theory_of_operation.html#fifo-depth-and-empty-status
+  // hw/ip/kmac/doc/theory_of_operation.md#fifo-depth-and-empty-status
 
   for (; inlen > 0; --inlen, ++in) {
     abs_mmio_write32(kBase + KMAC_MSG_FIFO_REG_OFFSET, *in);

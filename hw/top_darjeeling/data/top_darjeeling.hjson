@@ -1836,7 +1836,7 @@
         // boot time during certain life cycle states in order to determine
         // DFT modes and the TAP mux selection index (the JTAG signals can be
         // muxed to either the lifecycle TAP, DFT TAP or RISC-V processor
-        // TAP). TODO: add more documentation to https://docs.opentitan.org/hw/ip/pinmux/doc/index.html
+        // TAP).
         // Each entry must have the following two keys:
         //
         // - name: Basename for the SV parameter.

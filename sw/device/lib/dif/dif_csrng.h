@@ -60,7 +60,7 @@ extern "C" {
  * - `dif_csrng_get_output_status()`
  *
  * Please see the following documentation for more information:
- * https://opentitan.org/book/hw/ip/csrng/
+ * hw/ip/csrng/
  *
  * Remaining work:
  *

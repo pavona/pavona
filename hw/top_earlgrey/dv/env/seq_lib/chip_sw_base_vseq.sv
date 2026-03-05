@@ -745,7 +745,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // Indicate LC state where cpu_en == 1
   // This has to follow Manufacturing State description
-  // https://opentitan.org/book/doc/security/specs/device_life_cycle/#manufacturing-states
+  // doc/security/specs/device_life_cycle/README.md#manufacturing-states
   virtual function bit is_cpu_enabled_lc_state(lc_state_e state);
     return ((state inside {LcStDev, LcStProd, LcStProdEnd, LcStRma}) ||
             (is_test_unlocked_lc_state(state) == 1));

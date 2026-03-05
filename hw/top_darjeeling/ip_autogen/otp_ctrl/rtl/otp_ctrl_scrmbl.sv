@@ -62,7 +62,7 @@
 //
 // References:
 //  - The block diagram in ../doc/theory_of_operation.md
-//  - https://opentitan.org/book/hw/ip/prim/doc/prim_present.html
+//  - hw/ip/prim/doc/prim_present.md
 //  - https://en.wikipedia.org/wiki/Merkle-Damgard_construction
 //  - https://en.wikipedia.org/wiki/One-way_compression_function#Davies%E2%80%93Meyer
 //  - https://en.wikipedia.org/wiki/PRESENT

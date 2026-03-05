@@ -6,7 +6,7 @@
 // output buffers and life-cycle specific assertions.
 //
 // Should be used exactly as recommended in the life cycle controller spec:
-// https://opentitan.org/book/hw/ip/lc_ctrl/doc/interfaces.html#control-signal-propagation
+// hw/ip/lc_ctrl/doc/interfaces.md#control-signal-propagation
 
 `include "prim_assert.sv"
 

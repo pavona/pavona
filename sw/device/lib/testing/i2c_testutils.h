@@ -227,7 +227,7 @@ status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
 /**
  * Set the i2c timing parameters based on the desired speed mode.
  * Also see
- * https://opentitan.org/book/hw/ip/i2c/doc/programmers_guide.html#initialization
+ * hw/ip/i2c/doc/programmers_guide.md#initialization
  *
  * @param i2c An I2C DIF handle.
  * @param speed The speed mode.

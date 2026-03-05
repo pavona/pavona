@@ -43,7 +43,7 @@ extern "C" {
  * AES registers must be securely cleared, by calling `dif_aes_end`.
  *
  * Please see the following documentation for further information:
- * https://opentitan.org/book/hw/ip/aes/
+ * hw/ip/aes/
  * https://csrc.nist.gov/csrc/media/publications/fips/197/final/documents/fips-197.pdf
  * https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf
  */

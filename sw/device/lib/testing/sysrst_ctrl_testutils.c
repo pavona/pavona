@@ -12,8 +12,8 @@
 
 void sysrst_ctrl_testutils_setup_dio(dif_pinmux_t *pinmux) {
   // Make sure that the DIO pins EC reset and flash WP are configured correctly
-  // https://opentitan.org/book/hw/ip/sysrst_ctrl/doc/theory_of_operation.html#ec-and-power-on-reset
-  // https://opentitan.org/book/hw/ip/sysrst_ctrl/doc/theory_of_operation.html#flash-write-protect-output
+  // hw/ip/sysrst_ctrl/doc/theory_of_operation.md#ec-and-power-on-reset
+  // hw/ip/sysrst_ctrl/doc/theory_of_operation.md#flash-write-protect-output
   //
   // The documentation says that they should be configured as open drain.
   dif_pinmux_pad_attr_t out_attr;
@@ -46,8 +46,8 @@ void sysrst_ctrl_testutils_release_dio(dif_sysrst_ctrl_t *sysrst_ctrl,
                                        bool release_ec, bool release_flash) {
   // Make sure that the DIO pins EC reset and flash WP are released according to
   // the documentation:
-  // https://opentitan.org/book/hw/ip/sysrst_ctrl/doc/theory_of_operation.html#ec-and-power-on-reset
-  // https://opentitan.org/book/hw/ip/sysrst_ctrl/doc/theory_of_operation.html#flash-write-protect-output
+  // hw/ip/sysrst_ctrl/doc/theory_of_operation.md#ec-and-power-on-reset
+  // hw/ip/sysrst_ctrl/doc/theory_of_operation.md#flash-write-protect-output
   // We also need to disable the output override mecanism (i.e. "release the
   // pin").
   if (release_ec) {

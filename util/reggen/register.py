@@ -427,7 +427,7 @@ class Register(RegBase):
             go to the staged register). This is useful for software in case
             it lost track of the current phase. See comportability spec for
             more details:
-            https://opentitan.org/book/util/reggen/index.html#shadow-registers
+            util/reggen/README.md#shadow-registers
 
           - There's an RC field (where we'll attach the read-enable signal to
             the subreg's we port)

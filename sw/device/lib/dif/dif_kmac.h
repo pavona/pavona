@@ -57,7 +57,7 @@ extern "C" {
  *
  * Please see the following documentation for more information about the KMAC
  * hardware:
- * https://opentitan.org/book/hw/ip/kmac/
+ * hw/ip/kmac/
  *
  * References:
  * [1] - NIST FIPS 202

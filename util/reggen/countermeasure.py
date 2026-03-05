@@ -9,7 +9,7 @@ from typing import Dict, List, Sequence, Tuple
 from reggen.lib import check_keys, check_str, check_list
 
 # The documentation of assets and cm_types can be found here
-# https://opentitan.org/book/doc/contributing/hw/comportability/#security-countermeasures
+# doc/contributing/hw/comportability/README.md#security-countermeasures
 # yapf: disable
 CM_ASSETS = [
     'KEY',
