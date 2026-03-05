@@ -16,16 +16,14 @@ ARG BAZELISK_VERSION=v1.24.1
 ARG CLANG_VERSION=16
 
 # Main container image.
-FROM ubuntu:22.04 AS opentitan
+FROM ubuntu:22.04 AS pavona
 ARG VERILATOR_VERSION
 ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG BAZELISK_VERSION
 ARG CLANG_VERSION
 
-LABEL version="1.0"
-LABEL description="OpenTitan development container."
-LABEL maintainer="opentitan-dev@opentitan.org"
+LABEL description="Experimental Pavona development container."
 
 # Use bash as default shell.
 RUN ln -sf /bin/bash /bin/sh
