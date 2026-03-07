@@ -588,17 +588,31 @@ class KmacDigestWSR(WSR):
     def has_value(self) -> bool:
         return self._has_value
 
-    def request_value(self) -> bool:
+    def request_value_share0(self) -> bool:
         '''Returns true if the full register value is ready,
-        but only one cycle after digest_ready() is asserted,
+        but only one cycle after digest0_ready() is asserted,
         modeling the ACC app_req.next behavior'''
-        self._has_value = self._kmac.digest_ready()
+        self._has_value = self._kmac.digest0_ready()
 
         kmac_debug_print(f"\tKMAC_DIGEST - Request value: {self._has_value}")
         return self._has_value
 
-    def read_unsigned(self) -> int:
-        value = int.from_bytes(self._kmac.read(32), byteorder='little')
+    def request_value_share1(self) -> bool:
+        '''Returns true if the full register value is ready,
+        but only one cycle after digest1_ready() is asserted,
+        modeling the ACC app_req.next behavior'''
+        self._has_value = self._kmac.digest1_ready()
+
+        kmac_debug_print(f"\tKMAC_DIGEST - Request value: {self._has_value}")
+        return self._has_value
+
+    def read_unsigned_share0(self) -> int:
+        value = int.from_bytes(self._kmac.read_shares(32, True), byteorder='little')
+        kmac_debug_print(f"\tRead value: {hex(value)}")
+        return value
+
+    def read_unsigned_share1(self) -> int:
+        value = int.from_bytes(self._kmac.read_shares(32, False), byteorder='little')
         kmac_debug_print(f"\tRead value: {hex(value)}")
         return value
 
@@ -635,7 +649,8 @@ class WSRFile:
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
         self.KMAC_STATUS = KmacStatusWSR('KMAC_STATUS', self.Kmac)
-        self.KMAC_DIGEST = KmacDigestWSR('KMAC_DIGEST', self.Kmac)
+        self.KMAC_DIGEST0 = KmacDigestWSR('KMAC_DIGEST0', self.Kmac)
+        self.KMAC_DIGEST1 = KmacDigestWSR('KMAC_DIGEST1', self.Kmac)
         self.KMAC_PARTIAL_WRITE = KmacPartialWriteISPR('KMAC_PARTIAL_WRITE', self.Kmac)
         self.KMAC_CFG = KmacCfgWSR('KMAC_CFG', self.Kmac, self.KMAC_PARTIAL_WRITE)
         self.KMAC_MSG = KmacMsgWSR('KMAC_MSG', self.Kmac, self.KMAC_PARTIAL_WRITE)
@@ -656,8 +671,9 @@ class WSRFile:
             self._by_idx.update({
                 8: self.KMAC_CFG,
                 9: self.KMAC_MSG,
-                10: self.KMAC_DIGEST,
-                11: self.ACCH,
+                10: self.KMAC_DIGEST0,
+                11: self.KMAC_DIGEST1,
+                12: self.ACCH,
             })
 
     def on_start(self) -> None:
@@ -685,9 +701,17 @@ class WSRFile:
         '''Read the WSR at idx as an unsigned 256-bit value
 
         Assumes that idx is a valid index (call check_idx to ensure this).
+        For KMAC Digest registers, read_unsigned_share0 and read_unsigned_share1
+        are used to apply an appropriate mask to the unmasked digest before writing
+        to the WSR at idx.
 
         '''
-        return self._by_idx[idx].read_unsigned()
+        if self._by_idx[idx] is self.KMAC_DIGEST0:
+            return self._by_idx[idx].read_unsigned_share0()
+        elif self._by_idx[idx] is self.KMAC_DIGEST1:
+            return self._by_idx[idx].read_unsigned_share1()
+        else:
+            return self._by_idx[idx].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
         '''Write the WSR at idx as an unsigned 256-bit value
@@ -707,7 +731,8 @@ class WSRFile:
         self.KeyS1.commit()
         self.KMAC_MSG.commit()
         self.KMAC_CFG.commit()
-        self.KMAC_DIGEST.commit()
+        self.KMAC_DIGEST0.commit()
+        self.KMAC_DIGEST1.commit()
         self.KMAC_PARTIAL_WRITE.commit()
 
     def abort(self) -> None:
@@ -722,7 +747,8 @@ class WSRFile:
         self.KeyS1.commit()
         self.KMAC_MSG.abort()
         self.KMAC_CFG.abort()
-        self.KMAC_DIGEST.abort()
+        self.KMAC_DIGEST0.abort()
+        self.KMAC_DIGEST1.abort()
         self.KMAC_PARTIAL_WRITE.abort()
 
     def changes(self) -> List[Trace]:
@@ -738,7 +764,8 @@ class WSRFile:
             ret += self.KMAC_MSG.changes()
             ret += self.KMAC_CFG.changes()
             ret += self.KMAC_STATUS.changes()
-            ret += self.KMAC_DIGEST.changes()
+            ret += self.KMAC_DIGEST0.changes()
+            ret += self.KMAC_DIGEST1.changes()
             ret += self.KMAC_PARTIAL_WRITE.changes()
         return ret
 
@@ -753,4 +780,5 @@ class WSRFile:
         self.ACC.write_invalid()
         self.ACCH.write_invalid()
         self.KMAC_MSG.write_invalid()
-        self.KMAC_DIGEST.write_invalid()
+        self.KMAC_DIGEST0.write_invalid()
+        self.KMAC_DIGEST1.write_invalid()

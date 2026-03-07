@@ -12,7 +12,7 @@ import sys
 from typing import Optional, Union
 from Crypto.Hash import cSHAKE128, cSHAKE256, SHAKE128, SHAKE256, SHA3_224, \
     SHA3_256, SHA3_384, SHA3_512
-DEBUG_KMAC = False
+DEBUG_KMAC = True
 
 
 def kmac_debug_print(text: str) -> None:
@@ -40,6 +40,8 @@ class KmacBlock:
     _STRENGTH_256 = 0x2
     _STRENGTH_384 = 0x3
     _STRENGTH_512 = 0x4
+    # Random 256-bit fixed mask to apply to digest
+    _FIXED_MASK = 0x6AF4EEF3D009BFFEA30CAD5958E9B1ABCEDDC59CC16E7481E562B3B77E7ED45E
 
     # Message FIFO size in bytes. See:
     # hw/ip/kmac/rtl/kmac_pkg.sv#L37
@@ -118,9 +120,16 @@ class KmacBlock:
         self._msg_fifo_packer_flush_ctr = 0
         self._msg_fifo_packer_flushing = False
         self._automatically_write_digest = True
-        self._digest_ready = False
-        self._digest_ready_next = False
-        self._digest_read = False
+        self._digest0_ready = False
+        self._digest0_ready_next = False
+        self._digest1_ready = False
+        self._digest1_ready_next = False
+        self._digest0_read = False
+        self._digest1_read = False
+        self._unmasked_digest = bytes()
+        self._apply_mask = False
+        self._finished_digest0 = False
+        self._finished_digest1 = False
         self._leftover_digest_bytes = 0
         self._shift_digest_reg = False
         self._new_permutation = False
@@ -165,9 +174,16 @@ class KmacBlock:
         self._msg_fifo_packer_flushing = False
         self._msg_fifo_packer_flush_ctr = 0
         self._automatically_write_digest = True
-        self._digest_ready = False
-        self._digest_ready_next = False
-        self._digest_read = False
+        self._digest0_ready = False
+        self._digest0_ready_next = False
+        self._digest1_ready = False
+        self._digest1_ready_next = False
+        self._digest0_read = False
+        self._digest1_read = False
+        self._unmasked_digest = bytes()
+        self._apply_mask = False
+        self._finished_digest0 = False
+        self._finished_digest1 = False
         self._leftover_digest_bytes = 0
         self._shift_digest_reg = False
         self._new_permutation = False
@@ -199,7 +215,7 @@ class KmacBlock:
         return self._app_intf_ready
 
     def get_done(self) -> int:
-        return int(self.digest_ready())
+        return int(self.digest0_ready())
 
     def get_undersized(self) -> int:
         return self._kmac_undersized_err
@@ -236,12 +252,41 @@ class KmacBlock:
         else:
             return False
 
-    def digest_ready(self) -> bool:
+    def kmac_undersized_req(self, digest_err: bool) -> None:
+        kmac_debug_print(f"Transaction Error: {digest_err}")
+        msg_fifo_write_ready = self.msg_fifo_bytes_available() >= self._APP_INTF_BYTES_PER_CYCLE
+        if msg_fifo_write_ready and not self._msg_fifo_packer_flushing:
+            nbytes = min(len(self._app_intf_fifo), self._APP_INTF_BYTES_PER_CYCLE)
+            last_byte_valid = self._msg_size % 8
+            kmac_debug_print(f"MSG Size: {self._msg_size}")
+            if (last_byte_valid == 0):
+                last_byte_valid = 8
+
+            if len(self._app_intf_fifo) < last_byte_valid:
+                padding_size = last_byte_valid - nbytes
+                self._app_intf_fifo += bytes(padding_size)
+
+            nbytes = last_byte_valid
+
+            self._msg_fifo += self._app_intf_fifo[:nbytes]
+            self._app_intf_fifo = bytes()
+            self._app_intf_bytes_sent += nbytes
+            # Artificially change the msg size
+            self._msg_size = self._app_intf_bytes_sent
+            self._msg_len = 0
+            self._app_intf_sending = True
+
+            self._kmac_undersized_err = digest_err
+            kmac_debug_print("Inserting Artificial Last MSG")
+            self.message_done()
+            self._app_intf_last = True        
+
+    def digest0_ready(self) -> bool:
         kmac_debug_print(f"\tKMAC Digest Ready Req: \
                         autowrite={self._automatically_write_digest} \
                         shift={self._shift_digest_reg} \
                         permute={self._new_permutation} \
-                        read={self._digest_read} ready={self._digest_ready} \
+                        read={self._digest0_read} ready={self._digest0_ready} \
                         read_offset={self._read_offset} \
                         leftover={self._leftover_digest_bytes}")
 
@@ -252,47 +297,60 @@ class KmacBlock:
         # If there is an undersized error we inject a "last" to the message request
         # to prevent stalling and raise an error flag to the status reg
         if digest_err and not self._kmac_undersized_err:
-            kmac_debug_print(f"Transaction Error: {digest_err}")
-            msg_fifo_write_ready = self.msg_fifo_bytes_available() >= self._APP_INTF_BYTES_PER_CYCLE
-            if msg_fifo_write_ready and not self._msg_fifo_packer_flushing:
-                nbytes = min(len(self._app_intf_fifo), self._APP_INTF_BYTES_PER_CYCLE)
-                last_byte_valid = self._msg_size % 8
-                kmac_debug_print(f"MSG Size: {self._msg_size}")
-                if (last_byte_valid == 0):
-                    last_byte_valid = 8
-
-                if len(self._app_intf_fifo) < last_byte_valid:
-                    padding_size = last_byte_valid - nbytes
-                    self._app_intf_fifo += bytes(padding_size)
-
-                nbytes = last_byte_valid
-
-                self._msg_fifo += self._app_intf_fifo[:nbytes]
-                self._app_intf_fifo = bytes()
-                self._app_intf_bytes_sent += nbytes
-                # Artificially change the msg size
-                self._msg_size = self._app_intf_bytes_sent
-                self._msg_len = 0
-                self._app_intf_sending = True
-
-                self._kmac_undersized_err = digest_err
-                kmac_debug_print("Inserting Artificial Last MSG")
-                self.message_done()
-                self._app_intf_last = True
+            self.kmac_undersized_req(digest_err)
 
         if self._automatically_write_digest:
-            if self._digest_ready:
-                self._digest_read = True
+            if self._digest0_ready:
+                self._digest0_read = True
                 self._automatically_write_digest = False
                 return True
             else:
                 return False
         elif self._shift_digest_reg or self._new_permutation:
             return False
-        elif self._digest_read:
+        elif self._digest0_read and self._digest1_ready:
+            # Digest has been read but Digest1 is still available
+            # Read will be redundant but is still legal
+            return True
+        elif self._digest0_ready:
+            self._digest0_read = True
+            return True
+        else:
             return False
-        elif self._digest_ready:
-            self._digest_read = True
+
+    def digest1_ready(self) -> bool:
+        kmac_debug_print(f"\tKMAC Digest Ready Req: \
+                        autowrite={self._automatically_write_digest} \
+                        shift={self._shift_digest_reg} \
+                        permute={self._new_permutation} \
+                        read={self._digest1_read} ready={self._digest1_ready} \
+                        read_offset={self._read_offset} \
+                        leftover={self._leftover_digest_bytes}")
+
+        # This helper function is executed during a digest wsrr insn
+        # Check if there is an undersized message at this point
+        digest_err = self.digest_req_err()
+
+        # If there is an undersized error we inject a "last" to the message request
+        # to prevent stalling and raise an error flag to the status reg
+        if digest_err and not self._kmac_undersized_err:
+            self.kmac_undersized_req(digest_err)
+
+        if self._automatically_write_digest:
+            if self._digest1_ready:
+                self._digest1_read = True
+                self._automatically_write_digest = False
+                return True
+            else:
+                return False
+        elif self._shift_digest_reg or self._new_permutation:
+            return False
+        elif self._digest1_read and self._digest0_ready:
+            # Digest has been read but Digest0 is still available
+            # Read will be redundant but is still legal
+            return True
+        elif self._digest1_ready:
+            self._digest1_read = True
             return True
         else:
             return False
@@ -620,15 +678,18 @@ class KmacBlock:
         self._app_intf_fifo_ready = self._app_intf_fifo_ready_next
 
         # Digest Register
-        self._digest_ready = self._digest_ready_next
+        self._digest0_ready = self._digest0_ready_next
+        self._digest1_ready = self._digest1_ready_next
         if self._shift_digest_reg:
             if self._digest_request_ctr < self._SHIFT_DIGEST_LATENCY:
                 self._digest_request_ctr += 1
-                self._digest_ready_next = False
+                self._digest0_ready_next = False
+                self._digest0_ready_next = False
             else:
                 self._shift_digest_reg = False
                 self._digest_request_ctr = 0
-                self._digest_ready_next = True
+                self._digest0_ready_next = True
+                self._digest1_ready_next = True
         elif self._new_permutation:
             if self._digest_request_ctr < self._NEW_PERMUTATION_LATENCY:
                 if self._skip_digest_shift_cycle:
@@ -638,21 +699,27 @@ class KmacBlock:
                     # the digest
                     self._digest_request_ctr += 1
                 self._digest_request_ctr += 1
-                self._digest_ready_next = False
+                self._digest0_ready_next = False
+                self._digest1_ready_next = False
             else:
                 self._new_permutation = False
                 self._digest_request_ctr = 0
-                self._digest_ready_next = True
+                self._digest0_ready_next = True
+                self._digest0_ready_next = True
         else:
-            self._digest_ready_next = self.is_squeezing() and (self._core_cycles_remaining == 0)
+            self._digest0_ready_next = self.is_squeezing() and (self._core_cycles_remaining == 0)
+            self._digest1_ready_next = self.is_squeezing() and (self._core_cycles_remaining == 0)
 
         if (
-            self._digest_read and self._digest_ready
-            and not self._shift_digest_reg and not self._new_permutation
+            (self._digest0_read and self._digest0_ready) and
+            (self._digest1_read and self._digest1_ready) and not
+            self._shift_digest_reg and not self._new_permutation
         ):
             # If we have read the digest then set ready to False as well for proper status sampling
-            self._digest_read = False
-            self._digest_ready = False
+            self._digest0_read = False
+            self._digest0_ready = False
+            self._digest1_read = False
+            self._digest1_ready = False
             if self._rate_bytes > self._read_offset + 32:
                 self._shift_digest_reg = True
                 self._digest_request_ctr += 1
@@ -674,7 +741,8 @@ class KmacBlock:
                     self._digest_request_ctr += 1
                     self._leftover_digest_bytes += max(self._rate_bytes - self._read_offset, 0)
                     self._read_offset = 0
-            self._digest_ready_next = False
+            self._digest0_ready_next = False
+            self._digest1_ready_next = False
 
         # Either step the core or check if we can start it.
         if self._core_is_busy():
@@ -742,6 +810,51 @@ class KmacBlock:
                 return 32 - self._read_offset
         # XOFs
         return None
+
+    def read_shares(self, num_bytes: int, share0: bool) -> bytes:
+        # If we need a new digest compute the next unmasked value before applying a mask
+        if not self._finished_digest0 and not self._finished_digest1:
+            if self._state is None:
+                raise ValueError("KMAC: Hash state not initialized")
+            max_bytes = self.max_read_bytes()
+            if max_bytes is not None and num_bytes > max_bytes:
+                raise ValueError('KMAC: Read request exceeds Keccak rate.')
+            if self._mode == self._MODE_SHAKE or self._mode == self._MODE_CSHAKE:
+                # XOFs SHAKE and CSHAKE
+                self._read_offset += num_bytes
+                if hasattr(self._state, "read"):
+                    self._unmasked_digest = self._state.read(num_bytes)
+            else:
+                # SHA3
+                if hasattr(self._state, "digest"):
+                    self._unmasked_digest = self._state.digest()[self._read_offset: self._read_offset + num_bytes]
+                self._read_offset += num_bytes
+
+        mask_bytes = self._FIXED_MASK.to_bytes(32, byteorder='little')
+
+        # Return the appropriate digest or fixed mask for testing
+        if share0:
+            if self._apply_mask:
+                digest = bytes(a ^ b for a, b in zip(self._unmasked_digest, mask_bytes))
+            else:
+                digest = mask_bytes
+            self._finished_digest0 = True
+        else:
+            if self._apply_mask:
+                digest = mask_bytes
+            else:
+                digest = bytes(a ^ b for a, b in zip(self._unmasked_digest, mask_bytes))
+            self._finished_digest1 = True
+
+        # If we have read from both shares reset to prepare for a new digest and mask order
+        if self._finished_digest0 and self._finished_digest1:
+            self._apply_mask = not self._apply_mask
+            self._finished_digest0 = False
+            self._finished_digest1 = False
+
+        kmac_debug_print(f"DIGEST TO RETURN: {digest}")
+
+        return digest
 
     def read(self, num_bytes: int) -> bytes:
         if self._state is None:

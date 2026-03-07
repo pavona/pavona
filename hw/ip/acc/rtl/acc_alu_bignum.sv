@@ -745,45 +745,117 @@ generate
     kmac_status_intg_q <= kmac_status_intg_d;
   end
 
-  // DIGEST
-  logic [kmac_pkg::AppDigestW-1:0]      unmasked_digest_share;
-  logic [DigestRegLen-1:0]              kmac_digest_no_intg_d;
-  logic [ExtDigestLen-1:0]              kmac_digest_intg_q;
-  logic [ExtDigestLen-1:0]              kmac_digest_intg_d;
-  logic [BaseWordsPerDigestLen-1:0]     kmac_digest_wr_en;
-  logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest_intg_err;
-  logic                                 kmac_digest_rd_next;
-  logic                                 kmac_digest_valid_q;
-  logic [1:0]                           sha_digest_rsp_cnt;
+  // DIGEST SHARE 0
+  logic [DigestRegLen-1:0]              kmac_digest0_no_intg_d;
+  logic [ExtDigestLen-1:0]              kmac_digest0_intg_q;
+  logic [ExtDigestLen-1:0]              kmac_digest0_intg_d;
+  logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest0_intg_err;
 
-  for (genvar i_word = 0; i_word < BaseWordsPerDigestLen; i_word++) begin : g_kmac_digest_words
-    prim_secded_inv_39_32_enc i_kmac_digest_secded_enc (
-      .data_i (kmac_digest_no_intg_d[i_word*32+:32]),
-      .data_o (kmac_digest_intg_d[i_word*39+:39])
+  // Common digest nets
+  logic                                 kmac_digest_valid_q;
+  logic [BaseWordsPerDigestLen-1:0]     kmac_digest_wr_en;
+
+  for (genvar i_word = 0; i_word < BaseWordsPerDigestLen; i_word++) begin : g_kmac_digest0_words
+    prim_secded_inv_39_32_enc i_kmac_digest0_secded_enc (
+      .data_i (kmac_digest0_no_intg_d[i_word*32+:32]),
+      .data_o (kmac_digest0_intg_d[i_word*39+:39])
     );
-    prim_secded_inv_39_32_dec i_kmac_digest_secded_dec (
-      .data_i     (kmac_digest_intg_q[i_word*39+:39]),
+    prim_secded_inv_39_32_dec i_kmac_digest0_secded_dec (
+      .data_i     (kmac_digest0_intg_q[i_word*39+:39]),
       .data_o     (/* unused because we abort on any integrity error */),
       .syndrome_o (/* unused */),
-      .err_o      (kmac_digest_intg_err[i_word*2+:2])
+      .err_o      (kmac_digest0_intg_err[i_word*2+:2])
     );
 
     always_ff @(posedge clk_i) begin
       if (kmac_digest_wr_en[i_word]) begin
-        kmac_digest_intg_q[i_word*39+:39] <= kmac_digest_intg_d[i_word*39+:39];
+        kmac_digest0_intg_q[i_word*39+:39] <= kmac_digest0_intg_d[i_word*39+:39];
       end
     end
 
-    assign kmac_digest_no_intg_d[i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
+    assign kmac_digest0_no_intg_d[i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
         urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] :
-        unmasked_digest_share[i_word*32+:32];
+        kmac_app_rsp_i.digest_share0[i_word*32+:32];
+  end
+
+  // DIGEST SHARE 1
+  logic [DigestRegLen-1:0]              kmac_digest1_no_intg_d;
+  logic [ExtDigestLen-1:0]              kmac_digest1_intg_q;
+  logic [ExtDigestLen-1:0]              kmac_digest1_intg_d;
+  logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest1_intg_err;
+
+  for (genvar i_word = 0; i_word < BaseWordsPerDigestLen; i_word++) begin : g_kmac_digest1_words
+    prim_secded_inv_39_32_enc i_kmac_digest1_secded_enc (
+      .data_i (kmac_digest1_no_intg_d[i_word*32+:32]),
+      .data_o (kmac_digest1_intg_d[i_word*39+:39])
+    );
+    prim_secded_inv_39_32_dec i_kmac_digest1_secded_dec (
+      .data_i     (kmac_digest1_intg_q[i_word*39+:39]),
+      .data_o     (/* unused because we abort on any integrity error */),
+      .syndrome_o (/* unused */),
+      .err_o      (kmac_digest1_intg_err[i_word*2+:2])
+    );
+
+    always_ff @(posedge clk_i) begin
+      if (kmac_digest_wr_en[i_word]) begin
+        kmac_digest1_intg_q[i_word*39+:39] <= kmac_digest1_intg_d[i_word*39+:39];
+      end
+    end
+
+    assign kmac_digest1_no_intg_d[i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
+        urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] :
+        kmac_app_rsp_i.digest_share1[i_word*32+:32];
 
     assign kmac_digest_wr_en[i_word] = kmac_app_rsp_i.done | sec_wipe_kmac_regs_urnd_i;
   end
 
+  // Common digest share interface to cotrol valids and app_o.next
+  logic       kmac_digest_rd_next;
+  logic [1:0] sha_digest_rsp_cnt;
+
   assign kmac_digest_valid_o = kmac_digest_valid_q;
-  assign kmac_digest_rd_next = kmac_digest_valid_q &&
-                               ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
+
+  // Make an FSM to control eager KMAC refresh
+  // Need to have read from both WSR in order to fetch the next digests
+
+  kmac_eager_state_e eager_state_d, eager_state_q;
+
+  always_comb begin : kmac_eager_next_fsm
+    // Default assignments
+    eager_state_d = eager_state_q;
+    kmac_digest_rd_next = 1'b0;
+
+    unique case (eager_state_q)
+      StDigestWait: begin
+        if (kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest0]) begin
+          eager_state_d = StDigestShare0;
+        end else if (kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest1]) begin
+          eager_state_d = StDigestShare1;
+        end
+      end
+      StDigestShare0: begin
+        if (kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest1]) begin
+          eager_state_d = StDigestWait;
+          kmac_digest_rd_next = 1'b1;
+        end
+      end
+      StDigestShare1: begin
+        if (kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest0]) begin
+          eager_state_d = StDigestWait;
+          kmac_digest_rd_next = 1'b1;
+        end
+      end
+      default: ; // Consider triggering an error or alert in this case.
+    endcase
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      eager_state_q <= StDigestWait;
+    end else begin
+      eager_state_q <= eager_state_d;
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -802,15 +874,11 @@ generate
     end else if (kmac_new_cfg_q) begin
       sha_digest_rsp_cnt <= 2'b0;
     end else if (sha3_pkg::sha3_mode_e'(kmac_cfg_intg_q[1:0]) == sha3_pkg::Sha3) begin
-      if (ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest] && kmac_digest_valid_q) begin
+      if (ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest0] && kmac_digest_valid_q) begin
         sha_digest_rsp_cnt <= sha_digest_rsp_cnt + 1'b1;
       end
     end
   end
-
-  // Digest shares are xor'ed to get the unmasked share value
-  // If KMAC is operating in unmasked mode then share1 is '0 and xor remains the unmasked val
-  assign unmasked_digest_share = kmac_app_rsp_i.digest_share0 ^ kmac_app_rsp_i.digest_share1;
 
   // MSG INTERFACE
   sha3_pkg::sha3_mode_e           kmac_cfg_sha3_mode;
@@ -1018,7 +1086,7 @@ generate
   assign kmac_msg_wr_stall = (kmac_msg_write & (~kmac_msg_fifo_wready));
 
   // When reading the return digest the message has already been sent and any remainder is cleared
-  assign kmac_msg_fifo_clr = kmac_sent_last && (ispr_addr_i == IsprKmacDigest) &&
+  assign kmac_msg_fifo_clr = kmac_sent_last && (ispr_addr_i == IsprKmacDigest0) &&
                              !kmac_msg_pending_write_o;
 
   // Prim packer is used to send full words until the final word in msg request
@@ -1119,9 +1187,7 @@ generate
   assign kmac_app_req_o.last  = kmac_app_last;
 
   // If we request an additional digest send a next to KMAC
-  assign kmac_app_req_o.next  = kmac_digest_valid_o
-                                & ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest]
-                                & kmac_next_sha;
+  assign kmac_app_req_o.next  = kmac_digest_valid_o & kmac_digest_rd_next & kmac_next_sha;
 
   // Hold will remain active for duration of transaction unless an internal error occurs
   assign kmac_app_req_o.hold  = kmac_app_active;
@@ -1153,7 +1219,7 @@ generate
   // The FIFO should not be in a flush cycle
   always_comb begin
     kmac_msg_req_err = 1'b0;
-    if (ispr_addr_i == IsprKmacDigest && kmac_app_active) begin
+    if (ispr_addr_i == IsprKmacDigest0 && kmac_app_active) begin
       kmac_msg_req_err = (!kmac_msg_pending_write_o && !kmac_msg_fifo_rvalid
                         && !kmac_msg_fifo_flush && !kmac_msg_fifo_wvalid);
     end
@@ -1288,16 +1354,17 @@ endgenerate
   localparam int IsprAccIntg        = 1;
   generate
     if (AccPQCEn) begin : gen_ispr_ids_pqc
-      localparam int IsprKmacMsgIntg    = 2;
-      localparam int IsprKmacDigestIntg = 3;
-      localparam int IsprAccHIntg       = 4;
+      localparam int IsprKmacMsgIntg     = 2;
+      localparam int IsprKmacDigest0Intg = 3;
+      localparam int IsprKmacDigest1Intg = 4;
+      localparam int IsprAccHIntg        = 5;
     end
   endgenerate
 
   // ID representing all ISPRs with no integrity
-  localparam int IsprNoIntg = AccPQCEn ? 5 : 2;
+  localparam int IsprNoIntg = AccPQCEn ? 6 : 2;
   // Number of ISPRs that have integrity protection
-  localparam int NIntgIspr  = AccPQCEn ? 5 : 2;
+  localparam int NIntgIspr  = AccPQCEn ? 6 : 2;
 
   logic [NIntgIspr:0] ispr_rdata_intg_mux_sel;
   logic [ExtWLEN-1:0] ispr_rdata_intg_mux_in    [NIntgIspr+1];
@@ -1317,8 +1384,9 @@ endgenerate
       assign ispr_rdata_no_intg_mux_in[IsprKmacStatus] =
           {224'b0, gen_pqc_wsr.kmac_status_intg_q[31:0]};
 
-      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest] = 0;
-      assign ispr_rdata_no_intg_mux_in[IsprAccH]       = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest0] = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest1] = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprAccH]        = 0;
     end
   endgenerate
 
@@ -1363,11 +1431,13 @@ endgenerate
 
   generate
     if (AccPQCEn) begin : gen_ispr_intg_mux_pqc
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacMsgIntg]    =
+      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacMsgIntg]     =
           gen_pqc_wsr.kmac_msg_intg_q;
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigestIntg] =
-          gen_pqc_wsr.kmac_digest_intg_q;
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprAccHIntg]       = ispr_acch_intg_i;
+      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigest0Intg] =
+          gen_pqc_wsr.kmac_digest0_intg_q;
+      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigest1Intg] =
+          gen_pqc_wsr.kmac_digest1_intg_q;
+      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprAccHIntg]        = ispr_acch_intg_i;
     end
   endgenerate
 
@@ -1376,11 +1446,13 @@ endgenerate
 
   generate
     if (AccPQCEn) begin : gen_ispr_intg_mux_sel_pqc
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacMsgIntg]    =
+      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacMsgIntg]     =
           ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg];
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacDigestIntg] =
-          ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest];
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprAccHIntg]       =
+      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacDigest0Intg] =
+          ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest0];
+      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacDigest1Intg] =
+          ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest1];
+      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprAccHIntg]        =
           ispr_predec_bignum_i.ispr_rd_en[IsprAccH];
     end
   endgenerate
@@ -2498,8 +2570,7 @@ generate
       assign gen_unused_pqc_bits.unused_pqc_bits =
           ^{gen_pqc_wsr.ispr_kmac_cfg_bignum_wdata_intg_blanked[311:39],
             gen_pqc_wsr.ispr_kmac_pw_bignum_wdata_intg_blanked[311:39],
-            gen_pqc_wsr.kmac_pw_intg_err,
-            gen_pqc_wsr.unmasked_digest_share[383:256]};
+            gen_pqc_wsr.kmac_pw_intg_err};
     end
   endgenerate
 
@@ -2517,19 +2588,21 @@ generate
     if (AccPQCEn) begin : gen_reg_intg_err_pqc
       logic kmac_used;
       assign kmac_used = operation_valid_i & (operation_i.op != AluOpBignumNone) &
-                         ( |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg])    |
-                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest]) |
-                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacCfg])    |
-                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacStatus]) );
+                         ( |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg])     |
+                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest0]) |
+                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest1]) |
+                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacCfg])     |
+                           |(ispr_predec_bignum_i.ispr_rd_en[IsprKmacStatus])  );
       `ASSERT_KNOWN(KmacUsed_A, kmac_used)
 
       // Raise a register integrity violation error iff `mod_intg_q` is used
       // and (at least partially) invalid.
       assign reg_intg_violation_err_o = (mod_used & |(mod_intg_err)) |
-                                        (kmac_used & ( |(gen_pqc_wsr.kmac_msg_intg_err)    |
-                                                       |(gen_pqc_wsr.kmac_cfg_intg_err)    |
-                                                       |(gen_pqc_wsr.kmac_status_intg_err) |
-                                                       |(gen_pqc_wsr.kmac_digest_intg_err) ));
+                                        (kmac_used & ( |(gen_pqc_wsr.kmac_msg_intg_err)     |
+                                                       |(gen_pqc_wsr.kmac_cfg_intg_err)     |
+                                                       |(gen_pqc_wsr.kmac_status_intg_err)  |
+                                                       |(gen_pqc_wsr.kmac_digest0_intg_err) |
+                                                       |(gen_pqc_wsr.kmac_digest1_intg_err) ));
 
       // Detect and signal unexpected secure wipe signals.
       assign sec_wipe_err_o = (sec_wipe_kmac_regs_urnd_i | sec_wipe_mod_urnd_i)

@@ -339,11 +339,11 @@ interface acc_trace_if
       assign ispr_read_data[IsprKmacStatus]  = 256'b0;
       assign ispr_write[IsprKmacStatus]      = 1'b0;
       assign ispr_write_data[IsprKmacStatus] = 256'b0;
-      // KMAC DIGEST
-      assign ispr_read[IsprKmacDigest]       = 1'b0;
-      assign ispr_read_data[IsprKmacDigest]  = 256'b0;
-      assign ispr_write[IsprKmacDigest]      = 1'b0;
-      assign ispr_write_data[IsprKmacDigest] = 256'b0;
+      // KMAC DIGEST SHARE 0
+      assign ispr_read[IsprKmacDigest0]       = 1'b0;
+      assign ispr_read_data[IsprKmacDigest0]  = 256'b0;
+      assign ispr_write[IsprKmacDigest0]      = 1'b0;
+      assign ispr_write_data[IsprKmacDigest0] = 256'b0;
       // ACCH
       assign ispr_write[IsprAccH]     = 1'b0;
       assign ispr_read[IsprAccH]      = 1'b0;

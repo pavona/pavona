@@ -372,14 +372,15 @@ package acc_pkg;
     WsrKeyS1H       = 'd7,
     WsrKmacCfg      = 'd8,
     WsrKmacMsg      = 'd9,
-    WsrKmacDigest   = 'd10,
-    WsrAccH         = 'd11
+    WsrKmacDigest0  = 'd10,
+    WsrKmacDigest1  = 'd11,
+    WsrAccH         = 'd12
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = 15;
+  parameter int NIspr = 16;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
     IsprMod           = 'd0,
@@ -394,9 +395,10 @@ package acc_pkg;
     IsprKmacCfg       = 'd9,
     IsprKmacMsg       = 'd10,
     IsprKmacStatus    = 'd11,
-    IsprKmacDigest    = 'd12,
-    IsprKmacPartialW  = 'd13,
-    IsprAccH          = 'd14
+    IsprKmacDigest0   = 'd12,
+    IsprKmacDigest1   = 'd13,
+    IsprKmacPartialW  = 'd14,
+    IsprAccH          = 'd15
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;
@@ -659,11 +661,36 @@ package acc_pkg;
   // Minimum Hamming weight: 2
   // Maximum Hamming weight: 3
   //
-  localparam int StateWidth = 4;
-  typedef enum logic [StateWidth-1:0] {
+  localparam int StateUndersizedWidth = 4;
+  typedef enum logic [StateUndersizedWidth-1:0] {
     StIdle         = 4'b1010,
     StPendingReady = 4'b1101
   } kmac_undersized_state_e;
+
+  // States for eager KMAC refresh with masked digest
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 2 -m 3 -n 4 \
+  //     -s 2029365291 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: |||||||||| (33.33%)
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: --
+  //
+  // Minimum Hamming distance: 2
+  // Maximum Hamming distance: 3
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 3
+  //
+  localparam int StateEagerWidth = 4;
+  typedef enum logic [StateEagerWidth-1:0] {
+    StDigestWait   = 4'b1010,
+    StDigestShare0 = 4'b0111,
+    StDigestShare1 = 4'b1100
+  } kmac_eager_state_e;
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \

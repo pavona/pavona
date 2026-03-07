@@ -1863,10 +1863,18 @@ class BNWSRR(ACCInsn):
                 yield None
 
         if self.wsr == 0xA:
-            # A read from KMAC_DIGEST. If a digest value is not available, request_value()
+            # A read from KMAC_DIGEST0. If a digest value is not available, request_value()
             # initiates or continues the request for the next digest word from KMAC and
             # returns false. If a digest value is available, it returns True.
-            while not state.wsrs.KMAC_DIGEST.request_value():
+            while not state.wsrs.KMAC_DIGEST0.request_value_share0():
+                # There's a pending KMAC request. Stall for a cycle.
+                yield None
+
+        if self.wsr == 0xB:
+            # A read from KMAC_DIGEST0. If a digest value is not available, request_value()
+            # initiates or continues the request for the next digest word from KMAC and
+            # returns false. If a digest value is available, it returns True.
+            while not state.wsrs.KMAC_DIGEST1.request_value_share1():
                 # There's a pending KMAC request. Stall for a cycle.
                 yield None
 

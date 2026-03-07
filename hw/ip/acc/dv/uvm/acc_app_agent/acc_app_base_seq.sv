@@ -20,7 +20,11 @@ class acc_app_base_seq extends dv_base_seq #(
     bit saw_first_rsp = 0;
     bit should_send_rsp = 0;
 
+    // Toggle bit to determine fixed mask share and prevent low toggle cov
+    bit apply_mask = 0;
+
     // Response digest shares
+    bit [255:0] unmasked_digest = '0;
     bit [255:0] digest_lsb_share0 = 0;
     bit [255:0] digest_lsb_share1 = 0;
 
@@ -397,16 +401,28 @@ class acc_app_base_seq extends dv_base_seq #(
         // Determine the start index and interate through digest to get the 256-bit msb
         // 256-bit msb always contains the most recent portion of rsp digest
         start_idx = dpi_digest.size() - 1;
+        unmasked_digest = '0;
         digest_lsb_share0 = '0;
+        digest_lsb_share1 = '0;
 
         for (int i = 0; i < 32; i++) begin
-          digest_lsb_share0 = (digest_lsb_share0 << 8) | dpi_digest[start_idx - i];
+          unmasked_digest = (unmasked_digest << 8) | dpi_digest[start_idx - i];
         end
+
+        if (apply_mask) begin
+          digest_lsb_share0 = unmasked_digest ^ FIXED_MASK;
+          digest_lsb_share1 = FIXED_MASK;
+        end else begin
+          digest_lsb_share0 = FIXED_MASK;
+          digest_lsb_share1 = unmasked_digest ^ FIXED_MASK;
+        end
+
+	apply_mask = !apply_mask;
 
         // Computed digest is unmasked therefore set share1 to all 0.
         // Inject error if appropriate from sequence config
         rsp.rsp_digest_share0 = {128'h0, digest_lsb_share0};
-        rsp.rsp_digest_share1 = {128'h0, 256'h0};
+        rsp.rsp_digest_share1 = {128'h0, digest_lsb_share1};
         rsp.rsp_error         = 0;
         rsp.rsp_done          = 1;
         rsp.rsp_ready         = 0;

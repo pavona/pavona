@@ -1531,9 +1531,16 @@ module acc_controller
           wsr_illegal_addr = 1'b1;
         end
       end
-      WsrKmacDigest: begin
+      WsrKmacDigest0: begin
         if (AccPQCEn) begin
-          ispr_addr_bignum = IsprKmacDigest;
+          ispr_addr_bignum = IsprKmacDigest0;
+        end else begin
+          wsr_illegal_addr = 1'b1;
+        end
+      end
+      WsrKmacDigest1: begin
+        if (AccPQCEn) begin
+          ispr_addr_bignum = IsprKmacDigest1;
         end else begin
           wsr_illegal_addr = 1'b1;
         end
@@ -1716,7 +1723,8 @@ module acc_controller
   generate
     if (AccPQCEn) begin : gen_kmac_raw
       assign gen_kmac_nets.kmac_digest_req_raw    = insn_valid_i & ispr_rd_insn &
-                                                    (ispr_addr_o == IsprKmacDigest);
+                                                    ((ispr_addr_o == IsprKmacDigest0)
+                                                    |(ispr_addr_o == IsprKmacDigest1));
       assign gen_kmac_nets.kmac_msg_write_req_raw = insn_valid_i & ispr_wr_insn &
                                                     (ispr_addr_o == IsprKmacMsg);
       assign gen_kmac_nets.kmac_msg_partial_raw   = insn_valid_i & ispr_wr_insn &

@@ -352,29 +352,31 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
       8'h07: return 7;     // KEY_S1_H
       8'h08: return 8;     // KMAC_CFG
       8'h09: return 9;     // KMAC_MSG
-      8'h0a: return 10;    // KMAC_DIGEST
-      8'h0b: return 11;    // ACCH
+      8'h0a: return 10;    // KMAC_DIGEST_SHARE0
+      8'h0b: return 11;    // KMAC_DIGEST_SHARE1
+      8'h0b: return 12;    // ACCH
       default: return -1;  // (invalid)
     endcase
   endfunction
 
-`define DEF_WSR_CP(NAME, EXPR)                            \
-  NAME: coverpoint (remap_wsr(EXPR)) {                    \
-    bins mod           = {0};                             \
-    bins rnd           = {1};                             \
-    bins urnd          = {2};                             \
-    bins acc           = {3};                             \
-    bins key_s0_l      = {4};                             \
-    bins key_s0_h      = {5};                             \
-    bins key_s1_l      = {6};                             \
-    bins key_s1_h      = {7};                             \
-    bins kmac_cfg      = {8};                             \
-    bins kmac_msg      = {9};                             \
-    bins kmac_digest   = {10};                            \
-    bins acch          = {11};                            \
-    bins invalid       = {-1};                            \
-    ignore_bins no_pqc = {8, 9, 10, 11} iff (!AccPQCEn); \
-    illegal_bins bad   = default;                         \
+`define DEF_WSR_CP(NAME, EXPR)                               \
+  NAME: coverpoint (remap_wsr(EXPR)) {                       \
+    bins mod           = {0};                                \
+    bins rnd           = {1};                                \
+    bins urnd          = {2};                                \
+    bins acc           = {3};                                \
+    bins key_s0_l      = {4};                                \
+    bins key_s0_h      = {5};                                \
+    bins key_s1_l      = {6};                                \
+    bins key_s1_h      = {7};                                \
+    bins kmac_cfg      = {8};                                \
+    bins kmac_msg      = {9};                                \
+    bins kmac_digest0  = {10};                               \
+    bins kmac_digest1  = {11};                               \
+    bins acch          = {12};                               \
+    bins invalid       = {-1};                               \
+    ignore_bins no_pqc = {8, 9, 10, 11, 12} iff (!AccPQCEn); \
+    illegal_bins bad   = default;                            \
   }
 
   // State tracking
