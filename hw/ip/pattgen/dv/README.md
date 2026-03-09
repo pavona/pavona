@@ -66,11 +66,11 @@ The `pattgen_base_vseq` virtual sequence is extended from `cip_base_vseq` and se
 All test sequences are extended from `pattgen_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* setup_pattgen_channel_0: test writing configuration values to CSR registers for channel 0
-* setup_pattgen_channel_1: test writing configuration values to CSR registers for channel 1
-* start_pattgen_channels: randomly activate data transfer in channels
-* stop_pattgen_channels: terminate data transfer in channels and check for randomly injected errors
-* control_channels: wait for bus availability and program CSR configuration values into channels
+* `setup_pattgen_channel_0`: test writing configuration values to CSR registers for channel 0
+* `setup_pattgen_channel_1`: test writing configuration values to CSR registers for channel 1
+* `start_pattgen_channels`: randomly activate data transfer in channels
+* `stop_pattgen_channels`: terminate data transfer in channels and check for randomly injected errors
+* `control_channels: wait` for bus availability and program CSR configuration values into channels
 
 #### Functional coverage
 * Covergroups are captured at the end of the testplan
@@ -80,7 +80,7 @@ Some of the most commonly used tasks / functions are as follows:
 The `pattgen_scoreboard` is primarily used for end to end checking.
 
 #### Assertions
-* TLUL assertions: The `sva/pattgen_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TL-UL assertions: The `sva/pattgen_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests

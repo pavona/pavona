@@ -18,18 +18,18 @@
             to generate random patterns on output channels.
 
             Stimulus:
-              - Program the configuration registers of the output channels
-              - Randomly activate the output channels
+              - Program the configuration registers of the output channels.
+              - Randomly activate the output channels.
               - Re-program the configuration registers of the output channels once
-                completion interrupts are asserted
+                completion interrupts are asserted.
 
             Checking:
               - Check divided clock rate for the active channels
-                matching with the values of pre-divider registers
+                matching with the values of pre-divider registers.
               - Check generated pattern matching on the active channels
-                matching with the values of pattern data registers
+                matching with the values of pattern data registers.
               - Check completion interrupts are asserted once a pattern
-                is completely generated on the active channels
+                is completely generated on the active channels.
             '''
       stage: V1
       tests: ["pattgen_smoke"]
@@ -40,14 +40,14 @@
             Checking ip operation at min/max bandwidth
 
             Stimulus:
-              - Program the pre-divider registers to high/low values (slow/fast data rate)
+              - Program the pre-divider registers to high/low values (slow/fast data rate).
               - Program the pattern data registers, the pattern length per output, and
-                repeat counter registers to high/low values
-              - Start and stop channels quickly
-              - Clear interrupts quickly
+                repeat counter registers to high/low values.
+              - Start and stop channels quickly.
+              - Clear interrupts quickly.
             Checking:
-              - Ensure patterns are correctly generated
-              - Ensure interrupts are robust asserted and cleared (e.g. at the high data rate)
+              - Ensure patterns are correctly generated.
+              - Ensure interrupts are robust asserted and cleared (e.g. at the high data rate).
             '''
       stage: V2
       tests: ["pattgen_perf"]

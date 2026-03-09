@@ -23,10 +23,10 @@ Each FSM consists of
     - `clk_i`, `rst_ni`, `enable`, `prediv`, `data`, `len`, `polarity`, `reps`, `inactive_level_pcl` and `inactive_level_pda`.
 - Outputs:
     - `pda` and `pcl`
-- a single state variable with three states `IDLE`, `ACTIVE`, and `END`,
-- a clock-divide counter, `clk_cnt`,
-- a single clock-divide flop, `pcl_int`, and
-- two additional internal counters `bit_cnt` and `rep_cnt`.
+- A single state variable with three states `IDLE`, `ACTIVE`, and `END`,
+- A clock-divide counter, `clk_cnt`,
+- A single clock-divide flop, `pcl_int`, and
+- Two additional internal counters `bit_cnt` and `rep_cnt`.
 
 Each FSM is disabled when `enable` is low.
 Disabling the FSM is equivalent to an FSM reset, and both operations place the FSM in the `IDLE` state.
@@ -56,5 +56,5 @@ The entire sequence can be restarted either by resetting or disabling and re-ena
 ### Interrupts
 
 The pattern generator HWIP provides two interrupt pins, `done_ch0` and `done_ch1`, which indicate the completion of pattern generation on the output channels.
-These interrupts can be enabled/disabled by setting/un-setting the corresponding bits of the [`INTR_ENABLE`](registers.md#intr_enable) register.
+These interrupts can be enabled or disabled by setting / un-setting the corresponding bits of the [`INTR_ENABLE`](registers.md#intr_enable) register.
 To clear the interrupts, a value of `1` must be written to the corresponding bits of the [`INTR_STATE`](registers.md#intr_state) register.

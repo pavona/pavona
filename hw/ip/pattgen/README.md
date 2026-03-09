@@ -1,20 +1,14 @@
 # Pattern Generator HWIP Technical Specification
 
-[`pattgen`](https://reports.opentitan.org/hw/ip/pattgen/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/pattgen/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pattgen/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pattgen/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pattgen/code.svg)
-
 # Overview
 
-The pattern generator (`pattgen`) is designed to create configurable output patterns.
-The module is controlled through a register interface and raises an interrupt when a pattern completes.
+The pattern generator (`pattgen`) is a module designed to create configurable output patterns.
+It is controlled through a register interface and raises an interrupt when a pattern completes.
 As a peripheral on the system bus, it follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 ## Features
 
-There is more detailed description about the features below, but the headlines are:
+There is a more detailed explanation of each of the features, but the headlines are:
 
 - Generates time-dependent patterns on two channels, each with its own clock.
 - Each channel has a 1-bit data output (`pda`) and its own clock signal (`pcl`).
@@ -34,7 +28,7 @@ The output channels may be activated and operated independently, or they can be 
 ## Channels
 
 The current `pattgen` implementation is designed to support two channels.
-Each channel can run independently, started with the [`CTRL`](doc/registers.md#ctrl) register.
+Each channel can run independently, starting with the [`CTRL`](doc/registers.md#ctrl) register.
 Because the "enable" fields for the different channels are both in the same register, two channels may be started synchronously.
 
 ## Patterns
@@ -43,7 +37,7 @@ Each channel can send a pattern of up to 64 bits.
 The pattern is configured by writing its bits to a multi-register for the channel.
 For channel zero, this is [`DATA_CH0`](doc/registers.md#data_ch0).
 These bits are presented on the output `pda` signal.
-The multiregister is serialized starting with the register with the lowest index (e.g. `DATA_CH0_0`) and each register is sent LSB-first.
+The multi-register is serialized starting with the register with the lowest index (e.g. `DATA_CH0_0`) and each register is sent LSB-first.
 
 A pattern can be repeated, up to 1024 times.
 There are no gaps between repeats: the MSB of a pattern is immediately followed by its LSB again.
@@ -104,7 +98,7 @@ This means that they can be run in lock-step, with both clocks toggling synchron
 ## Sensitivity when enabled
 
 Each channel stores a local copy of its control parameters.
-These get updated on the posedge of every clock cycle that the channel is not enabled, then stay constant when the channel is enabled.
+These get updated on the positive edge of every clock cycle that the channel is not enabled, then stay constant when the channel is enabled.
 The only field that has an effect when the channel is enabled is the associated `ENABLE_CH*` field in the [`CTRL`](doc/registers.md#ctrl) register.
 
 ## Clean output signals
