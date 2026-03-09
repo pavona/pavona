@@ -114,11 +114,10 @@ When the lock is active, the base, mask/limit, and permission settings of the ra
 
 ## Bypass Mode
 
-The system shall support a bypass mode controlled via a bypass_wire signal.
-The bypass_signal shall be driven by a 8-bit encoded multi-bit encoded signal in the ROT-controlled register space.
-A single bypass_signal shall manage access override for all source AC range registers within the system.
+The system shall support a bypass mode controlled via the `range_check_overwrite_i` 8-bit multi-bit encoded signal controlled by the RoT.
+A single `range_check_overwrite_i` shall manage access override for all source AC Range registers within the system.
 
-When the bypass_wire is asserted, the range register logic shall allow access for all transactions, overriding any existing configuration settings.
-This includes ignoring permission restrictions such as READ, WRITE, or  EXECUTE and RACL checks, ensuring all transactions are permitted while bypass mode is active.
+When `range_check_overwrite_i` is asserted, the range register logic shall allow access for all transactions, overriding any existing configuration settings.
+This includes ignoring permission restrictions such as READ, WRITE, and EXECUTE, as well as RACL checks; ensuring all transactions are permitted while bypass mode is active.
 
 The bypass mode may be used during early silicon bring-up or debugging phases, where reducing the security due to disabled range filters is acceptable.
