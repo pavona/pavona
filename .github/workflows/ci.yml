@@ -277,12 +277,31 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Run fast Verilator tests
-        run: ./ci/scripts/run-verilator-tests.sh
+        run: ./ci/scripts/run-verilator-tests.sh earlgrey
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
         with:
           artifact-name: verilator_earlgrey-test-results
+
+  verilator_darjeeling:
+    name: Darjeeling Verilator tests
+    runs-on:
+      group: pavona-large
+    needs: quick_lint
+    if: ${{ github.event_name != 'merge_group' }}
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Run fast Verilator tests
+        run: ./ci/scripts/run-verilator-tests.sh darjeeling
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: verilator_darjeeling-test-results
 
   chip_earlgrey_cw310:
     name: Earlgrey for CW310
