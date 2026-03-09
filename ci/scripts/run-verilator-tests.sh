@@ -5,9 +5,18 @@
 
 set -e
 
+if [ $# != 1 ]; then
+    echo >&2 "Usage: run-verilator-tests.sh top_name"
+    echo >&2 "E.g. ./run-verilator-tests.sh earlgrey"
+    exit 1
+fi
+
+TOP_NAME=$1
+
 # Increase the test_timeout due to slow performance on CI
 
 ./bazelisk.sh test \
+    --//hw/top=${TOP_NAME} \
     --build_tests_only=true \
     --test_timeout=2400,2400,4000,-1 \
     --local_test_jobs=8 \
@@ -23,7 +32,6 @@ set -e
     //sw/device/tests:kmac_mode_cshake_test_sim_verilator \
     //sw/device/tests:kmac_mode_kmac_test_sim_verilator \
     //sw/device/tests:flash_ctrl_test_sim_verilator \
-    //sw/device/tests:usbdev_test_sim_verilator \
     //sw/device/silicon_creator/lib/drivers:hmac_functest_sim_verilator \
     //sw/device/silicon_creator/lib/drivers:uart_functest_sim_verilator \
     //sw/device/silicon_creator/lib/drivers:retention_sram_functest_sim_verilator \

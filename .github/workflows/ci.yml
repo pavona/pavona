@@ -285,12 +285,31 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Run fast Verilator tests
-        run: ./ci/scripts/run-verilator-tests.sh
+        run: ./ci/scripts/run-verilator-tests.sh earlgrey
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
         with:
           artifact-name: verilator_egret-test-results
+
+  verilator_dragonfly:
+    name: Dragonfly Verilator tests
+    runs-on:
+      group: pavona-large
+    needs: quick_lint
+    if: ${{ github.event_name != 'merge_group' }}
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Run fast Verilator tests
+        run: ./ci/scripts/run-verilator-tests.sh dragonfly
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: verilator_dragonfly-test-results
 
   chip_egret_cw310:
     name: Egret for CW310
