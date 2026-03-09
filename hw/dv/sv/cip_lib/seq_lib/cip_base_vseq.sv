@@ -304,14 +304,14 @@ class cip_base_vseq #(
   //  alert_name      The name of the alert to wait for.
   //
   //  max_wait_cycle  After any pending ping operation has completed, this gives the number of
-  //                  cycles to wait until the alert. By default it is 7, which gives one extra
-  //                  cycle longer than the gap we expect between continuously triggered alerts.
-  //                  That gap is 6 cycles: 2-3 cycles for a CDC, 2 for pauses and 1 for the idle
-  //                  state.
+  //                  cycles to wait until the alert reaches a handshake. By default it is 8:
+  //                  2-3 cycles for a CDC, 2 for transferring the error to a CSR and using
+  //                  that to trigger the alert, and 2 extra cycles for the alert to get an ack,
+  //                  plus one extra cycle for good measure..
   //
   //  wait_complete   If this is true, the task waits for the alert to be acked before exiting.
   extern protected task wait_alert_trigger(string alert_name,
-                                           int    max_wait_cycle = 7,
+                                           int    max_wait_cycle = 8,
                                            bit    wait_complete = 0);
 
   // Run a sequence on the alert sequencer for the named alert to act as a prim_alert_receiver and
@@ -1013,8 +1013,9 @@ task cip_base_vseq::wait_until_ping_is_finished(alert_esc_agent_cfg alert_agent_
   wait (alert_agent_cfg.active_ping == 0);
 endtask
 
+// Count cycles based on the alert clock.
 task cip_base_vseq::wait_alert_trigger(string alert_name,
-                                       int    max_wait_cycle = 7,
+                                       int    max_wait_cycle = 8,
                                        bit    wait_complete = 0);
   // wait until ping finishes before the dv_spinwait in case
   // m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking() is true due to a ping
