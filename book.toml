@@ -1,0 +1,55 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[book]
+src = "."
+title = "Pavona Documentation"
+
+[build]
+create-missing = false
+use-default-preprocessors = false
+
+[output.html]
+site-url = "book/"
+fold = { enable = true}
+git-repository-url = "https://github.com/pavona/pavona"
+edit-url-template = "https://github.com/pavona/pavona/edit/master/{path}"
+smart-punctuation = true
+mathjax-support = true
+
+[output.html.print]
+enable = false
+
+[preprocessor.index]
+
+[preprocessor.readme2index]
+command = "./util/mdbook_readme2index.py"
+
+[preprocessor.reggen]
+command = "./util/mdbook_reggen.py"
+# Python RegEx identifying ip block config paths.
+ip-cfg-py-regex = '(ip|ip_autogen)/.+/data/(?!.+_testplan).+\.hjson'
+
+[preprocessor.testplan]
+command = "./util/mdbook_testplan.py"
+# Python RegEx identifying testplan paths.
+testplan-py-regex = '.+_testplan\.hjson'
+
+[preprocessor.acc]
+command = "./util/mdbook_acc.py"
+
+[preprocessor.dashboard]
+command = "./util/mdbook_dashboard.py"
+
+[preprocessor.code-snippet]
+command = "./util/mdbook_code_snippet.py"
+
+[preprocessor.doxygen]
+command = "./util/mdbook_doxygen.py"
+out-dir = "build-site/gen"
+html-out-dir = "gen/doxy"
+dif-src-py-regex = 'dif_\S*\.h'
+
+[preprocessor.toolversion]
+command = "./util/mdbook_toolversion.py"
