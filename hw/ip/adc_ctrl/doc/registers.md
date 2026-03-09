@@ -3,40 +3,40 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/adc_ctrl/data/adc_ctrl.hjson -->
 ## Summary
 
-| Name                                                     | Offset   |   Length | Description                               |
-|:---------------------------------------------------------|:---------|---------:|:------------------------------------------|
-| adc_ctrl.[`INTR_STATE`](#intr_state)                     | 0x0      |        4 | Interrupt State Register                  |
-| adc_ctrl.[`INTR_ENABLE`](#intr_enable)                   | 0x4      |        4 | Interrupt Enable Register                 |
-| adc_ctrl.[`INTR_TEST`](#intr_test)                       | 0x8      |        4 | Interrupt Test Register                   |
-| adc_ctrl.[`ALERT_TEST`](#alert_test)                     | 0xc      |        4 | Alert Test Register                       |
-| adc_ctrl.[`adc_en_ctl`](#adc_en_ctl)                     | 0x10     |        4 | ADC enable control register               |
-| adc_ctrl.[`adc_pd_ctl`](#adc_pd_ctl)                     | 0x14     |        4 | ADC PowerDown(PD) control register        |
-| adc_ctrl.[`adc_lp_sample_ctl`](#adc_lp_sample_ctl)       | 0x18     |        4 | ADC Low-Power(LP) sample control register |
-| adc_ctrl.[`adc_sample_ctl`](#adc_sample_ctl)             | 0x1c     |        4 | ADC sample control register               |
-| adc_ctrl.[`adc_fsm_rst`](#adc_fsm_rst)                   | 0x20     |        4 | ADC FSM reset control                     |
-| adc_ctrl.[`adc_chn0_filter_ctl_0`](#adc_chn0_filter_ctl) | 0x24     |        4 | ADC channel0 filter range                 |
-| adc_ctrl.[`adc_chn0_filter_ctl_1`](#adc_chn0_filter_ctl) | 0x28     |        4 | ADC channel0 filter range                 |
-| adc_ctrl.[`adc_chn0_filter_ctl_2`](#adc_chn0_filter_ctl) | 0x2c     |        4 | ADC channel0 filter range                 |
-| adc_ctrl.[`adc_chn0_filter_ctl_3`](#adc_chn0_filter_ctl) | 0x30     |        4 | ADC channel0 filter range                 |
-| adc_ctrl.[`adc_chn0_filter_ctl_4`](#adc_chn0_filter_ctl) | 0x34     |        4 | ADC channel0 filter range                 |
-| adc_ctrl.[`adc_chn0_filter_ctl_5`](#adc_chn0_filter_ctl) | 0x38     |        4 | ADC channel0 filter range                 |
-| adc_ctrl.[`adc_chn0_filter_ctl_6`](#adc_chn0_filter_ctl) | 0x3c     |        4 | ADC channel0 filter range                 |
-| adc_ctrl.[`adc_chn0_filter_ctl_7`](#adc_chn0_filter_ctl) | 0x40     |        4 | ADC channel0 filter range                 |
-| adc_ctrl.[`adc_chn1_filter_ctl_0`](#adc_chn1_filter_ctl) | 0x44     |        4 | ADC channel1 filter range                 |
-| adc_ctrl.[`adc_chn1_filter_ctl_1`](#adc_chn1_filter_ctl) | 0x48     |        4 | ADC channel1 filter range                 |
-| adc_ctrl.[`adc_chn1_filter_ctl_2`](#adc_chn1_filter_ctl) | 0x4c     |        4 | ADC channel1 filter range                 |
-| adc_ctrl.[`adc_chn1_filter_ctl_3`](#adc_chn1_filter_ctl) | 0x50     |        4 | ADC channel1 filter range                 |
-| adc_ctrl.[`adc_chn1_filter_ctl_4`](#adc_chn1_filter_ctl) | 0x54     |        4 | ADC channel1 filter range                 |
-| adc_ctrl.[`adc_chn1_filter_ctl_5`](#adc_chn1_filter_ctl) | 0x58     |        4 | ADC channel1 filter range                 |
-| adc_ctrl.[`adc_chn1_filter_ctl_6`](#adc_chn1_filter_ctl) | 0x5c     |        4 | ADC channel1 filter range                 |
-| adc_ctrl.[`adc_chn1_filter_ctl_7`](#adc_chn1_filter_ctl) | 0x60     |        4 | ADC channel1 filter range                 |
-| adc_ctrl.[`adc_chn_val_0`](#adc_chn_val)                 | 0x64     |        4 | ADC value sampled on channel              |
-| adc_ctrl.[`adc_chn_val_1`](#adc_chn_val)                 | 0x68     |        4 | ADC value sampled on channel              |
-| adc_ctrl.[`adc_wakeup_ctl`](#adc_wakeup_ctl)             | 0x6c     |        4 | Enable filter matches as wakeups          |
-| adc_ctrl.[`filter_status`](#filter_status)               | 0x70     |        4 | Adc filter match status                   |
-| adc_ctrl.[`adc_intr_ctl`](#adc_intr_ctl)                 | 0x74     |        4 | Interrupt enable controls.                |
-| adc_ctrl.[`adc_intr_status`](#adc_intr_status)           | 0x78     |        4 | Debug cable internal status               |
-| adc_ctrl.[`adc_fsm_state`](#adc_fsm_state)               | 0x7c     |        4 | State of the internal state machine       |
+| Name                                                     | Offset   |   Length | Description                                |
+|:---------------------------------------------------------|:---------|---------:|:-------------------------------------------|
+| adc_ctrl.[`INTR_STATE`](#intr_state)                     | 0x0      |        4 | Interrupt State Register                   |
+| adc_ctrl.[`INTR_ENABLE`](#intr_enable)                   | 0x4      |        4 | Interrupt Enable Register                  |
+| adc_ctrl.[`INTR_TEST`](#intr_test)                       | 0x8      |        4 | Interrupt Test Register                    |
+| adc_ctrl.[`ALERT_TEST`](#alert_test)                     | 0xc      |        4 | Alert Test Register                        |
+| adc_ctrl.[`adc_en_ctl`](#adc_en_ctl)                     | 0x10     |        4 | ADC enable control register                |
+| adc_ctrl.[`adc_pd_ctl`](#adc_pd_ctl)                     | 0x14     |        4 | ADC PowerDown (PD) control register        |
+| adc_ctrl.[`adc_lp_sample_ctl`](#adc_lp_sample_ctl)       | 0x18     |        4 | ADC Low-Power (LP) sample control register |
+| adc_ctrl.[`adc_sample_ctl`](#adc_sample_ctl)             | 0x1c     |        4 | ADC sample control register                |
+| adc_ctrl.[`adc_fsm_rst`](#adc_fsm_rst)                   | 0x20     |        4 | ADC FSM reset control                      |
+| adc_ctrl.[`adc_chn0_filter_ctl_0`](#adc_chn0_filter_ctl) | 0x24     |        4 | ADC channel0 filter range                  |
+| adc_ctrl.[`adc_chn0_filter_ctl_1`](#adc_chn0_filter_ctl) | 0x28     |        4 | ADC channel0 filter range                  |
+| adc_ctrl.[`adc_chn0_filter_ctl_2`](#adc_chn0_filter_ctl) | 0x2c     |        4 | ADC channel0 filter range                  |
+| adc_ctrl.[`adc_chn0_filter_ctl_3`](#adc_chn0_filter_ctl) | 0x30     |        4 | ADC channel0 filter range                  |
+| adc_ctrl.[`adc_chn0_filter_ctl_4`](#adc_chn0_filter_ctl) | 0x34     |        4 | ADC channel0 filter range                  |
+| adc_ctrl.[`adc_chn0_filter_ctl_5`](#adc_chn0_filter_ctl) | 0x38     |        4 | ADC channel0 filter range                  |
+| adc_ctrl.[`adc_chn0_filter_ctl_6`](#adc_chn0_filter_ctl) | 0x3c     |        4 | ADC channel0 filter range                  |
+| adc_ctrl.[`adc_chn0_filter_ctl_7`](#adc_chn0_filter_ctl) | 0x40     |        4 | ADC channel0 filter range                  |
+| adc_ctrl.[`adc_chn1_filter_ctl_0`](#adc_chn1_filter_ctl) | 0x44     |        4 | ADC channel1 filter range                  |
+| adc_ctrl.[`adc_chn1_filter_ctl_1`](#adc_chn1_filter_ctl) | 0x48     |        4 | ADC channel1 filter range                  |
+| adc_ctrl.[`adc_chn1_filter_ctl_2`](#adc_chn1_filter_ctl) | 0x4c     |        4 | ADC channel1 filter range                  |
+| adc_ctrl.[`adc_chn1_filter_ctl_3`](#adc_chn1_filter_ctl) | 0x50     |        4 | ADC channel1 filter range                  |
+| adc_ctrl.[`adc_chn1_filter_ctl_4`](#adc_chn1_filter_ctl) | 0x54     |        4 | ADC channel1 filter range                  |
+| adc_ctrl.[`adc_chn1_filter_ctl_5`](#adc_chn1_filter_ctl) | 0x58     |        4 | ADC channel1 filter range                  |
+| adc_ctrl.[`adc_chn1_filter_ctl_6`](#adc_chn1_filter_ctl) | 0x5c     |        4 | ADC channel1 filter range                  |
+| adc_ctrl.[`adc_chn1_filter_ctl_7`](#adc_chn1_filter_ctl) | 0x60     |        4 | ADC channel1 filter range                  |
+| adc_ctrl.[`adc_chn_val_0`](#adc_chn_val)                 | 0x64     |        4 | ADC value sampled on channel               |
+| adc_ctrl.[`adc_chn_val_1`](#adc_chn_val)                 | 0x68     |        4 | ADC value sampled on channel               |
+| adc_ctrl.[`adc_wakeup_ctl`](#adc_wakeup_ctl)             | 0x6c     |        4 | Enable filter matches as wakeups           |
+| adc_ctrl.[`filter_status`](#filter_status)               | 0x70     |        4 | Adc filter match status                    |
+| adc_ctrl.[`adc_intr_ctl`](#adc_intr_ctl)                 | 0x74     |        4 | Interrupt enable controls.                 |
+| adc_ctrl.[`adc_intr_status`](#adc_intr_status)           | 0x78     |        4 | Debug cable internal status                |
+| adc_ctrl.[`adc_fsm_state`](#adc_fsm_state)               | 0x7c     |        4 | State of the internal state machine        |
 
 ## INTR_STATE
 Interrupt State Register
@@ -50,10 +50,10 @@ Interrupt State Register
 {"reg": [{"name": "match_pending", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name          | Description                                 |
-|:------:|:------:|:-------:|:--------------|:--------------------------------------------|
-|  31:1  |        |         |               | Reserved                                    |
-|   0    |   ro   |   0x0   | match_pending | ADC match or measurement event has occurred |
+|  Bits  |  Type  |  Reset  | Name          | Description                                  |
+|:------:|:------:|:-------:|:--------------|:---------------------------------------------|
+|  31:1  |        |         |               | Reserved                                     |
+|   0    |   ro   |   0x0   | match_pending | ADC match or measurement event has occurred. |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -125,7 +125,7 @@ ADC enable control register
 |   0    |   rw   |   0x0   | adc_enable   | 1'b0: to power down ADC and ADC_CTRL FSM will enter the reset state; 1'b1: to power up ADC and ADC_CTRL FSM will start |
 
 ## adc_pd_ctl
-ADC PowerDown(PD) control register
+ADC PowerDown (PD) control register
 - Offset: `0x14`
 - Reset default: `0x64070`
 - Reset mask: `0xfffffff1`
@@ -144,7 +144,7 @@ ADC PowerDown(PD) control register
 |   0    |   rw   |   0x0   | lp_mode     | 1'b0: adc_pd is disabled, use adc_sample_ctl. 1'b1: adc_pd is enabled, use both adc_lp_sample_ctl & adc_sample_ctl                                                                 |
 
 ## adc_lp_sample_ctl
-ADC Low-Power(LP) sample control register
+ADC Low-Power (LP) sample control register
 - Offset: `0x18`
 - Reset default: `0x4`
 - Reset mask: `0xff`

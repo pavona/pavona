@@ -44,7 +44,7 @@ Note that the time taken in this step depends on the properties of the ADC.
 
 8. *Wait sleep time*: The controller will wait for the next sample timer to time out before restarting at step (1).
 
-If the controller is configured as oneshot mode, ([`adc_en_ctl.oneshot_mode`](registers.md#adc_en_ctl)), the controller waits for high value (1) from channel 0 and 1 in order.
+If the controller is configured as oneshot mode ([`adc_en_ctl.oneshot_mode`](registers.md#adc_en_ctl)) the controller waits for high value (1) from channel 0 and 1 in order.
 Once it gets high value from both channels, it goes back to power off state without evaluating the filters after setting [`adc_intr_status.oneshot`](registers.md#adc_intr_status).
 
 In active operation the controller is in continuous scanning mode:
@@ -52,7 +52,7 @@ In active operation the controller is in continuous scanning mode:
 * The sampling cycle time is the time taken for the ADC to take two samples (450us) plus internal processing time (4 clock cycles) from the ADC controller.
 * The debounce timer will trigger the [`filter_status`](registers.md#filter_status) and interrupt after a configurable number of matching ADC samples have been seen, as determined by [`adc_sample_ctl`](registers.md#adc_sample_ctl).
 
-For low power operation the periodic scanning mode can be used.
+For low power operation, the periodic scanning mode can be used.
 In this mode samples are taken using a slower periodic sampling cycle time with the ADC powered down most of the time.
 Once a small number of cycles have hit the filter with periodic scanning then the controller switches to continuous scanning in order to more accurately debounce the signal.
 In low power mode:

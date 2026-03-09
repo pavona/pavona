@@ -56,8 +56,8 @@ Note that the ADC in the Earlgrey integration with Nuvoton has a full range of 0
 
 The following assumes:
 * Full scale range is 0.0V to 2.3V
-* The slow clock runs at 200kHz or 5 us.
-* The ADC requires 30 us to power on.
+* The slow clock runs at 200kHz or 5 us
+* The ADC requires 30 us to power on
 * The ADC takes a single sample in 44 clocks (220 us)
 
 The controller should be initialized with the properties of the ADC and scan times.

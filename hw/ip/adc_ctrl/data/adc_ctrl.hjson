@@ -46,7 +46,7 @@
   ],
   interrupt_list: [
     { name: "match_pending",
-      desc: "ADC match or measurement event has occurred",
+      desc: "ADC match or measurement event has occurred.",
       type: "status"
     }
   ],
@@ -66,13 +66,13 @@
     { name:    "NumAdcFilter",
       type:    "int",
       default: "8",
-      desc:    "Number for ADC filters",
+      desc:    "Number for ADC filters.",
       local:   "true",
     }
     { name:    "NumAdcChannel",
       type:    "int",
       default: "2",
-      desc:    "Number for ADC channels",
+      desc:    "Number for ADC channels.",
       local:   "true",
     }
   ],
@@ -125,7 +125,7 @@
       ]
     }
     { name: "adc_pd_ctl",
-      desc: "ADC PowerDown(PD) control register",
+      desc: "ADC PowerDown (PD) control register",
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_aon_i",
@@ -151,7 +151,7 @@
       ]
     }
     { name: "adc_lp_sample_ctl",
-      desc: "ADC Low-Power(LP) sample control register",
+      desc: "ADC Low-Power (LP) sample control register",
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_aon_i",
