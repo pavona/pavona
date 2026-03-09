@@ -22,6 +22,8 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv",
         "//hw/top_earlgrey:sim_verilator",
+        "//hw/top_darjeeling:sim_dv",
+        "//hw/top_darjeeling:sim_verilator",
     ],
     deps = [
         ":hello_world_lib",
