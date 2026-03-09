@@ -53,3 +53,6 @@ dif-src-py-regex = 'dif_\S*\.h'
 
 [preprocessor.toolversion]
 command = "./util/mdbook_toolversion.py"
+
+[preprocessor.template]
+command = "./util/mdbook_template.py"

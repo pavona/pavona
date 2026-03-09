@@ -80,6 +80,7 @@ mdbook(
         "//util:mdbook_reggen",
         "//util:mdbook_testplan",
         "//util:mdbook_toolversion",
+        "//util:mdbook_template",
     ],
 )
 

@@ -36,7 +36,7 @@ def main() -> None:
     testplan_files = set()
     for chapter in md_utils.chapters(book["sections"]):
         src_path = chapter["source_path"]
-        if not src_path or not testplan_pattern.search(src_path):
+        if not src_path or not testplan_pattern.search(src_path) or ".tpl" in src_path:
             continue
         # Testplan prints to stdout, redirect that to stderr for error messages
         from contextlib import redirect_stdout
