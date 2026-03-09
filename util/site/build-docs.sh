@@ -94,9 +94,6 @@ book_env+=" MDBOOK_PREPROCESSOR__DOXYGEN__COMMAND=${proj_root}/util/mdbook_doxyg
 book_env+=" MDBOOK_PREPROCESSOR__REGGEN__COMMAND=${proj_root}/util/mdbook_reggen.py"
 book_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
 book_env+=" MDBOOK_PREPROCESSOR__DASHBOARD__COMMAND=${proj_root}/util/mdbook_dashboard.py"
-book_env+=" MDBOOK_OUTPUT__HTML__THEME=$proj_root/site/book-theme/"
-book_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
-book_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
 book_args="build"
 book_args+=" --dest-dir ${book_out}/"
 book_args+=" ${proj_root}"
@@ -122,9 +119,6 @@ buildSite () {
 
     # shellcheck disable=SC2086
     ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @mdbook_index//:mdbook__mdbook -- ${book_args}
-    # Copy additional font files to output directory, as currently mdBook does not have a way to specify them as part of the build.
-    local font="Recursive_wght,CASL@300__800,0_5.woff2"
-    cp "${proj_root}/site/book-theme/${font}" "${book_out}/site/book-theme/${font}"
 
     # Build Rust Documentation
     local rustdoc_dir="${build_dir}/gen/rustdoc/"
