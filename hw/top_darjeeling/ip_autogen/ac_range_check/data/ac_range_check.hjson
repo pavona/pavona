@@ -12,7 +12,16 @@
   cip_id:             "41",
   design_spec:        "../doc"
   dv_doc:             "../doc/dv"
-  version:            "1.0.0"
+  revisions:          [
+      {
+        // TODO: The checklist should be updated.
+        version: "1.0.0",
+        life_stage: "L2",
+        design_stage: "D1",
+        verification_stage: "V1",
+        dif_stage: "S1"
+      }
+  ]
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   bus_interfaces: [
