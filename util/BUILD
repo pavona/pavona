@@ -163,6 +163,7 @@ cc_library(
         "readme2index",
         "reggen",
         "testplan",
+        "template",
     ]
 ]
 

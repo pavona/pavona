@@ -42,7 +42,7 @@ def main() -> None:
     cfg_files: List[Path] = []
     for chapter in md_utils.chapters(book["sections"]):
         src_path = chapter["source_path"]
-        if not src_path or not ip_cfg_pattern.search(src_path):
+        if not src_path or not ip_cfg_pattern.search(src_path) or ".tpl" in src_path:
             continue
 
         block = IpBlock.from_text(
@@ -50,7 +50,7 @@ def main() -> None:
             "file at {}/{}".format(context["root"], chapter["source_path"]))
         buffer = io.StringIO()
         buffer.write("# Hardware Interfaces\n")
-        templatized = ("ip_autogen" in chapter["source_path"] 
+        templatized = ("ip_autogen" in chapter["source_path"]
                        or re.search(r"/top_[^/]+/", chapter["source_path"]))
         gen_cfg_md.gen_cfg_md(block, buffer, templatized)
 

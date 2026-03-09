@@ -94,6 +94,7 @@ book_env+=" MDBOOK_PREPROCESSOR__DOXYGEN__COMMAND=${proj_root}/util/mdbook_doxyg
 book_env+=" MDBOOK_PREPROCESSOR__REGGEN__COMMAND=${proj_root}/util/mdbook_reggen.py"
 book_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
 book_env+=" MDBOOK_PREPROCESSOR__DASHBOARD__COMMAND=${proj_root}/util/mdbook_dashboard.py"
+book_env+=" MDBOOK_PREPROCESSOR__TEMPLATE__COMMAND=${proj_root}/util/mdbook_template.py"
 book_args="build"
 book_args+=" --dest-dir ${book_out}/"
 book_args+=" ${proj_root}"

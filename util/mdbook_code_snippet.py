@@ -18,7 +18,7 @@ REPO_TOP = Path(__file__).resolve().parents[1]
 HEADER_SNIPPET = re.compile(r'\{\{#header-snippet\s+?(.+?)\s+?(.+?)\s*?\}\}')
 
 # Path to REPO_TOP on GitHub.
-REPO_TOP_GH = "https://github.com/lowRISC/opentitan/tree/master/"
+REPO_TOP_GH = "https://github.com/pavona/pavona/tree/master/"
 
 
 def is_struct(line: str, defn: str) -> bool:
