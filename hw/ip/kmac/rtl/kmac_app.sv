@@ -264,8 +264,9 @@ module kmac_app
   always_ff @(posedge clk_i) begin
     if (AppCfg[app_id_d].Mode == AppConfigDynamic) begin
       if (app_i[app_id_d].valid && set_appid) begin
-        dynamic_sha3_mode_q <= sha3_pkg::sha3_mode_e'(app_i[app_id_d].data[1:0]);
-        dynamic_keccak_strength_q <= sha3_pkg::keccak_strength_e'(app_i[app_id_d].data[4:2]);
+        dynamic_sha3_mode_q <= sha3_pkg::sha3_mode_e'(app_i[app_id_d].data_share0[1:0]);
+        dynamic_keccak_strength_q <=
+          sha3_pkg::keccak_strength_e'(app_i[app_id_d].data_share0[4:2]);
       end
     end
   end
@@ -766,7 +767,7 @@ module kmac_app
       SelApp: begin
         // app_id is valid at this time
         kmac_valid_o = app_i[app_id].valid;
-        kmac_data_o  = app_i[app_id].data;
+        kmac_data_o  = app_i[app_id].data_share0;
         // Expand strb to bits. prim_packer inside MSG_FIFO accepts the bit masks
         for (int i = 0 ; i < $bits(app_i[app_id].strb) ; i++) begin
           kmac_mask_o[8*i+:8] = {8{app_i[app_id].strb[i]}};

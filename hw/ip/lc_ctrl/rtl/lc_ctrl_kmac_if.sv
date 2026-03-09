@@ -166,9 +166,9 @@ module lc_ctrl_kmac_if
       // LC token.
       FirstSt: begin
         if (kmac_req) begin
-          kmac_data_o.valid = 1'b1;
-          kmac_data_o.strb  = 8'hFF;
-          kmac_data_o.data  = kmac_transition_token[0 +: 64];
+          kmac_data_o.valid       = 1'b1;
+          kmac_data_o.strb        = 8'hFF;
+          kmac_data_o.data_share0 = kmac_transition_token[0 +: 64];
           if (kmac_data_i.ready) begin
             state_d = SecondSt;
           end
@@ -176,10 +176,10 @@ module lc_ctrl_kmac_if
       end
       // Transfer second half of LC token.
       SecondSt: begin
-        kmac_data_o.valid = 1'b1;
-        kmac_data_o.strb  = 8'hFF;
-        kmac_data_o.last = 1'b1;
-        kmac_data_o.data  = kmac_transition_token[64 +: 64];
+        kmac_data_o.valid       = 1'b1;
+        kmac_data_o.strb        = 8'hFF;
+        kmac_data_o.last        = 1'b1;
+        kmac_data_o.data_share0 = kmac_transition_token[64 +: 64];
         if (kmac_data_i.ready) begin
           state_d = WaitSt;
         end

@@ -131,7 +131,8 @@ module rom_ctrl
     assign kmac_data_o = '{valid: kmac_rom_vld_outer,
                            hold: 1'b0,  // Tied to 1'b0 outside of ACC mode
                            next: 1'b0,  // Not used in ROM mode
-                           data: kmac_rom_data,
+                           data_share0: kmac_rom_data,
+                           data_share1: 64'b0,
                            strb: kmac_pkg::MsgStrbW'({NumBytes{1'b1}}),
                            last: kmac_rom_last_outer};
 

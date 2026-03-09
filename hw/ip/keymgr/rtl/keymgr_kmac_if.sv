@@ -329,15 +329,17 @@ module keymgr_kmac_if
   // so a subtract is necessary to send the right byte
   // alternatively we can also reverse the order of the input
   always_comb begin
-    kmac_data_o.data  = decoy_data;
+    // Keymgr does not use the msg interface in masked mode
+    kmac_data_o.data_share0  = decoy_data;
+    kmac_data_o.data_share1  = 64'b0;
     if (|cmd_error_o || inputs_invalid_o || fsm_error_o) begin
-      kmac_data_o.data  = decoy_data;
+      kmac_data_o.data_share0  = decoy_data;
     end else if (valid && adv_en_i) begin
-      kmac_data_o.data  = adv_data[adv_sel];
+      kmac_data_o.data_share0  = adv_data[adv_sel];
     end else if (valid && id_en_i) begin
-      kmac_data_o.data  = id_data[id_sel];
+      kmac_data_o.data_share0  = id_data[id_sel];
     end else if (valid && gen_en_i) begin
-      kmac_data_o.data  = gen_data[gen_sel];
+      kmac_data_o.data_share0  = gen_data[gen_sel];
     end
   end
 

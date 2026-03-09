@@ -388,7 +388,8 @@ package kmac_pkg;
     logic valid;
     logic hold;
     logic next;
-    logic [MsgWidth-1:0] data;
+    logic [MsgWidth-1:0] data_share0;
+    logic [MsgWidth-1:0] data_share1;
     logic [MsgStrbW-1:0] strb;
     logic last;
   } app_req_t;
@@ -408,7 +409,8 @@ package kmac_pkg;
     valid: 1'b 0,
     hold: 1'b0,
     next: 1'b0,
-    data: '0,
+    data_share0: '0,
+    data_share1: '0,
     strb: '0,
     last: 1'b 0
   };
