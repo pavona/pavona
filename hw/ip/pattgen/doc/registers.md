@@ -33,8 +33,8 @@ Interrupt State Register
 |  Bits  |  Type  |  Reset  | Name     | Description                                          |
 |:------:|:------:|:-------:|:---------|:-----------------------------------------------------|
 |  31:2  |        |         |          | Reserved                                             |
-|   1    |  rw1c  |   0x0   | done_ch1 | raise if pattern generation on Channel 1 is complete |
-|   0    |  rw1c  |   0x0   | done_ch0 | raise if pattern generation on Channel 0 is complete |
+|   1    |  rw1c  |   0x0   | done_ch1 | Raise if pattern generation on Channel 1 is complete |
+|   0    |  rw1c  |   0x0   | done_ch0 | Raise if pattern generation on Channel 0 is complete |
 
 ## INTR_ENABLE
 Interrupt Enable Register

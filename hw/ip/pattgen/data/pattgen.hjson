@@ -43,10 +43,10 @@
   // INTERRUPT pins
   interrupt_list: [
     { name: "done_ch0"
-      desc: "raise if pattern generation on Channel 0 is complete"
+      desc: "Raise if pattern generation on Channel 0 is complete"
     }
     { name: "done_ch1"
-      desc: "raise if pattern generation on Channel 1 is complete"
+      desc: "Raise if pattern generation on Channel 1 is complete"
     }
   ],
   alert_list: [

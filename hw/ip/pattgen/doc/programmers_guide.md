@@ -41,7 +41,7 @@ To start both channel patterns at the same time, configure both channels then si
 
 ## Using the *inactive level* feature
 
-By default, the `pcl` and `pda` outputs are zero when pattgen is inactive (i.e., when pattgen is disabled or after it has sent all data bits).
+By default, the `pcl` and `pda` outputs are zero when pattgen is inactive (i.e., when `pattgen` is disabled or after it has sent all data bits).
 Using the CSR bits [`CTRL.INACTIVE_LEVEL_PCL`](registers.md#ctrl) and [`CTRL.INACTIVE_LEVEL_PDA`](registers.md#ctrl) (one pair of bits for channel 0, the other pair for channel 1), one can set either `pcl` or `pda` or both to one when pattgen is inactive.
 The value of the output changes when these CSR fields are set, as the following example shows:
 ```wavejson

@@ -26,8 +26,8 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 
 | Interrupt Name   | Type   | Description                                          |
 |:-----------------|:-------|:-----------------------------------------------------|
-| done_ch0         | Event  | raise if pattern generation on Channel 0 is complete |
-| done_ch1         | Event  | raise if pattern generation on Channel 1 is complete |
+| done_ch0         | Event  | Raise if pattern generation on Channel 0 is complete |
+| done_ch1         | Event  | Raise if pattern generation on Channel 1 is complete |
 
 ## Security Alerts
 
