@@ -41,7 +41,15 @@ uint64_t to_cpu_cycles(uint64_t usec) {
 
 const uint64_t kClockFreqHiSpeedPeripheralHz = 500 * 1000;  // 500kHz
 
-const uint64_t kClockFreqPeripheralHz = 125 * 1000;  // 125kHz
+// Egret on Verilator uses a 1/4 clock divider for the peripheral clock, but on
+// Dragonfly the peripheral clock is 1:1 with the high-speed domain clock.
+#if defined(PAVONA_IS_EGRET)
+const uint64_t kClockFreqPeripheralHz =
+    kClockFreqHiSpeedPeripheralHz / 4;  // 125kHz
+#elif defined(PAVONA_IS_DRAGONFLY)
+const uint64_t kClockFreqPeripheralHz =
+    kClockFreqHiSpeedPeripheralHz;  // 500kHz
+#endif
 
 const uint64_t kClockFreqUsbHz = 500 * 1000;  // 500kHz
 

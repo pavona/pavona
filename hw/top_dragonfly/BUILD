@@ -70,7 +70,8 @@ sim_verilator(
         "--logging=info",
         "--interface=verilator",
         "--verilator-bin=$(rootpath //hw:verilator)",
-        "--verilator-rom={rom}",
+        "--verilator-rom={rom}:0",
+        "--verilator-rom={second_rom}:1",
         "--verilator-otp={otp}",
         "--verilator-ctn-ram={firmware}",
     ],
@@ -85,6 +86,7 @@ sim_verilator(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     rom = "//sw/device/lib/testing/test_rom:test_rom",
+    second_rom = "//sw/device/lib/testing/test_second_rom:test_second_rom",
     test_cmd = """
         --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op

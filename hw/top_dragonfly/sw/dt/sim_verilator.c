@@ -6,10 +6,13 @@
 
 #include "hw/top/dt/api.h"  // Generated
 
-// FIXME Are those really fixed in DV? Does it matter?
+// Keep in sync with sw/device/lib/arch/device_sim_verilator.c.
+//
+// These values are important to ensure the correct baud rate in DV, e.g. see
+// the `uartdpi` in hw/top_dragonfly/dv/verilator/chip_sim_tb.sv.
 static const uint32_t clock_freqs[kDtClockCount] = {
     [kDtClockMain] = 500 * 1000,
-    [kDtClockIo] = 250 * 1000,
+    [kDtClockIo] = 500 * 1000,
     [kDtClockAon] = 125 * 1000,
 };
 
