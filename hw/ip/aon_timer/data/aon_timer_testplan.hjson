@@ -18,7 +18,7 @@
             the programmers guide.
 
             **Stimulus**:
-            - Register writes to Watchdog/Wakeup COUNT, CTRL and THOLD registers
+            - Register writes to Watchdog/Wakeup COUNT, CTRL, and THOLD registers.
 
             **Checks**:
             - If we are changing WDOG_BARK_THOLD to be lower than the current WDOG_COUNT

@@ -1,6 +1,6 @@
 # Theory of Operation
 
-AON Timer interacts with the CPU core and the power manager and reset manager to generate interrupts as well as wakeup and  reset events.
+AON Timer interacts with the CPU core, the power manager, and reset manager to generate interrupts as well as wakeup and reset events.
 Each timer increases its count as long as its enable signal (`wdog_ctrl.enable` for WDOG and `wkup_ctrl.enable` for WKUP) is set.
 Both timers halt the counting if the signal `lc_escalate_en_i` is set, which tells the alert handler is the system is in a "killed" state.
 
