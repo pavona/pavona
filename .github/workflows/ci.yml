@@ -285,23 +285,28 @@ jobs:
         run: ./bazelisk.sh test --test_tag_filters=-nightly --test_timeout=3600 //sw/acc/crypto/...
 
   verilator_earlgrey:
-    name: Verilated Earl Grey
-    runs-on:
-      group: pavona-large
+    name: Run Verilator tests (Earlgrey)
     needs: quick_lint
+    uses: ./.github/workflows/verilator.yml
     if: ${{ github.event_name != 'merge_group' }}
-    timeout-minutes: 240
-    steps:
-      - uses: actions/checkout@v4
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-      - name: Run fast Verilator tests
-        run: ./ci/scripts/run-verilator-tests.sh
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: verilator_earlgrey-test-results
+    secrets: inherit
+    with:
+      name: Run Verilator tests (Earlgrey)
+      job_name: verilator_earlgrey
+      top: earlgrey
+      tag_filters: verilator
+
+  verilator_darjeeling:
+    name: Run Verilator tests (Darjeeling)
+    needs: quick_lint
+    uses: ./.github/workflows/verilator.yml
+    if: ${{ github.event_name != 'merge_group' }}
+    secrets: inherit
+    with:
+      name: Run Verilator tests (Darjeeling)
+      job_name: verilator_darjeeling
+      top: darjeeling
+      tag_filters: verilator
 
   chip_earlgrey_cw310_hyperdebug:
     name: Earl Grey for CW310 Hyperdebug

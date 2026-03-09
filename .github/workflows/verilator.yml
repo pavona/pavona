@@ -1,0 +1,94 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Run Verilator tests
+on:
+  workflow_call:
+    inputs:
+      name:
+        required: true
+        type: string
+        description: Web UI name of the job
+      job_name:
+        required: true
+        type: string
+        description: Name of the job
+      top:
+        required: true
+        type: string
+        description: Hardware top name
+      tag_filters:
+        required: true
+        type: string
+        description: Bazel tag filters for the tests
+      timeout_filters:
+        default: 'short,moderate'
+        type: string
+        description: Bazel timeout filters for the tests
+      timeout:
+        default: 240
+        type: number
+        description: Timeout for the job in minutes
+      targets:
+        default: "//... @manufacturer_test_hooks//..."
+        type: string
+        description: Bazel target(s) to look for tests in
+      add_default_filters:
+        default: true
+        type: boolean
+        description: Include additional test filters for "manual", "broken", and "skip_in_ci" tests.
+      cache_test_results:
+        default: true
+        type: boolean
+        description: Skip tests that previously passed and were cached by Bazel
+
+jobs:
+  verilator:
+    name: ${{ inputs.name }}
+    runs-on:
+      group: pavona-large
+    timeout-minutes: ${{ inputs.timeout }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Execute tests
+        run: |
+          . util/build_consts.sh
+
+          tag_filters="${{ inputs.tag_filters }}"
+          if ${{ inputs.add_default_filters }}; then
+            tag_filters+=",-manual,-broken,-skip_in_ci"
+          fi
+
+          # Execute a query to find all targets that match the test tags and store them in a file.
+          ci/scripts/run-bazel-test-query.sh \
+            target_pattern_file.txt \
+            "$tag_filters" \
+            ${{ inputs.timeout_filters }} \
+            ${{ inputs.targets }}
+
+          cache_test_results="--cache_test_results=${{ inputs.cache_test_results }}"
+
+          # Run Verilator tests
+          if [[ -s target_pattern_file.txt ]]; then
+            ci/scripts/run-verilator-tests.sh "${{ inputs.top }}" target_pattern_file.txt "$cache_test_results"
+          else
+            echo "No tests to run after filtering"
+          fi
+
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: ${{ inputs.job_name }}-test-results
+
+      - name: Upload target pattern file
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.job_name }}-targets
+          path: target_pattern_file.txt
