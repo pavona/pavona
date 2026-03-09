@@ -14,6 +14,7 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
+    "DRAGONFLY_TEST_ENVS",
     "EGRET_CW340_TEST_ENVS",
     "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
     "EGRET_TEST_ENVS",
@@ -280,6 +281,7 @@ pavona_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_CW340_TEST_ENVS,
     ),
@@ -288,7 +290,6 @@ pavona_test(
     ),
     deps = [
         ":hmac",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/testing:hexstr",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
@@ -639,13 +640,12 @@ cc_test(
 pavona_test(
     name = "retention_sram_functest",
     srcs = ["retention_sram_functest.c"],
-    exec_env = EGRET_TEST_ENVS,
+    exec_env = dicts.add(EGRET_TEST_ENVS, DRAGONFLY_TEST_ENVS),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         ":retention_sram",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -828,10 +828,9 @@ cc_test(
 pavona_test(
     name = "uart_functest",
     srcs = ["uart_functest.c"],
-    exec_env = EGRET_TEST_ENVS,
+    exec_env = dicts.add(EGRET_TEST_ENVS, DRAGONFLY_TEST_ENVS),
     deps = [
         ":uart",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
     ],
@@ -886,7 +885,7 @@ cc_test(
 pavona_test(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
-    exec_env = EGRET_TEST_ENVS,
+    exec_env = dicts.add(EGRET_TEST_ENVS, DRAGONFLY_TEST_ENVS),
     verilator = verilator_params(
         timeout = "long",
     ),

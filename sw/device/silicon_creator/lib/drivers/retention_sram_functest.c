@@ -12,8 +12,6 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 // Variables of type `retention_sram_t` are static to reduce stack usage.
 static retention_sram_t ret;
 static uint64_t raw[sizeof(retention_sram_t) / sizeof(uint64_t)];

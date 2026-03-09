@@ -5,9 +5,41 @@
 
 set -e
 
+if [ $# != 1 ]; then
+    echo >&2 "Usage: run-verilator-tests.sh top_name"
+    echo >&2 "E.g. ./run-verilator-tests.sh egret"
+    exit 1
+fi
+
+TOP_NAME=$1
+
+TESTS=(
+    "//sw/device/tests:aes_smoketest_sim_verilator"
+    "//sw/device/tests:uart_smoketest_sim_verilator"
+    "//sw/device/tests:crt_test_sim_verilator"
+    "//sw/device/tests:acc_randomness_test_sim_verilator"
+    "//sw/device/tests:acc_irq_test_sim_verilator"
+    "//sw/device/tests:kmac_mode_cshake_test_sim_verilator"
+    "//sw/device/tests:kmac_mode_kmac_test_sim_verilator"
+    "//sw/device/silicon_creator/lib/drivers:hmac_functest_sim_verilator"
+    "//sw/device/silicon_creator/lib/drivers:uart_functest_sim_verilator"
+    "//sw/device/silicon_creator/lib/drivers:retention_sram_functest_sim_verilator"
+)
+
+if [ "${TOP_NAME}" == "egret" ]; then
+    TESTS+=("//sw/device/silicon_creator/lib/drivers:alert_functest_sim_verilator")
+    TESTS+=("//sw/device/tests:flash_ctrl_test_sim_verilator")
+    TESTS+=("//sw/device/silicon_creator/rom:rom_epmp_test_sim_verilator")
+    TESTS+=("//sw/device/tests:usbdev_test_sim_verilator")
+    # TODO: these two tests hang on Dragonfly.
+    TESTS+=("//sw/device/silicon_creator/lib/drivers:watchdog_functest_sim_verilator")
+    TESTS+=("//sw/device/silicon_creator/lib:irq_asm_functest_sim_verilator")
+fi
+
 # Increase the test_timeout due to slow performance on CI
 
 ./bazelisk.sh test \
+    --//hw/top="${TOP_NAME}" \
     --build_tests_only=true \
     --test_timeout=2400,2400,4000,-1 \
     --local_test_jobs=8 \
@@ -15,19 +47,4 @@ set -e
     --test_tag_filters=verilator,-broken \
     --test_output=errors \
     --//hw:make_options=-j,8 \
-    //sw/device/tests:aes_smoketest_sim_verilator \
-    //sw/device/tests:uart_smoketest_sim_verilator \
-    //sw/device/tests:crt_test_sim_verilator \
-    //sw/device/tests:acc_randomness_test_sim_verilator \
-    //sw/device/tests:acc_irq_test_sim_verilator \
-    //sw/device/tests:kmac_mode_cshake_test_sim_verilator \
-    //sw/device/tests:kmac_mode_kmac_test_sim_verilator \
-    //sw/device/tests:flash_ctrl_test_sim_verilator \
-    //sw/device/tests:usbdev_test_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:hmac_functest_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:uart_functest_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:retention_sram_functest_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:alert_functest_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:watchdog_functest_sim_verilator \
-    //sw/device/silicon_creator/lib:irq_asm_functest_sim_verilator \
-    //sw/device/silicon_creator/rom:rom_epmp_test_sim_verilator
+    "${TESTS[@]}"

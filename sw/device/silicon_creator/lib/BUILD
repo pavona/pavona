@@ -12,6 +12,7 @@ load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library
 load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load(
     "//rules/pavona:defs.bzl",
+    "DRAGONFLY_TEST_ENVS",
     "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_test",
@@ -247,14 +248,13 @@ cc_library(
 pavona_test(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
-    exec_env = EGRET_TEST_ENVS,
+    exec_env = dicts.add(EGRET_TEST_ENVS, DRAGONFLY_TEST_ENVS),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         ":error",
         ":irq_asm",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",

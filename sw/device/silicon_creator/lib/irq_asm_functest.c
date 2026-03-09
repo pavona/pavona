@@ -19,8 +19,6 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 /**
  * Exception handler written in assembly.
  *

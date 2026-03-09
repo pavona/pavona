@@ -312,6 +312,7 @@ pavona_test(
     # loading the default test ROM, or any other ROM that may be specified via
     # Verilator or CW310 params).
     exec_env = {
+        "//hw/top_dragonfly:sim_verilator": None,
         "//hw/top_egret:sim_verilator": None,
     },
     kind = "rom",

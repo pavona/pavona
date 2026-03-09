@@ -18,8 +18,6 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 // From: http://www.abrahamlincolnonline.org/lincoln/speeches/gettysburg.htm
 static alignas(uint32_t) const char kGettysburgPrelude[] =
     "Four score and seven years ago our fathers brought forth on this "

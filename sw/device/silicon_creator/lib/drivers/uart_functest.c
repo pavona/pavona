@@ -11,8 +11,6 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 OTTF_DEFINE_TEST_CONFIG(.console.test_may_clobber = true);
 
 rom_error_t uart_test(void) {
