@@ -614,9 +614,14 @@ module acc_predecode
             ispr_addr = IsprKmacCfg;
           end
         end
-        WsrKmacMsg: begin
+        WsrKmacMsg0: begin
           if (AccPQCEn) begin
-            ispr_addr = IsprKmacMsg;
+            ispr_addr = IsprKmacMsg0;
+          end
+        end
+        WsrKmacMsg1: begin
+          if (AccPQCEn) begin
+            ispr_addr = IsprKmacMsg1;
           end
         end
         WsrKmacDigest0: begin

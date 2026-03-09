@@ -153,8 +153,10 @@ module acc_controller
   input  logic urnd_reseed_err_i,
 
   // KMAC interface
-  input  logic kmac_msg_write_ready_i,
-  input  logic kmac_msg_pending_write_i,
+  input  logic kmac_msg0_write_ready_i,
+  input  logic kmac_msg1_write_ready_i,
+  input  logic kmac_msg0_pending_write_i,
+  input  logic kmac_msg1_pending_write_i,
   input  logic kmac_digest_valid_i,
 
   // Secure Wipe
@@ -193,7 +195,8 @@ module acc_controller
     if (!AccPQCEn) begin : gen_unused_ports
       // Tie off unused inputs
       logic unused_bits;
-      assign unused_bits = ^{kmac_msg_write_ready_i, kmac_msg_pending_write_i,
+      assign unused_bits = ^{kmac_msg0_write_ready_i, kmac_msg0_pending_write_i,
+                             kmac_msg1_write_ready_i, kmac_msg1_pending_write_i,
                              kmac_digest_valid_i};
     end
   endgenerate
@@ -231,8 +234,11 @@ module acc_controller
   generate
     if (AccPQCEn) begin : gen_kmac_nets
       logic kmac_write_stall;
+      logic kmac_msg0_stall;
+      logic kmac_msg1_stall;
+      logic kmac_msg0_write_req_raw;
+      logic kmac_msg1_write_req_raw;
       logic kmac_digest_req_raw;
-      logic kmac_msg_write_req_raw;
       logic kmac_msg_partial_raw;
     end
   endgenerate
@@ -418,9 +424,16 @@ module acc_controller
       assign ispr_stall = (rnd_req_raw & ~rnd_valid_i) |
                           (gen_kmac_nets.kmac_digest_req_raw & ~kmac_digest_valid_i);
 
-      assign gen_kmac_nets.kmac_write_stall =
-              (gen_kmac_nets.kmac_msg_write_req_raw & ~kmac_msg_write_ready_i) |
-              (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg_pending_write_i);
+      assign gen_kmac_nets.kmac_msg0_stall =
+              (gen_kmac_nets.kmac_msg0_write_req_raw & ~kmac_msg0_write_ready_i) |
+              (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg0_pending_write_i);
+
+      assign gen_kmac_nets.kmac_msg1_stall =
+              (gen_kmac_nets.kmac_msg1_write_req_raw & ~kmac_msg1_write_ready_i) |
+              (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg1_pending_write_i);
+
+      assign gen_kmac_nets.kmac_write_stall = gen_kmac_nets.kmac_msg0_stall |
+                                              gen_kmac_nets.kmac_msg1_stall;
 
       assign stall = mem_stall | ispr_stall | rf_indirect_stall | gen_kmac_nets.kmac_write_stall;
     end else begin : gen_ispr_stall
@@ -1517,9 +1530,16 @@ module acc_controller
       WsrRnd:  ispr_addr_bignum = IsprRnd;
       WsrUrnd: ispr_addr_bignum = IsprUrnd;
       WsrAcc:  ispr_addr_bignum = IsprAcc;
-      WsrKmacMsg: begin
+      WsrKmacMsg0: begin
         if (AccPQCEn) begin
-          ispr_addr_bignum = IsprKmacMsg;
+          ispr_addr_bignum = IsprKmacMsg0;
+        end else begin
+          wsr_illegal_addr = 1'b1;
+        end
+      end
+      WsrKmacMsg1: begin
+        if (AccPQCEn) begin
+          ispr_addr_bignum = IsprKmacMsg1;
         end else begin
           wsr_illegal_addr = 1'b1;
         end
@@ -1722,13 +1742,15 @@ module acc_controller
 
   generate
     if (AccPQCEn) begin : gen_kmac_raw
-      assign gen_kmac_nets.kmac_digest_req_raw    = insn_valid_i & ispr_rd_insn &
-                                                    ((ispr_addr_o == IsprKmacDigest0)
-                                                    |(ispr_addr_o == IsprKmacDigest1));
-      assign gen_kmac_nets.kmac_msg_write_req_raw = insn_valid_i & ispr_wr_insn &
-                                                    (ispr_addr_o == IsprKmacMsg);
-      assign gen_kmac_nets.kmac_msg_partial_raw   = insn_valid_i & ispr_wr_insn &
-                                                    (ispr_addr_o == IsprKmacPartialW);
+      assign gen_kmac_nets.kmac_digest_req_raw     = insn_valid_i & ispr_rd_insn &
+                                                     ((ispr_addr_o == IsprKmacDigest0)
+                                                     |(ispr_addr_o == IsprKmacDigest1));
+      assign gen_kmac_nets.kmac_msg0_write_req_raw = insn_valid_i & ispr_wr_insn &
+                                                     (ispr_addr_o == IsprKmacMsg0);
+      assign gen_kmac_nets.kmac_msg1_write_req_raw = insn_valid_i & ispr_wr_insn &
+                                                     (ispr_addr_o == IsprKmacMsg1);
+      assign gen_kmac_nets.kmac_msg_partial_raw    = insn_valid_i & ispr_wr_insn &
+                                                     (ispr_addr_o == IsprKmacPartialW);
     end
   endgenerate
 

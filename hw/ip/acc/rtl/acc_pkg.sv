@@ -371,16 +371,17 @@ package acc_pkg;
     WsrKeyS1L       = 'd6,
     WsrKeyS1H       = 'd7,
     WsrKmacCfg      = 'd8,
-    WsrKmacMsg      = 'd9,
-    WsrKmacDigest0  = 'd10,
-    WsrKmacDigest1  = 'd11,
-    WsrAccH         = 'd12
+    WsrKmacMsg0     = 'd9,
+    WsrKmacMsg1     = 'd10,
+    WsrKmacDigest0  = 'd11,
+    WsrKmacDigest1  = 'd12,
+    WsrAccH         = 'd13
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = 16;
+  parameter int NIspr = 17;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
     IsprMod           = 'd0,
@@ -393,12 +394,13 @@ package acc_pkg;
     IsprKeyS1L        = 'd7,
     IsprKeyS1H        = 'd8,
     IsprKmacCfg       = 'd9,
-    IsprKmacMsg       = 'd10,
-    IsprKmacStatus    = 'd11,
-    IsprKmacDigest0   = 'd12,
-    IsprKmacDigest1   = 'd13,
-    IsprKmacPartialW  = 'd14,
-    IsprAccH          = 'd15
+    IsprKmacMsg0      = 'd10,
+    IsprKmacMsg1      = 'd11,
+    IsprKmacStatus    = 'd12,
+    IsprKmacDigest0   = 'd13,
+    IsprKmacDigest1   = 'd14,
+    IsprKmacPartialW  = 'd15,
+    IsprAccH          = 'd16
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;
@@ -691,6 +693,30 @@ package acc_pkg;
     StDigestShare0 = 4'b0111,
     StDigestShare1 = 4'b1100
   } kmac_eager_state_e;
+
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 2 -m 3 -n 4 \
+  //     -s 4780358931 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: |||||||||| (33.33%)
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: --
+  //
+  // Minimum Hamming distance: 2
+  // Maximum Hamming distance: 3
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 3
+  //
+  localparam int StateWidth = 4;
+  typedef enum logic [StateWidth-1:0] {
+    StMsgWait   = 4'b0110,
+    StMsgShare0 = 4'b1101,
+    StMsgShare1 = 4'b1000
+  } kmac_write_state_e;
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \

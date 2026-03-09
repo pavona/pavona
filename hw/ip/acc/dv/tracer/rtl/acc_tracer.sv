@@ -99,9 +99,14 @@ module acc_tracer #(
           return "ACCH";
         end
       end
-      IsprKmacMsg: begin
+      IsprKmacMsg0: begin
         if (AccPQCEn) begin
-          return "KMAC_MSG";
+          return "KMAC_MSG0";
+        end
+      end
+      IsprKmacMsg1: begin
+        if (AccPQCEn) begin
+          return "KMAC_MSG1";
         end
       end
       IsprKmacCfg: begin
