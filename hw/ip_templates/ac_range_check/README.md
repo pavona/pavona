@@ -2,7 +2,7 @@
 
 The System on Chip (SoC) must implement differentiated security access controls for shared memory regions located outside of the Root of Trust (RoT).
 To facilitate access to these memory regions, a dedicated TL-UL port is provided, connecting to the Control Network (CTN) fabric.
-This document outlines the requirements for a framework, referred to as Access Control Range Check (AC Range Check).
+This document outlines the requirements of a framework, referred to as Access Control Range Check (AC Range Check).
 In the proposed architecture, the AC Range Check mechanism intercepts the outgoing TL-UL bus, ensuring that only valid and authorized addresses are accessed.
 Adding the AC Range Check on the TL-UL bus will likely introduce a flop stage to meet the timings, which will cause a cycle of delay for bus initiators to receive their response.
 
@@ -12,11 +12,11 @@ Adding the AC Range Check on the TL-UL bus will likely introduce a flop stage to
 
 AC Range checks on the memory bus shares similarities with an I/O Peripheral Memory Protection (IOPMP) in that both mechanisms control access to memory regions, ensuring that only authorized transactions pass through.
 Like an IOPMP, AC ranges define specific address spaces and enforce permissions, preventing unauthorized access.
-However, AC range checks offer a simpler implementation and verification process.
+However, AC Range checks offer a simpler implementation and verification process.
 
 ## Parameterizable Range Registers
 
-The AC range check IP shall support a configurable number of range registers, allowing a flexible and granular security configuration.
+The AC Range Check IP shall support a configurable number of range registers, allowing a flexible and granular security configuration.
 The number of range registers shall be parameterizable at design time for every instance of the IP to accommodate different use cases and system requirements, providing scalability based on system size and complexity.
 A typical configuration would be between 16 and 32 ranges, but the design should not be limited to those bounds.
 
@@ -46,7 +46,7 @@ The matching process includes:
 * **Address Match:** The request's address is checked against the ranges defined by the enabled range registers (top-of-range matching).
 * **Permission Check:** For each matching range, the permissions associated with that range (READ, WRITE) are checked against the type of access requested.
 * **RACL Check:** For each matching range, the RACL policy associated with that range (read_perm, write_perm) is checked against the source role of the access requested.
-RACL is specified in Integrated OpenTitan: Register Access Control (RACL).
+RACL is specified in [Register Access Control (RACL)](../racl_ctrl/README.md).
 
 ## Access Policy
 
@@ -55,7 +55,7 @@ The following policy governs the handling of access requests based on the outcom
 * **Allowed Access:** If an incoming request matches an enabled range and the corresponding permission allows the requested operation (READ or WRITE), the request is granted, and the transaction proceeds normally.
 * **Denied Access:** If the request does not match any range or matches a range but the configured permission denied the requested operation, the TL-UL response shall return an error, i.e., setting `d_error = 1` when acknowledging the request.
 Further, the request is denied as follows:
-  * **Write Requests** Denied write requests shall be dropped, meaning no write operation is performed.
+  * **Write Requests:** Denied write requests shall be dropped, meaning no write operation is performed.
   * **Read/Execute Requests:** Denied read/execute requests shall return a zero value as a response.
 
 Range register 0 may be used as a configurable default policy to match the whole address space.
@@ -92,21 +92,22 @@ Upon the **first denied request**, the system shall record the following informa
 
 * **Range Index:** Identifies the specific range responsible for denying the request. If the access is denied because no range matches, it is logged in a dedicated status bit.
 * **Access Type:** Indicates whether the request was a READ, WRITE, or EXECUTE operation.
-* **RACL role:** Indicates the RACL role of th request and an indicator if a RACL read or write check caused the denial.
+* **RACL role:** Indicates the RACL role of the request and an indicator if a RACL read or write check caused the denial.
 * **Access Address:** Logs the exact address that the request attempted to access.
 
 ### Single Event Logging
 
 * This logging mechanism is triggered only for the first denied access after a reset or after the log has been cleared, ensuring that only the initial violation is captured for diagnostics.
-* Subsequent denied requests will not overwrite the log, preserving the information of the first event until manually cleared by the RoT.
-The log is cleared automatically when the interrupt is acknowledged or manually by writing a configuration bit.
+* Subsequent denied requests will not overwrite the log, preserving the information of the first event until it is cleared by setting the `log_clear` bit in the [LOG_CONFIG](./doc/registers.md#log_config) CSR.
+* The log is cleared automatically when the interrupt is acknowledged or manually by writing a configuration bit.
+* The log is only performed for ranges where logging is enabled.
 
 ## Enable/Disable Control and Lock Mechanism
 
 Each range register shall include both an enable/disable control bit and a lock mechanism.
 The following controls apply:
 
-* **Enable/Disable** Control: Each range register can be enabled or disabled individually.
+* **Enable/Disable Control:** Each range register can be enabled or disabled individually.
 Disabled range registers shall not participate in the matching process and shall have no effect on access control decisions.
 * **Lock Mechanism:** Once a range register is configured, a lock can be asserted to prevent further modification of the range's configuration.
 When the lock is active, the base, mask/limit, and permission settings of the range register are immutable and cannot be altered until the system is reset.

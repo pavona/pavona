@@ -133,7 +133,7 @@ Review        | Signoff date            | Not Started |
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [AC_RANGE_CHECK DV document](../dv/README.md)
-Documentation | [TESTPLAN_COMPLETED][]                | Ongoing     | See issue [#27791](https://github.com/lowRISC/opentitan/issues/27791) [AC_RANGE_CHECK Testplan](../dv/README.md#testplan)
+Documentation | [TESTPLAN_COMPLETED][]                | Ongoing     | [AC_RANGE_CHECK Testplan](../dv/README.md#testplan)
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
@@ -150,7 +150,7 @@ Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Ongoing     | Not properly set yet, command fails
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Ongoing     | See issue [#27792](https://github.com/lowRISC/opentitan/issues/27792)
+Review        | [DESIGN_SPEC_REVIEWED][]              | Ongoing     |
 Review        | [TESTPLAN_REVIEWED][]                 | Not Started | TODO with relevant stakeholders
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
@@ -183,7 +183,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
-Documentation | [DV_DOC_COMPLETED][]                    | Ongoing     | See issue #27793
+Documentation | [DV_DOC_COMPLETED][]                    | Ongoing     |
 Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
