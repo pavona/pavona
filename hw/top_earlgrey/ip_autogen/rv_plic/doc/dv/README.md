@@ -11,7 +11,7 @@
 
 ## Current status
 * [Design & verification stage](../../../../README.md)
-  * [HW development stages](../../../../../../doc/project_governance/development_stages.md)
+  * [HW development stages](../../../../../../doc/contributing/hw/development_stages.md)
 * FPV dashboard (link TBD)
 
 ## Design features

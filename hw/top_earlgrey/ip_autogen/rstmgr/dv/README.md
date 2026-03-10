@@ -7,7 +7,7 @@
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 * [Design & verification stage](../../../../README.md)
-  * [HW development stages](../../../../../doc/project_governance/development_stages.md)
+  * [HW development stages](../../../../../doc/contributing/hw/development_stages.md)
 <!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 For detailed information on RSTMGR design features, please see the [RSTMGR HWIP technical specification](../README.md).

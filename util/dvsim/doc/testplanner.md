@@ -40,7 +40,7 @@ The following attributes are used to define each testpoint, at minimum:
 
 * **tests: list of written test(s) for this testpoint**
 
-    The testplan is written in the initial work stage of the verification [life-cycle](../../../doc/project_governance/development_stages.md#hardware-verification-stages-v).
+    The testplan is written in the initial work stage of the verification [life-cycle](../../../doc/contributing/hw/development_stages.md#hardware-verification-stages-v).
     Later, when the DV engineer writes the tests, they may not map one-to-one to a testpoint - it may be possible that a written test satisfactorily addresses multiple testpoints; OR it may also be possible that a testpoint needs to be split into multiple smaller tests.
     To cater to these needs, we provide the ability to set a list of written tests for each testpoint.
     It is used to not only indicate the current progress so far into each verification stage, but also map the simulation results to the testpoints to generate the final report table.

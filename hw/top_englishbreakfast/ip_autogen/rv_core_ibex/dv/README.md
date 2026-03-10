@@ -17,7 +17,7 @@ For more information please see the [Ibex RISC-V Core Wrapper Technical Specific
 ## Current Status
 
 * Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html)
-  * Verification follows the OpenTitan [HW development stages](../../../../../doc/project_governance/development_stages.md)
+  * Verification follows the OpenTitan [HW development stages](../../../../../doc/contributing/hw/development_stages.md)
 * [Nightly regression results](https://dev.azure.com/lowrisc/lowrisc-private/_build?definitionId=11)
   * These are from the Ibex private-ci which is restricted to OpenTitan project members
 

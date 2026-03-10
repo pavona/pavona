@@ -7,7 +7,7 @@ This documents describes the verification for AON_TIMER as a block-level IP.
 * [Testplan](#testplan)
 <!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 * [HW landing page](../../../README.md)
-* [HW/DV development stages](../../../../doc/project_governance/development_stages.md)
+* [HW/DV development stages](../../../../doc/contributing/hw/development_stages.md)
 
 ## Testbench architecture
 

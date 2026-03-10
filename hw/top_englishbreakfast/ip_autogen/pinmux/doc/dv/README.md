@@ -8,7 +8,7 @@
   * Verify TileLink device protocol compliance with a FPV based testbench
 
 * [Design & verification stage](../../../../../README.md)
-  * [HW development stages](../../../../../../doc/project_governance/development_stages.md)
+  * [HW development stages](../../../../../../doc/contributing/hw/development_stages.md)
 * [FPV dashboard](https://reports.opentitan.org/hw/top_englishbreakfast/formal/summary.html)
 
 For detailed information on PINMUX design features, please see the

@@ -1,32 +1,6 @@
-- [About OpenTitan](./doc/sections/opentitan.md)
-
-  - [Introduction](./README.md)
-  - [OpenTitan News](./doc/project_governance/news.md))
+- [Introduction](./README.md)
   - [Product Architecture](./doc/productarchitecture.md)
-  - [History](./doc/project_governance/history.md)
-  - [OpenTitan updates - RFCs](./doc/project_governance/rfc_approved.md)
-  - [lowRISC CIC](./doc/project_governance/lowRISC.md)
   - [Glossary](./doc/glossary.md)
-
-- [Governance and Policies](./doc/sections/governance.md)
-
-  - [Introduction](./doc/project_governance/README.md)
-  - [Governing Board](./doc/project_governance/governing_board.md)
-  - [Technical Committee](./doc/project_governance/technical_committee.md)
-  - [Working Groups](./doc/project_governance/working_group.md)
-  - [User accounts](./doc/project_governance/useraccounts.md)
-  - [Trademarks](./doc/project_governance/trademark.md)
-  - [Code of Conduct](./doc/project_governance/code_of_conduct.md)
-  - [Communication Policy](./doc/project_governance/communications.md)
-
-- [Use Cases](./doc/sections/usecases.md)
-
-  - [Introduction](./doc/use_cases/README.md)
-  - [Platform Integrity Module](./doc/use_cases/platform_integrity_module/README.md)
-  - [Trusted Platform Module](./doc/use_cases/tpm/README.md)
-  - [Universal 2nd-Factor Security Key](./doc/use_cases/u2f/README.md)
-
-- [Hardware](./doc/sections/specification.md)
 
   - [Introduction](./hw/README.md)
   - [Top Earlgrey](./hw/top_earlgrey/README.md)
@@ -78,7 +52,6 @@
       - [Checklist](./hw/top_earlgrey/ip_autogen/gpio/doc/checklist.md)
     - [Ibex RISC-V Core Wrapper](./hw/top_earlgrey/ip_autogen/rv_core_ibex/README.md)
       - [Theory of Operation](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/theory_of_operation.md)
-      - [Boot, ROM execution and Patching](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/boot-rom-patching.md)
       - [Design Verification](./hw/top_earlgrey/ip_autogen/rv_core_ibex/dv/README.md)
       - [Programmer's Guide](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/programmers_guide.md)
       - [Hardware Interfaces](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/interfaces.md)
@@ -186,7 +159,6 @@
       - [Checklist](./hw/top_darjeeling/ip_autogen/gpio/doc/checklist.md)
     - [Ibex RISC-V Core Wrapper](./hw/top_darjeeling/ip_autogen/rv_core_ibex/README.md)
       - [Theory of Operation](./hw/top_darjeeling/ip_autogen/rv_core_ibex/doc/theory_of_operation.md)
-      - [Boot, ROM execution and Patching](./hw/top_darjeeling/ip_autogen/rv_core_ibex/doc/boot-rom-patching.md)
       - [Design Verification](./hw/top_darjeeling/ip_autogen/rv_core_ibex/dv/README.md)
       - [Programmer's Guide](./hw/top_darjeeling/ip_autogen/rv_core_ibex/doc/programmers_guide.md)
       - [Hardware Interfaces](./hw/top_darjeeling/ip_autogen/rv_core_ibex/doc/interfaces.md)
@@ -243,30 +215,29 @@
   - [Cores](./hw/doc/cores.md)
     - [Ibex RISC-V Core Wrapper](./hw/top_earlgrey/ip_autogen/rv_core_ibex/README.md)
       - [Theory of Operation](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/theory_of_operation.md)
-      - [Boot, ROM execution and Patching](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/boot-rom-patching.md)
       - [Design Verification](./hw/top_earlgrey/ip_autogen/rv_core_ibex/dv/README.md)
       - [Programmer's Guide](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/programmers_guide.md)
       - [Hardware Interfaces](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/interfaces.md)
       - [Registers](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/registers.md)
       - [Checklist](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/checklist.md)
-    - [OTBN](./hw/ip/otbn/README.md)
-      - [Theory of Operation](./hw/ip/otbn/doc/theory_of_operation.md)
-      - [Introduction to OTBN](./hw/ip/otbn/doc/otbn_intro.md)
-      - [Developing OTBN](./hw/ip/otbn/doc/developing_otbn.md)
-      - [ISA Guide](./hw/ip/otbn/doc/isa.md)
-      - [Design Verification](./hw/ip/otbn/dv/README.md)
-      - [Random Instruction Generator](./hw/ip/otbn/dv/rig/README.md)
-        - [Internals](./hw/ip/otbn/dv/rig/rig/README.md)
-        - [Configuration](./hw/ip/otbn/dv/rig/rig/configs/README.md)
-      - [memutil wrapper](./hw/ip/otbn/dv/memutil/README.md)
-      - [OTBN Simulation Software](./hw/ip/otbn/dv/otbnsim/README.md)
-      - [Tracer](./hw/ip/otbn/dv/tracer/README.md)
-      - [Formal Masking Verification Using Alma](./hw/ip/otbn/pre_sca/alma/README.md)
-      - [Functional Coverage](./hw/ip/otbn/dv/doc/fcov.md)
-      - [Programmer's Guide](./hw/ip/otbn/doc/programmers_guide.md)
-      - [Hardware Interfaces](./hw/ip/otbn/doc/interfaces.md)
-      - [Registers](./hw/ip/otbn/doc/registers.md)
-      - [Checklist](./hw/ip/otbn/doc/checklist.md)
+    - [ACC](./hw/ip/acc/README.md)
+      - [Theory of Operation](./hw/ip/acc/doc/theory_of_operation.md)
+      - [Introduction to ACC](./hw/ip/acc/doc/acc_intro.md)
+      - [Developing ACC](./hw/ip/acc/doc/developing_acc.md)
+      - [ISA Guide](./hw/ip/acc/doc/isa.md)
+      - [Design Verification](./hw/ip/acc/dv/README.md)
+      - [Random Instruction Generator](./hw/ip/acc/dv/rig/README.md)
+        - [Internals](./hw/ip/acc/dv/rig/rig/README.md)
+        - [Configuration](./hw/ip/acc/dv/rig/rig/configs/README.md)
+      - [memutil wrapper](./hw/ip/acc/dv/memutil/README.md)
+      - [ACC Simulation Software](./hw/ip/acc/dv/accsim/README.md)
+      - [Tracer](./hw/ip/acc/dv/tracer/README.md)
+      - [Formal Masking Verification Using Alma](./hw/ip/acc/pre_sca/alma/README.md)
+      - [Functional Coverage](./hw/ip/acc/dv/doc/fcov.md)
+      - [Programmer's Guide](./hw/ip/acc/doc/programmers_guide.md)
+      - [Hardware Interfaces](./hw/ip/acc/doc/interfaces.md)
+      - [Registers](./hw/ip/acc/doc/registers.md)
+      - [Checklist](./hw/ip/acc/doc/checklist.md)
 
   - [Hardware IP Blocks](./hw/ip/README.md)
     - [Analog to Digital Converter Control](./hw/ip/adc_ctrl/README.md)
@@ -555,8 +526,6 @@
     - [UART Agent](./hw/dv/sv/uart_agent/README.md)
     - [USB20 Agent](./hw/dv/sv/usb20_agent/README.md)
 
-- [Security](./doc/sections/security.md)
-
   - [Introduction](./doc/security/README.md)
   - [Cryptography Library](./doc/security/cryptolib/README.md)
     - [API Documentation](./doc/security/cryptolib/cryptolib_api.md)
@@ -578,8 +547,6 @@
 
   - [Lightweight Threat Model](./doc/security/threat_model/README.md)
 
-- [Software](./doc/sections/software.md)
-
   - [Introduction](./sw/README.md)
   - [Build Software](./sw/doc/build_software.md)
     - [External dependencies](./third_party/README.md)
@@ -592,6 +559,7 @@
   - [Device Software](./sw/device/README.md)
     - [Device Libraries](./sw/device/lib/README.md)
       - [DIF Library](./sw/device/lib/dif/README.md)
+        - [ACC Checklist](sw/device/lib/dif/dif_acc.md)
         - [ADC Checklist](sw/device/lib/dif/dif_adc_ctrl.md)
         - [AES Checklist](sw/device/lib/dif/dif_aes.md)
         - [Alert Handler Checklist](sw/device/lib/dif/dif_alert_handler.md)
@@ -610,7 +578,6 @@
         - [KMAC Checklist](sw/device/lib/dif/dif_kmac.md)
         - [Lifecycle Checklist](sw/device/lib/dif/dif_lc_ctrl.md)
         - [Mailbox Checklist](sw/device/lib/dif/dif_mbx.md)
-        - [OTBN Checklist](sw/device/lib/dif/dif_otbn.md)
         - [OTP Controller Checklist](sw/device/lib/dif/dif_otp_ctrl.md)
         - [Pattern Generator Checklist](sw/device/lib/dif/dif_pattgen.md)
         - [Pin Multiplexer Checklist](sw/device/lib/dif/dif_pinmux.md)
@@ -668,8 +635,6 @@
     - [Signing Guide](./signing/README.md)
     - [TPM2 Test Server](./sw/host/tpm2_test_server/README.md)
 
-- [Working as a contributor](./doc/sections/contributor.md)
-
   - [Getting Started](./doc/getting_started/README.md)
     - [Workflows](./doc/getting_started/workflows.md)
     - [Design Verification](./doc/getting_started/setup_dv.md)
@@ -683,15 +648,10 @@
     - [Verilator Setup](./doc/getting_started/setup_verilator.md)
     - [Installing Vivado](./doc/getting_started/install_vivado/README.md)
 
-    - [Unofficial Guides](./doc/getting_started/unofficial/README.md)
-    - [RedHat/Fedora](./doc/getting_started/unofficial/fedora.md)
-
   - [Contributing](./doc/contributing/README.md)
 
-    - [Detailed Contribution Guide](./doc/contributing/detailed_contribution_guide/README.md)
     - [Directory Structure](./doc/contributing/directory_structure.md)
     - [Contributing to Documentation](./doc/contributing/doc/README.md)
-      - [An Example IP Block's Documentation](./doc/contributing/doc/example_ip_block.md)
     - [Continuous Integration](./doc/contributing/ci/README.md)
     - [Top-Level Design and Targets](./doc/contributing/system_list.md)
     - [GitHub Notes](./doc/contributing/github_notes.md)
@@ -714,10 +674,7 @@
 
     - [Contributing to Software](./doc/contributing/sw/README.md)
     - [Device Interface Functions](./doc/contributing/sw/device_interface_functions.md)
-    - [Writing and Building Software for OTBN](./doc/contributing/sw/acc_sw.md)
-
-    - [Committers](./doc/project_governance/committers.md)
-    - [RFC Process](./doc/project_governance/rfc_process.md)
+    - [Writing and Building Software for ACC](./doc/contributing/sw/acc_sw.md)
 
   - [Contributor Guides](./doc/contributing/style_guides/README.md)
 
@@ -726,7 +683,7 @@
     - [C & C++](./doc/contributing/style_guides/c_cpp_coding_style.md)
     - [Markdown](./doc/contributing/style_guides/markdown_usage_style.md)
     - [RISC-V Assembly](./doc/contributing/style_guides/asm_coding_style.md)
-    - [OTBN Assembly](./doc/contributing/style_guides/acc_style_guide.md)
+    - [ACC Assembly](./doc/contributing/style_guides/acc_style_guide.md)
     - [Guidance for Volatile](./doc/contributing/style_guides/guidance_for_volatile.md)
 
     - [Developing on an FPGA](./doc/contributing/fpga/README.md)
@@ -734,10 +691,8 @@
     - [FPGA Reference Manual](./doc/contributing/fpga/ref_manual_fpga.md)
     - [Debugging with an ILA](./doc/contributing/fpga/debugging_with_ila.md)
 
-    - [Generalized Priority Definitions](./doc/project_governance/priority_definitions.md)
-    - [Generalized Project Milestone Definitions](./doc/project_governance/project_milestone_definitions.md)
-    - [Hardware Development Stages](./doc/project_governance/development_stages.md)
-    - [Signoff Checklist](./doc/project_governance/checklist/README.md)
+    - [Hardware Development Stages](./doc/contributing/hw/development_stages.md)
+    - [Signoff Checklist](./doc/contributing/hw/checklist/README.md)
     - [Rust for Embedded C Programmers](./doc/rust_for_c_devs.md)
 
   - [Tooling](./util/README.md)
@@ -759,8 +714,6 @@
     - [vendor: Vendoring In Tool](./util/doc/vendor.md)
     - [i2csvg: Generate SVGs of I2C Commands](./util/i2csvg/README.md)
     - [dtgen: Generate Device Tables](./util/dtgen/README.md)
-
-- [Update this documentation](./doc/project_governance/edit.md)
 
 # Hardware Reference
 
