@@ -31,10 +31,10 @@ The discussions on how those are used within the program are carried out in a di
 Verification within the Pavona project comes in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of verification is important to gauge the confidence in the design's advertised feature set.
-To that end, we've designated a spectrum of design and verification stages in the  [Pavona Hardware Development Stages](../../../project_governance/development_stages.md) document.
+To that end, we've designated a spectrum of design and verification stages in the  [Pavona Hardware Development Stages](../../../contributing/hw/development_stages.md) document.
 It defines the verification stages and references where one can find the current verification status of each of the designs in the repository.
 Splitting the effort in such a way enables the team to pace the development effort and allows the progress to be in lock-step with the design stages.
-The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists](../../../project_governance/checklist/README.md) document.
+The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists](../../../contributing/hw/checklist/README.md) document.
 Verification is said to be complete when the checklist items for all stages are marked as done.
 We will explain some of the key items in those checklists in the remainder of this document.
 
@@ -42,7 +42,7 @@ We will explain some of the key items in those checklists in the remainder of th
 
 DV effort needs to be well documented to not only provide a detailed description of what tests are being planned and functionality covered, but also how the overall effort is strategized and implemented.
 The first is provided by the **testplan** document and the second, by the **DV document**.
-The [**project status**](../../../project_governance/development_stages.md#indicating-stages-and-making-transitions) document tracks to progression of the effort through the stages.
+The [**project status**](../../../contributing/hw/development_stages.md#indicating-stages-and-making-transitions) document tracks to progression of the effort through the stages.
 
 In addition to these documents, a nightly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
 
@@ -183,10 +183,10 @@ The chip DV document, which is currently under active development will explain t
 ## Key Test Focus Areas
 
 When progressing through the verification stages, there are key focus areas or testing activities that are perhaps common across all DUTs.
-These are described under [Hardware Verification Stages](../../../project_governance/development_stages.md#hardware-verification-stages-v).
+These are described under [Hardware Verification Stages](../../../contributing/hw/development_stages.md#hardware-verification-stages-v).
 The basic steps are:
 
-### [Progressing towards V1](../../../project_governance/checklist/README.md#v1)
+### [Progressing towards V1](../../../contributing/hw/checklist/README.md#v1)
 
 These set of tests (not exhaustive) provide the confidence that the design is ready for vertical integration.
 
@@ -203,7 +203,7 @@ This test (or set of tests) is also included as a part of the sanity regression 
 The very first set of real tests validate the SW interface laid out using the regtool.
 These prove that the SW interface is solid and all assumptions in CSRs in terms of field descriptions and their accessibility are correctly captured and there are no address decode bugs.
 
-### [Progressing towards V2](../../../project_governance/checklist/README.md#v2)
+### [Progressing towards V2](../../../contributing/hw/checklist/README.md#v2)
 
 Bulk of testing in this stage focus on functionally testing the DUT.
 There however are certain categories of tests that may need additional attention.
@@ -250,7 +250,7 @@ To mitigate that, they are constructed with knobs to control the level of constr
 The level of constraints are then slowly eased to allow deeper state space exploration, until all areas of the DUT are satisfactorily stressed.
 Stress tests are ideal for bug hunting and closing coverage.
 
-### [Progressing towards V3](../../../project_governance/checklist/README.md#v3)
+### [Progressing towards V3](../../../contributing/hw/checklist/README.md#v3)
 
 The main focus of testing at this stage is to meet our [regression](#nightly) and [coverage](#coverage-collection) goals.
 Apart from that, there are cleanup activities to resolve all pending TODO items in the DV code base and fix all compile and run time warnings (if any) thrown by the simulator tools.
@@ -618,7 +618,7 @@ The goal of this review is to achieve utmost clarity in the planning of the DV e
 The feedback in this review flows both ways - the language in the design specification could be made more precise, and missing items in both the design specification and the testplan can be identified and added.
 This enables the development stages to progress smoothly.
 
-Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status](../../../project_governance/development_stages.md#indicating-stages-and-making-transitions).
+Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status](../../../contributing/hw/development_stages.md#indicating-stages-and-making-transitions).
 
 Finally, after the verification effort is complete, there is a final sign-off review to ensure all checklist items are completed satisfactorily without any major exceptions or open issues.
 

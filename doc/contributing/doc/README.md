@@ -24,8 +24,6 @@ Any additional documentation that does not belong to a subdirectory should be pu
 Images and other assets should also be put in this doc directory.
 This structure is used from the very root of the project where the `README.md` describes the project as a whole and the `doc` directory holds general information about the project that cannot be wholly contained by another subdirectory.
 
-See [An Example IP Block's Documentation](./example_ip_block.md) to get a better sense of this structure.
-
 ## `CMDGEN`
 
 In an effort to make as much content viewable in plain text and GitHub as possible, auto-generated markdown is checked in within documentation files.

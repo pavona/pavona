@@ -15,7 +15,7 @@ For example, compare "pwrmgr" and "Power Manager".
 It will instantiate:
 - `util/make_new_dif/templates/dif_template.h.tpl` as the DIF Header boilerplate
   into `dif_<ip>.h`, which should be manually edited/enhanced.
-- `doc/project_governance/checklist/sw_checklist.md.tpl` as the DIF Checklist
+- `doc/contributing/hw/checklist/sw_checklist.md.tpl` as the DIF Checklist
   into dif_<ip>.md,  which should be manually edited.
 
 Each one of these templates has comments with more specific information.
@@ -108,7 +108,7 @@ def main():
     if "checklist" in args.only:
         checklist_template_file = (
             REPO_TOP /
-            "doc/project_governance/checklist/sw_checklist.md.tpl")
+            "doc/contributing/hw/checklist/sw_checklist.md.tpl")
         checklist_out_file = dif_dir / "dif_{}.md".format(ip.name_snake)
         if checklist_out_file.is_file():
             raise FileExistsError(

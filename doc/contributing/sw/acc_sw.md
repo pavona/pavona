@@ -20,7 +20,7 @@ For specific formatting and secure coding guidelines, see the [ACC style guide](
 
 ### Assembler
 
-The ACC assembler is called [acc_as.py](hw/ip/acc/util/acc_as.py).
+The ACC assembler is called [acc_as.py](../../../hw/ip/acc/util/acc_as.py).
 This has the same command line interface as `riscv32-unknown-elf-as` (indeed, it's a wrapper around that program).
 The only difference in default flags is that `acc_as.py` passes `-mno-relax`, telling the assembler not to request linker relaxation.
 This is needed because one of these relaxations generates GP-relative loads, which assume `x3` is treated as a global pointer (not true for ACC code).
@@ -32,7 +32,7 @@ hw/ip/acc/util/acc_as.py -o foo.o foo.s
 
 ### Linker
 
-The ACC linker is called [acc_ld.py](hw/ip/acc/util/acc_ld.py).
+The ACC linker is called [acc_ld.py](../../../hw/ip/acc/util/acc_ld.py).
 This is a thin wrapper around `riscv32-unknown-elf-ld`, but supplies a default linker script that matches the ACC memory layout.
 This linker script creates `.start`, `.text` and `.data` output sections.
 The `.start` and `.text` sections go to IMEM, with `.start` coming first.
@@ -58,7 +58,7 @@ hw/ip/acc/util/acc_ld.py -o foo foo0.o foo1.o foo2.o
 
 ### Objdump
 
-To disassemble ACC code, use [acc_objdump.py](hw/ip/acc/util/acc_objdump.py).
+To disassemble ACC code, use [acc_objdump.py](../../../hw/ip/acc/util/acc_objdump.py).
 This wraps `riscv32-unknown-elf-objdump`, but correctly disassembles ACC instructions when run with the `-d` flag.
 
 To disassemble the ELF binary linked in the previous section, run

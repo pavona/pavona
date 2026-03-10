@@ -474,7 +474,7 @@ Where possible (exceptions for inherited IP that is too tricky to convert) all i
 Currently, all wired CIP interrupts in OpenTitan use active-high level-triggering.
 (An alternate standard is the use of edge-triggered interrupts, which are not described here, but may be supported in a future release.)
 
-![OpenTitan System Interrupt Architecture](ot_interrupt_arch.svg)
+![OpenTitan System Interrupt Architecture](pavona_interrupt_arch.svg)
 
 Interrupts sent to the processor are aggregated by a platform level interrupt controller (PLIC).
 Within that logic there may be another level of control for enabling, prioritizing, and enumeration.

@@ -151,7 +151,7 @@ These tests may not live in `sw/device/tests/dif`.
 ### DIF Development Stages
 
 As part of the DIF Standardization process, we've decided to establish more concrete DIF lifecycle stages.
-These are documented with the [Development Stages](../../project_governance/development_stages.md).
+These are documented with the [Development Stages](../../contributing/hw/development_stages.md).
 
 In the hardware world, there are checklists for establishing that each stage is complete and the next stage can be moved to.
 

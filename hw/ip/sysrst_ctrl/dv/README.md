@@ -18,7 +18,7 @@ applicable. Once done, remove this comment before making a PR. -->
 
 ## Current status
 * [Design & verification stage](../../../README.md)
-  * [HW development stages](../../../../doc/project_governance/development_stages.md)
+  * [HW development stages](../../../../doc/contributing/hw/development_stages.md)
 <!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ## Design features

@@ -9,7 +9,7 @@ ${"##"} Goals
 
 ${"##"} Current status
 * [Design & verification stage](../doc/checklist.md)
-  * [HW development stages](../../../../../doc/project_governance/development_stages.md)
+  * [HW development stages](../../../../../doc/contributing/hw/development_stages.md)
 <!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ${"##"} Design features

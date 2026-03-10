@@ -9,7 +9,7 @@
 
 ## Current status
 * [Design & verification stage](../../../README.md)
-  * [HW development stages](../../../../doc/project_governance/development_stages.md)
+  * [HW development stages](../../../../doc/contributing/hw/development_stages.md)
 * [Simulation results for Masked AES](https://reports.opentitan.org/hw/ip/aes_masked/dv/latest/report.html)
 * [Simulation results for Unmasked AES](https://reports.opentitan.org/hw/ip/aes_unmasked/dv/latest/report.html)
 

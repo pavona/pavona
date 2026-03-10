@@ -1,7 +1,7 @@
 # Pattern Generator DIF Checklist
 
-This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Pattern Generator DIF](../../../../hw/ip/pattgen/README.md).
-All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).
+This checklist is for [Development Stage](../../../../doc/contributing/hw/development_stages.md) transitions for the [Pattern Generator DIF](../../../../hw/ip/pattgen/README.md).
+All checklist items refer to the content in the [Checklist](../../../../doc/contributing/hw/checklist/README.md).
 
 <h2>DIF Checklist</h2>
 
@@ -13,9 +13,9 @@ Implementation | [DIF_EXISTS][]         | Done        |
 Implementation | [DIF_USED_IN_TREE][]   | Done        |
 Tests          | [DIF_TEST_ON_DEVICE][] | Done        |
 
-[DIF_EXISTS]:         ../../../../doc/project_governance/checklist/README.md#dif_exists
-[DIF_USED_IN_TREE]:   ../../../../doc/project_governance/checklist/README.md#dif_used_in_tree
-[DIF_TEST_ON_DEVICE]: ../../../../doc/project_governance/checklist/README.md#dif_test_on_device
+[DIF_EXISTS]:         ../../../../doc/contributing/hw/checklist/README.md#dif_exists
+[DIF_USED_IN_TREE]:   ../../../../doc/contributing/hw/checklist/README.md#dif_used_in_tree
+[DIF_TEST_ON_DEVICE]: ../../../../doc/contributing/hw/checklist/README.md#dif_test_on_device
 
 <h3>S2</h3>
 
@@ -24,8 +24,8 @@ Type           | Item                        | Resolution  | Note/Collaterals
 Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard](../../../../hw/README.md)
 Implementation | [DIF_FEATURES][]            | Done        |
 
-[DIF_HW_FEATURE_COMPLETE]: ../../../../doc/project_governance/checklist/README.md#dif_hw_feature_complete
-[DIF_FEATURES]:            ../../../../doc/project_governance/checklist/README.md#dif_features
+[DIF_HW_FEATURE_COMPLETE]: ../../../../doc/contributing/hw/checklist/README.md#dif_hw_feature_complete
+[DIF_FEATURES]:            ../../../../doc/contributing/hw/checklist/README.md#dif_features
 
 <h3>S3</h3>
 
@@ -40,9 +40,9 @@ Review         | [DIF_TODO_COMPLETE][]            | Not Started |
 Review         | Reviewer(s)                      | Not Started |
 Review         | Signoff date                     | Not Started |
 
-[DIF_HW_DESIGN_COMPLETE]:       ../../../../doc/project_governance/checklist/README.md#dif_hw_design_complete
-[DIF_HW_VERIFICATION_COMPLETE]: ../../../../doc/project_governance/checklist/README.md#dif_hw_verification_complete
-[DIF_DOC_HW]:                   ../../../../doc/project_governance/checklist/README.md#dif_doc_hw
-[DIF_CODE_STYLE]:               ../../../../doc/project_governance/checklist/README.md#dif_code_style
-[DIF_TEST_UNIT]:                ../../../../doc/project_governance/checklist/README.md#dif_test_unit
-[DIF_TODO_COMPLETE]:            ../../../../doc/project_governance/checklist/README.md#dif_todo_complete
+[DIF_HW_DESIGN_COMPLETE]:       ../../../../doc/contributing/hw/checklist/README.md#dif_hw_design_complete
+[DIF_HW_VERIFICATION_COMPLETE]: ../../../../doc/contributing/hw/checklist/README.md#dif_hw_verification_complete
+[DIF_DOC_HW]:                   ../../../../doc/contributing/hw/checklist/README.md#dif_doc_hw
+[DIF_CODE_STYLE]:               ../../../../doc/contributing/hw/checklist/README.md#dif_code_style
+[DIF_TEST_UNIT]:                ../../../../doc/contributing/hw/checklist/README.md#dif_test_unit
+[DIF_TODO_COMPLETE]:            ../../../../doc/contributing/hw/checklist/README.md#dif_todo_complete

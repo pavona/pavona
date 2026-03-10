@@ -16,7 +16,7 @@ Only toggle coverage on the IOs of these sub-modules is enabled for coverage col
 
 ## Current status
 * [Design & verification stage](../../../README.md)
-  * [HW development stages](../../../../doc/project_governance/development_stages.md)
+  * [HW development stages](../../../../doc/contributing/hw/development_stages.md)
 * [Simulation results for SRAM](https://reports.opentitan.org/hw/ip/sram_ctrl_main/dv/latest/report.html)
 * [Simulation results for retention SRAM](https://reports.opentitan.org/hw/ip/sram_ctrl_ret/dv/latest/report.html)
 
