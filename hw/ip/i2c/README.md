@@ -1,11 +1,5 @@
 # I2C HWIP Technical Specification
 
-[`i2c`](https://reports.opentitan.org/hw/ip/i2c/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/i2c/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/i2c/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/i2c/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/i2c/code.svg)
-
 # Overview
 
 This document specifies I2C hardware IP functionality.
@@ -38,13 +32,13 @@ See that document for integration overview within the broader top level system.
 - Interrupts in the controller mode for FMT and RX FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete
 - Interrupts in the target mode for TX FIFO empty during a read, TX FIFO nonempty at the end of a read, TX overflow and ACQ FIFO full, controller sending STOP after ACK, and controller ceasing to send SCL pulses during an ongoing transaction
 - Loopback support with external controller when in target operation
-- SW may reset I2C block using the Reset Manager
+- SW reset I2C block through the use of the Reset Manager
 
-<sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to controller/target where applicable.
+<sup>1</sup> This document avoids the fraught terms master/slave and defaults to controller/target where applicable.
 
 <sup>2</sup> The target is only compatible with controllers that support clock stretching.
 For controllers that do not support clock stretching, it is expected that there must be an additional protocol to guarantee there is always sufficient space and data.
-These protocols are not in scope of this document.
+These protocols are not in the scope of this document.
 
 ## Description
 
@@ -80,7 +74,7 @@ in a manner which differs between reads and writes.
 All well-behaved transactions end with a STOP signal, which indicates the end of the last transfer and when the bus is free again.
 However, this IP does support detection of bus timeouts, when there has been no activity for a specified amount of time.
 
-This protocol is generally quite flexible with respect to timing constraints, and slow enough to be managed by a software microcontroller, however such an implementation requires frequent activity on the part of the microcontroller.
+This protocol is generally quite flexible with respect to timing constraints, and slow enough to be managed by a software microcontroller. However, such an implementation requires frequent activity on the part of the microcontroller.
 This IP presents a simple register interface and state-machine to manage the corresponding I/O pins directly using a byte-formatted programming model.
 
 ## Compatibility

@@ -38,8 +38,8 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Global types & methods
-All common types and methods defined at the package level can be found in [`i2c_env_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/i2c/dv/env/i2c_env_pkg.sv).
-Some of them are imported from [`i2c_reg_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/i2c/rtl/i2c_reg_pkg.sv).
+All common types and methods defined at the package level can be found in [`i2c_env_pkg`](./env/i2c_env_pkg.sv).
+Some of them are imported from [`i2c_reg_pkg`](../rtl/i2c_reg_pkg.sv).
 
 ### TL_agent
 I2C instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)

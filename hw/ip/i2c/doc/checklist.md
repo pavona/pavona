@@ -35,7 +35,7 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | Done        | Added transaction complete interrupt (Issue #1921, PR #2662) and target mode (Issue #3858, PR #2746, #4646, #4969, #6807)
+Documentation | [NEW_FEATURES][]          | Done        | Added transaction complete interrupt and target mode
 Documentation | [BLOCK_DIAGRAM][]         | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
 Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
@@ -44,7 +44,7 @@ Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
 RTL           | [PORT_FROZEN][]           | Done        |
 RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
-RTL           | [REVIEW_TODO][]           | Done        | Added loop back test (issue #5753); FIFO size reviewed (issue #5112)
+RTL           | [REVIEW_TODO][]           | Done        | Added loop back test; FIFO size reviewed
 RTL           | [STYLE_X][]               | Done        |
 RTL           | [CDC_SYNCMACRO][]         | N/A         |
 Code Quality  | [LINT_PASS][]             | Done        |
@@ -185,15 +185,15 @@ Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
 Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
 Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
 Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        | Above 90% for 5cec7755e (2023 June 12) and 431ad2b51 (2023 June 19)
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | Improved FSM coverage with PR #18335 and added waiver file in PR #18728
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        | In the nightlies 5cec7755e (2023 June 12) and 431ad2b51 (2023 June 19) functional coverage is above 90%
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        | Above 90% for 2023 June 19
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | Improved FSM coverage and added waiver file
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        | In the nightlies functional coverage is above 90%
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        | Only prim and tlul sub-modules used
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        | After merge of PR #18088
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../doc/contributing/hw/checklist/README.md#design_deltas_captured_v2

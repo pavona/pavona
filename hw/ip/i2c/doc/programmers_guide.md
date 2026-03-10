@@ -30,9 +30,9 @@ The values of these parameters will depend primarily on three bus details:
     - See table 10 of the I2C specification for more details.
 - (optional) The desired SCL cycle period, t<sub>SCL,user</sub> in ns.
     - By default the device should operate at the maximum frequency for that mode.
-    However, If the system developer wishes to operate at slower than the mode-specific maximum, a larger than minimum period could be allowed as an additional functional parameter when calculating the timing parameters.
+    However, if the system developer wishes to operate at slower than the mode-specific maximum, a larger than minimum period could be allowed as an additional functional parameter when calculating the timing parameters.
 
-Additional Constraints
+Additional Constraints:
 - To guarantee clock stretching works correctly with the Controller Module, there is a requirement of `THIGH >= 4 + InputDelayCycles`.
 This constraint derives from the fact that there is a latency between the Controller FSM driving the bus and observing the effect of driving the bus.
 The implementation requires `THIGH` to be at least this large to guarantee that if the Target stretches the clock, we can observe it in time, and react accordingly.
@@ -53,16 +53,16 @@ $$ \textrm{T_STO_MIN}= \lceil{t\_{STO,min}/t\_{clk}}\rceil $$
 
 Note that `T_HD_DAT_MIN` must be at least 1, and `T_HD_STA_MIN` and `T_BUF_MIN` must be greater than `T_HD_DAT_MIN`.
 
-1. Input the integer timing parameters, THD_STA_MIN, TSU_STA_MIN, THD_DAT_MIN, TSU_DAT_MIN, T_BUF_MIN and T_STO_MIN into their corresponding registers (`TIMING2.THD_STA`, `TIMING2.TSU_STA`, `TIMING3.THD_DAT`, `TIMING3.TSU_DAT`, `TIMING4.T_BUF`, `TIMING4.T_STO`)
+1. Input the integer timing parameters, `THD_STA_MIN`, `TSU_STA_MIN`, `THD_DAT_MIN`, `TSU_DAT_MIN`, `T_BUF_MIN` and `T_STO_MIN` into their corresponding registers (`TIMING2.THD_STA`, `TIMING2.TSU_STA`, `TIMING3.THD_DAT`, `TIMING3.TSU_DAT`, `TIMING4.T_BUF`, `TIMING4.T_STO`)
     - This step allows the firmware to manage SDA signal delays to ensure that the SDA outputs are compliant with the specification.
     - The registers `TIMING0.THIGH` and `TIMING0.TLOW` will be taken care of in a later step.
 1. Take the given values for t<sub>f</sub> and t<sub>r</sub> and convert them to integer counts as well:
 $$ \textrm{T_R}= \lceil{t\_{r}/t\_{clk}}\rceil $$
 $$ \textrm{T_F}= \lceil{t\_{f}/t\_{clk}}\rceil $$
-1. Store T_R and T_F in their corresponding registers: `TIMING1.T_R` and `TIMING1.T_F`.
+1. Store `T_R` and `T_F` in their corresponding registers: `TIMING1.T_R` and `TIMING1.T_F`.
 1. Based on the input speed mode, look up the maximum permissible SCL frequency (f<sub>SCL,max</sub>)and calculate the minimum permissible SCL period:
 $$ t\_{SCL,min}= 1/f\_{SCL,max} $$
-1. As with each of the other physical parameters convert t<sub>SCL,min</sub> and, if provided, the t<sub>SCL,user</sub> to integers, MINPERIOD and USERPERIOD..
+1. As with each of the other physical parameters convert t<sub>SCL,min</sub> and, if provided, the t<sub>SCL,user</sub> to integers, `MINPERIOD` and `USERPERIOD`.
 $$ MINPERIOD = \lceil{t\_{SCL,min}/t\_{clk}}\rceil $$
 $$ USERPERIOD = \lceil{t\_{SCL,user}/t\_{clk}}\rceil $$
 1. Let `PERIOD = max(MINPERIOD, USERPERIOD)`.
@@ -72,9 +72,9 @@ $$ USERPERIOD = \lceil{t\_{SCL,user}/t\_{clk}}\rceil $$
 $$ \textrm{THIGH}+\textrm{TLOW} \ge\textrm{PERIOD}-\textrm{T_F}-\textrm{T_R} $$
     - Since t<sub>HIGH</sub> and t<sub>LOW</sub> both have minimum allowable values, which depends on the mode, high values of t<sub>r</sub> or t<sub>f</sub> may force an increase in the total SCL period, slowing down the data transit rate.
     - The balance between t<sub>HIGH</sub> and t<sub>LOW</sub> can be manipulated in a variety of different ways (depending on the desired SCL duty cycle).
-    - It is, for instance, perfectly acceptable to simply set TLOW to the minimum possible value:
+    - It is, for instance, perfectly acceptable to simply set `TLOW` to the minimum possible value:
 $$ \textrm{TIMING0.TLOW}=\textrm{TLOW_MIN} $$
-1. THIGH is then set to satisfy both constraints in the desired SCL period and in the minimum permissible values for t<sub>HIGH</sub>:
+1. `THIGH` is then set to satisfy both constraints in the desired SCL period and in the minimum permissible values for t<sub>HIGH</sub>:
 $$ \textrm{TIMING0.THIGH}=\max(\textrm{PERIOD}-\textrm{T_R} - \textrm{TIMING0.TLOW} -\textrm{T_F}, \textrm{THIGH_MIN}) $$
 
 Note that the actual frequency will generally be lower, due to the need to round up counts after dividing.
@@ -84,7 +84,7 @@ To achieve nominal rates within 5% or so, we recommend that the internal clock i
 #### Timing parameter examples
 
 The following tables show a couple of examples for calculating timing register parameters for Fast-mode Plus devices.
-Both examples assume a desired datarate of 1 Mbaud (the bus maximum) for an SCL period of 1 us, and an internal device clock period of 3 ns.
+Both examples assume a desired data rate of 1 Mbaud (the bus maximum) for an SCL period of 1 us, and an internal device clock period of 3 ns.
 
 | Parameter       | Spec. Min. (ns)  | Reg. Val.  | Phys. Val (ns) | Comment                                         |
 |-----------------|------------------|------------|----------------|-----------------------------------------------|

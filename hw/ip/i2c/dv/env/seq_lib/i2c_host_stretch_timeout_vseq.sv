@@ -21,9 +21,6 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
   // This always creates 3 cycles of delay and increment stretch_idle_cnt up to 3.
   // To avoid spurious interrupt, program timeout count value greater than 3.
   // 't_timeout' is used to define upper bound of 'tStretchHostClock'
-  // see (https://cs.opensource.google/opentitan/opentitan/+/master:
-  // hw/dv/sv/i2c_agent/i2c_driver.sv;drc=95fba940c08451445fac85b1aac4a8117cee452b;
-  // l=107)
   constraint t_timeout_c { t_timeout == 5; }
 
   // timeout is always enabled so stretch_timeout irq is aggressively asserted
