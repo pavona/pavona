@@ -165,7 +165,7 @@ interface kmac_app_intf (input clk, input rst_n);
       hold       <= hold_d;
       next       <= next_d;
       per_ctr    <= per_ctr_d;
-      acc_start <= acc_start_d;
+      acc_start  <= acc_start_d;
     end
   end
 

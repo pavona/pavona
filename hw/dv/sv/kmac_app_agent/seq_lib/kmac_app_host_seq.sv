@@ -63,7 +63,7 @@ class kmac_app_host_seq extends kmac_app_base_seq;
     `uvm_create_on(header_seq, p_sequencer.m_push_pull_sequencer)
     `DV_CHECK_RANDOMIZE_FATAL(header_seq)
 
-    cfg.m_data_push_agent_cfg.add_h_user_data({header_data, header_strb, header_last});
+    cfg.m_data_push_agent_cfg.add_h_user_data({header_data, 64'b0, header_strb, header_last});
     `uvm_send(header_seq)
   endtask
 
@@ -76,9 +76,11 @@ class kmac_app_host_seq extends kmac_app_base_seq;
     cfg.m_data_push_agent_cfg.host_delay_max = 100;
 
     req = kmac_app_item::type_id::create("req");
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(req, byte_data_q.size() == msg_size_bytes;)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(req, byte_data_share0_q.size() == msg_size_bytes;)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(req, byte_data_share1_q.size() == msg_size_bytes;)
     `uvm_info(`gfn, $sformatf("Randomized req: %0s", req.sprint()), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("byte_data_q: %0p", req.byte_data_q), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("byte_data_share0_q: %0p", req.byte_data_share0_q), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("byte_data_share1_q: %0p", req.byte_data_share1_q), UVM_HIGH)
 
     init_msg_size_bytes = msg_size_bytes;
 
@@ -91,7 +93,8 @@ class kmac_app_host_seq extends kmac_app_base_seq;
 
     while (msg_size_bytes > 0) begin
 
-      bit [KmacDataIfWidth-1:0] req_data = '0;
+      bit [KmacDataIfWidth-1:0] req_data_share0 = '0;
+      bit [KmacDataIfWidth-1:0] req_data_share1 = '0;
       bit [KmacDataIfWidth/8-1:0] req_strb = '1;
       bit req_last = 0;
 
@@ -109,11 +112,13 @@ class kmac_app_host_seq extends kmac_app_base_seq;
               ($countones(req_strb ^ {req_strb[KmacDataIfWidth/8-2:0], 1'b0}) <= 2);)
         end
         if (req_strb[i] == 1) begin
-          req_data[i*8 +: 8] = 8'(req.byte_data_q.pop_front());
+          req_data_share0[i*8 +: 8] = 8'(req.byte_data_share0_q.pop_front());
+          req_data_share1[i*8 +: 8] = 8'(req.byte_data_share1_q.pop_front());
           req_strb[i] = 1'b1;
           msg_size_bytes -= 1;
         end else begin
-          req_data[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
+          req_data_share0[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
+          req_data_share1[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
           req_strb[i] = 1'b0;
         end
       end
@@ -121,7 +126,8 @@ class kmac_app_host_seq extends kmac_app_base_seq;
       // Set the last bit
       req_last = (msg_size_bytes == 0);
 
-      cfg.m_data_push_agent_cfg.add_h_user_data({req_data, req_strb, req_last});
+      cfg.m_data_push_agent_cfg.add_h_user_data(
+        {req_data_share0, req_data_share1, req_strb, req_last});
 
       `uvm_send(host_seq)
 

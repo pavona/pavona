@@ -43,7 +43,8 @@ class kmac_app_monitor extends dv_base_monitor #(
       kmac_app_item req = kmac_app_item::type_id::create("req");
       kmac_app_item rsp;
       while (1) begin
-        bit [KmacDataIfWidth-1:0] data;
+        bit [KmacDataIfWidth-1:0] data_share0;
+        bit [KmacDataIfWidth-1:0] data_share1;
         bit [KmacDataIfWidth/8-1:0] strb;
         bit last;
         push_pull_item#(`CONNECT_DATA_WIDTH) data_item;
@@ -57,9 +58,10 @@ class kmac_app_monitor extends dv_base_monitor #(
         // ok_to_end = 0 for the entire transaction.
         ok_to_end = 1;
         data_fifo.get(data_item);
-        {data, strb, last} = data_item.h_data;
+        {data_share0, data_share1, strb, last} = data_item.h_data;
         for (int i = 0; i < KmacDataIfWidth/8; i++) begin
-          if (strb[i]) req.byte_data_q.push_back(data[i*8+:8]);
+          if (strb[i]) req.byte_data_share0_q.push_back(data_share0[i*8+:8]);
+          if (strb[i]) req.byte_data_share1_q.push_back(data_share1[i*8+:8]);
         end
 
         if (last) begin

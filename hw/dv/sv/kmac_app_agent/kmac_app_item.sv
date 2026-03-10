@@ -9,7 +9,8 @@ class kmac_app_item extends uvm_sequence_item;
   // request data/mask
   //
   // also used by the monitor to assemble the full request message
-  rand byte byte_data_q[$];
+  rand byte byte_data_share0_q[$];
+  rand byte byte_data_share1_q[$];
 
   // response digest/error
   rand bit [kmac_pkg::AppDigestW-1:0] rsp_digest_share0;
@@ -19,11 +20,12 @@ class kmac_app_item extends uvm_sequence_item;
   rand int unsigned       rsp_delay;
 
   `uvm_object_utils_begin(kmac_app_item)
-    `uvm_field_queue_int(byte_data_q, UVM_DEFAULT)
-    `uvm_field_int(rsp_digest_share0, UVM_DEFAULT)
-    `uvm_field_int(rsp_digest_share1, UVM_DEFAULT)
-    `uvm_field_int(rsp_error,         UVM_DEFAULT)
-    `uvm_field_int(rsp_delay,         UVM_DEFAULT)
+    `uvm_field_queue_int(byte_data_share0_q, UVM_DEFAULT)
+    `uvm_field_queue_int(byte_data_share1_q, UVM_DEFAULT)
+    `uvm_field_int(rsp_digest_share0,        UVM_DEFAULT)
+    `uvm_field_int(rsp_digest_share1,        UVM_DEFAULT)
+    `uvm_field_int(rsp_error,                UVM_DEFAULT)
+    `uvm_field_int(rsp_delay,                UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

@@ -10,8 +10,8 @@
 `define CALC_PARTIAL_MSG \
     (!in_kmac_app && msg.size() % 8 > 0) || \
       (in_kmac_app && \
-        (app_mode == AppKeymgr && (kmac_app_msg.size() + 3) % 8 > 0) || \
-        (app_mode != AppKeymgr && kmac_app_msg.size() % 8 > 0))
+        (app_mode == AppKeymgr && (kmac_app_msg_share0.size() + 3) % 8 > 0) || \
+        (app_mode != AppKeymgr && kmac_app_msg_share0.size() % 8 > 0))
 
 class kmac_scoreboard extends cip_base_scoreboard #(
     .CFG_T(kmac_env_cfg),
@@ -117,7 +117,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // key length enum
   key_len_e key_len;
 
-  bit [keymgr_pkg::KmacDataIfWidth-1:0]   kmac_app_block_data;
+  bit [keymgr_pkg::KmacDataIfWidth-1:0]   kmac_app_block_data_share0;
+  bit [keymgr_pkg::KmacDataIfWidth-1:0]   kmac_app_block_data_share1;
   bit [keymgr_pkg::KmacDataIfWidth/8-1:0] kmac_app_block_strb;
   int kmac_app_block_strb_size = 0;
   bit kmac_app_last;
@@ -134,7 +135,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit [7:0] msg[$];
 
   // input message from keymgr
-  byte kmac_app_msg[$];
+  byte kmac_app_msg_share0[$];
 
   // output digest from KMAC_APP intf (256 bits each)
   bit [kmac_pkg::AppDigestW-1:0] kmac_app_digest_share0;
@@ -352,9 +353,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               app_mode = AppAcc;
               // Set the sha3 mode and keccak strength from cfg word
               // Bits [8:0] contain strb and last
-              // Bits [72:9] contain the msg/cfg
-              strength = cfg.m_kmac_app_agent_cfg[AppAcc].vif.req_data_if.h_data[13:11];
-              dynamic_hash_mode = cfg.m_kmac_app_agent_cfg[AppAcc].vif.req_data_if.h_data[10:9];
+              // Bits [72:9] contain share 1
+              // Bits [136:73] contain share0/cfg
+              strength = cfg.m_kmac_app_agent_cfg[AppAcc].vif.req_data_if.h_data[77:75];
+              dynamic_hash_mode = cfg.m_kmac_app_agent_cfg[AppAcc].vif.req_data_if.h_data[74:73];
               max_digest_words = kmac_pkg::compute_max_digest(strength);
               //compute_max_digest(strength, max_digest_words);
             end
@@ -561,8 +563,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                         $sformatf("Detected KMAC_APP data transfer:\n%0s",
                                   kmac_app_block_item.sprint()),
                         UVM_HIGH)
-              {kmac_app_block_data, kmac_app_block_strb, kmac_app_last} =
-                  kmac_app_block_item.h_data;
+              {kmac_app_block_data_share0, kmac_app_block_data_share1,
+               kmac_app_block_strb, kmac_app_last} = kmac_app_block_item.h_data;
               kmac_app_block_strb_size = $countones(kmac_app_block_strb);
 
               // sample coverage
@@ -578,16 +580,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               if (!acc_mode_skip) begin
                 while (kmac_app_block_strb > 0) begin
                   if (kmac_app_block_strb[0]) begin
-                    kmac_app_msg.push_back(kmac_app_block_data[7:0]);
+                    kmac_app_msg_share0.push_back(kmac_app_block_data_share0[7:0]);
                   end
-                  kmac_app_block_data = kmac_app_block_data >> 8;
+                  kmac_app_block_data_share0 = kmac_app_block_data_share0 >> 8;
                   kmac_app_block_strb = kmac_app_block_strb >> 1;
                 end
               end else begin
                 acc_mode_skip = 0;
               end
 
-              `uvm_info(`gfn, $sformatf("kmac_app_msg: %0p", kmac_app_msg), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("kmac_app_msg_share0: %0p", kmac_app_msg_share0), UVM_HIGH)
             end
             ,
             wait(cfg.under_reset || !in_kmac_app);
@@ -631,7 +633,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   // sample coverage
                   if (cfg.en_cov) begin
                     cov.app_cg_wrappers[app_mode].app_sample(
-                      kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
+                      kmac_app_rsp.byte_data_share0_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
                       '0,
                       kmac_app_rsp.rsp_error,
                       1,
@@ -1460,9 +1462,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     do_check_digest = 1;
 
     msg.delete();
-    kmac_app_msg.delete();
+    kmac_app_msg_share0.delete();
 
-    kmac_app_block_data      = '0;
+    kmac_app_block_data_share0      = '0;
     kmac_app_block_strb      = '0;
     kmac_app_block_strb_size = 0;
     kmac_app_last            = 0;
@@ -1632,9 +1634,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     ///////////////////////////////////////////////////////////
     if (in_kmac_app) begin
       // kmac_app message is a byte array, cast to bit[7:0]
-      msg_arr = new[kmac_app_msg.size()];
-      foreach (kmac_app_msg[i]) begin
-        msg_arr[i] = kmac_app_msg[i];
+      msg_arr = new[kmac_app_msg_share0.size()];
+      foreach (kmac_app_msg_share0[i]) begin
+        msg_arr[i] = kmac_app_msg_share0[i];
       end
     end else begin
       msg_arr = msg;

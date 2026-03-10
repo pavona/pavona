@@ -16,7 +16,8 @@ package kmac_app_agent_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter int KMAC_REQ_DATA_WIDTH = keymgr_pkg::KmacDataIfWidth       // data width
+  parameter int KMAC_REQ_DATA_WIDTH = keymgr_pkg::KmacDataIfWidth       // data_share0 width
+                                      + keymgr_pkg::KmacDataIfWidth     // data_share1 width
                                       + keymgr_pkg::KmacDataIfWidth / 8 // data mask width
                                       + 1;                              // bit last
 
