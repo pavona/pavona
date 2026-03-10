@@ -117,8 +117,8 @@ jobs:
         continue-on-error: true
       # zR: Currently commented out because it expects an upstream status report
       # to exist for the current (internal) commit.
-      - name: Build documentation
-        run: ./ci/scripts/build-docs.sh
+      #- name: Build documentation
+      #  run: ./ci/scripts/build-docs.sh
       - name: Generated files
         run: ./ci/scripts/check-generated.sh
         env:
