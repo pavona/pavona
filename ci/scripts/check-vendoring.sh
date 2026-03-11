@@ -12,15 +12,15 @@ set -e
 # We exclude the following:
 # - Any in 'hw/vendor/lowrisc_ibex', because that directory is vendored.
 find . \
-     -not \( -path './hw/vendor/lowrisc_ibex' -prune \) \
-     -name '*.vendor.hjson' -print0 | \
-    xargs -0 -n1 util/vendor.py --verbose || {
+  -not \( -path './hw/vendor/lowrisc_ibex' -prune \) \
+  -name '*.vendor.hjson' -print0 |
+  xargs -0 -n1 util/vendor.py --verbose || {
 
-    echo >&2 "Failed to run vendor script"
-    exit 1
+  echo >&2 "Failed to run vendor script"
+  exit 1
 }
 
 git diff --exit-code || {
-    echo >&2 "::error::Vendored repositories not up-to-date. Run util/vendor.py to fix."
-    exit 1
+  echo >&2 "::error::Vendored repositories not up-to-date. Run util/vendor.py to fix."
+  exit 1
 }

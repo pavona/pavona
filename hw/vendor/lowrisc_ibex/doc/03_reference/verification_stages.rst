@@ -5,7 +5,7 @@ Verification Stages
 
 Ibex is being verified as part of the `OpenTitan <https://www.opentitan.org>`_ project and follows the `verification stages used in OpenTitan <https://opentitan.org/book/doc/project_governance/development_stages.html#hardware-verification-stages-v>`_.
 The current verification stage of the 'opentitan' configuration of Ibex is **V2S**.
-The full definition of V2S can be found at the `OpenTitan V2 <https://opentitan.org/book/doc/contributing/hw/checklist/index.html#v2>`_ and `OpenTitan V2S <https://opentitan.org/book/doc/contributing/hw/checklist/index.html#v2s>`_ checklists.
+The full definition of V2S can be found at the `OpenTitan V2 <https://opentitan.org/book/doc/project_governance/checklist/index.html#v2>`_ and `OpenTitan V2S <https://opentitan.org/book/doc/project_governance/checklist/index.html#v2s>`_ checklists.
 Other Ibex configurations do not have a formal verification stage at present.
 
 V1 Checklist
