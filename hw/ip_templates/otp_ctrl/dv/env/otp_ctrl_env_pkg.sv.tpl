@@ -59,8 +59,10 @@ package otp_ctrl_env_pkg;
   parameter int OTP_ADDR_WIDTH = OtpByteAddrWidth-2;
 
   // The full word size of the OTP macro, including ECC.
-  parameter int OTP_MACRO_FULL_WIDTH = OtpWidth + prim_secded_pkg::get_synd_width(
-              prim_secded_pkg::SecdedHamming, OtpWidth);
+  parameter int OTP_MACRO_FULL_WIDTH = otp_ctrl_macro_pkg::OtpWidth +
+      prim_secded_pkg::get_synd_width(
+          prim_secded_pkg::SecdedHamming,
+          otp_ctrl_macro_pkg::OtpWidth);
 
   parameter uint NUM_PRIM_REG = 8;
 
