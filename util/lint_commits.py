@@ -102,7 +102,7 @@ def lint_commit_message(commit):
             error('Commit has Signed-off-by line {!r}, but the second part '
                   'is not of the required form. It should be of the form '
                   '"Signed-off-by: NAME <EMAIL>".'
-                  .format(line))
+                  .format(line), commit)
             success = False
 
         signoff_lines.append(line)
@@ -118,13 +118,13 @@ def lint_commit_message(commit):
                        'this line for you.')
 
     if not signoff_lines:
-        error('Commit has no Signed-off-by line. ' + signoff_req_msg)
+        error('Commit has no Signed-off-by line. ' + signoff_req_msg, commit)
         success = False
     elif expected_signoff_line not in signoff_lines:
         error(('Commit has one or more Signed-off-by lines, but not the one '
                'we expect. We expected to find "{}". '
                .format(expected_signoff_line)) +
-              signoff_req_msg)
+              signoff_req_msg, commit)
         success = False
 
     return success
