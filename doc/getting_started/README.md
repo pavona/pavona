@@ -181,4 +181,4 @@ Check out the additional resources below.
 ### Software
 * [Software Introduction](../../sw/README.md)
 * [Writing and Building Software for ACC](../contributing/sw/acc_sw.md)
-* [Rust for Embedded C Programmers](../rust_for_c_devs.md)
+* [Rust for Embedded C Programmers](../contributing/sw/rust_for_c_devs.md)
