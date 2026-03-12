@@ -412,7 +412,8 @@ def _validate_mmap(config: Dict, generate_fresh_keys: bool) -> Dict:
                                    DIGEST_SIZE * 8)
 
             # We always place the digest into the last 64bit word
-            # of a partition.
+            # of a partition, but before the zeroization field for
+            # zeroizable partitions.
             canonical_offset = (check_int(part["offset"]) +
                                 check_int(part["size"]) -
                                 DIGEST_SIZE - zer_size)
@@ -433,7 +434,7 @@ def _validate_mmap(config: Dict, generate_fresh_keys: bool) -> Dict:
             zer_name = part["name"] + ZER_SUFFIX
             if zer_name in item_dict:
                 raise RuntimeError(
-                    'Digest name {} is not unique'.format(zer_name))
+                    'Zeroization marker name {} is not unique'.format(zer_name))
             item_dict[zer_name] = len(part["items"])
             part["items"].append({
                 "name":
