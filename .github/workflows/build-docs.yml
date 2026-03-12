@@ -22,7 +22,7 @@ jobs:
   build_docs:
     name: Build documentation
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,7 +46,7 @@ jobs:
     needs: build_docs
     runs-on:
       # Requires access to license-server.
-      group: zerorisc-vivado
+      group: pavona-vivado
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v7

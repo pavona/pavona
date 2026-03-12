@@ -51,7 +51,7 @@ jobs:
   cache_bitstreams:
     name: Cache bitstreams to GCP
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     needs:
       - chip_earlgrey_cw310
       - chip_earlgrey_cw310_hyperdebug

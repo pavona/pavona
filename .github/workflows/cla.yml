@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "CLA Assistant"
-        if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I certify that I have read and agree that my contributions will be bound by the expo CLA.') || github.event_name == 'pull_request_target'
+        if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I certify that I have read and agree that my contributions will be bound by the Pavona CLA.') || github.event_name == 'pull_request_target'
         uses: zerorisc/cla-assistant-lite@v0.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,10 +42,10 @@ jobs:
           # 'For example: Creating file for storing CLA Signatures'
           #create-file-commit-message:
           # 'pull request comment with Introductory message to ask new contributors to sign'
-          custom-notsigned-prcomment: 'Welcome! Before accepting your contribution, the expo project requires you to sign the [Contributor License Agreement](https://gist.github.com/rtorok-zr/1ca3a78e9367cca492b183e553dc39d5). To indicate your agreement, please post a comment on this Pull Request with the message below.<br/><br/>If you are contributing on behalf of a company, please inform your supervisor to [contact zeroRISC](mailto:info@zerorisc.com) to sign a Corporate CLA instead.'
+          custom-notsigned-prcomment: 'Welcome! Before accepting your contribution, the Pavona project requires you to sign the [Contributor License Agreement](https://gist.github.com/rtorok-zr/1ca3a78e9367cca492b183e553dc39d5). To indicate your agreement, please post a comment on this Pull Request with the message below.<br/><br/>If you are contributing on behalf of a company, please inform your supervisor to [contact zeroRISC](mailto:info@zerorisc.com) to sign a Corporate CLA instead.'
           #'The signature to be committed in order to sign the CLA'
-          custom-pr-sign-comment: 'I certify that I have read and agree that my contributions will be bound by the expo CLA.'
+          custom-pr-sign-comment: 'I certify that I have read and agree that my contributions will be bound by the Pavona CLA.'
           # 'pull request comment when all contributors has signed, defaults to **CLA Assistant Lite bot** All Contributors have signed the CLA.'
-          custom-allsigned-prcomment: "**Expo CLA Assistant** All committers have signed the CLA."
+          custom-allsigned-prcomment: "**Pavona CLA Assistant** All committers have signed the CLA."
           #lock-pullrequest-aftermerge: false - if you don't want this bot to automatically lock the pull request after merging (default - true)
           #use-dco-flag: true - If you are using DCO instead of CLA
