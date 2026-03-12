@@ -590,7 +590,7 @@
 
 - [Introduction](./sw/README.md)
 
-- [Build Software](./sw/doc/build_software.md)
+- [Build Software](./doc/getting_started/build_sw.md)
   - [External dependencies](./third_party/README.md)
   - [Build & Test Rules](./rules/opentitan/README.md)
   - [Top selection](./hw/top/README.md)
