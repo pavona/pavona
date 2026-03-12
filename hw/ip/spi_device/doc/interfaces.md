@@ -40,7 +40,7 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 | upload_payload_overflow  | Event  | Upload payload overflow event. When a SPI Host system issues a command with payload more than 256B, this event is reported. When it happens, SW should read the last written payload index CSR to figure out the starting address of the last 256B. |
 | readbuf_watermark        | Event  | Read Buffer Threshold event. The host system accesses greater than or equal to the threshold of a buffer.                                                                                                                                           |
 | readbuf_flip             | Event  | Read buffer flipped event. The host system accesses other side of buffer.                                                                                                                                                                           |
-| tpm_header_not_empty     | Status | TPM Header(Command/Address) buffer available                                                                                                                                                                                                        |
+| tpm_header_not_empty     | Status | TPM Header (Command/Address) buffer available                                                                                                                                                                                                       |
 | tpm_rdfifo_cmd_end       | Event  | TPM RdFIFO command ended. The TPM Read command targeting the RdFIFO ended. Check TPM_STATUS.rdfifo_aborted to see if the transaction completed.                                                                                                     |
 | tpm_rdfifo_drop          | Event  | TPM RdFIFO data dropped. Data was dropped from the RdFIFO. Data was written while a read command was not active, and it was not accepted. This can occur when the host aborts a read command.                                                       |
 
@@ -59,9 +59,9 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 
 <!-- END CMDGEN -->
 
-The TPM submodule requires a separate input port for CS#.
+The TPM submodule requires a separate input port for `CS#`.
 The TPM submodule and other SPI Device modes are able to be active together.
-The host system distinguishes between the TPM transactions and the other SPI transactions using separate CS# ports.
+The host system distinguishes between the TPM transactions and the other SPI transactions using separate `CS#` ports.
 Even though both submodules are able to be active, the host system cannot issue a TPM command and a SPI transaction at the same time due to the SPI IO lines being shared.
 
 The TPM has no write FIFO interrupt.

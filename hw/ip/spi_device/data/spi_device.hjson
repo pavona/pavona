@@ -8,7 +8,7 @@
   one_paragraph_desc: '''
   SPI Device is a configurable, versatile hardware block that implements three modes (SPI Flash emulation mode, SPI passthrough mode, and TPM over SPI mode) to support a variety of different applications.
   TPM over SPI operates in compliance with TPM PC Client Platform, unloading this protocol from a software solution.
-  SPI Flash emulation mode supports many JEDEC standard commands such as Read Status, Read JEDEC ID, Read SFDP, EN4B/EX4B, and multiple other read commands, allowing OpenTitan to provide, for example, verified boot firmware to other external devices.
+  SPI Flash emulation mode supports many JEDEC standard commands such as Read Status, Read JEDEC ID, Read SFDP, EN4B/EX4B, and multiple other read commands, allowing Pavona to provide, for example, verified boot firmware to other external devices.
   '''
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
   cip_id:             "26",
@@ -100,7 +100,7 @@
       type: "event"
     }
     { name: "tpm_header_not_empty"
-      desc: "TPM Header(Command/Address) buffer available"
+      desc: "TPM Header (Command/Address) buffer available"
       type: "status"
     }
     { name: "tpm_rdfifo_cmd_end"

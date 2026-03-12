@@ -27,12 +27,12 @@ Software can only write to the egress memory, and it can only read from the ingr
 
 ### Initialization
 
-The SW should enable the TPM submodule by writing 1 to the TPM_CFG.en CSR field.
-Other SPI_DEVICE features (Flash, Passthrough) CSRs do not affect the TPM feature.
+The software should enable the TPM submodule by writing 1 to the `TPM_CFG.en` CSR field.
+Other SPI device features (Flash, Passthrough) CSRs do not affect the TPM feature.
 
-Update TPM_ACCESS_0, TPM_ACCESS_1 CSRs.
-The TPM submodule uses TPM_ACCESS_x.activeLocality to determine if the TPM_STS is returned to the host system.
-The SW may configure TPM_CFG.hw_reg_dis and/or TPM_CFG.invalid_locality to fully control the TPM transactions.
+Update `TPM_ACCESS_0`, `TPM_ACCESS_1` CSRs.
+The TPM submodule uses `TPM_ACCESS_x.activeLocality` to determine if the `TPM_STS` is returned to the host system.
+The software may configure `TPM_CFG.hw_reg_dis` and/or `TPM_CFG.invalid_locality` to fully control the TPM transactions.
 
 ### TPM mode: FIFO and CRB
 
@@ -41,26 +41,26 @@ In terms of hardware design, these two interfaces differ in how return-by-HW reg
 
 In FIFO mode, when [`TPM_CFG.tpm_mode`](registers.md#tpm_cfg) is set to 0, HW registers reads must be returned after a maximum of 1 wait state.
 In CRB mode, when [`TPM_CFG.tpm_mode`](registers.md#tpm_cfg) is set to 1, there are no such restrictions.
-The logic always uploads both the command and address to the SW and waits for the return data in CRB mode.
+The logic always uploads both the command and address to the software and waits for the return data in CRB mode.
 
 ### Return-by-HW register update
 
-The SW manages the return-by-HW registers.
-The contents are placed inside the SPI_DEVICE CSRs.
-The SW must maintain the other TPM registers outside of the SPI_DEVICE HWIP and use write/read FIFOs to receive the content from/ send the register value to the host system.
+The software manages the return-by-HW registers.
+The contents are placed inside the SPI device CSRs.
+The software must maintain the other TPM registers outside of the SPI device HWIP and use write/read FIFOs to receive the content from/send the register value to the host system.
 
-When the SW updates the return-by-HW registers, the SW is recommended to read back the register to confirm the value is written.
-Due to the CDC issue, the SW is only permitted to update the registers when the TPM CS# is de-asserted.
+When the software updates the return-by-HW registers, the software is recommended to read back the register to confirm the value is written.
+Due to the CDC issue, the software is only permitted to update the registers when the TPM `CS#` is de-asserted.
 
 ### TPM Read
 
 1. The host system sends the TPM read command with the address.
-2. The SW reads a word from TPM_CMD_ADDR CSR (optional cmdaddr_notempty interrupt).
-  1. If the address falls into the return-by-HW registers and TPM_CFG.hw_reg_dis is not set, the HW does not push the command and address bytes into the TPM_CMD_ADDR CSR.
-3. The SW prepares the register value and writes the value into the read FIFO.
+2. The SW reads a word from `TPM_CMD_ADDR CSR` (optional `cmdaddr_notempty` interrupt).
+  1. If the address falls into the return-by-HW registers and `TPM_CFG.hw_reg_dis` is not set, the hardware does not push the command and address bytes into the `TPM_CMD_ADDR` CSR.
+3. The software prepares the register value and writes the value into the read FIFO.
 4. The TPM submodule sends `WAIT` until the read FIFO is available.
    When available, the TPM submodule sends `START` followed by the register value.
-5. Optionally, SW may choose to monitor the `tpm_rdfifo_cmd_end` interrupt to be notified when commands targeting read FIFO commands end.
+5. Optionally, the software may choose to monitor the `tpm_rdfifo_cmd_end` interrupt to be notified when commands targeting read FIFO commands end.
   1. `TPM_STATUS.rdfifo_aborted` will show whether the triggering command failed.
 
 ### TPM Write
@@ -69,14 +69,14 @@ Due to the CDC issue, the SW is only permitted to update the registers when the 
 2. The TPM submodule checks the write FIFO and cmdaddr FIFO statuses.
 3. If the write FIFO is busy or the cmdaddr FIFO is not empty, the TPM submodule sends `WAIT` to the host system.
 4. When both FIFOs are empty and/or not busy, the TPM sends `START` to the host system, receives the payload, and stores the data into the write FIFO.
-5. On the last bit of the data, the TPM submodule pushes the command and the address to the TPM_CMD_ADDR CSR.
-6. The SW reads TPM_CMD_ADDR and then reads the write FIFO data from the RAM.
-7. The SW writes TPM_STATUS to release the write FIFO buffer, marking it not busy.
+5. On the last bit of the data, the TPM submodule pushes the command and the address to the `TPM_CMD_ADDR` CSR.
+6. The software reads `TPM_CMD_ADDR` and then reads the write FIFO data from the RAM.
+7. The software writes `TPM_STATUS` to release the write FIFO buffer, marking it not busy.
 
 ### TPM_CMDADDR_NOTEMPTY Interrupt
 
-`TPM_CMDADDR_NOTEMPTY` interrupt remains high even SW clears the interrupt unless the cause is disappeared.
-SW should mask the interrupt if SW wants to process the event in a deferred way.
+`TPM_CMDADDR_NOTEMPTY` interrupt remains high even software clears the interrupt unless the cause is disappeared.
+Software should mask the interrupt if SW wants to process the event in a deferred way.
 
 ```c
 void spi_tpm_isr() {
@@ -110,7 +110,7 @@ void spi_tpm_deferred_work() {
 ### TPM Interrupt
 
 The TPM submodule does not process the TPM over SPI interrupt.
-The SW must check TPM_INT_ENABLE, TPM_INT_STATUS and control the GPIO pin that is designated to the TPM over SPI interrupt.
+The software must check `TPM_INT_ENABLE`, `TPM_INT_STATUS` and control the GPIO pin that is designated to the TPM over SPI interrupt.
 
 ## Device Interface Functions (DIFs)
 

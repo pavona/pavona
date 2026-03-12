@@ -7,7 +7,7 @@
 /*
  * # Passthrough
  *
- * The OpenTitan SPI Device has a feature for snooping the SPI transactions from
+ * The Pavona SPI Device has a feature for snooping the SPI transactions from
  * a host system to a SPI flash device and for intervening against unauthorized
  * traffic. It is mainly intended for blocking any harmful read/ write requests
  * and for guaranteeing the return of genuine binary images to the host system.

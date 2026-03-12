@@ -14,7 +14,7 @@
 <!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
 ## Design features
-For detailed information on SPI Device design features, please see the [SPI_device design specification](../README.md).
+For detailed information on SPI Device design features, please see the [SPI Device design specification](../README.md).
 
 ## Testbench architecture
 SPI Device testbench has been constructed based on the
@@ -52,7 +52,7 @@ TL host interface into SPI Device.
 
 ### SPI Device agent
 [spi agent](../../../dv/sv/spi_agent/README.md) is used to drive and monitor SPI items.
-There are 2 spi_agents in the testbench to serve as a SPI host and a SPI device.
+There are 2 `spi_agents` in the testbench to serve as a SPI host and a SPI device.
 * The host agent is connected to the upstream port to drive stimulus for TPM mode and flash mode.
 * The device agent is connected to the passthrough port.
 When host sends a flash transaction with passthrough enabled, the device agent receives it and provides the return data when it's a read command.
@@ -69,24 +69,24 @@ The `spi_device_base_vseq` virtual sequence is extended from `cip_base_vseq` and
 All test sequences are extended from `spi_device_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* spi_host_xfer_bytes:        Send bytes of data to DUT (SPI Device) through spi_host_driver
+* `spi_host_xfer_bytes`:        Send bytes of data to DUT (SPI Device) through spi_host_driver
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
-* Other spi_device covergroups are defined the `spi_device_env_cov` class, which thoroughly covers all design features.
+* Common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin.
+* Other `spi_device` covergroups are defined the `spi_device_env_cov` class, which thoroughly covers all design features.
 Refer to the testplan covergroups sections for the detail descriptions.
 
 ### Self-checking strategy
 #### Scoreboard
 The `spi_device_scoreboard` is primarily used for end to end checking.
 It creates the following analysis FIFOs to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo, tl_d_chan_fifo:           These 2 FIFOs provide transaction items at the end of address channel and data channel respectively
-* upstream_spi_host_fifo, upstream_spi_device_fifo: These 2 FIFOs provides TX/RX words of data from spi_monitor
+* `tl_a_chan_fifo`, `tl_d_chan_fifo`: These 2 FIFOs provide transaction items at the end of address channel and data channel respectively.
+* `upstream_spi_host_fifo`, `upstream_spi_device_fifo`: These 2 FIFOs provides TX/RX words of data from `spi_monitor`.
 
 #### Assertions
-* TLUL assertions: The `tb/spi_device_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TL-UL assertions: The `tb/spi_device_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
