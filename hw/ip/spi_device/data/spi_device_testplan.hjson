@@ -16,17 +16,17 @@
       desc: '''
             Configures Flash/Passthrough modes as well as TPM and drive reads/writes
             through SPI alternating between TPM and SPI commands.
-            Sequences spi_device_flash_all_vseq and spi_device_tpm_all_vseq are
-            launched in parallel'''
+            Sequences `spi_device_flash_all_vseq` and `spi_device_tpm_all_vseq` are
+            launched in parallel.'''
       stage: V1
       tests: ["spi_device_flash_and_tpm"]
     }
     {
       name: csb_read
-      desc: '''Read CSB value from CSR and check the correctness
+      desc: '''Read `CSb` value from CSR and check the correctness
 
                This feature is for debug only, so it's sufficient to verify with this direct sequence:
-               - Assign both CSB pins with random values and read the CSB CSRs to check the values'''
+               - Assign both `CSb` pins with random values and read the `CSb` CSRs to check the values'''
       stage: V2
       tests: ["spi_device_csb_read"]
     }
@@ -34,18 +34,18 @@
       name: mem_parity
       desc: '''Test memory parity error
 
-               pick a random mem address to inject parity errors and read it back,
-               then check it returns d_error with all 1s data.'''
+               Pick a random memory address to inject parity errors and read it back,
+               then check it returns `d_error` with all 1s as data.'''
       stage: V2
       tests: ["spi_device_mem_parity"]
     }
     {
       name: mem_cfg
-      desc: '''Test cfg_i connectivity between spi_device and the backing RAM.
+      desc: '''Test `cfg_i` connectivity between `spi_device` and the backing RAM.
 
 
-               Randomly set dut.ram_cfg_i and check this value is propagated to the memory itself.
-               For the 1r1w implementation, where the RAM is split into ingress and egress portions,
+               Randomly set `dut.ram_cfg_i` and check this value is propagated to the memory itself.
+               For the `1r1w` implementation, where the RAM is split into ingress and egress portions,
                check that the configuration makes it to both sides.'''
 
       stage: V2
@@ -54,14 +54,14 @@
     {
       name: tpm_read
       desc: '''
-            - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.
-            - Randomise other fields in TPM_CFG.
-            - Assert the tpm_csb.
+            - Set `TPM_CFG.TPM_MODE` to CRB mode and set TPM_CFG.EN.
+            - Randomise other fields in `TPM_CFG`.
+            - Assert the `tpm_csb`.
             - Send TPM read command over the SPI bus with a randomised address.
-            - Check TPM_CMD_ADDR.
-            - Confirm FIFO behaviour dictated by TPM_CFG.tpm_mode.
-            - Check TPM_STATUS.cmdaddr_notempty and INTR_STATE.tpm_header_notempty, they should be asserted if hw_reg_dis == 0.
-            - If hw_reg_dis == 0, the data is returned to the host via return-by-HW register, else the data is returned via read TPM FIFO in SRAM.
+            - Check `TPM_CMD_ADDR`.
+            - Confirm FIFO behaviour dictated by `TPM_CFG.tpm``_mode.
+            - Check `TPM_STATUS.cmdaddr_notempty` and `INTR_STATE.tpm_header_notempty`, they should be asserted if `hw_reg_dis == 0`.
+            - If `hw_reg_dis == 0`, the data is returned to the host via return-by-HW register, else the data is returned via read TPM FIFO in SRAM.
             - Confirm that the TPM submodule sends WAIT until the read FIFO is available.
             - Check the read FIFO.
             - When available, confirm that the TPM submodule sends START followed by the register value.
@@ -72,12 +72,12 @@
     {
       name: tpm_write
       desc: '''
-            - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.
-            - Randomise other fields in TPM_CFG.
-            - Assert the tpm_csb.
+            - Set `TPM_CFG.TPM_MODE` to CRB mode and set `TPM_CFG.EN`.
+            - Randomise other fields in `TPM_CFG`.
+            - Assert the `tpm_csb`.
             - Send TPM write command with a randomised address.
-            - Check TPM_CMD_ADDR and write FIFO.
-            - Check TPM_STATUS.cmdaddr_notempty and INTR_STATE.tpm_header_notempty.
+            - Check `TPM_CMD_ADDR` and write FIFO.
+            - Check `TPM_STATUS.cmdaddr_notempty` and `INTR_STATE.tpm_header_notempty`.
             - Based on FIFO status, check SPI bus to confirm WAIT or START sent.
             - Check that the TPM submodule accepts write data without the WAIT state if the write FIFO is empty.
             - Otherwise, check WAIT until the write FIFO becomes available (empty).'''
@@ -116,7 +116,7 @@
       name: pass_cmd_filtering
       desc: '''
             - Randomize command opcode.
-            - Configure unused CMD_INFO reg with new opcode and set it to valid.
+            - Configure unused `CMD_INFO` reg with new opcode and set it to valid.
             - Check opcode, address and payload are passing through.
             - Configure filter bit corresponding to opcode to 1.
             - Check the entire command is filtered.
@@ -130,7 +130,7 @@
       name: pass_addr_translation
       desc: '''
             - Randomize command opcode.
-            - Configure unused CMD_INFO reg with new opcode and set it to valid.
+            - Configure unused `CMD_INFO` reg with new opcode and set it to valid.
             - Enable address translation for given command.
             - Configure address translation bits.
             - Check proper address translation is applied.
@@ -178,10 +178,10 @@
     {
       name: cmd_read_jedec
       desc: '''
-            - Configure proper read jedec command info slot.
-            - Issue read jedec command.
-            - Check propagation of read jedec command.
-            - Initiate response to the read jedec.
+            - Configure proper read JEDEC command info slot.
+            - Issue read JEDEC command.
+            - Check propagation of read JEDEC command.
+            - Initiate response to the read JEDEC.
             - Check proper reception of response.'''
       stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
@@ -189,10 +189,10 @@
     {
       name: cmd_read_sfdp
       desc: '''
-            - Configure proper read sfdp command info slot.
-            - Issue read sfdp command.
-            - Check propagation of read sfdp command.
-            - Initiate response to the read sfdp.
+            - Configure proper read SFDP command info slot.
+            - Issue read SFDP command.
+            - Check propagation of read SFDP command.
+            - Initiate response to the read SFDP.
             - Check proper reception of response.'''
       stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
@@ -222,7 +222,7 @@
     {
       name: flash_cmd_upload
       desc: '''
-            - Configure spi_device on flash or passthrough mode.
+            - Configure `spi_device` on flash or passthrough mode.
             - Configure cmd info slots.
             - Set upload to 1 for some of 13 non fixed cmd info slots.
             - Host should poll busy field status to check if command is done.
@@ -243,15 +243,15 @@
     {
       name: mailbox_cross_outside_command
       desc: '''
-            - Configure spi_device on passthrough mode. Mailbox boundary crossing is not expected to
+            - Configure `spi_device` on passthrough mode. Mailbox boundary crossing is not expected to
               be used on flash mode, so that testing this on flash mode isn't needed.
             - Configure cmd info slots.
             - Issue one of predefined read command targeting mailbox space.
             - Command should start inside mailbox space and cross into read space.
             - When the address falls in the mailbox region, data returns from the mailbox. when the
               address is outside the mailbox, data returns as follows
-                - returns high-z if the read command is filtered.
-                - returns from downstream port if read command is passed through.'''
+                - Returns high-z if the read command is filtered.
+                - Returns from downstream port if read command is passed through.'''
       stage: V2
       tests: ["spi_device_mailbox"]
     }
@@ -348,17 +348,17 @@
     {
       name: tpm_and_flash_trans_with_min_inactive_time
       desc: '''
-            Issue these transactions with 2 sys_clk inactive time in between.
+            Issue these transactions with 2 `sys_clk` inactive time in between.
             - 2 tpm transactions.
             - 2 flash transactions.
-            - a tpm transaction and a flash transaction.'''
+            - A TPM transaction and a Flash transaction.'''
       stage: V2
       tests: ["spi_device_flash_and_tpm_min_idle"]
     }
     {
       name: stress_all
       desc: '''
-            - Combine above sequences in one test to run sequentially, except csr sequences.
+            - Combine above sequences in one test to run sequentially, except CSR sequences.
             - Test modes switch among FW, flash, passthrough and tpm.
             - Randomly add reset between each sequence'''
       stage: V2
@@ -378,7 +378,7 @@
       name: tpm_cfg_cg
       desc: '''
             Cover all combinations of these configurations in CSR `tpm_cfg`:
-              - tpm_mode, hw_reg_dis, tpm_reg_chk_dis, invalid_locality.
+              - `tpm_mode`, `hw_reg_dis`, `tpm_reg_chk_dis`, invalid_locality.
             Cover these address mode:
              - TPM address in both valid and invalid locality.
              - TPM address in/outside TPM address region ('hd4_xxxx).
@@ -453,7 +453,7 @@
       desc: '''
             Cover all status bits toggled.
             Cross above with host reading status and SW reading status.
-            Cover SW updating flash_status while CSB is active.'''
+            Cover SW updating flash_status while `CSb` is active.'''
     }
     {
       name: flash_upload_payload_size_cg
@@ -478,7 +478,7 @@
             Cover dummy cycle.
             Cover filter enabled/disabled.
             Cover various payload size
-            Cover INTERCEPT_EN.
+            Cover `INTERCEPT_EN`.
             Cross all above items.'''
     }
     {
@@ -513,7 +513,7 @@
       name: spi_device_write_enable_disable_cg
       desc: '''
             Cover write enable and write disable commands.
-            Cross this with the previous flash_status.wel value.'''
+            Cross this with the previous `flash_status.wel` value.'''
     }
     {
       name: spi_device_buffer_boundary_cg
