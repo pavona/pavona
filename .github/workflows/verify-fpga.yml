@@ -27,7 +27,7 @@ jobs:
   verify_fpga_jobs:
     name: Verify FPGA jobs
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     steps:
       - uses: actions/checkout@v4
       - name: Download target pattern files
