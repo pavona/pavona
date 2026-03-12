@@ -636,13 +636,9 @@
     - [TPM2 Test Server](./sw/host/tpm2_test_server/README.md)
 
   - [Getting Started](./doc/getting_started/README.md)
-    - [Workflows](./doc/getting_started/workflows.md)
     - [Design Verification](./doc/getting_started/setup_dv.md)
-    - [Formal Verification](./doc/getting_started/setup_formal.md)
-    - [Building (and Testing) Software](./doc/getting_started/build_sw.md)
-    - [Building Documentation](./doc/getting_started/build_docs.md)
-    - [Using OpenOCD](./doc/getting_started/using_openocd.md)
 
+<<<<<<< HEAD
     - [Tools Setup](./doc/getting_started/tools-setup.md)
     - [FPGA Setup](./doc/getting_started/setup_fpga.md)
     - [Verilator Setup](./doc/getting_started/setup_verilator.md)
@@ -654,16 +650,15 @@
     - [Contributing to Documentation](./doc/contributing/doc/README.md)
     - [Continuous Integration](./doc/contributing/ci/README.md)
     - [Top-Level Design and Targets](./doc/contributing/system_list.md)
+=======
+    - [Contributing to Documentation](./doc/contributing/doc/README.md)
+    - [Continuous Integration](./doc/contributing/ci/faq.md)
+>>>>>>> d40e12ecf7 ([doc] Remove broken links in `SUMMARY.md`)
     - [GitHub Notes](./doc/contributing/github_notes.md)
     - [Bazel Notes](./doc/contributing/bazel_notes.md)
     - [Using the Container](./util/container/README.md)
 
-    - [Contributing to Hardware](./doc/contributing/hw/README.md)
     - [Comportability](./doc/contributing/hw/comportability/README.md)
-    - [RACL](./doc/contributing/hw/racl/README.md)
-    - [Hardware Design](./doc/contributing/hw/design.md)
-    - [Design Methodology](./doc/contributing/hw/methodology.md)
-    - [Vendoring in Hardware](./doc/contributing/hw/vendor.md)
     - [Linting](./hw/lint/README.md)
     - [Synthesis Flow](./hw/syn/README.md)
 
@@ -676,14 +671,17 @@
     - [Device Interface Functions](./doc/contributing/sw/device_interface_functions.md)
     - [Writing and Building Software for ACC](./doc/contributing/sw/acc_sw.md)
 
+<<<<<<< HEAD
   - [Contributor Guides](./doc/contributing/style_guides/README.md)
 
     - [HJSON](./doc/contributing/style_guides/hjson_usage_style.md)
     - [Python](./doc/contributing/style_guides/python_coding_style.md)
+=======
+
+>>>>>>> d40e12ecf7 ([doc] Remove broken links in `SUMMARY.md`)
     - [C & C++](./doc/contributing/style_guides/c_cpp_coding_style.md)
-    - [Markdown](./doc/contributing/style_guides/markdown_usage_style.md)
-    - [RISC-V Assembly](./doc/contributing/style_guides/asm_coding_style.md)
     - [ACC Assembly](./doc/contributing/style_guides/acc_style_guide.md)
+<<<<<<< HEAD
     - [Guidance for Volatile](./doc/contributing/style_guides/guidance_for_volatile.md)
 
     - [Developing on an FPGA](./doc/contributing/fpga/README.md)
@@ -694,6 +692,8 @@
     - [Hardware Development Stages](./doc/contributing/hw/development_stages.md)
     - [Signoff Checklist](./doc/contributing/hw/checklist/README.md)
     - [Rust for Embedded C Programmers](./doc/rust_for_c_devs.md)
+=======
+>>>>>>> d40e12ecf7 ([doc] Remove broken links in `SUMMARY.md`)
 
   - [Tooling](./util/README.md)
 
