@@ -58,7 +58,7 @@ jobs:
   fpga:
     name: ${{ inputs.name }}
     runs-on:
-      group: zerorisc-fpga-${{ inputs.board }}
+      group: pavona-${{ inputs.board }}
     timeout-minutes: ${{ inputs.timeout }}
     steps:
       - uses: actions/checkout@v4

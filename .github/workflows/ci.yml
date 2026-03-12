@@ -36,7 +36,7 @@ jobs:
   quick_lint:
     name: Lint (quick)
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,16 +78,15 @@ jobs:
       - name: Trailing whitespace
         run: ./ci/scripts/whitespace.sh "$GITHUB_BASE_REF"
         if: ${{ github.event_name == 'pull_request' }}
-      # Temporarily disabled, see expo#153
-      # - name: Broken links
-      #   run: ./ci/scripts/check-links.sh
+      - name: Broken links
+        run: ./ci/scripts/check-links.sh
       - name: Lock files
         run: ./ci/scripts/check-lock-files.sh
 
   slow_lint:
     name: Lint (slow)
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
@@ -148,7 +147,7 @@ jobs:
   dependency-licenses:
     name: Check software dependency licenses
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
@@ -192,7 +191,7 @@ jobs:
   verible_lint:
     name: Verible lint
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     needs: quick_lint
     if: ${{ github.event_name == 'pull_request' }}
     env:
@@ -239,7 +238,7 @@ jobs:
     name: Run ACC smoke Test
     needs: quick_lint
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 10
     steps:
@@ -272,7 +271,7 @@ jobs:
     name: Run ACC crypto tests
     needs: quick_lint
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 60
     steps:
@@ -287,7 +286,7 @@ jobs:
   verilator_earlgrey:
     name: Verilated Earl Grey
     runs-on:
-      group: zerorisc-large
+      group: pavona-large
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 240
@@ -347,7 +346,7 @@ jobs:
   sw_build_test:
     name: Build and test software (Earlgrey)
     runs-on:
-      group: zerorisc-large
+      group: pavona-large
     timeout-minutes: 120
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
@@ -417,7 +416,7 @@ jobs:
   dj_sw_build_test:
     name: Build and test software (Darjeeling)
     runs-on:
-      group: zerorisc-large
+      group: pavona-large
     timeout-minutes: 120
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
@@ -490,7 +489,7 @@ jobs:
   qemu_smoketest:
     name: QEMU smoketest
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
@@ -506,7 +505,7 @@ jobs:
   qemu_local_dev_test:
     name: Test QEMU local development override
     runs-on:
-      group: zerorisc-none
+      group: pavona-basic
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:

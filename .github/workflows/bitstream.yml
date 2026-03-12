@@ -18,7 +18,7 @@ jobs:
   bitstream:
     name: Build bitstream
     runs-on:
-      group: zerorisc-vivado
+      group: pavona-vivado
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
