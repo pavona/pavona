@@ -13,7 +13,7 @@ Extensions can be used to add extra definitions to the generated artifacts such 
 Python extensions can be added by passing a python file on the command-line of `dtgen` with `--extension`.
 This file must contain one or more classes derived from the `Extension` class in [`helper.py`](./helper.py).
 The API for such extensions is not considered public or stable.
-Some IPs currently have these extensions, including [`pwrmgr`](../../hw/ip_templates/pwrmgr/util/dt.py), [`rstmgr`](../../hw/ip_templates/rstmgr/util/dt.py), and [`clkmgr`](../../hw/ip_templates/clkmgr/util/dt.py).
+Some IPs currently have these extensions, including [`pwrmgr`](../../hw/top/dt/pwrmgr_binding.py), [`rstmgr`](../../hw/top/dt/rstmgr_binding.py), and [`clkmgr`](../../hw/top/dt/clkmgr_binding.py).
 
 ## Ipgen-based extensions
 
