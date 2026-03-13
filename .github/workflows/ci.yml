@@ -361,49 +361,8 @@ jobs:
           # Test the graph with both an empty and filled bitstream cache.
           ./ci/scripts/test-empty-bitstream-cache.sh
           ./bazelisk.sh build --nobuild //...
-      - name: Select software targets
-        run: |
-          target_pattern_file="$(mktemp)"
-          echo "target_pattern_file=${target_pattern_file}" >> "$GITHUB_ENV"
-
-          # Start with building the whole graph.
-          echo '//...' > "$target_pattern_file"
-          # Exclude some targets:
-          #
-          # 1. `//hw/...` is out of scope.
-          # 2. `//quality/...` is tested by the lint jobs.
-          # 3. `//sw/acc/crypto/...` is tested by the ACC job.
-          # 4. `//third_party/...` which is not our code.
-          printf "%s\n"             \
-            "-//hw/..."             \
-            "-//quality/..."        \
-            "-//sw/acc/crypto/..." \
-            "-//third_party/..."    \
-            >> "$target_pattern_file"
-          # Exclude anything that requires a bitstream splice.
-          ./bazelisk.sh cquery                               \
-            --noinclude_aspects                              \
-            --output=starlark                                \
-            --starlark:expr='"-{}".format(target.label)'     \
-            --define DISABLE_VERILATOR_BUILD=true            \
-            -- "rdeps(//..., kind(bitstream_splice, //...))" \
-            >> "$target_pattern_file"
-      - name: Build software targets
-        run: |
-          # Build everything we selected, excluding some tags.
-          ./bazelisk.sh build                                \
-            --build_tests_only=false                         \
-            --define DISABLE_VERILATOR_BUILD=true            \
-            --test_tag_filters=-broken,-cw310,-verilator,-dv \
-            --target_pattern_file="$target_pattern_file"
-      - name: Run software unit tests
-        run: |
-          ./bazelisk.sh test                                          \
-            --build_tests_only=false                                  \
-            --test_output=errors                                      \
-            --define DISABLE_VERILATOR_BUILD=true                     \
-            --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
-            --target_pattern_file="$target_pattern_file"
+      - name: Build and test software targets
+        run: ./ci/scripts/sw-build-test.sh earlgrey //...
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
@@ -431,52 +390,8 @@ jobs:
           # Test the graph with both an empty and filled bitstream cache.
           ./ci/scripts/test-empty-bitstream-cache.sh
           ./bazelisk.sh build --nobuild --//hw/top=darjeeling //...
-      - name: Select software targets
-        run: |
-          target_pattern_file="$(mktemp)"
-          echo "target_pattern_file=${target_pattern_file}" >> "$GITHUB_ENV"
-
-          # Start with building the whole graph.
-          echo '//...' > "$target_pattern_file"
-          # Exclude some targets:
-          #
-          # 1. `//hw/...` is out of scope.
-          # 2. `//quality/...` is tested by the lint jobs.
-          # 3. `//sw/acc/crypto/...` is tested by the ACC job.
-          # 4. `//third_party/...` which is not our code.
-          printf "%s\n"             \
-            "-//hw/..."             \
-            "-//quality/..."        \
-            "-//sw/acc/crypto/..." \
-            "-//third_party/..."    \
-            >> "$target_pattern_file"
-          # Exclude anything that requires a bitstream splice.
-          ./bazelisk.sh cquery                               \
-            --//hw/top=darjeeling                            \
-            --noinclude_aspects                              \
-            --output=starlark                                \
-            --starlark:expr='"-{}".format(target.label)'     \
-            --define DISABLE_VERILATOR_BUILD=true            \
-            -- "rdeps(//..., kind(bitstream_splice, //...))" \
-            >> "$target_pattern_file"
-      - name: Build software targets
-        run: |
-          # Build everything we selected, excluding some tags.
-          ./bazelisk.sh build                                \
-            --//hw/top=darjeeling                            \
-            --build_tests_only=false                         \
-            --define DISABLE_VERILATOR_BUILD=true            \
-            --test_tag_filters=-broken,-cw310,-verilator,-dv \
-            --target_pattern_file="$target_pattern_file"
-      - name: Run software unit tests
-        run: |
-          ./bazelisk.sh test                                           \
-            --//hw/top=darjeeling                                      \
-            --build_tests_only=false                                   \
-            --test_output=errors                                       \
-            --define DISABLE_VERILATOR_BUILD=true                      \
-            --test_tag_filters=-broken,-vcu118,-verilator,-dv,-silicon \
-            --target_pattern_file="$target_pattern_file"
+      - name: Build and test software targets
+        run: ./ci/scripts/sw-build-test.sh darjeeling //...
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
