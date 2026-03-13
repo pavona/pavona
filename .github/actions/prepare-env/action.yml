@@ -53,6 +53,9 @@ runs:
     - name: Install system dependencies
       run: |
         sudo apt update --fix-missing
+        sudo apt install wget
+        wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
+        sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
         grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
       shell: bash
       working-directory: ${{ inputs.working-directory }}
