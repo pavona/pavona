@@ -13,11 +13,11 @@ Here are two examples:
     <br />Every time <code>req</code> goes high, <code>ack</code> must be
     high exactly 2 clock cycles later.
 
-Above examples are using the <code>`ASSERT</code> macro defined in [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv),
+Above examples are using the <code>`ASSERT</code> macro defined in [prim_assert.sv](../ip/prim/rtl/prim_assert.sv),
 whose four arguments are assertion name, property, clock, and reset (active-high reset).
 
 Assertions are usually added by the designer in the RTL file.
-Assertions can also be added in a separate module, see for example [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv) and its [documentation](../ip/tlul/doc/TlulProtocolChecker.md), which contains a generic protocol checker for the TileLink-UL standard.
+Assertions can also be added in a separate module, see for example [tlul_assert.sv](../ip/tlul/rtl/tlul_assert.sv) and its [documentation](../ip/tlul/doc/TlulProtocolChecker.md), which contains a generic protocol checker for the TileLink-UL standard.
 
 ## Types of Assertions
 There are two types of assertions:
@@ -35,7 +35,7 @@ end
 ```
 
 ## Useful Macros
-The file [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) and [prim_assert_standard_macros.svh](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert_standard_macros.svh) define many useful shortcuts that you can use in your RTL code.
+The file [prim_assert.sv](../ip/prim/rtl/prim_assert.sv) and [prim_assert_standard_macros.svh](../ip/prim/rtl/prim_assert_standard_macros.svh) define many useful shortcuts that you can use in your RTL code.
 Some of them are detailed below:
 
 ### ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
@@ -82,9 +82,9 @@ Assert that a concurrent property never happens.
 Assert that `signal` has a known value after reset, where "known" refers to a value that is not X.
 
 ### More Macros and Examples
-*   For more macros see file [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) and [prim_assert_standard_macros.svh](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert_standard_macros.svh).
+*   For more macros see file [prim_assert.sv](../ip/prim/rtl/prim_assert.sv) and [prim_assert_standard_macros.svh](../ip/prim/rtl/prim_assert_standard_macros.svh).
 *   For more examples, search the repository for ASSERT by typing `grep -r ASSERT .`
-*   Also see [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv) and its [documentation](../ip/tlul/doc/TlulProtocolChecker.md).
+*   Also see [tlul_assert.sv](../ip/tlul/rtl/tlul_assert.sv) and its [documentation](../ip/tlul/doc/TlulProtocolChecker.md).
 
 ## Useful SVA System Functions
 Below table lists useful SVA (SystemVerilog assertion) functions that can be used for assertion properties.
@@ -227,7 +227,7 @@ To ensure the symbolic variable performs the expected behaviors, two assumptions
 Coverpoints are used for properties and corner cases that the designer wants to make sure are being exercised by the testbench (e.g. FIFO-full checks).
 The code coverage tool then reports the coverage percentage of these coverpoints together with the other cover metrics (such as line coverage and branch coverage).
 
-The macro <code>`COVER(name, prop, clk, rst)</code> of [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) can be used to add coverpoints to your design, where the cover property uses the same SVA syntax, operators, and system functions as the assert properties.
+The macro <code>`COVER(name, prop, clk, rst)</code> of [prim_assert.sv](../ip/prim/rtl/prim_assert.sv) can be used to add coverpoints to your design, where the cover property uses the same SVA syntax, operators, and system functions as the assert properties.
 
 ## Running FPV on DVSim
 

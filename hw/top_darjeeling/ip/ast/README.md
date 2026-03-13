@@ -22,12 +22,7 @@ shown in the diagram, but will be explained as well.
 
 ### Signal naming conventions used in this document
 
-It complies with OpenTitan-conventional
-[<u>names</u>](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md#naming)
-and
-[<u>suffixes</u>](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md#suffixes)
-with some augmentations.
-
+Signal naming generally complies with the [Verilog style guide](../../../../doc/contributing/style_guides/verilog_coding_style.md) names and suffixes with some augmentations:
 - Clock signals start with clk_*
 
 - Inputs and outputs are marked with *_i/o

@@ -279,7 +279,7 @@ Some notes to help explain the code above:
 - The first argument to `loopi` is the number of iterations, and the second is the number of instructions in the loop body
 - `.bss` marks data memory that is not initialized; the program would still work if we used `.data`, but the binary would be bigger because Ibex would store a bunch of placeholder zeroes
 
-To see all current ACC programs from the codebase, see the `sw/acc/` directory.
+To see all current ACC programs from the codebase, see the [`sw/acc/`](../../../../sw/acc) directory.
 The `crypto/` subdirectory contains code we use in production, while the `code-snippets` subdirectory contains small example programs.
 
 ## Performance
@@ -290,8 +290,8 @@ Look below for instructions on how to reproduce these benchmarks.
 | Operation | Cycles | Commit | Target | Constant time |
 |-----------|-------:|--------|:-------|---------------|
 | P256 scalar mult | 670089 | 5bcd7d | p256_scalar_mult_test | yes |
-| ECDSA-P256 sign | 704126 | 5bcd7d | p256_ecdsa_sign_test | yes |
-| ECDH-P256 verify | 420220 | 5bcd7d | p256_ecdsa_verify_test | no |
+| ECDSA-P256 sign | 704126 | 5bcd7d | run_p256_sign_test | yes |
+| ECDH-P256 verify | 420220 | 5bcd7d | run_p256_verify_test | no |
 | P384 scalar mult | 1632638 | 875b3a | p384_scalar_mult_test | yes |
 | ECDSA-P384 sign | 1697985 | 875b3a | p384_ecdsa_sign_test | yes |
 | ECDSA-P384 verify | 1075092 | 875b3a | p384_ecdsa_verify_test | no |
@@ -316,11 +316,11 @@ To reproduce these benchmarks yourself, checkout the specified commit, then run 
 
 #### Step 1: Build the tests.
 
-To build the tests with Bazel, run `bazel build //sw/acc/crypto/tests:<target_name>`, e.g. `bazel build //sw/acc/crypto/tests:p256_ecdsa_verify_test`.
-Then you'll need to find the `.elf` file that Bazel generates; for me this is e.g. `bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/acc/crypto/tests/p256_ecdsa_verify_test.elf`.
+To build the tests with Bazel, run `bazel build //sw/acc/crypto/tests:<target_name>`, e.g. `bazel build //sw/acc/crypto/tests:run_p256_verify_test`.
+Then you'll need to find the `.elf` file that Bazel generates; for me this is e.g. `bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/acc/crypto/tests/run_p256_verify_test.elf`.
 You can find the path for yours by running:
 ```
-bazel aquery 'outputs(".*.elf", //sw/acc/crypto/tests:p256_ecdsa_verify_test)' | grep 'Outputs'
+bazel aquery 'outputs(".*.elf", //sw/acc/crypto/tests:run_p256_verify_test)' | grep 'Outputs'
 ```
 
 Alternatively, you can build the tests manually with `acc_as.py` and `acc_ld.py`, as described in the [ACC development guide](developing_acc.md#build-acc-software).
@@ -333,7 +333,7 @@ See the [ACC development guide](developing_acc.md#run-the-python-simulator) for 
 
 ## SCA methodology
 
-Current code for side channel analysis (SCA) on ACC is in the `sw/device/sca` directory.
+Current code for side channel analysis (SCA) on ACC is in the [`sw/device/sca`](../../../../sw/device/sca) directory.
 The main focus of this code is analysis of power/EM side channels.
 For timing side channels, we use [static analysis scripts](#static-checks) instead.
 
@@ -365,7 +365,7 @@ A typical workflow when developing for ACC is to write both the program itself a
 If the tests fail, then the cycle-by-cycle printouts help to determine what went wrong.
 The simulator is also a good way to get accurate ACC cycle counts.
 
-You can see the current ACC simulator tests under `sw/acc/crypto/tests`.
+You can see the current ACC simulator tests under [`sw/acc/crypto/tests`](../../../../sw/acc/crypto/tests).
 
 ### Formal methods
 
@@ -378,14 +378,14 @@ Their ACC code is used in production silicon.
 There is no performance hit from the verified code, and since it is burned into hardware ROM it is essential that this code is correct.
 
 We are also pursuing other ongoing collaborations in formal methods, including adding ACC to the Jasmin compiler.
-In the meantime, we occasionally prove small and particularly tricky parts of programs against simplified ACC models in Coq, such as [here](https://github.com/lowRISC/opentitan/pull/19768).
+In the meantime, we occasionally prove small and particularly tricky parts of programs against simplified ACC models in Coq.
 
 ### Static checks
 
 Building on top of the ACC simulator, we also have Python tools that model ACC's control flow and statically:
-- [check](https://github.com/lowRISC/opentitan/blob/7528f848214589e837ce3b0dacac8385c458b772/hw/ip/otbn/util/check_const_time.py) if an ACC program or function is constant-time relative to secrets
-- [print](https://github.com/lowRISC/opentitan/blob/7528f848214589e837ce3b0dacac8385c458b772/hw/ip/otbn/util/analyze_information_flow.py) out the information-flow graph for ACC functions
-- [determine](https://github.com/lowRISC/opentitan/blob/7528f848214589e837ce3b0dacac8385c458b772/hw/ip/otbn/util/get_instruction_count_range.py) the minimum and maximum possible instruction count for a program
+- [check](../util/check_const_time.py) if an ACC program or function is constant-time relative to secrets
+- [print](../util/analyze_information_flow.py) out the information-flow graph for ACC functions
+- [determine](../util/get_instruction_count_range.py) the minimum and maximum possible instruction count for a program
 
 Some of these have Bazel build integration.
 For example, many ACC functions have a Bazel build target like this that runs the constant-time checker in CI:
@@ -394,7 +394,7 @@ acc_consttime_test(
     name = "p256_base_mult_consttime",
     subroutine = "p256_base_mult",
     deps = [
-        "//sw/acc/crypto:p256_ecdsa",
+        "//sw/acc/crypto:run_p256",
     ],
 )
 ```

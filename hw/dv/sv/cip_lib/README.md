@@ -418,7 +418,7 @@ CIP contains reusable security verification components, sequences and function c
 This section describes the details of them and the steps to enable them.
 
 ### Security Verification for bus integrity
-The countermeasure of bus integrity can be fully verified via importing [tl_access_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/tl_access_tests.hjson) and [tl_device_access_types_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson).
+The countermeasure of bus integrity can be fully verified via importing [tl_access_tests](../../tools/dvsim/tests/tl_access_tests.hjson) and [tl_device_access_types_testplan](../../tools/dvsim/testplans/tl_device_access_types_testplan.hjson).
 The `tl_intg_err` test injects errors on control, data, or the ECC bits and verifies that the integrity error will trigger a fatal alert (provided via `cfg.tl_intg_alert_name`) and error status (provided via `cfg.tl_intg_alert_fields`) is set.
 Refer to section [cip_base_env_cfg](#cip_base_env_cfg) for more information on these 2 variables.
 The user may update these 2 variables as follows.
@@ -433,8 +433,8 @@ class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
 
 ### Security Verification for memory integrity
 The memory integrity countermeasure stores the data integrity in the memory rather than generating the integrity on-the-fly during a read.
-The [passthru_mem_intg_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/passthru_mem_intg_tests.hjson) can fully verify this countermeasure.
-The details of the test sequences are described in the [tl_device_access_types_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/passthru_mem_intg_testplan.hjson). Users need to override the task `inject_intg_fault_in_passthru_mem` to inject an integrity fault to the memory in the block common_vseq.
+The [passthru_mem_intg_tests](../../tools/dvsim/tests/passthru_mem_intg_tests.hjson) can fully verify this countermeasure.
+The details of the test sequences are described in the [tl_device_access_types_testplan](../../tools/dvsim/testplans/passthru_mem_intg_testplan.hjson). Users need to override the task `inject_intg_fault_in_passthru_mem` to inject an integrity fault to the memory in the block common_vseq.
 
 The following is an example from `sram_ctrl`, in which it flips up to `MAX_TL_ECC_ERRORS` bits of the data and generates a backdoor write to the memory.
 ```systemverilog
@@ -460,7 +460,7 @@ endclass
 ```
 
 ### Security Verification for shadow CSRs
-The countermeasure of shadow CSRs can be fully verified via importing [shadow_reg_errors_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson) and [shadow_reg_errors_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson).
+The countermeasure of shadow CSRs can be fully verified via importing [shadow_reg_errors_tests](../../tools/dvsim/tests/shadow_reg_errors_tests.hjson) and [shadow_reg_errors_testplan](../../tools/dvsim/testplans/shadow_reg_errors_testplan.hjson).
 The details of the test sequences are described in the testplan. Users need to assign the status CSR fields to `cfg.shadow_update_err_status_fields` and `cfg.shadow_storage_err_status_fields` for update error and storage error respectively.
 ```systemverilog
 class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
@@ -472,15 +472,15 @@ class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
 ```
 
 ### Security Verification for REGWEN CSRs
-If the REGWEN CSR meets the following criteria, it can be fully verified by the common [csr_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/csr_tests.hjson).
+If the REGWEN CSR meets the following criteria, it can be fully verified by the common [csr_tests](../../tools/dvsim/tests/csr_tests.hjson).
  - The REGWEN CSR and its related lockable CSRs are HW read-only registers.
  - The related lockable CSRs are not WO type, otherwise the read value is always 0 and CSR tests can't really verify if the write value is taken or not.
  - No CSR exclusions have been added to the REGWEN CSR and its related lockable CSRs.
 If not, users need to write a test to verify it separately since cip_lib and dv_base_reg can't predict its value.
-For example, the [sram_ctrl_regwen_vseq](https://github.com/lowRISC/opentitan/blob/master/hw/ip/sram_ctrl/dv/env/seq_lib/sram_ctrl_regwen_vseq.sv) has been added to verify `ctrl_regwen` and the lockable register `ctrl` since `ctrl` is a `WO` register and excluded in CSR tests.
+For example, the [sram_ctrl_regwen_vseq](../../../ip/sram_ctrl/dv/env/seq_lib/sram_ctrl_regwen_vseq.sv) has been added to verify `ctrl_regwen` and the lockable register `ctrl` since `ctrl` is a `WO` register and excluded in CSR tests.
 
 Functional coverage for REGWEN CSRs and their related lockable CSRs is generated automatically in dv_base_reg.
-The details of functional coverage is described in [csr_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/csr_testplan.hjson).
+The details of functional coverage is described in [csr_testplan](../../tools/dvsim/testplans/csr_testplan.hjson).
 
 ### Security Verification for MUBI type CSRs
 A functional covergroup of MUBI type CSR is automatically created in the RAL model for each MUBI CSR, which ensures `True`, `False` and at least N of other values (N = width of the MUBI type) have been collected.
@@ -518,9 +518,9 @@ Note: The `sim_tops` in sim_cfg.hjson should be updated to include this bind fil
 A [security countermeasure verification framework](../../../../doc/contributing/dv/sec_cm_dv_framework/README.md) is implemented in cip_lib to verify common countermeasure primitives in a semi-automated way.
 
 #### Design Verification
-cip_lib imports [sec_cm_pkg](https://github.com/lowRISC/opentitan/tree/master/hw/dv/sv/sec_cm), which automatically locates all the common countermeasure primitives and binds an interface to each of them.
+cip_lib imports [sec_cm_pkg](../../sv/sec_cm), which automatically locates all the common countermeasure primitives and binds an interface to each of them.
 In the cib_base_vseq, it injects a fault to each of these primitives and verifies that the fault will lead to a fatal alert.
-The details of the sequences can be found in testplans - [sec_cm_count_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson), [sec_cm_fsm_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson) and [sec_cm_double_lfsr_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/sec_cm_double_lfsr_testplan.hjson).
+The details of the sequences can be found in testplans - [sec_cm_count_testplan](../../tools/dvsim/testplans/sec_cm_count_testplan.hjson), [sec_cm_fsm_testplan](../../tools/dvsim/testplans/sec_cm_fsm_testplan.hjson) and [sec_cm_double_lfsr_testplan](../../tools/dvsim/testplans/sec_cm_double_lfsr_testplan.hjson).
 If the block uses common security countermeasure primitives (prim_count, prim_sparse_fsm_flop, prim_double_lfsr), users can enable this sequence to fully verify them via following steps.
 
 1. Import the applicable sec_cm testplans.
@@ -528,7 +528,7 @@ If more checks or sequences are needed, add another testpoint in the block testp
 For example, when the fault is detected by countermeasure, some subsequent operations won’t be executed.
 Add a testpoint in the testplan to capture this sequence and the checks.
 
-2. Import [sec_cm_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson) in sim_cfg.hjson file, as well as add applicable sec_cm bind files for `sim_tops`.
+2. Import [sec_cm_tests](../../tools/dvsim/tests/sec_cm_tests.hjson) in sim_cfg.hjson file, as well as add applicable sec_cm bind files for `sim_tops`.
 The `ip_sec_cm` test will be added and all common countermeasure primitives will be verified in this test.
 
 ```

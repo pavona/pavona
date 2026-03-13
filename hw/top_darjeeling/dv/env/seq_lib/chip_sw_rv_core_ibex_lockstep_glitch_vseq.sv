@@ -609,8 +609,6 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       //    that it's infeasible to always correctly model how the glitching of any internal signal
       //    impacts core behavior and ultimately whether this should be detected. Forcing inputs
       //    of ibex_core is a way to make the test feasible in the first place.
-      //
-      // For more details refer to https://github.com/lowRISC/ibex/pull/1967 .
       `DV_CHECK_FATAL(uvm_hdl_force(glitch_path_lockstep, orig_val));
       `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x.", glitch_path_lockstep, orig_val),
           UVM_LOW)

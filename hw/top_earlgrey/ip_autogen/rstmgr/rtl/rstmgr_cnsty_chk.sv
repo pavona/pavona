@@ -68,8 +68,6 @@ module rstmgr_cnsty_chk
     // 2-flop synchronizer (see u_rst_sync in rstmgr_leaf_rst) which is clocked using the same
     // clock (clk_io_div4_i). This means child_rst_asserted always de-asserts after
     // parent_rst_asserted unless we are under attack.
-    //
-    // For details, refer to https://github.com/lowRISC/opentitan/issues/27659 .
     .EnablePrimCdcRand(0)
   ) u_parent_sync (
     .clk_i,

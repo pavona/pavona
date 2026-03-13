@@ -275,5 +275,5 @@ Review        | Signoff date                      | Done        | 2019-11-01
 [PRE_VERIFIED_SUB_MODULES_V3]:   ../../../../doc/contributing/hw/checklist/README.md#pre_verified_sub_modules_v3
 [NO_ISSUES_PENDING]:             ../../../../doc/contributing/hw/checklist/README.md#no_issues_pending
 
-[common_cov_excl.cfg]:https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.cfg
-[uart_cov_excl.el]:  https://github.com/lowRISC/opentitan/blob/04bb36e0ae1430262b048d400102b0fed43377ac/hw/ip/uart/dv/cov/uart_cov_excl.el
+[common_cov_excl.cfg]: ../../../dv/tools/vcs/common_cov_excl.cfg
+[uart_cov_excl.el]: ../dv/cov/uart_cov_excl.el

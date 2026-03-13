@@ -6,7 +6,7 @@
 ## **Overview**
 
 This document details the protocol checker
-[tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv)
+[tlul_assert.sv](../rtl/tlul_assert.sv)
 for TL-UL (TileLink Uncached Lightweight), based on
 [TileLink specification version 1.7.1](https://sifive.cdn.prismic.io/sifive%2F57f93ecf-2c42-46f7-9818-bcdd7d39400a_tilelink-spec-1.7.1.pdf).
 
@@ -18,7 +18,7 @@ transactions rather than physical agents. A single agent can use multiple
 source IDs to track multiple outstanding transactions. See spec section 5.4
 "Source and Sink Identifiers" for more details.
 *   The source fields are `TL_AIW` bits wide (defined in
-[tlul_pkg.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_pkg.sv)).
+[tlul_pkg.sv](../rtl/tlul_pkg.sv)).
 Therefore, there can be up to 2<sup>TL_AIW</sup> outstanding
 requests at the same time. To keep track of these outstanding requests, the
 protocol checker stores pending requests in the array `pend_req` of depth
@@ -27,7 +27,7 @@ protocol checker stores pending requests in the array `pend_req` of depth
 accepted. Therefore, in each clock cycle, the protocol checker first processes
 requests and thereafter responses.
 *   The package
-[tlul_pkg.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_pkg.sv)
+[tlul_pkg.sv](../rtl/tlul_pkg.sv)
 defines the structs for channels A and D.
 *   In below tables, "known" means that a signal should have a value other
 than X.

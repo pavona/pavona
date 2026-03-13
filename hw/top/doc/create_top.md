@@ -48,7 +48,7 @@ AES = opentitan_ip(
     hjson = "//hw/ip/aes:data/aes.hjson",
 )
 ```
-For concrete examples, you can look at the [AES module](https://github.com/lowRISC/opentitan/blob/master/hw/ip/aes/defs.bzl) or the [AST module](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip/ast/defs.bzl).
+For concrete examples, you can look at the [AES module](../../ip/aes/defs.bzl) or the [AST module](../../top_earlgrey/ip/ast/defs.bzl).
 
 ### Registering generated IPs
 
@@ -73,7 +73,7 @@ ${module_instance_name.upper()} = opentitan_ip(
     ipconfig = "//hw/top_${topname}/ip_autogen/${module_instance_name}:data/top_${topname}_${module_instance_name}.ipconfig.hjson",
 )
 ```
-For concrete examples, you can look at the [clkmgr module](https://github.com/lowRISC/opentitan/blob/master/hw/ip_templates/clkmgr/defs.bzl.tpl).
+For concrete examples, you can look at the [clkmgr module](../../ip_templates/clkmgr/defs.bzl.tpl).
 
 ## Automatically generated files
 
@@ -90,7 +90,7 @@ The following steps require manual edits or creation of files and only need to b
 ### Adding your top to the build system
 
 The first step is to make the build system aware of your top so you can use the [top-selection mechanism](../README.md).
-To do this, edit [`hw/top/defs.bzl`](https://github.com/lowRISC/opentitan/blob/master/hw/top/defs.bzl) and add the following lines marked as `NEW`:
+To do this, edit [`hw/top/defs.bzl`](../../top/defs.bzl) and add the following lines marked as `NEW`:
 ```py
 # In hw/top/defs.bzl`:
 load("//rules/opentitan:hw.bzl", "opentitan_top")
@@ -153,13 +153,13 @@ sim_dv(
     rom = "//sw/device/lib/testing/test_rom:test_rom",
 )
 ```
-For concrete examples see [Darjeeling (simple)](https://github.com/lowRISC/opentitan/blob/master/hw/top_darjeeling/BUILD) or [Earlgrey (very complex)](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/BUILD).
+For concrete examples see [Darjeeling (simple)](../../top_darjeeling/BUILD) or [Earlgrey (very complex)](../../top_earlgrey/BUILD).
 
 **Important note:** creating an execution environment does not automatically enroll tests, those must manually be enabled for your execution environment.
 
 ### Build the test ROM for your top
 
-At minimum, you will want to build the test ROM for your DV execution environment. To do so, edit [`sw/device/lib/testing/test_rom/BUILD`](https://github.com/lowRISC/opentitan/blob/61427e7cb1d5c4ba5d0bd16199349033536cfce9/sw/device/lib/testing/test_rom/BUILD#L38) and add the following:
+At minimum, you will want to build the test ROM for your DV execution environment. To do so, edit [`sw/device/lib/testing/test_rom/BUILD`](../../../sw/device/lib/testing/test_rom/BUILD) and add the following:
 ```py
 # In sw/device/lib/testing/test_rom/BUILD
 opentitan_binary(
@@ -182,7 +182,7 @@ Once done, you should be able to compile a test ROM for your top by running:
 ### Adding your execution environment to tests
 
 This is usually done in two ways:
-- manually add a `//hw/top_match:sim_dv` to the `exec_env` attribute of a test, see [`example_test_from_rom`](https://github.com/lowRISC/opentitan/blob/61427e7cb1d5c4ba5d0bd16199349033536cfce9/sw/device/tests/BUILD#L1732C10-L1732C36) for example:
+- manually add a `//hw/top_match:sim_dv` to the `exec_env` attribute of a test, see [`example_test_from_rom`](../../../sw/device/tests/BUILD) for example:
 ```py
 opentitan_test(
     name = "example_test_from_rom",
@@ -197,7 +197,7 @@ opentitan_test(
     # ...
 )
 ```
-- create a new list of execution environment for your top in [`rules/opentitan/defs.bzl`](https://github.com/lowRISC/opentitan/blob/master/rules/opentitan/defs.bzl#L134)
+- create a new list of execution environment for your top in [`rules/opentitan/defs.bzl`](../../../rules/opentitan/defs.bzl)
 ```py
 # In rules/opentitan/defs.bzl
 
@@ -207,7 +207,7 @@ MATCHA_TEST_ENVS = {
     "//hw/top_matcha:sim_dv": None,
 }
 ```
-and add it to tests that you want to enroll, e.g. in [`sw/device/tests/BUILD`](https://github.com/lowRISC/opentitan/blob/master/sw/device/tests/BUILD)
+and add it to tests that you want to enroll, e.g. in [`sw/device/tests/BUILD`](../../../sw/device/tests/BUILD)
 ```py
 # In sw/device/tests/BUILD:
 load(

@@ -44,7 +44,7 @@ Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
 RTL           | [PORT_FROZEN][]           | Done        | Interrupt port was revised.
 RTL           | [ARCHITECTURE_FROZEN][]   | Done        | Livestream was added
-RTL           | [REVIEW_TODO][]           | Done        | Removed irrelevant TODOs and create [#761][]
+RTL           | [REVIEW_TODO][]           | Done        | Removed irrelevant TODOs
 RTL           | [STYLE_X][]               | Done        |
 RTL           | [CDC_SYNCMACRO][]         | N/A         |
 Code Quality  | [LINT_PASS][]             | Done        |

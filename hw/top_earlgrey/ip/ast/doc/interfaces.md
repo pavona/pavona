@@ -4,7 +4,7 @@
 
 ### Signal naming conventions used in this document
 
-Naming here is compliant with the OpenTitan [names](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md#naming) and [suffixes](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md#suffixes) specification, with the following augmentations:
+Naming here is compliant with the [Verilog style guide](../../../../../doc/contributing/style_guides/verilog_coding_style.md) names and suffixes specification, with the following augmentations:
 
 - Clock signals start with `clk_*`
 - Inputs and outputs are marked with `*_i/o`

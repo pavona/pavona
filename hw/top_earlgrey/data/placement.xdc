@@ -1,7 +1,5 @@
 # While the code below looks messy, it was taken directly from a vivado example
 # See here (https://www.xilinx.com/support/answers/66386.html)
-# See also this link (https://github.com/lowRISC/opentitan/pull/8138#issuecomment-916696830)
-# for a thorough explanation of why such a custom placement helps.
 #
 # The placement location has been chosen by evaluating the resulting place and route times of
 # all possible options.

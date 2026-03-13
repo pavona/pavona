@@ -45,7 +45,7 @@ Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
 RTL           | [PORT_FROZEN][]           | Done        | Targeting for current top_earlgrey( Port can be changed later based on top_earlgrey config)
 RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
-RTL           | [REVIEW_TODO][]           | Done        | PR [#837][] is pending
+RTL           | [REVIEW_TODO][]           | Done        |
 RTL           | [STYLE_X][]               | Done        |
 RTL           | [CDC_SYNCMACRO][]         | N/A         |
 Code Quality  | [LINT_PASS][]             | Done        |
@@ -54,8 +54,6 @@ Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow av
 Code Quality  | [AREA_CHECK][]            | Done        |
 Code Quality  | [TIMING_CHECK][]          | Done        | Pipeline inserted in front of Core IBEX. meet timing @ 50MHz on NexysVideo
 Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
-
-[#837]: https://github.com/lowRISC/opentitan/pull/837
 
 [NEW_FEATURES]:          ../../../../../doc/contributing/hw/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../../doc/contributing/hw/checklist/README.md#block_diagram
@@ -267,4 +265,4 @@ Review        | Signoff date                      | Done        | 2019-11-07
 [PRE_VERIFIED_SUB_MODULES_V3]:   ../../../../../doc/contributing/hw/checklist/README.md#pre_verified_sub_modules_v3
 [NO_ISSUES_PENDING]:             ../../../../../doc/contributing/hw/checklist/README.md#no_issues_pending
 
-[xbar_cov_excl.el]: https://github.com/weicaiyang/opentitan/blob/6cd55ad23aac96374bfa0bec315b904c6ffbdb8f/hw/ip/tlul/dv/cov/xbar_cov_excl.el
+[xbar_cov_excl.el]: ../../xbar_main/dv/autogen/xbar_cov_excl.el

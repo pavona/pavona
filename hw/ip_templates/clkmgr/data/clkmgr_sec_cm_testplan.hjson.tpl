@@ -63,8 +63,7 @@
             Verify the countermeasure(s) MEAS.CONFIG.SHADOW.
 
             This is covered by shadow_reg_errors_tests
-            (https://github.com/lowRISC/opentitan/blob/master/
-            hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson)
+            ($REPO_TOP/hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson)
             '''
       stage: V2S
       tests: ["clkmgr_shadow_reg_errors"]

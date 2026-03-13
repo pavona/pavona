@@ -1,6 +1,6 @@
 # Hardware Interfaces
 
-All hardware interfaces of the debug system are documented in the [PULP RISC-V Debug System Documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/pulp_riscv_dbg/doc/debug-system.md), with the exception of the bus interfaces, which are converted to TL-UL by this wrapper.
+All hardware interfaces of the debug system are documented in the [PULP RISC-V Debug System Documentation](../../../vendor/pulp_riscv_dbg/doc/debug-system.md), with the exception of the bus interfaces, which are converted to TL-UL by this wrapper.
 
 ## Signals
 
@@ -124,7 +124,7 @@ input  logic [NrHarts-1:0]    unavailable_i, // communicate whether the hart is 
 The debug system implements execution-based debug according to the RISC-V Debug Specification.
 Most interactions between the core and the debug system are performed through the debug memory, a bus-exposed memory.
 The memory needs to be accessible from the core instruction *and* data interfaces.
-A full memory map is part of the [PULP RISC-V Debug System Documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/pulp_riscv_dbg/doc/debug-system.md).
+A full memory map is part of the [PULP RISC-V Debug System Documentation](../../../vendor/pulp_riscv_dbg/doc/debug-system.md).
 
 ```verilog
 input  tlul_pkg::tl_h2d_t tl_d_i,

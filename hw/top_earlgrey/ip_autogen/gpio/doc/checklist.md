@@ -185,25 +185,20 @@ Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        | Resolved: [#680][]
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
 Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
 Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
 Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
 Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        | Resolved: [#807][]
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        | [#41][] Not quite related, [#45][] root caused
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
 Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
-
-[#41]: https://github.com/lowRISC/opentitan/issues/41
-[#45]: https://github.com/lowRISC/opentitan/issues/45
-[#680]: https://github.com/lowRISC/opentitan/pull/680
-[#807]: https://github.com/lowRISC/opentitan/pull/807
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../../doc/contributing/hw/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   ../../../../../doc/contributing/hw/checklist/README.md#dv_doc_completed
@@ -249,9 +244,9 @@ Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived t
 Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | N/A         |
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      | Revisit later. Tool setup in progress.
 Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | N/A         |
-Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        | Resolved: [#680][]
-Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        | [common_cov_excl.el][], [gpio_cov_excl.el][]
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        | [#807][]
+Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        |
+Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        | [common_cov_excl.cfg][], [gpio_cov_excl.el][]
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        |
 Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | N/A         |
 Coverage      | [FPV_COI_COVERAGE_AT_100][]       | N/A         |
 Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        |
@@ -261,8 +256,6 @@ Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
 Issues        | [NO_ISSUES_PENDING][]             | Done        |
 Review        | Reviewer(s)                       | Done        | @eunchan @sriyerg @sjgitty
 Review        | Signoff date                      | Done        | 2019-11-04
-
-[#807]: https://github.com/lowRISC/opentitan/pull/807
 
 [DESIGN_DELTAS_CAPTURED_V3]:     ../../../../../doc/contributing/hw/checklist/README.md#design_deltas_captured_v3
 [X_PROP_ANALYSIS_COMPLETED]:     ../../../../../doc/contributing/hw/checklist/README.md#x_prop_analysis_completed
@@ -278,5 +271,5 @@ Review        | Signoff date                      | Done        | 2019-11-04
 [PRE_VERIFIED_SUB_MODULES_V3]:   ../../../../../doc/contributing/hw/checklist/README.md#pre_verified_sub_modules_v3
 [NO_ISSUES_PENDING]:             ../../../../../doc/contributing/hw/checklist/README.md#no_issues_pending
 
-[common_cov_excl.el]:https://github.com/lowRISC/opentitan/blob/9dff09b6c57f4962d67f5f64f8e69ac9bea6885c/hw/dv/tools/vcs/common_cov_excl.el
-[gpio_cov_excl.el]:  https://github.com/lowRISC/opentitan/blob/39aaeefdb43661b065c29ceab2efc1065aebf6dd/hw/ip/gpio/dv/cov/gpio_cov_excl.el
+[common_cov_excl.cfg]: ../../../../dv/tools/vcs/common_cov_excl.cfg
+[gpio_cov_excl.el]:  ../dv/cov/gpio_cov_excl.el

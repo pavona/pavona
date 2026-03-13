@@ -8,7 +8,7 @@ To solve this issue, a minimal description of each top is created in Bazel so th
 
 ## Creating the top description
 
-The description is created in `.bzl` files using two macros provided by [`//rules/opentitan:hw.bzl`](https://github.com/lowRISC/opentitan/blob/master/rules/opentitan/hw.bzl):
+The description is created in `.bzl` files using two macros provided by [`//rules/opentitan:hw.bzl`](../../../rules/opentitan/hw.bzl):
 - `opentitan_ip`: create the description of an IP,
 - `opentitan_top`: create the description of a top.
 
@@ -97,7 +97,7 @@ Access to the top's description is available through two APIs:
 
 ### High-level API
 
-The recommended way to access attributes is through the macros defined in [`//hw/top:defs.bzl`](https://github.com/lowRISC/opentitan/blob/master/hw/top/defs.bzl).
+The recommended way to access attributes is through the macros defined in [`//hw/top:defs.bzl`](../defs.bzl).
 The following macros are particularly useful. To see examples of use, see the [Example section](#Examples).
 For more details, look at the documentation in `//hw/top:defs.bzl`
 - The most general macro is `opentitan_select_top_attr(attr_name, required = True, default = None, fn = None)`.

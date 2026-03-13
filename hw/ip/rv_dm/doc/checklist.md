@@ -34,7 +34,7 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
 Documentation | [NEW_FEATURES][]          | Done        |
-Documentation | [BLOCK_DIAGRAM][]         | Done        | Available in external [PULP RISC-V Debug System Documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/pulp_riscv_dbg/doc/debug-system.md)
+Documentation | [BLOCK_DIAGRAM][]         | Done        | Available in external [PULP RISC-V Debug System Documentation](../../../vendor/pulp_riscv_dbg/doc/debug-system.md)
 Documentation | [DOC_INTERFACE][]       | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
 Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.

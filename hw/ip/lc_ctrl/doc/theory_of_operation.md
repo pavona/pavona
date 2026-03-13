@@ -64,7 +64,7 @@ All 128bit lock and unlock tokens are passed through a cryptographic one way fun
 This mechanism is used to guard against reverse engineering and brute-forcing attempts.
 An attacker able to extract the hashed token values from the scrambled OTP partitions or from the netlist would first have to find a hash collision in order to perform a life cycle transition, since the values supplied to the life cycle controller must be valid hash pre-images.
 
-The employed one way function is a 128bit cSHAKE hash with the function name "" (empty string) and customization string "LC_CTRL", see also [kmac documentation](../../kmac/README.md) and AppCfgLcCtrl in [`kmac_pkg.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/kmac_pkg.sv).
+The employed one way function is a 128bit cSHAKE hash with the function name "" (empty string) and customization string "LC_CTRL", see also [kmac documentation](../../kmac/README.md) and AppCfgLcCtrl in [`kmac_pkg.sv`](../../kmac/rtl/kmac_pkg.sv).
 
 ### Post Transition Handling
 
@@ -474,7 +474,7 @@ Note that these registers read back all-zero if the mutex is not claimed.
 
 #### Life Cycle TAP Controller
 
-The life cycle TAP controller is functionally very similar to the [RISC-V debug module](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rv_dm/rtl/rv_dm.sv) for the Ibex processor and reuses the same debug transport module (DTM) and the associated debug module interface (DMI).
+The life cycle TAP controller is functionally very similar to the [RISC-V debug module](../../rv_dm/rtl/rv_dm.sv) for the Ibex processor and reuses the same debug transport module (DTM) and the associated debug module interface (DMI).
 The DTM and DMI are specified as part of the [RISC-V external debug specification, v0.13](https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf) and essentially provide a simple mechanism to read and write to a register space.
 In the case of the life cycle TAP controller this register space is essentially the life cycle CSR space.
 Hence, the [register table](./registers.md) is identical for both the SW view and the view through the DMI, with the only difference that the byte offsets have to be converted to word offsets for the DMI.

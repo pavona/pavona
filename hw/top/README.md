@@ -99,7 +99,7 @@ You can create your own annotations by using the macros described in the next se
 
 ## The `//hw/top:defs.bzl` library
 
-This bazel library provides several important definitions are macros which can be used by rule creators and users to interact with the build system. See the documentation in [the file](https://github.com/lowRISC/opentitan/blob/master/hw/top/defs.bzl) for more details.
+This bazel library provides several important definitions are macros which can be used by rule creators and users to interact with the build system. See the documentation in [the file](./defs.bzl) for more details.
 - `opentitan_if_ip(ip, obj, default)` provides a way to conditionally do something the top selected by `//hw/top` contains at least one instance of a given IP. For example, if we want to conditionally compile code only if the usbdev block is present, we could do:
 Example:
 ```python

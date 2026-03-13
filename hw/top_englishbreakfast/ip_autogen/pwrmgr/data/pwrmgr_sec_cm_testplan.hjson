@@ -110,8 +110,7 @@
       desc: '''Verify the countermeasure(s) ESC_RX.CLK.LOCAL_ESC.
 
             This is triggered by common cm primitives (SecCmPrimCount).
-            (https://github.com/lowRISC/opentitan/blob/master
-            /hw/dv/sv/cip_lib/doc/index.md#security-verification
+            ($REPO_TOP/hw/dv/sv/cip_lib/doc/README.md#security-verification
             -for-common-countermeasure-primitives)
 
             **Check**:
@@ -126,8 +125,7 @@
       name: sec_cm_fsm_sparse
       desc: '''Verify the countermeasure(s) FSM.SPARSE.
             This is triggered by common cm primitives (SecCmPrimSparseFsmFlop).
-            (https://github.com/lowRISC/opentitan/blob/master
-            /hw/dv/sv/cip_lib/doc/index.md#security-verification
+            ($REPO_TOP/hw/dv/sv/cip_lib/doc/README.md#security-verification
             -for-common-countermeasure-primitives)
             '''
       stage: V2S

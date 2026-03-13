@@ -169,9 +169,7 @@
                 //
                 //    sw/host/opentitanlib/src/otp/alert_handler_regs.rs
                 //
-                //    is up to date. See also
-                //
-                //    https://github.com/lowRISC/opentitan/issues/19501
+                //    is up to date.
                 //
                 // 2. Run opentitantool
                 //

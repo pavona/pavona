@@ -5,7 +5,7 @@
 // This contains SVA assertions to check the external clock bypass control outputs.
 //
 // Notice when a condition fails we allow the logic to generate non strict mubi values. Ideally it
-// would generate mubi False: see https://github.com/lowRISC/opentitan/issues/11400.
+// would generate mubi False.
 interface clkmgr_extclk_sva_if
   import prim_mubi_pkg::*, lc_ctrl_pkg::*;
 (

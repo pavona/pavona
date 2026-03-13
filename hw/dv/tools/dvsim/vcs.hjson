@@ -129,7 +129,6 @@
                // for each instance of the module. Hence, for each instance of the same module
                // $urandom() generates same random value.
                // Below switch generates different randomization values per instance of a module.
-               // Refer to https://github.com/lowRISC/opentitan/issues/27659 for more details.
                "-xlrm hier_inst_seed",
                // Disable the display of the SystemVerilog assert and cover statement summary
                // at the end of simulation. This summary is list of assertions that started but

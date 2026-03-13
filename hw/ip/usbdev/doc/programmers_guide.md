@@ -151,7 +151,7 @@ There is a resistive divider to set the sense pin at half of the VBUS voltage wh
 
 The PMOD PCB is [available from OSH Park](https://oshpark.com/shared_projects/xMKhTIHn).
 
-The PMOD design files for KiCad version 5 are in the [`usbdev/pmod`](https://github.com/lowRISC/opentitan/tree/master/hw/ip/usbdev/pmod) directory.
+The PMOD design files for KiCad version 5 are in the [`usbdev/pmod`](../pmod) directory.
 The BOM can be filled by parts from Digikey.
 
 | Item | Qty | Reference(s) | Value | LibPart | Footprint | Datasheet | Category | DK_Datasheet_Link | DK_Detail_Page | Description | Digi-Key_PN | Family | MPN | Manufacturer | Status|

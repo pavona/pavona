@@ -45,7 +45,7 @@ Documentation | [FEATURE_FROZEN][]        | Done           |
 RTL           | [FEATURE_COMPLETE][]      | Done           |
 RTL           | [PORT_FROZEN][]           | Done w/ waiver | Change intr port name
 RTL           | [ARCHITECTURE_FROZEN][]   | Done           |
-RTL           | [REVIEW_TODO][]           | [#68][]        |
+RTL           | [REVIEW_TODO][]           |                |
 RTL           | [STYLE_X][]               | Done           |
 RTL           | [CDC_SYNCMACRO][]         | N/A            |
 Code Quality  | [LINT_PASS][]             | Done           |
@@ -54,8 +54,6 @@ Code Quality  | [RDC_SETUP][]             | Waived         | No block-level flow
 Code Quality  | [AREA_CHECK][]            | Done           |
 Code Quality  | [TIMING_CHECK][]          | Done           |
 Security      | [SEC_CM_DOCUMENTED][]     | N/A            |
-
-[#68]: https://github.com/lowRISC/opentitan/issues/68
 
 [NEW_FEATURES]:          ../../../../doc/contributing/hw/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../doc/contributing/hw/checklist/README.md#block_diagram
@@ -197,11 +195,9 @@ Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        | [#68][], [#69][]
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
 Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
-
-[#69]: https://github.com/lowRISC/opentitan/issues/69
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../doc/contributing/hw/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   ../../../../doc/contributing/hw/checklist/README.md#dv_doc_completed
@@ -256,11 +252,9 @@ Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
 Code Quality  | [TB_LINT_COMPLETE][]              | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
-Issues        | [NO_ISSUES_PENDING][]             | Done        | [#18918] Part of a future release
+Issues        | [NO_ISSUES_PENDING][]             | Done        |
 Review        | Reviewer(s)                       | Done        | @rswarbrick
 Review        | Signoff date                      | Done        | 2025-05-09
-
-[#18918]: https://github.com/lowRISC/opentitan/issues/18918
 
 [DESIGN_DELTAS_CAPTURED_V3]:     ../../../../doc/contributing/hw/checklist/README.md#design_deltas_captured_v3
 [X_PROP_ANALYSIS_COMPLETED]:     ../../../../doc/contributing/hw/checklist/README.md#x_prop_analysis_completed
