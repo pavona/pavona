@@ -95,14 +95,12 @@ def gen_cfg_md(cfgs: IpBlock,
             desc = ims.desc if ims.desc is not None else ""
             rows.append([name, pkg_struct, sig_type, act, width, desc])
 
+        comport_url = "../../../../doc/contributing/hw/comportability#inter-signal-handling"
         if templatized:
-            comportability_url = "../../../../../doc/contributing/hw/comportability#inter-signal-handling"
-            
-        else:
-            comportability_url = "../../../../doc/contributing/hw/comportability#inter-signal-handling"
+            comport_url = "../" + comport_url
 
         tables.append((
-            url("Inter-Module Signals", comportability_url),
+            url("Inter-Module Signals", comport_url),
             [
                 "Port Name", "Package::Struct", "Type", "Act", "Width",
                 "Description"
