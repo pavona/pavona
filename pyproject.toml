@@ -94,6 +94,8 @@ extend-exclude = [ "*vendor*" ]
 [tool.ruff.lint]
 preview = true
 explicit-preview-rules = true
+# ruff 0.15.2 expanded default ruleset, so select pre-0.15.2 defaults
+select = ["E4", "E7", "E9", "F"]
 extend-select = ["E", "E303", "W391"]
 
 [tool.uv.workspace]
