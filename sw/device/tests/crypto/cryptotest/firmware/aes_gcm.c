@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -34,9 +35,9 @@ static const uint32_t kKeyMask[8] = {
 
 // Available security levels. The test randomly chooses one.
 static const otcrypto_key_security_level_t security_level[3] = {
-    kOtcryptoKeySecurityLevelLow,
-    kOtcryptoKeySecurityLevelMedium,
-    kOtcryptoKeySecurityLevelHigh,
+    kOtcryptoKeySecurityLevelPassiveRemote,
+    kOtcryptoKeySecurityLevelPassivePhysical,
+    kOtcryptoKeySecurityLevelActivePhysical,
 };
 
 status_t handle_aes_gcm_op(ujson_t *uj) {
@@ -133,7 +134,9 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
   uint32_t key_buf[kAesMaxKeyWords];
   memcpy(key_buf, uj_data.key, kAesMaxKeyBytes);
   // Create keyblob
-  uint32_t keyblob[keyblob_num_words(config)];
+  size_t keyblob_words = 0;
+  TRY(keyblob_num_words(config, &keyblob_words));
+  uint32_t keyblob[keyblob_words];
   // Create blinded key
   TRY(keyblob_from_key_and_mask(key_buf, kKeyMask, config, keyblob));
   otcrypto_blinded_key_t key = {
