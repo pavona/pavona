@@ -39,6 +39,8 @@ AES_GCM_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_gcm_{}_{}_json".format(operation, key_len)
     for operation in ("encryptextiv", "decrypt")
     for key_len in ("128", "192", "256")
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_aes_gcm_json",
 ]
 
 AES_GCM_TESTVECTOR_ARGS = " ".join([

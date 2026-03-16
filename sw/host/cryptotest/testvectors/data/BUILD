@@ -566,6 +566,24 @@ run_binary(
     ]
 ]
 
+run_binary(
+    name = "wycheproof_aes_gcm_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json",
+        "@wycheproof//testvectors_v1:aes_gcm_test.json",
+    ],
+    outs = [":wycheproof_aes_gcm.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:aes_gcm_test.json)",
+        "--dst",
+        "$(location :wycheproof_aes_gcm.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_aes_gcm_parser",
+)
+
 [
     run_binary(
         name = "nist_cavp_rsa_{}_{}_json".format(
