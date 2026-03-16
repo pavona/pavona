@@ -29,9 +29,12 @@ class KmacBlock:
     _STATUS_IDLE = 'IDLE'
     _STATUS_ABSORB = 'ABSORB'
     _STATUS_SQUEEZE = 'SQUEEZE'
+    # The following MODE and STRENGTH values are mapped to their corresponding enums in
+    # `hw/ip/kmac/rtl/kmac_pkg.sv`. This is required to do any hardware simulation that
+    # uses the real KMAC IP and accsim.
     _MODE_SHA3 = 0x0
-    _MODE_SHAKE = 0x1
-    _MODE_CSHAKE = 0x2
+    _MODE_SHAKE = 0x2
+    _MODE_CSHAKE = 0x3
     _STRENGTH_128 = 0x0
     _STRENGTH_224 = 0x1
     _STRENGTH_256 = 0x2

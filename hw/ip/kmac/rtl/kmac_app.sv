@@ -215,6 +215,7 @@ module kmac_app
   logic pack_digest_word;
   logic shift_and_pack_digest;
   logic [2:0] digest_word_idx_q, digest_word_idx_d;
+  logic acc_app_data_valid;
 
   // Output length
   logic [OutLenW-1:0] encoded_outlen, encoded_outlen_mask;
@@ -261,9 +262,11 @@ module kmac_app
 
   // Set SHA3 mode and Keccak strength if ACC mode
   always_ff @(posedge clk_i) begin
-    if (app_i[AppConfigDynamic].valid && set_appid) begin
-      dynamic_sha3_mode_q <= sha3_pkg::sha3_mode_e'(app_i[AppConfigDynamic].data[1:0]);
-      dynamic_keccak_strength_q <= sha3_pkg::keccak_strength_e'(app_i[AppConfigDynamic].data[4:2]);
+    if (AppCfg[app_id_d].Mode == AppConfigDynamic) begin
+      if (app_i[app_id_d].valid && set_appid) begin
+        dynamic_sha3_mode_q <= sha3_pkg::sha3_mode_e'(app_i[app_id_d].data[1:0]);
+        dynamic_keccak_strength_q <= sha3_pkg::keccak_strength_e'(app_i[app_id_d].data[4:2]);
+      end
     end
   end
 
@@ -279,10 +282,11 @@ module kmac_app
   end
 
   // Control the word index for XOFs with ACC
-  assign digest_word_idx_d = digest_word_idx_q;
+  assign digest_word_idx_d  = digest_word_idx_q;
+  assign acc_app_data_valid = (AppCfg[app_id_d].Mode == AppConfigDynamic) && app_i[app_id_d].valid;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) digest_word_idx_q <= 3'h0;
-    else if ((app_i[AppConfigDynamic].valid && set_appid) || reset_digest_word) begin
+    else if ((acc_app_data_valid && set_appid) || reset_digest_word) begin
       digest_word_idx_q <= 3'h0;
     end else if (next_digest_word) digest_word_idx_q <= digest_word_idx_d + 3'h1;
   end
