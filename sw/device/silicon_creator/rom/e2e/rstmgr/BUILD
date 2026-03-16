@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "fpga_params", "opentitan_test")
+load("//rules/pavona:defs.bzl", "fpga_params", "pavona_test")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -52,7 +52,7 @@ CPU_INFO_TESTCASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "cpu_info_{}_test".format(testcase["name"]),
         srcs = ["cpu_info_test.c"],
         exec_env = {
@@ -118,7 +118,7 @@ ALERT_INFO_TESTCASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "alert_info_{}_test".format(testcase["name"]),
         srcs = ["alert_info_test.c"],
         exec_env = {

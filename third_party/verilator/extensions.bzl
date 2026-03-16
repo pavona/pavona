@@ -16,6 +16,6 @@ def _verilator_repos():
             "https://github.com/verilator/verilator/archive/refs/tags/v{}.tar.gz".format(VERILATOR_VERSION),
         ],
         strip_prefix = "verilator-" + VERILATOR_VERSION,
-        build_file = "@lowrisc_opentitan//third_party/verilator:BUILD.verilator.bazel",
+        build_file = "@pavona_pavona//third_party/verilator:BUILD.verilator.bazel",
         sha256 = "002bc6d92b203eb8b4612e1d198d8108517d4ec9859e131ef328015352fe6d0c",
     )

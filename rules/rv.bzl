@@ -4,8 +4,8 @@
 
 """Helpers for transitioning to the RISC-V target."""
 
-OPENTITAN_CPU = "@platforms//cpu:riscv32"
-OPENTITAN_PLATFORM = "//toolchain:opentitan_platform"
+PAVONA_CPU = "@platforms//cpu:riscv32"
+PAVONA_PLATFORM = "//toolchain:pavona_platform"
 
 # This constant holds a dictionary of per-device dependencies which are used to
 # generate slightly different binaries for each hardware target, including two
@@ -18,7 +18,7 @@ PER_DEVICE_DEPS = {
     "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
 }
 
-def _opentitan_transition_impl(settings, attr):
+def _pavona_transition_impl(settings, attr):
     coverage = settings["//command_line_option:collect_code_coverage"]
     if attr.collect_code_coverage != -1:
         coverage = bool(attr.collect_code_coverage)
@@ -31,8 +31,8 @@ def _opentitan_transition_impl(settings, attr):
         "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
     }
 
-opentitan_transition = transition(
-    implementation = _opentitan_transition_impl,
+pavona_transition = transition(
+    implementation = _pavona_transition_impl,
     # In order to build the englishbreakfast binaries, we need to pass through
     # the `--copt` and `--features` flags:
     # - The copt flag defines a preprocessor symbol indicating englishbreakfast.
@@ -60,7 +60,7 @@ def rv_rule(**kwargs):
 
     attrs = kwargs.pop("attrs", {})
     if "platform" not in attrs:
-        attrs["platform"] = attr.string(default = OPENTITAN_PLATFORM)
+        attrs["platform"] = attr.string(default = PAVONA_PLATFORM)
     if "collect_code_coverage" not in attrs:
         attrs["collect_code_coverage"] = attr.int(
             default = -1,
@@ -76,7 +76,7 @@ def rv_rule(**kwargs):
     )
 
     return rule(
-        cfg = opentitan_transition,
+        cfg = pavona_transition,
         attrs = attrs,
         **kwargs
     )

@@ -9,11 +9,11 @@ load(
     "dicts",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "verilator_params",
 )
 
@@ -41,7 +41,7 @@ def rv_compliance_test(name, arch):
         """.format(reference_output),
     )
 
-    opentitan_test(
+    pavona_test(
         name = name,
         srcs = [
             test_file,

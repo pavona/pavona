@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -87,7 +87,7 @@ otp_json(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "boot_policy_rollback_{}_a_{}_b_{}".format(
             lc_state,
             t["a"],

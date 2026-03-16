@@ -7,7 +7,7 @@ ${gencmd}
 top_name = "top_" + top["name"]
 %>\
 load("//rules:linker.bzl", "ld_library")
-load("//hw/top:defs.bzl", "opentitan_require_top")
+load("//hw/top:defs.bzl", "pavona_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -21,7 +21,7 @@ cc_library(
         "${top_name}_memory.h",
     ],
     defines = ["OPENTITAN_IS_${top["name"].upper()}"],
-    target_compatible_with = opentitan_require_top("${top["name"]}"),
+    target_compatible_with = pavona_require_top("${top["name"]}"),
 )
 
 ld_library(
@@ -31,5 +31,5 @@ ld_library(
         "OPENTITAN_IS_${top["name"].upper()}",
     ],
     includes = ["${top_name}_memory.ld"],
-    target_compatible_with = opentitan_require_top("${top["name"]}"),
+    target_compatible_with = pavona_require_top("${top["name"]}"),
 )

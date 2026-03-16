@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -14,11 +14,11 @@ load(
 load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
 load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING_ALERTS")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:otp.bzl",
@@ -51,7 +51,7 @@ ALERT_LC_STATES = get_lc_items(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "alert_{}".format(lc_state),
         srcs = ["rom_e2e_alert_config_test.c"],
         ecdsa_key = ecdsa_key_for_lc_state(
@@ -202,7 +202,7 @@ otp_alert_digest(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "shutdown_alert_{}".format(lc_state),
         srcs = ["rom_e2e_shutdown_alert_config_test.c"],
         ecdsa_key = ecdsa_key_for_lc_state(

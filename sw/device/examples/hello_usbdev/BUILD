@@ -2,10 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "opentitan_binary")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "pavona_binary")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 
-opentitan_binary(
+pavona_binary(
     name = "hello_usbdev",
     testonly = True,
     srcs = [
@@ -30,7 +30,7 @@ opentitan_binary(
 
 cc_library(
     name = "hello_usbdev_lib",
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples:demos",

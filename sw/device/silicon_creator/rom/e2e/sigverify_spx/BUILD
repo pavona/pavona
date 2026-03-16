@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
     "spx_key_for_lc_state",
 )
 load("//rules:const.bzl", "CONST", "get_lc_items")
-load("//rules/opentitan:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -86,7 +86,7 @@ SIGVERIFY_SPX_CASES = [
     },
 ]
 
-opentitan_binary(
+pavona_binary(
     name = "empty_test_sigverify_spx",
     testonly = True,
     srcs = ["sigverify_spx_test.c"],
@@ -146,7 +146,7 @@ opentitan_binary(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "sigverify_spx_{}_{}".format(
             lc_state,
             t["name"],
@@ -197,7 +197,7 @@ test_suite(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sigverify_spx_prehashed_test",
     srcs = ["sigverify_spx_test.c"],
     ecdsa_key = {

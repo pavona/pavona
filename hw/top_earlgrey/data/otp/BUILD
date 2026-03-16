@@ -19,13 +19,13 @@ load(
     "otp_per_class_ints",
     "otp_per_class_lists",
 )
-load("//hw/top:defs.bzl", "opentitan_require_top")
+load("//hw/top:defs.bzl", "pavona_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
 # All otp_json targets are marked as compatible only with Earlgrey to avoid
 # using them on other tops by mistake
-TARGET_COMPATIBLE_WITH = opentitan_require_top("earlgrey")
+TARGET_COMPATIBLE_WITH = pavona_require_top("earlgrey")
 
 # This package must be kept in sync with get_otp_images() from //rules:otp.bzl.
 # That is, each OTP image referenced by the macro should have a definition in

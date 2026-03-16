@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//rules/pavona:defs.bzl", "pavona_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,7 +15,7 @@ alias(
     visibility = ["//visibility:private"],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "aes_serial",
     testonly = True,
     srcs = ["aes_serial.c"],
@@ -39,7 +39,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "kmac_serial",
     testonly = True,
     srcs = ["kmac_serial.c"],
@@ -60,7 +60,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "sha3_serial",
     testonly = True,
     srcs = ["sha3_serial.c"],
@@ -81,7 +81,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "ecc384_serial",
     testonly = True,
     srcs = ["ecc384_serial.c"],
@@ -105,7 +105,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "ecc256_sign_serial",
     testonly = True,
     srcs = ["ecc256_sign_serial.c"],

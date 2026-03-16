@@ -5,7 +5,7 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("@rules_python//python:defs.bzl", "py_library")
-load("//hw/top:defs.bzl", "opentitan_select_top_attr")
+load("//hw/top:defs.bzl", "pavona_select_top_attr")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
 # command line. This is intended to allow CI to specifically build a single
@@ -103,8 +103,8 @@ fusesoc_build(
     ],
     data = ["//hw/ip/acc:rtl_files"],
     make_options = ":make_options",
-    output_groups = opentitan_select_top_attr("top_verilator_binary"),
-    systems = opentitan_select_top_attr("top_verilator_core"),
+    output_groups = pavona_select_top_attr("top_verilator_binary"),
+    systems = pavona_select_top_attr("top_verilator_core"),
     tags = [
         "manual",
         "verilator",

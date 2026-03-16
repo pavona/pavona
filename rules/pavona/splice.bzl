@@ -4,10 +4,10 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
-load("//rules/opentitan:providers.bzl", "get_one_binary_file")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-load("//rules/opentitan:util.bzl", "get_fallback")
+load("//rules/pavona:exec_env.bzl", "ExecEnvInfo")
+load("//rules/pavona:providers.bzl", "get_one_binary_file")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/pavona:util.bzl", "get_fallback")
 load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
 
 # Rules for memory splicing with Vivado.

@@ -24,11 +24,11 @@ load(
     "IMM_SECTION_MINOR_VERSION",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -149,7 +149,7 @@ _POSITIONS = {
 }
 
 [
-    opentitan_test(
+    pavona_test(
         name = "position_{}".format(name),
         srcs = [":boot_test"],
         exec_env = {
@@ -192,7 +192,7 @@ manifest(d = {
     "visibility": ["//visibility:public"],
 })
 
-opentitan_test(
+pavona_test(
     name = "bad_manifest_test",
     srcs = [":boot_test"],
     exec_env = {
@@ -254,7 +254,7 @@ _KEYS = {
 }
 
 [
-    opentitan_test(
+    pavona_test(
         name = "key_{}".format(name),
         srcs = [":boot_test"],
         ecdsa_key = keyinfo["ecdsa"],
@@ -300,7 +300,7 @@ manifest(d = {
     ),
 })
 
-opentitan_test(
+pavona_test(
     name = "isfb_boot_test",
     srcs = [":boot_test"],
     ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},

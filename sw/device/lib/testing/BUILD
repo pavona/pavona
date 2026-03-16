@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM")
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_select_top")
-load("//rules/opentitan:util.bzl", "flatten")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU", "PAVONA_PLATFORM")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOP_NAMES", "pavona_if_ip", "pavona_select_top")
+load("//rules/pavona:util.bzl", "flatten")
 load("//rules:doxygen.bzl", "doxygen_gather_cc")
 
 package(default_visibility = ["//visibility:public"])
@@ -26,20 +26,20 @@ cc_library(
     name = "aes_testutils",
     srcs = ["aes_testutils.c"],
     hdrs = ["aes_testutils.h"],
-    defines = opentitan_if_ip(
+    defines = pavona_if_ip(
         "csrng",
         # Assume that if csrng is present then so is the edn.
         ["AES_TESTUTILS_HAS_EDN_AND_CSRNG"],
         [],
     ),
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/ip/aes:model",
         "//hw/top/dt",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
-    ] + opentitan_if_ip(
+    ] + pavona_if_ip(
         "csrng",
         # Assume that if csrng is present then so is the edn.
         [
@@ -48,7 +48,7 @@ cc_library(
             "//sw/device/lib/testing:csrng_testutils",
         ],
         [],
-    ) + opentitan_if_ip(
+    ) + pavona_if_ip(
         "alert_handler",
         [
             "//sw/device/lib/dif:alert_handler",
@@ -61,7 +61,7 @@ cc_library(
     name = "alert_handler_testutils",
     srcs = ["alert_handler_testutils.c"],
     hdrs = ["alert_handler_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/dif:alert_handler",
@@ -75,7 +75,7 @@ cc_library(
     name = "aon_timer_testutils",
     srcs = ["aon_timer_testutils.c"],
     hdrs = ["aon_timer_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/arch:device",
@@ -97,7 +97,7 @@ cc_library(
     name = "clkmgr_testutils",
     srcs = ["clkmgr_testutils.c"],
     hdrs = ["clkmgr_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/runtime:ibex",
@@ -109,7 +109,7 @@ cc_library(
     name = "csrng_testutils",
     srcs = ["csrng_testutils.c"],
     hdrs = ["csrng_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:csrng_c_regs",
         "//sw/device/lib/dif:csrng",
@@ -122,7 +122,7 @@ cc_library(
     name = "edn_testutils",
     srcs = ["edn_testutils.c"],
     hdrs = ["edn_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
@@ -134,7 +134,7 @@ cc_library(
     name = "entropy_src_testutils",
     srcs = ["entropy_src_testutils.c"],
     hdrs = ["entropy_src_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing/test_framework:check",
@@ -145,19 +145,19 @@ cc_library(
     name = "entropy_testutils",
     srcs = ["entropy_testutils.c"],
     hdrs = ["entropy_testutils.h"],
-    local_defines = opentitan_if_ip(
+    local_defines = pavona_if_ip(
         "entropy_src",
         ["HAS_ENTROPY_SRC"],
         [],
     ),
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:edn_c_regs",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/testing/test_framework:check",
-    ] + opentitan_if_ip(
+    ] + pavona_if_ip(
         "entropy_src",
         ["//sw/device/lib/dif:entropy_src"],
         [],
@@ -168,7 +168,7 @@ cc_library(
     name = "flash_ctrl_testutils",
     srcs = ["flash_ctrl_testutils.c"],
     hdrs = ["flash_ctrl_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top/dt",
@@ -184,7 +184,7 @@ cc_library(
     name = "nv_counter_testutils",
     srcs = ["nv_counter_testutils.c"],
     hdrs = ["nv_counter_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":flash_ctrl_testutils",
         "//hw/top:flash_ctrl_c_regs",
@@ -216,7 +216,7 @@ cc_library(
     name = "hmac_testutils",
     srcs = ["hmac_testutils.c"],
     hdrs = ["hmac_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:hmac_c_regs",
         "//sw/device/lib/base:mmio",
@@ -230,7 +230,7 @@ cc_library(
     name = "i2c_testutils",
     srcs = ["i2c_testutils.c"],
     hdrs = ["i2c_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:i2c_c_regs",
         "//hw/top/dt",
@@ -246,7 +246,7 @@ cc_library(
     name = "keymgr_testutils",
     srcs = ["keymgr_testutils.c"],
     hdrs = ["keymgr_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":entropy_testutils",
         ":flash_ctrl_testutils",
@@ -273,7 +273,7 @@ cc_library(
     name = "kmac_testutils",
     srcs = ["kmac_testutils.c"],
     hdrs = ["kmac_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/testing/test_framework:check",
@@ -284,7 +284,7 @@ cc_library(
     name = "lc_ctrl_testutils",
     srcs = ["lc_ctrl_testutils.c"],
     hdrs = ["lc_ctrl_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/runtime:log",
@@ -296,7 +296,7 @@ cc_library(
     name = "acc_testutils",
     srcs = ["acc_testutils.c"],
     hdrs = ["acc_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:acc",
         "//sw/device/lib/runtime:ibex",
@@ -309,7 +309,7 @@ cc_library(
     name = "acc_testutils_rsa",
     srcs = ["acc_testutils_rsa.c"],
     hdrs = ["acc_testutils_rsa.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":acc_testutils",
         "//sw/acc/crypto:rsa",
@@ -322,7 +322,7 @@ cc_library(
     name = "otp_ctrl_testutils",
     srcs = ["otp_ctrl_testutils.c"],
     hdrs = ["otp_ctrl_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:ibex",
@@ -335,7 +335,7 @@ cc_library(
     name = "pinmux_testutils",
     srcs = ["pinmux_testutils.c"],
     hdrs = ["pinmux_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/arch:device",
@@ -361,7 +361,7 @@ cc_library(
     name = "pwrmgr_testutils",
     srcs = ["pwrmgr_testutils.c"],
     hdrs = ["pwrmgr_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/testing/test_framework:check",
@@ -372,7 +372,7 @@ cc_library(
     name = "rand_testutils",
     srcs = ["rand_testutils.c"],
     hdrs = ["rand_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":rv_core_ibex_testutils",
         "//hw/top:top_lib",
@@ -397,7 +397,7 @@ cc_library(
     name = "rstmgr_testutils",
     srcs = ["rstmgr_testutils.c"],
     hdrs = ["rstmgr_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing/test_framework:check",
@@ -409,7 +409,7 @@ cc_library(
     name = "rv_core_ibex_testutils",
     srcs = ["rv_core_ibex_testutils.c"],
     hdrs = ["rv_core_ibex_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:ibex",
@@ -421,7 +421,7 @@ cc_library(
     name = "rv_plic_testutils",
     srcs = ["rv_plic_testutils.c"],
     hdrs = ["rv_plic_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":rand_testutils",
         "//sw/device/lib/dif:base",
@@ -435,7 +435,7 @@ cc_library(
     name = "sensor_ctrl_testutils",
     srcs = ["sensor_ctrl_testutils.c"],
     hdrs = ["sensor_ctrl_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:sensor_ctrl",
@@ -447,7 +447,7 @@ cc_library(
     name = "sram_ctrl_testutils",
     srcs = ["sram_ctrl_testutils.c"],
     hdrs = ["sram_ctrl_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:sram_ctrl",
@@ -461,7 +461,7 @@ cc_library(
     name = "ret_sram_testutils",
     srcs = ["ret_sram_testutils.c"],
     hdrs = ["ret_sram_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:top_lib",
         "//sw/device/lib/base:status",
@@ -475,7 +475,7 @@ cc_library(
     name = "spi_device_testutils",
     srcs = ["spi_device_testutils.c"],
     hdrs = ["spi_device_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/base:status",
@@ -490,7 +490,7 @@ cc_library(
     name = "spi_host_testutils",
     srcs = ["spi_host_testutils.c"],
     hdrs = ["spi_host_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":pinmux_testutils",
         "//hw/top/dt",
@@ -511,7 +511,7 @@ cc_library(
         "spi_flash_emulator.h",
         "spi_flash_testutils.h",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":spi_device_testutils",
         "//sw/device/lib/base:bitfield",
@@ -526,7 +526,7 @@ cc_library(
     name = "sysrst_ctrl_testutils",
     srcs = ["sysrst_ctrl_testutils.c"],
     hdrs = ["sysrst_ctrl_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -541,7 +541,7 @@ cc_library(
     name = "uart_testutils",
     srcs = ["uart_testutils.c"],
     hdrs = ["uart_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
@@ -564,7 +564,7 @@ cc_library(
         "usb_testutils_controlep.h",
         "usb_testutils_diags.h",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:usbdev",
@@ -576,7 +576,7 @@ cc_library(
     name = "usb_testutils_simpleserial",
     srcs = ["usb_testutils_simpleserial.c"],
     hdrs = ["usb_testutils_simpleserial.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":usb_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -587,7 +587,7 @@ cc_library(
     name = "usb_testutils_streams",
     srcs = ["usb_testutils_streams.c"],
     hdrs = ["usb_testutils_streams.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":usb_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -598,7 +598,7 @@ cc_library(
     name = "usb_logging",
     srcs = ["usb_logging.c"],
     hdrs = ["usb_logging.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":pinmux_testutils",
         ":usb_testutils",
@@ -610,7 +610,7 @@ cc_library(
     name = "dma_testutils",
     srcs = ["dma_testutils.c"],
     hdrs = ["dma_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/dif:dma",
@@ -625,7 +625,7 @@ cc_library(
     name = "keymgr_dpe_testutils",
     srcs = ["keymgr_dpe_testutils.c"],
     hdrs = ["keymgr_dpe_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":entropy_testutils",
         ":kmac_testutils",
@@ -653,12 +653,12 @@ TESTUTILS_EXCEPTIONS = [
 # testutils are not compatible with the host platform.
 doxygen_gather_cc(
     name = "doxy_target",
-    platform = OPENTITAN_PLATFORM,
+    platform = PAVONA_PLATFORM,
     deps = [
         "isr_testutils",
     ] + flatten([
         # Add all compatible register headers
-        opentitan_if_ip(
+        pavona_if_ip(
             ip,
             [":{}_testutils".format(ip)],
             [],
@@ -666,7 +666,7 @@ doxygen_gather_cc(
         for ip in ALL_IP_NAMES
         if existing_rule("{}_testutils".format(ip)) != None and
            ip not in TESTUTILS_EXCEPTIONS
-    ]) + opentitan_select_top(
+    ]) + pavona_select_top(
         {
             "earlgrey": ["{}_testutils".format(ip) for ip in TESTUTILS_EXCEPTIONS],
         },

@@ -9,7 +9,7 @@ load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES", "C_COMPILE_ACTION_NAME")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules:rv.bzl", "rv_rule")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 def _ensure_tag(tags, *tag):
     for t in tag:

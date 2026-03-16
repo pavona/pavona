@@ -4,12 +4,12 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
+load("//rules/pavona:cc.bzl", "pavona_binary_assemble")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -27,7 +27,7 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 [
-    opentitan_test(
+    pavona_test(
         name = "no_refresh_{}_test".format(variation),
         srcs = ["no_refresh_test.c"],
         exec_env = {
@@ -57,7 +57,7 @@ manifest({
     "visibility": ["//visibility:private"],
 })
 
-opentitan_binary(
+pavona_binary(
     name = "print_certs_for_assemble",
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs.c"],
@@ -78,7 +78,7 @@ opentitan_binary(
 )
 
 [
-    opentitan_binary_assemble(
+    pavona_binary_assemble(
         name = "{}_rom_ext_owner_bundle".format(variation),
         testonly = True,
         bins = {
@@ -105,7 +105,7 @@ _VARIATION_INTEROP_TEST_CASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "variation_interop_{}_first_test".format(tc["first"]),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -139,7 +139,7 @@ test_suite(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "modify_digest",
     testonly = True,
     srcs = ["modify_digest.c"],
@@ -158,7 +158,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "corrupted_digest_test",
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     exec_env = {

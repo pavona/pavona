@@ -4,13 +4,13 @@
 
 load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load(
-    "//rules/opentitan:providers.bzl",
+    "//rules/pavona:providers.bzl",
     "SiliconBinaryInfo",
     "get_one_binary_file",
 )
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+load("@pavona_pavona//rules:rv.bzl", "rv_rule")
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
     "IMM_SECTION_VERSION",
@@ -152,8 +152,8 @@ def _prepare_release_files(ctx):
 prepare_release_files = rule(
     implementation = _prepare_release_files,
     attrs = {
-        "variants_keys": attr.string_list(doc = "Name of the opentitan_binary to release"),
-        "variants_values": attr.label_list(doc = "Target label of the opentitan_binary to release"),
+        "variants_keys": attr.string_list(doc = "Name of the pavona_binary to release"),
+        "variants_values": attr.label_list(doc = "Target label of the pavona_binary to release"),
         "_tool": attr.label(
             default = "//util:gen_stamped_tarball",
             executable = True,

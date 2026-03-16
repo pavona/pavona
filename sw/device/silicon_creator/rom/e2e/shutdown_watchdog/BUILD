@@ -3,18 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -94,7 +94,7 @@ SHUTDOWN_WATCHDOG_CASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "shutdown_watchdog_{}_{}".format(
             t["lc_state"],
             t["bite_threshold"],

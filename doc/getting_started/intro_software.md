@@ -150,7 +150,7 @@ In addition to the C code and any headers you may create, you'll need to add an 
 Refer to the Bazel documentation for more information about how to write BUILD files.
 
 ```bazel
-opentitan_test(
+pavona_test(
     name = "my_new_test",
     srcs = ["my_new_test.c"],
     exec_env = {

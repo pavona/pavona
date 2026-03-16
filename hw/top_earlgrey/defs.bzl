@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-load("//rules/opentitan:hw.bzl", "opentitan_top")
+load("//rules/pavona:hw.bzl", "pavona_top")
 load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_IPS")
 load("//hw/top_earlgrey/data/otp:defs.bzl", "EARLGREY_OTP_SIGVERIFY_FAKE_KEYS", "EARLGREY_STD_OTP_OVERLAYS")
 
-EARLGREY = opentitan_top(
+EARLGREY = pavona_top(
     name = "earlgrey",
     hjson = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     top_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",

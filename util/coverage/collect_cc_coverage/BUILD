@@ -10,7 +10,7 @@ rust_library(
     name = "coverage_lib",
     srcs = ["coverage_lib.rs"],
     data = [
-        "//toolchain:opentitan_toolchain",
+        "//toolchain:pavona_toolchain",
     ],
     deps = [
         "@crate_index//:anyhow",

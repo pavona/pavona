@@ -716,7 +716,7 @@
 
 - [Build Software](./doc/getting_started/build_sw.md)
   - [External dependencies](./third_party/README.md)
-  - [Build & Test Rules](./rules/opentitan/README.md)
+  - [Build & Test Rules](./rules/pavona/README.md)
     - [Overriding FPGA Bitstream Defaults](./hw/bitstream/README.md)
   - [Top selection](./hw/top/README.md)
     - [Top Description](./hw/top/doc/top_desc.md)

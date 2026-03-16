@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -34,10 +34,10 @@ package(default_visibility = ["//visibility:public"])
 
 [
     # We are using a bitstream with disabled execution so the content of the flash
-    # does not matter but opentitan_test() is unhappy if we don't provide one.
+    # does not matter but pavona_test() is unhappy if we don't provide one.
     # Since execution in the ROM is disabled, bootstrap is not possible so we need
     # to make sure that the test does not try to bootstrap
-    opentitan_test(
+    pavona_test(
         name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
@@ -88,7 +88,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "openocd_asm_interrupt_handler_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
@@ -131,7 +131,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "openocd_shutdown_execution_asm_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
@@ -174,7 +174,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "openocd_asm_watchdog_bark_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
@@ -216,7 +216,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "openocd_asm_watchdog_bite_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
@@ -263,7 +263,7 @@ LC_STATES_DEBUG_DISALLOWED = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "openocd_debug_test_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {

@@ -4,7 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("//rules:tock.bzl", "tock_elf2tab", "tock_image")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "cw310_params", "fpga_params", "opentitan_test")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU", "cw310_params", "fpga_params", "pavona_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,7 +15,7 @@ rust_binary(
     ],
     # We specifically restrict our build target to the OpenTitan
     # CPU because libtock does not support an x86_64 target.
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/silicon_owner/tock/apps:single_app_layout",
         "@libtock",
@@ -35,7 +35,7 @@ tock_image(
     kernel = "//sw/device/silicon_owner/tock/tests:test_kernel",
 )
 
-opentitan_test(
+pavona_test(
     name = "basic_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,

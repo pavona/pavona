@@ -16,12 +16,12 @@ load(
     "otp_partition",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -192,7 +192,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "immutable_rom_ext_section_test_{}".format(s["name"]),
         testonly = True,
         srcs = ["immutable_rom_ext_section_test.c"],
@@ -215,7 +215,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "immutable_section_{}_{}".format(
             t["name"],
             s["name"],
@@ -270,7 +270,7 @@ BAD_SECTION_BINS = {
 # The former produces an immutable section with a valid hash, whereas the
 # later produces an invalid hash.
 [
-    opentitan_binary(
+    pavona_binary(
         name = "imm_section_{}".format(name),
         testonly = True,
         srcs = ["immutable_rom_ext_section_test.c"],
@@ -298,7 +298,7 @@ BAD_SECTION_BINS = {
 # Tests that "imm_section_invalid" is functional when OTP disabled the immutable
 # section.  This test proves that `imm_section_invalid` is a valid signed
 # ROM_EXT stage.
-opentitan_test(
+pavona_test(
     name = "immutable_section_invalid_ok_when_disabled",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -315,7 +315,7 @@ opentitan_test(
 # Tests that we can boot "imm_section_valid" when there is a valid signed
 # ROM_EXT with an invalid immutable section in the primary slot.
 # The ROM should skip the primary slot and boot the secondary slot.
-opentitan_test(
+pavona_test(
     name = "immutable_section_a_bad_b_good",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -334,7 +334,7 @@ opentitan_test(
 
 # Test that the ROM fails to boot when both slots have valid signatures
 # and invalid immutable sections.
-opentitan_test(
+pavona_test(
     name = "immutable_section_a_bad_b_bad",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,

@@ -5,14 +5,14 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load("//rules:autogen.bzl", "autogen_acc_insn_count_header")
 
 cc_library(
     name = "p256",
     srcs = ["p256.c"],
     hdrs = ["p256.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":p256_insn_counts",
         "//sw/acc/crypto:run_p256",
@@ -28,7 +28,7 @@ cc_library(
     name = "p384",
     srcs = ["p384.c"],
     hdrs = ["p384.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":p384_insn_counts",
         "//sw/acc/crypto:run_p384",
@@ -44,7 +44,7 @@ cc_library(
     name = "ed25519",
     srcs = ["ed25519.c"],
     hdrs = ["ed25519.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":ed25519_insn_counts",
         "//sw/acc/crypto:run_ed25519",

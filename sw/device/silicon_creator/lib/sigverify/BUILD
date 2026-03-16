@@ -9,10 +9,10 @@ load(
     "dual_inputs",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "qemu_params",
     "verilator_params",
 )
@@ -91,7 +91,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "mod_exp_ibex_functest_hardcoded",
     srcs = ["mod_exp_ibex_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -109,7 +109,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "mod_exp_ibex_functest_wycheproof",
     srcs = ["mod_exp_ibex_functest.c"],
     exec_env = dicts.add(
@@ -144,7 +144,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdsa_p256_verify_functest",
     srcs = ["ecdsa_p256_verify_functest.c"],
     exec_env = dicts.add(
@@ -176,7 +176,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_verify_functest",
     srcs = ["rsa_verify_functest.c"],
     exec_env = dicts.add(
@@ -213,7 +213,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spx_verify_functest",
     srcs = ["spx_verify_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -286,7 +286,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sigverify_dynamic_functest_hardcoded",
     srcs = ["sigverify_dynamic_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -304,7 +304,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sigverify_dynamic_functest_wycheproof",
     srcs = ["sigverify_dynamic_functest.c"],
     exec_env = dicts.add(

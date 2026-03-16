@@ -2,10 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_test")
-load("//hw/top:defs.bzl", "opentitan_select_top")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU", "pavona_test")
+load("//hw/top:defs.bzl", "pavona_select_top")
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_tx_rx_test",
     srcs = ["i2c_host_tx_rx_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -27,7 +27,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_device_tx_rx_test",
     srcs = ["i2c_device_tx_rx_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -49,7 +49,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_lc_rw_en_test",
     srcs = ["flash_ctrl_lc_rw_en_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -68,13 +68,13 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_rma_unlocked_test",
     srcs = ["flash_rma_unlocked_test.c"],
     # This test doesn't use the OTTF.
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting the `test_in_rom` flag makes the `opentitan_test` rule aware
+    # Setting the `test_in_rom` flag makes the `pavona_test` rule aware
     # of this, and instructs it to load the test image into ROM.
     kind = "rom",
     linker_script = "//sw/device/lib/testing/test_rom:linker_script",
@@ -97,13 +97,13 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_init_test",
     srcs = ["flash_init_test.c"],
     # This test doesn't use the OTTF.
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting the `test_in_rom` flag makes the `opentitan_test` rule aware
+    # Setting the `test_in_rom` flag makes the `pavona_test` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified).
     kind = "rom",
@@ -125,7 +125,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "gpio_test",
     srcs = ["gpio_test.c"],
     exec_env = {
@@ -146,7 +146,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sysrst_ctrl_ec_rst_l_test",
     srcs = ["sysrst_ctrl_ec_rst_l_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -165,7 +165,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "lc_ctrl_scrap_test",
     srcs = ["lc_ctrl_scrap_test.c"],
     exec_env = {
@@ -183,7 +183,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "otp_ctrl_vendor_test_csr_access_test",
     srcs = ["otp_ctrl_vendor_test_csr_access_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -200,7 +200,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "otp_ctrl_vendor_test_ecc_error_test",
     srcs = ["otp_ctrl_vendor_test_ecc_error_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -221,7 +221,7 @@ cc_library(
     name = "lc_ctrl_transition_impl",
     srcs = ["lc_ctrl_transition_impl.c"],
     hdrs = ["lc_ctrl_transition_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -234,7 +234,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "lc_ctrl_transition_test",
     srcs = ["lc_ctrl_transition_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -244,7 +244,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "lc_ctrl_volatile_raw_unlock_test",
     srcs = ["lc_ctrl_volatile_raw_unlock_test.c"],
     exec_env = {
@@ -264,7 +264,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "lc_walkthrough_test",
     srcs = ["lc_walkthrough_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -284,7 +284,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "lc_walkthrough_testunlocks_test",
     srcs = ["lc_walkthrough_testunlocks_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -303,7 +303,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "all_escalation_resets_test",
     srcs = ["all_escalation_resets_test.c"],
     exec_env = {
@@ -337,7 +337,7 @@ opentitan_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ] + opentitan_select_top(
+    ] + pavona_select_top(
         {
             "earlgrey": ["//sw/device/lib/dif:flash_ctrl"],
         },
@@ -345,7 +345,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "data_integrity_escalation_reset_test",
     srcs = ["data_integrity_escalation_reset_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -371,7 +371,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_external_clk_src_for_lc_test",
     srcs = ["clkmgr_external_clk_src_for_lc_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -381,7 +381,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_main_power_glitch_test",
     srcs = ["pwrmgr_main_power_glitch_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -394,7 +394,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_sleep_power_glitch_test",
     srcs = ["pwrmgr_sleep_power_glitch_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -410,7 +410,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_deep_sleep_power_glitch_test",
     srcs = ["pwrmgr_deep_sleep_power_glitch_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -426,7 +426,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_sysrst_ctrl_test",
     srcs = ["pwrmgr_sysrst_ctrl_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -452,7 +452,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_random_sleep_power_glitch_reset_test",
     srcs = ["pwrmgr_random_sleep_power_glitch_reset_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -483,7 +483,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ctrl_integrity_check_test",
     srcs = ["rom_ctrl_integrity_check_test.c"],
     exec_env = {
@@ -502,7 +502,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_tx_rx_test",
     srcs = ["spi_host_tx_rx_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -521,7 +521,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_passthrough_test",
     srcs = ["spi_passthrough_test.c"],
     exec_env = {
@@ -548,7 +548,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_execution_main_test",
     srcs = ["sram_ctrl_execution_main_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -569,7 +569,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "adc_ctrl_sleep_debug_cable_wakeup_test",
     srcs = ["adc_ctrl_sleep_debug_cable_wakeup_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -589,7 +589,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_b2b_sleep_reset_test",
     srcs = ["pwrmgr_b2b_sleep_reset_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -612,7 +612,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sensor_ctrl_status_test",
     srcs = ["sensor_ctrl_status.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -635,7 +635,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_entropy_test",
     srcs = ["alert_handler_entropy_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -653,7 +653,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_lpg_sleep_mode_alerts_test",
     srcs = ["alert_handler_lpg_sleep_mode_alerts.c"],
     # The test requires to drive fatal alerts which is possible only in DV sim.
@@ -681,7 +681,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "lc_ctrl_program_error",
     srcs = ["lc_ctrl_program_error.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -711,7 +711,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ast_usb_clk_calib",
     srcs = ["ast_usb_clk_calib.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -730,7 +730,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "csrng_fuse_en_sw_app_read",
     srcs = ["csrng_fuse_en_sw_app_read.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -749,7 +749,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "csrng_lc_hw_debug_en_test",
     srcs = ["csrng_lc_hw_debug_en_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -775,7 +775,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "inject_scramble_seed",
     srcs = ["inject_scramble_seed.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -799,7 +799,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "exit_test_unlocked_bootstrap",
     srcs = ["exit_test_unlocked_bootstrap.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -815,7 +815,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "otp_ctrl_lc_signals_test",
     srcs = ["otp_ctrl_lc_signals_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -843,7 +843,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ast_clk_rst_inputs",
     srcs = ["ast_clk_rst_inputs.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},

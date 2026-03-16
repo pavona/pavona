@@ -4,7 +4,7 @@
 
 def _top_desc_repo_impl(rctx):
     defs = """
-load("@lowrisc_opentitan//rules/opentitan:hw.bzl", "opentitan_modify_top")
+load("@pavona_pavona//rules/pavona:hw.bzl", "pavona_modify_top")
 """
     nr_tops = len(rctx.attr.top_vars)
     for i in range(nr_tops):
@@ -12,7 +12,7 @@ load("@lowrisc_opentitan//rules/opentitan:hw.bzl", "opentitan_modify_top")
 
     defs += "\nALL_TOPS = [\n"
     for i in range(nr_tops):
-        defs += "  opentitan_modify_top(TOP{}, name = \"{}\"),\n".format(i, rctx.attr.top_names[i])
+        defs += "  pavona_modify_top(TOP{}, name = \"{}\"),\n".format(i, rctx.attr.top_names[i])
     defs += "]\n"
 
     rctx.file("defs.bzl", defs)
@@ -23,7 +23,7 @@ top_desc_repo = repository_rule(
     doc = """
         Create a repository containing a `defs.bzl` file containing
         the description of all the tops, in the form of a single `ALL_TOPS`
-        array whose elements are created by `opentitan_top`.
+        array whose elements are created by `pavona_top`.
     """,
     # The attributes are directly forwarded from the `register` tag classes,
     # see documentation there.
@@ -51,7 +51,7 @@ _register = tag_class(
     },
     doc = """
 Register a top with the build system. To do so, you must have a bazel file exporting
-a variable containing the top description created by `opentitan_top`. For example,
+a variable containing the top description created by `pavona_top`. For example,
 Earlgrey's top description is located in hw/top_earlgrey/defs.bzl which exports
 a variable named `EARLGREY`. In this case, you need to pass the label to the
 `hw/top_earlgrey/defs.bzl` in `bazel_file` and `EARLGREY` in `top_var`.

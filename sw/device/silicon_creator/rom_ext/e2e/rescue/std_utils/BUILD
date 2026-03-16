@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_test(
+pavona_test(
     name = "xmodem_protocol",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -31,7 +31,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdfu_protocol",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,

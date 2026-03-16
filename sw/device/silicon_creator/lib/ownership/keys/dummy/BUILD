@@ -1,7 +1,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-load("//rules/opentitan:keyutils.bzl", "key_ecdsa")
+load("//rules/pavona:keyutils.bzl", "key_ecdsa")
 
 package(default_visibility = ["//visibility:public"])
 

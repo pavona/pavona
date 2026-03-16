@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
+load("//rules/pavona:legacy.bzl", "scramble_flash_vmem", "vmem_file")
 
 package(default_visibility = ["//visibility:public"])
 

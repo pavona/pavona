@@ -80,7 +80,7 @@ qemu_bazel_build_or_forward = repository_rule(
     local = True,
 )
 
-def _qemu_opentitan_repos():
+def _qemu_pavona_repos():
     QEMU_VERSION = "v9.2.0-2025-02-11"
 
     url = "/".join([
@@ -90,7 +90,7 @@ def _qemu_opentitan_repos():
     ])
 
     http_archive(
-        name = "qemu_opentitan_src",
+        name = "qemu_pavona_src",
         url = url,
         build_file = Label(":BUILD.qemu_opentitan.bazel"),
         sha256 = "85091287ee67dee337968071b7d10d39d44bb582c90991eae3d61f11a13ccf29",
@@ -99,9 +99,9 @@ def _qemu_opentitan_repos():
 
     qemu_bazel_build_or_forward(
         name = "qemu_opentitan",
-        qemu_src = "@qemu_opentitan_src//:qemu_src",
+        qemu_src = "@qemu_pavona_src//:qemu_src",
     )
 
 qemu = module_extension(
-    implementation = lambda _: _qemu_opentitan_repos(),
+    implementation = lambda _: _qemu_pavona_repos(),
 )

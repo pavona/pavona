@@ -15,10 +15,10 @@ load(
     "otp_partition",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "dv_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "qemu_params",
     "verilator_params",
 )
@@ -66,7 +66,7 @@ rom_e2e_keymgr_init_configs = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rom_e2e_keymgr_init_{}".format(config["name"]),
         srcs = [":rom_e2e_keymgr_init_test.c"],
         dv = dv_params(

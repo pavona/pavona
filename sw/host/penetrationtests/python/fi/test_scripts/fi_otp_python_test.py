@@ -19,7 +19,7 @@ iterations = 3
 
 target = None
 
-# Read in the extra arguments from the opentitan_test.
+# Read in the extra arguments from the pavona_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
 parser.add_argument("--bootstrap", type=str)
@@ -32,7 +32,7 @@ BOOTSTRAP = args.bootstrap
 
 def load_test_data(test_name):
     data_path = r.Rlocation(
-        "lowrisc_opentitan/sw/host/penetrationtests/python/fi/gold_responses/fi_otp.json"
+        "pavona_pavona/sw/host/penetrationtests/python/fi/gold_responses/fi_otp.json"
     )
 
     with open(data_path, "r") as f:
@@ -170,13 +170,13 @@ class OtpFiTest(unittest.TestCase):
 if __name__ == "__main__":
     r = Runfiles.Create()
     # Get the opentitantool path.
-    opentitantool_path = r.Rlocation("lowrisc_opentitan/sw/host/opentitantool/opentitantool")
+    opentitantool_path = r.Rlocation("pavona_pavona/sw/host/opentitantool/opentitantool")
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:
-        bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+        bitstream_path = r.Rlocation("pavona_pavona/" + BITSTREAM)
     # Get the firmware path.
-    firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
+    firmware_path = r.Rlocation("pavona_pavona/" + BOOTSTRAP)
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"

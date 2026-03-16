@@ -6,7 +6,7 @@ load("//rules:const.bzl", "CONST", "hex", "hex_digits")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:defs.bzl", "fpga_params", "opentitan_binary", "opentitan_test")
+load("//rules/pavona:defs.bzl", "fpga_params", "pavona_binary", "pavona_test")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VARIATIONS",
@@ -72,7 +72,7 @@ _TEST_ROM_EXTS = {
 }
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "rom_ext_{}".format(name),
         testonly = True,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
@@ -100,7 +100,7 @@ _TEST_ROM_EXTS = {
     for name, param in _TEST_ROM_EXTS.items()
 ]
 
-opentitan_test(
+pavona_test(
     name = "secver_write_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -153,7 +153,7 @@ opentitan_test(
 )
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "boot_test_slot_{}".format(slot),
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],

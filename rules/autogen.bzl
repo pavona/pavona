@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
-load("//rules/opentitan:util.bzl", "flatten")
+load("//rules/pavona:util.bzl", "flatten")
 load("//rules:doxygen.bzl", "DoxygenCcInputInfo")
 load(
     "//hw/top:defs.bzl",
-    "opentitan_require_ip_attr",
-    "opentitan_require_top_attr",
-    "opentitan_select_ip_attr",
+    "pavona_require_ip_attr",
+    "pavona_require_top_attr",
+    "pavona_select_ip_attr",
 )
 
 """Autogeneration rules for OpenTitan.
@@ -20,7 +20,7 @@ used by the OpenTitan build, such as register definition files generated
 from hjson register descriptions.
 """
 
-def _opentitan_ip_c_header_impl(ctx):
+def _pavona_ip_c_header_impl(ctx):
     header = ctx.actions.declare_file("{}_regs.h".format(ctx.attr.ip))
 
     arguments = [
@@ -66,8 +66,8 @@ def _opentitan_ip_c_header_impl(ctx):
         ),
     ]
 
-opentitan_ip_c_header_rule = rule(
-    implementation = _opentitan_ip_c_header_impl,
+pavona_ip_c_header_rule = rule(
+    implementation = _pavona_ip_c_header_impl,
     doc = "Generate the C headers for an IP block as used in a top",
     attrs = {
         "ip": attr.string(mandatory = True, doc = "Name of the IP"),
@@ -86,20 +86,20 @@ opentitan_ip_c_header_rule = rule(
     provides = [CcInfo, DoxygenCcInputInfo],
 )
 
-def opentitan_ip_c_header(name, ip, target_compatible_with = [], **kwargs):
+def pavona_ip_c_header(name, ip, target_compatible_with = [], **kwargs):
     """
-    Macro around `opentitan_ip_c_header_rule` that automatically sets `hjson` for the current top.
+    Macro around `pavona_ip_c_header_rule` that automatically sets `hjson` for the current top.
     The target will also be marked as compatible only with tops containing this IP.
     """
-    opentitan_ip_c_header_rule(
+    pavona_ip_c_header_rule(
         name = name,
         ip = ip,
-        hjson = opentitan_select_ip_attr(ip, "hjson"),
-        target_compatible_with = target_compatible_with + opentitan_require_ip_attr(ip, "hjson"),
+        hjson = pavona_select_ip_attr(ip, "hjson"),
+        target_compatible_with = target_compatible_with + pavona_require_ip_attr(ip, "hjson"),
         **kwargs
     )
 
-def _opentitan_ip_rust_module_impl(ctx):
+def _pavona_ip_rust_module_impl(ctx):
     module = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
 
     stamp_args = []
@@ -134,8 +134,8 @@ def _opentitan_ip_rust_module_impl(ctx):
         ),
     ]
 
-opentitan_ip_rust_module_rule = rule(
-    implementation = _opentitan_ip_rust_module_impl,
+pavona_ip_rust_module_rule = rule(
+    implementation = _pavona_ip_rust_module_impl,
     doc = "Generate the Rust modules for an IP block as used in a top",
     attrs = {
         "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
@@ -153,21 +153,21 @@ opentitan_ip_rust_module_rule = rule(
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-def opentitan_ip_rust_module(name, ip, kind, target_compatible_with = [], **kwargs):
+def pavona_ip_rust_module(name, ip, kind, target_compatible_with = [], **kwargs):
     """
-    Macro around `opentitan_ip_rust_module_rule` that automatically sets `hjson` for the current top.
+    Macro around `pavona_ip_rust_module_rule` that automatically sets `hjson` for the current top.
     The target will also be marked as compatible only with tops containing this IP.
     """
-    opentitan_ip_rust_module_rule(
+    pavona_ip_rust_module_rule(
         name = name,
         ip = ip,
         kind = kind,
-        hjson = opentitan_select_ip_attr(ip, "hjson"),
-        target_compatible_with = target_compatible_with + opentitan_require_ip_attr(ip, "hjson"),
+        hjson = pavona_select_ip_attr(ip, "hjson"),
+        target_compatible_with = target_compatible_with + pavona_require_ip_attr(ip, "hjson"),
         **kwargs
     )
 
-def _opentitan_autogen_dif_gen(ctx):
+def _pavona_autogen_dif_gen(ctx):
     outputs = []
 
     groups = {}
@@ -199,8 +199,8 @@ def _opentitan_autogen_dif_gen(ctx):
         OutputGroupInfo(**groups),
     ]
 
-opentitan_autogen_dif_gen = rule(
-    implementation = _opentitan_autogen_dif_gen,
+pavona_autogen_dif_gen = rule(
+    implementation = _pavona_autogen_dif_gen,
     doc = "Generate the DIFs file for an IP",
     attrs = {
         "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
@@ -220,25 +220,25 @@ opentitan_autogen_dif_gen = rule(
     },
 )
 
-def opentitan_autogen_dif(name, ip, deps = [], target_compatible_with = []):
+def pavona_autogen_dif(name, ip, deps = [], target_compatible_with = []):
     """
-    Macro around `opentitan_autogen_dif_gen` that automatically sets `hjson` for the current top
+    Macro around `pavona_autogen_dif_gen` that automatically sets `hjson` for the current top
     and `output_groups` to the default ones.
     The target will also be marked as compatible only with tops containing this IP.
 
     This macro also creates some filegroups to extract the sources, headers and unittests, as
     well as a `cc_library` for the DIF code which will depend on `deps`.
     """
-    opentitan_autogen_dif_gen(
+    pavona_autogen_dif_gen(
         name = "{}_gen".format(name),
-        hjson = opentitan_select_ip_attr(ip, "hjson"),
+        hjson = pavona_select_ip_attr(ip, "hjson"),
         ip = ip,
         output_groups = {
             "hdr": ["dif_{}_autogen.h".format(ip)],
             "src": ["dif_{}_autogen.c".format(ip)],
             "unittest": ["dif_{}_autogen_unittest.cc".format(ip)],
         },
-        target_compatible_with = target_compatible_with + opentitan_require_ip_attr(ip, "hjson"),
+        target_compatible_with = target_compatible_with + pavona_require_ip_attr(ip, "hjson"),
     )
 
     for grp in ["hdr", "src", "unittest"]:
@@ -255,7 +255,7 @@ def opentitan_autogen_dif(name, ip, deps = [], target_compatible_with = []):
         deps = deps,
     )
 
-def _opentitan_top_dt_gen(ctx):
+def _pavona_top_dt_gen(ctx):
     outputs = []
     _subdir_ignore = ctx.actions.declare_directory("_ignore_{}".format(ctx.label.name))
     outdir = _subdir_ignore.dirname
@@ -292,7 +292,7 @@ def _opentitan_top_dt_gen(ctx):
     for extension in ctx.attr.extensions:
         ext_files = extension[DefaultInfo].files.to_list()
         if len(ext_files) > 1:
-            fail("opentitan_top_dt_gen was given {} as an extension but it contains more one file: {}"
+            fail("pavona_top_dt_gen was given {} as an extension but it contains more one file: {}"
                 .format(extension, ext_files))
         tools.append(extension[DefaultInfo].default_runfiles.files)
         arguments.extend(["--extension", ext_files[0].path])
@@ -310,8 +310,8 @@ def _opentitan_top_dt_gen(ctx):
         OutputGroupInfo(**groups),
     ]
 
-opentitan_top_dt_gen_rule = rule(
-    implementation = _opentitan_top_dt_gen,
+pavona_top_dt_gen_rule = rule(
+    implementation = _pavona_top_dt_gen,
     doc = "Generate the C headers for an IP block as used in a top",
     attrs = {
         "gen_top": attr.bool(default = False, doc = "If true, generate the toplevel files"),
@@ -335,34 +335,34 @@ opentitan_top_dt_gen_rule = rule(
     },
 )
 
-def opentitan_top_dt_gen(name, gen_ips = [], gen_top = False, output_groups = {}, target_compatible_with = []):
-    opentitan_top_dt_gen_rule(
+def pavona_top_dt_gen(name, gen_ips = [], gen_top = False, output_groups = {}, target_compatible_with = []):
+    pavona_top_dt_gen_rule(
         name = name,
         gen_top = gen_top,
         gen_ip = len(gen_ips) > 0,
         ips_hjson = flatten([
             # Trick: we wrap the attribute in a list and return the empty list if the attribute (or the IP) is
             # missing. This way we can simply concatenate all the selects.
-            opentitan_select_ip_attr(ip, "hjson", required = False, default = [], fn = lambda x: [x])
+            pavona_select_ip_attr(ip, "hjson", required = False, default = [], fn = lambda x: [x])
             for ip in gen_ips
         ]),
         ips_config = flatten([
-            opentitan_select_ip_attr(ip, "ipconfig", required = False, default = [], fn = lambda x: [x])
+            pavona_select_ip_attr(ip, "ipconfig", required = False, default = [], fn = lambda x: [x])
             for ip in gen_ips
         ]),
         extensions = flatten([
-            opentitan_select_ip_attr(ip, "extension", required = False, default = [], fn = lambda x: [x])
+            pavona_select_ip_attr(ip, "extension", required = False, default = [], fn = lambda x: [x])
             for ip in gen_ips
         ]),
         output_groups = output_groups,
         top_hjson = "//hw/top:top_gen_hjson",
-        target_compatible_with = target_compatible_with + opentitan_require_top_attr("hjson") + flatten([
-            opentitan_require_ip_attr(ip, "hjson")
+        target_compatible_with = target_compatible_with + pavona_require_top_attr("hjson") + flatten([
+            pavona_require_ip_attr(ip, "hjson")
             for ip in gen_ips
         ]),
     )
 
-def opentitan_ip_dt(name, ip, target_compatible_with = []):
+def pavona_ip_dt(name, ip, target_compatible_with = []):
     """
     Generate the C header/source for an IP block as used in the current top.
     The target will also be marked as compatible only with tops containing this IP.
@@ -374,7 +374,7 @@ def opentitan_ip_dt(name, ip, target_compatible_with = []):
     if target_compatible_with == None:
         target_compatible_with = []
 
-    opentitan_top_dt_gen(
+    pavona_top_dt_gen(
         name = "{}_gen".format(name),
         gen_ips = [ip],
         output_groups = {
@@ -391,7 +391,7 @@ def opentitan_ip_dt(name, ip, target_compatible_with = []):
             output_group = grp,
         )
 
-def opentitan_top_dt_api(name, deps = None):
+def pavona_top_dt_api(name, deps = None):
     """
     Create a library that exports the "dt_api.h" header.
     The target will also be marked as compatible only with tops containing this IP.
@@ -401,7 +401,7 @@ def opentitan_top_dt_api(name, deps = None):
     if deps == None:
         deps = []
 
-    opentitan_top_dt_gen(
+    pavona_top_dt_gen(
         name = "{}_gen".format(name),
         gen_top = True,
         output_groups = {
@@ -424,7 +424,7 @@ def opentitan_top_dt_api(name, deps = None):
         deps = deps,
     )
 
-def _opentitan_autogen_testutils_gen(ctx):
+def _pavona_autogen_testutils_gen(ctx):
     outputs = []
     groups = {}
     for group, files in ctx.attr.output_groups.items():
@@ -460,8 +460,8 @@ def _opentitan_autogen_testutils_gen(ctx):
         OutputGroupInfo(**groups),
     ]
 
-opentitan_autogen_testutils_gen = rule(
-    implementation = _opentitan_autogen_testutils_gen,
+pavona_autogen_testutils_gen = rule(
+    implementation = _pavona_autogen_testutils_gen,
     doc = "Generate the testutils file for a top",
     attrs = {
         "top_hjson": attr.label(allow_single_file = True, doc = "Hjson description of the top"),
@@ -488,21 +488,21 @@ opentitan_autogen_testutils_gen = rule(
     },
 )
 
-def opentitan_autogen_isr_testutils(name, ips = [], deps = [], target_compatible_with = []):
+def pavona_autogen_isr_testutils(name, ips = [], deps = [], target_compatible_with = []):
     """
-    Macro around `opentitan_autogen_testutils_gen` that automatically sets `top_hjson` for the current top,
+    Macro around `pavona_autogen_testutils_gen` that automatically sets `top_hjson` for the current top,
     `ips_hjson` to the list of all IPs listed in `ips` for the top and `output_groups` to the expected value for the
     `irs_testutils`.
 
     This macro also creates some filegroups to extract the sources, headers and unittests, as
     well as a `cc_library` for the testutil code which will depend on `deps`.
     """
-    opentitan_autogen_testutils_gen(
+    pavona_autogen_testutils_gen(
         name = "{}_gen".format(name),
         ips_hjson = flatten([
             # Trick: we wrap the attribute in a list and return the empty list of the attribute (or the IP) is
             # missing. This way we can simply concatenate all the selects.
-            opentitan_select_ip_attr(ip, "hjson", required = False, default = [], fn = lambda x: [x])
+            pavona_select_ip_attr(ip, "hjson", required = False, default = [], fn = lambda x: [x])
             for ip in ips
         ]),
         top_hjson = "//hw/top:top_gen_hjson",
@@ -510,7 +510,7 @@ def opentitan_autogen_isr_testutils(name, ips = [], deps = [], target_compatible
             "hdr": ["isr_testutils.h"],
             "src": ["isr_testutils.c"],
         },
-        target_compatible_with = opentitan_require_top_attr("hjson"),
+        target_compatible_with = pavona_require_top_attr("hjson"),
     )
     for grp in ["hdr", "src"]:
         native.filegroup(

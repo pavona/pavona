@@ -371,7 +371,7 @@ index 0000000..8d67e4e
 +#include "sw/device/riscv_compliance_support/support.h"
 +
 +int main(int argc, char **argv) {
-+  return opentitan_compliance_main(argc, argv);
++  return pavona_compliance_main(argc, argv);
 +}
 diff --git a/riscv-target/opentitan/device/rv32imc/platform.yaml b/riscv-target/opentitan/device/rv32imc/platform.yaml
 new file mode 100644

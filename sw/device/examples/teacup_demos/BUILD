@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "pavona_test",
 )
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_test(
+pavona_test(
     name = "teacup_leds_demo",
     srcs = ["teacup_leds_demo.c"],
     exec_env = {
@@ -26,7 +26,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "teacup_leds_and_screen_demo",
     srcs = ["teacup_leds_and_screen_demo.c"],
     exec_env = {

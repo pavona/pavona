@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -76,7 +76,7 @@ REDACT.update({"INVALID": 0x0})
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "e2e_shutdown_redact_{}_{}".format(
             lc_state,
             redact.lower(),

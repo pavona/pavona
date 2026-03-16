@@ -2,17 +2,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Rules to describe OpenTitan HW"""
+"""Rules to describe HW"""
 
 load("//rules:host.bzl", "host_tools_transition")
 
-def opentitan_ip(name, **kwargs):
+def pavona_ip(name, **kwargs):
     """
-    Return a structure describing an IP. This can be given to opentitan_top.
+    Return a structure describing an IP. This can be given to pavona_top.
 
     Example:
     ```
-    opentitan_ip(
+    pavona_ip(
         name = "pwrmgr",
         'hjson' = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/pwrmgr.hjson",
         'ipconfig' = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/top_earlgrey_pwrmgr.ipconfig.hjson",
@@ -28,13 +28,13 @@ def opentitan_ip(name, **kwargs):
         attrs = kwargs,
     )
 
-def opentitan_top(name, ips, **kwargs):
+def pavona_top(name, ips, **kwargs):
     """
     Return a structure describing a top.
 
     Arguments:
     - name: name of top in lower case.
-    - ips: array of ips, the entries must be built by opentitan_ip().
+    - ips: array of ips, the entries must be built by pavona_ip().
     - kwargs: arbitrary top attributes.
     """
     return struct(
@@ -43,7 +43,7 @@ def opentitan_top(name, ips, **kwargs):
         attrs = kwargs,
     )
 
-def opentitan_modify_top(top, **kwargs):
+def pavona_modify_top(top, **kwargs):
     """
     Return a modified top.
 
@@ -51,7 +51,7 @@ def opentitan_modify_top(top, **kwargs):
     - name: change the top name
 
     Arguments:
-    - top: top created by opentitan_top
+    - top: top created by pavona_top
     - kwargs: arbitrary list of modifications
     """
     name = kwargs.pop("name", "")
@@ -77,7 +77,7 @@ def has_top_attr(top, name):
     Check whether a top has an attribute.
 
     Parameters:
-    - top: top created by `opentitan_top`
+    - top: top created by `pavona_top`
     - name: name of the attribute
     """
     return name in top.attrs
@@ -90,7 +90,7 @@ def get_top_attr(top, name, required = True, default = None):
     does not have the requested attribute. Otherwise it will return `default`.
 
     Parameters:
-    - top: top created by `opentitan_top`
+    - top: top created by `pavona_top`
     - name: name of the attribute
     - required: fail if the top does not have the attribute
     - default: this value will be returned when the top does not have this attribute
@@ -107,7 +107,7 @@ def has_ip(top, ipname):
     Check whether a top has a particular IP.
 
     Parameters:
-    - top: top created by `opentitan_top`
+    - top: top created by `pavona_top`
     - ipname: IP name
     """
     return any([ip.name == ipname for ip in top.ips])
@@ -117,7 +117,7 @@ def _get_ip(top, ipname, default = None):
     Return the requested IP or a default value.
 
     Parameters:
-    - top: top created by `opentitan_top`
+    - top: top created by `pavona_top`
     - ip: IP name
     """
     for ip in top.ips:
@@ -131,7 +131,7 @@ def has_ip_attr(top, ipname, name):
     the top does not have the requested IP.
 
     Parameters:
-    - top: top created by `opentitan_top`
+    - top: top created by `pavona_top`
     - ipname: IP name
     - name: name of the attribute
     """
@@ -147,7 +147,7 @@ def get_ip_attr(top, ipname, name, required = True, default = None):
     attribute. Otherwise it will return `default`.
 
     Parameters:
-    - top: top created by `opentitan_top`
+    - top: top created by `pavona_top`
     - ipname: IP name
     - name: name of the attribute
     - required: fail if the IP does not have the attribute

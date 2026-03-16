@@ -7,12 +7,12 @@ load(
     "dicts",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
     "silicon_params",
     "verilator_params",
 )
@@ -190,7 +190,7 @@ FIRMWARE_DEPS_GDB = [
 # Note that the targets below are only to build the software, to run tests, see the BUILD from penetrationtests
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_fi",
     srcs = [":firmware_fi.c"],
     exec_env = PENTEST_EXEC_ENVS,
@@ -215,7 +215,7 @@ opentitan_test(
 )
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_fi_ibex",
     srcs = [":firmware_fi_ibex.c"],
     exec_env = PENTEST_EXEC_ENVS,
@@ -240,7 +240,7 @@ opentitan_test(
 )
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_fi_acc",
     srcs = [":firmware_fi_acc.c"],
     exec_env = PENTEST_EXEC_ENVS,
@@ -265,7 +265,7 @@ opentitan_test(
 )
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_sca",
     srcs = [":firmware_sca.c"],
     exec_env = PENTEST_EXEC_ENVS,
@@ -290,7 +290,7 @@ opentitan_test(
 )
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_cryptolib_fi_sym",
     srcs = [":firmware_cryptolib_fi_sym.c"],
     exec_env = PENTEST_EXEC_ENVS,
@@ -315,7 +315,7 @@ opentitan_test(
 )
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_cryptolib_fi_asym",
     srcs = [":firmware_cryptolib_fi_asym.c"],
     exec_env = PENTEST_EXEC_ENVS,
@@ -340,7 +340,7 @@ opentitan_test(
 )
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_cryptolib_sca_sym",
     srcs = [":firmware_cryptolib_sca_sym.c"],
     exec_env = PENTEST_EXEC_ENVS,
@@ -365,7 +365,7 @@ opentitan_test(
 )
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_cryptolib_sca_asym",
     srcs = [":firmware_cryptolib_sca_asym.c"],
     exec_env = PENTEST_EXEC_ENVS,
@@ -390,7 +390,7 @@ opentitan_test(
 )
 
 # Not an actual test, only for building purposes
-opentitan_test(
+pavona_test(
     name = "pen_test_gdb",
     srcs = [":firmware_gdb.c"],
     exec_env = PENTEST_EXEC_ENVS,

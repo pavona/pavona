@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//rules/pavona:defs.bzl", "pavona_binary")
 load("//rules:files.bzl", "exclude_files")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_binary(
+pavona_binary(
     name = "hello_world",
     testonly = True,
     srcs = ["hello_world.c"],

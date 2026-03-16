@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "pavona_test",
 )
 
 def ownership_transfer_test(
@@ -48,7 +48,7 @@ def ownership_transfer_test(
             "//sw/device/silicon_creator/lib/ownership:datatypes",
         ],
         **kwargs):
-    opentitan_test(
+    pavona_test(
         name = name,
         srcs = srcs,
         exec_env = exec_env,

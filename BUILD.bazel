@@ -18,7 +18,7 @@ filegroup(
         "README.md",
         "//doc:doc_files",
         "//hw:doc_files",
-        "//rules/opentitan:doc_files",
+        "//rules/pavona:doc_files",
         "//signing:doc_files",
         "//sw:doc_files",
         "//third_party:doc_files",

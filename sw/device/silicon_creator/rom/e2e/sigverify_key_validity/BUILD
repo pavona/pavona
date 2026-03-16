@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -16,7 +16,7 @@ load(
     "hex_digits",
 )
 load(
-    "//rules/opentitan:keyutils.bzl",
+    "//rules/pavona:keyutils.bzl",
     "ECDSA_SPX_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
 )
@@ -207,7 +207,7 @@ KEY_VALIDITY_TESTS = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "sigverify_key_validity_{}_{}_{}_{}".format(
             test["name"],
             lc_state,

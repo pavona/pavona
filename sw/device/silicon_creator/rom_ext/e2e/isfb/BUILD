@@ -4,12 +4,12 @@
 
 load("//rules:const.bzl", "CONST", "hex", "hex_digits")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
@@ -48,7 +48,7 @@ manifest(d = {
     ),
 })
 
-opentitan_binary(
+pavona_binary(
     name = "isfb_page_init",
     testonly = True,
     srcs = ["isfb_page_test.c"],
@@ -68,7 +68,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "isfb_page_test",
     srcs = ["isfb_page_test.c"],
     exec_env = {
@@ -93,7 +93,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "isfb_page_bad_erase_constraint_test",
     srcs = ["isfb_page_test.c"],
     exec_env = {
@@ -212,7 +212,7 @@ _ISFB_CONTRAINT_TESTS = {
 }
 
 [
-    opentitan_test(
+    pavona_test(
         name = "isfb_{}_test".format(name),
         srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
         exec_env = {

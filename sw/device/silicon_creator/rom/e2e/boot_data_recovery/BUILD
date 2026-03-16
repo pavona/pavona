@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -129,7 +129,7 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "boot_data_recovery_{}_{}".format(
             case["lc_state"],
             case["default_boot_data"],

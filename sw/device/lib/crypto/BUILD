@@ -4,8 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
-load("//rules/opentitan:static_library.bzl", "ot_static_library")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
+load("//rules/pavona:static_library.bzl", "ot_static_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
@@ -44,7 +44,7 @@ ot_static_library(
 cc_import(
     name = "crypto",
     static_library = ":otcrypto",
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/crypto/include:crypto_hdrs",
     ],
@@ -63,7 +63,7 @@ cc_import(
 cc_import(
     name = "crypto_exported_for_test",
     static_library = ":otcrypto",
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/crypto/include:exported_headers_for_test",
     ],

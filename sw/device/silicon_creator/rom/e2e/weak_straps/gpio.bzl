@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "pavona_test",
     "verilator_params",
 )
 
@@ -49,7 +49,7 @@ def strap_combination_test(name, env, value, evaluator = None, tags = [], extra_
         evaluator = "console --non-interactive --exit-success=\"{pass}\" --exit-failure=\"{fail}\""
     settings["evaluator"] = evaluator.format(**settings)
 
-    opentitan_test(
+    pavona_test(
         name = name,
         exec_env = {
             env: None,

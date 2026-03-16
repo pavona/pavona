@@ -2,10 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "CLEAR_TEST_CMD",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
     "silicon_params",
     "verilator_params",
 )
@@ -13,7 +13,7 @@ load(":gpio.bzl", "strap_combinations_test")
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_binary(
+pavona_binary(
     name = "straps_unsigned",
     testonly = True,
     srcs = ["sw_straps_test.c"],
@@ -58,7 +58,7 @@ strap_combinations_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sw_strap_value",
     srcs = ["sw_straps_test.c"],
     exec_env = {

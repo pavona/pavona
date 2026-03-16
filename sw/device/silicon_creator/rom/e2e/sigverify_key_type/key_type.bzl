@@ -4,14 +4,14 @@
 
 """Helper functions for generating expected test signatures for sigverify_key_type tests."""
 
-load("//rules/opentitan:defs.bzl", "DEFAULT_TEST_FAILURE_MSG")
+load("//rules/pavona:defs.bzl", "DEFAULT_TEST_FAILURE_MSG")
 load("//rules:const.bzl", "CONST", "hex_digits")
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
     "MSG_TEMPLATE_BFV_LCV",
 )
-load("//rules/opentitan:keyutils.bzl", "key_allowed_in_lc_state")
+load("//rules/pavona:keyutils.bzl", "key_allowed_in_lc_state")
 
 # SPHINCS+ is disabled uncoditionally in these lifecycle states.
 SPX_DISABLED_LC_STATES = [
@@ -32,7 +32,7 @@ def ecdsa_exit_failure(lc_state_val, key):
         lc_state_val: Lifecycle state value.
         key: Key object. Must have ecdsa key.
     Returns:
-        Expected failure test signature to be used in opentitan_test.
+        Expected failure test signature to be used in pavona_test.
     """
     return MSG_PASS if not key_allowed_in_lc_state(
         key.ecdsa,
@@ -49,7 +49,7 @@ def ecdsa_exit_success(lc_state_val, key):
         lc_state_val: Lifecycle state value.
         key: Key object. Must have ecdsa key.
     Returns:
-        Expected success test signature to be used in opentitan_test.
+        Expected success test signature to be used in pavona_test.
     """
     return MSG_PASS if key_allowed_in_lc_state(
         key.ecdsa,
@@ -70,7 +70,7 @@ def spx_exit_failure(lc_state_val, key):
         lc_state_val: Lifecycle state value.
         key: Key object. Must have spx key.
     Returns:
-        Expected failure test signature to be used in opentitan_test.
+        Expected failure test signature to be used in pavona_test.
     """
     if lc_state_val in SPX_DISABLED_LC_STATES:
         return DEFAULT_TEST_FAILURE_MSG

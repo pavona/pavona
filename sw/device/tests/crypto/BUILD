@@ -9,13 +9,13 @@ load(
 )
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
     "qemu_params",
     "silicon_params",
     "verilator_params",
@@ -42,7 +42,7 @@ cc_library(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "otcrypto_export_size",
     testonly = True,
     srcs = [
@@ -63,7 +63,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_functest",
     srcs = ["aes_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -81,7 +81,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_kwp_kat_functest",
     srcs = ["aes_kwp_kat_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -96,7 +96,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_kwp_functest",
     srcs = ["aes_kwp_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -113,7 +113,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_kwp_sideload_functest",
     srcs = ["aes_kwp_sideload_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -136,7 +136,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_sideload_functest",
     srcs = ["aes_sideload_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -169,7 +169,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_gcm_functest",
     srcs = ["aes_gcm_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -209,7 +209,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_gcm_timing_test",
     srcs = ["aes_gcm_timing_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -236,7 +236,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "drbg_functest",
     srcs = ["drbg_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -252,7 +252,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sha256_functest",
     srcs = ["sha256_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -267,7 +267,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sha384_functest",
     srcs = ["sha384_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -281,7 +281,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sha512_functest",
     srcs = ["sha512_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -317,7 +317,7 @@ autogen_cryptotest_header(
     tool = "//sw/device/tests/crypto:kdf_set_testvectors",
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -334,7 +334,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -349,7 +349,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_sha384_functest",
     srcs = ["hmac_sha384_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -363,7 +363,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_sha512_functest",
     srcs = ["hmac_sha512_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -377,7 +377,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hkdf_functest",
     srcs = ["hkdf_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -393,7 +393,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_multistream_functest",
     srcs = ["hmac_multistream_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -414,7 +414,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_functest_hardcoded",
     srcs = ["kmac_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -433,7 +433,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_sideload_functest_hardcoded",
     srcs = ["kmac_sideload_functest.c"],
     exec_env = dicts.add(
@@ -462,7 +462,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kdf_hmac_ctr_functest",
     srcs = ["kdf_hmac_ctr_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -480,7 +480,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kdf_kmac_functest",
     srcs = ["kdf_kmac_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -503,7 +503,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kdf_kmac_sideload_functest_hardcoded",
     srcs = ["kdf_kmac_sideload_functest.c"],
     exec_env = dicts.add(
@@ -532,7 +532,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_2048_encryption_functest",
     srcs = ["rsa_2048_encryption_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -551,7 +551,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_3072_encryption_functest",
     srcs = ["rsa_3072_encryption_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -570,7 +570,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_4096_encryption_functest",
     srcs = ["rsa_4096_encryption_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -589,7 +589,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_2048_key_from_cofactor_functest",
     srcs = ["rsa_2048_key_from_cofactor_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -609,7 +609,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_3072_key_from_cofactor_functest",
     srcs = ["rsa_3072_key_from_cofactor_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -629,7 +629,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_4096_key_from_cofactor_functest",
     srcs = ["rsa_4096_key_from_cofactor_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -649,7 +649,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_2048_key_construct_functest",
     srcs = ["rsa_2048_key_construct_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -668,7 +668,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_3072_key_construct_functest",
     srcs = ["rsa_3072_key_construct_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -687,7 +687,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_4096_key_construct_functest",
     srcs = ["rsa_4096_key_construct_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -706,7 +706,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_2048_keygen_functest",
     srcs = ["rsa_2048_keygen_functest.c"],
     # This test is too slow for Verilator/DV, so target FPGA only.
@@ -732,7 +732,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_2048_signature_functest",
     srcs = ["rsa_2048_signature_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -752,7 +752,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_3072_keygen_functest",
     srcs = ["rsa_3072_keygen_functest.c"],
     # This test is too slow for Verilator/DV, so target FPGA only.
@@ -779,7 +779,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_3072_signature_functest",
     srcs = ["rsa_3072_signature_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -797,7 +797,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_4096_keygen_functest",
     srcs = ["rsa_4096_keygen_functest.c"],
     # This test is too slow for Verilator/DV, so target FPGA only.
@@ -824,7 +824,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rsa_4096_signature_functest",
     srcs = ["rsa_4096_signature_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -842,7 +842,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecc_p256_key_construct_functest",
     srcs = ["ecc_p256_key_construct_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -860,7 +860,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecc_p384_key_construct_functest",
     srcs = ["ecc_p384_key_construct_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -878,7 +878,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdh_p256_functest",
     srcs = ["ecdh_p256_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -894,7 +894,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdh_p384_functest",
     srcs = ["ecdh_p384_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -913,7 +913,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdh_p256_sideload_functest",
     srcs = ["ecdh_p256_sideload_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -941,7 +941,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdh_p384_sideload_functest",
     srcs = ["ecdh_p384_sideload_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -969,7 +969,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdsa_p256_functest",
     srcs = ["ecdsa_p256_functest.c"],
     exec_env = dicts.add(
@@ -999,7 +999,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdsa_p384_functest",
     srcs = ["ecdsa_p384_functest.c"],
     exec_env = dicts.add(
@@ -1032,7 +1032,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdsa_p256_sideload_functest",
     srcs = ["ecdsa_p256_sideload_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1061,7 +1061,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdsa_p384_sideload_functest",
     srcs = ["ecdsa_p384_sideload_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1091,7 +1091,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ecdsa_p256_verify_functest_hardcoded",
     srcs = ["ecdsa_p256_verify_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1115,7 +1115,7 @@ autogen_cryptotest_header(
     tool = "//sw/device/tests/crypto:ecdsa_p256_verify_set_testvectors",
 )
 
-opentitan_test(
+pavona_test(
     name = "ed25519_functest",
     srcs = ["ed25519_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1136,7 +1136,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "mlkem_functest",
     srcs = ["mlkem_functest.c"],
     exec_env = dicts.add(
@@ -1162,7 +1162,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "mldsa_functest",
     srcs = ["mldsa_functest.c"],
     exec_env = dicts.add(
@@ -1183,7 +1183,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "mldsa_benchmark",
     srcs = ["mldsa_functest.c"],
     copts = ["-DMLDSA_BENCHMARK_MODE"],
@@ -1252,7 +1252,7 @@ py_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "symmetric_keygen_functest",
     srcs = ["symmetric_keygen_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1268,7 +1268,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "otcrypto_hash_test",
     srcs = ["otcrypto_hash_test.c"],
     exec_env = dicts.add(
@@ -1287,7 +1287,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "otcrypto_export_test",
     srcs = ["otcrypto_export_test.c"],
     exec_env = dicts.add(

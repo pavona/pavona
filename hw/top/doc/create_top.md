@@ -28,13 +28,13 @@ package(default_visibility = ["//visibility:public"])
 # build bitstreams or run verilator.
 ```
 
-A `defs.bzl` file must be located in root directory of the IP and contain at the very least an `opentitan_ip` definition, as in the example below for AES.
+A `defs.bzl` file must be located in root directory of the IP and contain at the very least an `pavona_ip` definition, as in the example below for AES.
 ```py
 # In <ip dir>/defs.bzl:
-load("//rules/opentitan:hw.bzl", "opentitan_ip")
+load("//rules/pavona:hw.bzl", "pavona_ip")
 
 # The variable name must be the name of the IP in upper case.
-AES = opentitan_ip(
+AES = pavona_ip(
     name = "aes",
     # This must be a **full** label (i.e. you must including the package name)
     # pointing to the IP's Hjson. There usually are two options:
@@ -67,9 +67,9 @@ package(default_visibility = ["//visibility:public"])
 and
 ```py
 # In <ip template dir>/defs.bzl:
-load("//rules/opentitan:hw.bzl", "opentitan_ip")
+load("//rules/pavona:hw.bzl", "pavona_ip")
 
-${module_instance_name.upper()} = opentitan_ip(
+${module_instance_name.upper()} = pavona_ip(
     name = "${module_instance_name}",
     # Example using Option 2, see the explanation above.
     hjson = "//hw/top_${topname}/ip_autogen/${module_instance_name}/data:${module_instance_name}.hjson",
@@ -97,7 +97,7 @@ The first step is to make the build system aware of your top so you can use the 
 To do this, edit [`hw/top/defs.bzl`](../../top/defs.bzl) and add the following lines marked as `NEW`:
 ```py
 # In hw/top/defs.bzl`:
-load("//rules/opentitan:hw.bzl", "opentitan_top")
+load("//rules/pavona:hw.bzl", "pavona_top")
 load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY")
 load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING")
 load("//hw/top_englishbreakfast/data/autogen:defs.bzl", "ENGLISHBREAKFAST")
@@ -122,7 +122,7 @@ To do so, create (or edit) a `BUILD` file in your top's root directory and add t
 ```py
 # In hw/top_matcha/BUILD:
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "sim_dv",
@@ -169,7 +169,7 @@ At minimum, you will want to build the test ROM for your DV execution environmen
 To do so, edit [`sw/device/lib/testing/test_rom/BUILD`](../../../sw/device/lib/testing/test_rom/BUILD) and add the following:
 ```py
 # In sw/device/lib/testing/test_rom/BUILD
-opentitan_binary(
+pavona_binary(
     name = "test_rom",
     exec_env = [
         # ...
@@ -192,7 +192,7 @@ See [below](#porting-the-software-to-your-top) for more details.
 This is usually done in two ways:
 - manually add a `//hw/top_match:sim_dv` to the `exec_env` attribute of a test, see [`example_test_from_rom`](../../../sw/device/tests/BUILD) for example:
 ```py
-opentitan_test(
+pavona_test(
     name = "example_test_from_rom",
     srcs = ["example_test_from_rom.c"],
     exec_env = {
@@ -205,9 +205,9 @@ opentitan_test(
     # ...
 )
 ```
-- create a new list of execution environment for your top in [`rules/opentitan/defs.bzl`](../../../rules/opentitan/defs.bzl)
+- create a new list of execution environment for your top in [`rules/pavona/defs.bzl`](../../../rules/pavona/defs.bzl)
 ```py
-# In rules/opentitan/defs.bzl
+# In rules/pavona/defs.bzl
 
 # NEW
 # The default set of test environments for Matcha.
@@ -219,7 +219,7 @@ and add it to tests that you want to enroll, e.g. in [`sw/device/tests/BUILD`](.
 ```py
 # In sw/device/tests/BUILD:
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     # NEW
     "MATCHA_TEST_ENVS"
     # ...
@@ -227,7 +227,7 @@ load(
 
 # ...
 
-opentitan_test(
+pavona_test(
     name = "uart_smoketest",
     srcs = ["uart_smoketest.c"],
     exec_env = dicts.add(

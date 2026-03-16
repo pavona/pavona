@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -52,7 +52,7 @@ _TESTS = {
 }
 
 [
-    opentitan_test(
+    pavona_test(
         name = "sram_readback_{}_test".format(name),
         srcs = ["sram_readback_test.c"],
         exec_env = {

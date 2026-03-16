@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:types.bzl", "types")
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@pavona_pavona//rules/pavona:providers.bzl", "OpenTitanBinaryInfo")
+load("@pavona_pavona//rules/pavona:util.bzl", "get_fallback", "get_files")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 # ExecEnvInfo provider fields and whether the field is required.
 _FIELDS = {
@@ -315,7 +315,7 @@ def update_file_attr(ctx, name, attr, exec_env, data_files, param, action_param 
     if type(attr) == "File":
         _update(name, attr, data_files, param, action_param)
     elif OpenTitanBinaryInfo in attr:
-        # This target was built by opentitan_binary, so make a few sanity check to make
+        # This target was built by pavona_binary, so make a few sanity check to make
         # sure that it contains a binary for the right target.
         if exec_env == None:
             fail("For target {}, attribute {} is {}, ".format(ctx.label, name, attr) +

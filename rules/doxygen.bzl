@@ -59,7 +59,7 @@ def _gather_cc_files_impl(target, ctx):
     for dep in ctx.rule.attr.deps:
         # It can happen that a target does not have a Doxygen provider if
         # for example it returns a CcInfo but is not a cc_library rule, e.g.
-        # `opentitan_ip_c_header`.
+        # `pavona_ip_c_header`.
         if DoxygenCcInputInfo in dep:
             infos.append(dep[DoxygenCcInputInfo])
 

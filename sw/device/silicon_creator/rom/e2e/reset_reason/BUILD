@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -43,7 +43,7 @@ otp_image(
     overlays = STD_OTP_OVERLAYS + [":otp_json_reset_reason"],
 )
 
-opentitan_test(
+pavona_test(
     name = "reset_reasons_test",
     srcs = ["reset_reasons_test.c"],
     exec_env = {
@@ -140,7 +140,7 @@ RESET_CORRUPTION_SCENARIOS = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "reset_reason_{}".format(t["name"]),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {

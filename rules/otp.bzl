@@ -39,9 +39,9 @@ format expected by the image generation tool.
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//rules:const.bzl", "CONST", "hex")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
-load("//hw/top:defs.bzl", "opentitan_select_top_attr")
+load("//hw/top:defs.bzl", "pavona_select_top_attr")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -151,7 +151,7 @@ otp_json_rot_keys = rule(
 def _otp_json_immutable_rom_ext_impl(ctx):
     # TODO(#23425): refactor how the ELF file containing the immutable section
     # is extracted since there could be multiple ELFs if the ROM_EXT input
-    # target is the output of an `opentitan_binary` rule.
+    # target is the output of an `pavona_binary` rule.
     rom_ext_deps = ctx.attr.rom_ext[DefaultInfo].files.to_list()
     rom_ext_elf_file = None
     for file in rom_ext_deps:
@@ -369,9 +369,9 @@ otp_image_consts = rule(
 # The following overlays are used to generate a generic OTP image with fake
 # keys. This is useful for testing in dv_sim, fpga and verilator
 # environments.
-OTP_SIGVERIFY_FAKE_KEYS = opentitan_select_top_attr("otp_sigverify_fake_keys")
+OTP_SIGVERIFY_FAKE_KEYS = pavona_select_top_attr("otp_sigverify_fake_keys")
 
-STD_OTP_OVERLAYS = opentitan_select_top_attr("std_otp_overlay")
+STD_OTP_OVERLAYS = pavona_select_top_attr("std_otp_overlay")
 
 def otp_hex(v):
     return hex(v)

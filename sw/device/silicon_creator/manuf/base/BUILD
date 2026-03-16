@@ -6,12 +6,12 @@ load("@//rules:manuf.bzl", "device_id_header")
 load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
+load("//rules/pavona:cc.bzl", "pavona_binary_assemble")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
@@ -51,7 +51,7 @@ device_id_header(
     template = ":cp_device_id.c.tpl",
 )
 
-opentitan_binary(
+pavona_binary(
     name = "sram_cp_provision",
     testonly = True,
     srcs = ["sram_cp_provision.c"],
@@ -90,7 +90,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "sram_cp_provision_functest",
     testonly = True,
     srcs = ["sram_cp_provision_functest.c"],
@@ -132,7 +132,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "cp_provision_functest",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -168,7 +168,7 @@ opentitan_test(
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "sram_ft_individualize_{}{}".format(sku, variant),
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
@@ -299,7 +299,7 @@ manifest(d = {
 })
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "ft_personalize_{}".format(sku),
         testonly = True,
         srcs = ["ft_personalize.c"],
@@ -362,12 +362,12 @@ manifest(d = {
 ]
 
 [
-    opentitan_binary_assemble(
+    pavona_binary_assemble(
         name = "ft_fw_bundle_{}".format(sku),
         testonly = True,
         bins = {
             # Use a pre-compiled perso binary if the SKU defines it,
-            # else use the label of the opentitan_binary for the SKU.
+            # else use the label of the pavona_binary for the SKU.
             config.get(
                 "perso_bin",
                 ":ft_personalize_{}".format(sku),

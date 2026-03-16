@@ -3,14 +3,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
+load("//hw/top:defs.bzl", "pavona_require_ip", "pavona_require_top", "pavona_select_top")
 load(
-    "//rules/opentitan:defs.bzl",
-    "OPENTITAN_CPU",
-    "opentitan_binary",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "PAVONA_CPU",
+    "pavona_binary",
+    "pavona_test",
 )
-load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("//rules/pavona:legacy.bzl", "legacy_rom_targets")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
@@ -28,7 +28,7 @@ ld_library(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "test_second_rom",
     exec_env = [
         "//hw/top_darjeeling:sim_dv_base",
@@ -120,7 +120,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "test_second_rom_test",
     srcs = ["test_second_rom_test.c"],
     exec_env = {
@@ -151,7 +151,7 @@ pkg_files(
     name = "package",
     testonly = True,
     srcs = [":pre_package"],
-    prefix = opentitan_select_top(
+    prefix = pavona_select_top(
         {
             "darjeeling": "darjeeling/test_second_rom",
         },

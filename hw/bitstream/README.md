@@ -22,16 +22,16 @@ The following command shows a list of targets provided by `//hw/bitstream`:
 bazel query //hw/bitstream:*
 ```
 
-## Overriding Defaults in `opentitan_test` Targets
+## Overriding Defaults in `pavona_test` Targets
 
 ### Implicit Override Using Universal Bitstream Support (Recommended)
 
-The `opentitan_test` rule supports the ability to customize the default
+The `pavona_test` rule supports the ability to customize the default
 bitstream with a custom `otp` or `rom` image. The following example shows
 how to inject an `otp` image to a test target.
 
 ```python
-opentitan_test(
+pavona_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     fpga = fpga_params(
@@ -55,7 +55,7 @@ opentitan_test(
 ```
 
 > Bazel is configured to cache all bitstream splice operations triggered by
-`otp` and/or `rom` dependencies in `opentitan_test` rules. For this reason, it
+`otp` and/or `rom` dependencies in `pavona_test` rules. For this reason, it
 is recommended to use this approach over the use of the `bitstream_splice`
 rule.
 
@@ -66,14 +66,14 @@ configuration for a given execution environment. In most cases, it is better
 to use the `otp` and/or `rom` dependencies to customize the bitstream. See
 the previous section for more details.
 
-`opentitan_test` rules support the ability to override the `bitstream` used
+`pavona_test` rules support the ability to override the `bitstream` used
 in the test. To do this, simply set the `bitstream` argument to the bitstream
 target.
 
 The following example is taken from `sw/device/silicon_creator/manuf/lib/BUILD`:
 
 ```python
-opentitan_test(
+pavona_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     fpga = fpga_params(

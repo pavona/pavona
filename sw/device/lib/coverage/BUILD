@@ -4,7 +4,7 @@
 
 load("//rules:linker.bzl", "ld_library")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -40,7 +40,7 @@ cc_library(
     name = "ottf_runtime_real",
     srcs = ["ottf_runtime.c"],
     features = ["-coverage"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":printer",
         "//sw/device/lib/base:memory",

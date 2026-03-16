@@ -10,8 +10,8 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
     "//rules:rv.bzl",
     "rv_rule",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
+    _PAVONA_CPU = "PAVONA_CPU",
+    _PAVONA_PLATFORM = "PAVONA_PLATFORM",
 )
 
 TockApplication = provider(
@@ -130,7 +130,7 @@ def _tock_image_impl(ctx):
         arguments = [
             "flash",
             "--board",
-            "opentitan_earlgrey",
+            "pavona_earlgrey",
             "--flash-file",
             images[0].path,
             "--address",
@@ -154,7 +154,7 @@ def _tock_image_impl(ctx):
               cp {} {} &&\
               chmod +rw {} &&\
               {} install\
-                --board opentitan_earlgrey\
+                --board pavona_earlgrey\
                 --flash-file {}\
                 --app-address {}\
                 {}\

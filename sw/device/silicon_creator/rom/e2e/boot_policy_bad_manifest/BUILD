@@ -25,12 +25,12 @@ load(
     "maybe_skip_in_ci",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "OTTF_SUCCESS_MSG",
     "ROM_BOOT_FAILURE_MSG",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -230,7 +230,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "boot_policy_bad_manifest_{}_{}_{}".format(
             lc_state,
             t["name"],

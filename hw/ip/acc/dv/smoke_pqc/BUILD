@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "opentitan_select_top_attr")
+load("//hw/top:defs.bzl", "pavona_select_top_attr")
 load("//rules:acc.bzl", "acc_binary")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 

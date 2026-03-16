@@ -2,14 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_top", "opentitan_select_top")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_require_top", "pavona_select_top")
 load(
-    "//rules/opentitan:defs.bzl",
-    "OPENTITAN_CPU",
-    "opentitan_binary",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "PAVONA_CPU",
+    "pavona_binary",
+    "pavona_test",
 )
-load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("//rules/pavona:legacy.bzl", "legacy_rom_targets")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
@@ -32,7 +32,7 @@ ld_library(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "test_rom",
     collect_code_coverage = 0,
     exec_env = [
@@ -139,7 +139,7 @@ cc_library(
 
 alias(
     name = "target_test_rom_lib",
-    actual = opentitan_select_top(
+    actual = pavona_select_top(
         {
             "darjeeling": ":darjeeling_test_rom_lib",
             "englishbreakfast": ":english_breakfast_test_rom_lib",
@@ -179,7 +179,7 @@ cc_library(
 
 alias(
     name = "test_rom_manifest",
-    actual = opentitan_select_top(
+    actual = pavona_select_top(
         {
             "englishbreakfast": ":english_breakfast_test_rom_manifest",
         },
@@ -193,26 +193,26 @@ cc_library(
         "test_rom.c",
         "test_rom_start.S",
     ],
-    local_defines = opentitan_if_ip(
+    local_defines = pavona_if_ip(
         "flash_ctrl",
         ["HAS_FLASH_CTRL"],
         [],
-    ) + opentitan_if_ip(
+    ) + pavona_if_ip(
         "otp_ctrl",
         ["HAS_OTP_CTRL"],
         [],
-    ) + opentitan_select_top(
+    ) + pavona_select_top(
         {
             "englishbreakfast": [],
         },
         ["HAS_RETENTION_RAM"],
-    ) + opentitan_select_top(
+    ) + pavona_select_top(
         {
             "darjeeling": ["HAS_ROM_CTRL1"],
         },
         [],
     ),
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":target_test_rom_lib",
         ":test_rom_manifest",
@@ -240,19 +240,19 @@ cc_library(
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
-    ] + opentitan_if_ip(
+    ] + pavona_if_ip(
         "entropy_src",
         ["//hw/top:entropy_src_c_regs"],
         [],
-    ) + opentitan_if_ip(
+    ) + pavona_if_ip(
         "csrng",
         ["//hw/top:csrng_c_regs"],
         [],
-    ) + opentitan_if_ip(
+    ) + pavona_if_ip(
         "edn",
         ["//hw/top:edn_c_regs"],
         [],
-    ) + opentitan_if_ip(
+    ) + pavona_if_ip(
         "flash_ctrl",
         [
             "//hw/top:flash_ctrl_c_regs",
@@ -261,11 +261,11 @@ cc_library(
             "//sw/device/lib/testing:flash_ctrl_testutils",
         ],
         [],
-    ) + opentitan_if_ip(
+    ) + pavona_if_ip(
         "sensor_ctrl",
         ["//hw/top:sensor_ctrl_c_regs"],
         [],
-    ) + opentitan_if_ip(
+    ) + pavona_if_ip(
         "otp_ctrl",
         [
             "//hw/top:otp_ctrl_c_regs",
@@ -275,7 +275,7 @@ cc_library(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "test_rom_test",
     srcs = ["test_rom_test.c"],
     exec_env = {
@@ -314,7 +314,7 @@ output_groups(
         "sim_verilator_rom",
         "sim_verilator_mapfile",
     ],
-    target_compatible_with = opentitan_require_top("earlgrey"),
+    target_compatible_with = pavona_require_top("earlgrey"),
 )
 
 pkg_files(

@@ -62,9 +62,9 @@ impl Backend for VerilatorBackend {
 define_interface!(
     "verilator",
     VerilatorBackend,
-    "/__builtin__/opentitan_verilator.json5"
+    "/__builtin__/pavona_verilator.json5"
 );
 builtin_file!(
-    "opentitan_verilator.json5",
-    include_str!("../config/opentitan_verilator.json5")
+    "pavona_verilator.json5",
+    include_str!("../config/pavona_verilator.json5")
 );

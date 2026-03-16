@@ -74,7 +74,7 @@ It is generally recommended that device code either depends on `//hw/top/dt` if 
 
 ### Top description
 
-Each top has a description in Bazel created by `opentitan_top` which can be used to tweak the build graph.
+Each top has a description in Bazel created by `pavona_top` which can be used to tweak the build graph.
 See [./doc/top_desc.md] for more details.
 
 ### Compatibility annotations
@@ -112,44 +112,44 @@ You can create your own annotations by using the macros described in the next se
 
 This bazel library provides several important definitions are macros which can be used by rule creators and users to interact with the build system.
 See the documentation in [the file](./defs.bzl) for more details.
-- `opentitan_if_ip(ip, obj, default)` provides a way to conditionally do something the top selected by `//hw/top` contains at least one instance of a given IP.
+- `pavona_if_ip(ip, obj, default)` provides a way to conditionally do something the top selected by `//hw/top` contains at least one instance of a given IP.
 For example, if we want to conditionally compile code only if the usbdev block is present, we could do:
 Example:
 ```python
 # Optional dependency on the usbdev with a define.
 cc_library(
     name = "my_library",
-    defines = opentitan_if_ip("usbdev", ["HAS_USBDEV"], []),
-    deps = opentitan_if_ip("usbdev", ["//sw/device/lib/dif:usbdev"], []),
+    defines = pavona_if_ip("usbdev", ["HAS_USBDEV"], []),
+    deps = pavona_if_ip("usbdev", ["//sw/device/lib/dif:usbdev"], []),
 )
 ```
-- `opentitan_require_ip(ip)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid if the top has at least one instance of a given IP.
+- `pavona_require_ip(ip)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid if the top has at least one instance of a given IP.
 Recall that compatibility requirements are transitive so this annotation will usually be redundant if the target depends on headers or the DT.
 Example:
 ```python
 cc_library(
     name = "my_library",
-    target_compatible_with = opentitan_require_ip("uart"),
+    target_compatible_with = pavona_require_ip("uart"),
 )
 ```
-- `opentitan_select_top(values, default)` provides a way to conditionally do something depending on the top.
-For example if we to create an alias on another library on Earlgrey but a different one on Darjeeling and Englishbreakfast, we could do:
+- `pavona_select_top(values, default)` provides a way to conditionally do something depending on the top.
+For example if we want to create an alias on another library on Earlgrey but a different one on Darjeeling and Englishbreakfast, we could do:
 ```python
 alias(
     name = "my_alias",
-    actual = opentitan_select_top({
+    actual = pavona_select_top({
     "earlgrey": "//something:earlgrey",
     ("englishbreakfast", "darjeeling"): "//something:dj_eb",
     }, "//something:default")
 )
 ```
-- `opentitan_require_top(top)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid on certan tops.
-Similarly to `opentitan_require_ip`, this requirement will usually be redundant if the target transitively depends on headers or the DT.
+- `pavona_require_top(top)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid on certan tops.
+Similarly to `pavona_require_ip`, this requirement will usually be redundant if the target transitively depends on headers or the DT.
 Example:
 ```python
 cc_library(
     name = "my_library",
-    target_compatible_with = opentitan_require_top("darjeeling"),
+    target_compatible_with = pavona_require_top("darjeeling"),
 )
 ```
 

@@ -231,24 +231,24 @@ impl<B: Board + 'static> Backend for ChipWhispererBackend<B> {
     }
 }
 
-builtin_file!("opentitan.json5", include_str!("../config/opentitan.json5"));
+builtin_file!("pavona.json5", include_str!("../config/pavona.json5"));
 
 define_interface!(
     "cw310",
     ChipWhispererBackend<Cw310>,
-    "/__builtin__/opentitan_cw310.json5"
+    "/__builtin__/pavona_cw310.json5"
 );
 builtin_file!(
-    "opentitan_cw310.json5",
-    include_str!("../config/opentitan_cw310.json5")
+    "pavona_cw310.json5",
+    include_str!("../config/pavona_cw310.json5")
 );
 
 define_interface!(
     "cw340",
     ChipWhispererBackend<Cw340>,
-    "/__builtin__/opentitan_cw340.json5"
+    "/__builtin__/pavona_cw340.json5"
 );
 builtin_file!(
-    "opentitan_cw340.json5",
-    include_str!("../config/opentitan_cw340.json5")
+    "pavona_cw340.json5",
+    include_str!("../config/pavona_cw340.json5")
 );

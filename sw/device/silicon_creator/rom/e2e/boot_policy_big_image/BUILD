@@ -11,10 +11,10 @@ load(
     "maybe_skip_in_ci",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -27,7 +27,7 @@ BOOT_POLICY_BIG_IMAGE_CASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "boot_policy_big_image_{}_{}".format(
             lc_state,
             t["suffix"],

@@ -2,22 +2,22 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:util.bzl", "flatten")
+load("//rules/pavona:util.bzl", "flatten")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//rules:autogen.bzl",
-    "opentitan_ip_c_header",
-    "opentitan_ip_rust_module",
+    "pavona_ip_c_header",
+    "pavona_ip_rust_module",
 )
-load("//rules/opentitan:hw.bzl", "get_top_attr")
+load("//rules/pavona:hw.bzl", "get_top_attr")
 load(
     "//hw/top:defs.bzl",
     "ALL_IP_NAMES",
     "ALL_SEED_NAMES",
     "ALL_TOPS",
     "ALL_TOP_NAMES",
-    "opentitan_alias_top_attr",
-    "opentitan_if_ip",
+    "pavona_alias_top_attr",
+    "pavona_if_ip",
 )
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
@@ -85,29 +85,29 @@ string_flag(
     for seed in ALL_SEED_NAMES
 ]
 
-opentitan_alias_top_attr(
+pavona_alias_top_attr(
     name = "top_gen_hjson",
     attr_name = "hjson",
 )
 
 # Point to the right top library.
-opentitan_alias_top_attr(
+pavona_alias_top_attr(
     name = "top_lib",
     attr_name = "top_lib",
 )
 
 # Point to the right top library.
-opentitan_alias_top_attr(
+pavona_alias_top_attr(
     name = "top_ld",
     attr_name = "top_ld",
 )
 
-opentitan_alias_top_attr(
+pavona_alias_top_attr(
     name = "top_otp_map",
     attr_name = "otp_map",
 )
 
-opentitan_alias_top_attr(
+pavona_alias_top_attr(
     name = "rtl_files",
     attr_name = "top_rtl",
 )
@@ -134,14 +134,14 @@ opentitan_alias_top_attr(
 alias(
     name = "secrets",
     actual = select({
-        "@lowrisc_opentitan//hw/top:is_{}".format(top): ":top_{}_seed_secrets".format(top)
+        "@pavona_pavona//hw/top:is_{}".format(top): ":top_{}_seed_secrets".format(top)
         for top in ALL_TOP_NAMES
     }),
 )
 
 # C register headers for all IPs.
 [
-    opentitan_ip_c_header(
+    pavona_ip_c_header(
         name = "{}_c_regs".format(ip),
         ip = ip,
     )
@@ -150,7 +150,7 @@ alias(
 
 # Rust register modules for all IPs.
 [
-    opentitan_ip_rust_module(
+    pavona_ip_rust_module(
         name = "{}_rust_regs".format(ip),
         ip = ip,
         kind = "generic",
@@ -176,7 +176,7 @@ genrule(
 rust_library(
     name = "ot_regs",
     srcs = [":ot_regs_lib_rs"] + flatten([
-        opentitan_if_ip(
+        pavona_if_ip(
             ip,
             [":{}_rust_regs".format(ip)],
             [],
@@ -184,7 +184,7 @@ rust_library(
         for ip in ALL_IP_NAMES
     ]),
     crate_features = flatten([
-        opentitan_if_ip(
+        pavona_if_ip(
             ip,
             [ip],
             [],
@@ -200,7 +200,7 @@ cc_library(
         "//hw/top/dt",
     ] + flatten([
         # Add all compatible register headers
-        opentitan_if_ip(
+        pavona_if_ip(
             ip,
             ["{}_c_regs".format(ip)],
             [],

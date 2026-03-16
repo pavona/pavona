@@ -1,12 +1,12 @@
 {
-  "includes": ["/__builtin__/opentitan.json5"],
-  "interface": "cw310",
+  "includes": ["/__builtin__/pavona.json5"],
+  "interface": "cw340",
   "pins": [
     {
       "name": "RESET",
       "mode": "PushPull",
-      "invert": false,
-      "alias_of": "USB_A14",
+      "invert": true,
+      "alias_of": "PC30",
       "pull_mode": "None"
     },
     {
@@ -18,32 +18,32 @@
     },
     {
       "name": "IOC0",
-      "alias_of": "USB_A15"
+      "alias_of": "PC23"
     },
     {
       "name": "IOC1",
-      "alias_of": "USB_A16"
+      "alias_of": "PC22"
     },
     {
       "name": "IOC2",
-      "alias_of": "USB_A17"
+      "alias_of": "PC21"
     },
     {
       "name": "IOC8",
-      "alias_of": "USB_A18"
+      "alias_of": "PB13"
     },
     {
       "name": "IOC5",
-      "alias_of": "USB_A19"
+      "alias_of": "PB12"
     }
   ],
   "spi": [
     {
       "name": "BOOTSTRAP",
-      "serial_clock": "USB_SPI_SCK",
-      "host_out_device_in": "USB_SPI_COPI",
-      "host_in_device_out": "USB_SPI_CIPO",
-      "chip_select": "USB_SPI_CS",
+      "serial_clock": "PA27",
+      "host_out_device_in": "PA26",
+      "host_in_device_out": "PA25",
+      "chip_select": "PA28",
       "alias_of": "0"
     }
   ],
@@ -51,10 +51,6 @@
     {
       "name": "console",
       "alias_of": "0"
-    },
-    {
-      "name": "dut",
-      "alias_of": "1"
     }
   ]
 }

@@ -4,10 +4,10 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 
 cc_library(
     name = "crt",
     srcs = ["crt.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
 )

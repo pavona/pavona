@@ -18,8 +18,8 @@ VFILE_DIR=.
 SIM_CYCLES=757000
 
 # Expected output
-EXPECT_USB=hw/top_earlgrey/util/opentitan_earlgrey_usbdev_expected-usb
-EXPECT_UART=hw/top_earlgrey/util/opentitan_earlgrey_usbdev_expected-uart
+EXPECT_USB=hw/top_earlgrey/util/pavona_earlgrey_usbdev_expected-usb
+EXPECT_UART=hw/top_earlgrey/util/pavona_earlgrey_usbdev_expected-uart
 
 # Expected differences in output between expected and actual
 IGNORE_EX_UART="-I Build.Date -I Version -I Built.at"

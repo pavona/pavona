@@ -8,9 +8,9 @@ load(
     "hex_digits",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -21,7 +21,7 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_a_flash_a",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -38,7 +38,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_b_flash_b",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -55,7 +55,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_a_flash_b",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -72,7 +72,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_b_flash_a",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -89,7 +89,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_v_flash_a",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -106,7 +106,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_v_flash_b",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -123,7 +123,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_a_flash_a_bad_addr_trans",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,

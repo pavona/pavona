@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "dv_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -57,7 +57,7 @@ manifest(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "shutdown_output_{}".format(lc_state),
         dv = dv_params(
             binaries = {"//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware"},

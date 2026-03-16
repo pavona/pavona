@@ -8,18 +8,18 @@ load(
 )
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "verilator_params",
 )
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_test(
+pavona_test(
     name = "fors_test",
     srcs = ["fors_test.c"],
     exec_env = dicts.add(
@@ -43,7 +43,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "mgf1_test",
     srcs = ["mgf1_test.c"],
     exec_env = dicts.add(
@@ -64,7 +64,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "thash_test",
     srcs = ["thash_test.c"],
     exec_env = dicts.add(
@@ -104,7 +104,7 @@ autogen_cryptotest_header(
     tool = ":sphincsplus_set_testvectors",
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_hardcoded",
     srcs = ["verify_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -121,7 +121,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "wots_test",
     srcs = ["wots_test.c"],
     exec_env = dicts.add(
@@ -219,7 +219,7 @@ autogen_cryptotest_header(
     tool = ":sphincsplus_set_testvectors",
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat0",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -242,7 +242,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat1",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -265,7 +265,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat2",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -288,7 +288,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat3",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -311,7 +311,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat4",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -334,7 +334,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat5",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -357,7 +357,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat6",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -380,7 +380,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat7",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -403,7 +403,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat8",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
@@ -426,7 +426,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "verify_test_kat9",
     srcs = ["verify_test.c"],
     exec_env = dicts.add(

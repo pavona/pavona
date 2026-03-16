@@ -4,11 +4,11 @@
 
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "verilator_params",
 )
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
@@ -60,7 +60,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "crc32_functest",
     srcs = ["crc32_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -73,7 +73,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "crc32_perftest",
     srcs = ["crc32_perftest.c"],
     exec_env = dicts.add(
@@ -214,7 +214,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "memory_perftest",
     srcs = ["memory_perftest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -260,7 +260,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hardened_functest",
     srcs = ["hardened_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,

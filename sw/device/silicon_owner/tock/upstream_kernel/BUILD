@@ -4,8 +4,8 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("//rules:linker.bzl", "ld_library")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
-load("//rules/opentitan:legacy.bzl", "obj_transform")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
+load("//rules/pavona:legacy.bzl", "obj_transform")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -40,7 +40,7 @@ rust_binary(
     ],
     # We specifically restrict our build target to the OpenTitan
     # CPU because tock does not support an x86_64 target.
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":layout",
         ":nostartfiles",

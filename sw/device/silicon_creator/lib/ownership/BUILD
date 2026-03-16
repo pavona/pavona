@@ -8,8 +8,8 @@ load(
     "dual_inputs",
 )
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",

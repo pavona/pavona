@@ -214,7 +214,7 @@ bazel test --define DISABLE_VERILATOR_BUILD=true       \
 
 ## Read More
 
-*  [Build & Test Rules](../../../../../rules/opentitan/README.md)
+*  [Build & Test Rules](../../../../../rules/pavona/README.md)
 *  [FPGA Bitstreams](../../../../../hw/bitstream/README.md)
 *  [On-Device Test Framework](../../../lib/testing/test_framework/README.md)
 *  [OTP Preload Image Generator](../../../../../util/design/README.md#otp_preload_image_generator)

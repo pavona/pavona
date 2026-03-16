@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
@@ -16,7 +16,7 @@ cc_library(
     name = "epmp",
     srcs = ["epmp.c"],
     hdrs = ["epmp.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
 )
 
 dual_cc_library(
@@ -43,7 +43,7 @@ cc_library(
     name = "ibex",
     srcs = ["ibex.c"],
     hdrs = ["ibex.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
@@ -57,7 +57,7 @@ cc_library(
     name = "irq",
     srcs = ["irq.c"],
     hdrs = ["irq.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/base:csr",
     ],
@@ -67,7 +67,7 @@ cc_library(
     name = "log",
     srcs = ["log.c"],
     hdrs = ["log.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -81,7 +81,7 @@ cc_library(
     name = "pmp",
     srcs = ["pmp.c"],
     hdrs = ["pmp.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",

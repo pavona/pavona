@@ -3,15 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
     "verilator_params",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load("//rules:const.bzl", "get_lc_items")
 load(
     "//rules:otp.bzl",
@@ -76,7 +76,7 @@ WATCHDOG_TEST_CASES = {
 # Creates a binary that confirms the watchdog is enabled and a binary that
 # confirms the watchdog is disabled.
 [
-    opentitan_binary(
+    pavona_binary(
         name = "test_watchdog_{}_{}".format(watchdog_config, lc_state),
         testonly = True,
         srcs = ["watchdog_test.c"],
@@ -114,7 +114,7 @@ WATCHDOG_OTP = {
 }
 
 [
-    opentitan_test(
+    pavona_test(
         name = "watchdog_{}_{}".format(
             watchdog_config,
             lc_state,

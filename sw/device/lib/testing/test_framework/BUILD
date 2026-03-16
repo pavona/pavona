@@ -5,16 +5,16 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "verilator_params",
 )
-load("//rules/opentitan:util.bzl", "flatten")
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
+load("//rules/pavona:util.bzl", "flatten")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -30,7 +30,7 @@ cc_library(
     name = "status",
     srcs = ["status.c"],
     hdrs = ["status.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
@@ -47,7 +47,7 @@ cc_library(
 cc_library(
     name = "check",
     hdrs = ["check.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":status",
         "//sw/device/lib/base:macros",
@@ -173,12 +173,12 @@ cc_library(
     hdrs = [
         "ottf_isrs.h",
     ],
-    defines = opentitan_if_ip(
+    defines = pavona_if_ip(
         "alert_handler",
         ["OPENTITAN_HAS_ALERT_HANDLER"],
         [],
     ),
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":check",
         "//hw/top/dt",
@@ -188,7 +188,7 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
-    ] + opentitan_select_top(
+    ] + pavona_select_top(
         {"englishbreakfast": []},
         [
             ":ottf_alerts",
@@ -212,7 +212,7 @@ cc_library(
         "ottf_macros.h",
         "ottf_start.S",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":check",
         ":ottf_isrs",
@@ -242,7 +242,7 @@ cc_library(
 cc_library(
     name = "ottf_utils",
     hdrs = ["ottf_utils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
@@ -255,12 +255,12 @@ cc_library(
     name = "ottf_alerts",
     srcs = ["ottf_alerts.c"],
     hdrs = ["ottf_alerts.h"],
-    defines = opentitan_if_ip(
+    defines = pavona_if_ip(
         "flash_ctrl",
         ["OPENTITAN_HAS_FLASH_CTRL"],
         [],
     ),
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":ottf_test_config",
         "//hw/top/dt",
@@ -280,12 +280,12 @@ cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
     hdrs = ["ottf_main.h"],
-    defines = opentitan_if_ip(
+    defines = pavona_if_ip(
         "alert_handler",
         ["OPENTITAN_HAS_ALERT_HANDLER"],
         [],
     ),
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":check",
         ":freertos_port",
@@ -303,7 +303,7 @@ cc_library(
         "//sw/device/lib/testing:rand_testutils",
         "//third_party/freertos",
         "@manufacturer_test_hooks//:test_hooks",
-    ] + opentitan_select_top(
+    ] + pavona_select_top(
         {
             "englishbreakfast": [],
         },
@@ -391,7 +391,7 @@ cc_library(
         name = "ottf_console_{}_header".format(ip),
         hdrs = cfg["hdrs"],
         defines = cfg["defines"],
-        target_compatible_with = [OPENTITAN_CPU],
+        target_compatible_with = [PAVONA_CPU],
         deps = cfg["deps"] + [
             ":ottf_console_types",
         ],
@@ -405,7 +405,7 @@ cc_library(
         "ottf_console.h",
     ],
     deps = flatten([
-        opentitan_if_ip(
+        pavona_if_ip(
             ip,
             [":ottf_console_{}_header".format(ip)],
             [],
@@ -445,7 +445,7 @@ cc_library(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:print",
     ] + flatten([
-        opentitan_if_ip(
+        pavona_if_ip(
             ip,
             [":ottf_console_{}".format(ip)],
             [],
@@ -459,7 +459,7 @@ _FLOW_CONTROL_MESSAGE = (
     "Everywhere that Mary went the lamb was sure to go."
 )
 
-opentitan_test(
+pavona_test(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
     exec_env = dicts.add(

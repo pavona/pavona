@@ -7,11 +7,11 @@ load(
     "dicts",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "silicon_params",
     "verilator_params",
 )

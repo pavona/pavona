@@ -21,10 +21,10 @@ load(
     "otp_partition",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -83,7 +83,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "secret_page_setup",
     testonly = True,
     srcs = ["secret_page_setup.c"],
@@ -100,7 +100,7 @@ opentitan_binary(
 )
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "uncorrupted_test_slot_{}".format(slot),
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:uncorrupted_test_src"],
@@ -120,7 +120,7 @@ opentitan_binary(
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "flash_ecc_self_corruption_slot_{}_{}".format(
             slot,
             c["cause"],
@@ -166,7 +166,7 @@ opentitan_binary(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = t["name"].format(c["cause"]),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -208,7 +208,7 @@ opentitan_binary(
     for c in FLASH_ECC_ERROR_CAUSES
 ]
 
-opentitan_test(
+pavona_test(
     name = "flash_exc_handler_disabled_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,

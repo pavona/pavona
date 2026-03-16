@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
+load("@pavona_pavona//rules/pavona:transform.bzl", "obj_transform")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU", "pavona_binary")
 load("//rules:linker.bzl", "ld_library")
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
@@ -33,7 +33,7 @@ cc_library(
         "imm_section_start.S",
     ],
     hdrs = ["imm_section.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":imm_section_epmp",
         ":imm_section_version_def",
@@ -124,7 +124,7 @@ ld_library(
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "main_binaries_{}_slot_{}".format(variation_name, slot),
         exec_env = DEFAULT_EXEC_ENV,
         linker_script = ":ld_slot_{}".format(slot),

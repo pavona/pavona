@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:doxygen.bzl", "doxygen_gather_all_package_cc")
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_ip")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_require_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -34,7 +34,7 @@ cc_library(
     name = "uart",
     srcs = ["uart.c"],
     hdrs = ["device.h"],
-    target_compatible_with = opentitan_require_ip("uart"),
+    target_compatible_with = pavona_require_ip("uart"),
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:ibex",
@@ -64,7 +64,7 @@ cc_library(
     deps = [
         ":device",
         "//sw/device/lib/base:macros",
-    ] + opentitan_if_ip(
+    ] + pavona_if_ip(
         "uart",
         [":uart"],
         [":stub"],
@@ -77,7 +77,7 @@ cc_library(
     deps = [
         ":device",
         "//sw/device/lib/base:macros",
-    ] + opentitan_if_ip(
+    ] + pavona_if_ip(
         "uart",
         [":uart"],
         [":stub"],
@@ -90,7 +90,7 @@ cc_library(
     deps = [
         ":device",
         "//sw/device/lib/base:macros",
-    ] + opentitan_if_ip(
+    ] + pavona_if_ip(
         "uart",
         [":uart"],
         [":stub"],
@@ -136,7 +136,7 @@ cc_library(
         "//hw/top:rv_core_ibex_c_regs",
         "//hw/top/dt:rv_core_ibex",
         "//sw/device/lib/base:macros",
-    ] + opentitan_if_ip(
+    ] + pavona_if_ip(
         "uart",
         [":uart"],
         [":stub"],

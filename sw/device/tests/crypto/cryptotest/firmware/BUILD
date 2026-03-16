@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_binary",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "pavona_binary",
+    "pavona_test",
     "silicon_params",
 )
 
@@ -298,7 +298,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
-opentitan_binary(
+pavona_binary(
     name = "firmware",
     testonly = True,
     srcs = [":firmware.c"],

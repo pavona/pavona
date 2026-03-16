@@ -4,7 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN", "localtools_toolchain")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN", "localtools_toolchain")
 
 localtools_toolchain(
     name = "localtools_impl",

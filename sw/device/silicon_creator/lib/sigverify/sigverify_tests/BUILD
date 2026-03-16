@@ -5,9 +5,9 @@
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -23,7 +23,7 @@ _TEST_ARGS = " ".join([
     for target in _TEST_VECTORS
 ])
 
-opentitan_test(
+pavona_test(
     name = "sigverify_cryptotest",
     srcs = ["sigverify_cryptotest.c"],
     exec_env = {

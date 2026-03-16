@@ -144,9 +144,9 @@ impl<C: Chip + 'static> Backend for FtdiBackend<C> {
 define_interface!(
     "ftdi",
     FtdiBackend<Ft4232hq>,
-    "/__builtin__/opentitan_ftdi_voyager.json5"
+    "/__builtin__/pavona_ftdi_voyager.json5"
 );
 builtin_file!(
-    "opentitan_ftdi_voyager.json5",
-    include_str!("../config/opentitan_ftdi_voyager.json5")
+    "pavona_ftdi_voyager.json5",
+    include_str!("../config/pavona_ftdi_voyager.json5")
 );

@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "verilator_params",
 )
 load(
@@ -15,13 +15,13 @@ load(
     "CONST",
     "get_lc_items",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 
 package(default_visibility = ["//visibility:public"])
 
 [
-    opentitan_test(
+    pavona_test(
         name = "epmp_init_otp_" + lc_state,
         srcs = ["epmp_init_test.c"],
         ecdsa_key = ecdsa_key_for_lc_state(

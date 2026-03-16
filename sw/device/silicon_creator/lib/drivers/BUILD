@@ -13,12 +13,12 @@ load(
     "dual_inputs",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "qemu_params",
     "silicon_params",
     "verilator_params",
@@ -86,7 +86,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_functest",
     srcs = ["alert_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -259,7 +259,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
     exec_env = dicts.add(
@@ -339,7 +339,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -410,7 +410,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_functest",
     srcs = ["kmac_functest.c"],
     exec_env = dicts.add(
@@ -601,7 +601,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "retention_sram_functest",
     srcs = ["retention_sram_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -672,7 +672,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rnd_functest",
     srcs = ["rnd_functest.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -741,7 +741,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rstmgr_functest",
     srcs = ["rstmgr_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -790,7 +790,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "uart_functest",
     srcs = ["uart_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -836,7 +836,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -995,7 +995,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usb_functest",
     srcs = ["usb_functest.c"],
     exec_env = dicts.add(

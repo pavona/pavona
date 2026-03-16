@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:util.bzl", "flatten")
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_top")
+load("//rules/pavona:util.bzl", "flatten")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -41,11 +41,11 @@ DIFS = {
     "acc": {},
     "aes": {},
     "alert_handler": {
-        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("earlgrey"),
     },
     "aon_timer": {},
     "clkmgr": {
-        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("earlgrey"),
     },
     "csrng": {
         "deps": [":csrng_shared"],
@@ -69,22 +69,22 @@ DIFS = {
         "deps": ["//sw/device/lib/base:abs_mmio"],
     },
     "otp_ctrl": {
-        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("earlgrey"),
     },
     "pattgen": {},
     "pinmux": {
-        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("earlgrey"),
     },
     "pwm": {},
     "pwrmgr": {
-        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("earlgrey"),
     },
     "rom_ctrl": {},
     "rstmgr": {},
     "rv_core_ibex": {},
     "rv_dm": {},
     "rv_plic": {
-        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("earlgrey"),
     },
     "rv_timer": {},
     "soc_dbg_ctrl": {
@@ -181,7 +181,7 @@ cc_library(
     name = "all_difs",
     deps = flatten([
         # Add all compatible register headers
-        opentitan_if_ip(
+        pavona_if_ip(
             ip,
             [":{}".format(ip)],
             [],

@@ -4,10 +4,10 @@
 
 load("//rules:linker.bzl", "ld_library")
 load(
-    "//rules/opentitan:defs.bzl",
-    "OPENTITAN_CPU",
+    "//rules/pavona:defs.bzl",
+    "PAVONA_CPU",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
@@ -38,7 +38,7 @@ cc_library(
 cc_library(
     name = "sram_start",
     srcs = ["sram_start.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":ast_program",
         ":sram_start_headers",
@@ -54,7 +54,7 @@ cc_library(
 cc_library(
     name = "sram_start_no_ast_init",
     srcs = ["sram_start_no_ast_init.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":ast_program",
         ":sram_start_headers",
@@ -137,7 +137,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     exec_env = {
@@ -204,7 +204,7 @@ cc_library(
     for cfg, target in EARLGREY_OTP_CFGS.items()
 ]
 
-opentitan_test(
+pavona_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     exec_env = {
@@ -264,7 +264,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
@@ -322,7 +322,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ast_program_functest",
     srcs = [
         "ast_program.c",

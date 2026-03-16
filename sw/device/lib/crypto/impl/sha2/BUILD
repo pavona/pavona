@@ -5,14 +5,14 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load("//rules:autogen.bzl", "autogen_acc_insn_count_header")
 
 cc_library(
     name = "sha256",
     srcs = ["sha256.c"],
     hdrs = ["sha256.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":sha256_insn_counts",
         "//sw/acc/crypto:run_sha256",
@@ -30,7 +30,7 @@ cc_library(
     name = "sha512",
     srcs = ["sha512.c"],
     hdrs = ["sha512.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":sha512_insn_counts",
         "//sw/acc/crypto:run_sha512",

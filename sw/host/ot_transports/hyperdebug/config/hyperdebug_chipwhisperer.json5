@@ -1,7 +1,7 @@
 {
   "includes": [
     "/__builtin__/hyperdebug.json5",
-    "/__builtin__/opentitan.json5"
+    "/__builtin__/pavona.json5"
   ],
   "pins": [
     {

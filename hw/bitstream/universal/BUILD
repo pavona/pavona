@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:splice.bzl", universal_splice = "bitstream_splice")
+load("//rules/pavona:splice.bzl", universal_splice = "bitstream_splice")
 
 package(default_visibility = ["//visibility:public"])
 

@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "@pavona_pavona//rules/pavona:transform.bzl",
     "convert_to_vmem",
     "scramble_flash",
     _obj_transform = "obj_transform",
 )
-load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
-load("@lowrisc_opentitan//rules/opentitan:defs.bzl", "exec_env_to_top_map")
+load("@pavona_pavona//rules:rv.bzl", "rv_rule")
+load("@pavona_pavona//rules/pavona:defs.bzl", "exec_env_to_top_map")
 load(
-    "@lowrisc_opentitan//hw/top:defs.bzl",
-    "opentitan_select_top",
+    "@pavona_pavona//hw/top:defs.bzl",
+    "pavona_select_top",
 )
 
 def legacy_rom_targets(target, suffixes, testonly = False):
@@ -26,7 +26,7 @@ def legacy_rom_targets(target, suffixes, testonly = False):
     macros will automatically select() the right one based on the selected top.
 
     Args:
-      target: The name of the new `opentitan_binary` ROM target.
+      target: The name of the new `pavona_binary` ROM target.
       suffix: A map from suffixes (strings) to list of execution environments.
     """
 
@@ -44,7 +44,7 @@ def legacy_rom_targets(target, suffixes, testonly = False):
                 "//conditions:default": "{}_rom".format(suffix),
             }),
             testonly = testonly,
-            target_compatible_with = opentitan_select_top(
+            target_compatible_with = pavona_select_top(
                 {
                     top: []
                     for top in valid_tops

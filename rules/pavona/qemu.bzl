@@ -3,22 +3,22 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "@lowrisc_opentitan//rules/opentitan:providers.bzl",
+    "@pavona_pavona//rules/pavona:providers.bzl",
     "SimQemuBinaryInfo",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:util.bzl",
+    "@pavona_pavona//rules/pavona:util.bzl",
     "get_fallback",
     "get_override",
 )
 load(
-    "//rules/opentitan:exec_env.bzl",
+    "//rules/pavona:exec_env.bzl",
     "ExecEnvInfo",
     "common_test_setup",
     "exec_env_as_dict",
     "exec_env_common_attrs",
 )
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
@@ -53,7 +53,7 @@ def qemu_params(
         **kwargs):
     extra_params = {
         "icount": str(icount),
-        # We have to stringify this dictionary here because `_opentitan_test` only accepts
+        # We have to stringify this dictionary here because `_pavona_test` only accepts
         # a dict with string values, not more dicts.
         "globals": json.encode(globals),
         "qemu_args": json.encode(qemu_args),
@@ -76,7 +76,7 @@ def qemu_params(
     )
 
 def gen_cfg(ctx, **kwargs):
-    """Generate a QEMU `readconfig` INI file containing OpenTitan RTL secrets"""
+    """Generate a QEMU `readconfig` INI file containing RTL secrets"""
     name = get_override(ctx, "label.name", kwargs)
     cfggen = get_override(ctx, "executable.cfggen", kwargs)
 

@@ -8,10 +8,10 @@
 #                -o hw/top_englishbreakfast/
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "silicon_params",
     "verilator_params",
 )
@@ -26,7 +26,7 @@ NR_IRQ_PERIPH_PER_TEST = 10
 NR_IRQ_PERIPH_TESTS = 1
 
 [
-    opentitan_test(
+    pavona_test(
         name = "plic_all_irqs_test_{}".format(idx * NR_IRQ_PERIPH_PER_TEST),
         srcs = ["plic_all_irqs_test.c"],
         # For the last test, do not specify TEST_MAX_IRQ_PERIPHERAL to be sure
@@ -78,7 +78,7 @@ test_suite(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_test",
     srcs = ["alert_test.c"],
     exec_env = dicts.add(

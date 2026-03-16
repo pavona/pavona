@@ -18,7 +18,7 @@ load("//rules:actions.bzl", "OT_ACTION_LLVM_PROFDATA", "OT_ACTION_OBJDUMP")
 package(default_visibility = ["//visibility:public"])
 
 platform(
-    name = "opentitan_platform",
+    name = "pavona_platform",
     constraint_values = [
         "@platforms//cpu:riscv32",
         "@platforms//os:none",
@@ -50,13 +50,13 @@ toolchain(
         "@platforms//cpu:riscv32",
         "@platforms//os:none",
     ],
-    toolchain = ":opentitan_toolchain",
+    toolchain = ":pavona_toolchain",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
 # Collects a set of tools, arguments, and features into a C/C++ toolchain.
 cc_toolchain(
-    name = "opentitan_toolchain",
+    name = "pavona_toolchain",
     args = [
         ":system_includes",
         ":arch_rv32imc",

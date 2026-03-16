@@ -30,7 +30,7 @@ target = None
 # MAX_SKIPS_PER_LOOP iterations of a loop
 MAX_SKIPS_PER_LOOP = 2
 
-# Read in the extra arguments from the opentitan_test.
+# Read in the extra arguments from the pavona_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
 parser.add_argument("--bootstrap", type=str)
@@ -304,27 +304,27 @@ class RomFiSim(unittest.TestCase):
 if __name__ == "__main__":
     r = Runfiles.Create()
     # Get the openocd path.
-    openocd_path = r.Rlocation("lowrisc_opentitan/third_party/openocd/build_openocd/bin/openocd")
+    openocd_path = r.Rlocation("pavona_pavona/third_party/openocd/build_openocd/bin/openocd")
     # Get the openocd config files.
     # The config file for jtag
     CONFIG_FILE_CHIP = r.Rlocation("openocd/tcl/interface/cmsis-dap.cfg")
     # The config for the earlgrey design
-    CONFIG_FILE_DESIGN = r.Rlocation("lowrisc_opentitan/util/openocd/target/lowrisc-earlgrey.cfg")
+    CONFIG_FILE_DESIGN = r.Rlocation("pavona_pavona/util/openocd/target/lowrisc-earlgrey.cfg")
     # Get the opentitantool path.
-    opentitantool_path = r.Rlocation("lowrisc_opentitan/sw/host/opentitantool/opentitantool")
+    opentitantool_path = r.Rlocation("pavona_pavona/sw/host/opentitantool/opentitantool")
     # The path for GDB and the default port (set up by OpenOCD)
     GDB_PATH = r.Rlocation("lowrisc_rv32imcb_toolchain/bin/riscv32-unknown-elf-gdb")
     GDB_PORT = 3333
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:
-        bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+        bitstream_path = r.Rlocation("pavona_pavona/" + BITSTREAM)
     # Get the test result path
     log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
     # Get the firmware path.
-    firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
+    firmware_path = r.Rlocation("pavona_pavona/" + BOOTSTRAP)
     # Get the rom path.
-    rom_path = r.Rlocation("lowrisc_opentitan/" + ROM)
+    rom_path = r.Rlocation("pavona_pavona/" + ROM)
     # Get the disassembly path.
     rom_dis_path = rom_path.replace(".39.scr.vmem", ".dis")
     # And the path for the elf.

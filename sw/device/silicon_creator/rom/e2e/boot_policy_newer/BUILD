@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -54,7 +54,7 @@ SEC_VERS = [
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "empty_test_slot_{}_sec_ver_{}".format(slot, sec_ver),
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
@@ -113,7 +113,7 @@ BOOT_POLICY_NEWER_CASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "boot_policy_newer_{}_a_{}_b_{}".format(
             lc_state,
             t["a"],

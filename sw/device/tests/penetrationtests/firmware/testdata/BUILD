@@ -8,9 +8,9 @@ load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_binary",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "pavona_binary",
+    "pavona_test",
     "silicon_params",
 )
 load(
@@ -24,7 +24,7 @@ load(
 )
 
 # Building a wrongly signed BL0 binary for testing the secure boot
-opentitan_binary(
+pavona_binary(
     name = "bl0_firmware",
     testonly = True,
     # This can be any other source of the pentest framework

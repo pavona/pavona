@@ -138,7 +138,7 @@ These tags can also be used to filter builds using `--build_tag_filters=-cw310,-
 `--build_tests_only` is important when matching wildcards if you aren't using
 `--build_tag_filters` to prevent `bazel test //...` from building targets that are filtered out by `--test_tag_filters`.
 
-There is no way to filter out dependencies of a test\_suite such as `//sw/device/tests:uart_smoketest` (Which is a suite that's assembled by the `opentitan_test` rule) from a build.
+There is no way to filter out dependencies of a test\_suite such as `//sw/device/tests:uart_smoketest` (Which is a suite that's assembled by the `pavona_test` rule) from a build.
 
 ### Running on-device Tests
 
@@ -227,11 +227,11 @@ Additionally, for each device, there are two types of software images that can b
 
 To facilitate instantiating all build rules required to build the same artifacts across several devices and memories, we implement two Pavona-specific Bazel macros.
 These macros include:
-* `opentitan_rom_binary`
-* `opentitan_flash_binary`
+* `pavona_rom_binary`
+* `pavona_flash_binary`
 
 Both macros instantiate build rules to produce software artifacts for each device above.
-Specifically, building either an `opentitan_rom_binary` or `opentitan_flash_binary` named `<target>`, destined to run on the device `<device>`, will output the following files under `bazel-out/`:
+Specifically, building either an `pavona_rom_binary` or `pavona_flash_binary` named `<target>`, destined to run on the device `<device>`, will output the following files under `bazel-out/`:
 * `<target>_<device>.elf`: the linked program, in ELF format.
 * `<target>_<device>.bin`: the linked program, as a plain binary with ELF debug information removed.
 * `<target>_<device>.dis`: the disassembled program with inline source code.
@@ -240,7 +240,7 @@ Specifically, building either an `opentitan_rom_binary` or `opentitan_flash_bina
 * `<target>_<device>.*.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code.
 Note, `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}.
 
-Additionally, if the `opentitan_flash_binary` is signed, then these files will also be under `bazel-out/`:
+Additionally, if the `pavona_flash_binary` is signed, then these files will also be under `bazel-out/`:
 * `<target>_<device>.<signing key name>.signed.bin`: the same `.bin` file above, but with a valid signature field in the manifest.
 * `<target>_<device>.<signing key name>.signed.*.vmem`: the same `*.vmem` file above, but with a valid signature field in the manifest.
 

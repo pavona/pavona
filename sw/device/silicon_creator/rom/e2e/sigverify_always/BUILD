@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -15,7 +15,7 @@ load(
     "hex_digits",
 )
 load(
-    "//rules/opentitan:keyutils.bzl",
+    "//rules/pavona:keyutils.bzl",
     "ECDSA_ONLY_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
 )
@@ -67,7 +67,7 @@ SIGVERIFY_BAD_CASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "sigverify_always_{}_a_{}_b_{}".format(
             lc_state,
             case["a"],

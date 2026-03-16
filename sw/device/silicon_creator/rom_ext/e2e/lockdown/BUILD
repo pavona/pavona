@@ -2,15 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_test(
+pavona_test(
     name = "otp_creator_lockdown",
     srcs = ["otp_creator_lockdown.c"],
     exec_env = {
@@ -34,7 +34,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "otp_dai_lockdown",
     srcs = ["otp_dai_lockdown.c"],
     exec_env = {
@@ -60,7 +60,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_lockdown",
     srcs = ["sram_lockdown.c"],
     exec_env = {
@@ -78,7 +78,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "epmp_rlb_lockdown",
     srcs = ["epmp_rlb_lockdown.c"],
     exec_env = {

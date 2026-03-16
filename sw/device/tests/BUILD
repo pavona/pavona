@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("//hw/top:defs.bzl", "opentitan_select_top")
+load("//hw/top:defs.bzl", "pavona_select_top")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -17,31 +17,31 @@ load(
     "otp_partition",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DARJEELING_TEST_ENVS",
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
-    "OPENTITAN_CPU",
+    "PAVONA_CPU",
     "dv_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
     "qemu_params",
     "silicon_params",
     "verilator_params",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
-load("//rules/opentitan:util.bzl", "flatten")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_select_top")
+load("//rules/pavona:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
 
 # TODO(lowRISC:opentitan#13180): this is a temporary solution to enable writing
 # manufacturer specific tests in the `manufacturer_test_hooks` repository that
 # use open source test code. Specifically, this enables defining an
-# `opentitan_test` in the `manufacturer_test_hooks` repository without the
+# `pavona_test` in the `manufacturer_test_hooks` repository without the
 # need to specify the corresponding test hooks that should be used with the test
 # on the command line.
 exports_files(glob([
@@ -62,7 +62,7 @@ filegroup(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_masking_off_test",
     srcs = ["aes_masking_off_test.c"],
     exec_env = dicts.add(
@@ -85,7 +85,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_entropy_test",
     srcs = ["aes_entropy_test.c"],
     exec_env = dicts.add(
@@ -109,7 +109,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
     exec_env = dicts.add(
@@ -145,7 +145,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_interrupt_encryption_test",
     srcs = ["aes_interrupt_encryption_test.c"],
     exec_env = dicts.add(
@@ -181,7 +181,7 @@ alias(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_smoketest",
     srcs = ["aes_smoketest.c"],
     exec_env = dicts.add(
@@ -212,7 +212,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_force_prng_reseed_test",
     srcs = ["aes_force_prng_reseed_test.c"],
     exec_env = dicts.add(
@@ -245,7 +245,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_prng_reseed_test",
     srcs = ["aes_prng_reseed_test.c"],
     exec_env = dicts.add(
@@ -280,7 +280,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_stall_test",
     srcs = ["aes_stall_test.c"],
     exec_env = dicts.add(
@@ -315,7 +315,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_escalation_test",
     srcs = ["alert_handler_escalation_test.c"],
     exec_env = dicts.add(
@@ -350,7 +350,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_ping_timeout_test",
     srcs = ["alert_handler_ping_timeout_test.c"],
     exec_env = dicts.add(
@@ -378,7 +378,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_lpg_clkoff_test",
     srcs = ["alert_handler_lpg_clkoff_test.c"],
     exec_env = dicts.add(
@@ -428,7 +428,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_reverse_ping_in_deep_sleep_test",
     srcs = ["alert_handler_reverse_ping_in_deep_sleep_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -468,7 +468,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_lpg_reset_toggle_test",
     srcs = ["alert_handler_lpg_reset_toggle.c"],
     exec_env = dicts.add(
@@ -520,7 +520,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_lpg_sleep_mode_pings_test",
     srcs = ["alert_handler_lpg_sleep_mode_pings.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -571,7 +571,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "alert_handler_ping_ok_test",
     srcs = ["alert_handler_ping_ok_test.c"],
     exec_env = dicts.add(
@@ -599,7 +599,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aon_timer_irq_test",
     srcs = ["aon_timer_irq_test.c"],
     exec_env = dicts.add(
@@ -624,7 +624,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aon_timer_smoketest",
     srcs = ["aon_timer_smoketest.c"],
     exec_env = dicts.add(
@@ -643,7 +643,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aon_timer_wdog_bite_reset_test",
     srcs = ["aon_timer_wdog_bite_reset_test.c"],
     exec_env = dicts.add(
@@ -670,7 +670,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_wdog_reset_reqs_test",
     srcs = ["pwrmgr_wdog_reset_reqs_test.c"],
     exec_env = dicts.add(
@@ -695,7 +695,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aon_timer_wdog_lc_escalate_test",
     srcs = ["aon_timer_wdog_lc_escalate_test.c"],
     exec_env = dicts.add(
@@ -724,7 +724,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aon_timer_sleep_wdog_sleep_pause_test",
     srcs = ["aon_timer_sleep_wdog_sleep_pause_test.c"],
     exec_env = dicts.add(
@@ -749,7 +749,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "chip_power_idle_load_test",
     srcs = ["chip_power_idle_load_test.c"],
     exec_env = dicts.add(
@@ -781,7 +781,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "chip_power_sleep_load_test",
     srcs = ["chip_power_sleep_load_test.c"],
     exec_env = dicts.add(
@@ -815,7 +815,7 @@ cc_library(
     name = "clkmgr_external_clk_src_for_sw_impl",
     srcs = ["clkmgr_external_clk_src_for_sw_impl.c"],
     hdrs = ["clkmgr_external_clk_src_for_sw_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -830,7 +830,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_external_clk_src_for_sw_fast_test",
     srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
     exec_env = dicts.add(
@@ -859,7 +859,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_external_clk_src_for_sw_slow_test",
     srcs = ["clkmgr_external_clk_src_for_sw_slow_test.c"],
     exec_env = {
@@ -878,7 +878,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_jitter_frequency_test",
     srcs = ["clkmgr_jitter_frequency_test.c"],
     exec_env = dicts.add(
@@ -908,7 +908,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_jitter_test",
     srcs = ["clkmgr_jitter_test.c"],
     exec_env = dicts.add(
@@ -927,7 +927,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_off_peri_test",
     srcs = ["clkmgr_off_peri_test.c"],
     exec_env = dicts.add(
@@ -984,7 +984,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_off_aes_trans_test",
     srcs = ["clkmgr_off_aes_trans_test.c"],
     exec_env = dicts.add(
@@ -1001,7 +1001,7 @@ opentitan_test(
     deps = ["clkmgr_off_trans_impl"],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_off_hmac_trans_test",
     srcs = ["clkmgr_off_hmac_trans_test.c"],
     exec_env = dicts.add(
@@ -1018,7 +1018,7 @@ opentitan_test(
     deps = ["clkmgr_off_trans_impl"],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_off_kmac_trans_test",
     srcs = ["clkmgr_off_kmac_trans_test.c"],
     exec_env = dicts.add(
@@ -1035,7 +1035,7 @@ opentitan_test(
     deps = ["clkmgr_off_trans_impl"],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_off_acc_trans_test",
     srcs = ["clkmgr_off_acc_trans_test.c"],
     exec_env = dicts.add(
@@ -1051,7 +1051,7 @@ opentitan_test(
     deps = ["clkmgr_off_trans_impl"],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_reset_frequency_test",
     srcs = ["clkmgr_reset_frequency_test.c"],
     exec_env = dicts.add(
@@ -1081,7 +1081,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_sleep_frequency_test",
     srcs = ["clkmgr_sleep_frequency_test.c"],
     exec_env = dicts.add(
@@ -1114,7 +1114,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "clkmgr_smoketest",
     srcs = ["clkmgr_smoketest.c"],
     exec_env = dicts.add(
@@ -1134,7 +1134,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "crt_test",
     srcs = ["crt_test.c"],
     exec_env = dicts.add(
@@ -1163,7 +1163,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "csrng_edn_concurrency_test",
     srcs = ["csrng_edn_concurrency_test.c"],
     exec_env = dicts.add(
@@ -1207,7 +1207,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "csrng_kat_test",
     srcs = ["csrng_kat_test.c"],
     exec_env = dicts.add(
@@ -1231,7 +1231,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "csrng_smoketest",
     srcs = ["csrng_smoketest.c"],
     exec_env = dicts.add(
@@ -1254,7 +1254,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "edn_auto_mode",
     srcs = ["edn_auto_mode.c"],
     exec_env = dicts.add(
@@ -1295,7 +1295,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "edn_boot_mode",
     srcs = ["edn_boot_mode.c"],
     exec_env = dicts.add(
@@ -1331,7 +1331,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "edn_sw_mode",
     srcs = ["edn_sw_mode.c"],
     exec_env = dicts.add(
@@ -1370,7 +1370,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "edn_kat",
     srcs = ["edn_kat.c"],
     exec_env = dicts.add(
@@ -1403,7 +1403,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_fw_ovr_test",
     srcs = ["entropy_src_fw_ovr_test.c"],
     exec_env = dicts.add(
@@ -1435,7 +1435,7 @@ cc_library(
     name = "entropy_src_kat_impl",
     srcs = ["entropy_src_kat_impl.c"],
     hdrs = ["entropy_src_kat_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -1448,7 +1448,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_kat_test",
     srcs = ["entropy_src_kat_test.c"],
     exec_env = dicts.add(
@@ -1469,7 +1469,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_smoketest",
     srcs = ["entropy_src_smoketest.c"],
     exec_env = dicts.add(
@@ -1493,7 +1493,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_ast_rng_req_test",
     srcs = ["entropy_src_ast_rng_req_test.c"],
     exec_env = dicts.add(
@@ -1514,7 +1514,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_csrng_test",
     srcs = ["entropy_src_csrng_test.c"],
     exec_env = dicts.add(
@@ -1550,7 +1550,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_fw_observe_many_contiguous_test",
     srcs = ["entropy_src_fw_observe_many_contiguous.c"],
     exec_env = dicts.add(
@@ -1583,7 +1583,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
     exec_env = dicts.add(
@@ -1623,7 +1623,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_bypass_mode_health_test",
     srcs = ["entropy_src_bypass_mode_health_test.c"],
     exec_env = dicts.add(
@@ -1665,7 +1665,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_fips_mode_health_test",
     srcs = ["entropy_src_fips_mode_health_test.c"],
     exec_env = dicts.add(
@@ -1720,7 +1720,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "example_concurrency_test",
     srcs = ["example_concurrency_test.c"],
     exec_env = dicts.add(
@@ -1735,7 +1735,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "example_mem_ujcmd_test",
     srcs = ["example_mem_ujcmd.c"],
     exec_env = dicts.add(
@@ -1765,7 +1765,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -1775,7 +1775,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "example_test_from_rom",
     srcs = ["example_test_from_rom.c"],
     exec_env = {
@@ -1784,7 +1784,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting the `test_in_rom` flag makes the `opentitan_test` rule aware
+    # Setting the `test_in_rom` flag makes the `pavona_test` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified via
     # DV or Verilator params).
@@ -1805,7 +1805,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_idle_low_power_test",
     srcs = ["flash_ctrl_idle_low_power_test.c"],
     exec_env = dicts.add(
@@ -1831,7 +1831,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
     exec_env = dicts.add(
@@ -1861,7 +1861,7 @@ opentitan_test(
 
 # This is sim_dv only target.
 # Real sival target is implement after this.
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_info_access_lc",
     srcs = ["flash_ctrl_info_access_lc.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -1892,7 +1892,7 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "flash_ctrl_info_access_lc_{}".format(lc_state.lower()),
         srcs = ["flash_ctrl_info_access_lc.c"],
         ecdsa_key = ecdsa_key_for_lc_state(
@@ -1934,7 +1934,7 @@ test_suite(
 
 # These tests cannot run at the owner stage because the ROM_EXT locks the info pages.
 [
-    opentitan_test(
+    pavona_test(
         name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),
         srcs = ["flash_ctrl_info_access_lc.c"],
         dv = dv_params(
@@ -1981,7 +1981,7 @@ test_suite(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
     exec_env = dicts.add(
@@ -2008,7 +2008,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_test",
     srcs = ["flash_ctrl_test.c"],
     exec_env = dicts.add(
@@ -2038,7 +2038,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_write_clear_test",
     srcs = ["flash_ctrl_write_clear_test.c"],
     exec_env = dicts.add(
@@ -2059,7 +2059,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_mem_protection_test",
     srcs = ["flash_ctrl_mem_protection_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -2088,7 +2088,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_ctrl_rma_test",
     srcs = ["flash_ctrl_rma_test.c"],
     exec_env = {
@@ -2130,7 +2130,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
     exec_env = dicts.add(
@@ -2154,7 +2154,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
     exec_env = dicts.add(
@@ -2186,7 +2186,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "gpio_intr_test",
     srcs = ["gpio_intr_test.c"],
     exec_env = dicts.add(
@@ -2224,7 +2224,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_enc_test",
     srcs = ["hmac_enc_test.c"],
     exec_env = dicts.add(
@@ -2246,7 +2246,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_enc_idle_test",
     srcs = ["hmac_enc_idle_test.c"],
     exec_env = dicts.add(
@@ -2270,7 +2270,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_endianness_test",
     srcs = ["hmac_endianness_test.c"],
     exec_env = dicts.add(
@@ -2295,7 +2295,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_secure_wipe_test",
     srcs = ["hmac_secure_wipe_test.c"],
     exec_env = dicts.add(
@@ -2318,7 +2318,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_smoketest",
     srcs = ["hmac_smoketest.c"],
     exec_env = dicts.add(
@@ -2342,7 +2342,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_key_derivation_test",
     srcs = ["keymgr_key_derivation_test.c"],
     exec_env = dicts.add(
@@ -2366,7 +2366,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_derive_sealing_test",
     srcs = ["keymgr_derive_cdi_test.c"],
     exec_env = dicts.add(
@@ -2398,7 +2398,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_derive_attestation_test",
     srcs = ["keymgr_derive_cdi_test.c"],
     copts = ["-DDERIVE_ATTESTATION"],
@@ -2469,7 +2469,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
+pavona_test(
     name = "otp_ctrl_descrambling_test",
     srcs = ["otp_ctrl_descrambling_test.c"],
     dv = dv_params(
@@ -2504,7 +2504,7 @@ opentitan_test(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "otp_ctrl_rot_auth_config_test",
     testonly = True,
     srcs = ["otp_ctrl_rot_auth_config_test.c"],
@@ -2531,7 +2531,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
     exec_env = dicts.add(
@@ -2567,7 +2567,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_sideload_kmac_test",
     srcs = ["keymgr_sideload_kmac_test.c"],
     exec_env = dicts.add(
@@ -2600,7 +2600,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_sideload_acc_test",
     srcs = ["keymgr_sideload_acc_test.c"],
     exec_env = dicts.add(
@@ -2636,7 +2636,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_sideload_acc_simple_test",
     srcs = ["keymgr_sideload_acc_test.c"],
     copts = ["-DTEST_SIMPLE_CASE_ONLY"],
@@ -2713,7 +2713,7 @@ _KMAC_APP_ROM_LIST = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "kmac_app_rom_test_{}".format(exec_env),
         srcs = [
             "kmac_app_rom_test.c",
@@ -2742,7 +2742,7 @@ test_suite(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_endianess_test",
     srcs = ["kmac_endianess_test.c"],
     exec_env = dicts.add(
@@ -2764,7 +2764,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_entropy_test",
     srcs = ["kmac_entropy_test.c"],
     exec_env = dicts.add(
@@ -2788,7 +2788,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_error_conditions_test",
     srcs = ["kmac_error_conditions_test.c"],
     exec_env = dicts.add(
@@ -2816,7 +2816,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_entropy_stress_test",
     srcs = ["kmac_entropy_stress_test.c"],
     exec_env = dicts.add(
@@ -2837,7 +2837,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_idle_test",
     srcs = ["kmac_idle_test.c"],
     exec_env = dicts.add(
@@ -2859,7 +2859,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_kmac_key_sideload_test",
     srcs = ["kmac_kmac_key_sideload_test.c"],
     exec_env = dicts.add(
@@ -2895,7 +2895,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_mode_cshake_test",
     srcs = ["kmac_mode_cshake_test.c"],
     exec_env = dicts.add(
@@ -2918,7 +2918,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_mode_kmac_test",
     srcs = ["kmac_mode_kmac_test.c"],
     exec_env = dicts.add(
@@ -2940,7 +2940,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "kmac_smoketest",
     srcs = ["kmac_smoketest.c"],
     exec_env = dicts.add(
@@ -2962,7 +2962,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "lc_ctrl_otp_hw_cfg0_test",
     srcs = ["lc_ctrl_otp_hw_cfg0_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -2979,7 +2979,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "acc_ecdsa_op_irq_test",
     srcs = ["acc_ecdsa_op_irq_test.c"],
     exec_env = dicts.add(
@@ -3006,7 +3006,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "acc_irq_test",
     srcs = ["acc_irq_test.c"],
     exec_env = dicts.add(
@@ -3035,7 +3035,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "acc_mem_scramble_test",
     srcs = ["acc_mem_scramble_test.c"],
     exec_env = dicts.add(
@@ -3065,7 +3065,7 @@ cc_library(
     name = "acc_randomness_impl",
     srcs = ["acc_randomness_impl.c"],
     hdrs = ["acc_randomness_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/acc/code-snippets:randomness",
         "//sw/device/lib/dif:acc",
@@ -3076,7 +3076,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "acc_randomness_test",
     srcs = ["acc_randomness_test.c"],
     exec_env = dicts.add(
@@ -3106,7 +3106,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "acc_rsa_test",
     srcs = ["acc_rsa_test.c"],
     exec_env = dicts.add(
@@ -3130,7 +3130,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "acc_smoketest",
     srcs = ["acc_smoketest.c"],
     exec_env = dicts.add(
@@ -3158,7 +3158,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "acc_isa_test",
     srcs = ["acc_isa_test.c"],
     exec_env = dicts.add(
@@ -3180,7 +3180,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "otp_ctrl_mem_access_test",
     srcs = ["otp_ctrl_mem_access_test.c"],
     exec_env = {
@@ -3210,7 +3210,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "otp_ctrl_smoketest",
     srcs = ["otp_ctrl_smoketest.c"],
     exec_env = {
@@ -3238,7 +3238,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "plic_sw_irq_test",
     srcs = ["plic_sw_irq_test.c"],
     exec_env = dicts.add(
@@ -3261,7 +3261,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
     exec_env = dicts.add(
@@ -3279,7 +3279,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
     exec_env = dicts.add(
@@ -3297,7 +3297,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwm_smoketest",
     srcs = ["pwm_smoketest.c"],
     exec_env = dicts.add(
@@ -3340,7 +3340,7 @@ cc_library(
     name = "pwrmgr_sleep_resets_lib",
     srcs = ["pwrmgr_sleep_resets_lib.c"],
     hdrs = ["pwrmgr_sleep_resets_lib.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -3367,7 +3367,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_all_reset_reqs_test",
     srcs = ["pwrmgr_all_reset_reqs_test.c"],
     exec_env = dicts.add(
@@ -3410,7 +3410,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_random_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
     exec_env = dicts.add(
@@ -3449,7 +3449,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_deep_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_deep_sleep_all_reset_reqs_test.c"],
     exec_env = dicts.add(
@@ -3487,7 +3487,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_normal_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_normal_sleep_all_reset_reqs_test.c"],
     exec_env = dicts.add(
@@ -3519,7 +3519,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_deep_sleep_por_reset_test",
     srcs = ["pwrmgr_deep_sleep_por_reset_test.c"],
     exec_env = dicts.add(
@@ -3559,7 +3559,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_normal_sleep_por_reset_test",
     srcs = ["pwrmgr_normal_sleep_por_reset_test.c"],
     exec_env = dicts.add(
@@ -3616,7 +3616,7 @@ cc_library(
     hdrs = ["pwrmgr_sleep_all_wake_ups_impl.h"],
     defines = flatten(
         [
-            opentitan_if_ip(
+            pavona_if_ip(
                 ip,
                 ["HAS_" + ip.upper()],
                 [],
@@ -3624,7 +3624,7 @@ cc_library(
             for ip in PWRMGR_SUPPORTED_IPS
         ],
     ),
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
         "//hw/top:pwrmgr_c_regs",
@@ -3643,7 +3643,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ] + flatten(
         [
-            opentitan_if_ip(
+            pavona_if_ip(
                 ip,
                 ["//sw/device/lib/dif:" + ip],
                 [],
@@ -3653,7 +3653,7 @@ cc_library(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_normal_sleep_all_wake_ups",
     srcs = ["pwrmgr_normal_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
@@ -3689,7 +3689,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_deep_sleep_all_wake_ups",
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
@@ -3727,7 +3727,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_random_sleep_all_wake_ups",
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
@@ -3770,7 +3770,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sleep_pin_wake_test",
     srcs = ["sleep_pin_wake_test.c"],
     exec_env = dicts.add(
@@ -3809,7 +3809,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_sensor_ctrl_deep_sleep_wake_up",
     srcs = ["pwrmgr_sensor_ctrl_deep_sleep_wake_up.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -3826,7 +3826,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_smoketest",
     srcs = ["pwrmgr_smoketest.c"],
     exec_env = dicts.add(
@@ -3856,7 +3856,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
     exec_env = dicts.add(
@@ -3878,7 +3878,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_usb_clk_disabled_when_active_test",
     srcs = ["pwrmgr_usb_clk_disabled_when_active_test.c"],
     exec_env = dicts.add(
@@ -3902,7 +3902,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rstmgr_smoketest",
     srcs = ["rstmgr_smoketest.c"],
     exec_env = dicts.add(
@@ -3928,7 +3928,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rstmgr_cpu_info_test",
     srcs = ["rstmgr_cpu_info_test.c"],
     exec_env = dicts.add(
@@ -3959,7 +3959,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rstmgr_sw_req_test",
     srcs = ["rstmgr_sw_req_test.c"],
     exec_env = dicts.add(
@@ -3986,7 +3986,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rstmgr_sw_rst_ctrl_test",
     srcs = ["rstmgr_sw_rst_ctrl_test.c"],
     exec_env = dicts.add(
@@ -3998,7 +3998,7 @@ opentitan_test(
             "//hw/top_darjeeling:sim_dv": None,
         },
     ),
-    local_defines = opentitan_if_ip(
+    local_defines = pavona_if_ip(
         "usbdev",
         ["OT_HAS_USBDEV"],
         [],
@@ -4019,7 +4019,7 @@ opentitan_test(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ] + opentitan_select_top(
+    ] + pavona_select_top(
         {
             "earlgrey": [
                 "//hw/top:usbdev_c_regs",
@@ -4032,7 +4032,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_plic_smoketest",
     srcs = ["rv_plic_smoketest.c"],
     exec_env = dicts.add(
@@ -4056,7 +4056,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_timer_smoketest",
     srcs = ["rv_timer_smoketest.c"],
     exec_env = dicts.add(
@@ -4078,7 +4078,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_timer_systick_test",
     srcs = ["rv_timer_systick_test.c"],
     copts = ["-Wno-enum-float-conversion"],
@@ -4100,7 +4100,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_device_tpm_tx_rx_test",
     srcs = ["spi_device_tpm_tx_rx_test.c"],
     exec_env = dicts.add(
@@ -4148,7 +4148,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_device_flash_smoketest",
     srcs = ["spi_device_flash_smoketest.c"],
     exec_env = dicts.add(
@@ -4189,7 +4189,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_device_ujson_console_test",
     srcs = ["spi_device_ujson_console_test.c"],
     exec_env = dicts.add(
@@ -4219,7 +4219,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_device_sleep_test",
     srcs = ["spi_device_sleep_test.c"],
     exec_env = dicts.add(
@@ -4269,7 +4269,7 @@ cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],
     hdrs = ["spi_host_flash_test_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -4285,7 +4285,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -4324,7 +4324,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_winbond_flash_test",
     srcs = ["spi_host_winbond_flash_test.c"],
     exec_env = dicts.add(
@@ -4357,7 +4357,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_config_test",
     srcs = ["spi_host_config_test.c"],
     exec_env = dicts.add(
@@ -4399,7 +4399,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_irq_test",
     srcs = ["spi_host_irq_test.c"],
     exec_env = dicts.add(
@@ -4424,7 +4424,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts_test.c"],
     exec_env = dicts.add(
@@ -4458,7 +4458,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sensor_ctrl_wakeup_test",
     srcs = ["sensor_ctrl_wakeup_test.c"],
     exec_env = dicts.add(
@@ -4495,7 +4495,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sleep_pwm_pulses_test",
     srcs = ["sleep_pwm_pulses_test.c"],
     exec_env = dicts.add(
@@ -4526,7 +4526,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_execution_test",
     srcs = ["sram_ctrl_execution_test.c"],
     exec_env = dicts.omit(
@@ -4553,7 +4553,7 @@ cc_library(
     name = "sram_ctrl_sleep_sram_ret_contents_impl",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_impl.c"],
     hdrs = ["sram_ctrl_sleep_sram_ret_contents_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -4573,7 +4573,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ottf_console_with_gpio_tx_indicator_test",
     srcs = ["ottf_console_with_gpio_tx_indicator_test.c"],
     exec_env = {
@@ -4604,7 +4604,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_device_ottf_console_test",
     srcs = ["spi_device_ottf_console_test.c"],
     exec_env = dicts.add(
@@ -4630,7 +4630,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ottf_dual_console_test",
     srcs = ["ottf_dual_console_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -4663,7 +4663,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_no_scramble_test.c"],
     exec_env = dicts.add(
@@ -4686,7 +4686,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_sleep_sram_ret_contents_scramble_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_scramble_test.c"],
     exec_env = dicts.add(
@@ -4709,7 +4709,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_smoketest",
     srcs = ["sram_ctrl_smoketest.c"],
     exec_env = dicts.add(
@@ -4729,7 +4729,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_subword_access_test",
     srcs = ["sram_ctrl_subword_access_test.c"],
     exec_env = dicts.add(
@@ -4752,7 +4752,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "uart_smoketest",
     srcs = ["uart_smoketest.c"],
     exec_env = dicts.add(
@@ -4783,7 +4783,7 @@ alias(
     actual = "//sw/host/tests/usbdev/usbdev_stream:stream_test",
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_pincfg_test",
     srcs = ["usbdev_pincfg_test.c"],
     exec_env = dicts.add(
@@ -4817,7 +4817,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_vbus_test",
     srcs = ["usbdev_vbus_test.c"],
     exec_env = dicts.add(
@@ -4854,7 +4854,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_pullup_test",
     srcs = ["usbdev_pullup_test.c"],
     exec_env = dicts.add(
@@ -4893,7 +4893,7 @@ opentitan_test(
 # Same requirements as usbdev_aon_wake_reset_test
 # This test cannot be implemented on the CW310 because
 # there is no VBUS control so we cannot disconnect the device.
-opentitan_test(
+pavona_test(
     name = "usbdev_aon_wake_disconnect_test",
     srcs = ["usbdev_aon_wake_disconnect_test.c"],
     exec_env = dicts.add(
@@ -4920,7 +4920,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_aon_pullup_test",
     srcs = ["usbdev_aon_pullup_test.c"],
     exec_env = dicts.add(
@@ -4960,7 +4960,7 @@ opentitan_test(
 # open the USB parent hub of the device under test so it can issue
 # requests directly. For this reason, the test is tagged as manual
 # until the CI can provide such an access.
-opentitan_test(
+pavona_test(
     name = "usbdev_aon_wake_reset_test",
     srcs = ["usbdev_aon_wake_reset_test.c"],
     exec_env = dicts.add(
@@ -5002,7 +5002,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_setuprx_test",
     srcs = ["usbdev_setuprx_test.c"],
     exec_env = dicts.add(
@@ -5040,7 +5040,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_config_host_test",
     srcs = ["usbdev_config_host_test.c"],
     exec_env = dicts.add(
@@ -5082,7 +5082,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
     exec_env = dicts.add(
@@ -5117,7 +5117,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_mem_test",
     srcs = ["usbdev_mem_test.c"],
     exec_env = dicts.add(
@@ -5136,7 +5136,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_mixed_test",
     srcs = ["usbdev_mixed_test.c"],
     data = [
@@ -5177,7 +5177,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_iso_test",
     srcs = ["usbdev_iso_test.c"],
     data = [
@@ -5218,7 +5218,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_stream_test",
     srcs = ["usbdev_stream_test.c"],
     data = [
@@ -5259,7 +5259,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_toggle_restore_test",
     srcs = ["usbdev_toggle_restore_test.c"],
     exec_env = dicts.add(
@@ -5294,7 +5294,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_logging_test",
     srcs = ["usbdev_logging_test.c"],
     exec_env = {
@@ -5331,7 +5331,7 @@ cc_library(
     name = "usbdev_suspend",
     srcs = ["usbdev_suspend.c"],
     hdrs = ["usbdev_suspend.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -5353,7 +5353,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_suspend_resume_test",
     srcs = [
         "usbdev_suspend_resume_test.c",
@@ -5393,7 +5393,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_sleep_resume_test",
     srcs = [
         "usbdev_sleep_resume_test.c",
@@ -5434,7 +5434,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_sleep_reset_test",
     srcs = [
         "usbdev_sleep_reset_test.c",
@@ -5475,7 +5475,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_sleep_disconnect_test",
     srcs = [
         "usbdev_sleep_disconnect_test.c",
@@ -5519,7 +5519,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_deep_resume_test",
     srcs = [
         "usbdev_deep_resume_test.c",
@@ -5560,7 +5560,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_deep_reset_test",
     srcs = [
         "usbdev_deep_reset_test.c",
@@ -5601,7 +5601,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_deep_disconnect_test",
     srcs = [
         "usbdev_deep_disconnect_test.c",
@@ -5642,7 +5642,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "usbdev_suspend_full_test",
     srcs = [
         "usbdev_suspend_full_test.c",
@@ -5672,7 +5672,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -5732,7 +5732,7 @@ opentitan_test(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ] + opentitan_select_top(
+    ] + pavona_select_top(
         {
             "earlgrey": [
                 "//sw/device/lib/dif:flash_ctrl",
@@ -5744,7 +5744,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_rnd_test",
     srcs = [
         "rv_core_ibex_rnd_test.S",
@@ -5770,7 +5770,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_address_translation_test",
     srcs = [
         "rv_core_ibex_address_translation_test.S",
@@ -5798,7 +5798,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_nmi_irq_test",
     srcs = ["rv_core_ibex_nmi_irq_test.c"],
     exec_env = dicts.add(
@@ -5828,7 +5828,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_icache_invalidate_test",
     srcs = ["rv_core_ibex_icache_invalidate_test.c"],
     exec_env = dicts.add(
@@ -5845,7 +5845,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
     exec_env = dicts.add(
@@ -5897,7 +5897,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
+pavona_test(
     name = "power_virus_systemtest",
     srcs = ["power_virus_systemtest.c"],
     dv = dv_params(
@@ -5979,7 +5979,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_passthru_test",
     srcs = ["spi_passthru_test.c"],
     exec_env = dicts.add(
@@ -6041,7 +6041,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
+pavona_test(
     name = "flash_scrambling_smoketest",
     srcs = ["example_test_from_flash.c"],
     dv = dv_params(
@@ -6098,7 +6098,7 @@ _RV_DM_TEST_CONFIGURATIONS = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_csr_rw_{}".format(test_cfg["name"]),
         srcs = ["rv_dm_delayed_enable.c"],
         exec_env = {
@@ -6141,7 +6141,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_mem_access_{}".format(test_cfg["name"]),
         srcs = ["rv_dm_delayed_enable.c"],
         exec_env = {
@@ -6186,7 +6186,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
@@ -6226,7 +6226,7 @@ _RV_DM_TAP_SEL_LC_STATES = get_lc_items(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_jtag_tap_sel_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = dicts.add(
@@ -6293,7 +6293,7 @@ _LC_STATES_DEBUG_DISALLOWED = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_lc_disabled_tl_{}".format(lc_state),
         srcs = ["rv_dm_lc_disabled.c"],
         exec_env = dicts.add(
@@ -6330,7 +6330,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_lc_disabled_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = dicts.add(
@@ -6372,7 +6372,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_ndm_reset_req_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req.c"],
         exec_env = {
@@ -6403,7 +6403,7 @@ test_suite(
             "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
-        ] + opentitan_select_top(
+        ] + pavona_select_top(
             {
                 "darjeeling": [
                     "//hw/top:keymgr_dpe_c_regs",
@@ -6430,7 +6430,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_ndm_reset_req_when_cpu_halted_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
         exec_env = {
@@ -6473,7 +6473,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_dtm_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
@@ -6515,7 +6515,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_control_status_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
@@ -6557,7 +6557,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_access_after_wakeup_{}".format(lc_state),
         srcs = ["rv_dm_access_after_wakeup.c"],
         exec_env = {
@@ -6616,7 +6616,7 @@ test_suite(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rv_dm_access_after_hw_reset_{}".format(lc_state),
         srcs = ["rv_dm_access_after_hw_reset.c"],
         exec_env = {
@@ -6658,7 +6658,7 @@ test_suite(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
     exec_env = {
@@ -6681,7 +6681,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_target_smbus_arp_test",
     srcs = [
         "i2c_target_smbus_arp_test.c",
@@ -6710,7 +6710,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_override_test",
     srcs = [
         "i2c_host_override_test.c",
@@ -6753,7 +6753,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_target_test",
     srcs = [
         "i2c_target_test.c",
@@ -6802,7 +6802,7 @@ _STATUS_REPORT_TEST_MSG = "\r\n".join([
     ".*status.c:.* FAIL!",
 ])
 
-opentitan_test(
+pavona_test(
     name = "status_report_test",
     srcs = ["status_report_test.c"],
     exec_env = {
@@ -6827,7 +6827,7 @@ _STATUS_REPORT_OVERFLOW_TEST_MSG = "\r\n".join([
     ".*status.c:.* FAIL!",
 ])
 
-opentitan_test(
+pavona_test(
     name = "status_report_overflow_test",
     srcs = ["status_report_overflow_test.c"],
     exec_env = {
@@ -6843,7 +6843,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "example_sival",
     srcs = ["example_sival.c"],
     # We only run this test on the FPGA (`fpga_cw3*0_sival_rom_ext`)
@@ -6871,7 +6871,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sysrst_ctrl_inputs_test",
     srcs = ["sysrst_ctrl_inputs_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -6910,7 +6910,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sysrst_ctrl_outputs_test",
     srcs = ["sysrst_ctrl_outputs_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -6949,7 +6949,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sysrst_ctrl_in_irq_test",
     srcs = ["sysrst_ctrl_in_irq_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -6990,7 +6990,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sysrst_ctrl_ec_rst_l_test",
     srcs = ["sysrst_ctrl_ec_rst_l_test.c"],
     exec_env = dicts.add(
@@ -7029,7 +7029,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sysrst_ctrl_ulp_z3_wakeup_test",
     srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -7071,7 +7071,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sysrst_ctrl_reset_test",
     srcs = ["sysrst_ctrl_reset_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -7112,7 +7112,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_memset_test",
     srcs = ["sram_ctrl_memset_test.c"],
     exec_env = dicts.add(
@@ -7132,7 +7132,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_readback_test",
     srcs = ["sram_ctrl_readback_test.c"],
     exec_env = dicts.add(
@@ -7152,7 +7152,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_isa_test_test_unlocked0",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     exec_env = dicts.add(
@@ -7195,7 +7195,7 @@ opentitan_test(
 
 # This test checks basic Ibex functionality, so we prefer to run as little code as possible before the test.
 # In LC states where JTAG is available, we use SRAM execution to run the test before ROM.
-opentitan_binary(
+pavona_binary(
     name = "rv_core_ibex_isa_test_sram",
     testonly = True,
     srcs = [
@@ -7215,7 +7215,7 @@ opentitan_binary(
 )
 
 # For PROD LC state, we run this test as normal.
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_isa_test_prod",
     srcs = [
         "rv_core_ibex_isa_test.S",
@@ -7242,7 +7242,7 @@ test_suite(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_epmp_test_functest",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     exec_env = dicts.add(
@@ -7283,7 +7283,7 @@ opentitan_test(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "rv_core_ibex_epmp_test",
     testonly = True,
     srcs = [
@@ -7316,7 +7316,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "uart_tx_rx_test",
     srcs = ["uart_tx_rx_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -7373,7 +7373,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_mem_test_test_unlocked0",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     exec_env = dicts.add(
@@ -7417,7 +7417,7 @@ opentitan_test(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "rv_core_ibex_mem_test_sram",
     testonly = True,
     srcs = ["rv_core_ibex_mem_test.c"],
@@ -7448,7 +7448,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_mem_test_prod",
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = dicts.add(
@@ -7486,7 +7486,7 @@ test_suite(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "uart_baud_rate_test",
     srcs = ["uart_baud_rate_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -7529,7 +7529,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "uart_loopback_test",
     srcs = ["uart_loopback_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -7575,7 +7575,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_src_fw_override_test",
     srcs = ["entropy_src_fw_override_test.c"],
     exec_env = dicts.add(
@@ -7615,7 +7615,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "uart_parity_break_test",
     srcs = ["uart_parity_break_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -7664,7 +7664,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_scrambled_access_test",
     srcs = ["sram_ctrl_scrambled_access_test.c"],
     exec_env = dicts.add(
@@ -7690,7 +7690,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_usbdev_smoketest",
     srcs = ["pwrmgr_usbdev_smoketest.c"],
     exec_env = dicts.add(
@@ -7710,7 +7710,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pwrmgr_lowpower_cancel_test",
     srcs = ["pwrmgr_lowpower_cancel_test.c"],
     exec_env = dicts.add(
@@ -7734,7 +7734,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sram_ctrl_lc_escalation_test",
     srcs = ["sram_ctrl_lc_escalation_test.c"],
     exec_env = {
@@ -7766,7 +7766,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sleep_pin_mio_dio_val_test",
     srcs = ["sleep_pin_mio_dio_val_test.c"],
     exec_env = dicts.add(
@@ -7806,7 +7806,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sleep_pin_retention_test",
     srcs = ["sleep_pin_retention_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -7852,7 +7852,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "pattgen_ios_test",
     srcs = ["pattgen_ios_test.c"],
     exec_env = dicts.add(
@@ -7898,7 +7898,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "hmac_error_conditions_test",
     srcs = ["hmac_error_conditions_test.c"],
     exec_env = dicts.add(
@@ -7926,7 +7926,7 @@ opentitan_test(
 cc_library(
     name = "rom_exit_immediately_lib",
     srcs = ["rom_exit_immediately.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:rv_core_ibex",
@@ -7934,7 +7934,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_exit_immediately",
     exec_env = {
         "//hw/top_earlgrey:sim_qemu_base": None,
@@ -7948,7 +7948,7 @@ opentitan_test(
     deps = [":rom_exit_immediately_lib"],
 )
 
-opentitan_test(
+pavona_test(
     name = "dma_inline_hashing",
     srcs = ["dma_inline_hashing.c"],
     exec_env = DARJEELING_TEST_ENVS,
@@ -7968,7 +7968,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "dma_abort",
     srcs = ["dma_abort.c"],
     exec_env = DARJEELING_TEST_ENVS,
@@ -7986,7 +7986,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_dpe_key_derivation_test",
     srcs = ["keymgr_dpe_key_derivation_test.c"],
     exec_env = DARJEELING_TEST_ENVS,
@@ -8004,7 +8004,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "mbx_smoketest",
     srcs = ["mbx_smoketest.c"],
     exec_env = DARJEELING_TEST_ENVS,
@@ -8020,7 +8020,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "soc_proxy_smoketest",
     srcs = ["soc_proxy_smoketest.c"],
     exec_env = DARJEELING_TEST_ENVS,
@@ -8039,7 +8039,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "soc_proxy_external_wakeup",
     srcs = ["soc_proxy_external_wakeup.c"],
     exec_env = DARJEELING_TEST_ENVS,
@@ -8058,7 +8058,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "soc_proxy_gpios",
     srcs = ["soc_proxy_gpios.c"],
     exec_env = DARJEELING_TEST_ENVS,
@@ -8073,7 +8073,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ottf_alert_catch_test",
     srcs = ["ottf_alert_catch_test.c"],
     exec_env = dicts.add(

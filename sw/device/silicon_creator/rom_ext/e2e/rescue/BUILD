@@ -5,14 +5,14 @@
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 load(
     "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
@@ -72,7 +72,7 @@ _CONFIGS = {
 }
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "boot_test_{}".format(name),
         testonly = True,
         srcs = [
@@ -99,7 +99,7 @@ _CONFIGS = {
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rescue_firmware_{}_{}".format(name, protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -158,7 +158,7 @@ genrule(
 # 4. Upon booting, the test binary will print the identifier and version
 #    fields of both ROM_EXT slots.
 [
-    opentitan_test(
+    pavona_test(
         name = "rescue_rom_ext_{}_update_{}".format(rxslot, name),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -198,7 +198,7 @@ genrule(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "next_slot_{}".format(protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -237,7 +237,7 @@ genrule(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "primary_slot_{}".format(protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -279,7 +279,7 @@ genrule(
     for protocol, config in _CONFIGS.items()
 ]
 
-opentitan_test(
+pavona_test(
     name = "rescue_rate_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -306,7 +306,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rescue_inactivity_timeout",
     srcs = [
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
@@ -339,7 +339,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     # This test ensures that the ROM_EXT clears power-on-reset before rebooting
     # so that the ROM wont re-scrable RET-RAM and destroy the 'skip_once' request.
     #
@@ -387,7 +387,7 @@ opentitan_test(
 )
 
 # Check that xmodem rescue is functional when the `RESQ` mode is disabled.
-opentitan_test(
+pavona_test(
     name = "xmodem_restricted_commands",
     srcs = [
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
@@ -425,7 +425,7 @@ opentitan_test(
 
 # Check that DFU rescue is functional when the `RESQ` mode is disabled.
 # TODO: Add a test to try to perform a firmware rescue and ensure that it fails.
-opentitan_test(
+pavona_test(
     name = "spidfu_restricted_commands",
     srcs = [
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
@@ -459,7 +459,7 @@ opentitan_test(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rescue_enter_on_fail_{}".format(name),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -492,7 +492,7 @@ opentitan_test(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rescue_get_boot_log_{}".format(protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -515,7 +515,7 @@ opentitan_test(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rescue_get_device_id_{}".format(protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -540,7 +540,7 @@ opentitan_test(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rescue_get_owner_page_{}".format(protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -567,7 +567,7 @@ opentitan_test(
     for protocol, config in _CONFIGS.items()
 ]
 
-opentitan_test(
+pavona_test(
     name = "rescue_disability_xmodem",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -590,7 +590,7 @@ opentitan_test(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rescue_disability_spidfu",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,

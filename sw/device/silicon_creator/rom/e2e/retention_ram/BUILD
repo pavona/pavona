@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -46,7 +46,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_e2e_ret_ram_init",
     srcs = ["rom_e2e_ret_ram_init_test.c"],
     exec_env = {
@@ -66,7 +66,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_e2e_ret_ram_keep",
     srcs = ["rom_e2e_ret_ram_keep_test.c"],
     exec_env = {

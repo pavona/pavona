@@ -5,7 +5,7 @@
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:defs.bzl", "cw310_params", "fpga_params", "opentitan_test")
+load("//rules/pavona:defs.bzl", "cw310_params", "fpga_params", "pavona_test")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",
@@ -55,7 +55,7 @@ _FAULT_TEST_CASES = {
 }
 
 [
-    opentitan_test(
+    pavona_test(
         name = "fault_{}".format(name),
         srcs = [
             "fault_start.S",
@@ -93,7 +93,7 @@ test_suite(
     tests = ["fault_{}".format(name) for name in _FAULT_TEST_CASES],
 )
 
-opentitan_test(
+pavona_test(
     name = "epmp_test",
     srcs = ["epmp_print.c"],
     exec_env = {
@@ -135,7 +135,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_device_status_test",
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     exec_env = {

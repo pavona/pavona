@@ -3,17 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 
 package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))
 
-opentitan_binary(
+pavona_binary(
     name = "print_certs",
     testonly = True,
     srcs = ["print_certs.c"],
@@ -32,7 +32,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "print_certs_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,

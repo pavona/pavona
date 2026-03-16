@@ -2,21 +2,30 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimVerilatorBinaryInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback")
 load(
-    "//rules/opentitan:exec_env.bzl",
+    "@pavona_pavona//rules/pavona:providers.bzl",
+    "SiliconBinaryInfo",
+)
+load(
+    "@pavona_pavona//rules/pavona:transform.bzl",
+    "convert_to_scrambled_rom_vmem",
+    "convert_to_vmem",
+    "extract_software_logs",
+    "scramble_flash",
+)
+load(
+    "@pavona_pavona//rules/pavona:util.bzl",
+    "assemble_for_test",
+    "get_fallback",
+)
+load(
+    "//rules/pavona:exec_env.bzl",
     "ExecEnvInfo",
     "common_test_setup",
     "exec_env_as_dict",
     "exec_env_common_attrs",
 )
-load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
-    "convert_to_scrambled_rom_vmem",
-    "convert_to_vmem",
-)
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
@@ -27,7 +36,7 @@ RUST_BACKTRACE=1 {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
-    """Transform binaries into the preferred forms for sim_verilator.
+    """Transform binaries into the preferred forms for silicon.
 
     Args:
       ctx: The rule context.
@@ -52,23 +61,11 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             top_gen_hjson = exec_env.top_gen_hjson,
             top_secret_cfg = exec_env.top_secret_cfg,
         )
-
-        # The englishbreakfast verilator model does not understand ROM
-        # scrambling, so we also create a non-scrambled VMEM file.
-        rom32 = convert_to_vmem(
-            ctx,
-            name = name,
-            src = binary,
-            word_size = 32,
-        )
         default = rom
         vmem = rom
     elif ctx.attr.kind == "ram":
         default = elf
         rom = None
-        rom32 = None
-
-        # Generate Un-scrambled RAM VMEM (for testing SRAM injection in DV)
         vmem = convert_to_vmem(
             ctx,
             name = name,
@@ -76,57 +73,80 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             word_size = 32,
         )
     elif ctx.attr.kind == "flash":
-        # FIXME: We need to separate the concept of a software component from
-        # the physical device and its properties; software test images are
-        # usually loaded into flash memory for Englishbreakfast and Earlgrey
-        # but they are stored in the ConTrol Network RAM on Darjeeling targets.
-        if exec_env.design == "darjeeling":
-            vmem = convert_to_vmem(
-                ctx,
-                name = name,
-                src = signed_bin if signed_bin else binary,
-                word_size = 32,
-            )
-        else:
-            vmem = convert_to_vmem(
-                ctx,
-                name = name,
-                src = signed_bin if signed_bin else binary,
-                word_size = 64,
-            )
-        default = vmem
+        default = signed_bin if signed_bin else binary
         rom = None
-        rom32 = None
+
+        # Build VMEM images to enable GLS testing.
+        vmem_base = convert_to_vmem(
+            ctx,
+            name = name,
+            src = default,
+            word_size = 64,
+        )
+        vmem = scramble_flash(
+            ctx,
+            name = name,
+            suffix = "64.scr.vmem",
+            src = vmem_base,
+            otp = get_fallback(ctx, "file.otp", exec_env),
+            otp_mmap = exec_env.otp_mmap,
+            top_secret_cfg = exec_env.top_secret_cfg,
+            otp_data_perm = exec_env.otp_data_perm,
+            _tool = exec_env.flash_scramble_tool.files_to_run,
+        )
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
+    logs = extract_software_logs(
+        ctx,
+        name = name,
+        src = elf,
+        _tool = exec_env.extract_sw_logs.files_to_run,
+    )
     return {
         "elf": elf,
         "binary": binary,
-        "default": vmem,
+        "default": default,
         "rom": rom,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "mapfile": mapfile,
-        "vmem": vmem,
-        "rom32": rom32,
         "hashfile": hashfile,
+        "vmem": vmem,
+        "logs": logs,
     }
 
 def _test_dispatch(ctx, exec_env, firmware):
-    """Dispatch a test for the sim_verilator environment.
+    """Dispatch a test for the silicon environment.
 
     Args:
       ctx: The rule context.
       exec_env: The ExecEnvInfo for this environment.
-      firmware: A label with a SimVerilatorBinaryInfo provider attached.
+      firmware: A label with a SiliconBinaryInfo provider attached.
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
-    if ctx.attr.kind == "ram":
-        fail("verilator is not capable of executing RAM tests")
+    if ctx.attr.kind == "rom":
+        fail("Silicon is not capable of executing ROM tests")
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
+
+    # If the test requested an assembled image, then use opentitantool to
+    # assemble the image.  Replace the firmware param with the newly assembled
+    # image.
+    if "assemble" in param:
+        assemble = param["assemble"].format(**action_param)
+        assemble = ctx.expand_location(assemble, data_labels)
+        image = assemble_for_test(
+            ctx,
+            name = ctx.attr.name,
+            spec = assemble.split(" "),
+            data_files = data_files,
+            opentitantool = exec_env._opentitantool,
+        )
+        param["firmware"] = image.short_path
+        action_param["firmware"] = image.path
+        data_files.append(image)
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)
@@ -135,12 +155,6 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
-    if ctx.attr.kind == "rom":
-        # FIXME: This is a bit of inside-baseball: We know the opentitantool
-        # args for a verilator based test will contain an argument with the
-        # firmware substitution.  For a ROM test, we eliminate this arg because
-        # we don't want to load any firmware.
-        args = [a for a in args if "{firmware}" not in a]
     args = " ".join(args).format(**param)
     args = ctx.expand_location(args, data_labels)
 
@@ -157,43 +171,43 @@ def _test_dispatch(ctx, exec_env, firmware):
     )
     return script, data_files
 
-def _sim_verilator(ctx):
+def _silicon(ctx):
     fields = exec_env_as_dict(ctx)
     return ExecEnvInfo(
-        provider = SimVerilatorBinaryInfo,
+        provider = SiliconBinaryInfo,
         test_dispatch = _test_dispatch,
         transform = _transform,
         **fields
     )
 
-sim_verilator = rule(
-    implementation = _sim_verilator,
+silicon = rule(
+    implementation = _silicon,
     attrs = exec_env_common_attrs(),
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
-def verilator_params(
+def silicon_params(
         tags = [],
-        timeout = "moderate",
+        timeout = "short",
+        rom_ext = None,
         test_harness = None,
         binaries = {},
-        rom = None,
-        rom_ext = None,
-        otp = None,
+        changes_otp = False,
+        needs_jtag = False,
         test_cmd = "",
         data = [],
         defines = [],
         **kwargs):
-    """A macro to create verilator parameters for OpenTitan tests.
+    """A macro to create Silicon parameters for tests.
 
     Args:
       tags: The test tags to apply to the test rule.
       timeout: The timeout to apply to the test rule.
       test_harness: Use an alternative test harness for this test.
-      binaries: Dict of binaries labels to substitution parameter names.
-      rom: Use an alternate ROM for this test.
+      binaries: Dict of binary labels to substitution parameter names.
       rom_ext: Use an alternate ROM_EXT for this test.
-      otp: Use an alternate OTP configuration for this test.
+      changes_otp: Whether this test may change the OTP.
+      needs_jtag: If this test requires JTAG access, set this to True.
       test_cmd: Use an alternate test_cmd for this test.
       data: Additional files needed by this test.
       kwargs: Additional key-value pairs to override in the test `param` dict.
@@ -201,15 +215,19 @@ def verilator_params(
       struct of test parameters.
     """
     return struct(
-        tags = ["verilator", "cpu:5"] + tags,
+        tags = ["silicon", "exclusive"] + (["changes_otp"] if changes_otp else []) + tags,
         timeout = timeout,
         test_harness = test_harness,
         binaries = binaries,
-        rom = rom,
+        rom = None,
         rom_ext = rom_ext,
-        otp = otp,
+        otp = None,
         bitstream = None,
-        test_cmd = test_cmd,
+        changes_otp = None,
+        needs_jtag = needs_jtag,
+        test_cmd = ("""
+            {jtag_test_cmd}
+        """ if needs_jtag else "") + test_cmd,
         data = data,
         param = kwargs,
         defines = defines,

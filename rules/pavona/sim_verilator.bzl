@@ -2,35 +2,32 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimDvBinaryInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback")
+load("@pavona_pavona//rules/pavona:providers.bzl", "SimVerilatorBinaryInfo")
+load("@pavona_pavona//rules/pavona:util.bzl", "get_fallback")
 load(
-    "//rules/opentitan:exec_env.bzl",
+    "//rules/pavona:exec_env.bzl",
     "ExecEnvInfo",
     "common_test_setup",
     "exec_env_as_dict",
     "exec_env_common_attrs",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "@pavona_pavona//rules/pavona:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
-    "extract_software_logs",
-    "scramble_flash",
 )
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
 
-readonly DVSIM="util/dvsim/dvsim.py"
 TEST_CMD=({test_cmd})
-echo "At this time, dvsim.py must be run manually (after building SW) via:
-${{DVSIM}} {args} $@ ${{TEST_CMD[@]}}"
+echo Invoking test: {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
+RUST_BACKTRACE=1 {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
-    """Transform binaries into the preferred forms for sim_dv.
+    """Transform binaries into the preferred forms for sim_verilator.
 
     Args:
       ctx: The rule context.
@@ -56,8 +53,8 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             top_secret_cfg = exec_env.top_secret_cfg,
         )
 
-        # We may want to run non-scrambled ROM in DV environment, for faster
-        # run times.
+        # The englishbreakfast verilator model does not understand ROM
+        # scrambling, so we also create a non-scrambled VMEM file.
         rom32 = convert_to_vmem(
             ctx,
             name = name,
@@ -66,7 +63,6 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         default = rom
         vmem = rom
-        vmem32 = None
     elif ctx.attr.kind == "ram":
         default = elf
         rom = None
@@ -79,74 +75,57 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             src = signed_bin if signed_bin else binary,
             word_size = 32,
         )
-        vmem32 = None
     elif ctx.attr.kind == "flash":
-        # First convert to VMEM, then scramble according to flash
-        # scrambling settings.
-        # When dvsim and bazel use different otp image which has different scramble option,
-        # there is a corner case where dvsim can't find vmem file.
-        # Send scr.vmem and vmem to mitigate the issue
-        vmem_base = convert_to_vmem(
-            ctx,
-            name = name,
-            src = signed_bin if signed_bin else binary,
-            word_size = 64,
-        )
-        vmem32 = convert_to_vmem(
-            ctx,
-            name = name,
-            src = signed_bin if signed_bin else binary,
-            word_size = 32,
-        )
-        vmem = scramble_flash(
-            ctx,
-            name = name,
-            suffix = "64.scr.vmem",
-            src = vmem_base,
-            otp = get_fallback(ctx, "file.otp", exec_env),
-            otp_mmap = exec_env.otp_mmap,
-            top_secret_cfg = exec_env.top_secret_cfg,
-            otp_data_perm = exec_env.otp_data_perm,
-            _tool = exec_env.flash_scramble_tool.files_to_run,
-        )
+        # FIXME: We need to separate the concept of a software component from
+        # the physical device and its properties; software test images are
+        # usually loaded into flash memory for Englishbreakfast and Earlgrey
+        # but they are stored in the ConTrol Network RAM on Darjeeling targets.
+        if exec_env.design == "darjeeling":
+            vmem = convert_to_vmem(
+                ctx,
+                name = name,
+                src = signed_bin if signed_bin else binary,
+                word_size = 32,
+            )
+        else:
+            vmem = convert_to_vmem(
+                ctx,
+                name = name,
+                src = signed_bin if signed_bin else binary,
+                word_size = 64,
+            )
+        default = vmem
         rom = None
         rom32 = None
-        default = vmem
-        vmem = vmem_base
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
-    logs = extract_software_logs(
-        ctx,
-        name = name,
-        src = elf,
-        _tool = exec_env.extract_sw_logs.files_to_run,
-    )
     return {
         "elf": elf,
         "binary": binary,
-        "default": default,
+        "default": vmem,
         "rom": rom,
-        "rom32": rom32,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
-        "logs": logs,
         "mapfile": mapfile,
         "vmem": vmem,
-        "vmem32": vmem32,
+        "rom32": rom32,
         "hashfile": hashfile,
     }
 
 def _test_dispatch(ctx, exec_env, firmware):
-    """Dispatch a test for the sim_dv environment.
+    """Dispatch a test for the sim_verilator environment.
 
     Args:
       ctx: The rule context.
       exec_env: The ExecEnvInfo for this environment.
-      firmware: A label with a SimDvBinaryInfo provider attached.
+      firmware: A label with a SimVerilatorBinaryInfo provider attached.
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
+    if ctx.attr.kind == "ram":
+        fail("verilator is not capable of executing RAM tests")
+
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
 
     # Perform all relevant substitutions on the test_cmd.
@@ -156,6 +135,12 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
+    if ctx.attr.kind == "rom":
+        # FIXME: This is a bit of inside-baseball: We know the opentitantool
+        # args for a verilator based test will contain an argument with the
+        # firmware substitution.  For a ROM test, we eliminate this arg because
+        # we don't want to load any firmware.
+        args = [a for a in args if "{firmware}" not in a]
     args = " ".join(args).format(**param)
     args = ctx.expand_location(args, data_labels)
 
@@ -167,32 +152,31 @@ def _test_dispatch(ctx, exec_env, firmware):
             test_harness = test_harness.executable.short_path,
             args = args,
             test_cmd = test_cmd,
-            data_files = " ".join([f.path for f in data_files]),
         ),
         is_executable = True,
     )
     return script, data_files
 
-def _sim_dv(ctx):
+def _sim_verilator(ctx):
     fields = exec_env_as_dict(ctx)
     return ExecEnvInfo(
-        provider = SimDvBinaryInfo,
+        provider = SimVerilatorBinaryInfo,
         test_dispatch = _test_dispatch,
         transform = _transform,
         **fields
     )
 
-sim_dv = rule(
-    implementation = _sim_dv,
+sim_verilator = rule(
+    implementation = _sim_verilator,
     attrs = exec_env_common_attrs(),
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
-def dv_params(
+def verilator_params(
         tags = [],
-        timeout = "short",
+        timeout = "moderate",
         test_harness = None,
-        binaries = None,
+        binaries = {},
         rom = None,
         rom_ext = None,
         otp = None,
@@ -200,7 +184,7 @@ def dv_params(
         data = [],
         defines = [],
         **kwargs):
-    """A macro to create dv parameters for OpenTitan tests.
+    """A macro to create verilator parameters for tests.
 
     Args:
       tags: The test tags to apply to the test rule.
@@ -217,7 +201,7 @@ def dv_params(
       struct of test parameters.
     """
     return struct(
-        tags = ["dv"] + tags,
+        tags = ["verilator", "cpu:5"] + tags,
         timeout = timeout,
         test_harness = test_harness,
         binaries = binaries,

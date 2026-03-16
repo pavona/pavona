@@ -18,7 +18,7 @@ ln -s "/path/to/your/repo/third_party/qemu/BUILD.qemu_opentitan.bazel" "BUILD.ba
 Once done, every time you compile something using QEMU, you need to tell Bazel to use your QEMU repository instead of downloading a release archive.
 This is done by passing the following command-line argument to bazel:
 ```
---override_repository="+qemu+qemu_opentitan_src=/path/to/your/qemu/repo/"
+--override_repository="+qemu+qemu_pavona_src=/path/to/your/qemu/repo/"
 ```
 For example:
 ```bash
@@ -36,18 +36,18 @@ Bazel will automatically watch all files in the QEMU repository so that it can r
 
 # Troubleshooting
 
-## Bazel tells me that `+qemu+qemu_opentitan_src` is not a valid repository name
+## Bazel tells me that `+qemu+qemu_pavona_src` is not a valid repository name
 
 Unfortunately bazel requires the canonical name of the repository to be given on the command line and this name may change in the future.
 If this happens, you can run the following commands to figure out the canonical name:
 ```bash
-./bazelisk.sh mod dump_repo_mapping "" | jq .qemu_opentitan_src
+./bazelisk.sh mod dump_repo_mapping "" | jq .qemu_pavona_src
 ```
 If it's not the root repository, you will need to update the above command to pass the canonical name of the repository instead of `""`.
 
 # How does it work?
 
-When passing `--override_repository="+qemu+qemu_opentitan_src=/path/to/your/qemu/repo/"`, the `qemu_bazel_build_or_forward` repository rules detect the override by looking for a specific marker file which is added to the release archive.
+When passing `--override_repository="+qemu+qemu_pavona_src=/path/to/your/qemu/repo/"`, the `qemu_bazel_build_or_forward` repository rules detect the override by looking for a specific marker file which is added to the release archive.
 If an override is detected, the repository rule will run the `build_qemu.sh` script inside the user's QEMU source directory.
 This script configures QEMU if necessary and then builds everything using ninja.
 Finally, it uses the release script to create a fake release archive.

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load("//rules:tock.bzl", "tock_elf2tab", "tock_image")
 
 package(default_visibility = ["//visibility:public"])
@@ -15,7 +15,7 @@ rust_binary(
     ],
     # We specifically restrict our build target to the OpenTitan
     # CPU because libtock does not support an x86_64 target.
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/silicon_owner/tock/apps:single_app_layout",
         "@libtock",

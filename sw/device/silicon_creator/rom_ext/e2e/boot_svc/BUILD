@@ -4,13 +4,13 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
 )
 load("//rules:manifest.bzl", "manifest")
 
@@ -34,7 +34,7 @@ cc_library(
 # identification number and a signature, and thus require far more test
 # infrastructure than the common boot_svc commands.
 
-opentitan_test(
+pavona_test(
     name = "boot_svc_empty_test",
     srcs = ["boot_svc_empty_test.c"],
     exec_env = {
@@ -60,7 +60,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "boot_svc_enter_rescue_test",
     srcs = ["boot_svc_enter_rescue_test.c"],
     exec_env = {
@@ -95,7 +95,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "boot_svc_wakeup_test",
     srcs = ["boot_svc_wakeup_test.c"],
     exec_env = {
@@ -124,7 +124,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "boot_svc_next_test",
     srcs = ["boot_svc_next_test.c"],
     exec_env = {
@@ -151,7 +151,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "boot_svc_primary_test",
     srcs = ["boot_svc_primary_test.c"],
     exec_env = {
@@ -186,7 +186,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "boot_svc_bad_next_test",
     srcs = ["boot_svc_bad_next_test.c"],
     exec_env = {
@@ -226,7 +226,7 @@ manifest({
     "identifier": hex(CONST.OWNER),
 })
 
-opentitan_binary(
+pavona_binary(
     name = "min_sec_ver_5",
     testonly = True,
     srcs = ["boot_svc_min_sec_ver_test.c"],
@@ -250,7 +250,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "boot_svc_min_sec_ver_test",
     srcs = ["boot_svc_min_sec_ver_test.c"],
     exec_env = {

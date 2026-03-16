@@ -4,7 +4,7 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
 load("//rules:fusesoc.bzl", "fusesoc_build")
-load("//hw/top:defs.bzl", "opentitan_select_top_attr")
+load("//hw/top:defs.bzl", "pavona_select_top_attr")
 
 package(default_visibility = ["//visibility:public"])
 

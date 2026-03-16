@@ -5,9 +5,9 @@
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_binary",
+    "pavona_binary",
 )
 load(
     "//sw/device/silicon_creator/rom_ext/e2e/ownership:defs.bzl",
@@ -21,7 +21,7 @@ package(default_visibility = ["//visibility:public"])
 # so we need to clear the bitstream after the test, which is what the
 # `changes_otp` parameter actually does.
 
-opentitan_binary(
+pavona_binary(
     name = "boot_test",
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
@@ -43,7 +43,7 @@ opentitan_binary(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "flash_regions",
     testonly = True,
     srcs = ["flash_regions.c"],
@@ -620,7 +620,7 @@ ownership_transfer_test(
     ),
 )
 
-opentitan_binary(
+pavona_binary(
     name = "keymgr_test",
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],

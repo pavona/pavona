@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//rules:rv.bzl", "rv_rule")
-load("//rules/opentitan:providers.bzl", "get_binary_files")
-load("//rules/opentitan:util.bzl", "get_override")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/pavona:providers.bzl", "get_binary_files")
+load("//rules/pavona:util.bzl", "get_override")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:host.bzl", "host_tools_transition")
 
 PreSigningBinaryInfo = provider(fields = ["files"])

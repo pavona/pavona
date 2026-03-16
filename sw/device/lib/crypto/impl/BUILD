@@ -5,7 +5,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 
 config_setting(
     name = "crypto_status_debug",
@@ -66,7 +66,7 @@ cc_library(
     name = "ecc_p256",
     srcs = ["ecc_p256.c"],
     hdrs = ["//sw/device/lib/crypto/include:ecc_p256.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":integrity",
         ":keyblob",
@@ -83,7 +83,7 @@ cc_library(
     name = "ecc_p384",
     srcs = ["ecc_p384.c"],
     hdrs = ["//sw/device/lib/crypto/include:ecc_p384.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":integrity",
         ":keyblob",
@@ -100,7 +100,7 @@ cc_library(
     name = "ed25519",
     srcs = ["ed25519.c"],
     hdrs = ["//sw/device/lib/crypto/include:ed25519.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":integrity",
         ":sha2",
@@ -240,7 +240,7 @@ cc_library(
     hdrs = [
         "//sw/device/lib/crypto/include:sha2.h",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":status",
         "//sw/device/lib/base:crc32",
@@ -258,7 +258,7 @@ cc_library(
     hdrs = [
         "//sw/device/lib/crypto/include:sha3.h",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":status",
         "//sw/device/lib/base:hardened",
@@ -346,7 +346,7 @@ cc_library(
     hdrs = [
         "//sw/device/lib/crypto/include:mlkem.h",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":status",
         "//sw/device/lib/crypto/impl:integrity",
@@ -362,7 +362,7 @@ cc_library(
     hdrs = [
         "//sw/device/lib/crypto/include:mldsa.h",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":integrity",
         ":keyblob",
@@ -376,7 +376,7 @@ cc_library(
     name = "x25519",
     srcs = ["x25519.c"],
     hdrs = ["//sw/device/lib/crypto/include:x25519.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":status",
         "//sw/device/lib/crypto/include:datatypes",

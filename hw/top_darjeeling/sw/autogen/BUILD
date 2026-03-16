@@ -8,7 +8,7 @@
 #                -o hw/top_darjeeling/
 
 load("//rules:linker.bzl", "ld_library")
-load("//hw/top:defs.bzl", "opentitan_require_top")
+load("//hw/top:defs.bzl", "pavona_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -22,7 +22,7 @@ cc_library(
         "top_darjeeling_memory.h",
     ],
     defines = ["OPENTITAN_IS_DARJEELING"],
-    target_compatible_with = opentitan_require_top("darjeeling"),
+    target_compatible_with = pavona_require_top("darjeeling"),
 )
 
 ld_library(
@@ -32,5 +32,5 @@ ld_library(
         "OPENTITAN_IS_DARJEELING",
     ],
     includes = ["top_darjeeling_memory.ld"],
-    target_compatible_with = opentitan_require_top("darjeeling"),
+    target_compatible_with = pavona_require_top("darjeeling"),
 )

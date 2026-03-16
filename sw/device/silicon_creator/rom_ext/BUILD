@@ -6,7 +6,7 @@ load("//rules:const.bzl", "CONST", "hex")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU", "pavona_binary")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VARIATIONS",
@@ -46,7 +46,7 @@ cc_library(
     name = "rom_ext_manifest",
     srcs = ["rom_ext_manifest.c"],
     hdrs = ["rom_ext_manifest.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -145,7 +145,7 @@ cc_library(
     defines = [
         "INTERRUPT_HANDLER=rom_ext_interrupt_handler",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -219,7 +219,7 @@ ld_library(
             "rom_ext_start.S",
         ],
         hdrs = ["rom_ext.h"],
-        target_compatible_with = [OPENTITAN_CPU],
+        target_compatible_with = [PAVONA_CPU],
         deps = [
             ":rom_ext_boot_policy",
             ":rom_ext_boot_policy_ptrs",
@@ -291,7 +291,7 @@ ROM_EXT_FEATURES = [
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "rom_ext_{}_slot_{}".format(variation_name, slot),
         testonly = True,
         collect_code_coverage = 0,
@@ -323,7 +323,7 @@ ROM_EXT_FEATURES = [
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "rom_ext_{}".format(name),
         testonly = True,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
@@ -352,7 +352,7 @@ manifest(d = {
     "identifier": hex(CONST.ROM_EXT),
 })
 
-opentitan_binary(
+pavona_binary(
     name = "rom_ext_dice_x509_slot_a_bad_address_translation",
     testonly = True,
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},

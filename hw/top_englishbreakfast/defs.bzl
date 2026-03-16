@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-load("//rules/opentitan:hw.bzl", "opentitan_top")
+load("//rules/pavona:hw.bzl", "pavona_top")
 load("//hw/top_englishbreakfast/data/autogen:defs.bzl", "ENGLISHBREAKFAST_IPS")
 
-ENGLISHBREAKFAST = opentitan_top(
+ENGLISHBREAKFAST = pavona_top(
     name = "englishbreakfast",
     hjson = "//hw/top_englishbreakfast/data/autogen:top_englishbreakfast.gen.hjson",
     top_lib = "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast",

@@ -5,7 +5,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_device_library_of",
@@ -13,11 +13,11 @@ load(
     "dual_inputs",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "qemu_params",
     "verilator_params",
 )
@@ -44,7 +44,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "aes_test",
     srcs = ["aes_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -81,7 +81,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "keymgr_test",
     srcs = ["keymgr_test.c"],
     broken = fpga_params(tags = ["broken"]),
@@ -186,7 +186,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "entropy_test",
     srcs = ["entropy_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -250,7 +250,7 @@ dual_cc_library(
     ),
 )
 
-opentitan_test(
+pavona_test(
     name = "rv_core_ibex_test",
     srcs = ["rv_core_ibex_test.c"],
     exec_env = EARLGREY_TEST_ENVS,

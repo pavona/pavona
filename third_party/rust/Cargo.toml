@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [package]
-name = "cargo_opentitan_deps"
+name = "cargo_pavona_deps"
 version = "0.0.0"
 rust-version = "1.85"
 publish = false

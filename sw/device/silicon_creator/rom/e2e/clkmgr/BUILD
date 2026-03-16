@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_test",
+    "//rules/pavona:defs.bzl",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -19,9 +19,9 @@ load(
     "otp_partition",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 
 otp_json(
@@ -58,7 +58,7 @@ JITTER_TESTCASES = [
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "jitter_{}_test".format(testcase["name"]),
         srcs = ["jitter_test.c"],
         exec_env = {

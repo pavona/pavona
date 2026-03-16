@@ -19,13 +19,13 @@ load(
     "otp_per_class_ints",
     "otp_per_class_lists",
 )
-load("//hw/top:defs.bzl", "opentitan_require_top")
+load("//hw/top:defs.bzl", "pavona_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
 # All otp_json targets are marked as compatible only with Darjeeling to avoid
 # using them on other tops by mistake
-TARGET_COMPATIBLE_WITH = opentitan_require_top("darjeeling")
+TARGET_COMPATIBLE_WITH = pavona_require_top("darjeeling")
 
 exports_files(["otp_ctrl_mmap.hjson"])
 

@@ -2,37 +2,37 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Rules to build OpenTitan for the RISC-V target"""
+"""Rules to build hardware for the RISC-V target"""
 
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load(
-    "@lowrisc_opentitan//rules:rv.bzl",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
-    _opentitan_transition = "opentitan_transition",
+    "@pavona_pavona//rules:rv.bzl",
+    _PAVONA_CPU = "PAVONA_CPU",
+    _PAVONA_PLATFORM = "PAVONA_PLATFORM",
+    _pavona_transition = "pavona_transition",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:cc.bzl",
-    _opentitan_binary = "opentitan_binary",
-    _opentitan_test = "opentitan_test",
+    "@pavona_pavona//rules/pavona:cc.bzl",
+    _pavona_binary = "pavona_binary",
+    _pavona_test = "pavona_test",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:ci.bzl",
+    "@pavona_pavona//rules/pavona:ci.bzl",
     "ci_orchestrator",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
+    "@pavona_pavona//rules/pavona:fpga.bzl",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
     _fpga_params = "fpga_params",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:hw.bzl",
+    "@pavona_pavona//rules/pavona:hw.bzl",
     "get_top_attr",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
+    "@pavona_pavona//rules/pavona:keyutils.bzl",
     _ecdsa_key_by_name = "ecdsa_key_by_name",
     _ecdsa_key_for_lc_state = "ecdsa_key_for_lc_state",
     _rsa_key_by_name = "rsa_key_by_name",
@@ -41,33 +41,33 @@ load(
     _spx_key_for_lc_state = "spx_key_for_lc_state",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:manual.bzl",
-    _opentitan_manual_test = "opentitan_manual_test",
+    "@pavona_pavona//rules/pavona:manual.bzl",
+    _pavona_manual_test = "pavona_manual_test",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
+    "@pavona_pavona//rules/pavona:silicon.bzl",
     _silicon = "silicon",
     _silicon_params = "silicon_params",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:sim_dv.bzl",
+    "@pavona_pavona//rules/pavona:sim_dv.bzl",
     _dv_params = "dv_params",
     _sim_dv = "sim_dv",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
+    "@pavona_pavona//rules/pavona:sim_verilator.bzl",
     _sim_verilator = "sim_verilator",
     _verilator_params = "verilator_params",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:qemu.bzl",
+    "@pavona_pavona//rules/pavona:qemu.bzl",
     _qemu_params = "qemu_params",
     _sim_qemu = "sim_qemu",
 )
 load(
-    "@lowrisc_opentitan//hw/top:defs.bzl",
+    "@pavona_pavona//hw/top:defs.bzl",
     "ALL_TOPS",
-    "opentitan_select_top",
+    "pavona_select_top",
 )
 load(
     "@provisioning_exts//:cfg.bzl",
@@ -75,14 +75,14 @@ load(
 )
 
 # The following definition is used to clear the key set in the signing
-# configuration for execution environments (exec_env) and opentitan_test
-# and opentitan_binary rules.
+# configuration for execution environments (exec_env) and pavona_test
+# and pavona_binary rules.
 CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 
 # Re-exports of names from transition.bzl
-OPENTITAN_CPU = _OPENTITAN_CPU
-OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
-opentitan_transition = _opentitan_transition
+PAVONA_CPU = _PAVONA_CPU
+PAVONA_PLATFORM = _PAVONA_PLATFORM
+pavona_transition = _pavona_transition
 
 fpga_cw305 = _fpga_cw305
 fpga_cw310 = _fpga_cw310
@@ -113,7 +113,7 @@ rsa_key_by_name = _rsa_key_by_name
 spx_key_for_lc_state = _spx_key_for_lc_state
 spx_key_by_name = _spx_key_by_name
 
-opentitan_manual_test = _opentitan_manual_test
+pavona_manual_test = _pavona_manual_test
 
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
@@ -252,11 +252,11 @@ def exec_env_to_top_map(exec_env):
 # Note about multitop behaviour:
 # This rules allows `exec_env` to list execution environments from multiple tops.
 # It will automatically filter the relevant ones based on the value of //hw/top:top.
-# This means that the targets created by opentitan_binary() will expose only the
+# This means that the targets created by pavona_binary() will expose only the
 # binaries which can be compiled for the active top.
 #
 # See exec_env_to_top_map() for constraints on the exec_env for this work.
-def opentitan_binary(name, exec_env, **kwargs):
+def pavona_binary(name, exec_env, **kwargs):
     # Filter execution environments by top.
     ev_map = exec_env_to_top_map(exec_env)
     select_map = {}
@@ -266,7 +266,7 @@ def opentitan_binary(name, exec_env, **kwargs):
 
     kwargs["target_compatible_with"] = \
         kwargs.get("target_compatible_with", []) + \
-        opentitan_select_top(
+        pavona_select_top(
             {
                 top: []
                 for top in select_map.keys()
@@ -274,21 +274,21 @@ def opentitan_binary(name, exec_env, **kwargs):
             ["@platforms//:incompatible"],
         )
 
-    _opentitan_binary(
+    _pavona_binary(
         name = name,
-        exec_env = opentitan_select_top(select_map, []),
+        exec_env = pavona_select_top(select_map, []),
         **kwargs
     )
 
 # Note about multitop behaviour:
 # This rules allows `exec_env` to list execution environments from multiple tops.
 # It will automatically filter the relevant ones based on the value of //hw/top:top.
-# This means that the targets created by opentitan_test() will expose only the
+# This means that the targets created by pavona_test() will expose only the
 # test which can be compiled/run for the active top.
 #
 # See exec_env_to_top_map() for constraints on the exec_env for this work.
 
-def opentitan_test(
+def pavona_test(
         name,
         srcs = [],
         kind = "flash",
@@ -374,7 +374,7 @@ def opentitan_test(
 
     # Make sure that we used all elements in kwargs.
     if len(kwargs_unused) > 0:
-        fail("the following arguments passed to opentitan_test were not used: {}".format(", ".join(kwargs_unused)))
+        fail("the following arguments passed to pavona_test were not used: {}".format(", ".join(kwargs_unused)))
 
     # Compute set of exec_env that should be marked as skip_in_ci.
     if run_in_ci == None:
@@ -384,10 +384,10 @@ def opentitan_test(
     else:
         run_in_ci = sets.make(run_in_ci)
 
-    # List of test parameters and how they map to the _opentitan_test attributes
+    # List of test parameters and how they map to the _pavona_test attributes
     # and which default values they use if not present.
     TEST_PARAM_ATTRS = {
-        # _opentitan_test attr -> (test param field name, default value)
+        # _pavona_test attr -> (test param field name, default value)
         "defines": ("defines", []),
         "tags": ("tags", []),
         "timeout": ("timeout", None),
@@ -442,14 +442,14 @@ def opentitan_test(
     for (suffix, env_list) in suffix_map.items():
         # Build a list of kwargs with select statements in them.
         test_kwargs = {}
-        test_kwargs["exec_env"] = opentitan_select_top(
+        test_kwargs["exec_env"] = pavona_select_top(
             {
                 ev_to_top_map[env]: env
                 for env in env_list
             },
             None,
         )
-        test_kwargs["target_compatible_with"] = opentitan_select_top(
+        test_kwargs["target_compatible_with"] = pavona_select_top(
             {
                 ev_to_top_map[env]: []
                 for env in env_list
@@ -475,11 +475,11 @@ def opentitan_test(
                     ev_to_top_map[env]: all_test_kwargs[env][arg]
                     for env in env_list
                 }
-                test_kwargs[arg] = opentitan_select_top(select_args, default)
+                test_kwargs[arg] = pavona_select_top(select_args, default)
 
         test_name = "{}_{}".format(name, suffix)
         all_tests.append(":" + test_name)
-        _opentitan_test(
+        _pavona_test(
             name = test_name,
             srcs = srcs,
             kind = kind,

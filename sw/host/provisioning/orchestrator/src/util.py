@@ -88,7 +88,7 @@ def resolve_runfile(path):
     #
     # The old scheme does not work within a zipped py_binary, so this logic is a
     # hack to fix up the supplied path.
-    REPO = "lowrisc_opentitan"
+    REPO = "pavona_pavona"
     if path.startswith("external/"):
         corrected_path = path[len("external/"):]
     else:

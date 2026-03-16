@@ -8,7 +8,7 @@ load(
     "manifest",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_cw305",
@@ -19,7 +19,7 @@ load(
     "sim_qemu",
     "sim_verilator",
 )
-load("//rules/opentitan:qemu.bzl", "qemu_cfg", "qemu_flash", "qemu_otp")
+load("//rules/pavona:qemu.bzl", "qemu_cfg", "qemu_flash", "qemu_otp")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -58,8 +58,8 @@ filegroup(
 )
 
 # The following definition is used to define a null manifest in the signing
-# configuration for execution environments (exec_env) and opentitan_test
-# and opentitan_binary rules. When building the binaries, if the manifest equals
+# configuration for execution environments (exec_env) and pavona_test
+# and pavona_binary rules. When building the binaries, if the manifest equals
 # to this null manifest, then the signing will be skipped.
 CLEAR_MANIFEST = manifest(d = {
     "name": "none_manifest",

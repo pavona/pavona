@@ -88,7 +88,7 @@ key_ecdsa = rule(
 
 def ecdsa_key_for_lc_state(key_structs, hw_lc_state):
     """Return a dictionary containing a single key that can be used in the given
-    LC state. The format of the dictionary is compatible with opentitan_test.
+    LC state. The format of the dictionary is compatible with pavona_test.
     """
     keys = [k for k in key_structs if (k.ecdsa != None and key_allowed_in_lc_state(k.ecdsa, hw_lc_state))]
     if len(keys) == 0:
@@ -99,7 +99,7 @@ def ecdsa_key_for_lc_state(key_structs, hw_lc_state):
 
 def rsa_key_for_lc_state(key_structs, hw_lc_state):
     """Return a dictionary containing a single key that can be used in the given
-    LC state. The format of the dictionary is compatible with opentitan_test.
+    LC state. The format of the dictionary is compatible with pavona_test.
     """
     keys = [k for k in key_structs if (k.rsa != None and key_allowed_in_lc_state(k.rsa, hw_lc_state))]
     if len(keys) == 0:
@@ -111,7 +111,7 @@ def rsa_key_for_lc_state(key_structs, hw_lc_state):
 def ecdsa_key_by_name(key_structs, nickname):
     """Return a dictionary containing a single key that matches the name given.
 
-    The format of the dictionary is compatible with opentitan_test.
+    The format of the dictionary is compatible with pavona_test.
 
     Args:
         key_structs: List of key structs.
@@ -128,7 +128,7 @@ def ecdsa_key_by_name(key_structs, nickname):
 
 def rsa_key_by_name(key_structs, nickname):
     """Return a dictionary containing a single key that matches the name given.
-    The format of the dictionary is compatible with opentitan_test.
+    The format of the dictionary is compatible with pavona_test.
     """
     keys = [k for k in key_structs if (k.rsa != None and k.rsa.name == nickname)]
     if len(keys) == 0:
@@ -139,7 +139,7 @@ def rsa_key_by_name(key_structs, nickname):
 
 def spx_key_for_lc_state(key_structs, hw_lc_state):
     """Return a dictionary containing a single key that can be used in the given
-    LC state. The format of the dictionary is compatible with opentitan_test.
+    LC state. The format of the dictionary is compatible with pavona_test.
     """
     keys = [k for k in key_structs if (k.spx != None and key_allowed_in_lc_state(k.spx, hw_lc_state))]
     if len(keys) == 0:
@@ -150,7 +150,7 @@ def spx_key_for_lc_state(key_structs, hw_lc_state):
 
 def spx_key_by_name(key_structs, nickname):
     """Return a dictionary containing a single key that matches the name given.
-    The format of the dictionary is compatible with opentitan_test.
+    The format of the dictionary is compatible with pavona_test.
     """
     keys = [k for k in key_structs if (k.spx != None and k.spx.name == nickname)]
     if len(keys) == 0:

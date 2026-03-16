@@ -288,9 +288,9 @@ Configure each ILA according to your needs and hit the 'play' button in the *Sta
 Last but not least, you need to run a test in which the FPGA does not get reprogrammed (otherwise the ILA or at least its configuration is lost).
 To this end, make two modifications to prevent tests from loading a bitstream:
 ```diff
-diff --git a/rules/opentitan_test.bzl b/rules/opentitan_test.bzl
---- a/rules/opentitan_test.bzl
-+++ b/rules/opentitan_test.bzl
+diff --git a/rules/pavona_test.bzl b/rules/pavona_test.bzl
+--- a/rules/pavona_test.bzl
++++ b/rules/pavona_test.bzl
 @@ -197,7 +197,6 @@ def cw310_params(
          tags = _BASE_PARAMS["tags"],
          test_runner = _BASE_PARAMS["test_runner"],

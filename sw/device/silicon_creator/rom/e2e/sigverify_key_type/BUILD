@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:const.bzl", "CONST", "get_lc_items")
-load("//rules/opentitan:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:otp.bzl",
@@ -134,7 +134,7 @@ otp_json(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "sigverify_key_type_{}_{}".format(
             lc_state,
             test["name"],

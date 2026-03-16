@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//rules/pavona:defs.bzl", "pavona_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -48,7 +48,7 @@ cc_library(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "acc_vertical_serial",
     testonly = True,
     srcs = ["acc_vertical_serial.c"],

@@ -41,7 +41,7 @@ Any test that does not rely on Verilator, the ACC simulator, or an FPGA is autom
 All tests under `//sw/acc/crypto/...` are triaged under the `Run ACC crypto tests` check.
 
 For FPGA and Verilator tests, the necessary tags to triage the test in the CI are automatically applied by the execution environment.
-For example, adding the `//hw/top_earlgrey:fpga_cw310_test_rom` to `exec_env` in the `opentitan_test` rule automatically instructs the CI to run the test in the `CW310 Test ROM tests` check, via the `cw310_test_rom` tag.
+For example, adding the `//hw/top_earlgrey:fpga_cw310_test_rom` to `exec_env` in the `pavona_test` rule automatically instructs the CI to run the test in the `CW310 Test ROM tests` check, via the `cw310_test_rom` tag.
 
 **Note**: If you want to include a test in the repository, but want the CI to _skip_ it, you can add either the `broken` or `skip_in_ci` tag, as appropriate.
 

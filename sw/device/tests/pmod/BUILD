@@ -3,17 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "silicon_params",
     "verilator_params",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_cw310",
@@ -43,7 +43,7 @@ fpga_cw310(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_macronix1Gb_flash_test",
     srcs = ["spi_host_macronix1Gb_flash_test.c"],
     exec_env = dicts.add(
@@ -77,7 +77,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_macronix128Mb_flash_test",
     srcs = ["spi_host_macronix128Mb_flash_test.c"],
     exec_env = dicts.add(
@@ -111,7 +111,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_gigadevice256Mb_flash_test",
     srcs = ["spi_host_gigadevice256Mb_flash_test.c"],
     exec_env = dicts.add(
@@ -146,7 +146,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_gigadevice1Gb_flash_test",
     srcs = ["spi_host_gigadevice1Gb_flash_test.c"],
     exec_env = dicts.add(
@@ -181,7 +181,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_issi256Mb_flash_test",
     srcs = ["spi_host_issi256Mb_flash_test.c"],
     exec_env = dicts.add(
@@ -216,7 +216,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_micron512Mb_flash_test",
     srcs = ["spi_host_micron512Mb_flash_test.c"],
     exec_env = dicts.add(
@@ -251,7 +251,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "spi_host_winbond1Gb_flash_test",
     srcs = ["spi_host_winbond1Gb_flash_test.c"],
     exec_env = dicts.add(
@@ -286,7 +286,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_accelerometer_test",
     srcs = ["i2c_host_accelerometer_test.c"],
     exec_env = dicts.add(
@@ -317,7 +317,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_ambient_light_detector_test",
     srcs = ["i2c_host_ambient_light_detector_test.c"],
     exec_env = dicts.add(
@@ -348,7 +348,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_hdc1080_humidity_temp_test",
     srcs = ["i2c_host_hdc1080_humidity_temp_test.c"],
     exec_env = dicts.add(
@@ -379,7 +379,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_clock_stretching_test",
     srcs = ["i2c_host_clock_stretching_test.c"],
     exec_env = dicts.add(
@@ -412,7 +412,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_compass_test",
     srcs = ["i2c_host_compass_test.c"],
     exec_env = dicts.add(
@@ -444,7 +444,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_eeprom_test",
     srcs = ["i2c_host_eeprom_test.c"],
     exec_env = dicts.add(
@@ -475,7 +475,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_fram_test",
     srcs = ["i2c_host_fram_test.c"],
     exec_env = dicts.add(
@@ -509,7 +509,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_gas_sensor_test",
     srcs = ["i2c_host_gas_sensor_test.c"],
     exec_env = dicts.add(
@@ -540,7 +540,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_power_monitor_test",
     srcs = ["i2c_host_power_monitor_test.c"],
     exec_env = dicts.add(
@@ -571,7 +571,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "i2c_host_irq_test",
     srcs = ["i2c_host_irq_test.c"],
     exec_env = dicts.add(

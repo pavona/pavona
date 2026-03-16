@@ -6,22 +6,22 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_alias_top_attr", "pavona_if_ip", "pavona_select_top")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "verilator_params",
 )
-load("//rules/opentitan:util.bzl", "flatten")
+load("//rules/pavona:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_alias_top_attr(
+pavona_alias_top_attr(
     name = "silicon_creator_hooks",
     attr_name = "silicon_creator_hooks",
     required = True,
@@ -81,7 +81,7 @@ cc_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
     exec_env = dicts.add(
@@ -186,7 +186,7 @@ cc_library(
     name = "epmp_test_unlock",
     srcs = ["epmp_test_unlock.c"],
     hdrs = ["epmp_test_unlock.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":epmp_state",
         "//sw/device/lib/arch:device",
@@ -222,7 +222,7 @@ cc_test(
 cc_library(
     name = "irq_asm",
     srcs = ["irq_asm.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:aon_timer_c_regs",
         "//hw/top:flash_ctrl_c_regs",
@@ -233,7 +233,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -328,7 +328,7 @@ dual_cc_library(
     name = "manifest_def",
     srcs = dual_inputs(device = ["manifest_def.c"]),
     hdrs = ["manifest_def.h"],
-    target_compatible_with = dual_inputs(device = [OPENTITAN_CPU]),
+    target_compatible_with = dual_inputs(device = [PAVONA_CPU]),
     deps = [
         ":manifest",
         "//sw/device/lib/base:macros",
@@ -378,11 +378,11 @@ dual_cc_library(
         host = ["mock_shutdown.h"],
         shared = ["shutdown.h"],
     ),
-    defines = opentitan_if_ip(
+    defines = pavona_if_ip(
         "flash_ctrl",
         ["HAS_FLASH_CTRL"],
         [],
-    ) + opentitan_if_ip(
+    ) + pavona_if_ip(
         "keymgr",
         ["HAS_KEYMGR"],
         [],
@@ -419,11 +419,11 @@ dual_cc_library(
             "//sw/device/lib/base:stdasm",
             "//sw/device/silicon_creator/lib/drivers:alert",
             "//sw/device/silicon_creator/lib/drivers:otp",
-        ] + opentitan_if_ip(
+        ] + pavona_if_ip(
             "flash_ctrl",
             [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
             [],
-        ) + opentitan_if_ip(
+        ) + pavona_if_ip(
             "keymgr",
             ["//sw/device/silicon_creator/lib/drivers:keymgr"],
             [],
@@ -520,7 +520,7 @@ cc_library(
     srcs = ["acc_boot_services.c"],
     hdrs = ["acc_boot_services.h"],
     # This target uses ACC pointers internally, so it cannot work host-side.
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":attestation",
         ":silicon_creator_hooks",
@@ -540,7 +540,7 @@ cc_library(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "acc_boot_services_functest",
     srcs = ["acc_boot_services_functest.c"],
     broken = fpga_params(tags = ["broken"]),

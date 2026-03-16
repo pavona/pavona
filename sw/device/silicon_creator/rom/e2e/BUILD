@@ -4,8 +4,8 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules:const.bzl", "CONST", "hex_digits")
-load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:legacy.bzl", "scramble_flash_vmem", "vmem_file")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
@@ -22,14 +22,14 @@ load(
     "SLOTS",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "cw310_params",
     "dv_params",
     "ecdsa_key_by_name",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
     "verilator_params",
 )
 
@@ -69,7 +69,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_e2e_default_otp_bootup",
     srcs = [":empty_test"],
     exec_env = {
@@ -88,7 +88,7 @@ opentitan_test(
 )
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "empty_test_slot_{}_unsigned".format(slot),
         testonly = True,
         srcs = [":empty_test"],
@@ -127,7 +127,7 @@ opentitan_test(
 [
     # TODO(#19923): This target has been temporarily added until the original
     # target and its dependencies are migrated to the new build and test rules.
-    opentitan_binary(
+    pavona_binary(
         name = "new_empty_test_slot_{}".format(slot),
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
@@ -151,7 +151,7 @@ opentitan_test(
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "empty_test_slot_{}_{}".format(slot, key),
         testonly = True,
         srcs = [":empty_test"],
@@ -273,7 +273,7 @@ opentitan_test(
     for slot in SLOTS
 ]
 
-opentitan_test(
+pavona_test(
     name = "rom_e2e_flash_ctrl_init",
     srcs = ["rom_e2e_flash_ctrl_init_test.c"],
     exec_env = {
@@ -288,7 +288,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_e2e_shutdown_exception_c",
     srcs = ["rom_e2e_shutdown_exception_c_test.c"],
     dv = dv_params(
@@ -319,7 +319,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_e2e_smoke",
     srcs = [":empty_test"],
     dv = dv_params(
@@ -344,7 +344,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_e2e_static_critical",
     srcs = ["rom_e2e_static_critical_test.c"],
     dv = dv_params(
@@ -369,7 +369,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_e2e_c_init",
     srcs = ["rom_e2e_c_init_test.c"],
     exec_env = {
@@ -397,7 +397,7 @@ opentitan_test(
 
 # Same as `:e2e_bootup_success`, but the Dev OTP image is spliced into the
 # bitstream before it's sent to the CW310 FPGA.
-opentitan_test(
+pavona_test(
     name = "e2e_bootup_success_otp_dev",
     srcs = [":empty_test"],
     exec_env = {
@@ -420,7 +420,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "sigverify_key_auth",
     srcs = [":empty_test"],
     ecdsa_key = {
@@ -444,7 +444,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_ext_upgrade",
     srcs = ["rom_ext_upgrade_test.c"],
     exec_env = {

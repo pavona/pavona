@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-def _opentitan_manual_test_impl(ctx):
+def _pavona_manual_test_impl(ctx):
     executable = ctx.actions.declare_file("manual_test_wrapper")
     ctx.actions.write(
         output = executable,
@@ -23,8 +23,8 @@ def _opentitan_manual_test_impl(ctx):
         ),
     ]
 
-opentitan_manual_test = rule(
-    _opentitan_manual_test_impl,
+pavona_manual_test = rule(
+    _pavona_manual_test_impl,
     attrs = {
         "testplan": attr.label(
             allow_single_file = [".hjson"],

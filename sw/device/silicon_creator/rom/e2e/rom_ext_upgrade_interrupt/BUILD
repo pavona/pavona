@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -59,7 +59,7 @@ otp_json(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "rom_ext_upgrade_interrupt_{}".format(lc_state),
         srcs = ["rom_ext_upgrade_interrupt.c"],
         ecdsa_key = ecdsa_key_for_lc_state(

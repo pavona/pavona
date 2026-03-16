@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_SUCCESS_MSG",
     "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 load(
     "//rules:const.bzl",
@@ -18,7 +18,7 @@ load(
     "hex_digits",
     "lcv_hw_to_sw",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load("//rules:manifest.bzl", "manifest")
 load(
     "//rules:otp.bzl",
@@ -262,7 +262,7 @@ invalid_unselected_word_cases = [
 test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases + all_constr_test_cases + invalid_unselected_word_cases
 
 [
-    opentitan_test(
+    pavona_test(
         name = "sigverify_usage_constraint_{}".format(t["name"]),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         ecdsa_key = ecdsa_key_for_lc_state(

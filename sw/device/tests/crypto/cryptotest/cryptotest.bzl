@@ -5,14 +5,14 @@
 """Cryptotest test case definition"""
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
     "silicon_params",
 )
 
 # Defines default execution environments for cryptotest targets. All
-# opentitan_test must have the following attributes to configure
+# pavona_test must have the following attributes to configure
 # each execution environment:
 # - cw310
 # - cw340
@@ -63,7 +63,7 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
         slow_test: indicate if the test should be run in the nightly CI.
     """
     tags = ["slow_test"] if slow_test else []
-    opentitan_test(
+    pavona_test(
         name = name,
         srcs = ["//sw/device/tests/crypto/cryptotest/firmware:firmware.c"],
         fpga = fpga_params(

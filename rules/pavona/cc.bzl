@@ -3,25 +3,25 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "@lowrisc_opentitan//rules:rv.bzl",
+    "@pavona_pavona//rules:rv.bzl",
     "rv_rule",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
-    _opentitan_transition = "opentitan_transition",
+    _PAVONA_CPU = "PAVONA_CPU",
+    _PAVONA_PLATFORM = "PAVONA_PLATFORM",
+    _pavona_transition = "pavona_transition",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "@pavona_pavona//rules/pavona:transform.bzl",
     "convert_to_vmem",
     "obj_disassemble",
     "obj_transform",
 )
-load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
-load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
+load("@pavona_pavona//rules:signing.bzl", "sign_binary")
+load("@pavona_pavona//rules/pavona:exec_env.bzl", "ExecEnvInfo")
+load("@pavona_pavona//rules/pavona:util.bzl", "get_fallback", "get_override")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-load("//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
-load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
+load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/pavona:util.bzl", "assemble_for_test", "recursive_format")
+load("//rules/pavona:providers.bzl", "OpenTitanBinaryInfo")
 
 def _expand(ctx, name, items):
     """Perform location and make_variable expansion on a list of items.
@@ -169,7 +169,7 @@ def _binary_name(ctx, exec_env):
 def _build_binary(ctx, exec_env, name, deps, kind):
     """Build a binary, sign and perform output file transformations.
 
-    This function is the core of the `opentitan_binary` and `opentitan_test`
+    This function is the core of the `pavona_binary` and `pavona_test`
     implementations.
 
     Args:
@@ -245,7 +245,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     )
     return provides, signed
 
-def _opentitan_binary(ctx):
+def _pavona_binary(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
 
     providers = []
@@ -426,8 +426,8 @@ common_binary_attrs = {
     ),
 }
 
-opentitan_binary = rv_rule(
-    implementation = _opentitan_binary,
+pavona_binary = rv_rule(
+    implementation = _pavona_binary,
     attrs = dict(common_binary_attrs.items() + {
         "exec_env": attr.label_list(
             providers = [ExecEnvInfo],
@@ -463,7 +463,7 @@ _testing_bitstream = transition(
     ],
 )
 
-def _opentitan_test(ctx):
+def _pavona_test(ctx):
     exec_env = ctx.attr.exec_env[ExecEnvInfo]
 
     if ctx.attr.srcs or ctx.attr.deps:
@@ -491,8 +491,8 @@ def _opentitan_test(ctx):
         runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles, coverage_runfiles]),
     )
 
-opentitan_test = rv_rule(
-    implementation = _opentitan_test,
+pavona_test = rv_rule(
+    implementation = _pavona_test,
     attrs = dict(common_binary_attrs.items() + {
         "exec_env": attr.label(
             providers = [ExecEnvInfo],
@@ -577,7 +577,7 @@ opentitan_test = rv_rule(
     test = True,
 )
 
-def _opentitan_binary_assemble_impl(ctx):
+def _pavona_binary_assemble_impl(ctx):
     assembled_bins = []
     result = []
     ot_bin_env_info = {}
@@ -623,8 +623,8 @@ def _opentitan_binary_assemble_impl(ctx):
     result.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
     return result + [DefaultInfo(files = depset(assembled_bins))]
 
-opentitan_binary_assemble = rule(
-    implementation = _opentitan_binary_assemble_impl,
+pavona_binary_assemble = rule(
+    implementation = _pavona_binary_assemble_impl,
     attrs = {
         "bins": attr.label_keyed_string_dict(
             allow_files = True,
@@ -659,7 +659,7 @@ def _exec_env_filegroup(ctx):
             fail("files[{}] must supply exactly one file".format(k))
 
         # Return the exec_env's provider so this rule can be consumed by
-        # opentitan_test rules.
+        # pavona_test rules.
         result.append(provider(default = f[0], kind = ctx.attr.kind))
         ot_bin_env_info[provider] = exec_env[k][ExecEnvInfo]
         default_files.append(f[0])

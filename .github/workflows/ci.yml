@@ -427,7 +427,7 @@ jobs:
           ln -s $PWD/opentitan/third_party/qemu/BUILD.qemu_opentitan.bazel qemu/BUILD.bazel
           touch qemu/REPO.bazel
           # Just make sure all expected targets are there after building.
-          opentitan/bazelisk.sh build --override_repository="+qemu+qemu_opentitan_src=$PWD/qemu/" //third_party/qemu/...
+          opentitan/bazelisk.sh build --override_repository="+qemu+qemu_pavona_src=$PWD/qemu/" //third_party/qemu/...
       - name: Upload error logs
         if: failure()
         uses: actions/upload-artifact@v4

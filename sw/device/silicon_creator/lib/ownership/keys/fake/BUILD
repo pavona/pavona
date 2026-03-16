@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
+load("//rules/pavona:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
 
 package(default_visibility = ["//visibility:public"])
 

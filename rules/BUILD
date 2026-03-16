@@ -4,7 +4,7 @@
 
 load("//rules:autogen.bzl", "autogen_stamp_include")
 load("//rules:stamp.bzl", "stamp_flag")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_PLATFORM")
+load("//rules/pavona:defs.bzl", "PAVONA_PLATFORM")
 
 package(default_visibility = ["//visibility:public"])
 

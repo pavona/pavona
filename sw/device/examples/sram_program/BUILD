@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//rules/pavona:defs.bzl", "pavona_binary")
 load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -21,7 +21,7 @@ ld_library(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "sram_program",
     testonly = True,
     srcs = ["sram_program.c"],

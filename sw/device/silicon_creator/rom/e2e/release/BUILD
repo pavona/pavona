@@ -8,10 +8,10 @@ load(
     "otp_image",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "dv_params",
     "fpga_params",
-    "opentitan_test",
+    "pavona_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -26,7 +26,7 @@ otp_image(
 )
 
 # The self hash test is disabled except when we're releasing a new ROM.
-#opentitan_test(
+#pavona_test(
 #    name = "rom_e2e_self_hash_test",
 #    srcs = ["rom_e2e_self_hash_test.c"],
 #    dv = dv_params(

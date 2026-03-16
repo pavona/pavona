@@ -6,7 +6,7 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
-load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//rules/pavona:defs.bzl", "pavona_binary")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VARIATIONS",
@@ -40,7 +40,7 @@ ROM_EXT_FEATURES = [
 #   --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_hyper310_rom_ext \
 #   --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized
 [
-    opentitan_binary(
+    pavona_binary(
         name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
         collect_code_coverage = 0,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
@@ -76,7 +76,7 @@ ROM_EXT_FEATURES = [
 ]
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "rom_ext_{}_prod_slot_{}".format(variation, slot),
         collect_code_coverage = 0,
         exec_env = [

@@ -9,11 +9,11 @@ load(
     "dicts",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
-    "opentitan_test",
+    "pavona_test",
     "verilator_params",
 )
 
@@ -25,7 +25,7 @@ cc_library(
     includes = ["."],
 )
 
-opentitan_test(
+pavona_test(
     name = "coremark_test",
     srcs = [
         "core_portme.c",

@@ -4,19 +4,19 @@
 
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
-load("//rules/opentitan:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
-load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
+load("//rules/pavona:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
+load("//rules/pavona:cc.bzl", "pavona_binary_assemble")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
     "otp_image",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "//rules/pavona:defs.bzl",
     "ecdsa_key_for_lc_state",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_test",
     "silicon_params",
     "spx_key_for_lc_state",
 )
@@ -73,7 +73,7 @@ _MANUF_TEST_LOCKED_KEY = None
 # We bootstrap code into flash in LC states where CPU execution is enabled. In
 # other LC states, we do not perform bootstrap, as it will not succeed.
 [
-    opentitan_test(
+    pavona_test(
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
         ecdsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else ecdsa_key_for_lc_state(ECDSA_SPX_KEY_STRUCTS, lc_val),
@@ -115,7 +115,7 @@ lc_raw_unlock_token(
     name = "lc_raw_unlock_token",
 )
 
-opentitan_test(
+pavona_test(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
@@ -138,7 +138,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "manuf_cp_volatile_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
@@ -175,7 +175,7 @@ opentitan_test(
 ]
 
 [
-    opentitan_test(
+    pavona_test(
         name = "manuf_cp_yield_test_functest_{}".format(lc_state.lower()),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
         exec_env = {
@@ -243,11 +243,11 @@ cc_library(
 ]
 
 # We are using a bitstream with ROM execution disabled so the contents of flash
-# does not matter but opentitan_test() is unhappy if we don't provide one.
+# does not matter but pavona_test() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
 # attempt to bootstrap.
 [
-    opentitan_test(
+    pavona_test(
         name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
         srcs = ["sram_empty_functest.c"],
         exec_env = {
@@ -296,7 +296,7 @@ test_suite(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "sram_device_info_flash_wr_functest",
     testonly = True,
     srcs = ["sram_device_info_flash_wr_functest.c"],
@@ -331,7 +331,7 @@ opentitan_binary(
 )
 
 [
-    opentitan_test(
+    pavona_test(
         name = "manuf_cp_device_info_flash_wr_{}_to_{}_functest".format(
             init_lc_state.lower(),
             target_lc_state.lower(),
@@ -393,7 +393,7 @@ test_suite(
     ],
 )
 
-opentitan_binary(
+pavona_binary(
     name = "sram_exec_test",
     testonly = True,
     srcs = ["sram_exec_test.c"],
@@ -421,11 +421,11 @@ opentitan_binary(
 )
 
 # We are using a bitstream with disabled execution so the content of the flash
-# does not matter but opentitan_test() is unhappy if we don't provide one.
+# does not matter but pavona_test() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
 # attempt to bootstrap.
 [
-    opentitan_test(
+    pavona_test(
         name = "manuf_cp_ast_test_execution_{}_functest".format(lc_state.lower()),
         srcs = ["idle_functest.c"],
         exec_env = {
@@ -463,7 +463,7 @@ test_suite(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "manuf_cp_test_lock_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
@@ -492,7 +492,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
+pavona_test(
     name = "otp_ctrl_functest",
     srcs = [":empty_functest.c"],
     exec_env = {
@@ -515,7 +515,7 @@ opentitan_test(
 )
 
 [
-    opentitan_binary(
+    pavona_binary(
         name = "empty_test_{}".format(slot),
         testonly = True,
         srcs = ["empty_functest.c"],
@@ -532,7 +532,7 @@ opentitan_test(
     for slot in SLOTS.keys()
 ]
 
-opentitan_binary_assemble(
+pavona_binary_assemble(
     name = "multislot_empty_test",
     testonly = True,
     bins = {
@@ -551,7 +551,7 @@ alias(
     actual = "multislot_empty_test",
 )
 
-opentitan_test(
+pavona_test(
     name = "ujson_msg_size_functest",
     srcs = ["ujson_msg_size_functest.c"],
     exec_env = {
@@ -573,7 +573,7 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
+pavona_test(
     name = "ujson_msg_padding_functest",
     srcs = ["ujson_msg_padding_functest.c"],
     exec_env = {

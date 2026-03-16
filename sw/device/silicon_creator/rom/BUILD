@@ -8,14 +8,14 @@ load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
 load(
-    "//rules/opentitan:defs.bzl",
-    "OPENTITAN_CPU",
+    "//rules/pavona:defs.bzl",
+    "PAVONA_CPU",
     "fpga_params",
-    "opentitan_binary",
-    "opentitan_manual_test",
-    "opentitan_test",
+    "pavona_binary",
+    "pavona_manual_test",
+    "pavona_test",
 )
-load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("//rules/pavona:legacy.bzl", "legacy_rom_targets")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -100,7 +100,7 @@ cc_library(
     defines = [
         "INTERRUPT_HANDLER=rom_interrupt_handler",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -114,7 +114,7 @@ cc_library(
 cc_library(
     name = "mask_rom_lib",
     srcs = ["rom_start.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         ":rom_common",
         ":rom_epmp",
@@ -214,7 +214,7 @@ cc_library(
     ]
 ]
 
-opentitan_binary(
+pavona_binary(
     name = "mask_rom",
     collect_code_coverage = 0,
     exec_env = [
@@ -272,7 +272,7 @@ cc_library(
         "rom_epmp_init.S",
     ],
     hdrs = ["rom_epmp.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -287,7 +287,7 @@ cc_library(
     name = "rom_state",
     srcs = ["rom_state.c"],
     hdrs = ["rom_state.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [PAVONA_CPU],
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
@@ -298,7 +298,7 @@ cc_library(
     alwayslink = True,
 )
 
-opentitan_test(
+pavona_test(
     name = "rom_epmp_test",
     srcs = [
         "rom_epmp_test.c",
@@ -306,7 +306,7 @@ opentitan_test(
     # This test doesn't use the OTTF and can only run in verilator right now.
     #
     # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting `kind = "rom"` makes the `opentitan_test` rule aware
+    # Setting `kind = "rom"` makes the `pavona_test` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified via
     # Verilator or CW310 params).
@@ -506,7 +506,7 @@ pkg_files(
     prefix = "earlgrey/rom",
 )
 
-opentitan_manual_test(
+pavona_manual_test(
     name = "manual_test",
     tags = [
         "manual",
@@ -576,7 +576,7 @@ genrule(
     """,
 )
 
-opentitan_test(
+pavona_test(
     name = "stack_utilization_test",
     cw310 = fpga_params(
         binaries = {
