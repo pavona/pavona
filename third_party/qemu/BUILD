@@ -7,6 +7,11 @@ package(default_visibility = ["//visibility:public"])
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 py_binary(
     name = "cfggen",
     srcs = ["@qemu_opentitan//:scripts/opentitan/cfggen.py"],

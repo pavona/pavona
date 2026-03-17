@@ -25,6 +25,7 @@ filegroup(
 filegroup(
     name = "doc_files",
     srcs = glob(["**/*.md"]) + [
+        "//hw/top_darjeeling/ip:doc_files",
         "//hw/top_darjeeling/ip_autogen/ac_range_check:doc_files",
         "//hw/top_darjeeling/ip_autogen/alert_handler:doc_files",
         "//hw/top_darjeeling/ip_autogen/clkmgr:doc_files",

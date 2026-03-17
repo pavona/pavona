@@ -9,6 +9,11 @@ load("//rules/opentitan:static_library.bzl", "ot_static_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 # Top-level cryptolib target.
 ot_static_library(
     name = "otcrypto",

@@ -26,6 +26,7 @@ filegroup(
 filegroup(
     name = "doc_files",
     srcs = glob([
+        "**/*.html",
         "**/*.md",
         "**/*.png",
     ]),

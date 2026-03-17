@@ -3,142 +3,142 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-	"@bazel_skylib//lib:dicts.bzl",
-	"dicts",
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
 )
 load(
-	"//rules:cross_platform.bzl",
-	"dual_cc_device_library_of",
-	"dual_cc_library",
-	"dual_inputs",
+    "//rules:cross_platform.bzl",
+    "dual_cc_device_library_of",
+    "dual_cc_library",
+    "dual_inputs",
 )
 load(
-	"//rules/opentitan:defs.bzl",
-	"EARLGREY_CW340_TEST_ENVS",
-	"EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-	"EARLGREY_TEST_ENVS",
-	"fpga_params",
-	"opentitan_test",
-	"qemu_params",
-	"silicon_params",
-	"verilator_params",
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_CW340_TEST_ENVS",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "EARLGREY_TEST_ENVS",
+    "fpga_params",
+    "opentitan_test",
+    "qemu_params",
+    "silicon_params",
+    "verilator_params",
 )
 
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-	name = "english_breakfast_test_rom_driver_srcs",
-	srcs = [
-		"flash_ctrl.c",
-		"flash_ctrl.h",
-		"flash_ctrl_info_pages.c",
-		"lifecycle.h",
-		"otp.h",
-		"rstmgr.h",
-		"spi_device.c",
-		"spi_device.h",
-		"spi_device_bfpt.h",
-	],
+    name = "english_breakfast_test_rom_driver_srcs",
+    srcs = [
+        "flash_ctrl.c",
+        "flash_ctrl.h",
+        "flash_ctrl_info_pages.c",
+        "lifecycle.h",
+        "otp.h",
+        "rstmgr.h",
+        "spi_device.c",
+        "spi_device.h",
+        "spi_device_bfpt.h",
+    ],
 )
 
 dual_cc_library(
-	name = "alert",
-	srcs = dual_inputs(
-		device = ["alert.c"],
-		host = ["mock_alert.cc"],
-	),
-	hdrs = dual_inputs(
-		host = ["mock_alert.h"],
-		shared = ["alert.h"],
-	),
-	deps = dual_inputs(
-		device = [
-			"//hw/top:alert_handler_c_regs",
-			"//hw/top:otp_ctrl_c_regs",
-		],
-		host = [
-			"//sw/device/lib/base:global_mock",
-			"//sw/device/silicon_creator/testing:rom_test",
-			"@googletest//:gtest",
-		],
-		shared = [
-			":lifecycle",
-			":otp",
-			"//hw/top/dt",
-			"//sw/device/lib/base:abs_mmio",
-			"//sw/device/lib/base:macros",
-			"//sw/device/lib/base:memory",
-			"//sw/device/lib/base:crc32",
-			"//sw/device/silicon_creator/lib:error",
-		],
-	),
+    name = "alert",
+    srcs = dual_inputs(
+        device = ["alert.c"],
+        host = ["mock_alert.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_alert.h"],
+        shared = ["alert.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/top:alert_handler_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
+        ],
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            ":lifecycle",
+            ":otp",
+            "//hw/top/dt",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:memory",
+            "//sw/device/lib/base:crc32",
+            "//sw/device/silicon_creator/lib:error",
+        ],
+    ),
 )
 
 cc_test(
-	name = "alert_unittest",
-	srcs = ["alert_unittest.cc"],
-	deps = [
-		dual_cc_device_library_of(":alert"),
-		"//hw/top:alert_handler_c_regs",
-		"//hw/top_earlgrey/sw/autogen:top_earlgrey",
-		"//sw/device/lib/base:crc32",
-		"@googletest//:gtest_main",
-	],
+    name = "alert_unittest",
+    srcs = ["alert_unittest.cc"],
+    deps = [
+        dual_cc_device_library_of(":alert"),
+        "//hw/top:alert_handler_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:crc32",
+        "@googletest//:gtest_main",
+    ],
 )
 
 opentitan_test(
-	name = "alert_functest",
-	srcs = ["alert_functest.c"],
-	exec_env = EARLGREY_TEST_ENVS,
-	verilator = verilator_params(
-		timeout = "long",
-	),
-	deps = [
-		":alert",
-		":rstmgr",
-		"//hw/top:alert_handler_c_regs",
-		"//hw/top:flash_ctrl_c_regs",
-		"//hw/top:otp_ctrl_c_regs",
-		"//hw/top:rstmgr_c_regs",
-		"//hw/top/dt",
-		"//hw/top_earlgrey/sw/autogen:top_earlgrey",
-		"//sw/device/lib/base:abs_mmio",
-		"//sw/device/lib/testing:rstmgr_testutils",
-		"//sw/device/lib/testing/test_framework:ottf_main",
-	],
+    name = "alert_functest",
+    srcs = ["alert_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":alert",
+        ":rstmgr",
+        "//hw/top:alert_handler_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:rstmgr_c_regs",
+        "//hw/top/dt",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )
 
 cc_library(
-	name = "ast",
-	srcs = ["ast.c"],
-	hdrs = ["ast.h"],
-	deps = [
-		":lifecycle",
-		":otp",
-		"//hw/top:ast_c_regs",
-		"//hw/top:otp_ctrl_c_regs",
-		"//hw/top:sensor_ctrl_c_regs",
-		"//hw/top/dt",
-		"//hw/top_earlgrey/sw/autogen:top_earlgrey",
-		"//sw/device/lib/arch:device",
-		"//sw/device/lib/base:abs_mmio",
-		"//sw/device/lib/base:bitfield",
-		"//sw/device/lib/base:csr",
-		"//sw/device/lib/base:hardened",
-		"//sw/device/lib/base:memory",
-		"//sw/device/lib/base:multibits",
-		"//sw/device/silicon_creator/lib:error",
-	],
+    name = "ast",
+    srcs = ["ast.c"],
+    hdrs = ["ast.h"],
+    deps = [
+        ":lifecycle",
+        ":otp",
+        "//hw/top:ast_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
+        "//hw/top/dt",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib:error",
+    ],
 )
 
 cc_test(
-	name = "ast_unittest",
-	srcs = ["ast_unittest.cc"],
-	deps = [
-		":ast",
-		"//sw/device/silicon_creator/testing:rom_test",
-		"@googletest//:gtest_main",
-	],
+    name = "ast_unittest",
+    srcs = ["ast_unittest.cc"],
+    deps = [
+        ":ast",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
 )
 
 dual_cc_library(
