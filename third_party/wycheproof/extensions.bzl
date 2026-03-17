@@ -12,7 +12,13 @@ def _wycheproof_repos():
     http_archive(
         name = "wycheproof",
         build_file = Label("//third_party/wycheproof:BUILD.wycheproof_common.bazel"),
-        sha256 = "a7a4c18d0d5609b26f3341dc7a9dd6829174d542ee6f0434f5fa7319e0811b75",
-        strip_prefix = "wycheproof-snapshot-d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d",
-        url = "https://github.com/lowRISC/wycheproof/archive/refs/tags/snapshot-d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d.tar.gz",
+        sha256 = "2f83fb2199f52297f675bad2be5c8a15cca90061ef593b205fc6fd994dc38f47",
+        strip_prefix = "wycheproof-78898104021ebd2cd98820e4112da89b1531d999",
+        url = "https://github.com/C2SP/wycheproof/archive/78898104021ebd2cd98820e4112da89b1531d999.tar.gz",
+        # C2SP upstream doesn't include BUILD files for subdirectories
+        # (the lowRISC fork did). Create them so existing references like
+        # @wycheproof//testvectors_v1:foo.json continue to work.
+        patch_cmds = [
+            "echo 'exports_files(glob([\"**\"]))' > testvectors_v1/BUILD.bazel",
+        ],
     )

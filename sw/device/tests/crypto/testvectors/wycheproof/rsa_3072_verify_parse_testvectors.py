@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -33,7 +34,11 @@ def parse_test(raw_data, n, e, t):
     if t['comment']:
         notes.append(t['comment'])
     # Add notes from flags, if any
-    notes.extend([raw_data['notes'][flag] for flag in t['flags']])
+    for flag in t['flags']:
+        note = raw_data['notes'].get(flag, flag)
+        if isinstance(note, dict):
+            note = note.get('description', str(note))
+        notes.append(note)
 
     # cases for expected result
     if t['result'] == 'valid':
@@ -55,8 +60,9 @@ def parse_test(raw_data, n, e, t):
 
 def parse_test_group(raw_data, group):
     tests = []
-    n = parse_hex_int(group['n'])
-    e = parse_hex_int(group['e'])
+    pub_key = group['publicKey']
+    n = parse_hex_int(pub_key['modulus'])
+    e = parse_hex_int(pub_key['publicExponent'])
     for t in group['tests']:
         tests.append(parse_test(raw_data, n, e, t))
     return tests
