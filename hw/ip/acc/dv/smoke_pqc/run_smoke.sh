@@ -34,7 +34,7 @@ $ACC_UTIL/acc_ld.py -o $SMOKE_BIN_DIR/smoke.elf $SMOKE_BIN_DIR/smoke_test.o || \
     fail "Failed to link smoke_test.o"
 
 (cd $REPO_TOP;
- fusesoc --cores-root=. run --target=sim --setup --build \
+ fusesoc --cores-root=. run --target=sim --flag pqc --setup --build \
     --mapping=lowrisc:prim_generic:all:0.1 lowrisc:ip:acc_top_sim \
     --make_options="-j$(nproc)" || fail "HW Sim build failed")
 
