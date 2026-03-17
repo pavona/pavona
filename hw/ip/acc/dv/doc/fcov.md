@@ -57,6 +57,7 @@ We expect to:
 
 Accesses to CSRs and WSRs are tracked in the coverage for the instructions that access them.
 See [CSRRS](#csrrs) and [CSRRW](#csrrw) for CSRs; [BN.WSRR](#bnwsrr) and [BN.WSRW](#bnwsrw) for WSRs.
+Some CSRs and WSRs are dependant on the `AccPQCEn` RTL parameter, and are appropriately set as valid/illegal bins when appropriate.
 
 ## Random numbers
 
@@ -253,6 +254,7 @@ If the field is treated as a signed number, we also expect to see it with the ex
 > The code to track this is split by encoding schema in `acc_env_cov`.
 > Each instruction listed below will specify its encoding schema.
 > Each encoding schema then has its own covergroup.
+> Vector-based instruction coverage collection depends on the `AccPQCEn` parameter.
 > Rather than tracking toggle coverage as described above, we just track extremal values in a coverpoint.
 > This also implies toggle coverage for both signed and unsigned fields.
 > For unsigned fields of width `N`, the extremal values are `0` and `(1 << N) - 1`, represented by the bits `'0` and `'1` respectively.
@@ -798,6 +800,14 @@ The instruction-specific covergroup is `insn_bn_addm_cg`.
 - A calculation where the intermediate sum is greater than `2^256-1`, crossed with whether the subtraction of `MOD` results in a value that will wrap.
   Tracked as `overflow_wrap_cross`.
 
+## BN.ADDV
+
+This instruction uses the `bnam` encoding schema, with covergroup `enc_bnam_pqc_cg`.
+There is no instruction-specific covergroup.
+
+The `enc_bnam_pqc_cg` contains all other `enc_bnam_cg` instructions but is only used with the `AccPQCEn` parameter.
+No additional special coverage.
+
 ## BN.MULQACC
 
 This instruction uses the `bnaq` encoding schema, with covergroup `enc_bnaq_cg`.
@@ -831,6 +841,23 @@ The instruction-specific covergroup is `insn_bn_mulqaccx_cg` (shared with the ot
   This is tracked in `insn_bnmulqaccx_cg` as `overflow_cross`.
 - Cross the generic flag updates with `wrd_hwsel`, since the flag changes are different in the two modes.
   This is tracked in `enc_bnaqs_cg` as `flags_01_cross`, `flags_10_cross` and `flags_11_cross`.
+
+## BN.MULV
+
+This instruction uses the `bnmulv` encoding schema, with covergroup `enc_bnmulv_cg`.
+There is no instruction-specific covergroup.
+
+The `enc_bnmulv_cg` is only used with the `AccPQCEn` parameter.
+No additional special coverage.
+
+## BN.MULV.L
+
+This instruction uses the `bnmulvl` encoding schema, with covergroup `enc_bnmulvl_cg`.
+There is no instruction-specific covergroup.
+
+The `enc_bnmulvl_cg` is only used with the `AccPQCEn` parameter.
+- Cross `type_cp` with `ln_idx_cp` to make sure lane widths are used with valid lane indexes.
+  This is tracked in `enc_bnmulvl_cg` as `type_index_cross`.
 
 ## BN.SUB
 
@@ -876,6 +903,14 @@ The instruction-specific covergroup is `insn_bn_subm_cg`.
   Tracked as `diff_neg_cp`.
 - A very negative intermediate result with a nonzero `MOD` (so `MOD` is added, but the top bit is still set)
   Tracked as `diff_neg2_cp`.
+
+## BN.SUBV
+
+This instruction uses the `bnam` encoding schema, with covergroup `enc_bnam_pqc_cg`.
+There is no instruction-specific covergroup.
+
+The `enc_bnam_pqc_cg` contains all other `enc_bnam_cg` instructions but is only used with the `AccPQCEn` parameter.
+No additional special coverage.
 
 ## BN.AND
 
@@ -923,6 +958,23 @@ This instruction uses the `bnr` encoding schema, with covergroup `enc_bnr_cg`.
 There is no instruction-specific covergroup.
 
 No special coverage.
+
+## BN.SHV
+
+This instruction uses the `bnav` encoding schema, with covergroup `enc_bnav_cg`.
+There is no instruction-specific covergroup.
+
+The `enc_bnav_cg` is only used with the `AccPQCEn` parameter.
+- Extremal values of shift for both directions where the shifted value is nonzero
+  Tracked in `enc_bnav_cg` as `st_sb_nz_shifted_cross`.
+
+## BN.TRN
+
+This instruction uses the `bntrn` encoding schema, with covergroup `enc_bntrn_cg`.
+There is no instruction-specific covergroup.
+
+The `enc_bntrn_cg` is only used with the `AccPQCEn` parameter.
+No additional special coverage.
 
 ## BN.SEL
 

@@ -33,7 +33,7 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | Done        | New features are [Key Sideload](https://www.github.com/lowrisc/opentitan/pull/8650), [Private ACC DMem](https://www.github.com/lowrisc/opentitan/pull/8890), [XoShiRo PRNG](https://www.github.com/lowrisc/opentitan/pull/7944) and [Prefetch Stage](https://www.github.com/lowrisc/opentitan/issues/8898)
+Documentation | [NEW_FEATURES][]          | Done        | New features are Key Sideload, Private ACC DMEM, XoShiRo PRNG, and Prefetch Stage.
 Documentation | [BLOCK_DIAGRAM][]         | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
 Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.

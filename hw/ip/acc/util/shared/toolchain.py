@@ -54,5 +54,5 @@ def find_tool(tool_name: str) -> str:
                        'installed your RISC-V toolchain in an alternate '
                        'location. (Hint: if you installed the toolchain via '
                        'Bazel, this is likely '
-                       '\'bazel-opentitan/external/lowrisc_rv32imcb_files/\' )'
+                       '\'bazel-pavona/external/lowrisc_rv32imcb_files/\' )'
                        .format(expanded, default_location, tool_env_var))

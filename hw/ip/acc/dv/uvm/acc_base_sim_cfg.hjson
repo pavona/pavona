@@ -66,7 +66,7 @@
   acc_elf_dir: "{run_dir}/acc-binaries"
 
 
-  // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation
+  // Enable cdc instrumentation
   run_opts: ["+acc_elf_dir={acc_elf_dir}",
              "+cdc_instrumentation_enabled=0"]
 

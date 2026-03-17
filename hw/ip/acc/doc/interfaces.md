@@ -86,7 +86,7 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 
 ## Hardware Interface Requirements
 
-ACC connects to other components in an OpenTitan system.
+ACC connects to other components in the top-level system.
 This section lists requirements on those interfaces that go beyond the physical connectivity.
 
 ### Entropy Distribution Network (EDN)

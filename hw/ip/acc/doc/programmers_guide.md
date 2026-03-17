@@ -38,7 +38,7 @@ Depending on the application additional steps might be necessary, such as deleti
 ## Writing ACC applications
 
 ACC applications are (small) pieces of software written in ACC assembly.
-The full instruction set is described in the [ISA manual](./isa.md), and example software is available in the `sw/acc` directory of the OpenTitan source tree.
+The full instruction set is described in the [ISA manual](./isa.md), and example software is available in the `sw/acc` directory of the source tree.
 
 A hands-on user guide to develop ACC software can be found in the section [Writing and building software for ACC](../../../../doc/contributing/sw/acc_sw.md).
 

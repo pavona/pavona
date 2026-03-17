@@ -1,18 +1,14 @@
 # ACC Formal Masking Verification Using Alma
 
-This directory contains support files to formally verify the ACC core using the
-tool [Alma:
-Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
+This directory contains support files to formally verify the ACC core using the tool [Alma: Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
 
 ## Prerequisites
 
-Note that this flow is experimental. It has been developed using Yosys v0.15
-(this also works: v0.9+4306 (git sha1 3931b3a03)), sv2v v0.0.9-24-gf868f06 and
-Verilator 4.106 (2020-12-02 rev v4.106). Other tool versions might not be
-compatible.
+Note that this flow is experimental.
+It has been developed using Yosys v0.15 (this also works: v0.9+4306 (git sha1 3931b3a03)), sv2v v0.0.9-24-gf868f06 and Verilator 4.106 (2020-12-02 rev v4.106).
+Other tool versions might not be compatible.
 
-1. Download the Alma tool from this specific repo and check out to the
-   `coco-acc-latest` branch of the tool
+1. Download the Alma tool from this specific repo and check out to the `coco-acc-latest` branch of the tool.
    ```sh
    git clone git@github.com:abdullahvarici/coco-alma.git -b coco-acc-latest
    ```
@@ -29,42 +25,38 @@ compatible.
    ```sh
    pip3 install -r requirements.txt
    ```
-   Update `examples/acc/config.json` to point correct locations for `asm`,
-   `objdump` and `rv_objdump`.
+   Update `examples/acc/config.json` to point correct locations for `asm`, `objdump` and `rv_objdump`.
 
 1. Generate a Verilog netlist
 
-   A netlist of the DUT can be generated using the Yosys synthesis flow from
-   the OpenTitan repository. From the OpenTitan top level, run
+   A netlist of the DUT can be generated using the Yosys synthesis flow from the repository.
+   From the top level, run
    ```sh
    cd hw/ip/acc/pre_syn
    ```
-   Set up the synthesis flow as described in the corresponding README. Then run
-   the synthesis
+   Set up the synthesis flow as described in the corresponding README.
+   Then run the synthesis
    ```sh
    ./syn_yosys.sh
    ```
 
 ## Formally verifying the masking of the ACC core
 
-After downloading the Alma tool, installing dependencies and synthesizing ACC,
-the masking can finally be formally verified.
+After downloading the Alma tool, installing dependencies and synthesizing ACC, the masking can finally be formally verified.
 
-1. Enter the directory where you have downloaded Alma and load the virtual
-   Python environment.
+1. Enter the directory where you have downloaded Alma and load the virtual Python environment.
    ```sh
    source dev/bin/activate
    ```
 
-1. Make sure to source the `build_consts.sh` script from the OpenTitan
-   repository in order to set up some shell variables.
+1. Make sure to source the `build_consts.sh` script from this repository in order to set up some shell variables.
    ```sh
-   source ../opentitan/util/build_consts.sh
+   source ../pavona/util/build_consts.sh
    ```
 
-1. Launch the Alma tool to parse, assemble, trace (simulate) and formally verify
-   the netlist. For simplicity, a single script is provided to launch all the
-   required steps with a single command. Simply run:
+1. Launch the Alma tool to parse, assemble, trace (simulate) and formally verify the netlist.
+   For simplicity, a single script is provided to launch all the required steps with a single command.
+   Simply run:
    ```sh
    ${REPO_TOP}/hw/ip/acc/pre_sca/alma/verify_acc.sh
    ```
@@ -138,13 +130,11 @@ the masking can finally be formally verified.
 Below we outline the individual steps performed by the `verify_acc.sh` script.
 This is useful if you, e.g., want to verify the masking of your own module.
 
-For more details, please refer to the [Alma
-tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage)
+For more details, please refer to the [Alma tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage)
 
-1. Make sure to source the `build_consts.sh` script from the OpenTitan
-   repository in order to set up some shell variables.
+1. Make sure to source the `build_consts.sh` script from this repository in order to set up some shell variables.
    ```sh
-   source ../opentitan/util/build_consts.sh
+   source ../pavona/util/build_consts.sh
    ```
 
 1. The first step involves the parsing of the synthesized netlist.
@@ -176,11 +166,10 @@ tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage)
    Add `-b` argument to use cached object files from a previous Verilator run
    and save some time.
 
-1. Next, the automatically generated labeling file `tmp/labels.txt` needs to be
-   adapted. This file tells Alma which inputs of the DUT correspond to the
-   secret shares and which ones are used to provide randomness for (re-)masking.
-   It is pretty tedious to compute the actual indices for bignum register file
-   labels. Generate it with the following command:
+1. Next, the automatically generated labeling file `tmp/labels.txt` needs to be adapted.
+   This file tells Alma which inputs of the DUT correspond to the secret shares and which ones are used to provide randomness for (re-)masking.
+   It is pretty tedious to compute the actual indices for bignum register file labels.
+   Generate it with the following command:
    ```sh
    examples/acc/labels/generate_bignum_rf_labels.py \
       -i examples/acc/labels/${program}_labels.txt \

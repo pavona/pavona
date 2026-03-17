@@ -9,7 +9,8 @@
 ### Memories
 
 The ACC processor core has access to two dedicated memories: an instruction memory (IMEM), and a data memory (DMEM).
-The IMEM is 8 KiB, the DMEM is 4 KiB.
+In the classical instantiation mode the IMEM is 8 KiB and the DMEM is 4 KiB.
+If ACC is instantiated with `AccPQCEn` to enable PQC, IMEM and DMEM should be 32 KiB each to support first-order-masking of ML-DSA-87.
 
 The memory layout follows the Harvard architecture.
 Both memories are byte-addressed, with addresses starting at 0.
@@ -37,8 +38,9 @@ Functionally it should be impossible for either ACC or a host processor to make 
 ACC is in the busy state whilst keys are requested so ACC will not execute any programs and a host processor access will generated an `ILLEGAL_BUS_ACCESS` fatal error.
 Should a request not be granted due to a fault, a `BAD_INTERNAL_STATE` fatal error will be raised.
 
-While DMEM is 4kiB, only the first 3kiB (at addresses `0x0` to `0xbff`) is visible through the register interface.
-This is to allow ACC applications to store sensitive information in the other 1kiB, making it harder for that information to leak back to Ibex.
+While DMEM is 4 KiB, only the first 3 KiB (at addresses `0x0` to `0xbff`) is visible through the register interface.
+When ACC is operating in its PQC mode the first 31 KiB are visible through the register interface.
+This is to allow ACC applications to store sensitive information in the other 1 KiB, making it harder for that information to leak back to Ibex.
 
 Each memory write through the register interface updates a checksum.
 See the [Memory Load Integrity](#memory-load-integrity) section for more details.
@@ -141,7 +143,7 @@ In the absence of an attacker, these errors are due to a programmer's mistake.
 A fatal error is typically the violation of a security property.
 All errors and their classification are listed in the [List of Errors](#list-of-errors).
 
-Whenever an error is detected, ACC reacts locally, and informs the OpenTitan system about it by raising an alert.
+Whenever an error is detected, ACC reacts locally, and informs the system about it by raising an alert.
 ACC generally does not try to recover from errors itself, and provides no error handling support to code that runs on it.
 
 ACC gives host software the option to recover from some errors by restarting the operation.
@@ -527,11 +529,16 @@ Host software cannot explicitly trigger an internal secure wipe; it is performed
 
 ### KMAC Application Interface
 
-The ACC has an application interface connection to the KMAC block allowing for function calls directly to SHA3 and SHAKE algorithms.
+The ACC has an application interface side-load connection to the KMAC IP allowing for accelerated hashing with the SHA3 and SHAKE algorithms.
 For KMAC specific implementation details of the AppIntf view the [`KMAC Theory of Operation`](../../kmac/doc/theory_of_operation.md#application-interface).
-The first word written from KMAC on the application interface is used to dynamically configure the algorithm executed within the KMAC block.
+The first word written from KMAC on the application interface is used to dynamically configure the algorithm executed within KMAC.
 Bits [1:0] select the appropriate SHA3/cSHAKE/SHAKE algorithm and bits [4:2] select the appropriate Keccak drive strength.
-The CSR for configuring the KMAC operation can be found at 0x7D9.
+The CSR for configuring the KMAC operation can be found at `0x7D9`.
+After configuring the transaction, writes to the `kmac_msg` WSR register are used to send data over the AppIntf.
+Reading from the `kmac_digest` WSR will contain the valid digest from KMAC.
+ACC supports a partial word write through the `kmac_partial_write` CSR register.
+This register applies a byte-mask to the `kmac_msg` WSR such that a word less than 32B can be written to the internal FIFO and sent over the AppIntf.
+For register descriptions refer to the [csr.yml](../data/csr.yml) and [wsr.yml](../data/wsr.yml).
 
 <table>
   <thead>
@@ -546,17 +553,6 @@ The CSR for configuring the KMAC operation can be found at 0x7D9.
     <tr><td><code>CsrKmacPartialWrite</code></td><td>0x7F3</td></tr>
   </tbody>
 </table>
-
-#### Partial Word Support
-
-To reduce additional complexity and code size in the ACC when initializing a SHA3/SHAKE algorithm the ACC supports partial word writes.
-Writing to the `Send to KMAC` register is used to transfer data over the AppIntf.
-The optimization provides a reduced code size for the following reason.
-If software wanted to compute SHAKE128(a || b) where a is 2 bytes and b is 32 bytes, without partial write support, software is required to compute a || b[29:0].
-Then write the result and follow with the last two bytes, b[31:30].
-A `_KMAC_WRITE_LEN` register is used to write the size of the next word being transferred, if it is not 32B in size.
-After writing the partial word to the KMAC register, the `_KMAC_WRITE_LEN` register will clear itself unless a new value is written.
-The ACC should be able to make requests to the KMAC block back-to-back.
 
 ## References
 

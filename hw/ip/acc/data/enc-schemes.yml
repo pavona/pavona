@@ -163,7 +163,7 @@ custom4:
   parents:
     - rv(opcode=b11111)
 
-# A partial scheme for custom instructions with opcode b11111
+# A partial scheme for custom instructions with opcode b10010
 custom5:
   parents:
     - rv(opcode=b10010)
@@ -187,7 +187,7 @@ wdr3:
     wrs2: 24-20
     wrs1: 19-15
 
-# A partial scheme for instructions that take two source WDRs and produce a
+# A partial scheme for instructions that take one source WDR and produce a
 # dest WDR.
 wdr2:
   parents:

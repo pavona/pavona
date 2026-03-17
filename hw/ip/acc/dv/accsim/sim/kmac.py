@@ -39,14 +39,14 @@ class KmacBlock:
     _STRENGTH_512 = 0x4
 
     # Message FIFO size in bytes. See:
-    # https://github.com/lowRISC/opentitan/blob/1b56f197b49d5f597867561d0a153d2e7a985909/hw/ip/kmac/rtl/kmac_pkg.sv#L37
-    # https://github.com/lowRISC/opentitan/blob/1b56f197b49d5f597867561d0a153d2e7a985909/hw/ip/kmac/rtl/sha3_pkg.sv#L52
+    # hw/ip/kmac/rtl/kmac_pkg.sv#L37
+    # hw/ip/kmac/rtl/sha3_pkg.sv#L52
     _MSG_FIFO_SIZE_BYTES = 10 * 8
     _MSG_PACKER_SIZE_BYTES = 2 * 8
 
     # Rate at which the Keccak core absorbs data from the message FIFO
     # (bytes/cycle). See:
-    # https://github.com/lowRISC/opentitan/blob/1b56f197b49d5f597867561d0a153d2e7a985909/hw/ip/kmac/rtl/keccak_round.sv#L50
+    # hw/ip/kmac/rtl/keccak_round.sv#L50
     _MSG_FIFO_ABSORB_BYTES_PER_CYCLE = 8
 
     # If the packer in the Keccak MSG FIFO fills up completely, it must flush
@@ -54,7 +54,7 @@ class KmacBlock:
     _MSG_FIFO_PACKER_FLUSH_LATENCY = 2
 
     # Cycles for a Keccak round. See:
-    # https://opentitan.org/book/hw/ip/kmac/doc/theory_of_operation.html#keccak-round
+    # hw/ip/kmac/doc/theory_of_operation.md#keccak-round
     _KECCAK_CYCLES_PER_ROUND = 4
     _KECCAK_NUM_ROUNDS = 24
     # It takes 3 cycles until the finished digest is exposed to the application interface.

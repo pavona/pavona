@@ -5,7 +5,7 @@
 import os
 import sys
 
-# Ensure that the OpenTitan utils directory is on sys.path. This will allow us
+# Ensure that the repository utils directory is on sys.path. This will allow us
 # (and anyone who depends on us) to import serialize.parse_helpers.
 #
 # This isn't massively clean: in particular, messing around with sys.path like

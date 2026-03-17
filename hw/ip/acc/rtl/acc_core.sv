@@ -12,7 +12,7 @@
 `include "prim_assert.sv"
 
 /**
- * Asymmetric Cryptographic Coprocessor (ACC) Core
+ * Asymmetric Cryptography Coprocessor (ACC) Core
  *
  * This module is the top-level of the ACC processing core.
  */

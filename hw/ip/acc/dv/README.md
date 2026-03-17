@@ -15,7 +15,7 @@
 
 ## Design features
 
-ACC, the Asymmetric Cryptographic Coprocessor, is a cryptographic accelerator.
+ACC, the Asymmetric Cryptography Coprocessor, is a cryptographic accelerator.
 For detailed information on ACC design features, see the [ACC HWIP technical specification](../README.md).
 
 ## Testbench architecture
@@ -40,13 +40,14 @@ ACC has the following interfaces:
 - A [Clock and reset interface](../../../dv/sv/common_ifs/README.md#clk_rst_if)
 - A [TileLink interface](../../../dv/sv/tl_agent/README.md).
   ACC is a TL-UL device, which expects to communicate with a TL-UL host.
-  In the OpenTitan SoC, this will be the Ibex core.
+  In the SoC, this will be the Ibex core.
 - Idle signals in each clock domain, `idle_o`, and `idle_otp_o`
 - One interrupt
 - An [alert interface](../../../dv/sv/alert_esc_agent/README.md)
 - A life cycle escalation interface
 - An OTP: for example, see earlgrey's [OTP](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md) connection
 - Two [EDN](../../edn/README.md) connections
+- A KMAC interface for message hashing
 - A RAM configuration interface, which is passed through to the SRAM macros
 
 The idle and interrupt signals are modelled with the basic
@@ -128,6 +129,10 @@ To run a basic smoke test, go to the top of the repository and run:
 ```console
 $ util/dvsim/dvsim.py hw/ip/acc/dv/uvm/acc_sim_cfg.hjson -i acc_smoke
 ```
+
+Note that due to the `AccPQCEn` parameterization of ACC to support PQC algorithms that there are two simulation configs.
+As referenced in the example, `acc_sim_cfg.hjson` is for the classical ACC implementation.
+To run simulations on the PQC enabled ACC instead, the appropriate file is `acc_pqc_sim_cfg.hjson`.
 
 ## Testplan
 [Testplan](../data/acc_testplan.hjson)

@@ -105,7 +105,7 @@ struct TmpDir {
   }
 };
 
-// Find the top of the OpenTitan repository
+// Find the top of the repository
 //
 // If REPO_TOP is defined, use that. Otherwise, this will only work if we're
 // running from a binary inside the git repository. This happens with the

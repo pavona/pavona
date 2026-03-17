@@ -16,9 +16,9 @@ set -e
 
 SCRIPT_DIR="$(dirname "$(readlink -e "${BASH_SOURCE[0]}")")"
 ROOT_DIR="$(readlink -e "$SCRIPT_DIR/../../../../..")" || \
-  fail "Can't find OpenTitan root dir"
+  fail "Can't find repository root dir"
 UTIL_DIR="$(readlink -e "$ROOT_DIR/util")" || \
-  fail "Can't find OpenTitan util dir"
+  fail "Can't find repository util dir"
 
 source "$UTIL_DIR/build_consts.sh"
 
