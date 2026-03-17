@@ -1763,20 +1763,6 @@ def main():
         if args.rust_only:
             sys.exit(0)
 
-    # Check countermeasures for all blocks.
-    if args.check_cm:
-        # Change verbosity to log.INFO to see an okay confirmation message:
-        # the log level is set to log.ERROR upon start to avoid the chatter
-        # of the regular topgen elaboration.
-        log_level = log.DEBUG if args.verbose else log.INFO
-        log.basicConfig(format="%(levelname)s: %(message)s",
-                        level=log_level,
-                        force=True)
-
-        okay = _check_countermeasures(completecfg, name_to_block,
-                                      name_to_hjson)
-        sys.exit(0 if okay else 1)
-
     if not args.no_top or args.top_only:
 
         def render_template(template_path: str, rendered_path: Path,
@@ -2089,6 +2075,20 @@ waive --rule=line-length --location="{rnd_cnst_sv_file}"
 
         # generate documentation for toplevel
         gen_top_docs(completecfg, c_helper, out_path)
+
+    # Check countermeasures for all blocks.
+    if args.check_cm:
+        # Change verbosity to log.INFO to see an okay confirmation message:
+        # the log level is set to log.ERROR upon start to avoid the chatter
+        # of the regular topgen elaboration.
+        log_level = log.DEBUG if args.verbose else log.INFO
+        log.basicConfig(format="%(levelname)s: %(message)s",
+                        level=log_level,
+                        force=True)
+
+        okay = _check_countermeasures(completecfg, name_to_block,
+                                      name_to_hjson)
+        sys.exit(0 if okay else 1)
 
 
 if __name__ == "__main__":
