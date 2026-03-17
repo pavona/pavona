@@ -49,12 +49,11 @@ $ hw/ip/acc/dv/accsim/standalone.py path/to/prog.elf
 
 ### Run the standalone RTL simulation
 A standalone environment to run ACC alone in Verilator is included.
-Build it with `fusesoc` as follows:
+The Verilator environment uses an optional fusesoc flag to configure the ACC hardware and model.
+Build it with `fusesoc` as follows and note that `--flag pqc` is optional:
 
 ```sh
-fusesoc --cores-root=. run --target=sim --setup --build \
-  --mapping=lowrisc:prim_generic:all:0.1 lowrisc:ip:acc_top_sim \
-  --make_options="-j$(nproc)"
+fusesoc --cores-root=. run --target=sim --flag pqc --setup --build lowrisc:ip:acc_top_sim
 ```
 
 It includes functionality to set the initial Dmem and Imem contents from a .elf file.

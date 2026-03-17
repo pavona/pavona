@@ -73,9 +73,9 @@ prefixed with "0x" if they are hexadecimal.
     set_software_errs_fatal Set software_errs_fatal bit.
 '''
 
+import argparse
 import binascii
 import sys
-import os
 from typing import List, Optional
 
 from sim.decode import decode_file
@@ -294,7 +294,7 @@ def on_print_call_stack(sim: ACCSim, args: List[str]) -> Optional[ACCSim]:
 
 def on_reset(sim: ACCSim, args: List[str]) -> Optional[ACCSim]:
     check_arg_count('reset', 0, args)
-    return ACCSim(get_pqc_mode())
+    return ACCSim(sim.EN_PQC)
 
 
 def on_edn_rnd_step(sim: ACCSim, args: List[str]) -> Optional[ACCSim]:
@@ -454,12 +454,11 @@ def on_input(sim: ACCSim, line: str) -> Optional[ACCSim]:
     return ret
 
 
-def get_pqc_mode() -> bool:
-    return os.environ.get("PQC_EN", '0') == '1'
-
-
 def main() -> int:
-    sim = ACCSim(get_pqc_mode())
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pqc', action='store_true', help='Enable pqc mode in ISS model.')
+    args = parser.parse_args()
+    sim = ACCSim(args.pqc)
     try:
         for line in sys.stdin:
             ret = on_input(sim, line)

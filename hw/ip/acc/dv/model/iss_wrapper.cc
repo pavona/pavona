@@ -314,9 +314,15 @@ ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
                 << "\n";
       abort();
     }
-    // Finally, exec the ISS
+
+// Finally, exec the ISS
+#ifdef PQC_EN
+    execl("/usr/bin/env", "/usr/bin/env", "python3", "-u", model_path.c_str(),
+          "--pqc", NULL);
+#else
     execl("/usr/bin/env", "/usr/bin/env", "python3", "-u", model_path.c_str(),
           NULL);
+#endif
   }
 
   // We are the parent process and pid is the PID of the child. Close the pipe

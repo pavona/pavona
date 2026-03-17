@@ -85,6 +85,11 @@
       name: default
       pre_build_cmds: []
     }
+    {
+      name: enable_acc_pqc_model
+      build_opts: ["-CFLAGS -DPQC_EN=true"]
+      pre_build_cmds: []
+    }
   ]
 
   // The value to pass to the --size parameter for gen-binaries.py. This

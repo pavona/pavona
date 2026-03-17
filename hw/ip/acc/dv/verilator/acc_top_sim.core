@@ -10,9 +10,11 @@ filesets:
   files_acc:
     depend:
       - lowrisc:ip:acc
-      - lowrisc:dv:acc_pqc_off_env_pkg
+      - 'pqc ? (lowrisc:dv:acc_pqc_on_env_pkg)'
+      - '!pqc ? (lowrisc:dv:acc_pqc_off_env_pkg)'
       - lowrisc:dv:acc_model
       - lowrisc:ip:acc_tracer
+      - lowrisc:ip:kmac
       - lowrisc:ip:keymgr_pkg
   files_verilator:
     depend:
@@ -66,6 +68,7 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '-CFLAGS "-std=c++17 -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=acc_top_sim"'
+          - 'pqc ? (-CFLAGS "-DPQC_EN=true")'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           # RAM primitives wider than 64bit (required for ECC) fail to build in
           # Verilator without increasing the unroll count (see Verilator#1266)

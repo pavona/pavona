@@ -3,13 +3,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module acc_top_sim (
+module acc_top_sim #(
+  parameter int NumAppIntf = 4
+) (
   input IO_CLK,
   input IO_RST_N
 );
   import acc_pkg::*;
   import acc_pqc_env_pkg::*;
   import edn_pkg::*;
+  import kmac_pkg::*;
   import keymgr_pkg::acc_key_req_t;
 
   // Size of the instruction memory, in bytes
@@ -56,6 +59,26 @@ module acc_top_sim (
   logic                     edn_rnd_data_valid;
   logic                     edn_urnd_data_valid;
 
+  // KMAC interface
+  kmac_pkg::app_req_t                                      acc_kmac_app_req;
+  kmac_pkg::app_rsp_t                                      acc_kmac_app_rsp;
+  kmac_pkg::app_req_t [NumAppIntf-1:0]                     kmac_app_req_ifaces;
+  kmac_pkg::app_rsp_t [NumAppIntf-1:0]                     kmac_app_rsp_ifaces;
+  keymgr_pkg::hw_key_req_t                                 kmac_sideload_key;
+  edn_pkg::edn_req_t                                       kmac_edn_req;
+  edn_pkg::edn_rsp_t                                       kmac_edn_rsp;
+  prim_alert_pkg::alert_rx_t [kmac_reg_pkg::NumAlerts-1:0] kmac_alert_rx;
+  prim_alert_pkg::alert_tx_t [kmac_reg_pkg::NumAlerts-1:0] kmac_alert_tx;
+  logic [kmac_reg_pkg::NumAlerts-1:0] kmac_alerts;
+  tlul_pkg::tl_h2d_t                  kmac_tl_i_d, kmac_tl_i_q;
+  tlul_pkg::tl_d2h_t                  kmac_tl_o;
+  lc_ctrl_pkg::lc_tx_t                kmac_lc_escalate_en;
+  logic                               kmac_err_tl;
+  logic                               acc_kmac_iface_err;
+  logic                               kmac_intr_kmac_done, kmac_intr_fifo_empty, kmac_intr_kmac_err;
+  prim_mubi_pkg::mubi4_t              kmac_idle;
+  logic                               kmac_en_masking;
+
   // Instruction counter (feeds into acc.INSN_CNT in full block)
   logic [31:0]              insn_cnt;
   logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares;
@@ -73,7 +96,7 @@ module acc_top_sim (
     .DmemSizeByte             ( DmemSizeByte ),
     .SecMuteUrnd              ( 1'b0         ),
     .SecSkipUrndReseedAtStart ( 1'b0         ),
-    .AccPQCEn                ( AccPQCEn    )
+    .AccPQCEn                 ( AccPQCEn     )
   ) u_acc_core (
     .clk_i                       ( IO_CLK                     ),
     .rst_ni                      ( IO_RST_N                   ),
@@ -128,9 +151,94 @@ module acc_top_sim (
     .sideload_key_shares_i       ( sideload_key_shares        ),
     .sideload_key_shares_valid_i ( 2'b11                      ),
 
-    .kmac_app_req_o              (                            ),
-    .kmac_app_rsp_i              (                            )
+    .kmac_app_req_o              ( acc_kmac_app_req           ),
+    .kmac_app_rsp_i              ( acc_kmac_app_rsp           )
   );
+
+    kmac #(
+    .EnMasking(1),
+    .SwKeyMasked(1)
+  ) u_kmac (
+    .clk_i              ( IO_CLK  ),
+    .rst_ni             ( IO_RST_N ),
+    .rst_shadowed_ni    ( IO_RST_N ),
+
+    // TLUL interface
+    .tl_i               ( kmac_tl_i_q ),
+    .tl_o               ( kmac_tl_o   ),
+
+    // Alerts
+    .alert_rx_i         ( kmac_alert_rx ),
+    .alert_tx_o         ( kmac_alert_tx ),
+
+    // life cycle escalation input
+    .lc_escalate_en_i   ( kmac_lc_escalate_en ),
+
+    // KeyMgr sideload key interface
+    .keymgr_key_i       ( kmac_sideload_key   ),
+
+    // KeyMgr KDF datapath
+    .app_i              ( kmac_app_req_ifaces ),
+    .app_o              ( kmac_app_rsp_ifaces ),
+
+    // Interrupts
+    .intr_kmac_done_o   ( kmac_intr_kmac_done   ),
+    .intr_fifo_empty_o  ( kmac_intr_fifo_empty  ),
+    .intr_kmac_err_o    ( kmac_intr_kmac_err    ),
+
+    // Idle interface
+    .idle_o             ( kmac_idle ),
+
+    .en_masking_o       ( kmac_en_masking ),
+
+    // EDN interface
+    .clk_edn_i          ( IO_CLK   ),
+    .rst_edn_ni         ( IO_RST_N ),
+    .entropy_o          ( kmac_edn_req  ),
+    .entropy_i          ( kmac_edn_rsp  )
+  );
+
+
+  assign kmac_app_req_ifaces[0] = kmac_pkg::APP_REQ_DEFAULT;
+  assign kmac_app_req_ifaces[1] = kmac_pkg::APP_REQ_DEFAULT;
+  assign kmac_app_req_ifaces[2] = kmac_pkg::APP_REQ_DEFAULT;
+  assign kmac_app_req_ifaces[3] = acc_kmac_app_req;
+
+  assign acc_kmac_iface_err = kmac_err_tl | (kmac_app_rsp_ifaces[0] != kmac_pkg::APP_RSP_DEFAULT)
+                                          | (kmac_app_rsp_ifaces[1] != kmac_pkg::APP_RSP_DEFAULT)
+                                          | (kmac_app_rsp_ifaces[2] != kmac_pkg::APP_RSP_DEFAULT)
+                                          | |(kmac_alerts);
+  assign acc_kmac_app_rsp = kmac_app_rsp_ifaces[3];
+
+  assign kmac_sideload_key.key = {2{{256{1'b0}}}};
+  assign kmac_sideload_key.valid = 1'b1;
+
+  for (genvar i=0; i < kmac_reg_pkg::NumAlerts; i++) begin : g_kmac_alerts
+    assign kmac_alert_rx[i] = prim_alert_pkg::ALERT_RX_DEFAULT;
+    assign kmac_alerts[i] = kmac_alert_tx[i].alert_p | ~kmac_alert_tx[i].alert_n;
+  end
+
+  assign kmac_tl_i_d = tlul_pkg::TL_H2D_DEFAULT;
+
+  tlul_cmd_intg_gen u_tlul_cmd_intg_gen (
+    .tl_i(kmac_tl_i_d),
+    .tl_o(kmac_tl_i_q)
+  );
+
+  tlul_rsp_intg_chk u_tlul_rsp_intg_chk (
+    .tl_i (kmac_tl_o),
+    .err_o(kmac_err_tl)
+  );
+
+  assign kmac_lc_escalate_en = lc_ctrl_pkg::LC_TX_DEFAULT;
+
+  always_ff @ (posedge IO_CLK) begin
+    kmac_edn_rsp <= edn_pkg::EDN_RSP_DEFAULT;
+    if (kmac_edn_req.edn_req == 1'b1) begin
+      kmac_edn_rsp.edn_ack <= kmac_edn_req.edn_req;
+      kmac_edn_rsp.edn_bus <= $urandom();
+    end
+  end
 
   // The values returned by the mock EDN must match those set in `standalonesim.py`.
   localparam logic [1:0][WLEN-1:0] FixedEdnVals = {{4{64'hCCCC_CCCC_BBBB_BBBB}},
@@ -246,7 +354,7 @@ module acc_top_sim (
     end
   end
 
-  localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
+  localparam int DmemSizeWords  = DmemSizeByte / (WLEN / 8);
   localparam int DmemIndexWidth = prim_util_pkg::vbits(DmemSizeWords);
 
   logic [DmemIndexWidth-1:0] dmem_index;
@@ -294,7 +402,7 @@ module acc_top_sim (
   // No integrity errors in Verilator testbench
   assign dmem_rerror = 1'b0;
 
-  localparam int ImemSizeWords = ImemSizeByte / 4;
+  localparam int ImemSizeWords  = ImemSizeByte / 4;
   localparam int ImemIndexWidth = prim_util_pkg::vbits(ImemSizeWords);
 
   logic [ImemIndexWidth-1:0] imem_index;

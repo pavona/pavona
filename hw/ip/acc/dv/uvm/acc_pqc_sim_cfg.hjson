@@ -9,18 +9,17 @@
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/ip/acc/dv/uvm/acc_base_sim_cfg.hjson"]
 
+  // PQC specific smoke test
   smoke_dir: "{acc_dir}/dv/smoke_pqc"
 
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:acc_sim_pqc:0.1
 
+  // Enable this build mode to configure C++ ISS model
+  en_build_modes: ["enable_acc_pqc_model"]
+
   // Used to generate pqc instructions with assembly gen
   pqc_enable: 1
-
-  // Sets accsim to PQC mode
-  exports: [
-    { PQC_EN: 1 },
-  ]
 
   // exclusion files
   vcs_cov_excl_files: ["{proj_root}/hw/ip/acc/dv/uvm/cov/acc_pqc_cov_excl.el"]

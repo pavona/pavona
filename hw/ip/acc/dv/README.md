@@ -84,6 +84,8 @@ When testing ACC, we are careful to distinguish between
 
 Testing lots of different instruction streams doesn't really use the UVM machinery, so we have a "pre-DV" phase of testing that generates constrained-random instruction streams (as ELF binaries) and runs a simple block-level simulation on each to check that the RTL matches the model.
 The idea is that this is much quicker for designers to use to smoke-test proposed changes, and can be run with Verilator, so it doesn't require an EDA tool licence.
+The Verilator environment uses a fusesoc flag to configure the ISS model and ACC dependencies.
+To configure the simulation environment for simulation of the vector ISA extension use `--flag pqc` during the build invocation.
 This pre-DV phase cannot drive sign-off, but it does use much of the same tooling.
 
 Once we are running full DV tests, we re-use this work, by using the same collection of randomized instruction streams and randomly picking from them for most of the sequences.
