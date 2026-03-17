@@ -631,7 +631,7 @@ module kmac
   //   needs to be full again for the empty status to be signaled again next time it's empty.
   //
   // For further details see also:
-  // https://opentitan.org/book/hw/ip/kmac/doc/theory_of_operation.html#fifo-depth-and-empty-status
+  // hw/ip/kmac/doc/theory_of_operation.html#fifo-depth-and-empty-status
   logic status_msgfifo_empty, msgfifo_empty_gate;
   logic msgfifo_empty_negedge, msgfifo_empty_q;
   logic msgfifo_full_seen_d, msgfifo_full_seen_q;

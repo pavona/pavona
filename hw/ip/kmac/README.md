@@ -1,22 +1,10 @@
 # KMAC HWIP Technical Specification
 
-[`kmac/masked`](https://reports.opentitan.org/hw/ip/kmac_masked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/code.svg)
-
-[`kmac/unmasked`](https://reports.opentitan.org/hw/ip/kmac_unmasked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/code.svg)
-
 # Overview
 
 This document specifies the Keccak Message Authentication Code (KMAC) and Secure Hashing Algorithm 3 (SHA3) hardware IP functionality.
-This module conforms to the OpenTitan guideline for peripheral device functionality.
-See that document for integration overview within the broader OpenTitan top level system.
+KMAC follows the [comportability guidelines for peripheral functionality](../../../doc/contributing/hw/comportability/README.md).
+Refer to the guidelines for an integration overview requirements within a broader top level system.
 
 ## Features
 

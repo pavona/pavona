@@ -30,8 +30,8 @@ Other versions of these tools might not be compatible.
 
 1. Generate a Verilog netlist
 
-   A netlist of the kmac_reduced module can be generated using the Yosys synthesis flow from the OpenTitan repository.
-   From the OpenTitan top level, run
+   A netlist of the kmac_reduced module can be generated using the Yosys synthesis flow.
+   From the repository top level, run
    ```sh
    cd hw/ip/kmac/pre_syn
    ```
@@ -55,8 +55,7 @@ Other versions of these tools might not be compatible.
 
 After downloading and building the PROLEAD tool, and synthesizing the kmac_reduced module, the masking together with the PRNG can finally be evaluated.
 
-1. Make sure to source the `build_consts.sh` script from the OpenTitan
-   repository
+1. Make sure to source the `build_consts.sh` script from the repository
    ```sh
    source util/build_consts.sh
    ```
@@ -77,7 +76,7 @@ After downloading and building the PROLEAD tool, and synthesizing the kmac_reduc
 
    Library file:   library.lib
    Library name:   NANG45
-   Design file:    /scratch/vogelpi/ot/opentitan/hw/ip/kmac/pre_syn/syn_out/latest/generated/kmac_reduced_netlist.v
+   Design file:    hw/ip/kmac/pre_syn/syn_out/latest/generated/kmac_reduced_netlist.v
    Module name:    kmac_reduced
    Linker file:    linker.ld
    Settings file:  kmac_reduced_config.set

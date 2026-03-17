@@ -261,10 +261,11 @@ If the `EnMasking` parameter is not set, the second share is always zero.
 
 ACC initiated SHA3/SHAKE algorithms over the AppIntf may require multiple permutations for the resulting digest with a single function call.
 Support for the ACC application interface introduced the `next` and `hold` signals in the AppIntf request channel.
-The `hold` signal is asserted `1'b1` for the duration of an ACC initiated operation. This prevents KMAC from finishing its hashing computation until ACC has received enough digest words.
+The `hold` signal is asserted `1'b1` for the duration of an ACC initiated operation.
+This prevents KMAC from finishing its hashing computation until ACC has received enough digest words.
 While remaining digest words exist, the `next` signal is asserted `1'b1` for a single clock cycle following a response `done` signal from KMAC.
 Given the `hold` and `next` signals are only required by the AppIntf state machine for ACC initiated functions, both signals are held inactive for the three previously existing interfaces.
-The ACC application interface uses the same AppIntf state machine as KeyMgr, LC_CTRL, and ROM_CTRL which a seperate internal state path.
+The ACC application interface uses the same AppIntf state machine as KeyMgr, LC_CTRL, and ROM_CTRL with a separate internal state path.
 
 The ACC expects a 256-bit digest in the response channel from KMAC.
 The digest shares in `app_rsp_t` are both 384-bits wide.

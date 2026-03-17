@@ -42,7 +42,7 @@ ln -s "${LR_SYNTH_OUT_DIR#syn_out/}" syn_out/latest
 #-------------------------------------------------------------------------
 export LR_SYNTH_SRC_DIR="../../$LR_SYNTH_IP_NAME"
 
-# Get OpenTitan dependency sources.
+# Get IP dependency sources.
 OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_adapter_reg.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_err.sv
@@ -98,7 +98,7 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_double_lfsr.sv
 )
 
-# Get OpenTitan dependency packages.
+# Get IP dependency packages.
 OT_DEP_PACKAGES=(
     "$LR_SYNTH_SRC_DIR"/../../top_earlgrey/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../edn/rtl/*_pkg.sv
@@ -110,7 +110,7 @@ OT_DEP_PACKAGES=(
     "$LR_SYNTH_SRC_DIR"/../keymgr/rtl/*_pkg.sv
 )
 
-# Convert OpenTitan dependency sources.
+# Convert IP dependency sources.
 for file in "${OT_DEP_SOURCES[@]}"; do
     module=`basename -s .sv $file`
 

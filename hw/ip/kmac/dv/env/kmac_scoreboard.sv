@@ -882,8 +882,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
 
           if (app_fsm_active) begin
-            // As per designer comment in https://github.com/lowRISC/opentitan/issues/7716,
-            // if CmdStart is sent during an active App operation, KMAC will throw
+            // If CmdStart is sent during an active App operation, KMAC will throw
             // ErrSwIssuedCmdInAppActive, but for any other command the KMAC will throw a
             // ErrSwCmdSequence.
             if (kmac_cmd_e'(kmac_cmd) != CmdNone) begin

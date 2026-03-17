@@ -10,8 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/contributing/hw/development_stages.md)
-* [Simulation results for Masked KMAC](https://reports.opentitan.org/hw/ip/kmac_masked/dv/latest/report.html)
-* [Simulation results for Unmasked KMAC](https://reports.opentitan.org/hw/ip/kmac_unmasked/dv/latest/report.html)
+
 
 ## Design features
 For detailed information on KMAC design features, please see the [KMAC HWIP technical specification](../README.md).
@@ -23,7 +22,8 @@ KMAC testbench has been constructed based on the [CIP testbench architecture](..
 ![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/kmac/dv/tb/tb.sv`. It instantiates the KMAC DUT module `hw/ip/kmac/rtl/kmac.sv`.
+Top level testbench is located at `hw/ip/kmac/dv/tb/tb.sv`.
+It instantiates the KMAC DUT module `hw/ip/kmac/rtl/kmac.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
@@ -43,8 +43,7 @@ Two compile-time configurations are tested:
 A macro define `EN_MASKING` is defined as a build option in `hw/ip/kmac/dv/kmac_base_sim_cfg.hjson`, which is used to set the correct compile-time settings.
 
 ### Global types & methods
-All common types and methods defined at the package level can be found in
-`kmac_env_pkg`. Some of them in use are:
+All common types and methods defined at the package level can be found in `kmac_env_pkg`. Some of them in use are:
 ```systemverilog
 parameter int KMAC_NUM_SHARES = 2;
 
@@ -65,7 +64,8 @@ typedef enum int {
 typedef enum int {
   AppKeymgr,
   AppLc,
-  AppRom
+  AppRom,
+  AppAcc
 } kmac_app_e;
 
 typedef virtual pins_if#(1)      idle_vif;
@@ -100,7 +100,7 @@ The KMAC RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/READM
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
 ### Reference models
-The KMAC testbench utilizes a [C++ reference model](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/dv/dpi/vendor/kerukuro_digestpp/README.md) for various hashing operations (SHA3, SHAKE, CSHAKE, KMAC) to check the DUT's digest output for correctness.
+The KMAC testbench utilizes a [C++ reference model](./dpi/vendor/kerukuro_digestpp/README.md) for various hashing operations (SHA3, SHAKE, CSHAKE, KMAC) to check the DUT's digest output for correctness.
 
 ### Stimulus strategy
 #### Test sequences

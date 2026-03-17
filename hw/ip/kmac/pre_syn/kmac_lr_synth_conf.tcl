@@ -33,6 +33,6 @@ set lr_synth_clk_period 8000.0
 
 # Amount to subtract from clk period to give the clock period passed to ABC in
 # the synth flow. ABC maps the design to the standard cell library and
-# optimises paths for timing, better results are obtained by giving it a faster
-# clock period so it optimises more.
+# optimizes paths for timing, better results are obtained by giving it a faster
+# clock period so it optimizes more.
 set lr_synth_abc_clk_uprate 4000.0

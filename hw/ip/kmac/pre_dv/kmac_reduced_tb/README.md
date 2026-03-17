@@ -7,7 +7,7 @@ The main use of this testbench is to help understanding how to operate and prope
 How to build and run the testbench
 ----------------------------------
 
-From the OpenTitan top level execute
+From the repository top level execute
 
 ```sh
    fusesoc --verbose --cores-root=. run --setup --build lowrisc:dv_verilator:kmac_reduced_tb
@@ -22,6 +22,5 @@ to run it.
 Details of the testbench
 ------------------------
 
-- `rtl/kmac_reduced_tb.sv`: SystemVerilog testbench, instantiates and drives the SHA3 core and the PRNG, checks whether the SHA3 core finishes without errors, signals test end and result
-  (pass/fail) to C++ via output ports.
+- `rtl/kmac_reduced_tb.sv`: SystemVerilog testbench, instantiates and drives the SHA3 core and the PRNG, checks whether the SHA3 core finishes without errors, signals test end and result (pass/fail) to C++ via output ports.
 - `cpp/kmac_reduced_tb.cc`: Contains main function and instantiation of SimCtrl, reads output ports of DUT and signals simulation termination to Verilator.
