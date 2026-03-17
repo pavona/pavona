@@ -479,6 +479,24 @@ run_binary(
     ]
 ]
 
+run_binary(
+    name = "wycheproof_aes_kwp_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:aes_kw_schema.json",
+        "@wycheproof//testvectors_v1:aes_kwp_test.json",
+    ],
+    outs = [":wycheproof_aes_kwp.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:aes_kwp_test.json)",
+        "--dst",
+        "$(location :wycheproof_aes_kwp.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_kw_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_aes_kwp_parser",
+)
+
 [
     run_binary(
         name = "nist_cavp_aes_{}_{}_json".format(

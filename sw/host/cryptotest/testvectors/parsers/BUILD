@@ -216,6 +216,14 @@ py_binary(
 )
 
 py_binary(
+    name = "wycheproof_aes_kwp_parser",
+    srcs = ["wycheproof_aes_kwp_parser.py"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "hjson_rsa_parser",
     srcs = ["hjson_rsa_parser.py"],
     deps = [
