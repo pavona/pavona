@@ -19,6 +19,12 @@ _FIELDS = {
     "manifest": ("file.manifest", False),
     "rom": ("attr.rom", False),
     "rom_ext": ("attr.rom_ext", False),
+    "flash0_info0": ("attr.flash0_info0", False),
+    "flash0_info1": ("attr.flash0_info1", False),
+    "flash0_info2": ("attr.flash0_info2", False),
+    "flash1_info0": ("attr.flash1_info0", False),
+    "flash1_info1": ("attr.flash1_info1", False),
+    "flash1_info2": ("attr.flash1_info2", False),
     "otp": ("file.otp", False),
     "mmi": ("file.mmi", False),
     "base_bitstream": ("file.base_bitstream", False),
@@ -150,6 +156,36 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("rom_ext"),
             allow_files = True,
             doc = "ROM_EXT image to use in this environment",
+        ),
+        "flash0_info0": attr.label(
+            default = kwargs.get("flash0_info0"),
+            allow_files = True,
+            doc = "Flash bank 0 info partition 0 image to use in this environment",
+        ),
+        "flash0_info1": attr.label(
+            default = kwargs.get("flash0_info1"),
+            allow_files = True,
+            doc = "Flash bank 0 info partition 1 image to use in this environment",
+        ),
+        "flash0_info2": attr.label(
+            default = kwargs.get("flash0_info2"),
+            allow_files = True,
+            doc = "Flash bank 0 info partition 2 image to use in this environment",
+        ),
+        "flash1_info0": attr.label(
+            default = kwargs.get("flash1_info0"),
+            allow_files = True,
+            doc = "Flash bank 1 info partition 0 image to use in this environment",
+        ),
+        "flash1_info1": attr.label(
+            default = kwargs.get("flash1_info1"),
+            allow_files = True,
+            doc = "Flash bank 1 info partition 1 image to use in this environment",
+        ),
+        "flash1_info2": attr.label(
+            default = kwargs.get("flash1_info2"),
+            allow_files = True,
+            doc = "Flash bank 1 info partition 2 image to use in this environment",
         ),
         "slot_spec": attr.string_dict(
             default = kwargs.get("slot_spec", {}),
@@ -390,6 +426,19 @@ def common_test_setup(ctx, exec_env, firmware):
 
     rom_ext = get_fallback(ctx, "attr.rom_ext", exec_env)
     update_file_attr(ctx, "rom_ext", rom_ext, exec_env, data_files, param, action_param)
+
+    flash0_info0 = get_fallback(ctx, "attr.flash0_info0", exec_env)
+    update_file_attr(ctx, "flash0_info0", flash0_info0, exec_env, data_files, param, action_param)
+    flash0_info1 = get_fallback(ctx, "attr.flash0_info1", exec_env)
+    update_file_attr(ctx, "flash0_info1", flash0_info1, exec_env, data_files, param, action_param)
+    flash0_info2 = get_fallback(ctx, "attr.flash0_info2", exec_env)
+    update_file_attr(ctx, "flash0_info2", flash0_info2, exec_env, data_files, param, action_param)
+    flash1_info0 = get_fallback(ctx, "attr.flash1_info0", exec_env)
+    update_file_attr(ctx, "flash1_info0", flash1_info0, exec_env, data_files, param, action_param)
+    flash1_info1 = get_fallback(ctx, "attr.flash1_info1", exec_env)
+    update_file_attr(ctx, "flash1_info1", flash1_info1, exec_env, data_files, param, action_param)
+    flash1_info2 = get_fallback(ctx, "attr.flash1_info2", exec_env)
+    update_file_attr(ctx, "flash1_info2", flash1_info2, exec_env, data_files, param, action_param)
 
     # Add the binaries built by the test or added to the test.
     update_file_provider("firmware", firmware, data_files, param, action_param)
