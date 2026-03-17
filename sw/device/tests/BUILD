@@ -57,6 +57,7 @@ filegroup(
     ]) + [
         "//sw/device/tests/closed_source:doc_files",
         "//sw/device/tests/crypto/cryptotest:doc_files",
+        "//sw/device/tests/penetrationtests:doc_files",
     ],
 )
 

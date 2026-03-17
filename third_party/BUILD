@@ -6,5 +6,8 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]),
+    srcs = glob(["**/*.md"]) + [
+        "//third_party/coremark:doc_files",
+        "//third_party/qemu:doc_files",
+    ],
 )

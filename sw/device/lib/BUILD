@@ -8,8 +8,10 @@ filegroup(
     name = "doc_files",
     srcs = glob(["**"]) + [
         "//sw/device/lib/base:doc_files",
+        "//sw/device/lib/crypto:doc_files",
         "//sw/device/lib/crypto/data:doc_files",
         "//sw/device/lib/dif:doc_files",
+        "//sw/device/lib/runtime:doc_files",
         "//sw/device/lib/testing:doc_files",
     ],
 )

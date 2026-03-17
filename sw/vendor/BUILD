@@ -6,6 +6,11 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["veri-titan/gen/*.s"]))
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 cc_library(
     name = "cryptoc_sha256",
     srcs = ["cryptoc/sha256.c"],

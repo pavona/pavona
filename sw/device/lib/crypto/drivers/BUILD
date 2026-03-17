@@ -131,7 +131,7 @@ dual_cc_library(
             ":entropy",
             ":rv_core_ibex",
             "//hw/top:kmac_c_regs",
-             "//hw/top/dt:kmac",
+            "//hw/top/dt:kmac",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened_memory",
@@ -278,8 +278,8 @@ cc_library(
     hdrs = ["acc.h"],
     deps = [
         ":entropy",
-        "//hw/top/dt:acc",
         "//hw/top:acc_c_regs",
+        "//hw/top/dt:acc",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",

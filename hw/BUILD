@@ -24,9 +24,11 @@ filegroup(
         "//hw/bitstream:doc_files",
         "//hw/dv:doc_files",
         "//hw/ip:doc_files",
+        "//hw/ip_templates:doc_files",
         "//hw/top:doc_files",
         "//hw/top_darjeeling:doc_files",
         "//hw/top_earlgrey:doc_files",
+        "//hw/top_englishbreakfast:doc_files",
     ],
 )
 
