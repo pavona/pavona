@@ -7,6 +7,17 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(
+        [
+            "**/*.md",
+            "**/*.svg",
+        ],
+        allow_empty = True,
+    ),
+)
+
 IBEX_FI_TESTVECTOR_TARGETS = [
     "//sw/host/penetrationtests/testvectors/data:fi_ibex",
 ]

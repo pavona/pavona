@@ -7,6 +7,11 @@ load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 cc_library(
     name = "epmp",
     srcs = ["epmp.c"],

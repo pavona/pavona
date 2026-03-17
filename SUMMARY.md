@@ -547,7 +547,6 @@
   - [USB20 Agent](./hw/dv/sv/usb20_agent/README.md)
 
 - [Vendored Hardware](./hw/vendor/README.md)
-  - [Ibex RISC-V CPU Core](./hw/vendor/lowrisc_ibex/doc/index.rst)
   - [RISC-V Debug Support](./hw/vendor/pulp_riscv_dbg/README.md)
 
 - [Reference Tops](./doc/contributing/system_list.md)
@@ -671,7 +670,6 @@
     - [Silicon Validation](./sw/device/tests/doc/sival/README.md)
       - [Developer Guide](./sw/device/tests/doc/sival/devguide.md)
     - [Penetration Tests](./sw/device/tests/penetrationtests/doc/README.md)
-  - [Hello World Example](./sw/device/examples/hello_world/README.md)
 
 - [Host Software](./sw/host/README.md)
   - [OpenTitanLib](./sw/host/opentitanlib/README.md)

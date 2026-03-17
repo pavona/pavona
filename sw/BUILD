@@ -9,5 +9,6 @@ filegroup(
     srcs = glob(["**/*.md"]) + [
         "//sw/device:doc_files",
         "//sw/host:doc_files",
+        "//sw/vendor:doc_files",
     ],
 )

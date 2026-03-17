@@ -24,6 +24,7 @@ filegroup(
         "**/*.md",
         "**/*.svg",
     ]) + [
+        "//hw/ip/acc/data:all_files",
         "//hw/ip/acc/dv/accsim:doc_files",
     ],
 )

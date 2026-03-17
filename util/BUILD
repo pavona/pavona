@@ -19,6 +19,7 @@ filegroup(
         "//util/i2csvg:doc_files",
         "//util/ipgen:doc_files",
         "//util/reggen:doc_files",
+        "//util/testplantool:doc_files",
         "//util/tlgen:doc_files",
         "//util/topgen:doc_files",
         "//util/uvmdvgen:doc_files",

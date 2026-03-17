@@ -6,6 +6,8 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("//hw/top:defs.bzl", "opentitan_select_top_attr")
 
+package(default_visibility = ["//visibility:public"])
+
 filegroup(
     name = "rtl_files",
     srcs = glob(
@@ -15,5 +17,19 @@ filegroup(
         "//hw/top_englishbreakfast/dv/verilator:all_files",
         "//hw/top_englishbreakfast/ip:rtl_files",
     ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(
+        [
+            "**/*.md",
+            "**/*.hjson",
+            "**/*.html",
+        ],
+        allow_empty = True,
+        exclude_directories = 0,
+    ),
     visibility = ["//visibility:public"],
 )
