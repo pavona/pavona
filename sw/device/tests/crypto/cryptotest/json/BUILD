@@ -11,6 +11,7 @@ cc_library(
     deps = [
         ":aes_commands",
         ":aes_gcm_commands",
+        ":aes_kwp_commands",
         ":drbg_commands",
         ":ecdh_commands",
         ":ecdsa_commands",
@@ -33,6 +34,13 @@ cc_library(
     name = "aes_gcm_commands",
     srcs = ["aes_gcm_commands.c"],
     hdrs = ["aes_gcm_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "aes_kwp_commands",
+    srcs = ["aes_kwp_commands.c"],
+    hdrs = ["aes_kwp_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

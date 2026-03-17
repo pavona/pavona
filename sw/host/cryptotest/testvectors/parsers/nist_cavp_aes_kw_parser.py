@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -35,16 +36,27 @@ def parse_testcases(args) -> None:
             "result": True if "P" in test_vec else False,
         }
 
+        # Filter based on AES-KWP API requirements (see aes_kwp.h):
+        #   - aes_kwp_wrap: plaintext must be >= 16 bytes
+        #   - aes_kwp_unwrap: ciphertext must be >= 24 bytes
+        pt_len = len(testcase["plaintext"])
+        ct_len = len(testcase["ciphertext"])
+        if testcase["operation"] == "encrypt":
+            if pt_len < 16:
+                continue
+        else:
+            if ct_len < 24:
+                continue
         testcases.append(testcase)
-
-    json_filename = args.dst
-    with open(json_filename, "w") as file:
-        json.dump(testcases, file, indent=4)
 
     # Validate generated JSON
     with open(args.schema) as schema_file:
         schema = json.load(schema_file)
     jsonschema.validate(testcases, schema)
+
+    json_filename = args.dst
+    with open(json_filename, "w") as file:
+        json.dump(testcases, file, indent=4)
 
 
 def main() -> int:

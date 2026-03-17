@@ -56,6 +56,25 @@ cryptotest(
     test_vectors = AES_GCM_TESTVECTOR_TARGETS,
 )
 
+AES_KWP_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kwp_{}_{}_json".format(operation, key_len)
+    for operation in ("ae", "ad")
+    for key_len in ("128", "192", "256")
+]
+
+AES_KWP_TESTVECTOR_ARGS = " ".join([
+    "--aes-kwp-json=\"$(rootpath {})\"".format(target)
+    for target in AES_KWP_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "aes_kwp_kat",
+    slow_test = True,
+    test_args = AES_KWP_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/aes_kwp_kat:harness",
+    test_vectors = AES_KWP_TESTVECTOR_TARGETS,
+)
+
 ECDSA_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_ecdsa_{}.json".format(config)
     for config in [

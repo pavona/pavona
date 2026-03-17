@@ -15,6 +15,7 @@
 // Include commands
 #include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/aes_gcm_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/aes_kwp_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/drbg_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdh_commands.h"
@@ -28,6 +29,7 @@
 // Include handlers
 #include "aes.h"
 #include "aes_gcm.h"
+#include "aes_kwp.h"
 #include "drbg.h"
 #include "ecdh.h"
 #include "ecdsa.h"
@@ -51,6 +53,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandAesGcm:
         RESP_ERR(uj, handle_aes_gcm(uj));
+        break;
+      case kCryptotestCommandAesKwp:
+        RESP_ERR(uj, handle_aes_kwp(uj));
         break;
       case kCryptotestCommandDrbg:
         RESP_ERR(uj, handle_drbg(uj));

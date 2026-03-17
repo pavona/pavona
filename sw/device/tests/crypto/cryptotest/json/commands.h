@@ -14,6 +14,7 @@ extern "C" {
 #define COMMAND(_, value) \
     value(_, Aes) \
     value(_, AesGcm) \
+    value(_, AesKwp) \
     value(_, Drbg) \
     value(_, Ecdsa) \
     value(_, Ecdh) \

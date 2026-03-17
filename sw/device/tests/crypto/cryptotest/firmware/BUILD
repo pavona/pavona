@@ -29,6 +29,21 @@ cc_library(
 )
 
 cc_library(
+    name = "aes_kwp",
+    srcs = ["aes_kwp.c"],
+    hdrs = ["aes_kwp.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl/aes_kwp",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:aes_kwp_commands",
+    ],
+)
+
+cc_library(
     name = "aes_gcm",
     srcs = ["aes_gcm.c"],
     hdrs = ["aes_gcm.h"],
@@ -203,6 +218,7 @@ cc_library(
 FIRMWARE_DEPS = [
     ":aes",
     ":aes_gcm",
+    ":aes_kwp",
     ":drbg",
     ":ecdh",
     ":ecdsa",
