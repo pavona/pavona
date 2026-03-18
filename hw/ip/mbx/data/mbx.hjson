@@ -8,9 +8,9 @@
   human_name:         "DOE Mailbox"
   one_line_desc:      "DOE mailbox for use as an integrated system communication channel"
   one_paragraph_desc: '''
-  The SoC (i.e., the SoC Host CPU or other SoC Execution Engines) may request security services from OpenTitan.
-  This means that pre-defined control information must be passed to OpenTitan from the security service requester.
-  A secure inbound/outbound mailbox can be used to implement a secure channel for these request/response transactions between the SoC and OpenTitan.
+  The SoC (i.e., the SoC Host CPU or other SoC Execution Engines) may request security services from a root-of-trust.
+  This means that pre-defined control information must be passed to a root-of-trust from the security service requester.
+  A secure inbound/outbound mailbox can be used to implement a secure channel for these request/response transactions between the SoC and the root-of-trust.
   '''
   cip_id:             "37"
   design_spec:        "../doc"
@@ -104,7 +104,7 @@
   registers: {
     core: [
       { name: "CONTROL"
-        desc: "DOE mailbox control register visible to OpenTitan"
+        desc: "DOE mailbox control register visible to the root-of-trust"
         hwext: "true"
         fields: [
           { name: "abort"
@@ -139,7 +139,7 @@
         tags: ["excl:CsrAllTests:CsrExclAll"] // alias of another register; no automated CSR tests applicable
       }
       { name: "STATUS"
-        desc: "DOE mailbox status register visible to OpenTitan"
+        desc: "DOE mailbox status register visible to the root-of-trust"
         hwext: "true"
         fields: [
           { name: "busy"

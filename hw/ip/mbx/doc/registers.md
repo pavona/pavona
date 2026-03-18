@@ -9,8 +9,8 @@
 | mbx.[`INTR_ENABLE`](#intr_enable)                       | 0x4      |        4 | Interrupt Enable Register                                                                                                 |
 | mbx.[`INTR_TEST`](#intr_test)                           | 0x8      |        4 | Interrupt Test Register                                                                                                   |
 | mbx.[`ALERT_TEST`](#alert_test)                         | 0xc      |        4 | Alert Test Register                                                                                                       |
-| mbx.[`CONTROL`](#control)                               | 0x10     |        4 | DOE mailbox control register visible to OpenTitan                                                                         |
-| mbx.[`STATUS`](#status)                                 | 0x14     |        4 | DOE mailbox status register visible to OpenTitan                                                                          |
+| mbx.[`CONTROL`](#control)                               | 0x10     |        4 | DOE mailbox control register visible to the root-of-trust                                                                 |
+| mbx.[`STATUS`](#status)                                 | 0x14     |        4 | DOE mailbox status register visible to the root-of-trust                                                                  |
 | mbx.[`ADDRESS_RANGE_REGWEN`](#address_range_regwen)     | 0x18     |        4 | Used to lock the inbound/outbound base/limit configuration registers.                                                     |
 | mbx.[`ADDRESS_RANGE_VALID`](#address_range_valid)       | 0x1c     |        4 | Used to mark the inbound/outbound base/limit configuration registers to have a valid configuration.                       |
 | mbx.[`INBOUND_BASE_ADDRESS`](#inbound_base_address)     | 0x20     |        4 | Base address of SRAM region, which is used to back up the inbound mailbox data.                                           |
@@ -99,7 +99,7 @@ Alert Test Register
 |   0    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
 
 ## CONTROL
-DOE mailbox control register visible to OpenTitan
+DOE mailbox control register visible to the root-of-trust
 - Offset: `0x10`
 - Reset default: `0x0`
 - Reset mask: `0xb`
@@ -119,7 +119,7 @@ DOE mailbox control register visible to OpenTitan
 |   0    |   rw   |   0x0   | abort         | Alias of the DoE mailbox abort bit                                                                                                                                                                              |
 
 ## STATUS
-DOE mailbox status register visible to OpenTitan
+DOE mailbox status register visible to the root-of-trust
 - Offset: `0x14`
 - Reset default: `0x1`
 - Reset mask: `0xf`

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The mailbox IP block in the OpenTitan Integrated design implements a request-response channel that the host System-on-Chip (SoC) may use to request security services of the Root Of Trust (RoT).
+The mailbox IP block in an integrated design implements a request-response channel that the host System-on-Chip (SoC) may use to request security services of the Root Of Trust (RoT).
 Communication is via message-passing with neither party requiring direct access to the memory address space or bus fabric of the other party.
 
 ## Features

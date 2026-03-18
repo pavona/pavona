@@ -1,12 +1,12 @@
-# OpenTitan-defined DOE objects
+# DOE objects
 
 Please refer to the following pages for additional details on the DMA controller.
-- [OpenTitan DMA Controller specification](../../dma/README.md)
+- [DMA Controller specification](../../dma/README.md)
 
 ## Simple DMA transfer request
 
 Requester specifies Source address, Destination address, source space ID and Destination space ID as required by the DMA transfer operation.
-Integrated OpenTitan Host firmware parses the object, checks the request and configures the OT DMA controller if it deems the transfer to be OK.
+Integrated host firmware parses the object, checks the request and configures the OT DMA controller if it deems the transfer to be OK.
 
 Response Object: [Response DOE object expected](#simple-dma-completion-response-object)
 
@@ -182,7 +182,7 @@ Destination address shall be ignored by the responder.
 Destination address space ID is fixed to 0x03 (FLASH).
 Note that the assumption here is that OT RoT firmware is in control and aware of the Flash map.
 
-Integrated OpenTitan Host firmware parses the object, checks the request and configures the OT DMA controller if it deems the transfer to be OK to write the update binary into an appropriate location of the OT flash, cryptographically verifies the update candidate blob , then initiates and completes the final flash update operation upon successful verification.
+Integrated host firmware parses the object, checks the request and configures the OT DMA controller if it deems the transfer to be OK to write the update binary into an appropriate location of the OT flash, cryptographically verifies the update candidate blob , then initiates and completes the final flash update operation upon successful verification.
 
 Response Object:  [Response DOE object expected](#simple-dma-completion-response-object)
 

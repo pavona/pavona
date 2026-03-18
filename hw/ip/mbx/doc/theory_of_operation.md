@@ -4,7 +4,7 @@
 
 ![Mailbox Block Diagram](block_diagram.svg)
 
-The integrated version of OpenTitan Root-Of-Trust may provide security services to the SoC such as:
+The integrated version of a Root-Of-Trust (RoT) may provide security services to the SoC such as:
 
 - Encryption or decryption of data blobs.
 - Cryptographic hashing of data blobs.
@@ -19,8 +19,8 @@ The integrated version of OpenTitan Root-Of-Trust may provide security services 
 - SoC security monitoring / book-keeping services.
 - Debug authentication / unlock service.
 
-As an example, a DMA controller may be used in conjunction with the newly defined OpenTitan mailbox interface.
-The mailbox interface is used to pass pointers to data blobs external to the OT RoT and request operations via pre-defined command objects.
+As an example, a DMA controller may be used in conjunction with the newly defined mailbox interface.
+The mailbox interface is used to pass pointers to data blobs external to the RoT and request operations via pre-defined command objects.
 
 ## Secure Mailbox Interface
 
@@ -33,31 +33,31 @@ The mailbox interface is used to pass pointers to data blobs external to the OT 
 
 - **Responder**\
 *Entity that processes the DOE request object and generates a DOE response in case one is expected for the original request.*\
-OpenTitan would generally have the responder role; however there may be use cases where OpenTitan is a DOE requester.
+A RoT would generally have the responder role; however there may be use cases where it is a DOE requester.
 
-- **OT Mailbox registers (Inbox/Outbox regs)**\
+- **Mailbox registers (Inbox/Outbox regs)**\
 *PCIe DOE specification defined registers used for reading and writing to the mailbox.*\
 These registers may be mapped into the PCIe Config space for the System Host to access the mailbox via the PCIe defined mechanism.
 Accesses from other SoC firmware based agents may not be mapped into the config address space.
 The access mechanism and relevant address space for such agents is defined by the SoC integrator.
 *(See the PCI Express Base Specification 6.0 section 7.9.24 for further details.)*
 
-- **OT Inbox Memory**\
-*Memory within the OpenTitan RoT secure perimeter that is allocated to the mailbox mechanism to store data objects passed from System/SoC mailbox writer.*\
+- **Inbox Memory**\
+*Memory within the RoT secure perimeter that is allocated to the mailbox mechanism to store data objects passed from System/SoC mailbox writer.*\
 System/SoC mailbox writer can write this memory via mailbox interface registers only.
-OpenTitan Ibex core may have direct read/write access to this memory.
+Ibex core may have direct read/write access to this memory.
 Please refer to the section below for inbox memory implementation options.
 
-- **OT Outbox Memory**\
-*Memory within the OpenTitan RoT secure perimeter that is allocated to the mailbox mechanism to store data objects passed from OT to System/SoC mailbox reader.*\
+- **Outbox Memory**\
+*Memory within the RoT secure perimeter that is allocated to the mailbox mechanism to store data objects passed from the RoT to System/SoC mailbox reader.*\
 System/SoC mailbox reader can read this memory via mailbox interface registers only.
-OpenTitan Ibex core may have direct read/write access to this memory.
+Ibex core may have direct read/write access to this memory.
 Please refer to the section below for outbox memory implementation options.
 
 - **DOE mailbox instance**\
-*A collection of the mailbox registers, inbound mailbox memory and outbound mailbox memory that can be used to exchange objects between OT and an SoC agent.*\
-A separate mailbox instance is required for each uncoordinated SoC agent that communicates with Integrated OpenTitan via the mailbox mechanism.
-OpenTitan may arbitrate between (read or write) objects from each DOE mailbox instance in a simple round robin fashion.
+*A collection of the mailbox registers, inbound mailbox memory and outbound mailbox memory that can be used to exchange objects between the RoT and an SoC agent.*\
+A separate mailbox instance is required for each uncoordinated SoC agent that communicates with an integrated RoT via the mailbox mechanism.
+The RoT may arbitrate between (read or write) objects from each DOE mailbox instance in a simple round robin fashion.
 Note that this is firmware controlled based on pending mailbox interrupts.
 
 - **Inbox / Outbox Handler**\
@@ -127,13 +127,13 @@ Following is a basic mailbox read / write sequence:
 1. System host consults the DOE Busy bit in the [DOE Status Register](#doe-status-register) to check if the DOE instance is free..\
 Busy being Clear indicates that the mailbox instance is not being actively used and is ready to accept new requests.\
 2. System host writes the entire data object one DWORD at a time via the [DOE Write Data Mailbox Register](#doe-write-data-mailbox-register).
-    - The inbox handler places each DWORD into the appropriate location of the OT inbox memory to assemble the object being transferred.
+    - The inbox handler places each DWORD into the appropriate location of the inbox memory to assemble the object being transferred.
 3. System host sets the DOE Go bit in [DOE Control Register](#doe-control-register)
-    - The inbox handler generates an interrupt to notify the responder (e.g. OpenTitan Ibex core) to start parsing the transferred object.
+    - The inbox handler generates an interrupt to notify the responder (e.g. Ibex core) to start parsing the transferred object.
     - The parser consumes the DOE request from the DOE mailbox.
-4. After successful processing, the responder (OT Ibex core) generates a response, in case one is expected.
-    - OT host places the response in the outbox memory.
-    - OT host sets the Data Object Ready bit.
+4. After successful processing, the responder (Ibex core) generates a response, in case one is expected.
+    - Host places the response in the outbox memory.
+    - Host sets the Data Object Ready bit.
     - DOE outbox handler generates a notification interrupt, if supported and enabled.
 5. System host waits for an interrupt if applicable.\
 Upon receiving an interrupt, it checks the [DOE Status Register](#doe-status-register).*ready* bit to see if the object is ready.\
@@ -153,9 +153,9 @@ See [below](#system-level-use-cases) for more details.
 
 **Note**: Please refer to the [PCIe Specification](https://members.pcisig.com/wg/PCI-SIG/document/18363) for more detailed and up to date information on the PCIe compatible DOE Mailbox operation basics.
 
-### Integrated OpenTitan Usage Of DOE Mailbox Mechanism
+### Integrated Root-of-Trust Usage Of DOE Mailbox Mechanism
 
-Integrated OpenTitan shall:
+Integrated RoTs shall:
 
 - Adopt the basic mechanisms as defined in the PCIe specification.
 - Support one or more DOE mailbox instances.
@@ -163,7 +163,7 @@ Integrated OpenTitan shall:
 - Support the following Interrupt mechanisms:
     - A firmware based mechanism to generate an interrupt.\
 Such a mechanism may require a method to ‘write’ to a predefined address in the appropriate address space (System, CTN or other) via the corresponding port of a DMA controller.\
-Example: Write to a location within system address space via the [SYS port of the Integrated OT DMA controller](../../dma/README.md) to generate an MSI-interrupt for PCIe compatible DOE instance(s).
+Example: Write to a location within system address space via the [SYS port of the Integrated DMA controller](../../dma/README.md) to generate an MSI-interrupt for PCIe compatible DOE instance(s).
     - Wired interrupt output(s) for each DOE instance.\
 Such a mechanism may be applied for DOE instances assigned to agents that support wired interrupt mechanism.
     - Depending upon the application & PCIe compatibility requirement for the instance, SoC may decide to use the wired interrupt or firmware based MSI interrupt mechanism at the time of SoC integration.\
@@ -191,19 +191,19 @@ In such a case, the two power management controllers may acquire a software mute
 
 #### Interprocessor Communication
 
-A basic usage of the DOE mailbox mechanism is to achieve Interprocessor communication (IPC) between the OpenTitan-based SoC root of trust and other SoC firmware based controllers.
+A basic usage of the DOE mailbox mechanism is to achieve Interprocessor communication (IPC) between the SoC root of trust and other SoC firmware based controllers.
 An example scenario is as follows:
 
 Such an IPC mechanism may be deployed during a system secure boot up operation.
-Here OT RoT has the responsibility to fetch firmware images from external flash, verify / measure & them and place in appropriate memory locations on the SoC that are protected via access control mechanisms to prevent further modification of firmware images.
+Here RoT has the responsibility to fetch firmware images from external flash, verify / measure & them and place in appropriate memory locations on the SoC that are protected via access control mechanisms to prevent further modification of firmware images.
 Other firmware based controllers may be configured to boot from such a memory location.
 Proper reset sequencing, voltage, clock and other configuration of the SoC region / subsystem under consideration may be needed prior to this operation.
 An SoC power management controller (PMC) may be responsible for these activities.
-OT RoT and the PMC may need to work together to complete the operation to bootstrap the firmware based controller of a subsystem under consideration.
-OT RoT and the PMC may exchange messages via DOE based mailbox mechanism through predefined message data objects to achieve this coordination.
+RoT and the PMC may need to work together to complete the operation to bootstrap the firmware based controller of a subsystem under consideration.
+RoT and the PMC may exchange messages via DOE based mailbox mechanism through predefined message data objects to achieve this coordination.
 More coordination may be required during runtime as well and may continue to use the mailboxes for further communication beyond boot time operation.
 
-In another example, more than one OT RoT instance may exist within an SoC - for example an RoT on each chiplet in an SoC composed of multiple chiplets.
+In another example, more than one RoT instance may exist within an SoC - for example an RoT on each chiplet in an SoC composed of multiple chiplets.
 Such RoTs may have a primary - secondary relationship, and may require communication to perform different operations.
 A dedicated DOE mailbox channel and predefined DOE objects may be assigned for such communication.
 
@@ -217,7 +217,7 @@ A PCIe device, either discrete or integrated within a system, may need to establ
 
 - Allowing a datacenter operator to query the state of the platform via remote mechanisms before deploying any workloads to the platform.\
 Such mechanisms may involve cryptographic measurements of the hardware components including any unique device bindings and firmware running on that platform, and attestation to a local (e.g sideband management controller) or a remote (e.g. datacenter operator) agent.\
-An OpenTitan-based root of trust integrated within a PCIe device may participate in such an authentication protocol, with the responsibility to create such measurements and present them to the system software upon request via a standard PCIe based DOE mailbox communication channel.
+A root of trust integrated within a PCIe device may participate in such an authentication protocol, with the responsibility to create such measurements and present them to the system software upon request via a standard PCIe based DOE mailbox communication channel.
 - Similar authentication scheme may be used for PCIe device hot plug support (adding new cards during system runtime) where the system software may decide to include the hot plugged device within its operation only upon successfully attesting to a local agent or a remote agent.
 
 #### Setup of Trusted Execution Environments
@@ -228,20 +228,20 @@ Trusted Software would use the DOE mailbox communication channel to establish se
 
 #### Generic security services
 
-An integrated OpenTitan RoT may provide generic security services to the SoC or system as a whole, such as secure storage, secure firmware update, PK crypto based certificate signing, encryption/decryption.
-Such operations require exchange of information (commands as well as data) back and forth between the requesters of these security services and OT.
+An integrated RoT may provide generic security services to the SoC or system as a whole, such as secure storage, secure firmware update, PK crypto based certificate signing, encryption/decryption.
+Such operations require exchange of information (commands as well as data) back and forth between the requesters of these security services and the RoT.
 DOE mailbox mechanism with properly defined DOE objects supporting such information exchange is envisioned to be the method to expose these security services to other components.
 
 ## Data Object Definition
 
 ### PCIe defined
 
-Following are the PCIe specification defined object types that shall be supported by the OT DOE implementation:
+Following are the PCIe specification defined object types that shall be supported by the DOE implementation:
 Vendor ID 0x0001, Data Object Types 0x00, 0x01, 0x02, 0x03, 0x04 and 0x05.
 
-### OT defined
+### DOE mapping
 
-An example DOE mapping for integrated OpenTitan can be found [here](DOE.md)
+An example DOE mapping can be found [here](DOE.md)
 
 ## External DOE Registers
 
@@ -280,7 +280,7 @@ For such mailbox instances, these address offsets are utilized to specify / conf
 | Bit Pos | Bit Definition               | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |---------|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0       | DOE Interrupt Support        | One when interrupts are supported. In the PCIe world, this means MSI/MSI-x support.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 11:1    | DOE Interrupt Message number | When value is 0: Responder only support MSI (not MSI-X); and same message data for all interrupts including the DOE interrupt. MSI address/data pairs are configured in the MSI or MSI-X capability of the PCIe function hosting the mailbox. When MSI-X is implemented, this message number indexes into the table of address/data pairs to determine the one to use. **Note:** Non-PCIe DOE mailboxes (e.g. Firmware - Firmware communication mailbox) may use the wired interrupt capability. [Please see above for interrupt support.](#integrated-opentitan-usage-of-doe-mailbox-mechanism) |
+| 11:1    | DOE Interrupt Message number | When value is 0: Responder only support MSI (not MSI-X); and same message data for all interrupts including the DOE interrupt. MSI address/data pairs are configured in the MSI or MSI-X capability of the PCIe function hosting the mailbox. When MSI-X is implemented, this message number indexes into the table of address/data pairs to determine the one to use. **Note:** Non-PCIe DOE mailboxes (e.g. Firmware - Firmware communication mailbox) may use the wired interrupt capability. [Please see above for interrupt support.](#integrated-root-of-trust-usage-of-doe-mailbox-mechanism) |
 | 31:12   | Reserved                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 The following DOE-related registers are present in all mailbox instances:
@@ -299,7 +299,6 @@ The following DOE-related registers are present in all mailbox instances:
 | PCIe  | PCI Express                                             |
 | DOE   | Data Object Exchange                                    |
 | SPDM  | Security Protocol and Data Model                        |
-| OT    | OpenTitan                                               |
 | RoT   | Root Of Trust                                           |
 | CTN   | ConTrol Network                                         |
 | SoC   | System On Chip                                          |
