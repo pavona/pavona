@@ -54,10 +54,10 @@ module kmac_app
   output logic                 key_valid_o,
 
   // to MSG_FIFO
-  output logic                kmac_valid_o,
-  output logic [MsgWidth-1:0] kmac_data_o,
+  output logic                kmac_valid_o [Share],
+  output logic [MsgWidth-1:0] kmac_data_o  [Share],
   output logic [MsgWidth-1:0] kmac_mask_o,
-  input                       kmac_ready_i,
+  input  logic                kmac_ready_i [Share],
 
   // KMAC Core
   output logic kmac_en_o,
@@ -495,7 +495,7 @@ module kmac_app
       StAppOutLen: begin
         mux_sel = SelOutLen;
 
-        if (kmac_valid_o && kmac_ready_i) begin
+        if (kmac_valid_o[0] && kmac_ready_i[0]) begin
           st_d = StAppProcess;
         end else begin
           st_d = StAppOutLen;
@@ -759,45 +759,62 @@ module kmac_app
     app_data_ready = 1'b 0;
     sw_ready_o = 1'b 1;
 
-    kmac_valid_o = 1'b 0;
-    kmac_data_o = '0;
+    for (int i = 0; i < Share; i++) begin : g_data_mux_initial_shares
+      kmac_valid_o[i] = 1'b 0;
+      kmac_data_o[i]  = '0;
+    end
+
     kmac_mask_o = '0;
 
     unique case (mux_sel_buf_kmac)
       SelApp: begin
         // app_id is valid at this time
-        kmac_valid_o = app_i[app_id].valid;
-        kmac_data_o  = app_i[app_id].data_share0;
+        kmac_valid_o[0] = app_i[app_id].valid;
+        kmac_data_o[0]  = app_i[app_id].data_share0;
+        if (EnMasking) begin : g_kmac_share1_assign
+          if (AppCfg[app_id].Mode == AppConfigDynamic) begin
+            kmac_valid_o[1] = app_i[app_id].valid;
+            kmac_data_o[1]  = app_i[app_id].data_share1;
+          end
+          app_data_ready = kmac_ready_i[0] && kmac_ready_i[1];
+        end else begin : g_app_data_ready_unmasked
+          app_data_ready = kmac_ready_i[0];
+        end
         // Expand strb to bits. prim_packer inside MSG_FIFO accepts the bit masks
         for (int i = 0 ; i < $bits(app_i[app_id].strb) ; i++) begin
           kmac_mask_o[8*i+:8] = {8{app_i[app_id].strb[i]}};
         end
-        app_data_ready = kmac_ready_i;
       end
 
       SelOutLen: begin
         // Write encoded output length value
-        kmac_valid_o = 1'b 1; // always write
-        kmac_data_o  = MsgWidth'(encoded_outlen);
+        kmac_valid_o[0] = 1'b 1; // always write
+        kmac_data_o[0]  = MsgWidth'(encoded_outlen);
         kmac_mask_o  = MsgWidth'(encoded_outlen_mask);
       end
 
       SelSw: begin
-        kmac_valid_o = sw_valid_i;
-        kmac_data_o  = sw_data_i ;
+        kmac_valid_o[0] = sw_valid_i;
+        kmac_data_o[0]  = sw_data_i ;
         kmac_mask_o  = sw_mask_i ;
-        sw_ready_o   = kmac_ready_i ;
+        sw_ready_o   = kmac_ready_i[0] ;
       end
 
       SelDynamicAppCfg: begin
         // Ready to consume next word on app iface,
         // since the first word sets only the config
-        app_data_ready = kmac_ready_i;
+        if (EnMasking) begin : g_sel_app_dynamic_masked
+          app_data_ready = kmac_ready_i[0] & kmac_ready_i[1];
+        end else begin : g_sel_app_dynamic_unmasked
+          app_data_ready = kmac_ready_i[0];
+        end
       end
 
       default: begin // Incl. SelNone
-        kmac_valid_o = 1'b 0;
-        kmac_data_o = '0;
+        for (int i = 0; i < Share; i++) begin : g_data_mux_default_shares
+          kmac_valid_o[i] = 1'b 0;
+          kmac_data_o[i]  = '0;
+        end
         kmac_mask_o = '0;
       end
 

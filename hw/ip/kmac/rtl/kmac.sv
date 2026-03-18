@@ -214,20 +214,15 @@ module kmac
   logic sha3_rand_aux;
 
   // FIFO related signals
-  logic msgfifo_empty, msgfifo_full;
-  logic [kmac_pkg::MsgFifoDepthW-1:0] msgfifo_depth;
+  logic msgfifo_empty [Share];
+  logic msgfifo_empty_all;
+  logic msgfifo_full  [Share];
+  logic [kmac_pkg::MsgFifoDepthW-1:0] msgfifo_depth [Share];
 
-  logic                          msgfifo_valid       ;
-  logic [kmac_pkg::MsgWidth-1:0] msgfifo_data [Share];
-  logic [kmac_pkg::MsgStrbW-1:0] msgfifo_strb        ;
-  logic                          msgfifo_ready       ;
-
-  if (EnMasking) begin : gen_msgfifo_data_masked
-    // In Masked mode, the input message data is split into two shares.
-    // Only concern, however, here is the secret key. So message can be
-    // put into only one share and other is 0.
-    assign msgfifo_data[1] = '0;
-  end
+  logic                          msgfifo_valid [Share];
+  logic [kmac_pkg::MsgWidth-1:0] msgfifo_data  [Share];
+  logic [kmac_pkg::MsgStrbW-1:0] msgfifo_strb  [Share];
+  logic                          msgfifo_ready        ;
 
   // TL-UL Adapter(MSG_FIFO) signals
   logic        tlram_req;
@@ -248,10 +243,10 @@ module kmac
   logic                          sw_msg_ready;
 
   // KeyMgr interface to MSG_FIFO
-  logic                          mux2fifo_valid;
-  logic [kmac_pkg::MsgWidth-1:0] mux2fifo_data ;
-  logic [kmac_pkg::MsgWidth-1:0] mux2fifo_mask ;
-  logic                          mux2fifo_ready;
+  logic                          mux2fifo_valid [Share];
+  logic [kmac_pkg::MsgWidth-1:0] mux2fifo_data  [Share];
+  logic [kmac_pkg::MsgWidth-1:0] mux2fifo_mask         ;
+  logic                          mux2fifo_ready [Share];
 
   // KMAC to SHA3 core
   logic                          msg_valid       ;
@@ -475,12 +470,12 @@ module kmac
   assign hw2reg.status.sha3_squeeze.d  = sha3_fsm == sha3_pkg::StSqueeze;
 
   // FIFO related status
-  assign hw2reg.status.fifo_depth.d[MsgFifoDepthW-1:0] = msgfifo_depth;
+  assign hw2reg.status.fifo_depth.d[MsgFifoDepthW-1:0] = msgfifo_depth[0];
   if ($bits(hw2reg.status.fifo_depth.d) != MsgFifoDepthW) begin : gen_fifo_depth_tie
     assign hw2reg.status.fifo_depth.d[$bits(hw2reg.status.fifo_depth.d)-1:MsgFifoDepthW] = '0;
   end
-  assign hw2reg.status.fifo_empty.d  = msgfifo_empty;
-  assign hw2reg.status.fifo_full.d   = msgfifo_full;
+  assign hw2reg.status.fifo_empty.d  = msgfifo_empty[0];
+  assign hw2reg.status.fifo_full.d   = msgfifo_full[0];
 
   // Configuration Register
   logic engine_stable;
@@ -569,10 +564,17 @@ module kmac
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       idle_o <= prim_mubi_pkg::MuBi4True;
-    end else if ((sha3_fsm == sha3_pkg::StIdle) && (msgfifo_empty || SecIdleAcceptSwMsg)) begin
+    end else if ((sha3_fsm == sha3_pkg::StIdle) && (msgfifo_empty_all || SecIdleAcceptSwMsg)) begin
       idle_o <= prim_mubi_pkg::MuBi4True;
     end else begin
       idle_o <= prim_mubi_pkg::MuBi4False;
+    end
+  end
+
+  always_comb begin
+    msgfifo_empty_all = 1'b1;
+    foreach (msgfifo_empty[i]) begin : g_msgfifo_empty_loop
+      msgfifo_empty_all &= msgfifo_empty[i];
     end
   end
 
@@ -635,14 +637,14 @@ module kmac
   logic status_msgfifo_empty, msgfifo_empty_gate;
   logic msgfifo_empty_negedge, msgfifo_empty_q;
   logic msgfifo_full_seen_d, msgfifo_full_seen_q;
-  assign msgfifo_empty_negedge = msgfifo_empty_q & ~msgfifo_empty;
+  assign msgfifo_empty_negedge = msgfifo_empty_q & ~msgfifo_empty[0];
 
   // Track whether the message FIFO was full after being empty. We clear the tracking:
   // - When receiving the Process command. This is to start over for the next message.
   // - When seeing a negative edge on the empty signal. This signals that software has reacted to
   //   the interrupt and is filling up the FIFO again.
   assign msgfifo_full_seen_d =
-      msgfifo_full          ? 1'b 1 :
+      msgfifo_full[0]          ? 1'b 1 :
       msgfifo_empty_negedge ? 1'b 0 :
       msgfifo2kmac_process  ? 1'b 0 : msgfifo_full_seen_q;
 
@@ -654,14 +656,14 @@ module kmac
       sha3_fsm != sha3_pkg::StAbsorb ? 1'b 1 :
       msgfifo2kmac_process           ? 1'b 1 : ~msgfifo_full_seen_q;
 
-  assign status_msgfifo_empty = msgfifo_empty_gate ? 1'b 0 : msgfifo_empty;
+  assign status_msgfifo_empty = msgfifo_empty_gate ? 1'b 0 : msgfifo_empty[0];
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       msgfifo_empty_q     <= 1'b 0;
       msgfifo_full_seen_q <= 1'b 0;
     end else begin
-      msgfifo_empty_q     <= msgfifo_empty;
+      msgfifo_empty_q     <= msgfifo_empty[0];
       msgfifo_full_seen_q <= msgfifo_full_seen_d;
     end
   end
@@ -871,9 +873,9 @@ module kmac
     .rst_ni,
 
     // from Msg FIFO
-    .fifo_valid_i (msgfifo_valid),
+    .fifo_valid_i (msgfifo_valid[0]),
     .fifo_data_i  (msgfifo_data ),
-    .fifo_strb_i  (msgfifo_strb ),
+    .fifo_strb_i  (msgfifo_strb[0]),
     .fifo_ready_o (msgfifo_ready),
 
     // to SHA3 core
@@ -1089,8 +1091,8 @@ module kmac
 
     // to MSG_FIFO
     .kmac_valid_o (mux2fifo_valid),
-    .kmac_data_o  (mux2fifo_data),
-    .kmac_mask_o  (mux2fifo_mask),
+    .kmac_data_o  (mux2fifo_data ),
+    .kmac_mask_o  (mux2fifo_mask ),
     .kmac_ready_i (mux2fifo_ready),
 
     // to KMAC Core
@@ -1149,17 +1151,17 @@ module kmac
     .rst_ni,
 
     .fifo_valid_i (mux2fifo_valid),
-    .fifo_data_i  (mux2fifo_data),
+    .fifo_data_i  (mux2fifo_data ),
     .fifo_mask_i  (mux2fifo_mask),
     .fifo_ready_o (mux2fifo_ready),
 
     .msg_valid_o (msgfifo_valid),
-    .msg_data_o  (msgfifo_data[0]),
-    .msg_strb_o  (msgfifo_strb),
+    .msg_data_o  (msgfifo_data ),
+    .msg_strb_o  (msgfifo_strb ),
     .msg_ready_i (msgfifo_ready),
 
     .fifo_empty_o (msgfifo_empty), // intr and status
-    .fifo_full_o  (msgfifo_full),  // connected to status only
+    .fifo_full_o  (msgfifo_full ), // connected to status only
     .fifo_depth_o (msgfifo_depth),
 
     .clear_i (sha3_done),
@@ -1584,19 +1586,38 @@ module kmac
     // MsgFifo.Packer
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       PackerCountCheck_A,
-      u_msgfifo.u_packer.g_pos_dupcnt.u_pos,
+      u_msgfifo.u_packer_share0.g_pos_dupcnt.u_pos,
+      alert_tx_o[1]
+    )
+
+    // MsgFifo.Packer
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+      Packer1CountCheck_A,
+      u_msgfifo.g_masked_msgfifo_share1.u_packer_share1.g_pos_dupcnt.u_pos,
       alert_tx_o[1]
     )
 
     // MsgFifo.Fifo
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       MsgFifoWptrCheck_A,
-      u_msgfifo.u_msgfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      u_msgfifo.u_msgfifo_share0.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
       alert_tx_o[1]
     )
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       MsgFifoRptrCheck_A,
-      u_msgfifo.u_msgfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      u_msgfifo.u_msgfifo_share0.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      alert_tx_o[1]
+    )
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+      MsgFifo1WptrCheck_A,
+      u_msgfifo.g_masked_msgfifo_share1.u_msgfifo_share1.gen_normal_fifo
+        .u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      alert_tx_o[1]
+    )
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+      MsgFifo1RptrCheck_A,
+      u_msgfifo.g_masked_msgfifo_share1.u_msgfifo_share1.gen_normal_fifo
+        .u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[1]
     )
   end
