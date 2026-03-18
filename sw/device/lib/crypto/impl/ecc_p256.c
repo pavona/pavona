@@ -322,6 +322,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
   return otcrypto_ecdsa_p256_sign_async_finalize(session_token, signature);
 }
 
+otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse(
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  return OTCRYPTO_NOT_IMPLEMENTED;
+}
+
 otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
@@ -597,6 +603,17 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
 
   // Clear the ACC sideload slot (in case the key was sideloaded).
   return keymgr_sideload_clear_acc();
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse_async_start(
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_session_token_t *session_token) {
+  return OTCRYPTO_NOT_IMPLEMENTED;
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse_async_finalize(
+    otcrypto_session_token_t session_token, otcrypto_word32_buf_t signature) {
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(

@@ -166,6 +166,25 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
     otcrypto_word32_buf_t signature);
 
 /**
+ * Signs with the current ECDSA attestation private key.
+ *
+ * Curve is fixed to P-256. The message digest must be exactly 256 bits and
+ * must use SHA-256 as the hash mode.
+ *
+ * In order to build a new link in the attestation chain, the caller must
+ * ensure that the hash is the digest of a certificate that includes
+ * hardware-backed public keys *from the same device as the attestation key*.
+ *
+ * @param message_digest Message digest to be signed (pre-hashed).
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of the ECDSA signature generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse(
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature);
+
+/**
  * Generates an ECDSA signature with curve P-256 and verifies the signature
  * before releasing it to mitigate fault injection attacks.
  *
@@ -309,6 +328,36 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
+    otcrypto_session_token_t session_token, otcrypto_word32_buf_t signature);
+
+/**
+ * Starts the asynchronous attestation signature generation.
+ *
+ * Curve is fixed to P-256. The message digest must be exactly 256 bits and
+ * must use SHA-256 as the hash mode.
+ *
+ * In order to build a new link in the attestation chain, the caller must
+ * ensure that the hash is the digest of a certificate that includes
+ * hardware-backed public keys *from the same device as the attestation key*.
+ *
+ * @param message_digest Message digest to be signed (pre-hashed).
+ * @param[out] session_token Session token for this operation.
+ * @return Result of the ECDSA signature generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse_async_start(
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_session_token_t *session_token);
+
+/**
+ * Finalizes the asynchronous attestation signature generation.
+ *
+ * @param session_token Session token for this operation.
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of the ECDSA signature generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse_async_finalize(
     otcrypto_session_token_t session_token, otcrypto_word32_buf_t signature);
 
 /**
