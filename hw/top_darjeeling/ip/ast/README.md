@@ -1,13 +1,13 @@
 # Analog Sensor Top Technical Specification
 # Overview
 
-AST, also known as the analog sensor top, is the OpenTitan analog and
+AST, also known as the analog sensor top, is the Darjeeling top analog and
 security companion. Within AST are various analog functions (such as
 clocks, regulators, random number generators) needed to make the device
 function, as well as physical security sensors necessary to protect the
 device from physical attacks or manipulation.
 
-At a high level, AST communicates with a number of OpenTitan comportable
+At a high level, AST communicates with a number of comportable
 modules. See diagram below.
 
 ![Analog Sensor Top Diagram](./doc/top_diagram.png)
@@ -22,7 +22,7 @@ shown in the diagram, but will be explained as well.
 
 ### Signal naming conventions used in this document
 
-It complies with OpenTitan
+It complies with OpenTitan-conventional
 [<u>names</u>](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md#naming)
 and
 [<u>suffixes</u>](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md#suffixes)
@@ -172,7 +172,7 @@ macro.</td>
 <td>O</td>
 <td>ast_pwst</td>
 <td>async</td>
-<td>Main core power-exist indication. Used by the OpenTitan power
+<td>Main core power-exist indication. Used by the power
 manager to determine the state of the main digital supply during power
 up and power down sequencing.</td>
 </tr>
@@ -182,7 +182,7 @@ up and power down sequencing.</td>
 <td>O</td>
 <td>ast_pwst</td>
 <td>async</td>
-<td>Always-on power-exist indication. Used by the OpenTitan power
+<td>Always-on power-exist indication. Used by the power
 manager for power-on reset root.</td>
 </tr>
 <tr class="odd">
@@ -261,9 +261,8 @@ system clock.</td>
 <td>O</td>
 <td>1</td>
 <td>async</td>
-<td>System clock valid. Used as "ack" signals for the <a
-href="https://opentitan.org/book/hw/ip/pwrmgr"><u>power
-manager</u></a></td>
+<td>System clock valid. Used as "ack" signals for the power
+manager</td>
 </tr>
 <tr class="even">
 <td>clk_src_sys_en_i</td>
@@ -306,9 +305,8 @@ that require a fixed frequency, for example SPI and UART</td>
 <td>O</td>
 <td>1</td>
 <td>async</td>
-<td>I/O and timer clock valid. Used as "ack" signals for the <a
-href="https://opentitan.org/book/hw/ip/pwrmgr"><u>Power
-manager</u></a>.</td>
+<td>I/O and timer clock valid. Used as "ack" signals for the power
+manager.</td>
 </tr>
 <tr class="odd">
 <td>clk_src_io_en_i</td>
@@ -653,7 +651,7 @@ Otherwise, these signals are grounded to 0.</td>
 <td>I</td>
 <td>8</td>
 <td>async</td>
-<td>OpenTitan modules observe bus for debug (optional)</td>
+<td>Modules observe bus for debug (optional)</td>
 </tr>
 <tr class="odd">
 <td>obs_ctrl_o</td>
@@ -725,13 +723,13 @@ logic is powered by VCAON.
 
 ## Core Power Control and Indication
 
-VCMAIN is the only supply that can be directly influenced by OpenTitan.
+VCMAIN is the only supply that can be directly influenced by Darjeeling.
 The power manager can request VCMAIN to shutdown through main_pd_ni. The
 state of VCMAIN is reflected by the vcmain_pok_o signal.
 
 ## IO Power Indication
 
-IO power state is reflected to OpenTitan by vioa_pok_o and viob_pok_o
+IO power state is reflected to Darjeeling by vioa_pok_o and viob_pok_o
 signals
 
 ## Main (VCC) Power Detection and Flash Protection
@@ -772,14 +770,14 @@ Once configured, their frequency is maintained within +/-3% of their
 target as long as the chip remains in its intended operating conditions
 until the next boot.
 
-The OpenTitan power and clock managers are responsible for manipulating
+The power and clock managers are responsible for manipulating
 the enables and observing the valids to know when clocks can be safely
 released to the system.
 
 # Clock and Reset Inputs
 
 The root clocks and resets are generated inside AST. However, the clocks
-go through gating and optional division in the OpenTitan top level and
+go through gating and optional division in the top level and
 propagate back into AST as feedback clocks, each with associated
 synchronized reset de-assertion to ensure it can synchronize with the
 various comportable modules. The input resets are used for the different
@@ -797,7 +795,7 @@ instead of using the root clocks directly
 - The leaf clocks and root clocks have very different clock tree depths
  and may be difficult for timing closure if they interacted directly.
 
-- Decouple AST internal design from OpenTitan top-level interfaces clock
+- Decouple AST internal design from top-level interfaces clock
  and reset selection.
 
 # Register Access Interface
@@ -849,7 +847,7 @@ injection.
 AST contains an entropy source vendor IP block that generates random number
 bitstreams, and performs health testing and conditioning of these random
 numbers. The conditioned and FIPS compliant entropy bits are packed into
-384-bit seeds and then fed into the [<u>OpenTitan CSRNG
+384-bit seeds and then fed into the [<u>CSRNG
 module</u>](../../../ip/csrng/README.md).
 
 
@@ -889,7 +887,7 @@ ensure they cannot be hard-wired or faulted to either '1' or
 
 <!---
 Inside the sensor controller, the events are then converted into alerts
-as part of the wider [<u>OpenTitan alert handling
+as part of the wider [<u>alert handling
 system</u>](../../ip_autogen/alert_handler/README.md).
 --->
 

@@ -1,12 +1,12 @@
 # Analog Sensor Top Technical Specification
 
-Analog Sensor Top, also known as the AST, is the OpenTitan analog and
+Analog Sensor Top, also known as the AST, is the Earlgrey top analog and
 security companion. Within the AST are various analog functions (such as
 clocks, regulators, random number generators) needed to make the device
 function, as well as physical security sensors necessary to protect the
 device from physical attacks or manipulation.
 
-At a high level, AST communicates with a number of OpenTitan comportable
+At a high level, AST communicates with a number of comportable
 modules. See the diagram below for an overview.
 
 ![Analog Sensor Top Diagram](./doc/top_diagram.png)
@@ -51,13 +51,13 @@ logic is powered by VCAON.
 
 ## Core Power Control and Indication
 
-VCMAIN is the only supply that can be directly influenced by OpenTitan.
+VCMAIN is the only supply that can be directly influenced by Earlgrey.
 The power manager can request VCMAIN to shutdown through main_pd_ni. The
 state of VCMAIN is reflected by the vcmain_pok_o signal.
 
 ## IO Power Indication
 
-IO power state is reflected to OpenTitan by vioa_pok_o and viob_pok_o
+IO power state is reflected to Earlgrey by vioa_pok_o and viob_pok_o
 signals
 
 ## Main (VCC) Power Detection and Flash Protection
@@ -101,7 +101,7 @@ Once configured, their frequency is maintained within +/-3% of their
 target as long as the chip remains in its intended operating conditions
 until the next boot.
 
-The OpenTitan power and clock managers are responsible for manipulating
+The power and clock managers are responsible for manipulating
 the enables and observing the valids to know when clocks can be safely
 released to the system.
 
@@ -115,7 +115,7 @@ clock</u>](../../../ip/usbdev/README.md#clocking).
 # Clock and Reset Inputs
 
 The root clocks and resets are generated inside AST. However, the clocks
-go through gating and optional division in the OpenTitan top level and
+go through gating and optional division in the top level and
 propagate back into AST as feedback clocks, each with associated
 synchronized reset de-assertion to ensure it can synchronize with the
 various comportable modules. The input resets are used for the different
@@ -133,7 +133,7 @@ instead of using the root clocks directly
 - The leaf clocks and root clocks have very different clock tree depths
  and may be difficult for timing closure if they interacted directly.
 
-- Decouple AST internal design from OpenTitan top-level interfaces clock
+- Decouple AST internal design from top-level interfaces clock
  and reset selection.
 
 # Register Access Interface
@@ -183,7 +183,7 @@ injection.
 # ADC
 
 AST contains an analog to digital converter that can be used to sample
-various input signals. For OpenTitan this will primarily be used for
+various input signals. For Earlgrey this will primarily be used for
 [<u>debug cable detection</u>](https://www.sparkfun.com/products/14746).
 To activate the ADC, the corresponding [<u>comportable
 module</u>](../../../ip/adc_ctrl/README.md) must first
@@ -240,7 +240,7 @@ following diagram.
 ```
 
 The expected rng_b_o valid output rate is about 50KHz. For more
-information on the RNG interface, please see the [<u>OpenTitan entropy
+information on the RNG interface, please see the [<u>entropy
 source module</u>](../../../ip/entropy_src/README.md).
 
 # Entropy Consumption
@@ -278,7 +278,7 @@ ensure they cannot be hard-wired or faulted to either '1' or
 '0'.
 
 Inside the sensor controller, the events are then converted into alerts
-as part of the wider [<u>OpenTitan alert handling
+as part of the wider [<u>alert handling
 system</u>](../../ip_autogen/alert_handler/README.md).
 
 ## Alert Signaling
