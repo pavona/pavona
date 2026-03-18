@@ -23,7 +23,7 @@ Category 3 debugging is controlled through vendor provisioned debug authorizatio
 Category 2 debugging is controlled through an owner-provided debug authorization.
 The debug authorization for Category 3 will be based on part-unique secrets provisioned by the vendor. The debug authorization for Category 2 may be based on a global secret or a per-part secret.
 
-At early boot (please see Integrated OpenTitan: Design for Test and Debug Support) RoT opens up the debug authorization window and if a debug is authorized (Category 2 and/or Category 3 and/or Category 4), the RoT drives the debug policy bus to all TAPs/DebugModules.
+At early boot, the RoT opens up the debug authorization window and if a debug is authorized (Category 2 and/or Category 3 and/or Category 4), the RoT drives the debug policy bus to all TAPs/DebugModules.
 The TAPs/DebugModules reject any requests classified as Category 3 unless a Category 3 or Category 4 debug is authorized.
 The TAP/debugModules reject any requests classified as Category 2 unless Category 2 or Category 3 or Category 4 debugging is authorized.
 
@@ -38,8 +38,6 @@ Units that need to distinguish between a pre-production and post-production part
 
 ## Debug Authorization Window
 
-The debug authorization protocol and interfaces are defined in Integrated OpenTitan: Design for Test and Debug Support.
-
 Before the owner and creator root keys are finalized, the ROM obtains an indication from the debugger if there is an intent to debug.
 If there is an intent to debug then the intent to debug is fed into the creator and/or owner root key derivation.
 The authorization itself is deferred to be done by the ROM extension or  a bootstrapped firmware.
@@ -51,7 +49,6 @@ Some owners may require the owner password to be also asserted to allow Category
 When the owner has activated this capability - owner authorized debug - the RoT will require the debugger to first authorize for Category 2 before authorizing for Category 3.
 
 During this flow, the ROT firmware drives all status bits related to the debug control.
-Integrated OpenTitan: Design for Test and Debug Support defines various status bits such as debug_auth_window/open etc.
 These status bits are mirrored to the debugger accessible JTAG interface, allowing debuggers to read the debug authorization status of the system.
 
 ## Relock
