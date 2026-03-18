@@ -10,26 +10,26 @@
 
 ## Scope
 
-This document covers the boot mechanism for Integrated OpenTitan.
-This includes the execution of the OpenTitan ROM, associated patch support in efuses / OTP for survivability and the code fetch from external flash.
+This document covers the boot mechanism for integrated tops.
+This includes the execution of the ROM, associated patch support in efuses / OTP for survivability and the code fetch from external flash.
 
 ## Overview
 
-The integrated Open Titan is a root of trust for measurement, integrated within the SoC.
+The integrated Darjeeling top is a root of trust for measurement, integrated within the SoC.
 It provides the framework necessary to bootstrap the SoC computing elements in a secure and trusted fashion.
-This document covers the changes necessary for the OpenTitan to boot first while also allowing an SoC with integrated OpenTitan to add small customizations to the boot path configuration that fit with the SoC topology.
+This document covers the changes necessary for it to boot first while also allowing the SoC to add small customizations to the boot path configuration that fit with the SoC topology.
 A few examples are voltage ramp up sequence, clock settings etc.
 Such customizations are expected to
 
 - Be non-proprietary such that they can be made available in the open source environment for audit.
-- Only require minimal flow to enable a path to external flash that is under OpenTitan control.
+- Only require minimal flow to enable a path to external flash that is under Darjeeling's control.
 
-Flows involving reset and bring up for the rest of the SoC, which may be potentially more complex and involve proprietary code, are expected to be handled by other computing element(s) that are bootstrapped by the integrated OpenTitan and running authenticated / measured code.
+Flows involving reset and bring up for the rest of the SoC, which may be potentially more complex and involve proprietary code, are expected to be handled by other computing element(s) that are bootstrapped by the integrated Darjeeling and running authenticated / measured code.
 
-This proposal introduces a second OpenTitan boot ROM partition with efuse/OTP based patching mechanism that enables each SoC to add such small customizations and provide critical survivability hooks while also removing the dependency on the integrated flash component.
+This proposal introduces a second Darjeeling boot ROM partition with efuse/OTP based patching mechanism that enables each SoC to add such small customizations and provide critical survivability hooks while also removing the dependency on the integrated flash component.
 Integrated flash technology may not be available for SoCs built using advanced process nodes.
 
-Two models for OpenTitan based ROM patch deployment are envisioned:
+Two models for ROM patch deployment are envisioned:
 
 - **Factory patching** - here the ROM patches are programmed into the eFuses in the factory.
   This may be to accommodate post-silicon bug fixes without needing a new step of the silicon.
@@ -43,26 +43,26 @@ The patch in eFuses will be signed using an appropriate PK signing algorithm
 ### Programming method:
 
 - If prior to the PROD lifecycle stage: Using the manufacturing efuse programming interface.
-- In PROD lifecycle stage: Secure, verified patch update programming managed by secure application running on OpenTitan Ibex core (e.g., update patch revision in factory after provisioning, backup in-field patching mechanism).
+- In PROD lifecycle stage: Secure, verified patch update programming managed by secure application running on an Ibex core (e.g., update patch revision in factory after provisioning, backup in-field patching mechanism).
 
 The factory provisioning model is expected to be the mainstream deployment model that covers bugs found throughout the product development lifecycle until product deployment phase.
 The in-field patching capability is primarily a backup mechanism used only in very rare cases to patch a critical ROM bug escape in the field, especially some hard to catch security or functional bugs.
 **It is advised to avoid reliance on the in-field ROM patch as much as possible.**
 
-This document also contains a detailed specification for the OpenTitan ROM patching architecture, the programming interfaces, and example sequences for patching ROM firmware.
+This document also contains a detailed specification for the ROM patching architecture, the programming interfaces, and example sequences for patching ROM firmware.
 
 ## ROM Boot & Patching Building Blocks
 
-![Integrated OpenTitan and Boot Building Blocks](building-blocks.svg)
+![Integrated Darjeeling and Boot Building Blocks](building-blocks.svg)
 
-Following changes are envisioned to allow OpenTitan based boot customizations for an SoC to configure the access path to the external flash:
+Following changes are envisioned to allow boot customizations for an SoC to configure the access path to the external flash:
 
-### OpenTitan base ROM (first ROM partition)
+### Base ROM (first ROM partition)
 
-- Base ROM design is common across all integrated OpenTitan instances.
+- Base ROM design is common across all integrated Darjeeling instances.
 
 - Supports security hardened functions such as signature verification, verification & loading of second ROM partition patch, other hardened crypto functions required at boot etc.
-  Integrated OpenTitan reuses the majority of current base ROM implementation.
+  Integrated Darjeeling reuses the majority of current base ROM implementation.
 
 - Base ROM is not patchable.
   Guaranteed to be fully verified and to be free of bugs.
@@ -106,7 +106,7 @@ Following changes are envisioned to allow OpenTitan based boot customizations fo
 
 **Note:** This ROM implements potentially new logic for each SoC and thus chances of having bug escapes is higher.
 An SoC built using an advanced node may not support an integrated flash.
-Discrete OpenTitan with integrated flash could support the SoC customizations within the ROM extension code in integrated flash, which can be refreshed multiple times by design.
+Discrete tops with integrated flash could support the SoC customizations within the ROM extension code in integrated flash, which can be refreshed multiple times by design.
 The second ROM partition with patching capability is added to the architecture definition to fill this gap.
 
 ### Efuse / OTP patch
@@ -342,19 +342,19 @@ This is further illustrated below:
 
 ![Redirection example](redirection-example-2.svg)
 
-# OpenTitan ROM Boot Flow
+# ROM Boot Flow
 
 ![ROM boot flow](rom-boot-flow.svg)
 
-The flowchart above illustrates the high level steps involved in the OpenTitan boot process and later extension to the SoC boot process.
+The flowchart above illustrates the high level steps involved in the boot process and later extension to the SoC boot process.
 These steps do not provide the low level details involved in each step.
 These are covered in the respective components specifications.
 Some details regarding the boot ROM and patching are covered in this document.
 The steps involved are as follows:
 
 - Reset is deasserted to the SoC.
-  OpenTitan is the first entity within the SoC to come out of reset and coordinates the release of reset & boot of other hardware blocks and programmable engines in the right order to expand the boot chain of trust.
-- This document assumes that the voltages and clocks are stable and available prior to the OpenTitan host boot.
+  Darjeeling is the first entity within the SoC to come out of reset and coordinates the release of reset & boot of other hardware blocks and programmable engines in the right order to expand the boot chain of trust.
+- This document assumes that the voltages and clocks are stable and available prior to the host boot.
   Associated requirements / mechanisms to protect against fault attacks are covered separately.
   This document assumes that a stable fault protected environment is available to boot.
 - efuse/OTP technology specific initialization, if any is completed by AST hardware state machines.
@@ -367,9 +367,9 @@ The steps involved are as follows:
 
   - Patch match registers are initialized to reset state.
 
-- OpenTitan base ROM performs the check to see if there is an intent to debug the SoC.
+- Base ROM performs the check to see if there is an intent to debug the SoC.
 
-  - More details on this subflow are outlined in the *integrated OpenTitan DFX specification* (TODO: Not currently linked).
+  - More details on this subflow are outlined in the *integrated DFX specification* (TODO: Not currently linked).
 
   - If debug intent strap is not set, goto "OTP Patch Load" (the next top-level bullet point in this document).
 
@@ -422,44 +422,44 @@ The steps involved are as follows:
     In some SoCs, this may involve reset release of downstream programmable engines that execute ROM code to configure the boot path to the flash.
     *A few points to note in this regard*:
 
-    - Integrated OpenTitan is the root of trust for measurement.
+    - Integrated Darjeeling is the root of trust for measurement.
       It is responsible for the measurement of the full environment that the SoC boots with (including the debug state of the SoC).
 
       - It includes such a measurement as part of the attestation record.
 
       - It also manages the SoC key management functions appropriately based on the boot environment.
 
-    - If additional ROM(s) are involved, this document assumes[^multi-roms] that it (/they) are measured by OpenTitan second ROM partition to execution.
+    - If additional ROM(s) are involved, this document assumes[^multi-roms] that it (/they) are measured by the second ROM partition to execution.
 
-    - The external flash, if requiring additional boot path configuration by measured SoC agents, is under exclusive control of the OpenTitan once initial boot path configuration is complete.
-      If other SoC agents require access to the external flash, it is provided by OpenTitan via the *DOE mailbox mechanism* (TODO: Not currently linked) and associated DOE objects.[^ext-flash]
+    - The external flash, if requiring additional boot path configuration by measured SoC agents, is under exclusive control of Darjeeling once initial boot path configuration is complete.
+      If other SoC agents require access to the external flash, it is provided via the *DOE mailbox mechanism* (TODO: Not currently linked) and associated DOE objects.[^ext-flash]
 
-[^multi-roms]: This document does not *mandate* that all additional ROMs / FW images are measured by OpenTitan.
+[^multi-roms]: This document does not *mandate* that all additional ROMs / FW images are measured by Darjeeling.
   Whether or not that is the case is outside the scope of this document.
 
-[^ext-flash]: This is aligned with the *first admissible architecture for OpenTitan Integrated* (TODO: Not currently linked), which has a dedicated flash controller that is exclusively under OpenTitan's control.
+[^ext-flash]: This is aligned with the *first admissible architecture for Darjeeling Integrated* (TODO: Not currently linked), which has a dedicated flash controller that is exclusively under Darjeeling's control.
   If/when other admissible architectures get defined (which is outside the scope of this document), this document should be updated to take them into account.
 
 - Load From external flash
 
-  - The second ROM partition accesses the OpenTitan QSPI controller to load code in external flash and assumes presence of artifacts required by the OpenTitan for boot & code fetch.
+  - The second ROM partition accesses the QSPI controller to load code in external flash and assumes presence of required artifacts for boot & code fetch.
 
   - Each SoC / product may have a custom QSPI flash layout.
 
-    - The second ROM partition can be leveraged to finetune the flash layout per SoC / product including location of OpenTitan boot artifacts.
+    - The second ROM partition can be leveraged to finetune the flash layout per SoC / product including location of boot artifacts.
 
     - A separate document shall outline the various use cases and requirements around the QSPI flash layout.
       To give some guidelines on splitting code between ROMs and external flash (not hard rules):
 
-      - The first ROM partition is standardized over all OpenTitan implementations.
+      - The first ROM partition is standardized over all Darjeeling implementations.
 
-      - The second ROM partition may be vendor-specific, but OpenTitan will provide an open-source reference implementation.
+      - The second ROM partition may be vendor-specific, but Darjeeling will provide an open-source reference implementation.
         Even vendor-specific second ROM partitions should be open-source for transparency and auditability.
         Vendor-specific code should not go into the second ROM partition unless it absolutely has to (e.g. to activate access paths to external flash).
 
       - Vendor-specific code should go into external flash unless it absolutely has to be part of the second ROM partition.
 
-  - The second ROM partition, in conjunction with the base ROM, fetches OpenTitan mutable firmware, authenticates the firmware and sets up the provided SRAM for code execution.
+  - The second ROM partition, in conjunction with the base ROM, fetches mutable firmware, authenticates the firmware and sets up the provided SRAM for code execution.
     The code that measures and authenticates ROMs can be part of the first ROM partition, the second ROM partition, or a combination of both ROM partitions -- e.g., some crypto library functions may be implemented in the first ROM partition and get called by the second ROM partition.
 
   - Just prior to starting RAM execution, disable the patch matches by programming a global patch cam disable bit (write once).
@@ -467,10 +467,10 @@ The steps involved are as follows:
     If any logic implementation from the second ROM partition is required during runtime, it is assumed to be included within the mutable firmware code as well.
     As such ROM execution can be disabled.
 
-- Once OpenTitan firmware is set up, it shall boot strap downstream SoC agents with authenticated & measured code setup and reset release.
+- Once the firmware is set up, it shall boot strap downstream SoC agents with authenticated & measured code setup and reset release.
 
-- Reset of the SoC reset release and more complex & potentially some proprietary bring up mechanism shall be the responsibility of other SoC programmable agents (called as the SoC reset controller from here on) running OpenTitan verified code.
+- Reset of the SoC reset release and more complex & potentially some proprietary bring up mechanism shall be the responsibility of other SoC programmable agents (called as the SoC reset controller from here on) running verified code.
 
-  - SoC reset controller may leverage OpenTitan's help to fetch, verify and load additional firmware packages for various programmable engines at different stages of the SoC specific reset release process.
+  - SoC reset controller may leverage Darjeeling's help to fetch, verify and load additional firmware packages for various programmable engines at different stages of the SoC specific reset release process.
 
-  - OpenTitan and the SoC reset controller may use the DOE mailbox mechanism to coordinate the reset handshakes.
+  - Darjeeling and the SoC reset controller may use the DOE mailbox mechanism to coordinate the reset handshakes.
