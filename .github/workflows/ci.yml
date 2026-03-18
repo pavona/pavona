@@ -169,6 +169,7 @@ jobs:
             'MIT'
             'MIT License'
             'Mozilla Public License 2.0 (MPL 2.0)'
+            'MPL-2.0 AND MIT'
             'Public Domain'
             'Python Software Foundation License'
             'UNKNOWN'
@@ -281,7 +282,7 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Execute tests
-        run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/acc/crypto/...
+        run: ./bazelisk.sh test --test_tag_filters=-nightly --test_timeout=3600 //sw/acc/crypto/...
 
   verilator_earlgrey:
     name: Verilated Earl Grey
