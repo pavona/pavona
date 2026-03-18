@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-interface kmac_cov_if
-  (
-   input logic     sw_cmd_process,
-   input bit [5:0] keccak_st,
-   input bit [3:0] msgfifo_depth,
-   input bit       msgfifo_full,
-   input bit       msgfifo_empty
-   );
+interface kmac_cov_if #(
+  parameter  bit EnMasking = `EN_MASKING,
+  localparam int Share     = (EnMasking) ? 2 : 1 // derived parameter
+) (
+  input logic     sw_cmd_process,
+  input bit [5:0] keccak_st,
+  input bit [3:0] msgfifo_depth [Share],
+  input bit       msgfifo_full  [Share],
+  input bit       msgfifo_empty [Share]
+  );
 
   `include "dv_fcov_macros.svh"
 
@@ -22,17 +24,17 @@ interface kmac_cov_if
       bins inactive = {KeccakStIdle};
     }
 
-    kmac_msgfifo_full: coverpoint msgfifo_full {
+    kmac_msgfifo_full: coverpoint msgfifo_full[0] {
       bins full     = {1};
       bins not_full = {0};
     }
 
-    kmac_msgfifo_empty: coverpoint msgfifo_empty {
+    kmac_msgfifo_empty: coverpoint msgfifo_empty[0] {
       bins empty     = {1};
       bins not_empty = {0};
     }
 
-    kmac_msgfifo_has_data: coverpoint msgfifo_depth {
+    kmac_msgfifo_has_data: coverpoint msgfifo_depth[0] {
       bins has_data = {[1:15]};
     }
   endgroup

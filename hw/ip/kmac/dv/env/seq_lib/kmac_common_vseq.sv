@@ -63,13 +63,28 @@ class kmac_common_vseq extends kmac_base_vseq;
     if (!uvm_re_match("*.u_sha3.u_state_regs*", if_proxy.path)) begin
       if (!enable) $assertoff(0, "tb.dut.u_sha3.FsmKnown_A");
       else         $asserton(0, "tb.dut.u_sha3.FsmKnown_A");
-    end else if (!uvm_re_match("*.u_msgfifo.gen_normal_fifo.u_fifo_cnt*", if_proxy.path)) begin
-      if (!enable) begin
-        $assertoff(0, "tb.dut.u_msgfifo.u_msgfifo.DataKnown_A");
-        $assertoff(0, "tb.dut.u_msgfifo.u_msgfifo.gen_normal_fifo.depthShallNotExceedParamDepth");
-      end else begin
-        $asserton(0, "tb.dut.u_msgfifo.u_msgfifo.DataKnown_A");
-        $asserton(0, "tb.dut.u_msgfifo.u_msgfifo.gen_normal_fifo.depthShallNotExceedParamDepth");
+    end else begin
+      if (!uvm_re_match("*.u_msgfifo_share0.gen_normal_fifo.u_fifo_cnt*", if_proxy.path)) begin
+        if (!enable) begin
+          $assertoff(0, "tb.dut.u_msgfifo.u_msgfifo_share0.DataKnown_A");
+          $assertoff(0,
+          "tb.dut.u_msgfifo.u_msgfifo_share0.gen_normal_fifo.depthShallNotExceedParamDepth");
+        end else begin
+          $asserton(0, "tb.dut.u_msgfifo.u_msgfifo_share0.DataKnown_A");
+          $asserton(0,
+          "tb.dut.u_msgfifo.u_msgfifo_share0.gen_normal_fifo.depthShallNotExceedParamDepth");
+        end
+      end
+      if (!uvm_re_match("*.u_msgfifo_share1.gen_normal_fifo.u_fifo_cnt*", if_proxy.path)) begin
+        if (!enable) begin
+          $assertoff(0, "tb.dut.u_msgfifo.g_masked_msgfifo_share1.u_msgfifo_share1.DataKnown_A");
+          // verilog_lint: waive line-length
+          $assertoff(0, "tb.dut.u_msgfifo.g_masked_msgfifo_share1.u_msgfifo_share1.gen_normal_fifo.depthShallNotExceedParamDepth");
+        end else begin
+          $asserton(0, "tb.dut.u_msgfifo.g_masked_msgfifo_share1.u_msgfifo_share1.DataKnown_A");
+          // verilog_lint: waive line-length
+          $asserton(0, "tb.dut.u_msgfifo.g_masked_msgfifo_share1.u_msgfifo_share1.gen_normal_fifo.depthShallNotExceedParamDepth");
+        end
       end
     end
   endfunction: sec_cm_fi_ctrl_svas

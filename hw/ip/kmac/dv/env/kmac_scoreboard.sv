@@ -136,6 +136,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // input message from keymgr
   byte kmac_app_msg_share0[$];
+  byte kmac_app_msg_share1[$];
 
   // output digest from KMAC_APP intf (256 bits each)
   bit [kmac_pkg::AppDigestW-1:0] kmac_app_digest_share0;
@@ -581,8 +582,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 while (kmac_app_block_strb > 0) begin
                   if (kmac_app_block_strb[0]) begin
                     kmac_app_msg_share0.push_back(kmac_app_block_data_share0[7:0]);
+                    kmac_app_msg_share1.push_back(kmac_app_block_data_share1[7:0]);
                   end
                   kmac_app_block_data_share0 = kmac_app_block_data_share0 >> 8;
+                  kmac_app_block_data_share1 = kmac_app_block_data_share1 >> 8;
                   kmac_app_block_strb = kmac_app_block_strb >> 1;
                 end
               end else begin
@@ -590,6 +593,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               end
 
               `uvm_info(`gfn, $sformatf("kmac_app_msg_share0: %0p", kmac_app_msg_share0), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("kmac_app_msg_share1: %0p", kmac_app_msg_share1), UVM_HIGH)
             end
             ,
             wait(cfg.under_reset || !in_kmac_app);
@@ -1463,6 +1467,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     msg.delete();
     kmac_app_msg_share0.delete();
+    kmac_app_msg_share1.delete();
 
     kmac_app_block_data_share0      = '0;
     kmac_app_block_strb      = '0;
@@ -1636,7 +1641,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       // kmac_app message is a byte array, cast to bit[7:0]
       msg_arr = new[kmac_app_msg_share0.size()];
       foreach (kmac_app_msg_share0[i]) begin
-        msg_arr[i] = kmac_app_msg_share0[i];
+        msg_arr[i] = kmac_app_msg_share0[i] ^ kmac_app_msg_share1[i];
       end
     end else begin
       msg_arr = msg;

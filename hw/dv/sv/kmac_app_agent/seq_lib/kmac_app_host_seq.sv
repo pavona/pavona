@@ -18,6 +18,9 @@ class kmac_app_host_seq extends kmac_app_base_seq;
   // AppIntf mode for generating first message
   kmac_app_e mode;
 
+  // Set if we are generating a masked message or not
+  bit en_masking = 0;
+
   // SHA3 configuration constraints
   rand sha3_pkg::sha3_mode_e sha3_mode;
   rand sha3_pkg::keccak_strength_e keccak_drive;
@@ -113,12 +116,16 @@ class kmac_app_host_seq extends kmac_app_base_seq;
         end
         if (req_strb[i] == 1) begin
           req_data_share0[i*8 +: 8] = 8'(req.byte_data_share0_q.pop_front());
-          req_data_share1[i*8 +: 8] = 8'(req.byte_data_share1_q.pop_front());
+          if (mode == AppAcc && en_masking) begin
+            req_data_share1[i*8 +: 8] = 8'(req.byte_data_share1_q.pop_front());
+          end
           req_strb[i] = 1'b1;
           msg_size_bytes -= 1;
         end else begin
           req_data_share0[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
-          req_data_share1[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
+          if (mode == AppAcc && en_masking) begin
+            req_data_share1[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
+          end
           req_strb[i] = 1'b0;
         end
       end

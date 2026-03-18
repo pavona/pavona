@@ -580,6 +580,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     `DV_CHECK_RANDOMIZE_FATAL(kmac_app_seq)
     kmac_app_seq.msg_size_bytes = msg.size();
     kmac_app_seq.mode = mode;
+    kmac_app_seq.en_masking = cfg.enable_masking;
     `uvm_send(kmac_app_seq)
   endtask
 
