@@ -15,8 +15,13 @@
 
 .section .text.start
 
-#define STACK_SIZE 20000
-#define CRYPTO_BYTES 32
+#ifndef NSHARES
+    #define NSHARES 2
+#endif
+#ifndef KYBER_K
+    #define KYBER_K 3
+#endif
+#define STACK_SIZE 9216
 
 #if KYBER_K == 2
   #define CRYPTO_PUBLICKEYBYTES  800
@@ -32,72 +37,132 @@
   #define CRYPTO_CIPHERTEXTBYTES 1568
 #endif
 
-/* Entry point. */
+/* Register aliases */
+.equ x2, sp
+.equ x3, fp
+.equ x5, t0
+.equ x6, t1
+.equ x7, t2
+.equ x8, s0
+.equ x9, s1
+.equ x10, a0
+.equ x11, a1
+.equ x12, a2
+.equ x13, a3
+.equ x14, a4
+.equ x15, a5
+.equ x16, a6
+.equ x17, a7
+.equ x18, s2
+.equ x19, s3
+.equ x20, s4
+.equ x21, s5
+.equ x22, s6
+.equ x23, s7
+.equ x24, s8
+.equ x25, s9
+.equ x26, s10
+.equ x27, s11
+.equ x28, t3
+.equ x29, t4
+.equ x30, t5
+.equ x31, t6
+
+.equ w31, bn0
+
 .globl main
 main:
-  /* Init all-zero register. */
-#ifdef RTL_ISS_TEST
-  bn.xor  w0, w0, w0
-  bn.xor  w1, w1, w1
-  bn.xor  w2, w2, w2
-  bn.xor  w3, w3, w3
-  bn.xor  w4, w4, w4
-  bn.xor  w5, w5, w5
-  bn.xor  w6, w6, w6
-  bn.xor  w7, w7, w7
-  bn.xor  w8, w8, w8
-  bn.xor  w9, w9, w9
-  bn.xor  w10, w10, w10
-  bn.xor  w11, w11, w11
-  bn.xor  w12, w12, w12
-  bn.xor  w13, w13, w13
-  bn.xor  w14, w14, w14
-  bn.xor  w15, w15, w15
-  bn.xor  w16, w16, w16
-  bn.xor  w17, w17, w17
-  bn.xor  w18, w18, w18
-  bn.xor  w19, w19, w19
-  bn.xor  w20, w20, w20
-  bn.xor  w21, w21, w21
-  bn.xor  w22, w22, w22
-  bn.xor  w23, w23, w23
-  bn.xor  w24, w24, w24
-  bn.xor  w25, w25, w25
-  bn.xor  w26, w26, w26
-  bn.xor  w27, w27, w27
-  bn.xor  w28, w28, w28
-  bn.xor  w29, w29, w29
-  bn.xor  w30, w30, w30
+    la sp, stack_end
+
+    /* MOD <= dmem[modulus] = KYBER_Q */
+    la      t0, modulus
+    bn.lid  x0++, 0(t0)
+    la      t0, modulus_inv
+    addi    x4, x0, 1
+    bn.lid  x4, 0(t0)
+    bn.or   w0, w0, w1 << 32 /* MOD = R | Q */
+    bn.wsrw mod, w0
+
+    /* Load stack pointer */
+    la   a0, coins
+    la   a1, ek
+#if NSHARES == 1
+    la   a2, dk
+#else
+	la   a2, masked_packed_dk
 #endif
-  bn.xor  w31, w31, w31
+    li   a3, KYBER_K
+    jal  x1, crypto_kem_keypair
+	bn.subi w0, w0, 10
+#if NSHARES != 1
+    la a0, masked_packed_dk
+    la a1, masked_unpacked_dk
+    loopi KYBER_K, 4
+        loopi NSHARES, 2
+            jal x1, poly_frombytes
+            nop
+        nop
+    addi s0, a0, 0 /* Start of ek. */
 
-  /* MOD <= dmem[modulus] = KYBER_Q */
-  li      x5, 2
-  la      x6, modulus
-  bn.lid  x5++, 0(x6)
-  la      x6, modulus_inv
-  bn.lid  x5, 0(x6)
-  bn.or   w2, w2, w3 << 32 /* MOD = R | Q */
-  bn.wsrw 0x0, w2
+    /* Unmask dk. */
+    la   t0, masked_unpacked_dk
+    la   t1, masked_unpacked_dk
+    li   x4, 1
+    li   t2, NSHARES
+    slli t3, t2, 9 /* NSHARES * 512 */
+    addi t2, t2, -1
+    loopi KYBER_K, 10
+        addi t4, t0, 0
+        loopi 16, 7
+            addi   t5, t0, 512
+            bn.lid x0, 0(t0++)
+            loop t2, 3
+                bn.lid       x4, 0(t5)
+                bn.addvm.16h w0, w0, w1
+                addi         t5, t5, 512
+            bn.sid x0, 0(t1++)
+        add t0, t4, t3
 
-  /* Load stack pointer */
-  la   x2, stack_end
-  la   x10, coins
-  la   x11, ek
-  la   x12, dk
-  jal  x1, crypto_kem_keypair
+    /* Pack unmasked dk. */
+    la  a0, masked_unpacked_dk
+    la  a1, dk
+    loopi KYBER_K, 2
+        jal x1, poly_tobytes
+        nop
+    addi s1, a1, 0
 
-  ecall
+    /* Copy ek to dk. */
+    li   t0, CRYPTO_PUBLICKEYBYTES
+    srli t0, t0, 5
+    addi t0, t0, 1
+#if NSHARES == 2
+    addi t0, t0, 2
+#else
+	addi t0, t0, 1
+#endif
+    loop t0, 2
+        bn.lid x0, 0(s0++)
+        bn.sid x0, 0(s1++)
+#endif
+
+    ecall
 
 .data
 .balign 32
-.global stack
 stack:
-  .zero STACK_SIZE
+    .zero STACK_SIZE
+.globl stack_end
 stack_end:
-.globl dk
-dk:
-  .zero CRYPTO_SECRETKEYBYTES
-.globl ek
+
 ek:
-  .zero CRYPTO_PUBLICKEYBYTES
+    .zero CRYPTO_PUBLICKEYBYTES
+dk:
+    .zero CRYPTO_SECRETKEYBYTES
+
+#if NSHARES != 1
+masked_packed_dk:
+    .zero 384 * KYBER_K * NSHARES + CRYPTO_PUBLICKEYBYTES + 32 + 32 * NSHARES
+
+masked_unpacked_dk:
+    .zero 512 * KYBER_K * NSHARES
+#endif

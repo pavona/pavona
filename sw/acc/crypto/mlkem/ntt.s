@@ -29,48 +29,31 @@
 
 .globl ntt
 ntt:
-  /* Set up wide registers for input and intermediate states */
-  li x4, 0
-  li x5, 1
-  li x6, 2
-  li x7, 3
-  li x8, 4
-  li x9, 5
-  li x13, 6
-  li x14, 7
-  li x15, 8
-  li x16, 9
-  li x17, 10
-  li x18, 11
-  li x19, 12
-  li x20, 13
-  li x21, 14
-  li x22, 15
-
   /* Set up wide registers for input and twiddle factors */
-  li x23, 17
 
   /* Load twiddle factors for Layers 1--4 */
-  bn.lid x23, 0(x11)
+  addi   x5, x0, 17
+  bn.lid x5, 0(x11)
 
   /* Compute NTT Layers 1--4 */
   /* Load input */
-  bn.lid x4,  0(x10++)
-  bn.lid x5,  0(x10++)
-  bn.lid x6,  0(x10++)
-  bn.lid x7,  0(x10++)
-  bn.lid x8,  0(x10++)
-  bn.lid x9,  0(x10++)
-  bn.lid x13, 0(x10++)
-  bn.lid x14, 0(x10++)
-  bn.lid x15, 0(x10++)
-  bn.lid x16, 0(x10++)
-  bn.lid x17, 0(x10++)
-  bn.lid x18, 0(x10++)
-  bn.lid x19, 0(x10++)
-  bn.lid x20, 0(x10++)
-  bn.lid x21, 0(x10++)
-  bn.lid x22, 0(x10++)
+  addi   x4, x0, 1
+  bn.lid x0, 0(x10)
+  bn.lid x4++, 32(x10)
+  bn.lid x4++, 64(x10)
+  bn.lid x4++, 96(x10)
+  bn.lid x4++, 128(x10)
+  bn.lid x4++, 160(x10)
+  bn.lid x4++, 192(x10)
+  bn.lid x4++, 224(x10)
+  bn.lid x4++, 256(x10)
+  bn.lid x4++, 288(x10)
+  bn.lid x4++, 320(x10)
+  bn.lid x4++, 352(x10)
+  bn.lid x4++, 384(x10)
+  bn.lid x4++, 416(x10)
+  bn.lid x4++, 448(x10)
+  bn.lid x4++, 480(x10)
 
   /* Layer 1, stride 128 */
 
@@ -336,7 +319,7 @@ ntt:
 
   #define wtmp w8
 
-  bn.lid x23, 32(x11) /* Load Twiddle factors */
+  bn.lid x5, 32(x11) /* Load Twiddle factors */
 
   /* Butterflies */
   bn.mulv.16H.acc.z.lo wtmp, w28, w17
@@ -363,7 +346,7 @@ ntt:
   bn.subvm.16H         w31, w27, wtmp
   bn.addvm.16H         w27, w27, wtmp
 
-  bn.lid x23, 64(x11) /* Load Twiddle factors */
+  bn.lid x5, 64(x11) /* Load Twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w4, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -391,7 +374,7 @@ ntt:
 
   /* Layer 6, stride 4 */
 
-  bn.lid x23, 96(x11) /* Load twiddle factors */
+  bn.lid x5, 96(x11) /* Load twiddle factors */
 
   /* Butterflies */
   bn.mulv.16H.acc.z.lo wtmp, w26, w17
@@ -406,7 +389,7 @@ ntt:
   bn.subvm.16H         w27, w25, wtmp
   bn.addvm.16H         w25, w25, wtmp
 
-  bn.lid x23, 128(x11) /* Load twiddle factors */
+  bn.lid x5, 128(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w30, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -420,7 +403,7 @@ ntt:
   bn.subvm.16H         w31, w29, wtmp
   bn.addvm.16H         w29, w29, wtmp
 
-  bn.lid x23, 160(x11) /* Load twiddle factors */
+  bn.lid x5, 160(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w2, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -434,7 +417,7 @@ ntt:
   bn.subvm.16H         w3, w1, wtmp
   bn.addvm.16H         w1, w1, wtmp
 
-  bn.lid x23, 192(x11) /* Load twiddle factors */
+  bn.lid x5, 192(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w6, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -450,7 +433,7 @@ ntt:
 
   /* Layer 7, stride 2 */
 
-  bn.lid x23, 224(x11) /* Load twiddle factors */
+  bn.lid x5, 224(x11) /* Load twiddle factors */
 
   /* Butterflies */
   bn.mulv.16H.acc.z.lo wtmp, w25, w17
@@ -459,7 +442,7 @@ ntt:
   bn.subvm.16H         w25, w24, wtmp
   bn.addvm.16H         w24, w24, wtmp
 
-  bn.lid x23, 256(x11) /* Load twiddle factors */
+  bn.lid x5, 256(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w27, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -467,7 +450,7 @@ ntt:
   bn.subvm.16H         w27, w26, wtmp
   bn.addvm.16H         w26, w26, wtmp
 
-  bn.lid x23, 288(x11) /* Load twiddle factors */
+  bn.lid x5, 288(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w29, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -475,7 +458,7 @@ ntt:
   bn.subvm.16H         w29, w28, wtmp
   bn.addvm.16H         w28, w28, wtmp
 
-  bn.lid x23, 320(x11) /* Load twiddle factors */
+  bn.lid x5, 320(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w31, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -483,7 +466,7 @@ ntt:
   bn.subvm.16H         w31, w30, wtmp
   bn.addvm.16H         w30, w30, wtmp
 
-  bn.lid x23, 352(x11) /* Load twiddle factors */
+  bn.lid x5, 352(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w1, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -491,7 +474,7 @@ ntt:
   bn.subvm.16H         w1, w0, wtmp
   bn.addvm.16H         w0, w0, wtmp
 
-  bn.lid x23, 384(x11) /* Load twiddle factors */
+  bn.lid x5, 384(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w3, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -499,7 +482,7 @@ ntt:
   bn.subvm.16H         w3, w2, wtmp
   bn.addvm.16H         w2, w2, wtmp
 
-  bn.lid x23, 416(x11) /* Load twiddle factors */
+  bn.lid x5, 416(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w5, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -507,7 +490,7 @@ ntt:
   bn.subvm.16H         w5, w4, wtmp
   bn.addvm.16H         w4, w4, wtmp
 
-  bn.lid x23, 448(x11) /* Load twiddle factors */
+  bn.lid x5, 448(x11) /* Load twiddle factors */
 
   bn.mulv.16H.acc.z.lo wtmp, w7, w17
   bn.mulv.l.16H.lo     wtmp, wtmp, sw0.2
@@ -572,21 +555,26 @@ ntt:
   bn.trn2.2Q w7, w27, w31
 
   /* Store output */
-  bn.sid x4, 0(x12++)
-  bn.sid x5, 0(x12++)
-  bn.sid x6, 0(x12++)
-  bn.sid x7, 0(x12++)
-  bn.sid x8, 0(x12++)
-  bn.sid x9, 0(x12++)
-  bn.sid x13, 0(x12++)
-  bn.sid x14, 0(x12++)
-  bn.sid x15, 0(x12++)
-  bn.sid x16, 0(x12++)
-  bn.sid x17, 0(x12++)
-  bn.sid x18, 0(x12++)
-  bn.sid x19, 0(x12++)
-  bn.sid x20, 0(x12++)
-  bn.sid x21, 0(x12++)
-  bn.sid x22, 0(x12++)
+  addi   x4, x0, 1
+  bn.sid x0, 0(x12)
+  bn.sid x4++, 32(x12)
+  bn.sid x4++, 64(x12)
+  bn.sid x4++, 96(x12)
+  bn.sid x4++, 128(x12)
+  bn.sid x4++, 160(x12)
+  bn.sid x4++, 192(x12)
+  bn.sid x4++, 224(x12)
+  bn.sid x4++, 256(x12)
+  bn.sid x4++, 288(x12)
+  bn.sid x4++, 320(x12)
+  bn.sid x4++, 352(x12)
+  bn.sid x4++, 384(x12)
+  bn.sid x4++, 416(x12)
+  bn.sid x4++, 448(x12)
+  bn.sid x4++, 480(x12)
+
+  /* Adjust input and output pointers. */
+  addi x10, x10, 512
+  addi x12, x12, 512
 
   ret

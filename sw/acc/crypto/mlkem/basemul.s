@@ -18,9 +18,9 @@
  *
  * Flags: -
  *
- * @param[in]  x29: dptr_input1, dmem pointer to first word of input polynomial
+ * @param[in]  x10: dptr_input1, dmem pointer to first word of input polynomial
  * @param[in]  x11: dptr_input2, dmem pointer to second word of input polynomial
- * @param[in]  x28: dptr_tw, dmem pointer to array of twiddles_basemul
+ * @param[in]  x12: dptr_tw, dmem pointer to array of twiddles_basemul
  * @param[in]  w16: sw0, where sw0.0 = Q, sw0.2 = Q^-1 mod 2^32
  * @param[out] x13: dmem pointer to result
  *
@@ -30,43 +30,28 @@
 .globl basemul
 basemul:
   /* Set up wide registers for inputs*/
-  li x4, 0
-  li x5, 1
-  li x6, 2
-  li x7, 3
-  li x8, 4
-  li x9, 5
-  li x14, 6
-  li x15, 7
-  li x16, 8
-  li x17, 9
-  li x18, 10
-  li x19, 11
-  li x20, 12
-  li x21, 13
-  li x22, 14
-  li x23, 15
   bn.xor w31, w31, w31
 
-  LOOPI 2, 144
+  LOOPI 2, 151
     /* Load input */
-    bn.lid x4,  0(x29++)
-    bn.lid x5,  0(x29++)
-    bn.lid x6,  0(x29++)
-    bn.lid x7,  0(x29++)
-    bn.lid x8,  0(x29++)
-    bn.lid x9,  0(x29++)
-    bn.lid x14, 0(x29++)
-    bn.lid x15, 0(x29++)
+    addi   x4, x0, 1
+    bn.lid x0, 0(x10)
+    bn.lid x4++, 32(x10)
+    bn.lid x4++, 64(x10)
+    bn.lid x4++, 96(x10)
+    bn.lid x4++, 128(x10)
+    bn.lid x4++, 160(x10)
+    bn.lid x4++, 192(x10)
+    bn.lid x4++, 224(x10)
 
-    bn.lid x16, 0(x11++)
-    bn.lid x17, 0(x11++)
-    bn.lid x18, 0(x11++)
-    bn.lid x19, 0(x11++)
-    bn.lid x20, 0(x11++)
-    bn.lid x21, 0(x11++)
-    bn.lid x22, 0(x11++)
-    bn.lid x23, 0(x11++)
+    bn.lid x4++, 0(x11)
+    bn.lid x4++, 32(x11)
+    bn.lid x4++, 64(x11)
+    bn.lid x4++, 96(x11)
+    bn.lid x4++, 128(x11)
+    bn.lid x4++, 160(x11)
+    bn.lid x4++, 192(x11)
+    bn.lid x4++, 224(x11)
 
     /* sw0 = w16: sw0.2 = Q^-1 mod 2^32, sw0.0 = Q */
     bn.mulv.16H.acc.z.lo w26, w0, w8
@@ -151,10 +136,11 @@ basemul:
     bn.mulv.l.16H.acc.hi w15, w15, sw0.0
 
     /* Load twiddle factors */
-    bn.lid x4,  0(x28++)
-    bn.lid x5,  0(x28++)
-    bn.lid x6,  0(x28++)
-    bn.lid x7,  0(x28++)
+    addi   x4, x0, 1
+    bn.lid x0, 0(x12)
+    bn.lid x4++, 32(x12)
+    bn.lid x4++, 64(x12)
+    bn.lid x4++, 96(x12)
 
     /* Multiply ai*bi*zeta */
     bn.trn2.16H          w24, w26, w17
@@ -221,15 +207,24 @@ basemul:
     bn.addvm.16H w7, w7, w15
 
     /* Store output */
-    bn.sid x4,  0(x13++)
-    bn.sid x5,  0(x13++)
-    bn.sid x6,  0(x13++)
-    bn.sid x7,  0(x13++)
-    bn.sid x8,  0(x13++)
-    bn.sid x9,  0(x13++)
-    bn.sid x14, 0(x13++)
-    bn.sid x15, 0(x13++)
+    addi   x4, x0, 1
+    bn.sid x0, 0(x13)
+    bn.sid x4++, 32(x13)
+    bn.sid x4++, 64(x13)
+    bn.sid x4++, 96(x13)
+    bn.sid x4++, 128(x13)
+    bn.sid x4++, 160(x13)
+    bn.sid x4++, 192(x13)
+    bn.sid x4++, 224(x13)
 
+    /* Adjust input and output pointers. */
+    addi x10, x10, 256
+    addi x11, x11, 256
+    addi x13, x13, 256
+    addi x12, x12, 128
+
+  /* Reset twiddle pointer. */
+  addi x12, x12, -256
   ret
 
 
@@ -242,9 +237,9 @@ basemul:
  *
  * Flags: -
  *
- * @param[in]  x29: dptr_input1, dmem pointer to first word of input polynomial
+ * @param[in]  x10: dptr_input1, dmem pointer to first word of input polynomial
  * @param[in]  x11: dptr_input2, dmem pointer to second word of input polynomial
- * @param[in]  x28: dptr_tw, dmem pointer to array of twiddles_basemul
+ * @param[in]  x12: dptr_tw, dmem pointer to array of twiddles_basemul
  * @param[out] x13: dmem pointer to result
  *
  * clobbered registers: x4-x30, w0-w23, w30
@@ -253,43 +248,28 @@ basemul:
 .globl basemul_acc
 basemul_acc:
   /* Set up wide registers for inputs*/
-  li x4, 0
-  li x5, 1
-  li x6, 2
-  li x7, 3
-  li x8, 4
-  li x9, 5
-  li x14, 6
-  li x15, 7
-  li x16, 8
-  li x17, 9
-  li x18, 10
-  li x19, 11
-  li x20, 12
-  li x21, 13
-  li x22, 14
-  li x23, 15
   bn.xor w31, w31, w31
 
-  LOOPI 2, 161
+  LOOPI 2, 168
     /* Load input */
-    bn.lid x4,  0(x29++)
-    bn.lid x5,  0(x29++)
-    bn.lid x6,  0(x29++)
-    bn.lid x7,  0(x29++)
-    bn.lid x8,  0(x29++)
-    bn.lid x9,  0(x29++)
-    bn.lid x14, 0(x29++)
-    bn.lid x15, 0(x29++)
+    addi   x4, x0, 1
+    bn.lid x0, 0(x10)
+    bn.lid x4++, 32(x10)
+    bn.lid x4++, 64(x10)
+    bn.lid x4++, 96(x10)
+    bn.lid x4++, 128(x10)
+    bn.lid x4++, 160(x10)
+    bn.lid x4++, 192(x10)
+    bn.lid x4++, 224(x10)
 
-    bn.lid x16, 0(x11++)
-    bn.lid x17, 0(x11++)
-    bn.lid x18, 0(x11++)
-    bn.lid x19, 0(x11++)
-    bn.lid x20, 0(x11++)
-    bn.lid x21, 0(x11++)
-    bn.lid x22, 0(x11++)
-    bn.lid x23, 0(x11++)
+    bn.lid x4++, 0(x11)
+    bn.lid x4++, 32(x11)
+    bn.lid x4++, 64(x11)
+    bn.lid x4++, 96(x11)
+    bn.lid x4++, 128(x11)
+    bn.lid x4++, 160(x11)
+    bn.lid x4++, 192(x11)
+    bn.lid x4++, 224(x11)
 
     /* Multiply ai*bi */
     bn.mulv.16H.acc.z.lo w26, w0, w8
@@ -374,10 +354,11 @@ basemul_acc:
     bn.mulv.l.16H.acc.hi w15, w15, sw0.0
 
     /* Load twiddle factors */
-    bn.lid x4,  0(x28++)
-    bn.lid x5,  0(x28++)
-    bn.lid x6,  0(x28++)
-    bn.lid x7,  0(x28++)
+    addi   x4, x0, 1
+    bn.lid x0, 0(x12)
+    bn.lid x4++, 32(x12)
+    bn.lid x4++, 64(x12)
+    bn.lid x4++, 96(x12)
 
     /* Multiply ai*bi*zeta */
     bn.trn2.16H          w24, w26, w17
@@ -444,14 +425,15 @@ basemul_acc:
     bn.addvm.16H w7, w7, w15
 
     /* Load inputs at dmem_result */
-    bn.lid x16, 0(x13++)
-    bn.lid x17, 0(x13++)
-    bn.lid x18, 0(x13++)
-    bn.lid x19, 0(x13++)
-    bn.lid x20, 0(x13++)
-    bn.lid x21, 0(x13++)
-    bn.lid x22, 0(x13++)
-    bn.lid x23, 0(x13++)
+    addi   x4, x0, 8
+    bn.lid x4++, 0(x13)
+    bn.lid x4++, 32(x13)
+    bn.lid x4++, 64(x13)
+    bn.lid x4++, 96(x13)
+    bn.lid x4++, 128(x13)
+    bn.lid x4++, 160(x13)
+    bn.lid x4++, 192(x13)
+    bn.lid x4++, 224(x13)
 
     /* Accumulate */
     bn.addvm.16H w0, w0, w8
@@ -463,17 +445,23 @@ basemul_acc:
     bn.addvm.16H w6, w6, w14
     bn.addvm.16H w7, w7, w15
 
-    /* Reset dmem_result */
-    addi x13, x13, -256
-
     /* Store output */
-    bn.sid x4,  0(x13++)
-    bn.sid x5,  0(x13++)
-    bn.sid x6,  0(x13++)
-    bn.sid x7,  0(x13++)
-    bn.sid x8,  0(x13++)
-    bn.sid x9,  0(x13++)
-    bn.sid x14, 0(x13++)
-    bn.sid x15, 0(x13++)
+    addi   x4, x0, 1
+    bn.sid x0, 0(x13)
+    bn.sid x4++, 32(x13)
+    bn.sid x4++, 64(x13)
+    bn.sid x4++, 96(x13)
+    bn.sid x4++, 128(x13)
+    bn.sid x4++, 160(x13)
+    bn.sid x4++, 192(x13)
+    bn.sid x4++, 224(x13)
 
+    /* Adjust input and output pointers. */
+    addi x10, x10, 256
+    addi x11, x11, 256
+    addi x13, x13, 256
+    addi x12, x12, 128
+
+  /* Reset twiddle pointer. */
+  addi x12, x12, -256
   ret

@@ -10,107 +10,26 @@
 
 .text
 
-#define KYBER_N 256
-#define KYBER_Q 3329
-#define KYBER_SYMBYTES 32   /* size in bytes of hashes, and seeds */
-#define KYBER_SSBYTES  32   /* size in bytes of shared key */
-#define KYBER_POLYBYTES		384
-#define KYBER_ETA2 2
-#if (KYBER_K == 2)
-  #define KYBER_POLYVECBYTES	768
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 640
-  #define KYBER_ETA1 3
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 800
-  #define KYBER_INDCPA_SECRETKEYBYTES 768
-  #define KYBER_INDCPA_BYTES          768
-
-  #define KYBER_PUBLICKEYBYTES  800
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  1632
-  #define KYBER_CIPHERTEXTBYTES 768
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 25
-  #define KYBER_CIPHERTEXT_WRS 24
-  #define KYBER_GEN_MATRIX_NONCE 254
-  #define KYBER_GEN_MATRIX_AT_NONCE -511
-  #define POLY -512
-  #define K_POLYS -1024
-  #define K_SQUARED_POLYS -2048
-
-#elif (KYBER_K == 3)
-  #define KYBER_POLYVECBYTES	1152
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 960
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1184
-  #define KYBER_INDCPA_SECRETKEYBYTES 1152
-  #define KYBER_INDCPA_BYTES          1088
-
-  #define KYBER_PUBLICKEYBYTES  1184
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  2400
-  #define KYBER_CIPHERTEXTBYTES 1088
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 37
-  #define KYBER_CIPHERTEXT_WRS 34
-  #define KYBER_GEN_MATRIX_NONCE 253
-  #define KYBER_GEN_MATRIX_AT_NONCE -767
-  #define POLY -512
-  #define K_POLYS -1536
-  #define K_SQUARED_POLYS -4608
-
-#elif (KYBER_K == 4)
-  #define KYBER_POLYVECBYTES	1536
-  #define KYBER_POLYCOMPRESSEDBYTES    160
-  #define KYBER_POLYVECCOMPRESSEDBYTES 1408
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1568
-  #define KYBER_INDCPA_SECRETKEYBYTES 1536
-  #define KYBER_INDCPA_BYTES          1568
-
-  #define KYBER_PUBLICKEYBYTES  1568
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  3168
-  #define KYBER_CIPHERTEXTBYTES 1568
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 49
-  #define KYBER_CIPHERTEXT_WRS 49
-  #define KYBER_GEN_MATRIX_NONCE 252
-  #define KYBER_GEN_MATRIX_AT_NONCE -1023
-  #define POLY -512
-  #define K_POLYS -2048
-  #define K_SQUARED_POLYS -8192
+#ifndef NSHARES
+	#define NSHARES 2
 #endif
 
 /* Register aliases */
-.equ x0, zero
 .equ x2, sp
 .equ x3, fp
-
 .equ x5, t0
-.equ x6, t1
+#define t1 x6
 .equ x7, t2
-
 .equ x8, s0
 .equ x9, s1
-
 .equ x10, a0
 .equ x11, a1
-
 .equ x12, a2
 .equ x13, a3
 .equ x14, a4
 .equ x15, a5
 .equ x16, a6
 .equ x17, a7
-
 .equ x18, s2
 .equ x19, s3
 .equ x20, s4
@@ -121,7 +40,6 @@
 .equ x25, s9
 .equ x26, s10
 .equ x27, s11
-
 .equ x28, t3
 .equ x29, t4
 .equ x30, t5
@@ -129,119 +47,10 @@
 
 .equ w31, bn0
 
-/* Index of the Keccak command special register. */
-#define KECCAK_CFG_REG 0x7d9
-/* Config to start a SHAKE-128 operation. */
-#define SHAKE128_CFG 0x2
 /* Config to start a SHAKE-256 operation. */
 #define SHAKE256_CFG 0xA
-/* Config to start a SHA3_256 operation. */
-#define SHA3_256_CFG 0x8
 /* Config to start a SHA3_512 operation. */
 #define SHA3_512_CFG 0x10
-
-/*
- * Name:        indcpa_dec
- *
- * Description: Decryption function of the CPA-secure
- *              public-key encryption scheme underlying Kyber.
- *
- * Arguments:   - uint8_t *m: pointer to output decrypted message
- *                            (of length KYBER_INDCPA_MSGBYTES)
- *              - const uint8_t *c: pointer to input ciphertext
- *                                  (of length KYBER_INDCPA_BYTES)
- *              - const uint8_t *sk: pointer to input secret key
- *                                   (of length KYBER_INDCPA_SECRETKEYBYTES)
- *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
- * @param[in]  x10 (a0): dmem pointer to input ciphertext
- * @param[in]  x11 (a1): dmem pointer to input packed sk
- * @param[out] x13 (a3): dmem pointer to output message
- *
- * clobbered registers: a0-a4, t0-t5, w8, w16
- */
-.globl indcpa_dec
-indcpa_dec:
-  /* Stack address mapping */
-  #define STACK_DEC_M_ADDR     -32
-#if (KYBER_K == 2)
-  #define STACK_DEC_SKPV     -1056
-  #define STACK_DEC_V        -1568
-  #define STACK_DEC_B        -2592
-#elif (KYBER_K == 3)
-  #define STACK_DEC_SKPV     -1568
-  #define STACK_DEC_V        -2080
-  #define STACK_DEC_B        -3616
-#elif (KYBER_K == 4)
-  #define STACK_DEC_SKPV     -2080
-  #define STACK_DEC_V        -2592
-  #define STACK_DEC_B        -4640
-#else
-#endif
-
-  /* Store parameters to stack */
-  sw a3, STACK_DEC_M_ADDR(fp)
-
-  /*** unpack_ciphertext ***/
-  li  a2, STACK_DEC_B
-  add a2, fp, a2
-  la  a3, const_8
-  la  a4, modulus
-  la  a5, const_0x0fff
-  jal x1, unpack_ciphertext
-
-  /*** unpack_sk ***/
-  jal x1, unpack_sk
-
-  bn.wsrr   w16, 0x0 /* w16 = R | Q */
-  bn.shv.8S w0, w16 << 1 /* w0 = 2*R | 2*Q */
-  bn.wsrw   0x0, w0 /* MOD = 2*R | 2*Q */
-  /*** NTT ***/
-  li  a0, STACK_DEC_B
-  add a0, fp, a0
-  la  a1, twiddles_ntt
-  add a2, zero, a0
-  .rept KYBER_K
-    jal x1, ntt
-  .endr
-
-  /* After NTT, w16 is still R | Q and MOD is still 2*R | 2*Q */
-  /*** Vector vector multiplication ***/
-  addi x29, a0, K_POLYS
-  addi a1, a2, 512
-  add  a3, zero, x29
-  la   x28, twiddles_basemul
-  jal  x1, basemul
-  .rept KYBER_K-1
-    addi a3, a3, POLY
-    la   x28, twiddles_basemul
-    jal  x1, basemul_acc
-  .endr
-
-  /* After basemul, w16 is still R | Q and MOD is still 2*R | 2*Q */
-  /*** INTT ***/
-  add     a0, a0, K_POLYS
-  la      a1, twiddles_intt
-  add     a2, zero, a0
-  jal     x1, intt
-  bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
-
-  /*** SUB ***/
-  li   a0, STACK_DEC_V
-  add  a0, fp, a0
-  addi a1, a2, POLY
-  addi a2, a2, POLY
-  jal  x1, poly_sub
-
-  /*** poly_tomsg ***/
-  addi a0, a1, POLY
-  la   a1, modulus_over_2
-  lw   a2, STACK_DEC_M_ADDR(fp)
-  la   a3, const_1290167
-  jal  x1, poly_tomsg
-
-  ret
 
 /*
  * Name:        crypto_kem_dec
@@ -249,145 +58,366 @@ indcpa_dec:
  * Description: Generates shared secret for given
  *              cipher text and private key
  *
- * Arguments:   - uint8_t *ss: pointer to output shared secret
- *                (an already allocated array of KYBER_SSBYTES bytes)
- *              - const uint8_t *ct: pointer to input cipher text
- *                (an already allocated array of KYBER_CIPHERTEXTBYTES bytes)
- *              - const uint8_t *sk: pointer to input private key
- *                (an already allocated array of KYBER_SECRETKEYBYTES bytes)
- *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ * Flags: -.
  *
  * @param[in]  x10 (a0): dmem pointer to input ct
  * @param[in]  x11 (a1): dmem pointer to input sk
  * @param[out] x12 (a2): dmem pointer to output key_a
+ * @param[in]  x13 (a3): k, the security level
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 .globl crypto_kem_dec
 crypto_kem_dec:
-  #define STACK_KEM_DEC_KEYA_ADDR -8
-  #define STACK_KEM_DEC_H_ADDR   -12
-  #define STACK_KEM_DEC_SK_ADDR  -16
-  #define STACK_KEM_DEC_CT_ADDR  -20
-  #define STACK_KEM_DEC_PK_ADDR  -24
-  #define STACK_KEM_DEC_CMP_ADDR -32
-#if (KYBER_K == 2)
-  #define STACK_KEM_DEC_KR     -3232
-  #define STACK_KEM_DEC_BUF    -3296
-  #define STACK_KEM_DEC_CMP    -2144
-#elif (KYBER_K == 3)
-  #define STACK_KEM_DEC_KR     -4256
-  #define STACK_KEM_DEC_BUF    -4320
-  #define STACK_KEM_DEC_CMP    -2656
-#elif (KYBER_K == 4)
-  #define STACK_KEM_DEC_KR     -5280
-  #define STACK_KEM_DEC_BUF    -5344
-  #define STACK_KEM_DEC_CMP    -3168
+	addi x4, x0, 2
+	beq  a3, x4, _save_k2_ptrs
+	addi x4, x0, 3
+	beq  a3, x4, _save_k3_ptrs
+
+	/* Save input and output addresses. */
+	/* Public ciphertext. */
+	la t0, dptr_ct
+	sw a0, 0(t0)
+	/* Public key for PKE.Enc. */
+	addi t1, a1, 0
+	loopi NSHARES, 1
+		addi t1, t1, 1536
+	la t0, dptr_pk
+	sw t1, 0(t0)
+	/* H(pk). */
+	addi t1, t1, 1568
+	la   t0, dptr_h
+	sw   t1, 0(t0)
+	/* Shared key. */
+	la t0, dptr_ss
+	sw a2, 0(t0)
+	/* k. */
+	la t0, k
+	sw a3, 0(t0)
+	/* Ciphertext bytes. */
+	la   t0, ctbytes
+	addi t1, x0, 1568
+	sw   t1, 0(t0)
+
+	beq  x0, x0, _continue
+
+_save_k2_ptrs:
+	/* Save input and output addresses. */
+	/* Public ciphertext. */
+	la t0, dptr_ct
+	sw a0, 0(t0)
+	/* Public key for PKE.Enc. */
+	addi t1, a1, 0
+	loopi NSHARES, 1
+		addi t1, t1, 768
+	la t0, dptr_pk
+	sw t1, 0(t0)
+	/* H(pk). */
+	addi t1, t1, 800
+	la   t0, dptr_h
+	sw   t1, 0(t0)
+	/* Shared key. */
+	la t0, dptr_ss
+	sw a2, 0(t0)
+	/* k. */
+	la t0, k
+	sw a3, 0(t0)
+	/* Ciphertext bytes. */
+	la   t0, ctbytes
+	addi t1, x0, 768
+	sw   t1, 0(t0)
+
+	beq  x0, x0, _continue
+
+_save_k3_ptrs:
+	/* Save input and output addresses. */
+	/* Public ciphertext. */
+	la t0, dptr_ct
+	sw a0, 0(t0)
+	/* Public key for PKE.Enc. */
+	addi t1, a1, 0
+	loopi NSHARES, 1
+		addi t1, t1, 1152
+	la t0, dptr_pk
+	sw t1, 0(t0)
+	/* H(pk). */
+	addi t1, t1, 1184
+	la   t0, dptr_h
+	sw   t1, 0(t0)
+	/* Shared key. */
+	la t0, dptr_ss
+	sw a2, 0(t0)
+	/* k. */
+	la t0, k
+	sw a3, 0(t0)
+	/* Ciphertext bytes. */
+	la   t0, ctbytes
+	addi t1, x0, 1088
+	sw   t1, 0(t0)
+
+_continue:
+
+	/*Compute m = indcpa_dec(ct, sk, nshares). ***/
+	/* a0 already points to ct. */
+	/* a1 already points to sk. */
+	la  a2, m
+	/* a3 is already k. */
+	jal x1, indcpa_dec
+
+#if NSHARES == 2
+	/* Since the output message of indcpa_dec is in a special order due
+	 * to performance reason for masked_poly_tomsg gagdet, we reorder the
+	 * message m here before hashing it. Note that the re-ordered message is
+	 * put elsewhere, not in buffer for m again. Otherwise, the re-encryption
+	 * will fail since the masked one-bit decompression gadget takes into
+	 * account the special order of the message m. */
+	bn.xor     bn0, bn0, bn0
+	bn.subi    w2, bn0, 1
+	bn.shv.16h w2, w2 << 15
+
+	la t0, m
+	la t1, mtmp
+	li x4, 3
+	loopi 2, 12
+		/* Whitening. */
+		bn.xor w0, w0, w0
+		bn.xor w1, w1, w1
+		bn.xor w3, w3, w3
+		bn.lid x0, 0(t0++)
+		loopi 16, 6
+			bn.and     w1, w0, w2
+			bn.shv.16h w1, w1 >> 15
+			loopi 16, 2
+				bn.rshi w3, w1, w3 >> 1
+				bn.rshi w1, bn0, w1 >> 16
+			bn.shv.16h w0, w0 << 1
+		bn.sid x4, 0(t1++)
+
+	/* Compute kr = hash_g(m || h). */
+	la      t0, dptr_h
+	lw      t0, 0(t0)
+	addi    x4, x0, 1
+	bn.lid  x4, 0(t0)
+	/* Send the message to KMAC. */
+	addi    t0, x0, 64
+	slli    t0, t0, 5
+	addi    t0, t0, SHA3_512_CFG
+	addi    t1, x0, 1
+	slli    t1, t1, 20
+	add     t0, t0, t1
+	csrrw   x0, kmac_cfg, t0
+	/* Send m. */
+	la      t1, mtmp
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.lid  x0, 0(t1++)
+	bn.wsrw kmac_msg, w0 /* m[0] */
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.lid  x0, 0(t1)
+	bn.wsrw kmac_msg1, w0 /* m[1] */
+	/* Send h. */
+	bn.wsrw kmac_msg, w1 /* h */
+	bn.xor  w1, w1, w1
+	bn.wsrw kmac_msg1, w1 /* 0 */
+	/* Retrieve output. We keep the ephemeral shared key in masked form. */
+	la      t0, kr
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.wsrr w0, kmac_digest
+	bn.sid  x0, 0(t0++)
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.wsrr w0, kmac_digest1
+	bn.sid  x0, 0(t0++)
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.wsrr w0, kmac_digest
+	bn.sid  x0, 0(t0++)
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.wsrr w0, kmac_digest1
+	bn.sid  x0, 0(t0++)
+
+#elif NSHARES == 1
+	/* Compute kr = hash_g(m || h). */
+	/* Send the message to KMAC. */
+	addi    t0, x0, 64
+	slli    t0, t0, 5
+	addi    t0, t0, SHA3_512_CFG
+	csrrw   x0, kmac_cfg, t0
+	la      t0, m
+	bn.lid  x0, 0(t0)
+	bn.wsrw kmac_msg, w0 /* m */
+	la      t0, dptr_h
+	lw      t0, 0(t0)
+	bn.lid  x0, 0(t0)
+	bn.wsrw kmac_msg, w0 /* h */
+
+	la      t0, kr
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.wsrr w0, kmac_digest
+	bn.sid  x0, 0(t0++)
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.wsrr w0, kmac_digest
+	bn.sid  x0, 0(t0++)
+
 #else
-#endif
-  /* Set frame pointer */
-  addi fp, sp, 0
-#if KYBER_K == 2
-    li  t0, -3296
-#elif KYBER_K == 3
-    li  t0, -4320
-#elif KYBER_K == 4
-    li  t0, -5344
-#endif
-  add  sp, sp, t0
 
-  /* Save parameters to stack */
-  sw   a0, STACK_KEM_DEC_CT_ADDR(fp)
-  sw   a1, STACK_KEM_DEC_SK_ADDR(fp)
-  addi t0, a1, KYBER_INDCPA_SECRETKEYBYTES
-  sw   t0, STACK_KEM_DEC_PK_ADDR(fp)
-  addi t0, t0, KYBER_INDCPA_PUBLICKEYBYTES
-  sw   t0, STACK_KEM_DEC_H_ADDR(fp)
-  sw   a2, STACK_KEM_DEC_KEYA_ADDR(fp)
+	/* TODO: Remove this when we have masked KMAC interface of order > 2. */
+	/* Since m is Boolean masked, we unmask it to get the real m. */
+	la     t0, m
+	bn.lid x0, 0(t0++)
+	addi   t1, x0, NSHARES
+	addi   t1, t1, -1
+	addi   x4, x0, 1
+	loop t1, 2
+		bn.lid x4, 0(t0++)
+		bn.xor w0, w0, w1
+	/* TODO: Remove this when we have masked KMAC interface of order > 2. */
 
-  /*** indcpa_dec ***/
-  li  a3, STACK_KEM_DEC_BUF
-  add a3, fp, a3
-  jal x1, indcpa_dec
+	bn.xor     bn0, bn0, bn0
+	bn.subi    w2, bn0, 1
+	bn.shv.16h w2, w2 << 15
 
-  /*** Copy hash_h(pk) to buf+32 ***/
-  li     x4, 0
-  lw     a0, STACK_KEM_DEC_H_ADDR(fp)
-  li     a3, STACK_KEM_DEC_BUF
-  add    a3, fp, a3
-  addi   a3, a3, 32
-  bn.lid x4, 0(a0)
-  bn.sid x4, 0(a3++)
+	loopi 16, 6
+		bn.and     w1, w0, w2
+		bn.shv.16h w1, w1 >> 15
+		loopi 16, 2
+			bn.rshi w3, w1, w3 >> 1
+			bn.rshi w1, bn0, w1 >> 16
+		bn.shv.16h w0, w0 << 1
 
-  /*** hash_g(buf) ***/
-  addi  a0, a3, -64
-  add   a2, zero, a3
-  addi  a1, zero, 64
-  slli  t0, a1, 5
-  addi  t0, t0, SHA3_512_CFG
-  csrrw zero, KECCAK_CFG_REG, t0
-  jal   x1, keccak_send_message
-  li    t0, 8
-  LOOPI 2, 2
-    bn.wsrr w8, 0xA /* KECCAK_DIGEST */
-    bn.sid  t0, 0(a2++) /* Store into buffer */
+	/* Compute kr = hash_g(m || h). */
+	addi    x4, x0, 1
+	la      t0, dptr_h
+	lw      t0, 0(t0)
+	bn.lid  x4, 0(t0)
+	/* Send the message to KMAC. */
+	addi    t0, x0, 64
+	slli    t0, t0, 5
+	addi    t0, t0, SHA3_512_CFG
+	csrrw   x0, kmac_cfg, t0
+	bn.wsrw kmac_msg, w3 /* m */
+	bn.wsrw kmac_msg, w1 /* h */
+	la      t0, kr
+	bn.wsrr w0, kmac_digest
+	bn.sid  x0, 0(t0++)
+	bn.wsrr w0, kmac_digest
+	bn.sid  x0, 0(t0++)
+#endif /* NSHARES == 2 */
 
-  /*** indcpa_enc ***/
-  addi a0, a0, -64
-  lw   a1, STACK_KEM_DEC_PK_ADDR(fp)
-  addi a2, a2, -32
-  li   a3, STACK_KEM_DEC_CMP
-  add  a3, fp, a3
-  sw   a3, STACK_KEM_DEC_CMP_ADDR(fp)
-  jal  x1, indcpa_enc
+	/*** shake256(z||c,32) ***/
+	addi    a1, x0, 32
+	la      t0, ctbytes
+	lw      t0, 0(t0)
+	add     a1, a1, t0
+	slli    t0, a1, 5
+	addi    t0, t0, SHAKE256_CFG
+#if NSHARES == 2
+	addi    t1, x0, 1
+	slli    t1, t1, 20
+	add     t0, t0, t1
+#endif /* NSHARES == 2 */
+	csrrw   x0, kmac_cfg, t0
+	/* z */
+	la      t0, dptr_h
+	lw      t0, 0(t0)
+	bn.lid  x0, 32(t0)
+	bn.wsrw kmac_msg, w0
+#if NSHARES == 2
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.lid  x0, 64(t0)
+	bn.wsrw kmac_msg1, w0
+#endif /* NSHARES == 2 */
 
-  /*** shake256(z||c,32) ***/
-  addi    a1, zero, 32
-  addi    a1, a1, KYBER_CIPHERTEXTBYTES
-  slli    t0, a1, 5
-  addi    t0, t0, SHAKE256_CFG
-  csrrw   zero, KECCAK_CFG_REG, t0
-  /* z */
-  lw      a0, STACK_KEM_DEC_H_ADDR(fp)
-  addi    a0, a0, 32
-  addi    a1, zero, 32
-  jal     x1, keccak_send_message
-  /* cmp */
-  lw      a0, STACK_KEM_DEC_CT_ADDR(fp)
-  addi    a1, zero, KYBER_CIPHERTEXTBYTES
-  jal     x1, keccak_send_message
-  /* output buffer */
-  li      a2, STACK_KEM_DEC_KR
-  add     a2, fp, a2
-  addi    a2, a2, 32
-  li      t0, 8
-  bn.wsrr w8, 0xA /* KECCAK_DIGEST */
-  bn.sid  t0, 0(a2++) /* Store into buffer */
+	/* c */
+	la   t0, dptr_ct
+	lw   a0, 0(t0)
+	la   t0, ctbytes
+	lw   t0, 0(t0)
+	add  a1, x0, t0
+#if NSHARES == 2
+	srli t0, a1, 5
+	loop t0, 3
+		bn.lid  x0, 0(a0++)
+		bn.wsrw kmac_msg, w0
+		bn.wsrw kmac_msg1, bn0
+	la      t0, ss_false
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.wsrr w0, kmac_digest
+	bn.sid  x0, 0(t0++)
+	bn.xor  w0, w0, w0 /* Whitening. */
+	bn.wsrr w0, kmac_digest1
+	bn.sid  x0, 0(t0)
+#else
+	jal  x1, keccak_send_message
+	/* output buffer */
+	la      t0, ss_false
+	bn.wsrr w0, kmac_digest
+	bn.sid  x0, 0(t0)
+#endif /* NSHARES == 2 */
 
-  /*** verify (constant-time): ct == cmp ? w4 = 0 : w4 = all-ones ***/
-  li      t0, 0
-  li      t1, 1
-  lw      a0, STACK_KEM_DEC_CT_ADDR(fp)
-  lw      a1, STACK_KEM_DEC_CMP_ADDR(fp)
-  bn.subi w2, w31, 1  /* w2 = 2^256 - 1 (all ones) */
-  bn.mov  w4, w31     /* w4 = 0 (difference accumulator) */
-  LOOPI KYBER_CIPHERTEXT_WRS, 5
-    bn.lid t0, 0(a0++)
-    bn.lid t1, 0(a1++)
-    bn.cmp w0, w1
-    bn.sel w3, w31, w2, FG0.Z  /* w3 = 0 if equal, all ones otherwise */
-    bn.or  w4, w4, w3          /* accumulate */
+	/* Compute re-encryption and compare the re-encrypted ciphertext with the
+	 * public ciphertext. w0 contains the comparison result. */
+	la   a0, m
+	la   t0, dptr_pk
+	lw   a1, 0(t0)
+	la   a2, kr /* coins */
+#if NSHARES == 2
+	addi a2, a2, 64
+#else
+	addi a2, a2, 32
+#endif /* NSHARES == 2 */
+	la   t0, dptr_ct
+	lw   a3, 0(t0)
+	addi a4, x0, NSHARES
+	la   t0, k
+	lw   a5, 0(t0)
+	jal  x1, indcpa_enc_cmp
 
-  /*** cmov ***/
-  li      a0, STACK_KEM_DEC_KR
-  add     a0, fp, a0
-  bn.lid  t0, 0(a0++) /* load true key */
-  bn.lid  t1, 0(a0)   /* load false key */
-  bn.xor  w3, w0, w1
-  bn.and  w3, w3, w4
-  bn.xor  w0, w0, w3
-  lw      a0, STACK_KEM_DEC_KEYA_ADDR(fp)
-  bn.sid  t0, 0(a0) /* return key */
+#if NSHARES == 1
+	/*** cmov ***/
+	la      t0, kr
+	addi    x4, x0, 1
+	bn.lid  x4++, 0(t0) /* load true key */
+	la      t0, ss_false
+	bn.lid  x4, 0(t0) /* load false key */
+	bn.xor  w3, w1, w2
+	bn.and  w3, w3, w0 /* w0 is the comparison result: 0 if equal, all ones otherwise. */
+	bn.xor  w0, w1, w3
+	la      t0, dptr_ss
+	lw      t0, 0(t0)
+	bn.sid  x0, 0(t0)
+	ret
+#else
+	/*** cmov ***/
+	la      t0, kr
+	la      t1, dptr_ss
+	lw      t1, 0(t1)
+	la      t2, ss_false
+	addi    x4, x0, 1
+	bn.xor  w1, w1, w1
+	bn.addi w1, w1, 1
+	bn.cmp  w0, w1
+	csrrw   t3, fg0, x0
+	srli    t3, t3, 3 /* extract z flag */
+#if NSHARES == 2
+	beq     t3, x0, _fail
+	bn.lid  x0, 0(t0)
+	bn.lid  x4, 32(t0)
+	beq     x0, x0, _end
+_fail:
+	bn.lid  x0, 0(t2)
+	bn.lid  x4, 32(t2)
+	beq     x0, x0, _end
+_end:
+	bn.sid  x0, 0(t1)
+	bn.sid  x4, 32(t1)
+#else
+	beq     t3, x0, _fail
+	bn.lid  x0, 0(t0)
+	beq     x0, x0, _end
+_fail:
+	bn.lid  x0, 0(t2)
+	beq     x0, x0, _end
+_end:
+	bn.sid  x0, 0(t1)
+#endif /* NSHARES == 2 */
+	ret
 
-  ret
+#endif /* NSHARES == 1 */

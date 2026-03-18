@@ -8,6 +8,12 @@ load("//rules:acc.bzl", "acc_binary", "acc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+NSHARES = [
+    1,
+    2,
+    3,
+]
+
 NAME_BY_SEC_LEVEL = {
     2: "mlkem512",
     3: "mlkem768",
@@ -42,18 +48,12 @@ acc_library(
     ],
 )
 
-[
-    acc_library(
-        name = name + "_poly",
-        srcs = [
-            "poly.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "poly",
+    srcs = [
+        "poly.s",
+    ],
+)
 
 acc_library(
     name = "poly_gen_matrix",
@@ -62,42 +62,39 @@ acc_library(
     ],
 )
 
-[
-    acc_library(
-        name = name + "_pack_ciphertext",
-        srcs = [
-            "pack_ciphertext.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "pack_ciphertext",
+    srcs = [
+        "pack_ciphertext.s",
+    ],
+)
+
+acc_library(
+    name = "pack_keys",
+    srcs = [
+        "pack_keys.s",
+    ],
+)
+
+acc_library(
+    name = "mlkem_indcpa_enc",
+    srcs = [
+        "mlkem_indcpa_enc.s",
+    ],
+)
 
 [
     acc_library(
-        name = name + "_pack_keys",
+        name = name + "_indcpa_enc_bss_" + str(nshares) + "shares",
         srcs = [
-            "pack_keys.s",
+            "mlkem_indcpa_enc_bss.s",
         ],
         copts = [
             "-DKYBER_K=" + str(sec_level),
+            "-DNSHARES=" + str(nshares),
         ],
     )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
-
-[
-    acc_library(
-        name = name + "_indcpa_enc",
-        srcs = [
-            "mlkem_indcpa_enc.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
+    for nshares in NSHARES
     for sec_level, name in NAME_BY_SEC_LEVEL.items()
 ]
 
@@ -114,44 +111,19 @@ acc_library(
     for sec_level, name in NAME_BY_SEC_LEVEL.items()
 ]
 
-[
-    acc_library(
-        name = name + "_encap",
-        srcs = [
-            "mlkem_encap.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "mlkem_encap",
+    srcs = [
+        "mlkem_encap.s",
+    ],
+)
 
-[
-    acc_library(
-        name = name + "_decap",
-        srcs = [
-            "mlkem_decap.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
-
-[
-    acc_library(
-        name = name + "_consts",
-        srcs = [
-            "mlkem_consts.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "mlkem_consts",
+    srcs = [
+        "mlkem_consts.s",
+    ],
+)
 
 acc_library(
     name = "kmac_send_msg",
@@ -159,3 +131,144 @@ acc_library(
         "kmac_send_msg.s",
     ],
 )
+
+[
+    acc_library(
+        name = "mlkem_non_bs_decap_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_non_bs_decap.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+]
+
+[
+    acc_library(
+        name = "mlkem_non_bs_indcpa_dec_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_non_bs_indcpa_dec.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+]
+
+[
+    acc_library(
+        name = "mlkem_non_bs_indcpa_enc_cmp_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_non_bs_indcpa_enc_cmp.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+]
+
+[
+    acc_library(
+        name = name + "_decap_bss_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_decap_bss.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+            "-DKYBER_K=" + str(sec_level),
+        ],
+    )
+    for nshares in NSHARES
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
+
+[
+    acc_library(
+        name = "mlkem_decap_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_decap.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+]
+
+[
+    acc_library(
+        name = "mlkem_indcpa_dec_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_indcpa_dec.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+]
+
+[
+    acc_library(
+        name = "mlkem_indcpa_enc_cmp_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_indcpa_enc_cmp.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+]
+
+acc_library(
+    name = "unpack_ciphertext",
+    srcs = [
+        "unpack_ciphertext.s",
+    ],
+)
+
+[
+    acc_library(
+        name = "mlkem_keypair_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_keypair.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+]
+
+[
+    acc_library(
+        name = name + "_keypair_bss_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_keypair_bss.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+            "-DKYBER_K=" + str(sec_level),
+        ],
+    )
+    for nshares in NSHARES
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
+
+[
+    acc_library(
+        name = "mlkem_indcpa_keypair_" + str(nshares) + "shares",
+        srcs = [
+            "mlkem_indcpa_keypair.s",
+        ],
+        copts = [
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+]

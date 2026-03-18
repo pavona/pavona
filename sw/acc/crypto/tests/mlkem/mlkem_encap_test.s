@@ -30,44 +30,41 @@
   #define CRYPTO_CIPHERTEXTBYTES 1568
 #endif
 
-/* Entry point. */
+/* Register aliases */
+.equ x2, sp
+.equ x3, fp
+.equ x5, t0
+.equ x6, t1
+.equ x7, t2
+.equ x8, s0
+.equ x9, s1
+.equ x10, a0
+.equ x11, a1
+.equ x12, a2
+.equ x13, a3
+.equ x14, a4
+.equ x15, a5
+.equ x16, a6
+.equ x17, a7
+.equ x18, s2
+.equ x19, s3
+.equ x20, s4
+.equ x21, s5
+.equ x22, s6
+.equ x23, s7
+.equ x24, s8
+.equ x25, s9
+.equ x26, s10
+.equ x27, s11
+.equ x28, t3
+.equ x29, t4
+.equ x30, t5
+.equ x31, t6
+
+.equ w31, bn0
+
 .globl main
 main:
-  /* Init all-zero register. */
-#ifdef RTL_ISS_TEST
-  bn.xor  w0, w0, w0
-  bn.xor  w1, w1, w1
-  bn.xor  w2, w2, w2
-  bn.xor  w3, w3, w3
-  bn.xor  w4, w4, w4
-  bn.xor  w5, w5, w5
-  bn.xor  w6, w6, w6
-  bn.xor  w7, w7, w7
-  bn.xor  w8, w8, w8
-  bn.xor  w9, w9, w9
-  bn.xor  w10, w10, w10
-  bn.xor  w11, w11, w11
-  bn.xor  w12, w12, w12
-  bn.xor  w13, w13, w13
-  bn.xor  w14, w14, w14
-  bn.xor  w15, w15, w15
-  bn.xor  w16, w16, w16
-  bn.xor  w17, w17, w17
-  bn.xor  w18, w18, w18
-  bn.xor  w19, w19, w19
-  bn.xor  w20, w20, w20
-  bn.xor  w21, w21, w21
-  bn.xor  w22, w22, w22
-  bn.xor  w23, w23, w23
-  bn.xor  w24, w24, w24
-  bn.xor  w25, w25, w25
-  bn.xor  w26, w26, w26
-  bn.xor  w27, w27, w27
-  bn.xor  w28, w28, w28
-  bn.xor  w29, w29, w29
-  bn.xor  w30, w30, w30
-#endif
-  bn.xor  w31, w31, w31
 
   /* MOD <= dmem[modulus] = KYBER_Q */
   li      x5, 2
@@ -79,9 +76,11 @@ main:
   bn.wsrw 0x0, w2
 
   /* Load stack pointer */
-  la   x11, ct
-  la   x12, ss
-  la   x13, ek
+  la   a0, coins
+  la   a1, ek
+  la   a2, ct
+  la   a3, ss
+  addi a4, x0, KYBER_K
   jal  x1, crypto_kem_enc
 
   ecall

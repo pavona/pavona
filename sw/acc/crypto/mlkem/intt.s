@@ -34,43 +34,26 @@ intt:
   bn.xor w18, w18, w18
 
   /* Set up wide registers for input and intermediate states */
-  li x4, 0
-  li x5, 1
-  li x6, 2
-  li x7, 3
-  li x8, 4
-  li x9, 5
-  li x13, 6
-  li x14, 7
-  li x15, 8
-  li x16, 9
-  li x17, 10
-  li x18, 11
-  li x19, 12
-  li x20, 13
-  li x21, 14
-  li x22, 15
-
-  /* Set up wide registers for input and twiddle factors */
-  li x23, 17
+  li x4, 1
+  li x5, 17
 
   /* Load input */
-  bn.lid x4,  0(x10++)
-  bn.lid x5,  0(x10++)
-  bn.lid x6,  0(x10++)
-  bn.lid x7,  0(x10++)
-  bn.lid x8,  0(x10++)
-  bn.lid x9,  0(x10++)
-  bn.lid x13, 0(x10++)
-  bn.lid x14, 0(x10++)
-  bn.lid x15, 0(x10++)
-  bn.lid x16, 0(x10++)
-  bn.lid x17, 0(x10++)
-  bn.lid x18, 0(x10++)
-  bn.lid x19, 0(x10++)
-  bn.lid x20, 0(x10++)
-  bn.lid x21, 0(x10++)
-  bn.lid x22, 0(x10++)
+  bn.lid x0, 0(x10)
+  bn.lid x4++, 32(x10)
+  bn.lid x4++, 64(x10)
+  bn.lid x4++, 96(x10)
+  bn.lid x4++, 128(x10)
+  bn.lid x4++, 160(x10)
+  bn.lid x4++, 192(x10)
+  bn.lid x4++, 224(x10)
+  bn.lid x4++, 256(x10)
+  bn.lid x4++, 288(x10)
+  bn.lid x4++, 320(x10)
+  bn.lid x4++, 352(x10)
+  bn.lid x4++, 384(x10)
+  bn.lid x4++, 416(x10)
+  bn.lid x4++, 448(x10)
+  bn.lid x4++, 480(x10)
 
   /* Transpose for Layers 7--5 */
   /* First trans w24-w31 */
@@ -132,7 +115,7 @@ intt:
   /* Layer 7, stride 2 */
   #define wtmp w8
 
-  bn.lid x23, 0(x11) /* Load twiddle factors */
+  bn.lid x5, 0(x11) /* Load twiddle factors */
 
   /* Butterflies */
   bn.subvm.16H         wtmp, w24, w25
@@ -141,7 +124,7 @@ intt:
   bn.mulv.l.16H.lo     w25, w25, sw0.2
   bn.mulv.l.16H.acc.hi w25, w25, sw0.0
 
-  bn.lid x23, 32(x11) /* Load twiddle factors */
+  bn.lid x5, 32(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w26, w27
   bn.addvm.16H         w26, w26, w27
@@ -149,7 +132,7 @@ intt:
   bn.mulv.l.16H.lo     w27, w27, sw0.2
   bn.mulv.l.16H.acc.hi w27, w27, sw0.0
 
-  bn.lid x23, 64(x11) /* Load twiddle factors */
+  bn.lid x5, 64(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w28, w29
   bn.addvm.16H         w28, w28, w29
@@ -157,7 +140,7 @@ intt:
   bn.mulv.l.16H.lo     w29, w29, sw0.2
   bn.mulv.l.16H.acc.hi w29, w29, sw0.0
 
-  bn.lid x23, 96(x11) /* Load twiddle factors */
+  bn.lid x5, 96(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w30, w31
   bn.addvm.16H         w30, w30, w31
@@ -165,7 +148,7 @@ intt:
   bn.mulv.l.16H.lo     w31, w31, sw0.2
   bn.mulv.l.16H.acc.hi w31, w31, sw0.0
 
-  bn.lid x23, 128(x11) /* Load twiddle factors */
+  bn.lid x5, 128(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w0, w1
   bn.addvm.16H         w0, w0, w1
@@ -173,7 +156,7 @@ intt:
   bn.mulv.l.16H.lo     w1, w1, sw0.2
   bn.mulv.l.16H.acc.hi w1, w1, sw0.0
 
-  bn.lid x23, 160(x11) /* Load twiddle factors */
+  bn.lid x5, 160(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w2, w3
   bn.addvm.16H         w2, w2, w3
@@ -181,7 +164,7 @@ intt:
   bn.mulv.l.16H.lo     w3, w3, sw0.2
   bn.mulv.l.16H.acc.hi w3, w3, sw0.0
 
-  bn.lid x23, 192(x11) /* Load twiddle factors */
+  bn.lid x5, 192(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w4, w5
   bn.addvm.16H         w4, w4, w5
@@ -189,7 +172,7 @@ intt:
   bn.mulv.l.16H.lo     w5, w5, sw0.2
   bn.mulv.l.16H.acc.hi w5, w5, sw0.0
 
-  bn.lid x23, 224(x11) /* Load twiddle factors */
+  bn.lid x5, 224(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w6, w7
   bn.addvm.16H         w6, w6, w7
@@ -199,7 +182,7 @@ intt:
 
   /* Layer 6, stride 4 */
 
-  bn.lid x23, 256(x11) /* Load twiddle factors */
+  bn.lid x5, 256(x11) /* Load twiddle factors */
 
   /* Butterflies */
   bn.subvm.16H         wtmp, w24, w26
@@ -214,7 +197,7 @@ intt:
   bn.mulv.l.16H.lo     w27, w27, sw0.2
   bn.mulv.l.16H.acc.hi w27, w27, sw0.0
 
-  bn.lid x23, 288(x11) /* Load twiddle factors */
+  bn.lid x5, 288(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w28, w30
   bn.addvm.16H         w28, w28, w30
@@ -228,7 +211,7 @@ intt:
   bn.mulv.l.16H.lo     w31, w31, sw0.2
   bn.mulv.l.16H.acc.hi w31, w31, sw0.0
 
-  bn.lid x23, 320(x11) /* Load twiddle factors */
+  bn.lid x5, 320(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w0, w2
   bn.addvm.16H         w0, w0, w2
@@ -242,7 +225,7 @@ intt:
   bn.mulv.l.16H.lo     w3, w3, sw0.2
   bn.mulv.l.16H.acc.hi w3, w3, sw0.0
 
-  bn.lid x23, 352(x11) /* Load twiddle factors */
+  bn.lid x5, 352(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w4, w6
   bn.addvm.16H         w4, w4, w6
@@ -258,7 +241,7 @@ intt:
 
   /* Layer 5, stride 8 */
 
-  bn.lid x23, 384(x11) /* Load twiddle factors */
+  bn.lid x5, 384(x11) /* Load twiddle factors */
 
   /* Butterflies */
   bn.subvm.16H         wtmp, w24, w28
@@ -285,7 +268,7 @@ intt:
   bn.mulv.l.16H.lo     w31, w31, sw0.2
   bn.mulv.l.16H.acc.hi w31, w31, sw0.0
 
-  bn.lid x23, 416(x11) /* Load twiddle factors */
+  bn.lid x5, 416(x11) /* Load twiddle factors */
 
   bn.subvm.16H         wtmp, w0, w4
   bn.addvm.16H         w0, w0, w4
@@ -370,7 +353,7 @@ intt:
 
   /* Layer 4, stride 16 */
   /* Load twiddle factors */
-  bn.lid x23, 448(x11)
+  bn.lid x5, 448(x11)
 
   /* Butterflies */
   bn.subvm.16H           w30, w0, w1
@@ -628,21 +611,25 @@ intt:
   bn.wsrw 0x0, w19
 
   /* Store output */
-  bn.sid x4, 0(x12++)
-  bn.sid x5, 0(x12++)
-  bn.sid x6, 0(x12++)
-  bn.sid x7, 0(x12++)
-  bn.sid x8, 0(x12++)
-  bn.sid x9, 0(x12++)
-  bn.sid x13, 0(x12++)
-  bn.sid x14, 0(x12++)
-  bn.sid x15, 0(x12++)
-  bn.sid x16, 0(x12++)
-  bn.sid x17, 0(x12++)
-  bn.sid x18, 0(x12++)
-  bn.sid x19, 0(x12++)
-  bn.sid x20, 0(x12++)
-  bn.sid x21, 0(x12++)
-  bn.sid x22, 0(x12++)
+  addi   x4, x0, 1
+  bn.sid x0, 0(x12)
+  bn.sid x4++, 32(x12)
+  bn.sid x4++, 64(x12)
+  bn.sid x4++, 96(x12)
+  bn.sid x4++, 128(x12)
+  bn.sid x4++, 160(x12)
+  bn.sid x4++, 192(x12)
+  bn.sid x4++, 224(x12)
+  bn.sid x4++, 256(x12)
+  bn.sid x4++, 288(x12)
+  bn.sid x4++, 320(x12)
+  bn.sid x4++, 352(x12)
+  bn.sid x4++, 384(x12)
+  bn.sid x4++, 416(x12)
+  bn.sid x4++, 448(x12)
+  bn.sid x4++, 480(x12)
 
+  /* Adjust input and output addresses. */
+  addi x10, x10, 512
+  addi x12, x12, 512
   ret
