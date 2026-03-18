@@ -8,7 +8,7 @@ This example diagram describes a sequence of advance operations on multiple keym
 Blue rounded rectangles represent empty key slots and green color is used to denote when they become active. Each slot stores a secret key as well as context data for its key.
 Purple rectangles denote key derivation function (KDF) calls that are used to compute slot keys.
 
-In OpenTitan, the KDF is instantiated as [KMAC](../../kmac/README.md).
+The KDF is instantiated as [KMAC](../../kmac/README.md).
 Each valid operation involves a KMAC invocation, which uses the internal key from the selected source slot for its key input, and other HW / SW supplied inputs as its message.
 The concatenated components of the message is dependent on the context of the source slot as well as further inputs provided from HW / SW.
 
