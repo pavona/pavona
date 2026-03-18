@@ -1,6 +1,6 @@
 # SoC Proxy Technical Specification
 
-SoC Proxy is a simple comportable IP module that facilitates the breakout of signals and buses internal to OpenTitan (similar to Sensor Control for AST).
+SoC Proxy is a simple comportable IP module that facilitates the breakout of signals and buses internal to Darjeeling (similar to Sensor Control for AST).
 
 ## Comportable Interfaces
 
