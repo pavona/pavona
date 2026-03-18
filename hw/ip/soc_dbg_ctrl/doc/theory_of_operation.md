@@ -1,3 +1,3 @@
 # Theory of Operation
 
-TODO (#26949)
+TODO
