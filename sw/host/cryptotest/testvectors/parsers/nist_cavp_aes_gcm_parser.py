@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -63,8 +64,8 @@ def parse_testcases(args) -> None:
         if len(test_case["plaintext"]) < 64:
             plaintext_length_valid = True
 
-        if (tag_length_valid & iv_length_valid & aad_length_valid &
-                ciphertext_length_valid & plaintext_length_valid):
+        if (tag_length_valid and iv_length_valid and aad_length_valid and
+                ciphertext_length_valid and plaintext_length_valid):
             test_cases.append(test_case)
 
     json_filename = args.dst
