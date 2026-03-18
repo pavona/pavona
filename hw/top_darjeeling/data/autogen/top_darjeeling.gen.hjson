@@ -7510,7 +7510,7 @@
         }
         {
           name: OtAgentId
-          desc: OT Agent ID
+          desc: Secure Agent ID
           type: int unsigned
           default: "0"
           local: "false"

@@ -32,12 +32,12 @@ Additionally, the following interfaces are instantiated to connect to the DUT:
 
 There are four TileLink interfaces:
 * The configuration register interface (device).
-* OpenTitan Internal bus (host).
+* Internal bus (host).
 * SoC Control Network bus (host).
 * SoC System Bus (host).
 
 An adapter is used to connect the SoC System Bus port of the DMA controller to a TL-UL agent to support verification of this non-TileLink port.
-Since the OpenTitan TL-UL components support only a 32-bit address space presently but the SoC System Bus carries a 64-bit address, the base address of this adapter is randomized and it presents a 4GiB window within the 64-bit address space.
+Since the TL-UL components support only a 32-bit address space presently but the SoC System Bus carries a 64-bit address, the base address of this adapter is randomized and it presents a 4GiB window within the 64-bit address space.
 The adapter will respond with an error if the DMA IP attempts to access an address outside of this window.
 
 ### Common DV utility components

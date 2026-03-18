@@ -4,7 +4,7 @@ This section details how software can interface with the Direct Memory Access (D
 
 ## Module Initialization
 
-Before initiating memory transfers using the DMA for OpenTitan internal memory, software must define the accessible memory range for the DMA.
+Before initiating memory transfers using the DMA for internal memory, software must define the accessible memory range for the DMA.
 This involves a specific sequence of register writes:
 
 1.  **Define the Memory Range:** First, software must write the base address to the [`ENABLED_MEMORY_RANGE_BASE`](registers.md#enabled_memory_range_base) register and the upper limit of the accessible range to the [`ENABLED_MEMORY_RANGE_LIMIT`](registers.md#enabled_memory_range_limit) register.

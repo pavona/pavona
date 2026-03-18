@@ -3,71 +3,71 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/dma/data/dma.hjson -->
 ## Summary
 
-| Name                                                            | Offset   |   Length | Description                                                                                                                                              |
-|:----------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| dma.[`INTR_STATE`](#intr_state)                                 | 0x0      |        4 | Interrupt State Register                                                                                                                                 |
-| dma.[`INTR_ENABLE`](#intr_enable)                               | 0x4      |        4 | Interrupt Enable Register                                                                                                                                |
-| dma.[`INTR_TEST`](#intr_test)                                   | 0x8      |        4 | Interrupt Test Register                                                                                                                                  |
-| dma.[`ALERT_TEST`](#alert_test)                                 | 0xc      |        4 | Alert Test Register                                                                                                                                      |
-| dma.[`SRC_ADDR_LO`](#src_addr_lo)                               | 0x10     |        4 | Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space. |
-| dma.[`SRC_ADDR_HI`](#src_addr_hi)                               | 0x14     |        4 | Upper 32 bits of the source address.                                                                                                                     |
-| dma.[`DST_ADDR_LO`](#dst_addr_lo)                               | 0x18     |        4 | Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space. |
-| dma.[`DST_ADDR_HI`](#dst_addr_hi)                               | 0x1c     |        4 | Upper 32 bits of the destination address.                                                                                                                |
-| dma.[`ADDR_SPACE_ID`](#addr_space_id)                           | 0x20     |        4 | Address spaces that source and destination pointers refer to.                                                                                            |
-| dma.[`ENABLED_MEMORY_RANGE_BASE`](#enabled_memory_range_base)   | 0x24     |        4 | Base Address to mark the start of the DMA enabled memory range within the OT internal memory space.                                                      |
-| dma.[`ENABLED_MEMORY_RANGE_LIMIT`](#enabled_memory_range_limit) | 0x28     |        4 | Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; address is inclusive.                                 |
-| dma.[`RANGE_VALID`](#range_valid)                               | 0x2c     |        4 | Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the OT internal address space.    |
-| dma.[`RANGE_REGWEN`](#range_regwen)                             | 0x30     |        4 | Used to lock the DMA enabled memory range configuration registers.                                                                                       |
-| dma.[`CFG_REGWEN`](#cfg_regwen)                                 | 0x34     |        4 | Indicates whether the configuration registers are locked because the DMA controller is operating.                                                        |
-| dma.[`TOTAL_DATA_SIZE`](#total_data_size)                       | 0x38     |        4 | Total size (in bytes) of the data to be transferred.                                                                                                     |
-| dma.[`CHUNK_DATA_SIZE`](#chunk_data_size)                       | 0x3c     |        4 | Number of bytes to be transferred in response to each interrupt/firmware request.                                                                        |
-| dma.[`TRANSFER_WIDTH`](#transfer_width)                         | 0x40     |        4 | Denotes the width of each transaction that the DMA shall issue.                                                                                          |
-| dma.[`CONTROL`](#control)                                       | 0x44     |        4 | Control register for DMA data movement.                                                                                                                  |
-| dma.[`SRC_CONFIG`](#src_config)                                 | 0x48     |        4 | Defines the addressing behavior of the DMA for the source address.                                                                                       |
-| dma.[`DST_CONFIG`](#dst_config)                                 | 0x4c     |        4 | Defines the addressing behavior of the DMA for the destination address.                                                                                  |
-| dma.[`STATUS`](#status)                                         | 0x50     |        4 | Status indication for DMA data movement.                                                                                                                 |
-| dma.[`ERROR_CODE`](#error_code)                                 | 0x54     |        4 | Denotes the source of the operational error.                                                                                                             |
-| dma.[`SHA2_DIGEST_0`](#sha2_digest)                             | 0x58     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_1`](#sha2_digest)                             | 0x5c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_2`](#sha2_digest)                             | 0x60     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_3`](#sha2_digest)                             | 0x64     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_4`](#sha2_digest)                             | 0x68     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_5`](#sha2_digest)                             | 0x6c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_6`](#sha2_digest)                             | 0x70     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_7`](#sha2_digest)                             | 0x74     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_8`](#sha2_digest)                             | 0x78     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_9`](#sha2_digest)                             | 0x7c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_10`](#sha2_digest)                            | 0x80     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_11`](#sha2_digest)                            | 0x84     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_12`](#sha2_digest)                            | 0x88     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_13`](#sha2_digest)                            | 0x8c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_14`](#sha2_digest)                            | 0x90     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_15`](#sha2_digest)                            | 0x94     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`HANDSHAKE_INTR_ENABLE`](#handshake_intr_enable)           | 0x98     |        4 | Enable bits for incoming handshake interrupt wires.                                                                                                      |
-| dma.[`CLEAR_INTR_SRC`](#clear_intr_src)                         | 0x9c     |        4 | Valid bits for which interrupt sources need clearing.                                                                                                    |
-| dma.[`CLEAR_INTR_BUS`](#clear_intr_bus)                         | 0xa0     |        4 | Bus selection bit where the clearing command should be performed."                                                                                       |
-| dma.[`INTR_SRC_ADDR_0`](#intr_src_addr)                         | 0xa4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_1`](#intr_src_addr)                         | 0xa8     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_2`](#intr_src_addr)                         | 0xac     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_3`](#intr_src_addr)                         | 0xb0     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_4`](#intr_src_addr)                         | 0xb4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_5`](#intr_src_addr)                         | 0xb8     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_6`](#intr_src_addr)                         | 0xbc     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_7`](#intr_src_addr)                         | 0xc0     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_8`](#intr_src_addr)                         | 0xc4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_9`](#intr_src_addr)                         | 0xc8     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_10`](#intr_src_addr)                        | 0xcc     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_WR_VAL_0`](#intr_src_wr_val)                     | 0x124    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_1`](#intr_src_wr_val)                     | 0x128    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_2`](#intr_src_wr_val)                     | 0x12c    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_3`](#intr_src_wr_val)                     | 0x130    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_4`](#intr_src_wr_val)                     | 0x134    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_5`](#intr_src_wr_val)                     | 0x138    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_6`](#intr_src_wr_val)                     | 0x13c    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_7`](#intr_src_wr_val)                     | 0x140    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_8`](#intr_src_wr_val)                     | 0x144    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_9`](#intr_src_wr_val)                     | 0x148    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_10`](#intr_src_wr_val)                    | 0x14c    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| Name                                                            | Offset   |   Length | Description                                                                                                                                               |
+|:----------------------------------------------------------------|:---------|---------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| dma.[`INTR_STATE`](#intr_state)                                 | 0x0      |        4 | Interrupt State Register                                                                                                                                  |
+| dma.[`INTR_ENABLE`](#intr_enable)                               | 0x4      |        4 | Interrupt Enable Register                                                                                                                                 |
+| dma.[`INTR_TEST`](#intr_test)                                   | 0x8      |        4 | Interrupt Test Register                                                                                                                                   |
+| dma.[`ALERT_TEST`](#alert_test)                                 | 0xc      |        4 | Alert Test Register                                                                                                                                       |
+| dma.[`SRC_ADDR_LO`](#src_addr_lo)                               | 0x10     |        4 | Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space.     |
+| dma.[`SRC_ADDR_HI`](#src_addr_hi)                               | 0x14     |        4 | Upper 32 bits of the source address.                                                                                                                      |
+| dma.[`DST_ADDR_LO`](#dst_addr_lo)                               | 0x18     |        4 | Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space.     |
+| dma.[`DST_ADDR_HI`](#dst_addr_hi)                               | 0x1c     |        4 | Upper 32 bits of the destination address.                                                                                                                 |
+| dma.[`ADDR_SPACE_ID`](#addr_space_id)                           | 0x20     |        4 | Address spaces that source and destination pointers refer to.                                                                                             |
+| dma.[`ENABLED_MEMORY_RANGE_BASE`](#enabled_memory_range_base)   | 0x24     |        4 | Base Address to mark the start of the DMA enabled memory range within the secure internal memory space.                                                   |
+| dma.[`ENABLED_MEMORY_RANGE_LIMIT`](#enabled_memory_range_limit) | 0x28     |        4 | Limit Address to mark the end of the DMA enabled memory range within the secure internal memory space; address is inclusive.                              |
+| dma.[`RANGE_VALID`](#range_valid)                               | 0x2c     |        4 | Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the secure internal address space. |
+| dma.[`RANGE_REGWEN`](#range_regwen)                             | 0x30     |        4 | Used to lock the DMA enabled memory range configuration registers.                                                                                        |
+| dma.[`CFG_REGWEN`](#cfg_regwen)                                 | 0x34     |        4 | Indicates whether the configuration registers are locked because the DMA controller is operating.                                                         |
+| dma.[`TOTAL_DATA_SIZE`](#total_data_size)                       | 0x38     |        4 | Total size (in bytes) of the data to be transferred.                                                                                                      |
+| dma.[`CHUNK_DATA_SIZE`](#chunk_data_size)                       | 0x3c     |        4 | Number of bytes to be transferred in response to each interrupt/firmware request.                                                                         |
+| dma.[`TRANSFER_WIDTH`](#transfer_width)                         | 0x40     |        4 | Denotes the width of each transaction that the DMA shall issue.                                                                                           |
+| dma.[`CONTROL`](#control)                                       | 0x44     |        4 | Control register for DMA data movement.                                                                                                                   |
+| dma.[`SRC_CONFIG`](#src_config)                                 | 0x48     |        4 | Defines the addressing behavior of the DMA for the source address.                                                                                        |
+| dma.[`DST_CONFIG`](#dst_config)                                 | 0x4c     |        4 | Defines the addressing behavior of the DMA for the destination address.                                                                                   |
+| dma.[`STATUS`](#status)                                         | 0x50     |        4 | Status indication for DMA data movement.                                                                                                                  |
+| dma.[`ERROR_CODE`](#error_code)                                 | 0x54     |        4 | Denotes the source of the operational error.                                                                                                              |
+| dma.[`SHA2_DIGEST_0`](#sha2_digest)                             | 0x58     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_1`](#sha2_digest)                             | 0x5c     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_2`](#sha2_digest)                             | 0x60     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_3`](#sha2_digest)                             | 0x64     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_4`](#sha2_digest)                             | 0x68     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_5`](#sha2_digest)                             | 0x6c     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_6`](#sha2_digest)                             | 0x70     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_7`](#sha2_digest)                             | 0x74     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_8`](#sha2_digest)                             | 0x78     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_9`](#sha2_digest)                             | 0x7c     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_10`](#sha2_digest)                            | 0x80     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_11`](#sha2_digest)                            | 0x84     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_12`](#sha2_digest)                            | 0x88     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_13`](#sha2_digest)                            | 0x8c     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_14`](#sha2_digest)                            | 0x90     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`SHA2_DIGEST_15`](#sha2_digest)                            | 0x94     |        4 | Digest register for the inline hashing operation.                                                                                                         |
+| dma.[`HANDSHAKE_INTR_ENABLE`](#handshake_intr_enable)           | 0x98     |        4 | Enable bits for incoming handshake interrupt wires.                                                                                                       |
+| dma.[`CLEAR_INTR_SRC`](#clear_intr_src)                         | 0x9c     |        4 | Valid bits for which interrupt sources need clearing.                                                                                                     |
+| dma.[`CLEAR_INTR_BUS`](#clear_intr_bus)                         | 0xa0     |        4 | Bus selection bit where the clearing command should be performed."                                                                                        |
+| dma.[`INTR_SRC_ADDR_0`](#intr_src_addr)                         | 0xa4     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_1`](#intr_src_addr)                         | 0xa8     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_2`](#intr_src_addr)                         | 0xac     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_3`](#intr_src_addr)                         | 0xb0     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_4`](#intr_src_addr)                         | 0xb4     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_5`](#intr_src_addr)                         | 0xb8     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_6`](#intr_src_addr)                         | 0xbc     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_7`](#intr_src_addr)                         | 0xc0     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_8`](#intr_src_addr)                         | 0xc4     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_9`](#intr_src_addr)                         | 0xc8     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_ADDR_10`](#intr_src_addr)                        | 0xcc     |        4 | Destination address for interrupt source clearing write.                                                                                                  |
+| dma.[`INTR_SRC_WR_VAL_0`](#intr_src_wr_val)                     | 0x124    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_1`](#intr_src_wr_val)                     | 0x128    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_2`](#intr_src_wr_val)                     | 0x12c    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_3`](#intr_src_wr_val)                     | 0x130    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_4`](#intr_src_wr_val)                     | 0x134    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_5`](#intr_src_wr_val)                     | 0x138    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_6`](#intr_src_wr_val)                     | 0x13c    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_7`](#intr_src_wr_val)                     | 0x140    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_8`](#intr_src_wr_val)                     | 0x144    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_9`](#intr_src_wr_val)                     | 0x148    |        4 | Write value for interrupt clearing write.                                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_10`](#intr_src_wr_val)                    | 0x14c    |        4 | Write value for interrupt clearing write.                                                                                                                 |
 
 ## INTR_STATE
 Interrupt State Register
@@ -144,7 +144,7 @@ Alert Test Register
 |   0    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
 
 ## SRC_ADDR_LO
-Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space.
 Data is read from this location in a copy operation.
 The address may be an IO virtual address.
 Must be aligned to the transfer width.
@@ -178,17 +178,12 @@ Source and destination address must have the same alignment.
 {"reg": [{"name": "src_addr_hi", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                     |
-|:------:|:------:|:-------:|:-----------------------------------------|
-|  31:0  |   rw   |   0x0   | [src_addr_hi](#src_addr_hi--src_addr_hi) |
-
-### SRC_ADDR_HI . src_addr_hi
-Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
-Must be aligned to the transfer width.
-Source and destination address must have the same alignment.
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                                                                                                                                                               |
+|:------:|:------:|:-------:|:------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | src_addr_hi | Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space. Must be aligned to the transfer width. Source and destination address must have the same alignment. |
 
 ## DST_ADDR_LO
-Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space.
 Data is written to this location in a copy operation.
 The address may be an IO virtual address.
 Must be aligned to the transfer width.
@@ -223,14 +218,9 @@ Source and destination address must have the same alignment.
 {"reg": [{"name": "dst_addr_hi", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                     |
-|:------:|:------:|:-------:|:-----------------------------------------|
-|  31:0  |   rw   |   0x0   | [dst_addr_hi](#dst_addr_hi--dst_addr_hi) |
-
-### DST_ADDR_HI . dst_addr_hi
-Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
-Must be aligned to the transfer width.
-Source and destination address must have the same alignment.
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                                                                                                                                                               |
+|:------:|:------:|:-------:|:------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | dst_addr_hi | Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space. Must be aligned to the transfer width. Source and destination address must have the same alignment. |
 
 ## ADDR_SPACE_ID
 Address spaces that source and destination pointers refer to.
@@ -256,7 +246,7 @@ Target address space that the destination address pointer refers to.
 
 | Value   | Name     | Description                                                                              |
 |:--------|:---------|:-----------------------------------------------------------------------------------------|
-| 0x7     | OT_ADDR  | OpenTitan 32-bit internal bus.                                                           |
+| 0x7     | OT_ADDR  | Secure 32-bit internal bus.                                                              |
 | 0xa     | SOC_ADDR | SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port. |
 | 0x9     | SYS_ADDR | SoC system address bus using 64 bit SYS port.                                            |
 
@@ -267,14 +257,14 @@ Target address space that the source address pointer refers to.
 
 | Value   | Name     | Description                                                                              |
 |:--------|:---------|:-----------------------------------------------------------------------------------------|
-| 0x7     | OT_ADDR  | OpenTitan 32-bit internal bus.                                                           |
+| 0x7     | OT_ADDR  | Secure 32-bit internal bus.                                                              |
 | 0xa     | SOC_ADDR | SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port. |
 | 0x9     | SYS_ADDR | SoC system address bus using 64 bit SYS port.                                            |
 
 Other values are reserved.
 
 ## ENABLED_MEMORY_RANGE_BASE
-Base Address to mark the start of the DMA enabled memory range within the OT internal memory space.
+Base Address to mark the start of the DMA enabled memory range within the secure internal memory space.
 - Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -286,12 +276,12 @@ Base Address to mark the start of the DMA enabled memory range within the OT int
 {"reg": [{"name": "base", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                         |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | base   | Base Address to mark the start of the DMA enabled memory range within the OT internal memory space. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                             |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | base   | Base Address to mark the start of the DMA enabled memory range within the secure internal memory space. |
 
 ## ENABLED_MEMORY_RANGE_LIMIT
-Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; address is inclusive.
+Limit Address to mark the end of the DMA enabled memory range within the secure internal memory space; address is inclusive.
 - Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -303,12 +293,12 @@ Limit Address to mark the end of the DMA enabled memory range within the OT inte
 {"reg": [{"name": "limit", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                   |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | limit  | Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; inclusive. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                       |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | limit  | Limit Address to mark the end of the DMA enabled memory range within the secure internal memory space; inclusive. |
 
 ## RANGE_VALID
-Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the OT internal address space.
+Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the secure internal address space.
 - Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0x1`
@@ -392,7 +382,7 @@ Total size (in bytes) of the data to be transferred. The complete transfer opera
 may consist of multiple chunks of data as specified by the CHUNK_DATA_SIZE register.
 
 Minimum: 1 byte.
-Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+Maximum: May be restricted to a maximum pre-defined size based on DMA enabled memory space allocation.
 Works in conjunction with the TRANSFER_WIDTH register.
 
 ## CHUNK_DATA_SIZE
@@ -418,7 +408,7 @@ In hardware handshake mode, the DMA reads in chunks of CHUNK_DATA_SIZE from the 
 For a single memory transfer CHUNK_DATA_SIZE and TOTAL_DATA_SIZE are set to the same value.
 
 Minimum: 1 byte.
-Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+Maximum: May be restricted to a maximum pre-defined size based on DMA enabled memory space allocation.
 Works in conjunction with the TRANSFER_WIDTH register.
 
 ## TRANSFER_WIDTH
@@ -488,7 +478,7 @@ Firmware shall clear the Go bit when it intends to stop the hardware handshake o
 ### CONTROL . abort
 Aborts the DMA operation if this bit is set.
 Sets the corresponding bit in the status register once abort operation is complete.
-Any OpenTitan-internal transactions are guaranteed to complete, but there are no guarantees on the SoC interface.
+Any secure-side internal transactions are guaranteed to complete, but there are no guarantees on the SoC interface.
 
 ### CONTROL . initial_transfer
 Marks the initial transfer to initialize the DMA and SHA engine for one transfer that can span over multiple single DMA transfers.
@@ -691,7 +681,7 @@ bit set in this register.
 ## CLEAR_INTR_BUS
 Bus selection bit where the clearing command should be performed."
 0: CTN/System fabric
-1: OT-internal crossbar
+1: secure-side internal crossbar
 - Offset: `0xa0`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`

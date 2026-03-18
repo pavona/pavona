@@ -258,7 +258,7 @@
 
               Checking:
               - Check if STATUS.aborted bit is set (This indicates DMA operation is aborted)
-              - Check if there all outstanding transactions on OT internal TLUL interface are complete
+              - Check that all outstanding transactions on secure internal TLUL interface are complete
               '''
         stage: V2
         tests: ["dma_abort"]

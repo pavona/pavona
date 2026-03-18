@@ -8,8 +8,8 @@
   human_name:         "DMA Controller"
   one_line_desc:      "DMA Controller for integrated systems"
   one_paragraph_desc: '''
-  The secure DMA controller provides OpenTitan with the ability to move data blobs securely in and out of the OpenTitan memory while offloading the Ibex core to focus on security critical tasks.
-  The secure DMA provides an hardware isolation layer between OpenTitan and the rest of the SoC.
+  The secure DMA controller provides the ability to move data blobs securely in and out of secure memory while offloading the Ibex core to focus on security critical tasks.
+  The secure DMA provides an hardware isolation layer between secure memory and the rest of the SoC.
   It provides the hardware enforcement of security properties through well defined isolation & access control techniques, hardware based checking and other protection mechanisms.
   Note that depending upon use case, it is expected that the SoC provides proper security mechanisms for code / data protections such as access control mechanisms, encrypted (w/integrity protection) memory regions etc.
   '''
@@ -60,7 +60,7 @@
       expose: "true",
     },
     { name: "OtAgentId",
-      desc: "OT Agent ID"
+      desc: "Secure Agent ID"
       type: "int unsigned"
       default: "0",
       local: "false",
@@ -155,7 +155,7 @@
   registers: [
     { name: "SRC_ADDR_LO"
       desc: '''
-            Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+            Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space.
             Data is read from this location in a copy operation.
             The address may be an IO virtual address.
             Must be aligned to the transfer width.
@@ -186,7 +186,7 @@
           name: "src_addr_hi"
           resval: 0x0
           desc: '''
-                Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+                Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space.
                 Must be aligned to the transfer width.
                 Source and destination address must have the same alignment.
                 '''
@@ -195,7 +195,7 @@
     }
     { name: "DST_ADDR_LO"
       desc: '''
-            Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+            Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space.
             Data is written to this location in a copy operation.
             The address may be an IO virtual address.
             Must be aligned to the transfer width.
@@ -228,7 +228,7 @@
           name: "dst_addr_hi"
           resval: 0x0
           desc: '''
-                Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+                Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within non-secure memory space.
                 Must be aligned to the transfer width.
                 Source and destination address must have the same alignment.
                 '''
@@ -248,7 +248,7 @@
           enum: [
             { value: "0x7"
               name: "OT_ADDR"
-              desc: "OpenTitan 32-bit internal bus."
+              desc: "Secure 32-bit internal bus."
             }
             { value: "0xa"
               name: "SOC_ADDR"
@@ -267,7 +267,7 @@
           enum: [
             { value: "0x7"
               name: "OT_ADDR"
-              desc: "OpenTitan 32-bit internal bus."
+              desc: "Secure 32-bit internal bus."
             }
             { value: "0xa"
               name: "SOC_ADDR"
@@ -282,7 +282,7 @@
       ]
     }
     { name: "ENABLED_MEMORY_RANGE_BASE"
-      desc: "Base Address to mark the start of the DMA enabled memory range within the OT internal memory space."
+      desc: "Base Address to mark the start of the DMA enabled memory range within the secure internal memory space."
       swaccess: "rw"
       hwaccess: "hro"
       hwqe: "true"
@@ -291,13 +291,13 @@
         { bits: "31:0"
           name: "base"
           resval: 0x0
-          desc: "Base Address to mark the start of the DMA enabled memory range within the OT internal memory space."
+          desc: "Base Address to mark the start of the DMA enabled memory range within the secure internal memory space."
         }
       ]
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     }
     { name: "ENABLED_MEMORY_RANGE_LIMIT"
-      desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; address is inclusive."
+      desc: "Limit Address to mark the end of the DMA enabled memory range within the secure internal memory space; address is inclusive."
       swaccess: "rw"
       hwaccess: "hro"
       hwqe: "true"
@@ -306,13 +306,13 @@
         { bits: "31:0"
           name: "limit"
           resval: 0x0
-          desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; inclusive."
+          desc: "Limit Address to mark the end of the DMA enabled memory range within the secure internal memory space; inclusive."
         }
       ]
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     }
     { name: "RANGE_VALID"
-      desc: "Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the OT internal address space."
+      desc: "Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the secure internal address space."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "RANGE_REGWEN"
@@ -387,7 +387,7 @@
                 may consist of multiple chunks of data as specified by the CHUNK_DATA_SIZE register.
 
                 Minimum: 1 byte.
-                Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+                Maximum: May be restricted to a maximum pre-defined size based on DMA enabled memory space allocation.
                 Works in conjunction with the TRANSFER_WIDTH register.
                 '''
         }
@@ -408,7 +408,7 @@
                 For a single memory transfer CHUNK_DATA_SIZE and TOTAL_DATA_SIZE are set to the same value.
 
                 Minimum: 1 byte.
-                Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+                Maximum: May be restricted to a maximum pre-defined size based on DMA enabled memory space allocation.
                 Works in conjunction with the TRANSFER_WIDTH register.
                 '''
         }
@@ -522,7 +522,7 @@
           desc: '''
                 Aborts the DMA operation if this bit is set.
                 Sets the corresponding bit in the status register once abort operation is complete.
-                Any OpenTitan-internal transactions are guaranteed to complete, but there are no guarantees on the SoC interface.
+                Any secure-side internal transactions are guaranteed to complete, but there are no guarantees on the SoC interface.
                 '''
         }
         { bits: "31"
@@ -766,7 +766,7 @@
     { name: "CLEAR_INTR_BUS"
       desc: '''Bus selection bit where the clearing command should be performed."
             0: CTN/System fabric
-            1: OT-internal crossbar
+            1: secure-side internal crossbar
             '''
       swaccess: "rw"
       hwaccess: "hro"

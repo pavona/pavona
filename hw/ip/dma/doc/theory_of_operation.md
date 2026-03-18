@@ -8,14 +8,14 @@
 
 |                       |     |
 |-----------------------|-----|
-| OT Private Memory     | Memory within the OpenTitan RoT secure perimeter
-|                       | This memory is allocated to the OT components like Ibex core for its secure code execution and data storage memory |
-| OT DMA Enabled Memory | Memory within the OpenTitan RoT secure perimeter. |
+| Private Memory        | Memory within the secure perimeter
+|                       | This memory is allocated to the components like Ibex core for its secure code execution and data storage memory |
+| DMA Enabled Memory    | Memory within the secure perimeter. |
 |                       | This memory is allocated as a staging area while moving data using the DMA controller |
 |                       | DMA operation is allowed to touch this memory |
-|                       | DMA controller shall provide configuration range registers to map OT internal memory as DMA enabled memory |
-| SoC memory            | Any memory outside the OpenTitan RoT secure perimeter |
-|                       | This memory may be untrusted from the OT perspective or may be included in its trust boundary for certain cases by leveraging SoC defined security access control enforcement |
+|                       | DMA controller shall provide configuration range registers to map secure internal memory as DMA enabled memory |
+| SoC memory            | Any memory outside the secure perimeter |
+|                       | This memory may be untrusted from the secure-side perspective or may be included in its trust boundary for certain cases by leveraging SoC defined security access control enforcement |
 
 ![](./secure_perimeter.svg)
 
@@ -33,10 +33,10 @@ The DMA is envisioned to operate in two main modes:
 ### Generic DMA operation
 
 Mode of operation & interactions with components considered external to
-the OT Trusted Compute Boundary
+the Trusted Compute Boundary
 
 -   External agents (e.g. System Host or other SoC Controllers) may
-    request certain security services from OpenTitan such as encryption,
+    request certain security services from the secure subsystem such as encryption,
     digital signing etc. Such an operation is requested using the
     Mailbox interface and may involve bulk data movement.
 
@@ -57,29 +57,28 @@ the OT Trusted Compute Boundary
     -   Opcode - Type of any optionally supported operation e.g.
         Cryptographic hash.
 
--   OT firmware parses the command object passed through the mailbox.
--   OT firmware sanitizes mailbox objects as required.
--   OT firmware allocates DMA enabled memory space for the data movement
+-   Secure-side firmware parses the command object passed through the mailbox.
+-   Secure-side firmware sanitizes mailbox objects as required.
+-   Secure-side firmware allocates DMA enabled memory space for the data movement
     as needed.
--   OT firmware configures DMA source address register & the
+-   Secure-side firmware configures DMA source address register & the
     corresponding address space Identifier.
--   OT firmware configures DMA destination address register &
+-   Secure-side firmware configures DMA destination address register &
     corresponding address space Identifier.
--   OT firmware completes other configurations such as operation size,
+-   Secure-side firmware completes other configurations such as operation size,
     OPCODE of any additional inline operations requested (e.g.
     cryptographic hash calculation of data blob being moved).
--   OT firmware triggers the DMA operation.
+-   Secure-side firmware triggers the DMA operation.
 -   DMA hardware performs appropriate address and configuration checks
     to enforce the defined security and access control properties.
--   OT firmware chooses to poll for status registers until operation
+-   Secure-side firmware chooses to poll for status registers until operation
     completes or waits for completion interrupt from the DMA controller.
 
 ***Notes***:
 
--   *Please refer to the Integrated [*OpenTitan: Access to SoC address space document*]()
-    for more details on the address spaces (OT internal, Control
+-   *With respect to the address spaces (secure/internal, Control
     Register address space, System Address Space), corresponding
-    identifiers & any involved address translation. Note that the
+    identifiers & any involved address translation: note that the
     address pointer may be an IO Virtual Address (IOVA) when the address
     space identifier is the system address space.*
 -   *As mentioned in the aforementioned document, the SoC memory may be
@@ -87,10 +86,10 @@ the OT Trusted Compute Boundary
     cryptographic techniques or access control based isolation
     techniques.*
 -   *External agents **shall not have direct access** to any addressable
-    regions within OT address space other than the mailbox registers.*
+    regions within secure address space other than the mailbox registers.*
 -   *The DMA controller shall support hardware range registers to
-    configure the address range for DMA enabled OT memory. Range
-    registers may be configured by OT firmware at boot time and locked
+    configure the address range for DMA enabled secure memory. Range
+    registers may be configured by secure-side firmware at boot time and locked
     from further modification until next reset. Existing specifications
     and implementations of range registers, such as for PMP, may be
     reused, although striking a balance between feature complexity and
@@ -100,7 +99,7 @@ the OT Trusted Compute Boundary
 -   *Detailed list of hardware checks performed by the DMA controller
     covered under* [*DMAC HW Enforced Security Checks*](#dmac-hw-enforced-security-checks).
 -   *Note that the DMA enabled memory may be a physically separate SRAM
-    structure or a partitioned and access controlled region of the OT
+    structure or a partitioned and access controlled region of the secure
     SRAM memory.*
 
 ### Hardware handshake based DMA operation
@@ -124,7 +123,7 @@ hardware handshake DMA operation.
     receive FIFO read out register.
 -   [*Destination address*](registers.md#dst_addr_lo): address to the memory
     buffer where received data is placed.
--   [*Address space ID*](registers.md#addr_space_id) (ASID): (OT Internal, CTN or System)
+-   [*Address space ID*](registers.md#addr_space_id) (ASID): (Secure/Internal, CTN or System)
 
     -   Source ASID: Specify the address space in which the LSIO FIFO is
         visible.
@@ -186,7 +185,7 @@ hardware handshake DMA operation.
     memory buffer.
 -   [*Destination address*](registers.md#dst_addr_lo): pointer to the FIFO
     register.
--   [*Address space ID*](registers.md#addr_space_id) (ASID): (OT Internal, CTN or System)
+-   [*Address space ID*](registers.md#addr_space_id) (ASID): (Secure/Internal, CTN or System)
 
     -   Source ASID: Specify the address space in which the source
         buffer resides.
@@ -257,13 +256,13 @@ The DMA controller provides the following security value:
     -   DMA controller involved in data movement & corresponding
         hardware enforced checks.
 
--   DMA engine acts as the boundary between OT secure components & the
+-   DMA engine acts as the boundary between secure components & the
     SoC for data movement.
--   While moving data from the SoC to OpenTitan, the DMA controller
+-   While moving data from the SoC to the secure subsystem, the DMA controller
     protects the Ibex core by staging the moved data into a DMA enabled
     memory location and providing an opportunity to perform additional
     security checks on it, before it is touched by the Ibex core.
--   Similarly, while moving data out of the OT secure perimeter,
+-   Similarly, while moving data out of the secure perimeter,
     provides an opportunity to inspect it for information leakage within
     the DMA enabled memory, prior to moving it out of the secure
     perimeter.
@@ -273,40 +272,40 @@ The DMA controller provides the following security value:
     perform such reads shields the Ibex core from such availability
     issues. The DMA controller must ensure that problems such as hanging
     transactions on the SoC interface do not lead to problems on any
-    OpenTitan-internal interfaces.
+    internal interfaces.
 
 Note that to ensure secure movement of data, the following assumptions must
 hold:
 
--   The DMA Controller configuration shall be under OpenTitan firmware
+-   The DMA Controller configuration shall be under secure-side firmware
     (Ibex core) control only.
--   External agents to the OpenTitan secure boundary *shall not* have
+-   External agents to the secure boundary *shall not* have
     access to the DMA registers.
 -   Following restrictions to data movement are observed and enforced by
     the DMA controller.
 
-| From -> , To ↓    | OT Private Memory | OT DMA Memory | SoC Memory |
-|-------------------|-------------------|---------------|------------|
-| OT Private Memory | ✔                 | ✔             | ❌         |
-| OT DMA Memory     | ✔                 | ✔             | ✔          |
-| SoC Memory        | ❌                | ✔             | ✔          |
+| From -> , To ↓     | Private Memory     | DMA Memory    | SoC Memory |
+|--------------------|--------------------|---------------|------------|
+| Private Memory     | ✔                  | ✔             | ❌         |
+| DMA Memory         | ✔                  | ✔             | ✔          |
+| SoC Memory         | ❌                 | ✔             | ✔          |
 
 ### DMAC HW Enforced Security Checks
 
 -   DMA enabled memory range registers are configured & locked prior to
     starting any DMA operation.
 -   If the configured source address space ID is SOC (CTN or System) and
-    destination address space ID is OT internal, then destination
+    destination address space ID is internal, then destination
     address pointer must lie within the DMA enabled memory range.
 -   If the configured destination address space ID is SOC (CTN or
-    System) and source address space ID is OT internal, then source
+    System) and source address space ID is internal, then source
     address pointer must lie within the DMA enabled memory range.
 -   If source (or destination) address space ID is set to CTN, then read
     (or write transactions) are sent to CTN port only. If CTN port is
     configured to be 32 bits, then make sure that the upper 32 bits of
     the source (or destination) address register pointer are all zeroes.
--   If source (or destination) address space ID is set to OT Internal,
-    then read (or write transactions) are sent to OT internal port only.
+-   If source (or destination) address space ID is set to Internal,
+    then read (or write transactions) are sent to internal port only.
     Make sure that the upper 32 bits of the source (or destination)
     address register pointer are all zeroes.
 -   If source (or destination) address space ID is set to System, then
@@ -348,7 +347,7 @@ use cases:
     target memory.
 
     1.  removes size restrictions on the data to be hashed, which would
-        otherwise have to fit OT-internal memory, and
+        otherwise have to fit internal memory, and
 
     2.  keeps data confidential because it is physically only accessible
         by the hashing (or encryption) engine used by the DMA
@@ -360,7 +359,7 @@ options:
 1.  Instantiating dedicated cryptographic hardware modules inside the
     DMA controller.
 2.  Sharing cryptographic hardware modules (such as the AES Accelerator
-    or KMAC) that are already instantiated in OT over a HW application
+    or KMAC) that are already instantiated over a HW application
     interface. KMAC already has such an interface.
 
 The advantage of dedicated modules is that they can be parametrized or
@@ -401,7 +400,7 @@ In accordance with the [comportability specification](../../../../doc/contributi
 The DMA controller also has up to three host interfaces, permitting it to transfer data to/from a number of devices.
 Two of these interfaces are TL-UL (TileLink Uncached Light) as per the register interface:
 
-- host_tl_h_i|o: TL-UL host connection to the RoT-private memory.
+- host_tl_h_i|o: TL-UL host connection to the secure-side private memory.
 - ctn_tl_d2h_i|h2d_o: Host connection to the ConTrol Network of the SoC.
 
 The third host interface of the DMA controller uses a different bus specification which is described below.
