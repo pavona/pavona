@@ -1,4 +1,4 @@
-# Summary
+# Table of Contents
 
 # Overview
 
@@ -7,16 +7,6 @@
 - [Builtin Top-Level Designs](./doc/contributing/system_list.md)
 - [Getting Started](./doc/getting_started/README.md)
   - [Using the Container](./util/container/README.md)
-  - [Workflows](./doc/getting_started/workflows.md)
-    - [Build Documentation](./doc/getting_started/build_docs.md)
-    - [Build Software](./doc/getting_started/build_sw.md)
-    - [Verilator Setup](./doc/getting_started/setup_verilator.md)
-    - [Design Verification Setup](./doc/getting_started/setup_dv.md)
-    - [Formal Verification Setup](./doc/getting_started/setup_formal.md)
-    - [Vivado Setup](./doc/getting_started/install_vivado/README.md)
-    - [FPGA Setup](./doc/getting_started/setup_fpga.md)
-  - [Synthesis Flow](./hw/syn/README.md)
-  - [Bazel Notes](./doc/contributing/bazel_notes.md)
 - [Hardware Overview](./hw/README.md)
 - [Software Overview](./sw/README.md)
 - [Security](./doc/security/README.md)
@@ -24,11 +14,24 @@
 - [Continuous Integration](./doc/contributing/ci/README.md)
 - [Glossary](./doc/glossary.md)
 
+# Workflows
+
+- [Workflows](./doc/getting_started/workflows.md)
+- [Build Documentation](./doc/getting_started/build_docs.md)
+- [Build Software](./doc/getting_started/build_sw.md)
+- [Verilator Setup](./doc/getting_started/setup_verilator.md)
+- [Design Verification Setup](./doc/getting_started/setup_dv.md)
+- [Formal Verification Setup](./doc/getting_started/setup_formal.md)
+- [Vivado Setup](./doc/getting_started/install_vivado/README.md)
+- [FPGA Setup](./doc/getting_started/setup_fpga.md)
+- [Synthesis Flow](./hw/syn/README.md)
+  - [RTL Linting Flow](./hw/lint/README.md)
+
 # Contributing
 
 - [Contributing](./doc/contributing/README.md)
-  - [GitHub Notes](./doc/contributing/github_notes.md)
-  - [Bazel Notes](./doc/contributing/bazel_notes.md)
+- [GitHub Notes](./doc/contributing/github_notes.md)
+- [Bazel Notes](./doc/contributing/bazel_notes.md)
 - [Continuous Integration](./doc/contributing/ci/README.md)
   - [FAQs](./doc/contributing/ci/faq.md)
 - [Style](./doc/contributing/style_guides/README.md)
@@ -84,6 +87,7 @@
 
 - [Introduction](./hw/README.md)
   - [Cores](./hw/doc/cores.md)
+  - [IP Template Generation](./util/ipgen/README.md)
   - [Linting](./hw/lint/README.md)
   - [Synthesis Flow](./hw/syn/README.md)
   - [Formal Assertions](./hw/formal/README.md)
@@ -547,7 +551,6 @@
   - [USB20 Agent](./hw/dv/sv/usb20_agent/README.md)
 
 - [Vendored Hardware](./hw/vendor/README.md)
-  - [RISC-V Debug Support](./hw/vendor/pulp_riscv_dbg/README.md)
 
 - [Reference Tops](./doc/contributing/system_list.md)
 
@@ -687,11 +690,7 @@
   - [USB Streaming Tests](./sw/host/tests/usbdev/usbdev_stream/README.md)
 
 - [Vendored Software](./sw/vendor/README.md)
-  - [EEMBC CoreMark](./sw/vendor/eembc_coremark/README.md)
-    - [Running CoreMark](./third_party/coremark/README.md)
-  - [FreeRTOS](./sw/vendor/freertos_freertos_kernel/README.md)
-  - [QEMU](./third_party/qemu/README.md)
-  - [RISC-V toolchain](./toolchain/README.md)
+- [RISC-V toolchain](./toolchain/README.md)
 
 # Tooling
 
@@ -720,7 +719,3 @@
 - [vendor: Vendoring In Tool](./util/doc/vendor.md)
 
 - [Docker Container](./util/container/README.md)
-
-# Requests for Comments
-
-- [RFC 2025-01: Reset Management in Design Verification Testbenches](./rfc/rfc-2025-01-DV-Reset-Management/rfc_2025_01_dv_reset_management.md)
