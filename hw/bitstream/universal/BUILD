@@ -21,6 +21,15 @@ label_flag(
     build_setting_default = ":none",
 )
 
+[
+    label_flag(
+        name = "flash{}_info{}".format(bank, partition),
+        build_setting_default = ":none",
+    )
+    for partition in range(3)
+    for bank in range(2)
+]
+
 label_flag(
     name = "env",
     build_setting_default = ":none",
@@ -32,6 +41,12 @@ universal_splice(
     # When the src bitstream and mmi fields are empty, the rule will use values
     # from the exec_env.
     exec_env = ":env",
+    flash0_info0 = ":flash0_info0",
+    flash0_info1 = ":flash0_info1",
+    flash0_info2 = ":flash0_info2",
+    flash1_info0 = ":flash1_info0",
+    flash1_info1 = ":flash1_info1",
+    flash1_info2 = ":flash1_info2",
     otp = ":otp",
     rom = ":rom",
     tags = ["manual"],

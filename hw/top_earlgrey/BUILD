@@ -93,6 +93,12 @@ fpga_cw310(
     base = ":fpga_cw310",
     base_bitstream = "//hw/bitstream/hyperdebug:bitstream",
     exec_env = "fpga_cw310_test_rom",
+    flash0_info0 = "//hw/top_earlgrey/data/flash_info:flash0_info0_rma",
+    flash0_info1 = "//hw/top_earlgrey/data/flash_info:flash0_info1_rma",
+    flash0_info2 = "//hw/top_earlgrey/data/flash_info:flash0_info2_rma",
+    flash1_info0 = "//hw/top_earlgrey/data/flash_info:flash1_info0_rma",
+    flash1_info1 = "//hw/top_earlgrey/data/flash_info:flash1_info1_rma",
+    flash1_info2 = "//hw/top_earlgrey/data/flash_info:flash1_info2_rma",
     mmi = "//hw/bitstream/hyperdebug:mmi",
     otp = "//hw/top_earlgrey/data/otp:img_rma",
     param = {
