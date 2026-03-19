@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/zerorisc/expo/master/sw/host/cryptotest/testvectors/data/schemas/mlkem_schema.json",
+  "title": "Cryptotest ML-KEM Testvector",
+  "description": "A list of testvectors for ML-KEM testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Incremental test case ID",
+        "type": "integer"
+      },
+      "operation": {
+        "description": "ML-KEM operation type",
+        "type": "string",
+        "enum": ["keygen_decaps", "keygen", "encaps", "decaps"]
+      },
+      "parameter_set": {
+        "description": "ML-KEM parameter set",
+        "type": "integer",
+        "enum": [512, 768, 1024]
+      },
+      "seed": {
+        "description": "Randomness for keygen (d||z) or encaps (m)",
+        "$ref": "#/$defs/byte_array"
+      },
+      "ek": {
+        "description": "Encapsulation (public) key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "dk": {
+        "description": "Decapsulation (secret) key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "c": {
+        "description": "Ciphertext",
+        "$ref": "#/$defs/byte_array"
+      },
+      "expected_hash": {
+        "description": "SHA3-256 hash of expected outputs",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Expected result",
+        "type": "boolean"
+      }
+    }
+  }
+}

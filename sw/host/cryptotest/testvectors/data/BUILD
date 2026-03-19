@@ -499,6 +499,68 @@ run_binary(
 
 [
     run_binary(
+        name = "wycheproof_mlkem_{}_{}_json".format(pset, test_type),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json",
+            "@wycheproof//testvectors_v1:{}".format(src_name),
+        ],
+        outs = [":wycheproof_mlkem_{}_{}.json".format(pset, test_type)],
+        args = [
+            "--src",
+            "$(location @wycheproof//testvectors_v1:{})".format(src_name),
+            "--dst",
+            "$(location :wycheproof_mlkem_{}_{}.json)".format(pset, test_type),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json)",
+            "--test-type",
+            test_type,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mlkem_parser",
+    )
+    for pset, test_type, src_name in [
+        ("512", "keygen_decaps", "mlkem_512_test.json"),
+        ("512", "keygen", "mlkem_512_keygen_seed_test.json"),
+        ("512", "encaps", "mlkem_512_encaps_test.json"),
+        ("512", "decaps", "mlkem_512_semi_expanded_decaps_test.json"),
+        ("768", "keygen_decaps", "mlkem_768_test.json"),
+        ("768", "keygen", "mlkem_768_keygen_seed_test.json"),
+        ("768", "encaps", "mlkem_768_encaps_test.json"),
+        ("768", "decaps", "mlkem_768_semi_expanded_decaps_test.json"),
+        ("1024", "keygen_decaps", "mlkem_1024_test.json"),
+        ("1024", "keygen", "mlkem_1024_keygen_seed_test.json"),
+        ("1024", "encaps", "mlkem_1024_encaps_test.json"),
+        ("1024", "decaps", "mlkem_1024_semi_expanded_decaps_test.json"),
+    ]
+]
+
+[
+    run_binary(
+        name = "acvp_mlkem_{}_json".format(test_type),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json",
+            "@acvp_testvectors//{}:internalProjection.json".format(acvp_dir),
+        ],
+        outs = [":acvp_mlkem_{}.json".format(test_type)],
+        args = [
+            "--src",
+            "$(location @acvp_testvectors//{}:internalProjection.json)".format(acvp_dir),
+            "--dst",
+            "$(location :acvp_mlkem_{}.json)".format(test_type),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json)",
+            "--test-type",
+            test_type,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_mlkem_parser",
+    )
+    for test_type, acvp_dir in [
+        ("keygen", "ML-KEM-keyGen-FIPS203"),
+        ("encap_decap", "ML-KEM-encapDecap-FIPS203"),
+    ]
+]
+
+[
+    run_binary(
         name = "nist_cavp_aes_{}_{}_json".format(
             function_name.lower(),
             key_len,

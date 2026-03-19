@@ -216,6 +216,22 @@ py_binary(
 )
 
 py_binary(
+    name = "wycheproof_mlkem_parser",
+    srcs = ["wycheproof_mlkem_parser.py"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
+    name = "nist_acvp_mlkem_parser",
+    srcs = ["nist_acvp_mlkem_parser.py"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "wycheproof_aes_kwp_parser",
     srcs = ["wycheproof_aes_kwp_parser.py"],
     deps = [
