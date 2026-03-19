@@ -1,16 +1,16 @@
-# Contribution Guidelines for the OT Cryptolib
+# Contribution Guidelines for Cryptolib
 
-This guide is for contributors to the OT cryptolib (the code under `sw/device/lib/crypto`) and outlines some general coding guidelines.
+This guide is for contributors to cryptolib (the code under `sw/device/lib/crypto`) and outlines some general coding guidelines.
 
 ## Style and Naming
 
-- Cryptolib code should follow the [C style guide](../../contributing/style_guides/c_cpp_coding_style.md) and the [OTBN style guide](../../contributing/style_guides/otbn_style_guide.md).
-- All definitions in the top-level API should be prefixed with `otcrypto`.
+- Cryptolib code should follow the [C style guide](../../contributing/style_guides/c_cpp_coding_style.md) and the [ACC style guide](../../contributing/style_guides/acc_style_guide.md).
 - Unit tests should be named after the files they test, e.g. the test for `foo.c` would be `foo_unittest.cc`.
 
 ## Code organization
 
-- The top-level cryptolib API is under `sw/device/lib/crypto/include`. This API should be kept as stable as possible.
+- The top-level cryptolib API is under `sw/device/lib/crypto/include`.
+  This API should be kept as stable as possible.
 - If modifying the top-level API, update the [documentation](cryptolib_api.md).
 - The drivers and their tests are under `sw/device/lib/crypto/drivers`.
 - All other code is under `sw/device/lib/crypto/impl`.
@@ -27,13 +27,14 @@ This guide is for contributors to the OT cryptolib (the code under `sw/device/li
 - Use `hardened_memshred` to clear any sensitive values that are no longer needed.
 - Turn icache off for code that needs to be constant-time.
 
-See `sw/device/lib/base/hardened.h` for more details about how to use hardening macros.
+See [`sw/device/lib/base/hardened.h`](../../../sw/device/lib/base/hardened.h) for more details about how to use hardening macros.
 
 ## Module IDs
 
 - Use `grep -Ir MODULE_ID sw/device/lib/crypto/` to see existing IDs.
 - Add a unique `MODULE_ID` statement to the top of all `.c` files under `sw/device/lib/crypto` that include any `OTCRYPTO` error codes.
-- Pay attention to any pattern for module IDs in a given directory and try to be consistent. For example, some directories have module IDs that all begin with the same leter.
+- Pay attention to any pattern for module IDs in a given directory and try to be consistent.
+  For example, some directories have module IDs that all begin with the same leter.
 - Test `.c` files that will never be imported by anything else can have the module ID "tst".
 
 Module IDs will show up in error codes when you run tests with `--define crypto_status_debug=true`.
@@ -44,7 +45,8 @@ See the [status codes](#status-codes) section for more details.
 - All functions in the top-level API (`sw/device/lib/crypto/include`) should return `otcrypto_status_t`.
 - All internal functions should return either `void` or `status_t`.
 - Functions returning `status_t` or `otcrypto_status_t` should always return one of the codes defined in `sw/device/lib/crypto/impl/status.h`, e.g. `OTCRYPTO_RECOV_ERR`.
-- Always use `HARDENED_TRY` instead of `TRY` when checking if an internal function succeeded. `TRY` is OK for tests.
+- Always use `HARDENED_TRY` instead of `TRY` when checking if an internal function succeeded.
+  `TRY` is OK for tests.
 - Prefix all function declarations that return `status_t` or `otcrypto_status_t` with `OT_WARN_UNUSED_RESULT`.
 
 ### Background

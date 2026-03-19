@@ -7,8 +7,7 @@
 
 ## Overview
 
-This document describes the OpenTitan provisioning flow which is divided into
-two stages:
+This document describes the Pavona-supported provisioning flow which is divided into two stages:
 
 *   [Personalization](#personalization): Covers initialization of the device
     with an unique cryptographic identity known as the
@@ -50,9 +49,8 @@ requirements:
 
 ### Unlock Tokens
 
-OpenTitan provides a set of lock/unlock tokens to control the state of the
-device in early manufacturing stages. See
-[device lifecycle specification][device_lifecycle] for more details.
+There are a set of lock/unlock tokens to control the state of the device in early manufacturing stages.
+See [device lifecycle specification][device_lifecycle] for more details.
 
 *   `RAW_UNLOCK`
 *   `TEST_UNLOCK`
@@ -121,12 +119,12 @@ The following diagram shows the physical connections between test components.
 
 #### Components
 
-*   **Device Under Test**: An OpenTitan device being tested as part of its
+*   **Device Under Test**: A device being tested as part of its
     manufacturing process.
 *   **ATE**: Automatic Test Equipment (ATE), used to perform tests on the
     devices as part of the manufacturing process.
 *   **Provisioning Appliance**: A network connected local server with an
-    attached HSM. The server implements an OpenTitan compliant secure boot
+    attached HSM. The server implements an Pavona-compliant secure boot
     implementation, and runs signed applications used to communicate with ATE
     and cloud services.
 *   **Provisioning Service**: Cloud service used to authenticate and initialize
@@ -140,9 +138,9 @@ The following diagram shows the physical connections between test components.
 
 #### Connectivity
 
-ATE - OpenTitan (DUT)
+ATE - DUT
 
-*   `RST_N`: OpenTitan reset pin.
+*   `RST_N`: reset pin.
 *   `STRAPS`: Pins used to control hardware and software test functionality. On
     the hardware side, strap pins are used to configure TEST modes and select
     TAP interfaces. On the software side, straps used to enable the SPI flash
@@ -187,7 +185,7 @@ Steps:
 1.  [Device identifiers][device_id] (`device_id`) and
     [unlock tokens](#unlock-tokens) are programmed into the device's One Time
     Programmable (OTP) memory. The unlock tokens are delivered in cleartext form
-    to each OpenTitan die.
+    to each die.
 2.  (Optional) A provisioning appliance collects all device identifiers and
     unlock tokens and sends them in encrypted form to a provisioning service
     hosted in the cloud.
@@ -198,7 +196,7 @@ Steps:
 5.  Devices are tested and switched to PROD or DEV mode before personalization.
     The ATE test setup actuates the personalization flow in collaboration with
     the provisioning appliance.
-    1.  There are two personalization approaches supported by OpenTitan.
+    1.  There are two personalization approaches supported by Pavona.
         1.  [Injection Process](#injection_process): The provisioning appliance
             generates `device_secrets` (in the injection case) and endorsement
             certificates. `appliance_secrets` are used to enable signing on
@@ -525,18 +523,18 @@ Certificate. The result is reported to the TESTER via SPI.
 
 ## Owner Personalization
 
-OpenTitan provides a mechanism to enable provisioning of Silicon Owner secrets
+Pavona provides a mechanism to enable provisioning of Silicon Owner secrets
 and endorsement certificates in manufacturing and post-manufacturing stages.
 Owners are encouraged to create an implementation plan to perform
 post-manufacturing provisioning to take full advantage of ownership transfer.
 
-Provisioning post-ownership transfer assumes that the OpenTitan device is
+Provisioning post-ownership transfer assumes that the device is
 integrated into a system, and there is a HOST capable of communicating
-synchronously or asynchronously with the DEVICE (OpenTitan) and a remote
+synchronously or asynchronously with the DEVICE and a remote
 registry and provisioning service.
 
 The physical transport layer between the DEVICE and the HOST is use-case
-specific and managed at the OpenTitan SKU configuration level (e.g. different
+specific and managed at the SKU configuration level (e.g. different
 `ROM_EXT` implementation per SKU).
 
 ### Overview
@@ -570,7 +568,7 @@ Steps:
     programmed on the device.
 3.  The host verifies the attestation chain provided by the device and requests
     a provisioning payload from the Silicon Owner's provisioning service. Data
-    in transit is encrypted with a key negotiated between the OpenTitan device
+    in transit is encrypted with a key negotiated between the device
     and the provisioning service. Provisioning data is divided into:
     1.  Owner Certificate endorsed by the Silicon Owner. The owner can also
         implement endorsement of additional certificates as part of the process.

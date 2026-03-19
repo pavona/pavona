@@ -4,9 +4,9 @@
   Status: Pre-RFC
 </p>
 
-The following overview gives a brief, high-level explanation of OpenTitan's secure boot process.
+The following overview gives a brief, high-level explanation of the secure boot process.
 The basic guarantee of secure boot is that *no unauthorized code will be executed before the boot process reaches the device owner's code*.
-All executed code must be cryptographically signed by either the owner of the OpenTitan device or the (trusted) entity that originally set up the device at manufacturing time (the "Silicon Creator").
+All executed code must be cryptographically signed by either the owner of the device or the (trusted) entity that originally set up the device at manufacturing time (the "Silicon Creator").
 
 Additionally, the secure boot procedure restricts certain stages to the Silicon Creator, so that even the current device owner can't change them.
 Therefore, if the device changes owners, the new owner only has to trust the Silicon Creator, *not* the previous owner(s).
@@ -18,11 +18,11 @@ The diagram below summarizes the specific steps involved in the secure boot proc
 ## ROM
 
 The first stage of secure boot is called "ROM".
-ROM is a region of read-only memory that cannot be updated at all after an OpenTitan device is manufactured.
+ROM is a region of read-only memory that cannot be updated at all after a device is manufactured.
 For that reason, the ROM is kept as simple as possible; it does some minimal setup, authenticates the next stage (`ROM_EXT`), and jumps there.
 
 The ROM contains non-updateable public keys, which it uses to authenticate the `ROM_EXT` signature.
-These public keys correspond to what OpenTitan calls the "Silicon Creator": the entity who was initially involved in the manufacturing of the device.
+These public keys correspond to what the device calls the "Silicon Creator": the entity who was initially involved in the manufacturing of the device.
 It's important to distinguish between the unchanging Silicon Creator and the changeable "Silicon Owner", the entity that owns the device at a given time.
 
 On startup, hardware settings use a feature called ["enhanced Physical Memory Protection" (ePMP)][ibex-epmp] to ensure that only the ROM code itself is executable.
@@ -67,13 +67,13 @@ The general procedure for the `ROM_EXT` looks something like this:
 7. Unlock flash execution, configure ePMP so that the Silicon Creator controlled regions of memory are not writable and the BL0 region is executable, and then jump to the start of BL0.
 
 Once the code has jumped into the Silicon Owner code at BL0, secure boot in its simplest form is complete.
-The Silicon Owner may choose to extend the secure boot process with multiple boot stages of their own; this will differ between device owners, while the stages described here are guaranteed by the Silicon Creator and will be shared by all OpenTitan implementations.
+The Silicon Owner may choose to extend the secure boot process with multiple boot stages of their own; this will differ between device owners, while the stages described here are guaranteed by the Silicon Creator and will be shared by all implementations.
 If any signature verification in the above process fails, or there is any kind of unexpected error, the device will fail to boot.
 
 # Silicon Creator Keys
 
 The Silicon Creator has multiple public keys.
-This redundancy partially protects against the scenario in which one of the keys is compromised; any OpenTitan devices produced after the key is known to be compromised can mark the compromised key invalid, without requiring a full new ROM implementation.
+This redundancy partially protects against the scenario in which one of the keys is compromised; any devices produced after the key is known to be compromised can mark the compromised key invalid, without requiring a full new ROM implementation.
 Devices produced before the key is known to be compromised are not protected by this strategy.
 
 Additionally, each key is restricted to one of three "roles", which determine in which device states the key can be used.
@@ -95,11 +95,11 @@ All of these keys are 3072-bit RSA public keys with exponent e=65537 (the “F4 
 
 # Terminology Quick Reference
 
-## OpenTitan Logical Entities
+## Logical Entities
 
-*   **Silicon Creator:** The owner of the public keys injected into the OpenTitan device at manufacturing time.
+*   **Silicon Creator:** The owner of the public keys injected into the device at manufacturing time.
     Signs the `ROM` and `ROM_EXT` boot stages.
-*   **Silicon Owner:** The individual or group who has taken ownership of the OpenTitan device by adding their public keys during an ownership transfer.
+*   **Silicon Owner:** The individual or group who has taken ownership of the device by adding their public keys during an ownership transfer.
     Signs all boot stages after `ROM_EXT`.
 
 The Silicon Creator and the Silicon Owner may be the same individual or group, but are not necessarily so.
@@ -132,7 +132,7 @@ code from. TODO(gdk): Expand on policy.
 
 <img src="flash_layout.svg" style="width: 800px;">
 
-Memory on OpenTitan can be considered as split into three separate regions: ROM,
+Memory can be considered as split into three separate regions: ROM,
 Flash Info, and addressable flash. The addressable flash is further divided into
 two equally-sized regions called Flash Bank 0 and Flash Bank 1. The beginning
 addresses for Flash Bank 0 and Flash Bank 1 are the only fixed points of

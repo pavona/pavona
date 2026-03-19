@@ -58,7 +58,7 @@ by the device SKU provisioning requirements.
   </tr>
   <tr>
     <td>16</td>
-    <td>Silicon Creator identifier. Assigned by the OpenTitan project.</td>
+    <td>Silicon Creator identifier.</td>
   </tr>
   <tr>
     <td>16</td>
@@ -188,7 +188,7 @@ generated as follows:
 
 ```
 CreatorIdentitySeed =
-  KM_DERIVE(CreatorRootKey, OTBNDiversificationConstant | IdentityDiversificationConstant)
+  KM_DERIVE(CreatorRootKey, ACCDiversificationConstant | IdentityDiversificationConstant)
 
 // ASYM_KDF is a KDF function compliant to the Asymmetric Key
 // requirements defined in the Attestation specification document.
@@ -204,10 +204,10 @@ CLEAR_BEFORE_NEXT_BOOT_STAGE(CreatorIdentitySeed, CreatorIdentity_Private)
     </td>
   </tr>
   <tr>
-    <td>OTBNDiversificationConstant</td>
+    <td>ACCDiversificationConstant</td>
     <td>Gates</td>
     <td>
-A constant defined in gates. Used to diversify sideloaded values to OTBN.
+A constant defined in gates. Used to diversify sideloaded values to ACC.
 
 Hidden from software.
     </td>
@@ -278,7 +278,7 @@ chain.
 
 ```
 OwnerIntermediateIdentitySeed =
-  KM_DERIVE(OwnerIntermediateKey, OTBNDiversificationConstant)
+  KM_DERIVE(OwnerIntermediateKey, ACCDiversificationConstant)
 
 // ASYM_KDF is a KDF function compliant to the Asymmetric Key
 // requirements defined in the Attestation specification document.
@@ -298,10 +298,10 @@ CLEAR_BEFORE_NEXT_BOOT_STAGE(OwnerIntermediateIdentitySeed, OwnerIntermediateIde
     <td>Seed used to generate the OwnerIntermediateIdentity asymmetric key.</td>
   </tr>
   <tr>
-    <td>OTBNDiversificationConstant</td>
+    <td>ACCDiversificationConstant</td>
     <td>Gates</td>
     <td>
-A constant defined in gates. Used to diversify sideloaded values to OTBN.
+A constant defined in gates. Used to diversify sideloaded values to ACC.
 
 Hidden from software.
     </td>
@@ -360,7 +360,7 @@ the SiliconOwner. It is used in Attestation flows.
 
 ```
 OwnerIdentitySeed =
-  KM_DERIVE(OwnerKey, OTBNDiversificationConstant)
+  KM_DERIVE(OwnerKey, ACCDiversificationConstant)
 
 // ASYM_KDF is a KDF function compliant to the Asymmetric Key
 // requirements defined in the Attestation specification document.
@@ -375,10 +375,10 @@ CLEAR_BEFORE_NEXT_BOOT_STAGE(OwnerIdentitySeed, OwnerIdentity_Private)
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td>OTBNDiversificationConstant</td>
+    <td>ACCDiversificationConstant</td>
     <td>Gates</td>
     <td>
-A constant defined in gates. Used to diversify sideloaded values to OTBN.
+A constant defined in gates. Used to diversify sideloaded values to ACC.
 
 Hidden from software.
     </td>
@@ -502,7 +502,7 @@ the secure boot implementation configure runtime-irrevocable binding tags in the
 key derivation scheme. Such tags are usually delivered inside the signed
 manifest of each code partition.
 
-OpenTitan shall support software binding for at least two Silicon Owner code
+Pavona supports software binding for at least two Silicon Owner code
 stages (_e.g._ bootloader and kernel). It is expected that the kernel will
 implement binding with the application layer exclusively in software.
 

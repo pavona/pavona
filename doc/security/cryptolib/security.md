@@ -1,4 +1,4 @@
-# OpenTitan Cryptography Library Security Hardening
+# Cryptography Library Security Hardening
 The library uses a mix of hardware- and software-based countermeasures that aim to mitigate side-channel and fault injection attacks.
 For the hardware-based countermeasures, please refer to the documentation of the corresponding IP block.
 The software-based countermeasures are listed below:
@@ -19,14 +19,14 @@ Common software-based countermeasures include:
 | Key integrity check                                | FI               | The integrity of a key passed into the library is checked on the entrance as well as after using the key.                                                         |
 | IP configuration read back                         | FI               | Security-sensitive IP configurations are read back from the IP after a write.                                                                                     |
 
-## Common OTBN Countermeasures
+## Common ACC Countermeasures
 Common software-based countermeasures include:
 
 | Countermeasure                                     | Threat Addressed | Description                                                                                                                                                       |
 | -------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Instruction count check                            | FI               | For constant time OTBN applications, check whether the instruction counter read back from OTBN matches the expectation.                                           |
-| Instruction memory integrity checksum              | FI               | After writing an OTBN application into IMEM, check whether the load integrity checksum read back from OTBN matches the expectation.                               |
-| Data memory integrity checksum                     | FI               | After writing data into DMEM, check whether the load integrity checksum read back from OTBN matches the expectation.                                              |
+| Instruction count check                            | FI               | For constant time ACC applications, check whether the instruction counter read back from ACC matches the expectation.                                           |
+| Instruction memory integrity checksum              | FI               | After writing an ACC application into IMEM, check whether the load integrity checksum read back from ACC matches the expectation.                               |
+| Data memory integrity checksum                     | FI               | After writing data into DMEM, check whether the load integrity checksum read back from ACC matches the expectation.                                              |
 | For loop hardening when writing into DMEM          | FI               | After executing the loop that writes data into DMEM, check if we have reached the expected number of iterations using the `HARDENED_CHECK_*` macro.               |
 | Randomized write order                             | SCA              | Randomize the write order of all data that is written into DMEM to avoid leaking sensitive values.                                                                |
 
@@ -55,7 +55,7 @@ The following software-based countermeasures are implemented:
   - The exponentiation operates on projective coordinates with re-randomisation of the used additive points P and 2P on every iteration.
   - Processing of the masked and blinded scalar is hardened against SCA leakage.
   - We check if input points and results of EC scalar multiplications satisfy the curve equation.
-  - The base point and curve parameters are protected against manipulation though the CRC check upon loading the OTBN app.
+  - The base point and curve parameters are protected against manipulation though the CRC check upon loading the ACC app.
 - P384 uses the same countermeasures with a blinding factor of 194b instead of 65b.
 
 ### HMAC
@@ -68,9 +68,9 @@ The following software-based countermeasures are implemented:
 Modular exponentiation is the core operation for both RSA encryption/sign and key generation.
 It is implemented as a constant-time Montgomery Ladder with Boolean-masked exponents and blinded message as detailed in the following works:
 
-- https://eprint.iacr.org/2018/1226.pdf
-- https://dl.acm.org/doi/10.1145/1873548.1873556
+- [https://eprint.iacr.org/2018/1226.pdf](https://eprint.iacr.org/2018/1226.pdf)
+- [https://dl.acm.org/doi/10.1145/1873548.1873556](https://dl.acm.org/doi/10.1145/1873548.1873556)
 
 The combination of both countermeasures results in an exponentiation that is resistant against vertical and horizontal power analysis.
 This hardened exponentiation is reused in the primality check routine of the key generation algorithm rendering it equally hardened.
-The key generation hardening only applies to [otcrypto_rsa_keygen](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/include/rsa.h#L100) and not [otcrypto_rsa_keypair_from_cofactor](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/include/rsa.h#L155).
+The key generation hardening only applies to [otcrypto_rsa_keygen](../../../sw/device/lib/crypto/include/rsa.h) and not [otcrypto_rsa_keypair_from_cofactor](../../../sw/device/lib/crypto/include/rsa.h).

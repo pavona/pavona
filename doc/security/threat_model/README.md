@@ -1,42 +1,31 @@
 # Lightweight Threat Model
 
-This threat model aims to identify in-scope design assets, attacker profiles,
-attack methods and attack surfaces. This is used to produce security
-requirements and implementation guidelines that cover hardware, software and the
-design process.
+This threat model aims to identify in-scope design assets, attacker profiles, attack methods and attack surfaces.
+This is used to produce security requirements and implementation guidelines that cover hardware, software and the design process.
 
-The threat model is considered for discrete and integrated instances of
-OpenTitan which may include external non-volatile memory.
+The threat model is considered for the Earlgrey and Darjeeling top-level systems, which may include external non-volatile memory.
 
 **Assets**
 
-*   Secrets and configuration parameters stored in the device or on external
-    memory:
+*   Secrets and configuration parameters stored in the device or on external memory:
     *   Private asymmetric keys (integrity and confidentiality)
     *   Symmetric keys (integrity and confidentiality)
     *   Anti-rollback and other counters (integrity)
-    *   Unique identifiers and data (integrity, authenticity and partly
-        confidentiality)
+    *   Unique identifiers and data (integrity, authenticity and partly confidentiality)
     *   Data requiring integrity and/or confidentiality
-*   Secrets stored outside the device (e.g. in a backend system), but that are
-    used to support critical functionality or lifecycle operations
+*   Secrets stored outside the device (e.g. in a backend system), but that are used to support critical functionality or lifecycle operations
 *   Integrity and authorization of cryptographic operations
 *   Integrity and authenticity of the code running on the device
 *   Integrity and authenticity of stored data
 *   Confidentiality of selected code and data
-*   Quality of the entropy source used in cryptographic operations and that used
-    in countermeasures
-*   Correct operation and confidentiality, integrity, authenticity of
-    cryptographic services.
+*   Quality of the entropy source used in cryptographic operations and that used in countermeasures
+*   Correct operation and confidentiality, integrity, authenticity of cryptographic services.
 
 **Attacker Profile**
 
-*   A bad actor with physical access either during manufacturing or active
-    deployment
-*   Malicious device owners: *e.g.* attacking one device to develop template
-    attacks
-*   Malicious actors with remote device access: *e.g.* performing remote
-    measurements of side channels that expose assets
+*   A bad actor with physical access either during manufacturing or active deployment
+*   Malicious device owners: *e.g.* attacking one device to develop template attacks
+*   Malicious actors with remote device access: *e.g.* performing remote measurements of side channels that expose assets
 
 **Attack Surface**
 
@@ -58,8 +47,7 @@ OpenTitan which may include external non-volatile memory.
 
 *Logical Attacks*
 
-*   Software vulnerabilities (e.g. bugs) exercised through interfaces or code
-    that can be run by the attacker on the device
+*   Software vulnerabilities (e.g. bugs) exercised through interfaces or code that can be run by the attacker on the device
 *   Compromise of secure boot
 *   Insider compromise of the personalization process
 *   Cryptanalysis
@@ -74,19 +62,12 @@ OpenTitan which may include external non-volatile memory.
 
 *Physical Access Attacks*
 
-*   Side Channel Analysis (SCA): Passive measurement attacks where the device is
-    operated normally. The attacker extracts the assets (*e.g.* secrets) via
-    observation of side channels, such as: 1) execution time, 2) power
-    consumption, 3) electromagnetic radiation.
-*   Fault Injection (FI): Fault Injection is a class of active attacks where the
-    device’s input and/or operation conditions are manipulated to make the
-    device operate outside its specification. An attacker modifies device
-    behavior (data and/or operations) by manipulating the internal electrical
-    state of the device (voltage, current, charge) through disturbances such as
-    voltage/current, EM, lasers, or body-bias injection.
+*   Side Channel Analysis (SCA): Passive measurement attacks where the device is operated normally.
+    The attacker extracts the assets (*e.g.* secrets) via observation of side channels, such as: 1) execution time, 2) power consumption, 3) electromagnetic radiation.
+*   Fault Injection (FI): Fault Injection is a class of active attacks where the device’s input and/or operation conditions are manipulated to make the device operate outside its specification.
+    An attacker modifies device behavior (data and/or operations) by manipulating the internal electrical state of the device (voltage, current, charge) through disturbances such as voltage/current, EM, lasers, or body-bias injection.
 *   Any combination of passive and active physical attacks.
 
 ## Read More
 
-*   [Use Cases](../../use_cases/README.md)
-*   [OpenTitan Security](../README.md)
+*   [Security Overview](../README.md)

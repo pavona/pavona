@@ -2,26 +2,20 @@
 
 ## Overview
 
-This document describes the OpenTitan device operational states supported for
-manufacturing, provisioning, regular operation and RMA[^1].
+This document describes the device operational states supported for manufacturing, provisioning, regular operation and RMA of hardware roots of trust, such as the Earlgrey and Darjeeling top levels[^1].
 
-Provisioning refers to the process in which a device creates a unique and
-trusted identity.
+Provisioning refers to the process in which a device creates a unique and trusted identity.
 
-Manufacturing refers to the process in which a device is tested and prepared for
-silicon correctness prior to production.
+Manufacturing refers to the process in which a device is tested and prepared for silicon correctness prior to production.
 
 The technical specification of the corresponding life cycle controller IP can be found [here](../../../../hw/ip/lc_ctrl/README.md).
 
 ## Background
 
-First see [here](../../logical_security_model/README.md) for
-OpenTitan's logical entity breakdowns.
+First see [here](../../logical_security_model/README.md) for logical entity breakdowns.
 
-OpenTitan implements standard device life cycle manufacturing states which are
-configured via OTP[^2] memory. These states allow the **Silicon Creator** to
-manage the state of the device as it is being manufactured and provisioned for
-shipment.
+Earlgrey and Darjeeling implement standard device life cycle manufacturing states which are configured via OTP[^2] memory.
+These states allow the **Silicon Creator** to manage the state of the device as it is being manufactured and provisioned for shipment.
 
 An additional set of life cycle states are used to encode the device ownership
 state. A device that has been personalized with a unique Silicon Creator
@@ -579,7 +573,7 @@ functionality to exist in PROD.
 
 ### Security IC Platform Protection Profile with Augmentation Packages
 
-OpenTitan's Device Life Cycle design may support the PP084 TOE[^3] life cycle
+The Device Life Cycle design may support the PP084 TOE[^3] life cycle
 phase requirements including the composite product life cycle phases.
 
 The list of TOE life cycle phases is available here for reference, See
