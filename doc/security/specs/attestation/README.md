@@ -2,9 +2,8 @@
 
 ## Overview
 
-Attestation is the mechanism in which software verifies the authenticity and
-integrity of the hardware and software of a device. OpenTitan supports the
-following attestation mechanisms:
+Attestation is the mechanism in which software verifies the authenticity and integrity of the hardware and software of a device.
+The following attestation mechanisms are supported:
 
 _Creator Based Attestation (Creator Identity Certificate)_
 
@@ -124,7 +123,7 @@ attestation chain, which may require generation of new attestation keys.
 
 The attestation command requires a `BOOT_SERVICE_REQUEST` reset to allow the
 `ROM_EXT` component to sign the new attestation chain. This is because
-OpenTitan's isolation model does not provide a way for the `ROM_EXT` to maintain
+the isolation model does not provide a way for the `ROM_EXT` to maintain
 its secrets isolated from `BL0` or the kernel layers. Once the `ROM_EXT` is done
 using its secrets, it must wipe them from memory before handing over execution
 to later stages.
@@ -249,7 +248,7 @@ components:
 
 ### Modes of Operation
 
-OpenTitan supports various modes of operation. The mode of operation is
+Pavona supports various modes of operation. The mode of operation is
 encapsulated in the Owner Identity certificate; thus, any given attestation
 chain is only valid for a single mode of operation. Secure boot makes sure that
 the attestation chain is only available if the device state matches the expected
@@ -258,7 +257,7 @@ configuration.
 In addition to this, the key manager outputs used to generate the
 [key identifiers](#key-identifiers) depend on system level measurements that
 reflect the mode of operation of the device. The following definitions are
-compatible with the OpenTitan device life cycle definitions.
+compatible with the device life cycle definitions.
 
 <table>
   <tr>
@@ -351,7 +350,7 @@ so that it can be endorsed by the Silicon Creator.
     <td style="text-align:center">
 <strong>Injection</strong>: This method employs a provisioning appliance, usually built with
 a certified HSM, capable of generating high-quality secrets at a much faster
-rate compared to an OpenTitan device. In this method, the secrets and Creator
+rate compared to a device. In this method, the secrets and Creator
 Identity certificate are injected into the device under test.
     </td>
   </tr>
@@ -368,7 +367,7 @@ manager. The triggering mechanism for updating the value is covered in the
 
 ## Asymmetric Keys
 
-OpenTitan uses ECDSA attestation keys conformant to
+Earlgrey and Darjeeling use ECDSA attestation keys conformant to
 [FIPS 186-4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf). Future
 revisions of this specification may add support for other signature schemes.
 
@@ -392,8 +391,6 @@ pool.
 // For CTR_DRBG with AES-256 the minimum seed length is 384.
 FIXED_ENTROPY_SEED = least 384b stored in flash
 
-// This mode of operation in hardware is being tracked via a feature
-// request: https://github.com/lowRISC/opentitan/issues/2652
 // The implementation may opt for supporting this in a software
 // based DRBG, as long as performance requirements are met.
 drbg_ctx = DRBG_init(FIXED_ENTROPY_SEED, key_identifier)
@@ -617,9 +614,9 @@ Extensions for compatibility with Open DICE profile:
     *   `cA` is set to TRUE
     *   `pathLenConstraint` not included.
 
-OpenTitan Creator Identity custom extension:
+Creator Identity custom extension:
 
-*   `extnID`: TBD. Need to determine if we need an OID for OpenTitan, or if we
+*   `extnID`: TBD. Need to determine if we need an OID, or if we
     can allocate a new ID under the Google certificate extension domain
     1.3.6.1.4.1.11129.2.1.
 *   `critical`: FALSE
@@ -784,9 +781,9 @@ Extensions for compatibility with Open DICE profile:
     *   `CA` is set to TRUE
     *   `pathLenConstraint` not included.
 
-OpenTitan Owner Identity custom extension:
+Owner Identity custom extension:
 
-*   `extnID`: TBD. Need to determine if we need an OID for OpenTitan, or if we
+*   `extnID`: TBD. Need to determine if we need an OID, or if we
     can allocate a new ID under the Google certificate extension domain
     1.3.6.1.4.1.11129.2.1.
 *   `critical`: FALSE
@@ -826,7 +823,7 @@ manifest containing the endorsed key as well as the measurements described in
 the [creator](#creator-custom-extension) and [owner](#owner-custom-extension)
 custom extensions.
 
-The binary manifest format must be standardized at the OpenTitan project level
+The binary manifest format must be standardized at the project level
 to ensure interoperability between silicon and software layers.
 
 ## Privacy Considerations
@@ -841,10 +838,10 @@ attestation services for multiple backends are required to derive
 certificates</span>. Such application level identities must fulfill the privacy
 requirements of their use cases.
 
-OpenTitan's key manager provides a mechanism to derive multiple application
+The key manager provides a mechanism to derive multiple application
 level keys with lineage to the Owner Identity, without making them
 distinguishable from any random key. These properties allow the software
-implementation to bind the OpenTitan attestation to any application level
+implementation to bind the attestation to any application level
 attestation flows without precluding the implementation of additional privacy
 measures at the application level.
 

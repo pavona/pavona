@@ -4,7 +4,7 @@
 
 The Silicon Owner is defined as a logical entity or entities allowed to sign
 code for execution, as well as to sign ownership management commands[^1].
-OpenTitan supports the following device life cycle states to manage the
+Silicon Owner supports the following device life cycle states to manage the
 ownership state of the device:
 
 *   _UNLOCKED_OWNERSHIP_: The device is ready to be assigned to a new owner.
@@ -17,7 +17,7 @@ At this point the device switches from a `LOCKED_OWNERSHIP` to an `UNLOCKED_OWNE
     *  The device attestation process will specify that the device is in an unlocked state rather than attesting to any specific owner.
 Key derivations will also correspond to the unlocked state rather than the previous owner.
     * The previous owner's public keys are still stored after ownership is unlocked.
-1. The new owner creates a set of keys by any means they wish (doesn't have to be on an OpenTitan device).
+1. The new owner creates a set of keys by any means they wish.
 These keys must include an RSA-3072 key pair for secure boot, an ECDSA-P256 key pair for unlocking ownership, and another ECDSA-P256 key pair for endorsing the next owner (see [Owner Keys](#owner-keys)).
     * The number of redundant keys stored is configurable up to around 2kiB of total key material.
 The new owner may choose, for example, to generate several RSA public/private key pairs.
@@ -254,7 +254,7 @@ Parameters:
     (e.g. `id = n - 1`). Used to bind the key to the custody chain (chain of
     owners).
 
-Function: `MAC` is an OpenTitan approved MAC function.
+Function: `MAC` is an approved MAC function.
 
 ```
 Kn = MAC(K, "OwnerSlot" | slot | n | prev_owner_digest)
@@ -279,9 +279,9 @@ ownership state.
 Determine if the `prev_owner_digest` field must be initialized with non-zero
 value at manufacturing time.
 
-## OpenTitan Device Mode
+## Device Mode
 
-A host can send unlock ownership and ownership transfer commands to OpenTitan
+A host can send unlock ownership and ownership transfer commands to a device
 via any physical interface supported by the `ROM_EXT`. The details of the
 command transport layer protocol, as well as the list of supported physical
 devices are left to the reference software implementation.
@@ -376,8 +376,8 @@ its allow-list.
 
 ### Ownership Transfer
 
-An ownership transfer command sent by a host to OpenTitan, is serviced by the
-ROM extension (`ROM_EXT`) allowing the Silicon Owner to take ownership of the
+An ownership transfer command sent by a host to the device is serviced by the
+ROM extension (`ROM_EXT`), allowing the Silicon Owner to take ownership of the
 device at silicon manufacture, Contract Manufacturing (CM) stage or in the
 field.
 
@@ -463,14 +463,14 @@ which effectively sets the new owner as the current owner.
   </tr>
 </table>
 
-## OpenTitan Host Mode
+## Host Mode
 
-Some of the OpenTitan use cases require support for self updates in which
-OpenTitan is used in host mode to scan an external device interface for update
+Some hardware Root of Trust use cases require support for self updates in which
+the device is used in host mode to scan an external device interface for update
 payloads. This section describes Ownership Transfer layered on top of such self
 update mechanism.
 
-An OpenTitan implementation may support this ownership transfer model at the SKU
+An implementation may support this ownership transfer model at the SKU
 level.
 
 ### Unlock Ownership
@@ -482,7 +482,7 @@ way:
 1.  The Device is updated to a stack able to support the ownership transfer
     implementation as described in the next section. The owner may opt for
     clearing any device secrets as part of this step.
-2.  Ownership unlock is performed as described in the OpenTitan device mode
+2.  Ownership unlock is performed as described in the device mode
     [Unlock Flow](#unlock-flow) section.
 
 ### Ownership Transfer
@@ -597,6 +597,6 @@ the factory image.
 
 ## Notes
 
-[^1]: https://opentitan.org/book/doc/security/logical_security_model/#silicon-owner
+[^1]: ../../logical_security_model/README.md#silicon-owner
 
 [^2]: Automatic Test Equipment used at package level testing.

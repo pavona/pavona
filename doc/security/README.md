@@ -1,85 +1,51 @@
 # Security
 
-## Overview
+A fundamental part of Pavona's quality lies in the trustworthy nature of its hardware security-related assets.
+Pavona builds atop the the rigorous standards set forth by [OpenTitan](https://opentitan.org).
 
-OpenTitan's mission is to create a trustworthy, vendor-agnostic open source
-silicon Root of Trust (RoT) widely adopted across the industry. We do this by
-implementing strong logical security integrity guarantees in the hardware and
-firmware components, and restricting licensing of the OpenTitan trademark to
-those implementations conforming to OpenTitan standards.
+Both the Earlgrey and Darjeeling top levels are hardware root-of-trust (RoT) systems which adhere to these standards and utilize the security resources within Pavona.
 
-## [OpenTitan Security Model Specification][security_model]
+## Specifications and Standards
 
-The [OpenTitan Security Model Specification][security_model] defines the logical
-security properties of the discrete IC. It covers device and software
-attestation, provisioning, secure boot, chip lifecycle, firmware update, chip
-identity, and chip ownership transfer.
+### [Earlgrey Security Model Specification][security_model]
 
-## [Logical Security Model][logical_security_model]
+The [Earlgrey Security Model Specification][security_model] defines the logical security properties of Earlgrey, a discrete IC RoT.
+It covers device and software attestation, provisioning, secure boot, chip lifecycle, firmware update, chip identity, and chip ownership transfer.
 
-The [OpenTitan Security Model][logical_security_model] provides a high level
-framework for device provisioning and run-time operations. It starts by
-enumerating the range of logical entities supported by the architecture, and
-their mapping into software stages. Runtime isolation properties and baseline
-identity concepts are introduced in this document.
+### [Logical Security Model][logical_security_model]
 
-## [Secure Hardware Design Guidelines][implementation_guidelines]
+A [Logical Security Model][logical_security_model] provides a high level framework for device provisioning and run-time operations.
+It starts by enumerating the range of logical entities supported by the architecture, and their mapping into software stages.
+Runtime isolation properties and baseline identity concepts are introduced in this document.
+
+### [Secure Hardware Design Guidelines][implementation_guidelines]
 
 Silicon designs for security devices require special guidelines to protect the designs against myriad attacks.
-To that end, the team established [Secure Hardware Design Guidelines][implementation_guidelines] which are followed when developing OpenTitan security IP.
+To that end, the [Secure Hardware Design Guidelines][implementation_guidelines] provide guidance for developing security IP.
 
-## Functional Guarantees
+### [Lightweight Threat Model][threat_model]
 
-At the functional level OpenTitan aims to provide the following guarantees:
-
-*   Silicon Owners shall be able to deploy their own Root of Trust (RoT) Public
-    Key Infrastructure (PKI) after taking ownership of the device.
-*   Silicon Creators shall endorse the authenticity of the hardware. Endorsement
-    is contingent on the silicon adhering to the physical implementation
-    guidelines and standard requirements stipulated by the project. The
-    endorsement shall be measurable via a Transport Certificate.
-*   OpenTitan shall provide full boot attestation measurements to allow Silicon
-    Owners to verify the boot chain configuration. The attestation chain shall
-    be anchored in the Silicon Owner's RoT PKI.
-*   OpenTitan shall provide a key manager implementation strongly bound to the
-    boot chain. Only a boot chain signed with the expected set of keys shall be
-    able to unlock stored keys/secrets.
-*   OpenTitan shall provide a key versioning scheme with support for key
-    migration bound to the firmware versioning and update implementation.
-
-## Use Cases
-
-The security goals of the project are derived from a list of target
-[use cases][use_cases]. The security goals are used to define OpenTitan's
-[threat model][threat_model], as well as functional and assurance security
-requirements. Such requirements influence the system architecture, as well as
-the certification strategy for silicon implementations.
+The [Lightweight Threat Model][threat_model] delineates the anticipated design assets, attacker profiles, attack methods, and attack surfaces for Earlgrey and Darjeeling.
 
 ## Security Primitives
 
-All hardware security primitives adhere to the OpenTitan
-[comportable][comportable_ip] peripheral interface specification.
-Implementations for some of these components are available for reference and
-may not meet production or certification criteria yet.
+All hardware security primitives adhere to the [comportable][comportable_ip] peripheral interface specification.
+Implementations for some of these components are available for reference and may not meet production or certification criteria yet.
 
 ### [Entropy source][entropy_source]
 
-Digital wrapper for a NIST SP 800-90B compliant entropy source. An additional
-emulated entropy source implementation will be available for FPGA functional
-testing.
+Digital wrapper for a NIST SP 800-90B compliant entropy source.
+An additional emulated entropy source implementation will be available for FPGA functional testing.
 
 ### [CSRNG][csrng]
 
-Cryptographically Secure Random Number Generator (CSRNG) providing support for
-both deterministic (DRBG) and true random number generation (TRNG).
+Cryptographically Secure Random Number Generator (CSRNG) providing support for both deterministic (DRBG) and true random number generation (TRNG).
 
-The DRBG is implemented using the `CTR_DRBG` construction specified in
-NIST SP 800-90A.
+The DRBG is implemented using the `CTR_DRBG` construction specified in NIST SP 800-90A.
 
 ### [AES][aes]
 
-Advanced Encryption Standard (AES) supporting Encryption/Decryption using
-128/192/256 bit key sizes in the following cipher block modes:
+Advanced Encryption Standard (AES) supporting Encryption/Decryption using 128/192/256 bit key sizes in the following cipher block modes:
 
 *   Electronic Codebook (ECB) mode,
 *   Cipher Block Chaining (CBC) mode,
@@ -87,30 +53,39 @@ Advanced Encryption Standard (AES) supporting Encryption/Decryption using
 *   Output Feedback (OFB) mode, and
 *   Counter (CTR) mode.
 
-Galois/Counter Mode (GCM) can be implemented by leveraging Ibex for the GHASH
-operation as demonstrated in [OpenTitan's library of cryptographic
-implementations][cryptolib].
+Galois/Counter Mode (GCM) can be implemented by leveraging Ibex for the GHASH operation as demonstrated in the [library of cryptographic implementations][cryptolib].
 
 ### [HMAC][hmac]
 
-HMAC with SHA-2 FIPS 180-4 compliant hash function, supporting both
-HMAC-SHA256 and SHA256 modes of operation.
+HMAC with SHA-2 FIPS 180-4 compliant hash function, supporting both HMAC-SHA256 and SHA256 modes of operation.
 
 ### [Key Manager][keymgr]
 
-Hardware backed symmetric key generation and storage providing key isolation
-from software.
+Hardware backed symmetric key generation and storage providing key isolation from software.
 
-### [OTBN][otbn]
+### [Asymmetric Cryptographic Coprocessor (ACC)][acc]
 
 Public key algorithm accelerator with support for bignum operations in hardware.
 
 ### [Alert Handler][alert_handler]
 
-Aggregates alert signals from other system components designated as potential
-security threats, converting them to processor interrupts. It also supports
-alert policy assignments to handle alerts completely in hardware depending on
-the assigned severity.
+Aggregates alert signals from other system components designated as potential security threats, converting them to processor interrupts.
+It also supports alert policy assignments to handle alerts completely in hardware depending on the assigned severity.
+
+## Using Earlgrey and Darjeeling
+
+At the functional level, these top level RoTs should:
+
+*   Enable RoT Public Key Infrastructure (PKI) to Silicon Owners who have taken ownership of the device.
+*   Have their hardware's authenticity endorsed by Silicon Creators.
+    Endorsement is contingent on the silicon adhering to the physical implementation guidelines and standard requirements stipulated by the project.
+    The endorsement shall be measurable via a Transport Certificate.
+*   Provide full boot attestation measurements to allow Silicon Owners to verify the boot chain configuration.
+    The attestation chain shall be anchored in the Silicon Owner's RoT PKI.
+*   Provide a key manager implementation strongly bound to the boot chain.
+    Only a boot chain signed with the expected set of keys shall be able to unlock stored keys/secrets.
+*   Provide a key versioning scheme with support for key migration bound to the firmware versioning and update implementation.
+
 
 [aes]: ../../hw/ip/aes/README.md
 [alert_handler]: ../../hw/top_earlgrey/ip_autogen/alert_handler/README.md
@@ -121,8 +96,7 @@ the assigned severity.
 [keymgr]: ../../hw/ip/keymgr/README.md
 [logical_security_model]: ./logical_security_model/README.md
 [implementation_guidelines]: ./implementation_guidelines/hardware/README.md
-[otbn]: ../../hw/ip/otbn/README.md
+[acc]: ../../hw/ip/acc/README.md
 [security_model]: ./specs/README.md
-[use_cases]: ../use_cases/README.md
 [threat_model]: ./threat_model/README.md
-[cryptolib]: https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto
+[cryptolib]: ../../sw/device/lib/crypto

@@ -1,15 +1,14 @@
-# OpenTitan Logical Security Model
+# Logical Security Model
 
 ## Overview
 
-This document explains the overall OpenTitan logical security model as it relates to secure provisioning and run-time operations.
-Due to the open source nature of OpenTitan, this document articulates fundamental requirements to be considered OpenTitan-compliant.
+This document explains the overall logical security model as it relates to secure provisioning and run-time operations for a Root-of-Trust (RoT).
+Due to the open source nature of Pavona, this document articulates fundamental requirements to be considered Pavona-compliant with respect to security.
 
 ## Logical Entities
 
-At a high level, the OpenTitan logical security model is composed of 4 entities - Silicon Creator, Silicon Owner, Application Provider and the End User.
+At a high level, the logical security model is composed of 4 entities - Silicon Creator, Silicon Owner, Application Provider and the End User.
 This document focuses on the first 3 entities.
-These entities are directly involved in creating a fully trademark compliant OpenTitan.
 
 Depending on the use case, these entities are not required to be distinct.
 
@@ -118,15 +117,15 @@ In these scenarios, it is not necessary to have separation between owner and App
 
 ### Summary of Logical Entities
 
-An OpenTitan chip may interact with up to 3 distinct logical entities or logical collection of entities over the course of its lifecycle.
+A Root-of-Trust chip may interact with up to 3 distinct logical entities or logical collection of entities over the course of its lifecycle.
 The End User (not discussed in this document), is not expected to impact the identities and stages described in this document.
 The model and underlying hardware are flexible enough to support distinct or overlapping entities.
 It is expected that most use cases will have some overlap between phases; between Silicon Creator and owner, or owner and Application Provider.
-Above all, consumers of OpenTitan have the ability to map the security model to their use case.
+Above all, consumers have the ability to map the security model to their use case.
 
 ## Software Stage Mapping
 
-Since OpenTitan software can contain components authored by up to 3 entities, this section describes the software mapping in the most generic case when all 3 entities are distinct.
+Since Pavona software can contain components authored by up to 3 entities, this section describes the software mapping in the most generic case when all 3 entities are distinct.
 Further examples on how different stages might merge are shown below.
 The overall construction is shown below.
 

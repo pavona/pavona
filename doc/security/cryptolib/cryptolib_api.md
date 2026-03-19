@@ -1,10 +1,10 @@
-# OpenTitan Cryptography Library User Guide
+# Cryptography Library User Guide
 
-This page is intended for users of the OpenTitan cryptographic library.
-The library is written in C and uses OpenTitan's hardware blocks for accelerated cryptography.
+This page is intended for users of the cryptographic library.
+The library is written in C and uses hardware blocks for accelerated cryptography.
 It generally attempts to minimize code size and protect against side-channel and fault-injection attacks, including by physically present attackers.
 
-**Note: at the time of writing, the crypto library is still under development, and not all algorithms described in this page are fully implemented and tested.**
+**Note: the crypto library is still under development, and not all algorithms described in this page are fully implemented and tested.**
 
 This page:
 - Lists a quick reference for [supported algorithms](#supported-algorithms)
@@ -24,7 +24,7 @@ This page:
 
 ## Supported Algorithms
 
-The following is a quick reference for algorithms and modes supported by the OT cryptolib.
+The following is a quick reference for algorithms and modes supported by the cryptolib.
 For more details, see later sections (links in the "category" column).
 
 | Category        | Supported schemes         |
@@ -40,12 +40,12 @@ For more details, see later sections (links in the "category" column).
 ## Data structures
 
 These are the basic data structures used by the crypto library to communicate with the caller.
-Note that in the OpenTitan cryptolib, memory allocation is left mostly to the caller.
+Note that in cryptolib, memory allocation is left mostly to the caller.
 
 ### Status Codes
 
-All functions in the OpenTitan cryptolib return `otcrypto_status_t`.
-This design is compatible with OpenTitan's internal `status_t` datatype.
+All functions in cryptolib return `otcrypto_status_t`.
+This design is compatible with the `status_t` datatype.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_status_t }}
 
@@ -62,7 +62,7 @@ The cryptolib uses byte buffers for data that may not be 32-bit aligned, such as
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_const_byte_buf }}
 
 The cryptolib uses word buffers to enforce alignment where either the data is guaranteed to be aligned or where it is especially helpful for implementation reasons.
-Since most OpenTitan hardware interfaces expect aligned data, this is important sometimes for security and simplicity.
+Since most comportable hardware interfaces expect aligned data, this is important sometimes for security and simplicity.
 Word buffers can be safely interpreted as byte streams by the caller; the bytes are arranged so that on a little-endian processor like Ibex, they will read as the correct byte-stream even if the specification calls for big-endian.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_word32_buf }}
@@ -94,7 +94,7 @@ Nothing in the configuration is typically secret.
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_config }}
 
 In most cases, the caller needs to provide a configuration before calling algorithms which generate secret keys.
-Callers may request keys from OpenTitan's [key manager block][keymgr] by setting `hw_backed` in the key configuration.
+Callers may request keys from the [key manager block][keymgr] by setting `hw_backed` in the key configuration.
 In this case, the keyblob is the diversification input for key manager instead of the key material itself.
 See the [key transport](#key-transport) section for more details.
 
@@ -155,8 +155,7 @@ However, they are essentially scratchpad space for the underlying implementation
 
 ## AES
 
-OpenTitan includes a hardware [AES block][aes].
-The AES block supports five cipher modes (ECB, CBC, CFB, OFB, and CTR) with a key length of 128 bits, 192 bits and 256 bits.
+The [AES block][aes] supports five cipher modes (ECB, CBC, CFB, OFB, and CTR) with a key length of 128 bits, 192 bits and 256 bits.
 
 The crypto library includes all five basic cipher modes supported by the hardware, as well as the AES-KWP key-wrapping scheme and AES-GCM authenticated encryption scheme.
 Padding schemes are defined in the **otcrypto\_aes\_padding\_t** structure from [this section](#aes-data-structures).
@@ -194,10 +193,10 @@ In streaming mode, it is strongly recommended not to process the decrypted data 
 
 ## Hash functions
 
-OpenTitan's [KMAC block][kmac] supports the fixed digest length SHA3\[224, 256, 384, 512\] cryptographic hash functions, and the extendable-output functions of variable digest length SHAKE\[128, 256\] and cSHAKE\[128, 256\].
+The [KMAC block][kmac] supports the fixed digest length SHA3\[224, 256, 384, 512\] cryptographic hash functions, and the extendable-output functions of variable digest length SHAKE\[128, 256\] and cSHAKE\[128, 256\].
 
-SHA-2 functions are supported by [OTBN][otbn], and one-shot SHA-256 is supported by the [HMAC block][hmac]
-The OpenTitan cryptolib supports SHA2-256, SHA2-384, and SHA2-512.
+SHA-2 functions are supported by [ACC][acc], and one-shot SHA-256 is supported by the [HMAC block][hmac]
+The cryptolib supports SHA2-256, SHA2-384, and SHA2-512.
 For **SHA2 only**, the hash API supports both one-shot and streaming modes of operation.
 
 Note that hardware support for one-shot SHA-256 means that the one-shot version will be significantly faster than streaming mode for that specific algorithm.
@@ -233,11 +232,11 @@ Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), be
 
 ## Message Authentication
 
-OpenTitan supports two kinds of message authentication codes (MACs):
+Cryptolib supports two kinds of message authentication codes (MACs):
 - HMAC, a simple construction based on cryptographic hash functions
 - KMAC, a Keccak-based MAC
 
-OpenTitan's [HMAC block][hmac] supports HMAC-SHA256 with a key length of 256 bits.
+The [HMAC block][hmac] supports HMAC-SHA256 with a key length of 256 bits.
 The [KMAC block][kmac] supports KMAC128 and KMAC256, with a key length of 128, 192, 256, 384, or 512 bits.
 
 ### One-shot mode
@@ -258,9 +257,9 @@ To avoid locking up the KMAC hardware, the streaming mode is supported **only fo
 ## RSA
 
 RSA (Rivest-Shamir-Adleman) is a family of asymmetric cryptographic algorithms supporting signatures and encryption.
-OpenTitan uses the [OpenTitan Big Number Accelerator][otbn] to speed up RSA operations.
+The [Asymmetric Cryptographic Coprocessor][acc] can speed up RSA operations.
 
-OpenTitan supports RSA key generation, signature generation, and signature verification for modulus lengths of 2048, 3072, and 4096 bits.
+Cryptolib supports RSA key generation, signature generation, and signature verification for modulus lengths of 2048, 3072, and 4096 bits.
 Supported padding schemes are defined in the **otcrypto\_rsa\_padding\_t** structure in [this section](#rsa-data-structures).
 
 All RSA operations may be run [asynchronously](#asynchronous-operations) through a dedicated [asynchronous API](#rsa-asynchronous-api).
@@ -293,7 +292,6 @@ Always ensure that you fully understand the security implications of the padding
 
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_public_key_construct }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_from_exponents }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt }}
@@ -320,7 +318,7 @@ Always ensure that you fully understand the security implications of the padding
 Elliptic curve cryptography (ECC) refers to a wide range of asymmetric cryptography based on elliptic curve operations.
 It is widely used for key agreement and signature schemes.
 Compared to RSA, ECC uses much shorter key-lengths to provide equivalent security.
-OpenTitan uses the [OpenTitan Big Number Accelerator][otbn] to speed up ECC operations.
+The [Asymmetric Cryptographic Coprocessor][acc] can speed up ECC operations.
 
 Elliptic-curve public keys are curve points; coordinates (x,y) that satisfy a particular equation that defines the curve.
 Elliptic curve private keys are scalar values, positive integers modulo the "curve order" (a large positive integer, usually denoted *n*).
@@ -344,7 +342,7 @@ To avoid degrading security, the collision resistance of the hash function shoul
 The phrasing in that document is a bit cryptic, but essentially the security of ECC depends on the curve order, *n*.
 Usually the security is about *n/2*, but in some cases approximations are accepted.
 For example, the order of the edwards25519 curve is 253 bits, not 256, but FIPS standards specifically accept it as having "about 128 bits of security".
-Below are security strengths for the curves supported by the OpenTitan cryptolib, as well as sources for those values.
+Below are security strengths for the curves supported by cryptolib, as well as sources for those values.
 
 
 |   Curve      | Security strength |     Schemes           |              Citation                   |
@@ -459,13 +457,13 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 ## Deterministic random bit generation
 
-OpenTitan's random bit generator, [CSRNG][csrng] (Cryptographically Secure Random Number Generator) uses a block cipher based deterministic random bit generation (DRBG) mechanism (AES-CTR-DRBG) as specified in [NIST SP800-90A][nist-drbg-spec].
-OpenTitan's RNG targets compliance with both [BSI AIS31 recommendations for Common Criteria][bsi-ais31], as well as [NIST SP800-90A][nist-drbg-spec] and [NIST SP800-90C (second draft)][nist-rng-spec].
+The [CSRNG][csrng] (Cryptographically Secure Random Number Generator) uses a block cipher based deterministic random bit generation (DRBG) mechanism (AES-CTR-DRBG) as specified in [NIST SP800-90A][nist-drbg-spec].
+RNG targets comply with both [BSI AIS31 recommendations for Common Criteria][bsi-ais31], as well as [NIST SP800-90A][nist-drbg-spec] and [NIST SP800-90C (second draft)][nist-rng-spec].
 The CSRNG operates at a 256-bit security strength.
 
 ### Seeding the DRBG
 
-The DRBG can be seeded with new entropy from OpenTitan's hardware [entropy source][entropy-src], mixed with additional caller-provided entropy if desired.
+The DRBG can be seeded with new entropy from a hardware [entropy source][entropy-src], mixed with additional caller-provided entropy if desired.
 It is also possible to instantiate or reseed the DRBG with *only* caller-provided entropy ("manual instantiate" and "manual reseed").
 This is useful for testing, but undermines security guarantees and FIPS compliance until the DRBG is uninstantiated again, so it is best to use these operations with caution.
 
@@ -490,7 +488,7 @@ Key derivation functions (KDFs) generate a new key from an existing key.
 
 ### Supported Modes
 
-OpenTitan supports two different key derivation methods:
+Cryptolib supports two different key derivation methods:
 - KDF-CTR following [NIST SP800-108][kdf-prf-spec] with HMAC or KMAC as the PRF
 - HKDF following [IETF RFC 5869][hkdf-rfc], which is special case of [NIST SP800-56C][nist-kdf-key-establishment]
 
@@ -552,29 +550,29 @@ The crypto library will always refuse to export these keys.
 
 ## Asynchronous operations
 
-For some functions, OpenTitan's cryptolib supports asynchronous calls.
+For some functions, cryptolib supports asynchronous calls.
 All operations which take longer than 10ms should have an asynchronous interface.
 This is helpful for compatibility with TockOS, which has a low latency return call programming model.
 
-The OpenTitan cryptolib does not implement any thread management.
-Instead, it treats the OTBN coprocessor as a "separate thread" to achieve non-blocking operation with virtually zero overhead.
-OTBN sends an interrupt when processing is complete.
+The cryptolib does not implement any thread management.
+Instead, it treats the ACC as a "separate thread" to achieve non-blocking operation with virtually zero overhead.
+ACC sends an interrupt when processing is complete.
 
 All asynchronous operations have two functions:
 
 - **\<algorithm\>\_async\_start**
-    - Takes input arguments. Checks that OTBN is available and idle. If
+    - Takes input arguments. Checks that ACC is available and idle. If
       so: does any necessary synchronous preprocessing, initializes
-      OTBN, and starts the OTBN routine.
+      ACC, and starts the ACC routine.
 - **\<algorithm\>\_async\_finalize**
-    - Takes caller-allocated output buffers. Blocks until OTBN is done
+    - Takes caller-allocated output buffers. Blocks until ACC is done
       processing if needed, then checks whether it had errors. If not, does any
       necessary postprocessing and writes results to the buffers.
 
 The caller should call the `start` function, wait for the interrupt, and then call `finalize`.
 
 A few noteworthy aspects of this setup:
-- While an asynchronous operation is running, OTBN will be unavailable and attempts to use it will return errors.
+- While an asynchronous operation is running, ACC will be unavailable and attempts to use it will return errors.
 - Only one asynchronous operation may be in progress at any given time.
 - The caller is responsible for properly managing asynchronous calls, including ensuring that the entity receiving the `finalize` results is the same as the one who called `start`.
 
@@ -668,7 +666,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 1. [NIST SP800-90A][nist-drbg-spec]: Recommendation for Random Number Generation Using Deterministic Random Bit Generators
 2. [NIST SP800-90B][nist-entropy-spec]: Recommendation for the Entropy Sources Used for Random Bit Generation
 3. [BSI-AIS31][bsi-ais31]: A proposal for: Functionality classes for random number generators
-4. OpenTitan [CSRNG block][csrng] technical specification
+4. [CSRNG block][csrng] technical specification
 
 **Key derivation**
 1. [NIST SP800-108][kdf-prf-spec]: Recommendation for Key Derivation using Pseudorandom Functions
@@ -708,7 +706,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [nist-rng-spec]: https://csrc.nist.gov/CSRC/media/Publications/sp/800-90c/draft/documents/sp800_90c_second_draft.pdf
 [nist-sp800-131a]: https://csrc.nist.gov/publications/detail/sp/800-131a/rev-2/final
 [nist-sp800-57]: https://csrc.nist.gov/publications/detail/sp/800-57-part-1/rev-5/final
-[otbn]: ../../../hw/ip/otbn/README.md
+[acc]: ../../../hw/ip/acc/README.md
 [rsa-rfc]: https://datatracker.ietf.org/doc/html/rfc8017
 [safe-curves]: https://safecurves.cr.yp.to/
 [sec1]: https://www.secg.org/sec1-v2.pdf
