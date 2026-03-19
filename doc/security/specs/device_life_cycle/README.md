@@ -625,8 +625,8 @@ for more details.
   <tr>
     <td> </td>
     <td style="text-align:center">Y</td>
-    <td>6: Personalization</td>
-    <td>Personalizer</td>
+    <td>6: Personalisation</td>
+    <td>Personaliser</td>
   </tr>
   <tr>
     <td> </td>

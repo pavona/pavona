@@ -52,7 +52,7 @@ The following software-based countermeasures are implemented:
   - Uses a constant-time square and multiply always algorithm processing an additively shared scalar.
   - Scalars (both ephemeral and secret keys) are additionally always blinded using a 64b multiple of the curve order.
   - For ECDH and key generation from a HW-backed seed, scalars are blinded using a 65b random multiple of the point order (as per [Schindler and Wiemers](https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf)).
-  - The exponentiation operates on projective coordinates with re-randomization of the used additive points P and 2P on every iteration.
+  - The exponentiation operates on projective coordinates with re-randomisation of the used additive points P and 2P on every iteration.
   - Processing of the masked and blinded scalar is hardened against SCA leakage.
   - We check if input points and results of EC scalar multiplications satisfy the curve equation.
   - The base point and curve parameters are protected against manipulation though the CRC check upon loading the OTBN app.
