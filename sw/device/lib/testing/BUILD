@@ -13,6 +13,7 @@ filegroup(
     name = "doc_files",
     srcs = glob(["**/*.md"]) + [
         "//sw/device/lib/testing/test_framework:doc_files",
+        "//sw/device/lib/testing/test_rom:doc_files",
     ],
 )
 

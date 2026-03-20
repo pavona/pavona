@@ -21,6 +21,8 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["README.md"])
+
 otp_json(
     name = "otp_json_secret2_locked",
     partitions = [

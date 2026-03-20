@@ -4,6 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["README.md"])
+
 cc_import(
     name = "nop_imm_section",
     objects = ["nop.o"],

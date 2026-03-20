@@ -6,6 +6,8 @@ load("//rules:acc.bzl", "acc_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["README.md"])
+
 acc_binary(
     name = "barrett384",
     srcs = [

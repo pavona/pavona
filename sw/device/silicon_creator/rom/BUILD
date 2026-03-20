@@ -28,6 +28,8 @@ filegroup(
     ]) + [
         "//sw/device/silicon_creator/rom/data:rom_e2e_testplan.hjson",
         "//sw/device/silicon_creator/rom/data:rom_manual_testplan.hjson",
+        "//sw/device/silicon_creator/rom/hooks:README.md",
+        "//sw/device/silicon_creator/rom/keys:README.md",
     ],
 )
 

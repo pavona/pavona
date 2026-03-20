@@ -24,6 +24,8 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["README.md"])
+
 cc_library(
     name = "main_lib",
     srcs = [

@@ -6,6 +6,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 cc_library(
     name = "default_perso_fw_ext",
     srcs = ["default_personalize_ext.c"],
