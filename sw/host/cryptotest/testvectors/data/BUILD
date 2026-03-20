@@ -561,6 +561,68 @@ run_binary(
 
 [
     run_binary(
+        name = "acvp_mldsa_{}_json".format(test_type),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json",
+            "@acvp_testvectors//{}:internalProjection.json".format(acvp_dir),
+        ],
+        outs = [":acvp_mldsa_{}.json".format(test_type)],
+        args = [
+            "--src",
+            "$(location @acvp_testvectors//{}:internalProjection.json)".format(acvp_dir),
+            "--dst",
+            "$(location :acvp_mldsa_{}.json)".format(test_type),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json)",
+            "--test-type",
+            test_type,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_mldsa_parser",
+    )
+    for test_type, acvp_dir in [
+        ("keygen", "ML-DSA-keyGen-FIPS204"),
+        ("siggen", "ML-DSA-sigGen-FIPS204"),
+        ("sigver", "ML-DSA-sigVer-FIPS204"),
+    ]
+]
+
+[
+    run_binary(
+        name = "wycheproof_mldsa_{}_{}_json".format(pset, test_type),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json",
+            "@wycheproof//testvectors_v1:{}".format(src_name),
+        ],
+        outs = [":wycheproof_mldsa_{}_{}.json".format(pset, test_type)],
+        args = [
+            "--src",
+            "$(location @wycheproof//testvectors_v1:{})".format(src_name),
+            "--dst",
+            "$(location :wycheproof_mldsa_{}_{}.json)".format(pset, test_type),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json)",
+            "--test-type",
+            test_type,
+            "--param-set",
+            pset,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mldsa_parser",
+    )
+    for pset, test_type, src_name in [
+        ("44", "verify", "mldsa_44_verify_test.json"),
+        ("44", "sign_seed", "mldsa_44_sign_seed_test.json"),
+        ("44", "sign_noseed", "mldsa_44_sign_noseed_test.json"),
+        ("65", "verify", "mldsa_65_verify_test.json"),
+        ("65", "sign_seed", "mldsa_65_sign_seed_test.json"),
+        ("65", "sign_noseed", "mldsa_65_sign_noseed_test.json"),
+        ("87", "verify", "mldsa_87_verify_test.json"),
+        ("87", "sign_seed", "mldsa_87_sign_seed_test.json"),
+        ("87", "sign_noseed", "mldsa_87_sign_noseed_test.json"),
+    ]
+]
+
+[
+    run_binary(
         name = "nist_cavp_aes_{}_{}_json".format(
             function_name.lower(),
             key_len,

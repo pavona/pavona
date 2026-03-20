@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/zerorisc/expo/master/sw/host/cryptotest/testvectors/data/schemas/mldsa_schema.json",
+  "title": "Cryptotest ML-DSA Testvector",
+  "description": "A list of testvectors for ML-DSA testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Incremental test case ID",
+        "type": "integer"
+      },
+      "operation": {
+        "description": "ML-DSA operation type",
+        "type": "string",
+        "enum": ["keygen", "keygen_sign", "siggen", "sigver"]
+      },
+      "parameter_set": {
+        "description": "ML-DSA parameter set",
+        "type": "integer",
+        "enum": [44, 65, 87]
+      },
+      "seed": {
+        "description": "Seed for keygen",
+        "$ref": "#/$defs/byte_array"
+      },
+      "sk": {
+        "description": "Secret key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "pk": {
+        "description": "Public key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "message": {
+        "description": "Message to sign or verify",
+        "$ref": "#/$defs/byte_array"
+      },
+      "context": {
+        "description": "Context string",
+        "$ref": "#/$defs/byte_array"
+      },
+      "rnd": {
+        "description": "Randomness for signing",
+        "$ref": "#/$defs/byte_array"
+      },
+      "signature": {
+        "description": "Signature",
+        "$ref": "#/$defs/byte_array"
+      },
+      "expected_hash": {
+        "description": "SHA3-256 hash of expected outputs",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Expected result",
+        "type": "boolean"
+      }
+    }
+  }
+}

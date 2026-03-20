@@ -224,6 +224,22 @@ py_binary(
 )
 
 py_binary(
+    name = "nist_acvp_mldsa_parser",
+    srcs = ["nist_acvp_mldsa_parser.py"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
+    name = "wycheproof_mldsa_parser",
+    srcs = ["wycheproof_mldsa_parser.py"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_acvp_mlkem_parser",
     srcs = ["nist_acvp_mlkem_parser.py"],
     deps = [

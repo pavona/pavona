@@ -99,6 +99,29 @@ cryptotest(
     test_vectors = MLKEM_TESTVECTOR_TARGETS,
 )
 
+MLDSA_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_mldsa_keygen_json",
+    "//sw/host/cryptotest/testvectors/data:acvp_mldsa_siggen_json",
+    "//sw/host/cryptotest/testvectors/data:acvp_mldsa_sigver_json",
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mldsa_{}_{}_json".format(pset, test_type)
+    for pset in ("44", "65", "87")
+    for test_type in ("verify", "sign_seed", "sign_noseed")
+]
+
+MLDSA_TESTVECTOR_ARGS = " ".join([
+    "--mldsa-json=\"$(rootpath {})\"".format(target)
+    for target in MLDSA_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "mldsa_kat",
+    slow_test = True,
+    test_args = MLDSA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/mldsa_kat:harness",
+    test_vectors = MLDSA_TESTVECTOR_TARGETS,
+)
+
 ECDSA_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_ecdsa_{}.json".format(config)
     for config in [
@@ -539,6 +562,7 @@ test_suite(
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kmac_kat",
+        ":mldsa_kat",
         ":mlkem_kat",
         ":rsa_kat",
         ":sha256_kat",

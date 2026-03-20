@@ -216,6 +216,25 @@ cc_library(
 )
 
 cc_library(
+    name = "mldsa",
+    srcs = ["mldsa.c"],
+    hdrs = ["mldsa.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/crypto/impl:sha3",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:mldsa_commands",
+    ],
+)
+
+cc_library(
     name = "mlkem",
     srcs = ["mlkem.c"],
     hdrs = ["mlkem.h"],
@@ -240,6 +259,7 @@ FIRMWARE_DEPS = [
     ":aes_kwp",
     ":drbg",
     ":ecdh",
+    ":mldsa",
     ":mlkem",
     ":ecdsa",
     ":hash",

@@ -23,6 +23,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/mldsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/mlkem_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/rsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/sphincsplus_commands.h"
@@ -37,12 +38,16 @@
 #include "hash.h"
 #include "hmac.h"
 #include "kmac.h"
+#include "mldsa.h"
 #include "mlkem.h"
 #include "rsa.h"
 #include "sphincsplus.h"
 
-// Scratch buffer for ML-KEM test handlers.
-static mlkem_test_scratch_t mlkem_scratch;
+// Scratch buffers for PQC tests.
+static union {
+  mlkem_test_scratch_t mlkem;
+  mldsa_test_scratch_t mldsa;
+} pqc_scratch;
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
@@ -80,8 +85,11 @@ status_t process_cmd(ujson_t *uj) {
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));
         break;
+      case kCryptotestCommandMldsa:
+        RESP_ERR(uj, handle_mldsa(uj, &pqc_scratch.mldsa));
+        break;
       case kCryptotestCommandMlkem:
-        RESP_ERR(uj, handle_mlkem(uj, &mlkem_scratch));
+        RESP_ERR(uj, handle_mlkem(uj, &pqc_scratch.mlkem));
         break;
       case kCryptotestCommandRsa:
         RESP_ERR(uj, handle_rsa(uj));

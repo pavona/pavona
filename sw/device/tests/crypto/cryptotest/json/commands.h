@@ -21,6 +21,7 @@ extern "C" {
     value(_, Hash) \
     value(_, Hmac) \
     value(_, Kmac) \
+    value(_, Mldsa) \
     value(_, Mlkem) \
     value(_, Rsa) \
     value(_, SphincsPlus)
