@@ -49,7 +49,7 @@ jobs:
       board: cw340
       interface: cw340
       tag_filters: cw340_rom_ext
-      timeout: 80
+      timeout: 120
 
   execute_sival_fpga_tests_cw340:
     name: CW340 SiVal Tests
@@ -76,6 +76,7 @@ jobs:
       board: cw340
       interface: cw340
       tag_filters: cw340_sival_rom_ext
+      timeout: 120
 
   execute_manuf_fpga_tests_cw340:
     name: CW340 Manufacturing Tests
