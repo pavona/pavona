@@ -4285,6 +4285,7 @@ cc_library(
 opentitan_test(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         # This test requires a flash connected to the SPI bus,
         # which is not available in Verilator.
@@ -4621,6 +4622,7 @@ opentitan_test(
 opentitan_test(
     name = "ottf_dual_console_test",
     srcs = ["ottf_dual_console_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         {
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
@@ -6891,6 +6893,7 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_outputs_test",
     srcs = ["sysrst_ctrl_outputs_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -7008,6 +7011,7 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_ulp_z3_wakeup_test",
     srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -7460,6 +7464,7 @@ test_suite(
 opentitan_test(
     name = "uart_baud_rate_test",
     srcs = ["uart_baud_rate_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,

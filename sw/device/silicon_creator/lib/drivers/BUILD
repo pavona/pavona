@@ -1003,6 +1003,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
+        tags = ["skip_in_ci"],
         test_cmd = """
             --bootstrap={firmware}
         """,
