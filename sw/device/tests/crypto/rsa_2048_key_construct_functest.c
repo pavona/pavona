@@ -156,6 +156,7 @@ status_t private_key_roundtrip_test(void) {
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+      .exportable = kHardenedBoolTrue,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
@@ -260,6 +261,7 @@ status_t private_key_check_valid_roundtrip_inner(hardened_bool_t check_primes) {
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+      .exportable = kHardenedBoolTrue,
   };
   size_t keyblob_words =
       ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));

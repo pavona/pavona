@@ -562,6 +562,12 @@ otcrypto_status_t otcrypto_rsa_private_key_deconstruct(
   // Entropy complex must be initialized for `hardened_memcpy`.
   HARDENED_TRY(entropy_complex_check());
 
+  // Check that the key is exportable.
+  if (private_key->config.exportable != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.exportable, kHardenedBoolTrue);
+
   // Infer the RSA size from the public key modulus.
   otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_private_key(private_key, &size));
