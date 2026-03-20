@@ -3,7 +3,6 @@
 # Introduction
 
 - [Introduction](./README.md)
-- [Features Overview](./doc/productarchitecture.md)
 - [Getting Started](./doc/getting_started/README.md)
 - [Glossary](./doc/glossary.md)
 
