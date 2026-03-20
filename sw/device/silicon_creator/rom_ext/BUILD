@@ -20,7 +20,12 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]),
+    srcs = glob(["**/*.md"]) + [
+        "//sw/device/silicon_creator/rom_ext/e2e:README.md",
+        "//sw/device/silicon_creator/rom_ext/imm_section:README.md",
+        "//sw/device/silicon_creator/rom_ext/imm_section/prebuilts:README.md",
+        "//sw/device/silicon_creator/rom_ext/sival/keys:README.md",
+    ],
 )
 
 string_flag(

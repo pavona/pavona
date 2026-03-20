@@ -7,6 +7,11 @@ package(default_visibility = ["//visibility:public"])
 exports_files(glob(["**"]))
 
 filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
+filegroup(
     name = "ca_data",
     srcs = [
         ":dice_ca.pem",

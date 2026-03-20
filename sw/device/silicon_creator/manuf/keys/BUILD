@@ -9,6 +9,13 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//sw/device/silicon_creator/manuf/keys/fake:doc_files",
+    ],
+)
+
 exports_files(glob(["**"]))
 
 filegroup(

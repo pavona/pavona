@@ -12,6 +12,8 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["README.md"])
+
 _TEST_VECTORS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_ecdsa_p256_sha256.json",
 ]

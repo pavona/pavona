@@ -6,6 +6,8 @@ load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["README.md"])
+
 cc_library(
     name = "includes",
     hdrs = [
