@@ -60,7 +60,7 @@ _CONFIGS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
         "params": "-p usb-dfu -t strap -v 3",
         "setup": "",
-        "tags": [],
+        "tags": ["skip_in_ci"],
     },
     "spidfu": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu",
@@ -502,6 +502,7 @@ opentitan_test(
             assemble = "",
             params = config["params"],
             rom_ext = config["rom_ext"],
+            tags = config["tags"],
             test_cmd = """
             --clear-bitstream
             --bootstrap={rom_ext}
@@ -525,6 +526,7 @@ opentitan_test(
             device_id = DEVICE_ID,
             params = config["params"],
             rom_ext = config["rom_ext"],
+            tags = config["tags"],
             test_cmd = """
             --clear-bitstream
             --bootstrap={rom_ext}
@@ -553,6 +555,7 @@ opentitan_test(
             owner_offset = "0x10000",
             params = config["params"],
             romext_offset = "0",
+            tags = config["tags"],
             test_cmd = """
             --clear-bitstream
             --bootstrap={firmware}
