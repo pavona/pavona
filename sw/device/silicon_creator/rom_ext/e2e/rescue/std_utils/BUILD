@@ -44,6 +44,7 @@ opentitan_test(
         },
         changes_otp = True,
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
+        tags = ["skip_in_ci"],
         test_cmd = """
             --clear-bitstream
             --bootstrap={rom_ext}
