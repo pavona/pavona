@@ -20,8 +20,6 @@ permissions:
   contents: read
   # Needed for workload identity federation
   id-token: write
-  # Needed for reviewdog (verible linter)
-  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -189,6 +187,10 @@ jobs:
 
   verible_lint:
     name: Verible lint
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write # Add comments to pull requests
     runs-on:
       group: pavona-basic
     needs: quick_lint
