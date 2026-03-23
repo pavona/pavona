@@ -12,9 +12,9 @@ def _wycheproof_repos():
     http_archive(
         name = "wycheproof",
         build_file = Label("//third_party/wycheproof:BUILD.wycheproof_common.bazel"),
-        sha256 = "2f83fb2199f52297f675bad2be5c8a15cca90061ef593b205fc6fd994dc38f47",
-        strip_prefix = "wycheproof-78898104021ebd2cd98820e4112da89b1531d999",
-        url = "https://github.com/C2SP/wycheproof/archive/78898104021ebd2cd98820e4112da89b1531d999.tar.gz",
+        sha256 = "8b5be7c35cf56da4aa7c0b2823333ad5da651517daa23e3a1a01eb2f33b29513",
+        strip_prefix = "wycheproof-45d916899992c5e42dba75106104ca8ce7ff8370",
+        url = "https://github.com/C2SP/wycheproof/archive/45d916899992c5e42dba75106104ca8ce7ff8370.tar.gz",
         # C2SP upstream doesn't include BUILD files for subdirectories
         # (the lowRISC fork did). Create them so existing references like
         # @wycheproof//testvectors_v1:foo.json continue to work.
