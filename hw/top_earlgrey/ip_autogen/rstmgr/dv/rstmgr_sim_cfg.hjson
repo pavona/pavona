@@ -46,6 +46,10 @@
       name: default_vcs_cov_cfg_file
       value: "-cm_hier {proj_root}/hw/dv/tools/vcs/cover.cfg+{proj_root}/hw/dv/tools/vcs/common_cov_excl.cfg+{self_dir}/cov/rstmgr_cover.cfg+{self_dir}/cov/rstmgr_tgl_excl.cfg"
     }
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{topname}-{flow}-{tool}"
+    }
   ]
 
   // Add additional tops for simulation.

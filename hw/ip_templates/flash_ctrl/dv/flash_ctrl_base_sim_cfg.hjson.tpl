@@ -39,6 +39,10 @@
       name: "timescale"
       value: "1ns/100ps"
     }
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{topname}-{flow}-{tool}"
+    }
   ]
 
 // Add additional tops for simulation.

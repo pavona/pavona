@@ -45,6 +45,14 @@
   uvm_test: ${module_instance_name}_base_test
   uvm_test_seq: ${module_instance_name}_base_vseq
 
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{topname}-{flow}-{tool}"
+    }
+  ]
+
   // Add GPIO specific exclusion files.
   vcs_cov_excl_files: ["{self_dir}/cov/gpio_cov_excl.el"]
 
