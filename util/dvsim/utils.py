@@ -203,6 +203,9 @@ def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
             raise ValueError('String to be expanded contains '
                              'unknown wildcard, {!r}.'.format(match.group(0)))
 
+        if name == "variant" and value == "":
+            value = "base"
+
         value = _stringify_wildcard_value(value)
 
         # Do any recursive expansion of value, adding name to seen (to avoid
