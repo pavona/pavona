@@ -194,6 +194,17 @@ def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
         if value is None:
             value = os.environ.get(name)
 
+        if value is None and name == "topname":
+            self_dir = mdict.get("self_dir")
+            top_ip = re.match(r'.*?/hw/([^/]+)/ip_autogen(/.*)?', self_dir)
+            top_tlul = re.match(r'.*?/hw/([^/]+)/ip(/.*)?', self_dir)
+            if top_ip:
+                value = top_ip.group(1)
+            elif top_tlul:
+                value = top_tlul.group(1)
+            else:
+                value = "default"
+
         if value is None:
             # Ignore missing values if ignore_error is True.
             if ignore_error:

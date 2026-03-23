@@ -24,6 +24,10 @@
       name: default_vcs_cov_cfg_file
       value: "-cm_hier {proj_root}/${xbar.ip_path}/dv/autogen/xbar_cover.cfg"
     }
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{topname}-{flow}-{tool}"
+    }
   ]
   // Import additional common sim cfg files.
   import_cfgs: [// xbar common sim cfg file
