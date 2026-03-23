@@ -46,6 +46,10 @@
       name: default_xcelium_cov_cfg_file
       value: "{self_dir}/cov/cover.ccf"
     }
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{topname}-{flow}-{tool}"
+    }
   ]
 
   // Default iterations for all tests - each test entry can override this.

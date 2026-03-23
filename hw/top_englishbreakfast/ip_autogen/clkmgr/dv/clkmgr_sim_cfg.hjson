@@ -54,6 +54,10 @@
       name: default_vcs_cov_cfg_file
       value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{self_dir}/cov/clkmgr_tgl_excl.cfg"
     }
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{topname}-{flow}-{tool}"
+    }
   ]
   // Default UVM test and seq class name.
   uvm_test: clkmgr_base_test

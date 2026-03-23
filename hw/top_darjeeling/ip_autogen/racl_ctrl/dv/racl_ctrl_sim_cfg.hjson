@@ -23,4 +23,12 @@
 
   // Import the underlying sim_cfg (not templated)
   import_cfgs: ["{proj_root}/hw/ip/racl_ctrl/dv/racl_ctrl_tests.hjson"]
+
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{topname}-{flow}-{tool}"
+    }
+  ]
 }

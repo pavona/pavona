@@ -69,6 +69,10 @@
       name: default_vcs_cov_cfg_file
       value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{self_dir}/cov/otp_ctrl_cover.cfg"
     }
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{topname}-{flow}-{tool}"
+    }
   ]
 
   // Default UVM test and seq class name.
