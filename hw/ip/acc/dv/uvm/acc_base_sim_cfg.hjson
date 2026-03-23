@@ -71,6 +71,14 @@ name:
   run_opts: ["+acc_elf_dir={acc_elf_dir}",
              "+cdc_instrumentation_enabled=0"]
 
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
+    }
+  ]
+
   // The default build mode, used for the tests explicitly listed below does not
   // require any pre-build steps.
   build_modes: [
