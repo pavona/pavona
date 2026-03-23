@@ -1143,7 +1143,7 @@
     },
     "//third_party/wycheproof:extensions.bzl%wycheproof": {
       "general": {
-        "bzlTransitiveDigest": "EUq+zMyjLPgUORSnJRmMBKJ+1gn6mWQAVXX0t74Uo1Q=",
+        "bzlTransitiveDigest": "CViQ9/V1cg0+5oh9U4jJIKTlLWRev5Uf0cXECboY9R4=",
         "usagesDigest": "Gdz66kVX6D/N5Ctc5bWOnMAXuhBPCcytmyTtIzqrvIU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1153,9 +1153,9 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "build_file": "@@//third_party/wycheproof:BUILD.wycheproof_common.bazel",
-              "sha256": "2f83fb2199f52297f675bad2be5c8a15cca90061ef593b205fc6fd994dc38f47",
-              "strip_prefix": "wycheproof-78898104021ebd2cd98820e4112da89b1531d999",
-              "url": "https://github.com/C2SP/wycheproof/archive/78898104021ebd2cd98820e4112da89b1531d999.tar.gz",
+              "sha256": "8b5be7c35cf56da4aa7c0b2823333ad5da651517daa23e3a1a01eb2f33b29513",
+              "strip_prefix": "wycheproof-45d916899992c5e42dba75106104ca8ce7ff8370",
+              "url": "https://github.com/C2SP/wycheproof/archive/45d916899992c5e42dba75106104ca8ce7ff8370.tar.gz",
               "patch_cmds": [
                 "echo 'exports_files(glob([\"**\"]))' > testvectors_v1/BUILD.bazel"
               ]
