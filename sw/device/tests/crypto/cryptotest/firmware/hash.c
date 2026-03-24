@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hash.h"
+
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -15,30 +17,24 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 
-status_t handle_hash(ujson_t *uj) {
+status_t handle_hash(ujson_t *uj, hash_test_scratch_t *s) {
   // Declare test arguments
   cryptotest_hash_algorithm_t uj_algorithm;
   cryptotest_hash_shake_digest_length_t uj_shake_digest_length;
-  cryptotest_hash_message_t uj_message;
+  cryptotest_hash_message_t *uj_message = &s->message;
   // Deserialize test arguments from UART
   TRY(ujson_deserialize_cryptotest_hash_algorithm_t(uj, &uj_algorithm));
   TRY(ujson_deserialize_cryptotest_hash_shake_digest_length_t(
       uj, &uj_shake_digest_length));
-  TRY(ujson_deserialize_cryptotest_hash_message_t(uj, &uj_message));
+  TRY(ujson_deserialize_cryptotest_hash_message_t(uj, uj_message));
 
-  // Create input message
-  uint8_t msg_buf[uj_message.message_len];
-  memcpy(msg_buf, uj_message.message, uj_message.message_len);
   otcrypto_const_byte_buf_t input_message = {
-      .len = uj_message.message_len,
-      .data = msg_buf,
+      .len = uj_message->message_len,
+      .data = uj_message->message,
   };
-  uint8_t customization_string_buf[uj_message.customization_string_len];
-  memcpy(customization_string_buf, uj_message.customization_string,
-         uj_message.customization_string_len);
   otcrypto_const_byte_buf_t customization_string = {
-      .len = uj_message.customization_string_len,
-      .data = customization_string_buf,
+      .len = uj_message->customization_string_len,
+      .data = uj_message->customization_string,
   };
   // If we are using cSHAKE, the empty function name tells cryptolib not to
   // apply any function on top of cSHAKE.
@@ -158,12 +154,12 @@ status_t handle_hash(ujson_t *uj) {
     // Split up input mesasge into 2 shares for better coverage of stepwise
     // hashing
     otcrypto_const_byte_buf_t input_message_share1 = {
-        .len = uj_message.message_len / 2,
-        .data = msg_buf,
+        .len = uj_message->message_len / 2,
+        .data = uj_message->message,
     };
     otcrypto_const_byte_buf_t input_message_share2 = {
-        .len = ceil_div(uj_message.message_len, 2),
-        .data = &msg_buf[uj_message.message_len / 2],
+        .len = ceil_div(uj_message->message_len, 2),
+        .data = &uj_message->message[uj_message->message_len / 2],
     };
     status = otcrypto_sha2_update(&ctx, input_message_share1);
     if (status.value != kOtcryptoStatusValueOk) {

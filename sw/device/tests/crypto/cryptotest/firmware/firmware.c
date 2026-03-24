@@ -43,11 +43,12 @@
 #include "rsa.h"
 #include "sphincsplus.h"
 
-// Scratch buffers for PQC tests.
+// Scratch buffers for crypto tests.
 static union {
+  hash_test_scratch_t hash;
   mlkem_test_scratch_t mlkem;
   mldsa_test_scratch_t mldsa;
-} pqc_scratch;
+} cryptotest_scratch;
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
@@ -77,7 +78,7 @@ status_t process_cmd(ujson_t *uj) {
         RESP_ERR(uj, handle_ecdh(uj));
         break;
       case kCryptotestCommandHash:
-        RESP_ERR(uj, handle_hash(uj));
+        RESP_ERR(uj, handle_hash(uj, &cryptotest_scratch.hash));
         break;
       case kCryptotestCommandHmac:
         RESP_ERR(uj, handle_hmac(uj));
@@ -86,10 +87,10 @@ status_t process_cmd(ujson_t *uj) {
         RESP_ERR(uj, handle_kmac(uj));
         break;
       case kCryptotestCommandMldsa:
-        RESP_ERR(uj, handle_mldsa(uj, &pqc_scratch.mldsa));
+        RESP_ERR(uj, handle_mldsa(uj, &cryptotest_scratch.mldsa));
         break;
       case kCryptotestCommandMlkem:
-        RESP_ERR(uj, handle_mlkem(uj, &pqc_scratch.mlkem));
+        RESP_ERR(uj, handle_mlkem(uj, &cryptotest_scratch.mlkem));
         break;
       case kCryptotestCommandRsa:
         RESP_ERR(uj, handle_rsa(uj));
