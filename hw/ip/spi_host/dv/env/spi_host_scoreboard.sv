@@ -313,7 +313,13 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       txt = "\n\t byte      actual     expected";
       for (int i=0; i < exp_segment.command_reg.len+1; i++) begin
 
-        wait(&cfg.m_spi_agent_cfg.vif.csb == 0);
+        // It would be simpler to just do `wait (&cfg.vif.csb === 1'b0);` but for some
+        // simulators that wait can be erroneously satisfied even when csb is all 1's.
+        if (&cfg.m_spi_agent_cfg.vif.csb !== 1'b0) begin
+          do
+            @cfg.m_spi_agent_cfg.vif.csb;
+          while (&cfg.m_spi_agent_cfg.vif.csb !== 1'b0);
+        end
         // After the sampling edge the plain_item should've been populated
         cfg.m_spi_agent_cfg.wait_sck_edge(SamplingEdge, cfg.m_spi_agent_cfg.vif.get_active_csb());
 
