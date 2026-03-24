@@ -109,7 +109,7 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
       }
     csaat_cp : coverpoint spi_cmd_reg.csaat;
     len_cp : coverpoint spi_cmd_reg.len{
-      bins lenl[5] = {[1:3]};
+      bins lenl[3] = {[1:3]};
       bins lenh[10] = {[4:$]};
       }
     direction_mode_cross: cross  direction_cp, mode_cp;
