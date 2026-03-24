@@ -97,16 +97,18 @@ module tb;
 
   // configure spi_if i/o
   assign spi_if.sck = (cio_sck_en_o) ? cio_sck_o : 1'bz;
+  // This iterates over the number of spi data pins.
   for (genvar i = 0; i < 4; i++) begin : gen_tri_state
     pullup (weak1) pd_in_i (si_pulldown[i]);
     pullup (weak1) pd_out_i (so_pulldown[i]);
     assign sio[i]  = (cio_sd_en_o[i]) ? cio_sd_o[i] : 'z;
     assign (highz0, pull1) sio[i] = !cio_sd_en_o[i];
     assign si_pulldown[i] = sio[i];
+  end
 
-    if (i < SPI_HOST_NUM_CS) begin : gen_drive_csb
-      assign spi_if.csb[i] = cio_csb_en_o[i] ? cio_csb_o[i] : 1'b1;
-    end
+  // Connect spi csb.
+  for (genvar i = 0; i < spi_agent_pkg::NUM_CSB; i++) begin : gen_csb
+    assign spi_if.csb[i] = (i < SPI_HOST_NUM_CS) && cio_csb_en_o[i] ? cio_csb_o[i] : 1'b1;
   end
 
   assign interrupts[SpiHostError] = intr_error;

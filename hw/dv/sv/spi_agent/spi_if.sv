@@ -11,7 +11,7 @@ interface spi_if
 );
   // standard spi interface pins
   logic       sck;
-  logic [CSB_WIDTH-1:0] csb;
+  logic [NUM_CSB-1:0] csb;
 
   // spi host drives sio to x when idle. release to z in case the io is used for other peripheral
   bit disconnected;
@@ -71,6 +71,6 @@ interface spi_if
   // check only 1 csb can be active
   initial forever begin
     @(csb);
-    if (en_chk) `DV_CHECK_LE($countones(CSB_WIDTH'(~csb)), 1, , , msg_id)
+    if (en_chk) `DV_CHECK_LE($countones(NUM_CSB'(~csb)), 1, , , msg_id)
   end
 endinterface : spi_if
