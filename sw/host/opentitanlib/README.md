@@ -1,6 +1,6 @@
 # OpenTitanLib
 
-*[Click here for the generated documentation of `opentitanlib`.](https://opentitan.org/gen/rustdoc/opentitanlib)*
+*[Click here for the generated documentation of `opentitanlib`.](#RUSTDOC/opentitanlib)*
 
 The OpenTitanLib is a Rust library that can be used to connect to and run tests on OpenTitan devices.
 

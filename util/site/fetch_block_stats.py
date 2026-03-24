@@ -8,7 +8,7 @@ This script fetches the hw block data the diagram needs
 and bundles it into one json file.
 """
 from urllib.request import urlopen
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 import itertools as it
 import json
 from pathlib import Path
@@ -18,6 +18,7 @@ from typing import Tuple
 import hjson  # type: ignore
 
 REPO_TOP = Path(__file__).parents[2].resolve()
+REPORTS_URL_BASE = "https://reports.opentitan.org/{}report.json"  # TODO
 
 block_level_urls = {
     "adc-controller": "hw/ip/adc_ctrl/dv/latest/",
@@ -61,8 +62,9 @@ def parse_report(url: str) -> Tuple[int, int]:
     try:
         with urlopen(url) as response:
             report = json.load(response)
-    except HTTPError:
+    except (HTTPError, URLError):
         # URL does not exist, there are no test runs yet for that
+        print(url, "not found; assuming no tests run")
         return (0, 0)
 
     # Extract all tests from the report.
@@ -127,7 +129,7 @@ def main() -> None:
         if name in block_level_urls:
             report_url = block_level_urls[name]
             if not report_url.startswith("https://"):
-                report_url = f'https://reports.opentitan.org/{report_url}/report.json'
+                report_url = REPORTS_URL_BASE.format(report_url)
             (
                 block_output['total_runs'],
                 block_output['total_passing'],

@@ -16,7 +16,7 @@ environment.
     (DUT). Leverages opentitanlib to expose DUT common functionality such as SPI
     bootstrap, reset, and general DUT I/O interfaces. Written in Rust.
 *   **[opentitanlib](https://github.com/lowRISC/opentitan/tree/master/sw/host/opentitantool)**
-    ([documentation](https://opentitan.org/gen/rustdoc/opentitanlib/index.html)):
+    ([documentation](#RUSTDOC/opentitanlib/index.html)):
     implements interfaces to access DUT functionality through various backend
     interfaces. Backed interfaces are used to abstract various target
     configurations (e.g. FPGA vs Verilator vs Silicon). Written in Rust.

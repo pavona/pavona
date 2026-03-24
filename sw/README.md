@@ -46,7 +46,7 @@ Host software must be written in C++ or Rust.
 
 ## Pavona Software API Documentation
 
-The [Pavona Software API Documentation]() contains automatically generated documentation for the public software APIs.
+The [Pavona Software API Documentation](#DOXYGEN) contains automatically generated documentation for the public software APIs.
 This includes the Device Interface Functions (DIFs).
 
 All DIFs are also documented on their respective [Hardware IP Specification](../hw/README.md)

@@ -48,6 +48,7 @@ doxygen(
     data = [
         "//:BUILD.bazel",
         "//util/site/doxygen:layout.xml",
+        "//util/site/doxygen:main_page.md",
     ],
     doxyfile = "//util/site/doxygen:Doxyfile",
     env = {

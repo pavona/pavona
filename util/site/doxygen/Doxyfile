@@ -5,7 +5,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 
-PROJECT_NAME           = "Software APIs"
+PROJECT_NAME           = "Pavona Software APIs"
 
 OUTPUT_DIRECTORY       = "$(DOXYGEN_OUT)"
 ALLOW_UNICODE_NAMES    = YES

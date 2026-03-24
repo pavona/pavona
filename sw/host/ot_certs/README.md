@@ -1,6 +1,6 @@
 # OpenTitan certificate generator
 
-*[Click here for the generated documentation of `ot_certs`.](https://opentitan.org/gen/rustdoc/ot_certs)*
+*[Click here for the generated documentation of `ot_certs`.](#RUSTDOC/ot_certs)*
 
 This crate is capable of generating OpenTitan certificates to be stored on the
 device.

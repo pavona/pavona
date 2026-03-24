@@ -3,7 +3,7 @@
 The `dtgen` tool is used by the build system to create many artefacts containing top-specific information.
 See:
 - [Device Tables artifacts](../../hw/top/README.md#device-tables-dt)
-- Doxygen documentation: look for the `(<topname>)/hw/top/dt/` directories.
+- [Doxygen documentation](#DOXYGEN): look for the `(<topname>)/hw/top/dt/` directories.
 
 In addition to the standard definitions generated for each top/IP, `dtgen` supports extensions.
 Extensions can be used to add extra definitions to the generated artifacts such as IP-specific constructs.

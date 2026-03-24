@@ -24,7 +24,7 @@ public_domain="${2}"
 public_port="${3}"
 
 case "$command" in
-  "build"|"build-staging"|"build-local"|"serve"|"serve-proxy")
+  "build"|"build-local"|"serve"|"serve-proxy")
     book_out="${build_dir}/book"
     ;;
   "help"|*)
@@ -34,7 +34,6 @@ case "$command" in
     echo "  help          prints this message."
     echo "  build         build the site and docs for prod"
     echo "  build-local   build the site and docs for a localhost server"
-    echo "  build-staging build the site and docs for staging.opentitan.org"
     echo "  serve         build and serve the site locally"
     echo "  serve-proxy   build and serve the site, with a public url"
     echo ""
@@ -52,7 +51,7 @@ declare serve_port # The port used by the local webserver (using "build-docs.sh 
 getURLs () {
     # Defaults here are for production ("build-docs.sh build")
     local scheme="https"
-    local domain="opentitan.org"
+    local domain="pavona.org"
     local port=""
 
     # Use un-encrypted localhost URLs when building/serving locally
@@ -72,10 +71,6 @@ getURLs () {
         domain="${public_domain}"
         port=":${public_port}"
         serve_port=":8000"
-    fi
-    if [ "$command" = "build-staging" ] ; then
-        scheme="https"
-        domain="staging.opentitan.org"
     fi
 
     base_url="${scheme}://${domain}${port}"
@@ -142,6 +137,19 @@ buildSite () {
     python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
 
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
+
+    # Put landing page in docs directory, fix links from book/ to gen/
+    cp "$(dirname $0)/landing.html" "${build_dir}/index.html"
+    for doxy_ref_file in $(grep "#DOXYGEN" -lr ./build-site); do
+      path_to_build_dir=$(realpath --relative-to=$doxy_ref_file $build_dir)
+      path_to_doxy=$(realpath --relative-to=$book_out ${build_dir}/gen/doxy)
+      sed -i "s:#DOXYGEN:${path_to_build_dir}/${path_to_doxy}:g" $doxy_ref_file
+    done
+    for rustdoc_ref_file in $(grep "#RUSTDOC" -lr ./build-site); do
+      path_to_build_dir=$(realpath --relative-to=$rustdoc_ref_file $build_dir)
+      path_to_rustdoc=$(realpath --relative-to=$book_out ${build_dir}/gen/rustdoc)
+      sed -i "s:#RUSTDOC:${path_to_build_dir}/${path_to_rustdoc}:g" $rustdoc_ref_file
+    done
     # -------
 }
 buildSite
