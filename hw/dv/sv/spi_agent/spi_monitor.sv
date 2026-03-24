@@ -47,7 +47,12 @@ class spi_monitor extends dv_base_monitor#(
     bit flash_opcode_received;
 
     wait (cfg.en_monitor);
-    wait (&cfg.vif.csb === 0);
+    // It would be simpler to just do `wait (&cfg.vif.csb === 1'b0);` but for some
+    // simulators that wait can be erroneously satisfied even when csb is all 1's.
+    if (&cfg.vif.csb !== 1'b0) begin
+      @cfg.vif.csb;
+      if (&cfg.vif.csb !== 1'b0) return;
+    end
     active_csb = cfg.vif.get_active_csb();
 
     cfg.vif.sck_polarity = cfg.sck_polarity[active_csb];
