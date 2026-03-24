@@ -3,8 +3,8 @@
 # Overview
 
 This document specifies the bus functionality within a Comportable top level
-system. This includes the bus protocol and all hardware IP that supports
-creating the network on chip within that framework.
+system.
+This includes the bus protocol and all hardware IP that supports creating the network on chip within that framework.
 
 ## Features
 
@@ -19,60 +19,48 @@ creating the network on chip within that framework.
   support for bursts
 - Suite of bus primitives to aid in fast fabric generation
 
-<sup>1</sup>lowRISC is avoiding the fraught terms master/slave and defaulting
-to host/device where applicable.
+<sup>1</sup>Pavona is avoiding the fraught terms master/slave and defaulting to host/device where applicable.
 
 ## Description
 
-For chip-level interconnect, Comportable devices will be using
-[TileLink](https://static.dev.sifive.com/docs/tilelink/tilelink-spec-1.7-draft.pdf)
-as its bus fabric protocol. For the purposes of our performance
-requirement needs, the Uncached Lightweight (TL-UL) variant will
-suffice. There is one minor modification to add the user extensions. This
-is highlighted below, but otherwise all functionality follows the official
-specification. The main signal names are kept the same as TL-UL and the
-user extension signal groups follow the same timing and naming conventions
-used in the TL-UL specification. Existing TL-UL IP blocks may be used
-directly in devices that do not need the additional sideband signals,
-or can be straightforwardly adapted to use the added features.
+For chip-level interconnect, Comportable devices will be using [TileLink](https://static.dev.sifive.com/docs/tilelink/tilelink-spec-1.7-draft.pdf) as its bus fabric protocol.
+For the purposes of our performance requirement needs, the Uncached Lightweight (TL-UL) variant will suffice.
+There is one minor modification to add the user extensions.
+This is highlighted below, but otherwise all functionality follows the official
+specification.
+The main signal names are kept the same as TL-UL and the user extension signal groups follow the same timing and naming conventions used in the TL-UL specification.
+Existing TL-UL IP blocks may be used directly in devices that do not need the additional sideband signals, or can be straightforwardly adapted to use the added features.
 
-TL-UL is a lightweight bus that combines the point-to-point
-split-transaction features of the powerful TileLink (or AMBA AXI)
-5-channel bus without the high pin-count overhead. It is intended to be
-about on par of pincount with APB but with the transaction performance of
-AXI-4, modulo the following assumptions.
+TL-UL is a lightweight bus that combines the point-to-point split-transaction features of the powerful TileLink (or AMBA AXI) 5-channel bus without the high pin-count overhead.
+It is intended to be about on par of pincount with APB but with the transaction performance of AXI-4, modulo the following assumptions.
 
 - Only one request (read or write) per cycle
 - Only one response (read or write) per cycle
 - No burst transactions
 
-Bus primitives are provided in the lowRISC IP library. These are
-described later in this document. These primitives can be combined to form
-a flexible crossbar of any M hosts to any N devices. As of this writing,
-these crossbars are generated programmatically through usage of configuration files.
+Bus primitives are provided in the Pavona IP library.
+These are described later in this document.
+These primitives can be combined to form a flexible crossbar of any M hosts to any N devices.
+As of this writing, these crossbars are generated programmatically through usage of configuration files.
 See the [tlgen reference manual](../../../util/tlgen/README.md) for more details.
 
 ## Compatibility
 
-With the exception of the user extensions, the bus is
-compliant with TileLink-UL. The bus primitives, hosts and peripherals
-developed using the extended specification can be used with
-blocks using the base specification. As a receiver baseline blocks
-ignore the user signals and as a
-source will generate a project-specific default value. Alternatively,
-the blocks can be easily modified to make use of the user extensions.
+With the exception of the user extensions, the bus is compliant with TileLink-UL.
+The bus primitives, hosts and peripherals developed using the extended specification can be used with blocks using the base specification.
+As a receiver baseline blocks ignore the user signals and as a source will generate a project-specific default value.
+Alternatively, the blocks can be easily modified to make use of the user extensions.
 
 # Theory of Operations
 
 ## Signals
 
-The table below lists all of the TL-UL signals. "Direction" is
-w.r.t. a bus host, signals marked as output will be in the verilog
-`typedef struct` tagged as host-to-device (`tl_h2d_t`) and those marked
-as input will be in the device-to-host struct (`tl_d2h_t`). The literal
-`typedef structs` follow. Size qualifiers are described below. The table
-and structs include the additional (non-TL-UL standard) user extension
-signals per direction to carry chip specific user bits.
+The table below lists all of the TL-UL signals, as seen from the perspective of the host initiating transactions.
+The prefixes to each signal come from the 5 channels used in TileLink (A, B, C, D, E).
+TL-UL only uses channels A (requests, host -> device) and D (responses, device -> host).
+Signals marked as output will be in the verilog `typedef struct` tagged as host-to-device (`tl_h2d_t`) and those marked as input will be in the device-to-host struct (`tl_d2h_t`).
+The literal `typedef structs` and size qualifiers are described below.
+The table and structs include the additional (non-TL-UL standard) user extension signals per direction to carry chip specific user bits.
 
 The function of the user bits are separately described in a separate table.
 
@@ -85,7 +73,7 @@ The function of the user bits are separately described in a separate table.
 | `a_address[AW-1:0]` | output | Request address of configurable width |
 | `a_data[DW-1:0]`    | output | Write request data of configurable width |
 | `a_source[AIW-1:0]` | output | Request identifier of configurable width |
-| `a_size[SZW-1:0]`   | output | Request size (requested size is 2^`a_size`, thus 0 = byte, 1 = 16b, 2 = 32b, 3 = 64b, etc) |
+| `a_size[SZW-1:0]`   | output | Request size (requested size is 2^`a_size` bytes, thus 0 = 8b, 1 = 16b, 2 = 32b, 3 = 64b, etc) |
 | `a_mask[DBW-1:0]`   | output | Write strobe, one bit per byte indicating which lanes of data are valid for this write request |
 | `a_user`            | output | Request attributes of configurable width, use TBD. **This is an augmentation to the TL-UL specification.** |
 | `d_valid`           | input  | Response from device is valid |
@@ -110,8 +98,8 @@ The `d_user` bus contains several signals
 
 The user bus is primarily used to distinguish data / instruction transactions while also supporting the bus integrity scheme.
 
-There are eight bus width parameters, defined here. Some are generated
-widths based upon the other parameter sizes.
+There are eight bus width parameters, defined here.
+Some are generated widths based upon the other parameter sizes.
 
 - `AW`: width of address bus, default 32
 - `DW`: width of data bus, default 32
@@ -121,25 +109,19 @@ widths based upon the other parameter sizes.
 - `DUW`: width of device user bits, default 4
 - `DIW`: width of sink bits, default 1
 
-All widths are expected to be fixed for an entire project and referred
-to in (what is currently called) `top_pkg`. The contents of `top_pkg`
-(to define the widths) and `tlul_pkg` (to define the bus structs) are
-given below.
+All widths are expected to be fixed for an entire project and referred to in (what is currently called) `top_pkg`.
+The contents of `top_pkg` (to define the widths) and `tlul_pkg` (to define the bus structs) are given below.
 
 ### Reset Timing
 
-Section 3.2.2 of the
-[TileLink specification (1.7.1)](https://sifive.cdn.prismic.io/sifive%2F57f93ecf-2c42-46f7-9818-bcdd7d39400a_tilelink-spec-1.7.1.pdf)
-has a requirement on TL-UL hosts ("masters" in TileLink terminology) that "`valid` signals must be driven LOW for at least 100 cycles while reset is asserted."
+Section 3.2.2 of the [TileLink specification (1.7.1)](https://sifive.cdn.prismic.io/sifive%2F57f93ecf-2c42-46f7-9818-bcdd7d39400a_tilelink-spec-1.7.1.pdf) has a requirement on TL-UL hosts ("masters" in TileLink terminology) that "`valid` signals must be driven LOW for at least 100 cycles while reset is asserted."
 The TL-UL collateral within this library does **not** have this requirement on its TL-UL host drivers.
 TL-UL devices within the library can tolerate shorter reset windows.
-(See the reset section of the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md)
-for details on reset requirements.)
+(See the reset section of the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md) for details on reset requirements.)
 
 ### Signal and Struct Definitions
 
-The following shows Verilog structs to define the above parameters
-and signals.
+The following shows Verilog structs to define the above parameters and signals.
 
 ```systemverilog
 package top_pkg;
@@ -206,90 +188,62 @@ endpackage
 
 #### Usage of Address
 
-All signaling for host-request routing is encapsulated in the `a_addr` signal.
-(See section 5.3 of the TileLink specification).
+All signaling for host-request routing is encapsulated in the `a_addr` signal (see section 5.3 of the TileLink specification).
 For a bus host to designate which device it is talking to, it only needs to indicate the correct device register/memory address.
 The other host signals (namely `a_source` and `a_user`) do not enter into the address calculation.
 All request steering must thus be made as a function of the address.
 
 #### Usage of Source and Sink ID Bits
 
-The `a_source` and `d_source` signals are used to steer the response from
-a device back to a host through bus primitives. (See primitives section
-that follows). It can also be used to ascribe request identifiers by a
-host when response reordering is required (since TL-UL does not guarantee
-in-order responses). For permission detection, static host identifiers
-will be transmitted in the user field (see below).
+The `a_source` and `d_source` signals are used to steer the response from a device back to a host through bus primitives (see primitives section that follows).
+It can also be used to ascribe request identifiers by a host when response reordering is required (since TL-UL does not guarantee in-order responses).
+For permission detection, static host identifiers will be transmitted in the user field (see below).
 
-Some bus primitives, such as `M:1` sockets, need to add source bits
-during request routing in order to be able to correctly route the
-response. For instance, if one destination is addressed by N potential
-hosts, log<sub>2</sub>N more source ID bits need to be added to the
-outgoing request. The fabric architect needs to ensure that the attribute
-`AIW` is big enough to cover the number of outstanding requests hosts
-can make and the maximum source ID growth that could be added by bus
-primitives. At this time, `AIW` is assumed to be 8 bits of ID growth, but
-this is likely overkill. The fabric also needs to allow for how many host
-ID bits are needed, for instance if converting from an AXI host that uses
-`RID` or `WID`, enough bits must be provided to maintain those ID values.
+Some bus primitives, such as `M:1` sockets, need to add source bits during request routing in order to be able to correctly route the response.
+For instance, if one destination is addressed by N potential hosts, log<sub>2</sub>N more source ID bits need to be added to the outgoing request.
+The fabric architect needs to ensure that the attribute `AIW` is big enough to cover the number of outstanding requests hosts can make and the maximum source ID growth that could be added by bus primitives.
+At this time, `AIW` is assumed to be 8 bits of ID growth, but this is likely overkill.
+The fabric also needs to allow for how many host ID bits are needed, for instance if converting from an AXI host that uses `RID` or `WID`, enough bits must be provided to maintain those ID values.
 
 ##### Source ID growth
 
-When a bus primitive needs to add source ID bits, it shifts left the
-incoming `a_source` and post-pends its necessary sub-source bits. For
-instance, if a 5:1 socket is needed, 3 sub-source bits are generated to
-distinguish between hosts 0 through 4. So an 8-bit outgoing `a_source`
-would be `{a_source_inbound[4:0],subsource[2:0]}`. When the response
-returns, those 3 sub-source bits are shifted off, with `'0'` bits
-shifted into the top, and returned to the originator's `d_source`. It
-is recommended to have assertions in place to ensure no significant bits
-of `a_source` are lost in `M:1` sockets. See the `M:1` socket primitive
-for more details.
+When a bus primitive needs to add source ID bits, it shifts left the incoming `a_source` and post-pends its necessary sub-source bits.
+For instance, if a 5:1 socket is needed, 3 sub-source bits are generated to distinguish between hosts 0 through 4.
+So an 8-bit outgoing `a_source` would be `{a_source_inbound[4:0],subsource[2:0]}`.
+When the response returns, those 3 sub-source bits are shifted off, with `'0'` bits shifted into the top, and returned to the originator's `d_source`.
+It is recommended to have assertions in place to ensure no significant bits of `a_source` are lost in `M:1` sockets.
+See the `M:1` socket primitive for more details.
 
 ##### Source ID requirements for host elements
 
-The potential for source ID growth (and contraction in the response)
-implies that hosts may only use the low bits of the identifier and cannot
-assume the entire `AIW` bits will be returned intact. If there are any hosts
-that need more source bits returned than the host's maximum number of
-outstanding transactions (for example the host uses some source bits as
-internal sub-unit identifiers and some bits as transaction IDs from that
-subunit) then the `AIW` value needs to be set accordingly.
+The potential for source ID growth (and contraction in the response) implies that hosts may only use the low bits of the identifier and cannot assume the entire `AIW` bits will be returned intact.
+If there are any hosts that need more source bits returned than the host's maximum number of outstanding transactions (for example the host uses some source bits as internal sub-unit identifiers and some bits as transaction IDs from that subunit) then the `AIW` value needs to be set accordingly.
 
 ##### Source ID requirements for device elements
 
-All bus devices must simply return the associated `a_source` on the
-response `d_source` bus.
+All bus devices must simply return the associated `a_source` on the response `d_source` bus.
 
 ##### Source ID requirements for bus primitives
 
-Most bus primitives simply pass source ID bits opaquely from host end to
-device end. The exception is for `M:1` sockets (see ID growth above). Other
-elements (`1:N` sockets, domain crossing FIFOs, etc) should not modify
-the `a_source` and `d_source` values, but pass them along.
+Most bus primitives simply pass source ID bits opaquely from host end to device end.
+The exception is for `M:1` sockets (see ID growth above).
+Other elements (`1:N` sockets, domain crossing FIFOs, etc) should not modify the `a_source` and `d_source` values, but pass them along.
 
 ##### Sink ID Usage
 
-At this time there is no defined use for `d_sink`, but the TileLink-UL
-protocol allows configurable bits to be passed back to the host to
-indicate who responded. In theory this could be used as a security
-guarantee, to ensure that the appropriate responder was targeted. At
-this time the configurable width for sink is turned down to one bit.
+At this time there is no defined use for `d_sink`, but the TileLink-UL protocol allows configurable bits to be passed back to the host to indicate who responded.
+In theory this could be used as a security guarantee, to ensure that the appropriate responder was targeted.
+At this time the configurable width for sink is turned down to one bit.
 
 #### Usage of User Bits
 
-User bits are added to the TileLink-UL specification in order to prepare
-for command and response modification in future IP. These are effectively
-modifiers to the transactions that can qualify the request and the
-response. The user bits follow the same timing as the source ID bits:
-`a_user` matches `a_source` and `d_user` matches `d_source`. Usage of
-user bits within a project must be assigned project-wide, but the bus
-fabric does not rely on them for transport, and should pass the user
-bits on blindly. Bus hosts and devices must understand their usage and
-apply them appropriately.
+User bits are added to the TileLink-UL specification in order to prepare for command and response modification in future IP.
+These are effectively modifiers to the transactions that can qualify the request and the response.
+The user bits follow the same timing as the source ID bits: `a_user` matches `a_source` and `d_user` matches `d_source`.
+Usage of user bits within a project must be assigned project-wide, but the bus fabric does not rely on them for transport, and should pass the user bits on blindly.
+Bus hosts and devices must understand their usage and apply them appropriately.
 
-The following list gives examples of future usage for `a_user` and
-`d_user` bits.
+The following list gives examples of future usage for `a_user` and `d_user` bits.
 
 - `a_user` modifications
   - Instruction Type
@@ -314,28 +268,21 @@ The following list gives examples of future usage for `a_user` and
 
 #### Usage of Opcode, Size and Mask
 
-The request opcode (`a_opcode`) can designate between a write (`'Put'`)
-and a read (`'Get'`) transaction. Writes can be designated as full
-(`'PutFullData'`) or partial (`'PutPartialData'`) within the opcode
-space. The request size (`a_size`) and mask (`a_mask`) is defined for
-all read and write operations. Opcode (`a_opcode`) definitions are
-shown below. Responses also have opcodes (`d_opcode`) to indicate read
-response (`'AccessAckData'`) and write response (`'AccessAck'`). Error
-indications are available on either with the `d_error` bit. Each bus
-device has an option to support or not support the full variety of
-bus transaction sizes. Their support will be documented in the device
-specification.
+The request opcode (`a_opcode`) can designate between a write (`'Put'`) and a read (`'Get'`) transaction.
+Writes can be designated as full (`'PutFullData'`) or partial (`'PutPartialData'`) within the opcode space.
+The request size (`a_size`) and mask (`a_mask`) is defined for all read and write operations.
+Opcode (`a_opcode`) definitions are shown below.
+Responses also have opcodes (`d_opcode`) to indicate read response (`'AccessAckData'`) and write response (`'AccessAck'`).
+Error indications are available on either with the `d_error` bit.
+Each bus device has an option to support or not support the full variety of bus transaction sizes.
+Their support will be documented in the device specification.
 
-It should be noted that, even though non-contiguous `a_mask` values like
-`0b1001` are permitted by the TL-UL spec, the TL-UL hosts within this project
-**do not leverage non-contiguous masks**. I.e., the TL-UL hosts will only assert
-`a_mask` values from the following restricted set for 32bit transfers:
+It should be noted that, even though non-contiguous `a_mask` values like `0b1001` are permitted by the TL-UL spec, the TL-UL hosts within this project **do not leverage non-contiguous masks**.
+I.e., the TL-UL hosts will only assert `a_mask` values from the following restricted set for 32bit transfers:
 ```
 {'b0000, 'b0001, 'b0010, 'b0100, 'b1000, 'b0011, 'b0110, 'b1100, 'b0111, 'b1110, 'b1111}.
 ```
-The TL-UL devices within the project may or may not support certain subword
-masks (both non-contiguous or contiguous ones), and they have the right to
-assert `d_error` if they don't.
+The TL-UL devices within the project may or may not support certain subword masks (both non-contiguous or contiguous ones), and they have the right to assert `d_error` if they don't.
 
 | `a_opcode[2:0]` value | Name | Definition |
 | :---: | :---: | --- |
@@ -383,9 +330,8 @@ To be filled in.
 
 ## Timing Diagrams
 
-This section shows the timing relationship on the bus for writes with
-response, and reads with response. This shows a few transactions, see
-the TileLink specification for more examples.
+This section shows the timing relationship on the bus for writes with response, and reads with response.
+This shows a few transactions, see the TileLink specification for more examples.
 
 ```wavejson
 {
@@ -416,6 +362,7 @@ the TileLink specification for more examples.
     }
 }
 ```
+![tlul write transaction timing diagram](./doc/write_transactions.svg)
 
 ```wavejson
 {
@@ -444,11 +391,11 @@ the TileLink specification for more examples.
     }
 }
 ```
+![tlul read transaction timing diagram](./doc/read_transactions.svg)
 
 ## Bus Primitives
 
-The bus primitives are defined in the following table and described in
-detail below.
+The bus primitives are defined in the following table and described in detail below.
 
 | Element | Description |
 | :---: | --- |
@@ -461,21 +408,17 @@ detail below.
 
 #### A Note on Directions
 
-In each of these devices, ports are named with respect to their usage,
-not their direction. For instance, a `1:N` socket connects one host to
-N devices. Thus the TL-UL port coming in is called the "host bus",
-and the N device ports are called "device bus" 0 through N-1. Within
-the Verilog module, the "host bus" is actually a device in the sense
-that it receives requests and returns responses. This terminology can be
-confusing within the bus element itself but should maintain consistency
-in naming at the higher levels.
+In each of these devices, ports are named with respect to their usage, not their direction.
+For instance, a `1:N` socket connects one host to N devices.
+Thus the TL-UL port coming in is called the "host bus", and the N device ports are called "device bus" 0 through N-1.
+Within the Verilog module, the "host bus" is actually a device in the sense that it receives requests and returns responses.
+This terminology can be confusing within the bus element itself but should maintain consistency in naming at the higher levels.
 
 ### `tlul_fifo_sync`
 
-The TL-UL FIFO is a `1:1` bus element that provides elasticity (the
-ability for transactions to stall on one side without affecting the other
-side) on the bus. It is also used as a sub-element in other elements, like
-sockets. Parameterization of the module is described in the table below.
+The TL-UL FIFO is a `1:1` bus element that provides elasticity (the ability for transactions to stall on one side without affecting the other side) on the bus.
+It is also used as a sub-element in other elements, like sockets.
+Parameterization of the module is described in the table below.
 
 | name | description |
 | :---: | --- |
@@ -489,8 +432,8 @@ sockets. Parameterization of the module is described in the table below.
 When `Pass` is 1 and its corresponding `Depth` is 0, the FIFO feeds through the signals completely.
 This allows more flexible control at compile-time on the FIFO overhead / latency trade-off without needing to re-code the design.
 
-The IO of the module are given in this table. See the struct above for
-TL-UL typedef definitions.
+The IO of the module are given in this table.
+See the struct above for TL-UL typedef definitions.
 
 | direction | type / size | name | description |
 | :---: | :---: | :---: | --- |
@@ -507,17 +450,16 @@ TL-UL typedef definitions.
 
 ### `tlul_fifo_async`
 
-The TL-UL asynchronous FIFO is a `1:1` bus element that can be used to
-cross clock domains. Parameterization of the module is described in the
-table below.
+The TL-UL asynchronous FIFO is a `1:1` bus element that can be used to cross clock domains.
+Parameterization of the module is described in the table below.
 
 | name | description |
 | :---: | --- |
 | `ReqDepth[4]` | Depth of request FIFO. Depth of request FIFO. ReqDepth must be >= 2, and the maximum value is 15. |
 | `RspDepth[4]` | Depth of response FIFO. RspDepth must be >= 2, and the maximum value is 15. |
 
-The IO of the module are given in this table. See the struct above for
-TL-UL typedef definitions.
+The IO of the module are given in this table.
+See the struct above for TL-UL typedef definitions.
 
 | direction | type / size | name | description |
 | :---: | :---: | :---: | --- |
@@ -532,12 +474,11 @@ TL-UL typedef definitions.
 
 ### `tlul_socket_1n`
 
-The TL-UL socket `1:N` is a bus element that connects 1 TL-UL host
-to N TL-UL devices. It is a fundamental building block of the TL-UL
-switch, and uses `tlul_fifo_sync` as its building block. It has a
-several parameterization settings available, summarized here. Note
-`tlul_socket_1n` is always synchronous. If asynchronous behavior is
-desired, an `tlul_fifo_async` should be placed on the desired bus.
+The TL-UL socket `1:N` is a bus element that connects 1 TL-UL host to N TL-UL devices.
+It is a fundamental building block of the TL-UL switch, and uses `tlul_fifo_sync` as its building block.
+It has a several parameterization settings available, summarized here.
+Note `tlul_socket_1n` is always synchronous.
+If asynchronous behavior is desired, an `tlul_fifo_async` should be placed on the desired bus.
 
 | name | description |
 | :---: | --- |
@@ -551,29 +492,21 @@ desired, an `tlul_fifo_async` should be placed on the desired bus.
 | `DReqDepth[N*4]` | Depth of device i request FIFO. Depth of zero is allowed if `ReqPass` is 1. A maximum value of 15 is allowed, default is 2. |
 | `DRspDepth[N*4]` | Depth of device i response FIFO. Depth of zero is allowed if `RspPass` is 1. A maximum value of 15 is allowed, default is 2. |
 
-The diagram below shows the dataflow of the `tlul_socket_1n` and how
-the `tlul_fifo_sync` modules are allocated.
+The diagram below shows the dataflow of the `tlul_socket_1n` and how the `tlul_fifo_sync` modules are allocated.
 
 ![tlul_socket_1n block diagram](./doc/tlul_socket_1n.svg)
 
-In this diagram, the full socket (`1:4` in this case) is shown, with
-its single host port and four device ports. Also shown is the critical
-device select input, which controls the transaction steering. To allow
-flexibility the address decoding is done outside the socket. The TL-UL
-specification requires that the decode only use the address bits, but no
-other constraints are placed on how the external decode logic converts
-the address to the output device selection signal (`dev_sel`). The
-timing of `dev_sel` is such that it must be valid whenever `a_valid`
-is true in order to steer the associated request.
+In this diagram, the full socket (`1:4` in this case) is shown, with its single host port and four device ports.
+Also shown is the critical device select input, which controls the transaction steering.
+To allow flexibility the address decoding is done outside the socket.
+The TL-UL specification requires that the decode only use the address bits, but no other constraints are placed on how the external decode logic converts the address to the output device selection signal (`dev_sel`).
+The timing of `dev_sel` is such that it must be valid whenever `a_valid` is true in order to steer the associated request.
 
-The address decoder can trigger an error response: if the value of
-`dev_sel` is not between 0 and N-1, then `tlul_socket_1n` will provide
-the error response to the request. This is implemented with a separate
-piece of logic inside the socket which handles all requests to `dev_sel >=
-N` and replies with an error.
+The address decoder can trigger an error response: if the value of `dev_sel` is not between 0 and N-1, then `tlul_socket_1n` will provide the error response to the request.
+This is implemented with a separate piece of logic inside the socket which handles all requests to `dev_sel >= N` and replies with an error.
 
-The IO of the socket are given in this table. See the struct above for
-TL-UL `typedef` definitions.
+The IO of the socket are given in this table.
+See the struct above for TL-UL `typedef` definitions.
 
 | direction | type / size | name | description |
 | :---: | :---: | :---: | --- |
@@ -585,19 +518,15 @@ TL-UL `typedef` definitions.
 | `input`  | `tl_d2h_t` | `tl_d_i[N]` | Incoming device response struct for device port *i* (where *i* is from 0 to *N-1*) |
 | `input`  | `[log2(N+1)-1:0]` | `dev_sel` | Device select for the current transaction provided in `tl_h_i` bus. Legal values from 0 to N-1 steer to the corresponding device port. Any other value returns an automatic error response.  |
 
-In the current implementation, outstanding requests are tracked so that
-no new requests can go to a device port if there already are outstanding
-requests to a different device. This ensures that all transactions are
-returned in order. This feature is still in discussion.
+In the current implementation, outstanding requests are tracked so that no new requests can go to a device port if there already are outstanding requests to a different device.
+This ensures that all transactions are returned in order.
 
 ### `tlul_socket_m1`
 
-The TL-UL socket `M:1` is a bus element that connects `M` TL-UL
-hosts to 1 TL-UL device. Along with a `tlul_socket_1n`, this could
-be used to build the TL-UL fabric, and uses `tlul_fifo` as its
-building block. `tlul_socket_m1` has several parameterization settings
-available. The `tlul_socket_m1` is synchronous, so a `tlul_fifo_async`
-must be instantiated on any ports that run asynchronously.
+The TL-UL socket `M:1` is a bus element that connects `M` TL-UL hosts to 1 TL-UL device.
+Along with a `tlul_socket_1n`, this could be used to build the TL-UL fabric, and uses `tlul_fifo` as its building block.
+`tlul_socket_m1` has several parameterization settings available.
+The `tlul_socket_m1` is synchronous, so a `tlul_fifo_async` must be instantiated on any ports that run asynchronously.
 
 | name | description |
 | :---: | --- |
@@ -611,20 +540,17 @@ must be instantiated on any ports that run asynchronously.
 | `DReqDepth[4]` | Depth of device i request FIFO. Depth of zero is allowed if `ReqPass` is true. A maximum value of 15 is allowed, default is 2. |
 | `DRspDepth[4]` | Depth of device i response FIFO. Depth of zero is allowed if `RspPass` is true. A maximum value of 15 is allowed, default is 2. |
 
-The diagram below shows the dataflow of `tlul_socket_m1` for `4:1`
-case and how the `tlul_fifo_sync` modules are allocated.
+The diagram below shows the dataflow of `tlul_socket_m1` for `4:1` case and how the `tlul_fifo_sync` modules are allocated.
 
 ![tlul_socket_m1 block diagram](./doc/tlul_socket_m1.svg)
 
-Requests coming from each host ports are arbitrated in the socket based
-on round-robin scheme. `tlul_socket_m1`, unlike the `1:N` socket, doesn't
-require the `dev_sel` input. As the request is forwarded, the request ID
-(`a_source`) is modified as described in the ID Growth section. The ID
-returned with a response (`d_source`) can thus be directly used to steer
-the response to the appropriate host.
+Requests coming from each host ports are arbitrated in the socket based on round-robin scheme.
+`tlul_socket_m1`, unlike the `1:N` socket, doesn't require the `dev_sel` input.
+As the request is forwarded, the request ID (`a_source`) is modified as described in the ID Growth section.
+The ID returned with a response (`d_source`) can thus be directly used to steer the response to the appropriate host.
 
-The IO of `M:1` socket are given in this table. See the struct above for
-TL `typedef` definitions.
+The IO of `M:1` socket are given in this table.
+See the struct above for TL `typedef` definitions.
 
 | direction | type / size | name | description |
 | :---: | :---: | :---: | --- |
