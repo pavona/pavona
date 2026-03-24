@@ -20,39 +20,30 @@ jobs:
       group: pavona-basic
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Bitstream cache requires all commits.
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Build documentation
-        run: util/site/build-docs.sh build
+        run: ./util/site/build-docs.sh build
       - name: Upload files as artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:
-          name: docs
           path: build-site/
-          overwrite: true
 
   upload_docs:
-    name: Upload documentation
+    name: Upload documentation to GitHub Pages
     needs: build_docs
     runs-on:
-      # Requires access to license-server.
-      group: pavona-vivado
+      group: pavona-basic
+    permissions:
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{steps.deployment.outputs.page_url}}
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: docs
-          path: build-site/
-      - name: Upload documentation to web server
-        run: |
-          HOST="$(cat /home/ci/license-server/hostname)"
-          KEY_FILE=/tmp/key.pem
-          echo ${{ secrets.HTML_UPLOAD_KEY }} > ${KEY_FILE}
-          scp -r -i ${KEY_FILE} build-site/book/* "www@${HOST}:public_html/"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
 
   chip_earlgrey_cw310:
     name: Earlgrey for CW310
