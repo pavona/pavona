@@ -7,7 +7,6 @@
 .globl rsa_keygen
 .globl rsa_key_from_cofactor
 .globl rsa_check_key
-.globl rsa_check_primes
 
 /* Exposed for testing purposes only. */
 .globl relprime_f4
@@ -237,56 +236,6 @@ rsa_check_key:
   la       x11, rsa_q
   la       x12, rsa_n
   jal      x0, bignum_mul
-
-  ret
-
-/**
- * Perform checks on the primes in an RSA private key.
- *
- * This routine performs a Miller-Rabin primailty check on both provided primes
- * and ensures that the two aren't too close, just as `rsa_keygen` does. See the
- * documentation for `check_p` and `check_q` for details.
- *
- * After execution of this function, check values will be stored in each prime's
- * place, equal to (1 << 256) - 1 if the checks for that prime pass, and 0
- * otherwise.
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * @param[in]  dmem[rsa_p..rsa_p+(plen*32)] first RSA private key prime (p)
- * @param[in]  dmem[rsa_q..rsa_q+(plen*32)] second RSA private key prime (q)
- * @param[in]  x30: plen, number of 256-bit limbs for p and q
- * @param[in]  w31: all-zero
- * @param[in]  dmem[rsa_p..rsa_p+(plen*32)] first RSA private key prime (p)
-       check value
- * @param[in]  dmem[rsa_q..rsa_q+(plen*32)] second RSA private key prime (q)
-       check value
- *
- * clobbered registers: x2, x3, x5 to x13, x16 to x26,
- *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
- * clobbered flag groups: FG0, FG1
- */
-
-rsa_check_primes:
-  /* Compute (<# of limbs> - 1), a helpful constant for later computations.
-       x31 <= x30 - 1 */
-  addi     x31, x30, -1
-
-  /* Initialize wide-register pointers.
-       x20 <= 20
-       x21 <= 21 */
-  li       x20, 20
-  li       x21, 21
-  li       x24, 24
-
-  /* Check the first cofactor p. */
-  la       x16, rsa_p
-  jal      x1, check_p
-  bn.sid   x24, 0(x16)
-
-  /* Check the second cofactor q. */
-  jal      x1, check_q
-  bn.sid   x24, 0(x16)
 
   ret
 

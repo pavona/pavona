@@ -218,7 +218,7 @@ status_t private_key_roundtrip_test(void) {
   return OK_STATUS();
 }
 
-status_t private_key_check_valid_roundtrip_inner(hardened_bool_t check_primes) {
+status_t private_key_check_valid_roundtrip_test(void) {
   // Construct the public key.
   otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
@@ -273,8 +273,7 @@ status_t private_key_check_valid_roundtrip_inner(hardened_bool_t check_primes) {
   };
   hardened_bool_t key_valid = kHardenedBoolFalse;
   TRY(otcrypto_rsa_private_key_construct_and_check(
-      p, q, d_p, d_q, i_q, &public_key, kHardenedBoolFalse, &private_key,
-      &key_valid));
+      p, q, d_p, d_q, i_q, &public_key, &private_key, &key_valid));
 
   TRY_CHECK(key_valid == kHardenedBoolTrue);
 
@@ -325,16 +324,6 @@ status_t private_key_check_valid_roundtrip_inner(hardened_bool_t check_primes) {
   TRY_CHECK_ARRAYS_EQ(roundtrip_i_q.data, kTestCrtCoefficient,
                       ARRAYSIZE(kTestCrtCoefficient));
   return OK_STATUS();
-}
-
-status_t private_key_check_valid_roundtrip_test(void) {
-  // Call the internal roundtrip test, with the check_primes flag unset.
-  return private_key_check_valid_roundtrip_inner(kHardenedBoolFalse);
-}
-
-status_t private_key_check_with_primes_valid_roundtrip_test(void) {
-  // Call the internal roundtrip test, with the check_primes flag set.
-  return private_key_check_valid_roundtrip_inner(kHardenedBoolTrue);
 }
 
 status_t private_key_check_invalid(void) {
@@ -392,8 +381,7 @@ status_t private_key_check_invalid(void) {
   };
   hardened_bool_t key_valid = kHardenedBoolFalse;
   TRY(otcrypto_rsa_private_key_construct_and_check(
-      p, q, d_p, d_q, i_q, &public_key, kHardenedBoolFalse, &private_key,
-      &key_valid));
+      p, q, d_p, d_q, i_q, &public_key, &private_key, &key_valid));
 
   // Ensure the private key was marked as invalid
   TRY_CHECK(key_valid == kHardenedBoolFalse);
@@ -408,7 +396,6 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, public_key_roundtrip_test);
   EXECUTE_TEST(test_result, private_key_roundtrip_test);
   EXECUTE_TEST(test_result, private_key_check_valid_roundtrip_test);
-  EXECUTE_TEST(test_result, private_key_check_with_primes_valid_roundtrip_test);
   EXECUTE_TEST(test_result, private_key_check_invalid);
   return status_ok(test_result);
 }

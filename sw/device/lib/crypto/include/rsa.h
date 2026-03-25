@@ -162,7 +162,15 @@ otcrypto_status_t otcrypto_rsa_private_key_construct(
 /**
  * Constructs an RSA private key from cofactors of the modulus, private exponent
  * CRT components, and a CRT coefficient, using a supplied public key to
- * verify that the constructed private key is valid.
+ * verify that the constructed private key passes basic validity checks.
+ *
+ * This function does *not* perform a primality check on the provided values
+ * for p and q, nor does it verify that the primes aren't 'too close', e.g. to
+ * prevent against Fermat factorization. Ensuring the safety of the provided
+ * prime cofactors, as well as ensuring the overall validity of the RSA key
+ * comprised of the provided components is ultimately the responsibility of
+ * the caller. The checks performed by this function should only be taken as
+ * defense-in-depth measures against inadvertently importing an invalid key.
  *
  * The caller should allocate space for the private key and set the `keyblob`,
  * `keyblob_length`, and `key_length` fields accordingly.
@@ -173,7 +181,6 @@ otcrypto_status_t otcrypto_rsa_private_key_construct(
  * @param d_q Second CRT component of the RSA private exponent d (d_q).
  * @param i_q CRT reconstruction coefficient for given cofactors (i_q).
  * @param public_key Public key to check private key against.
- * @param check_primes Whether to perform primality checks on p and q.
  * @param[out] private_key Destination private key struct.
  * @param[out] key_valid Whether the resultant key is valid.
  * @return Result of the RSA key construction and check.
@@ -183,13 +190,13 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check(
     otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q,
     otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
     otcrypto_const_word32_buf_t i_q, const otcrypto_unblinded_key_t *public_key,
-    hardened_bool_t check_primes, otcrypto_blinded_key_t *private_key,
-    hardened_bool_t *key_valid);
+    otcrypto_blinded_key_t *private_key, hardened_bool_t *key_valid);
 
 /**
  * Starts the process of constructing a RSA private key from cofactors of the
  * modulus, private exponent CRT components, and a CRT coefficient, using a
- * supplied public key to verify that the constructed private key is valid.
+ * supplied public key to verify that the constructed private key passes basic
+ * validity checks.
  *
  * See `otcrypto_rsa_private_key_construct_and_check` for details on the
  * requirements for input and output buffers.
@@ -200,7 +207,6 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check(
  * @param d_q Second CRT component of the RSA private exponent d (d_q).
  * @param i_q CRT reconstruction coefficient for given cofactors (i_q).
  * @param public_key Public key to check private key against.
- * @param check_primes Whether to perform primality checks on p and q.
  * @param[out] private_key Destination private key struct.
  * @param[out] key_valid Whether the resultant key is valid.
  * @param[out] session_token ACC session token for the operation.
@@ -211,19 +217,19 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_start(
     otcrypto_const_word32_buf_t p, otcrypto_const_word32_buf_t q,
     otcrypto_const_word32_buf_t d_p, otcrypto_const_word32_buf_t d_q,
     otcrypto_const_word32_buf_t i_q, const otcrypto_unblinded_key_t *public_key,
-    hardened_bool_t check_primes, otcrypto_blinded_key_t *private_key,
-    hardened_bool_t *key_valid, otcrypto_session_token_t *session_token);
+    otcrypto_blinded_key_t *private_key, hardened_bool_t *key_valid,
+    otcrypto_session_token_t *session_token);
 
 /**
  * Finalizes the process of constructing a RSA private key from cofactors of
  * the modulus, private exponent CRT components, and a CRT coefficient, using a
- * supplied public key to verify that the constructed private key is valid.
+ * supplied public key to verify that the constructed private key passes basic
+ * validity tests.
  *
  * See `otcrypto_rsa_private_key_construct_and_check` for details on the
  * requirements for input and output buffers.
  *
  * @param public_key Public key to check private key against.
- * @param check_primes Whether to perform primality checks on p and q.
  * @param session_token ACC session token for the operation.
  * @param[out] private_key Destination private key struct.
  * @param[out] key_valid Whether the resultant key is valid.
@@ -231,7 +237,7 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_finalize(
-    const otcrypto_unblinded_key_t *public_key, hardened_bool_t check_primes,
+    const otcrypto_unblinded_key_t *public_key,
     otcrypto_session_token_t session_token, otcrypto_blinded_key_t *private_key,
     hardened_bool_t *key_valid);
 

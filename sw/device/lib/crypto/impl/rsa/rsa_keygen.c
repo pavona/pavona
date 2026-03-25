@@ -50,39 +50,30 @@ static const acc_addr_t kAccVarRsaE = ACC_ADDR_T_INIT(run_rsa_keygen, rsa_e);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_GEN_RSA_2048);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_COFACTOR_RSA_2048);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_CHECK_RSA_2048);
-ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_CHECK_WITH_PRIMES_RSA_2048);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_GEN_RSA_3072);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_COFACTOR_RSA_3072);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_CHECK_RSA_3072);
-ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_CHECK_WITH_PRIMES_RSA_3072);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_GEN_RSA_4096);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_COFACTOR_RSA_4096);
 ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_CHECK_RSA_4096);
-ACC_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_CHECK_WITH_PRIMES_RSA_4096);
 static const uint32_t kAccRsaModeGen2048 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_GEN_RSA_2048);
 static const uint32_t kAccRsaModeCofactor2048 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_COFACTOR_RSA_2048);
 static const uint32_t kAccRsaModeCheck2048 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_CHECK_RSA_2048);
-static const uint32_t kAccRsaModeCheckWithPrimes2048 =
-    ACC_ADDR_T_INIT(run_rsa_keygen, MODE_CHECK_WITH_PRIMES_RSA_2048);
 static const uint32_t kAccRsaModeGen3072 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_GEN_RSA_3072);
 static const uint32_t kAccRsaModeCofactor3072 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_COFACTOR_RSA_3072);
 static const uint32_t kAccRsaModeCheck3072 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_CHECK_RSA_3072);
-static const uint32_t kAccRsaModeCheckWithPrimes3072 =
-    ACC_ADDR_T_INIT(run_rsa_keygen, MODE_CHECK_WITH_PRIMES_RSA_3072);
 static const uint32_t kAccRsaModeGen4096 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_GEN_RSA_4096);
 static const uint32_t kAccRsaModeCofactor4096 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_COFACTOR_RSA_4096);
 static const uint32_t kAccRsaModeCheck4096 =
     ACC_ADDR_T_INIT(run_rsa_keygen, MODE_CHECK_RSA_4096);
-static const uint32_t kAccRsaModeCheckWithPrimes4096 =
-    ACC_ADDR_T_INIT(run_rsa_keygen, MODE_CHECK_WITH_PRIMES_RSA_4096);
 
 enum {
   /* Fixed public exponent for generated keys. This exponent is 2^16 + 1, also
@@ -378,7 +369,6 @@ status_t rsa_keygen_from_cofactor_4096_finalize(
 
 status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
                                   const rsa_2048_private_key_t *private_key,
-                                  hardened_bool_t check_primes,
                                   uint32_t *session_token) {
   // Load the RSA key generation app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
@@ -400,33 +390,27 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->i_q.data),
                               private_key->i_q.data, kAccVarRsaIq));
 
-  // Select mode based on whether we should perform primality checks.
-  uint32_t mode;
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolTrue);
-    mode = kAccRsaModeCheckWithPrimes2048;
-  } else {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-    mode = kAccRsaModeCheck2048;
-  }
-
   // Generate a fresh session token, and store it in DMEM.
   uint32_t token = ibex_rnd32_read();
   HARDENED_TRY(acc_dmem_write(1, &token, kAccVarRsaSessionToken));
   *session_token = token;
 
   // Set mode and start ACC.
+  uint32_t mode = kAccRsaModeCheck2048;
   HARDENED_TRY(acc_dmem_write(kAccRsaModeWords, &mode, kAccVarRsaMode));
   return acc_execute();
 }
 
 status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
                                      const rsa_2048_private_key_t *private_key,
-                                     hardened_bool_t check_primes,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Defensively set the key to invalid unless we show otherwise later.
+  *key_valid = kHardenedBoolFalse;
+  HARDENED_CHECK_EQ(*key_valid, kHardenedBoolFalse);
 
   // Check the session token matches the expected one.
   // If this check fails, either the cryptolib client's logic is broken and
@@ -449,18 +433,9 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
   uint32_t act_mode = 0;
   ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarRsaMode, &act_mode));
 
-  // Get the expected mode from provided arguments.
-  uint32_t exp_mode = 0;
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolTrue);
-    exp_mode = kAccRsaModeCheckWithPrimes2048;
-  } else {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-    exp_mode = kAccRsaModeCheck2048;
-  }
-
   // Ensure that the actual mode is the same as the expected mode.
-  if (launder32(act_mode) != exp_mode) {
+  uint32_t exp_mode = kAccRsaModeCheck2048;
+  if (launder32(act_mode) != kAccRsaModeCheck2048) {
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(act_mode, exp_mode);
@@ -523,55 +498,15 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
   hardened_bool_t d_valid =
       hardened_memeq(all_ones, d_check, ARRAYSIZE(d_check));
 
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    // Read the first prime (p) check value
-    uint32_t p_check[kRsa2048NumWords / 2];
-    ACC_WIPE_IF_ERROR(
-        acc_dmem_read(kRsa2048NumWords / 2, kAccVarRsaE, p_check));
-
-    // Check whether the first prime check value is all ones.
-    hardened_bool_t p_valid =
-        hardened_memeq(all_ones, p_check, ARRAYSIZE(p_check));
-
-    // Read the second prime (q) check value
-    uint32_t q_check[kRsa2048NumWords / 2];
-    ACC_WIPE_IF_ERROR(
-        acc_dmem_read(kRsa2048NumWords / 2, kAccVarRsaE, q_check));
-
-    // Check whether the first prime check value is all ones.
-    hardened_bool_t q_valid =
-        hardened_memeq(all_ones, p_check, ARRAYSIZE(q_check));
-
-    // Check if all tests passed, and write the output accordingly.
-    if ((dp_valid & dq_valid & iq_valid & n_valid & d_valid & p_valid &
-         q_valid) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(dp_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(dq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(iq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(n_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(d_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(p_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(q_valid, kHardenedBoolTrue);
-      *key_valid = kHardenedBoolTrue;
-    } else {
-      *key_valid = kHardenedBoolFalse;
-    }
-  } else {
-    // Ensure that the check primes flag wasn't set.
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-
-    // Check if all tests passed, and write the output accordingly.
-    if ((dp_valid & dq_valid & iq_valid & n_valid & d_valid) ==
-        kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(dp_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(dq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(iq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(n_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(d_valid, kHardenedBoolTrue);
-      *key_valid = kHardenedBoolTrue;
-    } else {
-      *key_valid = kHardenedBoolFalse;
-    }
+  // Check if all tests passed, and if so set the key to valid.
+  if ((launder32(dp_valid) & launder32(dq_valid) & launder32(iq_valid) &
+       launder32(n_valid) & launder32(d_valid)) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(launder32(dp_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(dq_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(iq_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(n_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(d_valid), kHardenedBoolTrue);
+    *key_valid = dp_valid & dq_valid & iq_valid & n_valid & d_valid;
   }
 
   // Wipe DMEM.
@@ -580,7 +515,6 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
 
 status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
                                   const rsa_3072_private_key_t *private_key,
-                                  hardened_bool_t check_primes,
                                   uint32_t *session_token) {
   // Load the RSA key generation app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
@@ -602,33 +536,27 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->i_q.data),
                               private_key->i_q.data, kAccVarRsaIq));
 
-  // Select mode based on whether we should perform primality checks.
-  uint32_t mode;
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolTrue);
-    mode = kAccRsaModeCheckWithPrimes3072;
-  } else {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-    mode = kAccRsaModeCheck3072;
-  }
-
   // Generate a fresh session token, and store it in DMEM.
   uint32_t token = ibex_rnd32_read();
   HARDENED_TRY(acc_dmem_write(1, &token, kAccVarRsaSessionToken));
   *session_token = token;
 
   // Set mode and start ACC.
+  uint32_t mode = kAccRsaModeCheck3072;
   HARDENED_TRY(acc_dmem_write(kAccRsaModeWords, &mode, kAccVarRsaMode));
   return acc_execute();
 }
 
 status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
                                      const rsa_3072_private_key_t *private_key,
-                                     hardened_bool_t check_primes,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Defensively set the key to invalid unless we show otherwise later.
+  *key_valid = kHardenedBoolFalse;
+  HARDENED_CHECK_EQ(*key_valid, kHardenedBoolFalse);
 
   // Check the session token matches the expected one.
   // If this check fails, either the cryptolib client's logic is broken and
@@ -651,18 +579,9 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
   uint32_t act_mode = 0;
   ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarRsaMode, &act_mode));
 
-  // Get the expected mode from provided arguments.
-  uint32_t exp_mode = 0;
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolTrue);
-    exp_mode = kAccRsaModeCheckWithPrimes3072;
-  } else {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-    exp_mode = kAccRsaModeCheck3072;
-  }
-
   // Ensure that the actual mode is the same as the expected mode.
-  if (launder32(act_mode) != exp_mode) {
+  uint32_t exp_mode = kAccRsaModeCheck3072;
+  if (launder32(act_mode) != kAccRsaModeCheck3072) {
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(act_mode, exp_mode);
@@ -725,55 +644,15 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
   hardened_bool_t d_valid =
       hardened_memeq(all_ones, d_check, ARRAYSIZE(d_check));
 
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    // Read the first prime (p) check value
-    uint32_t p_check[kRsa3072NumWords / 2];
-    ACC_WIPE_IF_ERROR(
-        acc_dmem_read(kRsa3072NumWords / 2, kAccVarRsaE, p_check));
-
-    // Check whether the first prime check value is all ones.
-    hardened_bool_t p_valid =
-        hardened_memeq(all_ones, p_check, ARRAYSIZE(p_check));
-
-    // Read the second prime (q) check value
-    uint32_t q_check[kRsa3072NumWords / 2];
-    ACC_WIPE_IF_ERROR(
-        acc_dmem_read(kRsa3072NumWords / 2, kAccVarRsaE, q_check));
-
-    // Check whether the first prime check value is all ones.
-    hardened_bool_t q_valid =
-        hardened_memeq(all_ones, p_check, ARRAYSIZE(q_check));
-
-    // Check if all tests passed, and write the output accordingly.
-    if ((dp_valid & dq_valid & iq_valid & n_valid & d_valid & p_valid &
-         q_valid) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(dp_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(dq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(iq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(n_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(d_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(p_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(q_valid, kHardenedBoolTrue);
-      *key_valid = kHardenedBoolTrue;
-    } else {
-      *key_valid = kHardenedBoolFalse;
-    }
-  } else {
-    // Ensure that the check primes flag wasn't set.
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-
-    // Check if all tests passed, and write the output accordingly.
-    if ((dp_valid & dq_valid & iq_valid & n_valid & d_valid) ==
-        kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(dp_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(dq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(iq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(n_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(d_valid, kHardenedBoolTrue);
-      *key_valid = kHardenedBoolTrue;
-    } else {
-      *key_valid = kHardenedBoolFalse;
-    }
+  // Check if all tests passed, and if so set the key to valid.
+  if ((launder32(dp_valid) & launder32(dq_valid) & launder32(iq_valid) &
+       launder32(n_valid) & launder32(d_valid)) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(launder32(dp_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(dq_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(iq_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(n_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(d_valid), kHardenedBoolTrue);
+    *key_valid = dp_valid & dq_valid & iq_valid & n_valid & d_valid;
   }
 
   // Wipe DMEM.
@@ -782,7 +661,6 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
 
 status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
                                   const rsa_4096_private_key_t *private_key,
-                                  hardened_bool_t check_primes,
                                   uint32_t *session_token) {
   // Load the RSA key generation app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
@@ -804,33 +682,27 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
   HARDENED_TRY(acc_dmem_write(ARRAYSIZE(private_key->i_q.data),
                               private_key->i_q.data, kAccVarRsaIq));
 
-  // Select mode based on whether we should perform primality checks.
-  uint32_t mode;
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolTrue);
-    mode = kAccRsaModeCheckWithPrimes4096;
-  } else {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-    mode = kAccRsaModeCheck4096;
-  }
-
   // Generate a fresh session token, and store it in DMEM.
   uint32_t token = ibex_rnd32_read();
   HARDENED_TRY(acc_dmem_write(1, &token, kAccVarRsaSessionToken));
   *session_token = token;
 
   // Set mode and start ACC.
+  uint32_t mode = kAccRsaModeCheck4096;
   HARDENED_TRY(acc_dmem_write(kAccRsaModeWords, &mode, kAccVarRsaMode));
   return acc_execute();
 }
 
 status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
                                      const rsa_4096_private_key_t *private_key,
-                                     hardened_bool_t check_primes,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
+
+  // Defensively set the key to invalid unless we show otherwise later.
+  *key_valid = kHardenedBoolFalse;
+  HARDENED_CHECK_EQ(*key_valid, kHardenedBoolFalse);
 
   // Spin here waiting for ACC to complete.
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
@@ -853,18 +725,9 @@ status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
   uint32_t act_mode = 0;
   ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarRsaMode, &act_mode));
 
-  // Get the expected mode from provided arguments.
-  uint32_t exp_mode = 0;
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolTrue);
-    exp_mode = kAccRsaModeCheckWithPrimes4096;
-  } else {
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-    exp_mode = kAccRsaModeCheck4096;
-  }
-
   // Ensure that the actual mode is the same as the expected mode.
-  if (launder32(act_mode) != exp_mode) {
+  uint32_t exp_mode = kAccRsaModeCheck4096;
+  if (launder32(act_mode) != kAccRsaModeCheck4096) {
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(act_mode, exp_mode);
@@ -927,55 +790,15 @@ status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
   hardened_bool_t d_valid =
       hardened_memeq(all_ones, d_check, ARRAYSIZE(d_check));
 
-  if (launder32(check_primes) == kHardenedBoolTrue) {
-    // Read the first prime (p) check value
-    uint32_t p_check[kRsa4096NumWords / 2];
-    ACC_WIPE_IF_ERROR(
-        acc_dmem_read(kRsa4096NumWords / 2, kAccVarRsaE, p_check));
-
-    // Check whether the first prime check value is all ones.
-    hardened_bool_t p_valid =
-        hardened_memeq(all_ones, p_check, ARRAYSIZE(p_check));
-
-    // Read the second prime (q) check value
-    uint32_t q_check[kRsa4096NumWords / 2];
-    ACC_WIPE_IF_ERROR(
-        acc_dmem_read(kRsa4096NumWords / 2, kAccVarRsaE, q_check));
-
-    // Check whether the first prime check value is all ones.
-    hardened_bool_t q_valid =
-        hardened_memeq(all_ones, p_check, ARRAYSIZE(q_check));
-
-    // Check if all tests passed, and write the output accordingly.
-    if ((dp_valid & dq_valid & iq_valid & n_valid & d_valid & p_valid &
-         q_valid) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(dp_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(dq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(iq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(n_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(d_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(p_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(q_valid, kHardenedBoolTrue);
-      *key_valid = kHardenedBoolTrue;
-    } else {
-      *key_valid = kHardenedBoolFalse;
-    }
-  } else {
-    // Ensure that the check primes flag wasn't set.
-    HARDENED_CHECK_EQ(check_primes, kHardenedBoolFalse);
-
-    // Check if all tests passed, and write the output accordingly.
-    if ((dp_valid & dq_valid & iq_valid & n_valid & d_valid) ==
-        kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(dp_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(dq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(iq_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(n_valid, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(d_valid, kHardenedBoolTrue);
-      *key_valid = kHardenedBoolTrue;
-    } else {
-      *key_valid = kHardenedBoolFalse;
-    }
+  // Check if all tests passed, and if so set the key to valid.
+  if ((launder32(dp_valid) & launder32(dq_valid) & launder32(iq_valid) &
+       launder32(n_valid) & launder32(d_valid)) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(launder32(dp_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(dq_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(iq_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(n_valid), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(launder32(d_valid), kHardenedBoolTrue);
+    *key_valid = dp_valid & dq_valid & iq_valid & n_valid & d_valid;
   }
 
   // Wipe DMEM.

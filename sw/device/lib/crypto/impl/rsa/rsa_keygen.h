@@ -240,9 +240,12 @@ status_t rsa_keygen_from_cofactor_4096_finalize(
  *  (d) the CRT coefficient in the private key is the inverse of the second
  *      modulus cofactor modulo the first.
  *
- * Additionally, if the hardened `check_primes` flag is set, then this routine
- * also checks that both primes pass Miller-Rabin primality tests and that
- * the primes aren't too close.
+ * Note that this method does *not* perform a primality check on the prime
+ * cofactors in the private key, as the Miller-Rabin primality test implemented
+ * for the ACC is specialized to primes which are 3 mod 4, and this method
+ * needs to be able to apply its checks to any imported RSA key. The co-located
+ * check performed during RSA key generation to ensure the prime cofactors
+ * aren't 'too close' (e.g. for Fermat factorization) has similarly been elided.
  *
  * As part of performing these checks, check values are computed using the ACC
  * which are verified on the Ibex by performing hardened comparisons to expected
@@ -250,14 +253,12 @@ status_t rsa_keygen_from_cofactor_4096_finalize(
  *
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
- * @param check_primes Whether to perform checks on the private key primes.
  * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
                                   const rsa_2048_private_key_t *private_key,
-                                  hardened_bool_t check_primes,
                                   uint32_t *session_token);
 
 /*
@@ -266,14 +267,8 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
  * Should be invoked only after `rsa_key_check_2048_start`. Blocks until ACC is
  * done processing.
  *
- * The `check_primes` flag should be provided exactly as it was to
- * `rsa_key_check_2048_start` in order to ensure that the correct set of check
- * values returned from the ACC as a result of `rsa_key_check_2048_start` are
- * verified by the Ibex.
- *
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
- * @param check_primes Whether to perform checks on the private key primes.
  * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
@@ -281,7 +276,6 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
                                      const rsa_2048_private_key_t *private_key,
-                                     hardened_bool_t check_primes,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid);
 
@@ -303,9 +297,12 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
  *  (d) the CRT coefficient in the private key is the inverse of the second
  *      modulus cofactor modulo the first.
  *
- * Additionally, if the hardened `check_primes` flag is set, then this routine
- * also checks that both primes pass Miller-Rabin primality tests and that
- * the primes aren't too close.
+ * Note that this method does *not* perform a primality check on the prime
+ * cofactors in the private key, as the Miller-Rabin primality test implemented
+ * for the ACC is specialized to primes which are 3 mod 4, and this method
+ * needs to be able to apply its checks to any imported RSA key. The co-located
+ * check performed during RSA key generation to ensure the prime cofactors
+ * aren't 'too close' (e.g. for Fermat factorization) has similarly been elided.
  *
  * As part of performing these checks, check values are computed using the ACC
  * which are verified on the Ibex by performing hardened comparisons to expected
@@ -313,14 +310,12 @@ status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
  *
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
- * @param check_primes Whether to perform checks on the private key primes.
  * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
                                   const rsa_3072_private_key_t *private_key,
-                                  hardened_bool_t check_primes,
                                   uint32_t *session_token);
 
 /*
@@ -329,14 +324,8 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
  * Should be invoked only after `rsa_key_check_3072_start`. Blocks until ACC is
  * done processing.
  *
- * The `check_primes` flag should be provided exactly as it was to
- * `rsa_key_check_3072_start` in order to ensure that the correct set of check
- * values returned from the ACC as a result of `rsa_key_check_3072_start` are
- * verified by the Ibex.
- *
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
- * @param check_primes Whether to perform checks on the private key primes.
  * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
@@ -344,7 +333,6 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
                                      const rsa_3072_private_key_t *private_key,
-                                     hardened_bool_t check_primes,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid);
 
@@ -366,9 +354,12 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
  *  (d) the CRT coefficient in the private key is the inverse of the second
  *      modulus cofactor modulo the first.
  *
- * Additionally, if the hardened `check_primes` flag is set, then this routine
- * also checks that both primes pass Miller-Rabin primality tests and that
- * the primes aren't too close.
+ * Note that this method does *not* perform a primality check on the prime
+ * cofactors in the private key, as the Miller-Rabin primality test implemented
+ * for the ACC is specialized to primes which are 3 mod 4, and this method
+ * needs to be able to apply its checks to any imported RSA key. The co-located
+ * check performed during RSA key generation to ensure the prime cofactors
+ * aren't 'too close' (e.g. for Fermat factorization) has similarly been elided.
  *
  * As part of performing these checks, check values are computed using the ACC
  * which are verified on the Ibex by performing hardened comparisons to expected
@@ -376,14 +367,12 @@ status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
  *
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
- * @param check_primes Whether to perform checks on the private key primes.
  * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
                                   const rsa_4096_private_key_t *private_key,
-                                  hardened_bool_t check_primes,
                                   uint32_t *session_token);
 
 /*
@@ -392,14 +381,8 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
  * Should be invoked only after `rsa_key_check_4096_start`. Blocks until ACC is
  * done processing.
  *
- * The `check_primes` flag should be provided exactly as it was to
- * `rsa_key_check_4096_start` in order to ensure that the correct set of check
- * values returned from the ACC as a result of `rsa_key_check_4096_start` are
- * verified by the Ibex.
- *
  * @param public_key Public key (n, e).
  * @param private_key Private key (p, q, d_p, d_q, i_q).
- * @param check_primes Whether to perform checks on the private key primes.
  * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
@@ -407,7 +390,6 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
                                      const rsa_4096_private_key_t *private_key,
-                                     hardened_bool_t check_primes,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid);
 
