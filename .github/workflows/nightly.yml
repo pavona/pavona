@@ -18,6 +18,9 @@ jobs:
   # Run On-demand Tests
   on-demand:
     name: Run On-demand Tests
+    permissions:
+      # Required by verible_lint job, even though it doesn't run
+      pull-requests: write
     uses: ./.github/workflows/ci.yml
     secrets: inherit
 
