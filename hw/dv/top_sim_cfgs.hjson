@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // This is a cfg hjson group for DV simulations. It includes ALL individual DV simulation
-  // cfgs of the IPs and the full chip used in top_earlgrey. This enables the common
-  // regression sets to be run in one shot.
-  name: top_earlgrey_batch_sim
+  // cfgs across all IPs and tops in the project.
+  name: all_tops_batch_sim
   import_cfgs: [// Project wide common cfg file
                 "{proj_root}/hw/data/common_project_cfg.hjson"]
   flow: sim
-  rel_path: "hw/top_earlgrey/dv/summary"
+  rel_path: "hw/dv/summary"
   // Maintain alphabetical order below.
   use_cfgs: [
              // Unit tests for UVCs.
@@ -59,7 +58,7 @@
              "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
-             // Top level IPs.
+             // top_earlgrey IPs.
              "{proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
@@ -71,7 +70,23 @@
              "{proj_root}/hw/top_earlgrey/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/rstmgr_cnsty_chk_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
-             // Top level.
+             // top_earlgrey chip.
              "{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson",
+             // top_darjeeling IPs.
+             "{proj_root}/hw/top_darjeeling/ip_autogen/ac_range_check/dv/ac_range_check_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/gpio/dv/gpio_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/racl_ctrl/dv/racl_ctrl_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/rstmgr_cnsty_chk_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip/xbar_dbg/dv/autogen/xbar_dbg_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip/xbar_mbx/dv/autogen/xbar_mbx_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
+             // top_darjeeling chip.
+             "{proj_root}/hw/top_darjeeling/dv/chip_sim_cfg.hjson",
             ]
 }
