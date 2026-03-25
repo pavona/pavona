@@ -880,7 +880,7 @@ class SimCfg(FlowCfg):
                         if self.args.publish:
                             cov_report_page_path = "cov_report"
                         else:
-                            cov_report_page_path = self.cov_report_dir
+                            cov_report_page_path = "../../cov_report"
                         cov_report_page_path += "/" + self.cov_report_page
                         results_str += "({})\n\n".format(cov_report_page_path)
                     results_str += self.cov_report_deploy.cov_results
