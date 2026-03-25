@@ -838,9 +838,10 @@ class SimCfg(FlowCfg):
 
                 # self.rel_path gives us the path to the directory
                 # containing the sim_cfg file...
-                testplan = "https://{}/{}".format(
-                    self.book,
-                    Path(self.rel_path).parent / 'data' / f"{self.name}_testplan.html"
+                # TODO: Replace with book once it's available
+                testplan = "https://{}/tree/main/{}".format(
+                    self.repo_server,
+                    Path(self.rel_path).parent / 'data' / f"{self.name}_testplan.hjson"
                 )
 
             results_str += f"### [Testplan]({testplan})\n"
