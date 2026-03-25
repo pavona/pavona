@@ -18,23 +18,23 @@ usage() {
   echo "Usage: $0 [options] [output_dir]"
   echo ""
   echo "Options:"
-  echo "  -r <N>         Set number of runs (e.g. -r 5)"
-  echo "  -i <all|smoke> Set test item flag (default: all)"
-  echo "  -t <tool>      Set simulator tool (e.g. -t vcs)"
-  echo "  -p             Publish these results in the current server (port 8000) (default:false)"
-  echo "  -h             Show this help"
+  echo "  -r <N>           Set number of runs (e.g. -r 5)"
+  echo "  -i <all|smoke>   Set test item flag (default: all)"
+  echo "  -t <tool>        Set simulator tool (e.g. -t vcs)"
+  echo "  -p <true|false>  Publish these results in the current server (port 8000) (default:false)"
+  echo "  -h               Show this help"
   echo ""
   echo "Arguments:"
   echo "  output_dir     Output directory (default: ./scratch/dashboard)"
   exit 0
 }
 
-while getopts "r:i:t:h" opt; do
+while getopts "r:i:t:p:h" opt; do
   case $opt in
   r) RUN_FLAG="-r $OPTARG" ;;
   i) ITEM_FLAG="$OPTARG" ;;
-  t) TOOL_FLAG="--tool $OPTARG" ;;
-  p) PUBLISH_FLAGH="$OPTARG" ;;
+  t) TOOL_FLAG="$OPTARG" ;;
+  p) PUBLISH_FLAG="$OPTARG" ;;
   h) usage ;;
   *)
     echo "Unknown option: $opt"
@@ -67,11 +67,12 @@ SCRATCH_BASE="scratch/${GIT_BRANCH}"
 
 echo "Purging $DASHBOARD_BASE..."
 rm -rf "$DASHBOARD_BASE"
+mkdir "$DASHBOARD_BASE"
 
 echo "Purging $SCRATCH_BASE..."
 rm -rf "$SCRATCH_BASE"
 
-LOG_FILE="${DASHBOARD_BASE}/dashboard.log"
+LOG_FILE="${DASHBOARD_BASE}/dashboard.txt"
 touch "$LOG_FILE"
 
 log() {
@@ -86,6 +87,7 @@ echo "  Scratch base: $SCRATCH_BASE" | tee -a "$LOG_FILE"
 echo "  Runs        : ${RUN_FLAG:-(not set)}" | tee -a "$LOG_FILE"
 echo "  Item        : $ITEM_FLAG" | tee -a "$LOG_FILE"
 echo "  Tool        : ${TOOL_FLAG:-(not set)}" | tee -a "$LOG_FILE"
+echo "  Publish     : ${PUBLISH_FLAG:-(not set)}" | tee -a "$LOG_FILE"
 echo "============================================" | tee -a "$LOG_FILE"
 echo ""
 
@@ -98,6 +100,18 @@ find_cov_report() {
     echo "${SCRATCH_BASE}/${sim_name}-sim-vcs/cov_report"
   elif [ -d "${SCRATCH_BASE}/${sim_name}_${top}-sim-vcs/cov_report" ]; then
     echo "${SCRATCH_BASE}/${sim_name}_${top}-sim-vcs/cov_report"
+  else
+    echo ""
+  fi
+}
+
+find_run_report() {
+  local sim_name=$1
+  local top=$2
+  if [ -f "${SCRATCH_BASE}/${sim_name}-sim-vcs/reports/latest/report.html" ]; then
+    echo "${SCRATCH_BASE}/${sim_name}-sim-vcs/reports/latest/report.html"
+  elif [ -f "${SCRATCH_BASE}/${sim_name}_${top}-sim-vcs/reports/latest/report.html" ]; then
+    echo "${SCRATCH_BASE}/${sim_name}_${top}-sim-vcs/reports/latest/report.html"
   else
     echo ""
   fi
@@ -155,7 +169,7 @@ for top in top_earlgrey top_darjeeling; do
     JOBS+=("${cfg_file}|${ip_name}|${sim_name}|autogen|${top}")
   done
 
-  # Pattern 6: hw/{top}/ip_autogen/{ip_name}/dv/{sim_cfg}
+  # Pattern 6: hw/{top}/ip_autogen/{ip_name}/dv/*/{sim_cfg}
   for cfg_file in hw/${top}/ip_autogen/*/dv/*/*_sim_cfg.hjson; do
     [ -f "$cfg_file" ] || continue
     sim_name=$(basename "$cfg_file" "_sim_cfg.hjson")
@@ -246,9 +260,11 @@ for job in "${JOBS[@]}"; do
   if [ "$type" = "chip" ]; then
     top_clean=${top#top_} # strip "top_" prefix
     COV_REPORT="${SCRATCH_BASE}/${sim_name}_${top_clean}_asic-sim-vcs/cov_report"
+    RUN_REPORT="${SCRATCH_BASE}/${sim_name}_${top_clean}_asic-sim-vcs/reports/latest/report.html"
     DEST="${DASHBOARD_DEST}/${sim_name}_cov_report"
   else
     COV_REPORT=$(find_cov_report "$sim_name" "$top")
+    RUN_REPORT=$(find_run_report "$sim_name" "$top")
     DEST="${DASHBOARD_DEST}/${ip_name}_cov_report/${sim_name}"
   fi
 
@@ -259,6 +275,14 @@ for job in "${JOBS[@]}"; do
     cp -r "$COV_REPORT/." "$DEST/"
   else
     WARNINGS+=("Warning: no cov_report found for $sim_name (scratch: $SCRATCH_BASE)")
+    log "${WARNINGS[-1]}"
+  fi
+
+  if [ -n "$RUN_REPORT" ] && [ -f "$RUN_REPORT" ]; then
+    log "Copying run report for $sim_name to $DEST/run_report.html"
+    cp "$RUN_REPORT" "$DEST/run_report.html"
+  else
+    WARNINGS+=("Warning: no run report found for $sim_name (scratch: $SCRATCH_BASE)")
     log "${WARNINGS[-1]}"
   fi
 done
