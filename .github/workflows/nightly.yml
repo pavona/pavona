@@ -7,7 +7,7 @@ name: Nightly
 on:
   workflow_dispatch:
   schedule:
-    - cron: "00 02 * * *"
+    - cron: "00 02 * * 1-4" # 2:00 am Monday thru Thursday
 
 permissions:
   contents: read
