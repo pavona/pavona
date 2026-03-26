@@ -119,6 +119,8 @@ jobs:
         run: ./ci/scripts/check-generated.sh
         env:
           OT_DESTRUCTIVE: 1 # Required by the script to clean up.
+      - name: Check sim_cfg files
+        run: ./ci/scripts/check-sim-cfgs.py
       - name: Buildifier
         run: ./bazelisk.sh test //quality:buildifier_check
       - name: Vendored files

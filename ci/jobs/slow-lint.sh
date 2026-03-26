@@ -23,6 +23,9 @@ ci/scripts/build-docs.sh
 echo -e "\n### Ensure all generated files are clean and up-to-date"
 ci/scripts/check-generated.sh
 
+echo -e "\n### Ensure all sim_cfg files use the correct formatting"
+ci/scripts/check-sim-cfgs.py
+
 echo -e "\n### Use buiildifier to check Bazel coding style"
 bazel test //quality:buildifier_check --test_output=streamed
 
