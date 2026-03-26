@@ -93,7 +93,6 @@
 #endif
 
 /* Register aliases */
-.equ x0, zero
 .equ x2, sp
 .equ x3, fp
 
@@ -158,76 +157,57 @@
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x10 (a0): dmem pointer to input randombytes (KYBER_SYMBYTES = 32)
- * @param[out] x11 (a1): dmem pointer to output ct
- * @param[out] x12 (a2): dmem pointer to output key_b
- * @param[in]  x13 (a3): dmem pointer to input pk
+ * @param[in]  dmem[coins]: input random bytes (32)
+ * @param[out] dmem[ct]: output ciphertext
+ * @param[out] dmem[ss]: output shared secret
+ * @param[in]  dmem[ek]: input public key
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 
 .globl crypto_kem_enc
 crypto_kem_enc:
-  #define STACK_KEM_ENC_KEYB_ADDR -20
-  #define STACK_KEM_ENC_PK_ADDR   -24
-  #define STACK_KEM_ENC_CT_ADDR   -32
-  #define STACK_KEM_ENC_BUF     -1120
-  #define STACK_KEM_ENC_KR      -1056
-
-  /* Set frame pointer */
-  addi fp, sp, 0
-#if KYBER_K == 2
-    li  t0, -3168
-#elif KYBER_K == 3
-    li  t0, -4192
-#elif KYBER_K == 4
-    li  t0, -5216
-#endif
-  add  sp, sp, t0
-
-  /* Save parameters to stack */
-  sw a1, STACK_KEM_ENC_CT_ADDR(fp)
-  sw a2, STACK_KEM_ENC_KEYB_ADDR(fp)
-  sw a3, STACK_KEM_ENC_PK_ADDR(fp)
-
-  /*** Copy randombytes to buf ***/
-  li     x4, 0
-  bn.lid x4, 0(a0)
-  li     t0, STACK_KEM_ENC_BUF
-  add    t0, fp, t0
-  bn.sid x4, 0(t0++)
-  add    a3, zero, t0
 
   /*** hash_h(pk) ***/
-  lw      a0, STACK_KEM_ENC_PK_ADDR(fp)
-  addi    a1, zero, KYBER_PUBLICKEYBYTES
+  la      a0, ek
+  addi    a1, x0, KYBER_PUBLICKEYBYTES
   slli    t0, a1, 5
   addi    t0, t0, SHA3_256_CFG
-  csrrw   zero, KECCAK_CFG_REG, t0
+  csrrw   x0, KECCAK_CFG_REG, t0
   jal     x1, keccak_send_message
-  li      t0, 8
-  bn.wsrr w8, 0xA /* KECCAK_DIGEST */
-  bn.sid  t0, 0(a3++) /* Store into buffer */
+  bn.wsrr w8, kmac_digest
 
-  /*** hash_g(randombytes||hash_h(pk)) ***/
-  addi  a0, a3, -64
-  lw    a3, STACK_KEM_ENC_KEYB_ADDR(fp)
-  addi  a1, zero, 64
+  /*** Set up for hash_g(randombytes||hash_h(pk)) ***/
+  addi  a1, x0, 64
   slli  t0, a1, 5
   addi  t0, t0, SHA3_512_CFG
-  csrrw zero, KECCAK_CFG_REG, t0
-  jal   x1, keccak_send_message
-  li    t0, 8
-  LOOPI 2, 2
-    bn.wsrr w8, 0xA /* KECCAK_DIGEST */
-    bn.sid  t0, 0(a3++) /* Store into buffer */
+  csrrw x0, KECCAK_CFG_REG, t0
+
+  /* Send the message. */
+  la      t0, coins
+  bn.lid  x0, 0(t0)
+  bn.wsrw kmac_msg, w0
+  bn.wsrw kmac_msg, w8
+
+  /* Read the digest. */
+  la      t0, ss
+  bn.wsrr w0, kmac_digest
+  bn.sid  x0, 0(t0)
+  la      a2, indcpa_enc_seed
+  bn.wsrr w0, kmac_digest
+  bn.sid  x0, 0(a2)
 
   /*** indcpa_enc ***/
-  add a0, a0, -64 /* randombytes = m */
-  add a2, a3, -32 /* r */
-  jal x1, indcpa_enc
-
-  /* Free space on stack */
-  addi sp, fp, 0
+  la   a0, coins
+  la   a1, ek
+  la   a3, ct
+  jal  x1, indcpa_enc
 
   ret
+
+.bss
+
+/* Intermediate buffer to store the 64-byte hash result. */
+.balign 32
+indcpa_enc_seed:
+.zero 64

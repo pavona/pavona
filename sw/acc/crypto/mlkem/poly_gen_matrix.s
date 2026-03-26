@@ -105,23 +105,6 @@ poly_gen_matrix_init:
 
 .globl poly_gen_matrix
 poly_gen_matrix:
-  /* 32 byte align the sp */
-  andi a5, sp, 31
-  beq  a5, zero, _aligned
-  sub  sp, sp, a5
-_aligned:
-  /* save fp to stack, use 32 bytes to keep it 32-byte aligned */
-  addi sp, sp, -32
-  sw   fp, 0(sp)
-
-  addi fp, sp, 0
-
-  /* Adjust sp to accomodate local variables */
-  addi sp, sp, -64
-
-  /* Space for tmp buffer to hold a WDR */
-  #define STACK_WDR2GPR -32
-
   /* t0 = 508, a1 + 508 is the last valid address */
   addi t0, a1, 512
 
@@ -250,11 +233,6 @@ _skip_store4:
   /* No remainder! Start all over again. */
   beq        zero, zero, _rej_sample_loop
 _end_rej_sample_loop:
-
-  addi       sp, fp, 0 /* sp <- fp */
-  lw         fp, 0(sp)   /* Pop ebp */
-  addi       sp, sp, 32
-  add        sp, sp, a5 /* Correct alignment offset (unalign) */
 
   ret
 

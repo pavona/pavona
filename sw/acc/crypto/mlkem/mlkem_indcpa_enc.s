@@ -93,7 +93,6 @@
 #endif
 
 /* Register aliases */
-.equ x0, zero
 .equ x2, sp
 .equ x3, fp
 
@@ -170,94 +169,64 @@
  */
 .globl indcpa_enc
 indcpa_enc:
-  /* Stack address mapping */
-  #define STACK_ENC_PK_ADDR      -24
-  #define STACK_ENC_COINS_ADDR   -28
-  #define STACK_ENC_C_ADDR       -32
-  #define STACK_ENC_NONCE        -64
-  #define STACK_ENC_SEED         -96
-  #define STACK_ENC_V           -608
-  #define STACK_ENC_TMP        -1120
-#if (KYBER_K == 2)
-  #define STACK_ENC_AT         -2144
-    #define STACK_ENC_K        -2144
-    #define STACK_ENC_B        -2144
-    #define STACK_ENC_PKPV     -1632
-    #define STACK_ENC_EPP      -1632
-  #define STACK_ENC_SP         -3168
-    #define STACK_ENC_EP       -3168
-#elif (KYBER_K == 3)
-  #define STACK_ENC_AT         -2656
-    #define STACK_ENC_K        -2656
-    #define STACK_ENC_B        -2656
-    #define STACK_ENC_PKPV     -2144
-    #define STACK_ENC_EPP      -2144
-  #define STACK_ENC_SP         -4192
-    #define STACK_ENC_EP       -4192
-#elif (KYBER_K == 4)
-  #define STACK_ENC_AT         -3168
-    #define STACK_ENC_K        -3168
-    #define STACK_ENC_B        -3168
-    #define STACK_ENC_PKPV     -2656
-    #define STACK_ENC_EPP      -2656
-  #define STACK_ENC_SP         -5216
-    #define STACK_ENC_EP       -5216
-#else
-#endif
-
-  /* Store parameters to stack */
-  sw a2, STACK_ENC_COINS_ADDR(fp)
+  /* Store parameters to save registers or memory. */
+  addi t2, a1, 0
+  la   t0, dptr_coins
+  sw   a2, 0(t0)
+  la   t0, dptr_ct
+  sw   a3, 0(t0)
 
   /*** poly_frommsg ***/
   la  a1, modulus_over_2
-  li  a2, STACK_ENC_K
-  add a2, fp, a2
+  la  a2, poly_k
   jal x1, poly_frommsg
 
   /* Prepare for initial `poly_getnoise_eta_1` call, performing the SHAKE
      computation during `unpack_pk` */
-  lw   a0, STACK_ENC_COINS_ADDR(fp)
-  li   a3, STACK_ENC_NONCE
-  li   t0, 0
-  sw   t0, STACK_ENC_NONCE(fp)
-  jal  x1, poly_getnoise_eta_init
+  la     t0, dptr_coins
+  lw     a0, 0(t0)
+  la     a3, nonce
+  bn.xor w0, w0, w0
+  bn.sid x0, 0(a3)
+  jal    x1, poly_getnoise_eta_init
 
   /*** unpack_pk ***/
-  lw  a0, STACK_ENC_PK_ADDR(fp)
-  la  a3, const_0x0fff
-  jal x1, unpack_pk
+  addi a0, t2, 0
+  la   a2, pkpv
+  la   a3, const_0x0fff
+  jal  x1, unpack_pk
 
   /*** save seed to dmem ***/
-  li     x4, 0
-  bn.lid x4, 0(a0)
-  bn.sid x4, STACK_ENC_SEED(fp)
+  bn.lid x0, 0(a0)
+  la     t0, seed
+  bn.sid x0, 0(t0)
 
   /*** CBD sp + NTT ***/
-  li  s8, STACK_ENC_NONCE
-  lw  s9, STACK_ENC_COINS_ADDR(fp)
-  li  s10, STACK_ENC_SP
-  add s10, fp, s10
-  li  s11, 0
+  la   s8, nonce
+  la   t0, dptr_coins
+  lw   s9, 0(t0)
+  la   s10, sp
+  li   s11, 0
 
   .rept KYBER_K-1
-    addi t1, fp, STACK_ENC_V
-    add  a0, zero, s9
-    add  a1, zero, s10
+    la   t1, poly_v
+    add  a0, x0, s9
+    add  a1, x0, s10
     jal  x1, poly_getnoise_eta_1
 
-    add  a0, zero, s9
-    add  a3, zero, s8
+    add  a0, x0, s9
+    add  a3, x0, s8
     addi s11, s11, 1
-    sw   s11, STACK_ENC_NONCE(fp)
+    sw   s11, 0(s8)
     jal  x1, poly_getnoise_eta_init
 
     bn.wsrr   w16, 0x0 /* w16 = R | Q */
     bn.shv.8S w0, w16 << 1 /* w0 = 2*R | 2*Q */
     bn.wsrw   0x0, w0 /* MOD = 2*R | 2*Q */
 
-    add  a0, zero, s10
+    add  a0, x0, s10
     la   a1, twiddles_ntt
-    add  a2, zero, s10
+    add  a2, x0, s10
     jal  x1, ntt
 
     bn.xor w31, w31, w31  /* w31 = 0 */
@@ -265,29 +234,26 @@ indcpa_enc:
     bn.wsrw   0x0, w16 /* MOD = R | Q */
   .endr
 
-  addi t1, fp, STACK_ENC_V
-  add  a0, zero, s9
-  add  a1, zero, s10
-  add  a3, zero, s8
+  la   t1, poly_v
+  add  a0, x0, s9
+  add  a1, x0, s10
+  add  a3, x0, s8
   jal  x1, poly_getnoise_eta_1
 
   bn.wsrr   w16, 0x0 /* w16 = R | Q */
   bn.shv.8S w0, w16 << 1 /* w0 = 2*R | 2*Q */
   bn.wsrw   0x0, w0 /* MOD = 2*R | 2*Q */
 
-  add  a0, zero, s10
+  add  a0, x0, s10
   la   a1, twiddles_ntt
-  add  a2, zero, s10
+  add  a2, x0, s10
   jal  x1, ntt
 
   /* After NTT, w6 is still R | Q and MOD is still 2*R | 2*Q */
   /** v = sp * pkpv **/
-  li   x29, STACK_ENC_PKPV
-  add  x29, fp, x29
-  li   a1, STACK_ENC_SP
-  add  a1, fp, a1
-  li   a3, STACK_ENC_V
-  add  a3, fp, a3
+  la   x29, pkpv
+  la   a1, sp
+  la   a3, poly_v
   la   x28, twiddles_basemul
   jal  x1, basemul
   .rept KYBER_K-1
@@ -296,40 +262,37 @@ indcpa_enc:
     jal  x1, basemul_acc
   .endr
 
-  lw   a0, STACK_ENC_COINS_ADDR(fp)
-  addi a2, zero, 2*KYBER_K
-  sw   a2, STACK_ENC_NONCE(fp)
-  li   a3, STACK_ENC_NONCE
+  la   t0, dptr_coins
+  lw   a0, 0(t0)
+  addi a2, x0, 2*KYBER_K
+  la   a3, nonce
+  sw   a2, 0(a3)
   jal  x1, poly_getnoise_eta_init
 
   /* After basemul, w16 is still R | Q and MOD is still 2*R | 2*Q */
   /*** INTT v ***/
-  li      a0, STACK_ENC_V
-  add     a0, fp, a0
-  add     a2, zero, a0
+  la      a0, poly_v
+  add     a2, x0, a0
   la      a1, twiddles_intt
   jal     x1, intt
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
   /*** CBD epp ***/
-  li   a1, STACK_ENC_EPP
-  add  a1, fp, a1
-  li   t1, STACK_ENC_TMP
-  add  t1, fp, t1
+  la   a1, epp
+  la   t1, poly_tmp
   jal  x1, poly_getnoise_eta_2
 
   /* Prepare for the first call to poly_gen_matrix. */
-  addi a0, fp, STACK_ENC_SEED
+  la     a0, seed
   bn.xor w30, w30, w30
-  jal  x1, poly_gen_matrix_init
+  jal    x1, poly_gen_matrix_init
 
   /** v = v + k + epp **/
-  li   a0, STACK_ENC_K
-  add  a0, fp, a0
-  li   a1, STACK_ENC_V
-  add  a1, fp, a1
-  add  a2, zero, a1
+  la   a0, poly_k
+  la   a1, poly_v
+  add  a2, x0, a1
   jal  x1, poly_add
+  la   a0, epp
   addi a1, a1, POLY
   addi a2, a2, POLY
   jal  x1, poly_add
@@ -338,8 +301,7 @@ indcpa_enc:
   bn.shv.8S w0, w16 << 1 /* w0 = 2*R | 2*Q */
   bn.wsrw   0x0, w0 /* MOD = 2*R | 2*Q */
   /*** Matrix vector multiplication ***/
-  li   a1, STACK_ENC_AT
-  add  a1, fp, a1
+  la   a1, poly_at
 
   /* Run rejection sampling to generate the public key. */
 
@@ -350,22 +312,21 @@ indcpa_enc:
 
   .rept KYBER_K - 1
     /* Gen 1st mat poly */
-    addi a0, fp, STACK_ENC_SEED
+    la   a0, seed
     jal  x1, poly_gen_matrix
     bn.addi w30, w30, 0x0100
     jal  x1, poly_gen_matrix_init
 
     /* Mutliply this generated poly with sk */
     addi a1, a1, POLY /* point back to A[0][0] */
-    li   x29, STACK_ENC_SP
-    add  x29, fp, x29 /* point to sk[0] */
+    la   x29, sp /* point to sk[0] */
     add  a3, a1, x0   /* output at A[0][0] */
     la   x28, twiddles_basemul
     jal  x1, basemul
 
     .rept KYBER_K-2
       /* Gen next mat poly */
-      addi a0, fp, STACK_ENC_SEED
+      la   a0, seed
       jal  x1, poly_gen_matrix
       bn.addi w30, w30, 0x0100
       jal  x1, poly_gen_matrix_init
@@ -379,7 +340,7 @@ indcpa_enc:
     .endr
 
     /* Gen next mat poly */
-    addi a0, fp, STACK_ENC_SEED
+    la   a0, seed
     jal  x1, poly_gen_matrix
     bn.addi w30, w30, 0x0100
     bn.subi w30, w30, KYBER_GEN_MATRIX_AT_NONCE_NEG
@@ -394,22 +355,21 @@ indcpa_enc:
   .endr
 
   /* Gen 1st mat poly */
-  addi a0, fp, STACK_ENC_SEED
+  la   a0, seed
   jal  x1, poly_gen_matrix
   bn.addi w30, w30, 0x0100
   jal  x1, poly_gen_matrix_init
 
   /* Mutliply this generated poly with sk */
   addi a1, a1, POLY /* point back to A[0][0] */
-  li   x29, STACK_ENC_SP
-  add  x29, fp, x29 /* point to sk[0] */
+  la   x29, sp /* point to sk[0] */
   add  a3, a1, x0   /* output at A[0][0] */
   la   x28, twiddles_basemul
   jal  x1, basemul
 
   .rept KYBER_K-2
     /* Gen next mat poly */
-    addi a0, fp, STACK_ENC_SEED
+    la   a0, seed
     jal  x1, poly_gen_matrix
     bn.addi w30, w30, 0x0100
     jal  x1, poly_gen_matrix_init
@@ -423,7 +383,7 @@ indcpa_enc:
   .endr
 
   /* Gen next mat poly */
-  addi a0, fp, STACK_ENC_SEED
+  la   a0, seed
   jal  x1, poly_gen_matrix
 
   /* Mutliply this generated poly with sk */
@@ -436,69 +396,119 @@ indcpa_enc:
 
   /* Prepare for initial `poly_getnoise_eta_2` call, performing the SHAKE
      computation during `unpack_pk` */
-  lw   a0, STACK_ENC_COINS_ADDR(fp)
-  li   a3, STACK_ENC_NONCE
+  la   t0, dptr_coins
+  lw   a0, 0(t0)
+  la   a3, nonce
   li   t0, KYBER_K
-  sw   t0, STACK_ENC_NONCE(fp)
+  sw   t0, 0(a3)
   jal  x1, poly_getnoise_eta_init
 
   /* After basemul, w16 is still R | Q and MOD is still 2*R | 2*Q */
   /*** INTT ***/
-  li  a0, STACK_ENC_AT
-  add a0, fp, a0
+  la  a0, poly_at
   la  a1, twiddles_intt
-  add a2, zero, a0
+  add a2, x0, a0
   .rept KYBER_K
     jal x1, intt
   .endr
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
   /*** CBD ep + ADD ***/
-  li   a3, STACK_ENC_NONCE
-  lw   a4, STACK_ENC_COINS_ADDR(fp)
-  li   a5, STACK_ENC_EP
-  add  a5, fp, a5
-  li   a6, STACK_ENC_B
-  add  a6, fp, a6
+  la   a3, nonce
+  la   t0, dptr_coins
+  lw   a4, 0(t0)
+  la   a5, ep
+  la   a6, poly_b
   li   s2, KYBER_K
 
   .rept KYBER_K-1
-    addi t1, fp, STACK_ENC_TMP
-    add  a0, zero, a4
-    add  a1, zero, a5
+    la   t1, poly_tmp
+    add  a0, x0, a4
+    add  a1, x0, a5
     jal  x1, poly_getnoise_eta_2
 
-    add  a0, zero, a4
+    add  a0, x0, a4
     addi s2, s2, 1
-    sw   s2, STACK_ENC_NONCE(fp)
+    sw   s2, 0(a3)
     jal  x1, poly_getnoise_eta_init
 
-    add  a0, zero, a6
-    add  a1, zero, a5
-    add  a2, zero, a6
+    add  a0, x0, a6
+    add  a1, x0, a5
+    add  a2, x0, a6
     jal  x1, poly_add
 
     addi  a5, a5, 2*KYBER_N
     addi  a6, a6, 2*KYBER_N
   .endr
 
-  addi t1, fp, STACK_ENC_TMP
-  add  a0, zero, a4
-  add  a1, zero, a5
+  la   t1, poly_tmp
+  add  a0, x0, a4
+  add  a1, x0, a5
   jal  x1, poly_getnoise_eta_2
 
-  add  a0, zero, a6
-  add  a1, zero, a5
-  add  a2, zero, a6
+  add  a0, x0, a6
+  add  a1, x0, a5
+  add  a2, x0, a6
   jal  x1, poly_add
 
   /*** pack_ciphertext ***/
-  li   a0, STACK_ENC_B
-  add  a0, fp, a0
-  li   a1, STACK_ENC_V
-  add  a1, fp, a1
-  lw   a2, STACK_ENC_C_ADDR(fp)
+  la   a0, poly_b
+  la   a1, poly_v
+  la   t0, dptr_ct
+  lw   a2, 0(t0)
   la   a3, const_1290167
   la   a5, modulus_over_2
   jal  x1, pack_ciphertext
   ret
+
+.bss
+
+/* Randomness input address. */
+.balign 4
+dptr_coins:
+.zero 4
+
+/* Ciphertext output address. */
+.balign 4
+dptr_ct:
+.zero 4
+
+/* Nonce intermediate value (32 bytes). */
+.balign 32
+nonce:
+.zero 32
+
+/* Seed intermediate value (32 bytes). */
+.balign 32
+seed:
+.zero 32
+
+/* Polynomial v intermediate value (512 bytes). */
+.balign 32
+poly_v:
+.zero 512
+
+/* Polynomial-sized temporary buffer (512 bytes). */
+.balign 32
+poly_tmp:
+.zero 512
+
+/* Shared buffer for multiple intermediate polynomials. */
+.balign 32
+poly_at:
+poly_k:
+poly_b:
+.zero 512
+
+/* Shared buffer for public key polyvec (k*521 bytes) and epp. */
+.balign 32
+pkpv:
+epp:
+.rept KYBER_K
+.zero 512
+.endr
+
+/* Shared buffer for sp and ep (512 bytes each). */
+sp:
+ep:
+.zero 512

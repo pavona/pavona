@@ -335,6 +335,7 @@ crypto_kem_dec:
 
   /*** indcpa_enc ***/
   addi a0, a0, -64
+  lw   a1, STACK_KEM_DEC_PK_ADDR(fp)
   addi a2, a2, -32
   li   a3, STACK_KEM_DEC_CMP
   add  a3, fp, a3
