@@ -145,8 +145,7 @@ class FlowCfg():
         self._expand()
 
         # Construct the path variables after variable expansion.
-        self.results_dir = (Path(self.scratch_base_path) / "reports" /
-                            self.rel_path / "latest")
+        self.results_dir = (Path(self.scratch_path) / "reports" / "latest")
         self.results_page = (self.results_dir / self.results_html_name)
 
         tmp_path = (self.results_server + "/" + self.rel_path +
@@ -423,8 +422,7 @@ class FlowCfg():
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
             item.write_results(self.results_html_name, item.results_md,
                                json_str)
-            log.log(VERBOSE, "[report]: [%s] [%s/report.html]", item.name,
-                    item.results_dir)
+            log.info("[report]: [%s] [%s/report.html]", item.name, item.results_dir)
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
