@@ -840,7 +840,7 @@ class SimCfg(FlowCfg):
                 # containing the sim_cfg file...
                 testplan = "https://{}/tree/main/{}".format(
                     self.repo_server,
-                    Path(self.rel_path).parent / 'data' / f"{self.name}_testplan.html"
+                    Path(self.rel_path).parent / 'data' / f"{self.name}_testplan.hjson"
                 )
 
             results_str += f"### [Testplan]({testplan})\n"
@@ -879,7 +879,7 @@ class SimCfg(FlowCfg):
                         if self.args.publish:
                             cov_report_page_path = "cov_report"
                         else:
-                            cov_report_page_path = self.cov_report_dir
+                            cov_report_page_path = "../../cov_report"
                         cov_report_page_path += "/" + self.cov_report_page
                         results_str += "({})\n\n".format(cov_report_page_path)
                     results_str += self.cov_report_deploy.cov_results
