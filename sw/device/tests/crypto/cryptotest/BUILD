@@ -506,6 +506,7 @@ cryptotest(
 test_suite(
     name = "crypto_kat_test_suite",
     tests = [
+        ":aes_gcm_kat",
         ":aes_kat",
         ":aes_kwp_kat",
         ":cshake_kat",
@@ -516,6 +517,7 @@ test_suite(
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kmac_kat",
+        ":rsa_kat",
         ":sha256_kat",
         ":sha384_kat",
         ":sha3_224_kat",
