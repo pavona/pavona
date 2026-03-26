@@ -6,14 +6,6 @@
 name: CI
 on:
   pull_request:
-    branches-ignore:
-      - "backport-*"
-      - "gh-readonly-queue/**"
-    tags:
-      - "*"
-  merge_group:
-    types:
-      - checks_requested
   workflow_call:
 
 permissions:
