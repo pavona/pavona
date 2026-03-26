@@ -89,6 +89,9 @@ $(ips_reg): %_reg:
 
 top_and_cmdgen: top cmdgen
 
-all: top cmdgen regs
+dvgen:
+	${PRJ_DIR}/util/gen_ip_collection.py --flow sim_dv --tops top_earlgrey top_darjeeling
+
+all: top cmdgen regs dvgen
 
 .PHONY: all

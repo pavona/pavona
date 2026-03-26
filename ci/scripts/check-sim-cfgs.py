@@ -127,7 +127,7 @@ def check_sim_cfg_files(grouped: dict) -> bool:
         for file, fields in sim_cfgs_files:
             dir_path = Path(directory)
             if dir_path == SEARCH_ROOT / "hw" / "dv":
-                expected = "top_sim_cfgs.hjson"
+                expected = "all_sim_cfgs.hjson"
                 if file != expected:
                     mismatches.append(f"Filename {directory}/{file}"
                                       f" should be named {expected}")
