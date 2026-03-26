@@ -19,6 +19,8 @@ jobs:
   on-demand:
     name: Run On-demand Tests
     permissions:
+      contents: read
+      id-token: write
       # Required by verible_lint job, even though it doesn't run
       pull-requests: write
     uses: ./.github/workflows/ci.yml
