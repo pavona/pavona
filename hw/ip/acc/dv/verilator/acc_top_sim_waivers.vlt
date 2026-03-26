@@ -6,6 +6,38 @@
 
 lint_off -rule WIDTH -file "*/acc_top_sim.sv" -match "*'ImemStartAddr' generates 32 bits*"
 lint_off -rule WIDTH -file "*/acc_top_sim.sv" -match "*'stack_wr_ptr_q' generates 4 bits*"
+lint_off -rule WIDTH -file "*/prim_count.sv" -match "*'PossibleActions'*"
+lint_off -rule WIDTH -file "*/prim_diff_decode.sv" -match "*'skew_cnt_q'*"
+
+// VARHIDDEN: Local FSM enum values legitimately shadow package-level names
+lint_off -rule VARHIDDEN -file "*/kmac_core.sv" -match "*StTerminalError*"
+lint_off -rule VARHIDDEN -file "*/kmac_errchk.sv" -match "*StIdle*"
+lint_off -rule VARHIDDEN -file "*/kmac_errchk.sv" -match "*StTerminalError*"
+lint_off -rule VARHIDDEN -file "*/kmac_entropy.sv" -match "*StTerminalError*"
+
+// UNOPTFLAT: Combinational loops in KMAC due to struct assignments
+lint_off -rule UNOPTFLAT -file "*/prim_arbiter_fixed.sv"
+lint_off -rule UNOPTFLAT -file "*/kmac_app.sv"
+lint_off -rule UNOPTFLAT -file "*/kmac_errchk.sv"
+lint_off -rule UNOPTFLAT -file "*/kmac.sv"
+
+// UNDRIVEN: Read-only WSRs in ACC are not tracked in ispr_write/ispr_read because
+// they are tracked by WDR writes
+lint_off -rule UNDRIVEN -file "*/acc_trace_if.sv" -match "*'ispr_read'*"
+lint_off -rule UNDRIVEN -file "*/acc_trace_if.sv" -match "*'ispr_write'*"
+
+// UNUSED: Signals driven for visibility but not consumed in testbench
+lint_off -rule UNUSED -file "*/acc_top_sim.sv" -match "*'acc_kmac_iface_err'*"
+lint_off -rule UNUSED -file "*/acc_top_sim.sv" -match "*'kmac_intr_kmac_done'*"
+lint_off -rule UNUSED -file "*/acc_top_sim.sv" -match "*'kmac_intr_fifo_empty'*"
+lint_off -rule UNUSED -file "*/acc_top_sim.sv" -match "*'kmac_intr_kmac_err'*"
+lint_off -rule UNUSED -file "*/acc_top_sim.sv" -match "*'kmac_idle'*"
+lint_off -rule UNUSED -file "*/acc_top_sim.sv" -match "*'kmac_en_masking'*"
+lint_off -rule UNUSED -file "*/kmac_entropy.sv" -match "*'perm_test'*"
+lint_off -rule UNUSED -file "*/sha3pad.sv" -match "*'start_valid'*"
+lint_off -rule UNUSED -file "*/sha3pad.sv" -match "*'process_valid'*"
+lint_off -rule UNUSED -file "*/sha3pad.sv" -match "*'absorb_valid'*"
+lint_off -rule UNUSED -file "*/sha3pad.sv" -match "*'done_valid'*"
 
 // Mark some signals in the loop controller as public. These are used
 // by the AccTopApplyLoopWarp() function in acc_top_sim.cc

@@ -92,5 +92,3 @@ class ClearWsr(SnippetGen):
             model.pc += 4
 
         return (snippet, model)
-
-        return None

@@ -55,11 +55,11 @@ interface acc_trace_if
   input logic                      rf_bignum_rd_en_a,
   input logic                      rf_bignum_rd_en_b,
 
-  input logic [1:0]                   rf_bignum_wr_en,
-  input logic                         rf_bignum_wr_commit,
+  input logic [1:0]                  rf_bignum_wr_en,
+  input logic                        rf_bignum_wr_commit,
   input logic [acc_pkg::WLEN-1:0]    rf_bignum_wr_data_no_intg,
   input logic [acc_pkg::ExtWLEN-1:0] rf_bignum_wr_data_intg,
-  input logic                         rf_bignum_wr_data_intg_sel,
+  input logic                        rf_bignum_wr_data_intg_sel,
 
   input logic [acc_pkg::ExtWLEN-1:0] rf_bignum_rd_data_a_intg,
   input logic [acc_pkg::ExtWLEN-1:0] rf_bignum_rd_data_b_intg,
@@ -69,23 +69,23 @@ interface acc_trace_if
   input logic                     insn_fetch_resp_valid,
   input logic                     insn_fetch_err,
 
-  input logic                         dmem_req_o,
-  input logic                         dmem_write_o,
-  input logic [DmemAddrWidth-1:0]     dmem_addr_o,
+  input logic                        dmem_req_o,
+  input logic                        dmem_write_o,
+  input logic [DmemAddrWidth-1:0]    dmem_addr_o,
   input logic [acc_pkg::ExtWLEN-1:0] dmem_wdata_o,
   input logic [acc_pkg::ExtWLEN-1:0] dmem_wmask_o,
   input logic [acc_pkg::ExtWLEN-1:0] dmem_rdata_i,
 
   input acc_pkg::ispr_e                 ispr_addr,
-  input logic                            ispr_init,
+  input logic                           ispr_init,
   input acc_pkg::insn_dec_shared_t      insn_dec_shared,
   input acc_pkg::insn_dec_bignum_t      insn_dec_bignum,
   input acc_pkg::alu_bignum_operation_t alu_bignum_operation,
-  input logic                            mac_bignum_en,
+  input logic                           mac_bignum_en,
 
   input logic [acc_pkg::WLEN-1:0] rnd_data,
-  input logic                      rnd_req,
-  input logic                      rnd_valid,
+  input logic                     rnd_req,
+  input logic                     rnd_valid,
 
   input logic [acc_pkg::WLEN-1:0] urnd_data,
 
@@ -300,7 +300,7 @@ interface acc_trace_if
       // KMAC MSG
       assign ispr_read[IsprKmacMsg] =
         (any_ispr_read & (ispr_addr == IsprKmacMsg));
-      assign ispr_write[IsprKmacMsg] = u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en & ~ispr_init;
+      assign ispr_write[IsprKmacMsg] = |(u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en) && ~ispr_init;
       // KMAC CFG
       assign ispr_read[IsprKmacCfg] =
         (any_ispr_read & (ispr_addr == IsprKmacCfg));
