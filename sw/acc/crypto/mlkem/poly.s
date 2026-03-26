@@ -139,7 +139,7 @@ poly_tomsg:
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
  * @param[in]  x10: dptr_input, dmem pointer to input seed
- * @param[in]  x13: STACK_NONCE
+ * @param[in]  x13: *nonce
  *
  * clobbered registers: x5, x10
  * clobbered flag groups: None
@@ -156,8 +156,7 @@ poly_getnoise_eta_init:
   /* Send the message to the Keccak core. */
   bn.lid  x0, 0(x10)
   bn.wsrw 0x9, w0
-  add     x10, x3, x13
-  bn.lid  x0, 0(x10)
+  bn.lid  x0, 0(x13)
   bn.wsrw 0x9, w0
 
   ret
@@ -187,25 +186,19 @@ poly_getnoise_eta_init:
 
 .globl poly_getnoise_eta_1
 poly_getnoise_eta_1:
-  addi x2, x2, -8
-  sw   x11, 4(x2)
-  sw   x6, 0(x2)
+  addi x10, x6, 0
 
   li x5, 8
   LOOPI LOOP_GETNOISE_1, 2
     bn.wsrr w8, 0xA /* KECCAK_DIGEST */
     bn.sid  x5, 0(x6++) /* Store into buffer */
 
-  lw     x10, 0(x2)
-  lw     x11, 4(x2)
   bn.add w8, w0, w0
 #if (KYBER_K == 2)
   jal x1, cbd3
 #elif (KYBER_K == 3 || KYBER_K == 4)
   jal x1, cbd2
 #endif
-
-  addi x2, x2, 8
 
   ret
 
@@ -234,21 +227,15 @@ poly_getnoise_eta_1:
 
 .globl poly_getnoise_eta_2
 poly_getnoise_eta_2:
-  addi x2, x2, -8
-  sw   x11, 4(x2)
-  sw   x6, 0(x2)
+  addi x10, x6, 0
 
   li x5, 8
   LOOPI 4, 2
     bn.wsrr w8, 0xA /* KECCAK_DIGEST */
     bn.sid  x5, 0(x6++) /* Store into buffer */
 
-  lw     x10, 0(x2)
-  lw     x11, 4(x2)
   bn.add w8, w0, w0
   jal    x1, cbd2
-
-  addi x2, x2, 8
 
   ret
 

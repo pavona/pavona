@@ -14,7 +14,6 @@
 
 .section .text.start
 
-#define STACK_SIZE 20000
 #define CRYPTO_BYTES 32
 
 #if KYBER_K == 2
@@ -80,8 +79,6 @@ main:
   bn.wsrw 0x0, w2
 
   /* Load stack pointer */
-  la   x2, stack_end
-  la   x10, coins
   la   x11, ct
   la   x12, ss
   la   x13, ek
@@ -90,11 +87,6 @@ main:
   ecall
 
 .data
-.balign 32
-.global stack
-stack:
-  .zero STACK_SIZE
-stack_end:
 .globl ct
 ct:
   .zero CRYPTO_CIPHERTEXTBYTES
