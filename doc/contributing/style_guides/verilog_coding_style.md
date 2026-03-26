@@ -2211,7 +2211,7 @@ end
 ### Functions and Tasks
 
 The following section applies to synthesizable RTL only.
-See the [Coding Style Guide for Design Verification](DVCodingStyle.md) for DV usage.
+See the [Coding Style Guide for Design Verification](./dv_coding_style.md) for DV usage.
 
 ***In synthesizable RTL the use of functions is allowed, provided they are declared `automatic`.
 Tasks should not be used.***

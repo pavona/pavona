@@ -127,7 +127,7 @@ It also may make sense to stick with the basic setup and come back to these step
 ### Step 6a: Install Verible (optional)
 
 Verible is an open source SystemVerilog style linter and formatting tool.
-The style linter is relatively mature and we use it as part of our [RTL design flow](../contributing/hw/methodology.md).
+The style linter is relatively mature and we use it as part of our RTL design flow.
 The formatter is still under active development, and hence its usage is more experimental.
 
 You can download and build Verible from scratch as explained on the [Verible GitHub page](https://github.com/google/verible/).
@@ -170,13 +170,11 @@ Check out the additional resources below.
 ### General
 * [Directory Structure](../contributing/directory_structure.md)
 * [GitHub Notes](../contributing/github_notes.md)
-* [Building Documentation](./build_docs.md)
-* [Hardware Design Methodology](../contributing/hw/methodology.md)
+* [Building Documentation](../contributing/doc/README.md)
 * [Introduction to ACC](../../hw/ip/acc/doc/acc_intro.md)
 
 ### Hardware
 * [Hardware Introduction](../../hw/README.md)
-* [Designing Hardware](../contributing/hw/design.md)
 
 ### Software
 * [Software Introduction](../../sw/README.md)

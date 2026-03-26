@@ -63,7 +63,7 @@ The testplan is parsed into a data structure that serves the following purposes:
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
 
 The [testplanner](../../../../util/dvsim/doc/testplanner.md) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
-The [build_docs](../../../getting_started/build_docs.md) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
+The [documentation tooling](../../doc/README.md) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
 
 ### DV document
 
@@ -257,7 +257,6 @@ Apart from that, there are cleanup activities to resolve all pending TODO items 
 
 ## Assertions
 
-In DV, we follow the same assertion methodology as indicated in the [design methodology](../../hw/design.md#assertion-methodology).
 Wherever possible, the assertion monitors developed for FPV are reused in UVM testbenches when running dynamic simulations.
 An example of this is the [TLUL Protocol Checker](../../../../hw/ip/tlul/doc/TlulProtocolChecker.md).
 
