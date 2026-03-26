@@ -4,7 +4,7 @@
 
 {
   // Name of the sim cfg variant
-  variant: rng_16bits
+  variant: rng16bits
 
   // Import the base entropy_src sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/entropy_src/dv/entropy_src_base_sim_cfg.hjson"]

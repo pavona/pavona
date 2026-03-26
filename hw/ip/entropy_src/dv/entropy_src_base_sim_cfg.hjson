@@ -61,6 +61,14 @@
   uvm_test: entropy_src_base_test
   uvm_test_seq: entropy_src_base_vseq
 
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
+    }
+  ]
+
   // Enable CDC instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
 

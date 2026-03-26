@@ -10,7 +10,7 @@
 
   // Default directory structure for the output
   scratch_base_path:  "{scratch_root}/{branch}"
-  scratch_path:       "{scratch_base_path}/{dut}-{flow}-{tool}"
+  scratch_path:       "{scratch_base_path}/{name}-{flow}-{tool}"
 
   // Common data structure
   build_pass_patterns: []
