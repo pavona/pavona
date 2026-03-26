@@ -79,10 +79,10 @@ OT_WARN_UNUSED_RESULT
 static status_t set_context(const uint32_t context[kEd25519ContextWords],
                             const uint32_t context_length) {
   // Ensure that our context length is valid; if not, fail early.
-  if (context_length > kEd25519ContextWords) {
+  if (context_length > kEd25519ContextBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_LE(context_length, kEd25519ContextWords);
+  HARDENED_CHECK_LE(context_length, kEd25519ContextBytes);
 
   // Write the full context string.
   HARDENED_TRY(acc_dmem_write(context_length, context, kAccVarEd25519Ctx));

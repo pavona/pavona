@@ -77,17 +77,14 @@ enum {
    */
   kEd25519PointWords = kEd25519PointBytes / sizeof(uint32_t),
   /**
-   * Length of Ed25519 context in bits, including the flag.
+   * Max length of Ed25519 context in bytes.
    */
-  kEd25519ContextBits = 2048,
+  kEd25519ContextBytes = 255,
   /**
-   * Length of Ed25519 context in bytes, including the flag.
+   * Max length of Ed25519 context buffer in words (rounded up).
    */
-  kEd25519ContextBytes = kEd25519ContextBits / 8,
-  /**
-   * Length of Ed25519 context in words, including the flag.
-   */
-  kEd25519ContextWords = kEd25519ContextBytes / sizeof(uint32_t),
+  kEd25519ContextWords =
+      (kEd25519ContextBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
   /**
    * A successful Ed25519 signature verification result.
    */
