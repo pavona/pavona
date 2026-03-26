@@ -601,12 +601,13 @@
       sw_images: ["//sw/device/tests:kmac_entropy_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-    {
-      name: chip_sw_lc_ctrl_otp_hw_cfg
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:lc_ctrl_otp_hw_cfg_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
+    // TODO(Pavona #44): Needs sw_image Bazel target
+    // {
+    //   name: chip_sw_lc_ctrl_otp_hw_cfg
+    //   uvm_test_seq: chip_sw_base_vseq
+    //   sw_images: ["//sw/device/tests:lc_ctrl_otp_hw_cfg_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    // }
     // TODO(Pavona #43): Needs Darjeeling execution environment
     // {
     //   name: chip_sw_otp_ctrl_lc_signals_test_unlocked0
@@ -654,6 +655,7 @@
     //   sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_csr_access_test:6:new_rules"]
     //   en_run_modes: ["sw_test_mode_test_rom"]
     // }
+    // End of TODO(Pavona #43)
     {
       name: chip_sw_otp_ctrl_escalation
       uvm_test_seq: chip_sw_otp_ctrl_escalation_vseq
@@ -662,24 +664,26 @@
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
       reseed: 1
     }
-    {
-      name: chip_sw_otp_ctrl_nvm_cnt
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otp_ctrl_nvm_cnt_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=100_000_000"]
-      run_timeout_mins: 180
-      reseed: 1
-    }
-    {
-      name: chip_sw_otp_ctrl_sw_parts
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otp_ctrl_sw_parts_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=100_000_000"]
-      run_timeout_mins: 180
-      reseed: 1
-    }
+    // TODO(Pavona #44): Needs sw_image Bazel target
+    // {
+    //   name: chip_sw_otp_ctrl_nvm_cnt
+    //   uvm_test_seq: chip_sw_base_vseq
+    //   sw_images: ["//sw/device/tests:otp_ctrl_nvm_cnt_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=100_000_000"]
+    //   run_timeout_mins: 180
+    //   reseed: 1
+    // }
+    // {
+    //   name: chip_sw_otp_ctrl_sw_parts
+    //   uvm_test_seq: chip_sw_base_vseq
+    //   sw_images: ["//sw/device/tests:otp_ctrl_sw_parts_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=100_000_000"]
+    //   run_timeout_mins: 180
+    //   reseed: 1
+    // }
+    // End of TODO(Pavona #43)
     // TODO(Pavona #43): Needs Darjeeling execution environment
     // {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
@@ -756,6 +760,7 @@
     //   run_opts: ["+flash_program_latency=5",
     //              "+use_otp_image=OtpTypeLcStRaw", "+dest_dec_state=DecLcStProdEnd"]
     // }
+    // End of TODO(Pavona #43)
     {
       name: chip_sw_lc_ctrl_volatile_raw_unlock
       uvm_test_seq: chip_sw_lc_volatile_raw_unlock_vseq
@@ -793,6 +798,7 @@
     //   en_run_modes: ["sw_test_mode_test_rom"]
     //   run_opts: ["+use_otp_image=OtpTypeLcStRaw", "+dest_dec_state=DecLcStTestUnlock7"]
     // }
+    // End of TODO(Pavona #43)
     {
       name: chip_sw_rstmgr_sw_req
       uvm_test_seq: chip_sw_base_vseq
@@ -888,6 +894,7 @@
     //   sw_images: ["//sw/device/tests:pwrmgr_sleep_disabled_test:6:new_rules"]
     //   en_run_modes: ["sw_test_mode_test_rom"]
     // }
+    // End of TODO(Pavona #43)
     {
       name: chip_sw_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
@@ -1021,12 +1028,13 @@
       sw_images: ["//sw/device/tests:aes_masking_off_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-    {
-      name: chip_sw_alert_test
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen/{top_chip}:alert_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
+    // TODO(Pavona #44): Needs sw_image Bazel target
+    // {
+    //   name: chip_sw_alert_test
+    //   uvm_test_seq: chip_sw_base_vseq
+    //   sw_images: ["//sw/device/tests/autogen/{top_chip}:alert_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    // }
     // TODO(Pavona #43): Needs Darjeeling execution environment
     // {
     //   name: chip_sw_alert_handler_escalation
@@ -1062,19 +1070,20 @@
     //   run_opts: ["+en_scb=0", "+sw_test_timeout_ns=300_000_000"]
     //   run_timeout_mins: 240
     // }
-    {
-      name: chip_sw_alert_handler_lpg_sleep_mode_alerts
-      uvm_test_seq: chip_sw_all_escalation_resets_vseq
-      sw_images: ["//sw/device/tests:alert_handler_lpg_sleep_mode_alerts_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+en_scb=0",
-                 "+sw_test_timeout_ns=3000_000_000",
-                 "+bypass_alert_ready_to_end_check=1",
-                 "+avoid_inject_fatal_error_for_ips=sram_ctrl_main,lc_ctrl*state_regs",
-                 "+avoid_ferr_ips_append=otp_ctrl*u_otp_ctrl_dai,rv_core_ibex*sw_fatal_err"]
-      run_timeout_mins: 240
-      reseed: 90
-    }
+    // TODO(Pavona #44): Needs sw_image Bazel target
+    // {
+    //   name: chip_sw_alert_handler_lpg_sleep_mode_alerts
+    //   uvm_test_seq: chip_sw_all_escalation_resets_vseq
+    //   sw_images: ["//sw/device/tests:alert_handler_lpg_sleep_mode_alerts_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+en_scb=0",
+    //              "+sw_test_timeout_ns=3000_000_000",
+    //              "+bypass_alert_ready_to_end_check=1",
+    //              "+avoid_inject_fatal_error_for_ips=sram_ctrl_main,lc_ctrl*state_regs",
+    //              "+avoid_ferr_ips_append=otp_ctrl*u_otp_ctrl_dai,rv_core_ibex*sw_fatal_err"]
+    //   run_timeout_mins: 240
+    //   reseed: 90
+    // }
     // TODO(Pavona #43): Needs Darjeeling execution environment
     // {
     //   name: chip_sw_alert_handler_lpg_sleep_mode_pings
@@ -1110,6 +1119,7 @@
       // processing alerts accurately from both ends.
     //   run_opts: ["+en_scb=0", "+bypass_alert_ready_to_end_check=1"]
     // }
+    // End of TODO(Pavona #43)
     {
       name: chip_sw_aes_entropy
       uvm_test_seq: chip_sw_base_vseq
@@ -1276,14 +1286,15 @@
       run_opts: ["+sw_test_timeout_ns=12_000_000", "+en_scb_tl_err_chk=0",
                  "+bypass_alert_ready_to_end_check=1"]
     }
-    {
-      name: chip_sw_sram_ctrl_scrambled_access_jitter_en
-      uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=12_000_000", "+bypass_alert_ready_to_end_check=1",
-                 "+en_jitter=1", "+en_scb_tl_err_chk=0"]
-    }
+    // TODO(Pavona #44): Needs sw_image Bazel target
+    // {
+    //   name: chip_sw_sram_ctrl_scrambled_access_jitter_en
+    //   uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
+    //   sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=12_000_000", "+bypass_alert_ready_to_end_check=1",
+    //              "+en_jitter=1", "+en_scb_tl_err_chk=0"]
+    // }
     // TODO(Pavona #43): Needs Darjeeling execution environment
     // {
     //   name: chip_sw_sram_ctrl_execution_main
@@ -1291,6 +1302,7 @@
     //   sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_execution_main_test:6:new_rules"]
     //   en_run_modes: ["sw_test_mode_test_rom"]
     // }
+    // End of TODO(Pavona #43)
 // Refactor test to remove flash dependency
 //    {
 //      name: chip_sw_sleep_sram_ret_contents
@@ -1300,16 +1312,18 @@
 //      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_scb_tl_err_chk=0",
 //                 "+bypass_alert_ready_to_end_check=1"]
 //    }
-    {
-      name: chip_sw_coremark
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//third_party/coremark/{top_chip}:coremark_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+en_uart_logger=1",
-                 "+sw_test_timeout_ns=100_000_000"]
-      reseed: 1
-      run_timeout_mins: 180
-    }
+    // TODO(Pavona #44): Needs sw_image Bazel target
+    // {
+    //   name: chip_sw_coremark
+    //   uvm_test_seq: chip_sw_base_vseq
+    //   sw_images: ["//third_party/coremark/{top_chip}:coremark_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+en_uart_logger=1",
+    //              "+sw_test_timeout_ns=100_000_000"]
+    //   reseed: 1
+    //   run_timeout_mins: 180
+    // }
+    // End of TODO(Pavona #44)
     // {
     //   name: chip_sw_pwrmgr_b2b_sleep_reset_req
     //   uvm_test_seq: chip_sw_repeat_reset_wkup_vseq
@@ -1462,20 +1476,22 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_scb_tl_err_chk=0", "+use_jtag_dmi=1"]
     }
-    {
-      name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
-      uvm_test_seq: "chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq"
-      sw_images: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_jtag_dmi=1"]
-    }
-    {
-      name: chip_sw_rv_dm_access_after_wakeup
-      uvm_test_seq: chip_sw_rv_dm_access_after_wakeup_vseq
-      sw_images: ["//sw/device/tests:rv_dm_access_after_wakeup:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_jtag_dmi=1"]
-    }
+    // TODO(Pavona #44): Needs sw_image Bazel target
+    // {
+    //   name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
+    //   uvm_test_seq: "chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq"
+    //   sw_images: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+use_jtag_dmi=1"]
+    // }
+    // {
+    //   name: chip_sw_rv_dm_access_after_wakeup
+    //   uvm_test_seq: chip_sw_rv_dm_access_after_wakeup_vseq
+    //   sw_images: ["//sw/device/tests:rv_dm_access_after_wakeup:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+use_jtag_dmi=1"]
+    // }
+    // End of TODO(Pavona #44)
     // TODO(Pavona #43): Needs Darjeeling execution environment
     // {
     //   name: chip_sw_rv_dm_access_after_escalation_reset
