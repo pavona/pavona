@@ -39,6 +39,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/firmware:mlkem",
     "//sw/device/tests/crypto/cryptotest/firmware:rsa",
     "//sw/device/tests/crypto/cryptotest/firmware:sphincsplus",
+    "//sw/device/tests/crypto/cryptotest/firmware:ed25519",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",

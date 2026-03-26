@@ -139,7 +139,7 @@ typedef struct ed25519_signature {
  * @param prehashed_message Prehashed (SHA-512) message to sign.
  * @param hash_h SHA-512 hash of the Ed25519 private key to sign with.
  * @param context Context to use for signing.
- * @param context_length Length of the provided context.
+ * @param context_length Length of the provided context in bytes.
  * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
@@ -176,7 +176,7 @@ status_t ed25519_sign_finalize(uint32_t session_token,
  * @param prehashed_message Prehashed (SHA-512) message to sign.
  * @param hash_k Pre-computed scalar value k for verification.
  * @param context Context to use for signing.
- * @param context_length Length of the provided context.
+ * @param context_length Length of the provided context in bytes.
  * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */

@@ -20,6 +20,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/drbg_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdh_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/ed25519_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
@@ -35,6 +36,7 @@
 #include "drbg.h"
 #include "ecdh.h"
 #include "ecdsa.h"
+#include "ed25519.h"
 #include "hash.h"
 #include "hmac.h"
 #include "kmac.h"
@@ -97,6 +99,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandSphincsPlus:
         RESP_ERR(uj, handle_sphincsplus(uj));
+        break;
+      case kCryptotestCommandEd25519:
+        RESP_ERR(uj, handle_ed25519(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);

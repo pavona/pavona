@@ -74,6 +74,7 @@ enum {
  * Set the context for signature generation or verification.
  *
  * @param context Context to set (little-endian).
+ * @param context_length Length of the provided context in bytes.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT

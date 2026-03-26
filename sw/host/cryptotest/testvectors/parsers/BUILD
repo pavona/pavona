@@ -199,6 +199,14 @@ py_binary(
 )
 
 py_binary(
+    name = "nist_acvp_eddsa_parser",
+    srcs = ["nist_acvp_eddsa_parser.py"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "wycheproof_rsa_parser",
     srcs = ["wycheproof_rsa_parser.py"],
     deps = [

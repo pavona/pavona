@@ -253,6 +253,23 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "ed25519",
+    srcs = ["ed25519.c"],
+    hdrs = ["ed25519.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:ed25519",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:ed25519_commands",
+    ],
+)
+
 FIRMWARE_DEPS = [
     ":aes",
     ":aes_gcm",
@@ -262,6 +279,7 @@ FIRMWARE_DEPS = [
     ":mldsa",
     ":mlkem",
     ":ecdsa",
+    ":ed25519",
     ":hash",
     ":hmac",
     ":kmac",

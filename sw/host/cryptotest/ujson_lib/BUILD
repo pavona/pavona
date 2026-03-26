@@ -77,6 +77,11 @@ ujson_rust(
     srcs = ["//sw/device/tests/crypto/cryptotest/json:sphincsplus_commands"],
 )
 
+ujson_rust(
+    name = "ed25519_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:ed25519_commands"],
+)
+
 rust_library(
     name = "cryptotest_commands",
     srcs = [
@@ -87,6 +92,7 @@ rust_library(
         "src/drbg_commands.rs",
         "src/ecdh_commands.rs",
         "src/ecdsa_commands.rs",
+        "src/ed25519_commands.rs",
         "src/hash_commands.rs",
         "src/hmac_commands.rs",
         "src/kmac_commands.rs",
@@ -111,6 +117,7 @@ rust_library(
         ":mlkem_commands_rust",
         ":rsa_commands_rust",
         ":sphincsplus_commands_rust",
+        ":ed25519_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
@@ -127,6 +134,7 @@ rust_library(
         "mlkem_commands_loc": "$(execpath :mlkem_commands_rust)",
         "rsa_commands_loc": "$(execpath :rsa_commands_rust)",
         "sphincsplus_commands_loc": "$(execpath :sphincsplus_commands_rust)",
+        "ed25519_commands_loc": "$(execpath :ed25519_commands_rust)",
     },
     deps = [
         "//sw/host/opentitanlib",

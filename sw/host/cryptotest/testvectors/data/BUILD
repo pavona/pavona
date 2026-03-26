@@ -137,6 +137,46 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ed25519_parser",
 )
 
+run_binary(
+    name = "acvp_eddsa_sigver_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json",
+        "@acvp_testvectors//EDDSA-SigVer-1.0:internalProjection.json",
+    ],
+    outs = [":acvp_eddsa_sigver.json"],
+    args = [
+        "--src",
+        "$(location @acvp_testvectors//EDDSA-SigVer-1.0:internalProjection.json)",
+        "--dst",
+        "$(location :acvp_eddsa_sigver.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json)",
+        "--test-type",
+        "sigver",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_eddsa_parser",
+)
+
+run_binary(
+    name = "acvp_eddsa_siggen_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json",
+        "@acvp_testvectors//EDDSA-SigGen-1.0:internalProjection.json",
+    ],
+    outs = [":acvp_eddsa_siggen.json"],
+    args = [
+        "--src",
+        "$(location @acvp_testvectors//EDDSA-SigGen-1.0:internalProjection.json)",
+        "--dst",
+        "$(location :acvp_eddsa_siggen.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json)",
+        "--test-type",
+        "siggen",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_eddsa_parser",
+)
+
 # Number of tests per configuration (e.g. Verify P-256 SHA-256)
 ECDSA_RANDOM_COUNT = 128
 

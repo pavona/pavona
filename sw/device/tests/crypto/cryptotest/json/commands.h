@@ -24,7 +24,8 @@ extern "C" {
     value(_, Mldsa) \
     value(_, Mlkem) \
     value(_, Rsa) \
-    value(_, SphincsPlus)
+    value(_, SphincsPlus) \
+    value(_, Ed25519)
 UJSON_SERDE_ENUM(CryptotestCommand, cryptotest_cmd_t, COMMAND);
 
 // clang-format on

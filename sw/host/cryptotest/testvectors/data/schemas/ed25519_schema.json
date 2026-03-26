@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/ed25519_schema.json",
-  "title": "Cryptotest Ed25519 Signature Verification Test Vector",
-  "description": "A list of testvectors for Ed25519 Signature Verification testing",
+  "title": "Cryptotest Ed25519 Test Vector",
+  "description": "A list of testvectors for Ed25519 testing",
   "$defs": {
     "byte_array": {
       "type": "array",
@@ -19,6 +19,14 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+      "vendor": {
+        "description": "Source of the test vector",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case identifier from the source",
+        "type": "integer"
+      },
       "algorithm": {
         "description": "Should be ed25519",
         "type": "string",
@@ -27,22 +35,34 @@
       "operation": {
         "description": "Ed25519 operation",
         "type": "string",
-        "enum": ["verify"]
+        "enum": ["verify", "sign"]
       },
       "message": {
-        "description": "Message to be verified",
+        "description": "Pre-hashed message (SHA-512 digest)",
         "$ref": "#/$defs/byte_array"
       },
       "public_key": {
-        "description": "Public key to use for verification",
+        "description": "Public key for verification",
+        "$ref": "#/$defs/byte_array"
+      },
+      "private_key": {
+        "description": "Private key seed for signing",
+        "$ref": "#/$defs/byte_array"
+      },
+      "context": {
+        "description": "Context string for Ed25519ctx/Ed25519ph",
         "$ref": "#/$defs/byte_array"
       },
       "signature": {
         "description": "Signature to verify",
         "$ref": "#/$defs/byte_array"
       },
+      "expected_signature": {
+        "description": "Expected signature from signing",
+        "$ref": "#/$defs/byte_array"
+      },
       "result": {
-        "description": "Verification result",
+        "description": "Expected test result",
         "type": "boolean"
       }
     }
