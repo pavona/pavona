@@ -73,6 +73,8 @@ gen_hw_and_check_clean "Register headers" regs             || bad=1
 # causing this check to fail.
 gen_hw_and_check_clean "top and cmdgen"   top_and_cmdgen   || bad=1
 
+gen_hw_and_check_clean "top_sim_cfgs"     dvgen   || bad=1
+
 gen_and_check_clean \
     "secded primitive code" \
     util/design/secded_gen.py --no_fpv || bad=1
