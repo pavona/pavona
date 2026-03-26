@@ -53,6 +53,7 @@ cc_library(
         "//sw/acc/crypto:run_ed25519",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",

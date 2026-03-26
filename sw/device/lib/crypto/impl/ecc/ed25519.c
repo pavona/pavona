@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/impl/ecc/ed25519.h"
 
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/ecc/ed25519_insn_counts.h"
@@ -84,8 +85,15 @@ static status_t set_context(const uint32_t context[kEd25519ContextWords],
   }
   HARDENED_CHECK_LE(context_length, kEd25519ContextBytes);
 
-  // Write the full context string.
-  HARDENED_TRY(acc_dmem_write(context_length, context, kAccVarEd25519Ctx));
+  // Write the context string. If the context length is not a multiple of
+  // 32 bytes, the bytes up to the next multiple of 32 must be initialized
+  // to prevent read errors.
+  size_t padded_words =
+      ceil_div(context_length, kAccWideWordNumBytes) * kAccWideWordNumWords;
+  uint32_t padded_ctx[padded_words];
+  memset(padded_ctx, 0, sizeof(padded_ctx));
+  memcpy(padded_ctx, context, context_length);
+  HARDENED_TRY(acc_dmem_write(padded_words, padded_ctx, kAccVarEd25519Ctx));
 
   // Set the context length.
   return acc_dmem_write(1, &context_length, kAccVarEd25519CtxLen);
