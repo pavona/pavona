@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -50,7 +51,8 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
     .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
-status_t sign_then_verify_test(hardened_bool_t *verification_result) {
+status_t sign_then_verify_test(hardened_bool_t *verification_result,
+                               const uint8_t *ctx, size_t ctx_len) {
   // Set up private key.
   otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
@@ -90,23 +92,18 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   // Allocate space for the signature.
   uint32_t sig[kEd25519SignatureWords] = {0};
 
-  // Allocate a zero-size buffer for context
-  uint8_t context[0];
+  otcrypto_const_byte_buf_t context = {.data = ctx, .len = ctx_len};
 
   // Generate a signature for the message.
-  LOG_INFO("Signing...");
+  LOG_INFO("Signing (ctx_len=%d)...", ctx_len);
   CHECK_STATUS_OK(otcrypto_ed25519_sign(
-      &private_key, msg_digest_buf,
-      (otcrypto_const_byte_buf_t){.data = context, .len = 0},
-      kOtcryptoEddsaSignModeHashEddsa,
+      &private_key, msg_digest_buf, context, kOtcryptoEddsaSignModeHashEddsa,
       (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
-      &public_key, msg_digest_buf,
-      (otcrypto_const_byte_buf_t){.data = context, .len = 0},
-      kOtcryptoEddsaSignModeHashEddsa,
+      &public_key, msg_digest_buf, context, kOtcryptoEddsaSignModeHashEddsa,
       (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
       verification_result));
 
@@ -118,21 +115,24 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
-  hardened_bool_t verificationResult;
-  status_t err = sign_then_verify_test(&verificationResult);
-  if (!status_ok(err)) {
-    // If there was an error, print the ACC error bits and instruction count.
-    LOG_INFO("ACC error bits: 0x%08x", acc_err_bits_get());
-    LOG_INFO("ACC instruction count: 0x%08x", acc_instruction_count_get());
-    // Print the error.
-    CHECK_STATUS_OK(err);
-    return false;
-  }
+  // Test with various context lengths.
+  uint8_t ctx_buf[160];
+  memset(ctx_buf, 0x42, sizeof(ctx_buf));
+  size_t ctx_lens[] = {0, 8, 96, 160, 8, 32};
 
-  // Signature verification is expected to succeed.
-  if (verificationResult != kHardenedBoolTrue) {
-    LOG_ERROR("Signature failed to pass verification!");
-    return false;
+  for (size_t i = 0; i < ARRAYSIZE(ctx_lens); i++) {
+    hardened_bool_t result;
+    status_t err = sign_then_verify_test(&result, ctx_buf, ctx_lens[i]);
+    if (!status_ok(err)) {
+      LOG_INFO("ACC error bits: 0x%08x", acc_err_bits_get());
+      LOG_INFO("ACC instruction count: 0x%08x", acc_instruction_count_get());
+      CHECK_STATUS_OK(err);
+      return false;
+    }
+    if (result != kHardenedBoolTrue) {
+      LOG_ERROR("Verification failed (ctx_len=%d)!", ctx_lens[i]);
+      return false;
+    }
   }
 
   return true;
