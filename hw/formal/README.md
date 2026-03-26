@@ -1,8 +1,5 @@
 # Pavona Assertions
 
-# Pavona Assertions
-
-
 ## What Are Assertions?
 Assertions are statements about your design that are expected to be always true.
 Here are two examples:
@@ -38,7 +35,7 @@ end
 The file [prim_assert.sv](../ip/prim/rtl/prim_assert.sv) and [prim_assert_standard_macros.svh](../ip/prim/rtl/prim_assert_standard_macros.svh) define many useful shortcuts that you can use in your RTL code.
 Some of them are detailed below:
 
-### ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+### ASSERT(\_\_name, \_\_prop, \_\_clk = \`ASSERT_DEFAULT_CLK, \_\_rst = `ASSERT_DEFAULT_RST)
 *   This is a shortcut macro for a generic concurrent assignment.
 *   The first argument is the assertion name.
     It is recommended to follow the [naming conventions](#naming-conventions).
@@ -59,26 +56,26 @@ myAssertion: assert property (
       `STRINGIFY(myAssertion), `STRINGIFY(req |-> ack));
 end
 ```
-### `ASSERT_INIT(__name, __prop)
+### \`ASSERT_INIT(\_\_name, \_\_prop)
 Concurrent assertion inside an initial block. It can be used for checking parameters.
 
-### `ASSERT_FINAL(__name, __prop)
+### \`ASSERT_FINAL(\_\_name, \_\_prop)
 Concurrent assertion inside a final block. It can be used e.g. for making sure that a FIFO is empty at the end of each sim.
 
-### `ASSERT_AT_RESET(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+### \`ASSERT_AT_RESET(\_\_name, \_\_prop, \_\_rst = \`ASSERT_DEFAULT_RST)
 Assertion just before reset. Can be used to check sum-like properties that get cleared at reset.
 Note that unless your simulation ends with a reset, the property does not get checked at end of
 simulation; use `ASSERT_AT_RESET_AND_FINAL` if the property should also get checked at end of
 simulation.
 
-### `ASSERT_AT_RESET_AND_FINAL(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+### \`ASSERT_AT_RESET_AND_FINAL(\_\_name, \_\_prop, \_\_rst = \`ASSERT_DEFAULT_RST)
 Assertion just before reset and in final block. Can be used to check sum-like properties before
 every reset and at the end of simulation.
 
-### `ASSERT_NEVER(__name, __prop,  __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+### \`ASSERT_NEVER(\_\_name, \_\_prop,  \_\_clk = \`ASSERT_DEFAULT_CLK, \_\_rst = \`ASSERT_DEFAULT_RST)
 Assert that a concurrent property never happens.
 
-### `ASSERT_KNOWN(__name, __signal,  __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+### \`ASSERT_KNOWN(\_\_name, \_\_signal,  \_\_clk = \`ASSERT_DEFAULT_CLK, \_\_rst = \`ASSERT_DEFAULT_RST)
 Assert that `signal` has a known value after reset, where "known" refers to a value that is not X.
 
 ### More Macros and Examples

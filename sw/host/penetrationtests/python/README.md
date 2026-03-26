@@ -1,7 +1,7 @@
 # Penetrationtests
 
 ## Overview
-This directory contains Python scripts to work with the testOS from //sw/device/tests/penetrationtests which contains the chip/fpga interface for performing side-channel and fault injection tests. These scripts are reflected in the ot-sca repo (https://github.com/lowRISC/ot-sca).
+This directory contains Python scripts to work with the testOS from [`//sw/device/tests/penetrationtests`](../../../device/tests/penetrationtests/doc/README.md) which contains the chip/fpga interface for performing side-channel and fault injection tests. These scripts are reflected in the ot-sca repo (https://github.com/lowRISC/ot-sca).
 
 ### util
 Contains the basic scripts to interact with the target such as reading or sending data or resetting/reflashing the device.

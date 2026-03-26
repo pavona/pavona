@@ -39,7 +39,7 @@ options:
 
 For each vendored-in component a description file must be created, which serves as input to the `util/vendor` tool.
 The vendor description file is stored in `vendor/<vendor>_<name>.vendor.hjson`.
-By convention all imported code is named `<vendor>_<name>`, with `<vendor>` typically being the GitHub user or organization name, and `<name>` the project name.
+By convention all imported code is named `<vendor>_<name>`, with `<vendor>` typically being the GitHub user or organization name and `<name>` the project name.
 It is recommended to use only lower-case characters.
 
 A full commented example of a vendor description file is given below.

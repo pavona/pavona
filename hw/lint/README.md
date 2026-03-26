@@ -4,15 +4,9 @@
 
 Linting is a productivity tool for designers to quickly find typos and bugs at the time when the RTL is written.
 Running lint is important when using SystemVerilog, a weakly-typed language, unlike other hardware description languages.
-We consider linting to be critical for conformance to our goals of high quality designs.
+Linting is a critical part of high quality development.
 
-We have standardized on the [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint/) tool from RealIntent for this task due to its fast run-times and comprehensive set of rules that provide concise error and warning messages.
-
-The lint flow leverages a new lint rule policy named _"lowRISC Lint Rules"_ that has been tailored towards our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
-The lint flow run scripts and waiver files are available in the GitHub repository of this project, but due to the proprietary nature of the lint rules and their configuration, the _"lowRISC Lint Rules"_ lint policy file can not be publicly provided.
-However, the _"lowRISC Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
-This enables designers that have access to this tool to run the lint flow provided locally on their premises.
-
+The lint flow leverages lint rules that align with the [Verilog style guide](../../doc/contributing/style_guides/verilog_coding_style.md).
 Our linting flow leverages FuseSoC to resolve dependencies, build file lists and call the linting tools. See [here](https://github.com/olofk/fusesoc) for an introduction to this open source package manager and [here](../../doc/getting_started/README.md) for installation instructions.
 
 In order to run lint on a [comportable IP](../../doc/contributing/hw/comportability/README.md) block, the corresponding FuseSoC core file must have a lint target and include (optional) waiver files as shown in the following example taken from the FuseSoC core of the AES comportable IP:
@@ -66,8 +60,8 @@ targets:
         verilator_options:
           - "-Wall"
 ```
-Note that the setup shown above also supports RTL style linting with the open source tool [Verible](https://github.com/google/verible/) and RTL linting with [Verilator](https://www.veripool.org/wiki/verilator) in order to complement the sign-off lint flow with AscentLint.
-In particular, Verible lint focuses on different aspects of the code, and detects style elements that are in violation with our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
+Note that the setup shown above supports RTL style linting with the open source tool [Verible](https://github.com/google/verible/), with [Verilator](https://www.veripool.org/wiki/verilator), and with the commercial tool [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint/).
+In particular, Verible lint detects style elements that are in violation with the Verilog style guide.
 
 The same lint target is reused for all three tools (we override the tool selection when invoking FuseSoC).
 Lint waivers can be added to the flow by placing them in the corresponding waiver file.
@@ -87,27 +81,15 @@ $ cd $REPO_TOP
 $ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --local --purge
 ```
 The `purge` option ensures that the scratch directory is fully erased before starting the build.
-Depending on the number of AscentLint licenses that can be checked out at a time, you may also want to set the number of parallel workers to one using `--max-parallel <number>`.
+The number of parallel workers can be set using `--max-parallel <number>`.
 
-Batch regressions for all three tools are regularly run on the `master` branch at eight-hour intervals, and the results are published on a public dashboard such that everybody can inspect the current lint status of all IPs on the project website.
-The dashboard can be found by following the appropriate link on the [hardware IP overview page](../).
+Linting is run on CI, and results are public.
 
 # CDC Linting
 
-Logic designs that have signals that cross from one clock domain to
-another unrelated clock domain are notorious for introducing hard to
-debug problems.  The reason is that design verification, with its constant
-and idealized timing relationships on signals, does not represent the
-variability and uncertainty of real world systems.  For this reason,
-maintaining a robust Clock Domain Crossing verification strategy ("CDC
-methodology") is critical to the success of any multi-clock design.
-
-Currently, due to the proprietary nature of tool collateral, all CDC linting
-activity is done offline and reported back to designers.  The project will
-standardize on a particular CDC linting tool, and results will be shared in
-some form through continuous integration build results, published tool
-outputs, pre-submit checks, and/or linting summaries of tool output
-(TODO: publication details).  At that time this README will be updated
-with setup and run instructions.
-
+Logic designs that have signals that cross from one clock domain to another unrelated clock domain are notorious for introducing hard to debug problems.
+The reason is that design verification, with its constant and idealized timing relationships on signals, does not represent the variability and uncertainty of real world systems.
+For this reason, maintaining a robust Clock Domain Crossing verification strategy ("CDC methodology") is critical to the success of any multi-clock design.
 This holds for *Reset Domain Crossing* ("RDC") methodology as well.
+
+Pavona currently has yet to standardize CDC and RDC linting.

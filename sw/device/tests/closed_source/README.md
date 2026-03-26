@@ -15,7 +15,7 @@ bool manufacturer_post_test_hook(void);
 This feature is implemented with the help of some custom Bazel repository rules.
 Specifically, in `sw/device/test/closed_source` we define a secondary Bazel
 repository (`@manufacturer_test_hooks`) that is designed to be used in
-conjunction with the main OpenTitan Bazel repository. Within this repository, we
+conjunction with the main Bazel repository. Within this repository, we
 define a single `test_hooks` library that is linked with the OTTF. The
 `test_hooks` library itself just contains default weak symbols for each test
 hook function. However, the `test_hooks` library is linked with other libraries

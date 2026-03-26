@@ -1,7 +1,6 @@
 # Security
 
 A fundamental part of Pavona's quality lies in the trustworthy nature of its hardware security-related assets.
-Pavona builds atop the the rigorous standards set forth by [OpenTitan](https://opentitan.org).
 
 Both the Earlgrey and Darjeeling top levels are hardware root-of-trust (RoT) systems which adhere to these standards and utilize the security resources within Pavona.
 

@@ -1,6 +1,6 @@
-# OpenTitan top description
+# Top description
 
-Due to the very flexible nature of OpenTitan's tops, it is difficult for the build system to adjust the build graph without some knowledge of the top that it is compiling for.
+Due to the very flexible nature of tops, it is difficult for the build system to adjust the build graph without some knowledge of the top that it is compiling for.
 A simple but common example is the existence of an IP: if a top does not have an IP, it should not generate register headers for it, should not compile drivers for it and so on.
 How can the build system determine when this is the case?
 

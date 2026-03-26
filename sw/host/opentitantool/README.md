@@ -1,10 +1,10 @@
 # OpenTitanTool
 
-The OpenTitanTool is a CLI tool for interacting with an OpenTitan device via the various platforms available for development.
+The OpenTitanTool is a CLI tool for interacting with a device via the various platforms available for development.
 
 Operations supported by OpenTitanTool include:
 
-* Flashing an OpenTitan bitstream to an FPGA board.
+* Flashing a bitstream to an FPGA board.
 * Bootstrapping (flashing) software onto a device.
 * Connecting to a device's console.
 * Manipulating a device's GPIO pins, particularly for "[strapping][]".
@@ -12,7 +12,7 @@ Operations supported by OpenTitanTool include:
 ## Building
 
 OpenTitanTool is written in Rust and built using Bazel.
-It is used throughout the OpenTitan repository for executing tests.
+It is used throughout the repository for executing tests.
 
 To build and run the tool manually:
 

@@ -1,4 +1,4 @@
-# The OpenTitan DIF Library
+# The DIF Library
 
 A DIF is a "Device Interface Function". DIFs are low-level routines for
 accessing the hardware functionality directly, and are agnostic to the
@@ -62,7 +62,7 @@ Development Stage column.
 DIFs are very low-level software, so they have a more rigorous coding style than
 other parts of the codebase.
 
-DIFs should follow the [OpenTitan C/C++ style
+DIFs should follow the [C/C++ style
 guide](../../../../doc/contributing/style_guides/c_cpp_coding_style.md) where it does not
 contradict with the guidelines below.
 

@@ -67,7 +67,7 @@ cd $REPO_TOP
 ./bazelisk.sh run //sw/device/tests/penetrationtests:fi_ibex_fpga_cw340_sival_rom_ext
 ```
 
-In addition, we have Python scripts to use the pentest framework in `//sw/host/penetrationtests/python`.
+In addition, we have Python scripts to use the pentest framework in [`//sw/host/penetrationtests/python`](../../../../host/penetrationtests/python/README.md).
 These scripts are also tested.
 Use the following command to automatically test the Ibex FI tests on the CW340 FPGA board:
 
@@ -93,7 +93,7 @@ These tests specifically run in the rom_ext environment since this is a ROM vers
 
 The testing is performed on the flashed pentest framework in this directory which provides the interface to the crypto library in `//sw/device/lib/crypto`. The targeted functions are found parsing the dis file. The parser is also found in `//sw/host/penetrationtests/python/util`.
 
-All test outputs are saved in the `bazel-testlogs/sw/device/tests/penetrationtests` folder in opentitan. Take note that the output to the terminal is piped to the campaign file in that directory, please consult this file for the test output. This is done since each subtest can take 2-12h.
+All test outputs are saved in the `bazel-testlogs/sw/device/tests/penetrationtests` folder. Take note that the output to the terminal is piped to the campaign file in that directory, please consult this file for the test output. This is done since each subtest can take 2-12h.
 
 ## Secure Code Guidelines and Fault CI Tests
 

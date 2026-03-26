@@ -1,4 +1,4 @@
-# OpenTitan transports
+# Transports
 
 The crates under this directory each implement a specific transport telling OpenTitanLib on how to connect to the hardware (actual or simulated).
 
@@ -10,5 +10,5 @@ Currently, this requires the user to have
 extern crate ot_transport_hyperdebug;
 ```
 which explicitly tells rustc that you need to link against it.
-If https://github.com/rust-lang/rust/issues/111302 is stable, this step can potentially be replaced by Bazel.
+This step can potentially be replaced by Bazel.
 If you depend on `//sw/host/opentitanlib` target, this step is already done for you.

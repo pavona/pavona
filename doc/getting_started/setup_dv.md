@@ -2,13 +2,13 @@
 
 _Before following this guide, make sure you've followed the [dependency installation and software build instructions](README.md)._
 
-This document aims to enable a contributor to get started with a design verification (DV) effort within the OpenTitan project.
-While most of the focus is on development of a testbench from scratch, it should also be useful to understand how to contribute to an existing effort.
-Please refer to the [DV methodology](../contributing/dv/methodology/README.md) document for information on how design verification is done in OpenTitan.
+This document aims to help you get started with design verification (DV).
+While most of the focus is on development of a testbench from scratch, it should also be useful to understand how to work on top of existing efforts.
+Please refer to the [DV methodology](../contributing/dv/methodology/README.md) document for information on how design verification is done in upstream Pavona.
 
 ## Stages of DV
 
-The life stages of a design / DV effort within the OpenTitan are described in the [Hardware Development Stages](../contributing/hw/development_stages.md) document.
+Life stages of a design / DV effort are described in the [Hardware Development Stages](../contributing/hw/development_stages.md) document.
 It separates the life of DV into three broad stages: Initial Work, Under Test and Testing Complete.
 This document attempts to give guidance on how to get going with the first stage and have a smooth transition into the Under Test stage.
 They are not hard and fast rules but methods we have seen work well in the project.
@@ -17,7 +17,7 @@ The design specification, once available, is used as a starting point.
 
 ## Getting Started
 
-The very first thing to do in any DV effort is to [document the plan](../contributing/dv/methodology/README.md#documentation) detailing the overall effort.
+A good first thing to do in any DV effort is to [document the plan](../contributing/dv/methodology/README.md#documentation), detailing the overall effort.
 This is done in conjunction with developing the initial testbench.
 It is recommended to use the [uvmdvgen](../../util/uvmdvgen/README.md) tool, which serves both needs.
 
@@ -26,18 +26,19 @@ This should be set to the root of the DUT directory where the `rtl` directory ex
 When the tool is run, it creates a `dv` directory, along with `data` and `doc` directories.
 The `dv` directory is where the complete testbench along with the collaterals to build and run tests can be found.
 It puts the documentation sources in `doc` and `data` directories respectively (which also exist alongside the `rtl` directory).
+
 It is recommended to grep for 'TODO' at this stage in all of these generated files to make some of the required fixes right way.
 One of these for example, is to create appropriate interfaces for the DUT-specific IOs and have them connected in the testbench (`dv/tb/tb.sv`).
 
 ## Documentation and Initial Review
 
-The skeleton [DV document](../contributing/dv/methodology/README.md#dv-document) and the [Hjson testplan](../contributing/dv/methodology/README.md#testplan) should be addressed first.
-The DV documentation is not expected to be completed in full detail at this point.
-However, it is expected to list all the verification components needed and depict the planned testbench as a block diagram.
-Under the 'design verification' directory in the OpenTitan team drive, some sample testbench block diagrams are available in the `.svg` format, which can be used as a template.
-The Hjson testplan, on the other hand, is required to be completed.
+The [DV document](../contributing/dv/methodology/README.md#dv-document) and the [Hjson testplan](../contributing/dv/methodology/README.md#testplan) should be addressed first.
+DV documentation is not always completed in full detail at the beginning.
+However, it is wise to list all the verification components needed and depict the planned testbench as a block diagram for better understanding of the anticipated DV effort.
+The Hjson testplan, on the other hand, should be completed at the start.
 Please refer to the [testplanner tool](../../util/dvsim/doc/testplanner.md) documentation for additional details on how to write the Hjson testplan.
-Once done, these documents are to be reviewed with the designer(s) and other project members for completeness and clarity.
+
+Once done, these documents can be reviewed for completeness and clarity.
 
 ## UVM RAL Model
 
@@ -46,7 +47,7 @@ The [DV simulation flow](../../util/dvsim/README.md) has been updated to generat
 As such, nothing extra needs to be done.
 It can be created manually by invoking [`regtool`](../../util/reggen/doc/setup_and_use.md):
 ```console
-$ util/regtool.py -s -t /path-to-dv /path-to-module/data/<dut>.hjson
+$ util/regtool.py -s -t path/to/dv path/to/module/data/<dut>.hjson
 ```
 
 The generated file is placed in the simulation build scratch area instead of being checked in.
@@ -88,20 +89,20 @@ Please refer to [CSR utilities](../../hw/dv/sv/csr_utils/README.md) for more inf
 Running the sanity and CSR suite of tests while making progress toward reaching the [V1 stage](../contributing/hw/development_stages.md#hardware-verification-stages-v) should provide a good reference in terms of how to develop tests as outlined in the testplan and running and debugging them.
 Please refer to the [checklist](../contributing/hw/checklist) to understand the key requirements for progressing through the subsequent verification stages and final signoff.
 
-The [UART DV](https://github.com/lowRISC/opentitan/tree/master/hw/ip/uart/dv) area can be used as a canonical example for making progress.
+The [UART DV](../../hw/ip/uart/dv) area can be used as a canonical example for making progress.
 If it is not clear on how to proceed, feel free to file an issue requesting assistance.
 
 ## Reproduce a DV failure that CI reported
 
 Follow these steps to reproduce the failure
 
-1. Make sure the version of VCS is the same as the [one](https://github.com/lowRISC/opentitan-private-ci/blob/master/jobs.yml#L5) running in CI.
+1. Make sure the version of VCS is the same as the one running in CI.
 
 2. CI runs against an auto-generated merge commit, which effectively is generated by merging the pull request (PR) into the master branch.
 This "merge" branch is updated automatically by GitHub whenever the PR branch is pushed, or when the PR is closed and re-open.
-Retrieve this exact branch by running the following (assuming "upstream" is the name of your lowRISC/opentitan repository).
+Retrieve this exact branch by running the following.
 ```console
-$ git fetch upstream pull/<PR_number>/merge
+$ git fetch <remote_name> pull/<PR_number>/merge
 $ git checkout -b <temp_branch> FETCH_HEAD
 ```
 

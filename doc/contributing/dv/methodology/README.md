@@ -31,7 +31,7 @@ The discussions on how those are used within the program are carried out in a di
 Verification within the Pavona project comes in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of verification is important to gauge the confidence in the design's advertised feature set.
-To that end, we've designated a spectrum of design and verification stages in the  [Hardware Development Stages](../../hw/development_stages.md) document.
+To that end, we've designated a spectrum of design and verification stages in the [Hardware Development Stages](../../hw/development_stages.md) document.
 It defines the verification stages and references where one can find the current verification status of each of the designs in the repository.
 Splitting the effort in such a way enables the team to pace the development effort and allows the progress to be in lock-step with the design stages.
 The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists](../../hw/checklist/README.md) document.

@@ -1,4 +1,4 @@
-# SoC Debug Control (soc_dbg_ctrl)
+# SoC Debug Control
 
 ## Debug Categories
 

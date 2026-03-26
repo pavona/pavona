@@ -11,32 +11,32 @@ environment.
 
 #### Host
 
-*   **[opentitantool](https://github.com/lowRISC/opentitan/tree/master/sw/host/opentitantool)**:
-    provides a common interface to interact with an OpenTitan Device Under Test
+*   **[opentitantool](../../../../host/opentitantool)**:
+    provides a common interface to interact with a Device Under Test
     (DUT). Leverages opentitanlib to expose DUT common functionality such as SPI
     bootstrap, reset, and general DUT I/O interfaces. Written in Rust.
-*   **[opentitanlib](https://github.com/lowRISC/opentitan/tree/master/sw/host/opentitantool)**
+*   **[opentitanlib](../../../../host/opentitantool)**
     ([documentation](#RUSTDOC/opentitanlib/index.html)):
     implements interfaces to access DUT functionality through various backend
     interfaces. Backed interfaces are used to abstract various target
     configurations (e.g. FPGA vs Verilator vs Silicon). Written in Rust.
-*   **[test software](https://github.com/lowRISC/opentitan/tree/master/sw/host/tests)**:
+*   **[test software](../../../../host/tests)**:
     implement DUT test sequences. The most basic test program loads a binary
     into the DUT using the spi bootstrap protocol and polls the UART interface
     for results. All test cases are written in Rust.
-*   **Bazel**: OpenTitan software build system. Used to build host and device
-    (DUT) software and trigger unit tests as well as tests requiring an
-    OpenTitan target. FPGA, Verilator and Silicon targets are supported. DV test
+*   **Bazel**: software build system. Used to build host and device
+    (DUT) software and trigger unit tests as well as tests requiring a
+    target. FPGA, Verilator and Silicon targets are supported. DV test
     targets are integrated using
     [dvsim](../../../../../util/dvsim/README.md).
-*   **[hsmtool](https://github.com/lowRISC/opentitan/tree/master/sw/host/hsmtool)**:
+*   **[hsmtool](../../../../host/hsmtool)**:
     utility used to interface with hardware used to manage signing keys. The
     tool uses PKCS#11 to access HSM and USB tokens. Only NitroKey HSM2 is
     supported at the moment.
 
 #### Device Test Harness
 
-*   **hyperdebug**: standard OpenTitan test board interface. Implements a DUT
+*   **hyperdebug**: standard test board interface. Implements a DUT
     hardware abstraction layer (*hyperdebug firmware*) used to drive DUT
     peripheral interfaces. *opentitantool* supports a hyperdebug backend
     implementation.
@@ -65,7 +65,7 @@ environment.
 #### Additional Components
 
 *   **HSM/Signing Fob**: Hardware backed storage for signing keys.
-*   **JTAG**: JTAG interface to OpenTitan rv\_dm and lc\_ctrl TAP interfaces.
+*   **JTAG**: JTAG interface to rv\_dm and lc\_ctrl TAP interfaces.
 
 #### Relevant references
 
@@ -77,8 +77,7 @@ environment.
 1.  **Secure**
     1.  Common Criteria certified test lab; or,
     2.  Test lab meeting MSSR guidelines and that is in the process of being
-        certified as a site or as part of the certification of an OpenTitan
-        device
+        certified as a site or as part of the certification of a device
 2.  **Non-Secure**
     1.  Any testing performed outside a secure environment.
 
@@ -219,7 +218,6 @@ bazel test --define DISABLE_VERILATOR_BUILD=true       \
 *  [FPGA Bitstreams](../../../../../hw/bitstream/README.md)
 *  [On-Device Test Framework](../../../lib/testing/test_framework/README.md)
 *  [OTP Preload Image Generator](../../../../../util/design/README.md#otp_preload_image_generator)
-.md)
 *  [ROM\_EXT for Silicon Validation](../../../silicon_creator/rom_ext/doc/si_val.md)
 *  [Signing Guide](../../../../../signing/README.md)
 *  [SiVal Developer Guide](./devguide.md)

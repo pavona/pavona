@@ -1,4 +1,4 @@
-# DMA Controller (dma)
+# DMA Controller
 
 The Direct Memory Access (DMA) controller is a peripheral within a system-on-chip (SoC).
 It is designed to provide processor-independent data transfer capabilities between different locations in the system memory map and/or peripherals.

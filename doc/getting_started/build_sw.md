@@ -19,7 +19,7 @@ This will take a while (an hour on a laptop is typical) if it's your first build
 Future builds will be much faster; go get a coffee and come back later.
 
 If the test worked, your setup is functional; you can build the software and run on-device tests using the Verilator simulation tool.
-See [Running Tests with Bazel](#running-tests with Bazel) for information on how to find and run other tests.
+See [Running Tests with Bazel](#running-tests-with-bazel) for information on how to find and run other tests.
 
 If the test didn't work, read the full guide, especially the [Troubleshooting](#troubleshooting) section.
 

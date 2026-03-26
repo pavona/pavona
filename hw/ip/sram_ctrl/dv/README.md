@@ -9,8 +9,8 @@
 
 ## Pre-verified sub-modules
 The following sub-modules are pre-verified:
-* [prim_prince](https://reports.opentitan.org/hw/ip/prim/dv/prim_prince/latest/report.html)
-* [prim_lfsr](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/report.html)
+* [`prim_prince`](https://reports.opentitan.org/hw/ip/prim/dv/prim_prince/latest/report.html)
+* [`prim_lfsr`](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/report.html)
 
 Only toggle coverage on the IOs of these sub-modules is enabled for coverage collection.
 
@@ -25,7 +25,7 @@ For detailed information on SRAM_CTRL design features, please see the [SRAM_CTRL
 
 ## Testbench architecture
 SRAM_CTRL testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
-Note that there are 2 separate TLUL interfaces exposed to the rest of the OpenTitan system - one for CSR accesses, and one for accessing memory directly.
+Note that there are 2 separate TLUL interfaces exposed to the rest of the system - one for CSR accesses, and one for accessing memory directly.
 This is because the "full" DUT consists of the actual SRAM memory controller (which contains the CSR file) connected to a scrambling RAM primitive, with a TLUL adapter module to convert TL requests on the memory TL interface into SRAM format for the RAM primitive.
 
 ### Block diagram

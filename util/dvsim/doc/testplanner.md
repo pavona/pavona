@@ -211,7 +211,7 @@ The following examples provided within `util/dvsim/examples/testplanner` can be 
 * **`foo_dv_doc.md`**: DUT testplan imported within the DV document doc in Markdown
 
 In addition, see the [UART DV document](../../../hw/ip/uart/dv/README.md) for a 'production' example of inline expansion of an imported testplan as a table within the DV document.
-The [UART testplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson) imports some of the shared testplans located at `hw/dv/tools/dvsim/testplans` area.
+The [UART testplan](../../../hw/ip/uart/data/uart_testplan.hjson) imports some of the shared testplans located at `hw/dv/tools/dvsim/testplans` area.
 
 ### Limitations
 

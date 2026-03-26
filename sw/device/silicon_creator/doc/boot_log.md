@@ -4,7 +4,7 @@ The boot process consists of three stages: `ROM`, `ROM_EXT`, and the first owner
 Both the `ROM_EXT` and `BL0` stages have two slots, A and B, to ensure reliable updates.
 This means that the actual `ROM_EXT` and `BL0` slots executed during boot are determined at runtime.
 
-The device stores this information in the retention SRAM as a `boot_log_t` struct to make it accessible to later boot stages.
+A top level system like Darjeeling stores this information in the retention SRAM as a `boot_log_t` struct to make it accessible to later boot stages.
 
 ## Field Descriptors
 

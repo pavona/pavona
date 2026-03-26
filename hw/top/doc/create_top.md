@@ -249,7 +249,3 @@ Once done, you should be able to compile a DV UART smoke test for your top by ru
 ```
 **NOTE:** you might run into compilation errors due to top-specific constructs in the code of the test framework.
 See [below](#porting-the-software-to-your-top) for more details.
-
-### Porting the software to your top
-
-TODO

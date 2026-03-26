@@ -2,8 +2,8 @@
 
 OpenTitanLib provides several test utilities that can be used alongside GPIO bitbanging and monitoring transport interfaces to bitbang common protocols.
 
-These can be useful for testing different OpenTitan peripherals, by bitbanging invalid transactions or other edge cases that cannot be supported by regular transport devices.
-This allows for more thorough software testing to check that OpenTitan hardware can handle and respond to these cases correctly.
+These can be useful for testing different peripherals, by bitbanging invalid transactions or other edge cases that cannot be supported by regular transport devices.
+This allows for more thorough software testing to check that hardware can handle and respond to these cases correctly.
 
 Bitbanging can also be useful for custom workflows that only support bitbanging, or which require the generation of VCD files corresponding to different host/device transactions.
 One example of such a workflow might be the manufacturing process, which may require VCD files as inputs. See [*VCD Integration*](#vcd-integration) for more detail.

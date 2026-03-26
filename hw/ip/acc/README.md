@@ -1,11 +1,5 @@
 # Asymmetric Cryptographic Coprocessor (ACC) Technical Specification
 
-[`acc`](https://reports.opentitan.org/hw/ip/acc/dv/uvm/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/acc/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/acc/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/acc/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/acc/code.svg)
-
 # Overview
 
 This document specifies functionality of the Asymmetric Cryptographic Coprocessor, or ACC.

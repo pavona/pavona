@@ -1,11 +1,5 @@
 # Life Cycle Controller Technical Specification
 
-[`lc_ctrl`](https://reports.opentitan.org/hw/ip/lc_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/code.svg)
-
 # Overview
 
 This document specifies the functionality of the life cycle controller.

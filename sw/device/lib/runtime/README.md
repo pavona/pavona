@@ -1,5 +1,3 @@
-# libruntime: The OpenTitan Runtime Library
+# libruntime: The Runtime Library
 
-This directory contains machine-aware base libraries for OpenTitan, being more
-aware and able to control the execution environment than the "pure algorithm"
-functions in `libbase`.
+This directory contains machine-aware base libraries, being more aware and able to control the execution environment than the "pure algorithm" functions in `libbase`.

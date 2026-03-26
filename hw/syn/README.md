@@ -1,6 +1,6 @@
-# OpenTitan Synthesis Flow
+# Synthesis Flow
 
-This readme gives some quick instructions on how to run synthesis in OpenTitan, using top_earlgrey as an example.
+This readme gives some quick instructions on how to run synthesis in Pavona, using `top_earlgrey` as an example.
 
 ## Normal Synthesis Through dvsim
 
