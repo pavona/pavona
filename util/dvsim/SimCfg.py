@@ -21,7 +21,6 @@ from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
 from modes import BuildMode, Mode, RunMode, find_mode
 from Regression import Regression
-from results_server import ResultsServer
 from SimResults import SimResults
 from tabulate import tabulate
 from Test import Test
@@ -950,17 +949,3 @@ class SimCfg(FlowCfg):
         self.results_summary_md = "\n".join(lines)
         print(str(self.results_summary_md))
         return self.results_summary_md
-
-    def _publish_results(self, results_server: ResultsServer):
-        '''Publish coverage results to the opentitan web server.'''
-        super()._publish_results(results_server)
-
-        if self.cov_report_deploy is not None:
-            log.info("Publishing coverage results to https://{}/{}/latest"
-                     .format(self.results_server,
-                             self.rel_path))
-
-            latest_dir = '{}/latest'.format(self.rel_path)
-            results_server.upload(self.cov_report_dir,
-                                  latest_dir,
-                                  recursive=True)

@@ -536,7 +536,7 @@ def html_styling_batch_coverage(html_text):
     html_text = html_text.replace(
         "<table",
         "<div style=\"width:100vw; position:relative; left:50%;"
-        " transform:translateX(-50%); overflow-x:auto;\"><table"
+        "transform:translateX(-50%); overflow-x:auto;\"><table"
     )
     html_text = html_text.replace(
         "</table>",
