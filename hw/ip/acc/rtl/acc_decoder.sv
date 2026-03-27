@@ -608,9 +608,9 @@ module acc_decoder
         endcase
       end
 
-      ///////////////////////////////////////////////
-      // Bignum Misc WSR/LID/SID/MOV[R]/CMP[B]/SEL //
-      ///////////////////////////////////////////////
+      /////////////////////////////////////////////////////
+      // Bignum Misc WSR/LID/SID/LD/SD/MOV[R]/CMP[B]/SEL //
+      /////////////////////////////////////////////////////
 
       InsnOpcodeBignumMisc: begin
         insn_subset = InsnSubsetBignum;
@@ -678,6 +678,24 @@ module acc_decoder
               a_wlen_word_inc_bignum = 1'b0;
               b_inc_bignum           = 1'b0;
               illegal_insn           = 1'b1;
+            end
+          end
+          3'b010: begin // BN.LD/BN.SD
+            if (insn[7]) begin
+              st_insn              = 1'b1;
+              rf_ren_a_base        = 1'b1;
+              rf_ren_b_bignum      = 1'b1;
+            end else begin
+              ld_insn              = 1'b1;
+              rf_we_bignum         = 1'b1;
+              rf_ren_a_base        = 1'b1;
+              rf_wdata_sel_bignum  = RfWdSelLsu;            
+            end
+
+            if (insn[8]) begin
+              a_wlen_word_inc_bignum = 1'b1;
+              rf_we_base             = 1'b1;
+              rf_wdata_sel_base      = RfWdSelIncr;
             end
           end
           3'b110: begin  // BN.MOV/BN.MOVR
@@ -1064,9 +1082,9 @@ module acc_decoder
         endcase
       end
 
-      ///////////////////////////////////////////
-      // Bignum Misc LID/SID/MOV[R]/CMP[B]/SEL //
-      ///////////////////////////////////////////
+      /////////////////////////////////////////////////
+      // Bignum Misc LID/LD/SD/SID/MOV[R]/CMP[B]/SEL //
+      /////////////////////////////////////////////////
 
       InsnOpcodeBignumMisc: begin
         unique case (insn[14:12])
@@ -1083,7 +1101,8 @@ module acc_decoder
             alu_flag_en_bignum       = 1'b1;
           end
           3'b100,
-          3'b101: begin  // BN.LID/BN.SID
+          3'b101,
+          3'b010: begin  // BN.LID/BN.SID/BN.LD/BN.SD
             // Calculate memory address using base ALU
             alu_op_a_mux_sel_base = OpASelRegister;
             alu_op_b_mux_sel_base = OpBSelImmediate;

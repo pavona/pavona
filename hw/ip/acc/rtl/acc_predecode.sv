@@ -412,9 +412,9 @@ module acc_predecode
           endcase
         end
 
-        ///////////////////////////////////////////////
-        // Bignum Misc WSR/LID/SID/MOV[R]/CMP[B]/SEL //
-        ///////////////////////////////////////////////
+        /////////////////////////////////////////////////////
+        // Bignum Misc WSR/LID/SID/LD/SD/MOV[R]/CMP[B]/SEL //
+        /////////////////////////////////////////////////////
 
         InsnOpcodeBignumMisc: begin
           unique case (imem_rdata_i[14:12])
@@ -445,6 +445,19 @@ module acc_predecode
 
               if (imem_rdata_i[7]) begin
                 rf_we_b_base = 1'b1;
+              end
+            end
+            3'b010: begin // BN.LD, BN.SD
+              rf_ren_a_base = 1'b1;
+
+              if (imem_rdata_i[7]) begin
+                rf_ren_b_bignum = 1'b1;
+              end
+
+              lsu_addr_en_predec_o = 1'b1;
+
+              if (imem_rdata_i[8]) begin
+                rf_we_a_base = 1'b1;
               end
             end
             3'b110: begin
