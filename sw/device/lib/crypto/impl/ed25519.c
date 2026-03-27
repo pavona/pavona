@@ -30,9 +30,8 @@ otcrypto_status_t otcrypto_ed25519_sign(
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature) {
   otcrypto_session_token_t session_token = 0;
-  HARDENED_TRY(otcrypto_ed25519_sign_async_start(private_key, input_message,
-                                                 context, sign_mode, signature,
-                                                 &session_token));
+  HARDENED_TRY(otcrypto_ed25519_sign_async_start(
+      private_key, input_message, context, sign_mode, &session_token));
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   return otcrypto_ed25519_sign_async_finalize(session_token, signature);
 }
@@ -134,7 +133,7 @@ static status_t construct_hash_h(uint32_t hash_h[kEd25519HashWords],
 otcrypto_status_t otcrypto_ed25519_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature,
+    otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_session_token_t *session_token) {
   if (private_key == NULL || private_key->keyblob == NULL ||
       input_message.data == NULL) {
@@ -294,6 +293,12 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
+
+  // Check the mode; currently, only HashEd25519 is allowed.
+  if (launder32(sign_mode) != kOtcryptoEddsaSignModeHashEddsa) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
 
   // Check the integrity of the public key.
   if (launder32(integrity_unblinded_key_check(public_key)) !=

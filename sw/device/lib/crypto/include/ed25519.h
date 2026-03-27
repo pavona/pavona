@@ -129,7 +129,6 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * @param input_message Input message to be signed.
  * @param context Context for signing.
  * @param sign_mode EdDSA signature hashing mode.
- * @param[out] signature Pointer to the EdDSA signature to get (r) value.
  * @param[out] session_token Session token for this operation.
  * @return Result of async Ed25519 start operation.
  */
@@ -137,7 +136,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_const_byte_buf_t input_message, otcrypto_const_byte_buf_t context,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature,
+    otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_session_token_t *session_token);
 
 /**
