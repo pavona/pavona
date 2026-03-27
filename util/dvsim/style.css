@@ -123,3 +123,24 @@
   color: #000000;
   background-color: #57EF57;
 }
+
+/* Header column group colors for batch coverage */
+.results table.col-12 thead tr th:nth-child(1) {
+    background-color: #3D1067 !important;
+}
+
+.results table.col-12 thead tr th:nth-child(n+2):nth-child(-n+3) {
+    background-color: #5C2D91 !important;
+}
+
+.results table.col-12 thead tr th:nth-child(4) {
+    background-color: #3D1067 !important;
+}
+
+.results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+12) {
+    background-color: #5C2D91 !important;
+}
+
+.results table.col-12 thead tr th:nth-child(13) {
+    background-color: #3D1067 !important;
+}

@@ -875,18 +875,20 @@ class SimCfg(FlowCfg):
                     results_str += "\n## Coverage Results\n"
                     # Link the dashboard page using "cov_report_page" value.
                     if hasattr(self, "cov_report_page"):
-                        results_str += "\n### [Coverage Dashboard]"
-                        if self.args.publish:
-                            cov_report_page_path = "cov_report"
-                        else:
-                            cov_report_page_path = "../../cov_report"
-                        cov_report_page_path += "/" + self.cov_report_page
-                        results_str += "({})\n\n".format(cov_report_page_path)
+                        results_str += "\n### Coverage Dashboard\n\n"
+                        # TODO: modify to include differentiation between public and private
+                        # dashboard usage.
+                        # if self.args.publish:
+                        #     cov_report_page_path = "cov_report"
+                        # else:
+                        #     cov_report_page_path = "../../cov_report"
+                        # cov_report_page_path += "/" + self.cov_report_page
+                        # results_str += "({})\n\n".format(cov_report_page_path)
                     results_str += self.cov_report_deploy.cov_results
                     self.results_summary[
-                        "Coverage"] = self.cov_report_deploy.cov_total
+                        "Overall Coverage"] = self.cov_report_deploy.cov_total
                 else:
-                    self.results_summary["Coverage"] = "--"
+                    self.results_summary["Overall Coverage"] = "--"
 
         if results.buckets:
             self.errors_seen = True
@@ -911,28 +913,33 @@ class SimCfg(FlowCfg):
         lines += [f"### Branch: {self.branch}"]
 
         table = []
-        header = []
+        rows = []
+        DEFAULT_VALUE = "-- %"
         for cfg in self.cfgs:
-            row = cfg.results_summary
+            cov_scores = cfg.cov_report_deploy.cov_results_dict
+            cov_scores = {f"{key.capitalize()} Coverage": val for key, val in cov_scores.items()}
+            row = cfg.results_summary | cov_scores
             if row:
                 # convert name entry to relative link
-                row = cfg.results_summary
                 row["Name"] = cfg._get_results_page_link(
                     self.results_dir,
                     row["Name"])
+                rows.append(row)
 
-                # If header is set, ensure its the same for all cfgs.
-                if header:
-                    assert header == cfg.results_summary.keys()
-                else:
-                    header = cfg.results_summary.keys()
-                table.append(row.values())
+        if rows:
+            all_keys = list(dict.fromkeys(key for row in rows for key in row))
+            # Move the "Overall Coverage" key to the end
+            all_keys.remove("Overall Coverage")
+            all_keys.append("Overall Coverage")
+
+            for row in rows:
+                normalized = {key: row.get(key, DEFAULT_VALUE) for key in all_keys}
+                table.append(list(normalized.values()))
 
         if table:
-            assert header
-            colalign = ("center", ) * len(header)
+            colalign = ("center", ) * len(all_keys)
             table_txt = tabulate(table,
-                                 headers=header,
+                                 headers=all_keys,
                                  tablefmt="pipe",
                                  colalign=colalign)
             lines += ["", table_txt, ""]
@@ -941,7 +948,7 @@ class SimCfg(FlowCfg):
             lines += ["\nNo results to display.\n"]
 
         self.results_summary_md = "\n".join(lines)
-        print(self.results_summary_md)
+        print(str(self.results_summary_md))
         return self.results_summary_md
 
     def _publish_results(self, results_server: ResultsServer):

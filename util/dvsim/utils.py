@@ -16,6 +16,7 @@ import time
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
+from bs4 import BeautifulSoup
 
 import hjson
 import mistletoe
@@ -346,7 +347,7 @@ def find_and_substitute_wildcards(sub_dict,
     return sub_dict
 
 
-def md_results_to_html(title, css_file, md_text):
+def md_results_to_html(title, css_file, md_text, is_primary_cfg=False):
     '''Convert results in md format to html. Add a little bit of styling.
     '''
     html_text = "<!DOCTYPE html>\n"
@@ -366,6 +367,8 @@ def md_results_to_html(title, css_file, md_text):
     html_text = transform(html_text,
                           external_styles=css_file,
                           cssutils_logging_level=log.ERROR)
+    if is_primary_cfg:
+        html_text = html_styling_batch_coverage(html_text)
     return html_text
 
 
@@ -515,6 +518,34 @@ def htmc_color_pc_cells(text):
         for item in subst_list:
             text = text.replace(item, subst_list[item])
     return text
+
+
+def html_styling_batch_coverage(html_text):
+    """
+    Introduce formatting fixes for fitting the batch coverage page and
+    tag tables with a class based on their column count for CSS styling
+    when making a batch coverage report.
+    """
+    # Fix table centering: replace whatever margin was inlined with explicit auto margins
+    html_text = re.sub(
+        r'(<table[^>]*style="[^"]*?)margin:[^;]+;',
+        r'\1margin-left:auto; margin-right:auto;',
+        html_text
+    )
+    # Break out of the constrained .results div and center on full viewport
+    html_text = html_text.replace(
+        "<table",
+        "<div style=\"width:100vw; position:relative; left:50%;"
+        " transform:translateX(-50%); overflow-x:auto;\"><table"
+    )
+    html_text = html_text.replace(
+        "</table>",
+        "</table></div>"
+    )
+    soup = BeautifulSoup(html_text, "html.parser")
+    table = soup.select_one("table")
+    table["class"] = table.get("class", []) + ["col-12"]
+    return str(soup)
 
 
 def print_msg_list(msg_list_title, msg_list, max_msg_count=-1):

@@ -421,21 +421,22 @@ class FlowCfg():
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
             item.write_results(self.results_html_name, item.results_md,
-                               json_str)
-            log.info("[report]: [%s] [%s/report.html]", item.name, item.results_dir)
+                               json_str, is_primary_cfg=False)
+            log.info("[report]: [%s] [%s/report.html]\n\n", item.name, item.results_dir)
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
             self.gen_results_summary()
             self.write_results(self.results_html_name,
-                               self.results_summary_md)
+                               self.results_summary_md, is_primary_cfg=True)
+            log.info("[report]: [%s] [%s/report.html]", self.name, self.results_dir)
 
     def gen_results_summary(self):
         '''Public facing API to generate summary results for each IP/cfg file
         '''
         return
 
-    def write_results(self, html_filename, text_md, json_str=None):
+    def write_results(self, html_filename, text_md, json_str=None, is_primary_cfg=False):
         """Write results to files.
 
         This function converts text_md to HTML and writes the result to a file
@@ -452,7 +453,7 @@ class FlowCfg():
         # Write results to the report area.
         with open(self.results_dir / html_filename, "w") as f:
             f.write(
-                md_results_to_html(self.results_title, self.css_file, text_md))
+                md_results_to_html(self.results_title, self.css_file, text_md, is_primary_cfg))
 
         if json_str is not None:
             filename = Path(html_filename).with_suffix('.json')
