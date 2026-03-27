@@ -130,10 +130,6 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padding }}
 {{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_tag_len }}
 
-#### Elliptic curve data structures
-
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_eddsa_sign_mode }}
-
 #### Hash data structures
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_mode }}
@@ -383,14 +379,6 @@ Each party should generate a key pair, exchange public keys, and then generate t
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384 }}
 
-#### Ed25519
-
-For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital signature algorithm), the cryptography library supports keypair generation, signature generation, and signature verification.
-
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify }}
-
 #### X25519
 
 For x25519 key exchange, the cryptography library supports keypair generation and shared-key generation.
@@ -434,18 +422,6 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_async_finalize }}
-
-#### Ed25519
-
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen_async_finalize }}
-
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_part1_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_part2_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_async_finalize }}
-
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify_async_finalize }}
 
 #### X25519
 
