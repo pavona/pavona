@@ -15,6 +15,7 @@ set -e
 allowed_suffixes=(
     png
     ico
+    svg
     bin
     der
     vsdx
