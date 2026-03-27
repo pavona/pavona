@@ -14,8 +14,8 @@ filegroup(
         "//sw/host/ot_certs:doc_files",
         "//sw/host/ot_hal:doc_files",
         "//sw/host/ot_transports:doc_files",
+        "//sw/host/penetrationtests:python/README.md",
         "//sw/host/tests/usbdev/usbdev_stream:doc_files",
         "//sw/host/tpm2_test_server:doc_files",
-        "//sw/host/penetrationtests:python/README.md",
     ],
 )

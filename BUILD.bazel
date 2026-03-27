@@ -23,9 +23,7 @@ filegroup(
         "//third_party:doc_files",
         "//toolchain:doc_files",
         "//util:doc_files",
-    ] + glob(
-        ["rfc/**/*.md"],
-    ),
+    ],
 )
 
 alias(

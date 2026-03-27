@@ -7,9 +7,9 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "doc_files",
     srcs = glob(["**/*.md"]) + [
+        "//sw/acc/code-snippets:README.md",
         "//sw/device:doc_files",
         "//sw/host:doc_files",
         "//sw/vendor:doc_files",
-        "//sw/acc/code-snippets:README.md",
     ],
 )
