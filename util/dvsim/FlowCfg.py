@@ -2,17 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging as log
 import os
 import pprint
 import subprocess
 import sys
 from pathlib import Path
-from shutil import which
+import shutil
+import stat
+import tempfile
+from bs4 import BeautifulSoup
 
 import hjson
-from results_server import NoGCPError, ResultsServer
 from CfgJson import set_target_attribute
 from LauncherFactory import get_launcher_cls
 from Scheduler import Scheduler
@@ -468,157 +469,173 @@ class FlowCfg():
                                         relative_to)
         return "[%s](%s)" % (link_text, relative_link)
 
-    def _publish_results(self, results_server: ResultsServer):
-        '''Publish results to the opentitan web server.
+    def publish_results(self, repository: str, flow: str):
+        """Publish these results to a corresponding repository."""
+        log.info("Publishing results to %s", repository)
+        repo_dir = os.path.expanduser("./scratch/results_repo")
 
-        Results are uploaded to {results_server_page}. If the 'latest'
-        directory exists, then it is renamed to its 'timestamp' directory.
-        Links to the last 7 regression results are appended at the end if the
-        results page.
-        '''
-        # Timeformat for moving the dir
-        tf = "%Y.%m.%d_%H.%M.%S"
+        env = self._setup_ssh_env()
+        self.clone_or_pull(repository, repo_dir, env)
 
-        # Maximum number of links to add to previous results pages at the
-        # bottom of the page that we're generating.
-        max_old_page_links = 7
+        latest_batch_report = os.path.join(self.scratch_path, 'reports', 'latest', 'report.html')
+        # Destination directory should be
+        dest_batch_dir = os.path.join(repo_dir, f"{self.name}_{flow}",
+                                      f"{self.name}_{flow}_{self.timestamp}",
+                                      f"{self.name}", 'reports', 'latest')
+        os.makedirs(dest_batch_dir, exist_ok=True)
+        shutil.copy2(latest_batch_report, os.path.join(dest_batch_dir, 'report.html'))
+        log.info("Copied report for %s", self.name)
 
-        # We're going to try to put things in a directory called "latest". But
-        # there's probably something with that name already. If so, we want to
-        # move the thing that's there already to be at a path based on its
-        # creation time.
+        self._write_index_html(os.path.join(repo_dir, f"{self.name}_{flow}"),
+                               f"{self.name}_{flow}",
+                               f"{self.name}_{flow}_index",
+                               f"{self.name}_{flow}_{self.timestamp}",
+                               os.path.join(f"{self.name}_{flow}_{self.timestamp}",
+                                            self.name,
+                                            'reports', 'latest', 'report.html'))
 
-        # Try to get the creation time of any existing "latest/report.html"
-        latest_dir = '{}/latest'.format(self.rel_path)
-        latest_report_path = '{}/report.html'.format(latest_dir)
-        old_results_time = results_server.get_creation_time(latest_report_path)
+        self._write_index_html(repo_dir,
+                               "Reports",
+                               "index",
+                               f"{self.name}_{flow}",
+                               f"{self.name}_{flow}/{self.name}_{flow}_index.html")
 
-        if old_results_time is not None:
-            # If there is indeed a creation time, we will need to move the
-            # "latest" directory to a path based on that time.
-            old_results_ts = old_results_time.strftime(tf)
-            backup_dir = '{}/{}'.format(self.rel_path, old_results_ts)
-
-            results_server.mv(latest_dir, backup_dir)
-
-        # Do an ls in the results root dir to check what directories exist. If
-        # something goes wrong then continue, behaving as if there were none.
-        try:
-            existing_paths = results_server.ls(self.rel_path)
-        except subprocess.CalledProcessError:
-            log.error('Failed to list {} with gsutil. '
-                      'Acting as if there was nothing.'
-                      .format(self.rel_path))
-            existing_paths = []
-
-        # Do an ls in the results root dir to check what directories exist.
-        existing_basenames = []
-        for existing_path in existing_paths:
-            # Here, existing_path will start with "gs://" and should end in a
-            # time or with "latest" and then a trailing '/'. Split it to find
-            # that the directory basename. The rsplit() here will result in
-            # ["some_path", "basename_we_want", ""]. Grab the middle.
-            existing_parts = existing_path.rsplit('/', 2)
-            existing_basenames.append(existing_parts[1])
-
-        # We want to add pointers to existing directories with recent
-        # timestamps. Sort in reverse (time and lexicographic!) order, then
-        # take the top few results.
-        existing_basenames.sort(reverse=True)
-
-        history_txt = "\n## Past Results\n"
-        history_txt += "- [Latest](../latest/" + self.results_html_name + ")\n"
-        for existing_basename in existing_basenames[:max_old_page_links]:
-            relative_url = '../{}/{}'.format(existing_basename,
-                                             self.results_html_name)
-            history_txt += '- [{}]({})\n'.format(existing_basename,
-                                                 relative_url)
-
-        # Append the history to the results.
-        publish_results_md = self.publish_results_md or self.results_md
-        publish_results_md = publish_results_md + history_txt
-
-        # Export any results dictionary to json
-        suffixes = ['html']
-        json_str = None
-        if hasattr(self, 'results_dict'):
-            suffixes.append('json')
-            json_str = json.dumps(self.results_dict)
-
-        # Export our markdown page to HTML and dump the json to a local file.
-        # These are called publish.html and publish.json locally, but we'll
-        # rename them as part of the upload.
-        self.write_results("publish.html", publish_results_md, json_str)
-
-        html_name_no_suffix = self.results_html_name.split('.', 1)[0]
-        dst_no_suffix = '{}/latest/{}'.format(self.rel_path,
-                                              html_name_no_suffix)
-
-        # Now copy our local files over to the server
-        log.info("Publishing results to %s", self.results_server_url)
-        for suffix in suffixes:
-            src = "{}/publish.{}".format(self.results_dir, suffix)
-            dst = "{}.{}".format(dst_no_suffix, suffix)
-            results_server.upload(src, dst)
-
-    def publish_results(self):
-        """Publish these results to the opentitan web server."""
-        try:
-            server_handle = ResultsServer(self.results_server)
-        except NoGCPError:
-            # We failed to create a results server object at all, so we're not going to be able
-            # to publish any results right now.
-            log.error("Google Cloud SDK not installed. Cannot access the "
-                      "results server")
-            return
+        shutil.copy2(os.path.join(self.proj_root, 'util', 'dvsim', 'style.css'), repo_dir)
 
         for item in self.cfgs:
-            item._publish_results(server_handle)
+            latest_report = os.path.join(item.scratch_path, 'reports', 'latest', 'report.html')
+            if not os.path.exists(latest_report):
+                log.warning("No report found for %s at %s, skipping.", item.name, latest_report)
+                continue
+            dest_dir = os.path.join(repo_dir,
+                                    f"{self.name}_{flow}",
+                                    f"{self.name}_{flow}_{self.timestamp}",
+                                    os.path.basename(item.scratch_path),
+                                    'reports',
+                                    'latest')
+            os.makedirs(dest_dir, exist_ok=True)
+            shutil.copy2(latest_report, os.path.join(dest_dir, 'report.html'))
+            log.info("Copied report for %s", item.name)
 
-        if self.is_primary_cfg:
-            self.publish_results_summary(server_handle)
+        subprocess.run(["git", "-C", repo_dir, "add", "-A"], check=True, env=env)
+        subprocess.run(["git", "-C", repo_dir, "commit", "-m",
+                        f"[dashboard] Update {self.name} {self.flow} {self.timestamp}"],
+                       check=True, env=env)
+        subprocess.run(["git", "-C", repo_dir, "push"], check=True, env=env)
+        log.info("Results published successfully.")
 
-        # Trigger a rebuild of the site/docs which may pull new data from
-        # the published results.
-        self.rebuild_site()
+    def _setup_ssh_env(self) -> dict:
+        """Start an ssh-agent, add the key via askpass, and return the env dict."""
+        passphrase = os.environ.get("SSH_KEY_PASSPHRASE")
 
-    def publish_results_summary(self, results_server: ResultsServer):
-        '''Public facing API for publishing md format results to the opentitan
-        web server.
-        '''
-        # Publish the results page.
-        log.info("Publishing results summary to %s", self.results_server_url)
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
+            f.write(f'#!/bin/sh\necho "{passphrase}"\n')
+            askpass_script = f.name
+        os.chmod(askpass_script, stat.S_IRWXU)
 
-        latest_dir = '{}/latest'.format(self.rel_path)
-        latest_report_path = '{}/report.html'.format(latest_dir)
-        results_server.upload(self.results_page, latest_report_path)
+        env = os.environ.copy()
+        env["SSH_ASKPASS"] = askpass_script
+        env["SSH_ASKPASS_REQUIRE"] = "force"
+        env["DISPLAY"] = ""
+        env["GIT_SSH_COMMAND"] = "ssh -o StrictHostKeyChecking=no"
 
-    def rebuild_site(self):
-        '''Trigger a rebuild of the opentitan.org site using a Cloud Build trigger.
-
-        The Gcloud project which builds and deploys the site ("gold-hybrid-255131") uses
-        a cloudbuild yaml file (util/site/site-builder/cloudbuild-deploy-docs.yaml) to define
-        the rebuilding of the site.
-        A manually-triggered job ('site-builder-manual') has been created, which can be
-        triggered through an appropriately-authenticated Google Cloud SDK command. This
-        function calls that command.
-        '''
-        if which('gcloud') is None:
-            log.error("Google Cloud SDK not installed!"
-                      "Cannot access the Cloud Build API to trigger a site rebuild.")
-            return
-
-        project = 'gold-hybrid-255313'
-        trigger_name = 'site-builder-manual'
-        cmd = f"gcloud beta --project {project} builds triggers run {trigger_name}".split(' ')
         try:
-            cmd_output = subprocess.run(args=cmd,
-                                        shell=True,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT)
-            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-        except Exception as e:
-            log.error(f"{e}: Failed to trigger Cloud Build job to rebuild site:\n\"{cmd}\"")
+            agent = subprocess.run(["ssh-agent", "-s"], check=True, capture_output=True, text=True)
+            for line in agent.stdout.splitlines():
+                if "=" in line and ";" in line:
+                    key, _, rest = line.partition("=")
+                    env[key] = rest.split(";")[0]
+            subprocess.run(["ssh-add"], check=True, env=env, stdin=subprocess.DEVNULL)
+        finally:
+            os.unlink(askpass_script)
+
+        return env
+
+    def clone_or_pull(self, repository: str, local_path: str, env: dict):
+        """Clone the repo if it doesn't exist locally, otherwise pull latest."""
+        try:
+            if not os.path.exists(local_path):
+                subprocess.run(["git", "clone", repository, local_path], check=True, env=env)
+            else:
+                subprocess.run(["git", "-C", local_path, "pull"], check=True, env=env)
+        except FileNotFoundError:
+            log.error("git is not installed or not on PATH. Cannot publish results.")
+            raise
+        except subprocess.TimeoutExpired:
+            log.error("Timed out trying to reach repository: %s", repository)
+            raise
+        except subprocess.CalledProcessError as e:
+            log.error("Git operation failed for %s:\n%s",
+                      repository, e.stderr.decode().strip() if e.stderr else "")
+            raise
+
+    def _write_index_html(self, repo_dir: str, title: str, filename: str, version: str, link: str):
+        """Create or update an index html file with a versioned link, kept alphabetically."""
+        os.makedirs(repo_dir, exist_ok=True)
+        style_src = os.path.join(os.path.dirname(__file__), 'style.css')
+        shutil.copy2(style_src, repo_dir)
+        filepath = os.path.join(repo_dir, f"{filename}.html")
+        if not os.path.exists(filepath):
+            html = f"""<!DOCTYPE html>
+            <html lang="en">
+                <head>
+                    <meta charset="utf-8"/>
+                    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+                    <title>{title}</title>
+                    <link href="style.css" rel="stylesheet"/>
+                </head>
+            <body style="background-color: #ffffff; margin: 0; padding: 0;">
+                <div class="results index-page">
+                    <h1>{title}</h1>
+                    <table>
+                        <thead>
+                        <tr><th>Version</th></tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </body>
+            </html>"""
+            with open(filepath, 'w') as f:
+                f.write(html)
+
+        with open(filepath, 'r') as f:
+            soup = BeautifulSoup(f.read(), 'html.parser')
+
+        tbody = soup.find('tbody')
+
+        for tr in tbody.find_all('tr'):
+            a = tr.find('a')
+            if a and a.text == version:
+                if a['href'] == link:
+                    log.info("Version %s already exists in %s, skipping.", version, filepath)
+                    return
+                else:
+                    a['href'] = link
+                    with open(filepath, 'w') as f:
+                        f.write(str(soup))
+                    return
+
+        new_tr = soup.new_tag('tr')
+        new_td = soup.new_tag('td')
+        new_a = soup.new_tag('a', href=link)
+        new_a.string = version
+        new_td.append(new_a)
+        new_tr.append(new_td)
+
+        inserted = False
+        for tr in tbody.find_all('tr'):
+            a = tr.find('a')
+            if a and a.text > version:
+                tr.insert_before(new_tr)
+                inserted = True
+                break
+        if not inserted:
+            tbody.append(new_tr)
+
+        with open(filepath, 'w') as f:
+            f.write(str(soup))
 
     def has_errors(self):
         return self.errors_seen

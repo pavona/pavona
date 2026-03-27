@@ -626,8 +626,10 @@ def parse_args():
                             "at the end."))
 
     pubg.add_argument("--publish",
-                      action='store_true',
-                      help="Publish results to reports.opentitan.org.")
+                      metavar="REPO",
+                      help="Publish results to the given GitHub repository "
+                           "(e.g. git@github.com:org/repo.git). "
+                           "Requires the SSH_KEY_PASSPHRASE environment variable to be set.")
 
     dvg = parser.add_argument_group('Controlling DVSim itself')
 
@@ -770,6 +772,13 @@ def main():
         cfg.deploy_objects()
         sys.exit(0)
 
+    # Error out if it is a non-publishable config
+    if args.publish is not None:
+        if not args.cov or not cfg.is_primary_cfg:
+            log.fatal("--publish requires --cov to be enabled"
+                      " and for the config file to be a batch sim_cfg")
+            sys.exit(1)
+
     # Deploy the builds and runs
     if args.items:
         # Create deploy objects.
@@ -780,8 +789,8 @@ def main():
         cfg.gen_results(results)
 
         # Publish results
-        if args.publish:
-            cfg.publish_results()
+        if args.publish is not None:
+            cfg.publish_results(args.publish, args.items[0])
 
     else:
         log.error("Nothing to run!")

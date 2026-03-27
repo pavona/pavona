@@ -7,7 +7,6 @@ from pathlib import Path
 
 import hjson
 from OneShotCfg import OneShotCfg
-from results_server import ResultsServer
 from tabulate import tabulate
 from utils import subst_wildcards
 
@@ -255,18 +254,3 @@ class FormalCfg(OneShotCfg):
         self.result_summary[self.name] = summary
 
         return self.results_md
-
-    def _publish_results(self, results_server: ResultsServer):
-        ''' our agreement with tool vendors allows us to publish the summary
-        results (as in gen_results_summary).
-
-        In default this method does nothing: detailed messages from each child
-        cfg will not be published.
-        If the publish_report argument is set to true, this method will only
-        publish a result summary of the child cfg.
-        '''
-        if self.publish_report:
-            self.publish_results_md = self.gen_results_summary()
-            super()._publish_results(results_server)
-        else:
-            return

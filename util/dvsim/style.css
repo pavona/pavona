@@ -1,4 +1,5 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -130,7 +131,7 @@
 }
 
 .results table.col-12 thead tr th:nth-child(n+2):nth-child(-n+3) {
-    background-color: #5C2D91 !important;
+    background-color: #4A1A7A !important;
 }
 
 .results table.col-12 thead tr th:nth-child(4) {
@@ -138,9 +139,70 @@
 }
 
 .results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+12) {
-    background-color: #5C2D91 !important;
+    background-color: #4A1A7A !important;
 }
 
 .results table.col-12 thead tr th:nth-child(13) {
     background-color: #3D1067 !important;
+}
+
+/* Published reports index page additions */
+.results.index-page {
+  border-radius: 8px;
+  margin: 40px auto;
+  padding: 32px 40px;
+  font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+}
+
+.results.index-page td {
+  text-align: left;
+  padding-left: 16px;
+  border: none;
+}
+
+.results.index-page th {
+  text-align: left;
+  background-color: #3D1067 !important;
+  padding-left: 16px;
+  border: none;
+}
+
+.results.index-page::before {
+  height: 4px;
+  background: linear-gradient(90deg, #3D1067, #5C2D91);
+  border-radius: 4px 4px 0 0;
+  margin: -32px -40px 32px -40px;
+}
+
+.results.index-page h1 {
+  color: #000000;
+  letter-spacing: 0.01em;
+  font-weight: 600;
+  text-align: left;
+  font-size: 2.5rem;
+}
+
+.results.index-page tbody tr {
+  background: #FFFFFF;
+}
+
+.results.index-page tbody tr:nth-child(even) {
+  background: #FFFFFF;
+}
+
+.results.index-page td a {
+  font-weight: 500;
+  display: block;
+  padding: 4px 0;
+}
+
+.results.index-page td a:hover {
+  text-decoration: underline;
+}
+
+.results.index-page table {
+  width: 100%;
+  margin: 0;
+  border: none;
+  box-shadow: none;
 }
