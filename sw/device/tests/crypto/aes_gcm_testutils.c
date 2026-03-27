@@ -298,6 +298,9 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
                                        &final_plaintext_bytes_written,
                                        tag_valid));
     *cycles = profile_end(t_start);
+    // Verify total plaintext length matches expected.
+    TRY_CHECK(plaintext_bytes_written + final_plaintext_bytes_written ==
+              test->plaintext_len);
   } else {
     // Call decrypt() with a cycle count timing profile.
     icache_invalidate();

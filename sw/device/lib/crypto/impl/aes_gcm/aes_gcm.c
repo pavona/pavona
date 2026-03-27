@@ -547,6 +547,7 @@ status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
   size_t bytes_written;
   HARDENED_TRY(
       aes_gcm_final(ctx, tag_len, expected_tag, &bytes_written, output));
+  *output_len = bytes_written;
 
   // Compare the expected tag to the actual tag (in constant time).
   *success = hardened_memeq(expected_tag, tag, tag_len);
