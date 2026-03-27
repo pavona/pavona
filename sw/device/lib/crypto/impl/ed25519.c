@@ -22,6 +22,8 @@
 
 otcrypto_status_t otcrypto_ed25519_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  (void)private_key;
+  (void)public_key;
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
@@ -53,12 +55,17 @@ otcrypto_status_t otcrypto_ed25519_verify(
 otcrypto_status_t otcrypto_ed25519_keygen_async_start(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_session_token_t *session_token) {
+  (void)private_key;
+  (void)session_token;
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
     otcrypto_session_token_t session_token, otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
+  (void)session_token;
+  (void)private_key;
+  (void)public_key;
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 

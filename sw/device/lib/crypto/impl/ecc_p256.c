@@ -325,6 +325,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
 otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse(
     const otcrypto_hash_digest_t message_digest,
     otcrypto_word32_buf_t signature) {
+  (void)message_digest;
+  (void)signature;
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
@@ -608,11 +610,15 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
 otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse_async_start(
     const otcrypto_hash_digest_t message_digest,
     otcrypto_session_token_t *session_token) {
+  (void)message_digest;
+  (void)session_token;
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_attestation_endorse_async_finalize(
     otcrypto_session_token_t session_token, otcrypto_word32_buf_t signature) {
+  (void)session_token;
+  (void)signature;
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
