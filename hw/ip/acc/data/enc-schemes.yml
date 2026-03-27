@@ -398,7 +398,7 @@ bnc:
     - shift
     - fg
 
-# Used by bn.lid and bn.sid
+# Used by bn.lid and bn.sid, bn.ld and bn.sd
 bnxid:
   parents:
     - custom0

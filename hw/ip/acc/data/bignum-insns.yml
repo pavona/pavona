@@ -1113,6 +1113,124 @@
       dpp: grs2_inc
       funct3: b101
 
+
+- mnemonic: bn.ld
+  synopsis: Load Word
+  operands:
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: grs
+      doc: |
+        Name of the GPR containing the memory byte address.
+        The value contained in the referenced GPR must be WLEN-aligned.
+    - name: offset
+      abbrev: "off"
+      doc: |
+        Offset value.
+        Must be WLEN-aligned.
+      type: simm<<5
+    - name: grs_inc
+      abbrev: inc
+      type: option(++)
+      doc: |
+        Increment the value in `<grs>` by WLEN/8 (one word).
+  syntax: |
+    <wrd>, <offset>(<grs>[<grs_inc>])
+  doc: |
+    Load a WLEN-bit little-endian value from data memory.
+
+    The load address is `offset` plus the value in the GPR `grs`.
+    The loaded value is stored into the WDR `wrd'.
+
+    After the operation, the value in the GPR `grs` can be optionally incremented:
+
+    - If `grs_inc` is set, the value in `grs` is incremented by value WLEN/8 (one word).
+
+    The memory address must be aligned to WLEN bits.
+    Any address that is unaligned or is above the top of memory results in an error (setting bit `bad_data_addr` in `ERR_BITS`).
+    This instruction takes 2 cycles.
+  lsu:
+    type: mem-load
+    target: [offset, grs]
+    bytes: 32
+  errs:
+    - A `CALL_STACK` error from using `x1` as `grs` when the call stack is empty.
+    - *data-addr
+  iflow:
+    - to: [wrd]
+      from: [dmem]
+    - test:
+        - grs_inc == 1
+      to: [grs]
+      from: [grs]
+  encoding:
+    scheme: bnxid
+    mapping:
+      imm: offset
+      rs2: wrd
+      rs1: grs
+      spp: grs_inc
+      dpp: b0
+      funct3: b010
+
+- mnemonic: bn.sd
+  synopsis: Store Word
+  operands:
+    - name: grs
+      doc: |
+        Name of the GPR containing the memory byte address.
+        The value contained in the referenced GPR must be WLEN-aligned.
+    - name: wrs
+      doc: Name of the source WDR.
+    - name: offset
+      abbrev: "off"
+      doc: |
+        Offset value.
+        Must be WLEN-aligned.
+      type: simm<<5
+    - name: grs_inc
+      type: option(++)
+      abbrev: inc
+      doc: |
+        Increment the value in `<grs>` by WLEN/8 (one word).
+  syntax: |
+    <wrs>, <offset>(<grs>[<grs_inc>])
+  doc: |
+    Store a WDR to memory as a WLEN-bit little-endian value.
+
+    The store address is `offset` plus the value in the GPR `grs`.
+    The value to store is taken from `wrs`.
+
+    After the operation, the value in the GPR `grs` can be optionally incremented.
+
+    - If `grs_inc` is set, the value in `grs` is incremented by the value WLEN/8 (one word).
+
+    The memory address must be aligned to WLEN bits.
+    Any address that is unaligned or is above the top of memory results in an error (setting bit `bad_data_addr` in `ERR_BITS`).
+  errs:
+    - A `CALL_STACK` error from using `x1` as `grs` when the call stack is empty.
+    - *data-addr
+  lsu:
+    type: mem-store
+    target: [offset, grs]
+    bytes: 32
+  iflow:
+    - to: [dmem]
+      from: [wrs]
+    - test:
+        - grs_inc == 1
+      to: [grs]
+      from: [grs]
+  encoding:
+    scheme: bnxid
+    mapping:
+      imm: offset
+      rs2: wrs
+      rs1: grs
+      spp: grs_inc
+      dpp: b1
+      funct3: b010
+
 - mnemonic: bn.mov
   synopsis: Copy content between WDRs (direct addressing)
   operands: [wrd, wrs]
