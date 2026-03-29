@@ -68,5 +68,12 @@
         "spid_passthrough_addr4b"
       ]
     }
+    {
+      name: weekly
+      tests: [
+        "spid_passthrough_readbasic",
+        "spid_passthrough_addr4b"
+      ]
+    }
   ]
 }

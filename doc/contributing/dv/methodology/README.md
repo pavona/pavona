@@ -44,7 +44,7 @@ DV effort needs to be well documented to not only provide a detailed description
 The first is provided by the **testplan** document and the second, by the **DV document**.
 The [**project status**](../../../contributing/hw/development_stages.md#indicating-stages-and-making-transitions) document tracks to progression of the effort through the stages.
 
-In addition to these documents, a nightly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
+In addition to these documents, a nightly and a weekly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
 
 To effectively document all these pieces, there are some key tooling components which are also discussed briefly below.
 

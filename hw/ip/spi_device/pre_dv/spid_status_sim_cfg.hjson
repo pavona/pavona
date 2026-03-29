@@ -33,5 +33,9 @@
       name: nightly
       tests: ["spid_status_smoke"]
     }
+    {
+      name: weekly
+      tests: ["spid_status_smoke"]
+    }
   ]
 }

@@ -38,6 +38,10 @@
     }
     {
       name: nightly
+      reseed: 1
+    }
+    {
+      name: weekly
     }
   ]
   // -- END --

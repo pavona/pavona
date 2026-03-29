@@ -25,8 +25,8 @@ This allows contributors to rely on a stable development base for testing new ch
 Upon creating a Pull Request (PR) in GitHub against the `pavona` respository, continuous integration jobs will automatically trigger.
 You can check the status of the running CI jobs in the `Checks` tab after navigating to your Pull Request.
 
-We also run nightly regressions on main branches that trigger automatically and include tests that are not reasonable to run on every PR.
-You can view the result of the most recent nightly regression by navigating to the repository's `Actions` tab and clicking the `Nightly` workflow on the left pane.
+We also run nightly and weekly regressions on main branches that trigger automatically and include tests that are not reasonable to run on every PR.
+You can view the result of the most recent regression by navigating to the repository's `Actions` tab and clicking the `Nightly` or `Weekly` workflow on the left pane.
 
 ## Contributing Tests
 

@@ -29,5 +29,9 @@
       name: nightly
       tests: ["spid_upload_smoke"]
     }
+    {
+      name: weekly
+      tests: ["spid_upload_smoke"]
+    }
   ]
 }

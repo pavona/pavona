@@ -100,7 +100,8 @@ Please see [TBD]() for more details.
 
 DVSim provides these standard regression targets for all DUTs:
 - `smoke` (typically run in CI checks)
-- `nightly` (a full regression with coverage enabled, that is run every night)
+- `nightly` (a full regression with a single seed and coverage enabled, that is run every night)
+- `weekly` (a full regression with coverage enabled, that is run every night)
 - `v1` / `v2` / `v3` (DVSim automatically extracts tests that are tagged V1 / V2 / V3 and creates a regression target).
 - `all` (runs all tests with the preset reseeds, without coverage)
 - `all_once` (run all tests with only a single randomly chosen seed)

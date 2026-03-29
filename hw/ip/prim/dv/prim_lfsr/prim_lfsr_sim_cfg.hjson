@@ -110,5 +110,12 @@
              "prim_lfsr_gal_test",
              "prim_lfsr_fib_test"]
     }
+    {
+      name: weekly
+      tests:["prim_lfsr_gal_smoke",
+             "prim_lfsr_fib_smoke",
+             "prim_lfsr_gal_test",
+             "prim_lfsr_fib_test"]
+    }
   ]
 }

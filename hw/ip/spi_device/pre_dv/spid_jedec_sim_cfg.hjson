@@ -29,5 +29,9 @@
       name: nightly
       tests: ["spid_jedec_smoke"]
     }
+    {
+      name: weekly
+      tests: ["spid_jedec_smoke"]
+    }
   ]
 }

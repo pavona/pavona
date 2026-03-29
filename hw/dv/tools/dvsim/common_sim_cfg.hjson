@@ -109,8 +109,9 @@
   build_modes: []
 
   // Regressions are tests that can be grouped together and run in one shot
-  // By default, two regressions are made available - "all" and "nightly". Both
-  // run all available tests for the DUT. "nightly" enables coverage as well.
+  // By default, five regressions are made available - "smoke", "all", "all_once", "nightly"
+  // and "weekly". The last four run all available tests for the DUT, with different reseed values.
+  // For "weekly" and "nightly", coverage is enabled as well.
   // The 'tests' key is set to an empty list, which indicates "run everything".
   // Regressions can enable sim modes, which are a set of build_opts and run_opts
   // that are grouped together. These are appended to the build modes used by the
@@ -133,6 +134,11 @@
     }
     {
       name: nightly
+      reseed: 1
+      en_sim_modes: ["cov"]
+    }
+    {
+      name: weekly
       en_sim_modes: ["cov"]
     }
   ]

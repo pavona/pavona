@@ -29,5 +29,9 @@
       name: nightly
       tests: ["spid_readcmd_smoke"]
     }
+    {
+      name: weekly
+      tests: ["spid_readcmd_smoke"]
+    }
   ]
 }

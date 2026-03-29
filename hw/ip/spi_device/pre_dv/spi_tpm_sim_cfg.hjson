@@ -33,5 +33,9 @@
       name: nightly
       tests: ["spi_tpm_smoke"]
     }
+    {
+      name: weekly
+      tests: ["spi_tpm_smoke"]
+    }
   ]
 }
