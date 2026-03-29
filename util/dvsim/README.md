@@ -45,4 +45,4 @@ Note that you may have already done this if you followed the getting started ste
 
 ## Bugs
 
-Please see [link](https://github.com/zerorisc/wanta/issues) for a list of open bugs and feature requests.
+Please see [link](https://github.com/pavona/pavona/issues) for a list of open bugs and feature requests.

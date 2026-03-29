@@ -12,6 +12,10 @@ In Pavona, the build stage broadly performs the following steps:
 
 ## Build configuration
 
+A build configuration refers to the specific set of options and settings used to compile and elaborate the DUT into a simulation executable or database.
+It is uniquely identified by its build mode, which determines the compile-time and elaboration-time options applied.
+Each unique build configuration is generated in its own directory to avoid conflicts with other configurations.
+
 ## Build modes
 
 A test or a subset of tests may require the DUT to be modified a certain way at compile time (typically via `+define+` preprocessor macros) or elaboration time (typically, modification of design parameter values).
@@ -92,6 +96,11 @@ In Pavona, this step is accomplished by [FuseSoC](https://fusesoc.readthedocs.io
 
 ## Random seed
 
+A random seed is an integer value used to initialize the pseudo-random number generator (PRNG) used during a simulation run.
+Since constrained-random verification relies on randomization to generate stimulus, the seed determines the sequence of random values generated during a simulation.
+Running the same test with the same seed will always produce the same sequence of random values, making it possible to reproduce a failing test.
+Different seeds will produce different random sequences, allowing the same test to exercise different scenarios.
+
 ## Regressions
 
 A regression is a group of tests that are labeled with a target name.
@@ -101,16 +110,34 @@ Please see [TBD]() for more details.
 DVSim provides these standard regression targets for all DUTs:
 - `smoke` (typically run in CI checks)
 - `nightly` (a full regression with a single seed and coverage enabled, that is run every night)
-- `weekly` (a full regression with coverage enabled, that is run every night)
+- `weekly` (a full regression with coverage enabled, that is run every weekend)
 - `v1` / `v2` / `v3` (DVSim automatically extracts tests that are tagged V1 / V2 / V3 and creates a regression target).
 - `all` (runs all tests with the preset reseeds, without coverage)
 - `all_once` (run all tests with only a single randomly chosen seed)
 
 ## Reseeds
 
+Reseeding refers to the number of times a test is run with a different random seed.
+Running a test multiple times with different seeds increases the probability of hitting corner cases and bugs.
+The reseed value for a test can be specified in the DUT configuration file or overridden on the command line via `--reseed`.
+
 ## Run
 
+"Run" refers to the invocation of a previously built simulation executable to execute a specific test.
+In Pavona, the run stage broadly performs the following steps:
+
+- Create the run `scratch` directory.
+- Execute any pre-run utility scripts, if provided.
+- Invoke the simulation executable with the required runtime options, including the UVM test name and the random seed.
+- Execute any post-run utility scripts, if provided.
+- Parse the simulation log to determine whether the test passed or failed.
+
 ## Run modes
+
+A run mode encapsulates a list of special runtime options that may be applied to a simulation run.
+These are typically runtime plusargs (e.g. `+myarg=value`) or tool-specific runtime flags that alter the behavior of the simulation without requiring a recompilation of the executable.
+A test specification may specify one or more run modes to be applied to it.
+Run modes may also be enabled on the command line.
 
 ## Sim modes
 
