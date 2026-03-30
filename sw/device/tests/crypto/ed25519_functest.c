@@ -52,6 +52,8 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
 };
 
 status_t sign_then_verify_test(hardened_bool_t *verification_result,
+                               otcrypto_eddsa_sign_mode_t sign_mode,
+                               const uint8_t *msg, size_t msg_len,
                                const uint8_t *ctx, size_t ctx_len) {
   // Set up private key.
   otcrypto_blinded_key_t private_key = {
@@ -71,23 +73,24 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result,
   private_key.checksum = integrity_blinded_checksum(&private_key);
   public_key.checksum = integrity_unblinded_checksum(&public_key);
 
-  // Hash the message.
-  otcrypto_const_byte_buf_t msg = {
-      .data = (unsigned char *)&kMessage,
-      .len = sizeof(kMessage) - 1,
-  };
   uint32_t msg_digest_data[512 / 32];
-  otcrypto_hash_digest_t msg_digest = {
-      .data = msg_digest_data,
-      .len = ARRAYSIZE(msg_digest_data),
-  };
-  TRY(otcrypto_sha2_512(msg, &msg_digest));
-
-  // Convert the hashed message into a const byte buffer.
-  otcrypto_const_byte_buf_t msg_digest_buf = {
-      .data = (uint8_t *)msg_digest_data,
-      .len = sizeof(msg_digest_data),
-  };
+  if (sign_mode == kOtcryptoEddsaSignModeHashEddsa) {
+    // Hash the message for HashEd25519.
+    otcrypto_const_byte_buf_t raw_msg = {
+        .data = msg,
+        .len = msg_len,
+    };
+    otcrypto_hash_digest_t msg_digest = {
+        .data = msg_digest_data,
+        .len = ARRAYSIZE(msg_digest_data),
+    };
+    TRY(otcrypto_sha2_512(raw_msg, &msg_digest));
+  }
+  otcrypto_const_byte_buf_t message =
+      (sign_mode == kOtcryptoEddsaSignModeHashEddsa)
+          ? (otcrypto_const_byte_buf_t){.data = (uint8_t *)msg_digest_data,
+                                        .len = sizeof(msg_digest_data)}
+          : (otcrypto_const_byte_buf_t){.data = msg, .len = msg_len};
 
   // Allocate space for the signature.
   uint32_t sig[kEd25519SignatureWords] = {0};
@@ -95,15 +98,16 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result,
   otcrypto_const_byte_buf_t context = {.data = ctx, .len = ctx_len};
 
   // Generate a signature for the message.
-  LOG_INFO("Signing (ctx_len=%d)...", ctx_len);
+  LOG_INFO("Signing (mode=%d, msg_len=%d, ctx_len=%d)...", sign_mode,
+           message.len, ctx_len);
   CHECK_STATUS_OK(otcrypto_ed25519_sign(
-      &private_key, msg_digest_buf, context, kOtcryptoEddsaSignModeHashEddsa,
+      &private_key, message, context, sign_mode,
       (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
-      &public_key, msg_digest_buf, context, kOtcryptoEddsaSignModeHashEddsa,
+      &public_key, message, context, sign_mode,
       (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
       verification_result));
 
@@ -115,14 +119,16 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
-  // Test with various context lengths.
-  uint8_t ctx_buf[160];
+  // Test HashEd25519 with various context lengths.
+  uint8_t ctx_buf[255];
   memset(ctx_buf, 0x42, sizeof(ctx_buf));
-  size_t ctx_lens[] = {0, 8, 96, 160, 8, 32};
+  size_t ctx_lens[] = {0, 1, 8, 31, 32, 33, 96, 160, 8, 255};
 
   for (size_t i = 0; i < ARRAYSIZE(ctx_lens); i++) {
     hardened_bool_t result;
-    status_t err = sign_then_verify_test(&result, ctx_buf, ctx_lens[i]);
+    status_t err = sign_then_verify_test(
+        &result, kOtcryptoEddsaSignModeHashEddsa, (const uint8_t *)kMessage,
+        sizeof(kMessage) - 1, ctx_buf, ctx_lens[i]);
     if (!status_ok(err)) {
       LOG_INFO("ACC error bits: 0x%08x", acc_err_bits_get());
       LOG_INFO("ACC instruction count: 0x%08x", acc_instruction_count_get());
@@ -130,8 +136,33 @@ bool test_main(void) {
       return false;
     }
     if (result != kHardenedBoolTrue) {
-      LOG_ERROR("Verification failed (ctx_len=%d)!", ctx_lens[i]);
+      LOG_ERROR("HashEd25519 verification failed (ctx_len=%d)!", ctx_lens[i]);
       return false;
+    }
+  }
+
+  // Test pure Ed25519 with various message lengths.
+  {
+    static uint8_t msg_buf[4097];
+    memset(msg_buf, 0xA5, sizeof(msg_buf));
+    size_t msg_lens[] = {0,   1,   3,    31,   32,   33,   64,  127,
+                         128, 129, 1279, 1280, 1281, 2560, 4097};
+
+    for (size_t i = 0; i < ARRAYSIZE(msg_lens); i++) {
+      hardened_bool_t result;
+      status_t err = sign_then_verify_test(&result, kOtcryptoEddsaSignModeEddsa,
+                                           msg_buf, msg_lens[i], NULL, 0);
+      if (!status_ok(err)) {
+        LOG_INFO("ACC error bits: 0x%08x", acc_err_bits_get());
+        LOG_INFO("ACC instruction count: 0x%08x", acc_instruction_count_get());
+        CHECK_STATUS_OK(err);
+        return false;
+      }
+      if (result != kHardenedBoolTrue) {
+        LOG_ERROR("Pure Ed25519 verification failed (msg_len=%d)!",
+                  msg_lens[i]);
+        return false;
+      }
     }
   }
 

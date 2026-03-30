@@ -4,9 +4,29 @@
 
 [
   {
-    symbol: "ed25519_sign_top",
-    const_str: "Ed25519Sign",
-    comment: "Ed25519 signing",
+    symbol: "ed25519_sign_hash_top",
+    const_str: "Ed25519SignHash",
+    comment: "Ed25519 signing (HashEd25519)",
+  },
+  {
+    symbol: "ed25519_sign_pure_init_top",
+    const_str: "Ed25519SignPureInit",
+    comment: "Ed25519 pure signing (init phase)",
+  },
+  {
+    symbol: "ed25519_sign_pure_update_top",
+    const_str: "Ed25519SignPureUpdate",
+    comment: "Ed25519 pure signing (update phase)",
+  },
+  {
+    symbol: "ed25519_sign_pure_mid_top",
+    const_str: "Ed25519SignPureMid",
+    comment: "Ed25519 pure signing (mid phase)",
+  },
+  {
+    symbol: "ed25519_sign_pure_final_top",
+    const_str: "Ed25519SignPureFinal",
+    comment: "Ed25519 pure signing (final phase)",
   },
   {
     symbol: "ed25519_verify_top",

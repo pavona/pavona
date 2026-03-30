@@ -91,6 +91,22 @@ acc_sim_test(
 )
 
 acc_sim_test(
+    name = "ed25519_sign_pure_test",
+    srcs = [
+        "ed25519_sign_pure_test.s",
+    ],
+    dexp = "ed25519_sign_pure_test.dexp",
+    deps = [
+        "//sw/acc/crypto:ed25519",
+        "//sw/acc/crypto:ed25519_scalar",
+        "//sw/acc/crypto:field25519",
+        "//sw/acc/crypto:sha512_compact",
+        "//sw/acc/crypto:sha512_interface",
+        "//sw/acc/crypto:sha512_padding",
+    ],
+)
+
+acc_sim_test(
     name = "ed25519_verify_test",
     srcs = [
         "ed25519_verify_test.s",

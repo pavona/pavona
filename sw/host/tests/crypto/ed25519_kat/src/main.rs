@@ -114,6 +114,13 @@ fn run_ed25519_sign(
 ) -> Result<bool> {
     Ed25519Subcommand::Ed25519Siggen.send(spi_console)?;
 
+    let sign_mode = match test_case.sign_mode.as_str() {
+        "eddsa" => CryptotestEd25519SignMode::Eddsa,
+        "hash_eddsa" => CryptotestEd25519SignMode::HashEddsa,
+        _ => panic!("Unknown sign mode: {}", test_case.sign_mode),
+    };
+    sign_mode.send(spi_console)?;
+
     let mut sk = ArrayVec::new();
     sk.try_extend_from_slice(&test_case.private_key)?;
     let mut pk = ArrayVec::new();

@@ -101,8 +101,24 @@ static status_t handle_ed25519_sigver(ujson_t *uj) {
 }
 
 static status_t handle_ed25519_siggen(ujson_t *uj) {
+  cryptotest_ed25519_sign_mode_t uj_sign_mode;
+  TRY(ujson_deserialize_cryptotest_ed25519_sign_mode_t(uj, &uj_sign_mode));
+
   cryptotest_ed25519_siggen_data_t uj_data;
   TRY(ujson_deserialize_cryptotest_ed25519_siggen_data_t(uj, &uj_data));
+
+  // Map the ujson sign mode to the cryptolib enum.
+  otcrypto_eddsa_sign_mode_t sign_mode;
+  switch (uj_sign_mode) {
+    case kCryptotestEd25519SignModeEddsa:
+      sign_mode = kOtcryptoEddsaSignModeEddsa;
+      break;
+    case kCryptotestEd25519SignModeHashEddsa:
+      sign_mode = kOtcryptoEddsaSignModeHashEddsa;
+      break;
+    default:
+      return INVALID_ARGUMENT();
+  }
 
   // Set up the private key.
   uint32_t sk_data[kEd25519PrivateKeyBytes / sizeof(uint32_t)];
@@ -115,7 +131,7 @@ static status_t handle_ed25519_siggen(ujson_t *uj) {
   };
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
-  // Set up the pre-hashed message.
+  // Set up the message.
   otcrypto_const_byte_buf_t message = {
       .data = uj_data.message,
       .len = uj_data.message_len,
@@ -135,8 +151,8 @@ static status_t handle_ed25519_siggen(ujson_t *uj) {
   };
 
   // Sign.
-  otcrypto_status_t status = otcrypto_ed25519_sign(
-      &private_key, message, context, kOtcryptoEddsaSignModeHashEddsa, sig_buf);
+  otcrypto_status_t status =
+      otcrypto_ed25519_sign(&private_key, message, context, sign_mode, sig_buf);
 
   // Verify the signature we just produced.
   if (status_ok(status)) {
@@ -153,9 +169,8 @@ static status_t handle_ed25519_siggen(ujson_t *uj) {
     hardened_bool_t verification_result = kHardenedBoolFalse;
     otcrypto_const_word32_buf_t sig_const = {.data = sig,
                                              .len = ARRAYSIZE(sig)};
-    TRY(otcrypto_ed25519_verify(&public_key, message, context,
-                                kOtcryptoEddsaSignModeHashEddsa, sig_const,
-                                &verification_result));
+    TRY(otcrypto_ed25519_verify(&public_key, message, context, sign_mode,
+                                sig_const, &verification_result));
     if (verification_result != kHardenedBoolTrue) {
       LOG_ERROR("Ed25519 signature verification failed after signing");
       return INTERNAL();

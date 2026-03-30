@@ -6,14 +6,11 @@
 """Parser for converting ACVP EdDSA testvectors to JSON.
 
 Uses the internalProjection files from the NIST ACVP-Server repo.
-Only Ed25519ph (preHash=true) is supported, since the cryptolib only
-implements HashEdDSA mode.
+Supports both pure Ed25519 (preHash=false) and HashEd25519
+(preHash=true).
 
-For SigVer, the parser pre-hashes the message with SHA-512 so the
+For HashEd25519, the parser pre-hashes the message with SHA-512 so the
 firmware receives the 64-byte digest directly.
-
-For SigGen, the parser pre-hashes the message and emits the private
-key, context, and expected signature.
 """
 
 import argparse
@@ -62,30 +59,36 @@ def parse_sigver(data):
 def parse_siggen(data):
     """Parse EDDSA-SigGen internalProjection.
 
-    Only Ed25519 with preHash=true (Ed25519ph / HashEdDSA) is selected.
-    The message is pre-hashed with SHA-512 before output.
+    Supports both pure Ed25519 (preHash=false) and HashEd25519
+    (preHash=true). For HashEd25519, the message is pre-hashed with
+    SHA-512 before output.
     """
     test_vectors = []
     for group in data["testGroups"]:
         if group["curve"] != "ED-25519":
             continue
-        if not group.get("preHash", False):
-            continue
 
+        pre_hash = group.get("preHash", False)
         d = list(bytes.fromhex(group["d"]))
         q = list(bytes.fromhex(group["q"]))
         for test in group["tests"]:
             msg_bytes = bytes.fromhex(test["message"])
             context = list(bytes.fromhex(test.get("context", "")))
+            if pre_hash:
+                message = list(hashlib.sha512(msg_bytes).digest())
+                sign_mode = "hash_eddsa"
+            else:
+                message = list(msg_bytes)
+                sign_mode = "eddsa"
             test_vectors.append({
                 "vendor": "acvp",
                 "test_case_id": test["tcId"],
                 "algorithm": "ed25519",
                 "operation": "sign",
-                "sign_mode": "hash_eddsa",
+                "sign_mode": sign_mode,
                 "private_key": d,
                 "public_key": q,
-                "message": list(prehash),
+                "message": message,
                 "context": context,
                 "expected_signature": list(bytes.fromhex(test["signature"])),
                 "result": True,

@@ -138,7 +138,7 @@ typedef struct ed25519_signature {
 ;
 
 /**
- * Start an async Ed25519ph signature generation operation on ACC.
+ * Start an async HashEd25519 signature generation operation on ACC.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
@@ -150,26 +150,49 @@ typedef struct ed25519_signature {
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t ed25519_sign_start(
+status_t ed25519_sign_hash_start(
     const uint32_t prehashed_message[kEd25519PreHashWords],
     const uint32_t hash_h[kEd25519HashWords],
     const uint32_t context[kEd25519ContextWords], const uint32_t context_length,
     uint32_t *session_token);
 
 /**
- * Finish an async Ed25519 signature generation operation on ACC.
+ * Start an async pure Ed25519 signature generation operation on ACC.
  *
- * See the documentation of `p256_ecdsa_sign` for details.
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
- * Blocks until ACC is idle.
+ * @param message Message to sign (word-aligned).
+ * @param message_len Length of the message in bytes.
+ * @param hash_h SHA-512 hash of the Ed25519 private key to sign with.
+ * @param[out] session_token ACC session token for the operation.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t ed25519_sign_pure_start(const uint32_t *message, size_t message_len,
+                                 const uint32_t hash_h[kEd25519HashWords],
+                                 uint32_t *session_token);
+
+/**
+ * Finish an async HashEd25519 signature generation operation on ACC.
  *
  * @param session_token ACC session token for the operation.
  * @param[out] result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t ed25519_sign_finalize(uint32_t session_token,
-                               ed25519_signature_t *result);
+status_t ed25519_sign_hash_finalize(uint32_t session_token,
+                                    ed25519_signature_t *result);
+
+/**
+ * Finish an async pure Ed25519 signature generation operation on ACC.
+ *
+ * @param session_token ACC session token for the operation.
+ * @param[out] result Buffer in which to store the generated signature.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t ed25519_sign_pure_finalize(uint32_t session_token,
+                                    ed25519_signature_t *result);
 
 /**
  * Start an async Ed25519 signature verification operation on ACC.

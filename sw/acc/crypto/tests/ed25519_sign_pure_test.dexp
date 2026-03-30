@@ -1,0 +1,5 @@
+# Expected signature from RFC 8032 section 7.1 TEST 2.
+# Note: bytes are reversed here compared to the standard bytewise
+# representation of the signature.
+ed25519_sig_R: a909a092b8cad4f00b820e724025645f547bb2a28f3f5016232276b3da69dbeb
+ed25519_sig_S: e4c15a086e99153e13368f458c1df1d0ae2e7b38ee2a30b416290db0000cbb12

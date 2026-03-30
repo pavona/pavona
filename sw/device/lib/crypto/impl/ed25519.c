@@ -32,7 +32,8 @@ otcrypto_status_t otcrypto_ed25519_sign(
   HARDENED_TRY(otcrypto_ed25519_sign_async_start(
       private_key, input_message, context, sign_mode, &session_token));
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
-  return otcrypto_ed25519_sign_async_finalize(session_token, signature);
+  return otcrypto_ed25519_sign_async_finalize(session_token, sign_mode,
+                                              signature);
 }
 
 otcrypto_status_t otcrypto_ed25519_verify(
@@ -147,20 +148,22 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  // Check the mode; currently, only HashEd25519 is allowed.
-  if (launder32(sign_mode) != kOtcryptoEddsaSignModeHashEddsa) {
+  // Check the sign mode and message/context constraints.
+  if (launder32(sign_mode) == kOtcryptoEddsaSignModeHashEddsa) {
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
+    if (launder32(input_message.len) != kEd25519PreHashBytes) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_EQ(input_message.len, kEd25519PreHashBytes);
+  } else if (launder32(sign_mode) == kOtcryptoEddsaSignModeEddsa) {
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeEddsa);
+    if (launder32(context.len) != 0) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_EQ(context.len, 0);
+  } else {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
-
-  // Check the input message size: since only HashEd25519 is allowed presently,
-  // this must be the full size of the prehash output.
-  if (launder32(input_message.len) != kEd25519PreHashBytes) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(input_message.len, kEd25519PreHashBytes);
-
-  // TODO: how will we check context size? should we?
 
   // Check the integrity of the private key.
   if (launder32(integrity_blinded_key_check(private_key)) !=
@@ -186,25 +189,31 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
   // Copy the input message into a 32-bit aligned buffer.
   size_t input_message_wordlen = ceil_div(input_message.len, sizeof(uint32_t));
   uint32_t input_message_aligned[input_message_wordlen];
-  // TODO(#17711) Change to `hardened_memcpy`.
+  memset(input_message_aligned, 0, sizeof(input_message_aligned));
   memcpy(input_message_aligned, input_message.data, input_message.len);
-  memset(input_message_aligned, 0,
-         sizeof(input_message_aligned) - input_message.len);
-
-  // Copy the context into a 32-bit aligned buffer.
-  size_t context_wordlen = ceil_div(context.len, sizeof(uint32_t));
-  uint32_t context_aligned[context_wordlen];
-  // TODO(#17711) Change to `hardened_memcpy`.
-  memcpy(context_aligned, context.data, context.len);
-  memset(context_aligned, 0, sizeof(context_aligned) - context.len);
 
   // Start the asynchronous signature-generation routine.
-  return ed25519_sign_start(input_message_aligned, hash_h, context_aligned,
-                            context.len, session_token);
+  if (launder32(sign_mode) == kOtcryptoEddsaSignModeHashEddsa) {
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
+    // Copy the context into a 32-bit aligned buffer.
+    size_t context_wordlen = ceil_div(context.len, sizeof(uint32_t));
+    uint32_t context_aligned[context_wordlen];
+    // TODO(#17711) Change to `hardened_memcpy`.
+    memset(context_aligned, 0, sizeof(context_aligned));
+    memcpy(context_aligned, context.data, context.len);
+    return ed25519_sign_hash_start(input_message_aligned, hash_h,
+                                   context_aligned, context.len, session_token);
+  } else if (launder32(sign_mode) == kOtcryptoEddsaSignModeEddsa) {
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeEddsa);
+    return ed25519_sign_pure_start(input_message_aligned, input_message.len,
+                                   hash_h, session_token);
+  }
+  return OTCRYPTO_BAD_ARGS;
 }
 
 otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
-    otcrypto_session_token_t session_token, otcrypto_word32_buf_t signature) {
+    otcrypto_session_token_t session_token,
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature) {
   if (signature.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -219,7 +228,14 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
   // Note: This operation wipes DMEM, so if an error occurs after this
   // point then the signature would be unrecoverable. This should be the
   // last potentially error-causing line before returning to the caller.
-  return ed25519_sign_finalize(session_token, sig_ed25519);
+  if (launder32(sign_mode) == kOtcryptoEddsaSignModeHashEddsa) {
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
+    return ed25519_sign_hash_finalize(session_token, sig_ed25519);
+  } else if (launder32(sign_mode) == kOtcryptoEddsaSignModeEddsa) {
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeEddsa);
+    return ed25519_sign_pure_finalize(session_token, sig_ed25519);
+  }
+  return OTCRYPTO_BAD_ARGS;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -299,12 +315,6 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
-
-  // Check the mode; currently, only HashEd25519 is allowed.
-  if (launder32(sign_mode) != kOtcryptoEddsaSignModeHashEddsa) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
 
   // Check the integrity of the public key.
   if (launder32(integrity_unblinded_key_check(public_key)) !=

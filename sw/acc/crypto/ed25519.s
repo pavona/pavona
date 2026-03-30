@@ -240,7 +240,7 @@ ed25519_verify_var:
 /**
  * Top-level Ed25519ph signature generation operation.
  *
- * Returns an 512-bit signature (R_ || S).
+ * Returns a 512-bit signature (R_ || S).
  *
  * Briefly, the signature generation algorithm is:
  *   1. Compute h = SHA-512(d). Denote the second half of h as prefix.
@@ -266,7 +266,7 @@ ed25519_verify_var:
  * @param[out] dmem[ed25519_sig_R]: R component of signature (256 bits)
  * @param[out] dmem[ed25519_sig_S]: S component of signature (256 bits)
  *
- * clobbered registers: x2 to x4, x20 to x23, w1 to w30
+ * clobbered registers: x2 to x5, x10 to x23, x28, w0 to w31
  * clobbered flag groups: FG0
  */
 .globl ed25519_sign_prehashed
@@ -284,7 +284,7 @@ ed25519_sign_prehashed:
   or       x4, x4, x2
   sw       x4, 32(x3)
 
-  /* dmem[ed25519_r] <= SHA-512(domain-separator || h[63:32] || PH(M)) */
+  /* dmem[ed25519_hash_r] <= SHA-512(domain-separator || h[63:32] || PH(M)) */
   jal      x1, sha512_init
   li       x18, 34
   la       x20, ed25519_prehash_dom_sep
@@ -303,6 +303,186 @@ ed25519_sign_prehashed:
   la       x18, ed25519_hash_r
   jal      x1, sha512_final
 
+  /* Compute R and A from hash_r and hash_h. */
+  jal      x1, _ed25519_sign_compute_r_a
+
+  /* dmem[ed25519_hash_k] <= SHA-512(domain-separator || R_ || A_ || PH(M)) */
+  jal      x1, sha512_init
+  li       x18, 34
+  la       x20, ed25519_prehash_dom_sep
+  jal      x1, sha512_update
+  la       x18, ed25519_ctx_len
+  lw       x18, 0(x18)
+  la       x20, ed25519_ctx
+  jal      x1, sha512_update
+  li       x18, 32
+  la       x20, ed25519_sig_R
+  jal      x1, sha512_update
+  li       x18, 32
+  la       x20, ed25519_public_key
+  jal      x1, sha512_update
+  li       x18, 64
+  la       x20, ed25519_message
+  jal      x1, sha512_update
+  la       x18, ed25519_hash_k
+  jal      x1, sha512_final
+
+  /* Compute S from hash_k, hash_h, and hash_r. */
+  jal      x1, _ed25519_sign_compute_s
+
+  ret
+
+/**
+ * Incremental pure Ed25519 signing - INIT phase.
+ *
+ * Begins the nonce hash r = SHA-512(prefix || M) by hashing the key prefix
+ * (upper 32 bytes of h) and the first message chunk.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[ed25519_hash_h]: hash of secret key (512 bits)
+ * @param[in]  dmem[ed25519_message]: first message chunk (up to 1280 bytes)
+ * @param[in]  dmem[ed25519_message_len]: chunk length in bytes (32 bits)
+ *
+ * clobbered registers: x2, x3, x10 to x22, x28, w0 to w7, w10, w15 to w29, w31
+ * clobbered flag groups: FG0
+ */
+.globl ed25519_sign_pure_init
+ed25519_sign_pure_init:
+  bn.xor   w31, w31, w31
+  jal      x1, sha512_init
+  li       x18, 32
+  la       x20, ed25519_hash_h
+  addi     x20, x20, 32
+  jal      x1, sha512_update
+  la       x18, ed25519_message_len
+  lw       x18, 0(x18)
+  la       x20, ed25519_message
+  jal      x1, sha512_update
+  ret
+
+/**
+ * Incremental pure Ed25519 signing - UPDATE phase.
+ *
+ * Feeds more message data into the current hash (nonce or challenge).
+ * Used for both the nonce hash r = SHA-512(prefix || M) and the challenge
+ * hash k = SHA-512(R_ || A_ || M) when the message exceeds one chunk.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[ed25519_message]: message chunk (up to 1280 bytes)
+ * @param[in]  dmem[ed25519_message_len]: chunk length in bytes (32 bits)
+ *
+ * clobbered registers: x2, x3, x10 to x22, x28, w0 to w7, w10, w15 to w29, w31
+ * clobbered flag groups: FG0
+ */
+.globl ed25519_sign_pure_update
+ed25519_sign_pure_update:
+  bn.xor   w31, w31, w31
+  la       x18, ed25519_message_len
+  lw       x18, 0(x18)
+  la       x20, ed25519_message
+  jal      x1, sha512_update
+  ret
+
+/**
+ * Incremental pure Ed25519 signing - MID phase.
+ *
+ * Finalizes the nonce hash to get r, computes the signature point
+ * R_ = encode([r]B) and public key A_ = encode([s]B), then begins the
+ * challenge hash k = SHA-512(R_ || A_ || M) with the first message chunk.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[ed25519_hash_h]: hash of secret key (512 bits)
+ * @param[in]  dmem[ed25519_message]: first message chunk (up to 1280 bytes)
+ * @param[in]  dmem[ed25519_message_len]: chunk length in bytes (32 bits)
+ * @param[out] dmem[ed25519_sig_R]: R component of signature (256 bits)
+ * @param[out] dmem[ed25519_public_key]: encoded public key A_ (256 bits)
+ *
+ * clobbered registers: x2 to x5, x10 to x23, x28, w0 to w31, acc, mod
+ * clobbered flag groups: FG0
+ */
+.globl ed25519_sign_pure_mid
+ed25519_sign_pure_mid:
+  bn.xor   w31, w31, w31
+
+  /* Finalize the nonce hash: r = SHA-512(prefix || M). */
+  la       x18, ed25519_hash_r
+  jal      x1, sha512_final
+
+  /* Compute R_ = encode([r]B) and A_ = encode([s]B). */
+  jal      x1, _ed25519_sign_compute_r_a
+
+  /* Begin the challenge hash: k = SHA-512(R_ || A_ || M). */
+  jal      x1, sha512_init
+  li       x18, 32
+  la       x20, ed25519_sig_R
+  jal      x1, sha512_update
+  li       x18, 32
+  la       x20, ed25519_public_key
+  jal      x1, sha512_update
+  la       x18, ed25519_message_len
+  lw       x18, 0(x18)
+  la       x20, ed25519_message
+  jal      x1, sha512_update
+  ret
+
+/**
+ * Incremental pure Ed25519 signing - FINAL phase.
+ *
+ * Finalizes the challenge hash to get k, then computes the signature
+ * scalar S = (r + k * s) mod L.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[out] dmem[ed25519_sig_S]: S component of signature (256 bits)
+ *
+ * clobbered registers: x2 to x5, x10 to x12, x14 to x23, x28, w0 to w7, w10 to w31, acc, mod
+ * clobbered flag groups: FG0
+ */
+.globl ed25519_sign_pure_final
+ed25519_sign_pure_final:
+  bn.xor   w31, w31, w31
+
+  /* Finalize the challenge hash: k = SHA-512(R_ || A_ || M). */
+  la       x18, ed25519_hash_k
+  jal      x1, sha512_final
+
+  /* Compute S = (r + k * s) mod L. */
+  jal      x1, _ed25519_sign_compute_s
+
+  ret
+
+/**
+ * Compute signature point R and public key A.
+ *
+ * Reads the nonce hash r from dmem[ed25519_hash_r] and the secret key hash
+ * from dmem[ed25519_hash_h]. Computes R = [r]B and A = [s]B, encodes both,
+ * and writes them to dmem[ed25519_sig_R] and dmem[ed25519_public_key].
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[ed25519_hash_h]: hash of secret key (512 bits)
+ * @param[in]  dmem[ed25519_hash_r]: nonce hash r (512 bits)
+ * @param[out] dmem[ed25519_sig_R]: encoded R (256 bits)
+ * @param[out] dmem[ed25519_public_key]: encoded A (256 bits)
+ *
+ * clobbered registers: x2, x3, w1, w5 to w30, acc, mod
+ * clobbered flag groups: FG0
+ */
+_ed25519_sign_compute_r_a:
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
        MOD <= L */
@@ -409,28 +589,28 @@ ed25519_sign_prehashed:
   la       x3, ed25519_public_key
   bn.sid   x2, 0(x3)
 
-  /* TODO: we could start with the pre-computed domain separator prefix here potentially */
-  /* dmem[ed25519_hash_k] <= SHA-512(domain-separator || R_ || A_ || PH(M)) */
-  jal      x1, sha512_init
-  li       x18, 34
-  la       x20, ed25519_prehash_dom_sep
-  jal      x1, sha512_update
-  la       x18, ed25519_ctx_len
-  lw       x18, 0(x18)
-  la       x20, ed25519_ctx
-  jal      x1, sha512_update
-  li       x18, 32
-  la       x20, ed25519_sig_R
-  jal      x1, sha512_update
-  li       x18, 32
-  la       x20, ed25519_public_key
-  jal      x1, sha512_update
-  li       x18, 64
-  la       x20, ed25519_message
-  jal      x1, sha512_update
-  la       x18, ed25519_hash_k
-  jal      x1, sha512_final
+  ret
 
+/**
+ * Compute signature scalar S = (r + k * s) mod L.
+ *
+ * Reads the challenge hash k from dmem[ed25519_hash_k], recovers s from
+ * dmem[ed25519_hash_h], and loads r from dmem[ed25519_hash_r].
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[ed25519_hash_k]: challenge hash k (512 bits)
+ * @param[in]  dmem[ed25519_hash_h]: hash of secret key (512 bits)
+ * @param[in]  dmem[ed25519_hash_r]: nonce hash r (512 bits)
+ * @param[out] dmem[ed25519_sig_S]: S component of signature (256 bits)
+ *
+ * clobbered registers: x2, x3, w4, w10 to w18, w21, w22, acc, mod
+ * clobbered flag groups: FG0
+ */
+_ed25519_sign_compute_s:
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
        MOD <= L */
@@ -1789,8 +1969,17 @@ ed25519_hash_k:
 ed25519_ctx:
   .zero 256
 
-/* Message (pre-hashed, 64 bytes). */
+/* Message length in bytes. */
+.balign 4
+.weak ed25519_message_len
+ed25519_message_len:
+  .zero 4
+
+/* Message buffer (64 bytes for HashEdDSA, up to 1280 bytes for pure Ed25519).
+
+   Note: If the message length is not a multiple of 32 bytes, the bytes up to
+   the next multiple of 32 should be initialized to prevent read errors. */
 .balign 32
 .weak ed25519_message
 ed25519_message:
-  .zero 64
+  .zero 1280

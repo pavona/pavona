@@ -62,6 +62,11 @@ main:
 ed25519_ctx_len:
 .word 0x00000000
 
+.balign 4
+.globl ed25519_message_len
+ed25519_message_len:
+.word 0x00000000
+
 .balign 32
 .globl ed25519_sk
 ed25519_sk:

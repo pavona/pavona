@@ -190,6 +190,7 @@ typedef struct otcrypto_interface_t {
                                                 otcrypto_eddsa_sign_mode_t,
                                                 otcrypto_session_token_t *);
   otcrypto_status_t (*ed25519_sign_async_finalize)(otcrypto_session_token_t,
+                                                   otcrypto_eddsa_sign_mode_t,
                                                    otcrypto_word32_buf_t);
   otcrypto_status_t (*ed25519_verify_async_start)(
       const otcrypto_unblinded_key_t *, otcrypto_const_byte_buf_t,
