@@ -520,6 +520,7 @@ cryptotest(
 ED25519_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:acvp_eddsa_sigver_json",
     "//sw/host/cryptotest/testvectors/data:acvp_eddsa_siggen_json",
+    "//sw/host/cryptotest/testvectors/data:wycheproof_ed25519_json",
 ]
 
 ED25519_TESTVECTOR_ARGS = " ".join([

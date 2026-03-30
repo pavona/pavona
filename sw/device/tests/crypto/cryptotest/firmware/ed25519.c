@@ -63,12 +63,13 @@ static status_t handle_ed25519_sigver(ujson_t *uj) {
   };
 
   // Set up the signature.
-  uint32_t sig_data[kEd25519SignatureWords];
+  size_t sig_words = uj_signature.signature_len / sizeof(uint32_t);
+  uint32_t sig_data[ED25519_CMD_MAX_SIGNATURE_BYTES / sizeof(uint32_t)];
   memset(sig_data, 0, sizeof(sig_data));
   memcpy(sig_data, uj_signature.signature, uj_signature.signature_len);
   otcrypto_const_word32_buf_t signature = {
       .data = sig_data,
-      .len = kEd25519SignatureWords,
+      .len = sig_words,
   };
 
   // Map the ujson sign mode to the cryptolib enum.

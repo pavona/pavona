@@ -23,9 +23,16 @@ def parse_test_vectors(raw_data):
         # Parse tests within the group
         for test in group["tests"]:
             logging.debug(f"Parsing tcId {test['tcId']}")
+            # Skip signatures whose byte length is not a multiple of 4
+            # (not representable in the word-based API).
+            if len(test["sig"]) % 8 != 0:
+                continue
             test_vec = {
+                "vendor": "wycheproof",
+                "test_case_id": test["tcId"],
                 "algorithm": "ed25519",
                 "operation": "verify",
+                "sign_mode": "eddsa",
                 "message": list(bytes.fromhex(test["msg"])),
                 "public_key": list(bytes.fromhex(key["pk"])),
                 "signature": list(bytes.fromhex(test["sig"])),
