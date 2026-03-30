@@ -1,6 +1,9 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
+// Normally, SimCfgs would output pure JSON
+// This is an Hjson so that the copyright header may be used
 {
   timestamp: 10/10/2019 1:55AM
   test_results: [

@@ -12,7 +12,7 @@ $ cd ${PROJ_ROOT}
 $ ./util/design/gen-otp-mmap.py --topname <mytop>
 ```
 
-The `--topname` switch is mandatory and is used to select the given topname's hjon configuration file.
+The `--topname` switch is mandatory and is used to select the given topname's hjson configuration file.
 The seed value used to generate OTP-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
 Otherwise that seed value is taken from the Hjson file, or generated on-the-fly if the Hjson file does not contain a seed.
 
@@ -366,5 +366,5 @@ If the script reports potential issues, it is likely because the synthesis const
 correctly.
 Please refer to the sections [creating-a-technology-library] and [synthesis-constraints].
 
-[creating-a-technology-library]: https://github.com/lowRISC/opentitan/tree/master/hw/ip/prim#creating-a-technology-library
-[synthesis-constraints]: https://github.com/lowRISC/opentitan/tree/master/hw/ip/prim#important-synthesis-constraints-to-keep-important-redundant-constructs
+[creating-a-technology-library]: ../../hw/ip/prim/README.md#creating-a-technology-library
+[synthesis-constraints]: ../../hw/ip/prim/README.md#important-synthesis-constraints-to-keep-important-redundant-constructs

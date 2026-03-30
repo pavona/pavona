@@ -60,7 +60,7 @@ It represents a design entity (an RTL module written in SystemVerilog) on which 
 ## DUT configuration file
 
 A DUT configuration file describes everything required to run a specific EDA tool flow on it.
-It is written in Hjson, and is consumed by DVSim as a mandatory input. This file is typically located at `$REPO_TOP/hw/ip/<ip_block>/dv/<config_name>_sim_cfg.hjson` 
+It is written in Hjson, and is consumed by DVSim as a mandatory input. This file is typically located at `$REPO_TOP/hw/ip/<ip_block>/dv/<config_name>_sim_cfg.hjson`
 or `$REPO_TOP/hw/<top>/ip_autogen/<ip_block>/dv/<config_name>_sim_cfg.hjson`
 
 

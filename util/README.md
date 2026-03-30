@@ -12,7 +12,7 @@
   * [Crossbar Tool](./tlgen/README.md): Describes `tlgen.py` and its Hjson format source.
     Used to generate RTL files of the crossbars at the top level.
   * [DVSim](./dvsim/README.md): Describes `dvsim/dvsim.py`.
-    Used to build and run design verification (DV) tests. 
+    Used to build and run design verification (DV) tests.
   * [Fpvgen Tool](./fpvgen/README.md): Describes `fpvgen.py`.
     Used to generate initial code for formal property verification (FPV) testbenches.
   * [Uvmdvgen Tool](./uvmdvgen/README.md): Describes `uvmdvgen.py`.
