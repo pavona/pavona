@@ -22,6 +22,7 @@ filesets:
       - ${module_instance_name}_predictor.sv: {is_include_file: true}
       - ${module_instance_name}_scoreboard.sv: {is_include_file: true}
       - ${module_instance_name}_env.sv: {is_include_file: true}
+      - ${module_instance_name}_rst_safe_env.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_vseq_list.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_base_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_common_vseq.sv: {is_include_file: true}

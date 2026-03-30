@@ -27,7 +27,7 @@ class ac_range_check_smoke_test_seq_parameters extends ac_range_check_base_test_
 
 
 
-  constraint reset_enable {
+  constraint reset_enable_c {
     reset_testing == ENABLE;
   }
 

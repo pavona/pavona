@@ -53,11 +53,11 @@ class ac_range_check_base_test_seq_parameters extends dv_test_seq_parameters;
 
   // A derived class can set the reset_enable constraint to only ENABLE or DISABLE and still will
   // not violate any constraints in this base class
-  constraint reset_enable {
+  constraint reset_enable_c {
     reset_testing inside {DISABLE, ENABLE};
   }
 
-  constraint reset_loops {
+  constraint reset_loops_c {
       if (reset_testing == ENABLE) num_reset_loops inside {[2:5]};
       if (reset_testing == DISABLE) num_reset_loops == 1;
   }
@@ -258,7 +258,7 @@ task ac_range_check_rand_rst_safe_base_vseq::reset_trigger_thread();
   `uvm_info (get_name(), "Triggering Reset", UVM_MEDIUM)
 
   // Execute the reset sequence on the clk reset sequencer
-  rst_seq = reset_seq::type_id::create("reset_sequence");
+  rst_seq = reset_seq::type_id::create("rst_seq");
   rst_seq.start(p_sequencer.clk_rst_sequencer_h);
 endtask : reset_trigger_thread
 

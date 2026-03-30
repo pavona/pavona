@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ${module_instance_name}_env extends cip_rst_safe_base_env #(
+class ${module_instance_name}_env extends cip_base_env #(
     .CFG_T              (${module_instance_name}_env_cfg),
     .COV_T              (${module_instance_name}_env_cov),
     .VIRTUAL_SEQUENCER_T(${module_instance_name}_virtual_sequencer),

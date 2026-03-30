@@ -18,5 +18,6 @@ package ${module_instance_name}_test_pkg;
 
   // Package sources
   `include "${module_instance_name}_base_test.sv"
+  `include "${module_instance_name}_rst_safe_base_test.sv"
 
 endpackage

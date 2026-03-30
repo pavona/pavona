@@ -11,6 +11,7 @@ filesets:
     files:
       - ac_range_check_test_pkg.sv
       - ac_range_check_base_test.sv: {is_include_file: true}
+      - ac_range_check_rst_safe_base_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

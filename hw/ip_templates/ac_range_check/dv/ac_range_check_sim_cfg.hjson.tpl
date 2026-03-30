@@ -69,6 +69,7 @@
     }
     {
       name: ac_range_check_rst_safe_smoke
+      uvm_test: ${module_instance_name}_rst_safe_base_test
       uvm_test_seq: ac_range_check_rst_safe_smoke_vseq
       reseed: 20
     }

@@ -18,5 +18,6 @@ package ac_range_check_test_pkg;
 
   // Package sources
   `include "ac_range_check_base_test.sv"
+  `include "ac_range_check_rst_safe_base_test.sv"
 
 endpackage
