@@ -1,7 +1,7 @@
 {
     "high-speed-crossbar": {
         "name": "High Speed Crossbar",
-        "data_file": "hw/ip/tlul/data/tlul.prj.hjson",
+        "data_file": "hw/ip/tlul/data/tlul.hjson",
         "report": "/hw/top_earlgrey/ip/xbar_main/dv/autogen"
     },
     "ibex": {
@@ -91,7 +91,7 @@
     },
     "peripheral-crossbar": {
         "name": "Peripheral Crossbar",
-        "data_file": "hw/ip/tlul/data/tlul.prj.hjson",
+        "data_file": "hw/ip/tlul/data/tlul.hjson",
         "report": "/hw/top_earlgrey/ip/xbar_peri/dv/autogen"
     },
     "otp-fuse-controller": {
