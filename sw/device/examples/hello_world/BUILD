@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/pavona:defs.bzl", "pavona_test")
+load("//rules/pavona:defs.bzl", "pavona_test", "verilator_params")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,7 +16,11 @@ pavona_test(
     exec_env = {
         "//hw/top_egret:sim_dv": None,
         "//hw/top_egret:sim_verilator": None,
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_dragonfly:sim_verilator": None,
+        "//hw/top_dragonfly:sim_verilator_rom_with_fake_keys": None,
     },
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/arch:device",
