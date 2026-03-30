@@ -12,8 +12,8 @@ use std::time::Duration;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::ed25519_commands::{
     CryptotestEd25519Message, CryptotestEd25519PublicKey, CryptotestEd25519SiggenData,
-    CryptotestEd25519SiggenOutput, CryptotestEd25519Signature, CryptotestEd25519VerifyOutput,
-    Ed25519Subcommand,
+    CryptotestEd25519SiggenOutput, CryptotestEd25519SignMode, CryptotestEd25519Signature,
+    CryptotestEd25519VerifyOutput, Ed25519Subcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -44,6 +44,7 @@ struct Ed25519TestCase {
     test_case_id: usize,
     algorithm: String,
     operation: String,
+    sign_mode: String,
     message: Vec<u8>,
     #[serde(default)]
     public_key: Vec<u8>,
@@ -64,6 +65,13 @@ fn run_ed25519_verify(
     spi_console: &SpiConsoleDevice,
 ) -> Result<bool> {
     Ed25519Subcommand::Ed25519Sigver.send(spi_console)?;
+
+    let sign_mode = match test_case.sign_mode.as_str() {
+        "eddsa" => CryptotestEd25519SignMode::Eddsa,
+        "hash_eddsa" => CryptotestEd25519SignMode::HashEddsa,
+        _ => panic!("Unknown sign mode: {}", test_case.sign_mode),
+    };
+    sign_mode.send(spi_console)?;
 
     let mut input = ArrayVec::new();
     input.try_extend_from_slice(&test_case.message)?;

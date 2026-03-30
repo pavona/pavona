@@ -37,8 +37,13 @@
         "type": "string",
         "enum": ["verify", "sign"]
       },
+      "sign_mode": {
+        "description": "EdDSA signing mode",
+        "type": "string",
+        "enum": ["eddsa", "hash_eddsa"]
+      },
       "message": {
-        "description": "Pre-hashed message (SHA-512 digest)",
+        "description": "Message or pre-hashed message",
         "$ref": "#/$defs/byte_array"
       },
       "public_key": {
