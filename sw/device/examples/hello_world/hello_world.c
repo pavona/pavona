@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/gpio.h"
+#include "hw/top/dt/pinmux.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -14,13 +17,34 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_gpio_t gpio;
-static dif_pinmux_t pinmux;
 static dif_uart_t uart;
+
+/**
+ * Base address of the gpio registers.
+ */
+static inline uint32_t gpio_reg_base(void) {
+  return dt_gpio_reg_block(kDtGpio, kDtGpioRegBlockCore);
+}
+
+/**
+ * Base address of the pinmux registers.
+ */
+static inline uint32_t pinmux_reg_base(void) {
+  return dt_pinmux_reg_block(kDtPinmuxAon, kDtPinmuxRegBlockCore);
+}
+
+/**
+ * Base address of the uart registers.
+ */
+static inline uint32_t uart0_reg_base(void) {
+  return dt_uart_reg_block(kDtUart0, kDtUartRegBlockCore);
+}
+
+#ifdef PAVONA_IS_EGRET
+static dif_pinmux_t pinmux;
 
 static dif_pinmux_index_t leds[] = {
     kTopEgretPinmuxMioOutIor10,
@@ -49,14 +73,16 @@ void configure_pinmux(void) {
     CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, switches[i]));
   }
 }
+#endif
 
 void _ottf_main(void) {
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
-  configure_pinmux();
-
+#if defined(PAVONA_IS_EGRET)
   CHECK_DIF_OK(
-      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR), &uart));
+      dif_pinmux_init(mmio_region_from_addr(pinmux_reg_base()), &pinmux));
+  configure_pinmux();
+#endif
+
+  CHECK_DIF_OK(dif_uart_init(mmio_region_from_addr(uart0_reg_base()), &uart));
 
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
@@ -72,8 +98,7 @@ void _ottf_main(void) {
              }));
   base_uart_stdout(&uart);
 
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(mmio_region_from_addr(gpio_reg_base()), &gpio));
   // Enable GPIO: 0-3 is output; 8-11 is input.
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0xF));
 
@@ -91,6 +116,8 @@ void _ottf_main(void) {
   LOG_INFO(
       "The LEDs show the lower nibble of the ASCII code of the last "
       "character.");
+
+  LOG_INFO("PASSED");
 
   uint32_t gpio_state = 0;
   while (true) {
