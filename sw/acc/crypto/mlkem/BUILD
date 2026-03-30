@@ -90,6 +90,19 @@ acc_library(
 
 [
     acc_library(
+        name = name + "_indcpa_enc",
+        srcs = [
+            "mlkem_indcpa_enc.s",
+        ],
+        copts = [
+            "-DKYBER_K=" + str(sec_level),
+        ],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
+
+[
+    acc_library(
         name = name + "_keypair",
         srcs = [
             "mlkem_keypair.s",
