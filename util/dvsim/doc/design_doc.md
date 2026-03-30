@@ -232,3 +232,68 @@ It became clear that a better system was needed, one that scaled well with our g
 It lacked the necessary smarts to operate as a regression system capable of building once and running a large number of simulations at a time.
 DVSim uses FuseSoC to generate the dependency-resolved [filelist](./glossary.md#filelist) of SystemVerilog sources.
 The filelist is then consumed as input by the EDA tools.
+
+# Flow Configuration Schema
+
+There exist multiple classes of flow configuration files.
+The class inheritance hierarchy is:
+```
+- FlowCfg: EDA tool flow configuration
+  - OneShotCfg: one-shot build configuration
+    - FormalCfg: formal property verification (FPV) configuration
+    - LintCfg: lint configuration
+      - CdcCfg: clock domain crossing (CDC) linting configuration
+      - RdcCfg: reset domain crossing (RDC) linting configuration
+    - SynCfg: synthesis configuration
+  - SimCfg: simulation configuration
+```
+
+The most commonly used subclass of flow configuration is `SimCfg`, which is used to build a DV regression framework and run tests.
+
+Configuration flows have "default" values for missing fields:
+| Type   | Default     |
+| ------ | ----------- |
+| string | `""`        |
+| int    | `0` or `-1` |
+| bool   | `False`     |
+| list   | `[]`        |
+
+The schema for flow configuration is approximately as follows:
+| Key                         | Collected by           | Type   | Description                                                                                                                        |
+| --------------------------- | ---------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| flow                        | `FlowCfg`              | string | Which flow to use (indicates which subclass of `FlowCfg`).                                                                         |
+| ignored_wildcards           | `FlowCfg`              | list   | Wildcards (strings) indicating paths to ignore.                                                                                    |
+| project                     | `FlowCfg`              | string | Project name.                                                                                                                      |
+| scratch_path                | `FlowCfg`              | string | Path to the DVSim scratch directory.                                                                                               |
+| scratch_base_path           | `FlowCfg`              | string | Base path of the scratch directory.                                                                                                |
+| flow_makefile               | `OneShotCfg`, `SimCfg` | string | Path to a makefile to run.                                                                                                         |
+| build_dir                   | `OneShotCfg`, `SimCfg` | string | Directory in which to build flows.                                                                                                 |
+| pre_build_cmds              | `SimCfg`               | list   | Commands to run before building the simulation.                                                                                    |
+| post_build_cmds             | `SimCfg`               | list   | Commands to run after building the simulation.                                                                                     |
+| run_dir                     | `OneShotCfg`, `SimCfg` | string | Directory in which to run flows.                                                                                                   |
+| pre_run_cmds                | `SimCfg`               | list   | Commands to run before running the simulation.                                                                                     |
+| post_run_cmds               | `SimCfg`               | list   | Commands to run before running the simulation.                                                                                     |
+| pass_patterns               | `OneShotCfg`, `SimCfg` | list   | Output patterns that must be seen in order to indicate a passing test.                                                             |
+| fail_patterns               | `OneShotCfg`, `SimCfg` | list   | Output patterns that indicate failing tests.                                                                                       |
+| name                        | `OneShotCfg`, `SimCfg` | string | Configuration file name.                                                                                                           |
+| dut                         | `OneShotCfg`, `SimCfg` | string | Top level device under test (DUT) module name in the RTL.                                                                          |
+| variant                     | `SimCfg`               | string | Name of the specific sim config variant.                                                                                           |
+| tb                          | `SimCfg`               | string | Top level testbench module name in the RTL.                                                                                        |
+| testplan                    | `SimCfg`               | string | Path to the associated DV testplan.                                                                                                |
+| fusesoc_core                | `OneShotCfg`, `SimCfg` | string | Path to associated FuseSoC core for building and running flow.                                                                     |
+| ral_spec                    | `OneShotCfg`, `SimCfg` | string | Specification for generating the register access list (RAL) model.                                                                 |
+| build_modes                 | `OneShotCfg`, `SimCfg` | list   | Preset modes (sets of options) for building the flow.                                                                              |
+| run_modes                   | `OneShotCfg`, `SimCfg` | list   | Preset modes for running the flow.                                                                                                 |
+| regressions                 | `OneShotCfg`, `SimCfg` | list   | Regressions to run.                                                                                                                |
+| sw_images                   | `SimCfg`               | list   | Paths to software images (in Bazel formatting) to use in simulations.                                                              |
+| sw_build_opts               | `SimCfg`               | list   | Software build options.                                                                                                            |
+| supported_wave_formats      | `SimCfg`               | list   | Viable waveform output formats.                                                                                                    |
+| max_msg_count               | `OneShotCfg`           | int    | Maximum number of printed messages for each category; defaults to -1 (unlimited).                                                  |
+| publish_report              | `FormalCfg`            | bool   | Whether or not to publish child configuration results.                                                                             |
+| sub_flow                    | `FormalCfg`            | string | Which sub-flow to use.                                                                                                             |
+| is_style_lint               | `LintCfg`              | bool   | Whether linting for style or not.                                                                                                  |
+| report_severities           | `LintCfg`              | list   | Which message severities to print into report summaries.                                                                           |
+| fail_severities             | `LintCfg`              | list   | Which message severities lead to a linting failure.                                                                                |
+| message_buckets             | `LintCfg`              | list   | Message bucket format configurations (dictionaries of `{category: <category_str>, severity: <severity_str>, label: <label_str>}`). |
+| additional_fusesoc_argument | `LintCfg`              | string | Additional FuseSoC argument to place before the core name.                                                                         |
+| waves                       | `RdcCfg`               | string | Setting for including waveforms in output.                                                                                         |

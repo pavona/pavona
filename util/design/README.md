@@ -16,6 +16,15 @@ The `--topname` switch is mandatory and is used to select the given topname's hj
 The seed value used to generate OTP-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
 Otherwise that seed value is taken from the Hjson file, or generated on-the-fly if the Hjson file does not contain a seed.
 
+### OTP Memory Map Configuration
+
+The memory map configuration schema is:
+| Key        | Kind     | Type  | Description                                                                                                                                                                                                                                                                                                                                      |
+| ---------- | -------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| otp        | required | group | Dictionary specifying OTP entry `depth` (optional int, default 1024) and `width` (optional int, default 2).                                                                                                                                                                                                                                      |
+| scrambling | required | group | Dictionary specifying scrambling `key_size` (optional int, default 16), `iv_size` (optional int, default 8), `cnst_size` (optional in, default 16), `keys` (required list of key names and values), and `digests` (required list of digest names, IV values, and constant values).                                                               |
+| partitions | required | list  | OTP partition configurations (each partition being a dictionary with mandatory keys `bkout_type`, `integrity`, `items`, and optional keys `name`, `variant`, `secret`, `sw_digest`, `hw_digest`, `write_lock`, `read_lock`, `key_sel`, `absorb`, `iskeymgr_creator`, `iskeymgr_owner`, `zeroizable`, `ignore_read_lock_in_rma`, `size`, `desc`). |
+
 ## Life Cycle State Encoding Generator
 
 The `gen-lc-state-enc.py` script is used to generate the redundant life cycle state encoding and print the constants and type definitions into the life cycle state package.
@@ -38,6 +47,24 @@ $ ./util/design/gen-lc-state-enc.py
 The seed value used for generating life-cycle-state-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
 Otherwise that seed value is taken from the Hjson file, or generated on-the-fly if the Hjson file does not contain a seed.
 
+### Life Cycle State Definition Schema
+
+By default, [`util/design/gen-lc-state-enc.py`](./gen-lc-state-enc.py) will use [`hw/ip/lc_ctrl/data/lc_ctrl_state.hjson`](../../hw/ip/lc_ctrl/data/lc_ctrl_state.hjson) as the life cycle state definition file, but custom definition files may be passed in its stead.
+The life cycle definition schema
+| Key             | Kind     | Type  | Description                                                                                                                                     |
+| --------------- | -------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| secded          | required | group | SECDED configuration optionally specifying `data_width` (int, default 0), `ecc_width` (int, default 0), and `ecc_matrix` (list, default `[[]]`. |
+| tokens          | required | list  | List of tokens to hash.                                                                                                                         |
+| lc_state        | required | group | Life cycle state declaration.                                                                                                                   |
+| lc_cnt          | required | group | Life cycle counter declaration.                                                                                                                 |
+| soc_dbg_state   | required | group | SoC debuggger state declaration.                                                                                                                |
+| ownership_state | required | group | Ownership state declaration.                                                                                                                    |
+| auth_state      | required | group | Authentication state declaration.                                                                                                               |
+| min_hw          | optional | int   | Minimum hamming weight (default 0).                                                                                                             |
+| max_hw          | optional | int   | Maximum hamming weight (default 0).                                                                                                             |
+| min_hd          | optional | int   | Minimum hamming distance (default 0).                                                                                                           |
+| token_size      | optional | int   | Size of tokens (default 128).                                                                                                                   |
+
 ## OTP Preload Image Generator
 
 The OTP preload image generation tool builds on top of the memory map and life cycle state generation Python classes in order to transform a memory image configuration into a memory hexfile that can be used for OTP preloading in simulation and FPGA emulation runs.
@@ -50,6 +77,8 @@ two ways to build images:
    currently used in most DV test cases.
 2. Dynamically built OTP image overlays defined in [Bazel](#bazel). This is the
    approach currently used in FPGA and Silicon Validation (SiVal) targets.
+
+OTP image configurations only require one field: `partitions`.
 
 ### Bazel
 
