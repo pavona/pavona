@@ -142,7 +142,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
 /**
  * Finalizes asynchronous signature generation for Ed25519.
  *
- * See `otcrypto_ecdsa_p256_sign` for requirements on input values.
+ * See `otcrypto_ed25519_sign` for requirements on input values.
  *
  * May block until the operation is complete.
  *
@@ -157,7 +157,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
 /**
  * Starts asynchronous signature verification for Ed25519.
  *
- * See `otcrypto_ecdsa_p256_verify` for requirements on input values.
+ * See `otcrypto_ed25519_verify` for requirements on input values.
  *
  * @param public_key Pointer to the unblinded public key struct.
  * @param input_message Input message to be signed for verification.
@@ -177,7 +177,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 /**
  * Finalizes asynchronous signature verification for Ed25519.
  *
- * See `otcrypto_ecdsa_p256_verify` for requirements on input values.
+ * See `otcrypto_ed25519_verify` for requirements on input values.
  *
  * May block until the operation is complete.
  *

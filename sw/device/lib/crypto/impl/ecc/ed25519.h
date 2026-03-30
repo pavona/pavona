@@ -179,21 +179,16 @@ status_t ed25519_sign_finalize(uint32_t session_token,
  * function; see that section of the RFC for details.
  *
  * @param signature Signature to verify.
- * @param prehashed_message Prehashed (SHA-512) message to sign.
  * @param hash_k Pre-computed scalar value k for verification.
  * @param public_key Public key to verify against.
- * @param context Context to use for signing.
- * @param context_length Length of the provided context in bytes.
  * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t ed25519_verify_start(
-    const ed25519_signature_t *signature,
-    const uint32_t prehashed_message[kEd25519PreHashWords],
-    const uint32_t hash_k[kEd25519HashWords], const ed25519_point_t *public_key,
-    const uint32_t context[kEd25519ContextWords], const uint32_t context_length,
-    uint32_t *session_token);
+status_t ed25519_verify_start(const ed25519_signature_t *signature,
+                              const uint32_t hash_k[kEd25519HashWords],
+                              const ed25519_point_t *public_key,
+                              uint32_t *session_token);
 
 /**
  * Finish an async Ed25519 signature verification operation on ACC.

@@ -26,6 +26,11 @@ extern "C" {
     value(_, Ed25519Siggen)
 UJSON_SERDE_ENUM(Ed25519Subcommand, ed25519_subcommand_t, ED25519_SUBCOMMAND);
 
+#define ED25519_SIGN_MODE(_, value) \
+    value(_, Eddsa) \
+    value(_, HashEddsa)
+UJSON_SERDE_ENUM(CryptotestEd25519SignMode, cryptotest_ed25519_sign_mode_t, ED25519_SIGN_MODE);
+
 #define ED25519_MESSAGE(field, string) \
     field(input, uint8_t, ED25519_CMD_MAX_MESSAGE_BYTES) \
     field(input_len, size_t)

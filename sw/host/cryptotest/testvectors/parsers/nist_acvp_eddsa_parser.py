@@ -27,25 +27,31 @@ import jsonschema
 def parse_sigver(data):
     """Parse EDDSA-SigVer internalProjection.
 
-    Only Ed25519 with preHash=true (Ed25519ph / HashEdDSA) is selected.
-    The message is pre-hashed with SHA-512 before output.
+    Supports both pure Ed25519 (preHash=false) and HashEd25519
+    (preHash=true). For HashEd25519, the message is pre-hashed with
+    SHA-512 before output.
     """
     test_vectors = []
     for group in data["testGroups"]:
         if group["curve"] != "ED-25519":
             continue
-        if not group.get("preHash", False):
-            continue
 
+        pre_hash = group.get("preHash", False)
         for test in group["tests"]:
             msg_bytes = bytes.fromhex(test["message"])
-            prehash = hashlib.sha512(msg_bytes).digest()
+            if pre_hash:
+                message = list(hashlib.sha512(msg_bytes).digest())
+                sign_mode = "hash_eddsa"
+            else:
+                message = list(msg_bytes)
+                sign_mode = "eddsa"
             test_vectors.append({
                 "vendor": "acvp",
                 "test_case_id": test["tcId"],
                 "algorithm": "ed25519",
                 "operation": "verify",
-                "message": list(prehash),
+                "sign_mode": sign_mode,
+                "message": message,
                 "public_key": list(bytes.fromhex(test["q"])),
                 "signature": list(bytes.fromhex(test["signature"])),
                 "result": test["testPassed"],
@@ -70,13 +76,13 @@ def parse_siggen(data):
         q = list(bytes.fromhex(group["q"]))
         for test in group["tests"]:
             msg_bytes = bytes.fromhex(test["message"])
-            prehash = hashlib.sha512(msg_bytes).digest()
             context = list(bytes.fromhex(test.get("context", "")))
             test_vectors.append({
                 "vendor": "acvp",
                 "test_case_id": test["tcId"],
                 "algorithm": "ed25519",
                 "operation": "sign",
+                "sign_mode": "hash_eddsa",
                 "private_key": d,
                 "public_key": q,
                 "message": list(prehash),

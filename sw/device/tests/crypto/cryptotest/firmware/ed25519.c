@@ -31,10 +31,12 @@ static const otcrypto_key_config_t kEd25519PrivateKeyConfig = {
 };
 
 static status_t handle_ed25519_sigver(ujson_t *uj) {
+  cryptotest_ed25519_sign_mode_t uj_sign_mode;
   cryptotest_ed25519_message_t uj_message;
   cryptotest_ed25519_signature_t uj_signature;
   cryptotest_ed25519_public_key_t uj_public_key;
 
+  TRY(ujson_deserialize_cryptotest_ed25519_sign_mode_t(uj, &uj_sign_mode));
   TRY(ujson_deserialize_cryptotest_ed25519_message_t(uj, &uj_message));
   TRY(ujson_deserialize_cryptotest_ed25519_signature_t(uj, &uj_signature));
   TRY(ujson_deserialize_cryptotest_ed25519_public_key_t(uj, &uj_public_key));
@@ -69,11 +71,24 @@ static status_t handle_ed25519_sigver(ujson_t *uj) {
       .len = kEd25519SignatureWords,
   };
 
+  // Map the ujson sign mode to the cryptolib enum.
+  otcrypto_eddsa_sign_mode_t sign_mode;
+  switch (uj_sign_mode) {
+    case kCryptotestEd25519SignModeEddsa:
+      sign_mode = kOtcryptoEddsaSignModeEddsa;
+      break;
+    case kCryptotestEd25519SignModeHashEddsa:
+      sign_mode = kOtcryptoEddsaSignModeHashEddsa;
+      break;
+    default:
+      return INVALID_ARGUMENT();
+  }
+
   // Verify.
   hardened_bool_t verification_result = kHardenedBoolFalse;
-  otcrypto_status_t status = otcrypto_ed25519_verify(
-      &public_key, message, context, kOtcryptoEddsaSignModeHashEddsa, signature,
-      &verification_result);
+  otcrypto_status_t status =
+      otcrypto_ed25519_verify(&public_key, message, context, sign_mode,
+                              signature, &verification_result);
 
   cryptotest_ed25519_verify_output_t uj_output =
       (status_ok(status) && verification_result == kHardenedBoolTrue)

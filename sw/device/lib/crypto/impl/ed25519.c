@@ -237,26 +237,28 @@ static status_t construct_hash_k(uint32_t hash_k[kEd25519HashWords],
                                  otcrypto_const_word32_buf_t signature,
                                  otcrypto_const_byte_buf_t context,
                                  const otcrypto_unblinded_key_t *public_key,
-                                 otcrypto_const_byte_buf_t input_message) {
+                                 otcrypto_const_byte_buf_t input_message,
+                                 otcrypto_eddsa_sign_mode_t sign_mode) {
   // Initialize the SHA-512 computation.
   otcrypto_sha2_context_t ctx;
   HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha512, &ctx));
 
-  // Update with the domain separation string, pre-hash flag, and context
-  // length all together.
-  uint8_t domain_sep_data[34] = {'S', 'i', 'g', 'E', 'd', '2',  '5', '5', '1',
-                                 '9', ' ', 'n', 'o', ' ', 'E',  'd', '2', '5',
-                                 '5', '1', '9', ' ', 'c', 'o',  'l', 'l', 'i',
-                                 's', 'i', 'o', 'n', 's', 0x01, 0x00};
-  domain_sep_data[33] = (uint8_t)context.len;
-  otcrypto_const_byte_buf_t domain_sep_buf = {
-      .data = domain_sep_data,
-      .len = sizeof(domain_sep_data),
-  };
-  HARDENED_TRY(otcrypto_sha2_update(&ctx, domain_sep_buf));
-
-  // Update with the context.
-  HARDENED_TRY(otcrypto_sha2_update(&ctx, context));
+  if (launder32(sign_mode) == kOtcryptoEddsaSignModeHashEddsa) {
+    // HashEd25519: include dom2(1, ctx) prefix (RFC 8032 5.1).
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
+    uint8_t domain_sep_data[34] = {'S', 'i', 'g', 'E', 'd', '2',  '5', '5', '1',
+                                   '9', ' ', 'n', 'o', ' ', 'E',  'd', '2', '5',
+                                   '5', '1', '9', ' ', 'c', 'o',  'l', 'l', 'i',
+                                   's', 'i', 'o', 'n', 's', 0x01, 0x00};
+    domain_sep_data[33] = (uint8_t)context.len;
+    otcrypto_const_byte_buf_t domain_sep_buf = {
+        .data = domain_sep_data,
+        .len = sizeof(domain_sep_data),
+    };
+    HARDENED_TRY(otcrypto_sha2_update(&ctx, domain_sep_buf));
+    HARDENED_TRY(otcrypto_sha2_update(&ctx, context));
+  }
+  // Pure Ed25519: no domain separator (RFC 8032 5.1.7).
 
   // Update with the first half of the signature, R.
   otcrypto_const_byte_buf_t signature_point_buf = {
@@ -272,7 +274,7 @@ static status_t construct_hash_k(uint32_t hash_k[kEd25519HashWords],
   };
   HARDENED_TRY(otcrypto_sha2_update(&ctx, public_key_buf));
 
-  // Update with the pre-hashed message, PH(M).
+  // Update with the message (PH(M) for HashEd25519, raw M for pure).
   HARDENED_TRY(otcrypto_sha2_update(&ctx, input_message));
 
   // Finalize the computed digest.
@@ -322,36 +324,36 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   HARDENED_TRY(ed25519_public_key_length_check(public_key));
   ed25519_point_t *pk = (ed25519_point_t *)public_key->key;
 
-  // Check the digest length.
-  if (launder32(input_message.len) != kEd25519PreHashBytes) {
+  // Check the sign mode.
+  if (launder32(sign_mode) == kOtcryptoEddsaSignModeHashEddsa) {
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
+    // HashEd25519: message must be the pre-hash output (64 bytes).
+    if (launder32(input_message.len) != kEd25519PreHashBytes) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_EQ(input_message.len, kEd25519PreHashBytes);
+  } else if (launder32(sign_mode) == kOtcryptoEddsaSignModeEddsa) {
+    HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeEddsa);
+    // Pure Ed25519: context must be empty.
+    if (launder32(context.len) != 0) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_EQ(context.len, 0);
+  } else {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(input_message.len, kEd25519PreHashBytes);
 
   // Check the signature lengths.
   HARDENED_TRY(ed25519_signature_length_check(signature.len));
   ed25519_signature_t *sig = (ed25519_signature_t *)signature.data;
 
-  // Copy the input message into a 32-bit aligned buffer.
-  size_t input_message_wordlen = ceil_div(input_message.len, sizeof(uint32_t));
-  uint32_t input_message_aligned[input_message_wordlen];
-  memset(input_message_aligned, 0, sizeof(input_message_aligned));
-  memcpy(input_message_aligned, input_message.data, input_message.len);
-
-  // Compute the pre-computed hash k
+  // Compute the hash k = SHA-512([dom2] || R || A || M).
   uint32_t hash_k[kEd25519HashWords];
-  HARDENED_TRY(
-      construct_hash_k(hash_k, signature, context, public_key, input_message));
-
-  size_t context_wordlen = ceil_div(context.len, sizeof(uint32_t));
-  uint32_t context_aligned[context_wordlen];
-  // TODO(#17711) Change to `hardened_memcpy`.
-  memcpy(context_aligned, context.data, context.len);
-  memset(context_aligned, 0, sizeof(context_aligned) - context.len);
+  HARDENED_TRY(construct_hash_k(hash_k, signature, context, public_key,
+                                input_message, sign_mode));
 
   // Start the asynchronous signature-verification routine.
-  return ed25519_verify_start(sig, input_message_aligned, hash_k, pk,
-                              context_aligned, context.len, session_token);
+  return ed25519_verify_start(sig, hash_k, pk, session_token);
 }
 
 otcrypto_status_t otcrypto_ed25519_verify_async_finalize(

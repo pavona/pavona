@@ -164,28 +164,19 @@ status_t ed25519_sign_finalize(uint32_t session_token,
   return acc_dmem_sec_wipe();
 }
 
-status_t ed25519_verify_start(
-    const ed25519_signature_t *signature,
-    const uint32_t prehashed_message[kEd25519PreHashWords],
-    const uint32_t hash_k[kEd25519HashWords], const ed25519_point_t *public_key,
-    const uint32_t context[kEd25519ContextWords], const uint32_t context_length,
-    uint32_t *session_token) {
-  // Load the P-256 app and set up data pointers
+status_t ed25519_verify_start(const ed25519_signature_t *signature,
+                              const uint32_t hash_k[kEd25519HashWords],
+                              const ed25519_point_t *public_key,
+                              uint32_t *session_token) {
+  // Load the Ed25519 app.
   HARDENED_TRY(acc_load_app(kAccAppEd25519));
 
   // Set mode so start() will jump into verifying.
   uint32_t mode = kAccEd25519ModeVerify;
   HARDENED_TRY(acc_dmem_write(kAccEd25519ModeWords, &mode, kAccVarEd25519Mode));
 
-  // Set the pre-hashed message to the provided digest.
-  HARDENED_TRY(acc_dmem_write(kEd25519HashWords, prehashed_message,
-                              kAccVarEd25519Message));
-
   // Set the precomputed hash value k.
   HARDENED_TRY(acc_dmem_write(kEd25519HashWords, hash_k, kAccVarEd25519HashK));
-
-  // Set the context string.
-  HARDENED_TRY(set_context(context, context_length));
 
   // Set the signature R.
   HARDENED_TRY(
