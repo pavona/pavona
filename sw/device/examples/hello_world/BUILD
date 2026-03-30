@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("//rules/opentitan:defs.bzl", "DARJEELING_TEST_ENVS", "opentitan_binary", "opentitan_test")
+load("//rules/opentitan:defs.bzl", "opentitan_binary", "opentitan_test", "verilator_params")
 load("//rules:files.bzl", "exclude_files")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
@@ -23,7 +23,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv",
         "//hw/top_earlgrey:sim_verilator",
         "//hw/top_darjeeling:sim_dv",
-        "//hw/top_darjeeling:sim_verilator",
+        "//hw/top_darjeeling:sim_verilator_rom_with_fake_keys",
     ],
     deps = [
         ":hello_world_lib",
@@ -71,10 +71,12 @@ opentitan_test(
         # Disable the date-time warning only for the hello world program.
         "-Wno-date-time",
     ],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = {
-        "//hw/top_darjeeling:sim_verilator": None,
+        "//hw/top_darjeeling:sim_verilator_rom_with_fake_keys": None,
     },
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":hello_world_lib",
         "//sw/device/lib/base:mmio",
