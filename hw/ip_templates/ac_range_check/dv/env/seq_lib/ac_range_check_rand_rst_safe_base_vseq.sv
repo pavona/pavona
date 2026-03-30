@@ -208,6 +208,7 @@ class ac_range_check_rand_rst_safe_base_vseq extends cip_rand_rst_safe_base_vseq
   // 'dv_rand_rst_safe_base_seq' namely:
   // - TEST_PARAMS_T   test_params;
   // - CONFIG_PARAMS_T config_params;
+  process tl_filt_auto_resp_proc;
 
 
   // Standard SV/UVM methods
@@ -232,6 +233,7 @@ class ac_range_check_rand_rst_safe_base_vseq extends cip_rand_rst_safe_base_vseq
   extern virtual task configure_range(int unsigned idx = 0, bit [DataWidth-1:0] base = 0,
     bit [DataWidth-1:0] limit = 0, bit read_perm = 0, bit write_perm = 0, bit execute_perm = 0,
     bit en = 0, bit log_denied_access = 0);
+  extern virtual task post_start();
 endclass : ac_range_check_rand_rst_safe_base_vseq
 
 
@@ -294,6 +296,7 @@ task ac_range_check_rand_rst_safe_base_vseq::dut_init();
   // Spawns off a thread to auto-respond to incoming TL accesses on the Filtered host interface.
   // Note: the fork is required as the called sequence will loop indefinitely.
   fork
+    tl_filt_auto_resp_proc = process::self();
     tl_filt_device_auto_resp();
   join_none
 endtask : dut_init
@@ -433,3 +436,16 @@ task ac_range_check_rand_rst_safe_base_vseq::configure_range(int unsigned idx = 
   csr_update(.csr(ral.range_racl_policy_shadowed[idx]));
 
 endtask : configure_range
+
+
+task ac_range_check_rand_rst_safe_base_vseq::post_start();
+  // Kill pending TL-UL transactions
+  if (tl_filt_auto_resp_proc != null &&
+      (tl_filt_auto_resp_proc.status() == process::RUNNING ||
+       tl_filt_auto_resp_proc.status() == process::WAITING)) begin
+    tl_filt_auto_resp_proc.kill();
+    tl_filt_auto_resp_proc = null;
+  end
+
+  super.post_start();
+endtask
