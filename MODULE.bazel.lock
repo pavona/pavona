@@ -1082,6 +1082,35 @@
         ]
       }
     },
+    "//third_party/verilator:extensions.bzl%verilator": {
+      "general": {
+        "bzlTransitiveDigest": "/Ke06sSoOXrC7r/N3rtimfCN/ptSCclcl7INQqmF5Xc=",
+        "usagesDigest": "AKoOM1VCby0PmHWIO0B2K3VSzddPxnqOo8SHRkgpbpY=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "verilator": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "urls": [
+                "https://github.com/verilator/verilator/archive/refs/tags/v5.046.tar.gz"
+              ],
+              "strip_prefix": "verilator-5.046",
+              "build_file": "@@//third_party/verilator:BUILD.verilator.bazel",
+              "sha256": "002bc6d92b203eb8b4612e1d198d8108517d4ec9859e131ef328015352fe6d0c"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/wycheproof:extensions.bzl%wycheproof": {
       "general": {
         "bzlTransitiveDigest": "P/4xE9z72PWw4KN3Mzb9nTuKK1qFvLh8BSOcqZ7o2gk=",

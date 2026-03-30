@@ -23,11 +23,6 @@ scripts:
     # copyto.
     #filesets:
     #  - files_check_tool_requirements
-  check_tool_requirements_verilator:
-    cmd:
-      - python3
-      - check_tool_requirements.py
-      - 'verilator'
 
 targets:
   default:
@@ -35,5 +30,4 @@ targets:
       - files_check_tool_requirements
     hooks:
       pre_build:
-        - tool_verilator   ? (check_tool_requirements_verilator)
         - tool_veriblelint ? (check_tool_requirements_verible)

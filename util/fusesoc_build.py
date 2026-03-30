@@ -18,6 +18,13 @@ if __name__ == "__main__":
     if path_env is not None:
         path_env = ":" + path_env
     path_env = os.path.dirname(sys.executable) + path_env
+
+    # VERILATOR_BINARY` is passed in as a relative path to the Bazel
+    # `execroot`. Convert this to an absolute path in PATH, if present.
+    if "VERILATOR_BINARY" in os.environ:
+        verilator_binary = os.environ["VERILATOR_BINARY"]
+        verilator_dirname = os.path.dirname(os.path.join(os.getcwd(), verilator_binary))
+        path_env += os.pathsep + verilator_dirname
     os.environ["PATH"] = path_env
 
     # Start fusesoc

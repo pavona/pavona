@@ -198,22 +198,6 @@ class ToolReq:
                 .format(actual_version, self.min_version))
 
 
-class VerilatorToolReq(ToolReq):
-    def get_version(self):
-        try:
-            # Note: "verilator" needs to be called through a shell and with all
-            # arguments in a string, as it doesn't have a shebang, but instead
-            # relies on perl magic to parse command line arguments.
-            version_str = subprocess.run('verilator --version', shell=True,
-                                         check=True, stdout=subprocess.PIPE,
-                                         universal_newlines=True)
-        except subprocess.CalledProcessError as err:
-            raise RuntimeError('Unable to call Verilator to check version: {}'
-                               .format(err)) from None
-
-        return version_str.stdout.split(' ')[1].strip()
-
-
 class VeribleToolReq(ToolReq):
     tool_cmd = ['verible-verilog-lint', '--version']
 
@@ -352,7 +336,6 @@ def dict_to_tool_req(path, tool, raw):
         'edalize': EdalizeToolReq,
         'vcs': VcsToolReq,
         'verible': VeribleToolReq,
-        'verilator': VerilatorToolReq,
         'vivado': VivadoToolReq,
         'ninja': NinjaToolReq
     }

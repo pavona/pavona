@@ -32,6 +32,10 @@ targets:
     parameters:
       - AST_BYPASS_CLK=true
     toplevel: chip_earlgrey_verilator
+    tools:
+      verilator:
+        verilator_options:
+          - "--no-timing"
 
 
   lint:

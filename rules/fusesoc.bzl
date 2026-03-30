@@ -88,16 +88,22 @@ def _fusesoc_build_impl(ctx):
         inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc + [
             cfg_file,
         ],
+        tools = [ctx.executable._verilator] if ctx.attr.target != "synth" else [],
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
         env = dicts.add(
             # Verilator build doesn't need nonhermetic environment variables
-            ENV if ctx.attr.target == "synth" else {},
+            ENV if ctx.attr.target == "synth" else {
+                # Contains the `execroot`-relative path for verilator provided
+                # by Bazel. `fusesoc_build.py` converts this into an absolute
+                # path once the working directory is known.
+                "VERILATOR_BINARY": ctx.executable._verilator.path,
+            },
             {
                 "HOME": home_dir,
                 # Obtain the non-hermetic binary path and append Bazel's default PATH.
-                "PATH": BIN_PATHS["vivado" if ctx.attr.target == "synth" else "verilator"] + ":/bin:/usr/bin:/usr/local/bin",
+                "PATH": (BIN_PATHS["vivado"] + ":" if ctx.attr.target == "synth" else "") + "/bin:/usr/bin:/usr/local/bin",
                 "LD_PRELOAD": "/lib/x86_64-linux-gnu/libudev.so.1",
             },
         ),
@@ -135,6 +141,12 @@ fusesoc_build = rule(
         "_fusesoc": attr.label(
             default = "//util:fusesoc_build",
             executable = True,
+            cfg = "exec",
+        ),
+        "_verilator": attr.label(
+            executable = True,
+            default = "//third_party/verilator",
+            doc = "Verilator binary target",
             cfg = "exec",
         ),
     },

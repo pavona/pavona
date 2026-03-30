@@ -10,14 +10,17 @@
 #
 # Keep it sorted.
 autoconf
+bison
 brotli
 build-essential
 cmake
 curl
 dfu-util
 file
+flex
 g++
 git
+help2man
 lcov
 libelf1
 libelf-dev

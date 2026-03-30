@@ -9,7 +9,6 @@ NONHERMETIC_ENV_VARS = [
 
 # Binarys that Bazel rule may depend on from the PATH.
 NONHERMETIC_BINS = [
-    "verilator",
     "vivado",
     "updatemem",
 ]
