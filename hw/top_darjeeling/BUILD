@@ -56,7 +56,7 @@ sim_verilator(
         "//sw/device/lib/arch:sim_verilator",
         "//hw/top_darjeeling/sw/dt:sim_verilator",
     ],
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_virtual",
     otp = "//hw/top_darjeeling/data/otp:img_rma",
     slot_spec = DARJEELING_SLOTS,
     test_cmd = "testing-not-supported",
@@ -91,6 +91,17 @@ sim_verilator(
         --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
+)
+
+sim_verilator(
+    name = "sim_verilator_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_verilator",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
+    exec_env = "sim_verilator_rom_with_fake_keys",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    rom = "//sw/device/silicon_creator/rom:base_rom",
+    second_rom = "//sw/device/silicon_creator/rom:second_rom",
 )
 
 ###########################################################################
