@@ -48,14 +48,14 @@ def parse_testcases(args) -> None:
 
         testcases.append(testcase)
 
-    json_filename = f"{args.dst}"
-    with open(json_filename, "w") as file:
-        json.dump(testcases, file, indent=4)
-
     # Validate generated JSON
     with open(args.schema) as schema_file:
         schema = json.load(schema_file)
     jsonschema.validate(testcases, schema)
+
+    json_filename = f"{args.dst}"
+    with open(json_filename, "w") as file:
+        json.dump(testcases, file, indent=4)
 
 
 def main() -> int:

@@ -100,12 +100,12 @@ def main() -> int:
     raw_data = json.load(args.src)
     test_vectors = parse_test_vectors(raw_data)
 
-    json.dump(test_vectors, args.dst, indent=4)
-
     # Validate generated JSON
     with open(args.schema) as schema_file:
         schema = json.load(schema_file)
     jsonschema.validate(test_vectors, schema)
+
+    json.dump(test_vectors, args.dst, indent=4)
 
     return 0
 

@@ -68,14 +68,14 @@ def parse_testcases(args) -> None:
                 ciphertext_length_valid and plaintext_length_valid):
             test_cases.append(test_case)
 
-    json_filename = args.dst
-    with open(json_filename, "w") as file:
-        json.dump(test_cases, file, indent=4)
-
     # Validate generated JSON
     with open(args.schema) as schema_file:
         schema = json.load(schema_file)
     jsonschema.validate(test_cases, schema)
+
+    json_filename = args.dst
+    with open(json_filename, "w") as file:
+        json.dump(test_cases, file, indent=4)
 
 
 def main() -> int:
