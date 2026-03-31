@@ -16,7 +16,7 @@ offline_presigning_artifacts(
     name = "presigning",
     testonly = True,
     srcs = [
-        "//sw/device/examples/hello_world",
+        "//sw/device/examples/gpio_demo",
     ],
     # To sign with real keys, replace the ecdsa_key with the label of a real
     # key.

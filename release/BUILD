@@ -14,7 +14,7 @@ pkg_tar(
         "//hw:package",
         "//hw/bitstream/vivado:package",
         "//hw/top_egret/data/otp:package",
-        "//sw/device/examples/hello_world:package",
+        "//sw/device/examples/gpio_demo:package",
         "//sw/device/lib/testing/test_rom:package",
         "//sw/device/silicon_creator/rom:package",
         "//sw/host/opentitantool:package",
