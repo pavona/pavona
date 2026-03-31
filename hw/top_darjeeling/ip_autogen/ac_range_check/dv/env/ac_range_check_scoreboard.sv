@@ -315,6 +315,7 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
                                    "(detected in scoreboard)"}), UVM_MEDIUM)
         void'(ral.log_status.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
         void'(ral.log_address.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+        void'(ral.intr_state.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
         predict.deny_cnt = 0;
         predict.overflow_flag = 0;
       end
