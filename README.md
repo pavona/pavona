@@ -1,14 +1,27 @@
 # About this Repository
 
-This codebase is an open silicon distribution built in part from [OpenTitan](https://github.com/lowRISC/opentitan) technical collateral.
-Its purpose is to explore enhancements and extensions to increase the utility, flexibility or standards alignment of Open Silicon in general.
+The Pavona [project](https://pavona.org) is an open silicon distribution focusing on:
+- Flexible IP reuse and ease of integration
+- Production-quality / commercial adoption readiness
+- Standards alignment and certification readiness/awareness
+- Applicability across a wide range of systems
 
-This repository will from time to time sync with relevant collateral from OpenTitan and other repositories.
+This codebase is an open silicon distribution built in part from a number of open source projects, including [OpenTitan](https://github.com/lowRISC/opentitan) technical collateral.
 
-This repository is independent of and not affiliated with OpenTitan.
-We have attempted to retain original authorship, commit history and comply with license terms.
-OpenTitan is a trademark of its respective owners.
-This fork is not affiliated with or endorsed by the original project.
+Example technical collateral (IP + DV + SW) includes:
+- Cores: Ibex (RV32IMC), VexII (upcoming)
+  - PQC Stateless Hash-Based Digital Signatures support for DSA-SHA2 and SLH-DSA-SHAKE
+- Peripherals: I2C, GPIO, SPI host/device, pattgen
+- Crypto: Asymmetric Cryptography Coprocessor (ACC), HMAC, KMAC, AES, EDN, ASCON
+  - PQC includes ML-KEM {512, 768, 1024} and ML-DSA {44, 65, 87} with KMAC acceleration
+- Security infrastructure: alert-handler, lifecycle control, key manager, ROM integrity, CSRNG, SFI
+- Other blocks: OTP/flash controllers, clock manager, AON timer, SRAM controller, JTAG, interrupt controller, RV debug, ADC controller
+- Software: embedded cryptolib, hardened ROM, ROM_EXT, host tools
+
+# Contributing & Getting Started
+
+Please see the [Contributing](CONTRIBUTING.md) page to determine how one can contribute.  Likewise, if you want to poke around Pavona please see the [Getting Started](TBD) page.
+
 
 ## License
 
