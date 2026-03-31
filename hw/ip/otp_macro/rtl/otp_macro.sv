@@ -226,6 +226,7 @@ module otp_macro
   logic valid_d, valid_q;
   logic integrity_en_d, integrity_en_q;
   logic req, wren, rvalid;
+  logic clear_rdata;
   logic [1:0] rerror;
   otp_macro_addr_t addr_q;
   logic [SizeWidth-1:0] size_q;
@@ -250,6 +251,7 @@ module otp_macro
     err_d          = err_q;
     req            = 1'b0;
     wren           = 1'b0;
+    clear_rdata    = 1'b0;
     cnt_clr        = 1'b0;
     cnt_en         = 1'b0;
     read_ecc_on    = 1'b1;
@@ -388,6 +390,7 @@ module otp_macro
         wren = 1'b1;
         cnt_en = 1'b1;
         zer_en = 1'b1;
+        clear_rdata = 1'b1;
 
         if (cnt_q == size_q) begin
           state_d = ZerReadSt;
@@ -518,7 +521,9 @@ module otp_macro
         wdata_q <= otp_i.wdata;
         size_q  <= otp_i.size;
       end
-      if (rvalid) begin
+      if (clear_rdata) begin
+        rdata_q <= '0;
+      end else if (rvalid) begin
         rdata_q[cnt_q] <= rdata_d;
       end
     end
