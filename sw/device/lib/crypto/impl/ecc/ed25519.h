@@ -194,14 +194,12 @@ status_t ed25519_verify_start(
 /**
  * Finish an async Ed25519 signature verification operation on ACC.
  *
- * @param signature Signature to be verified.
  * @param session_token ACC session token for the operation.
  * @param[out] result Result of verification.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t ed25519_verify_finalize(const ed25519_signature_t *signature,
-                                 uint32_t session_token,
+status_t ed25519_verify_finalize(uint32_t session_token,
                                  hardened_bool_t *result);
 
 #ifdef __cplusplus

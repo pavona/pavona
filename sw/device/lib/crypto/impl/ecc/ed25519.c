@@ -199,8 +199,7 @@ status_t ed25519_verify_start(
   return acc_execute();
 }
 
-status_t ed25519_verify_finalize(const ed25519_signature_t *signature,
-                                 uint32_t session_token,
+status_t ed25519_verify_finalize(uint32_t session_token,
                                  hardened_bool_t *result) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());

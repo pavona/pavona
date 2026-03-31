@@ -402,7 +402,6 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
 }
 
 status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
-                                     const rsa_2048_private_key_t *private_key,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
@@ -548,7 +547,6 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
 }
 
 status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
-                                     const rsa_3072_private_key_t *private_key,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
@@ -694,7 +692,6 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
 }
 
 status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
-                                     const rsa_4096_private_key_t *private_key,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.

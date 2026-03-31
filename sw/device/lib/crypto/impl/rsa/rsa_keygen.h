@@ -268,14 +268,12 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
  * done processing.
  *
  * @param public_key Public key (n, e).
- * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_2048_finalize(const rsa_2048_public_key_t *public_key,
-                                     const rsa_2048_private_key_t *private_key,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid);
 
@@ -325,14 +323,12 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
  * done processing.
  *
  * @param public_key Public key (n, e).
- * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_3072_finalize(const rsa_3072_public_key_t *public_key,
-                                     const rsa_3072_private_key_t *private_key,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid);
 
@@ -382,14 +378,12 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
  * done processing.
  *
  * @param public_key Public key (n, e).
- * @param private_key Private key (p, q, d_p, d_q, i_q).
  * @param session_token ACC session token for the operation.
  * @param[out] key_valid Whether the provided private key is valid.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_key_check_4096_finalize(const rsa_4096_public_key_t *public_key,
-                                     const rsa_4096_private_key_t *private_key,
                                      uint32_t session_token,
                                      hardened_bool_t *key_valid);
 

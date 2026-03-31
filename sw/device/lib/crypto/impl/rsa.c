@@ -521,27 +521,21 @@ otcrypto_status_t otcrypto_rsa_private_key_construct_and_check_async_finalize(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      rsa_2048_private_key_t *sk =
-          (rsa_2048_private_key_t *)private_key->keyblob;
-      return rsa_key_check_2048_finalize(pk, sk, session_token, key_valid);
+      return rsa_key_check_2048_finalize(pk, session_token, key_valid);
     }
     case kOtcryptoRsaSize3072: {
       if (private_key->keyblob_length != sizeof(rsa_3072_private_key_t)) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      rsa_3072_private_key_t *sk =
-          (rsa_3072_private_key_t *)private_key->keyblob;
-      return rsa_key_check_3072_finalize(pk, sk, session_token, key_valid);
+      return rsa_key_check_3072_finalize(pk, session_token, key_valid);
     }
     case kOtcryptoRsaSize4096: {
       if (private_key->keyblob_length != sizeof(rsa_4096_private_key_t)) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      rsa_4096_private_key_t *sk =
-          (rsa_4096_private_key_t *)private_key->keyblob;
-      return rsa_key_check_4096_finalize(pk, sk, session_token, key_valid);
+      return rsa_key_check_4096_finalize(pk, session_token, key_valid);
     }
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.

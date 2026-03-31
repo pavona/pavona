@@ -362,7 +362,5 @@ otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
   HARDENED_TRY(entropy_complex_check());
 
   HARDENED_TRY(ed25519_signature_length_check(signature.len));
-  ed25519_signature_t *sig_ed25519 = (ed25519_signature_t *)signature.data;
-  return ed25519_verify_finalize(sig_ed25519, session_token,
-                                 verification_result);
+  return ed25519_verify_finalize(session_token, verification_result);
 }
