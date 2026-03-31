@@ -28,48 +28,48 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
   endgroup : rx_fifo_underflow_cg
 
   covergroup config_opts_cg with function sample(spi_host_configopts_t spi_configopts);
-    cpol_cp : coverpoint spi_configopts.cpol{ bins cpol[] = {[0:1]}; }
-    cpha_cp : coverpoint spi_configopts.cpha{ bins cpha[] = {[0:1]}; }
-    fullcyc_cp : coverpoint spi_configopts.fullcyc{
-    bins fullcyc[] = {[0:1]};
+    cpol_cp : coverpoint spi_configopts.cpol { bins cpol[] = {[0:1]}; }
+    cpha_cp : coverpoint spi_configopts.cpha { bins cpha[] = {[0:1]}; }
+    fullcyc_cp : coverpoint spi_configopts.fullcyc {
+      bins fullcyc[] = {[0:1]};
     }
-    csnlead_cp : coverpoint spi_configopts.csnlead{
-    bins csnlead[] = {[0:15]};
+    csnlead_cp : coverpoint spi_configopts.csnlead {
+      bins csnlead[] = {[0:15]};
     }
-    csnidle_cp : coverpoint spi_configopts.csnidle{
-    bins csnidle[] = {[0:15]};
+    csnidle_cp : coverpoint spi_configopts.csnidle {
+      bins csnidle[] = {[0:15]};
     }
-    clkdiv_cp : coverpoint spi_configopts.clkdiv{
-    // (Period) T_sck = 2*(clkdiv+1)*T_core
-    // If clkdiv == 16'h00fe, F_sck = F_core / 254
-    bins clk_div_zero = {0};
-    bins clk_divm_bottom_eight[30] = {[16'h1:16'h00fe]};
-    bins clk_divm_upper_eight[30] = {[16'h00ff:16'hfffe]};
-    bins clk_divm_max = {16'hffff};
+    clkdiv_cp : coverpoint spi_configopts.clkdiv {
+      // (Period) T_sck = 2*(clkdiv+1)*T_core
+      // If clkdiv == 16'h00fe, F_sck = F_core / 254
+      bins clk_div_zero = {0};
+      bins clk_divm_bottom_eight[30] = {[16'h1:16'h00fe]};
+      bins clk_divm_upper_eight[30] = {[16'h00ff:16'hfffe]};
+      bins clk_divm_max = {16'hffff};
     }
-    csntrail_cp : coverpoint spi_configopts.csntrail{
+    csntrail_cp : coverpoint spi_configopts.csntrail {
       bins csntrail[] = {[0:15]};
     }
     cpol_cpha_cross :  cross cpol_cp, cpha_cp;
-    csnlead_csnidle_csntrail_cross: cross csnlead_cp, csnidle_cp, csntrail_cp{
+    csnlead_csnidle_csntrail_cross: cross csnlead_cp, csnidle_cp, csntrail_cp {
       bins csncross = binsof(csnlead_cp) && binsof(csnidle_cp) && binsof(csntrail_cp);
     }
   endgroup
 
   covergroup unaligned_data_cg with function sample(bit [3:0] mask);
-    unaligned_data_cp: coverpoint mask{ bins mask = {[0:15]}; }
+    unaligned_data_cp: coverpoint mask { bins mask = {[0:15]}; }
   endgroup
 
   covergroup duplex_cg with function sample(spi_dir_e  direction);
-    duplex_cp : coverpoint direction{ ignore_bins unsupported_dir = {None}; }
+    duplex_cp : coverpoint direction { ignore_bins unsupported_dir = {None}; }
   endgroup
 
   covergroup control_cg with function sample(spi_host_ctrl_t spi_ctrl_reg, bit active);
-    tx_watermark_cp : coverpoint spi_ctrl_reg.tx_watermark{
+    tx_watermark_cp : coverpoint spi_ctrl_reg.tx_watermark {
       bins lower[10] = {[1:30]};
       bins upper[20] = {[31:SPI_HOST_TX_DEPTH]};
     }
-    rx_watermark_cp : coverpoint spi_ctrl_reg.rx_watermark{
+    rx_watermark_cp : coverpoint spi_ctrl_reg.rx_watermark {
       bins lower[10] = {[1:30]};
       bins upper[20] = {[31:SPI_HOST_RX_DEPTH]};
     }
@@ -106,12 +106,12 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     direction_cp : coverpoint spi_cmd_reg.direction;
     mode_cp : coverpoint spi_cmd_reg.mode {
       ignore_bins unsupported_mode = {RsvdSpd};
-      }
+    }
     csaat_cp : coverpoint spi_cmd_reg.csaat;
-    len_cp : coverpoint spi_cmd_reg.len{
+    len_cp : coverpoint spi_cmd_reg.len {
       bins lenl[3] = {[1:3]};
       bins lenh[10] = {[4:$]};
-      }
+    }
     direction_mode_cross: cross  direction_cp, mode_cp;
     csaat_mode_cross: cross csaat_cp, mode_cp;
   endgroup
@@ -157,7 +157,7 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
 
     csaat_cp: coverpoint spi_cmd_reg.csaat;
 
-    speed_cp : coverpoint spi_cmd_reg.mode{
+    speed_cp : coverpoint spi_cmd_reg.mode {
       ignore_bins unsupported_speed = {RsvdSpd};
     }
     speed_trans_cp : coverpoint spi_cmd_reg.mode {
@@ -165,11 +165,11 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
       bins Any2Any[] = ([Standard:Quad] => [Standard:Quad]);
     }
     direction_cp: coverpoint spi_cmd_reg.direction;
-    direction_transition_cp: coverpoint spi_cmd_reg.direction{
+    direction_transition_cp: coverpoint spi_cmd_reg.direction {
       // Creates a bin for each of the possible transitions
       bins Any2Any[] = ([None:Bidir] => [None:Bidir]);
     }
-    len_cp: coverpoint spi_cmd_reg.len{
+    len_cp: coverpoint spi_cmd_reg.len {
       bins zero = {0};
       bins one = {1};
       bins middle_range_val = {[2:2**SPI_HOST_COMMAND_LEN_SIZE_BITS - 2]};
