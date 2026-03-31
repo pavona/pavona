@@ -109,20 +109,11 @@ fn run_aes_kwp_testcase(
     if expected_success {
         // Only check output if the operation succeeded, as failed
         // unwrap testvectors don't have an expected output.
-        //
-        // For unwrap, aes_kwp_unwrap returns the plaintext padded to
-        // the next 8-byte boundary. The actual plaintext length is
-        // decoded and verified internally (from the KWP header) but
-        // not exposed to the caller. We compare only up to the
-        // expected plaintext length from the test vector.
-        assert_eq!(output.output[..expected_output.len()], expected_output[..],);
-        // Verify output length is plaintext padded to 8-byte boundary.
-        let expected_padded_len = expected_output.len().div_ceil(8) * 8;
-        assert_eq!(output.output_len, expected_padded_len);
-        // Verify padding bytes are zero.
-        for &b in &output.output[expected_output.len()..output.output_len] {
-            assert_eq!(b, 0);
-        }
+        assert_eq!(output.output_len, expected_output.len());
+        assert_eq!(
+            &output.output[..output.output_len],
+            expected_output.as_slice()
+        );
     }
 
     Ok(())

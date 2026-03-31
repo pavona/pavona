@@ -135,7 +135,7 @@ status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
 
 status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
                         const size_t ciphertext_len, hardened_bool_t *success,
-                        uint32_t *plaintext) {
+                        uint32_t *plaintext, size_t *plaintext_len) {
   // The ciphertext length is expected to be nonempty, at most 2^32 bytes, and
   // a multiple of the semiblock size.
   if (ciphertext_len > UINT32_MAX || ciphertext_len == 0 ||
@@ -206,9 +206,9 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
   }
 
   // Decode bits 32-64 of A as the plaintext length.
-  size_t plaintext_len = __builtin_bswap32(A[1]);
+  *plaintext_len = __builtin_bswap32(A[1]);
   size_t pad_len =
-      kSemiblockBytes * (ciphertext_semiblocks - 1) - plaintext_len;
+      kSemiblockBytes * (ciphertext_semiblocks - 1) - *plaintext_len;
 
   // Check that the first 32 bits of A match the AES-KWP fixed prefix and that
   // the padding length is valid.
@@ -225,7 +225,7 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
   if (pad_len != 0) {
     uint8_t exp_pad[pad_len];
     memset(exp_pad, 0, pad_len);
-    unsigned char *pad_start = ((unsigned char *)plaintext) + plaintext_len;
+    unsigned char *pad_start = ((unsigned char *)plaintext) + *plaintext_len;
     if (memcmp(pad_start, exp_pad, pad_len) != 0) {
       *success = kHardenedBoolFalse;
       memset(plaintext, 0, ciphertext_len);

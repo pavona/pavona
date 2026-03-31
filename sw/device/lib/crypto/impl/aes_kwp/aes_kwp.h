@@ -67,13 +67,14 @@ status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
  * @param ciphertext Key material to unwrap.
  * @param ciphertext_len Ciphertext length in bytes.
  * @param[out] success Whether the ciphertext was valid.
- * @param[out] plaintext Output buffer, same length as ciphertext
+ * @param[out] plaintext Output buffer, same length as ciphertext.
+ * @param[out] plaintext_len Plaintext length in bytes.
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
 status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
                         const size_t ciphertext_len, hardened_bool_t *success,
-                        uint32_t *plaintext);
+                        uint32_t *plaintext, size_t *plaintext_len);
 
 #ifdef __cplusplus
 }  // extern "C"

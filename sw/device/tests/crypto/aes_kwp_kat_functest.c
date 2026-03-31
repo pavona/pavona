@@ -96,15 +96,17 @@ static status_t aes_kwp_unwrap_kat(const uint32_t *kek, size_t kek_words,
   size_t ptext_words = (ptext_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t act_ptext[ptext_words];
   hardened_bool_t success;
+  size_t act_ptext_len;
   uint64_t t = profile_start();
   status_t err = aes_kwp_unwrap(aes_kek, ctext, ctext_words * sizeof(uint32_t),
-                                &success, act_ptext);
+                                &success, act_ptext, &act_ptext_len);
   profile_end_and_print(t, "aes_kwp_unwrap");
   TRY(err);
 
   // Check results.
   if (valid) {
     TRY_CHECK(success == kHardenedBoolTrue);
+    TRY_CHECK(act_ptext_len == ptext_bytes);
     TRY_CHECK_ARRAYS_EQ((unsigned char *)act_ptext, (unsigned char *)ptext,
                         ptext_bytes);
   } else {
