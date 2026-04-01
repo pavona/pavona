@@ -140,7 +140,7 @@ The initial patch tag should always be manually created as a way to improve rele
 #### Release Readiness
 
 Part of the preparation for initial release includes aggregating a set of conditions for the release to be deemed "stable".
-This should also include a set of tests that may be run by CI on all incoming release-branch PRs.
+This should also include a set of tests that will be run by CI on all incoming release-branch PRs (this can be the same set of tests run against PRs on main).
 Development of new release readiness metrics may refer to previous releases' criteria.
 
 All criteria for a properly prepared release must be met prior to initial release and should be openly published upon release.
@@ -148,18 +148,20 @@ The release standards should err on the side of having quality (better tested, a
 
 The technical committee or repository governing body will decide these criteria for each release by the time the release branch is cut.
 They will also decide the primary set of contributors responsible for meeting these criteria in time for initial release and properly documenting the release.
+They may also, if warranted, assign responsibility for maintaining a given release branch after initial release.
 
 #### Files which track versions
 
 Version information could potentially be tracked in some hardware files which have version fields, like Hjson metadata and FuseSoC core files, but for now they can be ignored.
 
 Hjsons should also keep the additional hardware development progress information up to date, which will be useful to users assessing usability of a certain component.
-An example of this is the `life_stage`, `design_stage`, `verification_stage`, and `dif_stage` fields in an IP block’s Hjson.
+Currently, this is the `life_stage`, `design_stage`, `verification_stage`, and `dif_stage` fields in an IP block’s Hjson.
+We will not be using the `version` field of the Hjson.
 This information must be kept accurate in order to retain trust in the repo.
 
-When a release branch is cut, the quality of the repo's IP blocks should be ascertained and the Hjson information should be updated accordingly.
+When a release branch is cut, the quality of the repo's IP blocks should be ascertained and updated accordingly such that at any given initial release, all `life_stage`, `design_stage`, `verification_stage`, and `dif_stage` information is up-to-date.
 
-Particularly in official releases, any sort of version-related Hjson metadata should be up-to-date.
+Similarly, any documentation that misaligns with the code should be updated prior to an initial release.
 
 ### Release Packaging
 
