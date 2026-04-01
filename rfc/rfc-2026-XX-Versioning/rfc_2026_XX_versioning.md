@@ -24,7 +24,7 @@ The project will version the repo as a whole.
 Versioning will use a release-date-plus-patch-number versioning scheme of `[YYYY].[MM].p[#]`.
 Version tracking will utilize git tags.
 
-For each official repo release: a release branch `release/[YYYY].[MM]` will be created, with patches marked by git tags of the form `release/[YYYY].[MM].p[#]` (eg., `release/2026.03.p2`).
+For each official repo release: a release branch `release/[YYYY].[MM]` will be created, with patches marked by git tags of the form `release/[YYYY].[MM].p[#]` (eg., `release/2026.04.p2`).
 Each release will also be made available on GitHub under “Releases”.
 
 ## Intent
@@ -59,7 +59,7 @@ This version number provides information on: 1\) the version being stable or dep
 
 Since compatibility is based on release date, all changes made on a release branch must not break any compatibility between any device-side or host-side parts.
 Everything that shares the same release date must remain compatible with one another.
-This includes keeping any external dependencies constant from patch to patch: for example, if version `2026.03.p4` requires package `foo` at version `3.14`, then so should version `2026.03.p5`.
+This includes keeping any external dependencies constant from patch to patch: for example, if version `2026.04.p4` requires package `foo` at version `3.14`, then so should version `2026.04.p5`.
 
 ## Version Tracking and Release Schedule
 
@@ -108,17 +108,20 @@ After initial release, any sets of commits made to a release branch should const
 
 ### Schedule
 
-A regular, predictable release schedule chosen and well-communicated ahead of time will help instill trust in the repo; therefore, it is advantageous to select a specific cadence rather than individual release months.
+A regular, predictable release schedule chosen and clear communication will help instill trust in the repo; therefore, it is advantageous to select a specific cadence rather than individual release months.
 
-Repo releases should always come out on time–once a release date is selected, the initial release *must* be made during that month, rolling back any unfinished features as necessary.
-Releases will occur twice per year, but this frequency may be adjusted as necessary.
+Repo releases should always come out on time.
+Releases can occur at any point during the release month.
+Once a release date is selected, the initial release *must* be made during that month, rolling back any unfinished features as necessary.
+
+Releases will occur twice per year.
 Release branches, accordingly, will be created three months before the release date to allot adequate time for preparing the initial release.
 
 Patches to supported repo releases may occur at any point in time between the initial release and end-of-life.
 Repo versions will no longer be supported two years after their initial release date, and a version that has reached end-of-life may no longer receive any patches.
 
-At this time, a reasonable release schedule seems to be every March and every September, starting with March 2026.
-This means new release branches will be created on the first day of every December and June, and release `2026.03` will be deprecated at the end of March 2028.
+At this time, a reasonable release schedule seems to be every April and every October, starting with April 2026.
+This means new release branches will be created on the first day of every January and July, and release `2026.04` will be deprecated at the end of April 2028.
 
 #### Support Window
 
