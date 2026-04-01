@@ -168,7 +168,7 @@ Similarly, any documentation that misaligns with the code should be updated prio
 Making it easy for users to access the repo is of utmost importance, especially since many individuals will simply want to use the repo rather than contribute to it, and packaging should help in this aim.
 
 Users will be encouraged to clone the repo for themselves as the primary method of installing Pavona, but this may not be suitable for all situations.
-GitHub provides [an easy interface](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) for generating release packages
+GitHub provides [an easy interface](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) for generating release packages, so the alternative to cloning for users is downloading the release packages from GitHub.
 Any git tags may be used to mark a release, but only the `release/*` tags will be used for this purpose.
 GitHub releases automatically provide both ZIP and TAR archive files of the repo using `git archive`.
 
@@ -189,11 +189,10 @@ Some simple ways to aid versioning are:
 - Quickly fixing any mistakes in repo releases (in the release content or in its version labels).
 - High, objective, and unambiguous standards for release content.
 
-While build tools currently ignore versioning, they may eventually be updated to account for version; otherwise, versioning will have little meaning at all besides communicating that there are fewer bugs.
 It is better to have something simply not build than to find a bug late in development.
-At some point, the various Bazel, Python, and Bash scripts that constitute the repo's build tooling should have access to version information, but this is not required at this time.
+At some point, the various Bazel, Python, and Bash scripts (which currently ignore versioning) that constitute the repo's build tooling should have access to version information, but this is not required at this time.
 
-Of course, documentation, active engagement in discussions (whether in GitHub issues or in RFC threads), good communication, and examples can always help inform users on how to best implement changes in Pavona; however, at the end of the day, it really comes down to responsible contributors’ and maintainers’ actions to keep the repo properly versioned.
+Of course, documentation, active engagement in discussions, good communication, and examples can always help inform users on how to best implement changes in Pavona; however, at the end of the day, it really comes down to responsible contributors’ and maintainers’ actions to keep the repo properly versioned.
 
 ## Procedures
 
@@ -227,7 +226,7 @@ Contributors’ Checklist:
 2. Make a PR on GitHub to bring changes into the release branch.
    Follow standard contribution procedures.
     * Specify any significant changes introduced by this patch in the PR description and/or comments.
-3. Once the PR is merged, check that the latest release branch commit is tagged with the new patch number and that there is a new patch release on GitHub.
+3. After the PR is merged, check that the latest release branch commit is tagged with the new patch number and that there is a new patch release on GitHub.
    If not, notify the release maintainers.
 
 Reviewers’ Checklist (for Versioning):
