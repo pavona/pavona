@@ -10,9 +10,7 @@ This RFC covers basic repo versioning--namely, which schemes to use and how to i
 
 The repository needs versioning to help its users reason about the quality and compatibility of its parts, especially as they change over time.
 The Pavona project will track all parts of the repo with only one version number.
-Instead of semantic versioning, it will use calendar versioning (`YYYY.MM`) to coincide with major repo releases, with revision numbers to represent subsequent patches.
-
-The bottom of this document includes a supplementary section to provide extra context for each decision made.
+Instead of semantic versioning, it will use calendar versioning (`YYYY.MM`) to coincide with major repo releases, with patch numbers to represent subsequent patches.
 
 ### Proposal
 
@@ -24,21 +22,20 @@ The project will version the repo as a whole.
 Versioning will use a release-date-plus-patch-number versioning scheme of `[YYYY].[MM].p[#]`.
 Version tracking will utilize git tags.
 
-For each official repo release: a release branch `release/[YYYY].[MM]` will be created, with patches marked by git tags of the form `release/[YYYY].[MM].p[#]` (eg., `release/2026.04.p2`).
+For each official repo release: a release branch `release/[YYYY].[MM]` will be created, with valid releases marked by git tags of the form `release/[YYYY].[MM].p[#]` (eg., `release/2026.04.p2`).
 Each release will also be made available on GitHub under “Releases”.
 
-## Intent
-
-*Supplementary topics: [central principles](#central-principles-in-versioning), [versioning silicon](#versioning-silicon), [document scope](#document-scope)*
+### Intent
 
 This guidebook is written to aid the repo launch in implementing a functional versioning scheme and adequate version control processes.
 
-We’d like to avoid:
-- Pointing non-contributing users to the main branch, which is actively developed and unstable.
+Potential problems to avoid:
+- Frustrating new users who find bugs on the main branch, which is actively developed and unstable.
 - Difficulties with incompatible or broken parts.
 - Incorrect or difficult-to-find version information.
 
 These things can hinder development and contribution, deter adoption of the repo, and lead to messy engineering kludges and/or code rot.
+Implementing a well-defined versioning scheme can provide an edition of the repo that is out-of-box usable, mitigating such difficulties.
 
 ## Versioning Scheme
 
