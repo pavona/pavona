@@ -37,45 +37,43 @@ Potential problems to avoid:
 These things can hinder development and contribution, deter adoption of the repo, and lead to messy engineering kludges and/or code rot.
 Implementing a well-defined versioning scheme can provide an edition of the repo that is out-of-box usable, mitigating such difficulties.
 
-## Versioning Scheme
+## Defining Versions
 
-*Supplementary topics: [monolithic repo rationale](#keeping-the-repo-as-a-single-whole), [repo split considerations](#why-calvercalendar-based-versioning), [calver rationale](#why-calver), [FuseSoC side note](#calver-with-fusesoc), [how big of a change](#how-big-of-a-change-warrants-a-new-version)*
+A simple version numbering scheme can go a long way: it can be both easy to implement and provide a quick way to supply information.
+The project will use a calendar versioning scheme of `[YYYY].[MM].p[#]`, filled in with the year and month of a given major repository release, plus a patch number.
 
-A simple versioning scheme can go a long way: it can be both easy to implement and provide a quick way to supply information.
-The project will use a calendar versioning (“calver”) scheme of `[YYYY].[MM].p[#]`, filled in with the year and month of a given major repository release, plus a patch number.
+### Version Labels
 
-Any two versions that have the same calver date, even if differing in patch number, will be considered compatible.
+Version tracking will be done via git tags and branches.
 
-This version number provides information on: 1\) the version being stable or deprecated, and 2\) how many bug fixes it has received.
-
-1. Let patch number 0 indicate an “initial” release, which occurs during the month specified by the release date.
-   A version must be considered stable (minimal updates and no “breaking” changes) from its initial release until it reaches end-of-life (discussed more below) two years after the initial release.
-2. Updates applied to a release branch should only consist of bug fixes in order to maintain release branch stability.
-   Each incoming fix will be considered a new patch.
-   Patches should not alter the release date numbers, and patch numbers must always increment by one (regardless of the size or subject of the code changes).
-
-Since compatibility is based on release date, all changes made on a release branch must not break any compatibility between any device-side or host-side parts.
-Everything that shares the same release date must remain compatible with one another.
-This includes keeping any external dependencies constant from patch to patch: for example, if version `2026.04.p4` requires package `foo` at version `3.14`, then so should version `2026.04.p5`.
-
-## Version Tracking and Release Schedule
-
-*Supplementary topics: [practicality of git tags](#practicality-of-git-tags), [infrastructure needed](#survey-of-infrastructure-needed), [the versionless main](#the-versionless-main), [archiving releases](#archiving-releases), [gitless](#gitless)*
-
-Version tracking is done via git tags.
+Git branches enable a continuous line of development separate from main.
 
 Git tags enable users to retrieve specific versions of the repo and/or its components, track development over time, and examine diffs across versions.
 Releases will use signed (annotated) tags in order to store more information about the tag as well as verify the tagger's identity.
 Multiple tags may be applied to a single commit, so assigning a version tag will not interfere with using tags for other purposes.
-While altering tags is possible, revising already-existing tags [is highly discouraged](https://git-scm.com/docs/git-tag#_on_re_tagging) and will only be done when absolutely necessary (this indicates that something has really gone wrong).
+Tags [should never be renamed or moved](https://git-scm.com/docs/git-tag#_on_re_tagging) (this indicates that something has really gone wrong).
 
-For each repo release, a new branch `release/[YYYY].[MM]` should be created.
-Each stable release will have a corresponding git tag on its latest commit, labeled `release/[YYYY].[MM].p[#]`, starting with patch number 0 (the initial release).
+For each release date, a new release branch `release/[YYYY].[MM]` will be created.
+Each release will have a corresponding git tag on its latest commit, labeled `release/[YYYY].[MM].p[#]`, starting with patch number 0, the initial release (zero patches received).
 
-Repo content (for example, Hjson metadata) will not be required to contain the repo version number because it would require too much effort to keep every versioned file in sync.
+Repo content will not be required to contain the repo version number because it would require too much effort to keep every versioned file in sync.
 Only the release's git tag will convey version information.
 
-### Release Development
+### Version Information
+
+The version number provides information on: 1\) compatibility of repo content, 2\) the version being stable or deprecated, and 3\) how many bug fixes it has received:
+
+1. Only two versions numbers that have the same version date, even if differing in patch number, will be considered compatible.
+   All repo content from compatible versions must remain compatible with one another.
+   This includes keeping any external dependencies constant from patch to patch: for example, if version `2026.04.p4` requires package `foo` at version `3.14`, then so should version `2026.04.p5`.
+
+2. The version's release date conveys the timeline for how long it is considered stable: releases are stable and supported from the time the initial release tag is pushed until a fixed time after the release date (see below discussion on release development and end-of-life).
+
+3. Updates applied to a release branch after initial release should only consist of bug fixes in order to maintain release branch stability.
+   Each incoming fix will be considered a new patch, constituting a new tag along the branch.
+   Patches should not alter the release date numbers, and patch numbers must always increment by one (regardless of the size or subject of the code changes).
+
+## Release Development
 
 ![Example of release branch evolution; initial release must occur in February 2026](./development.svg)
 
