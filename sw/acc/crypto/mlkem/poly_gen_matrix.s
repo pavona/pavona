@@ -66,7 +66,8 @@
  * @param[in]  a0: pointer to seed (KYBER_SYMBYTES = 32)
  * @param[in]  w30: i||j (2 bytes)
  *
- * clobbered registers: a0, t0, w0
+ * clobbered registers: x5, w0
+ * clobbered flag groups: none
  */
 
 .globl poly_gen_matrix_init
@@ -100,7 +101,8 @@ poly_gen_matrix_init:
  * @param[in]  a0: pointer to seed (KYBER_SYMBYTES = 32)
  * @param[out] a1: dmem pointer to polynomial
  *
- * clobbered registers: a0-a5, t0-s4, w8, w14
+ * clobbered registers: x5 to x7, x11, x14, x16, x18, x20 to x21, w8, w10 to w14, w17, w31
+ * clobbered flag groups: FG0
  */
 
 .globl poly_gen_matrix

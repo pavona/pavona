@@ -47,8 +47,8 @@
  * @param[in]  x11: dptr_modulus_over_2
  * @param[out] x12: dptr_output, dmem pointer to output
  *
- * clobbered registers: x4-x6, w0-w3
- * clobbered flag groups: None
+ * clobbered registers: x4 to x6, x12, w0 to w1, w3
+ * clobbered flag groups: FG0
  */
 
 .globl poly_frommsg
@@ -89,8 +89,8 @@ poly_frommsg:
  * @param[in]  x13: const_1290167
  * @param[out] x12: dptr_output, dmem pointer to output byte array
  *
- * clobbered registers: x4-x8, w0-w4
- * clobbered flag groups: None
+ * clobbered registers: x4 to x5, x7, x10, w0 to w3, w16, w31
+ * clobbered flag groups: FG0
  */
 
 .globl poly_tomsg
@@ -141,7 +141,7 @@ poly_tomsg:
  * @param[in]  x10: dptr_input, dmem pointer to input seed
  * @param[in]  x13: *nonce
  *
- * clobbered registers: x5, x10
+ * clobbered registers: x5, w0
  * clobbered flag groups: None
  */
 
@@ -180,8 +180,8 @@ poly_getnoise_eta_init:
  * @param[in]  x6: dmem_ptr to SHAKE256 results from `poly_getnoise_eta_init`
  * @param[out] x11: dptr_output, dmem pointer to output polynomial
  *
- * clobbered registers: x4-x30, w0-w31
- * clobbered flag groups: None
+ * clobbered registers: x4 to x6, x10 to x11, x17, x19 to x21, w0 to w9, w11, w20 to w21
+ * clobbered flag groups: FG0
  */
 
 .globl poly_getnoise_eta_1
@@ -221,8 +221,8 @@ poly_getnoise_eta_1:
  * @param[in]  x6: dmem_ptr to SHAKE256 results from `poly_getnoise_eta_init`
  * @param[out] x11: dptr_output, dmem pointer to output polynomial
  *
- * clobbered registers: x4-x30, w0-w31
- * clobbered flag groups: None
+ * clobbered registers: x4 to x11, x17, w0 to w4, w6 to w8
+ * clobbered flag groups: FG0
  */
 
 .globl poly_getnoise_eta_2
@@ -252,8 +252,8 @@ poly_getnoise_eta_2:
  * @param[in]  x11: dptr_input, dmem pointer to second poly
  * @param[in]  x12: dptr_output, dmem pointer to output polynomial
  *
- * clobbered registers: x4-x30, w0-w31
- * clobbered flag groups: None
+ * clobbered registers: x4, x10 to x12, w0 to w1
+ * clobbered flag groups: none
  */
 .globl poly_add
 poly_add:
@@ -279,8 +279,8 @@ poly_add:
  * @param[in]  x11: dptr_input, dmem pointer to second poly
  * @param[out] x12: dptr_output, dmem pointer to output polynomial
  *
- * clobbered registers: x4-x30, w0-w31
- * clobbered flag groups: None
+ * clobbered registers: x4, x10 to x12, w0 to w1
+ * clobbered flag groups: none
  */
 .globl poly_sub
 poly_sub:
@@ -307,8 +307,8 @@ poly_sub:
  * @param[in]      w16: sw0, where sw0.2 = Q^-1 mod 2^32, sw0.0 = Q
  * @param[in]      w31: all-zero
  *
- * clobbered registers: x4-x30, w0-w31
- * clobbered flag groups: None
+ * clobbered registers: x4, x10, w0 to w1, acc, acch
+ * clobbered flag groups: none
  */
 .globl poly_tomont
 poly_tomont:

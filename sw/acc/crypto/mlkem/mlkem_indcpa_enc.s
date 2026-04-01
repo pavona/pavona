@@ -165,7 +165,8 @@
  * @param[in]  x12 (a2): dmem pointer to input coins
  * @param[out] x13 (a3): dmem pointer to output ciphertext
  *
- * clobbered registers: a0-a4, t0-t5, w8, w16
+ * clobbered registers: x4 to x29, w0 to w31, acc, acch, mod
+ * clobbered flag groups: FG0
  */
 .globl indcpa_enc
 indcpa_enc:

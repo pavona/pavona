@@ -162,9 +162,9 @@
  * @param[out] dmem[ss]: output shared secret
  * @param[in]  dmem[ek]: input public key
  *
- * clobbered registers: a0-a4, t0-t5, w8, w16
+ * clobbered registers: x4 to x29, w0 to w31, acc, acch, mod
+ * clobbered flag groups: FG0
  */
-
 .globl crypto_kem_enc
 crypto_kem_enc:
 
