@@ -24,12 +24,10 @@ source "$UTIL_DIR/build_consts.sh"
 
 SMOKE_SRC_DIR=$ROOT_DIR/hw/ip/acc/dv/smoke
 
-(cd $ROOT_DIR;
- fusesoc --cores-root=. run --target=sim --setup --build \
-    --mapping=lowrisc:prim_generic:all:0.1 lowrisc:ip:acc_top_sim \
-    --make_options="-j$(nproc)" || fail "HW Sim build failed")
-
-./bazelisk.sh build //hw/ip/acc/dv/smoke:smoke_test_nondeterministic
+./bazelisk.sh build \
+  //hw/ip/acc/dv/smoke:verilator_acc \
+  //hw/ip/acc/dv/smoke:smoke_test_nondeterministic
+SIM_BINARY=$(./bazelisk.sh cquery --output=files //hw/ip/acc/dv/smoke:verilator_acc)
 SMOKE_ELF=$(./bazelisk.sh cquery --output=files //hw/ip/acc/dv/smoke:smoke_test_nondeterministic | grep "\\.elf$" | head -1)
 
 RUN_LOG=`mktemp`
@@ -37,9 +35,7 @@ readonly RUN_LOG
 # shellcheck disable=SC2064 # The RUN_LOG tempfile path should not change
 trap "rm -rf $RUN_LOG" EXIT
 
-timeout 5s \
-  $ROOT_DIR/build/lowrisc_ip_acc_top_sim_0.1/sim-verilator/Vacc_top_sim \
-  --load-elf=$SMOKE_ELF -t | tee $RUN_LOG
+timeout 5s ${SIM_BINARY} --load-elf=${SMOKE_ELF} -t | tee $RUN_LOG
 
 if [ $? -eq 124 ]; then
   fail "Simulation timeout"

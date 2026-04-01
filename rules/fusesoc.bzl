@@ -85,20 +85,30 @@ def _fusesoc_build_impl(ctx):
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,
-        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc + [
+        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc + ctx.files._libcxx + ctx.files._include + [
             cfg_file,
         ],
-        tools = [ctx.executable._verilator] if ctx.attr.target != "synth" else [],
+        tools = ([
+            ctx.executable._verilator,
+            ctx.executable._ar,
+            ctx.executable._cc,
+            ctx.executable._cxx,
+        ]) if ctx.attr.target != "synth" else [],
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
         env = dicts.add(
             # Verilator build doesn't need nonhermetic environment variables
             ENV if ctx.attr.target == "synth" else {
-                # Contains the `execroot`-relative path for verilator provided
-                # by Bazel. `fusesoc_build.py` converts this into an absolute
-                # path once the working directory is known.
+                # Contains the `execroot`-relative paths for verilator and C/C++
+                # compiler provided by Bazel. `fusesoc_build.py` converts these
+                # into absolute paths once the working directory is known.
                 "VERILATOR_BINARY": ctx.executable._verilator.path,
+                "VERILATOR_AR": ctx.executable._ar.path,
+                "VERILATOR_CC": ctx.executable._cc.path,
+                "VERILATOR_CXX": ctx.executable._cxx.path,
+                "VERILATOR_LIBCXX": ctx.files._libcxx[0].path,
+                "VERILATOR_INCLUDE": ctx.files._include[0].path,
             },
             {
                 "HOME": home_dir,
@@ -148,6 +158,42 @@ fusesoc_build = rule(
             default = "//third_party/verilator",
             doc = "Verilator binary target",
             cfg = "exec",
+        ),
+        "_ar": attr.label(
+            allow_files = True,
+            executable = True,
+            default = "@llvm_toolchain//:bin/llvm-ar",
+            doc = "Archive target.",
+            cfg = "exec",
+        ),
+        "_cc": attr.label(
+            allow_files = True,
+            executable = True,
+            default = "@llvm_toolchain_llvm//:bin/clang",
+            doc = "C compiler target.",
+            cfg = "exec",
+        ),
+        "_cxx": attr.label(
+            allow_files = True,
+            executable = True,
+            default = "@llvm_toolchain_llvm//:bin/clang++",
+            doc = "C++ compiler target.",
+            cfg = "exec",
+        ),
+        "_libc": attr.label(
+            allow_files = True,
+            default = "@llvm_toolchain_llvm//:lib",
+            doc = "C standard library archive.",
+        ),
+        "_libcxx": attr.label(
+            allow_files = True,
+            default = "@llvm_toolchain_llvm//:lib",
+            doc = "C++ standard library archive.",
+        ),
+        "_include": attr.label(
+            allow_files = True,
+            default = "@llvm_toolchain_llvm//:include",
+            doc = "C/C++ standard library include headers.",
         ),
     },
 )
