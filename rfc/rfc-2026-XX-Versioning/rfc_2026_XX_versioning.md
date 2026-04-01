@@ -6,11 +6,11 @@
 
 ## Introduction
 
-This RFC covers basic repo versioning–namely, which schemes to use and how to implement it.
+This RFC covers basic repo versioning--namely, which schemes to use and how to implement it.
 
 The repository needs versioning to help its users reason about the quality and compatibility of its parts, especially as they change over time.
-We propose to track all parts of the repo with only one version number.
-We will not use semantic versioning; we will use calendar versioning (`YYYY.MM`) to coincide with major repo releases, with revision numbers to represent subsequent patches.
+The Pavona project will track all parts of the repo with only one version number.
+Instead of semantic versioning, it will use calendar versioning (`YYYY.MM`) to coincide with major repo releases, with revision numbers to represent subsequent patches.
 
 The bottom of this document includes a supplementary section to provide extra context for each decision made.
 
@@ -20,11 +20,11 @@ The bottom of this document includes a supplementary section to provide extra co
 
 The purpose of versioning is to keep track of development progress and give users a common baseline point at which to most easily use the repo tools at hand.
 
-We will version the repo as a whole.
-We use a release-date-plus-patch-number versioning scheme of `[YYYY].[MM].p[#]`.
-Versioning tracking will utilize git tags.
+The project will version the repo as a whole.
+Versioning will use a release-date-plus-patch-number versioning scheme of `[YYYY].[MM].p[#]`.
+Version tracking will utilize git tags.
 
-For each official repo release: we will make a branch `release/[YYYY].[MM]`, with patches marked by git tags of the form `release/[YYYY].[MM].p[patch number]` (eg., `release/2026.03.p2`).
+For each official repo release: a release branch `release/[YYYY].[MM]` will be created, with patches marked by git tags of the form `release/[YYYY].[MM].p[#]` (eg., `release/2026.03.p2`).
 Each release will also be made available on GitHub under “Releases”.
 
 ## Intent
@@ -34,7 +34,7 @@ Each release will also be made available on GitHub under “Releases”.
 This guidebook is written to aid the repo launch in implementing a functional versioning scheme and adequate version control processes.
 
 We’d like to avoid:
-- Reliance on an unstable tip of master.
+- Pointing non-contributing users to the main branch, which is actively developed and unstable.
 - Difficulties with incompatible or broken parts.
 - Incorrect or difficult-to-find version information.
 
@@ -45,14 +45,17 @@ These things can hinder development and contribution, deter adoption of the repo
 *Supplementary topics: [monolithic repo rationale](#keeping-the-repo-as-a-single-whole), [repo split considerations](#why-calvercalendar-based-versioning), [calver rationale](#why-calver), [FuseSoC side note](#calver-with-fusesoc), [how big of a change](#how-big-of-a-change-warrants-a-new-version)*
 
 A simple versioning scheme can go a long way: it can be both easy to implement and provide a quick way to supply information.
-We will use a calendar versioning (“calver”) scheme of `[YYYY].[MM].p[#]`, filled in with the year and month of a given major repository release, plus a patch number.
+The project will use a calendar versioning (“calver”) scheme of `[YYYY].[MM].p[#]`, filled in with the year and month of a given major repository release, plus a patch number.
 
-Two items that have the same calver date will be considered compatible, corresponding to the same repo release.
+Any two versions that have the same calver date, even if differing in patch number, will be considered compatible.
 
 This version number provides information on: 1\) the version being stable or deprecated, and 2\) how many bug fixes it has received.
 
-1. Let patch number 0 indicate an “initial” release; a version must be considered stable (minimal changes and no “breaking” changes) from its initial release until it reaches end-of-life (discussed more below) two years after the initial release.
-2. Patches should not alter the release date numbers, and patch numbers must always increment by one with every update (large or small, in any part of the repo).
+1. Let patch number 0 indicate an “initial” release, which occurs during the month specified by the release date.
+   A version must be considered stable (minimal updates and no “breaking” changes) from its initial release until it reaches end-of-life (discussed more below) two years after the initial release.
+2. Updates applied to a release branch should only consist of bug fixes in order to maintain release branch stability.
+   Each incoming fix will be considered a new patch.
+   Patches should not alter the release date numbers, and patch numbers must always increment by one (regardless of the size or subject of the code changes).
 
 Since compatibility is based on release date, all changes made on a release branch must not break any compatibility between any device-side or host-side parts.
 Everything that shares the same release date must remain compatible with one another.
@@ -60,50 +63,47 @@ This includes keeping any external dependencies constant from patch to patch: fo
 
 ## Version Tracking and Release Schedule
 
-*Supplementary topics: [practicality of git tags](#practicality-of-git-tags), [infrastructure needed](#survey-of-infrastructure-needed), [the versionless master](#the-versionless-master), [archiving releases](#archiving-releases), [gitless](#gitless)*
+*Supplementary topics: [practicality of git tags](#practicality-of-git-tags), [infrastructure needed](#survey-of-infrastructure-needed), [the versionless main](#the-versionless-main), [archiving releases](#archiving-releases), [gitless](#gitless)*
 
 Version tracking is done via git tags.
 
 Git tags enable users to retrieve specific versions of the repo and/or its components, track development over time, and examine diffs across versions.
-For releases we will use signed (annotated) tags in order to store more information about the tag as well as verify the tagger's identity.
+Releases will use signed (annotated) tags in order to store more information about the tag as well as verify the tagger's identity.
 Multiple tags may be applied to a single commit, so assigning a version tag will not interfere with using tags for other purposes.
 While altering tags is possible, revising already-existing tags [is highly discouraged](https://git-scm.com/docs/git-tag#_on_re_tagging) and will only be done when absolutely necessary (this indicates that something has really gone wrong).
 
 For each repo release, a new branch `release/[YYYY].[MM]` should be created.
-Each new patch applied to the branch will correspond with a git tag on its latest commit, labeled `release/[YYYY].[MM].p[#]`, starting with patch 0 (the initial release).
+Each stable release will have a corresponding git tag on its latest commit, labeled `release/[YYYY].[MM].p[#]`, starting with patch number 0 (the initial release).
 
-We will not consider any of the repo content to be labeled with the correct version (for example, the versions written in the FuseSoC core files) because it would require too much effort to keep every versioned file in sync.
+Repo content (for example, Hjson metadata) will not be required to contain the repo version number because it would require too much effort to keep every versioned file in sync.
 Only the release's git tag will convey version information.
 
 ### Release Development
 
 ![Example of release branch evolution; initial release must occur in February 2026](./development.svg)
 
-In accordance with good practices, development should take place on separate branches, not directly on master or on any release branch.
+In accordance with good practices, development should begin on separate branches, not directly on main or on any release branch.
 Changes can then be merged into or rebased onto these central branches after making a pull request (PR) and getting reviewer approval.
 
-An important thing to note: release numbers never change nor decrement.
+Importantly: release numbers never change nor decrement.
 After the initial release, any updates on a release branch *must* constitute a new patch, and previous patches should never be amended or rescinded (a new patch may undo some of the things changed in a previous patch, but this does not change the git history nor patch numbering).
 
-On schedule, a new release branch will be created from the latest commit on master, marking the start of the new release, and that commit should be tagged with `cut/[YYYY].[MM]` to designate the point at which the release branch will diverge.
-The year and month still remain the release year and month, not the date when the release branch is created.
+On schedule, a new release branch will be created from the latest commit on main, and that commit should be tagged with `cut/[YYYY].[MM]` to designate the point at which the release branch `release/[YYYY].[MM]` diverges.
 
-Before initial release, the content of the release branch should be considered a release candidate.
-Additional commits may be made on the release branch (possibly cherry-picked from master) to prepare a minimally buggy, well-tested, and well-documented release.
-Master is considered unstable and where the majority of development is pushed, while releases are designed to be more carefully-controlled versions of the repo.
-
-As releases progress from in-development to being public and stable, the release branch will finally be tagged with `release/[YYYY].[MM].p0` at any point during the selected release month.
+Before initial release, the content of the release branch should be considered a release candidate, as it has not yet been stabilized.
+Additional commits may be made on the release branch (possibly cherry-picked from main) to prepare a minimally buggy, well-tested, and well-documented repo.
+Once the tip of the release branch can be considered stable, it can be tagged with `release/[YYYY].[MM].p0` to indicate that the release is ready for use.
 
 ### Patch Philosophy
 
-Once an initial release has been made, the release should be considered a snapshot in time, remaining mostly static.
-The only changes that should be made are ones where active issues with using the repo are found (bug fixes).
-This will keep releases stable and minimize the number of revisions a release receives over its lifetime.
+Once an initial release has been made, the release branch should be considered a snapshot in time, remaining mostly static.
+The only changes that should be made are fixes addressing issues found when using that specific version of the repo.
+This will keep releases stable and minimize the number of patches a release branch receives over its lifetime.
 
-All development for new features and improvements should instead go to master, and release branches may, if desired, backport select fixes from master up until the initial release.
+All development for new features and improvements should instead go to main.
 
-Generally speaking, changes on master should only be incorporated into the release branch before the initial release, at which point the two branches are considered to have diverged.
-If the same bug is found on both branches post-release, two separate PRs—one against each branch—is warranted.
+Generally speaking, changes on main should only be incorporated into the release branch before the initial release, at which point the two branches are considered to have diverged.
+If the same bug is found on both branches post-release, two separate PRs--one against each branch--is warranted.
 After initial release, any sets of commits made to a release branch should constitute a new patch.
 
 ### Schedule
@@ -111,11 +111,11 @@ After initial release, any sets of commits made to a release branch should const
 A regular, predictable release schedule chosen and well-communicated ahead of time will help instill trust in the repo; therefore, it is advantageous to select a specific cadence rather than individual release months.
 
 Repo releases should always come out on time–once a release date is selected, the initial release *must* be made during that month, rolling back any unfinished features as necessary.
-We will start with twice per year releases and adjust this frequency as necessary.
+Releases will occur twice per year, but this frequency may be adjusted as necessary.
 Release branches, accordingly, will be created three months before the release date to allot adequate time for preparing the initial release.
 
 Patches to supported repo releases may occur at any point in time between the initial release and end-of-life.
-Repo versions will no longer be supported two years after their initial release date, meaning that after two years, a given version may no longer receive any patches.
+Repo versions will no longer be supported two years after their initial release date, and a version that has reached end-of-life may no longer receive any patches.
 
 At this time, a reasonable release schedule seems to be every March and every September, starting with March 2026.
 This means new release branches will be created on the first day of every December and June, and release `2026.03` will be deprecated at the end of March 2028.
@@ -123,10 +123,10 @@ This means new release branches will be created on the first day of every Decemb
 #### Support Window
 
 Repo maintainers and contributors should not make any patches to deprecated releases nor be required to help users with new issues found when using deprecated versions.
-A given version's lifespan should be a hard cutoff for whether it will be supported, at which point the end user is "on their own", so to speak.
-Individuals may apply new patches to deprecated releases on their own forks, but these changes will never be merged into the central Pavona repository.
+A given version's lifespan should be a hard cutoff for whether it will be supported, at which point the end user is "on their own".
+Individuals may apply changes to deprecated releases on their own forks, but these changes will never be merged into the central Pavona repository.
 
-Archived branches should remain on GitHub but should no longer receive any updates.
+Deprecated branches should remain on GitHub but should no longer receive any updates.
 They exist as historical references.
 
 #### Mechanics
@@ -146,7 +146,7 @@ The release standards should err on the side of having quality (better tested, a
 The technical committee or repository governing body will decide these criteria for each release by the time the release branch is cut.
 They will also decide the primary set of contributors responsible for meeting these criteria in time for initial release and properly documenting the release.
 
-#### Hardware files which track versions
+#### Files which track versions
 
 Version information could potentially be tracked in some hardware files which have version fields, like Hjson metadata and FuseSoC core files, but for now they can be ignored.
 
@@ -163,7 +163,8 @@ Particularly in official releases, any sort of version-related Hjson metadata sh
 Making it easy for users to access the repo is of utmost importance, especially since many individuals will simply want to use the repo rather than contribute to it, and packaging should help in this aim.
 
 Users will be encouraged to clone the repo for themselves as the primary method of installing Pavona, but this may not be suitable for all situations.
-GitHub provides [an easy interface](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) for generating release packages; any git tags may be used to mark a release, but we will principally use the `release/*` tags for this purpose.
+GitHub provides [an easy interface](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) for generating release packages
+Any git tags may be used to mark a release, but only the `release/*` tags will be used for this purpose.
 GitHub releases automatically provide both ZIP and TAR archive files of the repo using `git archive`.
 
 Each version of the repo, including each patch, should be made a release on GitHub, and every initial release (patch 0\) must be supplemented with adequate release notes in the description box.
@@ -179,7 +180,7 @@ To this end, version management should be made as easy as possible.
 Some simple ways to aid versioning are:
 
 - Implementing automation when feasible.
-- Encouraging contributors to address issues in releases in addition to working off of master.
+- Encouraging contributors to address issues in releases in addition to working off of main.
 - Quickly fixing any mistakes in repo releases (in the release content or in its version labels).
 - High, objective, and unambiguous standards for release content.
 
@@ -201,14 +202,14 @@ The following sections are subject to revision, but they should provide a good s
     * This includes any overall milestones to complete.
     * This includes any tests that the release branch must always pass (which can be run by CI for every release-branch PR).
     * This includes any metrics to publish to the Pavona website to demonstrate the release's quality (eg., coverage tests).
-1. Before the full release is ready, ensure quality of new initial release and publish metrics.
+3. Before the full release is ready, ensure quality of new initial release and publish metrics.
     * Routinely evaluate the repo in accord with agreed upon standards (compare to milestones, run test suite, gather metrics).
     * Fix any bugs found and update documentation along the way.
-       Backport any bugfixes found in master to the release branch.
-4. At initial release, tag the latest commit on the release branch as `release/[YYYY].[MM].p0` and publish release metrics to the official Pavona documentation.
+      Backport any bugfixes found in main to the release branch.
+4. At initial release, tag the latest commit on the release branch as `release/[YYYY].[MM].p0` and publish release metrics.
 5. Create a new repo release package on GitHub.
-    * Create a release on GitHub titled “[YYYY].[MM].p[P]” from the `release/[YYYY].[MM].p[P]` git tag.
-    * Select the branch cut tag (`cut:[YYYY].[MM]`) as the "previous" tag
+    * Create a release on GitHub titled “[YYYY].[MM].p[#]” from the `release/[YYYY].[MM].p[#]` git tag.
+    * Select the branch cut tag (`cut/[YYYY].[MM]`) as the "previous" tag
        Write release notes.
     * Publish.
 
@@ -217,15 +218,16 @@ The following sections are subject to revision, but they should provide a good s
 Contributors’ Checklist:
 
 1. Make sure you are working on a derivative of the release branch.
-   It is possible that the release branch and master have diverged.
+   It is possible that the release branch and main have diverged.
 2. Make a PR on GitHub to bring changes into the release branch.
    Follow standard contribution procedures.
     * Specify any significant changes introduced by this patch in the PR description and/or comments.
-3. Once the PR is merged, ensure that the latest release branch commit is tagged with the new patch number and that there is a new patch release on GitHub.
+3. Once the PR is merged, check that the latest release branch commit is tagged with the new patch number and that there is a new patch release on GitHub.
+   If not, notify the release maintainers.
 
 Reviewers’ Checklist (for Versioning):
 
-- [ ] Are these changes appropriate as a release patch (fixes only), or do they belong on master (improvements, new features)?
+- [ ] Are these changes appropriate as a release patch (fixes only), or do they belong on main (improvements, new features)?
 - [ ] Are these changes being made prior to release deprecation?
 - [ ] After PR merge: has the latest patch been properly tagged and release notes written in?
 
@@ -233,7 +235,6 @@ Reviewers’ Checklist (for Versioning):
 
 This will follow the standard RFC process.
 All version-related documentation should be updated accordingly, should the RFC be approved.
-It should be noted that this document itself is an RFC and may be revised as well until approval or rejection.
 
 ### Git Reference
 
@@ -293,7 +294,7 @@ However, apart from these considerations, repo versioning should, by and large, 
 
 ### Document scope
 
-So far, this document mainly covers which way we describe versions/naming and how to generally package releases.
+So far, this document mainly covers how to describe versions/naming and package releases.
 It does not cover:
 - who arbitrates release schedule
 - how releases are publicized
@@ -334,7 +335,7 @@ Changes between versions should be clearly communicated (especially “breaking�
 ### Calver with FuseSoC
 
 An important note about calver and FuseSoC: FuseSoC uses the okonomiyaki Python library to determine versions, which assumes semantic versioning rather than calendar versioning.
-This can [pose a problem](https://github.com/olofk/fusesoc/issues/565) when calver versions are used in FuseSoC core files, so instead we will ignore the version number in hardware core files.
+This can [pose a problem](https://github.com/olofk/fusesoc/issues/565) when calver versions are used in FuseSoC core files, so instead the version number in the core files should be ignored.
 
 However, FuseSoC can [pull previous versions of the repo](https://github.com/olofk/fusesoc/issues/736#issuecomment-2696563930) and add them to core library; this can be done in the command line or in a [fusesoc.conf](https://fusesoc.readthedocs.io/en/stable/user/package_manager/index.html#core-libraries) file.
 
@@ -344,16 +345,16 @@ However, FuseSoC can [pull previous versions of the repo](https://github.com/olo
 Any functional change, large or small, should require an increment in patch number.
 
 Because this project has a lot of moving parts, it will be difficult to tell how momentous a change is and how possible it is to affect something that might seem completely unrelated.
-We currently have no way of quantifying the size of a change, and instead of wasting time debating about how changes should be categorized, it will be much simpler to just count any updates as new patches.
+There is currently no clean way to quantify the size of a change, and instead of wasting time debating about how changes should be categorized, it will be much simpler to count any updates as new patches.
 
 The only changes that could possibly be excluded here are minor typo fixes in comments and documentation or code reorganization for simple readability.
 These changes do not affect repo usage and can easily be lumped in with the next set of functional changes.
 
-While patch number does not specify the size of any given update, it’s more important to know just when anything changes.
-Trying to qualify a change may prove difficult, and git logs should be adequate for examining specific revisions.
+While patch number does not specify the size of any given update, it’s more important to know when anything changes.
+Trying to qualify a change may prove difficult, and git logs should be adequate for examining specific versions.
 
 Why not just use commit hashes along the release branch instead of patch number, keeping only the versioning at the latest point in the release branch?
-Patch number inherently has an order and can differentiate between pre-release status on the branch and public release; with commit hashes, it’s unclear when one hash precedes the other, and there’s no way to tell at what point the release became stable.
+Patch number inherently has an order and can differentiate between unstable (not tagged) and stable release status; with commit hashes, it’s unclear when one hash precedes the other, and there’s no way to tell at what point the release branch became stable.
 Patch number is also easier to remember than commit hashes.
 
 ### Practicality of git tags
@@ -372,7 +373,7 @@ Git tags have been selected as the central mode of storing version information f
   * Can be signed and verified.
 
 Git tags have some limitations that can be worked around, especially with the fact that git tags are commit-specific.
-Since rebasing or amending commits do not retain git tags (these actions create new commits), we will enforce a no-rebase and no-amend policy on the release branch: once changes are brought in to it, they are final.
+Since rebasing or amending commits does not retain git tags (these actions create new commits), there will be a no-rebase and no-amend policy on the release branch: once changes are brought in to it, they are final.
 Future commits may revert previous changes as needed.
 Tags can be manually moved, but doing so is tedious and highly discouraged.
 
@@ -387,26 +388,26 @@ Below are some suggestions of problems that arise when trying to keep a solid ve
 | Ease the process of incrementing version numbers for contributors | Scripts to check where version numbers should be incremented; this requires a well-defined repo directory structure.                                                                                                                             |
 | Prevent mistakes in versioning                                    | Strong PR processes (may require a reviewer’s guide/checklists/additional documentation) and automated checks. Tests that can be run locally to check if versioning has been done correctly. Tailor tooling to correctly handle versioned items. |
 
-### The versionless master
+### The versionless main
 
-At this point, it may be clear that there is no versioning to be done with changes made to master.
-This may cause some concern, as development on master will then not be easily tracked.
+At this point, it may be clear that there is no versioning to be done with changes made to main.
+This may cause some concern, as development on main will then not be easily tracked.
 
-On the other hand, this risk is well-mitigated by having a consistent and frequent release schedule; though development on master may continue without a release number, it will not be long before the next release branch is cut.
+On the other hand, this risk is well-mitigated by having a consistent and frequent release schedule; though development on main may continue without a release number, it will not be long before the next release branch is cut.
 Differences between release branches will be small enough that users will have enough granularity to know approximately where certain changes were made and will more easily be able to pull and adapt specific parts from previous versions as needed.
 
-### Archiving releases
+### Retaining unsupported release branches
 
 One thing to consider is how long unsupported releases should remain available in the public repo.
 
-Advantages to keeping archived releases available:
+Advantages to keeping deprecated releases available:
 - Historic info about development direction.
 - Helps users of deprecated records maintain a fixed reference.
     - Record-keeping for security and safety issues found in the future.
     - Standards compliance.
 - Allows access to older versions if specific desired features or properties no longer exist in newer versions.
 
-Disadvantages to keeping archived releases available:
+Disadvantages to keeping deprecated releases available:
 - Noise (eg. questions or suggestions about development for unsupported versions from unknowing users) / not communicating unsupported status as well.
 - Ever-increasing repo size.
 - Unused branches that have no reason to exist.
