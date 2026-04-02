@@ -2,7 +2,7 @@
 
 * Status: Proposed
 * Authors: [Viveca Pannell](mailto:vpannell@zerorisc.com), [Quan Nguyen](mailto:qmn@zerorisc.com)
-* Last updated: April 1, 2026
+* Last updated: April 2, 2026
 
 ## Introduction
 
@@ -80,16 +80,35 @@ The version number provides information on: 1\) compatibility of repo content, 2
 In accordance with good practices, development should begin on separate branches, not directly on main or on any release branch.
 Changes can then be merged into or rebased onto these central branches after making a pull request (PR) and getting reviewer approval.
 
-Importantly: release numbers never change nor decrement.
-After the initial release, any updates on a release branch *must* constitute a new patch, and previous patches should never be amended or rescinded (a new patch may undo some of the things changed in a previous patch, but this does not change the git history nor patch numbering).
+### Schedule
 
 On schedule, a new release branch will be created from the latest commit on main, and that commit should be tagged with `cut/[YYYY].[MM]` to designate the point at which the release branch `release/[YYYY].[MM]` diverges.
+A regular, predictable release schedule chosen and clear communication will help instill trust in the repo; therefore, it is advantageous to select a specific cadence rather than individual release months.
 
+Releases will occur twice per year.
+Release branches, accordingly, will be created three months before the release date to allot adequate time for preparing the initial release.
+
+Patches to supported repo releases may occur at any point in time between the initial release and end-of-life.
+Repo versions will no longer be supported two years after their initial release date, and a version that has reached end-of-life may no longer receive any patches.
+
+At this time, a reasonable release schedule seems to be every April and every October, starting with April 2026.
+This means new release branches will be created every January and July, and release `2026.04` will be deprecated at the end of April 2028.
+
+#### Initial Release
+
+Initial releases should always come out on time: once a release date is selected, the initial release *must* be made during that month, rolling back any unfinished features as necessary.
+They can occur at any point during the release month.
+
+Part of the preparation for initial release includes aggregating a set of conditions for the release to be deemed "stable" (discussed more below).
 Before initial release, the content of the release branch should be considered a release candidate, as it has not yet been stabilized.
-Additional commits may be made on the release branch (possibly cherry-picked from main) to prepare a minimally buggy, well-tested, and well-documented repo.
+Additional commits may be made on the release branch (possibly cherry-picked from main) to prepare a minimally buggy, well-tested, and well-documented repo until the initial release has been tagged.
+
 Once the tip of the release branch can be considered stable, it can be tagged with `release/[YYYY].[MM].p0` to indicate that the release is ready for use.
 
-### Patch Philosophy
+#### Patch Philosophy
+
+Importantly: release numbers never change nor decrement.
+After the initial release, any updates on a release branch *must* constitute a new patch, and previous patches should never be amended or rescinded (a new patch may undo some of the things changed in a previous patch, but this does not change the git history nor patch numbering).
 
 Once an initial release has been made, the release branch should be considered a snapshot in time, remaining mostly static.
 The only changes that should be made are fixes addressing issues found when using that specific version of the repo.
@@ -101,23 +120,6 @@ Generally speaking, changes on main should only be incorporated into the release
 If the same bug is found on both branches post-release, two separate PRs--one against each branch--is warranted.
 After initial release, any sets of commits made to a release branch should constitute a new patch.
 
-### Schedule
-
-A regular, predictable release schedule chosen and clear communication will help instill trust in the repo; therefore, it is advantageous to select a specific cadence rather than individual release months.
-
-Repo releases should always come out on time.
-Releases can occur at any point during the release month.
-Once a release date is selected, the initial release *must* be made during that month, rolling back any unfinished features as necessary.
-
-Releases will occur twice per year.
-Release branches, accordingly, will be created three months before the release date to allot adequate time for preparing the initial release.
-
-Patches to supported repo releases may occur at any point in time between the initial release and end-of-life.
-Repo versions will no longer be supported two years after their initial release date, and a version that has reached end-of-life may no longer receive any patches.
-
-At this time, a reasonable release schedule seems to be every April and every October, starting with April 2026.
-This means new release branches will be created on the first day of every January and July, and release `2026.04` will be deprecated at the end of April 2028.
-
 #### Support Window
 
 Repo maintainers and contributors should not make any patches to deprecated releases nor be required to help users with new issues found when using deprecated versions.
@@ -127,38 +129,30 @@ Individuals may apply changes to deprecated releases on their own forks, but the
 Deprecated branches should remain on GitHub but should no longer receive any updates.
 They exist as historical references.
 
-#### Mechanics
-
-In the future, it may be very helpful to have automations for cutting and archiving release branches on schedule as well as tagging the latest patches after each release-branch PR, but for now these things may be done manually.
-The initial patch tag should always be manually created as a way to improve release stability (ie., require human eyes to carefully check that the release is ready).
-
-#### Release Readiness
-
-Part of the preparation for initial release includes aggregating a set of conditions for the release to be deemed "stable".
-This should also include a set of tests that will be run by CI on all incoming release-branch PRs (this can be the same set of tests run against PRs on main).
-Development of new release readiness metrics may refer to previous releases' criteria.
-
-All criteria for a properly prepared release must be met prior to initial release and should be openly published upon release.
-The release standards should err on the side of having quality (better tested, albeit fewer, features) rather than quantity (less thorough testing).
+### Release Preparation Process
 
 The technical committee or repository governing body will decide these criteria for each release by the time the release branch is cut.
 They will also decide the primary set of contributors responsible for meeting these criteria in time for initial release and properly documenting the release.
 They may also, if warranted, assign responsibility for maintaining a given release branch after initial release.
 
-#### Files which track versions
+All criteria for a properly prepared release must be met prior to initial release and should be openly published upon release.
+The release standards should err on the side of having quality (better tested, albeit fewer, features) rather than quantity (less thorough testing).
 
-Version information could potentially be tracked in some hardware files which have version fields, like Hjson metadata and FuseSoC core files, but for now they can be ignored.
-
-Hjsons should also keep the additional hardware development progress information up to date, which will be useful to users assessing usability of a certain component.
-Currently, this is the `life_stage`, `design_stage`, `verification_stage`, and `dif_stage` fields in an IP block’s Hjson.
-We will not be using the `version` field of the Hjson.
-This information must be kept accurate in order to retain trust in the repo.
-
-When a release branch is cut, the quality of the repo's IP blocks should be ascertained and updated accordingly such that at any given initial release, all `life_stage`, `design_stage`, `verification_stage`, and `dif_stage` information is up-to-date.
+This should also include a set of tests that will be run by CI on all incoming release-branch PRs (this can be the same set of tests run against PRs on main).
+Development of new release readiness metrics may refer to previous releases' criteria.
 
 Similarly, any documentation that misaligns with the code should be updated prior to an initial release.
 
-### Release Packaging
+While version information could potentially be tracked in some files within the repo, for now they can be ignored.
+However, hardware quality information, such as the `life_stage`, `design_stage`, `verification_stage`, and `dif_stage` fields in an IP block’s Hjson should be up-to-date at initial release.
+This information must be kept accurate in order to retain trust in the repo.
+
+#### Mechanics
+
+In the future, it may be very helpful to have automations for cutting and archiving release branches on schedule as well as tagging the latest patches after each release-branch PR, but for now these things may be done manually.
+The initial patch tag should always be manually created as a way to improve release stability (ie., require human eyes to carefully check that the release is ready).
+
+#### Release Packaging
 
 Making it easy for users to access the repo is of utmost importance, especially since many individuals will simply want to use the repo rather than contribute to it, and packaging should help in this aim.
 
