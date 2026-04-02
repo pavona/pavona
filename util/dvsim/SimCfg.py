@@ -137,6 +137,7 @@ class SimCfg(FlowCfg):
         self.cov_merge_deploy = None
         self.cov_report_deploy = None
         self.results_summary = OrderedDict()
+        self.batchgroup = None
 
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
 
@@ -896,7 +897,7 @@ class SimCfg(FlowCfg):
         self.results_md = results_str
         return results_str
 
-    def gen_results_summary(self):
+    def gen_results_summary(self, batchgroups=False):
         '''Generate the summary results table.
 
         This method is specific to the primary cfg. It summarizes the results
@@ -912,8 +913,9 @@ class SimCfg(FlowCfg):
         lines += [f"### Branch: {self.branch}"]
 
         table = []
-        rows = []
+        rows = {} if batchgroups else {"default": []}
         DEFAULT_VALUE = "-- %"
+
         for cfg in self.cfgs:
             cov_scores = cfg.cov_report_deploy.cov_results_dict
             cov_scores = {f"{key.capitalize()} Coverage": val for key, val in cov_scores.items()}
@@ -923,17 +925,30 @@ class SimCfg(FlowCfg):
                 row["Name"] = cfg._get_results_page_link(
                     self.results_dir,
                     row["Name"])
-                rows.append(row)
+                if batchgroups:
+                    if cfg.batchgroup not in rows:
+                        rows[cfg.batchgroup] = []
+                    rows[cfg.batchgroup].append(row)
+                else:
+                    rows["default"].append(row)
 
-        if rows:
-            all_keys = list(dict.fromkeys(key for row in rows for key in row))
+        if any(rows.values()):
+            all_rows = [row for group in rows.values() for row in group]
+            all_keys = list(dict.fromkeys(key for row in all_rows for key in row))
             # Move the "Overall Coverage" key to the end
             all_keys.remove("Overall Coverage")
             all_keys.append("Overall Coverage")
+            print(all_rows)
+            print(all_keys)
 
-            for row in rows:
-                normalized = {key: row.get(key, DEFAULT_VALUE) for key in all_keys}
-                table.append(list(normalized.values()))
+            for batchgroup, group_rows in rows.items():
+                if self.batchgroups:
+                    # Insert a separator row for this batchgroup
+                    separator = [f"**{batchgroup}**"] + [""] * (len(all_keys) - 1)
+                    table.append(separator)
+                for row in group_rows:
+                    normalized = {key: row.get(key, DEFAULT_VALUE) for key in all_keys}
+                    table.append(list(normalized.values()))
 
         if table:
             colalign = ("center", ) * len(all_keys)
