@@ -69,7 +69,7 @@ endmodule
 
 ### Special Handling of Sparse FSM Primitive
 
-Sparse FSMs in Pavona security IPs are implemented with the `prim_sparse_fsm_flop` countermeasure primitive to ensure that the state encoding cannot be altered by synthesis tools.
+Sparse FSMs in security IPs are implemented with the `prim_sparse_fsm_flop` countermeasure primitive to ensure that the state encoding cannot be altered by synthesis tools.
 This primitive also implements the embedded common checks mentioned above.
 
 However, simulation tools like Xcelium and VCS are at this time not able to correctly infer FSMs and report FSM coverage when the state registers reside in a different hierarchy (such as `prim_sparse_fsm_flop`) than the next-state logic of the FSMs.
@@ -93,7 +93,7 @@ An example of how the macro should be used is shown below:
 `PRIM_FLOP_SPARSE_FSM(u_state_flops, state_d, state__q, state_e, ResetSt, clk_i, rst_ni, SvaEn)
 ```
 
-In order to generate a complete template for sparsely encoded FSMs, please refer to the [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py).
+In order to generate a complete template for sparsely encoded FSMs, please refer to the [the sparse-fsm-encode.py script](../../../../util/design/sparse-fsm-encode.py).
 
 ## Verification Framework For The Standardized Design Countermeasures
 

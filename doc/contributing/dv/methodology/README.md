@@ -1,13 +1,13 @@
-# Design Verification Methodology within Pavona
+# Design Verification Methodology
 
-Verification within Pavona combines the challenges of industry-strength verification methodologies with open source ambitions.
+Verification combines the challenges of industry-strength verification methodologies with open source ambitions.
 When in conflict, quality must win, and thus we aim to create a verification product that is equal to the quality required from a full production silicon chip tapeout.
 
-For the purpose of this document, each design (IPs or the full chip) verified within the Pavona project will be referred to as the 'design under test' or 'DUT' ('RTL' or 'design' may be used interchangeably as well), and the design verification as 'DV'.
+For the purpose of this document, each design (IPs or the full chip) verified will be referred to as the 'design under test' or 'DUT' ('RTL' or 'design' may be used interchangeably as well), and the design verification as 'DV'.
 
 ## Language and Tool Selection
 
-The following are the key techniques used to perform design verification within Pavona:
+The following are the key techniques used to perform design verification:
 
 *  Dynamic simulations of the design with functional tests
 *  Formal Property Verification (FPV)
@@ -31,10 +31,10 @@ The discussions on how those are used within the program are carried out in a di
 Verification within the Pavona project comes in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of verification is important to gauge the confidence in the design's advertised feature set.
-To that end, we've designated a spectrum of design and verification stages in the  [Pavona Hardware Development Stages](../../../contributing/hw/development_stages.md) document.
+To that end, we've designated a spectrum of design and verification stages in the  [Hardware Development Stages](../../hw/development_stages.md) document.
 It defines the verification stages and references where one can find the current verification status of each of the designs in the repository.
 Splitting the effort in such a way enables the team to pace the development effort and allows the progress to be in lock-step with the design stages.
-The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists](../../../contributing/hw/checklist/README.md) document.
+The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists](../../hw/checklist/README.md) document.
 Verification is said to be complete when the checklist items for all stages are marked as done.
 We will explain some of the key items in those checklists in the remainder of this document.
 
@@ -42,7 +42,7 @@ We will explain some of the key items in those checklists in the remainder of th
 
 DV effort needs to be well documented to not only provide a detailed description of what tests are being planned and functionality covered, but also how the overall effort is strategized and implemented.
 The first is provided by the **testplan** document and the second, by the **DV document**.
-The [**project status**](../../../contributing/hw/development_stages.md#indicating-stages-and-making-transitions) document tracks to progression of the effort through the stages.
+The [**project status**](../../hw/development_stages.md#indicating-stages-and-making-transitions) document tracks to progression of the effort through the stages.
 
 In addition to these documents, a nightly and a weekly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
 
@@ -70,7 +70,7 @@ The [documentation tooling](../../doc/README.md) tool works in conjunction with 
 The DV document expands the testplan inline, in addition to capturing the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
 This is written in [Markdown](../../style_guides/markdown_usage_style.md) and is made available in the corresponding `doc` directory of each DUT.
 
-A [template](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_doc_template.md) for the DV documentation as well as the testbench block diagram in the Pavona team drive  (under the 'design verification' directory) are available to help get started.
+A [template](../../../../hw/dv/doc/dv_doc_template.md) for the DV documentation is available to help with getting started.
 
 ### Regression Dashboard
 
@@ -122,7 +122,7 @@ The actual UVM testbenches for some of the IPs extend from this library as the f
 
 ### Comportable IP DV Library
 
-Defining a common ground to develop all Pavona IPs as described in the [Comportable IP specification](../../hw/comportability/README.md) provides us an excellent path to maximize code reuse and shorten the testbench development time even further.
+Defining a common ground to develop IPs as described in the [Comportable IP specification](../../hw/comportability/README.md) provides us an excellent path to maximize code reuse and shorten the testbench development time even further.
 In view of that, we provide the [Comportable IP DV library](../../../../hw/dv/sv/cip_lib/README.md) of classes, which themselves extend from DV base library to form the second layer.
 These provide a common set of DV features that are specific to Comportable IPs.
 The actual UVM testbenches for the Comportable IPs extend from this library as the third and the final layer.
@@ -143,9 +143,9 @@ A few examples of these are as follows:
 This is not an exhaustive list since we are still actively developing and adding more such components as we speak.
 Please navigate to the above code location to find more sure UVCs.
 
-## DV Efforts in Pavona
+## DV Efforts
 
-The overall Pavona DV effort is spread across 3 tiers:
+Overall DV effort can be spread across 3 tiers:
 
 *  IP level DV
 *  Core (Ibex) level DV
@@ -166,7 +166,7 @@ The [UART DV document](../../../../hw/ip/uart/dv/README.md) documentation can be
 
 ### Core Ibex Level DV
 
-The RISC-V CPU core Ibex used in Pavona has its own DV testbench and it is verified to full coverage closure.
+The RISC-V CPU core Ibex has its own DV testbench and it is verified to full coverage closure.
 Please see the [Ibex DV documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html) for more details.
 
 ### Chip Level DV
@@ -186,7 +186,7 @@ When progressing through the verification stages, there are key focus areas or t
 These are described under [Hardware Verification Stages](../../../contributing/hw/development_stages.md#hardware-verification-stages-v).
 The basic steps are:
 
-### [Progressing towards V1](../../../contributing/hw/checklist/README.md#v1)
+### [Progressing towards V1](../../hw/checklist/README.md#v1)
 
 These set of tests (not exhaustive) provide the confidence that the design is ready for vertical integration.
 
@@ -203,7 +203,7 @@ This test (or set of tests) is also included as a part of the sanity regression 
 The very first set of real tests validate the SW interface laid out using the regtool.
 These prove that the SW interface is solid and all assumptions in CSRs in terms of field descriptions and their accessibility are correctly captured and there are no address decode bugs.
 
-### [Progressing towards V2](../../../contributing/hw/checklist/README.md#v2)
+### [Progressing towards V2](../../hw/checklist/README.md#v2)
 
 Bulk of testing in this stage focus on functionally testing the DUT.
 There however are certain categories of tests that may need additional attention.
@@ -250,7 +250,7 @@ To mitigate that, they are constructed with knobs to control the level of constr
 The level of constraints are then slowly eased to allow deeper state space exploration, until all areas of the DUT are satisfactorily stressed.
 Stress tests are ideal for bug hunting and closing coverage.
 
-### [Progressing towards V3](../../../contributing/hw/checklist/README.md#v3)
+### [Progressing towards V3](../../hw/checklist/README.md#v3)
 
 The main focus of testing at this stage is to meet our [regression](#nightly) and [coverage](#coverage-collection) goals.
 Apart from that, there are cleanup activities to resolve all pending TODO items in the DV code base and fix all compile and run time warnings (if any) thrown by the simulator tools.
@@ -262,7 +262,7 @@ An example of this is the [TLUL Protocol Checker](../../../../hw/ip/tlul/doc/Tlu
 
 Unlike design assertions, in DV assertions are typically created within SV interfaces bound to the DUT.
 This way assertions and any collateral code don't affect the design, and can reach any internal design signal if needed.
-For an example of this see the [clkmgr assertions](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/ip_autogen/clkmgr/dv/sva).
+For an example of this see the [clkmgr assertions](../../../../hw/top_earlgrey/ip_autogen/clkmgr/dv/sva).
 
 ## Regressions
 
@@ -368,7 +368,7 @@ Here are the metrics used with a brief explanation:
 
 Most often property coverage is implemented using SystemVerilog Assertions (SVA).
 This observes events or series of events.
-As an example think of the TL UL register bus used in Pavona.
+As an example think of the TL UL register bus.
 A cover property cover point could be the handshaking between valid and ready.
 SVA also allows the design engineer to add cover for procedures and variables not visible on output pins.
 Note, an assertion precondition counts as a cover point.
@@ -477,7 +477,7 @@ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson --cov-unr
 ```
 3. If no exclusion file is generated, there is no unreachable code in RTL.
    If there is an exclusion file generated, the output should be reviewed by both designer and verification engineer.
-   When the unreachable code is sensible and we decide to exclude it in coverage report, create a PR to add to ['common_cov_excl.cfg'](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.cfg) or block specific exclusion file, such as ['uart_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/dv/cov/uart_cov_excl.el).
+   When the unreachable code is sensible and we decide to exclude it in coverage report, create a PR to add to ['common_cov_excl.cfg'](../../../../hw/dv/tools/vcs/common_cov_excl.cfg) or block specific exclusion file, such as ['uart_cov_excl.el'](../../../../hw/ip/uart/dv/cov/uart_cov_excl.el).
 
 Here are some guidelines for using UNR and checking in generating exclusion.
 1. It's encouraged that designers run UNR to check the design in the early design stage (D1/D2), but adding exclusions for unreachable coverage should be done between the D2 and V3 stage when the design is frozen (no feature update is allowed, except bug fix).
@@ -486,7 +486,7 @@ Over 90% is the hard part as there may be a big chunk of unreachable codes.
 It is cumbersome to go through a coverage report to manually add exclusions, but the VCS UNR flow provides a path to weed out all of the unreachable ones.
 However, it is not the right thing to add a coverage exclusion file to reach the 80% needed for V2 since the design isn't stable at that period.
 2. If any RTL changes happen to the design after the coverage exclusion file has been created, it needs to be redone and re-reviewed.
-3. All coverage exclusion files and coverage configuration file (if it's not using default [cover.cfg](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/cover.cfg)) should be checked during sign-off.
+3. All coverage exclusion files and coverage configuration file (if it's not using default [cover.cfg](../../../../hw/dv/tools/vcs/cover.cfg)) should be checked during sign-off.
 4. Keep the VCS generated `CHECKSUM` along with exclusions, as it checks the exclusion isn't outdated by changes on the corresponding code.
 We should not use `--exclude-bypass-checks` to disable the check, otherwise, it's needed to have additional review to make sure exclusions match to the design.
 5. For IP verified in IP-level test bench, UNR should be run in IP-level to generate exclusion.
@@ -527,7 +527,7 @@ Xprop is enabled by default when running simulations for all of our DUTs due to 
 
 It's mandatory to enable Xprop when running regression for coverage closure.
 Please refer to the simulator documentation to identify and apply the necessary build-time and / or run-time options to enable Xprop.
-In Pavona, Xprop is enabled by default for VCS and Xcelium simulators.
+In the Pavona repo, Xprop is enabled by default for VCS and Xcelium simulators.
 To test Xprop more effectively, the address / data / control signals are required to be driven to Xs when invalid (valid bit is not set).
 For example, when a_valid is 0 in the TLUL interface, we drive data, address and control signals to unknown values.
 ```systemverilog
@@ -568,7 +568,7 @@ If the problematic code is in a SV process, Xprop can be disabled adding the `xp
 There are cases where the problematic constructs are not in processes, and the code cannot be rewritten to make it Xprop-friendly.
 In these cases we need to disable Xprop for the full module or interface using a custom xprop configuration file.
 This uses the `vcs_xprop_cfg_file` field in the corresponding sim_cfg hjson file.
-See the [top_earlgrey vcs xprop configuration file](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/dv/vcs_xprop.cfg) and `vcs_xprop_cfg_file` override in the [top_earlgrey sim_cfg hjson file](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/dv/chip_sim_cfg.hjson) for an example.
+See the [top_earlgrey vcs xprop configuration file](../../../../hw/top_earlgrey/dv/vcs_xprop.cfg) and `vcs_xprop_cfg_file` override in the [top_earlgrey sim_cfg hjson file](../../../../hw/top_earlgrey/dv/chip_earlgrey_sim_cfg.hjson) for an example.
 
 ## FPV
 
@@ -576,7 +576,6 @@ Refer to the [formal verification documentation](../../../../hw/formal/README.md
 
 ## Security Verification
 
-Security verification is one of the critical challenges in Pavona.
 Each design IP contains certain security countermeasures.
 There are several common countermeasures that are widely used in the blocks.
 Therefore, a common verification framework is built up in the DV base libraries.
@@ -617,13 +616,13 @@ The goal of this review is to achieve utmost clarity in the planning of the DV e
 The feedback in this review flows both ways - the language in the design specification could be made more precise, and missing items in both the design specification and the testplan can be identified and added.
 This enables the development stages to progress smoothly.
 
-Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status](../../../contributing/hw/development_stages.md#indicating-stages-and-making-transitions).
+Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status](../../hw/development_stages.md#indicating-stages-and-making-transitions).
 
 Finally, after the verification effort is complete, there is a final sign-off review to ensure all checklist items are completed satisfactorily without any major exceptions or open issues.
 
 ## Filing Issues
 
-We use the [Pavona GitHub Issue tracker](https://github.com/zerorisc/wanta/issues) for filing possible bugs not just in the design, but also in the DV code base or in any associated tools or processes that may hinder progress.
+We use a [GitHub Issue tracker](https://github.com/pavona/pavona/issues) for filing possible bugs not just in the design, but also in the DV code base or in any associated tools or processes that may hinder progress.
 
 ## Getting Started with DV
 
