@@ -15,7 +15,7 @@ from typing import List, Optional, Sequence, Tuple
 from .trace import Trace
 from .ext_regs import ACCExtRegs
 from .kmac import KmacBlock
-DEBUG_KMAC = False
+DEBUG_KMAC = True
 
 
 def kmac_debug_print(text: str) -> None:
@@ -368,6 +368,8 @@ class KmacPartialWriteISPR(WSR):
         self._kmac = kmac
         self._value: Optional[int] = None
         self._next_value: Optional[int] = None
+        self._used_share0 = True
+        self._used_share1 = True
 
     def read_unsigned(self) -> int:
         assert self._value is not None
@@ -387,6 +389,8 @@ class KmacPartialWriteISPR(WSR):
     def commit(self) -> None:
         if self._pending_write:
             self._value = self._next_value
+            self._used_share0 = False
+            self._used_share1 = False
         super().commit()
 
     def changes(self) -> Sequence[Trace]:
@@ -431,18 +435,28 @@ class KmacMsgWSR(WSR):
         self._next_value = None
         self._pending_write = True
 
-    def step(self) -> None:
+    def step(self, share: bool) -> None:
         self._kmac._app_intf_writing = False
         kmac_debug_print("\tFETCHING STARTING FIFO STATUS")
         self._pending_write_stall_pw = self._pending_write_to_app_intf
-        self._start_cycle_fifo_ready = self._kmac.app_intf_fifo_ready()
+
+        if share:
+            self._start_cycle_fifo_ready = self._kmac.app_intf_share1_fifo_ready()
+        else:
+            self._start_cycle_fifo_ready = self._kmac.app_intf_fifo_ready()
+
         if self._kmac._app_fifo_after_flush:
             self._pending_write_stall_pw = False
+
         # KMAC_MSG reg -> FIFO
         if self._pending_write_to_app_intf and self._value is not None:
             strb_len = self._partial_ispr.read_mask()
             value_bytes = int.to_bytes(self._value, byteorder='little', length=32)[:strb_len]
-            kmac_debug_print("\tPending write to App FIFO")
+            if share:
+              kmac_debug_print("\tPending write to App Share1 FIFO")
+            else:
+              kmac_debug_print("\tPending write to App Share0 FIFO")
+
             if (
                 self._kmac._app_intf_last_latch
                 or (self._kmac._pending_app_intf_last and not self.pending_write_pw())
@@ -452,13 +466,37 @@ class KmacMsgWSR(WSR):
                 self._kmac._kmac_oversized_err = True
                 self._pending_write_to_app_intf = False
                 self._pending_write_stall_pw = False
-            elif not self._kmac._app_intf_last and self._kmac.write_to_app_intf_fifo(value_bytes):
-                kmac_debug_print(f"\tKMAC_MSG -> APP FIFO: Writing \
+            
+            # MSG SHARE0 Write
+            elif (
+                not self._kmac._app_intf_last
+                and self._kmac.write_to_app_intf_fifo(value_bytes)
+                and not share
+            ):
+                kmac_debug_print(f"\tKMAC_MSG0 -> APP FIFO0: Writing \
                                  {len(value_bytes)} bytes to App FIFO")
                 self._pending_write_to_app_intf = False
                 self._kmac._app_intf_writing = True
                 # Reset paritial write value after successful write
-                self._partial_ispr._value = 32
+                self._partial_ispr._used_share0 = True
+                if self._partial_ispr._used_share1 == True:
+                    self._partial_ispr._value = 32
+
+            # MSG SHARE1 Write
+            elif (
+                not self._kmac._app_intf_last
+                and self._kmac.write_to_app_intf_share1_fifo(value_bytes)
+                and share
+            ):
+                kmac_debug_print(f"\tKMAC_MSG1 -> APP FIFO1: Writing \
+                                 {len(value_bytes)} bytes to App FIFO")
+                self._pending_write_to_app_intf = False
+                self._kmac._app_intf_writing = True
+                # Reset paritial write value after successful write
+                self._partial_ispr._used_share1 = True
+                if self._partial_ispr._used_share0 == True:
+                    self._partial_ispr._value = 32
+
 
     def pending_write_pw(self) -> bool:
         if self._kmac._app_intf_fifo_flush and not self._pending_write_to_app_intf:
@@ -653,7 +691,8 @@ class WSRFile:
         self.KMAC_DIGEST1 = KmacDigestWSR('KMAC_DIGEST1', self.Kmac)
         self.KMAC_PARTIAL_WRITE = KmacPartialWriteISPR('KMAC_PARTIAL_WRITE', self.Kmac)
         self.KMAC_CFG = KmacCfgWSR('KMAC_CFG', self.Kmac, self.KMAC_PARTIAL_WRITE)
-        self.KMAC_MSG = KmacMsgWSR('KMAC_MSG', self.Kmac, self.KMAC_PARTIAL_WRITE)
+        self.KMAC_MSG0 = KmacMsgWSR('KMAC_MSG0', self.Kmac, self.KMAC_PARTIAL_WRITE)
+        self.KMAC_MSG1 = KmacMsgWSR('KMAC_MSG1', self.Kmac, self.KMAC_PARTIAL_WRITE)
 
         # These are the common index regardless of PQC enable or not
         self._by_idx = {
@@ -670,10 +709,11 @@ class WSRFile:
         if self.EN_PQC:
             self._by_idx.update({
                 8: self.KMAC_CFG,
-                9: self.KMAC_MSG,
-                10: self.KMAC_DIGEST0,
-                11: self.KMAC_DIGEST1,
-                12: self.ACCH,
+                9: self.KMAC_MSG0,
+                10: self.KMAC_MSG1,
+                11: self.KMAC_DIGEST0,
+                12: self.KMAC_DIGEST1,
+                13: self.ACCH,
             })
 
     def on_start(self) -> None:
@@ -729,7 +769,8 @@ class WSRFile:
         self.ACCH.commit()
         self.KeyS0.commit()
         self.KeyS1.commit()
-        self.KMAC_MSG.commit()
+        self.KMAC_MSG0.commit()
+        self.KMAC_MSG1.commit()
         self.KMAC_CFG.commit()
         self.KMAC_DIGEST0.commit()
         self.KMAC_DIGEST1.commit()
@@ -745,7 +786,8 @@ class WSRFile:
         # instruction itself gets aborted.
         self.KeyS0.commit()
         self.KeyS1.commit()
-        self.KMAC_MSG.abort()
+        self.KMAC_MSG0.abort()
+        self.KMAC_MSG1.abort()
         self.KMAC_CFG.abort()
         self.KMAC_DIGEST0.abort()
         self.KMAC_DIGEST1.abort()
@@ -761,7 +803,8 @@ class WSRFile:
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
         if self.EN_PQC:
-            ret += self.KMAC_MSG.changes()
+            ret += self.KMAC_MSG0.changes()
+            ret += self.KMAC_MSG1.changes()
             ret += self.KMAC_CFG.changes()
             ret += self.KMAC_STATUS.changes()
             ret += self.KMAC_DIGEST0.changes()
@@ -779,6 +822,7 @@ class WSRFile:
         self.MOD.write_invalid()
         self.ACC.write_invalid()
         self.ACCH.write_invalid()
-        self.KMAC_MSG.write_invalid()
+        self.KMAC_MSG0.write_invalid()
+        self.KMAC_MSG1.write_invalid()
         self.KMAC_DIGEST0.write_invalid()
         self.KMAC_DIGEST1.write_invalid()

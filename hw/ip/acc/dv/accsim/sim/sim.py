@@ -309,7 +309,8 @@ class ACCSim:
         assert self.state.init_sec_wipe_is_done()
 
         self.state.wsrs.URND.step()
-        self.state.wsrs.KMAC_MSG.step()
+        self.state.wsrs.KMAC_MSG0.step(False)
+        self.state.wsrs.KMAC_MSG1.step(True)
 
         insn = self._next_insn
         if insn is None:

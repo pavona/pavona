@@ -591,7 +591,10 @@ class CSRRW(ACCInsn):
             # to the AppIntf FIFO inside ACC Bignum ALU
             if DEBUG_KMAC:
                 eprint("\tBNWSRW FOR KMAC PARTIAL WRITE REGISTER")
-            while state.wsrs.KMAC_MSG.pending_write_pw():
+            while (
+                state.wsrs.KMAC_MSG0.pending_write_pw() or
+                state.wsrs.KMAC_MSG1.pending_write_pw()
+            ):
                 if DEBUG_KMAC:
                     eprint("\tBNWSRW to KMAC_PW stall")
                 yield None
@@ -1862,7 +1865,7 @@ class BNWSRR(ACCInsn):
                 # There's a pending EDN request. Stall for a cycle.
                 yield None
 
-        if self.wsr == 0xA:
+        if self.wsr == 0xB:
             # A read from KMAC_DIGEST0. If a digest value is not available, request_value()
             # initiates or continues the request for the next digest word from KMAC and
             # returns false. If a digest value is available, it returns True.
@@ -1870,8 +1873,8 @@ class BNWSRR(ACCInsn):
                 # There's a pending KMAC request. Stall for a cycle.
                 yield None
 
-        if self.wsr == 0xB:
-            # A read from KMAC_DIGEST0. If a digest value is not available, request_value()
+        if self.wsr == 0xC:
+            # A read from KMAC_DIGEST1. If a digest value is not available, request_value()
             # initiates or continues the request for the next digest word from KMAC and
             # returns false. If a digest value is available, it returns True.
             while not state.wsrs.KMAC_DIGEST1.request_value_share1():
@@ -1910,11 +1913,19 @@ class BNWSRW(ACCInsn):
             return None
 
         if self.wsr == 0x9:
-            # A write to KMAC_MSG might stall, if the register has not yet pushed
+            # A write to KMAC_MSG0 might stall, if the register has not yet pushed
             # all its contents to the FIFO connected to the KMAC app interface.
-            while not state.wsrs.KMAC_MSG.request_write():
+            while not state.wsrs.KMAC_MSG0.request_write():
                 if DEBUG_KMAC:
-                    eprint("\tBNWSRW to KMAC_MSG stall")
+                    eprint("\tBNWSRW to KMAC_MSG0 stall")
+                yield None
+
+        if self.wsr == 0xA:
+            # A write to KMAC_MSG1 might stall, if the register has not yet pushed
+            # all its contents to the FIFO connected to the KMAC app interface.
+            while not state.wsrs.KMAC_MSG1.request_write():
+                if DEBUG_KMAC:
+                    eprint("\tBNWSRW to KMAC_MSG1 stall")
                 yield None
 
         val = state.wdrs.get_reg(self.wrs).read_unsigned()

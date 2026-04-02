@@ -123,15 +123,19 @@ csrrw x0, mod0, x23
 csrrs x23, mod5, x0
 
 bn.wsrr w1, 0x0 /* MOD 82a 4ea*/
+bn.not w2, w1
 li x23, 0x000008ea
 csrrw x0, kmac_cfg, x23
 li x23, 0x0000001a
 csrrw x0, kmac_partial_write, x23
 bn.wsrw 0x9, w1 /* MSG */
+bn.wsrw 0xa, w2 /* MSG SHARE1 */
 li x23, 0x0000000d
 csrrw x0, kmac_partial_write, x23
 bn.wsrw 0x9, w1 /* MSG */
+bn.wsrw 0xa, w2 /* MSG SHARE1 */
 bn.wsrw 0x9, w1 /* MSG */
+bn.wsrw 0xa, w2 /* MSG SHARE1 */
 bn.wsrr w2, 0xb /* DIGEST SHARE0 */
 bn.wsrr w3, 0xc /* DIGEST SHARE1 */
 bn.wsrr w2, 0xb /* DIGEST SHARE0 */
