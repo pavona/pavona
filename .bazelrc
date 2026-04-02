@@ -19,9 +19,6 @@ build --strip='never'
 # impact of the hardened sequences on code size.
 build:disable_hardening --features=-guards --copt=-DOT_DISABLE_HARDENING=1
 
-# Enable toolchain resolution with cc
-build --incompatible_enable_cc_toolchain_resolution
-
 # This lets us generate key/value pairs for the workspace which can be
 # accessed like we do in util/BUILD
 build --workspace_status_command=util/get_workspace_status.sh
@@ -29,6 +26,9 @@ build --workspace_status_command=util/get_workspace_status.sh
 # This enables convenient building for opentitan targets with the argument
 # --config=riscv32
 build:riscv32 --platforms=@//toolchain:opentitan_platform
+
+# Never use the host C/C++ compiler (e.g. /usr/bin/gcc).
+#build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 # These options are required to build `cc_fuzz_test` targets. Enable with
 # --config=asan-libfuzzer

@@ -6,10 +6,10 @@ module(name = "lowrisc_opentitan")
 
 # Dependencies:
 bazel_dep(name = "abseil-cpp", version = "20240116.1")
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1")
-bazel_dep(name = "platforms", version = "0.0.11")
-bazel_dep(name = "rules_cc", version = "0.1.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
@@ -17,7 +17,7 @@ bazel_dep(name = "rules_python", version = "1.2.0")
 bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
 bazel_dep(name = "rules_rust_mdbook", version = "0.59.2")
 bazel_dep(name = "rules_rust", version = "0.59.2")
-bazel_dep(name = "toolchains_llvm", version = "1.1.2")
+bazel_dep(name = "toolchains_llvm", version = "1.7.0")
 
 # Dev dependencies:
 bazel_dep(
@@ -42,7 +42,7 @@ single_version_override(
     patches = [
         "@lowrisc_opentitan//third_party/cc/patches:remove_gold.patch",
     ],
-    version = "0.1.2",
+    version = "0.2.18",
 )
 
 single_version_override(
@@ -200,13 +200,20 @@ register_toolchains("//third_party/rust:bindgen_toolchain")
 # LLVM toolchain used by bindgen for `libclang` (not for device software):
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 llvm.toolchain(
-    name = "llvm_toolchain",
-    llvm_versions = {"": "10.0.0"},
-    sha256 = {"": "b25f592a0c00686f03e3b7db68ca6dc87418f681f4ead4df4745a01d9be63843"},
-    strip_prefix = {"": "clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04"},
-    urls = {"": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz"]},
+    name = "llvm_toolchain_llvm",
+    llvm_versions = {"": "22.1.2"},
+    sha256 = {"": "ff32497b6801267ee427bc69cdaeecfb2d19578af8c2a942e864c45215f9a2ac"},
+    strip_prefix = {
+        "": "LLVM-22.1.2-Linux-X64",
+    },
+    urls = {
+        "": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-X64.tar.xz"],
+    },
 )
 use_repo(llvm, "llvm_toolchain_llvm")
+
+# Host software toolchain.
+register_toolchains("@llvm_toolchain//:cc-toolchain-x86_64-linux")
 
 # Python toolchain:
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")

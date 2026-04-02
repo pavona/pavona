@@ -5,10 +5,10 @@ Date:   Wed Sep 10 13:52:39 2025 +0100
     Remove gold support
 
 diff --git a/cc/private/toolchain/unix_cc_configure.bzl b/cc/private/toolchain/unix_cc_configure.bzl
-index 6a6f38a..73839a9 100644
+index b44a229..c5190df 100644
 --- a/cc/private/toolchain/unix_cc_configure.bzl
 +++ b/cc/private/toolchain/unix_cc_configure.bzl
-@@ -473,10 +473,7 @@ def configure_unix_toolchain(repository_ctx, cpu_value, overridden_tools):
+@@ -490,10 +490,7 @@ def configure_unix_toolchain(repository_ctx, cpu_value, overridden_tools):
          False,
      ), ":")
  
@@ -20,3 +20,4 @@ index 6a6f38a..73839a9 100644
      cc_path = repository_ctx.path(cc)
      if not str(cc_path).startswith(str(repository_ctx.path(".")) + "/"):
          # cc is outside the repository, set -B
+
