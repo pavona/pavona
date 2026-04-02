@@ -287,7 +287,7 @@ bool test_main(void) {
       check_prev_state(dump.previous_fault_state,
                        (dif_rv_core_ibex_previous_crash_dump_state_t){
                            .mtval = (uint32_t)kIllegalAddr1,
-                           .mpec = (uint32_t)kDoubleFaultFirstAddr + 4,
+                           .mpec = (uint32_t)kDoubleFaultFirstAddr,
                        });
 
       return true;

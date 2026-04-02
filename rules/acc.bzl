@@ -34,12 +34,20 @@ def _acc_assemble_sources(ctx, additional_srcs = []):
     ctx.actions.run(
         outputs = [obj],
         inputs = depset(
-            direct = files + [ctx.executable._acc_as],
-            transitive = [cc_toolchain.all_files],
+            direct = files + [
+                ctx.executable._acc_as,
+                ctx.executable._riscv32_as,
+                ctx.executable._riscv32_clang,
+                ctx.executable._riscv32_ld,
+            ],
+            transitive = [
+                cc_toolchain.all_files,
+            ],
         ),
         env = {
             "RV32_TOOL_AS": ctx.executable._riscv32_as.path,
             "RV32_TOOL_GCC": ctx.executable._riscv32_clang.path,
+            "RV32_TOOL_LD": ctx.executable._riscv32_ld.path,
         },
         arguments = copts + ["-o", obj.path] + paths + ctx.attr.args,
         executable = ctx.executable._acc_as,
@@ -110,8 +118,12 @@ def _acc_binary(ctx, additional_srcs = []):
         inputs = ([obj] +
                   deps +
                   cc_toolchain.all_files.to_list() +
-                  ctx.files._acc_data +
-                  [ctx.executable._wrapper]),
+                  ctx.files._acc_data + [
+            ctx.executable._wrapper,
+            ctx.executable._riscv32_as,
+            ctx.executable._riscv32_clang,
+            ctx.executable._riscv32_ld,
+        ]),
         env = {
             "RV32_TOOL_AS": ctx.executable._riscv32_as.path,
             "RV32_TOOL_AR": ctx.executable._riscv32_ar.path,
@@ -335,13 +347,19 @@ acc_library = rv_rule(
         "args": attr.string_list(),
         "copts": attr.string_list(),
         "_riscv32_as": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-as"),
+            default = Label("@llvm_toolchain_llvm//:bin/clang"),
+            allow_single_file = True,
+            executable = True,
+            cfg = "exec",
+        ),
+        "_riscv32_ld": attr.label(
+            default = Label("@llvm_toolchain_llvm//:bin/ld.lld"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_clang": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-clang"),
+            default = Label("@llvm_toolchain_llvm//:bin/clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
@@ -365,31 +383,31 @@ acc_binary = rv_rule(
         "args": attr.string_list(),
         "copts": attr.string_list(),
         "_riscv32_ar": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
+            default = Label("@llvm_toolchain_llvm//:bin/llvm-ar"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_as": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-as"),
+            default = Label("@llvm_toolchain_llvm//:bin/clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_ld": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ld"),
+            default = Label("@llvm_toolchain_llvm//:bin/ld.lld"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_clang": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-clang"),
+            default = Label("@llvm_toolchain_llvm//:bin/clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_objcopy": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objcopy"),
+            default = Label("@llvm_toolchain_llvm//:bin/llvm-objcopy"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
@@ -428,31 +446,31 @@ acc_sim_test = rv_rule(
         "pqc": attr.bool(default = False),
         "stats": attr.bool(default = False),
         "_riscv32_ar": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
+            default = Label("@llvm_toolchain_llvm//:bin/llvm-ar"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_as": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-as"),
+            default = Label("@llvm_toolchain_llvm//:bin/clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_clang": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-clang"),
+            default = Label("@llvm_toolchain_llvm//:bin/clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_ld": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ld"),
+            default = Label("@llvm_toolchain_llvm//:bin/ld.lld"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_objcopy": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objcopy"),
+            default = Label("@llvm_toolchain_llvm//:bin/llvm-objcopy"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
@@ -498,31 +516,31 @@ acc_autogen_sim_test = rv_rule(
         "testgen_args": attr.string_list(),
         "stats": attr.bool(default = False),
         "_riscv32_ar": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ar"),
+            default = Label("@llvm_toolchain_llvm//:bin/llvm-ar"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_as": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-as"),
+            default = Label("@llvm_toolchain_llvm//:bin/clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_clang": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-clang"),
+            default = Label("@llvm_toolchain_llvm//:bin/clang"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_ld": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ld"),
+            default = Label("@llvm_toolchain_llvm//:bin/ld.lld"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",
         ),
         "_riscv32_objcopy": attr.label(
-            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objcopy"),
+            default = Label("@llvm_toolchain_llvm//:bin/llvm-objcopy"),
             allow_single_file = True,
             executable = True,
             cfg = "exec",

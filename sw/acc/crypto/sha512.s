@@ -885,7 +885,7 @@ dptr_msg:
 
 
 /* 80*8=640 bytes scratchpad for message schedule */
-.section .scratchpad
+.section .scratchpad, "aw"
  .balign 32
 W:
  .zero 640

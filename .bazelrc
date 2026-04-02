@@ -27,8 +27,8 @@ build --workspace_status_command=util/get_workspace_status.sh
 # --config=riscv32
 build:riscv32 --platforms=@//toolchain:opentitan_platform
 
-# Never use the host C/C++ compiler (e.g. /usr/bin/gcc).
-#build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+# Instruct rules_cc to not look for a nonhermetic C/C++ toolchain on the host.
+build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 # These options are required to build `cc_fuzz_test` targets. Enable with
 # --config=asan-libfuzzer

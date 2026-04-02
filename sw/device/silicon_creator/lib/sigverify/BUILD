@@ -233,6 +233,9 @@ cc_library(
     name = "usage_constraints",
     srcs = ["usage_constraints.c"],
     hdrs = ["usage_constraints.h"],
+    copts = [
+        "-Wno-enum-enum-conversion",
+    ],
     deps = [
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top/dt",

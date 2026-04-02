@@ -2,6 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//rules:copy_directory.bzl", "copy_directory")
+load("@bazel_skylib//rules/directory:directory.bzl", "directory")
+load("@bazel_skylib//rules/directory:subdirectory.bzl", "subdirectory")
 load("@rules_cc//cc/toolchains:actions.bzl", "cc_action_type")
 load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
 load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
@@ -70,7 +73,6 @@ cc_toolchain(
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_rv32_bitmanip",
         ":feat_warnings_as_errors",
-        ":feat_guards",
         ":feat_use_lld",
         ":feat_lto",
         ":feat_minsize",
@@ -78,7 +80,6 @@ cc_toolchain(
     known_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_warnings_as_errors",
-        ":feat_guards",
         ":feat_coverage",
         ":feat_use_lld",
         ":feat_lto",
@@ -95,16 +96,16 @@ cc_toolchain(
 cc_tool_map(
     name = "tool_map",
     tools = {
-        "@rules_cc//cc/toolchains/actions:ar_actions": "@lowrisc_rv32imcb_toolchain//:ar",
-        "@rules_cc//cc/toolchains/actions:assembly_actions": "@lowrisc_rv32imcb_toolchain//:clang",
-        "@rules_cc//cc/toolchains/actions:c_compile": "@lowrisc_rv32imcb_toolchain//:clang",
-        "@rules_cc//cc/toolchains/actions:cpp_compile_actions": "@lowrisc_rv32imcb_toolchain//:clang++",
-        "@rules_cc//cc/toolchains/actions:link_actions": "@lowrisc_rv32imcb_toolchain//:clang",
-        "@rules_cc//cc/toolchains/actions:llvm_cov": "@lowrisc_rv32imcb_toolchain//:llvm_cov",
-        "@rules_cc//cc/toolchains/actions:objcopy_embed_data": "@lowrisc_rv32imcb_toolchain//:objcopy",
-        "@rules_cc//cc/toolchains/actions:strip": "@lowrisc_rv32imcb_toolchain//:strip",
-        ":action_llvm_profdata": "@lowrisc_rv32imcb_toolchain//:llvm_profdata",
-        ":action_objdump": "@lowrisc_rv32imcb_toolchain//:objdump",
+        "@rules_cc//cc/toolchains/actions:ar_actions": "@llvm_toolchain_llvm//:bin/llvm-ar",
+        "@rules_cc//cc/toolchains/actions:assembly_actions": "@llvm_toolchain_llvm//:bin/clang",
+        "@rules_cc//cc/toolchains/actions:c_compile": "@llvm_toolchain_llvm//:bin/clang",
+        "@rules_cc//cc/toolchains/actions:cpp_compile_actions": "@llvm_toolchain_llvm//:bin/clang++",
+        "@rules_cc//cc/toolchains/actions:link_actions": "@llvm_toolchain_llvm//:bin/clang",
+        "@rules_cc//cc/toolchains/actions:llvm_cov": "@llvm_toolchain_llvm//:bin/llvm-cov",
+        "@rules_cc//cc/toolchains/actions:objcopy_embed_data": "@llvm_toolchain_llvm//:bin/llvm-objcopy",
+        "@rules_cc//cc/toolchains/actions:strip": "@llvm_toolchain_llvm//:bin/llvm-strip",
+        ":action_llvm_profdata": "@llvm_toolchain_llvm//:bin/llvm-profdata",
+        ":action_objdump": "@llvm_toolchain_llvm//:bin/llvm-objdump",
     },
 )
 
@@ -239,6 +240,12 @@ cc_args(
     args = ["-nostdinc"],
 )
 
+copy_directory(
+    name = "lib-clang-include",
+    src = "@llvm_toolchain_llvm//:lib/clang/22/include",
+    out = "toolchain",
+)
+
 cc_args(
     name = "system_includes",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
@@ -249,11 +256,11 @@ cc_args(
         "{freestanding}",
     ],
     data = [
+        ":lib-clang-include",
         "//sw/device/lib/base/freestanding",
-        "@lowrisc_rv32imcb_toolchain//:lib-clang-include",
     ],
     format = {
-        "clang-include": "@lowrisc_rv32imcb_toolchain//:lib-clang-include",
+        "clang-include": ":lib-clang-include",
         "freestanding": "//sw/device/lib/base/freestanding",
     },
 )
@@ -280,7 +287,10 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:compile_actions",
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = ["-march=rv32imc_zba_zbb_zbc_zbs"],
+    args = [
+        "--target=riscv32-unknown-elf",
+        "-march=rv32imc_zba_zbb_zbc_zbs",
+    ],
     requires_any_of = [":constraint_bitmanip"],
 )
 
@@ -290,7 +300,10 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:compile_actions",
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = ["-march=rv32imc"],
+    args = [
+        "--target=riscv32-unknown-elf",
+        "-march=rv32imc",
+    ],
     requires_any_of = [":constraint_no_bitmanip"],
 )
 
@@ -302,7 +315,7 @@ cc_args(
     ],
     args = [
         "-mabi=ilp32",
-        "-mcmodel=medany",
+        "-mcmodel=medium",
         "-mlittle-endian",
     ],
 )
@@ -320,6 +333,7 @@ cc_args(
         "-Wimplicit-fallthrough",
         "-Winvalid-pch",
         "-Wno-covered-switch-default",
+        "-Wno-enum-enum-conversion",
         "-Wno-error=unused-function",
         "-Wno-gnu-empty-initializer",
         "-Wno-gnu-statement-expression-from-macro-expansion",
@@ -327,6 +341,7 @@ cc_args(
         "-Wno-missing-field-initializers",
         "-Wno-sign-compare",
         "-Wno-unused-parameter",
+        "-Wno-zero-length-array",
         "-Wno-zero-length-array",
         "-Wstrict-prototypes",
         "-Wswitch-default",
@@ -352,18 +367,6 @@ cc_args(
     name = "reproducible",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = ["-Werror=date-time"],
-)
-
-cc_feature(
-    name = "feat_guards",
-    args = [":guards"],
-    feature_name = "guards",
-)
-
-cc_args(
-    name = "guards",
-    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
-    args = ["-mguards"],
 )
 
 cc_feature(

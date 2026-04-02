@@ -10,13 +10,31 @@
 #include "sw/device/lib/base/memory.h"
 
 #ifdef OT_PLATFORM_RV32
+/*
+ * Ibex contains `crc32` instructions from the unratified `zbr` subset of
+ * the bitmanip (`b`) RV32 extension. Support for `zbr` was removed from `clang`
+ * in September 2022, so we replace the instruction directives with `.insn`
+ * directives that specify the correct instruction format.
+ *
+ * Ibex classifies the `zbr` instructions under OP-IMM, hence the use of the
+ * "immedate" (`i`) instruction format used in the `.insn` directives below.
+ * However, `insn[31:20]` (the three-digit hex value at the end of the `.insn`
+ * directives) is not used as an immediate value. Instead, it is broken into
+ * segments of 7 and 5 bits as part of a two-stage decoding to select the
+ * specific zbr instruction.
+ *
+ * See hw/vendor/lowrisc_ibex/rtl/ibex_decoder.sv for more details.
+ */
 OT_WARN_UNUSED_RESULT
 static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
   ctx ^= byte;
-  asm(".option push;"
-      ".option arch, +zbr0p93;"
-      "crc32.b %0, %1;"
-      ".option pop;"
+  asm(
+      // Implementation of `crc32.b %0, %1` :
+      // -     i: Register-immediate instruction format
+      // -  0x13: OP-IMM type
+      // -  0x01: Bitmanip instruction family
+      // - 0x610: crc32.b
+      ".insn i 0x13, 0x01, %0, %1, 0x610;"
       : "+r"(ctx));
   return ctx;
 }
@@ -24,10 +42,13 @@ static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
 OT_WARN_UNUSED_RESULT
 static uint32_t crc32_internal_add32(uint32_t ctx, uint32_t word) {
   ctx ^= word;
-  asm(".option push;"
-      ".option arch, +zbr0p93;"
-      "crc32.w %0, %1;"
-      ".option pop;"
+  asm(
+      // Implementation of `crc32.w %0, %1` :
+      // -     i: Register-immediate instruction format
+      // -  0x13: OP-IMM type
+      // -  0x01: Bitmanip instruction family
+      // - 0x612: crc32.w
+      ".insn i 0x13, 0x01, %0, %1, 0x612;"
       : "+r"(ctx));
   return ctx;
 }

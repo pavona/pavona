@@ -17,6 +17,7 @@ cc_library(
         "mldsa_native_config.h",
         "mldsa_native_monobuild.h",
     ],
+    copts = ["-Wno-switch-default"],
     includes = ["."],
     deps = [
         "//sw/device/lib/crypto/impl:sha3",

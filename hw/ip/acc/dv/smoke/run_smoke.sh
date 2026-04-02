@@ -22,22 +22,15 @@ UTIL_DIR="$(readlink -e "$ROOT_DIR/util")" || \
 
 source "$UTIL_DIR/build_consts.sh"
 
-SMOKE_BIN_DIR=$BIN_DIR/acc/smoke_test
 SMOKE_SRC_DIR=$ROOT_DIR/hw/ip/acc/dv/smoke
-
-mkdir -p $SMOKE_BIN_DIR
-
-ACC_UTIL=$ROOT_DIR/hw/ip/acc/util
-
-$ACC_UTIL/acc_as.py -o $SMOKE_BIN_DIR/smoke_test.o $SMOKE_SRC_DIR/smoke_test.s || \
-    fail "Failed to assemble smoke_test.s"
-$ACC_UTIL/acc_ld.py -o $SMOKE_BIN_DIR/smoke.elf $SMOKE_BIN_DIR/smoke_test.o || \
-    fail "Failed to link smoke_test.o"
 
 (cd $ROOT_DIR;
  fusesoc --cores-root=. run --target=sim --setup --build \
     --mapping=lowrisc:prim_generic:all:0.1 lowrisc:ip:acc_top_sim \
     --make_options="-j$(nproc)" || fail "HW Sim build failed")
+
+./bazelisk.sh build //hw/ip/acc/dv/smoke:smoke_test_nondeterministic
+SMOKE_ELF=$(./bazelisk.sh cquery --output=files //hw/ip/acc/dv/smoke:smoke_test_nondeterministic | grep "\\.elf$" | head -1)
 
 RUN_LOG=`mktemp`
 readonly RUN_LOG
@@ -46,7 +39,7 @@ trap "rm -rf $RUN_LOG" EXIT
 
 timeout 5s \
   $ROOT_DIR/build/lowrisc_ip_acc_top_sim_0.1/sim-verilator/Vacc_top_sim \
-  --load-elf=$SMOKE_BIN_DIR/smoke.elf -t | tee $RUN_LOG
+  --load-elf=$SMOKE_ELF -t | tee $RUN_LOG
 
 if [ $? -eq 124 ]; then
   fail "Simulation timeout"

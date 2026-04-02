@@ -479,7 +479,7 @@ opentitan_autogen_testutils_gen = rule(
             cfg = "exec",
         ),
         "_clang_format": attr.label(
-            default = "@lowrisc_rv32imcb_toolchain//:bin/clang-format",
+            default = "@llvm_toolchain_llvm//:bin/clang-format",
             allow_single_file = True,
             cfg = "host",
             executable = True,

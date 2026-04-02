@@ -22,6 +22,7 @@ sw/device/lib/base/freestanding
 -Wimplicit-fallthrough
 -Winvalid-pch
 -Wno-covered-switch-default
+-Wno-enum-enum-conversion
 -Wno-error=unused-function
 -Wno-gnu-empty-initializer
 -Wno-gnu-statement-expression-from-macro-expansion

@@ -341,7 +341,7 @@ x_r:
 attestation_additional_seed:
 .zero 64
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* First share of the saved attestation ECDSA-P256 private key (d). */
 .globl d0

@@ -125,11 +125,12 @@ static status_t keymgr_wait_until_done(void) {
       abs_mmio_write32(keymgr_base() + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
       return OTCRYPTO_RECOV_ERR;
     }
+    default: {
+      // Should be unreachable.
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+    }
   }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
 }
 
 /**

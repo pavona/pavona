@@ -38,11 +38,6 @@ cmake(
         # "-DDEBUG_LOG_STDERR",
         # "-DSOFTHSM_LOG_FUNCTION_NAME",
     ],
-    # Otherwise CMake tries to compile C++ using /usr/bin/gcc
-    env = {
-        "CC": "/usr/bin/gcc",
-        "CXX": "/usr/bin/g++",
-    },
     lib_source = ":all_srcs",
     out_binaries = ["softhsm2-util"],
     out_shared_libs = ["softhsm/libsofthsm2.so"],

@@ -13,18 +13,18 @@ if [[ -n ${BAZEL_CACHE} ]]; then
   ${BAZEL_CMD} fetch \
     --distdir="${BAZEL_DISTDIR}" \
     --repository_cache="${BAZEL_CACHE}" \
-    @lowrisc_rv32imcb_toolchain//...
+    @llvm_toolchain_llvm//...
 else
   BAZEL_CMD="./bazelisk.sh"
-  ${BAZEL_CMD} fetch @lowrisc_rv32imcb_toolchain//...
+  ${BAZEL_CMD} fetch @llvm_toolchain_llvm//...
 fi
 
 # Set environment variables for the RV32 linker and assembler.
 RV32_TOOL_LD=$(${BAZEL_CMD} query \
-  'deps(@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-ld)' \
+  'deps(@llvm_toolchain_llvm//:bin/ld.lld)' \
   --output location | cut -f1 -d:)
 RV32_TOOL_AS=$(${BAZEL_CMD} query \
-  'deps(@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-as)' \
+  'deps(@llvm_toolchain_llvm//:bin/clang)' \
   --output location | cut -f1 -d:)
 export RV32_TOOL_LD
 export RV32_TOOL_AS

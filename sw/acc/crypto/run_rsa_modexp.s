@@ -346,7 +346,7 @@ inout:
 m0d:
 .zero 32
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* Montgomery constant RR. Filled by `modload`. */
 .balign 32

@@ -651,8 +651,8 @@ class Transformer:
 
         # Write .file and .line directives to tell the assembler where the code
         # came from.
-        out_handle.write(f'.file {in_idx + 1} "{in_path}"\n')
-        out_handle.write(f'.loc {in_idx + 1} 0\n')
+        out_handle.write(f'.file 1 "{in_path}"\n')
+        out_handle.write('.loc 1 0\n')
         out_handle.write(f'.file "{in_path}"\n')
         out_handle.write('.line 1\n')
 
@@ -963,6 +963,7 @@ class Transformer:
         assert pos < len(line)
         if line[pos] == '"':
             self.acc.append(line[pos])
+            self.in_string = True
             return self._continue_string(line, pos + 1)
 
         match = re.match(r'[^ \t"]*', line[pos:])
@@ -1184,7 +1185,7 @@ def transform_inputs(out_dir: str, inputs: List[str], insns_file: InsnsFile,
     '''Transform inputs to make them suitable for riscv as'''
     out_paths = []
     for idx, in_path in enumerate(inputs):
-        out_path = os.path.join(out_dir, str(idx))
+        out_path = os.path.join(out_dir, str(idx) + '.s')
         out_paths.append(out_path)
 
         in_handle = sys.stdin
@@ -1213,7 +1214,7 @@ def transform_inputs(out_dir: str, inputs: List[str], insns_file: InsnsFile,
 def run_c_preprocessor(out_dir: str, inputs: List[str], copts: List[str]) -> List[str]:
     inputs_pre = []
     for idx, in_path in enumerate(inputs):
-        out_path = os.path.join(out_dir, str(idx))
+        out_path = os.path.join(out_dir, str(idx) + '.s')
         inputs_pre.append(out_path)
 
         gcc_name = find_tool('gcc')
@@ -1253,14 +1254,21 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
     as_name = find_tool('as')
 
     default_args = [
+        # Perform partial linking between one or more assembly files into a
+        # single relocatable object file that can be itself linked into a larger
+        # binary.
+        '-r',
+        '-fuse-ld=lld',
         # Don't ask the linker to do relaxation because, in some cases, this
         # might generate a GP-relative load. ACC doesn't treat x3 (gp)
         # specially, so this won't work.
         '-mno-relax',
-        # ACC isn't a standard RISC-V architecture, disable .riscv.attributes.
-        '-mno-arch-attr',
         # ACC is based on RV32I without any hard float support.
+        '--target=riscv32-unknown-elf',
+        '-march=rv32i',
         '-mabi=ilp32',
+        # Do not include the standard library.
+        '-nostdlib',
         # Produce debug info for source line mapping.
         '-g',
     ]

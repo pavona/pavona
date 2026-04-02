@@ -79,7 +79,7 @@ input:
 .word 0xa746b70d
 .word 0x83f4fb7c
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* Space for Montgomery constant m0' (256 bits). */
 .balign 32

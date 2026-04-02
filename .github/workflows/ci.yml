@@ -240,14 +240,6 @@ jobs:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-      - name: Install toolchain
-        run: |
-          TOOLCHAIN_PATH=/tools/riscv
-          sudo util/get-toolchain.py \
-            --install-dir="$TOOLCHAIN_PATH" \
-            --release-version="$TOOLCHAIN_VERSION" \
-            --update
-          echo "$TOOLCHAIN_PATH/bin" >> $GITHUB_PATH
       - name: Display environment
         run: |
           python3 --version
@@ -255,7 +247,7 @@ jobs:
           verilator --version
       - name: ACC ISS test
         run: make -C hw/ip/acc/dv/accsim test
-      - name: OBTN smoke test
+      - name: ACC smoke test
         run: ./hw/ip/acc/dv/smoke/run_smoke.sh
       - name: Assemble & link code snippets
         run: make -C hw/ip/acc/util asm-check

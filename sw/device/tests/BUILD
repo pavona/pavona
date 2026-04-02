@@ -4081,6 +4081,7 @@ opentitan_test(
 opentitan_test(
     name = "rv_timer_systick_test",
     srcs = ["rv_timer_systick_test.c"],
+    copts = ["-Wno-enum-float-conversion"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,

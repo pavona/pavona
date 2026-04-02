@@ -7,11 +7,16 @@ all: lint
 
 # We need a directory to build stuff and use the "acc/accsim" namespace
 # in the top-level build-bin directory.
-repo-top := ../../../..
+repo-top := ../../../../..
 build-dir := $(repo-top)/build-bin/acc/accsim
+bazel := $(repo-top)/bazelisk.sh
+reponame := $(shell cd $(repo-top) && basename $$PWD)
 
 $(build-dir):
 	mkdir -p $@
+
+llvm:
+	$(bazel) build @llvm_toolchain_llvm//:bin/clang @llvm_toolchain_llvm//:bin/ld.lld
 
 py-scripts := standalone.py stepped.py
 py-files   := $(wildcard *.py sim/*.py test/*.py)
@@ -27,5 +32,8 @@ $(lint-stamps): $(build-dir)/%.stamp: % $(py-libs) | $(build-dir)
 lint: $(lint-stamps)
 
 .PHONY: test
-test:
-	pytest test
+test: llvm
+	RV32_TOOL_GCC=../../../../../bazel-$(reponame)/$$($(bazel) cquery --output=files @llvm_toolchain_llvm//:bin/clang) \
+		RV32_TOOL_AS=../../../../../bazel-$(reponame)/$$($(bazel) cquery --output=files @llvm_toolchain_llvm//:bin/clang) \
+		RV32_TOOL_LD=../../../../../bazel-$(reponame)/$$($(bazel) cquery --output=files @llvm_toolchain_llvm//:bin/ld.lld) \
+		pytest test

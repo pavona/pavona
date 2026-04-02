@@ -197,10 +197,10 @@ use_repo(crate, "mdbook_index")
 # Rust bindgen toolchain:
 register_toolchains("//third_party/rust:bindgen_toolchain")
 
-# LLVM toolchain used by bindgen for `libclang` (not for device software):
+# LLVM toolchain used for host and device software.
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 llvm.toolchain(
-    name = "llvm_toolchain_llvm",
+    name = "llvm_toolchain",
     llvm_versions = {"": "22.1.2"},
     sha256 = {"": "ff32497b6801267ee427bc69cdaeecfb2d19578af8c2a942e864c45215f9a2ac"},
     strip_prefix = {
@@ -210,6 +210,7 @@ llvm.toolchain(
         "": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-X64.tar.xz"],
     },
 )
+use_repo(llvm, "llvm_toolchain")
 use_repo(llvm, "llvm_toolchain_llvm")
 
 # Host software toolchain.
@@ -343,9 +344,6 @@ use_repo(open_dice, "open-dice")
 
 hyperdebug = use_extension("//third_party/hyperdebug:extensions.bzl", "hyperdebug")
 use_repo(hyperdebug, "hyperdebug_firmware")
-
-lowrisc_rv32imcb_toolchain = use_extension("//third_party/lowrisc:extensions.bzl", "lowrisc_rv32imcb_toolchain")
-use_repo(lowrisc_rv32imcb_toolchain, "lowrisc_rv32imcb_toolchain")
 
 qemu = use_extension("//third_party/qemu:extensions.bzl", "qemu")
 use_repo(qemu, "qemu_opentitan", "qemu_opentitan_src")

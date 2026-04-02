@@ -66,7 +66,11 @@ def run_ld(ld_script: Optional[str], args: List[str]) -> int:
     # more than one section with the same VMA. Since we have a Harvard
     # architecture where data and instructions both start at zero, we expect
     # that to happen.
-    cmd = [ld_name, '--no-check-sections']
+    #
+    # ACC binaries do not have a traditional entry point, because Ibex is
+    # supposed to call them, so `--entry=0` is needed to suppress the warning
+    # that _start is not defined.
+    cmd = [ld_name, '--no-check-sections', '--entry=0']
     if ld_script is not None:
         cmd.append('--script={}'.format(ld_script))
     cmd += args

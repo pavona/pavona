@@ -47,9 +47,9 @@ static constexpr std::array<dif_toggle_t, 2> kAllToggles = {
     kDifToggleEnabled,
 };
 static constexpr std::array<bool, 2> kAllBools = {true, false};
-static constexpr dif_toggle_t kBadToggle = static_cast<dif_toggle_t>(2);
-static constexpr dif_pwrmgr_req_type_t kBadReqType =
-    static_cast<dif_pwrmgr_req_type_t>(kDifPwrmgrReqTypeReset + 1);
+static dif_toggle_t kBadToggle = (dif_toggle_t)2;
+static dif_pwrmgr_req_type_t kBadReqType =
+    (dif_pwrmgr_req_type_t)(kDifPwrmgrReqTypeReset + 1);
 static constexpr dif_pwrmgr_domain_config_t kBadConfig =
     std::numeric_limits<uint8_t>::max();
 static constexpr dif_pwrmgr_request_sources_t kBadSources =

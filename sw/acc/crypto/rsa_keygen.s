@@ -2363,7 +2363,7 @@ is_zero_mod_small_prime:
 
   ret
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* RSA private exponent d. Up to 4096 bits; also used as a temporary work buffer
    containing `mont_m0inv` and `mont_rr`. */

@@ -110,7 +110,11 @@ def call_acc_as(src_file: Path, out_file: Path):
 def call_acc_ld(src_files: List[Path], out_file: Path,
                 linker_script: Optional[Path]):
 
-    args = ['-gc-sections', '-gc-keep-exported']
+    # ld.lld lacks the `--gc-keep-exported` flag from GNU ld. Instead, we add a
+    # `KEEP` annotation to the `.data` contents in the ACC linker script to
+    # ensure that exported symbols are not optimized out, which would cause
+    # `undefined symbol` errors during LTO when linking against Ibex binaries.
+    args = ['-gc-sections']
     if linker_script:
         args += ['-T', linker_script]
     args += src_files
@@ -184,12 +188,12 @@ def get_acc_syms(elf_path: str) -> List[Tuple[str, int]]:
     '''
     with tempfile.TemporaryDirectory() as tmpdir:
         # First, run objcopy to discard local symbols and the .scratchpad
-        # section. We also use --extract-symbol since we don't care about
-        # anything but the symbol data anyway.
+        # section.
         syms_path = os.path.join(tmpdir, 'syms.elf')
         call_rv32_objcopy([
             '-O', 'elf32-littleriscv', '--remove-section=.scratchpad',
-            '--extract-symbol'
+            # ACC isn't a standard RISC-V architecture, remove .riscv.attributes.
+            '--remove-section=.riscv.attributes',
         ] + [elf_path, syms_path])
 
         # Load the file and use elftools to grab any symbol table
@@ -308,10 +312,20 @@ def main() -> int:
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
         args = [
             '-O', 'elf32-littleriscv',
+            # Due to a bug in `llvm-objcopy`
+            # (https://github.com/llvm/llvm-project/issues/48694), the
+            # `--set-section-flags` option does not remove existing section
+            # flags even if they are not present in the list.
+            #
+            # The workaround is to rename the `.text` section to itself and
+            # explicitly specify the flags list, which convinces `llvm-objcopy`
+            # to remove the `executable` flag from the `.text` section, which we
+            # do not want, because it is not executable on Ibex.
+            '--rename-section=.text=.text,alloc,load,readonly',
             '--set-section-flags=*=alloc,load,readonly',
             '--remove-section=.scratchpad', '--remove-section=.bss',
             '--remove-section=.debug*',
-            '--prefix-sections=.rodata.acc', '--prefix-symbols', host_side_pfx
+            '--prefix-alloc-sections=.rodata.acc', '--prefix-symbols', host_side_pfx
         ]
         for name, addr in get_acc_syms(out_elf):
             args += ['--add-symbol', f'{acc_side_pfx}{name}=0x{addr:x}']

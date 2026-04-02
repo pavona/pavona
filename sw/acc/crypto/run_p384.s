@@ -476,7 +476,7 @@ d1_io:
 x_r:
   .zero 64
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* Secret scalar (k) in two shares: k = (k0 + k1) mod n */
 .globl k0

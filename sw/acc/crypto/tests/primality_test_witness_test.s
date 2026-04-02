@@ -119,7 +119,7 @@ mont_rr:
 .word 0x084be9c3
 .word 0x2bd6414c
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* Temporary working buffer (512 bits). */
 .balign 32

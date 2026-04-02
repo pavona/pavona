@@ -131,7 +131,7 @@ m0d:
   /* could go in scratchpad if there was space */
   .zero 32
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* Montgomery constant RR. Filled by `modload`. */
 .balign 32

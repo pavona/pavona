@@ -1664,7 +1664,7 @@ fe_pow_2252m3:
 
   ret
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* Hash value r (512 bits). Intermediate value for sign. */
 .balign 32

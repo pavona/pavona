@@ -133,7 +133,6 @@ DIFS = {
             "dif_{}_unittest.cc".format(ip),
             "//sw/device/lib/dif/autogen:{}_unittest".format(ip),
         ],
-        copts = ["-Wno-enum-constexpr-conversion"],
         target_compatible_with = cfg.get("ut_target_compatible_with", []),
         deps = [
             ":{}".format(ip),

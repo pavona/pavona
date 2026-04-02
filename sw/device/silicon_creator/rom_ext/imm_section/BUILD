@@ -85,6 +85,9 @@ cc_library(
     name = "imm_section_epmp",
     srcs = ["imm_section_epmp.c"],
     hdrs = ["imm_section_epmp.h"],
+    copts = [
+        "-Wno-enum-enum-conversion",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",

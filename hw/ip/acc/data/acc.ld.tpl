@@ -45,7 +45,11 @@ SECTIONS
     .data ORIGIN(dmem) : ALIGN(32)
     {
         _dmem_data_start = .;
-        *(.data*)
+        /*
+         * Do not garbage-collect this section, as it may contain unreferenced
+         * symbols we still want to export to be linked against Ibex code.
+         */
+        KEEP(*(.data*))
 
         /* Align section end (see note in .text section) */
         . = ALIGN(4);
@@ -70,5 +74,5 @@ SECTIONS
     .scratchpad ORIGIN(dmem_scratch) (NOLOAD) : ALIGN(32)
     {
         *(.scratch*)
-    } >dmem
+    } >dmem_scratch AT>dmem_load
 }

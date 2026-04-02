@@ -12,7 +12,13 @@ acc_binary(
         "smoke_test.s",
     ],
     args = [
-        "--defsym",
-        "deterministic=1",
+        "-Wa,-defsym,deterministic=1",
+    ],
+)
+
+acc_binary(
+    name = "smoke_test_nondeterministic",
+    srcs = [
+        "smoke_test.s",
     ],
 )

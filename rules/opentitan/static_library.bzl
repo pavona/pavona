@@ -53,8 +53,16 @@ def _ot_static_library_impl(ctx):
 
     lib_paths = [lib.path for lib in libs]
 
+    # This command to `llvm-ar` uses "quick append" mode (q), which is the only
+    # append mode with access to the `L` option, which tells `llvm-ar` to
+    # include the _contents_ of the source archive into the destination archive,
+    # rather than the source archive file itself.
+    #
+    # TODO: If `llvm-ar` later supports `L` in normal append mode (`r`), we
+    # should revert to that, as it correctly deduplicates files. See
+    # https://github.com/llvm/llvm-project/issues/140864 .
     ctx.actions.run_shell(
-        command = "\"{0}\" rcT {1} {2} && echo -e 'create {1}\naddlib {1}\nsave\nend' | \"{0}\" -M".format(
+        command = "\"{0}\" qcL {1} {2} && echo -e 'create {1}\naddlib {1}\nsave\nend' | \"{0}\" -M".format(
             archiver,
             output_lib.path,
             " ".join(lib_paths),

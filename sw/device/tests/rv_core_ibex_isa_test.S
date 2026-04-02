@@ -267,10 +267,8 @@ smoke_alu_zbc:
 smoke_alu_zbf:
   li t0, 0x0e0a47f3
   li t1, 0x0e1fcff3
-  .option push
-  .option arch, +zbf0p93
-  bfp t0, t0, t0
-  .option pop
+  // bfp t0, t0, t0
+  .insn r 0x33, 0x7, 0x24, t0, t0, t0
   check t0, t1
   ret
 
@@ -281,30 +279,37 @@ smoke_alu_zbf:
  * but in `smoke_alu_zbb`.
  */
 smoke_alu_zbp:
-  .option push
-  .option arch, +zbp0p93
   li t0, 0xcc9fd6b6
   li t1, 0x7ce71003
-  pack    t2, t0, t1
-  packu   t3, t0, t1
-  packh   t2, t2, t3
+  // pack    t2, t0, t1
+  .insn r 0x33, 0x4, 0x04, t2, t0, t1
+  // packu   t3, t0, t1
+  .insn r 0x33, 0x4, 0x24, t3, t0, t1
+  // packh   t2, t2, t3
+  .insn r 0x33, 0x7, 0x04, t2, t2, t3
 
   li t0, 0x00009fb6
   check t0, t2
 
   li t2, 0x04030001
-  xperm.n t3, t3, t2
-  xperm.b t3, t3, t2
-  xperm.h t3, t3, t2
+  // xperm.n t3, t3, t2
+  .insn r 0x33, 0x2, 0x14, t3, t3, t2
+  // xperm.b t3, t3, t2
+  .insn r 0x33, 0x4, 0x14, t3, t3, t2
+  // xperm.h t3, t3, t2
+  .insn r 0x33, 0x6, 0x14, t3, t3, t2
   li t0, 0x000000f7
   check t3, t0
 
   li t0, 4
-  grev    t1, t1, t0
-  shfl    t1, t1, t0
-  gorc    t1, t1, t0
-  unshfl  t1, t1, t0
-  .option pop
+  // grev    t1, t1, t0
+  .insn r 0x33, 0x5, 0x34, t1, t1, t0
+  // shfl    t1, t1, t0
+  .insn r 0x33, 0x1, 0x04, t1, t1, t0
+  // gorc    t1, t1, t0
+  .insn r 0x33, 0x5, 0x14, t1, t1, t0
+  // unshfl  t1, t1, t0
+  .insn r 0x33, 0x5, 0x04, t1, t1, t0
 
   li t0, 0xffff3131
   check t0, t1
@@ -316,15 +321,18 @@ smoke_alu_zbp:
 smoke_alu_zbr:
   li t0, 0xabdca651
   li t1, 0xac605e47
-  .option push
-  .option arch, +zbr0p93
-  crc32.b  t0, t0
-  crc32.h  t0, t0
-  crc32.w  t0, t0
-  crc32c.b t0, t0
-  crc32c.h t0, t0
-  crc32c.w t0, t0
-  .option pop
+  // crc32.b  t0, t0
+  .insn i 0x13, 0x01, t0, t0, 0x610
+  // crc32.h  t0, t0
+  .insn i 0x13, 0x01, t0, t0, 0x611
+  // crc32.2  t0, t0
+  .insn i 0x13, 0x01, t0, t0, 0x612
+  // crc32c.b  t0, t0
+  .insn i 0x13, 0x01, t0, t0, 0x618
+  // crc32c.h  t0, t0
+  .insn i 0x13, 0x01, t0, t0, 0x619
+  // crc32c.w  t0, t0
+  .insn i 0x13, 0x01, t0, t0, 0x61a
   check t1, t0
   ret
 
@@ -348,22 +356,27 @@ smoke_alu_zbs:
  * Checks the instructions from the zbt extension
  */
 smoke_alu_zbt:
-  .option push
-  .option arch, +zbt0p93
   li t0, 7
   li t1, 4
   li t2, 0x5d76fb6b
   li t3, 0xe5693902
-  fsl t2, t2, t3, t0
-  fsr t2, t2, t3, t1
-  cmix t2, t0, t2, t3
+  // Note the register operand order here. The zbt instructions (prior to their
+  // deprecation from the ISA), accepted the two arguments in different orders
+  // from what the `r4` instruction encoding accepts).
+  //
+  // fsl t2, t2, t3, t0
+  .insn r4 0x33, 0x1, 0x2, t2, t2, t0, t3
+  // fsr t2, t2, t3, t1
+  .insn r4 0x33, 0x5, 0x2, t2, t2, t1, t3
+  // cmix t2, t0, t2, t3
+  .insn r4 0x33, 0x1, 0x3, t2, t2, t0, t3
 
   li   t1, 0xe5693907
   check  t1, t2
 
-  cmov t2, t0, t3, t2
+  // cmov t2, t0, t3, t2
+  .insn r4 0x33, 0x5, 0x3, t2, t3, t0, t2
   check  t2, t3
-  .option pop
 
   ret
 
@@ -398,22 +411,22 @@ smoke_alu_b_imm:
   binvi t0, t0, 19
   bexti t1, t0, 8
   // zbt
-  .option push
-  .option arch, +zbt0p93
-  fsri  t0, t0, t1, 4
-  .option pop
+  // fsri  t0, t0, t1, 4
+  .insn i 0x13, 0x05, t0, t0, 0x344
   //sroi  t0, t0, 5
-  .insn i OP_IMM, 0b101, t0, t0, 0x205
+  .insn i 0x13, 0x05, t0, t0, 0x205
   // zbb
-  rori  t0, t0, 16
+  // rori  t0, t0, 16
+  .insn i 0x13, 0x05, t0, t0, 0x610
   // zbp
-  .option push
-  .option arch, +zbp0p93
-  grevi   t0, t0, 4
-  shfli   t0, t0, 4
-  gorci   t0, t0, 2
-  unshfli t0, t0, 4
-  .option pop
+  // grevi   t0, t0, 4
+  .insn i 0x13, 0x05, t0, t0, 0x684
+  // shfli   t0, t0, 4
+  .insn i 0x13, 0x01, t0, t0, 0x84
+  // gorci   t0, t0, 2
+  .insn i 0x13, 0x05, t0, t0, 0x282
+  // unshfli t0, t0, 4
+  .insn i 0x13, 0x05, t0, t0, 0x84
 
   li t1, 0xf0ffafff
   check t0, t1

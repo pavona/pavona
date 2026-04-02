@@ -538,7 +538,7 @@ m0inv:
 .zero 32
 
 /* needed to fit test in dmem */
-.section .scratchpad
+.section .scratchpad, "aw"
 
 .balign 32
 work_exp:

@@ -235,10 +235,8 @@ compute_crc32:
   // Compute the CRC word-by-word.
   lw      t1, 0(a0)
   xor     t0, t0, t1
-  .option push
-  .option arch, +zbr0p93
-  crc32.w t0, t0
-  .option pop
+  // crc32.w t0, t0
+  .insn i 0x13, 0x01, t0, t0, 0x612
   addi    a0, a0, 4
   bltu    a0, a1, .L_crc_loop
 

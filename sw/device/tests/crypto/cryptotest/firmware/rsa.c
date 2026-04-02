@@ -763,5 +763,8 @@ status_t handle_rsa(ujson_t *uj) {
           return INVALID_ARGUMENT();
       }
     }
+    default:
+      LOG_ERROR("Unexpected RSA operation: %d", uj_padding);
+      return INVALID_ARGUMENT();
   }
 }

@@ -406,7 +406,7 @@ sha256_process_block:
 
   ret
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* Message schedule (32*64 = 2048 bits) */
 .balign 32

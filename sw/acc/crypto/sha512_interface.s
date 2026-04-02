@@ -479,7 +479,7 @@ bswap64:
 
   ret
 
-.section .scratchpad
+.section .scratchpad, "aw"
 
 /* Buffer for the working hash state. */
 .balign 32

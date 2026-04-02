@@ -46,8 +46,13 @@ _manifest_code_end = _text_end - _ottf_start_address;
 /**
  * The location of the entry point relative to the beginning of the associated
  * slot for use in the manifest.
+
+ * NOTE: This is equivalent to _ottf_start - _ottf_start_address.  The notation
+ * below is a workaround for an issue in recent versions of LLVM, where
+ * subtracting a defined constant from a code symbol results in a `<variable>
+ * does not converge` error.
  */
-_manifest_entry_point = _ottf_start - _ottf_start_address;
+_manifest_entry_point = _manifest_code_start + (_ottf_start - _text_start);
 /*
  * The value kHardenedBoolFalse (0x1d4) is selected if the code is linked in
  * the flash region.  Otherwise, the value kHardenedBoolTrue (0x739) is

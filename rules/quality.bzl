@@ -110,7 +110,7 @@ def _cc_aspect_impl(target, ctx, action_callback):
 
 # To see which checks clang-tidy knows about, run this command:
 #
-#  ./bazelisk.sh run @lowrisc_rv32imcb_toolchain//:bin/clang-tidy -- --checks='*' --list-checks
+#  ./bazelisk.sh run @llvm_toolchain_llvm//:bin/clang-tidy -- --checks='*' --list-checks
 _CLANG_TIDY_CHECKS = [
     "clang-analyzer-core.*",
     # Disable advice to replace `memcpy` with `mempcy_s`.
@@ -183,7 +183,7 @@ def _make_clang_tidy_aspect(enable_fix):
                 executable = True,
             ),
             "_clang_tidy": attr.label(
-                default = "@lowrisc_rv32imcb_toolchain//:bin/clang-tidy",
+                default = "@llvm_toolchain_llvm//:bin/clang-tidy",
                 allow_single_file = True,
                 cfg = "host",
                 executable = True,

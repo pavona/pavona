@@ -71,7 +71,7 @@ certificate_codegen = rule(
     attrs = {
         "template": attr.label(allow_single_file = True, doc = "path to the hjson template file"),
         "clang_format": attr.label(
-            default = "@lowrisc_rv32imcb_toolchain//:bin/clang-format",
+            default = "@llvm_toolchain_llvm//:bin/clang-format",
             allow_single_file = True,
             cfg = "host",
             executable = True,
