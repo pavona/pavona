@@ -11,7 +11,7 @@ Python can be written in vastly different styles, which can lead to code conflic
 This style guide aims to promote Python readability across groups.
 To quote the C++ style guide: "Creating common, required idioms and patterns makes code much easier to understand."
 
-This guide defines the lowRISC style for Python version 3.
+This guide defines style for Python version 3.
 The goals are to:
 
 *   promote consistency across hardware development projects
@@ -47,7 +47,7 @@ In this case, no explanatory comment is required and yapf can be disabled for th
 
 ### Summary
 
-The lowRISC style matches [PEP8](https://www.python.org/dev/peps/pep-0008/) with the following options:
+Coding style should match [PEP8](https://www.python.org/dev/peps/pep-0008/) with the following options:
 * Bitwise operators should be placed before a line split
 * Logical operators should be placed before a line split
 

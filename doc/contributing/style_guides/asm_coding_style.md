@@ -4,7 +4,6 @@
 
 ### Summary
 
-OpenTitan needs to implement substantial functionality directly in RISC-V assembly.
 This document describes best practices for both assembly `.S` files and inline assembly statements in C and C++.
 It also codifies otherwise unwritten style guidelines in one central location.
 
@@ -108,7 +107,7 @@ Naturally, if a pseudoinstruction exists to read that CSR (like `rdtime`) that o
 
 Recognized CSR prefixes:
 - `CSR_IBEX_` - A CSR specific to the Ibex core.
-- `CSR_OT_` - A CSR specific to the OpenTitan chip, beyond the Ibex core.
+- `CSR_OT_` - A CSR specific to the chip, beyond the Ibex core.
 
 Example:
 ```S

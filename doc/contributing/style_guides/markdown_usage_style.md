@@ -7,7 +7,7 @@ The main Markdown tool is [mdBook](https://rust-lang.github.io/mdBook/).
 It is normally run as part of the `./util/site/build-docs.sh` script that builds all `mdbook` books as well as run documentation generators such as `doxygen`.
 *See [Contributing to Documentation](../doc/README.md) for more information.*
 
-In OpenTitan, most readers will read the documentation once it has been rendered to HTML on the website or GitHub.
+Many readers will read the documentation once it has been rendered to HTML on the website or GitHub.
 However, it is important that files are pleasant to read in plain text because viewing in the plain text can be more convenient when working in the codebase and when contributing to documentation the plain text form is what has to be read and edited.
 
 ## About this Style Guide
@@ -49,7 +49,7 @@ The Markdown file names should be in snake case and should use the `.md` file ex
 One must only use [CommonMark][] with the exception of the following extensions:
 - [GFM Tables](https://github.github.com/gfm/#tables-extension-)
 - [GFM Task Items](https://github.github.com/gfm/#task-list-items-extension-)
-- [Inline maths and maths blocks](#maths)
+- [Inline math and math blocks](#math)
 
 ## Line length and Whitespace
 
@@ -145,9 +145,9 @@ Waveforms can be included by describing them in [wavejson](https://github.com/wa
 
 [Mermaid](https://mermaid.js.org/) can be used for creating quick diagrams, like the one below, by surround mermaiding markup in a code block with a `mermaid` [info string][].
 
-## Maths
+## Math
 
-Maths can be included inline or within blocks using a single or double `$` respectively.
+Math can be included inline or within blocks using a single or double `$` respectively.
 As a result, the `$` symbol has to be escaped when not wishing to write mathematical notation.
 
 ````md

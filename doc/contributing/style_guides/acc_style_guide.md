@@ -1,13 +1,13 @@
-# OTBN Assembly Style Guide
+# ACC Assembly Style Guide
 
-Where possible, OTBN assembly should follow the same principles as the [RISC-V assembly style guide](./asm_coding_style.md).
-This guide describes additional OTBN-specific guidelines, and places where OTBN assembly can or should diverge from the RISC-V style guidelines.
+Where possible, ACC assembly should follow the same principles as the [RISC-V assembly style guide](./asm_coding_style.md).
+This guide describes additional ACC-specific guidelines, and places where ACC assembly can or should diverge from the RISC-V style guidelines.
 
 ## General Advice
 
 ### Register Names
 
-There's no ABI, so OTBN registers cannot be referred to by ABI names.
+There's no ABI, so ACC registers cannot be referred to by ABI names.
 
 ### Capitalization
 
@@ -36,19 +36,19 @@ Example:
 
 ### Pseudoinstructions
 
-As in RISC-V, prefer pseudoinstructions (e.g. `ret`, `li`) in OTBN code where they exist.
+As in RISC-V, prefer pseudoinstructions (e.g. `ret`, `li`) in ACC code where they exist.
 However, `loop` and `loopi` instructions require counting the number of instructions in the loop body, which can be tricky for pseudoinstructions that can expand to multiple instructions.
 (For example, `li` can expand to either 1 or 2 instructions depending on the immediate value.)
 Therefore, it is permitted to avoid pseudoinstructions that can expand to multiple instructions within loop bodies.
 
 ### Wrappers and ecall
 
-Generally, OTBN routines should be written so that they finish in `ret`.
+Generally, ACC routines should be written so that they finish in `ret`.
 Use of `ecall` should be restricted to thin wrapper files which serve as an interface for the more substantial assembly files, usually just reading one or two arguments and then calling subroutines from the other files.
 
 ### Comments
 
-The `//` syntax is not currently available for OTBN because it is not supported by `riscv32-unknown-as`.
+The `//` syntax is not currently available for ACC because it is not supported by `riscv32-unknown-as`.
 Use the `/* */` syntax instead.
 
 ### Labels
@@ -58,7 +58,7 @@ Labels should not be indented.
 
 ### Operand Alignment
 
-***Operands should be aligned within blocks of OTBN code.***
+***Operands should be aligned within blocks of ACC code.***
 
 The exact spacing between mnemonic and operand is not important, as long as it is consistent within the block.
 
@@ -82,10 +82,10 @@ Example:
 
 ### Register and flag group clobbering
 
-***Always document which registers and flag groups are clobbered by an OTBN "function", and which flags have meaning.***
+***Always document which registers and flag groups are clobbered by an ACC "function", and which flags have meaning.***
 
-OTBN subroutines should always document the registers and flag groups whose values they overwrite, including those used for output.
-In addition to Doxygen-style `@param[in]` and `@param[out]` notations, OTBN subroutines should also state whether the flags have meaning at the end of the subroutine.
+ACC subroutines should always document the registers and flag groups whose values they overwrite, including those used for output.
+In addition to Doxygen-style `@param[in]` and `@param[out]` notations, ACC subroutines should also state whether the flags have meaning at the end of the subroutine.
 If a subroutine jumps to another subroutine that clobbers additional registers or flag groups, these additional names should be added to the caller's list.
 
 Example:
@@ -144,11 +144,11 @@ Prefer `.word` over alternatives such as `.quad`.
 
 ## Secure Coding for Cryptography
 
-The following guidelines address cryptography-specific concerns for OTBN assembly.
+The following guidelines address cryptography-specific concerns for ACC assembly.
 
 ### Handling secret shares
 
-The following guidelines were determined with the [help of the COCO-Alma tool](https://github.com/lowRISC/opentitan/tree/master/hw/ip/otbn/pre_sca/alma) and help protect against SCA attacks.
+The following guidelines were determined with the [help of the COCO-Alma tool](../../../hw/ip/acc/pre_sca/alma) and help protect against SCA attacks.
 
 **1. Do not overwrite a share with its counterpart share.**
 
@@ -235,7 +235,7 @@ bn.mov  w5, w6
 
 **7. Do not use two shares of the same secret as the sources of the `bn.sel` instruction.**
 
-Due to [blanking limitations](https://github.com/lowRISC/opentitan/blob/ef42c7498534583141e16a6cd5c8df9e4c041bb2/hw/ip/otbn/rtl/otbn_controller.sv#L1018-L1030) of the bn.sel instruction, do not use shares of the same secret as the sources of `bn.sel`.
+Due to [blanking limitations](../../../hw/ip/acc/rtl/acc_controller.sv) of the bn.sel instruction, do not use shares of the same secret as the sources of `bn.sel`.
 This would cause a transient leakage.
 ```
 bn.sel w4, w1, w0, FG0.C
@@ -244,7 +244,7 @@ bn.sel w4, w1, w0, FG0.C
 **8. Clear `ACC` and flags between `bn.mulqacc` instructions which use shares of the same secret.**
 
 It is also necessary to use a dummy instruction to eliminate the transient leakage.
-Be aware there are some [flag blanking limitations](https://github.com/lowRISC/opentitan/blob/82bcfcae473e779a77fdabd789476b479cca0077/hw/ip/otbn/rtl/otbn_alu_bignum.sv#L257-L266) on `bn.mulqacc` instructions.
+Be aware there are some [flag blanking limitations](../../../hw/ip/acc/rtl/acc_alu_bignum.sv) on `bn.mulqacc` instructions.
 Note that only the writeback versions of `bn.mulqacc` (`bn.mulqacc.wo` and `bn.mulqacc.so`) affect flags.
 ```armasm
 /* Leakage (if w0, w1 contain two shares of a secret) */
