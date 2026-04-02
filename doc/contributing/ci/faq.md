@@ -129,7 +129,7 @@ If you are unable to reproduce a failure locally, here are some things to check:
 - **FPGA Connectivity**: If you are encountering issues with your test connecting to an FPGA (i.e. you see an error like `Found no USB device`), make sure your code does not rely on specific path names for the FPGA device files, including the TTY files.
   In other words, do not hard-code paths like `/dev/ttyACM0` anywhere. The indices appended to these device paths are not stable; the UART could be `/dev/ttyACM0` on one run and `/dev/ttyACM42` on the next.
 
-If you continue to have issues troubleshooting your job on the CI, feel free to [reach out to us](README.md#Support).
+If you continue to have issues troubleshooting your job on the CI, feel free to [reach out to us](#support).
 
 ## Support
 
