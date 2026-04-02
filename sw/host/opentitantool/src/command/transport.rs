@@ -76,9 +76,7 @@ impl CommandDispatch for TransportSetJtagPins {
 }
 
 /// Updates the firmware of the debugger/transport.  If no argument is given, a suitable
-/// "official" firmware will be used, if one such was compiled into the OpenTitanTool binary.  For
-/// instructions on how to build HyperDebug firmware locally, see
-/// https://docs.google.com/document/d/1ZEH7L5j9-wMw4tkW28-xt6JU5B6hTX0RdZD4h4OZzDo .
+/// "official" firmware will be used, if one such was compiled into the OpenTitanTool binary.
 #[derive(Debug, Args)]
 pub struct TransportUpdateFirmware {
     /// Local firmware file to use instead of official release.

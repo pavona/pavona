@@ -38,8 +38,6 @@ transition is legal and allowed by the life cycle definition.
 
 See the table below for more details.
 
-<!--SVG for flow chart below in google docs at
-https://docs.google.com/drawings/d/1kENEhJzrWDkzonu8ZC6SKDRtjETyH6S4SslcO1RpVPM/edit?usp=sharing-->
 <img src="device_life_cycle_fig1.svg" alt="Fig1" style="width: 800px;"/>
 
 In the diagram above,

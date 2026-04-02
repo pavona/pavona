@@ -4,8 +4,7 @@
 
 /**
  * Simple address translation for rv_core_ibex
- * This performs a configurable address translation, please see
- * https://docs.google.com/document/d/1uU2Zh46SJtoaOqZ9dCRO7oAQnhTUcWWZ7CstOa1PZiM/edit?usp=sharing
+ * This performs a configurable address translation.
  */
 
 module ${module_instance_name}_addr_trans import rv_core_ibex_pkg::*; #(

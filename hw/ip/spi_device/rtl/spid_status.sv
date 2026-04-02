@@ -155,9 +155,6 @@ module spid_status
   // the signal is broadcasted to Passthrough to filter-out the following
   // commands until the BUSY signal is released.
 
-  // Design Doc
-  //  https://docs.google.com/document/d/1wUIynMYVfVg9HmCL0q5-6r9BuN-XM0z--wGqU0bXRQ0
-
   // assumes BUSY bit as 0
   `ASSERT_INIT(BusyBitZero_A, BitBusy == 0)
 

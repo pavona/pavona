@@ -94,8 +94,8 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   Pack32(kAlertClass##prod, kAlertClass##prodend, kAlertClass##dev, \
          kAlertClass##rma)
 
-// This alert configuration is described in the ROM Shutdown specification:
-// https://docs.google.com/document/d/1V8hRvQnJhsvddieJbRHS3azbPZvoBWxfxPZV_0YA1QU/edit#
+// See the ROM Shutdown specification in
+// sw/device/silicon_creator/rom/doc/shutdown.md.
 // Dummy alerts have been added to prevent the tests breaking when new alerts
 // are added (see #7183). These lists of alerts and local alerts are for test
 // purposes only and may not be complete and/or up to date.

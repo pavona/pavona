@@ -299,10 +299,8 @@
             - Apply bootstrap pin strapping.
             - Reset the chip.
             - Verify that the chip responds to `READ_SFDP` (`0x5a`).
-            - Verify the SFDP header structure. See this
-              [document](https://docs.google.com/document/d/1X_x7f62IrPeHRLGBzybhDu9TsvsSCb6_1uKOjQO_fI4/edit?resourcekey=0-vLsVqyrt1F2mGwLrz73uwA#heading=h.gc2hf662pvy9).
-            - Verify the JEDEC Basic Flash Parameter Table. See this
-              [spreadsheet](https://docs.google.com/spreadsheets/d/1cioU3HgsWZXD4-eoUiH9TuVLZeFpucSdjyq5HND-FpQ/edit#gid=0).
+            - Verify the SFDP header structure.
+            - Verify the JEDEC Basic Flash Parameter Table.
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
@@ -925,14 +923,8 @@
 
             - For TEST, DEV, and RMA:
               - Connect a debugger.
-              - Follow the steps
-                [here](https://docs.google.com/document/d/1i6V3tFTv0UhWeM-IGCxgxkC07Bo_zpbgr6u1KE1Rehs/edit?resourcekey=0-L-XaP9QeLAkEsp8najVkUQ#heading=h.m4f6p97t15j8)
-                and execute `//sw/device/examples/sram_program` binary from SRAM.
+              - Execute `//sw/device/examples/sram_program` binary from SRAM.
               - Verify that chip sends the expected message over UART.
-
-            See this
-            [doc](https://docs.google.com/document/d/1i6V3tFTv0UhWeM-IGCxgxkC07Bo_zpbgr6u1KE1Rehs/edit?resourcekey=0-L-XaP9QeLAkEsp8najVkUQ)
-            for detils.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V3

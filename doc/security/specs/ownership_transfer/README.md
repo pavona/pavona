@@ -184,10 +184,6 @@ Definitions:
 <table>
   <tr>
     <td>
-    <!--
-    svgs are made in google docs, and can be found here:
-    https://docs.google.com/drawings/d/1hnC2EgkYpkxhVJ6I0prxdoQbglstqfwxvBYh_JIt8TA/edit?usp=sharing
-    -->
       <img src="ownership_transfer_fig1.svg" width="900" alt="fig1">
     </td>
   </tr>

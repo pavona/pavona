@@ -63,8 +63,4 @@ The advantage of this approach is that it does not require any changes in
 signature generation or off-target signature verification. See the usage
 constraints fields (`selector_bits`, `device_id`, `manuf_state_creator`,
 `manuf_state_owner`, `life_cycle_state`) in
-[manifest documentation](../../rom_ext/doc/manifest.md) for more details. See
-this
-[document](https://docs.google.com/document/d/1V9O-YTaUVWoXMq85qIYaSS6x7Bl9Li4Z2KqZ6u_jG98/edit?resourcekey=0-TfuDj6NU3Ir0L1PrkcNyog)
-for a brief explanation of why this approach is not susceptible to length
-extension attacks.
+[manifest documentation](../../rom_ext/doc/manifest.md) for more details.

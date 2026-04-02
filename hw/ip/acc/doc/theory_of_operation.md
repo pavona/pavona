@@ -87,11 +87,6 @@ If a fault causes the state to become zero, ACC raises a `BAD_INTERNAL_STATE` fa
 
 ### Operational States
 
-<!--
-Source: https://docs.google.com/drawings/d/1C0D4UriRk5pKGFoFtAXYLcJ1oBG1BCDd2omCLPYHtr0/edit
-
-Download the SVG from Google Draw, open it in Inkscape once and save it without changes to add width/height information to the image.
--->
 ![ACC operational states](./acc_operational_states.svg)
 
 ACC can be in different operational states.

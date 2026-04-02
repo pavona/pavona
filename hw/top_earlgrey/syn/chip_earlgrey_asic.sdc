@@ -808,7 +808,6 @@ set_false_path -hold -from [get_clocks SPI_TPM_CLK] \
 ##################
 # SPI host core logic operates on the IO_CLK
 #
-# See https://docs.google.com/drawings/d/1qkUnXaRafIPyBnVpreqfbF_zSy0xlpHqXMZp6F-j8Cc/edit?usp=sharing
 # During pre-layout, the SPI_HOST_CLK source latencies are estimated to account
 # for pad and logic latencies. After CTS, source latency must be removed as all
 # clocks are propagated.
@@ -872,8 +871,6 @@ set_output_delay -max $spi_host_out_val_max \
 # SPI DEV SLOW clock Passthru Operation  #
 ##########################################
 # Passthrough target freq for slow commands is 24MHz. Using 25MHz to over-constrain
-# For details on SPI passthrough timing, please see
-# https://docs.google.com/presentation/d/1GEPxKaOsr9ZcJwI_MBEL74P7jQvBFzOdzSbgru_yVLQ/edit?usp=sharing
 # See the SPI TPM section for half-cycle sampling with non-passthrough modes.
 #
 # The constraints below take the following approach:
@@ -1031,8 +1028,6 @@ set_false_path -from [get_clocks SPI_DEV_SLOW_PASS_CSB_CLK] \
 # SPI DEV FAST clock Passthru Operation  #
 ##########################################
 # Passthrough target freq for fast commands is 33MHz. Using 40MHz to over-constrain
-# For details on SPI passthrough timing, please see
-# https://docs.google.com/presentation/d/1GEPxKaOsr9ZcJwI_MBEL74P7jQvBFzOdzSbgru_yVLQ/edit?usp=sharing
 # See the SPI TPM section for half-cycle sampling with non-passthrough modes.
 #
 # The constraints below take the following approach:

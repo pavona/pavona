@@ -6,8 +6,6 @@
 // The top_earlgrey SoC provides a bunch of fixed-function and muxed IO pads. The interface serves
 // as the gateway connection between the chip IOs and ALL functions mapped to the fixed and muxed
 // IOs. It creates sub-interfaces for all functions and connects them all to the chip IOs together.
-// The pin mapping to each function is provided in the following spreadsheet:
-// https://docs.google.com/spreadsheets/d/1jp-paagh2_sJFMUFnewx0XAUmLdCCgXn8NnB2BNEk-Q
 //
 // All functional interfaces are internally (or externally, in this interface) gated off from
 // driving the IOs at the same time. Since there are more functions than IOs, it is the test

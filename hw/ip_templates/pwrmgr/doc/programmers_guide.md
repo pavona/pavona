@@ -74,8 +74,6 @@ Since in these scenarios the system was not reset, software continues executing 
 5. Re-enable interrupts for normal operation and wakeup handling.
 6. Once wake is handled, clear the wake indication in [`WAKE_INFO`](registers.md#wake_info).
 
-For an in-depth discussion, please see [power management programmers model](https://docs.google.com/document/d/1w86rmvylJgZVmmQ6Q1YBcCp2VFctkQT3zJ408SJMLPE/edit?usp=sharing) for additional details.
-
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../../sw/device/lib/dif/dif_pwrmgr.h)
