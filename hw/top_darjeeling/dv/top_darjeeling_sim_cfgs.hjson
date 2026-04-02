@@ -11,8 +11,7 @@
 
 {
   // This is a cfg hjson group for DV simulations. It includes ALL individual DV simulation
-  // cfgs of the IPs and the full chip used in top_darjeeling. This enables the common
-  // regression sets to be run in one shot.
+  // cfgs of the IPs and the full chip used in top_darjeeling. This enables the common regression sets to be run in one shot.
   name: top_darjeeling_batch
 
   import_cfgs: [// Project wide common cfg file
@@ -78,6 +77,7 @@
              "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
+
              // top_darjeeling autogen IPs.
              "{proj_root}/hw/top_darjeeling/ip_autogen/ac_range_check/dv/ac_range_check_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
@@ -94,5 +94,5 @@
              "{proj_root}/hw/top_darjeeling/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              // top_darjeeling chip.
              "{proj_root}/hw/top_darjeeling/dv/chip_darjeeling_sim_cfg.hjson",
-            ]
+  ]
 }

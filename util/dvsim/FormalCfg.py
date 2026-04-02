@@ -38,6 +38,7 @@ class FormalCfg(OneShotCfg):
         ]
         self.results_title = self.name.upper(
         ) + " Formal " + self.sub_flow.upper() + " Results"
+        self.batchgroup = None
 
     def parse_dict_to_str(self, input_dict, excl_keys=[]):
         # This is a helper function to parse dictionary items into a string.
@@ -133,7 +134,7 @@ class FormalCfg(OneShotCfg):
                 summary = ["N/A", "N/A", "N/A"]
         return results_str, summary
 
-    def gen_results_summary(self):
+    def gen_results_summary(self, batchgroups=False):
         # Gathers the aggregated results from all sub configs
         # The results_summary will only contain the passing rate and
         # percentages of the stimuli, coi, and proven coverage
@@ -146,22 +147,34 @@ class FormalCfg(OneShotCfg):
 
         colalign = ("center", ) * len(self.summary_header)
         table = [self.summary_header]
+
+        rows = {} if batchgroups else {"default": []}
         for cfg in self.cfgs:
             try:
-                table.append(cfg.result_summary[cfg.name])
+                row = cfg.result_summary[cfg.name]
             except KeyError as e:
-                table.append([cfg.name, "ERROR", "N/A", "N/A", "N/A"])
+                row = [cfg.name, "ERROR", "N/A", "N/A", "N/A"]
                 log.error(
                     "cfg: %s could not find generated results_summary: %s",
                     cfg.name, e)
+            self._add_to_row_dict(rows, batchgroups, cfg, row)
+
+        if any(rows.values()):
+            for batchgroup, group_rows in rows.items():
+                if batchgroups:
+                    # Insert a separator row for this batchgroup
+                    separator = [f"**{batchgroup}**"] + [""] * len(self.summary_header)
+                    table.append(separator)
+                for row in group_rows:
+                    table.append(row)
+
         if len(table) > 1:
             self.results_summary_md = results_str + tabulate(
                 table, headers="firstrow", tablefmt="pipe", colalign=colalign)
         else:
             self.results_summary_md = results_str
 
-        log.info("[result summary]: %s", self.results_summary_md)
-
+        print(str(self.results_summary_md))
         return self.results_summary_md
 
     def _gen_results(self, results):

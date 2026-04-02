@@ -105,57 +105,65 @@ def format_use_cfgs(cfgs, indent=13):
     return "\n".join(lines)
 
 
+def format_block(name, cfgs_sections, nested=False):
+    """Format a named block with optional nesting."""
+    BASE_INDENT = 13
+    NESTED_INDENT = BASE_INDENT + 4
+    indent = NESTED_INDENT if nested else BASE_INDENT
+    prefix = " " * BASE_INDENT
+    lines = []
+    if nested:
+        lines.append(f"{prefix}{name}: [")
+    for comment, cfgs in cfgs_sections:
+        if cfgs:
+            lines.append(f"{' ' * indent}// {comment}")
+            lines.append(format_use_cfgs(cfgs, indent))
+    if nested:
+        lines.append(f"{prefix}]")
+    return "\n".join(lines)
+
+
 def generate_hjson(ip_cfgs, top_cfgs, tops, copyright_header, top_specific=False):
     """Generate hjson for a batch sim_cfgs"""
-    sections = []
-
     tl_agent_cfgs = [c for c in ip_cfgs if "hw/dv/sv/" in c]
     pure_ip_cfgs = [c for c in ip_cfgs if "hw/ip/" in c]
 
-    if tl_agent_cfgs:
-        sections.append(
-            "             // Unit tests for UVCs.\n" +
-            format_use_cfgs(tl_agent_cfgs)
-        )
-    if pure_ip_cfgs:
-        sections.append(
-            "             // IPs.\n" +
-            format_use_cfgs(pure_ip_cfgs)
-        )
+    sections = []
 
+    # IP block
+    ip_sections = [
+        ("Unit tests for UVCs.", tl_agent_cfgs),
+        ("IPs.", pure_ip_cfgs),
+    ]
+    sections.append(format_block("ip", ip_sections, nested=not top_specific))
+
+    # Per-top blocks
     for top in tops:
         cfgs = top_cfgs[top]
-        autogen_cfgs = [c for c in cfgs if f"hw/{top}/ip_autogen/" in c
-                        or f"hw/{top}/ip/" in c]
-        chip_cfgs = [c for c in cfgs if f"hw/{top}/dv/" in c]
+        top_sections = [
+            (f"{top} autogen IPs.", [c for c in cfgs if f"hw/{top}/ip_autogen/" in c
+                                     or f"hw/{top}/ip/" in c]),
+            (f"{top} chip.", [c for c in cfgs if f"hw/{top}/dv/" in c]),
+        ]
+        sections.append(format_block(top, top_sections, nested=not top_specific))
 
-        if autogen_cfgs:
-            sections.append(
-                f"             // {top} autogen IPs.\n" +
-                format_use_cfgs(autogen_cfgs)
-            )
-        if chip_cfgs:
-            sections.append(
-                f"             // {top} chip.\n" +
-                format_use_cfgs(chip_cfgs)
-            )
-
-    use_cfgs_body = "\n".join(sections)
+    use_cfgs_body = "\n\n".join(s for s in sections if s)
 
     if not top_specific:
         batchname_desc = "across all IPs and tops in the project"
         batchname = "all_tops"
         rel_path = "hw/dv/summary"
+        open_br, close_br = "{", "}"
     else:
-        batchname_desc = f"of the IPs and the full chip used in {top}"
+        batchname_desc = f"of the IPs and the full chip used in {tops[0]}"
         batchname = tops[0]
         rel_path = f"hw/{tops[0]}/dv/summary"
+        open_br, close_br = "[", "]"
 
     return f"""{copyright_header}
 {{
   // This is a cfg hjson group for DV simulations. It includes ALL individual DV simulation
-  // cfgs {batchname_desc}. This enables the common
-  // regression sets to be run in one shot.
+  // cfgs {batchname_desc}. This enables the common regression sets to be run in one shot.
   name: {batchname}_batch
 
   import_cfgs: [// Project wide common cfg file
@@ -173,9 +181,9 @@ def generate_hjson(ip_cfgs, top_cfgs, tops, copyright_header, top_specific=False
     }}
   ]
 
-  use_cfgs: [
+  use_cfgs: {open_br}
 {use_cfgs_body}
-            ]
+  {close_br}
 }}
 """
 

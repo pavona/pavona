@@ -127,11 +127,26 @@ class FlowCfg():
         # configuration".
         self.is_primary_cfg = 'use_cfgs' in hjson_data
 
+        # If it's a primary_cfg, it's results can be grouped for reporting
+        # purposes in the 'use_cfgs' section of the hjson. If that's the case
+        # we group the reports
+        self.batchgroups = False
+
         if not self.is_primary_cfg:
             self.cfgs.append(self)
         else:
-            for entry in self.use_cfgs:
-                self._load_child_cfg(entry, mk_config)
+            if isinstance(self.use_cfgs, dict):
+                for batchgroup, entries in self.use_cfgs.items():
+                    for entry in entries:
+                        self._load_child_cfg(entry, mk_config, batchgroup)
+                self.batchgroups = True
+            elif isinstance(self.use_cfgs, list):
+                for entry in self.use_cfgs:
+                    self._load_child_cfg(entry, mk_config)
+            else:
+                log.error("use_cfgs must be either a dict of batchgroups",
+                          " or a list of configs")
+                sys.exit(1)
 
         if self.rel_path == "":
             self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
@@ -194,7 +209,7 @@ class FlowCfg():
                 log.error("Parse error!\n%s", self.cfgs)
                 sys.exit(1)
 
-    def create_instance(self, mk_config, flow_cfg_file):
+    def create_instance(self, mk_config, flow_cfg_file, batchgroup=None):
         '''Create a new instance of this class for the given config file.
 
         mk_config is a factory method (passed explicitly to avoid a circular
@@ -213,22 +228,24 @@ class FlowCfg():
                           type(new_instance).__name__))
             sys.exit(1)
 
+        new_instance.batchgroup = batchgroup
+
         return new_instance
 
-    def _load_child_cfg(self, entry, mk_config):
+    def _load_child_cfg(self, entry, mk_config, batchgroup=None):
         '''Load a child configuration for a primary cfg'''
         if type(entry) is str:
             # Treat this as a file entry. Substitute wildcards in cfg_file
             # files since we need to process them right away.
             cfg_file = subst_wildcards(entry, self.__dict__, ignore_error=True)
-            self.cfgs.append(self.create_instance(mk_config, cfg_file))
+            self.cfgs.append(self.create_instance(mk_config, cfg_file, batchgroup))
 
         elif type(entry) is dict:
             # Treat this as a cfg expanded in-line
             temp_cfg_file = self._conv_inline_cfg_to_hjson(entry)
             if not temp_cfg_file:
                 return
-            self.cfgs.append(self.create_instance(mk_config, temp_cfg_file))
+            self.cfgs.append(self.create_instance(mk_config, temp_cfg_file, batchgroup))
 
             # Delete the temp_cfg_file once the instance is created
             log.log(VERBOSE, "Deleting temp cfg file:\n%s", temp_cfg_file)
@@ -427,15 +444,26 @@ class FlowCfg():
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
-            self.gen_results_summary()
+            self.gen_results_summary(self.batchgroups)
             self.write_results(self.results_html_name,
                                self.results_summary_md, is_primary_cfg=True)
             log.info("[report]: [%s] [%s/report.html]", self.name, self.results_dir)
 
-    def gen_results_summary(self):
+    def gen_results_summary(self, batchgroups=False):
         '''Public facing API to generate summary results for each IP/cfg file
         '''
         return
+
+    def _add_to_row_dict(self, row_dict, batch_flag, cfg, row):
+        '''Checks if the cfgs are divided into batchgroups and adds it to the
+        corresponding batchgroup or to the default.
+        '''
+        if batch_flag:
+            if cfg.batchgroup not in row_dict:
+                row_dict[cfg.batchgroup] = []
+            row_dict[cfg.batchgroup].append(row)
+        else:
+            row_dict["default"].append(row)
 
     def write_results(self, html_filename, text_md, json_str=None, is_primary_cfg=False):
         """Write results to files.

@@ -38,6 +38,9 @@ class LintCfg(OneShotCfg):
         # fusesoc argument before the name of the core to invoke.
         # Format: str
         self.additional_fusesoc_argument = ''
+        # This key is a structure used to know if the result summary
+        # of a primary config is going to be divided into batchgroups
+        self.batchgroup = None
 
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
 
@@ -52,7 +55,7 @@ class LintCfg(OneShotCfg):
         else:
             self.results_title = f'{self.name.upper()} Lint Results'
 
-    def gen_results_summary(self):
+    def gen_results_summary(self, batchgroups=False):
         '''
         Gathers the aggregated results from all sub configs
         '''
@@ -78,14 +81,24 @@ class LintCfg(OneShotCfg):
         colalign = ('center', ) * len(header)
         table = [header]
 
+        rows = {} if batchgroups else {"default": []}
         keys = self.totals.get_keys(self.report_severities)
+
         for cfg in self.cfgs:
             name_with_link = cfg._get_results_page_link(
                 self.results_dir)
-
             row = [name_with_link]
             row += cfg.result_summary.get_counts_md(keys)
-            table.append(row)
+            self._add_to_row_dict(rows, batchgroups, cfg, row)
+
+        if any(rows.values()):
+            for batchgroup, group_rows in rows.items():
+                if batchgroups:
+                    # Insert a separator row for this batchgroup
+                    separator = [f"**{batchgroup}**"] + [""] * (len(keys) - 1)
+                    table.append(separator)
+                for row in group_rows:
+                    table.append(row)
 
         if len(table) > 1:
             self.results_summary_md = results_str + tabulate(
@@ -94,9 +107,7 @@ class LintCfg(OneShotCfg):
         else:
             self.results_summary_md = f'{results_str}\nNo results to display.\n'
 
-        print(self.results_summary_md)
-
-        # Return only the tables
+        print(str(self.results_summary_md))
         return self.results_summary_md
 
     # TODO(#9079): This way of parsing out messages into an intermediate

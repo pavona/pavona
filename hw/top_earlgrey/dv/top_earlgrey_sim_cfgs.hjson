@@ -11,8 +11,7 @@
 
 {
   // This is a cfg hjson group for DV simulations. It includes ALL individual DV simulation
-  // cfgs of the IPs and the full chip used in top_earlgrey. This enables the common
-  // regression sets to be run in one shot.
+  // cfgs of the IPs and the full chip used in top_earlgrey. This enables the common regression sets to be run in one shot.
   name: top_earlgrey_batch
 
   import_cfgs: [// Project wide common cfg file
@@ -78,6 +77,7 @@
              "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
+
              // top_earlgrey autogen IPs.
              "{proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
@@ -92,5 +92,5 @@
              "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              // top_earlgrey chip.
              "{proj_root}/hw/top_earlgrey/dv/chip_earlgrey_sim_cfg.hjson",
-            ]
+  ]
 }

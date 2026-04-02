@@ -89,8 +89,8 @@ def _load_single_file(target, path, is_first, arg_keys):
                 raise RuntimeError('{!r}: File is included by another one, '
                                    'but defines "use_cfgs".'
                                    .format(path))
-            if not isinstance(dict_val, list):
-                raise RuntimeError('{!r}: use_cfgs must be a list. Saw {!r}.'
+            if not isinstance(dict_val, list) and not isinstance(dict_val, dict):
+                raise RuntimeError('{!r}: use_cfgs must be a list or a dict. Saw {!r}.'
                                    .format(path, dict_val))
 
         # Otherwise, update target with this attribute
