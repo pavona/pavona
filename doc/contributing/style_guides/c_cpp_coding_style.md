@@ -356,7 +356,7 @@ This rule deviates from the Google C++ style guide to align closer with a typica
 
 ***All symbols in a particular header must share the same unique prefix.***
 
-"Prefix" in this case refers to the identifying string of words, and not the specific type/struct/enum/constant/macro-based capitalization.
+"Prefix" in this case refers to the identifying string of words, and not the specific type/struct/enum/constant/macro-based capitalisation.
 This rule also deviates from the Google C++ style guide, because C does not have namespaces, so we have to use long names to avoid name clashes.
 Symbols that have specific, global meaning imparted by an external script or specification may break this rule.
 For example:
@@ -372,7 +372,7 @@ my_unit_return_t my_unit_init(void);
 ***The names of enumeration constants must be prefixed with the name of their respective enumeration type.***
 
 Again, this is because C does not have namespaces.
-The exact capitalization does not need to match, as enumeration type names have a different capitalization rule to enumeration constants.
+The exact capitalisation does not need to match, as enumeration type names have a different capitalisation rule to enumeration constants.
 For example:
 ```c
 typedef enum my_wonderful_option {
@@ -454,7 +454,7 @@ Functions that we strongly wish to be inlined, and which are part of a public in
 This annotation serves as an indication to the programmer that the function has a low calling overhead, despite being part of a public interface.
 Presence---or lack---of an `inline` annotation does not imply a function will---or will not---be inlined by the compiler.
 
-[C11](#c-version) standardized inline functions, learning from the mistakes in C++ and various nonstandard extensions.
+[C11](#c-version) standardised inline functions, learning from the mistakes in C++ and various nonstandard extensions.
 This means there are many legacy ways to define an inline function in C.
 We have chosen to follow how C11 designed the `inline` keyword.
 
@@ -490,7 +490,7 @@ The compiler is capable of inlining static functions without the `inline` annota
 ### `volatile` Type Qualifier
 
 Do not use `volatile` in production, i.e. non-test, silicon creator code unless you are implementing a library explicitly for this purpose like `sec_mmio`, `abs_mmio`, or `hardened`.
-See [guidance for volatile](../sw/guidance_for_volatile.md) for more details.
+See [guidance for volatile](./guidance_for_volatile.md) for more details.
 When in doubt, please do not hesitate to reach out by creating a GitHub issue (preferably with the "Type:Question" label).
 
 ### Nonstandard Attributes
