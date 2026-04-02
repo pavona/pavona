@@ -1,12 +1,12 @@
 # Work with hardware code in external repositories
 
-OpenTitan is not a closed ecosystem: we incorporate code from third parties, and we split out pieces of our code to reach a wider audience.
-In both cases, we need to import and use code from external repositories in our OpenTitan code base.
+Pavona is not a closed ecosystem: we incorporate code from third parties, and we split out pieces of our code to reach a wider audience.
+In both cases, we need to import and use code from external repositories in our code base.
 Read on for step-by-step instructions for common tasks, and for background information on the topic.
 
 ## Summary
 
-Code in subdirectories of `hw/vendor` is imported (copied in) from external repositories (which may be provided by lowRISC or other sources).
+Code in subdirectories of `hw/vendor` is imported (copied in) from external repositories.
 The external repository is called "upstream".
 Any development on imported in `hw/vendor` code should happen upstream when possible.
 Files ending with `.vendor.hjson` indicate where the upstream repository is located.
@@ -16,9 +16,9 @@ In particular, this means:
 - If you find a bug in imported code or want to enhance it, report it upstream.
 - Follow the rules and style guides of the upstream project.
    They might differ from our own rules.
-- Use the upstream mechanisms to do code changes. In many cases, upstream uses GitHub just like we do with Pull Requests.
+- Use the upstream mechanisms to do code changes. In many cases, upstream uses GitHub just like we do with pull requests.
 - Work with upstream reviewers to get your changes merged into their code base.
-- Once the change is part of the upstream repository, the `util/vendor` tool can be used to copy the upstream code back into our OpenTitan repository.
+- Once the change is part of the upstream repository, the `util/vendor` tool can be used to copy the upstream code back into this repository.
 
 Read on for the longer version of these guidelines.
 
@@ -28,7 +28,7 @@ Our vendoring infrastructure is able to handle such cases, read on for more info
 
 ## Background
 
-OpenTitan is developed in a "monorepo", a single repository containing all its source code.
+Pavona is developed in a "monorepo", a single repository containing all its source code.
 This approach is beneficial for many reasons, ranging from an easier workflow to better reproducibility of the results, and that's why large companies like [Google](https://ai.google/research/pubs/pub45424) and Facebook are using monorepos.
 Monorepos are even more compelling for hardware development, which cannot make use of a standardized language-specific package manager like npm or pip.
 
@@ -93,10 +93,10 @@ $ cd $REPO_TOP
 $ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --update
 INFO: Cloning upstream repository https://github.com/lowRISC/ibex.git @ master
 INFO: Cloned at revision 7728b7b6f2318fb4078945570a55af31ee77537a
-INFO: Copying upstream sources to /home/philipp/src/opentitan/hw/vendor/lowrisc_ibex
+INFO: Copying upstream sources to /home/foo/pavona/hw/vendor/lowrisc_ibex
 INFO: Changes since the last import:
 * Typo fix in muldiv: Reminder->Remainder (Stefan Wallentowitz)
-INFO: Wrote lock file /home/philipp/src/opentitan/hw/vendor/lowrisc_ibex.lock.hjson
+INFO: Wrote lock file /home/foo/pavona/hw/vendor/lowrisc_ibex.lock.hjson
 INFO: Import finished
 ```
 
@@ -149,7 +149,7 @@ This command updates the "lowrisc_ibex" code, and creates a Git commit from it.
 
 Read on for a complete example how to efficiently update a vendored dependency, and how to make changes to such code.
 
-## Update vendored code in our repository
+## Update vendored code in upstream Pavona
 
 A complete example to update a vendored dependency, commit its changes, and create a pull request from it, is given below.
 
@@ -166,9 +166,10 @@ $ # Push the new branch to your fork
 $ git push origin update-ibex-code
 $ # Restore changes in working directory (if anything was stashed before)
 $ git stash pop
+$ # Now go to the GitHub web interface to open a pull request
+$ # for the `update-ibex-code` branch.
 ```
 
-Now go to the GitHub web interface to open a Pull Request for the `update-ibex-code` branch.
 
 ## How to modify vendored code (fix a bug, improve it)
 
@@ -188,18 +189,18 @@ Now go to the GitHub web interface to open a Pull Request for the `update-ibex-c
    ```
 
 After this step you're ready to make your modifications.
-You can do so *either* directly in the upstream repository, *or* start in the OpenTitan repository.
+You can do so *either* directly in the upstream repository, *or* start in your local copy of the Pavona repository.
 
 ### Step 2a: Make modifications in the upstream repository
 
 The easiest option is to modify the upstream repository directly as usual.
 
-### Step 2b: Make modifications in the OpenTitan repository
+### Step 2b: Make modifications in your copy of Pavona
 
 Most changes to external code are motivated by our own needs.
 Modifying the external code directly in the `hw/vendor` directory is therefore a sensible starting point.
 
-1. Make your changes in the OpenTitan repository. Do not commit them.
+1. Make your changes in Pavona. Do not commit them.
 
 2. Create a patch with your changes. The example below uses `lowrisc_ibex`.
 
@@ -255,12 +256,9 @@ Vendoring external code is done by creating a vendor description file, and then 
       Typically `<vendor>` is the lower-cased user or organization name on GitHub, and `<name>` is the lower-cased project name.
    3. Choose a target directory.
       It is recommended use the dependency name as directory name.
-   4. Create the vendor description file in `hw/vendor/<vendor>_<name>.vendor.hjson` with the following contents (adjust as needed):
+   4. Create the vendor description file in `hw/vendor/<vendor>_<name>.vendor.hjson` with a copyright header and the following contents (adjust as needed):
 
       ```
-      // Copyright lowRISC contributors (OpenTitan project).
-      // Licensed under the Apache License, Version 2.0, see LICENSE for details.
-      // SPDX-License-Identifier: Apache-2.0
       {
         name: "lowrisc_ibex",
         target_dir: "lowrisc_ibex",
@@ -292,13 +290,13 @@ Vendoring external code is done by creating a vendor description file, and then 
    $ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --commit
    ```
 
-5. Push the branch to your fork for review (assuming `origin` is the remote name of your fork).
+5. Push the branch to your fork for review (assuming `origin` is the remote name of your fork of Pavona).
 
    ```command
    $ git push -u origin vendor-something
    ```
 
-   Now go the GitHub web interface to create a Pull Request for the newly created branch.
+   Now go the GitHub web interface to create a pull request for the newly created branch.
 
 ## How to exclude some files from the upstream repository
 
@@ -354,7 +352,6 @@ If you want to add more patches and re-apply them without updating the upstream 
 Managing patch series on top of code can be challenging.
 As the underlying code changes, the patches need to be refreshed to continue to apply.
 Adding new patches is a very manual process.
-And so on.
 
 Fortunately, Git can be used to simplify this task.
 The idea:
