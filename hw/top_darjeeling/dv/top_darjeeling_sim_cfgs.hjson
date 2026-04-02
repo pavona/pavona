@@ -93,6 +93,6 @@
              "{proj_root}/hw/top_darjeeling/ip/xbar_mbx/dv/autogen/xbar_mbx_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              // top_darjeeling chip.
-             "{proj_root}/hw/top_darjeeling/dv/chip_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/dv/chip_darjeeling_sim_cfg.hjson",
             ]
 }

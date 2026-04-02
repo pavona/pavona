@@ -90,7 +90,7 @@
              "{proj_root}/hw/top_earlgrey/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              // top_earlgrey chip.
-             "{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/dv/chip_earlgrey_sim_cfg.hjson",
              // top_darjeeling autogen IPs.
              "{proj_root}/hw/top_darjeeling/ip_autogen/ac_range_check/dv/ac_range_check_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
@@ -106,6 +106,6 @@
              "{proj_root}/hw/top_darjeeling/ip/xbar_mbx/dv/autogen/xbar_mbx_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              // top_darjeeling chip.
-             "{proj_root}/hw/top_darjeeling/dv/chip_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/dv/chip_darjeeling_sim_cfg.hjson",
             ]
 }

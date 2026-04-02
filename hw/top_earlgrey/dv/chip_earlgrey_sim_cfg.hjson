@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Name of the sim cfg - typically same as the name of the DUT.
-  name: chip
+  name: chip_earlgrey
 
   // Top level dut name (sv module).
   dut: chip_earlgrey_asic
