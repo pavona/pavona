@@ -94,7 +94,7 @@ rustc has a number of flags. The most salient of these are:
 *   `--target`, which sets the cross-compilation target.
      It has a similar role to Clang's `-target`, `-march`, and `-mabi` flags.
      It accepts a target definition (which in many cases resembles an LLVM target triple) that defines the platform.
-     For example, OpenTitan software uses the `riscv32imc-unknown-none-elf` target.
+     For example, Pavona software uses the `riscv32imc-unknown-none-elf` target.
      Using a target that isn't the host target (e.g.,`x86_64-unknown-linux-musl`) requires installing the corresponding standard library build with `rustup component install rust-std-<target>`.
      See `rustc --print targets`.
      `--target` is also accepted directly by Cargo, unlike most rustc flags.
@@ -2074,7 +2074,7 @@ Nightly also provides support for the sanitizers, such as ASAN and TSAN.
 [^9]: The formatter is kind of a new component, so may require separate installation through `rustup`.
 See [https://github.com/rust-lang/rustfmt#on-the-stable-toolchain](https://github.com/rust-lang/rustfmt#on-the-stable-toolchain).
 
-[^10]: [https://doc.rust-lang.org/core/index.html](https://doc.rust-lang.org/core/index.html)
+[^10]: See: [https://doc.rust-lang.org/core/index.html](https://doc.rust-lang.org/core/index.html)
 
 [^11]: They are also used analogously to `ptrdiff_t` and `size_t`.
 In practice, these types are all the same width on modern systems, though C draws a distinction for portability reasons.
@@ -2139,15 +2139,15 @@ As such, it is not possible to get pointers to fields of a pointer-to-struct wit
 
 [^35]: However, great care should be taken when using these methods on types that track ownership of a resource, since this can result in a double-free when the pointee is freed.
 
-[^36]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned)
+[^36]: See: [https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned)
 
-[^37]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned)
+[^37]: See: [https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned)
 
 [^38]: These are effectively memcpys: they will behave as if they read each byte individually with no respect for alignment.
 
-[^39]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to](https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to)
+[^39]: See: [https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to](https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to)
 
-[^40]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to_nonoverlapping](https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to_nonoverlapping)
+[^40]: See: [https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to_nonoverlapping](https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to_nonoverlapping)
 
 [^41]: Rust also provides an abstraction for dealing with uninitialized memory that has somewhat fewer sharp edges: [https://doc.rust-lang.org/std/mem/union.MaybeUninit.html](https://doc.rust-lang.org/std/mem/union.MaybeUninit.html).
 
@@ -2185,9 +2185,9 @@ The variable cannot be used until Rust can prove that, in all branches of the pr
 [^54]: Rust's execution model is far more constrained than C, so C function calls are basically black boxes that inhibit optimization.
 However, there is no runtime cost compared to cross-library-calls in C.
 
-[^55]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.read_volatile](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_volatile)
+[^55]: See: [https://doc.rust-lang.org/std/primitive.pointer.html#method.read_volatile](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_volatile)
 
-[^56]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.write_volatile](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_volatile)
+[^56]: See: [https://doc.rust-lang.org/std/primitive.pointer.html#method.write_volatile](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_volatile)
 
 [^57]: Of course, due to an LLVM bug, this is not guaranteed to work...
 
@@ -2223,28 +2223,27 @@ Merely materializing an invalid reference is Undefined Behavior, because LLVM wi
 
 [^72]: It should be noted that `a..b` is itself an expression, which creates a `Range<T>` of the chosen numeric type.
 
-[^73]: [https://doc.rust-lang.org/std/primitive.slice.html#method.split_at_mut](https://doc.rust-lang.org/std/primitive.slice.html#method.split_at_mut)
+[^73]: See: [https://doc.rust-lang.org/std/primitive.slice.html#method.split_at_mut](https://doc.rust-lang.org/std/primitive.slice.html#method.split_at_mut)
 
-[^74]: [https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html](https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html)
+[^74]: See: [https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html](https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html)
 
 [^75]: The second quote disambiguates them from lifetime names.
 
-[^76]: [https://doc.rust-lang.org/std/mem/fn.drop.html](https://doc.rust-lang.org/std/mem/fn.drop.html)
+[^76]: See: [https://doc.rust-lang.org/std/mem/fn.drop.html](https://doc.rust-lang.org/std/mem/fn.drop.html)
 
 [^77]: Unions also cannot contain types with destructors in them.
 
 [^78]: While not available in embedded environments, `Box<T>` in the standard library is an implementation of this idea: [https://doc.rust-lang.org/std/boxed/index.html](https://doc.rust-lang.org/std/boxed/index.html).
 
-[^79]: [https://doc.rust-lang.org/std/mem/fn.forget.html](https://doc.rust-lang.org/std/mem/fn.forget.html)
+[^79]: See: [https://doc.rust-lang.org/std/mem/fn.forget.html](https://doc.rust-lang.org/std/mem/fn.forget.html)
 
-[^80]: [https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html](https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html)
+[^80]: See: [https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html](https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html)
 
 [^81]: We'll get to these later.
 
-[^82]: [https://doc.rust-lang.org/std/mem/fn.needs_drop.html](https://doc.rust-lang.org/std/mem/fn.needs_drop.html)
+[^82]: See: [https://doc.rust-lang.org/std/mem/fn.needs_drop.html](https://doc.rust-lang.org/std/mem/fn.needs_drop.html)
 
-[^83]:
-[https://doc.rust-lang.org/std/ptr/fn.drop_in_place.html](https://doc.rust-lang.org/std/ptr/fn.drop_in_place.html)
+[^83]: See: [https://doc.rust-lang.org/std/ptr/fn.drop_in_place.html](https://doc.rust-lang.org/std/ptr/fn.drop_in_place.html)
 
 [^84]: Though naively, it might seem like this would make `Option<T>` bigger than `T` (twice as big, for an integer type, where alignment == size), the compiler can optimize the size down.
 For example, as we'll see later, `Option::<&T>::None` is represented as a null pointer, since `&T` can never be null.
@@ -2255,19 +2254,19 @@ For example, as we'll see later, `Option::<&T>::None` is represented as a null p
 
 [^87]: Of course, the compiler has no problem optimizing match expressions into C switch statements when possible.
 
-[^88]: [https://doc.rust-lang.org/std/clone/trait.Clone.html](https://doc.rust-lang.org/std/clone/trait.Clone.html)
+[^88]: See: [https://doc.rust-lang.org/std/clone/trait.Clone.html](https://doc.rust-lang.org/std/clone/trait.Clone.html)
 
-[^89]: [https://doc.rust-lang.org/std/default/trait.Default.html](https://doc.rust-lang.org/std/default/trait.Default.html)
+[^89]: See: [https://doc.rust-lang.org/std/default/trait.Default.html](https://doc.rust-lang.org/std/default/trait.Default.html)
 
-[^90]: [https://doc.rust-lang.org/std/cmp/trait.PartialEq.html](https://doc.rust-lang.org/std/cmp/trait.PartialEq.html)
+[^90]: See: [https://doc.rust-lang.org/std/cmp/trait.PartialEq.html](https://doc.rust-lang.org/std/cmp/trait.PartialEq.html)
 
-[^91]: [https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html](https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html)
+[^91]: See: [https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html](https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html)
 
-[^92]: [https://doc.rust-lang.org/std/hash/trait.Hash.html](https://doc.rust-lang.org/std/hash/trait.Hash.html)
+[^92]: See: [https://doc.rust-lang.org/std/hash/trait.Hash.html](https://doc.rust-lang.org/std/hash/trait.Hash.html)
 
 [^93]: The so-called Universal Function Call Syntax.
 
-[^94]: [https://doc.rust-lang.org/std/ops/index.html](https://doc.rust-lang.org/std/ops/index.html)
+[^94]: See: [https://doc.rust-lang.org/std/ops/index.html](https://doc.rust-lang.org/std/ops/index.html)
 
 [^95]: Associated types and constants will also disqualify a trait.
 
@@ -2276,7 +2275,7 @@ In the language of generic bounds, trait object methods cannot rely on the fact 
 
 [^97]: This is sometimes called being "thread compatible".
 
-[^98]: [https://doc.rust-lang.org/std/marker/index.html](https://doc.rust-lang.org/std/marker/index.html)
+[^98]: See: [https://doc.rust-lang.org/std/marker/index.html](https://doc.rust-lang.org/std/marker/index.html)
 
 [^99]: I.e., write once, use for many types.
 
@@ -2304,13 +2303,13 @@ While it is completely possible for a single type `T` to implement `Add<U1>` and
 
 [^108]: While not present in C (except in C11 via the `_Generic` keyword), function overloading is a popular feature in many other languages.
 
-[^109]: [https://doc.rust-lang.org/std/marker/struct.PhantomData.html](https://doc.rust-lang.org/std/marker/struct.PhantomData.html)
+[^109]: See: [https://doc.rust-lang.org/std/marker/struct.PhantomData.html](https://doc.rust-lang.org/std/marker/struct.PhantomData.html)
 
-[^110]: [https://doc.rust-lang.org/nomicon/phantom-data.html](https://doc.rust-lang.org/nomicon/phantom-data.html)
+[^110]: See: [https://doc.rust-lang.org/nomicon/phantom-data.html](https://doc.rust-lang.org/nomicon/phantom-data.html)
 
 [^111]: C++ also has "smart pointers", though it is not as strict about what that means as Rust (none of the smart pointers used in embedded programming in Rust allocate, for example).
 
-[^112]: [https://doc.rust-lang.org/stable/std/ops/trait.Deref.html](https://doc.rust-lang.org/stable/std/ops/trait.Deref.html)
+[^112]: See: [https://doc.rust-lang.org/stable/std/ops/trait.Deref.html](https://doc.rust-lang.org/stable/std/ops/trait.Deref.html)
 
 [^113]: Even though raw pointers can be dereferenced with `*ptr`, they do _not_ implement `Deref`.
 Similarly, although references implement `Deref`, they are not typically called smart pointers.
@@ -2322,23 +2321,23 @@ In practice, the compiler is pretty good at inlining away the extra calls and re
 
 [^116]: This is currently magic, but is likely to become less magic in future versions.
 
-[^117]: See [https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers](https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers)
+[^117]: See: [https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers](https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers)
 
-[^118]: See [https://doc.rust-lang.org/std/num/struct.NonZeroI32.html](https://doc.rust-lang.org/std/num/struct.NonZeroI32.html)
+[^118]: See: [https://doc.rust-lang.org/std/num/struct.NonZeroI32.html](https://doc.rust-lang.org/std/num/struct.NonZeroI32.html)
 
-[^119]: See [https://doc.rust-lang.org/std/convert/enum.Infallible.html](https://doc.rust-lang.org/std/convert/enum.Infallible.html)
+[^119]: See: [https://doc.rust-lang.org/std/convert/enum.Infallible.html](https://doc.rust-lang.org/std/convert/enum.Infallible.html)
 
 [^120]: As in an electrical fuse: eventually, the fuse goes off and stops working.
 
 [^121]: These being Rust source-code symbols, _not_ linker symbols.
 
-[^122]: [https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html](https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html)
+[^122]: See: [https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html](https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html)
 
 [^123]: `UnsafeCell` (or, the effect it has on data, at any rate) is well-known to the optimizer and the code generator.
 As we'll see below, the presence of `UnsafeCell` can radically change how a value is laid out in memory, even though it logically only contains a `T`.
 
-[^124]: [https://doc.rust-lang.org/std/cell/struct.Cell.html](https://doc.rust-lang.org/std/cell/struct.Cell.html)
+[^124]: See: [https://doc.rust-lang.org/std/cell/struct.Cell.html](https://doc.rust-lang.org/std/cell/struct.Cell.html)
 
-[^125]: [https://doc.rust-lang.org/std/cell/struct.RefCell.html](https://doc.rust-lang.org/std/cell/struct.RefCell.html)
+[^125]: See: [https://doc.rust-lang.org/std/cell/struct.RefCell.html](https://doc.rust-lang.org/std/cell/struct.RefCell.html)
 
-[^126]: [https://doc.rust-lang.org/stable/nomicon/](https://doc.rust-lang.org/stable/nomicon/)
+[^126]: See: [https://doc.rust-lang.org/stable/nomicon/](https://doc.rust-lang.org/stable/nomicon/)

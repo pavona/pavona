@@ -1,4 +1,4 @@
-# Guidance for `volatile` in OpenTitan Silicon Creator Code
+# Guidance for `volatile` in Silicon Creator Code
 
 ## TL;DR
 
@@ -21,7 +21,7 @@ When in doubt, please do not hesitate to reach out by creating a GitHub issue (p
 
 ## Introduction
 
-The goal of this document is to provide guidance for using `volatile` in OpenTitan Silicon Creator code, i.e. `rom`, `rom_ext`, related tests, and examples.
+The goal of this document is to provide guidance for using `volatile` in Silicon Creator code, i.e. `rom`, `rom_ext`, related tests, and examples.
 There are several reasons for this guidance:
 
 *   `volatile` is contagious and, similar to `const`-correctness, `volatile`-correctness can be hard to achieve and maintain. Once a variable is declared as `volatile`, the `volatile` keyword must appear throughout the call stack in all other variables that will reference the same object.
@@ -106,12 +106,12 @@ When accessing memory mapped registers, any new code must use `abs_mmio` or `sec
 ### Hardening
 
 Do not use `volatile` for hardening purposes.
-OpenTitan has invested considerably to define simple and predictable building blocks and to leverage them to harden various patterns in `rom` and `rom_ext`.
+This repo defines simple and predictable building blocks and leverages them to harden various patterns in `rom` and `rom_ext`.
 See `hardened.h` for the hardening primitives we have.
 
 ### `const` and Non-`const` Variables Initialized Outside the Lifetime of a Program
 
-There are several cases in OpenTitan silicon creator code where a variable with static storage duration is initialized either partially or completely in a way that isn’t visible to the C source code overriding the static initializer of the C object.
+There are several cases in Silicon Creator code where a variable with static storage duration is initialized either partially or completely in a way that isn’t visible to the C source code overriding the static initializer of the C object.
 A `const` example to this case is the definition of `kManifest` in `sw/device/silicon_creator/lib/manifest_def.c`.
 `kManifest` is an aggregate object of type `manifest_t` that resides in flash memory whose actual value at runtime is different from the initializer in source code because the binary is modified by the build system before it is loaded into flash memory.
 Non-`const` examples include the `struct`s in the `static_critical` section of the main SRAM.
@@ -124,9 +124,9 @@ Such variables must be declared as
 
 ### Pointers Created Out of Thin Air
 
-OpenTitan secure boot consists of at least three stages: `rom`, `rom_ext`, and the first owner boot stage.
+Secure boot consists of at least three stages: `rom`, `rom_ext`, and the first owner boot stage.
 All boot stages except `rom` are stored in flash and all in-flash boot stages are required to start with a "manifest" so that their integrity and authenticity can be verified.
-Since OpenTitan uses a fixed flash layout, `rom` and `rom_ext` exactly know the next stage's manifest's location in flash.
+With a fixed flash layout, `rom` and `rom_ext` exactly know the next stage's manifest's location in flash.
 Since this address is not part of their images, `rom` and `rom_ext` create pointers essentially out of thin air using functions like `_const manifest_t *boot_policy_manifest_a_get(void)_`.
 If the pointers in question do not point to something already known by the compiler, an optimizing compiler cannot optimize away the first access.
 Thus, there is no need to declare such pointers as `volatile`.
@@ -142,7 +142,6 @@ In cases where a variable is shared between a handler and the rest of the progra
 *   [Final draft of C11](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf)
 *   [Deprecating volatile - JF Bastien - CppCon 2019](https://www.youtube.com/watch?v=KJW_DLaVXIY): A longer discussion on `volatile` and c++ with a good set of demotivating examples in the first 20+ minutes
 *   [LLVM Language Reference Manual — LLVM 16.0.0git documentation](https://llvm.org/docs/LangRef.html#volatile-memory-accesses)
-*   PRs that implement the guidance in this doc: [#15253](https://github.com/lowRISC/opentitan/pull/15253), [#15286](https://github.com/lowRISC/opentitan/pull/15286), [#15287](https://github.com/lowRISC/opentitan/pull/15287), [#15302](https://github.com/lowRISC/opentitan/pull/15302), [#15303](https://github.com/lowRISC/opentitan/pull/15303).
 
 ## Notes
 

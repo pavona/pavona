@@ -22,7 +22,7 @@ DIFs **must** conform to the style guide in [`sw/device/lib/dif`](../../../sw/de
 
 DIFs **must** only depend on:
 
-*   the [freestanding C library headers](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/base/freestanding),
+*   the [freestanding C library headers](../../../sw/device/lib/base/freestanding),
 *   compiler runtime libraries (e.g. libgcc and compiler-rt),
 *   the bitfield library for manipulating bits in binary values (`sw/device/lib/base/bitfield.h`),
 *   the mmio library for interacting with memory-mapped registers (`sw/device/lib/base/mmio.h`),
@@ -119,7 +119,7 @@ It is important that the DIFs are documented alongside the hardware IP that they
 Each hardware IP block also contains a "programmers' guide" section, which tells programmers how to use the hardware interfaces correctly, using prose descriptions and relevant diagrams.
 The prose descriptions should include references to relevant DIF functions.
 
-Programmers' guides **should** primarily refer to the [Software API Documentation](../../../sw/README.md#opentitan-software-api-documentation).
+Programmers' guides **should** primarily refer to the [Software API Documentation](../../../sw/README.md#pavona-software-api-documentation).
 Programmers' guides **should not** contain standalone examples that do not match how we implement DIFs and can become out of date.
 The software API documentation includes full source code of the respective DIFs, should extra clarity be needed to explain how a hardware interface should be used.
 
