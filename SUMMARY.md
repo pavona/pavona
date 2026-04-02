@@ -24,9 +24,7 @@
 
 - [Introduction](./hw/README.md)
   - [Comportability](./doc/contributing/hw/comportability/README.md)
-    - [Design Methodology](./doc/contributing/hw/methodology.md)
-    - [Development Stages](./doc/contributing/hw/development_stages.md)
-    - [Hardware Design](./doc/contributing/hw/design.md)
+  - [Development Stages](./doc/contributing/hw/development_stages.md)
   - [Cores](./hw/doc/cores.md)
   - [IP Template Generation](./util/ipgen/README.md)
 
@@ -702,7 +700,8 @@
 
 # Contributing
 
-- [Contributing](./doc/contributing/README.md)
+- [Contributing](./CONTRIBUTING.md)
+- [Directory Structure](./doc/contributing/directory_structure.md)
 - [GitHub Notes](./doc/contributing/github_notes.md)
 - [Bazel Notes](./doc/contributing/bazel_notes.md)
 - [Continuous Integration](./doc/contributing/ci/README.md)
