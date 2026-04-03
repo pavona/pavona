@@ -50,7 +50,7 @@ class AccTraceEntry {
     Stray,
   };
 
-  virtual ~AccTraceEntry(){};
+  virtual ~AccTraceEntry() {};
 
   // Parse a trace entry from the RTL into this object. On an error, print a
   // message to stderr and return false.

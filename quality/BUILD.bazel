@@ -29,7 +29,7 @@ py_test(
 
 alias(
     name = "clang-format",
-    actual = "@lowrisc_rv32imcb_toolchain//:bin/clang-format",
+    actual = "@llvm_toolchain_llvm//:bin/clang-format",
 )
 
 alias(
