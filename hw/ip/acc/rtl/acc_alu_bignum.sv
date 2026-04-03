@@ -485,6 +485,7 @@ generate
   logic                     kmac_cfg_wr_en;
   logic [1:0]               kmac_cfg_intg_err;
   logic                     kmac_new_cfg_q;
+  logic                     kmac_cfg_mask_mode;
 
   logic [ExtWLEN-1:0] ispr_kmac_cfg_bignum_wdata_intg_blanked;
 
@@ -584,16 +585,23 @@ generate
                               (ispr_base_wr_en_i[0] | ispr_bignum_wr_en_i) &
                               ispr_wr_commit_i;
 
-  assign kmac_pw_wr_en = (ispr_init_i | kmac_pw_ispr_wr_en) &
-                         ((~kmac_msg0_valid_q & ~kmac_msg1_valid_q) | kmac_sent_last);
+  always_comb begin
+    if (kmac_cfg_mask_mode) begin
+      kmac_pw_wr_en = (ispr_init_i | kmac_pw_ispr_wr_en) &
+                      ((~kmac_msg0_valid_q & ~kmac_msg1_valid_q) | kmac_sent_last);
+      kmac_pending_writes = kmac_msg0_pending_write_o | kmac_msg1_pending_write_o;
+    end else begin
+      kmac_pw_wr_en = (ispr_init_i | kmac_pw_ispr_wr_en) &
+                      (~kmac_msg0_valid_q | kmac_sent_last);
+      kmac_pending_writes = kmac_msg0_pending_write_o;
+    end
+  end
 
   always_ff @(posedge clk_i) begin
     if (kmac_pw_wr_en | kmac_new_cfg_q | kmac_pw_rst) begin
       kmac_pw_intg_q  <= kmac_pw_intg_d;
     end
   end
-
-  assign kmac_pending_writes = kmac_msg0_pending_write_o | kmac_msg1_pending_write_o;
 
   // Make an FSM to control partial word reset
   // Need to have written to both share WSR
@@ -608,7 +616,11 @@ generate
     unique case (write_state_q)
       StMsgWait: begin
         if (kmac_msg0_fifo_wvalid) begin
-          write_state_d = StMsgShare0;
+          if (kmac_cfg_mask_mode) begin
+            write_state_d = StMsgShare0;
+          end else begin
+            kmac_pw_rst   = 1'b1;
+          end
         end else if (kmac_msg1_fifo_wvalid) begin
           write_state_d = StMsgShare1;
         end
@@ -868,6 +880,7 @@ generate
   logic [ExtDigestLen-1:0]              kmac_digest0_intg_q;
   logic [ExtDigestLen-1:0]              kmac_digest0_intg_d;
   logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest0_intg_err;
+  logic [DigestRegLen-1:0]              kmac_digest0_mux_val;
 
   // Common digest nets
   logic                                 kmac_digest_valid_q;
@@ -892,9 +905,16 @@ generate
     end
 
     assign kmac_digest0_no_intg_d[i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
-        urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] :
-        kmac_app_rsp_i.digest_share0[i_word*32+:32];
+        urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] : kmac_digest0_mux_val[i_word*32+:32];
   end
+
+  // This module carefully combines the digest shares and should not be optimized in synthesis
+  acc_digest_mux u_digest0_mux (
+    .digest_share0_i    (kmac_app_rsp_i.digest_share0[255:0]),
+    .digest_share1_i    (kmac_app_rsp_i.digest_share1[255:0]),
+    .mask_digest_en_i   (kmac_cfg_mask_mode),
+    .digest_share0_wsr_o(kmac_digest0_mux_val)
+  );
 
   // DIGEST SHARE 1
   logic [DigestRegLen-1:0]              kmac_digest1_no_intg_d;
@@ -946,7 +966,12 @@ generate
     unique case (eager_state_q)
       StDigestWait: begin
         if (kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest0]) begin
-          eager_state_d = StDigestShare0;
+          if (~kmac_cfg_mask_mode) begin
+            kmac_digest_rd_next = 1'b1;
+            eager_state_d = StDigestWait;
+          end else begin
+            eager_state_d = StDigestShare0;
+          end
         end else if (kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest1]) begin
           eager_state_d = StDigestShare1;
         end
@@ -1035,6 +1060,7 @@ generate
   logic kmac_idle_q;
   logic kmac_cfg_done;
   logic kmac_app_cfg_sent;
+  logic kmac_ispr;
 
   // Oversized and undersized msg handling
   logic kmac_msg0_req_err;
@@ -1063,15 +1089,21 @@ generate
   logic [11:0]                    kmac_msg1_ctr;
   logic                           kmac_msg1_ctr_err;
 
+  // Combined FIFO ready
+  logic kmac_msg_fifos_valid;
+
   assign kmac_cfg_sha3_mode       = sha3_pkg::sha3_mode_e'(kmac_cfg_intg_q[1:0]);
   assign kmac_cfg_keccak_strength = sha3_pkg::keccak_strength_e'(kmac_cfg_intg_q[4:2]);
   assign kmac_cfg_done            = kmac_cfg_intg_q[31];
+  assign kmac_cfg_mask_mode       = kmac_cfg_intg_q[20];
   assign kmac_cfg_msg_len         = kmac_cfg_intg_q[19:5];
   assign kmac_cfg_msg_len_words   = kmac_cfg_msg_len[14:3];
   assign kmac_cfg_msg_len_bytes   = kmac_cfg_msg_len[2:0];
   assign kmac_msg_err_clr         = kmac_app_rsp_i.error
                                     | sec_wipe_kmac_regs_urnd_i
                                     | kmac_msg0_ctr_err;
+
+  assign kmac_ispr = sec_wipe_kmac_regs_urnd_i | ispr_init_i;
 
   // We speculatively fetch the next digest but this is illegal for non XOF
   // modes. As such SHA will need to limit the speculative fetch based on strength.
@@ -1114,7 +1146,7 @@ generate
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       kmac_new_cfg_q <= 1'b0;
-    end else if (kmac_cfg_wr_en & !sec_wipe_kmac_regs_urnd_i & !ispr_init_i) begin
+    end else if (kmac_cfg_wr_en & !kmac_ispr) begin
       kmac_new_cfg_q <= 1'b1;
     end else begin
       kmac_new_cfg_q <= 1'b0;
@@ -1157,7 +1189,7 @@ generate
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       kmac_msg0_valid_q <= 1'b0;
-    end else if (|(kmac_msg0_wr_en) & !sec_wipe_kmac_regs_urnd_i & !ispr_init_i) begin
+    end else if (|(kmac_msg0_wr_en) & !kmac_ispr) begin
       kmac_msg0_valid_q <= 1'b1;
     end else if (kmac_msg0_fifo_wready) begin
       kmac_msg0_valid_q <= 1'b0;
@@ -1167,7 +1199,7 @@ generate
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       kmac_msg1_valid_q <= 1'b0;
-    end else if (|(kmac_msg1_wr_en) & !sec_wipe_kmac_regs_urnd_i & !ispr_init_i) begin
+    end else if (|(kmac_msg1_wr_en) & !kmac_ispr & kmac_cfg_mask_mode) begin
       kmac_msg1_valid_q <= 1'b1;
     end else if (kmac_msg1_fifo_wready) begin
       kmac_msg1_valid_q <= 1'b0;
@@ -1324,6 +1356,11 @@ generate
     .err_o              (kmac_msg1_ctr_err)
   );
 
+  // All fifos for masked mode are rvalid
+  assign kmac_msg_fifos_valid = kmac_cfg_mask_mode ?
+                                kmac_msg0_fifo_rvalid && kmac_msg1_fifo_rvalid :
+                                kmac_msg0_fifo_rvalid;
+
   // Ensure that the read mask is at least the size of the cfg before asserting last
   assign packer_ctr_last       = (packer_rdata_mask_cnt >= {1'b0, kmac_cfg_msg_len_bytes});
 
@@ -1375,14 +1412,14 @@ generate
 
   // When there is an undersized message we artificially inject a last valid to finish the message
   assign kmac_app_req_o.valid = (kmac_write_cfg_to_app || kmac_inject_last_err) ?
-                                1'b1 : kmac_msg0_fifo_rvalid && kmac_msg1_fifo_rvalid &&
-                                      ~kmac_new_cfg_q && ~kmac_sent_last && ~kmac_msg_err_clr_q;
+                                1'b1 : kmac_msg_fifos_valid && ~kmac_new_cfg_q &&
+                                       ~kmac_sent_last && ~kmac_msg_err_clr_q;
 
   // The first word contains the cfg otherwise send the body
   assign kmac_app_req_o.data_share0 = kmac_write_cfg_to_app ?
                                       {59'b0, kmac_cfg_keccak_strength, kmac_cfg_sha3_mode} :
                                       kmac_msg0_fifo_rdata;
-  assign kmac_app_req_o.data_share1 = kmac_write_cfg_to_app ?
+  assign kmac_app_req_o.data_share1 = (kmac_write_cfg_to_app | ~kmac_cfg_mask_mode) ?
                                       64'b0 : kmac_msg1_fifo_rdata;
 
   // The strb will always be 8'hFF except for the CFG and last word

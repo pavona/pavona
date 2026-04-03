@@ -124,7 +124,7 @@ csrrs x23, mod5, x0
 
 bn.wsrr w1, 0x0 /* MOD 82a 4ea*/
 bn.not w2, w1
-li x23, 0x000008ea
+li x23, 0x001008ea
 csrrw x0, kmac_cfg, x23
 li x23, 0x0000001a
 csrrw x0, kmac_partial_write, x23
@@ -146,7 +146,9 @@ bn.wsrr w3, 0xb /* DIGEST */
 bn.wsrr w3, 0xc /* DIGEST SHARE1 */
 bn.wsrr w3, 0xc /* DIGEST SHARE1 */
 bn.wsrr w3, 0xc /* DIGEST SHARE1 */
-li x23, 0x800008ea /* STOP CFG 0x8000040a */
+bn.wsrr w2, 0xb
+csrrs x24, kmac_status, x0
+li x23, 0x801008ea /* STOP CFG 0x8000040a */
 csrrw x0, kmac_cfg, x23
 
 li x23, 0x53769ada
@@ -156,6 +158,24 @@ bn.wsrw 0x3, w3 /* ACC */
 bn.wsrr w4, 0xd
 bn.wsrr w5, 0x3
 
+bn.wsrr w1, 0x0 /* MOD 82a 4ea*/
+bn.not w2, w1
+li x23, 0x000008ea
+csrrw x0, kmac_cfg, x23
+li x23, 0x0000001a
+csrrw x0, kmac_partial_write, x23
+bn.wsrw 0x9, w1 /* MSG */
+li x23, 0x0000000d
+csrrw x0, kmac_partial_write, x23
+bn.wsrw 0x9, w1 /* MSG */
+bn.wsrw 0x9, w1 /* MSG */
+bn.wsrr w2, 0xb /* DIGEST SHARE0 */
+bn.wsrr w2, 0xb /* DIGEST SHARE0 */
+bn.wsrr w2, 0xb /* DIGEST */
+bn.wsrr w2, 0xb /* DIGEST */
+csrrs x24, kmac_status, x0
+li x23, 0x800008ea /* STOP CFG 0x8000040a */
+csrrw x0, kmac_cfg, x23
 
 # Note that some instructions used the fixed inputs (from w1 and w2) others use
 # results from previous instructions. When debugging an failure it is recommended

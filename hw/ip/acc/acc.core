@@ -37,6 +37,7 @@ filesets:
       - rtl/acc_rf_bignum_fpga.sv
       - rtl/acc_lsu.sv
       - rtl/acc_alu_base.sv
+      - rtl/acc_digest_mux.sv
       - rtl/acc_alu_bignum.sv
       - rtl/acc_mac_bignum.sv
       - rtl/bn_vec_core/unified_mul.sv

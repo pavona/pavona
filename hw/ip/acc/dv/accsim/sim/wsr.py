@@ -479,7 +479,7 @@ class KmacMsgWSR(WSR):
                 self._kmac._app_intf_writing = True
                 # Reset paritial write value after successful write
                 self._partial_ispr._used_share0 = True
-                if self._partial_ispr._used_share1 == True:
+                if (self._partial_ispr._used_share1 == True) or not self._kmac._masked_mode:
                     self._partial_ispr._value = 32
 
             # MSG SHARE1 Write
@@ -561,9 +561,10 @@ class KmacCfgWSR(WSR):
             else:
                 mode = self._value & 0b11
                 strength = (self._value >> 2) & 0b111
-                msg_len = self._value >> 5
+                msg_len = (self._value >> 5) & 0x7FFF # 15-bits for length
+                masked_mode = (self._value >> 20) & 0b1
                 self._kmac._reset()
-                self._kmac.set_configuration(mode, strength, msg_len)
+                self._kmac.set_configuration(mode, strength, msg_len, masked_mode)
         super().commit()
 
     def changes(self) -> Sequence[Trace]:
