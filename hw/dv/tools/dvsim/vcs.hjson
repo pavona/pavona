@@ -25,6 +25,8 @@
                // List multiple tops for the simulation. Prepend each top level with `-top`.
                "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
                "+incdir+{build_dir}",
+               // Turn on lint capability that shows specific missing ports
+               "+lint=TFIPC-L",
                // Turn on warnings for non-void functions called with return values ignored
                "+warn=SV-NFIVC",
                "+warn=noUII-L",
