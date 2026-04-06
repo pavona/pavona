@@ -297,9 +297,6 @@ use_repo(openocd, "openocd")
 freertos = use_extension("//third_party/freertos:extensions.bzl", "freertos")
 use_repo(freertos, "freertos")
 
-llvm_compiler_rt = use_extension("//third_party/llvm_compiler_rt:extensions.bzl", "llvm_compiler_rt")
-use_repo(llvm_compiler_rt, "llvm_compiler_rt")
-
 riscv_compliance = use_extension("//third_party/riscv-compliance:extensions.bzl", "riscv_compliance")
 use_repo(riscv_compliance, "riscv-compliance")
 
