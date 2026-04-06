@@ -1,0 +1,144 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ *
+ * SPDX-FileCopyrightText: 2023 'mdBook contributers' (https://github.com/rust-lang/mdBook)
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+/* Globals */
+
+:root {
+    --sidebar-width: 22vw;
+    --sidebar-resize-indicator-width: 8px;
+    --sidebar-resize-indicator-space: 2px;
+    --page-padding: 15px;
+    --content-max-width: 65vw;
+    --menu-bar-height: min(10vh, 60px);
+    --mono-font: "Fragment Mono", monospace;
+    --code-font-size: 0.875em; /* please adjust the ace font size accordingly in editor.js */
+
+    /* colors according to Pavona styling */
+    --pink: #F2BFBF;
+    --pink-bg: #F2BFBF50;
+    --coral: #FFBAA1;
+    --coral-bg: #FFBAA150;
+    --dark-bg: #1E3644;
+    --orange: #EB5A36;
+    --orange-bg: #ED640E50;
+    --grey-text: #666667;
+    --grey-link: #444444;
+    --grey-code: #333333;
+}
+
+/* Themes */
+
+.light {
+    --bg: #FFFFFF;
+    --fg: var(--dark-bg);
+
+    --sidebar-bg: #D95F4A; /* slightly less saturated orange */
+    --sidebar-fg: #FFFFFF;
+    --sidebar-non-existant: var(--grey-text);
+    --sidebar-active: var(--grey-link);
+    --sidebar-spacer: var(--sidebar-bg);
+    --sidebar-header-border-color: var(--grey-link);
+
+    --scrollbar: var(--sidebar-fg);
+
+    --icons: var(--dark-bg);
+    --icons-hover: #1e364475; /* dark-bg, 75% opacity */
+
+    --links: var(--orange);
+
+    --inline-code-color: var(--grey-code);
+
+    --theme-popup-bg: var(--sidebar-bg);
+    --theme-popup-border: var(--dark-bg);
+    --theme-hover: var(--coral-bg);
+
+    --quote-fg: #FFFFFF;
+    --quote-bg: var(--orange);
+    --quote-border: rgba(0 0 0 / 0);
+
+    --warning-border: rgba(0 0 0 / 0);
+
+    --table-border-color: var(--dark-bg);
+    --table-header-bg: var(--orange-bg);
+    --table-alternate-bg: #ED640E20; /* orange, 20% opacity */
+
+    --searchbar-border-color: #FFFFFF;
+    --searchbar-bg: #EEEEEE;
+    --searchbar-fg: var(--dark-bg);
+    --searchbar-shadow-color: var(--orange);
+    --searchresults-header-fg: #FFFFFF;
+    --searchresults-border-color: var(--dark-bg);
+    --searchresults-li-bg: #EEEEEE;
+    --search-mark-bg: var(--orange-bg);
+
+    --color-scheme: light;
+
+    --copy-button-filter: var(--icons);
+    --copy-button-filter-hover: var(--sidebar-active);
+
+    --code-highlight: #DEDEDE;
+}
+
+.dark {
+    --darker-bg: #EB5A3699;
+
+    --bg: var(--dark-bg);
+    --fg: #FFFFFF;
+
+    --sidebar-bg: var(--darker-bg);
+    --sidebar-fg: #FFFFFF;
+    --sidebar-non-existant: var(--grey-text);
+    --sidebar-active: #000000;
+    --sidebar-spacer: var(--sidebar-bg);
+    --sidebar-header-border-color: var(--orange-bg);
+
+    --scrollbar: var(--sidebar-fg);
+
+    --icons: var(--sidebar-fg);
+    --icons-hover: #FFFFFF75;
+
+    --links: var(--orange);
+
+    --inline-code-color: #DDDDDD;
+
+    --theme-popup-bg: var(--darker-bg);
+    --theme-popup-border: #FFFFFF;
+    --theme-hover: #444444;
+
+    --quote-fg: #FFFFFF;
+    --quote-bg: var(--orange);
+    --quote-border: rgba(0 0 0 / 0);
+
+    --warning-border: #ff8e00;
+
+    --table-border-color: #FFFFFF;
+    --table-header-bg: #666667;
+    --table-alternate-bg: rgba(255 255 255 / 7%);
+
+    --searchbar-border-color: var(--orange);
+    --searchbar-bg: #FFFFFF25;
+    --searchbar-fg: #EEEEEE;
+    --searchbar-shadow-color: var(--orange);
+    --searchresults-header-fg: #666;
+    --searchresults-border-color: #888;
+    --searchresults-li-bg: #252932;
+    --search-mark-bg: var(--orange);
+
+    --color-scheme: dark;
+
+    --copy-button-filter: var(--icons);
+    --copy-button-filter-hover: var(--sidebar-active);
+
+    --code-highlight: #FFFFFF40;
+}

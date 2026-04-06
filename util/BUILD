@@ -23,7 +23,7 @@ filegroup(
         "//util/tlgen:doc_files",
         "//util/topgen:doc_files",
         "//util/uvmdvgen:doc_files",
-    ],
+    ] + glob(["site/book-theme/**"]),
 )
 
 py_binary(

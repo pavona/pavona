@@ -17,6 +17,11 @@ git-repository-url = "https://github.com/pavona/pavona"
 edit-url-template = "https://github.com/pavona/pavona/edit/master/{path}"
 smart-punctuation = true
 mathjax-support = true
+theme = "util/site/book-theme"
+default_theme = "light"
+preferred_dark_theme = "dark"
+additional-css = ["util/site/book-theme/wavejson.css"]
+additional-js = ["util/site/book-theme/codeblock-conversions.js"]
 
 [output.html.print]
 enable = false
