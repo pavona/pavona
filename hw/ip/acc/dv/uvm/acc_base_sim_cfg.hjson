@@ -151,6 +151,15 @@
         "{gen_fixed} --src-dir {multi_err_dir} {acc_elf_dir}"
       ]
     }
+
+    // Run the random instruction generator to create errors in the KMAC
+    // AppIntf code snippet.
+    {
+      name: build_acc_rig_kmac_err_binary_mode
+      pre_run_cmds: [
+        "{gen_rnd} --count 1 {acc_elf_dir} --config kmac-err"
+      ]
+    }
   ]
 
   // List of test specifications.

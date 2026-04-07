@@ -185,34 +185,36 @@ The host CPU can clear this register when ACC is not running,
 by writing any value. Write attempts while ACC is running are ignored.
 - Offset: `0x1c`
 - Reset default: `0x0`
-- Reset mask: `0xff00ff`
+- Reset mask: `0x1ff01ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "bad_data_addr", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bad_insn_addr", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "call_stack", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "illegal_insn", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "loop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "key_invalid", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rnd_rep_chk_fail", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rnd_fips_chk_fail", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "imem_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dmem_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "reg_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bus_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bad_internal_state", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "illegal_bus_access", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "lifecycle_escalation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "fatal_software", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "bad_data_addr", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bad_insn_addr", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "call_stack", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "illegal_insn", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "loop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "key_invalid", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rnd_rep_chk_fail", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rnd_fips_chk_fail", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "kmac_recov_error", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}, {"name": "imem_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dmem_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "reg_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bus_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bad_internal_state", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "illegal_bus_access", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "lifecycle_escalation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "fatal_software", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "kmac_fatal_error", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                  |
-|:------:|:------:|:-------:|:---------------------|:---------------------------------------------|
-| 31:24  |        |         |                      | Reserved                                     |
-|   23   |   rw   |   0x0   | fatal_software       | A `FATAL_SOFTWARE` error was observed.       |
-|   22   |   rw   |   0x0   | lifecycle_escalation | A `LIFECYCLE_ESCALATION` error was observed. |
-|   21   |   rw   |   0x0   | illegal_bus_access   | An `ILLEGAL_BUS_ACCESS` error was observed.  |
-|   20   |   rw   |   0x0   | bad_internal_state   | A `BAD_INTERNAL_STATE` error was observed.   |
-|   19   |   rw   |   0x0   | bus_intg_violation   | A `BUS_INTG_VIOLATION` error was observed.   |
-|   18   |   rw   |   0x0   | reg_intg_violation   | A `REG_INTG_VIOLATION` error was observed.   |
-|   17   |   rw   |   0x0   | dmem_intg_violation  | A `DMEM_INTG_VIOLATION` error was observed.  |
-|   16   |   rw   |   0x0   | imem_intg_violation  | A `IMEM_INTG_VIOLATION` error was observed.  |
-|  15:8  |        |         |                      | Reserved                                     |
-|   7    |   rw   |   0x0   | rnd_fips_chk_fail    | An `RND_FIPS_CHK_FAIL` error was observed.   |
-|   6    |   rw   |   0x0   | rnd_rep_chk_fail     | An `RND_REP_CHK_FAIL` error was observed.    |
-|   5    |   rw   |   0x0   | key_invalid          | A `KEY_INVALID` error was observed.          |
-|   4    |   rw   |   0x0   | loop                 | A `LOOP` error was observed.                 |
-|   3    |   rw   |   0x0   | illegal_insn         | An `ILLEGAL_INSN` error was observed.        |
-|   2    |   rw   |   0x0   | call_stack           | A `CALL_STACK` error was observed.           |
-|   1    |   rw   |   0x0   | bad_insn_addr        | A `BAD_INSN_ADDR` error was observed.        |
-|   0    |   rw   |   0x0   | bad_data_addr        | A `BAD_DATA_ADDR` error was observed.        |
+|  Bits  |  Type  |  Reset  | Name                 | Description                                           |
+|:------:|:------:|:-------:|:---------------------|:------------------------------------------------------|
+| 31:25  |        |         |                      | Reserved                                              |
+|   24   |   rw   |   0x0   | kmac_fatal_error     | A `KMAC_FATAL_ERROR` error was observed."             |
+|   23   |   rw   |   0x0   | fatal_software       | A `FATAL_SOFTWARE` error was observed.                |
+|   22   |   rw   |   0x0   | lifecycle_escalation | A `LIFECYCLE_ESCALATION` error was observed.          |
+|   21   |   rw   |   0x0   | illegal_bus_access   | An `ILLEGAL_BUS_ACCESS` error was observed.           |
+|   20   |   rw   |   0x0   | bad_internal_state   | A `BAD_INTERNAL_STATE` error was observed.            |
+|   19   |   rw   |   0x0   | bus_intg_violation   | A `BUS_INTG_VIOLATION` error was observed.            |
+|   18   |   rw   |   0x0   | reg_intg_violation   | A `REG_INTG_VIOLATION` error was observed.            |
+|   17   |   rw   |   0x0   | dmem_intg_violation  | A `DMEM_INTG_VIOLATION` error was observed.           |
+|   16   |   rw   |   0x0   | imem_intg_violation  | A `IMEM_INTG_VIOLATION` error was observed.           |
+|  15:9  |        |         |                      | Reserved                                              |
+|   8    |   rw   |   0x0   | kmac_recov_error     | A "KMAC_RECOV_ERROR` recoverable error was observed." |
+|   7    |   rw   |   0x0   | rnd_fips_chk_fail    | An `RND_FIPS_CHK_FAIL` error was observed.            |
+|   6    |   rw   |   0x0   | rnd_rep_chk_fail     | An `RND_REP_CHK_FAIL` error was observed.             |
+|   5    |   rw   |   0x0   | key_invalid          | A `KEY_INVALID` error was observed.                   |
+|   4    |   rw   |   0x0   | loop                 | A `LOOP` error was observed.                          |
+|   3    |   rw   |   0x0   | illegal_insn         | An `ILLEGAL_INSN` error was observed.                 |
+|   2    |   rw   |   0x0   | call_stack           | A `CALL_STACK` error was observed.                    |
+|   1    |   rw   |   0x0   | bad_insn_addr        | A `BAD_INSN_ADDR` error was observed.                 |
+|   0    |   rw   |   0x0   | bad_data_addr        | A `BAD_DATA_ADDR` error was observed.                 |
 
 ## FATAL_ALERT_CAUSE
 Fatal Alert Cause Register
@@ -225,17 +227,18 @@ Refer to the "List of Errors" section for a detailed description of the
 errors.
 - Offset: `0x20`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x1ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "imem_intg_violation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "dmem_intg_violation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "reg_intg_violation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bus_intg_violation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bad_internal_state", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "illegal_bus_access", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lifecycle_escalation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fatal_software", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "imem_intg_violation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "dmem_intg_violation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "reg_intg_violation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bus_intg_violation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bad_internal_state", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "illegal_bus_access", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lifecycle_escalation", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fatal_software", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "kmac_fatal_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                 | Description                                  |
 |:------:|:------:|:-------:|:---------------------|:---------------------------------------------|
-|  31:8  |        |         |                      | Reserved                                     |
+|  31:9  |        |         |                      | Reserved                                     |
+|   8    |   ro   |   0x0   | kmac_fatal_error     | A `KMAC_FATAL_ERROR` error was observed.     |
 |   7    |   ro   |   0x0   | fatal_software       | A `FATAL_SOFTWARE` error was observed.       |
 |   6    |   ro   |   0x0   | lifecycle_escalation | A `LIFECYCLE_ESCALATION` error was observed. |
 |   5    |   ro   |   0x0   | illegal_bus_access   | A `ILLEGAL_BUS_ACCESS` error was observed.   |

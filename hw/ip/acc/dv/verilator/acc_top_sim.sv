@@ -294,6 +294,7 @@ module acc_top_sim #(
 
   // Convert from core_err_bits_t to err_bits_t
   assign acc_err_bits = '{
+    kmac_fatal_error:     core_err_bits.kmac_fatal_error,
     fatal_software:       core_err_bits.fatal_software,
     lifecycle_escalation: 0,
     illegal_bus_access:   0,
@@ -302,6 +303,7 @@ module acc_top_sim #(
     reg_intg_violation:   core_err_bits.reg_intg_violation,
     dmem_intg_violation:  core_err_bits.dmem_intg_violation,
     imem_intg_violation:  core_err_bits.imem_intg_violation,
+    kmac_recov_error:     core_err_bits.kmac_recov_error,
     rnd_fips_chk_fail:    core_err_bits.rnd_fips_chk_fail,
     rnd_rep_chk_fail:     core_err_bits.rnd_rep_chk_fail,
     key_invalid:          core_err_bits.key_invalid,

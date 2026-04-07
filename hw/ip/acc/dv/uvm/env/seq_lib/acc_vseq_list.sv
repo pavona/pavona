@@ -31,3 +31,4 @@
 `include "acc_mem_gnt_acc_err_vseq.sv"
 `include "acc_stack_addr_integ_chk_vseq.sv"
 `include "acc_partial_wipe_vseq.sv"
+`include "acc_kmac_intf_err_vseq.sv"

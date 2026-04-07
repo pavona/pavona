@@ -63,6 +63,10 @@ package acc_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } kmac_fatal_error;
+    struct packed {
+      logic        q;
+      logic        qe;
     } fatal_software;
     struct packed {
       logic        q;
@@ -92,6 +96,10 @@ package acc_reg_pkg;
       logic        q;
       logic        qe;
     } imem_intg_violation;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } kmac_recov_error;
     struct packed {
       logic        q;
       logic        qe;
@@ -153,6 +161,9 @@ package acc_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
+    } kmac_fatal_error;
+    struct packed {
+      logic        d;
     } fatal_software;
     struct packed {
       logic        d;
@@ -175,6 +186,9 @@ package acc_reg_pkg;
     struct packed {
       logic        d;
     } imem_intg_violation;
+    struct packed {
+      logic        d;
+    } kmac_recov_error;
     struct packed {
       logic        d;
     } rnd_fips_chk_fail;
@@ -202,6 +216,10 @@ package acc_reg_pkg;
   } acc_hw2reg_err_bits_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_fatal_error;
     struct packed {
       logic        d;
       logic        de;
@@ -246,24 +264,24 @@ package acc_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    acc_reg2hw_intr_state_reg_t intr_state; // [116:116]
-    acc_reg2hw_intr_enable_reg_t intr_enable; // [115:115]
-    acc_reg2hw_intr_test_reg_t intr_test; // [114:113]
-    acc_reg2hw_alert_test_reg_t alert_test; // [112:109]
-    acc_reg2hw_cmd_reg_t cmd; // [108:100]
-    acc_reg2hw_ctrl_reg_t ctrl; // [99:98]
-    acc_reg2hw_err_bits_reg_t err_bits; // [97:66]
+    acc_reg2hw_intr_state_reg_t intr_state; // [120:120]
+    acc_reg2hw_intr_enable_reg_t intr_enable; // [119:119]
+    acc_reg2hw_intr_test_reg_t intr_test; // [118:117]
+    acc_reg2hw_alert_test_reg_t alert_test; // [116:113]
+    acc_reg2hw_cmd_reg_t cmd; // [112:104]
+    acc_reg2hw_ctrl_reg_t ctrl; // [103:102]
+    acc_reg2hw_err_bits_reg_t err_bits; // [101:66]
     acc_reg2hw_insn_cnt_reg_t insn_cnt; // [65:33]
     acc_reg2hw_load_checksum_reg_t load_checksum; // [32:0]
   } acc_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    acc_hw2reg_intr_state_reg_t intr_state; // [107:106]
-    acc_hw2reg_ctrl_reg_t ctrl; // [105:105]
-    acc_hw2reg_status_reg_t status; // [104:96]
-    acc_hw2reg_err_bits_reg_t err_bits; // [95:80]
-    acc_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [79:64]
+    acc_hw2reg_intr_state_reg_t intr_state; // [111:110]
+    acc_hw2reg_ctrl_reg_t ctrl; // [109:109]
+    acc_hw2reg_status_reg_t status; // [108:100]
+    acc_hw2reg_err_bits_reg_t err_bits; // [99:82]
+    acc_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [81:64]
     acc_hw2reg_insn_cnt_reg_t insn_cnt; // [63:32]
     acc_hw2reg_load_checksum_reg_t load_checksum; // [31:0]
   } acc_hw2reg_t;
@@ -291,7 +309,7 @@ package acc_reg_pkg;
   parameter logic [7:0] ACC_CMD_CMD_RESVAL = 8'h 0;
   parameter logic [0:0] ACC_CTRL_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_CTRL_SOFTWARE_ERRS_FATAL_RESVAL = 1'h 0;
-  parameter logic [23:0] ACC_ERR_BITS_RESVAL = 24'h 0;
+  parameter logic [24:0] ACC_ERR_BITS_RESVAL = 25'h 0;
   parameter logic [0:0] ACC_ERR_BITS_BAD_DATA_ADDR_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_BAD_INSN_ADDR_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_CALL_STACK_RESVAL = 1'h 0;
@@ -300,6 +318,7 @@ package acc_reg_pkg;
   parameter logic [0:0] ACC_ERR_BITS_KEY_INVALID_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_RND_REP_CHK_FAIL_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_RND_FIPS_CHK_FAIL_RESVAL = 1'h 0;
+  parameter logic [0:0] ACC_ERR_BITS_KMAC_RECOV_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_IMEM_INTG_VIOLATION_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_DMEM_INTG_VIOLATION_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_REG_INTG_VIOLATION_RESVAL = 1'h 0;
@@ -308,6 +327,7 @@ package acc_reg_pkg;
   parameter logic [0:0] ACC_ERR_BITS_ILLEGAL_BUS_ACCESS_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_LIFECYCLE_ESCALATION_RESVAL = 1'h 0;
   parameter logic [0:0] ACC_ERR_BITS_FATAL_SOFTWARE_RESVAL = 1'h 0;
+  parameter logic [0:0] ACC_ERR_BITS_KMAC_FATAL_ERROR_RESVAL = 1'h 0;
   parameter logic [31:0] ACC_INSN_CNT_RESVAL = 32'h 0;
   parameter logic [31:0] ACC_INSN_CNT_INSN_CNT_RESVAL = 32'h 0;
   parameter logic [31:0] ACC_LOAD_CHECKSUM_RESVAL = 32'h 0;
@@ -345,8 +365,8 @@ package acc_reg_pkg;
     4'b 0001, // index[ 4] ACC_CMD
     4'b 0001, // index[ 5] ACC_CTRL
     4'b 0001, // index[ 6] ACC_STATUS
-    4'b 0111, // index[ 7] ACC_ERR_BITS
-    4'b 0001, // index[ 8] ACC_FATAL_ALERT_CAUSE
+    4'b 1111, // index[ 7] ACC_ERR_BITS
+    4'b 0011, // index[ 8] ACC_FATAL_ALERT_CAUSE
     4'b 1111, // index[ 9] ACC_INSN_CNT
     4'b 1111  // index[10] ACC_LOAD_CHECKSUM
   };

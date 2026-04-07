@@ -33,3 +33,5 @@ gen-weights:
   BadZeroLoop: 1
   MisalignedLoadStore: 1
   BadIspr: 1
+  # Disabled except for KMAC fatal error test
+  BadKmacAppReqInsn: 0

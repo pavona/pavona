@@ -27,6 +27,7 @@ from .gens.straight_line_insn import StraightLineInsn
 from .gens.app_req import KmacAppReqInsn
 from .gens.clear_wsr import ClearWsr
 
+from .gens.bad_app_req import BadKmacAppReqInsn
 from .gens.bad_at_end import BadAtEnd
 from .gens.bad_bnmovr import BadBNMovr
 from .gens.bad_branch import BadBranch
@@ -57,6 +58,7 @@ class SnippetGens:
         UntakenBranch,
 
         ECall,
+        BadKmacAppReqInsn,
         BadAtEnd,
         BadBNMovr,
         BadBranch,

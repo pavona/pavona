@@ -105,6 +105,7 @@
   doc: |
     Write to this CSR to set the configuration for KMAC message requests.
     Bit  [31]   Cfg Done
+    Bit  [20]   Masked Mode
     Bits [19:8] Number of 64-bit words in message
     Bits [7:5]  Number of bytes in final word
     Bits [4:2]  Keccak Strength
@@ -116,8 +117,6 @@
   read-only: true
   doc: |
     Contains status bits for KMAC operations and return digest
-    Bit [4]   MSG Undersized Error
-    Bit [3]   MSG Oversized Error
     Bit [2]   Digest error
     Bit [1]   KMAC Ready
     Bit [0]   Digest Done

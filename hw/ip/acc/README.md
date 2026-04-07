@@ -369,6 +369,7 @@ All read-write (RW) CSRs are set to 0 when ACC starts an operation (when 1 is wr
       <td>
         Write to this CSR to set the configuration for KMAC message requests.
         Bit  [31]   Cfg Done
+        Bit  [20]   Masked Mode
         Bits [19:8] Number of 64-bit words in message
         Bits [7:5]  Number of bytes in final word
         Bits [4:2]  Keccak Strength
@@ -382,8 +383,6 @@ All read-write (RW) CSRs are set to 0 when ACC starts an operation (when 1 is wr
       <td>KMAC_STATUS</td>
       <td>
         Contains status bits for KMAC operations and return digest
-        Bit [4]   MSG Undersized Error
-        Bit [3]   MSG Oversized Error
         Bit [2]   Digest error
         Bit [1]   KMAC Ready
         Bit [0]   Digest Done
@@ -564,7 +563,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x9</td>
       <td>RW</td>
-      <td><a name="kmac-msg0">KMAC_MSG0</a></td>
+      <td><a name="kmac-msg">KMAC_MSG</a></td>
       <td>
         The kmac message data share0 to send over the AppIntf.
         A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
@@ -573,34 +572,34 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0xA</td>
       <td>RW</td>
-      <td><a name="kmac-msg1">KMAC_MSG1</a></td>
+      <td><a name="kmac-digest">KMAC_DIGEST</a></td>
       <td>
-        The kmac message data share1 to send over the AppIntf.
-        A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
+        Return digest share 0 from AppIntf. In unmasked kmac_cfg this is the whole digest.
       </td>
     </tr>
     <tr>
       <td>0xB</td>
       <td>RW</td>
-      <td><a name="kmac-digest0">KMAC_DIGEST0</a></td>
+      <td><a name="acch">ACCH</a></td>
       <td>
-        Return digest share 0 from AppIntf.
+        The high 256-bits of the accumulator register used by the {{#acc-insn-ref BN.MULV}} instruction.
       </td>
     </tr>
     <tr>
       <td>0xC</td>
       <td>RW</td>
-      <td><a name="kmac-digest1">KMAC_DIGEST1</a></td>
+      <td><a name="kmac-msg1">KMAC_MSG1</a></td>
       <td>
-        Return digest share 1 from AppIntf.
+        The kmac message data share1 to send over the AppIntf. In unmasked kmac_cfg writing to this WSR is illegal.
+        A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
       </td>
     </tr>
     <tr>
       <td>0xD</td>
       <td>RW</td>
-      <td><a name="acch">ACCH</a></td>
+      <td><a name="kmac-digest1">KMAC_DIGEST1</a></td>
       <td>
-        The high 256-bits of the accumulator register used by the {{#acc-insn-ref BN.MULV}} instruction.
+        Return digest share 1 from AppIntf. In unmasked kmac_cfg reading from this WSR is illegal.
       </td>
     </tr>
   </tbody>

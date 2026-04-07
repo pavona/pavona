@@ -945,6 +945,7 @@ module acc
   assign hw2reg.err_bits.key_invalid.d = err_bits_q.key_invalid;
   assign hw2reg.err_bits.rnd_rep_chk_fail.d = err_bits_q.rnd_rep_chk_fail;
   assign hw2reg.err_bits.rnd_fips_chk_fail.d = err_bits_q.rnd_fips_chk_fail;
+  assign hw2reg.err_bits.kmac_recov_error.d = err_bits_q.kmac_recov_error;
   assign hw2reg.err_bits.imem_intg_violation.d = err_bits_q.imem_intg_violation;
   assign hw2reg.err_bits.dmem_intg_violation.d = err_bits_q.dmem_intg_violation;
   assign hw2reg.err_bits.reg_intg_violation.d = err_bits_q.reg_intg_violation;
@@ -953,6 +954,7 @@ module acc
   assign hw2reg.err_bits.illegal_bus_access.d = err_bits_q.illegal_bus_access;
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits_q.lifecycle_escalation;
   assign hw2reg.err_bits.fatal_software.d = err_bits_q.fatal_software;
+  assign hw2reg.err_bits.kmac_fatal_error.d = err_bits_q.kmac_fatal_error;
 
   assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & is_not_running_q;
   assign err_bits_d = err_bits_clear ? '0 : err_bits;
@@ -970,6 +972,7 @@ module acc
                                     reg2hw.err_bits.key_invalid,
                                     reg2hw.err_bits.rnd_rep_chk_fail,
                                     reg2hw.err_bits.rnd_fips_chk_fail,
+                                    reg2hw.err_bits.kmac_recov_error,
                                     reg2hw.err_bits.imem_intg_violation,
                                     reg2hw.err_bits.dmem_intg_violation,
                                     reg2hw.err_bits.reg_intg_violation,
@@ -977,7 +980,8 @@ module acc
                                     reg2hw.err_bits.bad_internal_state,
                                     reg2hw.err_bits.illegal_bus_access,
                                     reg2hw.err_bits.lifecycle_escalation,
-                                    reg2hw.err_bits.fatal_software};
+                                    reg2hw.err_bits.fatal_software,
+                                    reg2hw.err_bits.kmac_fatal_error};
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -1005,6 +1009,7 @@ module acc
   assign hw2reg.fatal_alert_cause.``NAME``.d = 1'b1;              \
   assign hw2reg.fatal_alert_cause.``NAME``.de = err_bits.``NAME;
 
+  `DEF_FAC_BIT(kmac_fatal_error)
   `DEF_FAC_BIT(fatal_software)
   `DEF_FAC_BIT(lifecycle_escalation)
   `DEF_FAC_BIT(illegal_bus_access)
@@ -1032,7 +1037,8 @@ module acc
   assign alert_test[AlertRecov] = reg2hw.alert_test.recov.q & reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = |{err_bits.fatal_software,
+  assign alerts[AlertFatal] = |{err_bits.kmac_fatal_error,
+                                err_bits.fatal_software,
                                 err_bits.lifecycle_escalation,
                                 err_bits.illegal_bus_access,
                                 err_bits.bad_internal_state,
@@ -1219,6 +1225,7 @@ module acc
 
   // Construct a full set of error bits from the core output
   assign err_bits = '{
+    kmac_fatal_error:     core_err_bits.kmac_fatal_error,
     fatal_software:       core_err_bits.fatal_software,
     lifecycle_escalation: non_core_err_bits_d.lifecycle_escalation,
     illegal_bus_access:   non_core_err_bits_d.illegal_bus_access,
@@ -1228,6 +1235,7 @@ module acc
     reg_intg_violation:   core_err_bits.reg_intg_violation,
     dmem_intg_violation:  core_err_bits.dmem_intg_violation,
     imem_intg_violation:  core_err_bits.imem_intg_violation,
+    kmac_recov_error:     core_err_bits.kmac_recov_error,
     rnd_fips_chk_fail:    core_err_bits.rnd_fips_chk_fail,
     rnd_rep_chk_fail:     core_err_bits.rnd_rep_chk_fail,
     key_invalid:          core_err_bits.key_invalid,

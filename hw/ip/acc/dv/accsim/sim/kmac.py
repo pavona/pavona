@@ -10,6 +10,7 @@
 
 import sys
 from typing import Optional, Union
+from .constants import ErrBits
 from Crypto.Hash import cSHAKE128, cSHAKE256, SHAKE128, SHAKE256, SHA3_224, \
     SHA3_256, SHA3_384, SHA3_512
 DEBUG_KMAC = True
@@ -216,7 +217,10 @@ class KmacBlock:
         self.start()
 
     def get_error(self) -> int:
-        return 0
+        err = 0
+        if (self.get_undersized()):
+            err |= ErrBits.KMAC_FATAL_ERROR
+        return err
 
     def get_ready(self) -> int:
         return self._app_intf_ready
@@ -284,7 +288,7 @@ class KmacBlock:
             self._app_intf_sending = True
 
             self._kmac_undersized_err = digest_err
-            kmac_debug_print("Inserting Artificial Last MSG")
+            kmac_debug_print(f"Inserting Artificial Last MSG {self._kmac_undersized_err}")
             self.message_done()
             self._app_intf_last = True        
 
@@ -652,6 +656,13 @@ class KmacBlock:
         if (self._app_intf_bytes_sent == self._msg_size):
             self._app_intf_last_latch = True
 
+        # KMAC is not ready but next word is last and oversized
+        if (self._msg_len != 0 and self._msg_len < self._APP_INTF_BYTES_PER_CYCLE and
+            (len(self._app_intf_fifo) > self._msg_len or
+             len(self._app_intf_share1_fifo) > self._msg_len)
+        ):
+            self._kmac_oversized_err = True
+
         self._app_intf_sending = False
         if msg_fifo_write_ready and not self._msg_fifo_packer_flushing and self._app_intf_ready:
             # Pass data from the application interface FIFO to the message FIFO.
@@ -712,8 +723,8 @@ class KmacBlock:
                 elif (
                     self._msg_len < self._APP_INTF_BYTES_PER_CYCLE
                     and self._msg_len != 0
-                    and (len(self._app_intf_fifo) >= self._msg_len or
-                        len(self._app_intf_share1_fifo >= self._msg_len))
+                    and (len(self._app_intf_fifo) >= self._msg_len and
+                         len(self._app_intf_share1_fifo) >= self._msg_len)
                 ):
                     if (len(self._app_intf_fifo) < 8):
                         # Flushing the APP FIFO has an extra clock cycle to read
@@ -799,9 +810,13 @@ class KmacBlock:
                 self._msg_fifo_packer_flushing = False
                 self._msg_fifo_packer_flush_ctr = 0
             kmac_debug_print(f"\tMSG FIFO FULL, flush ctr = {self._msg_fifo_packer_flush_ctr}")
+        
+        # Check for oversized in the current last word
         if self._msg_len == 0 and not self._app_intf_last:
             kmac_debug_print("\tAPP FIFO last")
             self.message_done()
+            if (len(self._app_intf_fifo) != 0 or len(self._app_intf_share1_fifo) != 0):
+                self._kmac_oversized_err = True
             self._app_intf_last = True
 
         self._app_intf_fifo_ready = self._app_intf_fifo_ready_next

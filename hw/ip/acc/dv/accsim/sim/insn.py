@@ -24,7 +24,7 @@ from .state import ACCState
 DEBUG_MEM = False
 DEBUG_BRANCH = False
 DEBUG_ARITH = False
-DEBUG_KMAC = False
+DEBUG_KMAC = True
 DEBUG_FLOW = False
 
 STACK_BENCH = False
@@ -597,6 +597,22 @@ class CSRRW(ACCInsn):
             ):
                 if DEBUG_KMAC:
                     eprint("\tBNWSRW to KMAC_PW stall")
+
+                # The following conditions cause a deadlock in execution
+                if (state.wsrs.KMAC_MSG1._pending_write_to_app_intf and
+                    not state.kmac.app_intf_share1_fifo_ready() and
+                    state.kmac.app_intf_fifo_ready() and
+                    state.kmac._masked_mode
+                ):
+                    state.stop_at_end_of_cycle(ErrBits.KMAC_FATAL_ERROR)
+
+                if (state.wsrs.KMAC_MSG0._pending_write_to_app_intf and
+                    not state.kmac.app_intf_fifo_ready() and
+                    state.kmac.app_intf_share1_fifo_ready() and
+                    state.kmac._masked_mode
+                ):
+                    state.stop_at_end_of_cycle(ErrBits.KMAC_FATAL_ERROR)
+
                 yield None
 
         # At this point, the CSR is either ready or unneeded. Read it if
@@ -1865,7 +1881,7 @@ class BNWSRR(ACCInsn):
                 # There's a pending EDN request. Stall for a cycle.
                 yield None
 
-        if self.wsr == 0xB:
+        if self.wsr == 0xA:
             # A read from KMAC_DIGEST0. If a digest value is not available, request_value()
             # initiates or continues the request for the next digest word from KMAC and
             # returns false. If a digest value is available, it returns True.
@@ -1873,10 +1889,14 @@ class BNWSRR(ACCInsn):
                 # There's a pending KMAC request. Stall for a cycle.
                 yield None
 
-        if self.wsr == 0xC:
+        if self.wsr == 0xD:
             # A read from KMAC_DIGEST1. If a digest value is not available, request_value()
             # initiates or continues the request for the next digest word from KMAC and
             # returns false. If a digest value is available, it returns True.
+            if not state.kmac._masked_mode:
+                state.stop_at_end_of_cycle(ErrBits.KMAC_RECOV_ERROR)
+                return
+
             while not state.wsrs.KMAC_DIGEST1.request_value_share1():
                 # There's a pending KMAC request. Stall for a cycle.
                 yield None
@@ -1918,14 +1938,30 @@ class BNWSRW(ACCInsn):
             while not state.wsrs.KMAC_MSG0.request_write():
                 if DEBUG_KMAC:
                     eprint("\tBNWSRW to KMAC_MSG0 stall")
+                # The following write will cause a deadlock by a full fifo
+                if (not state.wsrs.KMAC_MSG1._pending_write_to_app_intf and
+                    state.kmac.app_intf_share1_fifo_ready() and
+                    state.kmac._masked_mode
+                ):
+                    state.stop_at_end_of_cycle(ErrBits.KMAC_FATAL_ERROR)
+                    return None
                 yield None
 
-        if self.wsr == 0xA:
+        if self.wsr == 0xC:
             # A write to KMAC_MSG1 might stall, if the register has not yet pushed
             # all its contents to the FIFO connected to the KMAC app interface.
+            if not state.kmac._masked_mode:
+                state.stop_at_end_of_cycle(ErrBits.KMAC_RECOV_ERROR)
+                return None
             while not state.wsrs.KMAC_MSG1.request_write():
                 if DEBUG_KMAC:
                     eprint("\tBNWSRW to KMAC_MSG1 stall")
+                # The following write will cause a deadlock by a full fifo
+                if (not state.wsrs.KMAC_MSG0._pending_write_to_app_intf and
+                    state.kmac.app_intf_fifo_ready()
+                ):
+                    state.stop_at_end_of_cycle(ErrBits.KMAC_FATAL_ERROR)
+                    return None
                 yield None
 
         val = state.wdrs.get_reg(self.wrs).read_unsigned()

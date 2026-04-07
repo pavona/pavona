@@ -259,8 +259,10 @@ class Model:
         if self.pqc:
             wsrs.touch_addr(0x8)    # KMAC_CFG
             wsrs.touch_addr(0x9)    # KMAC_MSG
-            wsrs.touch_addr(0xa)    # KMAC_DIGEST
-            wsrs.touch_addr(0xb)    # ACCH
+            wsrs.touch_addr(0xa)    # KMAC_MSG SHARE1
+            wsrs.touch_addr(0xb)    # KMAC_DIGEST
+            wsrs.touch_addr(0xc)    # KMAC_DIGEST SHARE1
+            wsrs.touch_addr(0xd)    # ACCH
 
         # Separate CSR list for KMAC as these should be off-limits from
         # non app_req generators, with the exception of MOD0
@@ -277,7 +279,9 @@ class Model:
             "MOD": 0x0,
             "KMAC_CFG": 0x8,
             "KMAC_MSG": 0x9,
-            "KMAC_DIGEST": 0xa
+            "KMAC_MSG1": 0xc,
+            "KMAC_DIGEST": 0xa,
+            "KMAC_DIGEST1": 0xd
         }
 
         # The current PC (the address of the next instruction that needs

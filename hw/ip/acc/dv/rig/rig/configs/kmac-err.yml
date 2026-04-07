@@ -1,0 +1,37 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# A custom configuration that doesn't generate any normal KMAC app requests.
+# Generators that can end the program are also removed except for the KMAC
+# error generator.
+
+gen-weights:
+  # Generator to start program
+  ClearWsr: 1
+  # Disable other generators
+  Branch: 0
+  CallStackRW: 0
+  EdgeLoadStore: 0
+  Jump: 0
+  Loop: 0
+  LoopDupEnd: 0
+  SmallVal: 0
+  StraightLineInsn: 0
+  KmacAppReqInsn: 0
+  KnownWDR: 0
+  UntakenBranch: 0
+  BadAtEnd: 0
+  BadBNMovr: 0
+  BadBranch: 0
+  BadCallStackRW: 0
+  BadDeepLoop: 0
+  BadLoadStore: 0
+  BadInsn: 0
+  BadGiantLoop: 0
+  BadZeroLoop: 0
+  MisalignedLoadStore: 0
+  BadIspr: 0
+  # Only enable ECall and BadKmacAppReq
+  ECall: 1
+  BadKmacAppReqInsn: 100

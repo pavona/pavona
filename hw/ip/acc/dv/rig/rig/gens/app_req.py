@@ -23,7 +23,7 @@ class KmacAppReqInsn(SnippetGen):
         transaction being too large for the remaining model fuel, the
         generator attempts to run again with half the message size. When
         the message size is <= 32B the generator produces the least number
-        of instructions and is guarenteed to fit.
+        of instructions and is guaranteed to fit.
     '''
 
     pqc_program = True
@@ -35,12 +35,18 @@ class KmacAppReqInsn(SnippetGen):
         self.bn_wsrw = self._get_named_insn(insns_file, 'bn.wsrw')
         self.bn_wsrw_wsr_op_type = self.bn_wsrw.operands[0].op_type
         self.bn_wsrw_wrs_op_type = self.bn_wsrw.operands[1].op_type
-        self._wsrw_wrs = 0
 
         # bn.wsrr insn
         self.bn_wsrr = self._get_named_insn(insns_file, 'bn.wsrr')
         self.bn_wsrr_wrd_op_type = self.bn_wsrr.operands[0].op_type
         self.bn_wsrr_wsr_op_type = self.bn_wsrr.operands[1].op_type
+
+        # bn.rshi insn
+        self.bn_rshi = self._get_named_insn(insns_file, 'bn.rshi')
+        self.bn_rshi_wrd_op_type = self.bn_rshi.operands[0].op_type
+        self.bn_rshi_wrs1_op_type = self.bn_rshi.operands[1].op_type
+        self.bn_rshi_wrs2_op_type = self.bn_rshi.operands[2].op_type
+        self.bn_rshi_imm_op_type = self.bn_rshi.operands[3].op_type
 
         # csrrw insn
         self.csrrw = self._get_named_insn(insns_file, 'csrrw')
@@ -66,6 +72,8 @@ class KmacAppReqInsn(SnippetGen):
         self.lui_imm_op_type = self.lui.operands[1].op_type
 
         self._target_mod_addr = 0
+        self._share0_wrs = 0
+        self._share1_wrs = 0
 
         # kmac msg configurations
         self._msg_size = 0
@@ -73,6 +81,7 @@ class KmacAppReqInsn(SnippetGen):
         self._sha3_mode = Sha3Mode.Sha3
         self._keccak_strength = KeccakStrength.L128
         self._cfg_done = 0
+        self._masked_mode = 0
 
         # li insn mode
         self._fill_li_mode = FillLiMode.CFG
@@ -133,6 +142,8 @@ class KmacAppReqInsn(SnippetGen):
         else:
             self._msg_size = random.randint(2048, 8192)
 
+        self._masked_mode = random.randint(0, 1)
+
         while True:
             insn_list = self._gen(model, program)
             if (
@@ -166,24 +177,7 @@ class KmacAppReqInsn(SnippetGen):
         """
         insn_list = []
 
-        size_behavior = random.choices(
-            ["normal", "undersized", "oversized"],
-            weights=[80, 10, 10]
-        )[0]
-
-        # Change message size based on behavior
-        if size_behavior == "undersized":
-            if self._msg_size > 2:
-                target_bytes = random.randint(1, self._msg_size - 1)
-            else:
-                target_bytes = self._msg_size
-        elif size_behavior == "oversized":
-            # Up to 64 bytes over
-            target_bytes = self._msg_size + random.randint(1, 64)
-        else:
-            target_bytes = self._msg_size
-
-        remaining_bytes = target_bytes
+        remaining_bytes = self._msg_size
 
         self._cfg_done = 0
         self._pw_size = 32
@@ -247,16 +241,24 @@ class KmacAppReqInsn(SnippetGen):
             # Do a kmac msg write
             self._fill_wsrw_mode = FillWsrwMode.MSG
             prog_wsrw_msg = self.fill_bn_wsrw(model)
+            insn_list.append(prog_wsrw_msg)
+            if self._masked_mode:
+                self._fill_wsrw_mode = FillWsrwMode.MSG1
+                prog_wsrw_msg1 = self.fill_bn_wsrw(model)
+                insn_list.append(prog_wsrw_msg1)
             remaining_bytes -= self._pw_size
             self._pw_size = 32
             current_write_count += 1
-            insn_list.append(prog_wsrw_msg)
 
         # Digest reads
         for _ in range(num_digest_rd):
             self._fill_wsrr_mode = FillWsrrMode.DIGEST
             prog_wsrr_digest = self.fill_bn_wsrr(model)
             insn_list.append(prog_wsrr_digest)
+            if self._masked_mode:
+                self._fill_wsrr_mode = FillWsrrMode.DIGEST1
+                prog_wsrr_digest = self.fill_bn_wsrr(model)
+                insn_list.append(prog_wsrr_digest)
 
         # Status read
         op_vals = []
@@ -303,8 +305,13 @@ class KmacAppReqInsn(SnippetGen):
 
         self._fill_wsrr_mode = FillWsrrMode.MSG
         prog_wsrr_msg = self.fill_bn_wsrr(model)
-        self._wsrw_wrs = prog_wsrr_msg.operands[0]
+        self._share0_wrs = prog_wsrr_msg.operands[0]
         insn_list.append(prog_wsrr_msg)
+
+        # Generate a second source for MSG data
+        if self._masked_mode:
+            prog_rshi_msg = self.fill_bn_rshi(model)
+            insn_list.append(prog_rshi_msg)
 
         return insn_list
 
@@ -449,7 +456,8 @@ class KmacAppReqInsn(SnippetGen):
         cfg_mask |= (self._sha3_mode.value & 0b11) << 0          # Sha3 Mode [1:0]
         cfg_mask |= (self._keccak_strength.value & 0b111) << 2   # Strength  [4:2]
         cfg_mask |= (byte_remainder & 0b111) << 5                # Msg Bytes [7:5]
-        cfg_mask |= (whole_words & 0x7FFFFF) << 8                # Msg Words [30:8]
+        cfg_mask |= (whole_words & 0xFFF) << 8                   # Msg Words [19:8]
+        cfg_mask |= (self._masked_mode & 0b1) << 20              # Masked Mode [20]
         cfg_mask |= (self._cfg_done & 0b1) << 31                 # Cfg Done  [31]
 
         lui_imm_op_val = cfg_mask >> 12
@@ -471,6 +479,40 @@ class KmacAppReqInsn(SnippetGen):
             raise ValueError("Unable to create immediate values")
         return lui_imm_op_val, addi_imm_op_val
 
+    def fill_bn_rshi(self, model: Model) -> ProgInsn:
+        ''' Function to generate bn.rshi insn opcode values '''
+        op_vals = []
+        bn_rshi_wrs2_val = self._share0_wrs
+        bn_rshi_wrd_val = bn_rshi_wrs2_val
+        bn_rshi_wrs1_val = bn_rshi_wrs2_val
+
+        # Generate a new WRD value
+        while bn_rshi_wrd_val == bn_rshi_wrs2_val:
+            bn_rshi_wrd_val = model.pick_operand_value(self.bn_rshi_wrd_op_type)
+            if bn_rshi_wrd_val is None:
+                raise ValueError("Unable to generate bn.rshi destination reg")
+
+        # Generate a new WRS1 value
+        while bn_rshi_wrs1_val in [bn_rshi_wrs2_val, bn_rshi_wrd_val]:
+            bn_rshi_wrs1_val = model.pick_operand_value(self.bn_rshi_wrs1_op_type)
+            if bn_rshi_wrs1_val is None:
+                raise ValueError("Unable to generate bn.rshi wsr1 reg")
+            
+        # Generate the immediate
+        bn_rshi_imm_val = model.pick_operand_value(self.bn_rshi_imm_op_type)
+        if bn_rshi_imm_val is None:
+            raise ValueError("Unable to generate bn.rshi wsr1 reg")
+        
+        op_vals.append(bn_rshi_wrd_val)
+        op_vals.append(bn_rshi_wrs1_val)
+        op_vals.append(bn_rshi_wrs2_val)
+        op_vals.append(bn_rshi_imm_val)
+
+        self._share1_wrs = bn_rshi_wrd_val
+
+        assert len(op_vals) == len(self.bn_rshi.operands)
+        return ProgInsn(self.bn_rshi, op_vals, None)
+
     def fill_bn_wsrr(self, model: Model) -> ProgInsn:
         ''' Function to generate wsrr insn opcode values '''
 
@@ -489,6 +531,8 @@ class KmacAppReqInsn(SnippetGen):
             bn_wsrr_wsr_val = model._kmac_wsr_addr["MOD"]
         elif (self._fill_wsrr_mode == FillWsrrMode.DIGEST):
             bn_wsrr_wsr_val = model._kmac_wsr_addr["KMAC_DIGEST"]
+        elif (self._fill_wsrr_mode == FillWsrrMode.DIGEST1):
+            bn_wsrr_wsr_val = model._kmac_wsr_addr["KMAC_DIGEST1"]
 
         op_vals.append(bn_wsrr_wsr_val)
         addr = bn_wsrr_wsr_val
@@ -506,12 +550,16 @@ class KmacAppReqInsn(SnippetGen):
         # Pick destination register
         if (self._fill_wsrw_mode == FillWsrwMode.MSG):
             bn_wsrw_wsr_val = model._kmac_wsr_addr["KMAC_MSG"]
+            bn_wsrw_wrs_val = self._share0_wrs
+        # Pick destination register
+        if (self._fill_wsrw_mode == FillWsrwMode.MSG1):
+            bn_wsrw_wsr_val = model._kmac_wsr_addr["KMAC_MSG1"]
+            bn_wsrw_wrs_val = self._share1_wrs
 
         op_vals.append(bn_wsrw_wsr_val)
         addr = bn_wsrw_wsr_val
 
-        # Pick source WSR Addr
-        bn_wsrw_wrs_val = self._wsrw_wrs
+        # Get source WSR Addr
         op_vals.append(bn_wsrw_wrs_val)
 
         assert len(op_vals) == len(self.bn_wsrw.operands)
@@ -541,7 +589,9 @@ class FillLiMode(Enum):
 class FillWsrrMode(Enum):
     MSG = auto()
     DIGEST = auto()
+    DIGEST1 = auto()
 
 
 class FillWsrwMode(Enum):
     MSG = auto()
+    MSG1 = auto()

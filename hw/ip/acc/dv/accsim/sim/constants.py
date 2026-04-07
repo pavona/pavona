@@ -32,6 +32,7 @@ class ErrBits(IntEnum):
     KEY_INVALID = 1 << 5
     RND_REP_CHK_FAIL = 1 << 6
     RND_FIPS_CHK_FAIL = 1 << 7
+    KMAC_RECOV_ERROR = 1 << 8
     IMEM_INTG_VIOLATION = 1 << 16
     DMEM_INTG_VIOLATION = 1 << 17
     REG_INTG_VIOLATION = 1 << 18
@@ -40,7 +41,8 @@ class ErrBits(IntEnum):
     ILLEGAL_BUS_ACCESS = 1 << 21
     LIFECYCLE_ESCALATION = 1 << 22
     FATAL_SOFTWARE = 1 << 23
-    MASK = (1 << 24) - 1
+    KMAC_FATAL_ERROR = 1 << 24
+    MASK = (1 << 25) - 1
 
 
 class LcTx(IntEnum):

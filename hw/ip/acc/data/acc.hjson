@@ -595,6 +595,11 @@
           resval: 0,
           desc: "An `RND_FIPS_CHK_FAIL` error was observed."
         }
+        { bits: "8",
+          name: "kmac_recov_error"
+          resval: 0,
+          desc: A "KMAC_RECOV_ERROR` recoverable error was observed."
+        }
 
         // Fatal errors. Keep in sync with list in FATAL_ALERT_CAUSE.
         { bits: "16",
@@ -636,6 +641,11 @@
           name: "fatal_software"
           resval: 0,
           desc: "A `FATAL_SOFTWARE` error was observed."
+        }
+        { bits: "24",
+          name: "kmac_fatal_error"
+          resval: 0,
+          desc: A `KMAC_FATAL_ERROR` error was observed."
         }
       ]
     }
@@ -693,6 +703,11 @@
           name: "fatal_software"
           resval: 0,
           desc: "A `FATAL_SOFTWARE` error was observed."
+        }
+        { bits: "8",
+          name: "kmac_fatal_error"
+          resval: 0,
+          desc: "A `KMAC_FATAL_ERROR` error was observed."
         }
       ]
     }

@@ -367,6 +367,14 @@ class ACCSim:
             self.state.stop_at_end_of_cycle(ErrBits.RND_REP_CHK_FAIL)
         if (self.state.wsrs.RND.fips_err_escalate):
             self.state.stop_at_end_of_cycle(ErrBits.RND_FIPS_CHK_FAIL)
+        if (self.state.wsrs.KMAC_MSG0._oversized_error):
+            self.state.stop_at_end_of_cycle(ErrBits.KMAC_FATAL_ERROR)
+        if (self.state.wsrs.KMAC_MSG1._oversized_error):
+            self.state.stop_at_end_of_cycle(ErrBits.KMAC_FATAL_ERROR)
+        if (self.state.kmac._kmac_oversized_err):
+            self.state.stop_at_end_of_cycle(ErrBits.KMAC_FATAL_ERROR)
+        if (self.state.kmac._kmac_undersized_err):
+            self.state.stop_at_end_of_cycle(ErrBits.KMAC_FATAL_ERROR)
 
         # Handle any pending injected error. Note that this has to run after
         # we've executed any instruction, to ensure we get a trace entry for

@@ -23,4 +23,18 @@
 
   // exclusion files
   vcs_cov_excl_files: ["{proj_root}/hw/ip/acc/dv/uvm/cov/acc_pqc_cov_excl.el"]
+
+  tests: [
+    // This test runs single binaries that specifically contain errors
+    // related to the KMAC AppIntf. Errors tested are both fatal and
+    // recoverable. The reseed value is not high as most other coverpoints
+    // are reached using the regular acc_single test.
+    {
+      name: "acc_kmac_err"
+      uvm_test_seq: "acc_kmac_intf_err_vseq"
+      en_run_modes: ["build_acc_rig_kmac_err_binary_mode"]
+      reseed: 10
+    }
+  ]
+
 }

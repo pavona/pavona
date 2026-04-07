@@ -99,6 +99,14 @@
               "acc_urnd_err"]
     }
     {
+      name: kmac_error
+      desc: '''
+        Create bad transactions for the AppIntf that force ACC into a fatal error.
+      '''
+      stage: V2S
+      tests: ["acc_kmac_err"]
+    }
+    {
       name: back_to_back
       desc: '''
             Run sequences back-to-back

@@ -79,29 +79,29 @@
     Contains the configuration bits for sending KMAC messages.
     Also visible as a kmac_cfg CSR.
 
-- name: kmac_msg0
+- name: kmac_msg
   address: 9
   doc: |
     The kmac message data share0 to send over the AppIntf.
     A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
 
-- name: kmac_msg1
+- name: kmac_digest
   address: 10
   doc: |
-    The kmac message data share1 to send over the AppIntf.
-    A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
-
-- name: kmac_digest0
-  address: 11
-  doc: |
-    Return digest share 0 from AppIntf.
-
-- name: kmac_digest1
-  address: 12
-  doc: |
-    Return digest share 1 from AppIntf.
+    Return digest share 0 from AppIntf. In unmasked kmac_cfg this is the whole digest.
 
 - name: acch
-  address: 13
+  address: 11
   doc: |
     The high 256-bits of the accumulator register used by the {{#acc-insn-ref BN.MULV}} instruction.
+
+- name: kmac_msg1
+  address: 12
+  doc: |
+    The kmac message data share1 to send over the AppIntf. In unmasked kmac_cfg writing to this WSR is illegal.
+    A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
+
+- name: kmac_digest1
+  address: 13
+  doc: |
+    Return digest share 1 from AppIntf. In unmasked kmac_cfg reading from this WSR is illegal.

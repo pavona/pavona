@@ -68,6 +68,7 @@ filesets:
       - seq_lib/acc_mem_gnt_acc_err_vseq.sv: {is_include_file: true}
       - seq_lib/acc_stack_addr_integ_chk_vseq.sv: {is_include_file: true}
       - seq_lib/acc_partial_wipe_vseq.sv: {is_include_file: true}
+      - seq_lib/acc_kmac_intf_err_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
