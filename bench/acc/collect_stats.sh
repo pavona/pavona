@@ -9,7 +9,8 @@ set -e
 # Create the destination directory.
 hash=$(git log --pretty=format:'%h' -n 1)
 benchdir=$(dirname "$0")
-mkdir -p $benchdir/$hash
+dstdir="$benchdir/logs/$hash"
+mkdir -p $dstdir
 
 # Freshly test all targets. If they are set to collect statistics, these will
 # be gathered in the test logs.
@@ -25,7 +26,7 @@ do
     shortname=$(echo $target | cut -d ":" -f 2)
     testdir=$(echo $target | cut -d ":" -f 1 | cut -c 2-)
     logfile="bazel-testlogs/$testdir/$shortname/test.log"
-    statsfile="$benchdir/$hash/$shortname.stats"
+    statsfile="$dstdir/$shortname.stats"
     if grep -q "cycles" $logfile; then
       cp -f $logfile $statsfile
     else
