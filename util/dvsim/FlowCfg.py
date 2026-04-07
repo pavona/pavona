@@ -553,20 +553,23 @@ class FlowCfg():
         log.info("Results published successfully.")
 
     def _setup_ssh_env(self) -> dict:
-        """Start an ssh-agent, add the key via askpass, and return the env dict."""
+        """Return an env dict with SSH configured, using passphrase or deploy key."""
+        env = os.environ.copy()
+        env["GIT_SSH_COMMAND"] = "ssh -o StrictHostKeyChecking=no"
+
         passphrase = os.environ.get("SSH_KEY_PASSPHRASE")
+        if not passphrase:
+            # Rely on deploy key already configured in the environment
+            log.info("SSH_KEY_PASSPHRASE not set, assuming deploy key is available.")
+            return env
 
         with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
             f.write(f'#!/bin/sh\necho "{passphrase}"\n')
             askpass_script = f.name
         os.chmod(askpass_script, stat.S_IRWXU)
-
-        env = os.environ.copy()
         env["SSH_ASKPASS"] = askpass_script
         env["SSH_ASKPASS_REQUIRE"] = "force"
         env["DISPLAY"] = ""
-        env["GIT_SSH_COMMAND"] = "ssh -o StrictHostKeyChecking=no"
-
         try:
             agent = subprocess.run(["ssh-agent", "-s"], check=True, capture_output=True, text=True)
             for line in agent.stdout.splitlines():

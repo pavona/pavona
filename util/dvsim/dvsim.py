@@ -270,6 +270,24 @@ def parse_reseed_multiplier(as_str: str) -> float:
     return ret
 
 
+def check_ssh_git_access(repository: str, flag: str):
+    '''
+    Helper function that checks whether we have access to the provided repository
+    through a deploy key or through an environment variable.
+    '''
+    has_passphrase = bool(os.environ.get("SSH_KEY_PASSPHRASE"))
+    has_deploy_key = subprocess.run(
+        ["git", "ls-remote", repository],
+        capture_output=True,
+        env={**os.environ, "GIT_SSH_COMMAND": "ssh -o BatchMode=yes"}
+    ).returncode == 0
+
+    if not has_passphrase and not has_deploy_key:
+        log.fatal(f"--{flag} requires either SSH_KEY_PASSPHRASE to be set"
+                  " or a deploy key with access to the repository")
+        sys.exit(1)
+
+
 def parse_args():
     cfg_metavar = "<cfg-hjson-file>"
     parser = argparse.ArgumentParser(
@@ -629,7 +647,18 @@ def parse_args():
                       metavar="REPO",
                       help="Publish results to the given GitHub repository "
                            "(e.g. git@github.com:org/repo.git). "
-                           "Requires the SSH_KEY_PASSPHRASE environment variable to be set.")
+                           "Requires the SSH_KEY_PASSPHRASE environment variable to be set "
+                           "or the possession of a deploy key.")
+
+    pubg.add_argument("--publish-prev",
+                      metavar="REPO",
+                      help="Publish previously generated results to the given GitHub repository "
+                           "(e.g. git@github.com:org/repo.git). "
+                           "It only publishes the reports from the /latest subdirectories. "
+                           "Requires the SSH_KEY_PASSPHRASE environment variable to be set "
+                           "or the possession of a deploy key. "
+                           "Also requires the corresponding tool and flow to be passed from "
+                           "the sim_cfg or manually with the --tool and -i flags.")
 
     dvg = parser.add_argument_group('Controlling DVSim itself')
 
@@ -754,6 +783,16 @@ def main():
         cfg.print_list()
         sys.exit(0)
 
+    # Run --publish-prev if it was provided
+    if args.publish_prev is not None:
+        check_ssh_git_access(args.publish_prev, "publish-prev")
+        if args.items is None:
+            log.fatal("We need to know the regression to publish it! Set the regression with -i")
+            sys.exit(1)
+
+        cfg.publish_results(args.publish_prev, args.items[0])
+        sys.exit(0)
+
     # Purge the scratch path if --purge option is set.
     if args.purge:
         cfg.purge()
@@ -772,12 +811,13 @@ def main():
         cfg.deploy_objects()
         sys.exit(0)
 
-    # Error out if it is a non-publishable config
+    # Error out if it is a non-publishable config or if we don't have the passphrase
     if args.publish is not None:
         if not args.cov or not cfg.is_primary_cfg:
             log.fatal("--publish requires --cov to be enabled"
                       " and for the config file to be a batch sim_cfg")
             sys.exit(1)
+        check_ssh_git_access(args.publish, "publish")
 
     # Deploy the builds and runs
     if args.items:
