@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "main",
@@ -109,7 +110,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    { name:      "flash_ctrl.prim",
+    { name:      "flash_macro_wrapper",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
@@ -222,7 +223,7 @@
     rv_core_ibex.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
       "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
-      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
+      "flash_ctrl.core", "flash_macro_wrapper", "flash_ctrl.mem",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "acc", "keymgr", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg"
@@ -230,7 +231,7 @@
     rv_dm.sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
       "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
-      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
+      "flash_ctrl.core", "flash_macro_wrapper", "flash_ctrl.mem",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "acc", "keymgr", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg",

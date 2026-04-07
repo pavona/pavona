@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -19,7 +20,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   flash_phy_prim_item w_item[NumBanks];
   flash_phy_prim_item r_item[NumBanks];
   flash_phy_prim_item lm_item[NumBanks];
-  logic [PhyDataW-1:0] write_buffer[NumBanks][$];
+  logic [DataWidth-1:0] write_buffer[NumBanks][$];
 
   `uvm_component_new
 

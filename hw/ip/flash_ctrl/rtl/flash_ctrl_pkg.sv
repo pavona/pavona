@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -25,5 +26,18 @@ package flash_ctrl_pkg;
      256'hfa365df52da48cd752fb3a026a8e608f0098cfe5fa9810494829d0cd9479eb78
     }
   };
+
+  // Flash Program Operations Supported
+  typedef enum logic {
+    FlashProgNormal = 0,
+    FlashProgRepair = 1
+  } flash_prog_e;
+  parameter int ProgTypes = 2;
+
+  // Flash partition type
+  typedef enum logic {
+    FlashPartData = 1'b0,
+    FlashPartInfo = 1'b1
+  } flash_part_e;
 
 endpackage : flash_ctrl_pkg

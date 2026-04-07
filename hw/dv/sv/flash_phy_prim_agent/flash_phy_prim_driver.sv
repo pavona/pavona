@@ -1,9 +1,10 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 class flash_phy_prim_driver extends dv_base_driver #(.ITEM_T(flash_phy_prim_item),
-                                              .CFG_T (flash_phy_prim_agent_cfg));
+                                                     .CFG_T (flash_phy_prim_agent_cfg));
   `uvm_component_utils(flash_phy_prim_driver)
 
   // the base class provides the following handles for use:

@@ -1,30 +1,23 @@
 CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: ${instance_vlnv("lowrisc:ip:flash_ctrl_prim_reg_top:1.0")}
-description: "Generic register top for the FLASH wrapper"
+name: ${instance_vlnv("lowrisc:ip:flash_phy_macro_pkg:0.1")}
+description: "Flash phy interface to flash macro"
 virtual:
-  - lowrisc:virtual_ip:flash_ctrl_prim_reg_top
+  - lowrisc:virtual_ip:flash_phy_macro_pkg
 
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:tlul
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
-      - lowrisc:prim:subreg
     files:
-      - rtl/flash_ctrl_prim_reg_top.sv
+      - rtl/flash_phy_macro_pkg.sv
     file_type: systemVerilogSource
 
-
-parameters:
-  SYNTHESIS:
-    datatype: bool
-    paramtype: vlogdefine
-
-
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_rtl
-    toplevel: lc_ctrl

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,7 +16,7 @@ package flash_ctrl_env_pkg;
   import flash_ctrl_top_specific_pkg::*;
   import flash_ctrl_core_ral_pkg::*;
   import flash_ctrl_eflash_ral_pkg::*;
-  import flash_ctrl_prim_ral_pkg::*;
+  import flash_macro_wrapper_ral_pkg::*;
   import flash_ctrl_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
   import prim_mubi_pkg::*;
@@ -441,7 +442,9 @@ package flash_ctrl_env_pkg;
     end
   endfunction // flash_otf_print_data64
 
-  function automatic flash_dv_part_e get_part_name(flash_phy_pkg::flash_phy_prim_flash_req_t req);
+  function automatic flash_dv_part_e get_part_name(
+      input flash_phy_macro_pkg::flash_phy_macro_bank_req_t req
+  );
     flash_dv_part_e part;
 
     if (req.part == 0) return FlashPartData;

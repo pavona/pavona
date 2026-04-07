@@ -1,11 +1,15 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
 // Faux Flash Prog Control
 //
 
-module flash_ctrl_prog import flash_ctrl_top_specific_pkg::*; (
+module flash_ctrl_prog
+  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
+(
   input clk_i,
   input rst_ni,
 

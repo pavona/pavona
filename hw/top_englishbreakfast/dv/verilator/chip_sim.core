@@ -27,10 +27,9 @@ filesets:
       - lowrisc:dv:sim_sram
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:dv_test_status
-      - lowrisc:englishbreakfast_ip:flash_ctrl_prim_reg_top
+      - lowrisc:ip:flash_macro_wrapper_reg_top
       - lowrisc:prim:clock_div
       - lowrisc:prim_generic:all
-      - lowrisc:prim_generic:flash
 
     files:
       - chip_sim_tb.sv: { file_type: systemVerilogSource }

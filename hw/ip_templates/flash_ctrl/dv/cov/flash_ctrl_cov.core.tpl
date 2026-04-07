@@ -1,5 +1,6 @@
 CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:dv:flash_ctrl_cov")}
@@ -9,6 +10,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
+      - lowrisc:ip:flash_macro_wrapper
       - ${instance_vlnv("lowrisc:ip:flash_ctrl")}
     files:
       - flash_ctrl_cov_bind.sv

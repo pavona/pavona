@@ -1,5 +1,6 @@
 CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:flash_ctrl:0.1")}
@@ -8,11 +9,14 @@ description: "Flash Controller"
 filesets:
   files_rtl:
     depend:
+      - ${instance_vlnv("lowrisc:ip:flash_phy_macro_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_phy_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
       - lowrisc:ip:tlul
+      - lowrisc:ip:flash_macro_wrapper
       - lowrisc:prim:all
       - lowrisc:prim:count
       - lowrisc:prim:edge_detector
-      - lowrisc:prim:flash
       - lowrisc:prim:flop_2sync
       - lowrisc:prim:gf_mult
       - lowrisc:prim:lc_sync
@@ -20,7 +24,6 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:otp_ctrl_pkg
-      - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_reg")}
       - ${instance_vlnv("lowrisc:constants:top_pkg")}
       - lowrisc:ip:jtag_pkg
