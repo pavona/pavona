@@ -110,6 +110,7 @@ mapping:
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:darjeeling_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_darjeeling_ast_pkg"
   "lowrisc:virtual_constants:lc_ctrl_token_pkg": "lowrisc:darjeeling_constants:testing_lc_ctrl_token_pkg"
+  "lowrisc:virtual_ip:otp_ctrl_macro_pkg": "lowrisc:darjeeling_ip:otp_ctrl_macro_pkg"
   "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:darjeeling_constants:testing_rnd_cnst_pkg"
 
 parameters:
