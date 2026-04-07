@@ -356,7 +356,7 @@ def md_results_to_html(title, css_file, md_text, is_primary_cfg=False):
     if title != "":
         html_text += "  <title>{}</title>\n".format(title)
     html_text += "</head>\n"
-    html_text += "<body>\n"
+    html_text += "<body style=\"margin:0; padding:0;\">\n"
     html_text += "<div class=\"results\">\n"
     html_text += mistletoe.markdown(md_text)
     html_text += "</div>\n"
@@ -367,6 +367,11 @@ def md_results_to_html(title, css_file, md_text, is_primary_cfg=False):
     html_text = transform(html_text,
                           external_styles=css_file,
                           cssutils_logging_level=log.ERROR)
+    html_text = html_text.replace(
+        'width:80%',
+        'box-sizing:border-box; width:80%'
+    )
+    html_text = re.sub(r'(<div class="results"[^>]*) width="80%"', r'\1', html_text)
     if is_primary_cfg:
         html_text = html_styling_batch_coverage(html_text)
     return html_text
@@ -526,22 +531,6 @@ def html_styling_batch_coverage(html_text):
     tag tables with a class based on their column count for CSS styling
     when making a batch coverage report.
     """
-    # Fix table centering: replace whatever margin was inlined with explicit auto margins
-    html_text = re.sub(
-        r'(<table[^>]*style="[^"]*?)margin:[^;]+;',
-        r'\1margin-left:auto; margin-right:auto;',
-        html_text
-    )
-    # Break out of the constrained .results div and center on full viewport
-    html_text = html_text.replace(
-        "<table",
-        "<div style=\"width:100vw; position:relative; left:50%;"
-        "transform:translateX(-50%); overflow-x:auto;\"><table"
-    )
-    html_text = html_text.replace(
-        "</table>",
-        "</table></div>"
-    )
     soup = BeautifulSoup(html_text, "html.parser")
     table = soup.select_one("table")
     table["class"] = table.get("class", []) + ["col-12"]

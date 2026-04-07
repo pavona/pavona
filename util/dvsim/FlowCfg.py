@@ -545,6 +545,21 @@ class FlowCfg():
             shutil.copy2(latest_report, os.path.join(dest_dir, 'report.html'))
             log.info("Copied report for %s", item.name)
 
+            if self.args.cov_reports:
+                cov_dir = os.path.join(item.scratch_path, 'cov_report')
+                if not os.path.exists(cov_dir):
+                    log.warning("No coverage reports found for %s at %s, skipping.", item.name, 
+                                cov_dir)
+                else:
+                    cov_dest_dir = os.path.join(repo_dir,
+                                                f"{self.name}_{flow}",
+                                                f"{self.name}_{flow}_{self.timestamp}",
+                                                os.path.basename(item.scratch_path),
+                                                'cov_report')
+                    os.makedirs(cov_dest_dir, exist_ok=True)
+                    shutil.copytree(cov_dir, cov_dest_dir, dirs_exist_ok=True)
+                    log.info("Copied coverage reports for %s", item.name)
+
         subprocess.run(["git", "-C", repo_dir, "add", "-A"], check=True, env=env)
         subprocess.run(["git", "-C", repo_dir, "commit", "-m",
                         f"[dashboard] Update {self.name} {self.flow} {self.timestamp}"],
@@ -585,10 +600,21 @@ class FlowCfg():
     def clone_or_pull(self, repository: str, local_path: str, env: dict):
         """Clone the repo if it doesn't exist locally, otherwise pull latest."""
         try:
-            if not os.path.exists(local_path):
-                subprocess.run(["git", "clone", repository, local_path], check=True, env=env)
+            if os.path.exists(local_path):
+                result = subprocess.run(
+                    ["git", "-C", local_path, "remote", "get-url", "origin"],
+                    check=True, capture_output=True, text=True, env=env
+                )
+                existing_remote = result.stdout.strip()
+                if existing_remote != repository:
+                    log.warning("Existing repo at %s points to %s, expected %s. Recloning.",
+                                local_path, existing_remote, repository)
+                    shutil.rmtree(local_path)
+                    subprocess.run(["git", "clone", repository, local_path], check=True, env=env)
+                else:
+                    subprocess.run(["git", "-C", local_path, "pull"], check=True, env=env)
             else:
-                subprocess.run(["git", "-C", local_path, "pull"], check=True, env=env)
+                subprocess.run(["git", "clone", repository, local_path], check=True, env=env)
         except FileNotFoundError:
             log.error("git is not installed or not on PATH. Cannot publish results.")
             raise

@@ -636,6 +636,11 @@ def parse_args():
                       help=('Rather than building or running any tests, '
                             'analyze the coverage from the last run.'))
 
+    covg.add_argument("--cov-reports",
+                      action='store_true',
+                      help=('Enable collection of coverage data, '
+                            'and include the generated reports.'))
+
     pubg = parser.add_argument_group('Generating and publishing results')
 
     pubg.add_argument("--map-full-testplan",
@@ -735,6 +740,10 @@ def main():
     if args.publish:
         args.map_full_testplan = True
 
+    # Set coverage flag to true if passed the cov_reports flag
+    if args.cov_reports:
+        args.cov = True
+
     args.branch = resolve_branch(args.branch)
     proj_root_src, proj_root = resolve_proj_root(args)
     args.scratch_root = resolve_scratch_root(args.scratch_root, proj_root)
@@ -813,7 +822,7 @@ def main():
 
     # Error out if it is a non-publishable config or if we don't have the passphrase
     if args.publish is not None:
-        if not args.cov or not cfg.is_primary_cfg:
+        if (not args.cov and not args.cov_reports) or not cfg.is_primary_cfg:
             log.fatal("--publish requires --cov to be enabled"
                       " and for the config file to be a batch sim_cfg")
             sys.exit(1)

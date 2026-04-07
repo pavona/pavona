@@ -873,17 +873,15 @@ class SimCfg(FlowCfg):
                 report_status = run_results[self.cov_report_deploy]
                 if report_status == "P":
                     results_str += "\n## Coverage Results\n"
-                    # Link the dashboard page using "cov_report_page" value.
-                    if hasattr(self, "cov_report_page"):
+                    if self.args.cov_reports:
+                        # Link the dashboard page using "cov_report_page" value.
+                        if hasattr(self, "cov_report_page"):
+                            results_str += "\n### [Coverage Dashboard]"
+                            cov_report_page_path = "../../cov_report"
+                            cov_report_page_path += "/" + self.cov_report_page
+                            results_str += "({})\n\n".format(cov_report_page_path)
+                    else:
                         results_str += "\n### Coverage Dashboard\n\n"
-                        # TODO: modify to include differentiation between public and private
-                        # dashboard usage.
-                        # if self.args.publish:
-                        #     cov_report_page_path = "cov_report"
-                        # else:
-                        #     cov_report_page_path = "../../cov_report"
-                        # cov_report_page_path += "/" + self.cov_report_page
-                        # results_str += "({})\n\n".format(cov_report_page_path)
                     results_str += self.cov_report_deploy.cov_results
                     self.results_summary[
                         "Overall Coverage"] = self.cov_report_deploy.cov_total

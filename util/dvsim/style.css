@@ -8,8 +8,7 @@
  */
 
 .results {
-  width: 80%;
-  max-width: 960px;
+  box-sizing: border-box;
   padding-left: 40px;
   padding-right: 40px;
   margin: 0 auto;
@@ -33,13 +32,11 @@
 }
 
 .results table {
-  width: 90%;
   margin: 2% auto;
   border: 1px solid #f2f2f2;
   border-collapse: collapse;
   text-align: center;
   vertical-align: middle;
-  display: table;
   table-layout: auto;
 }
 
@@ -175,10 +172,12 @@
 }
 
 .results.index-page h1 {
+  width: 70%;
+  margin: 0 auto;
+  text-align: left;
   color: #000000;
   letter-spacing: 0.01em;
   font-weight: 600;
-  text-align: left;
   font-size: 2.5rem;
 }
 
@@ -201,8 +200,11 @@
 }
 
 .results.index-page table {
-  width: 100%;
-  margin: 0;
+  width: 70%;
+  margin: 0 auto;
   border: none;
   box-shadow: none;
+  position: static;
+  left: auto;
+  transform: none;
 }
