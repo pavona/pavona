@@ -23,7 +23,6 @@ rust_library(
         "@crate_index//:openssl",
         "@crate_index//:p256",
         "@crate_index//:serde",
-        "@hwtrust",
     ],
 )
 
