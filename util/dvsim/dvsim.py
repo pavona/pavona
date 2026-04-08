@@ -822,9 +822,13 @@ def main():
 
     # Error out if it is a non-publishable config or if we don't have the passphrase
     if args.publish is not None:
-        if (not args.cov and not args.cov_reports) or not cfg.is_primary_cfg:
-            log.fatal("--publish requires --cov to be enabled"
-                      " and for the config file to be a batch sim_cfg")
+        if cfg.flow == "sim":
+            if (not args.cov and not args.cov_reports) or not cfg.is_primary_cfg:
+                log.fatal("--publish requires --cov to be enabled for sim"
+                          " and for the config file to be a batch sim_cfg")
+                sys.exit(1)
+        elif not cfg.is_primary_cfg:
+            log.fatal("--publish needs the config file to be a batch cfg")
             sys.exit(1)
         check_ssh_git_access(args.publish, "publish")
 

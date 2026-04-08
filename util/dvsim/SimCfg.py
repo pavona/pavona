@@ -915,9 +915,13 @@ class SimCfg(FlowCfg):
         DEFAULT_VALUE = "-- %"
 
         for cfg in self.cfgs:
-            cov_scores = cfg.cov_report_deploy.cov_results_dict
-            cov_scores = {f"{key.capitalize()} Coverage": val for key, val in cov_scores.items()}
-            row = cfg.results_summary | cov_scores
+            if self.cov_report_deploy:
+                cov_scores = cfg.cov_report_deploy.cov_results_dict
+                cov_scores = {f"{key.capitalize()} Coverage": val for key,
+                              val in cov_scores.items()}
+                row = cfg.results_summary | cov_scores
+            else:
+                row = cfg.results_summary
             if row:
                 # convert name entry to relative link
                 row["Name"] = cfg._get_results_page_link(
@@ -928,9 +932,10 @@ class SimCfg(FlowCfg):
         if any(rows.values()):
             all_rows = [row for group in rows.values() for row in group]
             all_keys = list(dict.fromkeys(key for row in all_rows for key in row))
-            # Move the "Overall Coverage" key to the end
-            all_keys.remove("Overall Coverage")
-            all_keys.append("Overall Coverage")
+            # Move the "Overall Coverage" key to the end (only if coverage is enabled)
+            if self.cov_report_deploy:
+                all_keys.remove("Overall Coverage")
+                all_keys.append("Overall Coverage")
 
             for batchgroup, group_rows in rows.items():
                 if batchgroups:

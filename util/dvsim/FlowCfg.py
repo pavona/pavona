@@ -549,7 +549,7 @@ class FlowCfg():
             if self.args.cov_reports:
                 cov_dir = os.path.join(item.scratch_path, 'cov_report')
                 if not os.path.exists(cov_dir):
-                    log.warning("No coverage reports found for %s at %s, skipping.", item.name, 
+                    log.warning("No coverage reports found for %s at %s, skipping.", item.name,
                                 cov_dir)
                 else:
                     cov_dest_dir = os.path.join(repo_dir,
