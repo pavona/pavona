@@ -1,0 +1,29 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Weekly
+on:
+  schedule:
+    # Start weekly run at 2:00a GMT every Saturday morning.
+    # (7:00p PT, 10:00p ET, 3:00a CET)
+    - cron: "00 02 * * SAT"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  dvsim-all:
+    name: All weekly DVSim coverage simulation
+    uses: ./.github/workflows/dv-all.yml
+    secrets: inherit
+    with:
+      runner: "pavona-dv-large"
+      run-type: "weekly"
+      item: "weekly"
+      coverage: true
+      timeout-minutes: 9000 # 150 hours
+      dashboard: "git@github.com:pavona/internal-dashboard.git"
+      publish: true
+      reseed-source: "hw/dv/grading/grading_report.hjson"

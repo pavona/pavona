@@ -1,0 +1,74 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: DVSim All block-level tests
+on:
+  workflow_call:
+    inputs:
+      runner:
+        type: string
+        default: "pavona-dv"
+      run-type:
+        type: string
+        required: true
+      item:
+        type: string
+        required: true
+      tool:
+        type: string
+        default: "vcs"
+      coverage:
+        type: boolean
+        default: false
+      concurrent-jobs:
+        type: number
+        default: 0
+      vcs-version:
+        default: "U-2023.03-SP2"
+        type: string
+      timeout-minutes:
+        type: number
+        default: 1440  # 24 hours
+      dashboard:
+        type: string
+        default: "git@github.com:pavona/internal-dashboard.git"
+      publish:
+        type: boolean
+        default: true
+      reseed-source:
+        type: string
+
+jobs:
+  dv-all:
+    name: Run All Design Verification Tests
+    runs-on:
+      group: ${{ inputs.runner }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    # TODO: Filter DV jobs based on changed paths (`if-changed`).
+    - name: Prepare environment
+      id: prepare-env
+      uses: ./.github/actions/prepare-env
+      with:
+        service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+        ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+        ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        vcs-version: ${{ inputs.vcs-version }}
+
+    - name: All
+      if: ${{ success() || failure() }}
+      uses: ./.github/actions/dvsim
+      with:
+        run-type: ${{ inputs.run-type }}
+        sim-name: ${{ inputs.run-type }}-dv-all
+        hjson: hw/dv/all_sim_cfgs.hjson
+        item: ${{ inputs.item }}
+        coverage: ${{ inputs.coverage }}
+        concurrent-jobs: ${{ inputs.concurrent-jobs }}
+        dashboard: ${{ inputs.dashboard }}
+        publish: ${{ inputs.publish }}
+        reseed-source: ${{ inputs.reseed-source }}

@@ -1,0 +1,126 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Run DVSim
+description: Run hardware design verification tests using DVSim
+
+inputs:
+  run-type:
+    type: string
+    required: true
+  sim-name:
+    type: string
+    required: true
+  hjson:
+    type: string
+    required: true
+  item:
+    type: string
+  tool:
+    type: string
+    default: "vcs"
+  coverage:
+    type: boolean
+    default: false
+  concurrent-jobs:
+    type: number
+    default: 0
+  require-pass:
+    type: boolean
+    default: true
+  extra-dvsim-flags:
+    type: string
+    default: ""
+  vcs-version:
+    default: "U-2023.03-SP2"
+    type: string
+  fusesoc-core-path:
+    default: ""
+    type: string
+  dashboard:
+    type: string
+    default: "git@github.com:pavona/internal-dashboard.git"
+  publish:
+    type: boolean
+    default: true
+  reseed-source:
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Check if DVSim should be rerun
+      id: should_rerun
+      if: ${{ inputs.run-type == 'quick' }}
+      run: |
+        git fetch origin main
+        set +e
+        python3 -m ci.scripts.check_for_dvsim_rerun ${{ inputs.hjson }} origin/master $GITHUB_SHA
+        SHOULD_RERUN=$?
+        set -e
+        echo "SHOULD_RERUN=$SHOULD_RERUN" >> $GITHUB_OUTPUT
+        echo "Set SHOULD_RERUN to $SHOULD_RERUN"
+      shell: bash
+    - name: Setup SSH deploy key
+      id: ssh_setup
+      if: always()
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        cat >> ~/.ssh/known_hosts <<'EOF'
+        github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+        github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+        github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
+        EOF
+        chmod 600 ~/.ssh/known_hosts
+        eval "$(ssh-agent -s)"
+        echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+        echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
+        ssh-add - <<< "$DEPLOY_KEY" 2>/dev/null
+      env:
+        DEPLOY_KEY: ${{ secrets.DASHBOARD_UPLOAD_KEY }}
+      shell: bash
+    - name: Run DVSim
+      id: dvsim
+      if: ${{ inputs.run-type != 'quick' || steps.should_rerun.outputs.SHOULD_RERUN == '1' }}
+      run: |
+        COVERAGE=""
+        if [ "${{ inputs.coverage }}" == "true" ]; then
+          COVERAGE="--cov"
+        fi
+        MP=$(nproc)
+        if [ "${{ inputs.concurrent-jobs }}" != "0" ]; then
+          MP=${{ inputs.concurrent-jobs }}
+        fi
+        export FUSESOC_CORES=${{ inputs.fusesoc-core-path }}
+        DASH_REPO="${{ inputs.dashboard }}"
+        PUBLISH=""
+        if [ "${{ inputs.publish }}" == "true" ]; then
+          PUBLISH="--publish"
+        fi
+        RESEED=""
+        if [ -n "${{ inputs.reseed-source }}" ]; then
+          RESEED="-rs ${{ inputs.reseed-source }}"
+        fi
+        util/dvsim/dvsim.py $COVERAGE \
+          ${{ inputs.hjson }} \
+          -t ${{ inputs.tool }} \
+          -mp $MP \
+          -i ${{ inputs.item }} ${{ inputs.extra-dvsim-flags }} \
+          ${PUBLISH} ${DASH_REPO} \
+          ${RESEED}
+          || ! ${{ inputs.require-pass }}
+      shell: bash
+    - run: 'mkdir -p scratch/'
+      shell: bash
+      if: ${{ always() && env.SHOULD_RERUN == '1' }}
+    - uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: results-${{ inputs.sim-name }}
+        path: scratch/
+    - name: Clear scratch directory
+      if: always()
+      run: rm -rf scratch/
+      shell: bash

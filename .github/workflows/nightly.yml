@@ -121,3 +121,16 @@ jobs:
     secrets: inherit
     with:
       bitstream: chip_earlgrey_cw340
+
+  # DVSim nightly
+  dvsim-all:
+    name: All nightly DVSim coverage simulation
+    uses: ./.github/workflows/dv-all.yml
+    secrets: inherit
+    with:
+      item: "nightly"
+      run-type: "nightly"
+      coverage: true
+      timeout-minutes: 2880 # 48 hours
+      dashboard: "git@github.com:pavona/internal-dashboard.git"
+      publish: true
