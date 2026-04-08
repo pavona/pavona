@@ -497,7 +497,7 @@ class FlowCfg():
                                         relative_to)
         return "[%s](%s)" % (link_text, relative_link)
 
-    def publish_results(self, repository: str, flow: str):
+    def publish_results(self, repository: str, test: str):
         """Publish these results to a corresponding repository."""
         log.info("Publishing results to %s", repository)
         repo_dir = os.path.expanduser("./scratch/results_repo")
@@ -507,26 +507,27 @@ class FlowCfg():
 
         latest_batch_report = os.path.join(self.scratch_path, 'reports', 'latest', 'report.html')
         # Destination directory should be
-        dest_batch_dir = os.path.join(repo_dir, f"{self.name}_{flow}",
-                                      f"{self.name}_{flow}_{self.timestamp}",
+        dest_batch_dir = os.path.join(repo_dir, f"{self.name}_{test}_{self.flow}",
+                                      f"{self.name}_{test}_{self.flow}_{self.timestamp}",
                                       f"{self.name}", 'reports', 'latest')
         os.makedirs(dest_batch_dir, exist_ok=True)
         shutil.copy2(latest_batch_report, os.path.join(dest_batch_dir, 'report.html'))
         log.info("Copied report for %s", self.name)
 
-        self._write_index_html(os.path.join(repo_dir, f"{self.name}_{flow}"),
-                               f"{self.name}_{flow}",
-                               f"{self.name}_{flow}_index",
-                               f"{self.name}_{flow}_{self.timestamp}",
-                               os.path.join(f"{self.name}_{flow}_{self.timestamp}",
+        self._write_index_html(os.path.join(repo_dir, f"{self.name}_{test}_{self.flow}"),
+                               f"{self.name}_{test}_{self.flow}",
+                               f"{self.name}_{test}_{self.flow}_index",
+                               f"{self.name}_{test}_{self.flow}_{self.timestamp}",
+                               os.path.join(f"{self.name}_{test}_{self.flow}_{self.timestamp}",
                                             self.name,
                                             'reports', 'latest', 'report.html'))
 
         self._write_index_html(repo_dir,
                                "Reports",
                                "index",
-                               f"{self.name}_{flow}",
-                               f"{self.name}_{flow}/{self.name}_{flow}_index.html")
+                               f"{self.name}_{test}_{self.flow}",
+                               f"{self.name}_{test}_{self.flow}/"
+                               f"{self.name}_{test}_{self.flow}_index.html")
 
         shutil.copy2(os.path.join(self.proj_root, 'util', 'dvsim', 'style.css'), repo_dir)
 
@@ -536,8 +537,8 @@ class FlowCfg():
                 log.warning("No report found for %s at %s, skipping.", item.name, latest_report)
                 continue
             dest_dir = os.path.join(repo_dir,
-                                    f"{self.name}_{flow}",
-                                    f"{self.name}_{flow}_{self.timestamp}",
+                                    f"{self.name}_{test}_{self.flow}",
+                                    f"{self.name}_{test}_{self.flow}_{self.timestamp}",
                                     os.path.basename(item.scratch_path),
                                     'reports',
                                     'latest')
@@ -552,8 +553,8 @@ class FlowCfg():
                                 cov_dir)
                 else:
                     cov_dest_dir = os.path.join(repo_dir,
-                                                f"{self.name}_{flow}",
-                                                f"{self.name}_{flow}_{self.timestamp}",
+                                                f"{self.name}_{test}_{self.flow}",
+                                                f"{self.name}_{test}_{self.flow}_{self.timestamp}",
                                                 os.path.basename(item.scratch_path),
                                                 'cov_report')
                     os.makedirs(cov_dest_dir, exist_ok=True)
@@ -562,7 +563,7 @@ class FlowCfg():
 
         subprocess.run(["git", "-C", repo_dir, "add", "-A"], check=True, env=env)
         subprocess.run(["git", "-C", repo_dir, "commit", "-m",
-                        f"[dashboard] Update {self.name} {self.flow} {self.timestamp}"],
+                        f"[dashboard] Update {self.name}_{test}_{self.flow} {self.timestamp}"],
                        check=True, env=env)
         subprocess.run(["git", "-C", repo_dir, "push"], check=True, env=env)
         log.info("Results published successfully.")
