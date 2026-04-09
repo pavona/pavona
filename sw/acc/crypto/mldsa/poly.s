@@ -2255,7 +2255,7 @@ _loop_inner_decode_h:
         sw   a7, 0(t6)  /* h->vec[i].coeffs[sig[j]] = 1 */
 
 
-        addi a6, a3, 0 /* set sig[j - 1] from sig[j] */
+        addi a6, t1, 0 /* set sig[j - 1] from sig[j] */
         addi t5, t5, 1 /* j++ */
 
         /* j != sig[OMEGA + i] */
