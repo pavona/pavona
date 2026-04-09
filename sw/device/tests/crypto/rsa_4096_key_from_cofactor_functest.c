@@ -258,6 +258,59 @@ status_t keypair_from_q_test(void) {
   return run_key_from_cofactor(kTestPrimeQ, false);
 }
 
+status_t keypair_from_cofactor_bad_modulus_test(void) {
+  // Use a corrupted modulus (flip one word). The function should reject the
+  // cofactor/modulus mismatch.
+  uint32_t bad_modulus[kRsa4096NumWords];
+  memcpy(bad_modulus, kTestModulus, sizeof(kTestModulus));
+  bad_modulus[0] ^= 1;
+
+  otcrypto_const_word32_buf_t cofactor_share0 = {
+      .data = kTestPrimeP,
+      .len = kRsa4096CofactorNumWords,
+  };
+  uint32_t cofactor_share1_data[kRsa4096CofactorNumWords] = {0};
+  otcrypto_const_word32_buf_t cofactor_share1 = {
+      .data = cofactor_share1_data,
+      .len = ARRAYSIZE(cofactor_share1_data),
+  };
+  otcrypto_const_word32_buf_t modulus = {
+      .data = bad_modulus,
+      .len = ARRAYSIZE(bad_modulus),
+  };
+
+  otcrypto_key_config_t private_key_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa4096PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+  };
+  size_t keyblob_words =
+      ceil_div(kOtcryptoRsa4096PrivateKeyblobBytes, sizeof(uint32_t));
+  uint32_t keyblob[keyblob_words];
+  otcrypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob,
+      .keyblob_length = kOtcryptoRsa4096PrivateKeyblobBytes,
+  };
+
+  size_t public_key_words =
+      ceil_div(kOtcryptoRsa4096PublicKeyBytes, sizeof(uint32_t));
+  uint32_t public_key_data[public_key_words];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kTestKeyMode,
+      .key = public_key_data,
+      .key_length = kOtcryptoRsa4096PublicKeyBytes,
+  };
+
+  // This should fail because the modulus does not match p * q.
+  TRY_CHECK(!status_ok(otcrypto_rsa_keypair_from_cofactor(
+      kOtcryptoRsaSize4096, modulus, kTestPublicExponent, cofactor_share0,
+      cofactor_share1, &public_key, &private_key)));
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -265,5 +318,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, keypair_from_p_test);
   EXECUTE_TEST(test_result, keypair_from_q_test);
+  EXECUTE_TEST(test_result, keypair_from_cofactor_bad_modulus_test);
   return status_ok(test_result);
 }

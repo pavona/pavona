@@ -659,7 +659,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       modulus_eq = hardened_memeq(modulus.data, pk->n.data, modulus.len);
-      return OTCRYPTO_OK;
+      break;
     }
     case kOtcryptoRsaSize3072: {
       if (public_key->key_length != sizeof(rsa_3072_public_key_t) ||
@@ -668,7 +668,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
       modulus_eq = hardened_memeq(modulus.data, pk->n.data, modulus.len);
-      return OTCRYPTO_OK;
+      break;
     }
     case kOtcryptoRsaSize4096: {
       if (public_key->key_length != sizeof(rsa_4096_public_key_t) ||
@@ -677,7 +677,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
       modulus_eq = hardened_memeq(modulus.data, pk->n.data, modulus.len);
-      return OTCRYPTO_OK;
+      break;
     }
     default:
       return OTCRYPTO_BAD_ARGS;

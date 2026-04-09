@@ -18,6 +18,9 @@ build --strip='never'
 # Enable -Wunused-parameter for cryptolib code.
 build --per_file_copt=sw/device/tests/crypto/.*\.c@-Wunused-parameter
 build --per_file_copt=sw/device/lib/crypto/.*\.c@-Wunused-parameter
+# Catch unreachable code in cryptolib and its tests.
+build --per_file_copt=sw/device/lib/crypto/.*\.c@-Wunreachable-code
+build --per_file_copt=sw/device/tests/crypto/.*\.c@-Wunreachable-code
 
 # Use --config=disable_hardening to disable hardening to measure the
 # impact of the hardened sequences on code size.
