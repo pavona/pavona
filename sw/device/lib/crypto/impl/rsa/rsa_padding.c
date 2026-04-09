@@ -640,7 +640,7 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
   encoded_message_bytes[0] = 0x00;
   memcpy(encoded_message_bytes + 1, seed, sizeof(seed));
-  memcpy(encoded_message_bytes + 1 + sizeof(seed), db, sizeof(db));
+  memcpy(encoded_message_bytes + 1 + sizeof(seed), db, db_bytelen);
 
   // Reverse the byte-order.
   reverse_bytes(encoded_message_len, encoded_message);
