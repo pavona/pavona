@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -14,29 +18,19 @@
  * curve point on P-384. To this end p384_isoncurve_proj is called to compute
  * both sides of the Weierstrass equation zy^2 = x^3 + axz^2 + bz^3  mod p.
  *
- * Finally, both sides of the equation are compared.
- * This routine sets `ok` to false if the check fails and immediately exits the
- * program. If the check succeeds, `ok` is unmodified.
+ * Finally, both sides of the equation are compared. This routine produces an
+ * error if the equation fails, so it should only be used in cases where this
+ * would indicate an ongoing attack (e.g. after a scalar multiplication for a
+ * point that was already checked).
  *
  * The routine runs in constant time.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  [w13, w12]:  domain parameter p (modulus)
- * @param[in]  x20:         dptr_x, pointer to dmem location containing projective
- *                                  x-coordinate of input point
- * @param[in]  x21:         dptr_y, pointer to dmem location containing projective
- *                                  y-coordinate of input point
- * @param[in]  x30:         dptr_sp, pointer to 704 bytes of scratchpad memory in dmem
- *
- * Scratchpad memory layout:
- * The routine expects at least 192 bytes of scratchpad memory at dmem
- * location 'scratchpad' (sp). Internally the scratchpad is used as follows:
- * dptr_sp     .. dptr_sp+63:   z-coordinate of input point, projective
- * dptr_sp+64  .. dptr_sp+127:  dptr_rhs, pointer to dmem location where right
- *                              side result will be stored
- * dptr_sp+128 .. dptr_sp+191:  dptr_lhs, pointer to dmem location where left
- *                              side result will be stored
+ * @param[in]  x20:         dptr_x, pointer to x-coordinate in dmem
+ * @param[in]  x21:         dptr_y, pointer to y-coordinate in dmem
+ * @param[in]  x30:         dptr_z, pointer to z-coordinate in dmem
  *
  * clobbered registers: x2, x3, w0 to w5, w10 to w17
  * clobbered flag groups: FG0
@@ -44,17 +38,16 @@
  .globl p384_isoncurve_proj_check
 p384_isoncurve_proj_check:
 
-  addi      x22, x30, 64
-  addi      x23, x22, 64
-
   jal       x1, p384_isoncurve_proj
 
   /* load result to WDRs for comparison */
   li        x2, 2
-  bn.lid    x2++,  0(x22)
-  bn.lid    x2++, 32(x22)
-  bn.lid    x2++,  0(x23)
-  bn.lid    x2++, 32(x23)
+  la        x3, lhs
+  bn.lid    x2++,  0(x3)
+  bn.lid    x2++, 32(x3)
+  la        x3, rhs
+  bn.lid    x2++,  0(x3)
+  bn.lid    x2++, 32(x3)
 
   /* Compare the two sides of the equation.
        FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
@@ -90,16 +83,11 @@ p384_isoncurve_proj_check:
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  [w13, w12]:  domain parameter p (modulus)
- * @param[in]  x20:         dptr_x,   pointer to dmem location containing projective
- *                                    x-coordinate of input point
- * @param[in]  x21:         dptr_y,   pointer to dmem location containing projective
- *                                    y-coordinate of input point
- * @param[in]  x22:         dptr_rhs, pointer to dmem location where right
- *                                    side result will be stored
- * @param[in]  x23:         dptr_lhs, pointer to dmem location where left side
- *                                    result will be stored
- * @param[in]  x30:         dptr_z,   pointer to dmem location containing projective
- *                                    z-coordinate of input point
+ * @param[in]  x20:         dptr_x, pointer to x-coordinate in dmem
+ * @param[in]  x21:         dptr_y, pointer to y-coordinate in dmem
+ * @param[in]  x30:         dptr_z, pointer to z-coordinate in dmem
+ * @param[out] dmem[lhs]:   left-hand side of equation.
+ * @param[out] dmem[rhs]:   right-hand side of equation.
  *
  * clobbered registers: x2, x3, w0 to w5, w10 to w17
  * clobbered flag groups: FG0
@@ -165,10 +153,11 @@ p384_isoncurve_proj:
   /* zy^2 = [w17,w16] <= z*y^2 = [w17,w16]*[w11,w10] */
   jal       x1, p384_mulmod_p
 
-  /* store result (left side): dmem[dptr_lhs] <= zy^2 = [w17,w16] */
+  /* store result (left side): dmem[lhs] <= zy^2 = [w17,w16] */
   li        x2, 16
-  bn.sid    x2++, 0(x23)
-  bn.sid    x2++, 32(x23)
+  la        x3, lhs
+  bn.sid    x2++, 0(x3)
+  bn.sid    x2++, 32(x3)
 
   /* load projective z-coordinate of curve point from dmem
      [w11, w10] <= dmem[dptr_z] = dmem[x30] */
@@ -224,25 +213,24 @@ p384_isoncurve_proj:
   bn.sel    w1,  w17, w11, C
 
   /* store result (right side)
-     dmem[dptr_rhs] <= x^3 + axz^2 + bz^3 mod p = [w1,w0] */
+     dmem[rhs] <= x^3 + axz^2 + bz^3 mod p = [w1,w0] */
   li        x2, 0
-  bn.sid    x2++, 0(x22)
-  bn.sid    x2++, 32(x22)
+  la        x3, rhs
+  bn.sid    x2++, 0(x3)
+  bn.sid    x2++, 32(x3)
 
   ret
 
-.data
+.bss
 
-/* x-coordinate */
-.globl x
-.weak x
+/* Left-hand side of Weierstrauss equation (local tmp buffer). */
 .balign 32
-x:
+.globl lhs
+lhs:
   .zero 64
 
-/* y-coordinate */
-.globl y
-.weak y
+/* Right-hand side of Weierstrauss equation (local tmp buffer). */
 .balign 32
-y:
+.globl rhs
+rhs:
   .zero 64

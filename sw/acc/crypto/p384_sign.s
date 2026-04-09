@@ -344,7 +344,6 @@ p384_sign:
   ret
 
 
-/* scratchpad memory */
 .section .bss
 
 .balign 32
@@ -390,10 +389,3 @@ d0:
 .weak d1
 d1:
   .zero 64
-
-/* 704 bytes of scratchpad memory */
-.balign 32
-.globl scratchpad
-.weak scratchpad
-scratchpad:
-  .zero 704

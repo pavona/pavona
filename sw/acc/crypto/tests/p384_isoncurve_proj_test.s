@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -30,10 +34,12 @@ p384_isoncurve_proj_test:
 
   /* load result to WDRs for comparison with reference */
   li        x2, 0
-  bn.lid    x2++, 0(x22)
-  bn.lid    x2++, 32(x22)
-  bn.lid    x2++, 0(x23)
-  bn.lid    x2++, 32(x23)
+  la        x3, lhs
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+  la        x3, rhs
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
 
   ecall
 

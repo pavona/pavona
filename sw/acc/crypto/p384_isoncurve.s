@@ -181,8 +181,9 @@ p384_isoncurve:
  * The routine makes use of the property that the domain parameter 'a' can be
  * written as a=-3 for the P-384 curve, hence the routine is limited to P-384.
  *
- * This routine sets `ok` to false if the check fails and immediately exits the
- * program. If the check succeeds, `ok` is unmodified.
+ * This routine causes a fatal error if the point is not on the curve, and
+ * should only be used in circumstances where this situation would indicate a
+ * fault attack.
  *
  * The routine runs in constant time.
  *
