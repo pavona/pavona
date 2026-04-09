@@ -212,7 +212,7 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
   new_state.total_len = state->total_len + msg_bits;
 
   // Set the initial state if at least one block has been received before now.
-  if (state->total_len >= kSha256MessageBlockBytes) {
+  if ((state->total_len >> 3) >= kSha256MessageBlockBytes) {
     HARDENED_TRY(
         acc_dmem_write(kSha256StateWords, state->H, kAccVarSha256State));
   }
