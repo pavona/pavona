@@ -758,6 +758,17 @@ acc_sim_test(
 )
 
 acc_sim_test(
+    name = "p384_proj_double_test",
+    srcs = [
+        "p384_proj_double_test.s",
+    ],
+    exp = "p384_proj_double_test.exp",
+    deps = [
+        "//sw/acc/crypto:p384_base",
+    ],
+)
+
+acc_sim_test(
     name = "p384_scalar_mult_test",
     srcs = [
         "p384_scalar_mult_test.s",

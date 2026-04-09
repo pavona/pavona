@@ -909,6 +909,203 @@ proj_add_p384:
 
   ret
 
+
+/**
+ * P-384 point doubling in projective space.
+ *
+ * Adds a (valid) point to itself in-place.
+ *
+ * Uses the "dbl-2007-bl-2" formula from the Explicit Formulas Database:
+ *
+ * https://www.hyperelliptic.org/EFD/g1p/auto-shortw-projective-3.html#doubling-dbl-2007-bl-2
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]  [w13, w12]: p, modulus of underlying field of P-384
+ * @param[in]  w31: all-zero.
+ * @param[in,out]  [w26, w25]: x, x-coordinate of input point P/result point R
+ * @param[in,out]  [w28, w27]: y, y-coordinate of input point P/result point R
+ * @param[in,out]  [w30, w29]: z, z-coordinate of input point P/result point R
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * clobbered registers: w0 to w11, w16 to w30, acc
+ * clobbered flag groups: FG0
+ */
+.globl proj_double_p384
+proj_double_p384:
+  /* 1: [w1, w0] = t0 <= X1-Z1 */
+  bn.sub    w16, w25, w29
+  bn.subb   w17, w26, w30
+  bn.add    w10, w16, w12
+  bn.addc   w11, w17, w13
+  bn.sel    w0, w10, w16, C
+  bn.sel    w1, w11, w17, C
+
+  /* 2: [w3, w2] = t1 <= X1+Z1 */
+  bn.add    w16, w25, w29
+  bn.addc   w17, w26, w30
+  bn.sub    w10, w16, w12
+  bn.subb   w11, w17, w13
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
+
+  /* 3: [w17, w16] = t2 <= t0*t1 */
+  bn.mov    w10, w0
+  bn.mov    w11, w1
+  bn.mov    w16, w2
+  bn.mov    w17, w3
+  jal       x1, p384_mulmod_p
+
+  /* 4: [w1, w0] = w <= 3*t2 */
+  bn.add    w2, w16, w16
+  bn.addc   w3, w17, w17
+  bn.sub    w10, w2, w12
+  bn.subb   w11, w3, w13
+  bn.sel    w2, w2, w10, C
+  bn.sel    w3, w3, w11, C
+  bn.add    w2, w2, w16
+  bn.addc   w3, w3, w17
+  bn.sub    w10, w2, w12
+  bn.subb   w11, w3, w13
+  bn.sel    w0, w2, w10, C
+  bn.sel    w1, w3, w11, C
+
+  /* 5: [w3, w2] = t3 <= Y1*Z1 */
+  bn.mov    w10, w27
+  bn.mov    w11, w28
+  bn.mov    w16, w29
+  bn.mov    w17, w30
+  jal       x1, p384_mulmod_p
+  bn.mov    w2, w16
+  bn.mov    w3, w17
+
+  /* 6: [w3, w2] = s <= 2*t3 */
+  bn.add    w16, w2, w2
+  bn.addc   w17, w3, w3
+  bn.sub    w10, w16, w12
+  bn.subb   w11, w17, w13
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
+
+  /* 7: [w5, w4] = ss <= s^2 */
+  bn.mov    w10, w2
+  bn.mov    w11, w3
+  bn.mov    w16, w2
+  bn.mov    w17, w3
+  jal       x1, p384_mulmod_p
+  bn.mov    w4, w16
+  bn.mov    w5, w17
+
+  /* 8: [w30, w29] = Z3 = sss <= s*ss */
+  jal       x1, p384_mulmod_p
+  bn.mov    w29, w16
+  bn.mov    w30, w17
+
+  /* 9: [w5, w4] = R <= Y1*s */
+  bn.mov    w16, w27
+  bn.mov    w17, w28
+  jal       x1, p384_mulmod_p
+  bn.mov    w4, w16
+  bn.mov    w5, w17
+
+  /* 10: [w7, w6] = RR <= R^2 */
+  bn.mov    w10, w16
+  bn.mov    w11, w17
+  jal       x1, p384_mulmod_p
+  bn.mov    w6, w16
+  bn.mov    w7, w17
+
+  /* 11: [w5, w4] = t4 <= X1*R */
+  bn.mov    w16, w25
+  bn.mov    w17, w26
+  jal       x1, p384_mulmod_p
+  bn.mov    w4, w16
+  bn.mov    w5, w17
+
+  /* 12: [w5, w4] = B <= 2*t4 */
+  bn.add    w16, w4, w4
+  bn.addc   w17, w5, w5
+  bn.sub    w10, w16, w12
+  bn.subb   w11, w17, w13
+  bn.sel    w4, w16, w10, C
+  bn.sel    w5, w17, w11, C
+
+  /* 13: [w9, w8] = t5 <= w^2 */
+  bn.mov    w10, w0
+  bn.mov    w11, w1
+  bn.mov    w16, w0
+  bn.mov    w17, w1
+  jal       x1, p384_mulmod_p
+  bn.mov    w8, w16
+  bn.mov    w9, w17
+
+  /* 14: [w26, w25] = t6 <= 2*B */
+  bn.add    w16, w4, w4
+  bn.addc   w17, w5, w5
+  bn.sub    w10, w16, w12
+  bn.subb   w11, w17, w13
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
+
+  /* 15: [w11, w10] = h <= t5-t6 */
+  bn.sub    w16, w8, w25
+  bn.subb   w17, w9, w26
+  bn.add    w10, w16, w12
+  bn.addc   w11, w17, w13
+  bn.sel    w10, w10, w16, C
+  bn.sel    w11, w11, w17, C
+
+  /* 16: [w26, w25] = X3 <= h*s */
+  bn.mov    w16, w2
+  bn.mov    w17, w3
+  jal       x1, p384_mulmod_p
+  bn.mov    w25, w16
+  bn.mov    w26, w17
+
+  /* 17: [w11, w10] = t7 <= B-h */
+  bn.sub    w16, w4, w10
+  bn.subb   w17, w5, w11
+  bn.add    w10, w16, w12
+  bn.addc   w11, w17, w13
+  bn.sel    w10, w10, w16, C
+  bn.sel    w11, w11, w17, C
+
+  /* 18: [w17, w16] = t8 <= w*t7 */
+  bn.mov    w16, w0
+  bn.mov    w17, w1
+  jal       x1, p384_mulmod_p
+
+  /* 19: [w7, w6] = t9 <= 2*RR */
+  bn.add    w2, w6, w6
+  bn.addc   w3, w7, w7
+  bn.sub    w10, w2, w12
+  bn.subb   w11, w3, w13
+  bn.sel    w6, w2, w10, C
+  bn.sel    w7, w3, w11, C
+
+  /* 20: [w28, w27] = Y3 <= t8-t9 */
+  bn.sub    w16, w16, w6
+  bn.subb   w17, w17, w7
+  bn.add    w10, w16, w12
+  bn.addc   w11, w17, w13
+  bn.sel    w27, w10, w16, C
+  bn.sel    w28, w11, w17, C
+
+  /* The proj_double routine returns (0, 0, 0) when called on the point at
+     infinity (any point where Y is nonzero and both X=0 and Z=0). Detect this
+     case and select a 1 for Y if all coordinates are 0. */
+  bn.addi   w3, w31, 1
+  bn.or     w0, w25, w27
+  bn.or     w0, w0, w29
+  bn.or     w1, w26, w28
+  bn.or     w1, w1, w30
+  bn.or     w0, w0, w1
+  bn.sel    w27, w3, w27, Z
+
+  ret
+
+
 /**
  * Convert projective coordinates of a P-384 curve point to affine coordinates
  *
