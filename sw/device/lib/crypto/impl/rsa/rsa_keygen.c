@@ -242,9 +242,10 @@ status_t rsa_keygen_from_cofactor_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_short_t *cofactor,
     uint32_t *session_token) {
   // Only the exponent F4 is supported.
-  if (public_key->e != kFixedPublicExponent) {
+  if (launder32(public_key->e) != kFixedPublicExponent) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(public_key->e, kFixedPublicExponent);
 
   // Load the RSA key generation app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
@@ -285,9 +286,10 @@ status_t rsa_keygen_from_cofactor_3072_start(
     const rsa_3072_public_key_t *public_key, const rsa_3072_short_t *cofactor,
     uint32_t *session_token) {
   // Only the exponent F4 is supported.
-  if (public_key->e != kFixedPublicExponent) {
+  if (launder32(public_key->e) != kFixedPublicExponent) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(public_key->e, kFixedPublicExponent);
 
   // Load the RSA key generation app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
@@ -328,9 +330,10 @@ status_t rsa_keygen_from_cofactor_4096_start(
     const rsa_4096_public_key_t *public_key, const rsa_4096_short_t *cofactor,
     uint32_t *session_token) {
   // Only the exponent F4 is supported.
-  if (public_key->e != kFixedPublicExponent) {
+  if (launder32(public_key->e) != kFixedPublicExponent) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(public_key->e, kFixedPublicExponent);
 
   // Load the RSA key generation app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppRsaKeygen));
