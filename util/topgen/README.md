@@ -123,12 +123,17 @@ $ make -C hw top
 
 It is possible to restrict what the tool should generate.
 
-```console
-$ cd ${REPO_TOP}
-$ ./util/topgen.py -h
-usage: topgen [-h] --topcfg TOPCFG --seedcfg SEEDCFG [--outdir OUTDIR] [--hjson-path HJSON_PATH] [--verbose] [--version-stamp VERSION_STAMP] [--no-top] [--no-xbar]
-              [--no-plic] [--no-rust] [--top-only] [--check-cm] [--xbar-only] [--plic-only] [--alert-handler-only] [--rust-only] [--top_ral]
-              [--alias-files ALIAS_FILES [ALIAS_FILES ...]] [--dv-base-names DV_BASE_NAMES [DV_BASE_NAMES ...]] [--get_blocks]
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/topgen.py --help -->
+```
+$ util/topgen.py --help
+usage: topgen [-h] --topcfg TOPCFG --seedcfg SEEDCFG [--outdir OUTDIR]
+              [--hjson-path HJSON_PATH] [--verbose]
+              [--version-stamp VERSION_STAMP] [--no-top] [--no-xbar]
+              [--no-plic] [--no-rust] [--top-only] [--check-cm] [--xbar-only]
+              [--plic-only] [--alert-handler-only] [--rust-only] [--top_ral]
+              [--alias-files ALIAS_FILES [ALIAS_FILES ...]]
+              [--dv-base-names DV_BASE_NAMES [DV_BASE_NAMES ...]]
+              [--get_blocks]
 
 options:
   -h, --help            show this help message and exit
@@ -137,32 +142,47 @@ options:
   --seedcfg SEEDCFG, -s SEEDCFG
                         top_{name} seed configuration file.
   --outdir OUTDIR, -o OUTDIR
-                        Target TOP directory. Module is created under rtl/. (default: dir(topcfg)/..)
+                        Target TOP directory. Module is created under rtl/.
+                        (default: dir(topcfg)/..)
   --hjson-path HJSON_PATH
-                        If defined, topgen uses supplied path to search for ip hjson. This applies only to ip's with the `reggen_only` attribute. If an hjson is located
-                        both in the conventional path and the alternate path, the alternate path has priority.
+                        If defined, topgen uses supplied path to search for ip
+                        hjson. This applies only to ip's with the
+                        `reggen_only` attribute. If an hjson is located both
+                        in the conventional path and the alternate path, the
+                        alternate path has priority.
   --verbose, -v         Verbose
   --version-stamp VERSION_STAMP
-                        If version stamping, the location of workspace version stamp file.
+                        If version stamping, the location of workspace version
+                        stamp file.
   --no-top              If defined, topgen doesn't generate top_{name} RTLs.
   --no-xbar             If defined, topgen doesn't generate crossbar RTLs.
-  --no-plic             If defined, topgen doesn't generate the interrupt controller RTLs.
+  --no-plic             If defined, topgen doesn't generate the interrupt
+                        controller RTLs.
   --no-rust             If defined, topgen doesn't generate Rust code.
   --top-only            If defined, the tool generates top RTL only
-  --check-cm            Check countermeasures. Check countermeasures of all modules in the top config. All countermeasures declared in the module's hjson file should be
-                        implemented in the RTL, and the RTL should only contain countermeasures declared there.
+  --check-cm            Check countermeasures. Check countermeasures of all
+                        modules in the top config. All countermeasures
+                        declared in the module's hjson file should be
+                        implemented in the RTL, and the RTL should only
+                        contain countermeasures declared there.
   --xbar-only           If defined, the tool generates crossbar RTLs only
-  --plic-only           If defined, the tool generates RV_PLIC RTL and Hjson only
-  --alert-handler-only  If defined, the tool generates alert handler hjson only
+  --plic-only           If defined, the tool generates RV_PLIC RTL and Hjson
+                        only
+  --alert-handler-only  If defined, the tool generates alert handler hjson
+                        only
   --rust-only           If defined, the tool generates top Rust code only
   --top_ral, -r         If set, the tool generates top level RAL model for DV
   --alias-files ALIAS_FILES [ALIAS_FILES ...]
-                        If defined, topgen uses supplied alias hjson file(s) to override the generic register definitions when building the RAL model. This argument is
-                        only relevant in conjunction with the `--top_ral` switch.
+                        If defined, topgen uses supplied alias hjson file(s)
+                        to override the generic register definitions when
+                        building the RAL model. This argument is only relevant
+                        in conjunction with the `--top_ral` switch.
   --dv-base-names DV_BASE_NAMES [DV_BASE_NAMES ...]
-                        Names or prefix for the DV register classes from which the register models are derived.
+                        Names or prefix for the DV register classes from which
+                        the register models are derived.
   --get_blocks          Only return the list of blocks and exit.
 ```
+<!-- END CMDGEN -->
 
 ## Top Hjson Schema
 

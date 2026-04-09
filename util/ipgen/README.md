@@ -156,12 +156,12 @@ Refer to the [`ipgen.renderer`](./renderer.py) module for more renderers availab
 The ipgen command-line tool lives in [`util/ipgen.py`](../ipgen.py).
 The first argument is typically the action to be executed.
 
-```console
-$ cd $REPO_TOP
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/ipgen.py --help -->
+```
 $ util/ipgen.py --help
 usage: ipgen.py [-h] ACTION ...
 
-optional arguments:
+options:
   -h, --help  show this help message and exit
 
 actions:
@@ -171,17 +171,19 @@ actions:
     describe  Show details about an IP template
     generate  Generate an IP block from an IP template
 ```
+<!-- END CMDGEN -->
 
 ### `ipgen generate`
 
-```console
-$ cd $REPO_TOP
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/ipgen.py generate --help -->
+```
 $ util/ipgen.py generate --help
-usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR -o OUTDIR [--force] [--config-file CONFIG_FILE]
+usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR -o OUTDIR [--force]
+                         --config-file CONFIG_FILE
 
 Generate an IP block from an IP template
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --verbose             More info messages
   -C TEMPLATE_DIR, --template-dir TEMPLATE_DIR
@@ -192,22 +194,30 @@ optional arguments:
   --config-file CONFIG_FILE, -c CONFIG_FILE
                         path to a configuration file
 ```
+<!-- END CMDGEN -->
 
 ### `ipgen describe`
 
-```console
-$ cd $REPO_TOP
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/ipgen.py generate --help -->
+```
 $ util/ipgen.py generate --help
-usage: ipgen.py describe [-h] [--verbose] -C TEMPLATE_DIR
+usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR -o OUTDIR [--force]
+                         --config-file CONFIG_FILE
 
-Show all information available for the IP template.
+Generate an IP block from an IP template
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --verbose             More info messages
   -C TEMPLATE_DIR, --template-dir TEMPLATE_DIR
                         IP template directory
+  -o OUTDIR, --outdir OUTDIR
+                        output directory for the resulting IP block
+  --force, -f           overwrite the output directory, if it exists
+  --config-file CONFIG_FILE, -c CONFIG_FILE
+                        path to a configuration file
 ```
+<!-- END CMDGEN -->
 
 
 ## Limitations

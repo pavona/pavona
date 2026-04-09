@@ -18,15 +18,16 @@ For more information about the concept of RACL itself, see the [general RACL ove
 
 ## Usage
 
-```shell
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/raclgen.py --help -->
+```
 $ util/raclgen.py --help
-usage:
-raclgen.py --doc DOC
-    Generates markdown documentation of the RACL configuration for a given top.
+usage: 
+    raclgen.py --doc DOC
+        Generates markdown documentation of the RACL configuration for a given top.
 
-raclgen.py --racl-config RACL_CONFIG --ip IP --mapping MAPPING [--if-name IF_NAME]
-    Generates the RACL policy selection vector for the given IP, RACL mapping, and interface name.
-
+    raclgen.py --racl-config RACL_CONFIG --ip IP --mapping MAPPING [--if-name IF_NAME]
+        Generates the RACL policy selection vector for the given IP, RACL mapping, and
+        interface name.
 
 options:
   -h, --help            show this help message and exit
@@ -36,5 +37,7 @@ options:
   --ip IP, -i IP        Path to IP block hjson file.
   --mapping MAPPING, -m MAPPING
                         Path to RACL mapping hjson file.
-  --if-name IF_NAME     TLUL path interface name. Required if multiple bus_interfaces exist.
+  --if-name IF_NAME     TLUL path interface name. Required if multiple
+                        bus_interfaces exist.
 ```
+<!-- END CMDGEN -->

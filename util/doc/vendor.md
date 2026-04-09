@@ -8,21 +8,32 @@ The `util/vendor` tool can go beyond simply copying in source files: it can patc
 
 ## Tool usage overview
 
-```text
-usage: vendor [-h] [--refresh-patches] [--commit] [--verbose] file
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/vendor.py --help -->
+```
+$ util/vendor.py --help
+usage: vendor [-h] [--update] [--refresh-patches] [--commit]
+              [--desc-override DESC_OVERRIDES] [--verbose]
+              file
 
-vendor, copy source code from upstream into this repository
+A tool to copy source code from upstream into this repository. For an
+introduction to using this tool, see doc/contributing/hw/vendor.md in this
+repository. For full documentation, see util/doc/vendor.md.
 
 positional arguments:
-  file               vendoring description file (*.vendor.hjson)
+  file                  vendoring description file (*.vendor.hjson)
 
-optional arguments:
-  -h, --help         show this help message and exit
-  --update, -U       Update locked version of repository with upstream changes
-  --refresh-patches  Refresh the patches from the patch repository
-  --commit, -c       Commit the changes
-  --verbose, -v      Verbose
+options:
+  -h, --help            show this help message and exit
+  --update, -U          Update locked version of repository with upstream
+                        changes
+  --refresh-patches     Refresh the patches from the patch repository
+  --commit, -c          Commit the changes
+  --desc-override DESC_OVERRIDES, -D DESC_OVERRIDES
+                        Override a setting in the description file. Format:
+                        -Dsome.key=value. Can be used multiple times.
+  --verbose, -v         Verbose
 ```
+<!-- END CMDGEN -->
 
 ## The vendor description file
 

@@ -13,6 +13,7 @@ from mako.template import Template
 from raclgen.lib import parse_racl_config, parse_racl_mapping, gen_md, gen_md_header, _read_hjson
 from reggen.ip_block import IpBlock
 import topgen.lib as topgen_lib
+import textwrap
 
 # This file is under $REPO_TOP/util/, so parents[1] gets back to the top.
 REPO_TOP = Path(__file__).resolve().parents[1]
@@ -20,13 +21,14 @@ REPO_TOP = Path(__file__).resolve().parents[1]
 
 def main():
     is_doc = "--doc" in sys.argv
-    parser = argparse.ArgumentParser(usage='''
-%(prog)s --doc DOC
-    Generates markdown documentation of the RACL configuration for a given top.
+    parser = argparse.ArgumentParser(usage="\b" + textwrap.indent(textwrap.dedent('''
+        %(prog)s --doc DOC
+            Generates markdown documentation of the RACL configuration for a given top.
 
-%(prog)s --racl-config RACL_CONFIG --ip IP --mapping MAPPING [--if-name IF_NAME]
-    Generates the RACL policy selection vector for the given IP, RACL mapping, and interface name.
-              ''')
+        %(prog)s --racl-config RACL_CONFIG --ip IP --mapping MAPPING [--if-name IF_NAME]
+            Generates the RACL policy selection vector for the given IP, RACL mapping, and
+            interface name.
+        '''), "    "))
 
     parser.add_argument('--doc',
                         '-d',

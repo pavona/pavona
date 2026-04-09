@@ -37,7 +37,9 @@ If needed, the default output directory can be overridden using the `-o` switch.
 
 # Help Output
 This is the help output from the tool (switch `-h`).
-```console
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/fpvgen.py --help -->
+```
+$ util/fpvgen.py --help
 usage: fpvgen [-h] [-o OUTDIR] [-c] file
 
         Boilerplate code generator for FPV testbenches. Can be used for
@@ -68,7 +70,7 @@ positional arguments:
                         primitive or a comportable IP (for which the -c switch
                         should be set).
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -o OUTDIR, --outdir OUTDIR
                         Path where to place the testbench code. This is
@@ -82,3 +84,4 @@ optional arguments:
                         that these CSR assertions need to be generated
                         separately using the regtool automation.
 ```
+<!-- END CMDGEN -->

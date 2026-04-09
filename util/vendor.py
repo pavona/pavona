@@ -6,10 +6,9 @@
 '''A tool to copy source code from upstream into this repository.
 
 For an introduction to using this tool, see doc/contributing/hw/vendor.md in this
-repository (on the internet at https://opentitan.org/book/doc/contributing/hw/vendor.html).
+repository.
 
-For full documentation, see util/doc/vendor.md (on the internet at
-https://opentitan.org/book/util/doc/vendor.html).
+For full documentation, see util/doc/vendor.md.
 
 '''
 

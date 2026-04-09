@@ -10,37 +10,44 @@ Also, as a part of our [DV methodology](../../doc/contributing/dv/methodology/RE
 
 ### Help switch (-h)
 Running the tool with `-h` switch provides a brief description of all available switches.
-```console
-$ util/uvmdvgen.py -h
-usage: uvmdvgen.py [-h] [-a] [-s] [-e] [-c] [-hr] [-hi] [-ha]
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/uvmdvgen.py --help -->
+```
+$ util/uvmdvgen.py --help
+usage: uvmdvgen.py [-h] [-a] [-s] [-e] [-c] [-hr] [-hi] [-ha] [-ne NUM_EDN]
                    [-ea agt1 agt2 [agt1 agt2 ...]] [-ao [hw/dv/sv]]
                    [-eo [hw/ip/<ip>]] [-v VENDOR]
                    [ip/block name]
 
-Command-line tool to autogenerate boilerplate DV testbench code extended from
-dv_lib / cip_lib
+Command-line tool to generate boilerplate DV testbench.
+
+The generated objects are extended from dv_lib / cip_lib.
 
 positional arguments:
   [ip/block name]       Name of the ip/block for which the UVM TB is being
-                        auto-generated
+                        generated. This should just name the block, not the
+                        path to it.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -a, --gen-agent       Generate UVM agent code extended from DV library
   -s, --has-separate-host-device-driver
                         IP / block agent creates a separate driver for host
-                        and device modes. (ignored if -a switch is not passed)
+                        and device modes. (Ignored if -a switch is not
+                        passed.)
   -e, --gen-env         Generate testbench UVM env code
   -c, --is-cip          Is comportable IP - this will result in code being
                         extended from CIP library. If switch is not passed,
-                        then the code will be extended from DV library
-                        instead. (ignored if -e switch is not passed)
+                        the code will be extended from DV library instead.
+                        (Ignored if -e switch is not passed.)
   -hr, --has-ral        Specify whether the DUT has CSRs and thus needs a UVM
                         RAL model. This option is required if either --is_cip
                         or --has_interrupts are enabled.
   -hi, --has-interrupts
                         CIP has interrupts. Create interrupts interface in tb
   -ha, --has-alerts     CIP has alerts. Create alerts interface in tb
+  -ne NUM_EDN, --num-edn NUM_EDN
+                        CIP has EDN connection. Create edn pull interface in
+                        tb
   -ea agt1 agt2 [agt1 agt2 ...], --env-agents agt1 agt2 [agt1 agt2 ...]
                         Env creates an interface agent specified here. They
                         are assumed to already exist. Note that the list is
@@ -52,18 +59,19 @@ optional arguments:
                         to './<name>')
   -eo [hw/ip/<ip>], --env-outdir [hw/ip/<ip>]
                         Path to place the full testbench code. It creates 3
-                        directories - dv, data and doc. The DV document and the
+                        directories - dv, data, and doc. The DV doc and the
                         testplan Hjson files are placed in the doc and data
                         directories respectively. These are to be merged into
                         the IP's root directory (with the existing data and
                         doc directories). Under dv, it creates 3 sub-
-                        directories - env, tb and tests to place all of the
-                        testbench sources. (default set to './<name>')
+                        directories - env, tb, and tests - to place all of the
+                        testbench sources. (default set to './<name>'.)
   -v VENDOR, --vendor VENDOR
                         Name of the vendor / entity developing the testbench.
-                        This is used to set the VLNV of the FuesSoC core
+                        This is used to set the VLNV of the FuseSoC core
                         files.
 ```
+<!-- END CMDGEN -->
 
 ### Generating UVM agent
 The boilerplate code for a UVM agent for an interface can be generated using the `-a` switch.
