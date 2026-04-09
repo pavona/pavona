@@ -4,7 +4,7 @@
 
 ![Top Level Block Diagram](top_earlgrey_block_diagram.svg)
 
-The OpenTitan Earl Grey chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
+The Earlgrey chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
 The block diagram is shown above and shows the system configuration, including the Ibex processor and all of the memories and comportable IPs.
 
 As can be seen in the block diagram, the system is split into a fast processor core domain that runs on a 100MHz jittery clock, and a peripheral domain that runs at 24MHz.
