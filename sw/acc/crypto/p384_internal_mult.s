@@ -1,3 +1,8 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -26,8 +31,6 @@
  *                          x-coordinate of input point
  * @param[in]  x21: dptr_y, pointer to dmem location containing affine
  *                          y-coordinate of input point
- * @param[in]  [w15, w14]: u[383:0] lower 384 bit of Barrett constant u for
- *                                    modulus p
  * @param[in]  [w13, w12]: p, modulus of P-384 underlying finite field
  * @param[in]  w31: all-zero
  * @param[in]  x18: dptr_p_p, pointer to dmem location to store resulting point
@@ -139,7 +142,6 @@ store_proj_randomize:
  * @param[in]  x20: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  x21: dptr_y, pointer to affine y-coordinate in dmem
  * @param[in]  x28: dptr_b, pointer to domain parameter b of P-384 in dmem
- * @param[in]  x30: dptr_sp, pointer to 704 bytes of scratchpad memory in dmem
  * @param[in]  [w13, w12]: p, modulus of P-384 underlying finite field
  * @param[in]  [w11, w10]: n, domain parameter of P-384 curve
  *                            (order of base point G)
@@ -147,15 +149,6 @@ store_proj_randomize:
  * @param[out]  [w26,w25]: x, x-coordinate of resulting point R (projective).
  * @param[out]  [w28,w27]: y, y-coordinate of resulting point R (projective).
  * @param[out]  [w30,w29]: z, z-coordinate of resulting point R (projective).
- *
- * Scratchpad memory layout:
- * The routine expects at least 704 bytes of scratchpad memory at dmem
- * location 'scratchpad' (sp). Internally the scratchpad is used as follows:
- * dptr_sp     .. dptr_sp+191: point P, projective
- * dptr_sp+192 .. dptr_sp+255: s0, 1st share of scalar
- * dptr_sp+256 .. dptr_sp+447: point 2P, projective
- * dptr_sp+448 .. dptr_sp+511: s1, 2nd share of scalar
- * dptr_sp+512 .. dptr_sp+703: point Q, projective
  *
  * Projective coordinates of a point are kept in dmem in little endian format
  * with the individual coordinates 512 bit aligned. The coordinates are stored
@@ -165,13 +158,13 @@ store_proj_randomize:
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x10, x11 to x13, x18, x26, x27, w0 to w30
- * clobbered flag groups: FG0
+ * clobbered registers: x2 to x7, x10 to x13, x18, x22 to x27, x30, w0 to w11, w16 to w31, acc
+ * clobbered flag groups: FG0, FG1
  */
  .globl scalar_mult_int_p384
 scalar_mult_int_p384:
 
-  /* set regfile pointers to in/out regs of Barrett routine. Set here to avoid
+  /* set regfile pointers to in/out regs of mulmod routine. Set here to avoid
      resetting in very call to point addition routine */
   li        x22, 10
   li        x23, 11
@@ -195,188 +188,189 @@ scalar_mult_int_p384:
   bn.rshi   w3, w3, w2 >> 192
   bn.rshi   w2, w2, w31 >> 192
 
-   /* store shares in scratchpad */
+  /* Store first scalar share to scratchpad. */
   li        x2, 0
-  bn.sid    x2++, 192(x30)
-  bn.sid    x2++, 224(x30)
-  bn.sid    x2++, 448(x30)
+  la        x3, scalarmult_k0
+  bn.sid    x2++,  0(x3)
+  bn.sid    x2++, 32(x3)
 
-  /* Dummy instruction to avoid consecutive share access. */
+  /* Dummy operation in between share accesses. */
   bn.xor    w31, w31, w31
 
-  bn.sid    x2++, 480(x30)
+  /* Store second scalar share to scratchpad. */
+  la        x3, scalarmult_k1
+  bn.sid    x2++,  0(x3)
+  bn.sid    x2++, 32(x3)
 
-  /* get randomized projective coodinates of curve point
-     P = (x_p, y_p, z_p) = dmem[dptr_sp] = (x*z mod p, y*z mod p, z) */
-  add       x18, x30, 0
+  /* Convert P to projective coordinates and copy to scratchpad. */
+  la        x18, scalarmult_P
   jal       x1, store_proj_randomize
+
+  /* load randomized point P */
+  li        x2, 25
+  bn.lid    x2++,   0(x18)
+  bn.lid    x2++,  32(x18)
+  bn.lid    x2++,  64(x18)
+  bn.lid    x2++,  96(x18)
+  bn.lid    x2++, 128(x18)
+  bn.lid    x2++, 160(x18)
 
   /* double point P
      2P = ([w30,w29], [w28,w27], [w26, w25]) <= 2*P */
-  add       x27, x30, x0
-  add       x26, x30, x0
+  addi      x27, x18, 0
   jal       x1, proj_add_p384
 
-  /* store point 2P in scratchpad @w30+256
-     dmem[dptr_sc+256] = [w30:w25] = 2P */
+  /* Store point 2P.
+     dmem[scalarmult_2P] = [w30:w25] = 2P */
+  la        x3, scalarmult_2P
   li        x2, 25
-  bn.sid    x2++, 256(x30)
-  bn.sid    x2++, 288(x30)
-  bn.sid    x2++, 320(x30)
-  bn.sid    x2++, 352(x30)
-  bn.sid    x2++, 384(x30)
-  bn.sid    x2++, 416(x30)
+  bn.sid    x2++,   0(x3)
+  bn.sid    x2++,  32(x3)
+  bn.sid    x2++,  64(x3)
+  bn.sid    x2++,  96(x3)
+  bn.sid    x2++, 128(x3)
+  bn.sid    x2++, 160(x3)
 
-  /* init point Q = (0,1,0) for double-and-add in scratchpad */
-  /* dmem[x26] = dmem[dptr_sc+512] = Q = (0,1,0) */
-  addi      x26, x30, 512
-  li        x2, 30
-  bn.addi   w30, w31, 1
-  bn.sid    x2++, 64(x26)
-  bn.sid    x2, 0(x26)
-  bn.sid    x2, 32(x26)
-  bn.sid    x2, 96(x26)
-  bn.sid    x2, 128(x26)
-  bn.sid    x2, 160(x26)
+  /* Initialize the point Q = (0, 1, 0) in registers [w30:w25]. */
+  bn.xor    w25, w25, w25
+  bn.xor    w26, w26, w26
+  bn.addi   w27, w26, 1
+  bn.xor    w28, w28, w28
+  bn.xor    w29, w29, w29
+  bn.xor    w30, w30, w30
 
-  /* double-and-add loop with decreasing index */
-  loopi     448, 85
+  /* Double-and-add loop with decreasing index.
 
-    /* double point Q
+     Loop invariants (i=448..0):
+       x27 = scalarmult_Q (tmp)
+       [w30:w25] = Q = ((k >> i) * P)
+       dmem[x4:x4+64] = P
+       dmem[x5:x5+64] = 2*P
+       dmem[x6:x6+64] = (k0 << (i+64)) % 2^512
+       dmem[x7:x7+64] = (k1 << (i+64)) % 2^512
+   */
+  la        x4, scalarmult_P
+  la        x5, scalarmult_2P
+  la        x6, scalarmult_k0
+  la        x7, scalarmult_k1
+  la        x27, scalarmult_Q
+  loopi     448, 67
+
+    /* Double point Q.
        Q = ([w30,w29], [w28,w27], [w26, w25]) <= Q + dmem[x27] */
-    add       x27, x26, x0
-    jal       x1, proj_add_p384
+    jal       x1, proj_double_p384
 
-    /* store Q in dmem
-     dmem[x26] = dmem[dptr_sc+512] <= [w30:w25] */
+    /* Store Q in dmem and load scalar shares, interleaving to avoid
+       consecutive share access.
+         dmem[scalarmult_Q] <= [w30:w25]
+         [w1:w0] <= dmem[scalarmult_k0]
+         [w3:w2] <= dmem[scalarmult_k1] */
     li        x2, 25
-    bn.sid    x2++, 0(x26)
-    bn.sid    x2++, 32(x26)
-    bn.sid    x2++, 64(x26)
-    bn.sid    x2++, 96(x26)
-    bn.sid    x2++, 128(x26)
-    bn.sid    x2++, 160(x26)
+    li        x3, 0
+    bn.sid    x2++,   0(x27)
+    bn.sid    x2++,  32(x27)
+    bn.lid    x3++,   0(x6)
+    bn.lid    x3++,  32(x6)
+    bn.sid    x2++,  64(x27)
+    bn.sid    x2++,  96(x27)
+    bn.lid    x3++,   0(x7)
+    bn.lid    x3++,  32(x7)
+    bn.sid    x2++, 128(x27)
+    bn.sid    x2++, 160(x27)
 
-    /* Probe if MSb of either of the two scalars (rnd or d-rnd) but not both
-       is 1.
-       If only one MSb is set, select P for addition.
-       If both MSbs are set, select 2P for addition.
-       (If neither MSB is set, 2P will be selected but result discarded.) */
-    li        x2, 0
-    bn.lid    x2++, 224(x30)
-    bn.lid    x2, 480(x30)
-    bn.xor    w8, w0, w1
-    /* Create conditional offeset into scratchpad.
-       if (s0[512] xor s1[512]) x27 <= x30 else x27 <= x30+256 */
-    csrrs     x3, FG0, x0
-    xori      x3, x3, -1
-    andi      x3, x3, 2
-    slli      x27, x3, 7
-    add       x27, x27, x30
+    /* Probe the MSB xor and or of the combined scalars. Randomize other bits
+       to obfuscate power signals.
+         FG0.L <= w1[255] ^ w3[255] = k0[i] ^ k1[i]
+         FG1.L <= w1[255] | w3[255] = k0[i] | k1[i]
+    */
+    bn.wsrr   w18, urnd
+    bn.rshi   w20, w18, w1 >> 255
+    bn.wsrr   w19, urnd
+    bn.rshi   w21, w19, w3 >> 255
+    bn.cmp    w20, w21
+    bn.or     w20, w20, w21, FG1
 
-    /* Reload randomized projective coodinates for curve point P.
-       P = (x_p, y_p, z_p) = dmem[dptr_sp] <= (x*z mod p, y*z mod p, z) */
-    jal       x1, store_proj_randomize
+    /* Load P and 2P one limb at a time, using the L flag to select one. We
+       select P if the L flag is set and 2P otherwise (in the case that both
+       MSBs were zero, the addition result gets discarded).
+       [w24:w18] <= L ? dmem[scalarmult_P] : dmem[scalarmult_2P] */
+    li    x2, 25
+    loopi 6, 4
+      bn.lid    x24, 0(x4++)
+      bn.lid    x25, 0(x5++)
+      bn.sel    w11, w16, w17, L
+      bn.movr   x2++, x23
+    addi  x4, x4, -192
+    addi  x5, x5, -192
 
-    /* Add points Q+P or Q+2P depending on offset in x27.
-       Q_a = ([w30,w29], [w28,w27], [w26, w25]) <= Q + dmem[x27] */
-    jal       x1, proj_add_p384
-
-    /* load shares from scratchpad
-       [w1, w0] = s0; [w3, w2] = s1 */
-    li        x2, 0
-    bn.lid    x2++, 192(x30)
-    bn.lid    x2++, 224(x30)
-    bn.lid    x2++, 448(x30)
-    bn.lid    x2++, 480(x30)
-
-    /* M = s0[511] | s1[511] */
-    bn.or     w8, w1, w3
-
-    /* load q from scratchpad
-        Q = ([w9,w8], [w7,w6], [w5,w4]) <= dmem[x26] */
-    li        x2, 4
-    bn.lid    x2++, 0(x26)
-    bn.lid    x2++, 32(x26)
-    bn.lid    x2++, 64(x26)
-    bn.lid    x2++, 96(x26)
-    bn.lid    x2++, 128(x26)
-    bn.lid    x2++, 160(x26)
-
-    /* select either Q or Q_a
-       if M: Q = ([w30,w29], [w28,w27], [w26, w25]) <= Q else: Q <= Q_a */
-    bn.sel    w25, w25, w4, M
-    bn.sel    w26, w26, w5, M
-    bn.sel    w27, w27, w6, M
-    bn.sel    w28, w28, w7, M
-    bn.sel    w29, w29, w8, M
-    bn.sel    w30, w30, w9, M
-
-    /* store Q in dmem
-     dmem[x26] = dmem[dptr_sc+512] <= [w30:w25] */
-    li        x2, 25
-    bn.sid    x2++, 0(x26)
-    bn.sid    x2++, 32(x26)
-    bn.sid    x2++, 64(x26)
-    bn.sid    x2++, 96(x26)
-    bn.sid    x2++, 128(x26)
-    bn.sid    x2++, 160(x26)
-
-    /* left shift both shares
-       s0 <= s0 << 1 ; s1 <= s1 << 1 */
+    /* Shift the scalar shares one place and store them. */
     bn.add    w0, w0, w0
     bn.addc   w1, w1, w1
+    li        x2, 0
+    bn.sid    x2++,  0(x6)
+    bn.sid    x2++, 32(x6)
+    bn.xor    w31, w31, w31 /* dummy instruction between share accesses */
     bn.add    w2, w2, w2
     bn.addc   w3, w3, w3
-    /* store both shares in scratchpad */
-    li        x2, 0
-    bn.sid    x2++, 192(x30)
-    bn.sid    x2++, 224(x30)
-    bn.sid    x2++, 448(x30)
-    bn.sid    x2++, 480(x30)
+    bn.sid    x2++,  0(x7)
+    bn.sid    x2++, 32(x7)
 
+    /* [w30:w25] <= [w30:w25] + dmem[scalarmult_Q] */
+    jal       x1, proj_add_p384
 
-    /* Get a fresh random number from URND and scale the coordinates of 2P.
-       (scaling each proj. coordinate by same factor results in same point) */
+    /* Get a pseudorandom 384-bit scaling factor and reduce modulo p. */
+    bn.wsrr   w4, urnd
+    bn.wsrr   w5, urnd
+    bn.rshi   w5, w31, w5 >> 128
+    bn.sub    w2, w4, w12
+    bn.subb   w3, w5, w13
+    bn.sel    w10, w4, w2, C
+    bn.sel    w11, w5, w3, C
 
-    /* get a 384-bit random number from URND */
-    bn.wsrr   w2, 2
-    bn.wsrr   w3, 2
-    bn.rshi   w3, w31, w3 >> 128
-
-    /* reduce random number
-      [w2, w3] = z <= [w2, w3] mod p */
-    bn.sub    w10, w2, w12
-    bn.subb   w11, w3, w13
-    bn.sel    w2, w2, w10, C
-    bn.sel    w3, w3, w11, C
-
-    /* scale all coordinates in scratchpad */
-    li        x2, 16
-    li        x3, 17
-    /* x-coordinate */
-    bn.mov    w10, w2
-    bn.mov    w11, w3
-    bn.lid    x2, 256(x30)
-    bn.lid    x3, 288(x30)
+    /* Select either Q or Q_a based on FG1.L, randomizing as we go. */
+    li        x2, 1
+    bn.lid    x0,  0(x27)
+    bn.lid    x2, 32(x27)
+    bn.sel    w16, w25, w0, FG1.L
+    bn.sel    w17, w26, w1, FG1.L
     jal       x1, p384_mulmod_p
-    bn.sid    x2, 256(x30)
-    bn.sid    x3, 288(x30)
-    /* y-coordinate */
-    bn.mov    w10, w2
-    bn.mov    w11, w3
-    bn.lid    x2, 320(x30)
-    bn.lid    x3, 352(x30)
+    bn.mov    w25, w16
+    bn.mov    w26, w17
+    bn.lid    x0, 64(x27)
+    bn.lid    x2, 96(x27)
+    bn.sel    w16, w27, w0, FG1.L
+    bn.sel    w17, w28, w1, FG1.L
     jal       x1, p384_mulmod_p
-    bn.sid    x2, 320(x30)
-    bn.sid    x3, 352(x30)
-    /* z-coordinate */
-    bn.mov    w10, w2
-    bn.mov    w11, w3
-    bn.lid    x2, 384(x30)
-    bn.lid    x3, 416(x30)
+    bn.mov    w27, w16
+    bn.mov    w28, w17
+    bn.lid    x0, 128(x27)
+    bn.lid    x2, 160(x27)
+    bn.sel    w16, w29, w0, FG1.L
+    bn.sel    w17, w30, w1, FG1.L
     jal       x1, p384_mulmod_p
-    bn.sid    x2, 384(x30)
-    bn.sid    x3, 416(x30)
+    bn.mov    w29, w16
+    bn.mov    w30, w17
 
   ret
+
+.section .scratchpad, "aw"
+
+.balign 32
+scalarmult_k0:
+.zero 64
+
+.balign 32
+scalarmult_k1:
+.zero 64
+
+.balign 32
+scalarmult_P:
+.zero 192
+
+.balign 32
+scalarmult_2P:
+.zero 192
+
+.balign 32
+scalarmult_Q:
+.zero 192

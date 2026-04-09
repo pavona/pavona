@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -18,8 +22,15 @@ p384_proj_add_test:
   /* set dmem pointer to domain parameter b */
   la       x28, p384_b
 
-  /* set dmem pointer to point 1 */
-  la       x26, p1_x
+  /* load point 1 */
+  li x2,   25
+  la x3, p1_x
+  bn.lid   x2++,   0(x3)
+  bn.lid   x2++,  32(x3)
+  bn.lid   x2++,  64(x3)
+  bn.lid   x2++,  96(x3)
+  bn.lid   x2++, 128(x3)
+  bn.lid   x2++, 160(x3)
 
   /* set dmem pointer to point 2 */
   la       x27, p2_x
@@ -30,11 +41,6 @@ p384_proj_add_test:
   la       x3, p384_p
   bn.lid   x2++, 0(x3)
   bn.lid   x2++, 32(x3)
-
-  /* Compute Solinas constant k for modulus p (we know it is only 129 bits, so
-     no need to compute the high part):
-     w14 <= 2^256 - p[255:0] = (2^384 - p) mod (2^256) = 2^384 - p */
-  bn.sub    w14, w31, w12
 
   /* init all-zero reg */
   bn.xor   w31, w31, w31

@@ -495,8 +495,10 @@ p384_mulmod448x128_n:
  * terminology of Algorithm 4 of [2].
  * The routine is limited to P-384 curve points due to:
  *   - fixed a=-3 domain parameter
- *   - usage of a P-384 optimized Barrett multiplication kernel
+ *   - usage of a P-384 optimized multiplication kernel
  * This routine runs in constant time.
+ *
+ * The implementation overwrites one input in-place with the sum.
  *
  * [1] https://doi.org/10.1006/jnth.1995.1088
  * [2] https://doi.org/10.1007/978-3-662-49890-3_16
@@ -505,14 +507,13 @@ p384_mulmod448x128_n:
  * @param[in]  x23: set to 11, pointer to in reg for modular multiplication
  * @param[in]  x24: set to 16, pointer to in/out reg for modular multiplication
  * @param[in]  x25: set to 17, pointer to in/out reg for modular multiplication
- * @param[in]  x26: dptr_p_p, dmem pointer to point P in dmem (projective)
  * @param[in]  x27: dptr_q_p, dmem pointer to point Q in dmem (projective)
  * @param[in]  x28: dptr_b, dmem pointer to domain parameter b of P-384 in dmem
  * @param[in]  [w13, w12]: p, modulus of underlying field of P-384
  * @param[in]  w31: all-zero.
- * @param[out]  [w26, w25]: x_r, x-coordinate of resulting point R
- * @param[out]  [w28, w27]: y_r, y-coordinate of resulting point R
- * @param[out]  [w30, w29]: z_r, z-coordinate of resulting point R
+ * @param[in,out]  [w26, w25]: x_r, x-coordinate of input point P/result point R
+ * @param[in,out]  [w28, w27]: y_r, y-coordinate of input point P/result point R
+ * @param[in,out]  [w30, w29]: z_r, z-coordinate of input point P/result point R
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -525,40 +526,36 @@ proj_add_p384:
      X1 = x_p; Y1 = y_p; Z1 = z_p; X2 = x_q; Y2 = y_q; Z2 = z_q
      X3 = x_r; Y3 = y_r; Z3 = z_r */
 
-  /* 1: [w1, w0] = t0 <= X1*X2 = dmem[x26+0]*dmem[x27+0] */
-  bn.lid    x22, 0(x26)
-  bn.lid    x23, 32(x26)
+  /* 1: [w1, w0] = t0 <= X1*X2 = [w26, w25]*dmem[x27+0] */
+  bn.mov    w10, w25
+  bn.mov    w11, w26
   bn.lid    x24, 0(x27)
   bn.lid    x25, 32(x27)
   jal       x1, p384_mulmod_p
   bn.mov    w0, w16
   bn.mov    w1, w17
 
-  /* 2: [w3, w2] = t1 <= Y1*Y2 = dmem[x26+64]*dmem[x27+64] */
-  bn.lid    x22, 64(x26)
-  bn.lid    x23, 96(x26)
+  /* 2: [w3, w2] = t1 <= Y1*Y2 = [w28, w27]*dmem[x27+64] */
+  bn.mov    w10, w27
+  bn.mov    w11, w28
   bn.lid    x24, 64(x27)
   bn.lid    x25, 96(x27)
   jal       x1, p384_mulmod_p
   bn.mov    w2, w16
   bn.mov    w3, w17
 
-  /* 3: [w5, w4] = t2 <= Z1*Z2 = dmem[x26+128]*dmem[x27+128] */
-  bn.lid    x22, 128(x26)
-  bn.lid    x23, 160(x26)
+  /* 3: [w5, w4] = t2 <= Z1*Z2 = [w30, w29]*dmem[x27+128] */
+  bn.mov    w10, w29
+  bn.mov    w11, w30
   bn.lid    x24, 128(x27)
   bn.lid    x25, 160(x27)
   jal       x1, p384_mulmod_p
   bn.mov    w4, w16
   bn.mov    w5, w17
 
-  /* 4: [w7, w6] = t3 <= X1+Y1 = dmem[x26+0]+dmem[x26+64] */
-  bn.lid    x22, 0(x26)
-  bn.lid    x23, 32(x26)
-  bn.lid    x24, 64(x26)
-  bn.lid    x25, 96(x26)
-  bn.add    w16, w10, w16
-  bn.addc   w17, w11, w17
+  /* 4: [w7, w6] = t3 <= X1+Y1 = [w26, w25]+[w28, w27] */
+  bn.add    w16, w25, w27
+  bn.addc   w17, w26, w28
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
   bn.sel    w6, w16, w10, C
@@ -601,19 +598,15 @@ proj_add_p384:
   bn.sel    w6, w10, w16, C
   bn.sel    w7, w11, w17, C
 
-  /* 9: [w9, w8] = t4 <= Y1+Z1 = dmem[x26+64]+dmem[x26+128] */
-  bn.lid    x22, 64(x26)
-  bn.lid    x23, 96(x26)
-  bn.lid    x24, 128(x26)
-  bn.lid    x25, 160(x26)
-  bn.add    w16, w10, w16
-  bn.addc   w17, w11, w17
+  /* 9: [w9, w8] = t4 <= Y1+Z1 = [w28, w27]+[w30, w29] */
+  bn.add    w16, w27, w29
+  bn.addc   w17, w28, w30
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
   bn.sel    w8, w16, w10, C
   bn.sel    w9, w17, w11, C
 
-  /* 10: [w26, w25] = X3 <= Y2+Z2 = dmem[x27+64]+dmem[x27+128] */
+  /* 10: [w15, w14] = t5 <= Y2+Z2 = dmem[x27+64]+dmem[x27+128] */
   bn.lid    x22, 64(x27)
   bn.lid    x23, 96(x27)
   bn.lid    x24, 128(x27)
@@ -622,41 +615,37 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w25, w16, w10, C
-  bn.sel    w26, w17, w11, C
+  bn.sel    w14, w16, w10, C
+  bn.sel    w15, w17, w11, C
 
-  /* 11: [w9, w8] = t4 <= t4*X3 = [w9, w8]*[w26, w25] */
+  /* 11: [w9, w8] = t4 <= t4*t5 = [w9, w8]*[w26, w25] */
   bn.mov    w10, w8
   bn.mov    w11, w9
-  bn.mov    w16, w25
-  bn.mov    w17, w26
+  bn.mov    w16, w14
+  bn.mov    w17, w15
   jal       x1, p384_mulmod_p
   bn.mov    w8, w16
   bn.mov    w9, w17
 
-  /* 12: [w26, w25] = X3 <= t1+t2 = [w3, w2]+[w5, w4] */
+  /* 12: [w15, w14] = t5 <= t1+t2 = [w3, w2]+[w5, w4] */
   bn.add    w16, w2, w4
   bn.addc   w17, w3, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w25, w16, w10, C
-  bn.sel    w26, w17, w11, C
+  bn.sel    w14, w16, w10, C
+  bn.sel    w15, w17, w11, C
 
-  /* 13: [w9, w8] = t4 <= t4-X3 = [w9, w8]-[w26, w25] */
-  bn.sub    w16, w8, w25
-  bn.subb   w17, w9, w26
+  /* 13: [w9, w8] = t4 <= t4-t5 = [w9, w8]-[w26, w25] */
+  bn.sub    w16, w8, w14
+  bn.subb   w17, w9, w15
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
   bn.sel    w8, w10, w16, C
   bn.sel    w9, w11, w17, C
 
-  /* 14: [w26, w25] = X3 <= X1+Z1 = dmem[x26+0]+dmem[x26+128] */
-  bn.lid    x22, 0(x26)
-  bn.lid    x23, 32(x26)
-  bn.lid    x24, 128(x26)
-  bn.lid    x25, 160(x26)
-  bn.add    w16, w10, w16
-  bn.addc   w17, w11, w17
+  /* 14: [w26, w25] = X3 <= X1+Z1 = [w26, w25]+[w30, w29] */
+  bn.add    w16, w25, w29
+  bn.addc   w17, w26, w30
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
   bn.sel    w25, w16, w10, C
@@ -909,7 +898,6 @@ proj_add_p384:
 
   ret
 
-
 /**
  * P-384 point doubling in projective space.
  *
@@ -1104,7 +1092,6 @@ proj_double_p384:
   bn.sel    w27, w3, w27, Z
 
   ret
-
 
 /**
  * Convert projective coordinates of a P-384 curve point to affine coordinates

@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -106,7 +110,7 @@ p384_scalar_mult:
    4. Multiply mask with z^-1 for use in
       affine space. */
 
-  /* Load domain parameter.
+/* Load domain parameter.
      [w13,w12] = dmem[p384_p] */
   li        x2, 12
   la        x4, p384_p

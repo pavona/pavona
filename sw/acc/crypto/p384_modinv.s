@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -21,9 +25,9 @@
  * algorithm.
  *
  * This routine is mainly intended to be used for inversion of scalars in
- * context of the P-384 curve. In theory, it can be used with any 384-bit
- * modulus m with a corresponding 385-bit Barrett constant u,
- * where u[383:192] = 0.
+ * context of the P-384 curve. However, it can be used with any 384-bit modulus
+ * that fits the conditions of the p384_mulmod_n subroutine, in particular
+ * including the P-384 coordinate field modulus (p).
  *
  * Note: When used for P-384 scalar inversion, the routine will need 672 calls
  * to the multiplication routine. By using an adder chain this could be reduced
@@ -44,8 +48,8 @@
  * clobbered registers: x2, w2, w3, w10, w11, w16 to w24
  * clobbered flag groups: FG0
  */
- .globl mod_inv_n_p384
-mod_inv_n_p384:
+ .globl mod_inv_p384
+mod_inv_p384:
 
   /* subtract 2 from modulus for Fermat's little theorem
      [w3,w2] <= m - 2 = [w13,w12]-2 (left aligned) */

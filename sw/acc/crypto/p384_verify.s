@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -184,15 +188,13 @@ p384_verify:
      w14 <= 2^256 - n[255:0] = (2^384 - n) mod (2^256) = 2^384 - n */
   bn.sub    w14, w31, w12
 
-  /* Compute modular inverse of S
-     Note: This can be replaced by the 'mod_inv_n_p384' subroutine at the
-           cost of ~60k cycles if reduced code size is targeted */
+  /* Compute modular inverse of S. */
   /* [w9,w8] <= [w17,w16] <= s^-1  mod n = [w30,w29]^-1 mod [w13,w12] */
-  jal       x1, mod_inv_n_p384
+  jal       x1, mod_inv_p384
   bn.mov    w8, w16
   bn.mov    w9, w17
 
-  /* set regfile pointers to in/out regs of Barrett routine */
+  /* set regfile pointers to in/out regs of multiplication routine */
   li        x22, 10
   li        x23, 11
   li        x24, 16
@@ -291,12 +293,20 @@ p384_verify:
      compute the point C = (x1, y1) = u1*G + _2*Q. This can be done in a
      single double-and-add routine by using Shamir's Trick. */
 
+  /* load point G */
+  la       x26, scratchpad
+  li       x2, 25
+  bn.lid   x2++, 192(x26)
+  bn.lid   x2++, 224(x26)
+  bn.lid   x2++, 256(x26)
+  bn.lid   x2++, 288(x26)
+  bn.lid   x2++, 320(x26)
+  bn.lid   x2++, 352(x26)
+
   /* Compute G+Q and store in dmem
      GQ = (x,y,z) = dmem[dptr_sp+576]
         <= sp[dptr_sp+192] (+) dmem[dptr_sp+384] */
-  la        x26, scratchpad
   addi      x27, x26, 384
-  addi      x26, x26, 192
   jal       x1, proj_add_p384
   jal       x1, store_proj
 
@@ -305,8 +315,17 @@ p384_verify:
   /* Initialize loop counter to 0. */
   addi      x15, x0, 0
 
+  /* load point C */
+  li       x2, 25
+  bn.lid   x2++,   0(x26)
+  bn.lid   x2++,  32(x26)
+  bn.lid   x2++,  64(x26)
+  bn.lid   x2++,  96(x26)
+  bn.lid   x2++, 128(x26)
+  bn.lid   x2++, 160(x26)
+
   /* main loop with decreasing index i (i=383 downto 0) */
-  loopi     384, 35
+  loopi     384, 31
 
     /* probe MSBs of u1 and u2 and u1|u2 to determine which point has to be
        added. */
@@ -349,41 +368,34 @@ p384_verify:
     /* always double, let both input pointers for point addition point to C */
     add       x27, x26, x0
 
+    /* perform point doubling C <= 2 (*) C */
+    jal       x1, proj_double_p384
+
     /* no addition if x5 = u1[i] | u2[i] == 0 */
     beq       x5, x0, ver_end_loop
-
-    /* perform point doubling C <= 2 (*) C */
-    jal       x1, proj_add_p384
-    addi      x12, x26, 0
-    jal       x1, store_proj
 
     /* check if u1[i] is set */
     bne       x3, x0, u1_set
 
     /* only u2[i] is set: do C <= C + Q */
     addi      x27, x26, 384
-    jal       x0, ver_end_loop
+    jal       x0, ver_do_add
 
     u1_set:
-    /* chek if u2[i] is set as well */
-    bne       x4, x0, both
+    /* check if u2[i] is set as well, if so do C <= C + (G + Q) */
+    addi      x27, x26, 576
+    bne       x4, x0, ver_do_add
 
     /* only u1[i] is set: do C <= C + G */
     add       x27, x26, 192
-    jal       x0, ver_end_loop
+    jal       x0, ver_do_add
 
-    /* both bits at current index (u1[i] and u2[i]) are set:
-       do: C <= C + (G + Q) */
-    both:
-    addi      x27, x26, 576
+    ver_do_add:
+    /* Add selected point.
+         [w30:w25] <= [w30:w25] + dmem[x27] */
+    jal       x1, proj_add_p384
 
     ver_end_loop:
-    /* perform addition of selected point here, or point doubling in case
-       of no addition */
-    jal       x1, proj_add_p384
-    addi      x12, x26, 0
-    jal       x1, store_proj
-
     /* increment counter */
     addi     x15, x15, 1
 
@@ -400,7 +412,7 @@ p384_verify:
   bn.sub    w14, w31, w12
 
   /* compute inverse of z-coordinate: [w17,w16] <= z_c^-1  mod p */
-  jal       x1, mod_inv_n_p384
+  jal       x1, mod_inv_p384
 
   /* convert x-coordinate of C back to affine: x1 = x_c * z_c^-1  mod p */
   bn.mov    w10, w25
@@ -433,8 +445,6 @@ p384_verify:
 
   ret
 
-
-/* scratchpad memory */
 .section .bss
 
 .balign 32
