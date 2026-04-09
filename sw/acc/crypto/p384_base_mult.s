@@ -86,9 +86,6 @@ p384_base_mult:
   /* set dmem pointer to domain parameter b */
   la        x28, p384_b
 
-  /* set dmem pointer to scratchpad */
-  la        x30, scratchpad
-
   /* set dmem pointer to 1st private key share d0 */
   la        x17, d0
 
@@ -134,8 +131,7 @@ p384_base_mult:
 
   ret
 
-/* variables and scratchpad memory */
-.section .bss
+.bss
 
 .balign 32
 
@@ -162,10 +158,3 @@ x:
 .weak y
 y:
   .zero 64
-
-/* 704 bytes of scratchpad memory */
-.balign 32
-.globl scratchpad
-.weak scratchpad
-scratchpad:
-  .zero 704

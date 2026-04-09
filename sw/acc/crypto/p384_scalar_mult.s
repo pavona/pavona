@@ -49,9 +49,6 @@ p384_scalar_mult:
   /* set dmem pointer to domain parameter b */
   la        x28, p384_b
 
-  /* set dmem pointer to scratchpad */
-  la        x30, scratchpad
-
   /* set dmem pointer to point to x-coordinate */
   la       x20, x
 
@@ -85,14 +82,15 @@ p384_scalar_mult:
   /* load the result of the scalar multiplication into memory for
      the projective is on curve check. */
   li        x2, 25
-  la        x3, x
-  bn.sid    x2++, 0(x3)
-  bn.sid    x2++, 32(x3)
-  la        x3, y
-  bn.sid    x2++, 0(x3)
-  bn.sid    x2++, 32(x3)
+  la        x20, x
+  bn.sid    x2++, 0(x20)
+  bn.sid    x2++, 32(x20)
+  la        x21, y
+  bn.sid    x2++, 0(x21)
+  bn.sid    x2++, 32(x21)
 
-  /* store the z coordinate to scratchpad */
+  /* store the z coordinate */
+  la        x30, z
   bn.sid    x2++, 0(x30)
   bn.sid    x2++, 32(x30)
 
@@ -194,7 +192,6 @@ p384_scalar_mult:
 
   ret
 
-/* scratchpad memory */
 .section .bss
 
 .balign 32
@@ -223,7 +220,6 @@ x:
 y:
   .zero 64
 
-/* 704 bytes of scratchpad memory */
-.balign 32
-scratchpad:
-  .zero 704
+/* z-coordinate (local temp buffer) */
+z:
+  .zero 64

@@ -116,17 +116,6 @@ store_proj:
  * @param[out] dmem[ok]:  whether the signature passed basic checks (32 bits)
  * @param[out] dmem[x_r]: verification result: reduced affine x1-coordinate
  *
- * Scratchpad memory layout:
- * The routine expects at least 896 bytes of scratchpad memory at dmem
- * location 'scratchpad' (sp).
- * Internally the scratchpad is used as follows:
- * dptr_sp     .. dptr_sp+191: point C, projective
- * dptr_sp+192 .. dptr_sp+383: point G, projective
- * dptr_sp+384 .. dptr_sp+575: point Q, projective
- * dptr_sp+576 .. dptr_sp+767: point Q+G, projective
- * dptr_sp+768 .. dptr_sp+831: scalar u1
- * dptr_sp+832 .. dptr_sp+896: scalar u2
- *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * clobbered registers: x2 to x5, x10, x11, x12, x15, x22 to 28, w0 to w31
@@ -246,14 +235,15 @@ p384_verify:
   bn.rshi   w1, w1, w0 >> 128
   bn.rshi   w0, w0, w31 >> 128
 
-  /* store u1 and u2 in scratchpad
-     scratchpad[768] <= u1; scratchpad[832] <= u2 */
+  /* store u1 and u2
+     dmem[verify_u1] <= u1; dmem[verify_u2] <= u2 */
   li        x2, 0
-  la        x26, scratchpad
-  bn.sid    x2++, 768(x26)
-  bn.sid    x2++, 800(x26)
-  bn.sid    x2++, 832(x26)
-  bn.sid    x2++, 864(x26)
+  la        x3, verify_u1
+  bn.sid    x2++,  0(x3)
+  bn.sid    x2++, 32(x3)
+  la        x3, verify_u2
+  bn.sid    x2++,  0(x3)
+  bn.sid    x2++, 32(x3)
 
   /* load domain parameter p (modulus)
      [w13, w12] <= p = dmem[p384_p] */
@@ -266,26 +256,28 @@ p384_verify:
   la        x28, p384_b
 
   /* init double and add algorithm with C = (0, 1, 0)
-     GQ = (x,y,z) = scratchpad[0] <= (0, 1, 0) */
+     (x,y,z) = dmem[verify_C] <= (0, 1, 0) */
   bn.xor    w25, w25, w25
   bn.xor    w26, w26, w26
   bn.addi   w27, w31, 1
   bn.xor    w28, w28, w28
   bn.xor    w29, w29, w29
   bn.xor    w30, w30, w30
-  la        x12, scratchpad
+  la        x12, verify_C
   jal       x1, store_proj
 
   /* load base point G and use in projective form (set z to 1)
-     G = (x,y,z) = scratchpad[192] <= (dmem[p384_gy], dmem[p384_gy], 1) */
+     G = (x,y,z) = dmem[verify_G] <= (dmem[p384_gy], dmem[p384_gy], 1) */
   la        x10, p384_gx
   la        x11, p384_gy
+  la        x12, verify_G
   jal       x1, store_aff_proj
 
   /* load public key Q from dmem and use in projective form (set z to 1)
-     Q = (x,y,z) = scratchpad[384] <= (dmem[*dptr_x], dmem[*dptr_y], 1) */
+     Q = (x,y,z) = dmem[verify_Q] <= (dmem[*dptr_x], dmem[*dptr_y], 1) */
   add       x10, x13, x0
   add       x11, x14, x0
+  la        x12, verify_Q
   jal       x1,  store_aff_proj
 
   /* The remaining part of the routine implements a variable time
@@ -294,29 +286,28 @@ p384_verify:
      single double-and-add routine by using Shamir's Trick. */
 
   /* load point G */
-  la       x26, scratchpad
+  la       x3, verify_G
   li       x2, 25
-  bn.lid   x2++, 192(x26)
-  bn.lid   x2++, 224(x26)
-  bn.lid   x2++, 256(x26)
-  bn.lid   x2++, 288(x26)
-  bn.lid   x2++, 320(x26)
-  bn.lid   x2++, 352(x26)
+  bn.lid   x2++,   0(x3)
+  bn.lid   x2++,  32(x3)
+  bn.lid   x2++,  64(x3)
+  bn.lid   x2++,  96(x3)
+  bn.lid   x2++, 128(x3)
+  bn.lid   x2++, 160(x3)
 
   /* Compute G+Q and store in dmem
-     GQ = (x,y,z) = dmem[dptr_sp+576]
-        <= sp[dptr_sp+192] (+) dmem[dptr_sp+384] */
-  addi      x27, x26, 384
+     QG = (x,y,z) = dmem[verify_QG] <= Q + G */
+  la        x27, verify_Q
   jal       x1, proj_add_p384
+  la        x12, verify_QG
   jal       x1, store_proj
-
-  la        x26, scratchpad
 
   /* Initialize loop counter to 0. */
   addi      x15, x0, 0
 
   /* load point C */
   li       x2, 25
+  la       x26, verify_C
   bn.lid   x2++,   0(x26)
   bn.lid   x2++,  32(x26)
   bn.lid   x2++,  64(x26)
@@ -325,18 +316,23 @@ p384_verify:
   bn.lid   x2++, 160(x26)
 
   /* main loop with decreasing index i (i=383 downto 0) */
+  la        x17, verify_G
+  la        x18, verify_Q
+  la        x19, verify_QG
+  la        x20, verify_u1
+  la        x21, verify_u2
   loopi     384, 31
 
     /* probe MSBs of u1 and u2 and u1|u2 to determine which point has to be
        added. */
 
-    /* load u1 and u2 from scratchpad
+    /* load u1 and u2
        [w1,w0] <= u1; [w3, w2] = u2 */
     li        x2, 0
-    bn.lid    x2++, 768(x26)
-    bn.lid    x2++, 800(x26)
-    bn.lid    x2++, 832(x26)
-    bn.lid    x2++, 864(x26)
+    bn.lid    x2++,  0(x20)
+    bn.lid    x2++, 32(x20)
+    bn.lid    x2++,  0(x21)
+    bn.lid    x2++, 32(x21)
 
     /* left shift u1 = [w1,w0] <= [w1,w0] << 1 */
     bn.add    w0, w0, w0
@@ -355,11 +351,11 @@ p384_verify:
     andi      x4, x4, 1
     li        x2, 0
 
-    /* write back u1 and u2 to scratchpad */
-    bn.sid    x2++, 768(x26)
-    bn.sid    x2++, 800(x26)
-    bn.sid    x2++, 832(x26)
-    bn.sid    x2++, 864(x26)
+    /* write back u1 and u2 */
+    bn.sid    x2++,  0(x20)
+    bn.sid    x2++, 32(x20)
+    bn.sid    x2++,  0(x21)
+    bn.sid    x2++, 32(x21)
 
     /* test if at least one MSb of the scalars is 1
        x5 <= x4 | x3 = u1[i] | u2[i] */
@@ -378,16 +374,16 @@ p384_verify:
     bne       x3, x0, u1_set
 
     /* only u2[i] is set: do C <= C + Q */
-    addi      x27, x26, 384
+    addi      x27, x18, 0
     jal       x0, ver_do_add
 
     u1_set:
     /* check if u2[i] is set as well, if so do C <= C + (G + Q) */
-    addi      x27, x26, 576
+    addi      x27, x19, 0
     bne       x4, x0, ver_do_add
 
     /* only u1[i] is set: do C <= C + G */
-    add       x27, x26, 192
+    add       x27, x17, 0
     jal       x0, ver_do_add
 
     ver_do_add:
@@ -485,9 +481,38 @@ y:
 x_r:
   .zero 64
 
-/* Scratchpad memory */
+/* First scalar (local temp buffer) */
 .balign 32
-.globl scratchpad
-.weak scratchpad
-scratchpad:
-  .zero 896
+.globl verify_u1
+verify_u1:
+.zero 64
+
+/* Second scalar (local temp buffer) */
+.balign 32
+.globl verify_u2
+verify_u2:
+.zero 64
+
+/* Stored projective point (local temp buffer) */
+.balign 32
+.globl verify_Q
+verify_Q:
+.zero 192
+
+/* Stored projective point (local temp buffer) */
+.balign 32
+.globl verify_G
+verify_G:
+.zero 192
+
+/* Stored projective point (local temp buffer) */
+.balign 32
+.globl verify_QG
+verify_QG:
+.zero 192
+
+/* Stored projective point (local temp buffer) */
+.balign 32
+.globl verify_C
+verify_C:
+.zero 192
