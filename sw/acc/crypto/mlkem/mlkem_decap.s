@@ -365,23 +365,19 @@ crypto_kem_dec:
   bn.wsrr w8, 0xA /* KECCAK_DIGEST */
   bn.sid  t0, 0(a2++) /* Store into buffer */
 
-  /*** verify: ct == cmp ? ***/
+  /*** verify (constant-time): ct == cmp ? w4 = 0 : w4 = all-ones ***/
   li      t0, 0
   li      t1, 1
   lw      a0, STACK_KEM_DEC_CT_ADDR(fp)
   lw      a1, STACK_KEM_DEC_CMP_ADDR(fp)
-  li      t2, 1
-  bn.subi w2, w31, 1
-  LOOPI KYBER_CIPHERTEXT_WRS, 8
-    beq    t2, zero, _skip_verify
+  bn.subi w2, w31, 1  /* w2 = 2^256 - 1 (all ones) */
+  bn.mov  w4, w31     /* w4 = 0 (difference accumulator) */
+  LOOPI KYBER_CIPHERTEXT_WRS, 5
     bn.lid t0, 0(a0++)
     bn.lid t1, 0(a1++)
     bn.cmp w0, w1
-    bn.sel w4, w31, w2, FG0.Z
-    csrrw  t2, 0x7C0, zero
-    srl t2, t2, 3
-_skip_verify:
-    nop
+    bn.sel w3, w31, w2, FG0.Z  /* w3 = 0 if equal, all ones otherwise */
+    bn.or  w4, w4, w3          /* accumulate */
 
   /*** cmov ***/
   li      a0, STACK_KEM_DEC_KR
