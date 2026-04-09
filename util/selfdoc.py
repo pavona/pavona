@@ -8,6 +8,8 @@ import reggen.gen_selfdoc as reggen_selfdoc
 import tlgen
 import topgen.selfdoc as topgen_selfdoc
 from typing import TextIO
+import subprocess
+from cmdgen import REPO_ROOT
 
 
 def generate_selfdocs(tool: str, fout: TextIO):
@@ -21,12 +23,20 @@ def generate_selfdocs(tool: str, fout: TextIO):
         fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
     elif tool == "topgen":
         topgen_selfdoc.document(fout)
-    else:
-        sys.exit(f"unknown tool \"{tool}\"")
+    else:  # document tool stdout
+        cmd_input = tool.removeprefix("quote:")
+        format_as_code = tool.startswith("quote:")
+        try:
+            usage = subprocess.run(cmd_input.split(), capture_output=True, cwd=REPO_ROOT,
+                                   check=True, timeout=180, encoding="utf-8")
+            if format_as_code:
+                fout.write("```\n" + f"$ {cmd_input}\n" + usage.stdout + "```")
+            else:
+                fout.write(usage.stdout)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            sys.exit(f"unable to get command line stdout for {cmd_input}")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit("usage: selfdoc <tool>")
     # running this file as standalone prints the documentation
-    generate_selfdocs(sys.argv[1], sys.stdout)
+    generate_selfdocs(" ".join(sys.argv[1:]), sys.stdout)
