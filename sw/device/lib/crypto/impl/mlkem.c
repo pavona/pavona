@@ -256,6 +256,8 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
     return OTCRYPTO_FATAL_ERR;
   }
 
+  shared_secret->checksum = integrity_blinded_checksum(shared_secret);
+
   return OTCRYPTO_OK;
 }
 
@@ -468,6 +470,8 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
     return OTCRYPTO_FATAL_ERR;
   }
 
+  shared_secret->checksum = integrity_blinded_checksum(shared_secret);
+
   return OTCRYPTO_OK;
 }
 
@@ -679,6 +683,8 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     memset(ss_share0, 0, MLKEM1024_BYTES);
     return OTCRYPTO_FATAL_ERR;
   }
+
+  shared_secret->checksum = integrity_blinded_checksum(shared_secret);
 
   return OTCRYPTO_OK;
 }
