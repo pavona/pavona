@@ -157,8 +157,6 @@ otcrypto_status_t otcrypto_p256_public_key_construct_and_check(
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   return otcrypto_p256_public_key_construct_and_check_async_finalize(
       session_token, key_valid);
-  return otcrypto_p256_public_key_construct_and_check_async_finalize(
-      session_token, key_valid);
 }
 
 otcrypto_status_t otcrypto_p256_public_key_construct_and_check_async_start(
