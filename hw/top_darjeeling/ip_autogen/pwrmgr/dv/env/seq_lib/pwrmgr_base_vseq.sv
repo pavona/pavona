@@ -293,12 +293,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Uses macros because VCS flags an error for assignments to automatic variables,
   // even if the variable is a ref to an interface variable.
 
-  `define SLOW_DETECT(rsp_name_, req_) \
+  `define SLOW_DETECT(rsp_name_, req_, verb_ = UVM_MEDIUM) \
       forever \
         @req_ begin \
           raise_slow_objection(rsp_name_); \
           `uvm_info(`gfn, $sformatf( \
-                    "slow_responder: Will drive %0s to %b", rsp_name_, req_), UVM_MEDIUM) \
+                    "slow_responder: Will drive %0s to %b", rsp_name_, req_), verb_) \
         end
 
   `define SLOW_SHIFT_SR(req_, rsp_sr_) \
@@ -307,7 +307,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           rsp_sr_ = {rsp_sr_[MaxCyclesBeforeEnable-1:0], req_}; \
         end
 
-  `define SLOW_ASSIGN(rsp_name_, cycles_, rsp_sr_, rsp_) \
+  `define SLOW_ASSIGN(rsp_name_, cycles_, rsp_sr_, rsp_, verb_ = UVM_MEDIUM) \
       forever \
         @(rsp_sr_[cycles_]) begin \
           `uvm_info(`gfn, $sformatf( \
@@ -315,7 +315,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     rsp_name_, \
                     rsp_sr_[cycles_], \
                     cycles_ \
-                    ), UVM_MEDIUM) \
+                    ), verb_) \
           rsp_ <= rsp_sr_[cycles_]; \
           drop_slow_objection(rsp_name_); \
         end
@@ -379,13 +379,13 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // - Completes handshake with lc and otp: *_done needs to track *_init.
   // Macros for the same reason as the slow responder.
 
-  `define FAST_RESPONSE_ACTION(rsp_name, rsp, req, cycles) \
+  `define FAST_RESPONSE_ACTION(rsp_name, rsp, req, cycles, verb_ = UVM_HIGH) \
           `uvm_info(`gfn, $sformatf( \
                     "fast_responder %s: Will drive %0s to %b in %0d fast clock cycles", \
-                    rsp_name, rsp_name, req, cycles), UVM_HIGH) \
+                    rsp_name, rsp_name, req, cycles), verb_) \
           cfg.clk_rst_vif.wait_clks(cycles); \
           rsp <= req; \
-          `uvm_info(`gfn, $sformatf("fast_responder %s: Driving %0s to %b", rsp_name, rsp_name, req), UVM_HIGH) \
+          `uvm_info(`gfn, $sformatf("fast_responder %s: Driving %0s to %b", rsp_name, rsp_name, req), verb_) \
 
 
   task fast_responder();
