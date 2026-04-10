@@ -266,10 +266,9 @@ module acc_core
   logic        insn_cnt_clear_int;
   logic [31:0] insn_cnt;
 
-  logic kmac_msg0_write_ready;
-  logic kmac_msg1_write_ready;
-  logic kmac_msg0_pending_write;
-  logic kmac_msg1_pending_write;
+  // Split into two shares
+  logic kmac_msg_write_ready   [2];
+  logic kmac_msg_pending_write [2];
   logic kmac_digest_valid;
 
   logic secure_wipe_req, secure_wipe_ack;
@@ -584,11 +583,9 @@ module acc_core
     .urnd_reseed_err_i(urnd_reseed_err),
 
     // KMAC interface
-    .kmac_msg0_write_ready_i  (kmac_msg0_write_ready),
-    .kmac_msg1_write_ready_i  (kmac_msg1_write_ready),
-    .kmac_msg0_pending_write_i(kmac_msg0_pending_write),
-    .kmac_msg1_pending_write_i(kmac_msg1_pending_write),
-    .kmac_digest_valid_i      (kmac_digest_valid),
+    .kmac_msg_write_ready_i  (kmac_msg_write_ready),
+    .kmac_msg_pending_write_i(kmac_msg_pending_write),
+    .kmac_digest_valid_i     (kmac_digest_valid),
 
     // Secure wipe
     .secure_wipe_req_o     (secure_wipe_req),
@@ -690,7 +687,8 @@ module acc_core
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_intg_err, rf_base_spurious_we_err,
                                        predec_error, lsu_rdata_err, insn_fetch_err,
-                                       controller_fatal_err, insn_addr_err, kmac_intf_fatal_error}));
+                                       controller_fatal_err, insn_addr_err,
+                                       kmac_intf_fatal_error}));
 
   // Signal error if MuBi input signals take on invalid values as this means something bad is
   // happening. The explicit error detection is required as the mubi4_or_hi operations above
@@ -910,11 +908,9 @@ module acc_core
 
     .sideload_key_shares_i,
 
-    .kmac_msg0_write_ready_o  (kmac_msg0_write_ready),
-    .kmac_msg1_write_ready_o  (kmac_msg1_write_ready),
-    .kmac_msg0_pending_write_o(kmac_msg0_pending_write),
-    .kmac_msg1_pending_write_o(kmac_msg1_pending_write),
-    .kmac_digest_valid_o      (kmac_digest_valid),
+    .kmac_msg_write_ready_o  (kmac_msg_write_ready),
+    .kmac_msg_pending_write_o(kmac_msg_pending_write),
+    .kmac_digest_valid_o     (kmac_digest_valid),
 
     .kmac_app_rsp_i,
     .kmac_app_req_o,

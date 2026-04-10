@@ -506,7 +506,7 @@ class ACCState:
         self.loop_step(loop_warps)
         self.gprs.post_insn()
 
-        self._err_bits |= self.gprs.err_bits() | self.loop_stack.err_bits() | self.kmac.get_error()
+        self._err_bits |= self.gprs.err_bits() | self.loop_stack.err_bits()
         if self._err_bits:
             self.pending_halt = True
 

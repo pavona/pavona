@@ -417,7 +417,7 @@ class acc_app_base_seq extends dv_base_seq #(
           digest_lsb_share1 = unmasked_digest ^ FIXED_MASK;
         end
 
-	apply_mask = !apply_mask;
+        apply_mask = !apply_mask;
 
         // Computed digest is unmasked therefore set share1 to all 0.
         // Inject error if appropriate from sequence config

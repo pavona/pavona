@@ -26,7 +26,8 @@ module acc_controller
   parameter bit AccPQCEn = 1'b1,
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
-  localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
+  localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte),
+  localparam int Share         = 2
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -153,10 +154,8 @@ module acc_controller
   input  logic urnd_reseed_err_i,
 
   // KMAC interface
-  input  logic kmac_msg0_write_ready_i,
-  input  logic kmac_msg1_write_ready_i,
-  input  logic kmac_msg0_pending_write_i,
-  input  logic kmac_msg1_pending_write_i,
+  input  logic kmac_msg_write_ready_i   [Share],
+  input  logic kmac_msg_pending_write_i [Share],
   input  logic kmac_digest_valid_i,
 
   // Secure Wipe
@@ -195,8 +194,8 @@ module acc_controller
     if (!AccPQCEn) begin : gen_unused_ports
       // Tie off unused inputs
       logic unused_bits;
-      assign unused_bits = ^{kmac_msg0_write_ready_i, kmac_msg0_pending_write_i,
-                             kmac_msg1_write_ready_i, kmac_msg1_pending_write_i,
+      assign unused_bits = ^{kmac_msg_write_ready_i[0], kmac_msg_pending_write_i[0],
+                             kmac_msg_write_ready_i[1], kmac_msg_pending_write_i[1],
                              kmac_digest_valid_i};
     end
   endgenerate
@@ -425,12 +424,12 @@ module acc_controller
                           (gen_kmac_nets.kmac_digest_req_raw & ~kmac_digest_valid_i);
 
       assign gen_kmac_nets.kmac_msg0_stall =
-              (gen_kmac_nets.kmac_msg0_write_req_raw & ~kmac_msg0_write_ready_i) |
-              (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg0_pending_write_i);
+              (gen_kmac_nets.kmac_msg0_write_req_raw & ~kmac_msg_write_ready_i[0]) |
+              (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg_pending_write_i[0]);
 
       assign gen_kmac_nets.kmac_msg1_stall =
-              (gen_kmac_nets.kmac_msg1_write_req_raw & ~kmac_msg1_write_ready_i) |
-              (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg1_pending_write_i);
+              (gen_kmac_nets.kmac_msg1_write_req_raw & ~kmac_msg_write_ready_i[1]) |
+              (gen_kmac_nets.kmac_msg_partial_raw & kmac_msg_pending_write_i[1]);
 
       assign gen_kmac_nets.kmac_write_stall = gen_kmac_nets.kmac_msg0_stall |
                                               gen_kmac_nets.kmac_msg1_stall;

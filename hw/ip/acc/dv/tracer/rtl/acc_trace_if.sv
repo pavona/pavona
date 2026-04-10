@@ -271,14 +271,19 @@ interface acc_trace_if
         assign ispr_read_data[IsprMod][i_word*32+:32] = u_acc_alu_bignum.mod_intg_q[i_word*39+:32];
         assign ispr_write_data[IsprAcc][i_word*32+:32] = u_acc_mac_bignum.acc_intg_d[i_word*39+:32];
         assign ispr_write_data[IsprKmacMsg0][i_word*32+:32] =
-          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg0_wr_en[i_word] ? u_acc_alu_bignum.gen_pqc_wsr.kmac_msg0_intg_d[i_word*39+:32] :
-                                                    u_acc_alu_bignum.gen_pqc_wsr.kmac_msg0_intg_q[i_word*39+:32];
-        assign ispr_read_data[IsprKmacMsg0][i_word*32+:32] = u_acc_alu_bignum.gen_pqc_wsr.kmac_msg0_intg_q[i_word*39+:32];
+          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en[0][i_word] ?
+          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_intg_d[0][i_word*39+:32] :
+          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_intg_q[0][i_word*39+:32];
+        assign ispr_read_data[IsprKmacMsg0][i_word*32+:32] =
+          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_intg_q[0][i_word*39+:32];
         assign ispr_write_data[IsprKmacMsg1][i_word*32+:32] =
-          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg1_wr_en[i_word] ? u_acc_alu_bignum.gen_pqc_wsr.kmac_msg1_intg_d[i_word*39+:32] :
-                                                    u_acc_alu_bignum.gen_pqc_wsr.kmac_msg1_intg_q[i_word*39+:32];
-        assign ispr_read_data[IsprKmacMsg1][i_word*32+:32] = u_acc_alu_bignum.gen_pqc_wsr.kmac_msg1_intg_q[i_word*39+:32];
-        assign ispr_write_data[IsprAccH][i_word*32+:32] = u_acc_mac_bignum.gen_acch_wr_en.acch_intg_d[i_word*39+:32];
+          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en[1][i_word] ?
+          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_intg_d[1][i_word*39+:32] :
+          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_intg_q[1][i_word*39+:32];
+        assign ispr_read_data[IsprKmacMsg1][i_word*32+:32] =
+          u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_intg_q[1][i_word*39+:32];
+        assign ispr_write_data[IsprAccH][i_word*32+:32] =
+          u_acc_mac_bignum.gen_acch_wr_en.acch_intg_d[i_word*39+:32];
       end
     end else begin : gen_ispr_data
       for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_and_acc_words
@@ -306,11 +311,13 @@ interface acc_trace_if
       // KMAC MSG SHARE 0
       assign ispr_read[IsprKmacMsg0] =
         (any_ispr_read & (ispr_addr == IsprKmacMsg0));
-      assign ispr_write[IsprKmacMsg0] = |(u_acc_alu_bignum.gen_pqc_wsr.kmac_msg0_wr_en) && ~ispr_init;
+      assign ispr_write[IsprKmacMsg0] = |(u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en[0]) &&
+                                        ~ispr_init;
       // KMAC MSG SHARE 1
       assign ispr_read[IsprKmacMsg1] =
         (any_ispr_read & (ispr_addr == IsprKmacMsg1));
-      assign ispr_write[IsprKmacMsg1] = |(u_acc_alu_bignum.gen_pqc_wsr.kmac_msg1_wr_en) && ~ispr_init;
+      assign ispr_write[IsprKmacMsg1] = |(u_acc_alu_bignum.gen_pqc_wsr.kmac_msg_wr_en[1]) &&
+                                        ~ispr_init;
       // KMAC CFG
       assign ispr_read[IsprKmacCfg] =
         (any_ispr_read & (ispr_addr == IsprKmacCfg));
@@ -334,6 +341,9 @@ interface acc_trace_if
       // KMAC MSG
       assign ispr_read[IsprKmacMsg0]  = 1'b0;
       assign ispr_write[IsprKmacMsg0] = 1'b0;
+      // KMAC MSG SHARE 0
+      assign ispr_read[IsprKmacMsg1]  = 1'b0;
+      assign ispr_write[IsprKmacMsg1] = 1'b0;
       // KMAC CFG
       assign ispr_read[IsprKmacCfg]       = 1'b0;
       assign ispr_read_data[IsprKmacCfg]  = 256'b0;
@@ -354,6 +364,11 @@ interface acc_trace_if
       assign ispr_read_data[IsprKmacDigest0]  = 256'b0;
       assign ispr_write[IsprKmacDigest0]      = 1'b0;
       assign ispr_write_data[IsprKmacDigest0] = 256'b0;
+      // KMAC DIGEST SHARE 1
+      assign ispr_read[IsprKmacDigest1]       = 1'b0;
+      assign ispr_read_data[IsprKmacDigest1]  = 256'b0;
+      assign ispr_write[IsprKmacDigest1]      = 1'b0;
+      assign ispr_write_data[IsprKmacDigest1] = 256'b0;
       // ACCH
       assign ispr_write[IsprAccH]     = 1'b0;
       assign ispr_read[IsprAccH]      = 1'b0;

@@ -488,21 +488,25 @@ class KmacAppReqInsn(SnippetGen):
 
         # Generate a new WRD value
         while bn_rshi_wrd_val == bn_rshi_wrs2_val:
-            bn_rshi_wrd_val = model.pick_operand_value(self.bn_rshi_wrd_op_type)
-            if bn_rshi_wrd_val is None:
+            bn_rshi_wrd = model.pick_operand_value(self.bn_rshi_wrd_op_type)
+            if bn_rshi_wrd is None:
                 raise ValueError("Unable to generate bn.rshi destination reg")
+            else:
+                bn_rshi_wrd_val = bn_rshi_wrd
 
         # Generate a new WRS1 value
         while bn_rshi_wrs1_val in [bn_rshi_wrs2_val, bn_rshi_wrd_val]:
-            bn_rshi_wrs1_val = model.pick_operand_value(self.bn_rshi_wrs1_op_type)
-            if bn_rshi_wrs1_val is None:
+            bn_rshi_wrs1 = model.pick_operand_value(self.bn_rshi_wrs1_op_type)
+            if bn_rshi_wrs1 is None:
                 raise ValueError("Unable to generate bn.rshi wsr1 reg")
-            
+            else:
+                bn_rshi_wrs1_val = bn_rshi_wrs1
+
         # Generate the immediate
         bn_rshi_imm_val = model.pick_operand_value(self.bn_rshi_imm_op_type)
         if bn_rshi_imm_val is None:
             raise ValueError("Unable to generate bn.rshi wsr1 reg")
-        
+
         op_vals.append(bn_rshi_wrd_val)
         op_vals.append(bn_rshi_wrs1_val)
         op_vals.append(bn_rshi_wrs2_val)

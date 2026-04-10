@@ -11,11 +11,11 @@
 
 
 import sys
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple, Union
 from .trace import Trace
 from .ext_regs import ACCExtRegs
 from .kmac import KmacBlock
-DEBUG_KMAC = True
+DEBUG_KMAC = False
 
 
 def kmac_debug_print(text: str) -> None:
@@ -442,9 +442,9 @@ class KmacMsgWSR(WSR):
         self._pending_write_stall_pw = self._pending_write_to_app_intf
 
         if share:
-            self._start_cycle_fifo_ready = self._kmac.app_intf_share1_fifo_ready()
+            self._start_cycle_fifo_ready = self._kmac.app_intf_fifo1_ready()
         else:
-            self._start_cycle_fifo_ready = self._kmac.app_intf_fifo_ready()
+            self._start_cycle_fifo_ready = self._kmac.app_intf_fifo0_ready()
 
         if self._kmac._app_fifo_after_flush:
             self._pending_write_stall_pw = False
@@ -454,11 +454,9 @@ class KmacMsgWSR(WSR):
             strb_len = self._partial_ispr.read_mask()
             value_bytes = int.to_bytes(self._value, byteorder='little', length=32)[:strb_len]
             if share:
-              kmac_debug_print("\tPending write to App Share1 FIFO")
+                kmac_debug_print("\tPending write to App Share1 FIFO")
             else:
-              kmac_debug_print("\tPending write to App Share0 FIFO")
-
-            kmac_debug_print(f"Latch: {self._kmac._app_intf_last_latch} | Pending Last: {self._kmac._pending_app_intf_last} | Pending: {self.pending_write_pw()} | Flush: {self._kmac._app_intf_fifo_flush}")
+                kmac_debug_print("\tPending write to App Share0 FIFO")
 
             if (
                 self._kmac._app_intf_last_latch
@@ -470,12 +468,12 @@ class KmacMsgWSR(WSR):
                 self._oversized_error = True
                 self._pending_write_to_app_intf = False
                 self._pending_write_stall_pw = False
-            
+
             # MSG SHARE0 Write
             elif not share:
                 if (
                     not self._kmac._app_intf_last
-                    and self._kmac.write_to_app_intf_fifo(value_bytes)
+                    and self._kmac.write_to_app_intf_fifo0(value_bytes)
                 ):
                     kmac_debug_print(f"\tKMAC_MSG0 -> APP FIFO0: Writing \
                                     {len(value_bytes)} bytes to App FIFO")
@@ -483,14 +481,14 @@ class KmacMsgWSR(WSR):
                     self._kmac._app_intf_writing = True
                     # Reset paritial write value after successful write
                     self._partial_ispr._used_share0 = True
-                    if (self._partial_ispr._used_share1 == True) or not self._kmac._masked_mode:
-                      self._partial_ispr._value = 32
+                    if (self._partial_ispr._used_share1 is True) or not self._kmac._masked_mode:
+                        self._partial_ispr._value = 32
 
             # MSG SHARE1 Write
             elif share:
                 if (
                     not self._kmac._app_intf_last
-                    and self._kmac.write_to_app_intf_share1_fifo(value_bytes)
+                    and self._kmac.write_to_app_intf_fifo1(value_bytes)
                 ):
                     kmac_debug_print(f"\tKMAC_MSG1 -> APP FIFO1: Writing \
                                      {len(value_bytes)} bytes to App FIFO")
@@ -498,9 +496,8 @@ class KmacMsgWSR(WSR):
                     self._kmac._app_intf_writing = True
                     # Reset paritial write value after successful write
                     self._partial_ispr._used_share1 = True
-                    if self._partial_ispr._used_share0 == True:
+                    if self._partial_ispr._used_share0 is True:
                         self._partial_ispr._value = 32
-
 
     def pending_write_pw(self) -> bool:
         if self._kmac._app_intf_fifo_flush and not self._pending_write_to_app_intf:
@@ -559,14 +556,14 @@ class KmacCfgWSR(WSR):
             kmac_debug_print(f"\tREG -> KMAC_MSG reg: {hex(self._next_value)}")
             if self._value == (1 << 31):
                 # config value to release KMAC app intf
-                # should be done once before ACC yiels
+                # should be done once before ACC yields
                 # to Ibex
                 self._kmac._reset()
             else:
                 mode = self._value & 0b11
                 strength = (self._value >> 2) & 0b111
-                msg_len = (self._value >> 5) & 0x7FFF # 15-bits for length
-                masked_mode = (self._value >> 20) & 0b1
+                msg_len = (self._value >> 5) & 0x7FFF
+                masked_mode = bool((self._value >> 20) & 0b1)
                 self._kmac._reset()
                 self._kmac.set_configuration(mode, strength, msg_len, masked_mode)
         super().commit()
@@ -586,9 +583,7 @@ class KmacStatusWSR(WSR):
         self._next_value: Optional[int] = None
 
     def read_unsigned(self) -> int:
-        value = self._kmac.get_undersized() << 4
-        value += self._kmac.get_oversized() << 3
-        value += self._kmac.get_error() << 2
+        value = self._kmac.get_error() << 2
         value += self._kmac.get_ready() << 1
         value += self._kmac.get_done()
         self._next_value = value
@@ -700,7 +695,7 @@ class WSRFile:
         self.KMAC_MSG1 = KmacMsgWSR('KMAC_MSG1', self.Kmac, self.KMAC_PARTIAL_WRITE)
 
         # These are the common index regardless of PQC enable or not
-        self._by_idx = {
+        self._by_idx: dict[int, Union[WSR, KmacDigestWSR]] = {
             0: self.MOD,
             1: self.RND,
             2: self.URND,
@@ -751,12 +746,15 @@ class WSRFile:
         to the WSR at idx.
 
         '''
-        if self._by_idx[idx] is self.KMAC_DIGEST0:
-            return self._by_idx[idx].read_unsigned_share0()
-        elif self._by_idx[idx] is self.KMAC_DIGEST1:
-            return self._by_idx[idx].read_unsigned_share1()
+        wsr = self._by_idx[idx]
+
+        if isinstance(wsr, KmacDigestWSR):
+            if wsr is self.KMAC_DIGEST0:
+                return wsr.read_unsigned_share0()
+            else:
+                return wsr.read_unsigned_share1()
         else:
-            return self._by_idx[idx].read_unsigned()
+            return wsr.read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
         '''Write the WSR at idx as an unsigned 256-bit value

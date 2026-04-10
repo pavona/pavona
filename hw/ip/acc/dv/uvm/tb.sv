@@ -278,10 +278,6 @@ module tb;
    .model_insn_cnt_i (model_insn_cnt)
   );
 
-  always_ff @(posedge clk) begin
-    $display("DUT Insn: %0h | MODEL Insn: %0h", dut.insn_cnt, model_insn_cnt);
-  end
-
   acc_ssctrl_if ssctrl_if();
 
   //////////////////////////////////////////////////////////////////////////////

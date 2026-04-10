@@ -79,7 +79,8 @@ module acc_alu_bignum
   import acc_pkg::*;
 #(
   // Enabling PQC hardware support with vector ISA extension
-  parameter bit AccPQCEn = 1'b1
+  parameter  bit AccPQCEn = 1'b1,
+  localparam int Share    = 2
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -133,10 +134,8 @@ module acc_alu_bignum
   output logic kmac_intf_fatal_error_o,
   output logic kmac_intf_recov_error_o,
 
-  output logic kmac_msg0_write_ready_o,
-  output logic kmac_msg1_write_ready_o,
-  output logic kmac_msg0_pending_write_o,
-  output logic kmac_msg1_pending_write_o,
+  output logic kmac_msg_write_ready_o   [Share],
+  output logic kmac_msg_pending_write_o [Share],
   output logic kmac_digest_valid_o,
 
   output kmac_pkg::app_req_t          kmac_app_req_o,
@@ -158,13 +157,16 @@ module acc_alu_bignum
                              sec_wipe_kmac_regs_urnd_i, kmac_app_rsp_i};
 
       // Drive outputs to 0
-      assign ispr_acch_wr_data_intg_o  = '0;
-      assign ispr_acch_wr_en_o         = '0;
-      assign kmac_msg0_write_ready_o   = '0;
-      assign kmac_msg1_write_ready_o   = '0;
-      assign kmac_msg0_pending_write_o = '0;
-      assign kmac_digest_valid_o       = '0;
-      assign kmac_app_req_o            = '0;
+      assign ispr_acch_wr_data_intg_o    = '0;
+      assign ispr_acch_wr_en_o           = '0;
+      assign kmac_intf_fatal_error_o     = '0;
+      assign kmac_intf_recov_error_o     = '0;
+      assign kmac_msg_write_ready_o[0]   = '0;
+      assign kmac_msg_write_ready_o[1]   = '0;
+      assign kmac_msg_pending_write_o[0] = '0;
+      assign kmac_msg_pending_write_o[1] = '0;
+      assign kmac_digest_valid_o         = '0;
+      assign kmac_app_req_o              = '0;
     end else begin : gen_unused_pqc_bits
       logic unused_pqc_bits;
     end
@@ -556,10 +558,8 @@ generate
   logic                     kmac_pw_rst;
 
   // Nets from other blocks needed to reset the partial write
-  logic                     kmac_msg0_fifo_wvalid;
-  logic                     kmac_msg1_fifo_wvalid;
-  logic                     kmac_msg0_valid_q;
-  logic                     kmac_msg1_valid_q;
+  logic                     kmac_msg_fifo_wvalid [Share];
+  logic                     kmac_msg_valid_q     [Share];
   logic                     kmac_sent_last;
 
   logic [ExtWLEN-1:0] ispr_kmac_pw_bignum_wdata_intg_blanked;
@@ -590,12 +590,12 @@ generate
   always_comb begin
     if (kmac_cfg_mask_mode) begin
       kmac_pw_wr_en = (ispr_init_i | kmac_pw_ispr_wr_en) &
-                      ((~kmac_msg0_valid_q & ~kmac_msg1_valid_q) | kmac_sent_last);
-      kmac_pending_writes = kmac_msg0_pending_write_o | kmac_msg1_pending_write_o;
+                      ((~kmac_msg_valid_q[0] & ~kmac_msg_valid_q[1]) | kmac_sent_last);
+      kmac_pending_writes = kmac_msg_pending_write_o[0] | kmac_msg_pending_write_o[1];
     end else begin
       kmac_pw_wr_en = (ispr_init_i | kmac_pw_ispr_wr_en) &
-                      (~kmac_msg0_valid_q | kmac_sent_last);
-      kmac_pending_writes = kmac_msg0_pending_write_o;
+                      (~kmac_msg_valid_q[0] | kmac_sent_last);
+      kmac_pending_writes = kmac_msg_pending_write_o[0];
     end
   end
 
@@ -616,24 +616,24 @@ generate
 
     unique case (write_state_q)
       StMsgWait: begin
-        if (kmac_msg0_fifo_wvalid) begin
+        if (kmac_msg_fifo_wvalid[0]) begin
           if (kmac_cfg_mask_mode) begin
             write_state_d = StMsgShare0;
           end else begin
             kmac_pw_rst   = 1'b1;
           end
-        end else if (kmac_msg1_fifo_wvalid) begin
+        end else if (kmac_msg_fifo_wvalid[1]) begin
           write_state_d = StMsgShare1;
         end
       end
       StMsgShare0: begin
-        if (kmac_msg1_fifo_wvalid) begin
+        if (kmac_msg_fifo_wvalid[1]) begin
           write_state_d = StMsgWait;
           kmac_pw_rst   = 1'b1;
         end
       end
       StMsgShare1: begin
-        if (kmac_msg0_fifo_wvalid) begin
+        if (kmac_msg_fifo_wvalid[0]) begin
           write_state_d = StMsgWait;
           kmac_pw_rst   = 1'b1;
         end
@@ -679,202 +679,140 @@ generate
 
   `ASSERT(KmacPWWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[0]}))
 
+  // MSG SHARE Nets
+  logic [ExtWLEN-1:0]             kmac_msg_intg_q       [Share];
+  logic [ExtWLEN-1:0]             kmac_msg_intg_d       [Share];
+  logic [BaseWordsPerWLEN-1:0]    kmac_msg_ispr_wr_en   [Share];
+  logic [BaseWordsPerWLEN-1:0]    kmac_msg_ispr_base_wr [Share];
+  logic [BaseWordsPerWLEN-1:0]    kmac_msg_wr_en        [Share];
+  logic [WLEN-1:0]                kmac_msg_no_intg_d    [Share];
+  logic [WLEN-1:0]                kmac_msg_no_intg_q    [Share];
+  logic [ExtWLEN-1:0]             kmac_msg_intg_calc    [Share];
+  logic [2*BaseWordsPerWLEN-1:0]  kmac_msg_intg_err     [Share];
+  logic                           kmac_msg_wr_stall     [Share];
+  logic                           kmac_msg_write        [Share];
+
+  logic [ExtWLEN-1:0] ispr_kmac_msg_bignum_wdata_intg_blanked [Share];
+
   // MSG SHARE 0
-  logic [ExtWLEN-1:0]             kmac_msg0_intg_q;
-  logic [ExtWLEN-1:0]             kmac_msg0_intg_d;
-  logic [BaseWordsPerWLEN-1:0]    kmac_msg0_ispr_wr_en;
-  logic [BaseWordsPerWLEN-1:0]    kmac_msg0_ispr_base_wr;
-  logic [BaseWordsPerWLEN-1:0]    kmac_msg0_wr_en;
-  logic [WLEN-1:0]                kmac_msg0_no_intg_d;
-  logic [WLEN-1:0]                kmac_msg0_no_intg_q;
-  logic [ExtWLEN-1:0]             kmac_msg0_intg_calc;
-  logic [2*BaseWordsPerWLEN-1:0]  kmac_msg0_intg_err;
-
-  logic                           kmac_msg0_wr_stall;
-  logic                           kmac_msg0_write;
-
-  logic [ExtWLEN-1:0] ispr_kmac_msg0_bignum_wdata_intg_blanked;
 
   prim_blanker #(.Width(ExtWLEN)) u_ispr_kmac_msg0_bignum_wdata_blanker (
     .in_i (ispr_bignum_wdata_intg_i),
     .en_i (ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg0]),
-    .out_o(ispr_kmac_msg0_bignum_wdata_intg_blanked)
+    .out_o(ispr_kmac_msg_bignum_wdata_intg_blanked[0])
   );
 
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_kmac_msg0_words
     prim_secded_inv_39_32_enc i_kmac_msg0_secded_enc (
-      .data_i (kmac_msg0_no_intg_d[i_word*32+:32]),
-      .data_o (kmac_msg0_intg_calc[i_word*39+:39])
+      .data_i (kmac_msg_no_intg_d[0][i_word*32+:32]),
+      .data_o (kmac_msg_intg_calc[0][i_word*39+:39])
     );
     prim_secded_inv_39_32_dec i_kmac_msg0_secded_dec (
-      .data_i     (kmac_msg0_intg_q[i_word*39+:39]),
+      .data_i     (kmac_msg_intg_q[0][i_word*39+:39]),
       .data_o     (/* unused because we abort on any integrity error */),
       .syndrome_o (/* unused */),
-      .err_o      (kmac_msg0_intg_err[i_word*2+:2])
+      .err_o      (kmac_msg_intg_err[0][i_word*2+:2])
     );
 
     // This write signal is independent of an error in the controller that
-    // starts from this module.
-    assign kmac_msg0_ispr_base_wr[i_word] = (ispr_addr_i == IsprKmacMsg0) &
+    // starts from this module. ispr_wr_commit_i is pulled to 0 when fatal erorr ocurrs
+    // which leads to a combinational loop.
+    assign kmac_msg_ispr_base_wr[0][i_word] = (ispr_addr_i == IsprKmacMsg0) &
                                             (ispr_base_wr_en_i[i_word] | ispr_bignum_wr_en_i);
 
-    assign kmac_msg0_ispr_wr_en[i_word] = kmac_msg0_ispr_base_wr[i_word] & ispr_wr_commit_i;
+    assign kmac_msg_ispr_wr_en[0][i_word] = kmac_msg_ispr_base_wr[0][i_word] & ispr_wr_commit_i;
 
-    assign kmac_msg0_wr_en[i_word] = (ispr_init_i |
-                                     (kmac_msg0_ispr_wr_en[i_word] & kmac_msg0_write_ready_o) |
-                                      sec_wipe_kmac_regs_urnd_i) & ~kmac_msg0_wr_stall;
+    assign kmac_msg_wr_en[0][i_word] = (ispr_init_i |
+                                     (kmac_msg_ispr_wr_en[0][i_word] & kmac_msg_write_ready_o[0]) |
+                                      sec_wipe_kmac_regs_urnd_i) & ~kmac_msg_wr_stall[0];
 
     always_ff @(posedge clk_i) begin
-      if (kmac_msg0_wr_en[i_word]) begin
-        kmac_msg0_intg_q[i_word*39+:39] <= kmac_msg0_intg_d[i_word*39+:39];
+      if (kmac_msg_wr_en[0][i_word]) begin
+        kmac_msg_intg_q[0][i_word*39+:39] <= kmac_msg_intg_d[0][i_word*39+:39];
       end
     end
-    assign kmac_msg0_no_intg_q[i_word*32+:32] = kmac_msg0_intg_q[i_word*39+:32];
+    assign kmac_msg_no_intg_q[0][i_word*32+:32] = kmac_msg_intg_q[0][i_word*39+:32];
 
     always_comb begin
-      kmac_msg0_no_intg_d[i_word*32+:32] = '0;
-      kmac_msg0_intg_d[i_word*39+:39] = '0;
+      kmac_msg_no_intg_d[0][i_word*32+:32] = '0;
+      kmac_msg_intg_d[0][i_word*39+:39] = '0;
       if (sec_wipe_kmac_regs_urnd_i) begin
         // Non-encoded inputs have to be encoded before writing to the register.
-        kmac_msg0_no_intg_d[i_word*32+:32] = urnd_data_i[i_word*32+:32];
-        kmac_msg0_intg_d[i_word*39+:39] = kmac_msg0_intg_calc[i_word*39+:39];
+        kmac_msg_no_intg_d[0][i_word*32+:32] = urnd_data_i[i_word*32+:32];
+        kmac_msg_intg_d[0][i_word*39+:39] = kmac_msg_intg_calc[0][i_word*39+:39];
       end else begin
         // Pre-encoded inputs can directly be written to the register.
-        kmac_msg0_intg_d[i_word*39+:39] = ispr_kmac_msg0_bignum_wdata_intg_blanked[i_word*39+:39];
+        kmac_msg_intg_d[0][i_word*39+:39] =
+            ispr_kmac_msg_bignum_wdata_intg_blanked[0][i_word*39+:39];
       end
     end
 
     `ASSERT(KmacMsg0WrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
   end
 
-  assign kmac_msg0_write = (ispr_addr_i == IsprKmacMsg0) & ispr_wr_commit_i;
+  assign kmac_msg_write[0] = (ispr_addr_i == IsprKmacMsg0) & ispr_wr_commit_i;
 
   // MSG SHARE 1
-  logic [ExtWLEN-1:0]             kmac_msg1_intg_q;
-  logic [ExtWLEN-1:0]             kmac_msg1_intg_d;
-  logic [BaseWordsPerWLEN-1:0]    kmac_msg1_ispr_wr_en;
-  logic [BaseWordsPerWLEN-1:0]    kmac_msg1_ispr_base_wr;
-  logic [BaseWordsPerWLEN-1:0]    kmac_msg1_wr_en;
-  logic [WLEN-1:0]                kmac_msg1_no_intg_d;
-  logic [WLEN-1:0]                kmac_msg1_no_intg_q;
-  logic [ExtWLEN-1:0]             kmac_msg1_intg_calc;
-  logic [2*BaseWordsPerWLEN-1:0]  kmac_msg1_intg_err;
-
-  logic                           kmac_msg1_wr_stall;
-  logic                           kmac_msg1_write;
-  logic                           kmac_msg1_illegal_wr;
-
-  logic [ExtWLEN-1:0] ispr_kmac_msg1_bignum_wdata_intg_blanked;
+  logic kmac_msg1_illegal_wr; // Flag to detect illegal write in unmasked mode
 
   prim_blanker #(.Width(ExtWLEN)) u_ispr_kmac_msg1_bignum_wdata_blanker (
     .in_i (ispr_bignum_wdata_intg_i),
     .en_i (ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg1]),
-    .out_o(ispr_kmac_msg1_bignum_wdata_intg_blanked)
+    .out_o(ispr_kmac_msg_bignum_wdata_intg_blanked[1])
   );
 
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_kmac_msg1_words
     prim_secded_inv_39_32_enc i_kmac_msg1_secded_enc (
-      .data_i (kmac_msg1_no_intg_d[i_word*32+:32]),
-      .data_o (kmac_msg1_intg_calc[i_word*39+:39])
+      .data_i (kmac_msg_no_intg_d[1][i_word*32+:32]),
+      .data_o (kmac_msg_intg_calc[1][i_word*39+:39])
     );
     prim_secded_inv_39_32_dec i_kmac_msg1_secded_dec (
-      .data_i     (kmac_msg1_intg_q[i_word*39+:39]),
+      .data_i     (kmac_msg_intg_q[1][i_word*39+:39]),
       .data_o     (/* unused because we abort on any integrity error */),
       .syndrome_o (/* unused */),
-      .err_o      (kmac_msg1_intg_err[i_word*2+:2])
+      .err_o      (kmac_msg_intg_err[1][i_word*2+:2])
     );
 
-    assign kmac_msg1_ispr_base_wr[i_word] = (ispr_addr_i == IsprKmacMsg1) &
+    assign kmac_msg_ispr_base_wr[1][i_word] = (ispr_addr_i == IsprKmacMsg1) &
                                             (ispr_base_wr_en_i[i_word] | ispr_bignum_wr_en_i);
 
-    assign kmac_msg1_ispr_wr_en[i_word] = kmac_msg1_ispr_base_wr[i_word] & ispr_wr_commit_i;
+    assign kmac_msg_ispr_wr_en[1][i_word] = kmac_msg_ispr_base_wr[1][i_word] & ispr_wr_commit_i;
 
-    assign kmac_msg1_wr_en[i_word] = (ispr_init_i |
-                                     (kmac_msg1_ispr_wr_en[i_word] & kmac_msg1_write_ready_o) |
-                                     sec_wipe_kmac_regs_urnd_i) & ~kmac_msg1_wr_stall;
+    assign kmac_msg_wr_en[1][i_word] = (ispr_init_i |
+                                     (kmac_msg_ispr_wr_en[1][i_word] & kmac_msg_write_ready_o[1]) |
+                                     sec_wipe_kmac_regs_urnd_i) & ~kmac_msg_wr_stall[1];
 
     always_ff @(posedge clk_i) begin
-      if (kmac_msg1_wr_en[i_word]) begin
-        kmac_msg1_intg_q[i_word*39+:39] <= kmac_msg1_intg_d[i_word*39+:39];
+      if (kmac_msg_wr_en[1][i_word]) begin
+        kmac_msg_intg_q[1][i_word*39+:39] <= kmac_msg_intg_d[1][i_word*39+:39];
       end
     end
-    assign kmac_msg1_no_intg_q[i_word*32+:32] = kmac_msg1_intg_q[i_word*39+:32];
+    assign kmac_msg_no_intg_q[1][i_word*32+:32] = kmac_msg_intg_q[1][i_word*39+:32];
 
     always_comb begin
-      kmac_msg1_no_intg_d[i_word*32+:32] = '0;
-      kmac_msg1_intg_d[i_word*39+:39] = '0;
+      kmac_msg_no_intg_d[1][i_word*32+:32] = '0;
+      kmac_msg_intg_d[1][i_word*39+:39] = '0;
       if (sec_wipe_kmac_regs_urnd_i) begin
         // Non-encoded inputs have to be encoded before writing to the register.
-        kmac_msg1_no_intg_d[i_word*32+:32] = urnd_data_i[i_word*32+:32];
-        kmac_msg1_intg_d[i_word*39+:39] = kmac_msg1_intg_calc[i_word*39+:39];
+        kmac_msg_no_intg_d[1][i_word*32+:32] = urnd_data_i[i_word*32+:32];
+        kmac_msg_intg_d[1][i_word*39+:39] = kmac_msg_intg_calc[1][i_word*39+:39];
       end else begin
         // Pre-encoded inputs can directly be written to the register.
-        kmac_msg1_intg_d[i_word*39+:39] = ispr_kmac_msg1_bignum_wdata_intg_blanked[i_word*39+:39];
+        kmac_msg_intg_d[1][i_word*39+:39] =
+            ispr_kmac_msg_bignum_wdata_intg_blanked[1][i_word*39+:39];
       end
     end
 
     `ASSERT(KmacMsg1WrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
   end
 
-  assign kmac_msg1_write = (ispr_addr_i == IsprKmacMsg1) & ispr_wr_commit_i;
+  assign kmac_msg_write[1] = (ispr_addr_i == IsprKmacMsg1) & ispr_wr_commit_i;
 
   // If we have a write to share1 during unmasked mode report an error
   always_comb begin
     kmac_msg1_illegal_wr = 1'b0;
-    if (~kmac_cfg_mask_mode && |(kmac_msg1_ispr_base_wr)) begin
+    if (~kmac_cfg_mask_mode && |(kmac_msg_ispr_base_wr[1])) begin
       kmac_msg1_illegal_wr = 1'b1;
-    end
-  end
-
-  // Back to back writes to the same share in masked mode is illegal
-  kmac_write_state_e alt_write_state_d, alt_write_state_q;
-
-  logic msg0_consecutive_wr_error;
-  logic msg1_consecutive_wr_error;
-
-  always_comb begin
-    // Default assignments
-    alt_write_state_d = alt_write_state_q;
-    msg0_consecutive_wr_error = 1'b0;
-    msg1_consecutive_wr_error = 1'b0;
-
-    // Only an error if in masked mode
-    if (kmac_cfg_mask_mode) begin
-      unique case (alt_write_state_q)
-        StMsgWait: begin
-          if (|kmac_msg0_ispr_base_wr & ~kmac_msg0_wr_stall) begin
-            alt_write_state_d = StMsgShare0;
-          end
-          if (|kmac_msg1_ispr_base_wr & ~kmac_msg1_wr_stall) begin
-            alt_write_state_d = StMsgShare1;
-          end
-        end
-        StMsgShare0: begin
-          if (|kmac_msg0_ispr_base_wr & ~kmac_msg0_wr_stall) begin
-            msg0_consecutive_wr_error = 1'b1;
-          end
-          if (|kmac_msg1_ispr_base_wr & ~kmac_msg1_wr_stall) begin
-            alt_write_state_d = StMsgShare1;
-          end
-        end
-        StMsgShare1: begin
-          if (|kmac_msg0_ispr_base_wr & ~kmac_msg0_wr_stall) begin
-            alt_write_state_d = StMsgShare0;
-          end
-          if (|kmac_msg1_ispr_base_wr & ~kmac_msg1_wr_stall) begin
-            msg1_consecutive_wr_error = 1'b1;
-          end
-        end
-        default: ; // Consider triggering an error or alert in this case.
-      endcase
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      alt_write_state_q <= StMsgWait;
-    end else begin
-      alt_write_state_q <= alt_write_state_d;
     end
   end
 
@@ -886,11 +824,9 @@ generate
 
   // Error handling status for undersized message
   logic kmac_undersized_req_err;
-  logic kmac_undersized_req_err_latch;
 
   // Error handling status for oversized message
   logic kmac_oversized_req_err;
-  logic kmac_oversized_req_err_latch;
 
   prim_secded_inv_39_32_enc u_kmac_status_secded_enc (
     .data_i (kmac_status_no_intg_d),
@@ -905,74 +841,48 @@ generate
   );
 
   assign kmac_status_no_intg_d = kmac_new_cfg_q ? 32'b0 : {
-    27'b0,
-    kmac_undersized_req_err_latch,
-    kmac_oversized_req_err_latch,
+    29'b0,
     kmac_app_rsp_i.error,
     kmac_app_rsp_i.ready,
     kmac_app_rsp_i.done
   };
-
-  // If oversized err flag goes high at any point during transaction latch value into status reg
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      kmac_oversized_req_err_latch <= 1'b0;
-    end else begin
-      if (kmac_new_cfg_q) begin
-        kmac_oversized_req_err_latch <= 1'b0;
-      end else if (kmac_oversized_req_err) begin
-        kmac_oversized_req_err_latch <= 1'b1;
-      end
-    end
-  end
-
-  // If undersized err flag goes high at any point during transaction latch value into status reg
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      kmac_undersized_req_err_latch <= 1'b0;
-    end else begin
-      if (kmac_new_cfg_q) begin
-        kmac_undersized_req_err_latch <= 1'b0;
-      end else if (kmac_undersized_req_err) begin
-        kmac_undersized_req_err_latch <= 1'b1;
-      end
-    end
-  end
 
   always_ff @(posedge clk_i) begin
     kmac_status_intg_q <= kmac_status_intg_d;
   end
 
   // DIGEST SHARE 0
-  logic [DigestRegLen-1:0]              kmac_digest0_no_intg_d;
-  logic [ExtDigestLen-1:0]              kmac_digest0_intg_q;
-  logic [ExtDigestLen-1:0]              kmac_digest0_intg_d;
-  logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest0_intg_err;
-  logic [DigestRegLen-1:0]              kmac_digest0_mux_val;
 
-  // Common digest nets
+  // Common digest share nets
+  logic [DigestRegLen-1:0]              kmac_digest_no_intg_d [Share];
+  logic [ExtDigestLen-1:0]              kmac_digest_intg_q    [Share];
+  logic [ExtDigestLen-1:0]              kmac_digest_intg_d    [Share];
+  logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest_intg_err  [Share];
   logic                                 kmac_digest_valid_q;
   logic [BaseWordsPerDigestLen-1:0]     kmac_digest_wr_en;
 
+  // Unique share 0 net
+  logic [DigestRegLen-1:0]              kmac_digest0_mux_val;
+
   for (genvar i_word = 0; i_word < BaseWordsPerDigestLen; i_word++) begin : g_kmac_digest0_words
     prim_secded_inv_39_32_enc i_kmac_digest0_secded_enc (
-      .data_i (kmac_digest0_no_intg_d[i_word*32+:32]),
-      .data_o (kmac_digest0_intg_d[i_word*39+:39])
+      .data_i (kmac_digest_no_intg_d[0][i_word*32+:32]),
+      .data_o (kmac_digest_intg_d[0][i_word*39+:39])
     );
     prim_secded_inv_39_32_dec i_kmac_digest0_secded_dec (
-      .data_i     (kmac_digest0_intg_q[i_word*39+:39]),
+      .data_i     (kmac_digest_intg_q[0][i_word*39+:39]),
       .data_o     (/* unused because we abort on any integrity error */),
       .syndrome_o (/* unused */),
-      .err_o      (kmac_digest0_intg_err[i_word*2+:2])
+      .err_o      (kmac_digest_intg_err[0][i_word*2+:2])
     );
 
     always_ff @(posedge clk_i) begin
       if (kmac_digest_wr_en[i_word]) begin
-        kmac_digest0_intg_q[i_word*39+:39] <= kmac_digest0_intg_d[i_word*39+:39];
+        kmac_digest_intg_q[0][i_word*39+:39] <= kmac_digest_intg_d[0][i_word*39+:39];
       end
     end
 
-    assign kmac_digest0_no_intg_d[i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
+    assign kmac_digest_no_intg_d[0][i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
         urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] : kmac_digest0_mux_val[i_word*32+:32];
   end
 
@@ -985,31 +895,27 @@ generate
   );
 
   // DIGEST SHARE 1
-  logic [DigestRegLen-1:0]              kmac_digest1_no_intg_d;
-  logic [ExtDigestLen-1:0]              kmac_digest1_intg_q;
-  logic [ExtDigestLen-1:0]              kmac_digest1_intg_d;
-  logic [2*BaseWordsPerDigestLen-1:0]   kmac_digest1_intg_err;
-  logic                                 kmac_digest1_illegal_rd;
+  logic kmac_digest1_illegal_rd; // Flag to detect illegal digest read in unmasked mode
 
   for (genvar i_word = 0; i_word < BaseWordsPerDigestLen; i_word++) begin : g_kmac_digest1_words
     prim_secded_inv_39_32_enc i_kmac_digest1_secded_enc (
-      .data_i (kmac_digest1_no_intg_d[i_word*32+:32]),
-      .data_o (kmac_digest1_intg_d[i_word*39+:39])
+      .data_i (kmac_digest_no_intg_d[1][i_word*32+:32]),
+      .data_o (kmac_digest_intg_d[1][i_word*39+:39])
     );
     prim_secded_inv_39_32_dec i_kmac_digest1_secded_dec (
-      .data_i     (kmac_digest1_intg_q[i_word*39+:39]),
+      .data_i     (kmac_digest_intg_q[1][i_word*39+:39]),
       .data_o     (/* unused because we abort on any integrity error */),
       .syndrome_o (/* unused */),
-      .err_o      (kmac_digest1_intg_err[i_word*2+:2])
+      .err_o      (kmac_digest_intg_err[1][i_word*2+:2])
     );
 
     always_ff @(posedge clk_i) begin
       if (kmac_digest_wr_en[i_word]) begin
-        kmac_digest1_intg_q[i_word*39+:39] <= kmac_digest1_intg_d[i_word*39+:39];
+        kmac_digest_intg_q[1][i_word*39+:39] <= kmac_digest_intg_d[1][i_word*39+:39];
       end
     end
 
-    assign kmac_digest1_no_intg_d[i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
+    assign kmac_digest_no_intg_d[1][i_word*32+:32] = sec_wipe_kmac_regs_urnd_i ?
         urnd_data_i[(i_word % BaseWordsPerDigestLen)*32+:32] :
         kmac_app_rsp_i.digest_share1[i_word*32+:32];
 
@@ -1024,6 +930,7 @@ generate
     end
   end
 
+  // KMAC EAGER DIGEST REFRESH
   // Common digest share interface to cotrol valids and app_o.next
   logic       kmac_digest_rd_next;
   logic [1:0] sha_digest_rsp_cnt;
@@ -1032,6 +939,8 @@ generate
 
   // Make an FSM to control eager KMAC refresh
   // Need to have read from both WSR in order to fetch the next digests
+  // Consecutive reads from the same digest share are legal but will not trigger a
+  // new digest to be shifted from KMAC.
 
   kmac_eager_state_e eager_state_d, eager_state_q;
 
@@ -1042,8 +951,10 @@ generate
 
     unique case (eager_state_q)
       StDigestWait: begin
+        // Determine if there is a read from digest 0 or digest 1
         if (kmac_digest_valid_q && ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest0]) begin
           if (~kmac_cfg_mask_mode) begin
+            // When in unmasked mode we can immediately refresh
             kmac_digest_rd_next = 1'b1;
             eager_state_d = StDigestWait;
           end else begin
@@ -1065,18 +976,21 @@ generate
           kmac_digest_rd_next = 1'b1;
         end
       end
-      default: ; // Consider triggering an error or alert in this case.
+      default: eager_state_d = StDigestWait;
     endcase
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       eager_state_q <= StDigestWait;
+    end else if (kmac_new_cfg_q) begin
+      eager_state_q <= StDigestWait;
     end else begin
       eager_state_q <= eager_state_d;
     end
   end
 
+  // Set when the received digest is valid/new
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       kmac_digest_valid_q <= 1'b0;
@@ -1107,44 +1021,48 @@ generate
   logic [14:0]                    kmac_cfg_msg_len;
   logic [11:0]                    kmac_cfg_msg_len_words;
   logic [2:0]                     kmac_cfg_msg_len_bytes;
-  logic [11:0]                    kmac_msg0_ctr;
 
   logic                           kmac_msg_err_clr;
   logic                           kmac_msg_err_clr_q;
-  logic                           kmac_msg0_fifo_wready;
-  logic [WLEN-1:0]                kmac_msg0_fifo_wdata;
-  logic [WLEN-1:0]                kmac_msg_fifo_wdata_mask;
-  logic                           kmac_msg0_fifo_rvalid;
-  logic                           kmac_msg0_fifo_rready;
-  logic [kmac_pkg::MsgWidth-1:0]  kmac_msg0_fifo_rdata;
-  logic [kmac_pkg::MsgWidth-1:0]  kmac_msg0_fifo_rdata_mask;
-  logic                           kmac_msg_fifo_flush;
-  logic                           kmac_msg_fifo_clr;
+
+  // FIFO packer and counter shares
+  logic [11:0]                    kmac_msg_ctr             [Share];
+  logic                           kmac_msg_ctr_err         [Share];
+  logic [WLEN-1:0]                kmac_msg_fifo_wdata_mask        ;
+  logic                           kmac_msg_fifo_wready     [Share];
+  logic [WLEN-1:0]                kmac_msg_fifo_wdata      [Share];
+  logic                           kmac_msg_fifo_rvalid     [Share];
+  logic                           kmac_msg_fifo_rready     [Share];
+  logic [kmac_pkg::MsgWidth-1:0]  kmac_msg_fifo_rdata      [Share];
+  logic [kmac_pkg::MsgWidth-1:0]  kmac_msg_fifo_rdata_mask [Share];
+  logic                           kmac_msg_fifo_flush             ;
+  logic                           kmac_msg_fifo_clr               ;
+
+  logic       packer_ctr_last       [Share];
+  logic [7:0] packer_rdata_mask     [Share];
+  logic [3:0] packer_rdata_mask_cnt [Share];
+
+  // Signals for last from packer
   logic                           kmac_last_msg_all_bytes_valid;
   logic [kmac_pkg::MsgStrbW-1:0]  kmac_last_msg_strb;
+  logic msg_last_words [Share];
+  logic msg_last_bytes [Share];
 
-  logic       packer0_ctr_last;
-  logic       packer1_ctr_last;
-  logic [7:0] packer0_rdata_mask;
-  logic [7:0] packer1_rdata_mask;
-  logic [3:0] packer0_rdata_mask_cnt;
-  logic [3:0] packer1_rdata_mask_cnt;
-
+  // Config and status signals
   logic kmac_app_active;
   logic kmac_app_last;
   logic kmac_msg_active_q;
   logic kmac_cfg_active_q;
   logic kmac_write_cfg_to_app;
-  logic kmac_msg0_ctr_err;
   logic kmac_msg_last;
   logic kmac_idle_q;
   logic kmac_cfg_done;
   logic kmac_app_cfg_sent;
   logic kmac_ispr;
 
-  // Oversized and undersized msg handling
-  logic kmac_msg0_req_err;
-  logic kmac_msg1_req_err;
+  // AppIntf error handling signals
+  logic kmac_msg_req_err;
+  logic kmac_msg_mask_err;
   logic kmac_fifo_deadlock;
   logic kmac_pending_last;
   logic kmac_inject_last_err;
@@ -1160,16 +1078,6 @@ generate
   logic not_full_word;
   logic packer_oversized_last;
 
-  // KMAC msg share 1 nets
-  logic                           kmac_msg1_fifo_wready;
-  logic [WLEN-1:0]                kmac_msg1_fifo_wdata;
-  logic                           kmac_msg1_fifo_rvalid;
-  logic [kmac_pkg::MsgWidth-1:0]  kmac_msg1_fifo_rdata;
-  logic [kmac_pkg::MsgWidth-1:0]  kmac_msg1_fifo_rdata_mask;
-  logic                           kmac_msg1_fifo_rready;
-  logic [11:0]                    kmac_msg1_ctr;
-  logic                           kmac_msg1_ctr_err;
-
   // Combined FIFO ready
   logic kmac_msg_fifos_valid;
 
@@ -1182,7 +1090,8 @@ generate
   assign kmac_cfg_msg_len_bytes   = kmac_cfg_msg_len[2:0];
   assign kmac_msg_err_clr         = kmac_app_rsp_i.error
                                     | sec_wipe_kmac_regs_urnd_i
-                                    | kmac_msg0_ctr_err;
+                                    | kmac_msg_ctr_err[0]
+                                    | kmac_msg_ctr_err[1];
 
   assign kmac_ispr = sec_wipe_kmac_regs_urnd_i | ispr_init_i;
 
@@ -1191,6 +1100,7 @@ generate
   logic kmac_next_sha;
 
   always_comb begin
+    kmac_next_sha = 1'b0;
     unique case (kmac_cfg_sha3_mode)
       sha3_pkg::Sha3: begin
         if (kmac_cfg_keccak_strength == sha3_pkg::L256) begin
@@ -1260,7 +1170,7 @@ generate
     end else if (kmac_msg_err_clr || kmac_idle_q) begin
       kmac_msg_active_q <= 1'b0;
       kmac_cfg_active_q <= 1'b0;
-    end else if (kmac_msg0_fifo_wready) begin //kmac_app_cfg_sent
+    end else if (kmac_msg_fifo_wready[0]) begin //kmac_app_cfg_sent
       kmac_msg_active_q <= kmac_cfg_active_q;
     end
   end
@@ -1269,21 +1179,21 @@ generate
   // Value is held until it is written into the fifo at the first wready signal
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      kmac_msg0_valid_q <= 1'b0;
-    end else if (|(kmac_msg0_wr_en) & !kmac_ispr) begin
-      kmac_msg0_valid_q <= 1'b1;
-    end else if (kmac_msg0_fifo_wready) begin
-      kmac_msg0_valid_q <= 1'b0;
+      kmac_msg_valid_q[0] <= 1'b0;
+    end else if (|(kmac_msg_wr_en[0]) & !kmac_ispr) begin
+      kmac_msg_valid_q[0] <= 1'b1;
+    end else if (kmac_msg_fifo_wready[0]) begin
+      kmac_msg_valid_q[0] <= 1'b0;
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      kmac_msg1_valid_q <= 1'b0;
-    end else if (|(kmac_msg1_wr_en) & !kmac_ispr & kmac_cfg_mask_mode) begin
-      kmac_msg1_valid_q <= 1'b1;
-    end else if (kmac_msg1_fifo_wready) begin
-      kmac_msg1_valid_q <= 1'b0;
+      kmac_msg_valid_q[1] <= 1'b0;
+    end else if (|(kmac_msg_wr_en[1]) & !kmac_ispr & kmac_cfg_mask_mode) begin
+      kmac_msg_valid_q[1] <= 1'b1;
+    end else if (kmac_msg_fifo_wready[1]) begin
+      kmac_msg_valid_q[1] <= 1'b0;
     end
   end
 
@@ -1324,29 +1234,27 @@ generate
   // Convert the number of 1's in byte mask to decimal value for comparison
   // with CFG WSR partial word byte field
   always_comb begin
-    packer0_rdata_mask_cnt = '0;
-    packer1_rdata_mask_cnt = '0;
+    packer_rdata_mask_cnt[0] = '0;
+    packer_rdata_mask_cnt[1] = '0;
     for (int i = 0; i < kmac_pkg::MsgStrbW; i++) begin
       // collapse each 8-bit chunk into one strb bit
-      packer0_rdata_mask[i] = |kmac_msg0_fifo_rdata_mask[i*8 +: 8];
-      packer1_rdata_mask[i] = |kmac_msg1_fifo_rdata_mask[i*8 +: 8];
+      packer_rdata_mask[0][i] = |kmac_msg_fifo_rdata_mask[0][i*8 +: 8];
+      packer_rdata_mask[1][i] = |kmac_msg_fifo_rdata_mask[1][i*8 +: 8];
     end
-    foreach (packer0_rdata_mask[i]) begin
-      packer0_rdata_mask_cnt += {3'b0, packer0_rdata_mask[i]};
-    end
-    foreach (packer1_rdata_mask[i]) begin
-      packer1_rdata_mask_cnt += {3'b0, packer1_rdata_mask[i]};
+    for (int i = 0; i < 8; i++) begin
+      packer_rdata_mask_cnt[0] += {3'b0, packer_rdata_mask[0][i]};
+      packer_rdata_mask_cnt[1] += {3'b0, packer_rdata_mask[1][i]};
     end
   end
 
   // Internal copy of acc_controller stall signal to determine pending msg writes
-  assign kmac_msg0_wr_stall = (kmac_msg0_write & (~kmac_msg0_fifo_wready));
-  assign kmac_msg1_wr_stall = (kmac_msg1_write & (~kmac_msg1_fifo_wready));
+  assign kmac_msg_wr_stall[0] = (kmac_msg_write[0] & (~kmac_msg_fifo_wready[0]));
+  assign kmac_msg_wr_stall[1] = (kmac_msg_write[1] & (~kmac_msg_fifo_wready[1]));
 
   // When reading the return digest the message has already been sent and any remainder is cleared
   assign kmac_msg_fifo_clr = kmac_sent_last &&
                              ((ispr_addr_i == IsprKmacDigest0) | (ispr_addr_i == IsprKmacDigest1))
-                             && !kmac_msg0_pending_write_o && !kmac_msg1_pending_write_o;
+                             && !kmac_msg_pending_write_o[0] && !kmac_msg_pending_write_o[1];
 
   // MSG SHARE 0 Packer and Ctr
   // Prim packer is used to send full words until the final word in msg request
@@ -1357,15 +1265,15 @@ generate
     .clk_i,
     .rst_ni,
 
-    .valid_i      (kmac_msg0_fifo_wvalid),
-    .data_i       (kmac_msg0_fifo_wdata),
+    .valid_i      (kmac_msg_fifo_wvalid[0]),
+    .data_i       (kmac_msg_fifo_wdata[0]),
     .mask_i       (kmac_msg_fifo_wdata_mask),
-    .ready_o      (kmac_msg0_fifo_wready),
+    .ready_o      (kmac_msg_fifo_wready[0]),
 
-    .valid_o      (kmac_msg0_fifo_rvalid),
-    .data_o       (kmac_msg0_fifo_rdata),
-    .mask_o       (kmac_msg0_fifo_rdata_mask),
-    .ready_i      (kmac_msg0_fifo_rready),
+    .valid_o      (kmac_msg_fifo_rvalid[0]),
+    .data_o       (kmac_msg_fifo_rdata[0]),
+    .mask_o       (kmac_msg_fifo_rdata_mask[0]),
+    .ready_i      (kmac_msg_fifo_rready[0]),
 
     // kmac_msg_err_clr is for internal ACC error to empty the FIFO
     // kmac_msg_fifo_flush reads a partial word at the end of the msg
@@ -1387,13 +1295,13 @@ generate
     .clr_i              (kmac_msg_err_clr || kmac_new_cfg_q || kmac_sent_last),
     .set_i              (1'b0),
     .set_cnt_i          ({(12){1'b0}}),
-    .incr_en_i          (kmac_msg0_fifo_rvalid & kmac_app_rsp_i.ready & kmac_msg0_fifo_rready),
+    .incr_en_i          (kmac_msg_fifo_rvalid[0] & kmac_app_rsp_i.ready & kmac_msg_fifo_rready[0]),
     .decr_en_i          (1'b0),
     .step_i             ({{(11){1'b0}}, {1'b1}}),
     .commit_i           (1'b1),
-    .cnt_o              (kmac_msg0_ctr),
+    .cnt_o              (kmac_msg_ctr[0]),
     .cnt_after_commit_o (/* unused */),
-    .err_o              (kmac_msg0_ctr_err)
+    .err_o              (kmac_msg_ctr_err[0])
   );
 
   // MSG SHARE 1 Packer and Ctr
@@ -1404,15 +1312,15 @@ generate
     .clk_i,
     .rst_ni,
 
-    .valid_i      (kmac_msg1_fifo_wvalid),
-    .data_i       (kmac_msg1_fifo_wdata),
+    .valid_i      (kmac_msg_fifo_wvalid[1]),
+    .data_i       (kmac_msg_fifo_wdata[1]),
     .mask_i       (kmac_msg_fifo_wdata_mask),
-    .ready_o      (kmac_msg1_fifo_wready),
+    .ready_o      (kmac_msg_fifo_wready[1]),
 
-    .valid_o      (kmac_msg1_fifo_rvalid),
-    .data_o       (kmac_msg1_fifo_rdata),
-    .mask_o       (kmac_msg1_fifo_rdata_mask),
-    .ready_i      (kmac_msg1_fifo_rready),
+    .valid_o      (kmac_msg_fifo_rvalid[1]),
+    .data_o       (kmac_msg_fifo_rdata[1]),
+    .mask_o       (kmac_msg_fifo_rdata_mask[1]),
+    .ready_i      (kmac_msg_fifo_rready[1]),
 
     // kmac_msg_err_clr is for internal ACC error to empty the FIFO
     // kmac_msg_fifo_flush reads a partial word at the end of the msg
@@ -1433,30 +1341,36 @@ generate
     .clr_i              (kmac_msg_err_clr || kmac_new_cfg_q || kmac_sent_last),
     .set_i              (1'b0),
     .set_cnt_i          ({(12){1'b0}}),
-    .incr_en_i          (kmac_msg1_fifo_rvalid & kmac_app_rsp_i.ready & kmac_msg1_fifo_rready),
+    .incr_en_i          (kmac_msg_fifo_rvalid[1] & kmac_app_rsp_i.ready & kmac_msg_fifo_rready[1]),
     .decr_en_i          (1'b0),
     .step_i             ({{(11){1'b0}}, {1'b1}}),
     .commit_i           (1'b1),
-    .cnt_o              (kmac_msg1_ctr),
+    .cnt_o              (kmac_msg_ctr[1]),
     .cnt_after_commit_o (/* unused */),
-    .err_o              (kmac_msg1_ctr_err)
+    .err_o              (kmac_msg_ctr_err[1])
   );
 
   // Check if we have a FIFO deadlock
   always_comb begin
     kmac_fifo_deadlock = 1'b0;
     if (kmac_cfg_mask_mode) begin
-      if ((|kmac_msg0_ispr_base_wr & ~kmac_msg0_fifo_wready) & ~kmac_msg1_fifo_rvalid & ~kmac_msg1_valid_q) begin
+      if (
+        (|kmac_msg_ispr_base_wr[0] & ~kmac_msg_fifo_wready[0]) &
+        ~kmac_msg_fifo_rvalid[1] & ~kmac_msg_valid_q[1]
+      ) begin
         kmac_fifo_deadlock = 1'b1;
       end
-      if ((|kmac_msg1_ispr_base_wr & ~kmac_msg1_fifo_wready) & ~kmac_msg0_fifo_rvalid & ~kmac_msg0_valid_q) begin
+      if (
+        (|kmac_msg_ispr_base_wr[1] & ~kmac_msg_fifo_wready[1]) &
+        ~kmac_msg_fifo_rvalid[0] & ~kmac_msg_valid_q[0]
+      ) begin
         kmac_fifo_deadlock = 1'b1;
       end
       if ((ispr_addr_i == IsprKmacPartialW) & ispr_base_wr_en_i[0]) begin
-        if (kmac_msg1_valid_q & ~kmac_msg1_fifo_rready & ~kmac_msg0_fifo_rvalid) begin
+        if (kmac_msg_valid_q[1] & ~kmac_msg_fifo_rready[1] & ~kmac_msg_fifo_rvalid[0]) begin
           kmac_fifo_deadlock = 1'b1;
         end
-        if (kmac_msg0_valid_q & ~kmac_msg0_fifo_rready & ~kmac_msg1_fifo_rvalid) begin
+        if (kmac_msg_valid_q[0] & ~kmac_msg_fifo_rready[0] & ~kmac_msg_fifo_rvalid[1]) begin
           kmac_fifo_deadlock = 1'b1;
         end
       end
@@ -1465,63 +1379,65 @@ generate
 
   // All fifos for masked mode are rvalid
   assign kmac_msg_fifos_valid = kmac_cfg_mask_mode ?
-                                kmac_msg0_fifo_rvalid && kmac_msg1_fifo_rvalid :
-                                kmac_msg0_fifo_rvalid;
+                                kmac_msg_fifo_rvalid[0] && kmac_msg_fifo_rvalid[1] :
+                                kmac_msg_fifo_rvalid[0];
 
   // Ensure that the read mask is at least the size of the cfg before asserting last
-  assign packer0_ctr_last = (packer0_rdata_mask_cnt >= {1'b0, kmac_cfg_msg_len_bytes});
-  assign packer1_ctr_last = (packer1_rdata_mask_cnt >= {1'b0, kmac_cfg_msg_len_bytes});
+  assign packer_ctr_last[0] = (packer_rdata_mask_cnt[0] >= {1'b0, kmac_cfg_msg_len_bytes});
+  assign packer_ctr_last[1] = (packer_rdata_mask_cnt[1] >= {1'b0, kmac_cfg_msg_len_bytes});
 
   // If it is time for the final word and there is a partial word we need to flush it out
   assign kmac_msg_fifo_flush   = (kmac_msg_last && (kmac_cfg_msg_len_bytes != 3'h0) &&
-                                 (~kmac_msg0_fifo_rvalid && ~kmac_msg1_fifo_rvalid));
+                                 (~kmac_msg_fifo_rvalid[0] && ~kmac_msg_fifo_rvalid[1]));
 
   assign kmac_write_cfg_to_app =  kmac_cfg_active_q && (~kmac_msg_active_q | ~kmac_app_cfg_sent) &&
                                   ~kmac_idle_q;
 
   // fifo share 0 write iface
-  assign kmac_msg0_fifo_wdata  = kmac_msg0_no_intg_q;
-  assign kmac_msg0_fifo_wvalid = kmac_cfg_active_q && kmac_msg0_valid_q && kmac_msg0_fifo_wready &&
-                                ~kmac_msg_fifo_flush && ~kmac_sent_last && ~kmac_msg_last;
+  assign kmac_msg_fifo_wdata[0]  = kmac_msg_no_intg_q[0];
+  assign kmac_msg_fifo_wvalid[0] =
+      kmac_cfg_active_q && kmac_msg_valid_q[0] && kmac_msg_fifo_wready[0] &&
+      ~kmac_msg_fifo_flush && ~kmac_sent_last && ~kmac_msg_last;
 
-  assign kmac_msg0_write_ready_o = kmac_msg0_fifo_wready;
+  assign kmac_msg_write_ready_o[0] = kmac_msg_fifo_wready[0];
 
   // fifo share 0 read iface
   // KMAC must be ready to receive data and we should only fetch the next word if both shares
   // are asserted valid on the AppIntf. The FIFO may have to wait during writes to the other share.
-  assign kmac_msg0_fifo_rready = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app &
-                                  kmac_msg0_fifo_rvalid & kmac_app_req_o.valid) |
-                                 (kmac_sent_last | kmac_msg_err_clr_q);
+  assign kmac_msg_fifo_rready[0] = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app &
+                                    kmac_msg_fifo_rvalid[0] & kmac_app_req_o.valid) |
+                                   (kmac_sent_last | kmac_msg_err_clr_q);
 
   // fifo share 1 write iface
-  assign kmac_msg1_fifo_wdata  = kmac_msg1_no_intg_q;
-  assign kmac_msg1_fifo_wvalid = kmac_cfg_active_q && kmac_msg1_valid_q && kmac_msg1_fifo_wready &&
-                                 ~kmac_msg_fifo_flush && ~kmac_sent_last && ~kmac_msg_last;
+  assign kmac_msg_fifo_wdata[1]  = kmac_msg_no_intg_q[1];
+  assign kmac_msg_fifo_wvalid[1] =
+      kmac_cfg_active_q && kmac_msg_valid_q[1] && kmac_msg_fifo_wready[1] &&
+      ~kmac_msg_fifo_flush && ~kmac_sent_last && ~kmac_msg_last;
 
-  assign kmac_msg1_write_ready_o = kmac_msg1_fifo_wready;
+  assign kmac_msg_write_ready_o[1] = kmac_msg_fifo_wready[1];
 
   // fifo share 1 read iface
-  assign kmac_msg1_fifo_rready = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app &
-                                  kmac_msg1_fifo_rvalid & kmac_app_req_o.valid) |
+  assign kmac_msg_fifo_rready[1] = (kmac_app_rsp_i.ready & ~kmac_write_cfg_to_app &
+                                  kmac_msg_fifo_rvalid[1] & kmac_app_req_o.valid) |
                                  (kmac_sent_last | kmac_msg_err_clr_q);
 
-  assign kmac_msg0_pending_write_o = kmac_msg0_valid_q && ~kmac_sent_last;
-  assign kmac_msg1_pending_write_o = kmac_msg1_valid_q && ~kmac_sent_last;
+  assign kmac_msg_pending_write_o[0] = kmac_msg_valid_q[0] && ~kmac_sent_last;
+  assign kmac_msg_pending_write_o[1] = kmac_msg_valid_q[1] && ~kmac_sent_last;
 
-  logic msg0_last_words, msg0_last_bytes;
-  logic msg1_last_words, msg1_last_bytes;
-  assign msg0_last_words = (kmac_msg0_ctr >= kmac_cfg_msg_len_words - 1) && kmac_msg0_fifo_rvalid;
-  assign msg0_last_bytes = ((kmac_msg0_ctr >= kmac_cfg_msg_len_words) && packer0_ctr_last);
-  assign msg1_last_words = (kmac_msg1_ctr >= kmac_cfg_msg_len_words - 1) && kmac_msg1_fifo_rvalid;
-  assign msg1_last_bytes = ((kmac_msg1_ctr >= kmac_cfg_msg_len_words) && packer1_ctr_last);
+  assign msg_last_words[0] = (kmac_msg_ctr[0] >= kmac_cfg_msg_len_words - 1) &&
+                              kmac_msg_fifo_rvalid[0];
+  assign msg_last_bytes[0] = ((kmac_msg_ctr[0] >= kmac_cfg_msg_len_words) && packer_ctr_last[0]);
+  assign msg_last_words[1] = (kmac_msg_ctr[1] >= kmac_cfg_msg_len_words - 1) &&
+                              kmac_msg_fifo_rvalid[1];
+  assign msg_last_bytes[1] = ((kmac_msg_ctr[1] >= kmac_cfg_msg_len_words) && packer_ctr_last[1]);
 
   always_comb begin
     if (kmac_cfg_msg_len_bytes == 3'h0) begin
-      if (kmac_cfg_mask_mode) kmac_msg_last = msg0_last_words & msg1_last_words;
-      else                    kmac_msg_last = msg0_last_words;
+      if (kmac_cfg_mask_mode) kmac_msg_last = msg_last_words[0] & msg_last_words[1];
+      else                    kmac_msg_last = msg_last_words[0];
     end else begin
-      if (kmac_cfg_mask_mode) kmac_msg_last = msg0_last_bytes & msg1_last_bytes;
-      else                    kmac_msg_last = msg0_last_bytes;
+      if (kmac_cfg_mask_mode) kmac_msg_last = msg_last_bytes[0] & msg_last_bytes[1];
+      else                    kmac_msg_last = msg_last_bytes[0];
     end
   end
 
@@ -1539,9 +1455,9 @@ generate
   // The first word contains the cfg otherwise send the body
   assign kmac_app_req_o.data_share0 = kmac_write_cfg_to_app ?
                                       {59'b0, kmac_cfg_keccak_strength, kmac_cfg_sha3_mode} :
-                                      kmac_msg0_fifo_rdata;
+                                      kmac_msg_fifo_rdata[0];
   assign kmac_app_req_o.data_share1 = (kmac_write_cfg_to_app | ~kmac_cfg_mask_mode) ?
-                                      64'b0 : kmac_msg1_fifo_rdata;
+                                      64'b0 : kmac_msg_fifo_rdata[1];
 
   // The strb will always be 8'hFF except for the CFG and last word
   assign kmac_app_req_o.strb  = kmac_write_cfg_to_app ?
@@ -1565,7 +1481,7 @@ generate
       kmac_sent_last <= 1'b0;
     end else begin
       // Either we observed a valid last or we artificially created a last
-      if ((kmac_msg0_fifo_rvalid & kmac_msg_last) | kmac_inject_last_err) begin
+      if ((kmac_msg_fifo_rvalid[0] & kmac_msg_last) | kmac_inject_last_err) begin
         kmac_pending_last <= 1'b1; // Prepared to send the final word
         if (kmac_app_rsp_i.ready) begin
           kmac_sent_last <= 1'b1;
@@ -1583,26 +1499,17 @@ generate
   // There should not be any new words being written or read to/from the FIFO
   // The FIFO should not be in a flush cycle
   always_comb begin
-    kmac_msg0_req_err = 1'b0;
-    kmac_msg1_req_err = 1'b0;
-    //if (ispr_addr_i == IsprKmacDigest0 && kmac_app_active) begin
-    //  kmac_msg0_req_err = (!kmac_msg0_pending_write_o && !kmac_msg0_fifo_rvalid &&
-    //                       !kmac_msg_fifo_flush && !kmac_msg0_fifo_wvalid);
-    //end
-    if (ispr_addr_i == IsprKmacDigest1 && kmac_app_active) begin
-      kmac_msg1_req_err = (!kmac_msg1_pending_write_o && !kmac_msg1_fifo_rvalid &&
-                           !kmac_msg_fifo_flush && !kmac_msg1_fifo_wvalid);
-    end
+    kmac_msg_req_err = 1'b0;
     if ((ispr_addr_i == IsprKmacDigest0 | ispr_addr_i == IsprKmacDigest1) && kmac_app_active) begin
-      kmac_msg0_req_err = !(kmac_msg0_pending_write_o | kmac_msg1_pending_write_o) &&
-                          !(kmac_msg_fifos_valid) &&
-                          !kmac_msg_fifo_flush &&
-                          !(kmac_msg0_fifo_wvalid | kmac_msg1_fifo_wvalid);
+      kmac_msg_req_err = !(kmac_msg_pending_write_o[0] | kmac_msg_pending_write_o[1]) &&
+                         !(kmac_msg_fifos_valid) &&
+                         !kmac_msg_fifo_flush &&
+                         !(kmac_msg_fifo_wvalid[0] | kmac_msg_fifo_wvalid[1]);
     end
   end
 
   // If we have not received a last see if there is an error
-  assign kmac_undersized_req_err = (kmac_msg0_req_err) & ~kmac_pending_last;
+  assign kmac_undersized_req_err = kmac_msg_req_err & ~kmac_pending_last;
 
   // Register the undersized req err to compute a posedge
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -1654,34 +1561,47 @@ generate
     end
   end
 
+  always_comb begin
+    kmac_msg_mask_err = 1'b0;
+    if (kmac_cfg_mask_mode) begin
+      if (kmac_app_req_o.last & kmac_app_req_o.valid) begin
+        if (packer_rdata_mask_cnt[0] != packer_rdata_mask_cnt[1]) begin
+          kmac_msg_mask_err = 1'b1;
+        end else begin
+          kmac_msg_mask_err = 1'b0;
+        end
+      end
+    end
+  end
+
   // The cfg reads 0 when it is a full word which means the mask is 8 so we must skip evaluation
   // at these sizes, otherwise check if mask is greater than the cfg
   always_comb begin
     not_full_word = 1'b0;
     if (kmac_cfg_mask_mode) begin
-      not_full_word = ~(packer0_rdata_mask_cnt == 4'h8 & kmac_cfg_msg_len_bytes == 3'h0) &
-                      ~(packer1_rdata_mask_cnt == 4'h8 & kmac_cfg_msg_len_bytes == 3'h0);
+      not_full_word = ~(packer_rdata_mask_cnt[0] == 4'h8 & kmac_cfg_msg_len_bytes == 3'h0) &
+                      ~(packer_rdata_mask_cnt[1] == 4'h8 & kmac_cfg_msg_len_bytes == 3'h0);
     end else begin
-      not_full_word = ~(packer0_rdata_mask_cnt == 4'h8 & kmac_cfg_msg_len_bytes == 3'h0);
+      not_full_word = ~(packer_rdata_mask_cnt[0] == 4'h8 & kmac_cfg_msg_len_bytes == 3'h0);
     end
   end
   assign packer_oversized_last =
-      not_full_word & ((packer0_rdata_mask_cnt > {1'b0, kmac_cfg_msg_len_bytes}) |
-                       (packer1_rdata_mask_cnt > {1'b0, kmac_cfg_msg_len_bytes});
+      not_full_word & ((packer_rdata_mask_cnt[0] > {1'b0, kmac_cfg_msg_len_bytes}) |
+                       (packer_rdata_mask_cnt[1] > {1'b0, kmac_cfg_msg_len_bytes}));
 
   assign last_word_oversized    = kmac_msg_last & packer_oversized_last;
   // Read or write to/from FIFO that occurs after last
-  assign rw_after_last          = kmac_sent_last & ((kmac_msg0_fifo_rvalid | kmac_msg0_valid_q) |
-                                                    (kmac_msg1_fifo_rvalid | kmac_msg1_valid_q));
+  assign rw_after_last = kmac_sent_last & ((kmac_msg_fifo_rvalid[0] | kmac_msg_valid_q[0]) |
+                                           (kmac_msg_fifo_rvalid[1] | kmac_msg_valid_q[1]));
   // There is still a pending write to the FIFO while last is being asserted after flush
-  assign write_during_last      = kmac_app_last & (kmac_msg0_valid_q | kmac_msg1_valid_q);
+  assign write_during_last      = kmac_app_last & (kmac_msg_valid_q[0] | kmac_msg_valid_q[1]);
   // Injecting an artificial last may impact the write_during_last flag so we check that the
   // message isn't undersized before raising this flag
-  assign kmac_oversized_req_err = (rw_after_last | write_during_last)
-                                  & ~kmac_undersized_req_err_latch | last_word_oversized;
+  assign kmac_oversized_req_err = (rw_after_last | write_during_last) | last_word_oversized;
 
   assign kmac_intf_fatal_error_o = kmac_app_rsp_i.error | kmac_undersized_req_err |
-                                   kmac_oversized_req_err | kmac_fifo_deadlock;
+                                   kmac_oversized_req_err | kmac_fifo_deadlock |
+                                   kmac_msg_mask_err | kmac_msg_ctr_err[0] | kmac_msg_ctr_err[1];
   assign kmac_intf_recov_error_o = kmac_digest1_illegal_rd | kmac_msg1_illegal_wr;
   end
 endgenerate
@@ -1824,13 +1744,13 @@ endgenerate
   generate
     if (AccPQCEn) begin : gen_ispr_intg_mux_pqc
       assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacMsg0Intg]    =
-          gen_pqc_wsr.kmac_msg0_intg_q;
+          gen_pqc_wsr.kmac_msg_intg_q[0];
       assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacMsg1Intg]    =
-          gen_pqc_wsr.kmac_digest1_intg_q;
+          gen_pqc_wsr.kmac_digest_intg_q[1];
       assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigest0Intg] =
-          gen_pqc_wsr.kmac_digest0_intg_q;
+          gen_pqc_wsr.kmac_digest_intg_q[0];
       assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigest1Intg] =
-          gen_pqc_wsr.kmac_digest1_intg_q;
+          gen_pqc_wsr.kmac_digest_intg_q[1];
       assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprAccHIntg]        = ispr_acch_intg_i;
     end
   endgenerate
@@ -2995,10 +2915,10 @@ generate
       // Raise a register integrity violation error iff `mod_intg_q` is used
       // and (at least partially) invalid.
       assign reg_intg_violation_err_o = (mod_used & |(mod_intg_err)) |
-                                        (kmac_used & ( |(gen_pqc_wsr.kmac_msg0_intg_err)    |
-                                                       |(gen_pqc_wsr.kmac_msg1_intg_err)    |
-                                                       |(gen_pqc_wsr.kmac_digest0_intg_err) |
-                                                       |(gen_pqc_wsr.kmac_digest1_intg_err) |
+                                        (kmac_used & ( |(gen_pqc_wsr.kmac_msg_intg_err[0])    |
+                                                       |(gen_pqc_wsr.kmac_msg_intg_err[1])    |
+                                                       |(gen_pqc_wsr.kmac_digest_intg_err[0]) |
+                                                       |(gen_pqc_wsr.kmac_digest_intg_err[1]) |
                                                        |(gen_pqc_wsr.kmac_cfg_intg_err)     |
                                                        |(gen_pqc_wsr.kmac_status_intg_err)));
 
@@ -3108,14 +3028,16 @@ generate
 
       // KMAC MSG0 ISPR Blanking
       `ASSERT(BlankingIsprKmacMsg0A,
-              !((|gen_pqc_wsr.kmac_msg0_wr_en) | ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg0]) |->
-              gen_pqc_wsr.ispr_kmac_msg0_bignum_wdata_intg_blanked == '0,
+              !((|gen_pqc_wsr.kmac_msg_wr_en[0]) |
+              ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg0]) |->
+              gen_pqc_wsr.ispr_kmac_msg_bignum_wdata_intg_blanked[0] == '0,
               clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
 
       // KMAC MSG1 ISPR Blanking
       `ASSERT(BlankingIsprKmacMsg1A,
-              !((|gen_pqc_wsr.kmac_msg1_wr_en) | ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg1]) |->
-              gen_pqc_wsr.ispr_kmac_msg1_bignum_wdata_intg_blanked == '0,
+              !((|gen_pqc_wsr.kmac_msg_wr_en[1]) |
+              ispr_predec_bignum_i.ispr_wr_en[IsprKmacMsg1]) |->
+              gen_pqc_wsr.ispr_kmac_msg_bignum_wdata_intg_blanked[1] == '0,
               clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
     end
   endgenerate
