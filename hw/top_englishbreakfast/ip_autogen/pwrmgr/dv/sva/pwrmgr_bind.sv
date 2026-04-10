@@ -55,6 +55,22 @@ module pwrmgr_bind;
     .status(pwr_clk_i.usb_status)
   );
 
+  bind pwrmgr pwrmgr_rstreqs_sva_if pwrmgr_rstreqs_sva_if (
+    .clk_i,
+    .rst_ni,
+    .clk_slow_i,
+    .rst_slow_ni,
+    .rstreqs_i,
+    .reset_en(reg2hw.reset_en),
+    .sw_rst_req_i(prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_i)),
+    .main_rst_req_i(!rst_main_ni),
+    .esc_rst_req_i(esc_rst_req_q),
+    .ndm_rst_req_i(ndmreset_req_i),
+    .main_pd_n(pwr_ast_o.main_pd_n),
+    .reset_cause(pwr_rst_o.reset_cause),
+    .rstreqs(pwr_rst_o.rstreqs)
+  );
+
   bind pwrmgr pwrmgr_sec_cm_checker_assert pwrmgr_sec_cm_checker_assert (
     .clk_i,
     .rst_ni,
