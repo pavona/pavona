@@ -451,7 +451,8 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
-    with_alert_handler: false
+    with_alert_dump: false
+    with_cpu_dump: true
     topname: englishbreakfast
     uniquified_modules: {}
     module_instance_name: rstmgr

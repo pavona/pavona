@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -167,18 +168,22 @@
     { name: "RSTMGR.RESET_INFO.CLEAR",
       desc: "Clear information about the causes of a reset."
     }
+% if with_alert_dump:
     { name: "RSTMGR.ALERT_INFO.CAPTURE",
       desc: "Capture alert crash dump information upon reset."
     }
     { name: "RSTMGR.ALERT_INFO.ENABLE",
       desc: "Enable capture of alert crash dump information."
     }
+% endif
+% if with_cpu_dump:
     { name: "RSTMGR.CPU_INFO.CAPTURE",
       desc: "Capture cpu crash dump information upon reset."
     }
     { name: "RSTMGR.CPU_INFO.ENABLE",
       desc: "Enable capture of cpu crash dump information."
     }
+% endif
     { name: "RSTMGR.ALERT_HANDLER.RESET_STATUS",
       desc: "Inform alert handler about reset enable status for each reset."
     }
@@ -226,6 +231,7 @@
       '''
     },
 
+% if with_alert_dump:
     { struct:  "alert_crashdump",
       type:    "uni",
       name:    "alert_dump",
@@ -236,6 +242,8 @@
       '''
     },
 
+% endif
+% if with_cpu_dump:
     { struct:  "cpu_crash_dump",
       type:    "uni",
       name:    "cpu_dump",
@@ -246,6 +254,7 @@
       '''
     },
 
+% endif
     { struct:  "mubi4",
       type:    "uni",
       name:    "sw_rst_req",
@@ -342,6 +351,7 @@
     },
 
     % for dump_src in crash_dump_srcs:
+      % if (dump_src == 'alert' and with_alert_dump) or (dump_src == 'cpu' and with_cpu_dump):
     { name: "${dump_src.upper()}_REGWEN",
       desc: "${dump_src.capitalize()} write enable",
       swaccess: "rw0c",
@@ -430,6 +440,7 @@
         },
       ]
     },
+      % endif
     % endfor
 
 

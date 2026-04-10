@@ -22,7 +22,7 @@ The main address space, shared between the CPU and DM
 | rv_timer       | default     | `0x40100000`   | `0x200`        | `0x80`         | rv_timer                      |
 | usbdev         | default     | `0x40320000`   | `0x1000`       | `0x400`        | usbdev                        |
 | pwrmgr_aon     | default     | `0x40400000`   | `0x80`         | `0x20`         | pwrmgr_aon                    |
-| rstmgr_aon     | default     | `0x40410000`   | `0x80`         | `0x20`         | rstmgr_aon                    |
+| rstmgr_aon     | default     | `0x40410000`   | `0x40`         | `0x10`         | rstmgr_aon                    |
 | clkmgr_aon     | default     | `0x40420000`   | `0x80`         | `0x20`         | clkmgr_aon                    |
 | pinmux_aon     | default     | `0x40460000`   | `0x1000`       | `0x400`        | pinmux_aon                    |
 | aon_timer_aon  | default     | `0x40470000`   | `0x40`         | `0x10`         | aon_timer_aon                 |
