@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,7 +24,14 @@ use opentitanlib::util::parse_int::ParseInt;
 use super::gpio::{GpioInner, VerilatorGpioPin};
 use super::subprocess::{Options, Subprocess};
 
+/// Baud for UART communication with host.
 const UART_BAUD: u32 = 40;
+/// Timeout in milliseconds to wait after requesting exit for the verilator subprocess to finish.
+const REQUEST_EXIT_TIMEOUT: u64 = 2000;
+/// 'Virtual' pin used for requesting the verilator subprocess exit gracefully.
+const REQUEST_EXIT_PIN: u8 = 254;
+/// Disconnected 'virtual' reset pin, required by opentitanlib in every transport's interface definition.
+const RESET_PIN: u8 = 255;
 
 pub(crate) struct Inner {
     uart: Option<Rc<dyn Uart>>,
@@ -79,10 +87,26 @@ impl Verilator {
         })
     }
 
+    /// Helper function to fetch a verilator GPIO pin by index.
+    fn get_gpio_pin(&self, pin: u8) -> Result<Rc<dyn GpioPin>> {
+        ensure!(
+            pin < 32 || pin == REQUEST_EXIT_PIN || pin == RESET_PIN,
+            GpioError::InvalidPinNumber(pin)
+        );
+        let mut inner = self.inner.borrow_mut();
+        Ok(inner
+            .gpio
+            .pins
+            .entry(pin)
+            .or_insert_with(|| VerilatorGpioPin::new(self.inner.clone(), pin))
+            .clone())
+    }
+
     /// Shuts down the verilator subprocess.
     pub fn shutdown(&mut self) -> Result<()> {
+        self.get_gpio_pin(REQUEST_EXIT_PIN)?.write(true)?;
         if let Some(mut subprocess) = self.subprocess.take() {
-            subprocess.kill()
+            subprocess.shutdown_with_timeout(Duration::from_millis(REQUEST_EXIT_TIMEOUT))
         } else {
             Ok(())
         }
@@ -116,14 +140,7 @@ impl Transport for Verilator {
 
     fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
         let pin = u8::from_str(instance).with_context(|| format!("can't convert {instance:?}"))?;
-        ensure!(pin < 32 || pin == 255, GpioError::InvalidPinNumber(pin));
-        let mut inner = self.inner.borrow_mut();
-        Ok(inner
-            .gpio
-            .pins
-            .entry(pin)
-            .or_insert_with(|| VerilatorGpioPin::new(self.inner.clone(), pin))
-            .clone())
+        self.get_gpio_pin(pin)
     }
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,13 +18,19 @@ extern "C" {
  * @param name a name to use when creating the inner FIFO.
  * @param n_bits number of bits to write in each direction; this must be at
  *        most 32 bits.
+ * @param pin_req_exit 'virtual' pin index which the host can use to trigger
+ *        simulation exit; this index must be at least n_bits and at most 255.
  */
-void *gpiodpi_create(const char *name, int n_bits);
+void *gpiodpi_create(const char *name, int n_bits, int pin_req_exit);
 
 /**
  * Attempt to post the current GPIO state to the outside world.
  *
  * Intended to be called from SystemVerilog.
+ *
+ * @param ctx_void void pointer to the GPIO DPI context.
+ * @param gpio_data pointer to the GPIO data bit vector.
+ * @param gpio_data pointer to the GPIO output enable bit vector.
  */
 void gpiodpi_device_to_host(void *ctx_void, svBitVecVal *gpio_data,
                             svBitVecVal *gpio_oe);
@@ -38,11 +45,18 @@ void gpiodpi_device_to_host(void *ctx_void, svBitVecVal *gpio_data,
  * commands are ignored.
  *
  * Intended to be called from SystemVerilog.
+ * @param ctx_void void pointer to the GPIO DPI context.
+ * @param gpio_oe pointer to the GPIO output enable bit vector.
+ * @param gpio_pull_en pointer to GPIO pull up/down enable bit vector.
+ * @param gpio_pull_sel pointer to the GPIO pull up/down selection bit vector.
+ * @param pin_req_exit 'virtual' pin index which the host can use to trigger
+ *        simulation exit; this index must be at least n_bits and at most 255.
  * @return the values to pull the GPIO pins to.
  */
 uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
                                      svBitVecVal *gpio_pull_en,
-                                     svBitVecVal *gpio_pull_sel);
+                                     svBitVecVal *gpio_pull_sel,
+                                     svBit *req_exit);
 
 /**
  * Relinquish resources held by a GPIO DPI interface.

@@ -1,11 +1,13 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 module gpiodpi
 #(
   parameter string NAME = "gpio0",
-  parameter int    N_GPIO = 32
+  parameter int    N_GPIO = 32,
+  parameter int    PIN_REQ_EXIT = 254
 )(
   input  logic              clk_i,
   input  logic              rst_ni,
@@ -18,7 +20,7 @@ module gpiodpi
   input  logic [N_GPIO-1:0] gpio_pull_sel
 );
    import "DPI-C" function
-     chandle gpiodpi_create(input string name, input int n_bits);
+     chandle gpiodpi_create(input string name, input int n_bits, input int pin_req_exit);
 
    import "DPI-C" function
      void gpiodpi_device_to_host(input chandle ctx, input logic [N_GPIO-1:0] gpio_d2p,
@@ -31,13 +33,15 @@ module gpiodpi
      int gpiodpi_host_to_device_tick(input chandle ctx,
                                      input logic [N_GPIO-1:0] gpio_en_d2p,
                                      input logic [N_GPIO-1:0] gpio_pull_en,
-                                     input logic [N_GPIO-1:0] gpio_pull_sel);
+                                     input logic [N_GPIO-1:0] gpio_pull_sel,
+                                     output bit req_exit);
 
+   bit req_exit;
    chandle ctx;
 
    function automatic void initialize();
      $display($time, "GPIO: creating gpiodpi");
-     ctx = gpiodpi_create(NAME, N_GPIO);
+     ctx = gpiodpi_create(NAME, N_GPIO, PIN_REQ_EXIT);
    endfunction
 
    // Allow being activated past initial time.
@@ -62,14 +66,21 @@ module gpiodpi
      if (gpio_d2p_r != gpio_d2p) begin
        gpiodpi_device_to_host(ctx, gpio_d2p, gpio_en_d2p);
      end
+    if (req_exit) begin
+      $display("GPIO: Host pulled REQ_EXIT high, exiting simulation.");
+      $finish;
+    end
    end
 
+   // The req_exit signal starts low at initialization, and is set by the DPI
+   // function gpiodpi_host_to_device_tick in response to the host asserting the
+   // 'virtual' pin REQUEST_EXIT with index designated by PIN_REQ_EXIT.
    always_ff @(posedge eff_clk or negedge rst_ni) begin
      if (!rst_ni) begin
        gpio_p2d <= '0; // default value
      end else begin
-       gpio_p2d <= gpiodpi_host_to_device_tick(ctx, gpio_en_d2p, gpio_pull_en, gpio_pull_sel);
+       gpio_p2d <= gpiodpi_host_to_device_tick(ctx, gpio_en_d2p, gpio_pull_en, gpio_pull_sel,
+                                               req_exit);
      end
    end
-
 endmodule

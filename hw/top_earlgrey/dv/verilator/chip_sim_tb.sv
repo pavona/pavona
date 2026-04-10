@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -198,13 +199,15 @@ module chip_sim_tb (
     `SIM_SRAM_IF.start_addr = `VERILATOR_TEST_STATUS_ADDR;
     u_sw_test_status_if.sw_test_status_addr = `SIM_SRAM_IF.start_addr;
   end
-
+  // Print the test status on completion once, using the sw_test_status_printed
+  // variable to ensure we don't double-print the results.
+  bit sw_test_status_printed;
   always @(posedge clk_i) begin
-    if (u_sw_test_status_if.sw_test_done) begin
+    if (u_sw_test_status_if.sw_test_done && !sw_test_status_printed) begin
       $display("Verilator sim termination requested");
       $display("Your simulation wrote to 0x%h", u_sw_test_status_if.sw_test_status_addr);
       dv_test_status_pkg::dv_test_status(u_sw_test_status_if.sw_test_passed);
-      $finish;
+      sw_test_status_printed = 1'b1;
     end
   end
 

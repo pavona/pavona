@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +7,7 @@ use std::io::ErrorKind;
 use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use wait_timeout::ChildExt;
 
 use anyhow::{Context, Result, anyhow, ensure};
 use regex::Regex;
@@ -141,11 +143,22 @@ impl Subprocess {
         Err(anyhow!("Timed out"))
     }
 
-    /// Kill the verilator subprocess.
-    pub fn kill(&mut self) -> Result<()> {
-        match self.child.kill() {
-            Err(error) if error.kind() != ErrorKind::InvalidInput => Err(error.into()),
-            _ => Ok(()),
+    /// Shutdown the verilator subprocess with a timeout.
+    pub fn shutdown_with_timeout(&mut self, timeout: Duration) -> Result<()> {
+        // Try waiting for the process to exit on its own; if dispatch() was
+        // called on the parent VerilatorTransport, then the REQUEST_EXIT pin
+        // was already asserted, meaning that the verilator subprocess should be
+        // shutting down on its own now.
+        log::info!("Waiting for verilator subprocess to terminate.");
+        match self.child.wait_timeout(timeout)? {
+            Some(_) => Ok(()),
+            None => {
+                log::warn!("Verilator shutdown timeout expired, sending kill.");
+                match self.child.kill() {
+                    Err(error) if error.kind() != ErrorKind::InvalidInput => Err(error.into()),
+                    _ => Ok(()),
+                }
+            }
         }
     }
 }
@@ -178,9 +191,11 @@ mod test {
     }
 
     #[test]
-    fn test_kill() -> Result<()> {
+    fn test_shutdown_with_timeout() -> Result<()> {
+        // Subprocess will not shut itself down, so this exercises the shutdown
+        // timeout logic instead.
         let mut subprocess = echo_subprocess()?;
-        subprocess.kill()?;
+        subprocess.shutdown_with_timeout(Duration::from_secs(1))?;
         Ok(())
     }
 }

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -46,6 +47,8 @@ struct gpiodpi_ctx {
   // A counter of calls into the host_to_device_tick function; used to
   // avoid excessive `read` syscalls to the pipe fd.
   uint32_t counter;
+  // A designated 'virtual' pin index which the host can use to trigger an exit.
+  uint32_t pin_req_exit;
 
   // File descriptors and paths for the device-to-host and host-to-device
   // FIFOs.
@@ -107,7 +110,7 @@ static void print_usage(char *rfifo, char *wfifo, int n_bits) {
          wfifo);
 }
 
-void *gpiodpi_create(const char *name, int n_bits) {
+void *gpiodpi_create(const char *name, int n_bits, int pin_req_exit) {
   struct gpiodpi_ctx *ctx =
       (struct gpiodpi_ctx *)malloc(sizeof(struct gpiodpi_ctx));
   assert(ctx);
@@ -116,6 +119,12 @@ void *gpiodpi_create(const char *name, int n_bits) {
   // currently don't do.
   assert(n_bits <= 32 && "n_bits must be <= 32");
   ctx->n_bits = n_bits;
+
+  // pin_req_exit must not be the index of a physical pin, and also must have an
+  // index which fits in a byte for the host to trigger it.
+  assert(pin_req_exit >= n_bits && "pin_req_exit must be >= n_bits");
+  assert(pin_req_exit < 256 && "pin_req_exit must be < 256");
+  ctx->pin_req_exit = pin_req_exit;
 
   ctx->driven_pin_values = 0;
   ctx->weak_pins = 0;
@@ -211,9 +220,10 @@ static void set_bit_val(uint32_t *word, uint32_t idx, bool val) {
   }
 }
 
-uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
-                                     svBitVecVal *gpio_pull_en,
-                                     svBitVecVal *gpio_pull_sel) {
+svBitVecVal gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
+                                        svBitVecVal *gpio_pull_en,
+                                        svBitVecVal *gpio_pull_sel,
+                                        svBit *req_exit) {
   struct gpiodpi_ctx *ctx = (struct gpiodpi_ctx *)ctx_void;
   assert(ctx);
 
@@ -247,7 +257,7 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
               }
               CLR_BIT(ctx->driven_pin_values, idx);
               set_bit_val(&ctx->weak_pins, idx, weak);
-            } else {
+            } else if (idx != ctx->pin_req_exit) {
               fprintf(stderr,
                       "GPIO: Host tried to pull invalid pin low: pin %2d\n",
                       idx);
@@ -267,6 +277,11 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
               }
               SET_BIT(ctx->driven_pin_values, idx);
               set_bit_val(&ctx->weak_pins, idx, weak);
+            } else if (idx == ctx->pin_req_exit) {
+              // The request exit pin triggers an exit upon being set; the
+              // corresponding GPIO DPI SystemVerilog file triggers a $finish
+              // when req_exit is set high.
+              *req_exit = 1;
             } else {
               fprintf(stderr,
                       "GPIO: Host tried to pull invalid pin high: pin %2d\n",
