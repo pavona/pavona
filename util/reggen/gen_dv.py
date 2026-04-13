@@ -1,11 +1,12 @@
-# Copyright zeroRISC Inc.
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 '''Generate DV code for an IP block'''
 
 import logging as log
 import os
+from pathlib import Path
 import sys
 from collections import defaultdict
 from typing import Dict, List, Union, Optional
@@ -83,12 +84,12 @@ def gen_core_file(outdir: str, lblock: str, dv_base_names: List[str],
         # suffix.
         for block in blocks_base_names:
             pkg_name = blocks_base_names[block].pkg
-            depends.append("pavona:dv:{}".format(pkg_name.removesuffix("_pkg")))
+            depends.append(f"pavona:dv:{pkg_name.removesuffix('_pkg')}")
 
     # Generate a fusesoc core file that points at the files we've just
     # generated.
     core_data = {
-        'name': "pavona:dv:{}_ral_pkg".format(lblock),
+        'name': f"pavona:dv:{lblock}_ral_pkg",
         'filesets': {
             'files_dv': {
                 'depend': depends,
@@ -104,10 +105,14 @@ def gen_core_file(outdir: str, lblock: str, dv_base_names: List[str],
             },
         },
     }
-    core_file_path = os.path.join(outdir, lblock + '_ral_pkg.core')
-    with open(core_file_path, 'w') as core_file:
-        core_file.write('CAPI=2:\n')
-        yaml.dump(core_data, core_file, encoding='utf-8')
+
+    core_file_path = Path(outdir, lblock + '_ral_pkg.core')
+    try:
+        with core_file_path.open('w', encoding='utf-8') as core_file:
+            core_file.write('CAPI=2:\n')
+            yaml.dump(core_data, core_file, encoding='utf-8')
+    except Exception:
+        raise SystemExit(sys.exc_info()[1])
 
 
 def get_dv_base_names_objects(
