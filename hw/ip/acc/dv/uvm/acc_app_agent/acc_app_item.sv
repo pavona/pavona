@@ -8,7 +8,8 @@ class acc_app_item extends kmac_app_item;
   rand bit                          req_valid;
   rand bit                          req_hold;
   rand bit                          req_next;
-  rand bit [kmac_pkg::MsgWidth-1:0] req_data;
+  rand bit [kmac_pkg::MsgWidth-1:0] req_data_share0;
+  rand bit [kmac_pkg::MsgWidth-1:0] req_data_share1;
   rand bit [kmac_pkg::MsgStrbW-1:0] req_strb;
   rand bit                          req_last;
   rand bit                          rsp_done;
@@ -20,7 +21,8 @@ class acc_app_item extends kmac_app_item;
     `uvm_field_int(req_valid,         UVM_DEFAULT)
     `uvm_field_int(req_hold,          UVM_DEFAULT)
     `uvm_field_int(req_next,          UVM_DEFAULT)
-    `uvm_field_int(req_data,          UVM_DEFAULT)
+    `uvm_field_int(req_data_share0,   UVM_DEFAULT)
+    `uvm_field_int(req_data_share1,   UVM_DEFAULT)
     `uvm_field_int(req_strb,          UVM_DEFAULT)
     `uvm_field_int(req_last,          UVM_DEFAULT)
     `uvm_field_int(rsp_done,          UVM_DEFAULT)

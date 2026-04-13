@@ -79,10 +79,10 @@ class kmac_app_host_seq extends kmac_app_base_seq;
     cfg.m_data_push_agent_cfg.host_delay_max = 100;
 
     req = kmac_app_item::type_id::create("req");
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(req, byte_data_share0_q.size() == msg_size_bytes;)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(req, byte_data_q.size() == msg_size_bytes;)
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req, byte_data_share1_q.size() == msg_size_bytes;)
     `uvm_info(`gfn, $sformatf("Randomized req: %0s", req.sprint()), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("byte_data_share0_q: %0p", req.byte_data_share0_q), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("byte_data_share0_q: %0p", req.byte_data_q), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("byte_data_share1_q: %0p", req.byte_data_share1_q), UVM_HIGH)
 
     init_msg_size_bytes = msg_size_bytes;
@@ -115,7 +115,7 @@ class kmac_app_host_seq extends kmac_app_base_seq;
               ($countones(req_strb ^ {req_strb[KmacDataIfWidth/8-2:0], 1'b0}) <= 2);)
         end
         if (req_strb[i] == 1) begin
-          req_data_share0[i*8 +: 8] = 8'(req.byte_data_share0_q.pop_front());
+          req_data_share0[i*8 +: 8] = 8'(req.byte_data_q.pop_front());
           if (mode == AppAcc && en_masking) begin
             req_data_share1[i*8 +: 8] = 8'(req.byte_data_share1_q.pop_front());
           end

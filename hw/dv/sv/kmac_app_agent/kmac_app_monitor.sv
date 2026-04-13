@@ -60,7 +60,7 @@ class kmac_app_monitor extends dv_base_monitor #(
         data_fifo.get(data_item);
         {data_share0, data_share1, strb, last} = data_item.h_data;
         for (int i = 0; i < KmacDataIfWidth/8; i++) begin
-          if (strb[i]) req.byte_data_share0_q.push_back(data_share0[i*8+:8]);
+          if (strb[i]) req.byte_data_q.push_back(data_share0[i*8+:8]);
           if (strb[i]) req.byte_data_share1_q.push_back(data_share1[i*8+:8]);
         end
 

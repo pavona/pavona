@@ -53,7 +53,7 @@ class acc_app_monitor extends dv_base_monitor #(
 
       // Collect first req word without ready asserted
       base_item.req_valid       = cfg.vif.mon_cb.req_valid;
-      base_item.req_data        = cfg.vif.mon_cb.req_data;
+      base_item.req_data_share0 = cfg.vif.mon_cb.req_data_share0;
       base_item.req_strb        = cfg.vif.mon_cb.req_strb;
       base_item.rsp_ready       = cfg.vif.mon_cb.rsp_ready;
       base_item.req_next        = cfg.vif.mon_cb.req_next;
@@ -71,14 +71,14 @@ class acc_app_monitor extends dv_base_monitor #(
         // Only capture if word is valid and KMAC is ready to accept
         if (cfg.vif.mon_cb.req_valid && cfg.vif.mon_cb.rsp_ready && cfg.vif.mon_cb.rst_n) begin
           base_item.req_strb        = cfg.vif.mon_cb.req_strb;
-          base_item.req_data        = cfg.vif.mon_cb.req_data;
+          base_item.req_data_share0 = cfg.vif.mon_cb.req_data_share0;
           base_item.req_valid       = cfg.vif.mon_cb.req_valid;
           base_item.drive_rsp_ready = 1;
 
           // Only add valid words using strb
           for (int i = 0; i < KmacDataIfWidth/8; i++) begin
             if (cfg.vif.mon_cb.req_strb[i]) begin
-              base_item.byte_data_q.push_back(cfg.vif.mon_cb.req_data[i*8+:8]);
+              base_item.byte_data_q.push_back(cfg.vif.mon_cb.req_data_share0[i*8+:8]);
             end
           end
 

@@ -637,7 +637,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   // sample coverage
                   if (cfg.en_cov) begin
                     cov.app_cg_wrappers[app_mode].app_sample(
-                      kmac_app_rsp.byte_data_share0_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
+                      kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
                       '0,
                       kmac_app_rsp.rsp_error,
                       1,

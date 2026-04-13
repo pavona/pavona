@@ -1106,9 +1106,9 @@ generate
                                       ~kmac_sent_last && ~kmac_msg_err_clr_q;
 
   // The first word contains the cfg otherwise send the body
-  assign kmac_app_req_o.data  = kmac_write_cfg_to_app ?
-                                {59'b0, kmac_cfg_keccak_strength, kmac_cfg_sha3_mode} :
-                                kmac_msg_fifo_rdata;
+  assign kmac_app_req_o.data_share0  = kmac_write_cfg_to_app ?
+                                       {59'b0, kmac_cfg_keccak_strength, kmac_cfg_sha3_mode} :
+                                       kmac_msg_fifo_rdata;
 
   // The strb will always be 8'hFF except for the CFG and last word
   assign kmac_app_req_o.strb  = kmac_write_cfg_to_app ?

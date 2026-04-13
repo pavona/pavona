@@ -14,7 +14,8 @@ interface acc_app_intf (input clk, input rst_n);
   wire req_next;
   wire req_hold;
   wire req_valid;
-  wire [kmac_pkg::MsgWidth-1:0] req_data;
+  wire [kmac_pkg::MsgWidth-1:0] req_data_share0;
+  wire [kmac_pkg::MsgWidth-1:0] req_data_share1;
   wire [kmac_pkg::MsgStrbW-1:0] req_strb;
   wire req_last;
 
@@ -41,7 +42,8 @@ interface acc_app_intf (input clk, input rst_n);
     output req_next;
     output req_hold;
     output req_valid;
-    output req_data;
+    output req_data_share0;
+    output req_data_share1;
     output req_strb;
     output req_last;
   endclocking
@@ -52,14 +54,16 @@ interface acc_app_intf (input clk, input rst_n);
     input req_next;
     input req_hold;
     input req_valid;
-    input req_data;
+    input req_data_share0;
+    input req_data_share1;
     input req_strb;
     input req_last;
     input rsp_ready;
   endclocking
 
   // Split kmac_data_req signals
-  assign {req_valid, req_hold, req_next, req_data, req_strb, req_last} = kmac_data_req;
+  assign {req_valid, req_hold, req_next, req_data_share0, req_data_share1, req_strb, req_last} =
+    kmac_data_req;
 
   // Assemble kmac_data_rsp signals
   assign kmac_data_rsp = {rsp_ready, rsp_done, rsp_digest_share0, rsp_digest_share1, rsp_error};
