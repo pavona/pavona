@@ -28,6 +28,7 @@ from pathlib import Path
 import re
 import subprocess
 import argparse
+import difflib
 
 import logging
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ END_MARKER_PATTERN = re.compile(
     flags=(re.M | re.X))
 
 
-def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
+def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool, verbose: bool = False) -> bool:
     '''Find all CMDGEN blocks in a file and check their content is up to date.
 
     See this module's docstring to see how these blocks are declared.
@@ -125,6 +126,14 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
                 )
                 needs_updating = True
 
+            if verbose:
+                d = difflib.Differ()
+                diff = d.compare(
+                    old_content.splitlines(keepends=True),
+                    new_content.splitlines(keepends=True)
+                )
+                logger.info("".join(diff))
+
     # write back
     if modified:
         filepath.write_text(content)
@@ -146,6 +155,10 @@ def main() -> int:
     parser.add_argument(
         "-u", "--update", help="Update out of date content.", action="store_true",
     )
+    parser.add_argument(
+        "-v", "--verbose", help="Print diffs between old and new content. No diffs for dry runs.",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     logging.basicConfig()
@@ -155,7 +168,7 @@ def main() -> int:
     needs_updating = False
     for glob in args.globs:
         for file in REPO_ROOT.glob(glob):
-            needs_updating |= cmdgen_rewrite_md(file, args.dry_run, args.update)
+            needs_updating |= cmdgen_rewrite_md(file, args.dry_run, args.update, args.verbose)
 
     return 1 if needs_updating else 0
 
