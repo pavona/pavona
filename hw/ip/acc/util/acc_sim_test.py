@@ -44,6 +44,7 @@ class ErrBits(IntEnum):
     ILLEGAL_BUS_ACCESS = 1 << 21
     LIFECYCLE_ESCALATION = 1 << 22
     FATAL_SOFTWARE = 1 << 23
+    KMAC_FATAL_ERROR = 1 << 24
 
 
 def get_err_names(err: int) -> List[str]:
