@@ -329,6 +329,8 @@ crypto_sign_verify_internal:
     la        a0, pk
     bn.lid    x0, 0(a0)
     bn.wsrw   kmac_msg, w0
+    addi      t0, x0, 2
+    csrrw     x0, kmac_partial_write, t0
     bn.wsrw   kmac_msg, w23
 
     /* After NTT(z), w16 is still R | Q and MOD is still 2*R | 2*Q */
@@ -354,7 +356,7 @@ crypto_sign_verify_internal:
     la s5, pk
 
     /* Compute A * z, computing elements of A on the fly. */
-    loopi K, 33
+    loopi K, 39
         /* Compute A[i][0]. */
         addi a1, s1, 0
         jal  x1, poly_uniform
@@ -364,6 +366,8 @@ crypto_sign_verify_internal:
         csrrw     x0, kmac_cfg, s4
         bn.lid    x0, 0(s5)
         bn.wsrw   kmac_msg, w0
+        addi      t0, x0, 2
+        csrrw     x0, kmac_partial_write, t0
         bn.wsrw   kmac_msg, w23
         /* Compute A[i][0] * z[0] and set the output at index i. */
         addi a0, s0, 0
@@ -371,7 +375,7 @@ crypto_sign_verify_internal:
         addi a2, s2, 0
         jal  x1, poly_pointwise
         addi s0, s0, 1024
-        loopi Lminus1, 12
+        loopi Lminus1, 14
             /* Compute A[i][j]. */
             addi a1, s1, 0
             jal  x1, poly_uniform
@@ -381,6 +385,8 @@ crypto_sign_verify_internal:
             csrrw     x0, kmac_cfg, s4
             bn.lid    x0, 0(s5)
             bn.wsrw   kmac_msg, w0
+            addi      t0, x0, 2
+            csrrw     x0, kmac_partial_write, t0
             bn.wsrw   kmac_msg, w23
             /* Compute A[i][j] * z[j] and add it to the output at index i. */
             addi a0, s0, 0
@@ -398,6 +404,8 @@ crypto_sign_verify_internal:
         csrrw     x0, kmac_cfg, s4
         bn.lid    x0, 0(s5)
         bn.wsrw   kmac_msg, w0
+        addi      t0, x0, 2
+        csrrw     x0, kmac_partial_write, t0
         bn.wsrw   kmac_msg, w23
 
     /* Call random oracle and verify challenge */

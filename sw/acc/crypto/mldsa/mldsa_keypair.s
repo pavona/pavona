@@ -246,7 +246,7 @@ crypto_sign_keypair:
            for i in 0..k-1:
              t[i] += A[i][j] * s1j
     */
-    loopi L, 37
+    loopi L, 41
         bn.wsrw   mod, w16 /* MOD = R | Q */
         /* Sample the next polynomial from s1. */
         addi a0, s5, 0
@@ -259,6 +259,8 @@ crypto_sign_keypair:
         addi  a0, s8, 0
         bn.lid    x0, 0(a0)
         bn.wsrw   kmac_msg, w0
+        addi      t0, x0, 2
+        csrrw     x0, kmac_partial_write, t0
         bn.wsrw   kmac_msg, w23
         /* Pack the s1 polynomial into the secret key. */
         addi a0, s7, 0
@@ -270,7 +272,7 @@ crypto_sign_keypair:
         addi a0, s0, 0
         addi a2, s0, 0
         jal  x1, ntt
-        loopi K, 13
+        loopi K, 15
             /* Compute A[i][j]. */
             addi a1, s1, 0
             jal  x1, poly_uniform
@@ -281,6 +283,8 @@ crypto_sign_keypair:
             addi  a0, s8, 0
             bn.lid    x0, 0(a0)
             bn.wsrw   kmac_msg, w0
+            addi      t0, x0, 2
+            csrrw     x0, kmac_partial_write, t0
             bn.wsrw   kmac_msg, w23
             /* Compute A[i][j] * s1[j] and add it to the output at index i. */
             addi a0, s0, 0

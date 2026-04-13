@@ -320,7 +320,7 @@ _rej_crypto_sign_signature_internal:
            for i in 0..k-1:
              w[i] += A[i][j] * yj
     */
-    loopi L, 37
+    loopi L, 41
         /* Zero the buffer for y[j]. */
         addi  t0, s8, 0
         loopi 32, 1
@@ -337,13 +337,15 @@ _rej_crypto_sign_signature_internal:
         addi  a0, s0, 0
         bn.lid    x0, 0(a0)
         bn.wsrw   kmac_msg, w0
+        addi      t0, x0, 2
+        csrrw     x0, kmac_partial_write, t0
         bn.wsrw   kmac_msg, w23
         bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
         /* Compute ntt(y[j]). */
         addi a0, s8, 0
         addi a2, s8, 0
         jal x1, ntt
-        loopi K, 13
+        loopi K, 15
             /* Compute A[i][j]. */
             addi a1, s10, 0
             jal  x1, poly_uniform
@@ -354,6 +356,8 @@ _rej_crypto_sign_signature_internal:
             addi  a0, s0, 0
             bn.lid    x0, 0(a0)
             bn.wsrw   kmac_msg, w0
+            addi      t0, x0, 2
+            csrrw     x0, kmac_partial_write, t0
             bn.wsrw   kmac_msg, w23
             addi a0, s8, 0
             addi a1, s10, 0
