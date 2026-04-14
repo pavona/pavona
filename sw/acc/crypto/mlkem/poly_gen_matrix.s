@@ -81,6 +81,8 @@ poly_gen_matrix_init:
   /* Send the message to the Keccak core. */
   bn.lid x0, 0(a0)             /* a0 still contains the input buffer */
   bn.wsrw 0x9, w0              /* Write to KECCAK_MSG_REG */
+  li      t0, 2
+  csrrw   zero, kmac_partial_write, t0
   bn.wsrw 0x9, w30             /* Write to KECCAK_MSG_REG */
 
   ret

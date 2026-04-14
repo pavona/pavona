@@ -60,6 +60,7 @@ _no_full_wdr:
   /* If the remaining length is zero, return early. */
   beq t0, x0, _keccak_send_message_end
 
+  csrrw   x0, kmac_partial_write, t0
   bn.lid  x0, 0(x10)
   bn.wsrw 0x9, w0
 

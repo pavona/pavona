@@ -156,6 +156,8 @@ poly_getnoise_eta_init:
   /* Send the message to the Keccak core. */
   bn.lid  x0, 0(x10)
   bn.wsrw 0x9, w0
+  li      x5, 1
+  csrrw   x0, kmac_partial_write, x5
   bn.lid  x0, 0(x13)
   bn.wsrw 0x9, w0
 
