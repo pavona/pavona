@@ -1,0 +1,6360 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  reseed: 1
+  tests:
+  [
+    {
+      test: ac_range_check_alert_test
+      name: ac_range_check
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_intr_test
+      name: ac_range_check
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_lock_range
+      name: ac_range_check
+      reseed: 22
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_rst_safe_smoke
+      name: ac_range_check
+      reseed: 16
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_shadow_reg_errors
+      name: ac_range_check
+      reseed: 6
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_shadow_reg_errors_with_csr_rw
+      name: ac_range_check
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_smoke
+      name: ac_range_check
+      reseed: 27
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_smoke_high_threshold
+      name: ac_range_check
+      reseed: 16
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_smoke_racl
+      name: ac_range_check
+      reseed: 31
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_stress_all
+      name: ac_range_check
+      reseed: 62
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_stress_all_with_rand_reset
+      name: ac_range_check
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: ac_range_check_tl_intg_err
+      name: ac_range_check
+      reseed: 15
+      variant: darjeeling
+    }
+    {
+      test: acc_alert_test
+      name: acc
+      reseed: 3
+      variant: pqc
+    }
+    {
+      test: acc_alu_bignum_mod_err
+      name: acc
+      reseed: 7
+      variant: pqc
+    }
+    {
+      test: acc_controller_ispr_rdata_err
+      name: acc
+      reseed: 5
+      variant: pqc
+    }
+    {
+      test: acc_csr_hw_reset
+      name: acc
+      reseed: 3
+      variant: pqc
+    }
+    {
+      test: acc_ctrl_redun
+      name: acc
+      reseed: 13
+      variant: pqc
+    }
+    {
+      test: acc_dmem_err
+      name: acc
+      reseed: 7
+      variant: pqc
+    }
+    {
+      test: acc_escalate
+      name: acc
+      reseed: 22
+      variant: pqc
+    }
+    {
+      test: acc_illegal_mem_acc
+      name: acc
+      reseed: 5
+      variant: pqc
+    }
+    {
+      test: acc_imem_err
+      name: acc
+      reseed: 4
+      variant: pqc
+    }
+    {
+      test: acc_mac_bignum_acc_err
+      name: acc
+      reseed: 8
+      variant: pqc
+    }
+    {
+      test: acc_mem_gnt_acc_err
+      name: acc
+      reseed: 3
+      variant: pqc
+    }
+    {
+      test: acc_multi
+      name: acc
+      reseed: 11
+      variant: pqc
+    }
+    {
+      test: acc_multi_err
+      name: acc
+      reseed: 4
+      variant: pqc
+    }
+    {
+      test: acc_partial_wipe
+      name: acc
+      reseed: 7
+      variant: pqc
+    }
+    {
+      test: acc_passthru_mem_tl_intg_err
+      name: acc
+      reseed: 5
+      variant: pqc
+    }
+    {
+      test: acc_pc_ctrl_flow_redun
+      name: acc
+      reseed: 3
+      variant: pqc
+    }
+    {
+      test: acc_reset
+      name: acc
+      reseed: 7
+      variant: pqc
+    }
+    {
+      test: acc_rf_base_intg_err
+      name: acc
+      reseed: 7
+      variant: pqc
+    }
+    {
+      test: acc_rf_bignum_intg_err
+      name: acc
+      reseed: 14
+      variant: pqc
+    }
+    {
+      test: acc_rnd_sec_cm
+      name: acc
+      reseed: 7
+      variant: pqc
+    }
+    {
+      test: acc_same_csr_outstanding
+      name: acc
+      reseed: 3
+      variant: pqc
+    }
+    {
+      test: acc_single
+      name: acc
+      reseed: 62
+      variant: pqc
+    }
+    {
+      test: acc_stack_addr_integ_chk
+      name: acc
+      reseed: 8
+      variant: pqc
+    }
+    {
+      test: acc_stress_all
+      name: acc
+      reseed: 15
+      variant: pqc
+    }
+    {
+      test: acc_stress_all_with_rand_reset
+      name: acc
+      reseed: 4
+      variant: pqc
+    }
+    {
+      test: acc_sw_errs_fatal_chk
+      name: acc
+      reseed: 11
+      variant: pqc
+    }
+    {
+      test: acc_sw_no_acc
+      name: acc
+      reseed: 5
+      variant: pqc
+    }
+    {
+      test: acc_tl_intg_err
+      name: acc
+      reseed: 6
+      variant: pqc
+    }
+    {
+      test: acc_urnd_err
+      name: acc
+      reseed: 4
+      variant: pqc
+    }
+    {
+      test: acc_zero_state_err_urnd
+      name: acc
+      reseed: 5
+      variant: pqc
+    }
+    {
+      test: acc_alert_test
+      name: acc
+      reseed: 3
+      variant: standard
+    }
+    {
+      test: acc_alu_bignum_mod_err
+      name: acc
+      reseed: 8
+      variant: standard
+    }
+    {
+      test: acc_controller_ispr_rdata_err
+      name: acc
+      reseed: 8
+      variant: standard
+    }
+    {
+      test: acc_ctrl_redun
+      name: acc
+      reseed: 10
+      variant: standard
+    }
+    {
+      test: acc_dmem_err
+      name: acc
+      reseed: 8
+      variant: standard
+    }
+    {
+      test: acc_escalate
+      name: acc
+      reseed: 21
+      variant: standard
+    }
+    {
+      test: acc_illegal_mem_acc
+      name: acc
+      reseed: 8
+      variant: standard
+    }
+    {
+      test: acc_imem_err
+      name: acc
+      reseed: 7
+      variant: standard
+    }
+    {
+      test: acc_intr_test
+      name: acc
+      reseed: 3
+      variant: standard
+    }
+    {
+      test: acc_mac_bignum_acc_err
+      name: acc
+      reseed: 8
+      variant: standard
+    }
+    {
+      test: acc_mem_gnt_acc_err
+      name: acc
+      reseed: 5
+      variant: standard
+    }
+    {
+      test: acc_multi
+      name: acc
+      reseed: 11
+      variant: standard
+    }
+    {
+      test: acc_multi_err
+      name: acc
+      reseed: 4
+      variant: standard
+    }
+    {
+      test: acc_partial_wipe
+      name: acc
+      reseed: 8
+      variant: standard
+    }
+    {
+      test: acc_passthru_mem_tl_intg_err
+      name: acc
+      reseed: 4
+      variant: standard
+    }
+    {
+      test: acc_pc_ctrl_flow_redun
+      name: acc
+      reseed: 3
+      variant: standard
+    }
+    {
+      test: acc_reset
+      name: acc
+      reseed: 7
+      variant: standard
+    }
+    {
+      test: acc_rf_base_intg_err
+      name: acc
+      reseed: 10
+      variant: standard
+    }
+    {
+      test: acc_rf_bignum_intg_err
+      name: acc
+      reseed: 10
+      variant: standard
+    }
+    {
+      test: acc_rnd_sec_cm
+      name: acc
+      reseed: 7
+      variant: standard
+    }
+    {
+      test: acc_sec_cm
+      name: acc
+      reseed: 5
+      variant: standard
+    }
+    {
+      test: acc_sec_wipe_err
+      name: acc
+      reseed: 3
+      variant: standard
+    }
+    {
+      test: acc_single
+      name: acc
+      reseed: 44
+      variant: standard
+    }
+    {
+      test: acc_smoke
+      name: acc
+      reseed: 4
+      variant: standard
+    }
+    {
+      test: acc_stress_all
+      name: acc
+      reseed: 17
+      variant: standard
+    }
+    {
+      test: acc_stress_all_with_rand_reset
+      name: acc
+      reseed: 4
+      variant: standard
+    }
+    {
+      test: acc_sw_errs_fatal_chk
+      name: acc
+      reseed: 10
+      variant: standard
+    }
+    {
+      test: acc_sw_no_acc
+      name: acc
+      reseed: 6
+      variant: standard
+    }
+    {
+      test: acc_tl_errors
+      name: acc
+      reseed: 3
+      variant: standard
+    }
+    {
+      test: acc_tl_intg_err
+      name: acc
+      reseed: 7
+      variant: standard
+    }
+    {
+      test: acc_urnd_err
+      name: acc
+      reseed: 3
+      variant: standard
+    }
+    {
+      test: acc_zero_state_err_urnd
+      name: acc
+      reseed: 5
+      variant: standard
+    }
+    {
+      test: adc_ctrl_alert_test
+      name: adc_ctrl
+      reseed: 3
+    }
+    {
+      test: adc_ctrl_clock_gating
+      name: adc_ctrl
+      reseed: 11
+    }
+    {
+      test: adc_ctrl_filters_both
+      name: adc_ctrl
+      reseed: 26
+    }
+    {
+      test: adc_ctrl_filters_interrupt
+      name: adc_ctrl
+      reseed: 11
+    }
+    {
+      test: adc_ctrl_filters_interrupt_fixed
+      name: adc_ctrl
+      reseed: 3
+    }
+    {
+      test: adc_ctrl_filters_polled
+      name: adc_ctrl
+      reseed: 5
+    }
+    {
+      test: adc_ctrl_filters_wakeup
+      name: adc_ctrl
+      reseed: 19
+    }
+    {
+      test: adc_ctrl_filters_wakeup_fixed
+      name: adc_ctrl
+      reseed: 3
+    }
+    {
+      test: adc_ctrl_fsm_reset
+      name: adc_ctrl
+      reseed: 8
+    }
+    {
+      test: adc_ctrl_same_csr_outstanding
+      name: adc_ctrl
+      reseed: 3
+    }
+    {
+      test: adc_ctrl_sec_cm
+      name: adc_ctrl
+      reseed: 3
+    }
+    {
+      test: adc_ctrl_stress_all
+      name: adc_ctrl
+      reseed: 17
+    }
+    {
+      test: adc_ctrl_stress_all_with_rand_reset
+      name: adc_ctrl
+      reseed: 14
+    }
+    {
+      test: adc_ctrl_tl_errors
+      name: adc_ctrl
+      reseed: 3
+    }
+    {
+      test: adc_ctrl_tl_intg_err
+      name: adc_ctrl
+      reseed: 4
+    }
+    {
+      test: aes_alert_reset
+      name: aes
+      reseed: 8
+      variant: masked
+    }
+    {
+      test: aes_alert_test
+      name: aes
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: aes_b2b
+      name: aes
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: aes_cipher_fi
+      name: aes
+      reseed: 305
+      variant: masked
+    }
+    {
+      test: aes_clear
+      name: aes
+      reseed: 5
+      variant: masked
+    }
+    {
+      test: aes_config_error
+      name: aes
+      reseed: 12
+      variant: masked
+    }
+    {
+      test: aes_control_fi
+      name: aes
+      reseed: 274
+      variant: masked
+    }
+    {
+      test: aes_core_fi
+      name: aes
+      reseed: 39
+      variant: masked
+    }
+    {
+      test: aes_csr_mem_rw_with_rand_reset
+      name: aes
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: aes_ctr_fi
+      name: aes
+      reseed: 18
+      variant: masked
+    }
+    {
+      test: aes_deinit
+      name: aes
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: aes_fi
+      name: aes
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: aes_nist_vectors
+      name: aes
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: aes_reseed
+      name: aes
+      reseed: 5
+      variant: masked
+    }
+    {
+      test: aes_sec_cm
+      name: aes
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: aes_shadow_reg_errors
+      name: aes
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: aes_shadow_reg_errors_with_csr_rw
+      name: aes
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: aes_sideload
+      name: aes
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: aes_stress
+      name: aes
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: aes_stress_all
+      name: aes
+      reseed: 5
+      variant: masked
+    }
+    {
+      test: aes_tl_errors
+      name: aes
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: aes_tl_intg_err
+      name: aes
+      reseed: 8
+      variant: masked
+    }
+    {
+      test: aes_alert_reset
+      name: aes
+      reseed: 7
+      variant: unmasked
+    }
+    {
+      test: aes_b2b
+      name: aes
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: aes_cipher_fi
+      name: aes
+      reseed: 206
+      variant: unmasked
+    }
+    {
+      test: aes_clear
+      name: aes
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: aes_config_error
+      name: aes
+      reseed: 13
+      variant: unmasked
+    }
+    {
+      test: aes_control_fi
+      name: aes
+      reseed: 272
+      variant: unmasked
+    }
+    {
+      test: aes_core_fi
+      name: aes
+      reseed: 31
+      variant: unmasked
+    }
+    {
+      test: aes_ctr_fi
+      name: aes
+      reseed: 19
+      variant: unmasked
+    }
+    {
+      test: aes_fi
+      name: aes
+      reseed: 5
+      variant: unmasked
+    }
+    {
+      test: aes_man_cfg_err
+      name: aes
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: aes_readability
+      name: aes
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: aes_reseed
+      name: aes
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: aes_sec_cm
+      name: aes
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: aes_shadow_reg_errors
+      name: aes
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: aes_shadow_reg_errors_with_csr_rw
+      name: aes
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: aes_sideload
+      name: aes
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: aes_stress
+      name: aes
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: aes_stress_all
+      name: aes
+      reseed: 5
+      variant: unmasked
+    }
+    {
+      test: aes_tl_errors
+      name: aes
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: aes_tl_intg_err
+      name: aes
+      reseed: 10
+      variant: unmasked
+    }
+    {
+      test: alert_handler_alert_accum_saturation
+      name: alert_handler
+      reseed: 6
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_entropy
+      name: alert_handler
+      reseed: 7
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_entropy_stress
+      name: alert_handler
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_esc_intr_timeout
+      name: alert_handler
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_intr_test
+      name: alert_handler
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_lpg
+      name: alert_handler
+      reseed: 14
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_lpg_stub_clk
+      name: alert_handler
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_ping_timeout
+      name: alert_handler
+      reseed: 19
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_random_alerts
+      name: alert_handler
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_random_classes
+      name: alert_handler
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_sec_cm
+      name: alert_handler
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_shadow_reg_errors
+      name: alert_handler
+      reseed: 11
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_shadow_reg_errors_with_csr_rw
+      name: alert_handler
+      reseed: 12
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_sig_int_fail
+      name: alert_handler
+      reseed: 9
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_stress_all
+      name: alert_handler
+      reseed: 18
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_stress_all_with_rand_reset
+      name: alert_handler
+      reseed: 13
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_tl_intg_err
+      name: alert_handler
+      reseed: 25
+      variant: darjeeling
+    }
+    {
+      test: alert_handler_alert_accum_saturation
+      name: alert_handler
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_entropy
+      name: alert_handler
+      reseed: 10
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_entropy_stress
+      name: alert_handler
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_esc_intr_timeout
+      name: alert_handler
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_intr_test
+      name: alert_handler
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_lpg
+      name: alert_handler
+      reseed: 12
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_lpg_stub_clk
+      name: alert_handler
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_ping_timeout
+      name: alert_handler
+      reseed: 13
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_random_classes
+      name: alert_handler
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_sec_cm
+      name: alert_handler
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_shadow_reg_errors
+      name: alert_handler
+      reseed: 14
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_shadow_reg_errors_with_csr_rw
+      name: alert_handler
+      reseed: 11
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_sig_int_fail
+      name: alert_handler
+      reseed: 10
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_stress_all
+      name: alert_handler
+      reseed: 21
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_stress_all_with_rand_reset
+      name: alert_handler
+      reseed: 10
+      variant: earlgrey
+    }
+    {
+      test: alert_handler_tl_intg_err
+      name: alert_handler
+      reseed: 28
+      variant: earlgrey
+    }
+    {
+      test: aon_timer_alert_test
+      name: aon_timer
+      reseed: 3
+    }
+    {
+      test: aon_timer_alternating_enable_on_off
+      name: aon_timer
+      reseed: 4
+    }
+    {
+      test: aon_timer_csr_aliasing
+      name: aon_timer
+      reseed: 3
+    }
+    {
+      test: aon_timer_same_csr_outstanding
+      name: aon_timer
+      reseed: 3
+    }
+    {
+      test: aon_timer_sec_cm
+      name: aon_timer
+      reseed: 3
+    }
+    {
+      test: aon_timer_stress_all
+      name: aon_timer
+      reseed: 5
+    }
+    {
+      test: aon_timer_stress_all_with_rand_reset
+      name: aon_timer
+      reseed: 7
+    }
+    {
+      test: aon_timer_tl_intg_err
+      name: aon_timer
+      reseed: 3
+    }
+    {
+      test: aon_timer_wkup_count_cdc_hi
+      name: aon_timer
+      reseed: 3
+    }
+    {
+      test: chip_plic_all_irqs_0
+      name: chip
+      reseed: 7
+      variant: darjeeling
+    }
+    {
+      test: chip_plic_all_irqs_10
+      name: chip
+      reseed: 7
+      variant: darjeeling
+    }
+    {
+      test: chip_prim_tl_access
+      name: chip
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: chip_rv_dm_lc_disabled
+      name: chip
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: chip_rv_dm_ndm_reset_req
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_acc_smoketest
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_aes_idle
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_aes_masking_off
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_alert_handler_ping_timeout
+      name: chip
+      reseed: 7
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_aon_timer_sleep_wdog_sleep_pause
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_aon_timer_smoketest
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_aon_timer_wdog_lc_escalate
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_clkmgr_jitter
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_csrng_edn_concurrency
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_dma_inline_hashing
+      name: chip
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_entropy_src_csrng
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_entropy_src_smoketest
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_gpio
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_hmac_enc
+      name: chip
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_kmac_entropy
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_lc_ctrl_rand_to_scrap
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_lc_ctrl_raw_to_scrap
+      name: chip
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_lc_ctrl_test_locked0_to_scrap
+      name: chip
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_mbx_smoketest
+      name: chip
+      reseed: 7
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_otp_ctrl_smoketest
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_plic_sw_irq
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_pwrmgr_full_aon_reset
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_rom_ctrl_integrity_check
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_rv_core_ibex_address_translation
+      name: chip
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_rv_core_ibex_lockstep_glitch
+      name: chip
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_spi_device_pass_through
+      name: chip
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_sram_ctrl_scrambled_access
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_sw_uart_smoketest
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_access_same_device_slow_rsp
+      name: chip
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: xbar_error_random
+      name: chip
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: xbar_random_large_delays
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_random_slow_rsp
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_random_zero_delays
+      name: chip
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all
+      name: chip
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_error
+      name: chip
+      reseed: 15
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_rand_reset
+      name: chip
+      reseed: 24
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_reset_error
+      name: chip
+      reseed: 25
+      variant: darjeeling
+    }
+    {
+      test: xbar_unmapped_addr
+      name: chip
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: chip_jtag_csr_rw
+      name: chip
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: chip_padctrl_attributes
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_plic_all_irqs_0
+      name: chip
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: chip_plic_all_irqs_10
+      name: chip
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: chip_plic_all_irqs_20
+      name: chip
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: chip_rv_dm_ndm_reset_req
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sival_flash_info_access
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_acc_ecdsa_op_irq_jitter_en_reduced_freq
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_aes_idle
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_alert_handler_entropy
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_alert_handler_ping_timeout
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_all_escalation_resets
+      name: chip
+      reseed: 73
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_clkmgr_external_clk_src_for_lc
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_clkmgr_external_clk_src_for_sw_fast_dev
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_clkmgr_reset_frequency
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_csrng_edn_concurrency_reduced_freq
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_csrng_lc_hw_debug_en_test
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_data_integrity_escalation
+      name: chip
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_edn_boot_mode
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_edn_entropy_reqs
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_edn_kat
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_entropy_src_csrng
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_flash_ctrl_ops_jitter_en
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_flash_init
+      name: chip
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_flash_init_reduced_freq
+      name: chip
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_flash_rma_unlocked
+      name: chip
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_gpio
+      name: chip
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_hmac_enc_jitter_en
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_i2c_device_tx_rx
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_i2c_host_tx_rx
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_i2c_host_tx_rx_idx1
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_i2c_host_tx_rx_idx2
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_keymgr_key_derivation_jitter_en
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_keymgr_sideload_acc
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_keymgr_sideload_aes
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_lc_ctrl_program_error
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_lc_ctrl_rand_to_scrap
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_lc_ctrl_transition
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_lc_walkthrough_prodend
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_otp_ctrl_descrambling
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_otp_ctrl_vendor_test_csr_access
+      name: chip
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_pattgen_ios
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_plic_sw_irq
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_power_virus
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_pwrmgr_full_aon_reset
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_pwrmgr_lowpower_cancel
+      name: chip
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_pwrmgr_random_sleep_all_wake_ups
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_pwrmgr_sensor_ctrl_deep_sleep_wake_up
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_pwrmgr_sysrst_ctrl_reset
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_rstmgr_alert_info
+      name: chip
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_rstmgr_rst_cnsty_escalation
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_rv_core_ibex_address_translation
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_rv_core_ibex_lockstep_glitch
+      name: chip
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_rv_core_ibex_nmi_irq
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_rv_dm_access_after_escalation_reset
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_sensor_ctrl_alert
+      name: chip
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_sleep_pin_mio_dio_val
+      name: chip
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_sleep_pin_retention
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_sleep_pin_wake
+      name: chip
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_spi_device_pinmux_sleep_retention
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_spi_host_tx_rx
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_sram_ctrl_scrambled_access_jitter_en
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_sysrst_ctrl_reset
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_uart_tx_rx_alt_clk_freq_low_speed
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_uart_tx_rx_bootstrap
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_uart_tx_rx_idx2
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_usbdev_aon_pullup
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_sw_usbdev_pincfg
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: chip_tap_straps_dev
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: chip_tap_straps_testunlock0
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rom_e2e_asm_init_prod_end
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rom_e2e_shutdown_exception_c
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rom_e2e_shutdown_output
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_access_same_device
+      name: chip
+      reseed: 9
+      variant: earlgrey
+    }
+    {
+      test: xbar_access_same_device_slow_rsp
+      name: chip
+      reseed: 13
+      variant: earlgrey
+    }
+    {
+      test: xbar_error_and_unmapped_addr
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: xbar_random_large_delays
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_random_slow_rsp
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_same_source
+      name: chip
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all
+      name: chip
+      reseed: 15
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_error
+      name: chip
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_rand_reset
+      name: chip
+      reseed: 20
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_reset_error
+      name: chip
+      reseed: 8
+      variant: earlgrey
+    }
+    {
+      test: xbar_unmapped_addr
+      name: chip
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_alert_test
+      name: clkmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_clk_status
+      name: clkmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_idle_intersig_mubi
+      name: clkmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_peri
+      name: clkmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_regwen
+      name: clkmgr
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_sec_cm
+      name: clkmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_shadow_reg_errors
+      name: clkmgr
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_shadow_reg_errors_with_csr_rw
+      name: clkmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_smoke
+      name: clkmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_stress_all_with_rand_reset
+      name: clkmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_tl_intg_err
+      name: clkmgr
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: clkmgr_alert_test
+      name: clkmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_clk_handshake_intersig_mubi
+      name: clkmgr
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_clk_status
+      name: clkmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_csr_rw
+      name: clkmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_idle_intersig_mubi
+      name: clkmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_lc_clk_byp_req_intersig_mubi
+      name: clkmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_regwen
+      name: clkmgr
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_sec_cm
+      name: clkmgr
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_shadow_reg_errors
+      name: clkmgr
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_stress_all
+      name: clkmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_stress_all_with_rand_reset
+      name: clkmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: clkmgr_tl_intg_err
+      name: clkmgr
+      reseed: 8
+      variant: earlgrey
+    }
+    {
+      test: csrng_alert
+      name: csrng
+      reseed: 14
+    }
+    {
+      test: csrng_alert_test
+      name: csrng
+      reseed: 3
+    }
+    {
+      test: csrng_cmds
+      name: csrng
+      reseed: 9
+    }
+    {
+      test: csrng_err
+      name: csrng
+      reseed: 52
+    }
+    {
+      test: csrng_intr
+      name: csrng
+      reseed: 23
+    }
+    {
+      test: csrng_regwen
+      name: csrng
+      reseed: 3
+    }
+    {
+      test: csrng_same_csr_outstanding
+      name: csrng
+      reseed: 3
+    }
+    {
+      test: csrng_sec_cm
+      name: csrng
+      reseed: 3
+    }
+    {
+      test: csrng_smoke
+      name: csrng
+      reseed: 5
+    }
+    {
+      test: csrng_stress_all
+      name: csrng
+      reseed: 5
+    }
+    {
+      test: csrng_stress_all_with_rand_reset
+      name: csrng
+      reseed: 3
+    }
+    {
+      test: csrng_tl_intg_err
+      name: csrng
+      reseed: 6
+    }
+    {
+      test: dma_abort
+      name: dma
+      reseed: 4
+    }
+    {
+      test: dma_alert_test
+      name: dma
+      reseed: 3
+    }
+    {
+      test: dma_config_lock
+      name: dma
+      reseed: 3
+    }
+    {
+      test: dma_generic_stress
+      name: dma
+      reseed: 8
+    }
+    {
+      test: dma_handshake_smoke
+      name: dma
+      reseed: 3
+    }
+    {
+      test: dma_handshake_stress
+      name: dma
+      reseed: 7
+    }
+    {
+      test: dma_intr_test
+      name: dma
+      reseed: 4
+    }
+    {
+      test: dma_mem_enabled
+      name: dma
+      reseed: 10
+    }
+    {
+      test: dma_memory_region_lock
+      name: dma
+      reseed: 3
+    }
+    {
+      test: dma_memory_stress
+      name: dma
+      reseed: 7
+    }
+    {
+      test: dma_same_csr_outstanding
+      name: dma
+      reseed: 3
+    }
+    {
+      test: dma_short_transfer
+      name: dma
+      reseed: 15
+    }
+    {
+      test: dma_stress_all
+      name: dma
+      reseed: 5
+    }
+    {
+      test: dma_tl_errors
+      name: dma
+      reseed: 5
+    }
+    {
+      test: dma_tl_intg_err
+      name: dma
+      reseed: 3
+    }
+    {
+      test: edn_alert
+      name: edn
+      reseed: 21
+      variant: edn0
+    }
+    {
+      test: edn_alert_test
+      name: edn
+      reseed: 3
+      variant: edn0
+    }
+    {
+      test: edn_disable
+      name: edn
+      reseed: 13
+      variant: edn0
+    }
+    {
+      test: edn_disable_auto_req_mode
+      name: edn
+      reseed: 8
+      variant: edn0
+    }
+    {
+      test: edn_err
+      name: edn
+      reseed: 6
+      variant: edn0
+    }
+    {
+      test: edn_genbits
+      name: edn
+      reseed: 8
+      variant: edn0
+    }
+    {
+      test: edn_intr
+      name: edn
+      reseed: 7
+      variant: edn0
+    }
+    {
+      test: edn_same_csr_outstanding
+      name: edn
+      reseed: 3
+      variant: edn0
+    }
+    {
+      test: edn_sec_cm
+      name: edn
+      reseed: 3
+      variant: edn0
+    }
+    {
+      test: edn_stress_all_with_rand_reset
+      name: edn
+      reseed: 5
+      variant: edn0
+    }
+    {
+      test: edn_tl_intg_err
+      name: edn
+      reseed: 3
+      variant: edn0
+    }
+    {
+      test: edn_alert
+      name: edn
+      reseed: 20
+      variant: edn1
+    }
+    {
+      test: edn_alert_test
+      name: edn
+      reseed: 3
+      variant: edn1
+    }
+    {
+      test: edn_disable
+      name: edn
+      reseed: 9
+      variant: edn1
+    }
+    {
+      test: edn_disable_auto_req_mode
+      name: edn
+      reseed: 9
+      variant: edn1
+    }
+    {
+      test: edn_err
+      name: edn
+      reseed: 8
+      variant: edn1
+    }
+    {
+      test: edn_genbits
+      name: edn
+      reseed: 8
+      variant: edn1
+    }
+    {
+      test: edn_intr
+      name: edn
+      reseed: 6
+      variant: edn1
+    }
+    {
+      test: edn_same_csr_outstanding
+      name: edn
+      reseed: 3
+      variant: edn1
+    }
+    {
+      test: edn_sec_cm
+      name: edn
+      reseed: 3
+      variant: edn1
+    }
+    {
+      test: edn_stress_all
+      name: edn
+      reseed: 3
+      variant: edn1
+    }
+    {
+      test: edn_stress_all_with_rand_reset
+      name: edn
+      reseed: 6
+      variant: edn1
+    }
+    {
+      test: edn_tl_intg_err
+      name: edn
+      reseed: 3
+      variant: edn1
+    }
+    {
+      test: entropy_src_alert_test
+      name: entropy_src
+      reseed: 3
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_cfg_regwen
+      name: entropy_src
+      reseed: 3
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_csr_hw_reset
+      name: entropy_src
+      reseed: 7
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_functional_alerts
+      name: entropy_src
+      reseed: 3
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_functional_errors
+      name: entropy_src
+      reseed: 129
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_fw_ov
+      name: entropy_src
+      reseed: 20
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_fw_ov_contiguous
+      name: entropy_src
+      reseed: 3
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_intr
+      name: entropy_src
+      reseed: 12
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_rng
+      name: entropy_src
+      reseed: 50
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_rng_max_rate
+      name: entropy_src
+      reseed: 47
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_rng_with_xht_rsps
+      name: entropy_src
+      reseed: 8
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_same_csr_outstanding
+      name: entropy_src
+      reseed: 3
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_sec_cm
+      name: entropy_src
+      reseed: 3
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_stress_all
+      name: entropy_src
+      reseed: 5
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_tl_errors
+      name: entropy_src
+      reseed: 5
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_tl_intg_err
+      name: entropy_src
+      reseed: 16
+      variant: rng16bits
+    }
+    {
+      test: entropy_src_alert_test
+      name: entropy_src
+      reseed: 3
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_cfg_regwen
+      name: entropy_src
+      reseed: 4
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_csr_hw_reset
+      name: entropy_src
+      reseed: 3
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_functional_alerts
+      name: entropy_src
+      reseed: 3
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_functional_errors
+      name: entropy_src
+      reseed: 46
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_fw_ov
+      name: entropy_src
+      reseed: 19
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_fw_ov_contiguous
+      name: entropy_src
+      reseed: 3
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_intr
+      name: entropy_src
+      reseed: 9
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_rng
+      name: entropy_src
+      reseed: 36
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_rng_max_rate
+      name: entropy_src
+      reseed: 59
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_rng_with_xht_rsps
+      name: entropy_src
+      reseed: 14
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_same_csr_outstanding
+      name: entropy_src
+      reseed: 3
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_sec_cm
+      name: entropy_src
+      reseed: 3
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_stress_all
+      name: entropy_src
+      reseed: 7
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_tl_errors
+      name: entropy_src
+      reseed: 5
+      variant: rng4bits
+    }
+    {
+      test: entropy_src_tl_intg_err
+      name: entropy_src
+      reseed: 13
+      variant: rng4bits
+    }
+    {
+      test: flash_ctrl_access_after_disable
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_alert_test
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_config_regwen
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_connect
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_disable
+      name: flash_ctrl
+      reseed: 10
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_erase_suspend
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_error_mp
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_error_prog_type
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_error_prog_win
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_fetch_code
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_fs_sup
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_full_mem_access
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_host_ctrl_arb
+      name: flash_ctrl
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_hw_prog_rma_wipe_err
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_hw_read_seed_err
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_hw_rma
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_hw_rma_reset
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_hw_sec_otp
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_intr_rd
+      name: flash_ctrl
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_intr_rd_slow_flash
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_intr_test
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_intr_wr_slow_flash
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_invalid_op
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_lcmgr_intg
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_mid_op_rst
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_mp_regions
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_otp_reset
+      name: flash_ctrl
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_oversize_error
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_phy_ack_consistency
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_phy_arb
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_phy_arb_redun
+      name: flash_ctrl
+      reseed: 10
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_phy_host_grant_err
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_rd_buff_evict
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_rd_intg
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_re_evict
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_rma_err
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_ro_serr
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_rw
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_rw_derr
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_rw_evict
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_rw_evict_all_en
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_rw_serr
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_sec_cm
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_sec_info_access
+      name: flash_ctrl
+      reseed: 11
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_shadow_reg_errors
+      name: flash_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_shadow_reg_errors_with_csr_rw
+      name: flash_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_tl_errors
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_tl_intg_err
+      name: flash_ctrl
+      reseed: 12
+      variant: earlgrey
+    }
+    {
+      test: flash_ctrl_wr_intg
+      name: flash_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: gpio_alert_test
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_csr_mem_rw_with_rand_reset
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_csr_rw
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_dout_din_regs_random_rw
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_inp_prd_cnt
+      name: gpio
+      reseed: 12
+      variant: darjeeling
+    }
+    {
+      test: gpio_intr_with_filter_rand_intr_event
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_random_long_reg_writes_reg_reads
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_sec_cm
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_stress_all
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_tl_errors
+      name: gpio
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: gpio_tl_intg_err
+      name: gpio
+      reseed: 12
+      variant: darjeeling
+    }
+    {
+      test: gpio_alert_test
+      name: gpio
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: gpio_csr_mem_rw_with_rand_reset
+      name: gpio
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: gpio_intr_with_filter_rand_intr_event
+      name: gpio
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: gpio_same_csr_outstanding
+      name: gpio
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: gpio_sec_cm
+      name: gpio
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: gpio_stress_all
+      name: gpio
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: gpio_tl_errors
+      name: gpio
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: gpio_tl_intg_err
+      name: gpio
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: hmac_alert_test
+      name: hmac
+      reseed: 3
+    }
+    {
+      test: hmac_back_pressure
+      name: hmac
+      reseed: 4
+    }
+    {
+      test: hmac_burst_wr
+      name: hmac
+      reseed: 4
+    }
+    {
+      test: hmac_directed
+      name: hmac
+      reseed: 4
+    }
+    {
+      test: hmac_same_csr_outstanding
+      name: hmac
+      reseed: 3
+    }
+    {
+      test: hmac_sec_cm
+      name: hmac
+      reseed: 3
+    }
+    {
+      test: hmac_stress_all
+      name: hmac
+      reseed: 7
+    }
+    {
+      test: hmac_stress_all_with_rand_reset
+      name: hmac
+      reseed: 9
+    }
+    {
+      test: hmac_stress_reset
+      name: hmac
+      reseed: 3
+    }
+    {
+      test: hmac_test_hmac256_vectors
+      name: hmac
+      reseed: 13
+    }
+    {
+      test: hmac_test_hmac384_vectors
+      name: hmac
+      reseed: 20
+    }
+    {
+      test: hmac_test_hmac512_vectors
+      name: hmac
+      reseed: 22
+    }
+    {
+      test: hmac_test_sha256_vectors
+      name: hmac
+      reseed: 8
+    }
+    {
+      test: hmac_test_sha384_vectors
+      name: hmac
+      reseed: 17
+    }
+    {
+      test: hmac_test_sha512_vectors
+      name: hmac
+      reseed: 19
+    }
+    {
+      test: hmac_tl_intg_err
+      name: hmac
+      reseed: 4
+    }
+    {
+      test: i2c_alert_test
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_host_error_intr
+      name: i2c
+      reseed: 5
+    }
+    {
+      test: i2c_host_fifo_overflow
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_host_fifo_reset_fmt
+      name: i2c
+      reseed: 5
+    }
+    {
+      test: i2c_host_fifo_reset_rx
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_host_fifo_watermark
+      name: i2c
+      reseed: 4
+    }
+    {
+      test: i2c_host_may_nack
+      name: i2c
+      reseed: 8
+    }
+    {
+      test: i2c_host_mode_toggle
+      name: i2c
+      reseed: 4
+    }
+    {
+      test: i2c_host_override
+      name: i2c
+      reseed: 5
+    }
+    {
+      test: i2c_host_perf
+      name: i2c
+      reseed: 5
+    }
+    {
+      test: i2c_host_smoke
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_host_stress_all
+      name: i2c
+      reseed: 7
+    }
+    {
+      test: i2c_intr_test
+      name: i2c
+      reseed: 5
+    }
+    {
+      test: i2c_same_csr_outstanding
+      name: i2c
+      reseed: 4
+    }
+    {
+      test: i2c_sec_cm
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_bad_addr
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_fifo_reset_acq
+      name: i2c
+      reseed: 4
+    }
+    {
+      test: i2c_target_fifo_watermarks_acq
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_hrst
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_intr_stress_wr
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_nack_acqfull
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_nack_acqfull_addr
+      name: i2c
+      reseed: 4
+    }
+    {
+      test: i2c_target_nack_txstretch
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_smoke
+      name: i2c
+      reseed: 4
+    }
+    {
+      test: i2c_target_stress_all
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_stress_rd
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_stress_wr
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_target_tx_stretch_ctrl
+      name: i2c
+      reseed: 3
+    }
+    {
+      test: i2c_tl_errors
+      name: i2c
+      reseed: 4
+    }
+    {
+      test: i2c_tl_intg_err
+      name: i2c
+      reseed: 7
+    }
+    {
+      test: keymgr_alert_test
+      name: keymgr
+      reseed: 3
+    }
+    {
+      test: keymgr_cfg_regwen
+      name: keymgr
+      reseed: 21
+    }
+    {
+      test: keymgr_custom_cm
+      name: keymgr
+      reseed: 25
+    }
+    {
+      test: keymgr_hwsw_invalid_input
+      name: keymgr
+      reseed: 9
+    }
+    {
+      test: keymgr_kmac_rsp_err
+      name: keymgr
+      reseed: 12
+    }
+    {
+      test: keymgr_lc_disable
+      name: keymgr
+      reseed: 8
+    }
+    {
+      test: keymgr_random
+      name: keymgr
+      reseed: 4
+    }
+    {
+      test: keymgr_sec_cm
+      name: keymgr
+      reseed: 3
+    }
+    {
+      test: keymgr_shadow_reg_errors
+      name: keymgr
+      reseed: 3
+    }
+    {
+      test: keymgr_shadow_reg_errors_with_csr_rw
+      name: keymgr
+      reseed: 3
+    }
+    {
+      test: keymgr_sideload
+      name: keymgr
+      reseed: 3
+    }
+    {
+      test: keymgr_sideload_acc
+      name: keymgr
+      reseed: 3
+    }
+    {
+      test: keymgr_sideload_aes
+      name: keymgr
+      reseed: 3
+    }
+    {
+      test: keymgr_sideload_protect
+      name: keymgr
+      reseed: 4
+    }
+    {
+      test: keymgr_stress_all
+      name: keymgr
+      reseed: 21
+    }
+    {
+      test: keymgr_stress_all_with_rand_reset
+      name: keymgr
+      reseed: 12
+    }
+    {
+      test: keymgr_sw_invalid_input
+      name: keymgr
+      reseed: 6
+    }
+    {
+      test: keymgr_sync_async_fault_cross
+      name: keymgr
+      reseed: 5
+    }
+    {
+      test: keymgr_tl_intg_err
+      name: keymgr
+      reseed: 16
+    }
+    {
+      test: keymgr_dpe_alert_test
+      name: keymgr_dpe
+      reseed: 3
+    }
+    {
+      test: keymgr_dpe_csr_mem_rw_with_rand_reset
+      name: keymgr_dpe
+      reseed: 3
+    }
+    {
+      test: keymgr_dpe_intr_test
+      name: keymgr_dpe
+      reseed: 4
+    }
+    {
+      test: keymgr_dpe_sec_cm
+      name: keymgr_dpe
+      reseed: 6
+    }
+    {
+      test: keymgr_dpe_shadow_reg_errors
+      name: keymgr_dpe
+      reseed: 3
+    }
+    {
+      test: keymgr_dpe_shadow_reg_errors_with_csr_rw
+      name: keymgr_dpe
+      reseed: 3
+    }
+    {
+      test: keymgr_dpe_smoke
+      name: keymgr_dpe
+      reseed: 25
+    }
+    {
+      test: keymgr_dpe_tl_errors
+      name: keymgr_dpe
+      reseed: 4
+    }
+    {
+      test: keymgr_dpe_tl_intg_err
+      name: keymgr_dpe
+      reseed: 15
+    }
+    {
+      test: kmac_alert_test
+      name: kmac
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: kmac_app
+      name: kmac
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: kmac_edn_timeout_error
+      name: kmac
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: kmac_entropy_mode_error
+      name: kmac
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: kmac_entropy_ready_error
+      name: kmac
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: kmac_entropy_refresh
+      name: kmac
+      reseed: 5
+      variant: masked
+    }
+    {
+      test: kmac_error
+      name: kmac
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: kmac_intr_test
+      name: kmac
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: kmac_key_error
+      name: kmac
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: kmac_lc_escalation
+      name: kmac
+      reseed: 11
+      variant: masked
+    }
+    {
+      test: kmac_sec_cm
+      name: kmac
+      reseed: 5
+      variant: masked
+    }
+    {
+      test: kmac_shadow_reg_errors
+      name: kmac
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: kmac_shadow_reg_errors_with_csr_rw
+      name: kmac
+      reseed: 5
+      variant: masked
+    }
+    {
+      test: kmac_sideload
+      name: kmac
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: kmac_sideload_invalid
+      name: kmac
+      reseed: 5
+      variant: masked
+    }
+    {
+      test: kmac_smoke
+      name: kmac
+      reseed: 3
+      variant: masked
+    }
+    {
+      test: kmac_stress_all
+      name: kmac
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: kmac_stress_all_with_rand_reset
+      name: kmac
+      reseed: 4
+      variant: masked
+    }
+    {
+      test: kmac_tl_intg_err
+      name: kmac
+      reseed: 5
+      variant: masked
+    }
+    {
+      test: kmac_alert_test
+      name: kmac
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: kmac_app
+      name: kmac
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: kmac_entropy_ready_error
+      name: kmac
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: kmac_entropy_refresh
+      name: kmac
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: kmac_error
+      name: kmac
+      reseed: 5
+      variant: unmasked
+    }
+    {
+      test: kmac_intr_test
+      name: kmac
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: kmac_key_error
+      name: kmac
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: kmac_lc_escalation
+      name: kmac
+      reseed: 10
+      variant: unmasked
+    }
+    {
+      test: kmac_sec_cm
+      name: kmac
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: kmac_shadow_reg_errors
+      name: kmac
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: kmac_shadow_reg_errors_with_csr_rw
+      name: kmac
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: kmac_sideload_invalid
+      name: kmac
+      reseed: 4
+      variant: unmasked
+    }
+    {
+      test: kmac_stress_all
+      name: kmac
+      reseed: 5
+      variant: unmasked
+    }
+    {
+      test: kmac_stress_all_with_rand_reset
+      name: kmac
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: kmac_test_vectors_shake_256
+      name: kmac
+      reseed: 3
+      variant: unmasked
+    }
+    {
+      test: kmac_tl_intg_err
+      name: kmac
+      reseed: 7
+      variant: unmasked
+    }
+    {
+      test: lc_ctrl_alert_test
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_claim_transition_if
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 6
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_errors
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_access
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_csr_mem_rw_with_rand_reset
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_errors
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_same_csr_outstanding
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_state_failure
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_sec_cm
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_sec_mubi
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 4
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_sec_token_mux
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_security_escalation
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 5
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_smoke
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_state_failure
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_stress_all
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 7
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_stress_all_with_rand_reset
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 7
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_tl_errors
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_tl_intg_err
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 17
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_volatile_unlock_smoke
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_alert_test
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_claim_transition_if
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 7
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_csr_mem_rw_with_rand_reset
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_errors
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_jtag_access
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_jtag_csr_mem_rw_with_rand_reset
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_jtag_state_failure
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_regwen_during_op
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_same_csr_outstanding
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_sec_cm
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_sec_mubi
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 4
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_sec_token_mux
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_security_escalation
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 5
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_stress_all
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 8
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_stress_all_with_rand_reset
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 6
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_tl_errors
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_tl_intg_err
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 16
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_volatile_unlock_smoke
+      name: lc_ctrl_dmi_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_alert_test
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_claim_transition_if
+      name: lc_ctrl_volatile_unlock
+      reseed: 10
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_errors
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_access
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_csr_mem_rw_with_rand_reset
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_same_csr_outstanding
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_jtag_state_failure
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_regwen_during_op
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_sec_cm
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_sec_mubi
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_sec_token_mux
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_security_escalation
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_smoke
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_state_failure
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_stress_all
+      name: lc_ctrl_volatile_unlock
+      reseed: 6
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_stress_all_with_rand_reset
+      name: lc_ctrl_volatile_unlock
+      reseed: 5
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_tl_errors
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_tl_intg_err
+      name: lc_ctrl_volatile_unlock
+      reseed: 19
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_volatile_unlock_smoke
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: disabled
+    }
+    {
+      test: lc_ctrl_alert_test
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_claim_transition_if
+      name: lc_ctrl_volatile_unlock
+      reseed: 7
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_csr_rw
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_errors
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_jtag_access
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_jtag_csr_mem_rw_with_rand_reset
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_jtag_errors
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_jtag_state_failure
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_prog_failure
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_sec_cm
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_sec_mubi
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_sec_token_mux
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_security_escalation
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_smoke
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_stress_all
+      name: lc_ctrl_volatile_unlock
+      reseed: 6
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_stress_all_with_rand_reset
+      name: lc_ctrl_volatile_unlock
+      reseed: 8
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_tl_errors
+      name: lc_ctrl_volatile_unlock
+      reseed: 4
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_tl_intg_err
+      name: lc_ctrl_volatile_unlock
+      reseed: 18
+      variant: enabled
+    }
+    {
+      test: lc_ctrl_volatile_unlock_smoke
+      name: lc_ctrl_volatile_unlock
+      reseed: 3
+      variant: enabled
+    }
+    {
+      test: mbx_alert_test
+      name: mbx
+      reseed: 3
+    }
+    {
+      test: mbx_csr_hw_reset
+      name: mbx
+      reseed: 3
+    }
+    {
+      test: mbx_csr_mem_rw_with_rand_reset
+      name: mbx
+      reseed: 3
+    }
+    {
+      test: mbx_doe_intr_msg
+      name: mbx
+      reseed: 3
+    }
+    {
+      test: mbx_imbx_oob
+      name: mbx
+      reseed: 4
+    }
+    {
+      test: mbx_intr_test
+      name: mbx
+      reseed: 5
+    }
+    {
+      test: mbx_same_csr_outstanding
+      name: mbx
+      reseed: 3
+    }
+    {
+      test: mbx_smoke
+      name: mbx
+      reseed: 3
+    }
+    {
+      test: mbx_tl_errors
+      name: mbx
+      reseed: 5
+    }
+    {
+      test: mbx_tl_intg_err
+      name: mbx
+      reseed: 9
+    }
+    {
+      test: otp_ctrl_alert_test
+      name: otp_ctrl
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_check_fail
+      name: otp_ctrl
+      reseed: 20
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_csr_mem_rw_with_rand_reset
+      name: otp_ctrl
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_dai_errs
+      name: otp_ctrl
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_dai_lock
+      name: otp_ctrl
+      reseed: 8
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_init_fail
+      name: otp_ctrl
+      reseed: 45
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_macro_errs
+      name: otp_ctrl
+      reseed: 14
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_parallel_key_req
+      name: otp_ctrl
+      reseed: 10
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_parallel_lc_esc
+      name: otp_ctrl
+      reseed: 32
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_parallel_lc_req
+      name: otp_ctrl
+      reseed: 8
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_regwen
+      name: otp_ctrl
+      reseed: 13
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_same_csr_outstanding
+      name: otp_ctrl
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_sec_cm
+      name: otp_ctrl
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_stress_all
+      name: otp_ctrl
+      reseed: 41
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_test_access
+      name: otp_ctrl
+      reseed: 11
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_tl_errors
+      name: otp_ctrl
+      reseed: 7
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_tl_intg_err
+      name: otp_ctrl
+      reseed: 8
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_wake_up
+      name: otp_ctrl
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_zeroization
+      name: otp_ctrl
+      reseed: 16
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_zeroization_with_checks
+      name: otp_ctrl
+      reseed: 25
+      variant: darjeeling
+    }
+    {
+      test: otp_ctrl_alert_test
+      name: otp_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_background_chks
+      name: otp_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_check_fail
+      name: otp_ctrl
+      reseed: 12
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_csr_mem_rw_with_rand_reset
+      name: otp_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_dai_errs
+      name: otp_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_dai_lock
+      name: otp_ctrl
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_init_fail
+      name: otp_ctrl
+      reseed: 29
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_macro_errs
+      name: otp_ctrl
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_parallel_key_req
+      name: otp_ctrl
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_parallel_lc_esc
+      name: otp_ctrl
+      reseed: 18
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_parallel_lc_req
+      name: otp_ctrl
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_regwen
+      name: otp_ctrl
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_same_csr_outstanding
+      name: otp_ctrl
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_sec_cm
+      name: otp_ctrl
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_stress_all
+      name: otp_ctrl
+      reseed: 21
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_test_access
+      name: otp_ctrl
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_tl_errors
+      name: otp_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_tl_intg_err
+      name: otp_ctrl
+      reseed: 11
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_wake_up
+      name: otp_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_zeroization
+      name: otp_ctrl
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: otp_ctrl_zeroization_with_checks
+      name: otp_ctrl
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: cnt_rollover
+      name: pattgen
+      reseed: 5
+    }
+    {
+      test: pattgen_alert_test
+      name: pattgen
+      reseed: 3
+    }
+    {
+      test: pattgen_csr_aliasing
+      name: pattgen
+      reseed: 4
+    }
+    {
+      test: pattgen_csr_bit_bash
+      name: pattgen
+      reseed: 3
+    }
+    {
+      test: pattgen_csr_hw_reset
+      name: pattgen
+      reseed: 7
+    }
+    {
+      test: pattgen_csr_mem_rw_with_rand_reset
+      name: pattgen
+      reseed: 10
+    }
+    {
+      test: pattgen_csr_rw
+      name: pattgen
+      reseed: 10
+    }
+    {
+      test: pattgen_error
+      name: pattgen
+      reseed: 4
+    }
+    {
+      test: pattgen_inactive_level
+      name: pattgen
+      reseed: 5
+    }
+    {
+      test: pattgen_perf
+      name: pattgen
+      reseed: 3
+    }
+    {
+      test: pattgen_same_csr_outstanding
+      name: pattgen
+      reseed: 26
+    }
+    {
+      test: pattgen_sec_cm
+      name: pattgen
+      reseed: 3
+    }
+    {
+      test: pattgen_smoke
+      name: pattgen
+      reseed: 4
+    }
+    {
+      test: pattgen_stress_all
+      name: pattgen
+      reseed: 7
+    }
+    {
+      test: pattgen_stress_all_with_rand_reset
+      name: pattgen
+      reseed: 3
+    }
+    {
+      test: pattgen_tl_intg_err
+      name: pattgen
+      reseed: 32
+    }
+    {
+      test: prim_async_alert
+      name: prim
+      reseed: 4
+      variant: alert
+    }
+    {
+      test: prim_async_fatal_alert
+      name: prim
+      reseed: 3
+      variant: alert
+    }
+    {
+      test: prim_async_fatal_alert_with_3_cycles_skew
+      name: prim
+      reseed: 3
+      variant: alert
+    }
+    {
+      test: prim_sync_alert
+      name: prim
+      reseed: 4
+      variant: alert
+    }
+    {
+      test: prim_esc_test
+      name: prim
+      reseed: 7
+      variant: esc
+    }
+    {
+      test: prim_lfsr_fib_test
+      name: prim
+      reseed: 3
+      variant: lfsr
+    }
+    {
+      test: prim_lfsr_gal_smoke
+      name: prim
+      reseed: 3
+      variant: lfsr
+    }
+    {
+      test: prim_lfsr_gal_test
+      name: prim
+      reseed: 3
+      variant: lfsr
+    }
+    {
+      test: prim_present_test
+      name: prim
+      reseed: 3
+      variant: present
+    }
+    {
+      test: prim_prince_test
+      name: prim
+      reseed: 3
+      variant: prince
+    }
+    {
+      test: pwm_alert_test
+      name: pwm
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwm_csr_mem_rw_with_rand_reset
+      name: pwm
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: pwm_heartbeat_wrap
+      name: pwm
+      reseed: 9
+      variant: earlgrey
+    }
+    {
+      test: pwm_perf
+      name: pwm
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwm_phase
+      name: pwm
+      reseed: 8
+      variant: earlgrey
+    }
+    {
+      test: pwm_rand_output
+      name: pwm
+      reseed: 10
+      variant: earlgrey
+    }
+    {
+      test: pwm_same_csr_outstanding
+      name: pwm
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwm_sec_cm
+      name: pwm
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwm_smoke
+      name: pwm
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: pwm_stress_all
+      name: pwm
+      reseed: 20
+      variant: earlgrey
+    }
+    {
+      test: pwm_tl_intg_err
+      name: pwm
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_csr_bit_bash
+      name: pwrmgr
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_csr_rw
+      name: pwrmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_disable_rom_integrity_check
+      name: pwrmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_esc_clk_rst_malfunc
+      name: pwrmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_glitch
+      name: pwrmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_intr_test
+      name: pwrmgr
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_lowpower_invalid
+      name: pwrmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_reset
+      name: pwrmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_reset_invalid
+      name: pwrmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_sec_cm_ctrl_config_regwen
+      name: pwrmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_sec_cm_lc_ctrl_intersig_mubi
+      name: pwrmgr
+      reseed: 6
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_stress_all
+      name: pwrmgr
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_stress_all_with_rand_reset
+      name: pwrmgr
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_tl_errors
+      name: pwrmgr
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: pwrmgr_csr_mem_rw_with_rand_reset
+      name: pwrmgr
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_csr_rw
+      name: pwrmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_esc_clk_rst_malfunc
+      name: pwrmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_glitch
+      name: pwrmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_intr_test
+      name: pwrmgr
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_lowpower_invalid
+      name: pwrmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_reset_invalid
+      name: pwrmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_sec_cm_ctrl_config_regwen
+      name: pwrmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_sec_cm_lc_ctrl_intersig_mubi
+      name: pwrmgr
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_stress_all
+      name: pwrmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_stress_all_with_rand_reset
+      name: pwrmgr
+      reseed: 7
+      variant: earlgrey
+    }
+    {
+      test: pwrmgr_tl_errors
+      name: pwrmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rom_ctrl_alert_test
+      name: rom_ctrl
+      reseed: 3
+      variant: 32kB
+    }
+    {
+      test: rom_ctrl_corrupt_sig_fatal_chk
+      name: rom_ctrl
+      reseed: 4
+      variant: 32kB
+    }
+    {
+      test: rom_ctrl_csr_rw
+      name: rom_ctrl
+      reseed: 3
+      variant: 32kB
+    }
+    {
+      test: rom_ctrl_passthru_mem_tl_intg_err
+      name: rom_ctrl
+      reseed: 3
+      variant: 32kB
+    }
+    {
+      test: rom_ctrl_sec_cm
+      name: rom_ctrl
+      reseed: 3
+      variant: 32kB
+    }
+    {
+      test: rom_ctrl_stress_all
+      name: rom_ctrl
+      reseed: 5
+      variant: 32kB
+    }
+    {
+      test: rom_ctrl_stress_all_with_rand_reset
+      name: rom_ctrl
+      reseed: 4
+      variant: 32kB
+    }
+    {
+      test: rom_ctrl_tl_intg_err
+      name: rom_ctrl
+      reseed: 5
+      variant: 32kB
+    }
+    {
+      test: rom_ctrl_alert_test
+      name: rom_ctrl
+      reseed: 3
+      variant: 64kB
+    }
+    {
+      test: rom_ctrl_corrupt_sig_fatal_chk
+      name: rom_ctrl
+      reseed: 3
+      variant: 64kB
+    }
+    {
+      test: rom_ctrl_passthru_mem_tl_intg_err
+      name: rom_ctrl
+      reseed: 5
+      variant: 64kB
+    }
+    {
+      test: rom_ctrl_sec_cm
+      name: rom_ctrl
+      reseed: 3
+      variant: 64kB
+    }
+    {
+      test: rom_ctrl_stress_all
+      name: rom_ctrl
+      reseed: 4
+      variant: 64kB
+    }
+    {
+      test: rom_ctrl_stress_all_with_rand_reset
+      name: rom_ctrl
+      reseed: 5
+      variant: 64kB
+    }
+    {
+      test: rom_ctrl_tl_intg_err
+      name: rom_ctrl
+      reseed: 6
+      variant: 64kB
+    }
+    {
+      test: rstmgr_cnsty_chk_test
+      name: rstmgr_cnsty_chk
+      reseed: 3
+    }
+    {
+      test: rstmgr_alert_test
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_csr_mem_rw_with_rand_reset
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_csr_rw
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_leaf_rst_cnsty
+      name: rstmgr
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_leaf_rst_shadow_attack
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_por_stretcher
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_reset
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_sec_cm
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_sec_cm_scan_intersig_mubi
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_smoke
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_stress_all
+      name: rstmgr
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_sw_rst
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_sw_rst_reset_race
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_tl_errors
+      name: rstmgr
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_tl_intg_err
+      name: rstmgr
+      reseed: 6
+      variant: darjeeling
+    }
+    {
+      test: rstmgr_alert_test
+      name: rstmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_leaf_rst_cnsty
+      name: rstmgr
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_leaf_rst_shadow_attack
+      name: rstmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_por_stretcher
+      name: rstmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_same_csr_outstanding
+      name: rstmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_sec_cm
+      name: rstmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_sec_cm_scan_intersig_mubi
+      name: rstmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_stress_all
+      name: rstmgr
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_sw_rst
+      name: rstmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_sw_rst_reset_race
+      name: rstmgr
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_tl_errors
+      name: rstmgr
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: rstmgr_tl_intg_err
+      name: rstmgr
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: rv_dm_abstractcmd_status
+      name: rv_dm_use
+      reseed: 3
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_alert_test
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_buffered_enable
+      name: rv_dm_use
+      reseed: 5
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_cmderr_busy
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_cmderr_exception
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_cmderr_halt_resume
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_csr_hw_reset
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_csr_rw
+      name: rv_dm_use
+      reseed: 3
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_dataaddr_rw_access
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_debug_disabled
+      name: rv_dm_use
+      reseed: 3
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_halt_resume_whereto
+      name: rv_dm_use
+      reseed: 7
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_hartsel_warl
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_jtag_dmi_csr_bit_bash
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_jtag_dmi_csr_hw_reset
+      name: rv_dm_use
+      reseed: 5
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_jtag_dmi_csr_rw
+      name: rv_dm_use
+      reseed: 3
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_jtag_dtm_csr_hw_reset
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_jtag_dtm_hard_reset
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_mem_partial_access
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_mem_tl_access_halted
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_ndmreset_req
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_progbuf_read_write_execute
+      name: rv_dm_use
+      reseed: 5
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_rom_read_access
+      name: rv_dm_use
+      reseed: 3
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_same_csr_outstanding
+      name: rv_dm_use
+      reseed: 3
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_sba_debug_disabled
+      name: rv_dm_use
+      reseed: 5
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_sec_cm
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_smoke
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_sparse_lc_gate_fsm
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_stress_all
+      name: rv_dm_use
+      reseed: 7
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_tap_fsm
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_tap_fsm_rand_reset
+      name: rv_dm_use
+      reseed: 8
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_tl_errors
+      name: rv_dm_use
+      reseed: 4
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_tl_intg_err
+      name: rv_dm_use
+      reseed: 11
+      variant: dmi_interface
+    }
+    {
+      test: rv_dm_alert_test
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_buffered_enable
+      name: rv_dm_use
+      reseed: 5
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_cmderr_exception
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_cmderr_halt_resume
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_csr_rw
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_dmi_failed_op
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_jtag_dmi_csr_bit_bash
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_jtag_dmi_csr_hw_reset
+      name: rv_dm_use
+      reseed: 7
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_jtag_dtm_csr_bit_bash
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_ndmreset_req
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_rom_read_access
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_same_csr_outstanding
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_sba_debug_disabled
+      name: rv_dm_use
+      reseed: 5
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_sec_cm
+      name: rv_dm_use
+      reseed: 5
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_sparse_lc_gate_fsm
+      name: rv_dm_use
+      reseed: 5
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_stress_all
+      name: rv_dm_use
+      reseed: 14
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_stress_all_with_rand_reset
+      name: rv_dm_use
+      reseed: 9
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_tap_fsm
+      name: rv_dm_use
+      reseed: 3
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_tap_fsm_rand_reset
+      name: rv_dm_use
+      reseed: 8
+      variant: jtag_interface
+    }
+    {
+      test: rv_dm_tl_intg_err
+      name: rv_dm_use
+      reseed: 11
+      variant: jtag_interface
+    }
+    {
+      test: rv_timer_alert_test
+      name: rv
+      reseed: 3
+      variant: timer
+    }
+    {
+      test: rv_timer_cfg_update_on_fly
+      name: rv
+      reseed: 3
+      variant: timer
+    }
+    {
+      test: rv_timer_max
+      name: rv
+      reseed: 4
+      variant: timer
+    }
+    {
+      test: rv_timer_min
+      name: rv
+      reseed: 4
+      variant: timer
+    }
+    {
+      test: rv_timer_same_csr_outstanding
+      name: rv
+      reseed: 3
+      variant: timer
+    }
+    {
+      test: rv_timer_sec_cm
+      name: rv
+      reseed: 3
+      variant: timer
+    }
+    {
+      test: rv_timer_stress_all_with_rand_reset
+      name: rv
+      reseed: 5
+      variant: timer
+    }
+    {
+      test: rv_timer_tl_intg_err
+      name: rv
+      reseed: 3
+      variant: timer
+    }
+    {
+      test: soc_dbg_ctrl_alert_test
+      name: soc_dbg_ctrl
+      reseed: 5
+    }
+    {
+      test: soc_dbg_ctrl_csr_aliasing
+      name: soc_dbg_ctrl
+      reseed: 3
+    }
+    {
+      test: soc_dbg_ctrl_csr_bit_bash
+      name: soc_dbg_ctrl
+      reseed: 4
+    }
+    {
+      test: soc_dbg_ctrl_csr_hw_reset
+      name: soc_dbg_ctrl
+      reseed: 3
+    }
+    {
+      test: soc_dbg_ctrl_csr_mem_rw_with_rand_reset
+      name: soc_dbg_ctrl
+      reseed: 3
+    }
+    {
+      test: soc_dbg_ctrl_same_csr_outstanding
+      name: soc_dbg_ctrl
+      reseed: 3
+    }
+    {
+      test: soc_dbg_ctrl_tl_errors
+      name: soc_dbg_ctrl
+      reseed: 3
+    }
+    {
+      test: soc_dbg_ctrl_tl_intg_err
+      name: soc_dbg_ctrl
+      reseed: 6
+    }
+    {
+      test: spi_device_alert_test
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_csr_hw_reset
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_csr_rw
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_flash_all
+      name: spi_device
+      reseed: 6
+      variant: 1r1w
+    }
+    {
+      test: spi_device_flash_and_tpm
+      name: spi_device
+      reseed: 6
+      variant: 1r1w
+    }
+    {
+      test: spi_device_flash_and_tpm_min_idle
+      name: spi_device
+      reseed: 6
+      variant: 1r1w
+    }
+    {
+      test: spi_device_flash_mode
+      name: spi_device
+      reseed: 5
+      variant: 1r1w
+    }
+    {
+      test: spi_device_flash_mode_ignore_cmds
+      name: spi_device
+      reseed: 8
+      variant: 1r1w
+    }
+    {
+      test: spi_device_intercept
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_mailbox
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_pass_addr_payload_swap
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_pass_cmd_filtering
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_sec_cm
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_stress_all
+      name: spi_device
+      reseed: 14
+      variant: 1r1w
+    }
+    {
+      test: spi_device_tl_errors
+      name: spi_device
+      reseed: 5
+      variant: 1r1w
+    }
+    {
+      test: spi_device_tl_intg_err
+      name: spi_device
+      reseed: 5
+      variant: 1r1w
+    }
+    {
+      test: spi_device_tpm_read_hw_reg
+      name: spi_device
+      reseed: 3
+      variant: 1r1w
+    }
+    {
+      test: spi_device_alert_test
+      name: spi_device
+      reseed: 3
+      variant: 2p
+    }
+    {
+      test: spi_device_cfg_cmd
+      name: spi_device
+      reseed: 3
+      variant: 2p
+    }
+    {
+      test: spi_device_csr_hw_reset
+      name: spi_device
+      reseed: 3
+      variant: 2p
+    }
+    {
+      test: spi_device_csr_rw
+      name: spi_device
+      reseed: 3
+      variant: 2p
+    }
+    {
+      test: spi_device_flash_all
+      name: spi_device
+      reseed: 6
+      variant: 2p
+    }
+    {
+      test: spi_device_flash_and_tpm
+      name: spi_device
+      reseed: 12
+      variant: 2p
+    }
+    {
+      test: spi_device_flash_and_tpm_min_idle
+      name: spi_device
+      reseed: 7
+      variant: 2p
+    }
+    {
+      test: spi_device_flash_mode
+      name: spi_device
+      reseed: 5
+      variant: 2p
+    }
+    {
+      test: spi_device_flash_mode_ignore_cmds
+      name: spi_device
+      reseed: 8
+      variant: 2p
+    }
+    {
+      test: spi_device_mem_parity
+      name: spi_device
+      reseed: 3
+      variant: 2p
+    }
+    {
+      test: spi_device_pass_addr_payload_swap
+      name: spi_device
+      reseed: 3
+      variant: 2p
+    }
+    {
+      test: spi_device_ram_cfg
+      name: spi_device
+      reseed: 4
+      variant: 2p
+    }
+    {
+      test: spi_device_sec_cm
+      name: spi_device
+      reseed: 3
+      variant: 2p
+    }
+    {
+      test: spi_device_stress_all
+      name: spi_device
+      reseed: 9
+      variant: 2p
+    }
+    {
+      test: spi_device_tl_errors
+      name: spi_device
+      reseed: 6
+      variant: 2p
+    }
+    {
+      test: spi_device_tl_intg_err
+      name: spi_device
+      reseed: 5
+      variant: 2p
+    }
+    {
+      test: spi_device_tpm_all
+      name: spi_device
+      reseed: 4
+      variant: 2p
+    }
+    {
+      test: spi_device_tpm_sts_read
+      name: spi_device
+      reseed: 3
+      variant: 2p
+    }
+    {
+      test: spi_host_alert_test
+      name: spi
+      reseed: 3
+      variant: host
+    }
+    {
+      test: spi_host_csr_mem_rw_with_rand_reset
+      name: spi
+      reseed: 4
+      variant: host
+    }
+    {
+      test: spi_host_error_cmd
+      name: spi
+      reseed: 3
+      variant: host
+    }
+    {
+      test: spi_host_intr_test
+      name: spi
+      reseed: 4
+      variant: host
+    }
+    {
+      test: spi_host_overflow_underflow
+      name: spi
+      reseed: 3
+      variant: host
+    }
+    {
+      test: spi_host_passthrough_mode
+      name: spi
+      reseed: 4
+      variant: host
+    }
+    {
+      test: spi_host_performance
+      name: spi
+      reseed: 4
+      variant: host
+    }
+    {
+      test: spi_host_sec_cm
+      name: spi
+      reseed: 3
+      variant: host
+    }
+    {
+      test: spi_host_smoke
+      name: spi
+      reseed: 8
+      variant: host
+    }
+    {
+      test: spi_host_speed
+      name: spi
+      reseed: 8
+      variant: host
+    }
+    {
+      test: spi_host_spien
+      name: spi
+      reseed: 5
+      variant: host
+    }
+    {
+      test: spi_host_status_stall
+      name: spi
+      reseed: 13
+      variant: host
+    }
+    {
+      test: spi_host_stress_all
+      name: spi
+      reseed: 15
+      variant: host
+    }
+    {
+      test: spi_host_sw_reset
+      name: spi
+      reseed: 8
+      variant: host
+    }
+    {
+      test: spi_host_tl_errors
+      name: spi
+      reseed: 4
+      variant: host
+    }
+    {
+      test: spi_host_tl_intg_err
+      name: spi
+      reseed: 6
+      variant: host
+    }
+    {
+      test: spi_host_upper_range_clkdiv
+      name: spi
+      reseed: 7
+      variant: host
+    }
+    {
+      test: sram_ctrl_access_during_key_req
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_alert_test
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_lc_escalation
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_mem_walk
+      name: sram_ctrl
+      reseed: 4
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_mubi_enc_err
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_partial_access_b2b
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_passthru_mem_tl_intg_err
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_ram_cfg
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_readback_err
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_regwen
+      name: sram_ctrl
+      reseed: 3
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_stress_all
+      name: sram_ctrl
+      reseed: 4
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_stress_all_with_rand_reset
+      name: sram_ctrl
+      reseed: 4
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_tl_intg_err
+      name: sram_ctrl
+      reseed: 7
+      variant: exec_64kB
+    }
+    {
+      test: sram_ctrl_access_during_key_req
+      name: sram_ctrl
+      reseed: 3
+      variant: main
+    }
+    {
+      test: sram_ctrl_alert_test
+      name: sram_ctrl
+      reseed: 3
+      variant: main
+    }
+    {
+      test: sram_ctrl_executable
+      name: sram_ctrl
+      reseed: 3
+      variant: main
+    }
+    {
+      test: sram_ctrl_mubi_enc_err
+      name: sram_ctrl
+      reseed: 3
+      variant: main
+    }
+    {
+      test: sram_ctrl_partial_access_b2b
+      name: sram_ctrl
+      reseed: 3
+      variant: main
+    }
+    {
+      test: sram_ctrl_passthru_mem_tl_intg_err
+      name: sram_ctrl
+      reseed: 5
+      variant: main
+    }
+    {
+      test: sram_ctrl_ram_cfg
+      name: sram_ctrl
+      reseed: 3
+      variant: main
+    }
+    {
+      test: sram_ctrl_readback_err
+      name: sram_ctrl
+      reseed: 4
+      variant: main
+    }
+    {
+      test: sram_ctrl_regwen
+      name: sram_ctrl
+      reseed: 3
+      variant: main
+    }
+    {
+      test: sram_ctrl_stress_all
+      name: sram_ctrl
+      reseed: 5
+      variant: main
+    }
+    {
+      test: sram_ctrl_stress_all_with_rand_reset
+      name: sram_ctrl
+      reseed: 8
+      variant: main
+    }
+    {
+      test: sram_ctrl_tl_intg_err
+      name: sram_ctrl
+      reseed: 5
+      variant: main
+    }
+    {
+      test: sram_ctrl_access_during_key_req
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_alert_test
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_executable
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_lc_escalation
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_mem_walk
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_mubi_enc_err
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_partial_access_b2b
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_passthru_mem_tl_intg_err
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_ram_cfg
+      name: sram_ctrl
+      reseed: 3
+      variant: ret
+    }
+    {
+      test: sram_ctrl_readback_err
+      name: sram_ctrl
+      reseed: 4
+      variant: ret
+    }
+    {
+      test: sram_ctrl_stress_all
+      name: sram_ctrl
+      reseed: 6
+      variant: ret
+    }
+    {
+      test: sram_ctrl_stress_all_with_rand_reset
+      name: sram_ctrl
+      reseed: 4
+      variant: ret
+    }
+    {
+      test: sram_ctrl_tl_intg_err
+      name: sram_ctrl
+      reseed: 6
+      variant: ret
+    }
+    {
+      test: sysrst_ctrl_alert_test
+      name: sysrst_ctrl
+      reseed: 3
+    }
+    {
+      test: sysrst_ctrl_auto_blk_key_output
+      name: sysrst_ctrl
+      reseed: 3
+    }
+    {
+      test: sysrst_ctrl_combo_detect
+      name: sysrst_ctrl
+      reseed: 9
+    }
+    {
+      test: sysrst_ctrl_combo_detect_with_pre_cond
+      name: sysrst_ctrl
+      reseed: 28
+    }
+    {
+      test: sysrst_ctrl_csr_aliasing
+      name: sysrst_ctrl
+      reseed: 3
+    }
+    {
+      test: sysrst_ctrl_csr_mem_rw_with_rand_reset
+      name: sysrst_ctrl
+      reseed: 3
+    }
+    {
+      test: sysrst_ctrl_edge_detect
+      name: sysrst_ctrl
+      reseed: 10
+    }
+    {
+      test: sysrst_ctrl_feature_disable
+      name: sysrst_ctrl
+      reseed: 4
+    }
+    {
+      test: sysrst_ctrl_pin_override_test
+      name: sysrst_ctrl
+      reseed: 3
+    }
+    {
+      test: sysrst_ctrl_same_csr_outstanding
+      name: sysrst_ctrl
+      reseed: 3
+    }
+    {
+      test: sysrst_ctrl_sec_cm
+      name: sysrst_ctrl
+      reseed: 3
+    }
+    {
+      test: sysrst_ctrl_stress_all
+      name: sysrst_ctrl
+      reseed: 22
+    }
+    {
+      test: sysrst_ctrl_stress_all_with_rand_reset
+      name: sysrst_ctrl
+      reseed: 7
+    }
+    {
+      test: sysrst_ctrl_tl_errors
+      name: sysrst_ctrl
+      reseed: 4
+    }
+    {
+      test: sysrst_ctrl_tl_intg_err
+      name: sysrst_ctrl
+      reseed: 4
+    }
+    {
+      test: sysrst_ctrl_ultra_low_pwr
+      name: sysrst_ctrl
+      reseed: 6
+    }
+    {
+      test: uart_alert_test
+      name: uart
+      reseed: 3
+    }
+    {
+      test: uart_csr_rw
+      name: uart
+      reseed: 3
+    }
+    {
+      test: uart_fifo_full
+      name: uart
+      reseed: 9
+    }
+    {
+      test: uart_fifo_overflow
+      name: uart
+      reseed: 5
+    }
+    {
+      test: uart_fifo_reset
+      name: uart
+      reseed: 51
+    }
+    {
+      test: uart_intr
+      name: uart
+      reseed: 5
+    }
+    {
+      test: uart_long_xfer_wo_dly
+      name: uart
+      reseed: 5
+    }
+    {
+      test: uart_rx_parity_err
+      name: uart
+      reseed: 3
+    }
+    {
+      test: uart_sec_cm
+      name: uart
+      reseed: 3
+    }
+    {
+      test: uart_smoke
+      name: uart
+      reseed: 3
+    }
+    {
+      test: uart_stress_all
+      name: uart
+      reseed: 10
+    }
+    {
+      test: uart_stress_all_with_rand_reset
+      name: uart
+      reseed: 10
+    }
+    {
+      test: uart_tl_intg_err
+      name: uart
+      reseed: 4
+    }
+    {
+      test: uart_tx_rx
+      name: uart
+      reseed: 5
+    }
+    {
+      test: usbdev_alert_test
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_aon_wake_disconnect
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_aon_wake_reset
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_aon_wake_resume
+      name: usbdev
+      reseed: 4
+    }
+    {
+      test: usbdev_av_empty
+      name: usbdev
+      reseed: 5
+    }
+    {
+      test: usbdev_av_overflow
+      name: usbdev
+      reseed: 4
+    }
+    {
+      test: usbdev_bitstuff_err
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_data_toggle_restore
+      name: usbdev
+      reseed: 6
+    }
+    {
+      test: usbdev_device_address
+      name: usbdev
+      reseed: 6
+    }
+    {
+      test: usbdev_device_timeout
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_disconnected
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_dpi_config_host
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_endpoint_types
+      name: usbdev
+      reseed: 50
+    }
+    {
+      test: usbdev_fifo_levels
+      name: usbdev
+      reseed: 46
+    }
+    {
+      test: usbdev_freq_hiclk_max
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_host_lost
+      name: usbdev
+      reseed: 4
+    }
+    {
+      test: usbdev_intr_test
+      name: usbdev
+      reseed: 5
+    }
+    {
+      test: usbdev_invalid_sync
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_iso_retraction
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_link_out_err
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_link_reset
+      name: usbdev
+      reseed: 4
+    }
+    {
+      test: usbdev_link_resume
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_link_suspend
+      name: usbdev
+      reseed: 4
+    }
+    {
+      test: usbdev_low_speed_traffic
+      name: usbdev
+      reseed: 6
+    }
+    {
+      test: usbdev_max_usb_traffic
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_nak_trans
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_phy_config_tx_osc_test_mode
+      name: usbdev
+      reseed: 4
+    }
+    {
+      test: usbdev_phy_config_usb_ref_disable
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_phy_pins_sense
+      name: usbdev
+      reseed: 4
+    }
+    {
+      test: usbdev_pkt_buffer
+      name: usbdev
+      reseed: 4
+    }
+    {
+      test: usbdev_pkt_received
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_rx_crc_err
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_rx_full
+      name: usbdev
+      reseed: 5
+    }
+    {
+      test: usbdev_rx_pid_err
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_same_csr_outstanding
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_sec_cm
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_setup_priority
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_stall_priority_over_nak
+      name: usbdev
+      reseed: 3
+    }
+    {
+      test: usbdev_stress_usb_traffic
+      name: usbdev
+      reseed: 6
+    }
+    {
+      test: usbdev_tl_errors
+      name: usbdev
+      reseed: 5
+    }
+    {
+      test: usbdev_tl_intg_err
+      name: usbdev
+      reseed: 7
+    }
+    {
+      test: usbdev_tx_rx_disruption
+      name: usbdev
+      reseed: 10
+    }
+    {
+      test: xbar_access_same_device_slow_rsp
+      name: xbar_dbg
+      reseed: 5
+      variant: darjeeling
+    }
+    {
+      test: xbar_error_random
+      name: xbar_dbg
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_random
+      name: xbar_dbg
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_random_large_delays
+      name: xbar_dbg
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_smoke_zero_delays
+      name: xbar_dbg
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all
+      name: xbar_dbg
+      reseed: 7
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_reset_error
+      name: xbar_dbg
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_access_same_device
+      name: xbar_main
+      reseed: 10
+      variant: darjeeling
+    }
+    {
+      test: xbar_access_same_device_slow_rsp
+      name: xbar_main
+      reseed: 7
+      variant: darjeeling
+    }
+    {
+      test: xbar_random
+      name: xbar_main
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_random_large_delays
+      name: xbar_main
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_random_slow_rsp
+      name: xbar_main
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_same_source
+      name: xbar_main
+      reseed: 6
+      variant: darjeeling
+    }
+    {
+      test: xbar_smoke
+      name: xbar_main
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all
+      name: xbar_main
+      reseed: 17
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_error
+      name: xbar_main
+      reseed: 11
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_rand_reset
+      name: xbar_main
+      reseed: 10
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_reset_error
+      name: xbar_main
+      reseed: 8
+      variant: darjeeling
+    }
+    {
+      test: xbar_access_same_device
+      name: xbar_main
+      reseed: 6
+      variant: earlgrey
+    }
+    {
+      test: xbar_access_same_device_slow_rsp
+      name: xbar_main
+      reseed: 9
+      variant: earlgrey
+    }
+    {
+      test: xbar_random
+      name: xbar_main
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_random_large_delays
+      name: xbar_main
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: xbar_random_slow_rsp
+      name: xbar_main
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all
+      name: xbar_main
+      reseed: 14
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_error
+      name: xbar_main
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_rand_reset
+      name: xbar_main
+      reseed: 11
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_reset_error
+      name: xbar_main
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_access_same_device
+      name: xbar_mbx
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: xbar_access_same_device_slow_rsp
+      name: xbar_mbx
+      reseed: 8
+      variant: darjeeling
+    }
+    {
+      test: xbar_error_and_unmapped_addr
+      name: xbar_mbx
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_smoke_large_delays
+      name: xbar_mbx
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all
+      name: xbar_mbx
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_error
+      name: xbar_mbx
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_rand_reset
+      name: xbar_mbx
+      reseed: 6
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_reset_error
+      name: xbar_mbx
+      reseed: 4
+      variant: darjeeling
+    }
+    {
+      test: xbar_access_same_device
+      name: xbar_peri
+      reseed: 8
+      variant: darjeeling
+    }
+    {
+      test: xbar_access_same_device_slow_rsp
+      name: xbar_peri
+      reseed: 12
+      variant: darjeeling
+    }
+    {
+      test: xbar_random_large_delays
+      name: xbar_peri
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all
+      name: xbar_peri
+      reseed: 8
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_error
+      name: xbar_peri
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_rand_reset
+      name: xbar_peri
+      reseed: 12
+      variant: darjeeling
+    }
+    {
+      test: xbar_stress_all_with_reset_error
+      name: xbar_peri
+      reseed: 3
+      variant: darjeeling
+    }
+    {
+      test: xbar_access_same_device
+      name: xbar_peri
+      reseed: 5
+      variant: earlgrey
+    }
+    {
+      test: xbar_access_same_device_slow_rsp
+      name: xbar_peri
+      reseed: 15
+      variant: earlgrey
+    }
+    {
+      test: xbar_random
+      name: xbar_peri
+      reseed: 4
+      variant: earlgrey
+    }
+    {
+      test: xbar_same_source
+      name: xbar_peri
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_smoke_large_delays
+      name: xbar_peri
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all
+      name: xbar_peri
+      reseed: 14
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_error
+      name: xbar_peri
+      reseed: 3
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_rand_reset
+      name: xbar_peri
+      reseed: 9
+      variant: earlgrey
+    }
+    {
+      test: xbar_stress_all_with_reset_error
+      name: xbar_peri
+      reseed: 7
+      variant: earlgrey
+    }
+  ]
+}
