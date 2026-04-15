@@ -14,5 +14,8 @@
   // Simulator used to sign off this block
   tool: vcs
 
+  // Top level variant
+  variant: englishbreakfast
+
   import_cfgs: ["{self_dir}/flash_ctrl_base_sim_cfg.hjson"]
 }

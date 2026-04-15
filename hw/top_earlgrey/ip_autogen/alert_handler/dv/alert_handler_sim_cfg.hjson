@@ -11,6 +11,9 @@
   // Top level testbench name (sv module).
   tb: tb
 
+  // Top level variant
+  variant: earlgrey
+
   // Simulator used to sign off this block
   tool: vcs
 
