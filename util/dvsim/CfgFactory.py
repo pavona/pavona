@@ -7,6 +7,7 @@ import sys
 import os
 
 from CfgJson import load_hjson
+from utils import parse_hjson
 
 import FormalCfg
 import CdcCfg
@@ -65,7 +66,7 @@ def _load_cfg(path, initial_values):
     return (found_cls, hjson_data)
 
 
-def _make_child_cfg(path, args, initial_values):
+def _make_child_cfg(path, args, initial_values, seed_index=None, default_reseed=1):
     try:
         cls, hjson_data = _load_cfg(path, initial_values)
     except RuntimeError as err:
@@ -80,17 +81,57 @@ def _make_child_cfg(path, args, initial_values):
                            'itself included from another configuration.'
                            .format(path))
 
+    if seed_index:
+        reseed_override(hjson_data, seed_index, default_reseed)
+
     # Call cls as a constructor. Note that we pass None as the mk_config
     # argument: this is not supposed to load anything else.
     return cls(path, hjson_data, args, None)
 
 
+def reseed_override(hjson_data: dict, seed_index: dict, default_reseed: int):
+    '''Override resets for each test that has a reseed if the flag --reseed-source was passed.
+    '''
+    hjson_name = hjson_data["name"]
+    log.debug("========== %s ==========", hjson_name)
+    log.debug("before:")
+    count_reseeds(hjson_data)
+
+    hit = False
+    variant = hjson_data.get("variant")
+    for hjson_test in hjson_data.get("tests", []):
+        resolved_name = hjson_test["name"].replace("{name}", hjson_data["name"])
+
+        for candidate in [hjson_test["name"], resolved_name]:
+            key = (candidate, hjson_data["name"], variant)
+            if key in seed_index:
+                hit = True
+                hjson_test["reseed"] = seed_index[key]["reseed"]
+                break  # Assume one match per test
+
+    if "reseed" in hjson_data.keys() and hit:
+        hjson_data["reseed"] = default_reseed
+
+    log.debug("after:")
+    count_reseeds(hjson_data)
+
+
+def count_reseeds(hjson_data):
+    '''Helper function used in debug for counting seeds after override
+    '''
+    total = 0
+    for test in hjson_data.get("tests", []):
+        global_reseed = hjson_data.get("reseed", 1)
+        reseed = test.get("reseed", global_reseed)
+        testname = test["name"].replace("{name}", hjson_data["name"])
+        log.debug(" %s: %d", testname, reseed)
+        total += reseed
+    log.debug("  Total: %d", total)
+    return total
+
+
 def make_cfg(path, args, proj_root):
     '''Make a flow config by loading the config file at path
-
-    args is the arguments passed to the dvsim.py tool and proj_root is the top
-    of the project.
-
     '''
     initial_values = {
         'proj_root': proj_root,
@@ -105,9 +146,26 @@ def make_cfg(path, args, proj_root):
         log.error(str(err))
         sys.exit(1)
 
+    seed_index = {}
+    default_reseed = 1
+    if args.reseed_source:
+        seed_data = parse_hjson(args.reseed_source)
+
+        # Collect test seeds in a lookup dictionary
+        for seed_test in seed_data.get("tests", []):
+            variant = seed_test.get("variant")
+            key = (seed_test["test"], seed_test["name"], variant)
+            seed_index[key] = seed_test
+
+        default_reseed = seed_data.get("reseed", 1)
+
+        # If it is a single config, just change the reseeds now
+        if 'use_cfgs' not in hjson_data and seed_data:
+            reseed_override(hjson_data, seed_index, default_reseed)
+
     def factory(child_path):
         child_ivs = initial_values.copy()
         child_ivs['flow'] = hjson_data['flow']
-        return _make_child_cfg(child_path, args, child_ivs)
+        return _make_child_cfg(child_path, args, child_ivs, seed_index, default_reseed)
 
     return cls(path, hjson_data, args, factory)

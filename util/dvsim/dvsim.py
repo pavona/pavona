@@ -589,6 +589,14 @@ def parse_args():
                              'maintaining the ratio of numbers of runs '
                              'between different tests.'))
 
+    seedg.add_argument("--reseed-source",
+                       "-rs",
+                       metavar="PATH",
+                       help=('Path to a HJSON file used as the source for '
+                             'reseeding. The file is parsed and used to '
+                             'determine seed values for the test runs'
+                             'after a process of grading.'))
+
     waveg = parser.add_argument_group('Dumping waves')
 
     waveg.add_argument("--waves",
