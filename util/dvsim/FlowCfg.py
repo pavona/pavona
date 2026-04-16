@@ -570,22 +570,29 @@ class FlowCfg():
 
     def _setup_ssh_env(self) -> dict:
         """Return an env dict with SSH configured, using passphrase or deploy key."""
-        env = os.environ.copy()
-        env["GIT_SSH_COMMAND"] = "ssh -o StrictHostKeyChecking=no"
-
-        passphrase = os.environ.get("SSH_KEY_PASSPHRASE")
-        if not passphrase:
-            # Rely on deploy key already configured in the environment
-            log.info("SSH_KEY_PASSPHRASE not set, assuming deploy key is available.")
+        # If an SSH agent is already running with keys loaded (e.g. CI or a developer
+        # with their own agent), use it directly.
+        if os.environ.get("SSH_AUTH_SOCK"):
+            env = os.environ.copy()
+            env["GIT_SSH_COMMAND"] = "ssh"
+            log.info("Using pre-existing SSH agent at %s", env["SSH_AUTH_SOCK"])
             return env
 
+        # Otherwise, assume a passphrase
+        passphrase = os.environ.get("SSH_KEY_PASSPHRASE")
+        if not passphrase:
+            log.info("SSH_KEY_PASSPHRASE not set, assuming deploy key is available.")
+            return env
         with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
             f.write(f'#!/bin/sh\necho "{passphrase}"\n')
             askpass_script = f.name
         os.chmod(askpass_script, stat.S_IRWXU)
+        env = os.environ.copy()
         env["SSH_ASKPASS"] = askpass_script
         env["SSH_ASKPASS_REQUIRE"] = "force"
         env["DISPLAY"] = ""
+        env["GIT_SSH_COMMAND"] = "ssh"
+
         try:
             agent = subprocess.run(["ssh-agent", "-s"], check=True, capture_output=True, text=True)
             for line in agent.stdout.splitlines():
@@ -595,7 +602,6 @@ class FlowCfg():
             subprocess.run(["ssh-add"], check=True, env=env, stdin=subprocess.DEVNULL)
         finally:
             os.unlink(askpass_script)
-
         return env
 
     def clone_or_pull(self, repository: str, local_path: str, env: dict):
