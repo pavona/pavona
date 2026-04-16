@@ -7,8 +7,11 @@ import os
 import shlex
 import shutil
 import subprocess
+import tempfile
+from pathlib import Path
 
 from Launcher import ErrorMessage, Launcher, LauncherError
+from utils import VERBOSE
 
 
 SLURM_QUEUE = os.environ.get("SLURM_QUEUE", "hw-m")
@@ -16,13 +19,10 @@ SLURM_MEM = os.environ.get("SLURM_MEM", "16G")
 SLURM_MINCPUS = os.environ.get("SLURM_MINCPUS", "8")
 SLURM_TIMEOUT = os.environ.get("SLURM_TIMEOUT", "240")
 SLURM_CPUS_PER_TASK = os.environ.get("SLURM_CPUS_PER_TASK", "8")
-SLURM_SETUP_CMD = os.environ.get("SLURM_SLURM_SETUP_CMD", "")
+SLURM_SETUP_CMD = os.environ.get("SLURM_SETUP_CMD", "")
 
 
 class SlurmLauncher(Launcher):
-    # Misc common SlurmLauncher settings.
-    max_odirs = 5
-
     def __init__(self, deploy):
         '''Initialize common class members.'''
 
@@ -30,7 +30,8 @@ class SlurmLauncher(Launcher):
 
         # Popen object when launching the job.
         self.process = None
-        self.slurm_log_file = self.deploy.get_log_path() + '.slurm'
+        self.slurm_log_file = Path(self.deploy.get_log_path() + '.slurm')
+        self.slurm_script_file = None
 
     def _do_launch(self):
         # replace the values in the shell's env vars if the keys match.
@@ -44,28 +45,52 @@ class SlurmLauncher(Launcher):
         # Makefile with Make variables from any wrapper that called dvsim.
         if 'MAKEFLAGS' in exports:
             del exports['MAKEFLAGS']
-
         self._dump_env_vars(exports)
 
-        # Add a command delimiter if necessary
-        slurm_setup_cmd = SLURM_SETUP_CMD
-        if slurm_setup_cmd and not slurm_setup_cmd.endswith(';'):
-            slurm_setup_cmd += ';'
+        # Write command to a script on shared storage to avoid quoting issues
+        # with bash -c "..." when the command contains double quotes.
+        script_dir = self.slurm_log_file.parent
+        try:
+            script_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            raise LauncherError(f'File Error: {e}\n'
+                                f'Could not create the job directory {script_dir}')
 
-        # Encapsulate the run command with the slurm invocation
-        slurm_cmd = f'srun -p {SLURM_QUEUE} --mem={SLURM_MEM} --mincpus={SLURM_MINCPUS} ' \
-                    f'--time={SLURM_TIMEOUT} --cpus-per-task={SLURM_CPUS_PER_TASK} ' \
-                    f'bash -c "{slurm_setup_cmd} {self.deploy.cmd}"'
+        script_body = '#!/bin/bash\n'
+        if SLURM_SETUP_CMD:
+            script_body += f'{SLURM_SETUP_CMD}\n'
+        script_body += f'{self.deploy.cmd}\n'
 
         try:
-            with open(self.slurm_log_file, 'w') as out_file:
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.sh',
+                                             dir=script_dir, delete=False) as f:
+                f.write(script_body)
+                self.slurm_script_file = Path(f.name)
+            self.slurm_script_file.chmod(0o755)
+        except OSError as e:
+            raise LauncherError(f'File Error: {e}\n'
+                                f'Could not write the job script in {script_dir}')
+
+        # Encapsulate the run command with the slurm invocation. srun forwards
+        # its standard input to the job by default, so every concurrent job
+        # would contend for the terminal that dvsim was started from and stall
+        # until that terminal delivered input.
+        slurm_cmd = (f'srun -p {SLURM_QUEUE} --mem={SLURM_MEM} --mincpus={SLURM_MINCPUS} '
+                     f'--time={SLURM_TIMEOUT} --cpus-per-task={SLURM_CPUS_PER_TASK} '
+                     f'--job-name={shlex.quote(self.deploy.full_name)} '
+                     f'--input=none {self.slurm_script_file}')
+
+        try:
+            with self.slurm_log_file.open('w') as out_file:
                 out_file.write("[Executing]:\n{}\n\n".format(self.deploy.cmd))
                 out_file.flush()
 
-                log.info(f'Executing slurm command: {slurm_cmd}')
+                log.log(VERBOSE, 'Executing slurm command: %s', slurm_cmd)
+                log.log(VERBOSE, 'Job script:\n%s', script_body)
                 self.process = subprocess.Popen(shlex.split(slurm_cmd),
                                                 bufsize=4096,
                                                 universal_newlines=True,
+                                                stdin=subprocess.DEVNULL,
                                                 stdout=out_file,
                                                 stderr=out_file,
                                                 env=exports)
@@ -93,9 +118,9 @@ class SlurmLauncher(Launcher):
             return 'D'
 
         # Copy slurm job results to log file
-        if os.path.exists(self.slurm_log_file):
+        if self.slurm_log_file.exists():
             try:
-                with open(self.slurm_log_file, 'r') as slurm_file:
+                with self.slurm_log_file.open('r') as slurm_file:
                     try:
                         with open(self.deploy.get_log_path(), 'a') as out_file:
                             shutil.copyfileobj(slurm_file, out_file)
@@ -103,7 +128,7 @@ class SlurmLauncher(Launcher):
                         raise LauncherError(f'File Error: {e} when handling '
                                             f'{self.deploy.get_log_path()}')
                 # Remove the temporary file from the slurm process
-                os.remove(self.slurm_log_file)
+                self.slurm_log_file.unlink()
             except IOError as e:
                 raise LauncherError(f'File Error: {e} when handling {self.slurm_log_file}')
 
@@ -133,6 +158,9 @@ class SlurmLauncher(Launcher):
 
     def _post_finish(self, status, err_msg):
         super()._post_finish(status, err_msg)
+        if self.slurm_script_file and self.slurm_script_file.exists():
+            self.slurm_script_file.unlink()
+            self.slurm_script_file = None
         self._close_process()
         self.process = None
 

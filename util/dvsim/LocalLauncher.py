@@ -10,6 +10,7 @@ import shlex
 import subprocess
 from pathlib import Path
 from typing import Union
+import logging as log
 
 from Launcher import ErrorMessage, Launcher, LauncherBusy, LauncherError
 
@@ -70,6 +71,7 @@ class LocalLauncher(Launcher):
                 self._log_file.write(f"[Executing]:\n{self.deploy.cmd}\n\n")
                 self._log_file.flush()
 
+                log.debug(f'Executing command: {self.deploy.cmd}')
                 self._process = subprocess.Popen(
                     shlex.split(self.deploy.cmd),
                     bufsize=4096,
