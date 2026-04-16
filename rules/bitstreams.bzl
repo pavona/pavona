@@ -114,7 +114,7 @@ bitstreams_repo = repository_rule(
         ),
         "cache": attr.string(
             doc = "Location of bitstreams cache.",
-            default = "~/.cache/opentitan-bitstreams",
+            default = "~/.cache/pavona-bitstreams",
         ),
         "refresh_time": attr.int(
             doc = "How often to check for new bitstreams (seconds).",

@@ -27,9 +27,9 @@ MANIFEST_SCHEMA_VERSION_MIN = 2
 MANIFEST_SCHEMA_VERSION_MAX = 3
 
 # Default location of the bitstreams cache.
-CACHE_DIR = '~/.cache/opentitan-bitstreams'
+CACHE_DIR = '~/.cache/pavona-bitstreams'
 # Default bucket URL.
-BUCKET_URL = 'https://storage.googleapis.com/expo-bitstreams/'
+BUCKET_URL = 'https://storage.googleapis.com/expo-bitstreams/'  # TODO: update remote cache
 # The xml document returned by the bucket is in this namespace.
 XMLNS = {'': 'http://doc.s3.amazonaws.com/2006-03-01'}
 # Manifest schema directory
@@ -60,7 +60,7 @@ parser.add_argument('--latest-update',
                     default='latest.txt',
                     help='Last time the cache was updated')
 parser.add_argument('--branch',
-                    default="master",
+                    default="master",  # TODO: update after switch to new repo
                     help='Upstream git branch to search for bitstreams.')
 parser.add_argument('--bucket-url', default=BUCKET_URL, help='GCP Bucket URL')
 parser.add_argument('--build-file',
@@ -593,6 +593,18 @@ def main(argv):
             repo = os.path.dirname(args.repo)
     else:
         repo = os.path.dirname(argv[0])
+
+    # Check if repo is initialized with git or not. If not, unable ot use remote cache.
+    try:
+        in_git_repo = subprocess.check_output(["git", "rev-parse", "--is-inside-work-tree"],
+                                              cwd=repo, encoding="utf-8")
+        assert in_git_repo == "true\n"
+    except (subprocess.CalledProcessError, AssertionError):
+        logging.warning("not inside of git worktree, only using local cache")
+        args.offline = True
+        if args.bitstream == "HEAD":
+            logging.warning("bitstream for 'HEAD' without git history always corresponds to latest")
+            desired_bitstream = "latest"
 
     cache = BitstreamCache(args.bucket_url, args.cache, args.latest_update,
                            args.offline)
