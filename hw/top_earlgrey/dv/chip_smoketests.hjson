@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   # This auxiliary chip sim cfg specification focuses on chip level smoke tests.
-  # Please see chip_sim_cfg.hjson for full setup details.
+  # Please see chip_earlgrey_sim_cfg.hjson for full setup details.
 
   # Note: Please maintain alphabetical order.
   tests: [
