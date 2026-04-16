@@ -1,0 +1,37 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Gitless repo test
+on:
+  workflow_call:
+
+jobs:
+  gitless:
+    name: Run gitless check
+    runs-on:
+      group: pavona-large
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        with:
+          fetch-depth: 0
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Work from git repo archive
+        run: |
+          git archive --format=tar.gz -o "../gitless.tar.gz" HEAD
+          cd ..
+          mkdir gitless
+          tar -xzf gitless.tar.gz -C gitless --strip-components=1
+          cd gitless
+          export REPO_TOP=$(realpath .)
+      - name: Run gitless check
+        continue-on-error: true
+        run: ./ci/scripts/check-gitless.sh -e
+      - name: Output gitless log
+        run: |
+          log_output=$(cat gitless.log)  # will be empty if no errors
+          if [ -n "$log_output" ]; then
+            echo $log_output
+            exit 1
+          fi

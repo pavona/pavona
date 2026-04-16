@@ -359,6 +359,11 @@ jobs:
     with:
       bitstream: chip_earlgrey_cw340
 
+  gitless-check:
+    name: Test using the repo from a git archive (no git history)
+    needs: quick_lint
+    uses: ./.github/workflows/gitless.yml
+
   sw_build_test:
     name: Build and test software (Earlgrey)
     runs-on:
