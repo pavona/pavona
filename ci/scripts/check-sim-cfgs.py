@@ -53,8 +53,9 @@ def check_sim_cfg_files(grouped: dict) -> bool:
                 pass  # ignore
             else:
                 if 'variant' in fields:
-                    mismatches.append(f"Filename {directory}/{file}"
-                                      f" - should not contain 'variant' field")
+                    if 'ip_autogen' not in Path(directory).parts:
+                        mismatches.append(f"Filename {directory}/{file}"
+                                          f" - should not contain 'variant' field")
                 elif file.endswith("_base_sim_cfg.hjson"):
                     expected = f"{fields['name']}_base_sim_cfg.hjson"
                     if file != expected:
@@ -71,6 +72,10 @@ def check_sim_cfg_files(grouped: dict) -> bool:
             has_variant = any("variant" in fields for _, fields in sim_cfg_files)
 
             if has_variant:
+                # Special case (e.g. flash_ctrl)
+                if 'ip_autogen' in Path(directory).parts:
+                    continue
+
                 # Pattern 1: base + variant mode
                 # The base file is the one with 'name' field
                 base_files = [(f, d) for f, d in sim_cfg_files if "name" in d]
@@ -91,13 +96,13 @@ def check_sim_cfg_files(grouped: dict) -> bool:
                         )
                 else:
                     base_file, base_fields = base_files[0]
+                    base_name = base_fields["name"]
 
                     # Base file must not also contain 'variant'
                     if "variant" in base_fields:
                         mismatches.append(f"Filename {directory}/{base_file}"
                                           f" - base file must not contain 'variant' field")
                     else:
-                        base_name = base_fields["name"]
                         expected = f"{base_name}_base_sim_cfg.hjson"
                         if base_file != expected:
                             mismatches.append(f"Filename {directory}/{base_file}"
