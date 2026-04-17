@@ -19,14 +19,22 @@ from pathlib import Path
 # calls to get back to the top.
 REPO_TOP = Path(__file__).resolve().parent.parent
 
-IGNORED = {
+IGNORED_PATHS = {
     Path('sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.logs.txt'),
     Path('sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.rodata.txt'),
 }
 
+IGNORED_SUFFIXES = {
+    ".bin",
+    ".excalidraw",
+    ".patch",
+    ".tpl",
+    ".svg"
+}
+
 
 def is_ignored(path):
-    if path in IGNORED:
+    if path in IGNORED_PATHS:
         return True
     return subprocess.run(['git', 'check-ignore', path]).returncode == 0
 
@@ -77,7 +85,9 @@ def main():
         path = Path(path).resolve().relative_to(REPO_TOP)
         if not path.is_file() or path.is_symlink() or is_ignored(path):
             continue
-        if 'vendor' in path.parts or path.suffix in ['.patch', '.svg', '.tpl', '.bin']:
+        if 'vendor' in path.parts:
+            continue
+        if path.suffix in IGNORED_SUFFIXES:
             continue
         if args.verbose:
             print(f'Checking: "{path}"')
