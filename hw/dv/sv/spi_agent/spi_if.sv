@@ -29,7 +29,7 @@ interface spi_if
   bit         sck_phase;
 
   bit         en_chk = 1;
-  string      msg_id = "spi_if";
+  string      msg_id = $sformatf("%m");
 
   int unsigned clk_cycle;
   //---------------------------------

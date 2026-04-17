@@ -18,11 +18,12 @@ class spi_host_driver extends spi_driver;
 
   // Resets signals
   virtual task reset_signals();
+    cfg.vif.csb = '1;
     forever begin
       @(negedge cfg.vif.rst_n or negedge cfg.vif.disconnected);
       if (cfg.vif.disconnected) continue;
       under_reset = 1'b1;
-      active_csb  = 1'b0;
+      active_csb  = CSB_WIDTH'(0);
       cfg.vif.sck <= cfg.sck_polarity[0];
       cfg.vif.sio_out <= 'x;
       cfg.vif.csb <= '1;

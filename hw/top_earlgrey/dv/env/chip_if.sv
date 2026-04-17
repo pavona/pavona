@@ -21,6 +21,7 @@ interface chip_if;
   import top_earlgrey_pkg::*;
   import dv_utils_pkg::*;
   import uvm_pkg::*;
+  import spi_agent_pkg::NUM_CSB;
 
   `include "dv_macros.svh"
   `include "uvm_macros.svh"
@@ -238,7 +239,7 @@ interface chip_if;
       dios[top_earlgrey_pkg::DioPadSpiHostClk] : 1'bz;
 
   assign spi_device0_if.csb = __enable_spi_device[0] ?
-      {'1, dios[top_earlgrey_pkg::DioPadSpiHostCsL]} : '1;
+      {{NUM_CSB-1{1'b1}}, dios[top_earlgrey_pkg::DioPadSpiHostCsL]} : {NUM_CSB{1'b1}};
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents0*", "vif", spi_device0_if);
@@ -261,7 +262,7 @@ interface chip_if;
       mios[top_earlgrey_pkg::MioPadIob0] : 1'bz;
 
   assign spi_device1_if.csb = __enable_spi_device[1] ?
-      {'1, mios[top_earlgrey_pkg::MioPadIob1]} : '1;
+      {{NUM_CSB-1{1'b1}}, mios[top_earlgrey_pkg::MioPadIob1]} : {NUM_CSB{1'b1}};
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents1*", "vif", spi_device1_if);

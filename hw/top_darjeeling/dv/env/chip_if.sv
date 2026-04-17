@@ -21,6 +21,7 @@ interface chip_if;
   import top_darjeeling_pkg::*;
   import dv_utils_pkg::*;
   import uvm_pkg::*;
+  import spi_agent_pkg::NUM_CSB;
 
   `include "dv_macros.svh"
   `include "uvm_macros.svh"
@@ -209,7 +210,7 @@ interface chip_if;
       dios[top_darjeeling_pkg::DioPadSpiHostClk] : 1'bz;
 
   assign spi_device0_if.csb = __enable_spi_device[0] ?
-      {'1, dios[top_darjeeling_pkg::DioPadSpiHostCsL]} : '1;
+      {{NUM_CSB-1{1'b1}}, dios[top_darjeeling_pkg::DioPadSpiHostCsL]} : {NUM_CSB{1'b1}};
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents0*", "vif", spi_device0_if);
