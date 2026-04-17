@@ -8,6 +8,7 @@ on:
     # Start weekly run at 2:00a GMT every Saturday morning.
     # (7:00p PT, 10:00p ET, 3:00a CET)
     - cron: "00 02 * * SAT"
+  workflow_dispatch:
 
 permissions:
   id-token: write
