@@ -20,7 +20,7 @@ jobs:
     uses: ./.github/workflows/dv-all.yml
     secrets: inherit
     with:
-      runner: "pavona-dv-large"
+      runner: "pavona-large"
       run-type: "weekly"
       item: "weekly"
       coverage: true
