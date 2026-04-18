@@ -549,10 +549,16 @@ def _parse_iflow_nodes(
 
 class InsnInformationFlowTest:
     '''Wrapper class for tests for information-flow rules.'''
-    def __init__(self, as_string: str, operand: str, value: int):
+    def __init__(self, as_string: str, operand: str, value: Any):
         self.as_string = as_string
         self.operand = operand
         self.value = value
+        assert isinstance(value, str) or isinstance(value, int)
+
+    def get_value(self, op_vals: Dict[str, int]) -> int:
+        if isinstance(self.value, int):
+            return self.value
+        return op_vals[self.value]
 
     def check(self, op_vals: Dict[str, int]) -> bool:
         # Should be overridden by subclasses
@@ -565,25 +571,25 @@ class InsnInformationFlowTest:
 class EqTest(InsnInformationFlowTest):
     '''Tests that the operand is equal to the value.'''
     def check(self, op_vals: Dict[str, int]) -> bool:
-        return op_vals[self.operand] == self.value
+        return op_vals[self.operand] == self.get_value(op_vals)
 
 
 class NotEqTest(InsnInformationFlowTest):
     '''Tests that the operand is not equal to the value.'''
     def check(self, op_vals: Dict[str, int]) -> bool:
-        return not (op_vals[self.operand] == self.value)
+        return not (op_vals[self.operand] == self.get_value(op_vals))
 
 
 class GeqTest(InsnInformationFlowTest):
     '''Tests that the operand is greater than or equal to the value.'''
     def check(self, op_vals: Dict[str, int]) -> bool:
-        return op_vals[self.operand] >= self.value
+        return op_vals[self.operand] >= self.get_value(op_vals)
 
 
 class LeqTest(InsnInformationFlowTest):
     '''Tests that the operand is less than or equal to the value.'''
     def check(self, op_vals: Dict[str, int]) -> bool:
-        return op_vals[self.operand] <= self.value
+        return op_vals[self.operand] <= self.get_value(op_vals)
 
 
 class MultiTest(InsnInformationFlowTest):
@@ -617,7 +623,7 @@ def _parse_iflow_test(test_yml: object, what: str,
         raise ValueError(
             'Invalid information flow test format (expected "<operand> '
             '<comparison> <value>"): got {} (for {})'.format(test, what))
-    opname, comparison, value_str = test_split
+    opname, comparison, value = test_split
 
     opnames = [op.name for op in operands]
     if opname not in opnames:
@@ -626,11 +632,10 @@ def _parse_iflow_test(test_yml: object, what: str,
             'found in operands list: {}'.format(what, opname, opnames))
 
     try:
-        value = int(value_str, 0)
+        value = int(value, 0)  # type: ignore
     except ValueError:
-        raise ValueError(
-            'Value {} in test {} for {} must be an integer.'.format(
-                value_str, test, what))
+        # operand; ignore and keep as string
+        pass
 
     constructors = {
         '==': EqTest,
@@ -657,6 +662,9 @@ class InsnInformationFlowRule:
 
     def required_constants(self, op_vals: Dict[str, int]) -> Set[str]:
         '''Returns the names of regs that must be constant for `evaluate()`.'''
+        if not self.test.check(op_vals):
+            # Rule is not triggered
+            return set()
         out = set()
         for node in self.flows_to:
             out.update(node.required_constants(op_vals))

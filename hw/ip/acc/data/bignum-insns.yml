@@ -525,7 +525,13 @@
     The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
   errs: []
   iflow:
-    - to: [wrd, flags-all]
+    - test:
+        - wrs1 == wrs2
+      to: [wrd, flags-all]
+      from: []
+    - test:
+        - wrs1 != wrs2
+      to: [wrd, flags-all]
       from: [wrs1, wrs2]
   encoding:
     scheme: bnaf
@@ -546,7 +552,13 @@
     Subtracts the second WDR value and the Carry from the first one, writes the result to the destination WDR, and updates the flags.
     The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
   iflow:
-    - to: [wrd, flags-all]
+    - test:
+        - wrs1 == wrs2
+      to: [wrd, flags-all]
+      from: [flags-c]
+    - test:
+        - wrs1 != wrs2
+      to: [wrd, flags-all]
       from: [wrs1, wrs2, flags-c]
   encoding:
     scheme: bnaf
@@ -799,7 +811,15 @@
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   errs: []
-  iflow: *bn-and-iflow
+  iflow:
+    - test:
+        - wrs1 != wrs2
+      to: [wrd, flags-m, flags-l, flags-z]
+      from: [wrs1, wrs2]
+    - test:
+        - wrs1 == wrs2
+      to: [wrd, flags-m, flags-l, flags-z]
+      from: []
   encoding:
     scheme: bna
     mapping:
@@ -1141,8 +1161,14 @@
     - An `ILLEGAL_INSN` error if either the value in GPR `grd` or the value in GPR `grs` is greater than 31.
     - An `ILLEGAL_INSN` error if both `grs_inc` and `grd_inc` are set.
   iflow:
-    - to: [wref-grd]
+    - test:
+        - grs != grd
+      to: [wref-grd]
       from: [wref-grs]
+    - test:
+        - grs == grd
+      to: []
+      from: []
     - test:
         - grd_inc == 1
       to: [grd]
