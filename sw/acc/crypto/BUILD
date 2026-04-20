@@ -17,6 +17,8 @@ acc_binary(
         ":p256_isoncurve",
         ":p256_sign",
         ":p256_verify",
+        ":trigger_fault_if_fg0_z",
+        ":trigger_fault_if_not_fg0_z",
     ],
 )
 
@@ -159,6 +161,8 @@ acc_binary(
         ":p256_shared_key",
         ":p256_sign",
         ":p256_verify",
+        ":trigger_fault_if_fg0_z",
+        ":trigger_fault_if_not_fg0_z",
     ],
 )
 
@@ -307,6 +311,7 @@ acc_binary(
         ":mul",
         ":primality",
         ":rsa_keygen",
+        ":trigger_fault_if_not_fg0_z",
     ],
 )
 
@@ -320,6 +325,8 @@ acc_binary(
         ":p256_isoncurve",
         ":p256_sign",
         ":p256_verify",
+        ":trigger_fault_if_fg0_z",
+        ":trigger_fault_if_not_fg0_z",
     ],
 )
 
@@ -331,6 +338,8 @@ acc_binary(
     deps = [
         ":p256_base",
         ":p256_isoncurve",
+        ":trigger_fault_if_fg0_z",
+        ":trigger_fault_if_not_fg0_z",
     ],
 )
 
@@ -342,6 +351,8 @@ acc_binary(
     deps = [
         ":p256_base",
         ":p256_isoncurve",
+        ":trigger_fault_if_fg0_z",
+        ":trigger_fault_if_not_fg0_z",
     ],
 )
 
@@ -356,6 +367,8 @@ acc_binary(
         ":p384_isoncurve",
         ":p384_modinv",
         ":p384_sign",
+        ":trigger_fault_if_fg0_z",
+        ":trigger_fault_if_not_fg0_z",
     ],
 )
 
@@ -378,6 +391,8 @@ acc_binary(
         ":p384_scalar_mult",
         ":p384_sign",
         ":p384_verify",
+        ":trigger_fault_if_fg0_z",
+        ":trigger_fault_if_not_fg0_z",
     ],
 )
 
@@ -440,6 +455,20 @@ acc_library(
     name = "sha3_shake",
     srcs = [
         "sha3_shake.s",
+    ],
+)
+
+acc_library(
+    name = "trigger_fault_if_fg0_z",
+    srcs = [
+        "trigger_fault_if_fg0_z.s",
+    ],
+)
+
+acc_library(
+    name = "trigger_fault_if_not_fg0_z",
+    srcs = [
+        "trigger_fault_if_not_fg0_z.s",
     ],
 )
 

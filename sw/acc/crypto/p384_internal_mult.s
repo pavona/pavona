@@ -166,7 +166,7 @@ store_proj_randomize:
 scalar_mult_int_p384:
 
   /* set regfile pointers to in/out regs of mulmod routine. Set here to avoid
-     resetting in very call to point addition routine */
+     resetting in every call to point addition routine */
   li        x22, 10
   li        x23, 11
   li        x24, 16

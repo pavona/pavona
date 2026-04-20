@@ -126,7 +126,7 @@ p256_sign:
      The check fails if both sides are not equal.
      FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
   bn.cmp   w18, w19
-  jal      x1, trigger_fault_if_fg0_not_z
+  jal      x1, trigger_fault_if_not_fg0_z
 
   /* setup modulus n (curve order) and Barrett constant
      MOD <= w29 <= n = dmem[p256_n]; w28 <= u_n = dmem[p256_u_n]  */

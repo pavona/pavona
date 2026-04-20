@@ -1333,20 +1333,12 @@ modinv_f4:
   bn.addi    w23, w31, 1
   bn.cmp     w22, w23
 
-  /* Get the FG0.Z flag into a register.
-       x2 <= CSRs[FG0] & 8 = FG0.Z << 3 */
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 8
-
-  /* If the flag is unset (x2 == 0) then u != 1; in this case GCD(65537, m) !=
+  /* If the flag is unset (FG0.Z == 0) then u != 1; in this case GCD(65537, m) !=
      1 and the modular inverse cannot be computed. This should never happen
      under normal operation, so panic and abort the program immediately. */
-  bne      x2, x0, _modinv_f4_u_ok
-  unimp
+  jal      x1, trigger_fault_if_not_fg0_z
 
-_modinv_f4_u_ok:
   /* Done; the modular inverse is stored in A. */
-
   ret
 
 /**
