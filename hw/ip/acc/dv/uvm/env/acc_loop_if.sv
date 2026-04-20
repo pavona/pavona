@@ -99,20 +99,20 @@ interface acc_loop_if #(
 
     loop_addrs_padded_intg = prim_secded_pkg::prim_secded_inv_39_32_enc(loop_addrs_padded_no_intg);
 
-    // As the otbn_loop_if is bound to u_otbn_controller (see tb.sv) we can use an up-reference and
-    // directly access current_loop instead of specifying its absolute name (tb.dut.u_otbn_core.x).
-    force current_loop.loop_addr_info.loop_addrs_intg = loop_addrs_padded_intg[38:32];
-    force current_loop.loop_addr_info.loop_start = loop_start;
-    force current_loop.loop_addr_info.loop_end = loop_end;
+    // As the acc_loop_if is bound to u_acc_controller (see tb.sv) we can use an up-reference and
+    // directly access current_loop instead of specifying its absolute name (tb.dut.u_acc_core.x).
+    force u_acc_loop_controller.current_loop.loop_addr_info = '{
+      loop_start:      loop_start,
+      loop_end:        loop_end,
+      loop_addrs_intg: loop_addrs_padded_intg[38:32]
+    };
   endfunction
 
   // Release the forcing of the loop_addr_info.
   function automatic void release_loop_addrs_info();
-    // As the otbn_loop_if is bound to u_otbn_controller (see tb.sv) we can use an up-reference and
-    // directly access current_loop instead of specifying its absolute name (tb.dut.u_otbn_core.x).
-    release current_loop.loop_addr_info.loop_addrs_intg;
-    release current_loop.loop_addr_info.loop_start;
-    release current_loop.loop_addr_info.loop_end;
+    // As the acc_loop_if is bound to u_acc_controller (see tb.sv) we can use an up-reference and
+    // directly access current_loop instead of specifying its absolute name (tb.dut.u_acc_core.x).
+    release u_acc_loop_controller.current_loop.loop_addr_info;
   endfunction
 
   // Track completing some loop. This is implied by the next item, but much easier to hit so maybe
