@@ -27,6 +27,9 @@ class ControlLoc:
     def pretty(self) -> str:
         return '{:#x}'.format(self.pc)
 
+    def __repr__(self) -> str:
+        return 'ControlLoc({:#x})'.format(self.pc)
+
 
 class ImemEnd(ControlLoc):
     '''Represents the end of instruction memory.'''
@@ -40,6 +43,9 @@ class ImemEnd(ControlLoc):
 
     def pretty(self) -> str:
         return '<imem end>'
+
+    def __repr__(self) -> str:
+        return 'ImemEnd()'
 
 
 class Ret(ControlLoc):
@@ -55,6 +61,9 @@ class Ret(ControlLoc):
     def pretty(self) -> str:
         return 'RET'
 
+    def __repr__(self) -> str:
+        return 'Ret()'
+
 
 class Ecall(ControlLoc):
     '''Represents program termination as a result of an ecall.'''
@@ -68,6 +77,9 @@ class Ecall(ControlLoc):
 
     def pretty(self) -> str:
         return 'ECALL'
+
+    def __repr__(self) -> str:
+        return 'Ecall()'
 
 
 class LoopStart(ControlLoc):
@@ -90,6 +102,9 @@ class LoopStart(ControlLoc):
         return '<loop from {:#x}-{:#x}>'.format(self.loop_start_pc,
                                                 self.loop_end_pc)
 
+    def __repr__(self) -> str:
+        return 'LoopStart({:#x}-{:#x})'.format(self.loop_start_pc, self.loop_end_pc)
+
 
 class Cycle(ControlLoc):
     '''Represents a control flow that loops back to a previous PC.
@@ -107,6 +122,9 @@ class Cycle(ControlLoc):
     def pretty(self) -> str:
         return '<cycle: back to {:#x}>'.format(self.pc)
 
+    def __repr__(self) -> str:
+        return 'Cycle({:#x})'.format(self.pc)
+
 
 class LoopEnd(Cycle):
     '''Represents the end of a loop (looping back to the start).
@@ -121,6 +139,10 @@ class LoopEnd(Cycle):
     def pretty(self) -> str:
         return '<loop end: back to {:#x}>'.format(
             self.loop_start.loop_start_pc)
+
+    def __repr__(self) -> str:
+        return 'LoopEnd({:#x}-{:#x})'.format(
+            self.loop_start.loop_start_pc, self.loop_start.loop_end_pc)
 
 
 class ControlGraph:
