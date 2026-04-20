@@ -361,6 +361,9 @@ use_repo(mldsa_native, "mldsa_native")
 verilator = use_extension("//third_party/verilator:extensions.bzl", "verilator")
 use_repo(verilator, "verilator")
 
+mldsa_sign_bench = use_extension("//third_party/mldsa_sign_bench:extensions.bzl", "mldsa_sign_bench")
+use_repo(mldsa_sign_bench, "mldsa_sign_bench")
+
 # Hooks:
 # Extension for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.

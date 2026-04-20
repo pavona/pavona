@@ -268,9 +268,17 @@ def _acc_autogen_sim_test_impl(ctx):
     exp = ctx.actions.declare_file(ctx.attr.name + ".exp")
     dexp = ctx.actions.declare_file(ctx.attr.name + ".dexp")
     args = ["-s", str(ctx.attr.seed)] + ctx.attr.testgen_args + [data.path, exp.path, dexp.path]
+    if ctx.attr.nshares != 0:
+        args += ["-n", str(ctx.attr.nshares)]
+    if ctx.attr.scheme != -1:
+        args += ["--scheme", str(ctx.attr.scheme)]
+    inputs = [ctx.executable.testgen]
+    if ctx.file.vectors != None:
+        args += ["--from-vector", ctx.file.vectors.path, "--index", str(ctx.attr.vector_index)]
+        inputs.append(ctx.file.vectors)
     ctx.actions.run(
         outputs = [data, exp, dexp],
-        inputs = [ctx.executable.testgen],
+        inputs = inputs,
         arguments = args,
         executable = ctx.executable.testgen,
     )
@@ -553,6 +561,10 @@ acc_autogen_sim_test = rv_rule(
             cfg = "exec",
         ),
         "seed": attr.int(mandatory = True),
+        "scheme": attr.int(mandatory = False, default = -1),
+        "nshares": attr.int(mandatory = False),
+        "vectors": attr.label(allow_single_file = True, mandatory = False),
+        "vector_index": attr.int(mandatory = False),
         "_acc_as": attr.label(
             default = "//hw/ip/acc/util:acc_as",
             executable = True,

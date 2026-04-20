@@ -91,17 +91,49 @@
 #define POLYW1_PACKEDBYTES  128
 #endif
 
+/* secboundcheck bounds C_Z = (1 << 24) - 2*(GAMMA1-BETA-1) - 1 and
+ * C_R = (1 << 24) - 2*(GAMMA2-BETA-1) - 1, split into 8-bit slices for
+ * the per-call bn.addi/bn.shv.8S build of w17 (acc_as does not evaluate
+ * arithmetic in bn.addi immediates). */
+#if DILITHIUM_MODE == 2
+#define C_Z_HI  0xFC
+#define C_Z_MID 0x00
+#define C_Z_LO  0x9D
+#define C_R_HI  0xFD
+#define C_R_MID 0x18
+#define C_R_LO  0x9D
+#elif DILITHIUM_MODE == 3
+#define C_Z_HI  0xF0
+#define C_Z_MID 0x01
+#define C_Z_LO  0x89
+#define C_R_HI  0xF8
+#define C_R_MID 0x03
+#define C_R_LO  0x89
+#elif DILITHIUM_MODE == 5
+#define C_Z_HI  0xF0
+#define C_Z_MID 0x00
+#define C_Z_LO  0xF1
+#define C_R_HI  0xF8
+#define C_R_MID 0x02
+#define C_R_LO  0xF1
+#endif
+
 #if ETA == 2
 #define POLYETA_PACKEDBYTES  96
+#define ETA_KBITS              3
 #elif ETA == 4
 #define POLYETA_PACKEDBYTES 128
+#define ETA_KBITS              4
 #endif
 /* Register aliases */
 .equ x2, sp
 .equ x3, fp
 
 .equ x5, t0
-.equ x6, t1
+/* TODO(acc_as): switch back to `.equ x6, t1` once the assembler's
+ * naive textual substitution stops mangling identifiers that end in
+ * `t1` (e.g., `kmac_digest1` -> `kmac_digesx6`). */
+#define t1 x6
 .equ x7, t2
 
 .equ x8, s0
@@ -146,20 +178,23 @@
 /* Config to start a SHA3_512 operation. */
 #define SHA3_512_CFG 0x10
 
+#define W0_POLYVEC w0_polyvec
+
 
 /**
- * Dilithium Sign
+ * Dilithium Sign_internal (external-mu mode; FIPS 204 Algorithm 7).
  *
  * Returns: 0 on success
+ *
+ * The caller pre-hashes the message+context to mu and places it in
+ * dmem[mu].  ML-DSA-spec mu = SHAKE256(tr || 0x00 || byte(ctxlen) ||
+ * ctx || msg, 64).
  *
  * All input DMEM buffers must be 32-byte aligned and initialized up to the
  * next 32B boundary so wide-reads succeed.
  *
  * @param[in]  x10: *sig (destination pointer)
- * @param[in]  dmem[msg]: message
- * @param[in]  x11: message length in bytes
- * @param[in]  dmem[ctx]: context value (0-256B)
- * @param[in]  x12: context length in bytes
+ * @param[in]  dmem[mu]: pre-hashed message (64B)
  * @param[in]  dmem[sk]: secret key, 32B aligned
  * @param[in]  dmem[rnd]: signature randomization value (32B)
  * @param[out] x10: 0 (success)
@@ -169,65 +204,10 @@
  */
 .global crypto_sign_signature_internal
 crypto_sign_signature_internal:
-    /* Store pointer parameters. */
-    la  t0, dptr_sig
-    sw  a0, 0(t0)
-
-    /* Save length parameters to registers. */
-    addi s0, a1, 0
-    addi s1, a2, 0
-
-    /* CRH(tr, msg) */
-
-    /* Compute the total length of tr + [0,ctxlen] + ctx + msg. */
-    li   t1, TRBYTES
-    addi t1, t1, 2
-    add  t1, t1, s1 /* Add len(ctx) */
-    add  t1, t1, s0 /* Add msglen */
-
-    /* Initialize a SHAKE256 operation. */
-    slli  t0, t1, 5
-    addi  t0, t0, SHAKE256_CFG
-    csrrw x0, KECCAK_CFG_REG, t0
-
-    /* Send tr component of secret key (sk[64:128]) to the Keccak core. */
-    li   a1, TRBYTES
-    la   a0, sk
-    addi a0, a0, 64
-    jal  x1, keccak_send_message
-
-    /* Write zeroes to the tmp buffer (necessary so reads don't fail after a
-       partial write). */
-    la      a0, tmp_poly
-    li      t1, 31
-    bn.sid  t1, 0(a0)
-
-    /* Copy 0 || ctxlen to a 32B-aligned buffer temporarily. */
-    slli t1, s1, 8
-    sw   t1, 0(a0)
-
-    /* Send 0 || ctxlen to the Keccak core (2B). */
-    li  a1, 2
-    jal x1, keccak_send_message
-
-    /* Send ctx to the Keccak core. */
-    addi a1, s1, 0 /* a1 <= ctxlen */
-    la   a0, ctx /* a0 <= *ctx */
-    jal  x1, keccak_send_message
-
-    /* Send message to the Keccak core. */
-    addi a1, s0, 0 /* a1 <= msglen */
-    la   a0, msg /* a0 <= *msg */
-    jal  x1, keccak_send_message
-
-    /* Write 64B of SHAKE output to dmem[mu]. */
-    la  a0, mu
-    bn.wsrr w0, kmac_digest
-    bn.sid  x0, 0(a0++)
-    bn.wsrr w0, kmac_digest
-    bn.sid  x0, 0(a0)
-
-    /* Finish the SHAKE-256 operation. */
+    /* External-mu mode (FIPS 204 Algorithm 7, ML-DSA.Sign_internal):
+     * caller pre-hashes the message and provides mu in dmem[mu].  The
+     * msg/ctx buffers and the initial SHAKE-256 over tr||ctxlen||ctx||msg
+     * are gone -- saves ~2.4 KiB DMEM and one Keccak invocation. */
 
     /* Initialize a SHAKE256 operation. */
     addi  a1, x0, SEEDBYTES
@@ -267,17 +247,26 @@ crypto_sign_signature_internal:
     /* Prepare modulus */
     #define mod_x2 w22
     bn.wsrr   w16, 0x0 /* w16 = MOD = R | Q */
+
     bn.shv.8S mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
 
     li s11, 0 /* nonce */
 
-_rej_crypto_sign_signature_internal:
+    jal  x1, sign_attempt
+    ret
+
+/* sign_attempt: rejection-retry body.  Computes w, w0/w1 + c~, c,
+ * z (z-loop), h (hint loop); restarts in place on rejection.  Inputs
+ * are taken from caller-set state (masked_gamma1_buf, sk, etc.); on
+ * success returns a0 = 0, a1 = CRYPTO_BYTES. */
+.global sign_attempt
+sign_attempt:
     /* Matrix-vector multiplication */
 
     /* Get destination pointer. */
-    la s1, w0_polyvec
+    la s1, W0_POLYVEC
 
-    /* Initialize destination to 0. */
+    /* Zero each share's polyvec; t1 walks the contiguous buffer. */
     li t0, 31
     addi t1, s1, 0
     LOOPI K, 3
@@ -376,15 +365,14 @@ _rej_crypto_sign_signature_internal:
         bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
-    /* Inverse NTT on w */
-    la  a0, w0_polyvec
-
+    /* Inverse NTT on w. */
+    la  a0, W0_POLYVEC
     LOOPI K, 2
         jal x1, intt
-        /* Go to next input polynomial */
         addi a0, a0, 1024
 
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
+
 
     /* Random oracle */
     /* Initialize a SHAKE256 operation. */
@@ -401,13 +389,12 @@ _rej_crypto_sign_signature_internal:
     jal x1, keccak_send_message
 
     /* Save some pointers for loop. */
-    la  s0, w0_polyvec
+    la  s0, W0_POLYVEC
     la  s1, w1_repvec
     la  s4, tmp_poly
 
     /* Get the pointer to the signature (used as tmp buffer for packed w1). */
-    la  s2, dptr_sig
-    lw  s2, 0(s2) /* Get *sig */
+    la  s2, sig
     addi s3, s2, 0 /* Save *sig. */
 #if CTILDEBYTES == 48
     /* Use an offset of 16 to get an aligned buffer (alignment hack for CTILDE). */
@@ -510,8 +497,7 @@ _rej_crypto_sign_signature_internal:
     la   s2, tmp_poly
     la   s3, rhoprime
     la   s7, c_poly
-    la   s9, dptr_sig
-    lw   s9, 0(s9)
+    la   s9, sig
     addi s9, s9, CTILDEBYTES /* c is already packed */
     la   s10, gamma1_vec_const
 
@@ -566,7 +552,7 @@ _rej_crypto_sign_signature_internal:
         sub  a1, t0, t1
         jal x1, poly_chknorm
 
-        bne a2, x0, _rej_crypto_sign_signature_internal
+        bne a2, x0, sign_attempt
 
         /* Speculatively pack z[i] into the signature. */
         addi a0, s9, 0
@@ -610,8 +596,10 @@ _rej_crypto_sign_signature_internal:
     addi s0, s0, 1568
 #endif
 
-    /* Initialize some pointers for the loop. */
-    la  s3, w0_polyvec
+    /* s3 walks packed share 0 (608 B/poly), share 1 at s3 +
+     * POLYVECK_BYTES.  hint_b2a_scratch re-`la`'d per use to keep s11
+     * free for the y-sampling nonce on rejection. */
+    la  s3, W0_POLYVEC
     la  s5, w1_repvec
     la  s7, c_poly
     la  s10, tmp_poly
@@ -622,8 +610,8 @@ _rej_crypto_sign_signature_internal:
     /* Initialize the counter for the index in the hint vector. */
     li  s6, 0
 
-    /* Initialize the register that says whether the checks failed. */
-    li  s8, 0
+    /* Hint loop counter. */
+    li  s8, K
 
     /* Normalize w0 to the [0, q) range (in-place). */
     addi   a0, s3, 0
@@ -655,11 +643,7 @@ _rej_crypto_sign_signature_internal:
            reject
          make_hint(h, w0[i], w1[i]) # gets written directly into signature
      */
-    loopi K, 73
-        /* If there was a failure, skip to the end of the
-           loop body (because of architectural loop rules, we have to complete
-           all iterations). */
-        bne  s8, x0, _mldsa_sign_hint_loop_end
+_mldsa_sign_hint_loop:
 
         /* Unpack the next polynomial from s2. */
         addi a0, s10, 0
@@ -706,8 +690,8 @@ _rej_crypto_sign_signature_internal:
         sub  a1, t0, t1
         jal  x1, poly_chknorm
 
-        /* Update the continuation register. */
-        or  s8, s8, a2
+        /* Reject if ||rtilde|| >= gamma2 - beta on any lane. */
+        bne a2, x0, sign_attempt
 
         /* Unpack the next polynomial from t0. */
         addi a0, s10, 0
@@ -752,8 +736,8 @@ _rej_crypto_sign_signature_internal:
         addi a0, s10, 0
         jal  x1, poly_chknorm
 
-        /* Update the continuation register. */
-        or  s8, s8, a2
+        /* Reject if ||c*t0|| >= gamma2 on any lane. */
+        bne a2, x0, sign_attempt
 
         /* h[i] = make_hint(w0[i], w1[i]) */
         addi   a0, s10, 0
@@ -770,8 +754,8 @@ _rej_crypto_sign_signature_internal:
         sub  t0, t0, s4
         srli t0, t0, 31
 
-        /* Update the continuation register. */
-        or  s8, s8, t0
+        /* Reject if hint weight > omega. */
+        bne t0, x0, sign_attempt
 
         /* Encode h[i] into the signature. */
         addi a0, s9, 0
@@ -781,12 +765,11 @@ _rej_crypto_sign_signature_internal:
 
         /* Increment i. */
         addi s6, s6, 1
-        _mldsa_sign_hint_loop_end:
-        /* Update pointer into w0. */
+        /* Advance to next poly. */
         addi s3, s3, 1024
-
-    /* Reject the signature if any conditions failed in the hint loop. */
-    bne  s8, x0, _rej_crypto_sign_signature_internal
+        /* Decrement remaining-iter count and loop while > 0. */
+        addi s8, s8, -1
+        bne  s8, x0, _mldsa_sign_hint_loop
 
     /* Return success and signature length */
     li a0, 0
@@ -795,31 +778,20 @@ _rej_crypto_sign_signature_internal:
 
 .bss
 
-/* Pointer to the signature. */
-.balign 4
-dptr_sig:
-.zero 4
-
-/* mu intermediate value (64B). */
-.balign 32
-mu:
-.zero 64
+/* mu (64B) is supplied by the caller's data section in external-mu mode. */
 
 /* rho' intermediate value (64B). */
 .balign 32
 rhoprime:
 .zero 64
 
-/* Challenge polynomial (1024B). */
-.balign 32
-c_poly:
-/* y[i] intermediate value (1024B, shares a slot with c_poly). */
-y_poly:
-.zero 1024
-
-/* Temporary polynomial buffer (1024B). */
 .balign 32
 tmp_poly:
+.zero 1024
+.balign 32
+.globl c_poly
+c_poly:
+y_poly:
 .zero 1024
 
 /* w1 representative vector (K*32B). */
@@ -833,7 +805,6 @@ w1_repvec:
 .zero 256
 #endif
 
-/* w0 polynomial vector (K*1024B). */
 .balign 32
 w0_polyvec:
 .zero POLYVECK_BYTES

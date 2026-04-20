@@ -87,6 +87,10 @@ if __name__ == '__main__':
                         metavar='FILE',
                         type=argparse.FileType('w'),
                         help=('Output file for expected DMEM values.'))
+    parser.add_argument('--scheme',
+                        metavar='SCHEME',
+                        type=int,
+                        help=('This is not used in this test.'))
     args = parser.parse_args()
 
     if args.seed is not None:

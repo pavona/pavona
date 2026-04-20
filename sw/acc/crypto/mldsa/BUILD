@@ -71,6 +71,20 @@ acc_library(
 
 [
     acc_library(
+        name = name + "_keypair_masked_2shares",
+        srcs = [
+            "mldsa_keypair.s",
+        ],
+        copts = [
+            "-DDILITHIUM_MODE=" + str(sec_level),
+            "-DNSHARES=2",
+        ],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
+
+[
+    acc_library(
         name = name + "_verify",
         srcs = [
             "mldsa_verify.s",
@@ -121,6 +135,23 @@ acc_library(
     for sec_level, name in NAME_BY_SEC_LEVEL.items()
 ]
 
+NSHARES = [2]
+
+[
+    acc_library(
+        name = name + "_sign_masked_" + str(nshares) + "shares",
+        srcs = [
+            "mldsa_sign_masked.s",
+        ],
+        copts = [
+            "-DDILITHIUM_MODE=" + str(sec_level),
+            "-DNSHARES=" + str(nshares),
+        ],
+    )
+    for nshares in NSHARES
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
+
 [
     acc_library(
         name = name + "_consts",
@@ -129,6 +160,20 @@ acc_library(
         ],
         copts = [
             "-DDILITHIUM_MODE=" + str(sec_level),
+        ],
+    )
+    for sec_level, name in NAME_BY_SEC_LEVEL.items()
+]
+
+[
+    acc_library(
+        name = name + "_consts_masked",
+        srcs = [
+            "mldsa_consts.s",
+        ],
+        copts = [
+            "-DDILITHIUM_MODE=" + str(sec_level),
+            "-DNSHARES=2",
         ],
     )
     for sec_level, name in NAME_BY_SEC_LEVEL.items()

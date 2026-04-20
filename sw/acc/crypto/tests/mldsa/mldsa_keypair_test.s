@@ -110,6 +110,27 @@ main:
 
   jal x1, crypto_sign_keypair
 
+#ifdef NSHARES
+  /* Unmask the keygen's d=2 share outputs for the dexp check. */
+  li     x4, 1
+  la     x5, rho_prime_shares
+  la     x6, rho_prime_unmasked
+  bn.lid x0, 0(x5)
+  bn.lid x4, 64(x5)
+  bn.xor w0, w0, w1
+  bn.sid x0, 0(x6)
+  bn.lid x0, 32(x5)
+  bn.lid x4, 96(x5)
+  bn.xor w0, w0, w1
+  bn.sid x0, 32(x6)
+  la     x5, K_shares
+  la     x6, K_unmasked
+  bn.lid x0, 0(x5)
+  bn.lid x4, 32(x5)
+  bn.xor w0, w0, w1
+  bn.sid x0, 0(x6)
+#endif
+
   ecall
 
 .bss
@@ -122,3 +143,14 @@ pk:
 .globl sk
 sk:
   .zero CRYPTO_SECRETKEYBYTES
+
+#ifdef NSHARES
+.balign 32
+.globl rho_prime_unmasked
+rho_prime_unmasked:
+  .zero 64
+.balign 32
+.globl K_unmasked
+K_unmasked:
+  .zero 32
+#endif

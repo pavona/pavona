@@ -18,16 +18,19 @@
 #define ETA 2
 #define GAMMA1 131072
 #define GAMMA2 95232
+#define BETA 78
 
 #elif DILITHIUM_MODE == 3
 #define ETA 4
 #define GAMMA1 524288
 #define GAMMA2 261888
+#define BETA 196
 
 #elif DILITHIUM_MODE == 5
 #define ETA 2
 #define GAMMA1 524288
 #define GAMMA2 261888
+#define BETA 120
 
 #endif
 
@@ -327,6 +330,7 @@ twiddles_fwd:
   .word 0x006b16e0
   .word 0x001e29ce
 
+.balign 32
 .globl twiddles_inv
 twiddles_inv:
  /* Layer 8 - 1 */
@@ -609,18 +613,7 @@ reduce32_const:
     .word 0x1
     .word 0x1
 
-.balign 32
-.globl power2round_D
-power2round_D:
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-
+#ifndef NSHARES
 .balign 32
 .globl power2round_D_preprocessed
 power2round_D_preprocessed:
@@ -632,6 +625,10 @@ power2round_D_preprocessed:
     .word 0xfff
     .word 0xfff
     .word 0xfff
+#else
+.globl power2round_D_preprocessed
+.set    power2round_D_preprocessed, 0
+#endif
 
 .balign 32
 .globl eta
@@ -657,6 +654,7 @@ polyt0_pack_const:
     .word 0x1000
     .word 0x1000
 
+#ifndef NSHARES
 .balign 32
 .globl decompose_const
 decompose_const:
@@ -678,6 +676,10 @@ decompose_const:
     .word 1025
     .word 1025
     .word 1025
+#endif
+#else
+.globl decompose_const
+.set    decompose_const, 0
 #endif
 
 .balign 32
@@ -716,6 +718,7 @@ qm1half_const:
     .word 0x003ff000
     .word 0x003ff000
 
+#ifndef NSHARES
 .balign 32
 .globl decompose_127_const
 decompose_127_const:
@@ -750,6 +753,12 @@ decompose_43_const:
     .word 0x000000f
     .word 0x000000f
 #endif
+#else
+.globl decompose_127_const
+.set    decompose_127_const, 0
+.globl decompose_43_const
+.set    decompose_43_const, 0
+#endif
 
 .balign 32
 .globl polyeta_unpack_mask
@@ -774,6 +783,7 @@ polyeta_unpack_mask:
     .word 0x0f
 #endif
 
+#ifndef NSHARES
 .balign 32
 .globl polyt1_unpack_mask
 polyt1_unpack_mask:
@@ -785,6 +795,10 @@ polyt1_unpack_mask:
     .word 0x3ff
     .word 0x3ff
     .word 0x3ff
+#else
+.globl polyt1_unpack_mask
+.set    polyt1_unpack_mask, 0
+#endif
 
 .balign 32
 .globl polyt0_unpack_mask
@@ -821,6 +835,7 @@ polyz_unpack_mask:
     .word 0xfffff
 #endif
 
+#ifndef NSHARES
 .balign 32
 .globl poly_uniform_eta_205
 poly_uniform_eta_205:
@@ -832,19 +847,12 @@ poly_uniform_eta_205:
     .word 205
     .word 205
     .word 205
+#else
+.globl poly_uniform_eta_205
+.set    poly_uniform_eta_205, 0
+#endif
 
-.balign 32
-.globl poly_uniform_eta_2
-poly_uniform_eta_2:
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-
+#ifndef NSHARES
 .balign 32
 .globl poly_uniform_eta_5
 poly_uniform_eta_5:
@@ -856,7 +864,38 @@ poly_uniform_eta_5:
     .word 5
     .word 5
     .word 5
+#else
+.globl poly_uniform_eta_5
+.set    poly_uniform_eta_5, 0
+#endif
 
 .globl poly_wdr2gpr
 poly_wdr2gpr:
     .zero 32
+
+#ifdef NSHARES
+/* secboundcheck broadcast vectors (8 lanes of the lambda_0 bound). */
+.balign 32
+.globl lambda0_z_vec
+lambda0_z_vec:
+    .word (GAMMA1 - BETA - 1)
+    .word (GAMMA1 - BETA - 1)
+    .word (GAMMA1 - BETA - 1)
+    .word (GAMMA1 - BETA - 1)
+    .word (GAMMA1 - BETA - 1)
+    .word (GAMMA1 - BETA - 1)
+    .word (GAMMA1 - BETA - 1)
+    .word (GAMMA1 - BETA - 1)
+
+.balign 32
+.globl lambda0_r_vec
+lambda0_r_vec:
+    .word (GAMMA2 - BETA - 1)
+    .word (GAMMA2 - BETA - 1)
+    .word (GAMMA2 - BETA - 1)
+    .word (GAMMA2 - BETA - 1)
+    .word (GAMMA2 - BETA - 1)
+    .word (GAMMA2 - BETA - 1)
+    .word (GAMMA2 - BETA - 1)
+    .word (GAMMA2 - BETA - 1)
+#endif

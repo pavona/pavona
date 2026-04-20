@@ -135,13 +135,13 @@
 
 /* Macros */
 .macro push reg
-    addi sp, sp, -4      /* Decrement stack pointer by 4 bytes */
-    sw \reg, 0(sp)      /* Store register value at the top of the stack */
+    addi sp, sp, -4
+    sw \reg, 0(sp)
 .endm
 
 .macro pop reg
-    lw \reg, 0(sp)      /* Load value from the top of the stack into register */
-    addi sp, sp, 4     /* Increment stack pointer by 4 bytes */
+    lw \reg, 0(sp)
+    addi sp, sp, 4
 .endm
 
 /**

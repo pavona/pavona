@@ -303,6 +303,7 @@ crypto_sign_verify_internal:
     /* Prepare modulus */
     #define mod_x2 w22
     bn.wsrr   w16, 0x0 /* w16 = R | Q */
+
     bn.shv.8S mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
 
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */

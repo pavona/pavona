@@ -106,12 +106,8 @@ main:
   /* Write back MOD */
   bn.wsrw 0x0, w2
 
-  /* Load parameters */
+  /* External-mu mode: testgen supplies dmem[mu]. */
   la x10, sig
-  la x11, msglen
-  lw x11, 0(x11)
-  la x12, ctxlen
-  lw x12, 0(x12)
 
   jal x1, crypto_sign_signature_internal
 

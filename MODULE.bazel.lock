@@ -597,6 +597,35 @@
         ]
       }
     },
+    "//third_party/mldsa_sign_bench:extensions.bzl%mldsa_sign_bench": {
+      "general": {
+        "bzlTransitiveDigest": "bFNwq0bki64bJUE5MfdzXQstV+ZepyA8d+auPkqfRfg=",
+        "usagesDigest": "Zk6mfFh205HxlADIH+B6TBA1faj2JWGhSUi9Wtspe50=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "mldsa_sign_bench": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/mldsa_sign_bench:BUILD.mldsa_sign_bench.bazel",
+              "sha256": "adfc61b35a64df8d43c67ac6c2b190a6344115f9f12ff357af56f1d57b08ff8b",
+              "strip_prefix": "mldsa-sign-bench-66da53064d4323c024fcd15e423c2afc28b2ecf4",
+              "urls": [
+                "https://github.com/zerorisc/mldsa-sign-bench/archive/66da53064d4323c024fcd15e423c2afc28b2ecf4.tar.gz"
+              ]
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/mlkem_native:extensions.bzl%mlkem_native": {
       "general": {
         "bzlTransitiveDigest": "+2ghk+QRreE0onX/A+/ajAnK7A+W+dNmLuCN1U9KERk=",

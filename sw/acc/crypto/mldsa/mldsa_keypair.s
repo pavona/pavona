@@ -102,7 +102,7 @@
 .equ x3, fp
 
 .equ x5, t0
-.equ x6, t1
+#define t1 x6
 .equ x7, t2
 
 .equ x8, s0
@@ -154,10 +154,70 @@
  * @param[out] dmem[pk]: public key
  * @param[out] dmem[sk]: secret key
  *
- * clobbered registers: a0-a6, t0-t5, s1, w0-w30
+ * clobbered registers: a0-a7, t0-t6, s0-s11, w0-w30 (top-level entry,
+ * saves nothing and resets sp)
  */
 .globl crypto_sign_keypair
 crypto_sign_keypair:
+#ifdef NSHARES
+    /* Masked gadgets use sp for stack frames. */
+    la    sp, keygen_mask_stack_end
+    /* Masked seed expansion: absorb d=2 zeta shares into masked SHAKE-256. */
+    li    a1, SEEDBYTES
+    addi  a1, a1, 2 /* SEEDBYTES+2 */
+    slli  t0, a1, 5
+    addi  t0, t0, SHAKE256_CFG
+    li    a4, 1
+    slli  a4, a4, 20 /* masking-enable bit */
+    add   t0, t0, a4
+    csrrw x0, kmac_cfg, t0
+
+    la     t1, zeta_shares
+    bn.lid x0, 0(t1)
+    bn.wsrw kmac_msg, w0
+    bn.lid x0, 32(t1)
+    bn.wsrw kmac_msg1, w0
+
+    /* K, L are public: share 1 = 0. */
+    li      t0, 1
+    csrrw   x0, kmac_partial_write, t0
+    bn.addi w0, w31, K
+    bn.wsrw kmac_msg, w0
+    bn.xor  w0, w0, w0
+    bn.wsrw kmac_msg1, w0
+    csrrw   x0, kmac_partial_write, t0
+    bn.addi w0, w31, L
+    bn.wsrw kmac_msg, w0
+    bn.xor  w0, w0, w0
+    bn.wsrw kmac_msg1, w0
+
+    /* Sec-unmask of rho (public): refresh shares with URND, then XOR-collapse. */
+    la      t0, sk
+    bn.wsrr w0, kmac_digest
+    bn.wsrr w1, kmac_digest1
+    bn.wsrr w2, urnd
+    bn.xor  w0, w0, w2
+    bn.xor  w1, w1, w2
+    bn.xor  w0, w0, w1
+    bn.sid  x0, 0(t0)
+    /* rho': masked output to rho_prime_shares (share-major). */
+    la      t1, rho_prime_shares
+    li      t2, 1
+    bn.wsrr w0, kmac_digest
+    bn.wsrr w1, kmac_digest1
+    bn.sid  x0, 0(t1)
+    bn.sid  t2, 64(t1)
+    bn.wsrr w0, kmac_digest
+    bn.wsrr w1, kmac_digest1
+    bn.sid  x0, 32(t1)
+    bn.sid  t2, 96(t1)
+    /* K: masked output to K_shares (K is unused by keygen). */
+    la      t1, K_shares
+    bn.wsrr w0, kmac_digest
+    bn.wsrr w1, kmac_digest1
+    bn.sid  x0, 0(t1)
+    bn.sid  t2, 32(t1)
+#else
     /* Initialize a SHAKE256 operation. */
     li    a1, SEEDBYTES
     addi  a1, a1, 2 /* SEEDBYTES+2 */
@@ -190,19 +250,27 @@ crypto_sign_keypair:
     bn.sid  x0, 0(t1)
     bn.wsrr w0, kmac_digest
     bn.sid  x0, 0(t0)
+#endif
 
     /* Finish the SHAKE-256 operation. */
 
     bn.wsrr   w16, mod /* w16 = R | Q */
+
     bn.shv.8S w22, w16 << 1 /* w22 = 2*R | 2*Q */
     bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
 
-    /* Load source pointers for matrix-vector multiplication. */
-    la  s0, s1_poly
-    la  s1, tmp_poly
-
     /* Load destination pointer for matrix-vector multiplication. */
     la  s2, t_polyvec
+
+    /* Load source pointers for matrix-vector multiplication. */
+#ifdef NSHARES
+    la   s5, eta_out
+    addi s10, s5, 1024
+    addi s0, s2, 1024
+#else
+    la  s0, s1_poly
+#endif
+    la  s1, tmp_poly
 
     /* Zero the destination buffer. */
     li t0, 31
@@ -211,23 +279,34 @@ crypto_sign_keypair:
         LOOPI 32, 1
           bn.sid t0, 0(t1++)
         nop
+#ifdef NSHARES
+    LOOPI K, 3
+        LOOPI 32, 1
+          bn.sid t0, 0(t1++)
+        nop
+#endif
 
     /* Load offset for resetting vector pointer. */
     li s3, POLYVECK_BYTES
+#ifdef NSHARES
+    slli s3, s3, 1
+#endif
 
     /* Initialize the nonce for matrix expansion. This value should be
          byte(i) || byte(j)
        for entry A[i][j]. */
     bn.xor w23, w23, w23
 
-    /* Load pointers to rho and rho'. */
+    /* Load pointer to rho. */
     la  s8, sk
+#ifndef NSHARES
     la  s5, rhoprime
+#endif
 
     /* Initialize the nonce for sampling s1. */
     li   s6, 0
 
-    /* Load the destination for packed s1 within the secret key. */
+    /* Secret-key write cursor (masked packs only t0, here at sk+128). */
     la   s7, sk
     addi s7, s7, 128
 
@@ -246,6 +325,121 @@ crypto_sign_keypair:
            for i in 0..k-1:
              t[i] += A[i][j] * s1j
     */
+#ifdef NSHARES
+    /* bne-based (not loopi) so masked_poly_uniform_eta's loop/secadd chain
+       gets the full hardware loop stack. */
+    li   s9, L
+matmul_col_loop:
+        bn.wsrw   mod, w16 /* MOD = R | Q for the gadget */
+        /* The gadget clobbers w0-w27; stash the matrix nonce. */
+        li     t0, 23
+        la     t1, matmul_nonce
+        bn.sid t0, 0(t1)
+        /* Masked ExpandS: s1[j] as arithmetic shares in eta_out. */
+        addi a0, s5, 0
+        la   a1, rho_prime_shares
+        addi a2, s6, 0
+#if DILITHIUM_MODE == 5
+        la   a3, sk
+        addi a3, a3, 128
+        la   a4, pk
+#else
+        la   a3, eta_scratch
+        la   a4, eta_b2a
+#endif
+        jal  x1, masked_poly_uniform_eta
+        addi s6, s6, 1
+        li     t0, 23
+        la     t1, matmul_nonce
+        bn.lid t0, 0(t1)
+        bn.wsrr w16, mod /* gadget left MOD = R | Q */
+        /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
+        csrrw x0, kmac_cfg, s4
+        addi  a0, s8, 0
+        bn.lid    x0, 0(a0)
+        bn.wsrw   kmac_msg, w0
+        addi      t0, x0, 2
+        csrrw     x0, kmac_partial_write, t0
+        bn.wsrw   kmac_msg, w23
+        bn.shv.8S w22, w16 << 1 /* w22 = 2*R | 2*Q */
+        bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
+        /* ntt both shares of s1[j] in place. */
+        addi a0, s5, 0
+        addi a2, s5, 0
+        jal  x1, ntt
+        /* Whitening */
+        bn.xor w0, w0, w0
+        bn.xor w1, w1, w1
+        bn.xor w2, w2, w2
+        bn.xor w3, w3, w3
+        bn.xor w4, w4, w4
+        bn.xor w5, w5, w5
+        bn.xor w6, w6, w6
+        bn.xor w7, w7, w7
+        bn.xor w8, w8, w8
+        bn.xor w9, w9, w9
+        bn.xor w10, w10, w10
+        bn.xor w11, w11, w11
+        bn.xor w12, w12, w12
+        bn.xor w13, w13, w13
+        bn.xor w14, w14, w14
+        bn.xor w15, w15, w15
+        bn.xor w17, w17, w17
+        bn.xor w18, w18, w18
+        bn.xor w19, w19, w19
+        bn.xor w20, w20, w20
+        bn.xor w21, w21, w21
+        bn.xor w24, w24, w24
+        bn.xor w25, w25, w25
+        bn.xor w26, w26, w26
+        bn.xor w27, w27, w27
+        bn.xor w28, w28, w28
+        bn.xor w29, w29, w29
+        bn.xor w30, w30, w30
+        addi a0, s10, 0
+        addi a2, s10, 0
+        jal  x1, ntt
+        loopi K, 24
+            /* Compute A[i][j]. */
+            addi a1, s1, 0
+            jal  x1, poly_uniform
+            /* Increment the row in the matrix nonce (upper byte). */
+            bn.addi w23, w23, 256
+            /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
+            csrrw x0, kmac_cfg, s4
+            addi  a0, s8, 0
+            bn.lid    x0, 0(a0)
+            bn.wsrw   kmac_msg, w0
+            addi      t0, x0, 2
+            csrrw     x0, kmac_partial_write, t0
+            bn.wsrw   kmac_msg, w23
+            /* t share 0 += A[i][j] * ntt(s1[j])_share0. */
+            addi a0, s5, 0
+            addi a1, s1, 0
+            addi a2, s2, 0
+            jal  x1, poly_pointwise_acc
+            /* Whitening */
+            bn.xor w0, w0, w0
+            bn.xor w1, w1, w1
+            /* t share 1 += A[i][j] * ntt(s1[j])_share1. */
+            addi a0, s10, 0
+            addi a1, s1, 0
+            addi a2, s0, 0
+            jal  x1, poly_pointwise_acc
+            addi s2, s2, 1024
+            addi s2, s2, 1024
+            addi s0, s0, 1024
+            addi s0, s0, 1024
+        /* Reset output vector pointers. */
+        sub  s2, s2, s3
+        sub  s0, s0, s3
+        /* Increment the column index in the nonce by one. */
+        bn.addi w23, w23, 1
+        /* Reset the row index in the nonce to zero. */
+        bn.rshi w23, w23, bn0 >> 8
+        bn.rshi w23, bn0, w23 >> 248
+        bne s6, s9, matmul_col_loop
+#else
     loopi L, 41
         bn.wsrw   mod, w16 /* MOD = R | Q */
         /* Sample the next polynomial from s1. */
@@ -300,25 +494,139 @@ crypto_sign_keypair:
         /* Reset the row index in the nonce to zero. */
         bn.rshi w23, w23, bn0 >> 8
         bn.rshi w23, bn0, w23 >> 248
+#endif
 
     /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
     /* Inverse NTT on t=A*s1 */
     la  a0, t_polyvec
 
+#ifdef NSHARES
+    LOOPI K, 30
+        /* Whitening */
+        bn.xor w0, w0, w0
+        bn.xor w1, w1, w1
+        bn.xor w2, w2, w2
+        bn.xor w3, w3, w3
+        bn.xor w4, w4, w4
+        bn.xor w5, w5, w5
+        bn.xor w6, w6, w6
+        bn.xor w7, w7, w7
+        bn.xor w8, w8, w8
+        bn.xor w9, w9, w9
+        bn.xor w10, w10, w10
+        bn.xor w11, w11, w11
+        bn.xor w12, w12, w12
+        bn.xor w13, w13, w13
+        bn.xor w14, w14, w14
+        bn.xor w15, w15, w15
+        bn.xor w17, w17, w17
+        bn.xor w18, w18, w18
+        bn.xor w19, w19, w19
+        bn.xor w20, w20, w20
+        bn.xor w21, w21, w21
+        bn.xor w24, w24, w24
+        bn.xor w25, w25, w25
+        bn.xor w26, w26, w26
+        bn.xor w27, w27, w27
+        bn.xor w28, w28, w28
+        bn.xor w29, w29, w29
+        bn.xor w30, w30, w30
+        jal  x1, intt
+        addi a0, a0, 1024
+    LOOPI K, 30
+        /* Whitening */
+        bn.xor w0, w0, w0
+        bn.xor w1, w1, w1
+        bn.xor w2, w2, w2
+        bn.xor w3, w3, w3
+        bn.xor w4, w4, w4
+        bn.xor w5, w5, w5
+        bn.xor w6, w6, w6
+        bn.xor w7, w7, w7
+        bn.xor w8, w8, w8
+        bn.xor w9, w9, w9
+        bn.xor w10, w10, w10
+        bn.xor w11, w11, w11
+        bn.xor w12, w12, w12
+        bn.xor w13, w13, w13
+        bn.xor w14, w14, w14
+        bn.xor w15, w15, w15
+        bn.xor w17, w17, w17
+        bn.xor w18, w18, w18
+        bn.xor w19, w19, w19
+        bn.xor w20, w20, w20
+        bn.xor w21, w21, w21
+        bn.xor w24, w24, w24
+        bn.xor w25, w25, w25
+        bn.xor w26, w26, w26
+        bn.xor w27, w27, w27
+        bn.xor w28, w28, w28
+        bn.xor w29, w29, w29
+        bn.xor w30, w30, w30
+        jal  x1, intt
+        addi a0, a0, 1024
+#else
     LOOPI K, 2
         jal  x1, intt
         addi a0, a0, 1024 /* Go to next input polynomial */
+#endif
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
     /* Load pointers for loop. */
+#ifdef NSHARES
+    la   s2, t_polyvec
+    addi s0, s2, 1024
+    la   s1, tmp_poly
+#else
     la  s0, tmp_poly
     la  s1, t_polyvec
     la  s3, rhoprime
+#endif
 
     /* Initialize the nonce for sampling s2. */
     li s6, L
 
     /* This loop samples s2 and adds it to A*s1 (currently in the t buffer). */
+#ifdef NSHARES
+    li   s9, L
+    addi s9, s9, K
+s2_sample_loop:
+        /* Masked ExpandS: s2[i] as arithmetic shares in eta_out. */
+        addi a0, s5, 0
+        la   a1, rho_prime_shares
+        addi a2, s6, 0
+#if DILITHIUM_MODE == 5
+        la   a3, sk
+        addi a3, a3, 128
+        la   a4, pk
+#else
+        la   a3, eta_scratch
+        la   a4, eta_b2a
+#endif
+        jal  x1, masked_poly_uniform_eta
+        addi s6, s6, 1
+        /* t share 0 += s2[i]_share0. */
+        addi a0, s5, 0
+        addi a1, s2, 0
+        addi a2, s2, 0
+        jal  x1, poly_add
+        /* Whitening */
+        bn.xor w0, w0, w0
+        bn.xor w1, w1, w1
+        /* t share 1 += s2[i]_share1. */
+        addi a0, s10, 0
+        addi a1, s0, 0
+        addi a2, s0, 0
+        jal  x1, poly_add
+        /* Whitening */
+        bn.xor w0, w0, w0
+        bn.xor w1, w1, w1
+        addi s2, s2, 1024
+        addi s2, s2, 1024
+        addi s0, s0, 1024
+        addi s0, s0, 1024
+        bne s6, s9, s2_sample_loop
+#else
     LOOPI K, 14
         /* Sample the next polynomial from s2 and store in temp buffer. */
         addi a0, s3, 0
@@ -338,6 +646,24 @@ crypto_sign_keypair:
         jal  x1, poly_add
         /* Increment polyvec pointer *t. */
         addi s1, s1, 1024
+#endif
+
+#ifdef NSHARES
+    /* Unmask t into t_polyvec[0:K*1024]. */
+    la   s0, t_polyvec
+    addi s1, s0, 0
+    li   s9, K
+t_unmask_loop:
+        addi a0, s1, 0
+        addi a1, s0, 0
+        jal  x1, secunmask_modq
+        addi s0, s0, 1024
+        addi s0, s0, 1024
+        addi s1, s1, 1024
+        addi s9, s9, -1
+        bne  s9, x0, t_unmask_loop
+    la  s0, tmp_poly
+#endif
 
     /* Reset t pointer for power2round loop. */
     la  s1, t_polyvec
@@ -400,22 +726,62 @@ crypto_sign_keypair:
 
 .bss
 
+#ifdef NSHARES
+.balign 32
+.globl rho_prime_shares
+rho_prime_shares:
+.zero 128
+.balign 32
+.globl K_shares
+K_shares:
+.zero 64
+
+/* masked_poly_uniform_eta scratch; the bitslice scratch reuses tmp_poly.
+   L5 reuses the dead sk t0-region (a3) and pk (a4) to fit DMEM. */
+.balign 32
+eta_out:
+.zero 2048
+#if DILITHIUM_MODE != 5
+.balign 32
+eta_scratch:
+.zero 3104
+.balign 32
+eta_b2a:
+.zero 1536
+#endif
+/* Matrix nonce saved across the gadget call. */
+.balign 32
+matmul_nonce:
+.zero 32
+/* Stack for the masked gadget frames. */
+.balign 32
+keygen_mask_stack:
+.zero 224
+keygen_mask_stack_end:
+#else
 /* rho' intermediate value (64B). */
 .balign 32
 rhoprime:
 .zero 64
+#endif
 
 /* Temporary polynomial buffer (1024B). */
 .balign 32
 tmp_poly:
 .zero 1024
 
+#ifndef NSHARES
 /* s1 intermediate polynomial buffer (1024B). */
 .balign 32
 s1_poly:
 .zero 1024
+#endif
 
-/* t polynomial vector (K*1024B). */
+/* t polyvec; masked holds 2*K*1024 interleaved share pairs. */
 .balign 32
 t_polyvec:
+#ifdef NSHARES
+.zero 2 * POLYVECK_BYTES
+#else
 .zero POLYVECK_BYTES
+#endif
