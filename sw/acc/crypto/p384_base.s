@@ -618,7 +618,7 @@ proj_add_p384:
   bn.sel    w14, w16, w10, C
   bn.sel    w15, w17, w11, C
 
-  /* 11: [w9, w8] = t4 <= t4*t5 = [w9, w8]*[w26, w25] */
+  /* 11: [w9, w8] = t4 <= t4*t5 = [w9, w8]*[w15, w14] */
   bn.mov    w10, w8
   bn.mov    w11, w9
   bn.mov    w16, w14

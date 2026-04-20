@@ -108,7 +108,7 @@ p384_scalar_mult:
    4. Multiply mask with z^-1 for use in
       affine space. */
 
-/* Load domain parameter.
+  /* Load domain parameter.
      [w13,w12] = dmem[p384_p] */
   li        x2, 12
   la        x4, p384_p

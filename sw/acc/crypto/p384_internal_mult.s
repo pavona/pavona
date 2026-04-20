@@ -293,7 +293,7 @@ scalar_mult_int_p384:
     /* Load P and 2P one limb at a time, using the L flag to select one. We
        select P if the L flag is set and 2P otherwise (in the case that both
        MSBs were zero, the addition result gets discarded).
-       [w24:w18] <= L ? dmem[scalarmult_P] : dmem[scalarmult_2P] */
+       [w30:w25] <= L ? dmem[scalarmult_P] : dmem[scalarmult_2P] */
     li    x2, 25
     loopi 6, 4
       bn.lid    x24, 0(x4++)

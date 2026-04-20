@@ -267,7 +267,7 @@ p384_verify:
   jal       x1, store_proj
 
   /* load base point G and use in projective form (set z to 1)
-     G = (x,y,z) = dmem[verify_G] <= (dmem[p384_gy], dmem[p384_gy], 1) */
+     G = (x,y,z) = dmem[verify_G] <= (dmem[p384_gx], dmem[p384_gy], 1) */
   la        x10, p384_gx
   la        x11, p384_gy
   la        x12, verify_G
