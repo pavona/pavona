@@ -915,7 +915,7 @@ class SimCfg(FlowCfg):
         DEFAULT_VALUE = "-- %"
 
         for cfg in self.cfgs:
-            if self.cov_report_deploy:
+            if cfg.cov_report_deploy:
                 cov_scores = cfg.cov_report_deploy.cov_results_dict
                 cov_scores = {f"{key.capitalize()} Coverage": val for key,
                               val in cov_scores.items()}
