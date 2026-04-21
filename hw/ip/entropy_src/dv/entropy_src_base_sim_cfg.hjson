@@ -67,6 +67,12 @@
       name: scratch_path
       value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
     }
+    // Override coverage config files to add our elaboration time coverage exclusions.
+    //
+    {
+      name: default_vcs_cov_cfg_file
+      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_cover.cfg"
+    }
   ]
 
   // Enable CDC instrumentation.
