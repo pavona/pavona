@@ -303,8 +303,10 @@ def _acc_consttime_test_impl(ctx):
         script_content += " --subroutine {}".format(ctx.attr.subroutine)
     if ctx.attr.ignore:
         script_content += " --ignore {}".format(" ".join(ctx.attr.ignore))
-    if ctx.attr.secrets:
-        script_content += " --secrets {}".format(" ".join(ctx.attr.secrets))
+    if ctx.attr.secret:
+        script_content += " --secret {}".format(" ".join(ctx.attr.secret))
+    if ctx.attr.public:
+        script_content += " --public {}".format(" ".join(ctx.attr.public))
     if ctx.attr.initial_constants:
         script_content += " --constants {}".format(" ".join(ctx.attr.initial_constants))
     ctx.actions.write(
@@ -589,7 +591,8 @@ acc_consttime_test = rule(
         "deps": attr.label_list(providers = [OutputGroupInfo]),
         "subroutine": attr.string(),
         "ignore": attr.string_list(),
-        "secrets": attr.string_list(),
+        "secret": attr.string_list(),
+        "public": attr.string_list(),
         "initial_constants": attr.string_list(),
         "_checker": attr.label(
             default = "//hw/ip/acc/util:check_const_time",

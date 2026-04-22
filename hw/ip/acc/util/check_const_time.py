@@ -12,6 +12,7 @@ from shared.control_flow import program_control_graph, subroutine_control_graph
 from shared.decode import decode_elf
 from shared.information_flow_analysis import (get_program_iflow,
                                               get_subroutine_iflow,
+                                              parse_information_flow_node,
                                               stringify_control_deps)
 
 
@@ -43,15 +44,26 @@ def main() -> int:
               'in the form "reg:value", e.g. x3:5. Only GPRs are accepted as '
               'required constants.'))
     parser.add_argument(
-        '--secrets',
+        '--secret',
         nargs='+',
         type=str,
         required=False,
         help=('Initial secret information-flow nodes. If not provided, '
-              'assume everything is secret; check that the subroutine or '
-              'program has only one possible control-flow path regardless '
-              'of input.'))
+              'assume everything is secret unless --public is specified; '
+              'check that the subroutine or program has only one possible '
+              'control-flow path regardless of input.'))
+    parser.add_argument(
+        '--public',
+        nargs='+',
+        type=str,
+        required=False,
+        help=('Initially NOT secret information-flow nodes. If specified, '
+              'assume everything else is secret. Cannot be specified at the '
+              'same time as --secret.'))
     args = parser.parse_args()
+
+    # Load the program.
+    program = decode_elf(args.elf)
 
     # Parse initial constants.
     if args.constants is None:
@@ -62,6 +74,21 @@ def main() -> int:
                              'program; use --subroutine to analyze a specific '
                              'subroutine.')
         constants = parse_required_constants(args.constants)
+
+    if args.secret and args.public:
+        raise ValueError('Cannot specify --secret and --public together.')
+
+    # Parse the secrets as information-flow nodes.
+    secret_nodes = set()
+    if args.secret:
+        for secret in args.secret:
+            secret_nodes.add(parse_information_flow_node(secret))
+
+    # Parse the public values as information-flow nodes.
+    public_nodes = set()
+    if args.public:
+        for public in args.public:
+            public_nodes.add(parse_information_flow_node(public))
 
     # Compute control graph and get all nodes that influence control flow.
     program = decode_elf(args.elf)
@@ -83,21 +110,27 @@ def main() -> int:
                                                                   subroutine, {})
             control_deps_ignore.update(control_deps_ignore_temp)
 
-    if args.secrets is None:
-        if args.verbose:
-            print(
-                'No specific secrets provided; checking that {} has only one '
-                'control-flow path'.format(to_analyze))
-        secret_control_deps = control_deps
+    if args.secret is None:
+        if args.public is not None:
+            secret_control_deps = {
+                node: pcs
+                for node, pcs in control_deps.items()
+                if node not in public_nodes}
+        else:
+            if args.verbose:
+                print(
+                    'No specific secrets provided; checking that {} has only one '
+                    'control-flow path'.format(to_analyze))
+            secret_control_deps = control_deps
     else:
         if args.verbose:
             print('Analyzing {} with initial secrets {} and initial constants {}'.format(
-                to_analyze, args.secrets, constants))
+                to_analyze, args.secret, constants))
         # If secrets were provided, only show the ways in which those specific
         # nodes could influence control flow.
         secret_control_deps = {
             node: pcs
-            for node, pcs in control_deps.items() if node in args.secrets
+            for node, pcs in control_deps.items() if node in args.secret
         }
 
     secret_control_deps_filt = {k: v for k, v in secret_control_deps.items()

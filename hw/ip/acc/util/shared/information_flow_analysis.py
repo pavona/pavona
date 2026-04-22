@@ -4,6 +4,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import re
 from copy import deepcopy
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -12,7 +13,7 @@ from .constants import ConstantContext, get_op_val_str
 from .control_flow import (ControlLoc, ControlGraph, Cycle, Ecall, ImemEnd,
                            LoopStart, Ret)
 from .decode import ACCProgram
-from .information_flow import InformationFlowGraph
+from .information_flow import InformationFlowGraph, SPECIAL_REG_NAMES
 from .insn_yaml import Insn
 
 # Calls to _get_iflow return results in the form of a tuple with entries:
@@ -685,3 +686,24 @@ def stringify_control_deps(program: ACCProgram,
             pc_strings.append('{} at PC {:#x}'.format(insn.mnemonic, pc))
         out.append('{} (via {})'.format(node, ', '.join(pc_strings)))
     return out
+
+
+def parse_information_flow_node(x: str) -> str:
+    '''Parse a named information-flow node.
+
+    Accepts:
+    - register names e.g. "x20", "w1"
+    - special strings like "dmem" and "mod"
+    '''
+    if x == 'dmem':
+        return x
+    if x in SPECIAL_REG_NAMES:
+        return x
+    # try to match as a register
+    m = re.match(r'[wx]([0-9]+)', x)
+    if m is None:
+        raise ValueError(f'Malformatted node: {x}')
+    idx = int(m.group(1))
+    if not 0 <= idx < 32:
+        raise ValueError(f'Invalid register index: {x}')
+    return x

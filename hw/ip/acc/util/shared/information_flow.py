@@ -15,8 +15,9 @@ from serialize.parse_helpers import check_keys, check_list, check_str
 from .operand import Operand, RegOperandType
 
 FLAG_NAMES = ['c', 'm', 'l', 'z']
-SPECIAL_REG_NAMES = ['mod', 'acc', 'acch']
-READONLY = ['x0']
+
+# Registers that can be involved in information flow without being an operand
+SPECIAL_REG_NAMES = ['mod', 'acc', 'acch', 'kmac_core', 'rnd', 'urnd']
 
 
 class InformationFlowGraph:
@@ -683,7 +684,7 @@ class InsnInformationFlowRule:
         flow = {}
         for node in self.flows_to:
             dest = node.evaluate(op_vals, constant_regs)
-            if dest in READONLY:
+            if dest in ['x0']:
                 # No information will actually flow to this node, because it is
                 # not writeable; skip.
                 continue

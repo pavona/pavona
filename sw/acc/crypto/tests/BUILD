@@ -175,7 +175,7 @@ acc_consttime_test(
     name = "div_consttime",
     # All secrets are stored in DMEM; timing is permitted to depend on the
     # number of limbs.
-    secrets = ["dmem"],
+    secret = ["dmem"],
     subroutine = "div",
     deps = [
         ":div_small_test",
@@ -197,7 +197,7 @@ acc_consttime_test(
     name = "mod_consttime",
     # All secrets are stored in DMEM; timing is permitted to depend on the
     # number of limbs.
-    secrets = ["dmem"],
+    secret = ["dmem"],
     subroutine = "mod",
     deps = [
         ":mod_test",
@@ -264,7 +264,7 @@ acc_sim_test(
 acc_consttime_test(
     name = "gcd_consttime",
     # All inputs are in DMEM; no registers are secret.
-    secrets = ["dmem"],
+    secret = ["dmem"],
     subroutine = "gcd",
     deps = [
         ":gcd_small_test",
@@ -288,7 +288,7 @@ acc_sim_test(
 acc_consttime_test(
     name = "lcm_consttime",
     # All inputs are in DMEM; no registers are secret.
-    secrets = ["dmem"],
+    secret = ["dmem"],
     subroutine = "lcm",
     deps = [
         ":lcm_test",
@@ -309,7 +309,7 @@ acc_sim_test(
 acc_consttime_test(
     name = "mul_consttime",
     # All inputs are in DMEM; no registers are secret.
-    secrets = ["dmem"],
+    secret = ["dmem"],
     subroutine = "bignum_mul",
     deps = [
         ":mul_test",
@@ -330,7 +330,7 @@ acc_sim_test(
 acc_consttime_test(
     name = "mul256_consttime",
     # All inputs are in DMEM; no registers are secret.
-    secrets = ["dmem"],
+    secret = ["dmem"],
     subroutine = "bignum_mul256",
     deps = [
         ":mul_test",
@@ -858,6 +858,7 @@ acc_sim_test(
 
 acc_consttime_test(
     name = "p384_base_mult_consttime",
+    secret = ["dmem"],
     subroutine = "p384_base_mult",
     deps = [
         ":p384_base_mult_test",
@@ -976,52 +977,64 @@ acc_sim_test(
     ],
 )
 
-# Miller-Rabin with 1024-bit primes (as in RSA-2048).
+# Miller-Rabin round with 1024-bit primes (as in RSA-2048).
 acc_consttime_test(
-    name = "miller_rabin_consttime_1024",
-    # 4 limbs, x30 = n and x31 = n -1
+    name = "test_witness_1024_consttime",
     initial_constants = [
+        # 4 limbs, x30 = n and x31 = n - 1
         "x30:4",
         "x31:3",
     ],
-    # All secrets are stored in DMEM; timing is permitted to depend on the
-    # number of limbs.
-    secrets = ["dmem"],
-    subroutine = "miller_rabin",
+    public = [
+        # zero register
+        "w31",
+        # limb counts
+        "x30",
+        "x31",
+    ],
+    subroutine = "test_witness",
     deps = [
         ":primality_test",
     ],
 )
 
-# Miller-Rabin with 1536-bit primes (as in RSA-3072).
+# Miller-Rabin round with 1536-bit primes (as in RSA-3072).
 acc_consttime_test(
-    name = "miller_rabin_consttime_1536",
-    # 6 limbs, x30 = n and x31 = n -1
+    name = "test_witness_1536_consttime",
     initial_constants = [
+        # 6 limbs, x30 = n and x31 = n - 1
         "x30:6",
         "x31:5",
     ],
-    # All secrets are stored in DMEM; timing is permitted to depend on the
-    # number of limbs.
-    secrets = ["dmem"],
-    subroutine = "miller_rabin",
+    public = [
+        # zero register
+        "w31",
+        # limb counts
+        "x30",
+        "x31",
+    ],
+    subroutine = "test_witness",
     deps = [
         ":primality_test",
     ],
 )
 
-# Miller-Rabin with 2048-bit primes (as in RSA-4096).
+# Miller-Rabin round with 2048-bit primes (as in RSA-4096).
 acc_consttime_test(
-    name = "miller_rabin_consttime_2048",
-    # 8 limbs, x30 = n and x31 = n -1
+    name = "test_witness_2048_consttime",
     initial_constants = [
+        # 8 limbs, x30 = n and x31 = n - 1
         "x30:8",
         "x31:7",
     ],
-    # All secrets are stored in DMEM; timing is permitted to depend on the
-    # number of limbs.
-    secrets = ["dmem"],
-    subroutine = "miller_rabin",
+    public = [
+        # zero register
+        "w31",
+        # limb counts
+        "x30",
+        "x31",
+    ],
+    subroutine = "test_witness",
     deps = [
         ":primality_test",
     ],
@@ -1066,14 +1079,20 @@ acc_sim_test(
 )
 
 acc_consttime_test(
-    name = "modinv_f4_consttime_test",
+    name = "modinv_f4_1024_consttime",
     initial_constants = [
         "x20:20",
         "x21:21",
+        "x30:4",
     ],
-    # All secrets are stored in DMEM; timing is permitted to depend on the
-    # number of limbs.
-    secrets = ["dmem"],
+    public = [
+        # modulus is public
+        "mod",
+        # zero register is public
+        "w31",
+        # number of limbs is public
+        "x30",
+    ],
     subroutine = "modinv_f4",
     deps = [
         ":modinv_f4_test",
@@ -1103,7 +1122,7 @@ acc_consttime_test(
     name = "relprime_f4_consttime_test",
     # All secrets are stored in DMEM; timing is permitted to depend on the
     # number of limbs.
-    secrets = ["dmem"],
+    secret = ["dmem"],
     subroutine = "relprime_f4",
     deps = [
         ":relprime_f4_test",
@@ -1612,7 +1631,7 @@ acc_consttime_test(
     name = "sha256_consttime",
     # All secrets are stored in DMEM; timing is permitted to depend on the
     # number of message chunks.
-    secrets = ["dmem"],
+    secret = ["dmem"],
     subroutine = "sha256",
     deps = [
         ":sha256_test",
