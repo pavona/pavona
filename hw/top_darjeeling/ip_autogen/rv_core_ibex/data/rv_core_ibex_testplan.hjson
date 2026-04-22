@@ -340,8 +340,6 @@
       stage: V2
       tests: ["riscv_invalid_csr_test"]
     }
-    {
-      // TODO: Need to add testplan entries for PMP and nested trap tests
-    }
+    // TODO: Need to add testplan entries for PMP and nested trap tests
   ]
 }
