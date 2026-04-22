@@ -1,8 +1,7 @@
-# Request for Comments: Versioning
+# Request for Comments 2026-02: Versioning
 
-* Status: Proposed
 * Authors: [Viveca Pannell](mailto:vpannell@zerorisc.com), [Quan Nguyen](mailto:qmn@zerorisc.com)
-* Last updated: April 2, 2026
+* Last updated: April 22, 2026
 
 ## Introduction
 
