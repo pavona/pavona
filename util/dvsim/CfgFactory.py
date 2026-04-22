@@ -82,48 +82,48 @@ def _make_child_cfg(path, args, initial_values, seed_index=None, default_reseed=
                            .format(path))
 
     if seed_index:
-        reseed_override(hjson_data, seed_index, default_reseed)
+        reseed_source(hjson_data, seed_index, default_reseed)
 
     # Call cls as a constructor. Note that we pass None as the mk_config
     # argument: this is not supposed to load anything else.
     return cls(path, hjson_data, args, None)
 
 
-def reseed_override(hjson_data: dict, seed_index: dict, default_reseed: int):
-    '''Override resets for each test that has a reseed if the flag --reseed-source was passed.
+def reseed_source(graded_reseeds: dict, seed_index: dict, default_reseed: int):
+    '''Source resets for each test that has a reseed if the flag --reseed-source was passed.
     '''
-    hjson_name = hjson_data["name"]
+    hjson_name = graded_reseeds["name"]
     log.debug("========== %s ==========", hjson_name)
     log.debug("before:")
-    count_reseeds(hjson_data)
+    count_reseeds(graded_reseeds)
 
     hit = False
-    variant = hjson_data.get("variant")
-    for hjson_test in hjson_data.get("tests", []):
-        resolved_name = hjson_test["name"].replace("{name}", hjson_data["name"])
+    variant = graded_reseeds.get("variant")
+    for hjson_test in graded_reseeds.get("tests", []):
+        resolved_name = hjson_test["name"].replace("{name}", graded_reseeds["name"])
 
         for candidate in [hjson_test["name"], resolved_name]:
-            key = (candidate, hjson_data["name"], variant)
+            key = (candidate, graded_reseeds["name"], variant)
             if key in seed_index:
                 hit = True
                 hjson_test["reseed"] = seed_index[key]["reseed"]
                 break  # Assume one match per test
 
-    if "reseed" in hjson_data.keys() and hit:
-        hjson_data["reseed"] = default_reseed
+    if "reseed" in graded_reseeds.keys() and hit:
+        graded_reseeds["reseed"] = default_reseed
 
     log.debug("after:")
-    count_reseeds(hjson_data)
+    count_reseeds(graded_reseeds)
 
 
-def count_reseeds(hjson_data):
+def count_reseeds(graded_reseeds):
     '''Helper function used in debug for counting seeds after override
     '''
     total = 0
-    for test in hjson_data.get("tests", []):
-        global_reseed = hjson_data.get("reseed", 1)
+    for test in graded_reseeds.get("tests", []):
+        global_reseed = graded_reseeds.get("reseed", 1)
         reseed = test.get("reseed", global_reseed)
-        testname = test["name"].replace("{name}", hjson_data["name"])
+        testname = test["name"].replace("{name}", graded_reseeds["name"])
         log.debug(" %s: %d", testname, reseed)
         total += reseed
     log.debug("  Total: %d", total)
@@ -161,7 +161,7 @@ def make_cfg(path, args, proj_root):
 
         # If it is a single config, just change the reseeds now
         if 'use_cfgs' not in hjson_data and seed_data:
-            reseed_override(hjson_data, seed_index, default_reseed)
+            reseed_source(hjson_data, seed_index, default_reseed)
 
     def factory(child_path):
         child_ivs = initial_values.copy()

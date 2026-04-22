@@ -33,7 +33,7 @@ import shutil
 import subprocess
 import sys
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 import logging as log
 import hjson
@@ -44,7 +44,9 @@ LICENSE_HEADER = ("Copyright zeroRISC Inc.\n"
 
 
 def discover_units(root: Path):
-    """Yield (unit, cov_merge_dir) for every <unit>-sim-vcs under root."""
+    """
+    Yield (unit, cov_merge_dir) for every <unit>-sim-vcs under root.
+    """
     for child in sorted(root.iterdir()):
         if not child.is_dir() or not child.name.endswith("-sim-vcs"):
             continue
@@ -53,9 +55,10 @@ def discover_units(root: Path):
 
 
 def run_urg_grade(unit: str, merged: Path, report: Path, dry_run: bool) -> tuple[int, float]:
-    """Runs `urg -full64 -dir <merged.vdb> -grade testfile cost cputime
+    """
+    Runs `urg -full64 -dir <merged.vdb> -grade testfile cost cputime
           -report <unit>-sim-vcs/cov_merge/grade_report`
-        for the corresponding merged.vdb passed.
+    for the corresponding merged.vdb passed.
     """
     cmd = [
         "urg", "-full64",
@@ -89,31 +92,77 @@ def run_urg_grade(unit: str, merged: Path, report: Path, dry_run: bool) -> tuple
     return proc.returncode, time.time() - start
 
 
-def parse_test_file(path: Path) -> Counter:
+def parse_test_file(tests_file: Path,
+                    passing_tests_dir: Path) -> tuple[Counter, dict[str, list[str]]]:
     """
     Parses the corresponding graded file and counts the instances of a test
-    within that file.
+    within that file, returns the number of tests in that graded file and the
+    seeds.
     """
-    INDEX_PREFIX_RE = re.compile(r"^\d+\.")  # leading run index
-    SEED_SUFFIX_RE = re.compile(r"\.\d+$")   # trailing seed
+    INDEX_PREFIX_RE = re.compile(r"^(\d+)\.")    # leading run index
+    SEED_SUFFIX_RE = re.compile(r"\.(\d+)$")     # VCS seed
     counts: Counter = Counter()
-    if not path.is_file():
-        return counts
+    seeds = defaultdict(list)
+    if not tests_file.is_file() or not passing_tests_dir.is_dir():
+        log.error("A file or passing tests directory has not been provided: (%s, %s)",
+                  tests_file.name, passing_tests_dir.name)
+        sys.exit(1)
     try:
-        with path.open() as fh:
+        with tests_file.open() as fh:
             for raw in fh:
                 line = raw.strip()
                 if not line or line.startswith("#") or line.startswith("//"):
                     continue
                 token = line.split()[0]
-                name = token.rsplit("/", 1)[-1]
-                name = INDEX_PREFIX_RE.sub("", name, 1)
+                snippet = token.rsplit("/", 1)[-1]
+
+                idx_m = INDEX_PREFIX_RE.match(snippet)
+                seed_m = SEED_SUFFIX_RE.search(snippet)
+                short_seed = seed_m.group(1) if seed_m else None
+                run_idx = idx_m.group(1) if idx_m else None
+
+                name = INDEX_PREFIX_RE.sub("", snippet, 1)
                 name = SEED_SUFFIX_RE.sub("", name)
+
+                if not name or run_idx is None or short_seed is None:
+                    log.warning(f"Skipping malformed entry: {snippet}")
+                    continue
+
                 counts[name] += 1
+
+                # Find seed passed by dvsim
+                seed = _find_long_seed(passing_tests_dir, run_idx, name, short_seed)
+                if int(seed).bit_count() < 16:
+                    log.warning("Bit count for seed %s is under 16 bits", seed)
+                seeds[name].append(seed)
     except OSError as e:
-        log.error("Failed to open graded file %s: %s", path, e)
+        log.error("Failed to open graded file %s: %s", tests_file, e)
         sys.exit(1)
-    return counts
+    return counts, seeds
+
+
+def _find_long_seed(passing_tests_dir: Path, run_idx: str,
+                    name: str, short_seed: str) -> str | None:
+    """Look up the 256-bit seed from the passed/ directory.
+    We can't use SEED_SUFFIX_RE here because test names can overlap
+    (e.g. xbar_access_same_device vs xbar_access_same_device_slow_rsp),
+    so we rely on .isdigit() to isolate the seed suffix unambiguously.
+    """
+    prefix = f"{run_idx}.{name}"
+    candidates = list(passing_tests_dir.glob(f"{prefix}*"))
+    for entry in candidates:
+        if entry.is_dir():
+            long_seed = entry.name[len(prefix) + 1:]
+            if (long_seed.isdigit() and
+               (int(long_seed) & 0xFFFFFFFF) == (int(short_seed) & 0xFFFFFFFF)):
+                return long_seed
+    # If a seed is not found, error out
+    candidate_names = [e.name for e in candidates] or ["(none)"]
+    log.error(
+        "Failed to obtain long seed for %s.%s.%s\n  Candidates:\n    %s",
+        run_idx, name, short_seed, "\n    ".join(candidate_names)
+    )
+    sys.exit(1)
 
 
 def compute_targetcount(graded: int, unique: int, A: float, basecount: int) -> int:
@@ -177,6 +226,168 @@ def find_variants(test_list: list[dict]) -> list[dict]:
     return test_list
 
 
+def run_urg_phase(args) -> None:
+    """
+    Phase 1: run urg -grade for every unit that has a merged.vdb.
+    """
+    if shutil.which("urg") is None and not args.dry_run:
+        log.error("`urg` not found on PATH. Source your VCS setup first.")
+        sys.exit(1)
+
+    todo, no_vdb = [], []
+
+    for unit, cov_merge in discover_units(args.root):
+        merged = cov_merge / "merged.vdb"
+        report = cov_merge / "grade_report"
+        if not merged.exists():
+            no_vdb.append(unit)
+            continue
+        todo.append((unit, merged, report))
+
+    log.info(f"Found {len(todo)} unit(s) to grade "
+             f"(skipped {len(no_vdb)} without merged.vdb)")
+
+    failed = []
+
+    for unit, merged, report in todo:
+        log.info(f"[{unit}] urg -grade ...")
+        rc, elapsed = run_urg_grade(unit, merged, report, args.dry_run)
+        if args.dry_run:
+            continue
+        if rc == 0:
+            log.info(f"[{unit}] ok ({elapsed:.1f}s)")
+        else:
+            log.warning(f"[{unit}] FAILED rc={rc} (see {report / 'urg_grade.log'})")
+            failed.append(unit)
+
+    if no_vdb:
+        log.warning(f"No merged.vdb for: {', '.join(no_vdb)}")
+
+    if failed:
+        log.warning(f"urg failed for {len(failed)} unit(s); continuing to aggregate the rest")
+
+
+def aggregate_units(args) -> tuple[list, list, list, list]:
+    """
+    Phase 2: parse gradedtests.txt / uniquetests.txt for every unit and
+    compute target counts. Returns (rows, per_unit_summary, missing, hjson_entries).
+    """
+    rows = []
+    per_unit_summary = []
+    missing = []
+    hjson_entries = []
+
+    for unit, cov_merge in discover_units(args.root):
+        if args.force:
+            grade_dir = cov_merge / "grade_report"
+        else:
+            grade_dir = cov_merge.parent / "cov_report"
+
+        graded_path = grade_dir / "gradedtests.txt"
+        unique_path = grade_dir / "uniquetests.txt"
+
+        if not graded_path.is_file():
+            missing.append((unit, "gradedtests.txt missing"))
+            continue
+
+        passing_tests_dir = cov_merge.parent / "passed"
+        graded, graded_seeds = parse_test_file(graded_path, passing_tests_dir)
+
+        if unique_path.is_file():
+            unique, _ = parse_test_file(unique_path, passing_tests_dir)
+        else:
+            unique = Counter()
+
+        # Sanity check: uniquecount must be <= gradedcount
+        for test in unique:
+            if unique[test] > graded.get(test, 0):
+                log.error(f"{unit}:{test} uniquecount ({unique[test]}) > "
+                          f"gradedcount ({graded.get(test, 0)})")
+                sys.exit(1)
+            elif graded.get(test, 0) == 0:
+                log.warning(f"{unit}:{test} gradedcount has 0 seeds")
+
+        for test in sorted(graded):
+            g = graded[test]
+            u = unique.get(test, 0)
+            t = compute_targetcount(g, u, args.A, args.basecount)
+            entry = {"test": test, "name": unit, "reseed": t}
+            if graded_seeds.get(test):
+                entry["seeds"] = list(dict.fromkeys(graded_seeds[test]))
+            hjson_entries.append(entry)
+            rows.append({
+                "unit": unit, "test": test,
+                "gradedcount": g, "uniquecount": u, "targetcount": t,
+            })
+
+        per_unit_summary.append({
+            "unit": unit,
+            "num_tests": len(graded),
+            "num_unique_contributors": sum(1 for t in graded if unique.get(t, 0) > 0),
+            "total_graded_runs": sum(graded.values()),
+            "total_unique_runs": sum(unique.values()),
+            "total_target_runs": sum(
+                compute_targetcount(graded[t], unique.get(t, 0), args.A, args.basecount)
+                for t in graded
+            ),
+        })
+
+    return rows, per_unit_summary, missing, hjson_entries
+
+
+def write_csv_outputs(args, rows: list, per_unit_summary: list) -> None:
+    """
+    Phase 3a: write per-test CSV and per-unit summary CSV.
+    """
+    try:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        csv_path = args.output.with_suffix(".csv")
+
+        with csv_path.open("w", newline="") as fh:
+            for line in LICENSE_HEADER.splitlines():
+                fh.write(f"# {line}\n")
+            w = csv.DictWriter(fh, fieldnames=["unit", "test", "gradedcount",
+                                               "uniquecount", "targetcount"])
+            w.writeheader()
+            w.writerows(rows)
+
+        summary_path = args.output.with_name(args.output.stem + "_summary.csv")
+
+        with summary_path.open("w", newline="") as fh:
+            for line in LICENSE_HEADER.splitlines():
+                fh.write(f"# {line}\n")
+            w = csv.DictWriter(fh, fieldnames=[
+                "unit", "num_tests", "num_unique_contributors",
+                "total_graded_runs", "total_unique_runs", "total_target_runs",
+            ])
+            w.writeheader()
+            w.writerows(per_unit_summary)
+        log.info(f"  combined report : {csv_path}")
+        log.info(f"  per-unit summary: {summary_path}")
+
+    except OSError as e:
+        log.error("Failed to write CSV output: %s", e)
+        sys.exit(1)
+
+
+def write_hjson_output(args, hjson_entries: list) -> None:
+    """
+    Phase 3b: apply variant detection and write the combined reseed hjson.
+    """
+    hjson_entries = find_variants(hjson_entries)
+    cfg = {"reseed": 1, "tests": hjson_entries}
+    hjson_path = args.output.with_suffix(".hjson")
+
+    try:
+        with hjson_path.open("w") as fh:
+            fh.write("// " + LICENSE_HEADER.replace("\n", "\n// ").rstrip("/ ") + "\n")
+            fh.write(hjson.dumps(cfg).rstrip("\n") + "\n")
+        log.info(f"  combined reseed hjson: {hjson_path}")
+    except OSError as e:
+        log.error("Failed to write HJSON output: %s", e)
+        sys.exit(1)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__,
@@ -203,150 +414,24 @@ def main() -> int:
 
     # -------- Phase 1: Run urg --------
     if args.force:
-        if not args.dry_run and shutil.which("urg") is None:
-            log.error("`urg` not found on PATH. Source your VCS setup first.")
-            sys.exit(1)
-
-        todo, no_vdb, already = [], [], []
-        for unit, cov_merge in discover_units(args.root):
-            merged = cov_merge / "merged.vdb"
-            report = cov_merge / "grade_report"
-            if not merged.exists():
-                no_vdb.append(unit)
-                continue
-            todo.append((unit, merged, report))
-
-        log.info(f"Found {len(todo)} unit(s) to grade "
-                 f"(skipped {len(no_vdb)} without merged.vdb, "
-                 f"{len(already)} already graded)")
-
-        failed = []
-        for unit, merged, report in todo:
-            log.info(f"[{unit}] urg -grade ...")
-            rc, elapsed = run_urg_grade(unit, merged, report, args.dry_run)
-            if args.dry_run:
-                continue
-            if rc == 0:
-                log.info(f"[{unit}] ok ({elapsed:.1f}s)")
-            else:
-                log.warning(f"[{unit}] FAILED rc={rc} (see {report/'urg_grade.log'})")
-                failed.append(unit)
-
-        if no_vdb:
-            log.warning(f"No merged.vdb for: {', '.join(no_vdb)}")
-        if failed:
-            log.warning(f"urg failed for {len(failed)} unit(s); continuing to aggregate the rest")
-
+        run_urg_phase(args)
         if args.dry_run:
-            sys.exit()
+            return 0
 
     # -------- Phase 2: Aggregate --------
-    rows = []
-    per_unit_summary = []
-    missing = []
-    hjson_entries = []
+    rows, per_unit_summary, missing, hjson_entries = aggregate_units(args)
 
-    for unit, cov_merge in discover_units(args.root):
-        if args.force:
-            grade_dir = cov_merge / "grade_report"
-            graded_path = grade_dir / "gradedtests.txt"
-            unique_path = grade_dir / "uniquetests.txt"
-        else:
-            grade_dir = cov_merge.parent / "cov_report"
-            graded_path = grade_dir / "gradedtests.txt"
-            unique_path = grade_dir / "uniquetests.txt"
-
-        if not graded_path.is_file():
-            missing.append((unit, "gradedtests.txt missing"))
-            continue
-
-        graded = parse_test_file(graded_path)
-        unique = parse_test_file(unique_path) if unique_path.is_file() else Counter()
-
-        # Sanity check, uniquecount must be smaller or equal to gradecount
-        for test in unique:
-            if unique[test] > graded.get(test, 0):
-                log.error(f"{unit}:{test} uniquecount ({unique[test]}) > "
-                          f"gradedcount ({graded.get(test, 0)})")
-                sys.exit()
-
-        for test in sorted(graded):
-            g = graded[test]
-            u = unique.get(test, 0)
-            t = compute_targetcount(g, u, args.A, args.basecount)
-            hjson_entries.append({
-                "test": test,
-                "name": unit,
-                "reseed": t
-            })
-            rows.append({
-                "unit": unit, "test": test,
-                "gradedcount": g, "uniquecount": u, "targetcount": t,
-            })
-
-        per_unit_summary.append({
-            "unit": unit,
-            "num_tests": len(graded),
-            "num_unique_contributors": sum(1 for t in graded if unique.get(t, 0) > 0),
-            "total_graded_runs": sum(graded.values()),
-            "total_unique_runs": sum(unique.values()),
-            "total_target_runs": sum(
-                compute_targetcount(graded[t], unique.get(t, 0), args.A, args.basecount)
-                for t in graded
-            ),
-        })
-
+    # -------- Phase 3: Write outputs --------
     if not args.skip_csv:
-        try:
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            csv_path = args.output.with_name(args.output.stem + ".hjson")
-            with csv_path.open("w", newline="") as fh:
-                for line in LICENSE_HEADER.splitlines():
-                    fh.write(f"# {line}\n")
-                w = csv.DictWriter(fh, fieldnames=["unit", "test", "gradedcount",
-                                                   "uniquecount", "targetcount"])
-                w.writeheader()
-                w.writerows(rows)
-
-            summary_path = args.output.with_name(args.output.stem + "_summary.csv")
-            with summary_path.open("w", newline="") as fh:
-                for line in LICENSE_HEADER.splitlines():
-                    fh.write(f"# {line}\n")
-                w = csv.DictWriter(fh, fieldnames=[
-                    "unit", "num_tests", "num_unique_contributors",
-                    "total_graded_runs", "total_unique_runs", "total_target_runs",
-                ])
-                w.writeheader()
-                w.writerows(per_unit_summary)
-
-            log.info(f"  combined report : {args.output}")
-            log.info(f"  per-unit summary: {summary_path}")
-        except OSError as e:
-            log.error("Failed to write CSV output: %s", e)
-            sys.exit(1)
-
-    # -------- Phase 3: Write HJSON --------
-    hjson_entries = find_variants(hjson_entries)
-    cfg = {
-        "reseed": 1,
-        "tests": hjson_entries
-    }
-
-    hjson_path = args.output.with_name(args.output.stem + ".hjson")
-    try:
-        with hjson_path.open("w") as fh:
-            fh.write("// " + LICENSE_HEADER.replace("\n", "\n// ").rstrip("/ ") + "\n")
-            fh.write(hjson.dumps(cfg).rstrip("\n") + "\n")
-        log.info(f"  combined reseed hjson: {hjson_path}")
-    except OSError as e:
-        log.error("Failed to write HJSON output: %s", e)
-        sys.exit(1)
+        write_csv_outputs(args, rows, per_unit_summary)
+    write_hjson_output(args, hjson_entries)
 
     log.info(f"   Aggregated {len(per_unit_summary)} units, {len(rows)} test entries")
     if missing:
         log.warning(f"  skipped {len(missing)} unit(s) with no grade_report:")
         for u, why in missing:
             log.warning(f"    {u}: {why}")
+    return 0
 
 
 if __name__ == "__main__":
