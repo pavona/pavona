@@ -773,7 +773,7 @@ def main():
     setattr(args, "timestamp", curr_ts.strftime(TS_FORMAT))
 
     # Register the seeds from command line with the RunTest class.
-    RunTest.seeds = args.seeds
+    RunTest.seeds = list(args.seeds)
 
     # If we are fixing a seed value, no point in tests having multiple reseeds.
     if args.fixed_seed is not None:

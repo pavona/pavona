@@ -472,7 +472,7 @@ class RunTest(Deploy):
         self.test_obj = test
         self.index = index
         self.build_seed = sim_cfg.build_seed
-        self.seed = RunTest.get_seed()
+        self.seed = RunTest.get_seed(test.seeds)
         # Systemverilog accepts seeds with a maximum size of 32 bits.
         self.svseed = int(self.seed) & 0xFFFFFFFF
         self.simulated_time = JobTime()
@@ -561,7 +561,7 @@ class RunTest(Deploy):
             rm_path(self.cov_db_test_dir)
 
     @staticmethod
-    def get_seed():
+    def get_seed(seedlist: List[str]):
         # If --seeds option is passed, then those custom seeds are consumed
         # first. If --fixed-seed <val> is also passed, the subsequent tests
         # (once the custom seeds are consumed) will be run with the fixed seed.
@@ -571,6 +571,9 @@ class RunTest(Deploy):
             for i in range(1000):
                 seed = random.getrandbits(256)
                 RunTest.seeds.append(seed)
+        # If the test already specifies some seeds, use those first
+        if len(seedlist) != 0:
+            return int(seedlist.pop(0))
         return RunTest.seeds.pop(0)
 
     def get_timeout_mins(self):

@@ -283,6 +283,7 @@ class RunMode(Mode):
         self.sw_images = []
         self.sw_build_device = ""
         self.sw_build_opts = []
+        self.seeds = []
 
         super().__init__("run mode", rdict)
         self.en_run_modes = list(set(self.en_run_modes))
