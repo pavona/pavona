@@ -7,58 +7,113 @@
  * This is referenced by all results published to the reports server for some basic styling.
  */
 
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
 .results {
   box-sizing: border-box;
-  padding-left: 40px;
-  padding-right: 40px;
+  padding: 24px 40px;
   margin: 0 auto;
   position: relative;
-  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-  padding-top: 15px;
+  font-family: "Manrope", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  color: #1f2430;
+  line-height: 1.5;
 }
 
 .results p {
   text-align: justify;
+  color: #1f2430;
 }
 
 .results pre {
-   overflow-x: auto;
-   white-space: pre-wrap;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  background: #F7F1EB;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 0.875rem;
 }
 
 .results h1, .results h2, .results h3 {
   text-align: center;
   padding-bottom: 15px;
+  color: #1f2430;
+  letter-spacing: -0.01em;
+}
+
+.results h2 {
+  font-weight: 600;
+  margin-top: 1.25rem;
+}
+
+.results h3 {
+  font-weight: 500;
+  color: #5b6270;
+}
+
+.results a {
+  color: #B84A28;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.results a:hover {
+  color: #1E3A6F;
+  text-decoration: underline;
 }
 
 .results table {
   margin: 2% auto;
-  border: 1px solid #f2f2f2;
-  border-collapse: collapse;
+  border: 1px solid #e5e7eb !important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  overflow: clip;
   text-align: center;
   vertical-align: middle;
   table-layout: auto;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  background: #ffffff;
 }
 
 .results th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  background-color: #3D1067;
+  padding: 14px 10px !important;
+  background-color: #1E3A6F !important;
   text-transform: uppercase;
-  color: white;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  border: none !important;
 }
 
 .results th, .results td {
-  border: 1px solid #f2f2f2;
-  padding: 8px;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  padding: 10px 8px !important;
+  font-size: 0.9rem;
 }
 
-.results tr:hover {
-  background-color: #f2f2f2;
+.results tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.results tbody tr:hover,
+.results tbody tr:nth-child(even):hover {
+  background-color: #E8DDD0;
 }
 
 .results tbody tr:nth-child(even) {
-  background: #f2f2f2;
+  background: #F7F1EB;
+}
+
+.results thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 /* Color encoding for percentages. */
@@ -124,31 +179,30 @@
 
 /* Header column group colors for batch coverage */
 .results table.col-12 thead tr th:nth-child(1) {
-    background-color: #3D1067 !important;
+    background-color: #1E3A6F !important;
 }
 
 .results table.col-12 thead tr th:nth-child(n+2):nth-child(-n+3) {
-    background-color: #4A1A7A !important;
+    background-color: #152747 !important;
 }
 
 .results table.col-12 thead tr th:nth-child(4) {
-    background-color: #3D1067 !important;
+    background-color: #1E3A6F !important;
 }
 
 .results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+12) {
-    background-color: #4A1A7A !important;
+    background-color: #152747 !important;
 }
 
 .results table.col-12 thead tr th:nth-child(13) {
-    background-color: #3D1067 !important;
+    background-color: #1E3A6F !important;
 }
 
 /* Published reports index page additions */
 .results.index-page {
-  border-radius: 8px;
+  border-radius: 12px;
   margin: 40px auto;
   padding: 32px 40px;
-  font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
 }
 
 .results.index-page td {
@@ -159,23 +213,16 @@
 
 .results.index-page th {
   text-align: left;
-  background-color: #3D1067 !important;
+  background-color: #1E3A6F !important;
   padding-left: 16px;
   border: none;
-}
-
-.results.index-page::before {
-  height: 4px;
-  background: linear-gradient(90deg, #3D1067, #5C2D91);
-  border-radius: 4px 4px 0 0;
-  margin: -32px -40px 32px -40px;
 }
 
 .results.index-page h1 {
   width: 70%;
   margin: 0 auto;
   text-align: left;
-  color: #000000;
+  color: #1f2430;
   letter-spacing: 0.01em;
   font-weight: 600;
   font-size: 2.5rem;
@@ -207,4 +254,177 @@
   position: static;
   left: auto;
   transform: none;
+}
+
+/* Override inline <style> in report.html */
+html body .results tbody tr:hover,
+html body .results tbody tr:nth-child(even):hover {
+  background-color: #E8DDD0 !important;
+}
+
+html body .results tbody tr:nth-child(even) {
+  background: #F7F1EB;
+}
+
+html body .results table.col-12 thead tr th:nth-child(1),
+
+html body .results table.col-12 thead tr th:nth-child(4),
+
+html body .results table.col-12 thead tr th:nth-child(13) {
+  background-color: #1E3A6F !important;
+}
+
+html body .results table.col-12 thead tr th:nth-child(n+2):nth-child(-n+3),
+
+html body .results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+12) {
+  background-color: #152747 !important;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .results {
+    padding: 16px 20px;
+  }
+
+  .results.index-page {
+    margin: 20px 12px;
+    padding: 24px 20px;
+  }
+
+  .results.index-page h1 {
+    width: 100%;
+    font-size: 1.75rem;
+  }
+
+  .results.index-page table {
+    width: 100%;
+  }
+}
+
+/* Print */
+@media print {
+  body {
+    background: #ffffff !important;
+    margin: 0;
+  }
+
+  html body .results table.col-12 thead tr th:nth-child(1),
+
+  html body .results table.col-12 thead tr th:nth-child(4),
+
+  html body .results table.col-12 thead tr th:nth-child(13),
+
+  html body .results table.col-12 thead tr th:nth-child(n+2):nth-child(-n+3),
+
+  html body .results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+12) {
+    background-color: #e2e8f0 !important;
+  }
+
+  .results, .results.index-page {
+    padding: 0;
+    margin: 0;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    max-width: 100%;
+  }
+
+  .results a, .results.index-page a {
+    color: #000000 !important;
+    text-decoration: none !important;
+  }
+
+  .results table {
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 0.5rem 0 1rem 0 !important;
+    page-break-inside: auto;
+  }
+
+  .results th, .results td {
+    border: 1px solid #000 !important;
+    padding: 4px 6px !important;
+    font-size: 9pt !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .results th {
+    background-color: #e2e8f0 !important;
+    color: #000 !important;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .results tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .results thead {
+    display: table-header-group;
+  }
+
+  .results div[style*="100vw"] {
+    width: 100% !important;
+    position: static !important;
+    left: auto !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  .results thead th {
+    position: static !important;
+  }
+
+  .results h1, .results h2, .results h3 {
+    text-align: left;
+    page-break-after: avoid;
+    break-after: avoid;
+    padding-bottom: 4px;
+  }
+
+  .results pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 8pt;
+    border: 1px solid #ccc;
+    background: #f8f8f8 !important;
+    page-break-inside: avoid;
+  }
+
+  .results tr:hover {
+    background: transparent !important;
+  }
+
+  .results table.col-12,
+
+  .results table.col-12 th,
+
+  .results table.col-12 td {
+    font-size: 7pt !important;
+    padding: 2px 3px !important;
+  }
+
+  .results table.col-12 th {
+    white-space: normal !important;
+    word-break: break-word;
+    line-height: 1.1;
+  }
+
+  html:has(table.col-12) {
+    page: landscape;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+
+  @page landscape {
+    size: A4 landscape;
+    margin: 1cm;
+  }
 }
