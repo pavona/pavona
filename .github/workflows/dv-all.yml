@@ -8,7 +8,7 @@ on:
     inputs:
       runner:
         type: string
-        default: "pavona-dv"
+        default: "pavona-dv-large"
       run-type:
         type: string
         required: true
@@ -72,3 +72,4 @@ jobs:
         dashboard: ${{ inputs.dashboard }}
         publish: ${{ inputs.publish }}
         reseed-source: ${{ inputs.reseed-source }}
+        dashboard-upload-key: ${{ secrets.DASHBOARD_UPLOAD_KEY }}

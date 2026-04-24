@@ -52,19 +52,28 @@ runs:
   steps:
     - name: Install system dependencies
       run: |
-        sudo apt update --fix-missing
-        sudo apt install wget
-        wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
-        sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
-        grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
+        if command -v apt > /dev/null; then
+          sudo apt update --fix-missing
+          grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
+          sudo apt install wget
+          wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
+          sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
+        else
+          # Install groupinstall groups
+          grep '^["]' yum-requirements.txt | xargs sudo yum groupinstall -y
+          # Install individual packages
+          grep '^[^#"]' yum-requirements.txt | xargs sudo yum install -y
+        fi
       shell: bash
       working-directory: ${{ inputs.working-directory }}
 
     - name: Install UTF-8 language pack
       run: |
-        sudo apt install -y language-pack-gnome-en-base
-        echo "LANG=en_US.UTF-8" >> "$GITHUB_ENV"
-        echo "LANGUAGE=en.UTF-8" >> "$GITHUB_ENV"
+        if command -v apt > /dev/null; then
+          sudo apt install -y language-pack-gnome-en-base
+          echo "LANG=en_US.UTF-8" >> "$GITHUB_ENV"
+          echo "LANGUAGE=en.UTF-8" >> "$GITHUB_ENV"
+        fi
       shell: bash
 
     - uses: astral-sh/setup-uv@v6

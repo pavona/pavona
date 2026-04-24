@@ -46,6 +46,9 @@ inputs:
     default: true
   reseed-source:
     type: string
+  dashboard-upload-key:
+    type: string
+    default: ""
 
 runs:
   using: composite
@@ -77,9 +80,7 @@ runs:
         eval "$(ssh-agent -s)"
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-        ssh-add - <<< "$DEPLOY_KEY" 2>/dev/null
-      env:
-        DEPLOY_KEY: ${{ secrets.DASHBOARD_UPLOAD_KEY }}
+        echo "${{ inputs.dashboard-upload-key }}" | ssh-add -
       shell: bash
     - name: Run DVSim
       id: dvsim
