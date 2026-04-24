@@ -34,12 +34,23 @@ inputs:
   vivado-version:
     description: Vivado version to configure, if any.
     default: ''
-  license-host:
-    description: Hostname of the license server.
+  xilinx-license-file:
+    description: |
+      Path to a local Xilinx license. This license is prioritized over
+      xilinx-license-host if it is provided.
+    default: ''
+  xilinx-license-host:
+    description: Hostname of the Xilinx license server.
     default: 'license-server'
-  license-port:
-    description: Port on license-server that the license server is serving on.
+  xilinx-license-port:
+    description: Port on license-server that the license server is serving Xilinx licenses on.
     default: '2100'
+  synopsys-license-host:
+    description: Hostname of the Synopsys license server.
+    default: 'license-server'
+  synopsys-license-port:
+    description: Port on license-server that the license server is serving Synopsys licenses on.
+    default: '27020'
   fpga:
     description: FPGA board type to prepare, if any.
     default: ''
@@ -185,6 +196,29 @@ runs:
     - name: Set environment variable for license server
       if: inputs.vivado-version != ''
       run: |
-        LICENSE_HOST="$(cat /etc/ci/${{ inputs.license-host }}/hostname)"
-        echo "XILINXD_LICENSE_FILE=${{ inputs.license-port }}@${LICENSE_HOST}" >> $GITHUB_ENV
+        if ${{ inputs.xilinx-license-file != '' }}; then
+          echo "XILINXD_LICENSE_FILE=${{ inputs.xilinx-license-file }}" >> $GITHUB_ENV
+        else
+          LICENSE_HOST="$(cat /etc/ci/${{ inputs.xilinx-license-host }}/hostname)"
+          echo "XILINXD_LICENSE_FILE=${{ inputs.xilinx-license-port }}@${LICENSE_HOST}" >> $GITHUB_ENV
+        fi
+      shell: bash
+
+
+    # Setup Synopsys VCS, if requested
+    - name: VCS Setup
+      if: inputs.vcs-version != ''
+      run: |
+        # Set license environment variable for Synopsys.
+        LICENSE_HOST="$(cat /etc/ci/${{ inputs.synopsys-license-host }}/hostname)"
+        echo "SNPSLMD_LICENSE_FILE=${{ inputs.synopsys-license-port }}@${LICENSE_HOST}" >> $GITHUB_ENV
+        # Set path to the requested VCS version.
+        echo "VCS_HOME=/tools/synopsys/vcs/${{ inputs.vcs-version }}" >> $GITHUB_ENV
+        # Add VCS binary directory to PATH.
+        echo "/tools/synopsys/vcs/${{ inputs.vcs-version }}/bin" >> $GITHUB_PATH
+        # For fusesoc to get on the PATH later
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        # Use system-provided certs, which are in a different directory than
+        # Debian derivatives, and the latter is the default for bazel's python
+        echo "SSL_CERT_FILE=/etc/pki/tls/cert.pem" >> $GITHUB_ENV
       shell: bash
