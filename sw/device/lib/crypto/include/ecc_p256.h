@@ -96,7 +96,7 @@ otcrypto_status_t otcrypto_p256_public_key_deconstruct(
     const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t x,
     otcrypto_word32_buf_t y);
 
-/*
+/**
  * Constructs an ECDSA/ECDH P-256 private key from scalar shares.
  *
  * The caller should allocate space for the private key and set the `keyblob`,
@@ -112,7 +112,7 @@ otcrypto_status_t otcrypto_p256_private_key_construct(
     otcrypto_const_word32_buf_t scalar_share1,
     otcrypto_blinded_key_t *private_key);
 
-/*
+/**
  * Deconstructs an ECDSA/ECDH P-256 private key into scalar shares.
  *
  * The caller should allocate space for both scalar shares.

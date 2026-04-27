@@ -17,7 +17,7 @@ extern "C" {
 /**
  * This is a boolean type for use in hardened contexts.
  *
- * The intention is that this is used instead of `<stdbool.h>`'s #bool, where a
+ * The intention is that this is used instead of `<stdbool.h>`'s `bool`, where a
  * higher hamming distance is required between the truthy and the falsey value.
  *
  * The values below were chosen at random, with some specific restrictions. They
@@ -27,11 +27,11 @@ extern "C" {
  */
 typedef enum hardened_bool {
   /**
-   * The truthy value, expected to be used like #true.
+   * The truthy value, expected to be used like `true`.
    */
   kHardenedBoolTrue = 0x739,
   /**
-   * The falsey value, expected to be used like #false.
+   * The falsey value, expected to be used like `false`.
    */
   kHardenedBoolFalse = 0x1d4,
 } hardened_bool_t;

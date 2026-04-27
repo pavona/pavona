@@ -90,7 +90,7 @@ status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
  * The caller must ensure that enough space is allocated at `plaintext` to hold
  * the largest possible plaintext, which is (as described in IETF RFC 8017,
  * section 7.1.2):
- *   <length of modulus> - 2 * <length of hash function> - 2 bytes
+ *   `<length of modulus> - 2 * <length of hash function> - 2` bytes
  *
  * For example, if the hash function here is SHA-512 (64-byte digest), the
  * maximum plaintext byte-length would be:

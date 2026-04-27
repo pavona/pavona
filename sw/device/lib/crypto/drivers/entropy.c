@@ -722,7 +722,9 @@ static void entropy_src_stop(void) {
  * issues, it is recommended to first disable EDN, then CSRNG and entropy_src
  * last.
  *
- * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
+ * See [module enable and
+ * disable](hw/ip/csrng/doc/_index.md#module-enable-and-disable) for more
+ * details.
  */
 static void entropy_complex_stop_all(void) {
   edn_stop(edn0_base());

@@ -101,7 +101,7 @@ void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
  * Pads the input with 0s on the right-hand side if needed so that the input
  * size is a multiple of the block size. Given a state representing GHASH(A)
  * and a new input B, this function will return a state representing:
- *   GHASH(A || B || <padding for B>)
+ *   `GHASH(A || B || <padding for B>)`
  *
  * Initialize the context object with `ghash_init_subkey` and `ghash_init`
  * before calling this function.
@@ -118,7 +118,7 @@ void ghash_update(ghash_context_t *ctx, size_t input_len, const uint8_t *input);
  * Pads the input with 0s on the right-hand side if needed so that the input
  * size is a multiple of the block size. Given a state representing GHASH(A)
  * and a new input B, this function will return a state representing:
- *   GHASH(A || B || <padding for B>)
+ *   `GHASH(A || B || <padding for B>)`
  *
  * Initialize the context object with `ghash_init_subkey` and `ghash_init`
  * before calling this function.
