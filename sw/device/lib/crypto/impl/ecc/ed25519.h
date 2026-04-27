@@ -99,6 +99,9 @@ enum {
  * A type that holds an Ed25519 private key.
  */
 typedef struct ed25519_secret {
+  /**
+   * Encoded secret.
+   */
   uint32_t data[kEd25519SecretWords];
 } ed25519_secret_t;
 
@@ -109,6 +112,9 @@ typedef struct ed25519_secret {
  * section 5.2.2.
  */
 typedef struct ed25519_point {
+  /**
+   * Encoded point.
+   */
   uint32_t data[kEd25519SecretWords];
 } ed25519_point_t;
 

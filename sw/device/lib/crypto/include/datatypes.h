@@ -109,9 +109,13 @@ typedef uint32_t otcrypto_session_token_t;
  * crypto library will throw an error if `len` doesn't match expectations.
  */
 typedef struct otcrypto_byte_buf {
-  // Pointer to the data.
+  /**
+   * Pointer to the data.
+   */
   uint8_t *data;
-  // Length of the data in bytes.
+  /**
+   * Length of the data in bytes.
+   */
   size_t len;
 } otcrypto_byte_buf_t;
 
@@ -124,9 +128,13 @@ typedef struct otcrypto_byte_buf {
  * otcrypto_byte_buf_t` would still allow data to change.
  */
 typedef struct otcrypto_const_byte_buf {
-  // Pointer to the data.
+  /**
+   * Pointer to the data.
+   */
   const uint8_t *const data;
-  // Length of the data in bytes.
+  /**
+   * Length of the data in bytes.
+   */
   const size_t len;
 } otcrypto_const_byte_buf_t;
 
@@ -138,9 +146,13 @@ typedef struct otcrypto_const_byte_buf {
  * crypto library will throw an error if `len` doesn't match expectations.
  */
 typedef struct otcrypto_word32_buf {
-  // Pointer to the data.
+  /**
+   * Pointer to the data.
+   */
   uint32_t *data;
-  // Length of the data in words.
+  /**
+   * Length of the data in words.
+   */
   size_t len;
 } otcrypto_word32_buf_t;
 
@@ -153,9 +165,13 @@ typedef struct otcrypto_word32_buf {
  * otcrypto_word32_buf_t` would still allow data to change.
  */
 typedef struct otcrypto_const_word32_buf {
-  // Pointer to the data.
+  /**
+   * Pointer to the data.
+   */
   const uint32_t *const data;
-  // Length of the data in words.
+  /**
+   * Length of the data in words.
+   */
   const size_t len;
 } otcrypto_const_word32_buf_t;
 
@@ -491,19 +507,32 @@ typedef enum otcrypto_lib_version {
  * Struct to represent the configuration of a blinded key.
  */
 typedef struct otcrypto_key_config {
-  // Crypto library version for this key.
+  /**
+   * Crypto library version for this key.
+   */
   otcrypto_lib_version_t version;
-  // Mode for which the key usage is intended.
+  /**
+   * Mode for which the key usage is intended.
+   */
   otcrypto_key_mode_t key_mode;
-  // Length in bytes of the unblinded form of this key.
+  /**
+   * Length in bytes of the unblinded form of this key.
+   */
   uint32_t key_length;
-  // Whether the hardware key manager should produce this key.
-  // If this is set to `true`, the keyblob must be exactly 8 words long, where
-  // the first word is the version and the remaining 7 words are the salt.
+  /**
+   * Whether the hardware key manager should produce this key.
+   *
+   * If this is set to `true`, the keyblob must be exactly 8 words long, where
+   * the first word is the version and the remaining 7 words are the salt.
+   */
   hardened_bool_t hw_backed;
-  // Whether the key can be exported (always false if `hw_backed` is true).
+  /**
+   * Whether the key can be exported (always false if `hw_backed` is true).
+   */
   hardened_bool_t exportable;
-  // Key security level.
+  /**
+   * Key security level.
+   */
   otcrypto_key_security_level_t security_level;
 } otcrypto_key_config_t;
 
@@ -511,13 +540,21 @@ typedef struct otcrypto_key_config {
  * Struct to handle unmasked key type.
  */
 typedef struct otcrypto_unblinded_key {
-  // Mode for which the key usage is intended.
+  /**
+   * Mode for which the key usage is intended.
+   */
   otcrypto_key_mode_t key_mode;
-  // Key length in bytes.
+  /**
+   * Key length in bytes.
+   */
   uint32_t key_length;
-  // Implementation specific, storage provided by caller.
+  /**
+   * Implementation specific, storage provided by caller.
+   */
   uint32_t *key;
-  // Implementation specific, checksum for this struct.
+  /**
+   * Implementation specific, checksum for this struct.
+   */
   uint32_t checksum;
 } otcrypto_unblinded_key_t;
 
@@ -525,13 +562,21 @@ typedef struct otcrypto_unblinded_key {
  * Struct to handle masked key type.
  */
 typedef struct otcrypto_blinded_key {
-  // Key configuration information.
+  /**
+   * Key configuration information.
+   */
   const otcrypto_key_config_t config;
-  // Length of blinded key material in bytes.
+  /**
+   * Length of blinded key material in bytes.
+   */
   const uint32_t keyblob_length;
-  // Implementation specific, storage provided by caller.
+  /**
+   * Implementation specific, storage provided by caller.
+   */
   uint32_t *keyblob;
-  // Implementation specific, checksum for this struct.
+  /**
+   * Implementation specific, checksum for this struct.
+   */
   uint32_t checksum;
 } otcrypto_blinded_key_t;
 
@@ -569,11 +614,17 @@ typedef enum otcrypto_hash_mode {
  * Container for a hash digest.
  */
 typedef struct otcrypto_hash_digest {
-  // Digest type.
+  /**
+   * Digest type.
+   */
   otcrypto_hash_mode_t mode;
-  // Digest data.
+  /**
+   * Digest data.
+   */
   uint32_t *data;
-  // Digest length in 32-bit words.
+  /**
+   * Digest length in 32-bit words.
+   */
   size_t len;
 } otcrypto_hash_digest_t;
 

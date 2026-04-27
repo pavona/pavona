@@ -27,9 +27,15 @@ enum {
  * A type that holds a single cipher block.
  */
 typedef struct ghash_block {
+  /**
+   * Block data.
+   */
   uint32_t data[kGhashBlockNumWords];
 } ghash_block_t;
 
+/**
+ * GHASH state, including the precomputed hash subkey product table.
+ */
 typedef struct ghash_context {
   /**
    * Precomputed product table for the hash subkey.

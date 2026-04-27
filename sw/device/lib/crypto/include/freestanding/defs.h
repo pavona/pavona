@@ -21,6 +21,9 @@ extern "C" {
  *   otcrypto is exported out of the OpenTitan repository.
  */
 typedef struct status {
+  /**
+   * Status value.
+   */
   int32_t value;
 } status_t;
 

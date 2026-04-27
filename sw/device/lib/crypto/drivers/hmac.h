@@ -74,19 +74,42 @@ typedef struct hmac_key {
  * A context struct maintained for streaming operations.
  */
 typedef struct hmac_ctx {
-  // A copy of `CFG` register used during resumption.
+  /**
+   * A copy of `CFG` register used during resumption.
+   */
   uint32_t cfg_reg;
-  // A copy of `KEY` to be used during start or resumption.
+  /**
+   * A copy of `KEY` to be used during start or resumption.
+   */
   hmac_key_t key;
-  // The internal (message) block size of SHA-2 for this operation.
+  /**
+   * The internal (message) block size of SHA-2 for this operation, in 32-bit
+   * words.
+   */
   size_t msg_block_wordlen;
+  /**
+   * The digest size for this operation, in 32-bit words.
+   */
   size_t digest_wordlen;
-  // The following fields are saved and restored during streaming.
+  /**
+   * Saved hash state, restored during streaming.
+   */
   uint32_t H[kHmacMaxDigestWords];
+  /**
+   * Lower 32 bits of the saved processed-message length.
+   */
   uint32_t lower;
+  /**
+   * Upper 32 bits of the saved processed-message length.
+   */
   uint32_t upper;
+  /**
+   * Buffer holding any leftover message bytes from the last update.
+   */
   uint32_t partial_block[kHmacMaxBlockWords];
-  // The number of valid bytes in `partial_block`.
+  /**
+   * The number of valid bytes in `partial_block`.
+   */
   size_t partial_block_bytelen;
 } hmac_ctx_t;
 

@@ -96,7 +96,13 @@ typedef struct p256_point {
  * The signature consists of two integers r and s, computed modulo n.
  */
 typedef struct p256_ecdsa_signature_t {
+  /**
+   * First component of the ECDSA signature (r).
+   */
   uint32_t r[kP256ScalarWords];
+  /**
+   * Second component of the ECDSA signature (s).
+   */
   uint32_t s[kP256ScalarWords];
 } p256_ecdsa_signature_t;
 
@@ -106,7 +112,13 @@ typedef struct p256_ecdsa_signature_t {
  * The key is boolean-masked (XOR of the two shares).
  */
 typedef struct p256_ecdh_shared_key {
+  /**
+   * First share of the shared secret.
+   */
   uint32_t share0[kP256CoordWords];
+  /**
+   * Second share of the shared secret.
+   */
   uint32_t share1[kP256CoordWords];
 } p256_ecdh_shared_key_t;
 

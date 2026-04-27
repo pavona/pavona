@@ -32,6 +32,9 @@ enum {
  * A type to hold message blocks.
  */
 typedef struct sha512_message_block {
+  /**
+   * Block data.
+   */
   uint32_t data[kSha512MessageBlockWords];
 } sha512_message_block_t;
 

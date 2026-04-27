@@ -11,11 +11,22 @@
 
 #include "mldsa/src/sys.h"
 
-// Bump allocator context
+/**
+ * Bump allocator context.
+ */
 typedef struct {
-  uint32_t *base;       // Base pointer to start of buffer
-  size_t size_words;    // Total size of buffer (in words)
-  size_t offset_words;  // Current offset into buffer (in words)
+  /**
+   * Base pointer to start of buffer.
+   */
+  uint32_t *base;
+  /**
+   * Total size of buffer (in words).
+   */
+  size_t size_words;
+  /**
+   * Current offset into buffer (in words).
+   */
+  size_t offset_words;
 } mld_alloc_ctx_t;
 
 /**

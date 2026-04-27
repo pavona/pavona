@@ -47,7 +47,13 @@ typedef struct keymgr_diversification {
  * The output key material is 256 bits, generated in two shares.
  */
 typedef struct keymgr_output {
+  /**
+   * First share of the generated key.
+   */
   uint32_t share0[kKeymgrOutputShareNumWords];
+  /**
+   * Second share of the generated key.
+   */
   uint32_t share1[kKeymgrOutputShareNumWords];
 } keymgr_output_t;
 

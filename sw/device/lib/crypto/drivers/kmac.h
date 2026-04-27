@@ -48,12 +48,23 @@ enum {
  * Simplified key struct to pass blinded key internally.
  */
 typedef struct kmac_blinded_key {
+  /**
+   * First share of the key.
+   */
   uint32_t *share0;
+  /**
+   * Second share of the key.
+   */
   uint32_t *share1;
-  // The length of single share (in bytes)
+  /**
+   * The length of single share (in bytes).
+   */
   size_t len;
-  // Whether the key should be provided by keymgr through sideload port.
-  // If `hw_backed` is true, `share0/1` pointers and `len` are ignored.
+  /**
+   * Whether the key should be provided by keymgr through sideload port.
+   *
+   * If `hw_backed` is true, `share0/1` pointers and `len` are ignored.
+   */
   hardened_bool_t hw_backed;
 } kmac_blinded_key_t;
 

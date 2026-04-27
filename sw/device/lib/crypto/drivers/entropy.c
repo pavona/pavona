@@ -85,6 +85,9 @@ typedef struct entropy_csrng_cmd {
    * Mapped to flag0 in the hardware command interface.
    */
   hardened_bool_t disable_trng_input;
+  /**
+   * Seed material for this command, or NULL if none.
+   */
   const entropy_seed_material_t *seed_material;
   /**
    * Generate length. Specified as number of 128bit blocks.

@@ -26,6 +26,9 @@ enum {
  * An AES block, which may represent plaintext or ciphertext.
  */
 typedef struct aes_block {
+  /**
+   * Block data.
+   */
   uint32_t data[kAesBlockNumWords];
 } aes_block_t;
 

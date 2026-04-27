@@ -44,6 +44,9 @@ enum {
  * and intermediate values.
  */
 typedef struct rsa_2048_int_t {
+  /**
+   * Integer value.
+   */
   uint32_t data[kRsa2048NumWords];
 } rsa_2048_int_t;
 
@@ -54,6 +57,9 @@ typedef struct rsa_2048_int_t {
  * and intermediate values.
  */
 typedef struct rsa_3072_int_t {
+  /**
+   * Integer value.
+   */
   uint32_t data[kRsa3072NumWords];
 } rsa_3072_int_t;
 
@@ -64,6 +70,9 @@ typedef struct rsa_3072_int_t {
  * and intermediate values.
  */
 typedef struct rsa_4096_int_t {
+  /**
+   * Integer value.
+   */
   uint32_t data[kRsa4096NumWords];
 } rsa_4096_int_t;
 
@@ -73,7 +82,13 @@ typedef struct rsa_4096_int_t {
  * The public key consists of a 2048-bit modulus n and a public exponent e.
  */
 typedef struct rsa_2048_public_key_t {
+  /**
+   * Modulus.
+   */
   rsa_2048_int_t n;
+  /**
+   * Public exponent.
+   */
   uint32_t e;
 } rsa_2048_public_key_t;
 
@@ -83,7 +98,13 @@ typedef struct rsa_2048_public_key_t {
  * The public key consists of a 3072-bit modulus n and a public exponent e.
  */
 typedef struct rsa_3072_public_key_t {
+  /**
+   * Modulus.
+   */
   rsa_3072_int_t n;
+  /**
+   * Public exponent.
+   */
   uint32_t e;
 } rsa_3072_public_key_t;
 
@@ -93,7 +114,13 @@ typedef struct rsa_3072_public_key_t {
  * The public key consists of a 4096-bit modulus n and a public exponent e.
  */
 typedef struct rsa_4096_public_key_t {
+  /**
+   * Modulus.
+   */
   rsa_4096_int_t n;
+  /**
+   * Public exponent.
+   */
   uint32_t e;
 } rsa_4096_public_key_t;
 
@@ -105,6 +132,9 @@ typedef struct rsa_4096_public_key_t {
  * and intermediate values.
  */
 typedef struct rsa_2048_short_t {
+  /**
+   * Integer value.
+   */
   uint32_t data[kRsa2048NumWords / 2];
 } rsa_2048_short_t;
 
@@ -116,6 +146,9 @@ typedef struct rsa_2048_short_t {
  * and intermediate values.
  */
 typedef struct rsa_3072_short_t {
+  /**
+   * Integer value.
+   */
   uint32_t data[kRsa3072NumWords / 2];
 } rsa_3072_short_t;
 
@@ -127,6 +160,9 @@ typedef struct rsa_3072_short_t {
  * and intermediate values.
  */
 typedef struct rsa_4096_short_t {
+  /**
+   * Integer value.
+   */
   uint32_t data[kRsa4096NumWords / 2];
 } rsa_4096_short_t;
 
@@ -139,10 +175,25 @@ typedef struct rsa_4096_short_t {
  * inverse of q mod p.
  */
 typedef struct rsa_2048_private_key_t {
+  /**
+   * First cofactor of the modulus (p).
+   */
   rsa_2048_short_t p;
+  /**
+   * Second cofactor of the modulus (q).
+   */
   rsa_2048_short_t q;
+  /**
+   * First CRT component of the private exponent (d mod (p-1)).
+   */
   rsa_2048_short_t d_p;
+  /**
+   * Second CRT component of the private exponent (d mod (q-1)).
+   */
   rsa_2048_short_t d_q;
+  /**
+   * CRT conversion factor (q^-1 mod p).
+   */
   rsa_2048_short_t i_q;
 } rsa_2048_private_key_t;
 
@@ -155,10 +206,25 @@ typedef struct rsa_2048_private_key_t {
  * inverse of q mod p.
  */
 typedef struct rsa_3072_private_key_t {
+  /**
+   * First cofactor of the modulus (p).
+   */
   rsa_3072_short_t p;
+  /**
+   * Second cofactor of the modulus (q).
+   */
   rsa_3072_short_t q;
+  /**
+   * First CRT component of the private exponent (d mod (p-1)).
+   */
   rsa_3072_short_t d_p;
+  /**
+   * Second CRT component of the private exponent (d mod (q-1)).
+   */
   rsa_3072_short_t d_q;
+  /**
+   * CRT conversion factor (q^-1 mod p).
+   */
   rsa_3072_short_t i_q;
 } rsa_3072_private_key_t;
 
@@ -171,10 +237,25 @@ typedef struct rsa_3072_private_key_t {
  * inverse of q mod p.
  */
 typedef struct rsa_4096_private_key_t {
+  /**
+   * First cofactor of the modulus (p).
+   */
   rsa_4096_short_t p;
+  /**
+   * Second cofactor of the modulus (q).
+   */
   rsa_4096_short_t q;
+  /**
+   * First CRT component of the private exponent (d mod (p-1)).
+   */
   rsa_4096_short_t d_p;
+  /**
+   * Second CRT component of the private exponent (d mod (q-1)).
+   */
   rsa_4096_short_t d_q;
+  /**
+   * CRT conversion factor (q^-1 mod p).
+   */
   rsa_4096_short_t i_q;
 } rsa_4096_private_key_t;
 
