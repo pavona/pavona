@@ -1062,6 +1062,36 @@ Binning together the two underflows unless it makes a difference to the possible
 - Set both increments and have both a bad WDR index and a bad address.
   Tracked as `inc_both_and_bad_wdr_and_bad_addr_cross`.
 
+## BN.LD
+
+This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
+The instruction-specific covergroup is `insn_bn_xd_cg` (shared with `BN.SD`).
+
+- Load from a valid address, where `grs` is above the top of memory and a negative `offset` brings the load address in range.
+  Tracked as `oob_base_neg_off_cross`.
+- Load from a valid address, where `grs` is negative and a positive `offset` brings the load address in range.
+  Tracked as `neg_base_pos_off_cross`.
+- Load from address zero
+  Tracked as `addr0_cross`.
+- Load from the top word of memory
+  Tracked as `top_addr_cross`.
+- Load from an invalid address (aligned but above the top of memory)
+  Tracked as `oob_addr_cross`.
+- Load from a calculated negative invalid address (aligned but unsigned address exceeds the top of memory)
+  Tracked as `oob_addr_neg_cross`.
+- Misaligned address tracking.
+  Track loads from addresses that are in range for the size of the memory.
+  We track all possible alignments of the sum as `addr_align_cross`.
+  The reason for not tracking offset and register value misalignments separately is because the offset would always be shifted by 5 bits, which makes it always aligned.
+- See `wrd` greater than 31, giving an illegal instruction error
+  Tracked as `bigb_cross`.
+- Cross the three types of GPR for `grs` with `grs_inc`
+  Tracked in `enc_bnxid_cg` as `grs1_inc1_cross`.
+
+It is possible for BN.LD to trigger multiple errors in a single cycle.
+The possible errors are: underflow call stack (for `grs`) or bad data address.
+If we underflow the call stack for `grs`, there's no architectural address, so that can't happen at the same time as a bad data address.
+
 ## BN.SID
 
 This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
@@ -1117,6 +1147,34 @@ Binning together the two underflows unless it makes a difference to the possible
   Tracked as `underflow_and_inc_both_and_bad_addr_cross`.
 - Set both increments and have both a bad WDR index and a bad address.
   Tracked as `inc_both_and_bad_wdr_and_bad_addr_cross`.
+
+## BN.SD
+
+This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
+The instruction-specific covergroup is `insn_bn_xd_cg` (shared with `BN.LD`).
+
+- Store to a valid address, where `grs` is above the top of memory and a negative `offset` brings the load address in range.
+  Tracked as `oob_base_neg_off_cross`.
+- Store to a valid address, where `grs` is negative and a positive `offset` brings the load address in range.
+  Tracked as `neg_base_pos_off_cross`.
+- Store to address zero
+  Tracked as `addr0_cross`.
+- Store to the top word of memory
+  Tracked as `top_addr_cross`.
+- Store to an invalid address (aligned but above the top of memory)
+  Tracked as `oob_addr_cross`.
+- Store to a calculated negative invalid address (aligned but unsigned address exceeds the top of memory)
+  Tracked as `oob_addr_neg_cross`.
+- Misaligned address tracking.
+  Track stores to addresses that are in range for the size of the memory.
+  We track all possible alignments of the sum as `addr_align_cross`.
+  The reason for not tracking offset and register value misalignments separately is because the offset would always be shifted by 5 bits, which makes it always aligned.
+- Cross the three types of GPR for `grs` with `grs_inc`
+  Tracked in `enc_bnxid_cg` as `grs1_inc1_cross`.
+
+It is possible for BN.LD to trigger multiple errors in a single cycle.
+The possible errors are: underflow call stack (for `grs`) or bad data address.
+If we underflow the call stack for `grs`, there's no architectural address, so that can't happen at the same time as a bad data address.
 
 ## BN.MOV
 

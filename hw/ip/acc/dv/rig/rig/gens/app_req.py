@@ -132,7 +132,6 @@ class KmacAppReqInsn(SnippetGen):
             self._msg_size = random.randint(1, 512)
         else:
             self._msg_size = random.randint(2048, 8192)
-            print(f"[DEBUG] LARGE MESSAGE: {self._msg_size}")
 
         while True:
             insn_list = self._gen(model, program)

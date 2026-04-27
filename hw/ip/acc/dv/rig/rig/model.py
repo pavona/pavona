@@ -905,6 +905,74 @@ class Model:
         elif grs2_inc:
             self._inc_gpr(grs2, grs2_val, 1)
 
+    def update_for_bnld(self, prog_insn: ProgInsn) -> None:
+        '''Update model state after an BN.LD'''
+        insn = prog_insn.insn
+        op_vals = prog_insn.operands
+        assert insn.mnemonic == 'bn.ld'
+        assert len(insn.operands) == len(op_vals)
+
+        wrd_op, grs_op, offset_op, grs_inc_op = insn.operands
+        exp_shape = (
+            # wrd
+            isinstance(wrd_op.op_type, RegOperandType) and
+            wrd_op.op_type.reg_type == 'wdr' and
+            wrd_op.op_type.is_dest() and
+            # grs
+            isinstance(grs_op.op_type, RegOperandType) and
+            grs_op.op_type.reg_type == 'gpr' and
+            not grs_op.op_type.is_dest() and
+            # offset
+            isinstance(offset_op.op_type, ImmOperandType) and
+            offset_op.op_type.signed and
+            # grs_inc_op
+            isinstance(grs_inc_op.op_type, OptionOperandType)
+        )
+        if not exp_shape:
+            raise RuntimeError('Unexpected shape for bn.ld')
+
+        grd, grs, _offset, grs_inc = op_vals
+        grs_val = self.get_reg('gpr', grs)
+
+        self._generic_update_for_insn(prog_insn)
+
+        if grs_inc:
+            self._inc_gpr(grs, grs_val, 32)
+
+    def update_for_bnsd(self, prog_insn: ProgInsn) -> None:
+        '''Update model state after an BN.SD'''
+        insn = prog_insn.insn
+        op_vals = prog_insn.operands
+        assert insn.mnemonic == 'bn.sd'
+        assert len(insn.operands) == len(op_vals)
+
+        grs_op, wrs_op, offset_op, grs_inc_op = insn.operands
+        exp_shape = (
+            # grs
+            isinstance(grs_op.op_type, RegOperandType) and
+            grs_op.op_type.reg_type == 'gpr' and
+            not grs_op.op_type.is_dest() and
+            # wrs_op
+            isinstance(wrs_op.op_type, RegOperandType) and
+            wrs_op.op_type.reg_type == 'wdr' and
+            not wrs_op.op_type.is_dest() and
+            # offset
+            isinstance(offset_op.op_type, ImmOperandType) and
+            offset_op.op_type.signed and
+            # grs_inc_op
+            isinstance(grs_inc_op.op_type, OptionOperandType)
+        )
+        if not exp_shape:
+            raise RuntimeError('Unexpected shape for bn.sid')
+
+        grs, wrs, _offset, grs_inc = op_vals
+        grs_val = self.get_reg('gpr', grs)
+
+        self._generic_update_for_insn(prog_insn)
+
+        if grs_inc:
+            self._inc_gpr(grs, grs_val, 32)
+
     def update_for_bnmovr(self, prog_insn: ProgInsn) -> None:
         '''Update model state after an BN.MOVR'''
         insn = prog_insn.insn
@@ -1080,7 +1148,9 @@ class Model:
             'lui': self.update_for_lui,
             'addi': self.update_for_addi,
             'bn.lid': self.update_for_bnlid,
+            'bn.ld': self.update_for_bnld,
             'bn.sid': self.update_for_bnsid,
+            'bn.sd': self.update_for_bnsd,
             'bn.movr': self.update_for_bnmovr,
             'bn.xor': self.update_for_bnxor,
             'bn.not': self.update_for_bnnot

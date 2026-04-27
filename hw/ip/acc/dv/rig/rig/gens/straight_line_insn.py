@@ -268,6 +268,19 @@ class StraightLineInsn(SnippetGen):
         wt01 = 0.0 if model.is_const('gpr', idx1) else 1.0
         return random.choices(options, weights=[1.0, wt10, wt01])[0]
 
+    def _pick_inc_grs(self,
+                       idx0: int,
+                       model: Model) -> Tuple[int, int]:
+        '''Pick a value in 0, 1
+
+        This is appropriate to use as the increment flag for
+        BN.LD/BN.SD. idx0 is the index of the GPR in question.
+
+        '''
+        options = [0, 1]
+        wt1 = 0.0 if model.is_const('gpr', idx0) else 1.0
+        return random.choices(options, weights=[1.0, wt1])[0]
+
     def _fill_bn_xid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Fill out a BN.LID or BN.SID instruction'''
         if insn.mnemonic == 'bn.lid':
@@ -422,6 +435,7 @@ class StraightLineInsn(SnippetGen):
         # out the list of different known values we can give it. At the moment,
         # we only support the case when there is at most one non-register
         # operand, which must be an immediate. Grab that operand's name too.
+        # BN.LD/BN.SD are included but with additional generation of the grs_inc operand.
         lsu_imm_op = None
         lsu_reg_ops = []
         lsu_reg_types = set()
@@ -530,6 +544,18 @@ class StraightLineInsn(SnippetGen):
             if reg_val is not None:
                 enc_vals.append(reg_val)
                 continue
+
+            # Is it a grs_inc for bn.ld or bn.sd
+            if operand.name == 'grs_inc':
+                if insn.mnemonic == 'bn.ld':
+                    enc_val = self._pick_inc_grs(enc_vals[1], model)
+                    enc_vals.append(enc_val)
+                    continue
+                else:
+                    assert insn.mnemonic == 'bn.sd'
+                    enc_val = self._pick_inc_grs(enc_vals[0], model)
+                    enc_vals.append(enc_val)
+                    continue
 
             # Otherwise it's some other operand. Pick any old value.
             val = model.pick_operand_value(operand.op_type)

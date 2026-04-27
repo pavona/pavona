@@ -65,6 +65,8 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
   `DEF_MNEM(mnem_bn_cmpb,       "bn.cmpb");
   `DEF_MNEM(mnem_bn_lid,        "bn.lid");
   `DEF_MNEM(mnem_bn_sid,        "bn.sid");
+  `DEF_MNEM(mnem_bn_ld,         "bn.ld");
+  `DEF_MNEM(mnem_bn_sd,         "bn.sd");
   `DEF_MNEM(mnem_bn_mov,        "bn.mov");
   `DEF_MNEM(mnem_bn_movr,       "bn.movr");
   `DEF_MNEM(mnem_bn_wsrr,       "bn.wsrr");
@@ -113,6 +115,7 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
     `DEF_MNEM_BIN(mnem_bn_sel);                                        \
     `DEF_MNEM_BIN(mnem_bn_cmp); `DEF_MNEM_BIN(mnem_bn_cmpb);           \
     `DEF_MNEM_BIN(mnem_bn_lid); `DEF_MNEM_BIN(mnem_bn_sid);            \
+    `DEF_MNEM_BIN(mnem_bn_ld); `DEF_MNEM_BIN(mnem_bn_sd);              \
     `DEF_MNEM_BIN(mnem_bn_mov); `DEF_MNEM_BIN(mnem_bn_movr);           \
     `DEF_MNEM_BIN(mnem_bn_wsrr); `DEF_MNEM_BIN(mnem_bn_wsrw);
 
@@ -1316,6 +1319,8 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_bn_lid);
       `DEF_MNEM_BIN(mnem_bn_sid);
+      `DEF_MNEM_BIN(mnem_bn_ld);
+      `DEF_MNEM_BIN(mnem_bn_sd);
       illegal_bins other = default;
     }
 
@@ -1323,7 +1328,14 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
     inc1_cp: coverpoint insn_data[8];
     off_cp: coverpoint {insn_data[31:25], insn_data[11:9]} { bins extremes[] = {'0, '1}; }
     // See all possible combinations of incd and inc1 (including the illegal one where both are set)
-    `DEF_MNEM_CROSS2(incd, inc1)
+    // Only bn.lid and bn.sid use incd_cp
+    inc_indirect_cross: cross mnemonic_cp, incd_cp, inc1_cp {
+      bins direct_xd = binsof(mnemonic_cp.mnem_bn_ld) || binsof(mnemonic_cp.mnem_bn_sd);
+    }
+    // Cross for direct memory load/store with constant incd_cp
+    inc_direct_cross: cross mnemonic_cp, inc1_cp {
+      bins indirect_xd = binsof(mnemonic_cp.mnem_bn_lid) || binsof(mnemonic_cp.mnem_bn_sid);
+    }
     `DEF_MNEM_CROSS(off)
 
     `DEF_GPR_CP(grs1_cp, 19:15)
@@ -1340,7 +1352,9 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
     // Cross the three types of GPR for GRS1 with grs1_inc
     `DEF_MNEM_CROSS2(grs1, inc1)
     // Cross the three types of GPR for GRD/GRS2 with grd_inc/grs2_inc
-    `DEF_MNEM_CROSS2(grx, incd)
+    grx_incd_indirect_cross: cross mnemonic_cp, grx_cp, incd_cp {
+      bins direct_xd = binsof(mnemonic_cp.mnem_bn_ld) || binsof(mnemonic_cp.mnem_bn_sd);
+    }
   endgroup
 
   covergroup enc_b_cg
@@ -2135,7 +2149,7 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
                  ({1'b0, wdr_operand_a} - {1'b0, wdr_operand_b} + {1'b0, mod} >= {1'b1, 256'b0}))
   endgroup
 
-  // Used by BN.LID and BN.SID
+  // Used by BN.LID/LD and BN.SID/SD
   covergroup insn_bn_xid_cg
     with function sample(mnem_str_t          mnemonic,
                          logic [14:0]        offset,
@@ -2258,6 +2272,65 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
                  (operand_b >= 32) &&
                  ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
     `DEF_MNEM_CROSS(inc_both_and_bad_wdr_and_bad_addr)
+  endgroup
+
+  covergroup insn_bn_xd_cg
+    with function sample(mnem_str_t          mnemonic,
+                         logic [14:0]        offset,
+                         logic [31:0]        operand_a,
+                         logic [31:0]        operand_b,
+                         logic signed [31:0] addr,
+                         logic [4:0]         grs1,
+                         logic [4:0]         grx2,
+                         logic               call_stack_underflow);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_bn_ld);
+      `DEF_MNEM_BIN(mnem_bn_sd);
+      illegal_bins other = default;
+    }
+
+    // Access a valid address, where grs1 is above the top of memory and a negative offset brings
+    // the address in range.
+    `DEF_SEEN_CP(oob_base_neg_off_cp,
+                 ($signed(operand_a) > DmemSizeByte) &&
+                 ($signed(offset) < 0) &&
+                 (0 <= addr) && (addr + 32 <= DmemSizeByte) && ((addr & 32'd31) == 0))
+    `DEF_MNEM_CROSS(oob_base_neg_off)
+
+    // Access a valid address, where grs1 is negative and a positive offset brings the address in
+    // range.
+    `DEF_SEEN_CP(neg_base_pos_off_cp,
+                 ($signed(operand_a) < 0) &&
+                 ($signed(offset) > 0) &&
+                 (0 <= addr) && (addr + 32 <= DmemSizeByte) && ((addr & 32'd31) == 0))
+    `DEF_MNEM_CROSS(neg_base_pos_off)
+
+    // Access address zero
+    `DEF_SEEN_CP(addr0_cp, addr == 0)
+    `DEF_MNEM_CROSS(addr0)
+
+    // Access the top word of memory
+    `DEF_SEEN_CP(top_addr_cp, addr == DmemSizeByte - 32)
+    `DEF_MNEM_CROSS(top_addr)
+
+    // Access an invalid address (aligned but above the top of memory)
+    `DEF_SEEN_CP(oob_addr_cp,
+                 (addr > DmemSizeByte - 32) && ((addr & 32'd31) == 0))
+    `DEF_MNEM_CROSS(oob_addr)
+
+    // Load from a negative invalid address (aligned but unsigned address exceeds the top of memory)
+    `DEF_SEEN_CP(oob_addr_neg_cp,
+                 (addr < 0) && ((addr & 32'h3) == 0))
+    `DEF_MNEM_CROSS(oob_addr_neg)
+
+    // Misaligned address tracking (see DV document for why we have these exact crosses)
+    addr_align_cp: coverpoint operand_a[4:0];
+
+    addr_align_cross:
+      cross mnemonic_cp, addr_align_cp
+        iff ((0 <= addr) && (addr + 32 <= DmemSizeByte));
+
   endgroup
 
   covergroup insn_bn_movr_cg
@@ -2399,6 +2472,7 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
     insn_bn_subcmpb_cg = new;
     insn_bn_subm_cg = new;
     insn_bn_xid_cg = new;
+    insn_bn_xd_cg = new;
     insn_bn_movr_cg = new;
     insn_bn_wsrr_cg = new;
 
@@ -2451,6 +2525,8 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
     insn_encodings[mnem_bn_cmpb]       = "bnc";
     insn_encodings[mnem_bn_lid]        = "bnxid";
     insn_encodings[mnem_bn_sid]        = "bnxid";
+    insn_encodings[mnem_bn_ld]         = "bnxid";
+    insn_encodings[mnem_bn_sd]         = "bnxid";
     insn_encodings[mnem_bn_mov]        = "bnmov";
     insn_encodings[mnem_bn_movr]       = "bnmovr";
     insn_encodings[mnem_bn_wsrr]       = "wcsr";
@@ -2945,6 +3021,31 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
                               grs1,
                               grx2,
                               local_x1_uflow);
+      end
+      mnem_bn_ld, mnem_bn_sd: begin
+        logic [4:0] grs1 = insn_data[19:15];
+        logic [4:0] grx2 = insn_data[24:20]; // Either GRD or GRS2
+        logic       local_x1_uflow;
+
+        imm15 = {insn_data[11:9], insn_data[31:25], 5'b0};
+        addr = $signed(rtl_item.gpr_operand_a) + $signed(imm15);
+
+        // Compute our own definition of call_stack_underflow. This should match the existing one if
+        // !inc_both. However, when both increments are set the RTL decoder squashes the call stack
+        // update flags so we have to figure them out ourselves.
+        local_x1_uflow = (rtl_item.call_stack_fullness == StackEmpty) && (grs1 == 5'd1);
+        `DV_CHECK_FATAL(local_x1_uflow || !call_stack_underflow)
+        `DV_CHECK_FATAL(call_stack_underflow || !local_x1_uflow)
+
+        insn_bn_xd_cg.sample(mnem,
+                              imm15,
+                              rtl_item.gpr_operand_a,
+                              rtl_item.gpr_operand_b,
+                              addr,
+                              grs1,
+                              grx2,
+                              local_x1_uflow);
+
       end
       mnem_bn_movr: begin
         logic       inc_both = insn_data[9] && insn_data[7];

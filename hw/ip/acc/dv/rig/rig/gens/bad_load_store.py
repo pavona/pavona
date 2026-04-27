@@ -37,8 +37,10 @@ class BadLoadStore(SnippetGen):
         self.sw = self._get_named_insn(insns_file, 'sw')
         self.bnlid = self._get_named_insn(insns_file, 'bn.lid')
         self.bnsid = self._get_named_insn(insns_file, 'bn.sid')
+        self.bnld = self._get_named_insn(insns_file, 'bn.ld')
+        self.bnsd = self._get_named_insn(insns_file, 'bn.sd')
 
-        for insn in [self.sw, self.bnsid, self.lw, self.bnlid]:
+        for insn in [self.sw, self.bnsid, self.bnsd, self.lw, self.bnlid, self.bnld]:
             weight = cfg.insn_weights.get(insn.mnemonic)
             if weight > 0:
                 self.weights.append(weight)
@@ -87,7 +89,7 @@ class BadLoadStore(SnippetGen):
         # Special-case BN load/store instructions by mnemonic. These use
         # complicated indirect addressing, so it's probably more sensible to
         # give them special code.
-        if insn.mnemonic in ['bn.lid', 'bn.sid']:
+        if insn.mnemonic in ['bn.lid', 'bn.ld', 'bn.sid', 'bn.sd']:
             return self._fill_bn_xid(insn, model)
         if insn.mnemonic in ['lw', 'sw']:
             return self._fill_xw(insn, model)
@@ -270,5 +272,19 @@ class BadLoadStore(SnippetGen):
             op_val_grs2 = random.choice(known_regs)[0]
 
             op_val = [op_val_grs1, op_val_grs2, bn_offset_val, 0, 0]
+        
+        elif insn.mnemonic == 'bn.ld':
+            # Pick wrd randomly
+            op_val_wrd = model.pick_operand_value(insn.operands[0].op_type)
+            assert op_val_wrd is not None
+
+            op_val = [op_val_wrd, op_val_grs1, bn_offset_val, 0]
+        
+        elif insn.mnemonic == 'bn.sd':
+            # Pick wrs randomly
+            op_val_wrs = model.pick_operand_value(insn.operands[1].op_type)
+            assert op_val_wrs is not None
+
+            op_val = [op_val_grs1, op_val_wrs, bn_offset_val, 0]
 
         return ProgInsn(insn, op_val, ('dmem', 4096))
