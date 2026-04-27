@@ -41,7 +41,7 @@ enum {
    * Although some parts of the ERR_BITS register are marked reserved, the ACC
    * documentation explicitly guarantees that ERR_BITS is zero for a successful
    * execution:
-   *   hw/ip/acc/doc/theory_of_operation.md#software-execution-design-details
+   *   hw/ip/acc/doc/theory_of_operation.md (Software Execution section)
    */
   kAccErrBitsNoError = 0,
 };
@@ -99,7 +99,7 @@ static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
  * Update a checksum value with a given DMEM write.
  *
  * Calculates the checksum stream according to:
- * hw/ip/acc/doc/theory_of_operation.md#memory-load-integrity
+ * hw/ip/acc/doc/theory_of_operation.md (Memory Load Integrity section)
  *
  * This means each write is a 48b value, where the most significant two bytes
  * indicate the location and the least significant four bytes are the 32-bit
