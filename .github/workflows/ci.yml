@@ -233,7 +233,7 @@ jobs:
     needs: quick_lint
     runs-on:
       group: pavona-basic
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
