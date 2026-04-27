@@ -81,6 +81,8 @@ runs:
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
         echo "${{ inputs.dashboard-upload-key }}" | ssh-add -
+        git config --global user.email "dvsim-bot@pavona.local"
+        git config --global user.name "dvsim bot"
       shell: bash
     - name: Run DVSim
       id: dvsim
@@ -110,7 +112,7 @@ runs:
           -mp $MP \
           -i ${{ inputs.item }} ${{ inputs.extra-dvsim-flags }} \
           ${PUBLISH} ${DASH_REPO} \
-          ${RESEED}
+          ${RESEED} \
           || ! ${{ inputs.require-pass }}
       shell: bash
     - run: 'mkdir -p scratch/'
