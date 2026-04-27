@@ -383,6 +383,7 @@ otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
  * Can be used for both ECDSA and ECDH. If the key is hardware-backed, loads
  * the data from key manager and calls the sideloaded key generation routine.
  *
+ * @param[out] session_token ACC session token for the operation.
  * @param private_key Sideloaded key handle.
  * @return OK or error.
  */
@@ -430,6 +431,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_start(
  * same way as for `otcrypto_ecdh_p384_keygen_async_finalize` and
  * `otcrypto_ecdsa_p384_keygen_async_finalize`.
  *
+ * @param session_token ACC session token for the operation.
  * @param[out] private_key Private key to populate.
  * @param[out] public_key Public key to populate.
  * @return OK or error.

@@ -129,6 +129,9 @@ status_t rsa_modexp_get_result_size(otcrypto_session_token_t session_token,
  * expectations. Reads back the result, and then performs an ACC secure wipe.
  *
  * @param num_words Number of words for the modexp result.
+ * @param min_insn_count Minimum allowed instruction count.
+ * @param max_insn_count Maximum allowed instruction count.
+ * @param session_token ACC session token for the operation.
  * @param[out] result Result of the modexp operation.
  * @return Status of the operation (OK or error).
  */

@@ -119,13 +119,13 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
 /**
  * Applies the specified mode of AES padding to the block.
  *
- * Modifies only positions on and after index `last_block_len` in the
- * `padded_block`; real input may be written to the initial locations either
- * before or after calling this function.
+ * Modifies only positions on and after index `last_block_len` in `block`; real
+ * input may be written to the initial locations either before or after calling
+ * this function.
  *
  * @param padding_mode Padding mode.
  * @param partial_data_len Length of real input in this block (may be 0).
- * @param[out] padded_block Destination padded block.
+ * @param[out] block Destination padded block.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -173,7 +173,8 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
  *
  * @param plaintext_len Length of plaintext in bytes.
  * @param padding Padding mode.
- * @returns Number of AES blocks required.
+ * @param[out] num_blocks Number of AES blocks required.
+ * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 static status_t num_padded_blocks_get(size_t plaintext_len,
@@ -207,10 +208,8 @@ static status_t num_padded_blocks_get(size_t plaintext_len,
  * @param input Input data buffer.
  * @param padding Padding mode.
  * @param index Block index.
- * @param[out] AES block at `index`.
- * @param input_len Length of cipher input in bytes.
- * @param padding Padding mode.
- * @returns Number of AES blocks required.
+ * @param[out] block AES block at `index`.
+ * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 static status_t get_block(otcrypto_const_byte_buf_t input,

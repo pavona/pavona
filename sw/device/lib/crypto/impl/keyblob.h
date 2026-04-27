@@ -101,7 +101,7 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
  * @param keyblob Pointer to the keyblob.
  * @param keyblob_length Length of the keyblob in bytes.
  * @param mode Key mode to use in the diversification.
- * @param[out] Destination key manager diversification struct.
+ * @param[out] diversification Destination key manager diversification struct.
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_buffer_to_keymgr_diversification(
@@ -120,7 +120,7 @@ status_t keyblob_buffer_to_keymgr_diversification(
  * the keyblob is the wrong length, this function will return an error.
  *
  * @param key Blinded key to use.
- * @param[out] Destination key manager diversification struct.
+ * @param[out] diversification Destination key manager diversification struct.
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_to_keymgr_diversification(

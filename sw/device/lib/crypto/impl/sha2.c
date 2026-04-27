@@ -138,7 +138,7 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
  * out-of-bounds writes in the HMAC driver, in case a caller changes the
  * context in between calls.
  *
- * @param ctx HMAC context object.
+ * @param hmac_ctx HMAC context object.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT

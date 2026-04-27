@@ -167,7 +167,7 @@ static size_t get_keccak_rate_words(void) {
  * Returns an error if the key length is not supported.
  *
  * @param key_len The size of the key in bytes.
- * @param[out] reg KEY_LEN register value (pointer cannot be NULL).
+ * @param[out] key_len_reg KEY_LEN register value (pointer cannot be NULL).
  * @return Error code.
  */
 static_assert(KMAC_KEY_LEN_LEN_OFFSET == 0,

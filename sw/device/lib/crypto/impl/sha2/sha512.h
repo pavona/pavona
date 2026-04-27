@@ -174,8 +174,6 @@ status_t sha384_update(sha384_state_t *state, const uint8_t *msg,
  * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param state Hash context object.
- * @param msg Input message
- * @param msg_len Input message length in bytes
  * @param[out] digest Output buffer for digest.
  * @return Result of the operation (OK or error).
  */
@@ -238,8 +236,6 @@ status_t sha512_update(sha512_state_t *state, const uint8_t *msg,
  * Returns OTCRYPTO_ASYNC_INCOMPLETE if ACC is busy.
  *
  * @param state Hash context object.
- * @param msg Input message
- * @param msg_len Input message length in bytes
  * @param[out] digest Output buffer for digest.
  * @return Result of the operation (OK or error).
  */

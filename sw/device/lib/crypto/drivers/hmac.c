@@ -479,8 +479,6 @@ status_t hmac_hmac_sha512(const hmac_key_t *key, const uint8_t *msg,
  * The `msg_block_wordlen` and `digest_wordlen` fields of `ctx` is not set by
  * this operation.
  *
- * @param key Key data for HMAC.
- * @param key_wordlen Length of the key in words.
  * @param digest_len Digest length selector.
  * @param[out] ctx Initialized context object.
  */

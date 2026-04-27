@@ -62,7 +62,7 @@ static const uint8_t kSha3_512DigestIdentifier[] = {
  *
  * @param hash_mode Hash function to use.
  * @param[out] len Byte-length of the DER encoding of the digest.
- * @param OTCRYPTO_BAD_ARGS if the hash function is not valid, otherwise OK.
+ * @return OTCRYPTO_BAD_ARGS if the hash function is not valid, otherwise OK.
  */
 OT_WARN_UNUSED_RESULT
 static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,

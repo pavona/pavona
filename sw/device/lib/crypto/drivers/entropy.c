@@ -957,7 +957,6 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
  *
  * This check simply ensures that the CSRNG is enabled.
  *
- * @param config EDN configuration.
  * @return error on failure.
  */
 OT_WARN_UNUSED_RESULT

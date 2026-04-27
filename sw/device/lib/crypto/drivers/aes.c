@@ -92,6 +92,7 @@ static status_t aes_write_key(aes_key_t key) {
  *
  * @param key AES key.
  * @param encrypt True for encryption, false for decryption.
+ * @param[out] ctrl_reg Computed control register value.
  * @return result, OK or error.
  */
 OT_WARN_UNUSED_RESULT

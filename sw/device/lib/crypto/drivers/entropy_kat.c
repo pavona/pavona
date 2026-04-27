@@ -100,7 +100,6 @@ static void entropy_csrng_internal_state_get(
 /**
  * Checks the CSRNG internal state against `expected` values.
  *
- * @param csrng A CSRNG handle.
  * @param expected Expected CSRNG internal state.
  */
 OT_WARN_UNUSED_RESULT

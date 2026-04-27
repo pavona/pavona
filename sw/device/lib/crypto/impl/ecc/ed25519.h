@@ -175,6 +175,7 @@ status_t ed25519_sign_finalize(uint32_t session_token,
  * @param signature Signature to verify.
  * @param prehashed_message Prehashed (SHA-512) message to sign.
  * @param hash_k Pre-computed scalar value k for verification.
+ * @param public_key Public key to verify against.
  * @param context Context to use for signing.
  * @param context_length Length of the provided context in bytes.
  * @param[out] session_token ACC session token for the operation.

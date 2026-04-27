@@ -185,7 +185,7 @@ status_t p256_public_key_check_start(p256_point_t *public_key,
  * Blocks until ACC is idle.
  *
  * @param session_token ACC session token for the operation.
- * @param[out] reuslt Result of on-curve check.
+ * @param[out] result Result of on-curve check.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
