@@ -71,7 +71,7 @@ typedef enum otcrypto_aes_padding {
  *
  * @param plaintext_len Plaintext data length in bytes.
  * @param aes_padding Padding scheme to be used for the data.
- * @return Size of the padded input or ciphertext.
+ * @param[out] padded_len Size of the padded input or ciphertext.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT

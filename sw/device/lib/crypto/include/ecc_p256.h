@@ -25,7 +25,6 @@ extern "C" {
  * The caller should allocate space for the public key and set the `key` and
  * `key_length` fields accordingly.
  *
- * @param size RSA size parameter.
  * @param x First affine coordinate of public key (x).
  * @param y Second affine coordinate of public key (y).
  * @param[out] public_key Destination public key struct.

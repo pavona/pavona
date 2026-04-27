@@ -58,7 +58,7 @@ otcrypto_status_t otcrypto_drbg_reseed(
  * empty.
  *
  * @param entropy Pointer to the user defined entropy value.
- * @param personalization_string Pointer to personalization bitstring.
+ * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG manual instantiation.
  */
 OT_WARN_UNUSED_RESULT

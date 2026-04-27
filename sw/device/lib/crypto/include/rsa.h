@@ -271,7 +271,7 @@ otcrypto_status_t otcrypto_rsa_private_key_deconstruct(
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
- * @param exponent RSA public exponent (e).
+ * @param e RSA public exponent (e).
  * @param cofactor_share0 First share of the prime cofactor (p or q).
  * @param cofactor_share1 Second share of the prime cofactor (p or q).
  * @param[out] public_key Destination public key struct.
@@ -350,7 +350,7 @@ otcrypto_status_t otcrypto_rsa_verify(
  * slower and more fragile than other encryption methods. Consult an expert
  * before using RSA encryption.
  *
- * @param private_key Pointer to public key struct.
+ * @param public_key Pointer to public key struct.
  * @param hash_mode Hash function to use for OAEP encoding.
  * @param message Message to encrypt.
  * @param label Label for OAEP encoding.
@@ -437,7 +437,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
- * @param exponent RSA public exponent (e).
+ * @param e RSA public exponent (e).
  * @param cofactor_share0 First share of the prime cofactor (p or q).
  * @param cofactor_share1 Second share of the prime cofactor (p or q).
  * @param[out] session_token ACC session token for the operation.
