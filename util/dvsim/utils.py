@@ -364,9 +364,7 @@ def md_results_to_html(title, css_file, md_text, is_primary_cfg=False):
     html_text += "</html>\n"
     html_text = htmc_color_pc_cells(html_text)
     # this function converts css style to inline html style
-    html_text = transform(html_text,
-                          external_styles=css_file,
-                          cssutils_logging_level=log.ERROR)
+    html_text = transform(html_text, external_styles=css_file)
     html_text = html_text.replace(
         'width:80%',
         'box-sizing:border-box; width:80%'
