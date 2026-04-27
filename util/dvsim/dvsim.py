@@ -28,6 +28,7 @@ import shlex
 import subprocess
 import sys
 import textwrap
+import cssutils
 from pathlib import Path
 
 import Launcher
@@ -739,6 +740,7 @@ def main():
     elif args.verbose == "debug":
         log_level = log.DEBUG
     log.basicConfig(format=log_format, level=log_level)
+    cssutils.log.setLevel(log.DEBUG if args.verbose == "debug" else log.CRITICAL)
 
     if not os.path.exists(args.cfg):
         log.fatal("Path to config file %s appears to be invalid.", args.cfg)
