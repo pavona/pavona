@@ -1,0 +1,21 @@
+# Doxygen lint config
+
+PROJECT_NAME           = "cryptolib lint"
+# Limit scope to cryptolib
+INPUT                  = sw/device/lib/crypto
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.c
+OPTIMIZE_OUTPUT_FOR_C  = YES
+JAVADOC_AUTOBRIEF      = YES
+
+# Doxygen requires at least one GENERATE_* to be enabled.
+GENERATE_HTML          = NO
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+XML_OUTPUT             = doxylint-xml
+
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+WARN_AS_ERROR          = FAIL_ON_WARNINGS

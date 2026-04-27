@@ -70,6 +70,11 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
       - name: Broken links
         run: ./ci/scripts/check-links.sh
+      - name: Lint Doxygen comments (cryptolib)
+        run: |
+          ./bazelisk.sh build @doxygen//:doxygen_bin
+          DOXYGEN="$(./bazelisk.sh info execution_root)/$(./bazelisk.sh cquery --output=files @doxygen//:doxygen_bin)"
+          "${DOXYGEN}" util/site/doxygen/Doxyfile.lint
       - name: Lock files
         run: ./ci/scripts/check-lock-files.sh
 
