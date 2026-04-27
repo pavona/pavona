@@ -87,7 +87,7 @@ def render_table(table):
 
 def make_tops_table(outfile_path=DEFAULT_OUTFILE):
     table = [TABLE_COLUMNS, ("---",) * len(TABLE_COLUMNS)]
-    for topdir in REPO_TOP.glob("hw/top_*"):
+    for topdir in sorted(REPO_TOP.glob("hw/top_*")):
         table.append((
             get_design(topdir, outfile_path),
             get_targets(topdir),
