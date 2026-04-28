@@ -54,10 +54,8 @@ enum {
  * blob for the private key should have a length of 2x
  * ceil(kOtCryptoMlkem512SecretKeybytes / sizeof(uint32_t)) = 816 words.
  *
- * @param[out] public_key public key dest, len >=
- * `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key secret key dest, unmasked len
- * `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem512WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
@@ -76,10 +74,8 @@ otcrypto_status_t otcrypto_mlkem512_keygen(
  * ceil(kOtCryptoMlkem512SecretKeybytes / sizeof(uint32_t)) = 816 words.
  *
  * @param randomness seed for keygen, len `kOtcryptoMlkem512KeygenSeedBytes`.
- * @param[out] public_key public key dest, len >=
- * `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key secret key dest, unmasked len
- * `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem512WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
@@ -98,9 +94,9 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
  * `kOtcryptoMlkem512SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param public_key public key for which to generate ciphertext/shared secret.
+ * @param public_key encapsulation key.
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem512CiphertextBytes`.
- * @param[out] shared_secret dest key, len `kOtcryptoMlkem512SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem512SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem512WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
@@ -119,10 +115,10 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate(
  * `kOtcryptoMlkem512SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param public_key public key for which to generate ciphertext/shared secret.
+ * @param public_key encapsulation key.
  * @param randomness seed for encapsulate, len 32 bytes.
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem512CiphertextBytes`.
- * @param[out] shared_secret dest key, len `kOtcryptoMlkem512SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem512SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem512WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
@@ -142,9 +138,9 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
  * `kOtcryptoMlkem512SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param secret_key decapsulation key for which ciphertext was created.
+ * @param secret_key decapsulation key.
  * @param ciphertext buffer of len `kOtcryptoMlkem512CiphertextBytes`.
- * @param[out] shared_secret dest key, len `kOtcryptoMlkem512SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem512SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem512WorkBufferDecapsWords` words).
  * @return Status code (OK or error).
  */
@@ -163,10 +159,8 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
  * blob for the private key should have a length of 2x
  * ceil(kOtCryptoMlkem768SecretKeybytes / sizeof(uint32_t)) = 1200 words.
  *
- * @param[out] public_key public key dest, len >=
- * `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key secret key dest, unmasked len
- * `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem768WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
@@ -185,10 +179,8 @@ otcrypto_status_t otcrypto_mlkem768_keygen(
  * ceil(kOtCryptoMlkem768SecretKeybytes / sizeof(uint32_t)) = 1200 words.
  *
  * @param randomness seed for keygen, len `kOtcryptoMlkem768KeygenSeedBytes`.
- * @param[out] public_key public key dest, len >=
- * `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key secret key dest, unmasked len
- * `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem768WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
@@ -207,9 +199,9 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
  * `kOtcryptoMlkem768SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param public_key public key for which to generate ciphertext/shared secret.
+ * @param public_key encapsulation key.
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem768CiphertextBytes`.
- * @param[out] shared_secret dest key, len `kOtcryptoMlkem768SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem768SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem768WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
@@ -228,10 +220,10 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate(
  * `kOtcryptoMlkem768SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param public_key public key for which to generate ciphertext/shared secret.
+ * @param public_key encapsulation key.
  * @param randomness seed for encapsulate, len 32 bytes.
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem768CiphertextBytes`.
- * @param[out] shared_secret dest key, len `kOtcryptoMlkem768SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem768SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem768WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
@@ -251,9 +243,9 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
  * `kOtcryptoMlkem768SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param secret_key decapsulation key for which ciphertext was created.
+ * @param secret_key decapsulation key.
  * @param ciphertext buffer of len `kOtcryptoMlkem768CiphertextBytes`.
- * @param[out] shared_secret dest key, len `kOtcryptoMlkem768SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem768SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem768WorkBufferDecapsWords` words).
  * @return Status code (OK or error).
  */
@@ -272,10 +264,8 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
  * blob for the private key should have a length of 2x
  * ceil(kOtCryptoMlkem1024SecretKeybytes / sizeof(uint32_t)) = 1584 words.
  *
- * @param[out] public_key public key dest, len >=
- * `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key secret key dest, unmasked len
- * `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
@@ -294,10 +284,8 @@ otcrypto_status_t otcrypto_mlkem1024_keygen(
  * ceil(kOtCryptoMlkem1024SecretKeybytes / sizeof(uint32_t)) = 1584 words.
  *
  * @param randomness seed for keygen, len `kOtcryptoMlkem1024KeygenSeedBytes`.
- * @param[out] public_key public key dest, len >=
- * `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key secret key dest, unmasked len
- * `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
@@ -316,10 +304,9 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
  * `kOtcryptoMlkem1024SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param public_key public key for which to generate ciphertext/shared secret.
+ * @param public_key encapsulation key.
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem1024CiphertextBytes`.
- * @param[out] shared_secret dest key, len
- * `kOtcryptoMlkem1024SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem1024SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
@@ -338,11 +325,10 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate(
  * `kOtcryptoMlkem1024SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param public_key public key for which to generate ciphertext/shared secret.
+ * @param public_key encapsulation key.
  * @param randomness seed for encapsulate, len 32 bytes.
  * @param[out] ciphertext buffer of len `kOtcryptoMlkem1024CiphertextBytes`.
- * @param[out] shared_secret dest key, len
- * `kOtcryptoMlkem1024SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem1024SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferEncapsWords` words).
  * @return Status code (OK or error).
  */
@@ -362,10 +348,9 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
  * `kOtcryptoMlkem1024SharedSecretBytes` and the key blob should have a length
  * of 2x that value rounded up to the next 32-bit word boundary.
  *
- * @param secret_key decapsulation key for which ciphertext was created.
+ * @param secret_key decapsulation key.
  * @param ciphertext buffer of len `kOtcryptoMlkem1024CiphertextBytes`.
- * @param[out] shared_secret dest key, len
- * `kOtcryptoMlkem1024SharedSecretBytes`.
+ * @param[out] shared_secret dest, len `kOtcryptoMlkem1024SharedSecretBytes`.
  * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferDecapsWords` words).
  * @return Status code (OK or error).
  */
