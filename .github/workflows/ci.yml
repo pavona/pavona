@@ -179,6 +179,27 @@ jobs:
           cargo deny --all-features --manifest-path third_party/rust/Cargo.toml check licenses
           cargo deny --all-features --manifest-path third_party/tock/Cargo.toml check licenses
 
+  build_docs:
+    name: Build documentation
+    runs-on:
+      group: pavona-basic
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Build documentation
+        run: util/site/build-docs.sh build
+      - name: Upload files as artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: docs
+          path: build-site/
+          overwrite: true
+
   verible_lint:
     name: Verible lint
     permissions:
