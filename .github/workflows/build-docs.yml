@@ -2,11 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: Build Documentation
+name: Upload Documentation
 on:
-  pull_request:
   merge_group:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -19,27 +18,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build_docs:
-    name: Build documentation
-    runs-on:
-      group: pavona-basic
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Bitstream cache requires all commits.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Build documentation
-        run: util/site/build-docs.sh build
-      - name: Upload files as artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: docs
-          path: build-site/
-          overwrite: true
-
   upload_docs:
     name: Upload documentation
     if: ${{ github.event_name != 'pull_request' && github.ref_name == 'master' }}
