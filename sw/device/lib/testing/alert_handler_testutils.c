@@ -31,13 +31,19 @@ static uint32_t get_next_n_bits(
   CHECK(num_bits <= 32);
   CHECK(*bit_index < 32);
   uint32_t word = dump[*word_index] >> *bit_index;
+  // If the needed bits straddle into the next word, extract the missing bits
+  // from the next word.
+  if (*bit_index + num_bits > 32) {
+    word |= dump[(*word_index) + 1] << (32 - *bit_index);
+  }
   if (*bit_index + num_bits >= 32) {
     (*word_index) += 1;
     *bit_index = *bit_index + num_bits - 32;
   } else {
     *bit_index += num_bits;
   }
-  word &= (1 << num_bits) - 1;
+  uint32_t mask = (uint32_t)(((uint64_t)1 << num_bits) - 1);
+  word &= mask;
   return word;
 }
 
@@ -63,7 +69,8 @@ status_t alert_handler_testutils_info_parse(
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     info->alert_cause[i] = get_next_n_bits(1, dump, &word_index, &bit_index);
   }
-  TRY_CHECK(word_index < dump_size);
+  TRY_CHECK(word_index < dump_size ||
+            (word_index == dump_size && bit_index == 0));
   return OK_STATUS();
 }
 
