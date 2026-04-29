@@ -468,6 +468,8 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipUnlock) {
 
   boot_data.ownership_state = kOwnershipStateUnlockedAny;
   boot_data.nonce = {0x55555555, 0xAAAAAAAA};
+  boot_svc_msg.ownership_unlock_req.din[0] = 0x0;
+  boot_svc_msg.ownership_unlock_req.din[1] = 0x0;
   boot_svc_msg.ownership_unlock_req.nonce = boot_data.nonce;
   boot_svc_msg.ownership_unlock_req.signature = {{100, 101, 102, 103, 104, 105,
                                                   106, 107, 108, 109, 110, 111,
@@ -480,8 +482,9 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipUnlock) {
               validate(0, static_cast<ownership_key_t>(kOwnershipKeyUnlock),
                        kUnlock, _, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
-  EXPECT_CALL(mock_lifecycle_, DeviceId(_))
-      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+
+  lifecycle_device_id_t din = {{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}};
+  EXPECT_CALL(mock_lifecycle_, DeviceId(_)).WillOnce(SetArgPointee<0>(din));
 
   EXPECT_CALL(mock_rnd_, Uint32()).WillRepeatedly(Return(5));
 
