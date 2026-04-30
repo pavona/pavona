@@ -187,8 +187,8 @@ indcpa_dec:
   li  a2, STACK_DEC_B
   add a2, fp, a2
   la  a3, const_8
-  la  a4, modulus
   la  a5, const_0x0fff
+  li  x14, KYBER_K
   jal x1, unpack_ciphertext
 
   /*** unpack_sk ***/

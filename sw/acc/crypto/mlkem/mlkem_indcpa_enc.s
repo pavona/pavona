@@ -460,6 +460,7 @@ indcpa_enc:
   lw   a2, 0(t0)
   la   a3, const_1290167
   la   a5, modulus_over_2
+  li   x14, KYBER_K
   jal  x1, pack_ciphertext
   ret
 
