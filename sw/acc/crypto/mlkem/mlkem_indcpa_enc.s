@@ -209,6 +209,7 @@ indcpa_enc:
   lw   s9, 0(t0)
   la   s10, sp
   li   s11, 0
+  li   x14, KYBER_K
 
   .rept KYBER_K-1
     la   t1, poly_v

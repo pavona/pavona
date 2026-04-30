@@ -213,6 +213,7 @@ indcpa_keypair:
   li   a3, STACK_NONCE
   add  a3, a3, fp
   li   a2, 0
+  li   x14, KYBER_K
   LOOPI KYBER_K, 6
     add  t1, fp, a5
     addi a0, fp, STACK_NOISESEED
@@ -295,6 +296,7 @@ indcpa_keypair:
   li   a3, STACK_NONCE
   add  a3, a3, fp
   li   a2, KYBER_K
+  li   x14, KYBER_K
   LOOPI KYBER_K, 6
     add  t1, fp, a5
     addi a0, fp, STACK_NOISESEED

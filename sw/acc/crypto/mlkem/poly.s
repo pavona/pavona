@@ -10,17 +10,6 @@
 
 .text
 
-#ifndef KYBER_K
-#define KYBER_K 3
-#endif
-
-#if (KYBER_K == 2)
-  #define LOOP_GETNOISE_1 6
-#elif (KYBER_K == 3 || KYBER_K == 4)
-  #define LOOP_GETNOISE_1 4
-#else
-#endif
-
 /* Index of the Keccak command special register. */
 #define KECCAK_CFG_REG 0x7d9
 /* Config to start a SHAKE-128 operation. */
@@ -188,19 +177,38 @@ poly_getnoise_eta_init:
 
 .globl poly_getnoise_eta_1
 poly_getnoise_eta_1:
+  /* eta1 = 3 for ML-KEM-512 (K=2), eta1 = eta2 = 2 for ML-KEM-768/1024
+   * (K=3,4). Dispatch on x14 to the matching CBD sampler. */
+  li  x28, 2
+  beq x14, x28, poly_getnoise_cbd3
+  beq x0, x0, poly_getnoise_cbd2
+
+/*
+ * Name:        poly_getnoise_cbd3
+ *
+ * Description: Sample a polynomial deterministically from a seed and a nonce,
+ *              from the centered binomial distribution with parameter eta=3.
+ *              Used by ML-KEM-512 for eta1 sampling. Assumes
+ *              `poly_getnoise_eta_init` has been called first with the
+ *              appropriate seed and nonce.
+ *
+ * @param[in]  w31: all-zero
+ * @param[in]  x6: dmem_ptr to SHAKE256 results from `poly_getnoise_eta_init`
+ * @param[out] x11: dptr_output, dmem pointer to output polynomial
+ *
+ * clobbered registers: x4 to x6, x10 to x11, x17, x19 to x21, w0 to w9, w11, w20 to w21
+ * clobbered flag groups: FG0
+ */
+poly_getnoise_cbd3:
   addi x10, x6, 0
 
   li x5, 8
-  LOOPI LOOP_GETNOISE_1, 2
+  LOOPI 6, 2
     bn.wsrr w8, 0xA /* KECCAK_DIGEST */
     bn.sid  x5, 0(x6++) /* Store into buffer */
 
   bn.add w8, w0, w0
-#if (KYBER_K == 2)
-  jal x1, cbd3
-#elif (KYBER_K == 3 || KYBER_K == 4)
-  jal x1, cbd2
-#endif
+  jal    x1, cbd3
 
   ret
 
@@ -208,10 +216,11 @@ poly_getnoise_eta_1:
  * Name:        poly_getnoise_eta2
  *
  * Description: Sample a polynomial deterministically from a seed and a nonce,
- *              with output polynomial close to centered binomial distribution
- *              with parameter KYBER_ETA2; this function assumes
+ *              from the centered binomial distribution with parameter eta=2.
+ *              Used by ML-KEM-512/768/1024 for eta2 sampling, and by
+ *              ML-KEM-768/1024 for eta1 sampling. Assumes
  *              `poly_getnoise_eta_init` has been called first with the
- *              appropriate seed and nonce
+ *              appropriate seed and nonce.
  *
  * Arguments:   - poly *r: pointer to output polynomial
  *              - const uint8_t *seed: pointer to input seed (of length KYBER_SYMBYTES bytes)
@@ -229,6 +238,7 @@ poly_getnoise_eta_1:
 
 .globl poly_getnoise_eta_2
 poly_getnoise_eta_2:
+poly_getnoise_cbd2:
   addi x10, x6, 0
 
   li x5, 8
