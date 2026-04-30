@@ -17,21 +17,22 @@ DEFAULTS = struct(
     env = "//hw/bitstream/universal:none",
 )
 
-def gen_vivado_mem_file(ctx, name, src, tool, swap_nibbles = True):
-    update = ctx.actions.declare_file("{}.update.mem".format(name))
+def gen_vivado_mem_file(ctx, name, src, tool, bram_type = "rom", bram_size = 1024, swap_nibbles = True):
+    data = ctx.actions.declare_file("{}.update.mem".format(name))
+    intg = ctx.actions.declare_file("{}.intg.update.mem".format(name))
     args = ctx.actions.args()
     if swap_nibbles:
         args.add("--swap-nibbles")
-    args.add_all([src, update])
+    args.add_all([bram_type, src, data, intg, "--bram-size", str(bram_size)])
     ctx.actions.run(
         mnemonic = "GenVivadoImage",
-        outputs = [update],
+        outputs = [data, intg],
         inputs = [src],
         arguments = [args],
         executable = tool,
         use_default_shell_env = True,
     )
-    return update
+    return data, intg
 
 def vivado_updatemem(ctx, name, src, instance, mmi, update, debug = False):
     spliced = ctx.actions.declare_file("{}.bit".format(name))
@@ -111,6 +112,47 @@ def _bitstream_splice_impl(ctx):
     if ctx.attr.skip:
         return [DefaultInfo(files = depset([src]))]
 
+    # Splice in flash images if we have them either in attrs or the exec_env.
+    for bank in range(2):
+        for partition in range(3):
+            bram = "flash{}_info{}".format(bank, partition)
+            if not hasattr(ctx.attr, bram) or getattr(ctx.attr, bram).label.name == "none":
+                flash = getattr(exec_env, bram)
+            else:
+                flash = getattr(ctx.file, bram)
+            if flash:
+                flash = get_one_binary_file(flash, field = "vmem", providers = [exec_env.provider])
+
+                data, intg = gen_vivado_mem_file(
+                    ctx = ctx,
+                    name = "{}-{}".format(ctx.label.name, bram),
+                    bram_type = "flash",
+                    # A parition contains ten 2 KiB pages, each containing 256
+                    # 8-byte words.
+                    bram_size = 10 * 256,
+                    src = flash,
+                    tool = tc.tools.gen_mem_image,
+                    swap_nibbles = ctx.attr.swap_nibbles,
+                )
+                src = vivado_updatemem(
+                    ctx = ctx,
+                    name = "{}-{}_data".format(ctx.label.name, bram),
+                    src = src,
+                    instance = bram + "_data",
+                    mmi = get_fallback(ctx, "file.mmi", exec_env),
+                    update = data,
+                    debug = ctx.attr.debug,
+                )
+                src = vivado_updatemem(
+                    ctx = ctx,
+                    name = "{}-{}_intg".format(ctx.label.name, bram),
+                    src = src,
+                    instance = bram + "_intg",
+                    mmi = get_fallback(ctx, "file.mmi", exec_env),
+                    update = intg,
+                    debug = ctx.attr.debug,
+                )
+
     # Splice in a ROM image if we have one either in attrs or the exec_env.
     if not ctx.attr.rom or ctx.attr.rom.label.name == "none":
         rom = exec_env.rom
@@ -118,9 +160,10 @@ def _bitstream_splice_impl(ctx):
         rom = ctx.attr.rom
     if rom and rom.label.name != "none":
         rom = get_one_binary_file(rom, field = "rom", providers = [exec_env.provider])
-        mem = gen_vivado_mem_file(
+        mem, _ = gen_vivado_mem_file(
             ctx = ctx,
             name = "{}-rom".format(ctx.label.name),
+            bram_type = "rom",
             src = rom,
             tool = tc.tools.gen_mem_image,
             swap_nibbles = ctx.attr.swap_nibbles,
@@ -141,9 +184,10 @@ def _bitstream_splice_impl(ctx):
     else:
         otp = ctx.file.otp
     if otp:
-        mem = gen_vivado_mem_file(
+        mem, _ = gen_vivado_mem_file(
             ctx = ctx,
             name = "{}-otp".format(ctx.label.name),
+            bram_type = "otp",
             src = otp,
             tool = tc.tools.gen_mem_image,
             swap_nibbles = ctx.attr.swap_nibbles,
@@ -173,6 +217,12 @@ bitstream_splice_ = rule(
         "otp": attr.label(allow_single_file = True, doc = "The OTP image to splice into the bitstream"),
         "mmi": attr.label(allow_single_file = True, doc = "The meminfo file"),
         "rom": attr.label(doc = "The ROM image to splice into the bitstream"),
+        "flash0_info0": attr.label(doc = "Flash bank 0 info region 0 image to splice into the bitstream"),
+        "flash0_info1": attr.label(doc = "Flash bank 0 info region 1 image to splice into the bitstream"),
+        "flash0_info2": attr.label(doc = "Flash bank 0 info region 2 image to splice into the bitstream"),
+        "flash1_info0": attr.label(doc = "Flash bank 1 info region 0 image to splice into the bitstream"),
+        "flash1_info1": attr.label(doc = "Flash bank 1 info region 1 image to splice into the bitstream"),
+        "flash1_info2": attr.label(doc = "Flash bank 1 info region 2 image to splice into the bitstream"),
         "exec_env": attr.label(providers = [[ExecEnvInfo], [DefaultInfo]], mandatory = True, doc = "The exec_env to splice for"),
         "swap_nibbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = False, doc = "Emit debug info while updating"),

@@ -73,13 +73,19 @@ class UpdatememSimulator:
         return line_groups
 
 
-def parse_otp_init_strings(init_line_groups: List[List[str]]) -> List[int]:
-    """Parse a sequence of 22-bit OTP words from Vivado INIT_XX lines.
+def parse_init_strings(
+    init_line_groups: List[List[str]],
+    bram_size: int,
+    width: int,
+    padding: int,
+    reverse: bool,
+) -> List[int]:
+    """Parse a sequence of words from Vivado INIT_XX lines.
 
-    The data layout was determined by running a full Vivado bitstream build and
-    comparing the OTP image (//hw/top_earlgrey/data/otp:img_rma) with the
-    INIT_XX strings that Vivado produces (see the otp_init_strings.txt
-    artifact).
+    For OTP (width = 22, padding = 15, reverse), the data layout was determined
+    by running a full Vivado bitstream build and comparing the OTP image
+    (//hw/top_earlgrey/data/otp:img_rma) with the INIT_XX strings that Vivado
+    produces (see the otp_init_strings.txt artifact).
     """
 
     out = []
@@ -92,78 +98,95 @@ def parse_otp_init_strings(init_line_groups: List[List[str]]) -> List[int]:
             if not match:
                 continue
 
-            data = match.group(1)
+            rawdata = match.group(1)
+            data = int(rawdata, 16)
             bits = []
-            while len(data) > 0:
-                chunk = data[:4]
-                data = data[4:]
-                if chunk == '0000':
+            count = 0
+            while count < (4 * len(rawdata)) // (padding + 1):
+                chunk = data & ((1 << (padding + 1)) - 1)
+                data >>= (1 + padding)
+                count += 1
+                if chunk == 0:
                     bits.append(0)
-                elif chunk == '0001':
+                elif chunk == 1:
                     bits.append(1)
                 else:
-                    raise Exception("Unexpected chunk in OTP init string:", chunk)
-
+                    raise Exception("Unexpected chunk in init string:", hex(chunk))
+            bits.reverse()
             bram_scratch.append(bits)
         brams.append(bram_scratch)
 
-    for i in range(1024):
-        # Slice off the first 22 bits.
+    for i in range(bram_size):
+        # Slice off the first `width` bits.
         bits = []
         for bram in brams:
             if bram[0] == []:
                 bram.pop(0)
             bits.append(bram[0].pop())
 
+        if reverse:
+            bits = reversed(bits)
         value = 0
-        for bit in reversed(bits):
+        for bit in bits:
             value = (value << 1) | bit
 
-        logger.debug(f'@{i:06x}: {value:06x} = {bits}')
+        ceil_width = math.ceil(width / 4)
+        logger.debug(f'@{i:0{ceil_width}x}: {value:0{ceil_width}x} = {bits}')
         out.append(value)
 
     return out
 
 
-def otp_words_to_updatemem_pieces(words: List[int]) -> List[str]:
+def words_to_updatemem_pieces(
+    words: List[int],
+    bram_size: int,
+    width: int,
+    padding: int,
+    reverse: bool,
+) -> List[str]:
     """Transform `words` into pieces of an updatemem-compatible MEM file."""
 
     assert len(words) % 4 == 0
-    assert len(words) <= 1024
-    mask_22_bits = (1 << 22) - 1
-    assert all(word == (word & mask_22_bits) for word in words)
+    assert len(words) <= bram_size
+    assert width % 2 == 0
+    mask_bits = (1 << width) - 1
+    assert all(word == (word & mask_bits) for word in words)
 
     # The first line indicates that we're starting from the zero address. For
     # simplicity and to make `updatemem` more efficient, we will not print
     # any subsequent addresses.
     mem_pieces = ['@0']
+    words_to_write = []
     for word in words:
         # Examining the INIT_XX strings from a full Vivado bitstream build, it
-        # appears that each 22-bit word has its bits reversed and is padded with
-        # 15 zeroes. As a result, the hexadecimal init strings will only contain
+        # appears that each word has its bits reversed and is padded with 15
+        # zeroes. As a result, the hexadecimal init strings will only contain
         # '0' and '1' characters.
-        rev = 0
-        for _ in range(22):
-            rev = (rev << 1) | (word & 1)
-            word >>= 1
+        if reverse:
+            rev = 0
+            for _ in range(width):
+                rev = (rev << 1) | (word & 1)
+                word >>= 1
+        else:
+            rev = word
 
-        words_to_write = [rev] + [0] * 15
+        words_to_write += [rev] + [0] * padding
 
-        # Concatenate sequential pairs of OTP words before emitting a hex
-        # string. If we naively encoded each 22-bit OTP word as a 6-digit hex
-        # string, updatemem would dutifully write two unwanted zero bits. To
-        # work around this, we concatenate two words for each hex string; 11 hex
-        # digits cleanly represent 44 bits.
+        # Concatenate sequential pairs of words before emitting a hex string. If
+        # we naively encoded each word as a hex string if width % 4 == 2,
+        # updatemem would dutifully write two unwanted zero bits. To work around
+        # this, we concatenate two words for each hex string to get a clean
+        # multiple of 4 bits.
         #
         # Note that this complexity cannot be avoided by concatenating all the
         # words and emitting a single hex string because updatemem rejects long
         # hex strings, saying that they exceed data limits.
-        while len(words_to_write) > 0:
+        while len(words_to_write) > 1:
             word1, word2 = words_to_write[:2]
             words_to_write = words_to_write[2:]
 
-            # Write 44 bits in hexadecimal.
-            value = word1 << 22 | word2
+            # Write `width * 2` bits in hexadecimal.
+            value = word1 << width | word2
             col_string = f'{value:011X}'
             mem_pieces.append(col_string)
 
@@ -172,13 +195,14 @@ def otp_words_to_updatemem_pieces(words: List[int]) -> List[str]:
     # the real updatemem would print. We also know how to recover OTP memory
     # contents from INIT_XX strings. Composing these two functions should bring
     # us back to the original `words` input.
-    updatemem_sim = UpdatememSimulator(0x40, 22)
+    updatemem_sim = UpdatememSimulator(bram_size // 2, width)
     for piece in mem_pieces[1:]:
         updatemem_sim.write_updatemem_hex_string(piece)
     init_lines = updatemem_sim.render_init_lines()
 
-    reconstructed = parse_otp_init_strings(init_lines)
+    reconstructed = parse_init_strings(init_lines, bram_size, width, padding, reverse)
     if len(reconstructed) < len(words) or reconstructed[:len(words)] != words:
+        print([hex(x) for x in reconstructed], "\n\n\n", [hex(x) for x in words])
         raise Exception("Generated updatemem data for OTP failed self-check")
 
     return mem_pieces
@@ -200,9 +224,16 @@ def main() -> int:
     logger.setLevel(logging.INFO)
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'type',
+        choices = ["rom", "otp", "flash"],
+        help = "Splice image type to generate.",
+    )
     parser.add_argument('infile', type=argparse.FileType('rb'))
     parser.add_argument('outfile', type=argparse.FileType('w'))
+    parser.add_argument('intg_outfile', type=argparse.FileType('w'))
     parser.add_argument('--swap-nibbles', dest='swap_nibbles', action='store_true')
+    parser.add_argument('--bram-size', type=int, default=1024)
 
     args = parser.parse_args()
 
@@ -221,36 +252,58 @@ def main() -> int:
     assert len(vmem.chunks) == 1
     words = vmem.chunks[0].words
 
-    if width == 24:
+    if args.type == "otp":
         logger.info("Generating updatemem-compatible MEM file for OTP image.")
-        updatemem_pieces = otp_words_to_updatemem_pieces(words)
+        updatemem_pieces = words_to_updatemem_pieces(words, args.bram_size, 22, 15, True)
         updatemem_line = ' '.join(updatemem_pieces)
         args.outfile.write(updatemem_line + '\n')
         return 0
-
-    logger.info("Generating updatemem-compatible MEM file for ROM.")
-    # Loop over all words, and:
-    # 1) Generate the address,
-    # 2) convert the endianness, and
-    # 3) write this to the output file.
-    addr_chars = 8
-    word_chars = math.ceil(width / 4)
-    word_bytes = (word_chars + 1) // 2
-    prev_addr = None
-    for idx, word in enumerate(words):
-        # Generate the address.
-        addr = idx * math.ceil(width / 8)
-        # Convert endianness.
-        data = swap_bytes(width, word, args.swap_nibbles)
-        # Check for contiguous addresses. If any are found, omit this word's
-        # address to speed up `updatemem` operation.
-        toks = []
-        if prev_addr is None or addr != (prev_addr + word_bytes):
-            toks.append(f'@{addr:0{addr_chars}X}')
-        prev_addr = addr
-        # Write to file.
-        toks.append(f'{data:0{word_chars}X}')
-        args.outfile.write(' '.join(toks) + '\n')
+    elif args.type == "flash":
+        logger.info("Generating updatemem-compatible MEM file for flash image.")
+        data_updatemem_pieces = words_to_updatemem_pieces(
+            [word & ((1 << 64) - 1) for word in words],
+            args.bram_size,
+            64,
+            0,
+            True,
+        )
+        data_updatemem_line = ' '.join(data_updatemem_pieces)
+        args.outfile.write(data_updatemem_line + '\n')
+        intg_updatemem_pieces = words_to_updatemem_pieces(
+            [word >> 64 for word in words],
+            args.bram_size,
+            12,
+            0,
+            True,
+        )
+        intg_updatemem_line = ' '.join(intg_updatemem_pieces)
+        args.intg_outfile.write(intg_updatemem_line + '\n')
+        return 0
+    else:
+        assert args.type == "rom"
+        logger.info("Generating updatemem-compatible MEM file for ROM image.")
+        # Loop over all words, and:
+        # 1) Generate the address,
+        # 2) convert the endianness, and
+        # 3) write this to the output file.
+        addr_chars = 8
+        word_chars = math.ceil(width / 4)
+        word_bytes = (word_chars + 1) // 2
+        prev_addr = None
+        for idx, word in enumerate(words):
+            # Generate the address.
+            addr = idx * math.ceil(width / 8)
+            # Convert endianness.
+            data = swap_bytes(width, word, args.swap_nibbles)
+            # Check for contiguous addresses. If any are found, omit this word's
+            # address to speed up `updatemem` operation.
+            toks = []
+            if prev_addr is None or addr != (prev_addr + word_bytes):
+                toks.append(f'@{addr:0{addr_chars}X}')
+            prev_addr = addr
+            # Write to file.
+            toks.append(f'{data:0{word_chars}X}')
+            args.outfile.write(' '.join(toks) + '\n')
 
     return 0
 

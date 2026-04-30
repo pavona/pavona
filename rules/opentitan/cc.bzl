@@ -519,6 +519,30 @@ opentitan_test = rv_rule(
             allow_single_file = True,
             doc = "OTP image override for this test",
         ),
+        "flash0_info0": attr.label(
+            allow_files = True,
+            doc = "Flash bank 0 info partition 0 image override for this test",
+        ),
+        "flash0_info1": attr.label(
+            allow_files = True,
+            doc = "Flash bank 0 info partition 1 image override for this test",
+        ),
+        "flash0_info2": attr.label(
+            allow_files = True,
+            doc = "Flash bank 0 info partition 2 image override for this test",
+        ),
+        "flash1_info0": attr.label(
+            allow_files = True,
+            doc = "Flash bank 1 info partition 0 image override for this test",
+        ),
+        "flash1_info1": attr.label(
+            allow_files = True,
+            doc = "Flash bank 1 info partition 1 image override for this test",
+        ),
+        "flash1_info2": attr.label(
+            allow_files = True,
+            doc = "Flash bank 1 info partition 2 image override for this test",
+        ),
         "bitstream": attr.label(
             allow_single_file = True,
             cfg = _testing_bitstream,
