@@ -201,6 +201,7 @@ crypto_kem_enc:
   la   a0, coins
   la   a1, ek
   la   a3, ct
+  li   x14, KYBER_K
   jal  x1, indcpa_enc
 
   ret

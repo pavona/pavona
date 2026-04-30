@@ -341,6 +341,7 @@ crypto_kem_dec:
   li   a3, STACK_KEM_DEC_CMP
   add  a3, fp, a3
   sw   a3, STACK_KEM_DEC_CMP_ADDR(fp)
+  li   x14, KYBER_K
   jal  x1, indcpa_enc
 
   /*** shake256(z||c,32) ***/

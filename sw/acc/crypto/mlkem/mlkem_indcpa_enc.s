@@ -11,86 +11,7 @@
 .text
 
 #define KYBER_N 256
-#define KYBER_Q 3329
-#define KYBER_SYMBYTES 32   /* size in bytes of hashes, and seeds */
-#define KYBER_SSBYTES  32   /* size in bytes of shared key */
-#define KYBER_POLYBYTES		384
-#define KYBER_ETA2 2
-#if (KYBER_K == 2)
-  #define KYBER_POLYVECBYTES	768
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 640
-  #define KYBER_ETA1 3
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 800
-  #define KYBER_INDCPA_SECRETKEYBYTES 768
-  #define KYBER_INDCPA_BYTES          768
-
-  #define KYBER_PUBLICKEYBYTES  800
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  1632
-  #define KYBER_CIPHERTEXTBYTES 768
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 25
-  #define KYBER_CIPHERTEXT_WRS 24
-  #define KYBER_GEN_MATRIX_NONCE 254
-  #define KYBER_GEN_MATRIX_AT_NONCE -511
-  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 511
-  #define POLY -512
-  #define K_POLYS -1024
-  #define K_SQUARED_POLYS -2048
-
-#elif (KYBER_K == 3)
-  #define KYBER_POLYVECBYTES	1152
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 960
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1184
-  #define KYBER_INDCPA_SECRETKEYBYTES 1152
-  #define KYBER_INDCPA_BYTES          1088
-
-  #define KYBER_PUBLICKEYBYTES  1184
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  2400
-  #define KYBER_CIPHERTEXTBYTES 1088
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 37
-  #define KYBER_CIPHERTEXT_WRS 34
-  #define KYBER_GEN_MATRIX_NONCE 253
-  #define KYBER_GEN_MATRIX_AT_NONCE -767
-  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 767
-  #define POLY -512
-  #define K_POLYS -1536
-  #define K_SQUARED_POLYS -4608
-
-#elif (KYBER_K == 4)
-  #define KYBER_POLYVECBYTES	1536
-  #define KYBER_POLYCOMPRESSEDBYTES    160
-  #define KYBER_POLYVECCOMPRESSEDBYTES 1408
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1568
-  #define KYBER_INDCPA_SECRETKEYBYTES 1536
-  #define KYBER_INDCPA_BYTES          1568
-
-  #define KYBER_PUBLICKEYBYTES  1568
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  3168
-  #define KYBER_CIPHERTEXTBYTES 1568
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 49
-  #define KYBER_CIPHERTEXT_WRS 49
-  #define KYBER_GEN_MATRIX_NONCE 252
-  #define KYBER_GEN_MATRIX_AT_NONCE -1023
-  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 1023
-  #define POLY -512
-  #define K_POLYS -2048
-  #define K_SQUARED_POLYS -8192
-#endif
+#define POLY -512
 
 /* Register aliases */
 .equ x2, sp
@@ -164,6 +85,7 @@
  * @param[in]  x11 (a1): dmem pointer to input packed pk
  * @param[in]  x12 (a2): dmem pointer to input coins
  * @param[out] x13 (a3): dmem pointer to output ciphertext
+ * @param[in]  x14: KYBER_K
  *
  * clobbered registers: x4 to x29, w0 to w31, acc, acch, mod
  * clobbered flag groups: FG0
@@ -195,7 +117,6 @@ indcpa_enc:
   addi a0, t2, 0
   la   a2, pkpv
   la   a3, const_0x0fff
-  li   x14, KYBER_K
   jal  x1, unpack_pk
 
   /*** save seed to dmem ***/
@@ -209,9 +130,9 @@ indcpa_enc:
   lw   s9, 0(t0)
   la   s10, sp
   li   s11, 0
-  li   x14, KYBER_K
 
-  .rept KYBER_K-1
+  addi t0, x14, -1
+  LOOP t0, 21
     la   t1, poly_v
     add  a0, x0, s9
     add  a1, x0, s10
@@ -235,7 +156,6 @@ indcpa_enc:
     bn.xor w31, w31, w31  /* w31 = 0 */
     addi s10, s10, 2*KYBER_N
     bn.wsrw   0x0, w16 /* MOD = R | Q */
-  .endr
 
   la   t1, poly_v
   add  a0, x0, s9
@@ -259,15 +179,16 @@ indcpa_enc:
   la   a3, poly_v
   la   x28, twiddles_basemul
   jal  x1, basemul
-  .rept KYBER_K-1
+  addi t0, x14, -1
+  LOOP t0, 5
     addi a3, a3, POLY
     la   x28, twiddles_basemul
     jal  x1, basemul_acc
-  .endr
+    nop
 
   la   t0, dptr_coins
   lw   a0, 0(t0)
-  addi a2, x0, 2*KYBER_K
+  slli a2, x14, 1
   la   a3, nonce
   sw   a2, 0(a3)
   jal  x1, poly_getnoise_eta_init
@@ -313,7 +234,8 @@ indcpa_enc:
      `poly_gen_matrix`, which makes use of the result. By doing this carefully,
      we can avoid any stalls while reading SHAKE128 results. */
 
-  .rept KYBER_K - 1
+  addi t0, x14, -1
+  LOOP t0, 40
     /* Gen 1st mat poly */
     la   a0, seed
     jal  x1, poly_gen_matrix
@@ -327,7 +249,9 @@ indcpa_enc:
     la   x28, twiddles_basemul
     jal  x1, basemul
 
-    .rept KYBER_K-2
+    addi t1, x14, -2
+    beq  t1, x0, 2f
+    LOOP t1, 11
       /* Gen next mat poly */
       la   a0, seed
       jal  x1, poly_gen_matrix
@@ -340,13 +264,16 @@ indcpa_enc:
       la   x28, twiddles_basemul
       jal  x1, basemul_acc
       addi a1, a1, POLY /* points back to A[0][1] */
-    .endr
+2:
 
     /* Gen next mat poly */
     la   a0, seed
     jal  x1, poly_gen_matrix
     bn.addi w30, w30, 0x0100
-    bn.subi w30, w30, KYBER_GEN_MATRIX_AT_NONCE_NEG
+    /* w30 -= KYBER_K * 256 - 1 */
+    LOOP x14, 1
+      bn.subi w30, w30, 256
+    bn.addi w30, w30, 1
     jal  x1, poly_gen_matrix_init
 
     /* Mutliply this generated poly with sk */
@@ -355,7 +282,6 @@ indcpa_enc:
     la   x28, twiddles_basemul
     jal  x1, basemul_acc
     addi a1, a1, POLY /* points back to A[0][1] */
-  .endr
 
   /* Gen 1st mat poly */
   la   a0, seed
@@ -370,7 +296,9 @@ indcpa_enc:
   la   x28, twiddles_basemul
   jal  x1, basemul
 
-  .rept KYBER_K-2
+  addi t1, x14, -2
+  beq t1, x0, 1f
+  LOOP t1, 11
     /* Gen next mat poly */
     la   a0, seed
     jal  x1, poly_gen_matrix
@@ -383,7 +311,7 @@ indcpa_enc:
     la   x28, twiddles_basemul
     jal  x1, basemul_acc
     addi a1, a1, POLY /* points back to A[0][1] */
-  .endr
+1:
 
   /* Gen next mat poly */
   la   a0, seed
@@ -402,8 +330,7 @@ indcpa_enc:
   la   t0, dptr_coins
   lw   a0, 0(t0)
   la   a3, nonce
-  li   t0, KYBER_K
-  sw   t0, 0(a3)
+  sw   x14, 0(a3)
   jal  x1, poly_getnoise_eta_init
 
   /* After basemul, w16 is still R | Q and MOD is still 2*R | 2*Q */
@@ -411,26 +338,27 @@ indcpa_enc:
   la  a0, poly_at
   la  a1, twiddles_intt
   add a2, x0, a0
-  .rept KYBER_K
+  LOOP x14, 2
     jal x1, intt
-  .endr
+    nop
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
   /*** CBD ep + ADD ***/
   la   a3, nonce
   la   t0, dptr_coins
-  lw   a4, 0(t0)
+  lw   s3, 0(t0)
   la   a5, ep
   la   a6, poly_b
-  li   s2, KYBER_K
+  addi s2, x14, 0
 
-  .rept KYBER_K-1
+  addi t0, x14, -1
+  LOOP t0, 15
     la   t1, poly_tmp
-    add  a0, x0, a4
+    add  a0, x0, s3
     add  a1, x0, a5
     jal  x1, poly_getnoise_eta_2
 
-    add  a0, x0, a4
+    add  a0, x0, s3
     addi s2, s2, 1
     sw   s2, 0(a3)
     jal  x1, poly_getnoise_eta_init
@@ -442,10 +370,9 @@ indcpa_enc:
 
     addi  a5, a5, 2*KYBER_N
     addi  a6, a6, 2*KYBER_N
-  .endr
 
   la   t1, poly_tmp
-  add  a0, x0, a4
+  add  a0, x0, s3
   add  a1, x0, a5
   jal  x1, poly_getnoise_eta_2
 
@@ -461,7 +388,6 @@ indcpa_enc:
   lw   a2, 0(t0)
   la   a3, const_1290167
   la   a5, modulus_over_2
-  li   x14, KYBER_K
   jal  x1, pack_ciphertext
   ret
 
@@ -504,13 +430,11 @@ poly_k:
 poly_b:
 .zero 512
 
-/* Shared buffer for public key polyvec (k*521 bytes) and epp. */
+/* Shared buffer for public key polyvec (k*512 bytes, max K=4) and epp. */
 .balign 32
 pkpv:
 epp:
-.rept KYBER_K
-.zero 512
-.endr
+.zero 2048
 
 /* Shared buffer for sp and ep (512 bytes each). */
 sp:
