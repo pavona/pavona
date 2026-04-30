@@ -95,6 +95,7 @@ poly_tobytes:
  * @param[in]  x11: dptr_seed, dmem pointer to input public seed
  * @param[in]  x12: modulus_bn
  * @param[out] x13; dptr_output, dmem pointer to output serialized pk
+ * @param[in]  x14: KYBER_K
  * @param[in]  w31: all-zero
  *
  * clobbered registers: x4-x9, w0-w5, w31
@@ -113,9 +114,9 @@ pack_pk:
   bn.xor w31, w31, w31
 
   /* Pack polyvec pk */
-  .rept KYBER_K
+  LOOP x14, 2
     jal x1, poly_tobytes
-  .endr
+    nop
 
   /* Pack seed */
   bn.lid x9, 0(x11)
@@ -136,6 +137,7 @@ pack_pk:
  * @param[in]  x10: dptr_input, dmem pointer to input sk
  * @param[in]  x12: modulus_bn
  * @param[out] x13: dptr_output, dmem pointer to output serialized sk
+ * @param[in]  x14: KYBER_K
  * @param[in]  w31: all-zero
  *
  * clobbered registers: x4-x9, w0-w5, w31
@@ -154,9 +156,9 @@ pack_sk:
   bn.xor w31, w31, w31
 
   /* Pack polyvec sk */
-  .rept KYBER_K
+  LOOP x14, 2
     jal x1, poly_tobytes
-  .endr
+    nop
 
   ret
 
@@ -240,6 +242,7 @@ poly_frombytes:
  * @param[in]  x10: dptr_input, dmem pointer to input serialized pk
  * @param[out] x12: dptr_output, dmem pointer to output polyvec pk
  * @param[in]  x13: dptr_const_0x0fff
+ * @param[in]  x14: KYBER_K
  * @param[in]  w31: all-zero
  *
  * clobbered registers: x4-x8, w0-w5, w31
@@ -258,9 +261,9 @@ unpack_pk:
   bn.lid x7, 0(x13)
 
   /* Unpack pk */
-  .rept KYBER_K
+  LOOP x14, 2
     jal x1, poly_frombytes
-  .endr
+    nop
 
   /* Unpack seed */
   /* There's no need to unpack seed. Once pk is sent, client
@@ -282,6 +285,7 @@ unpack_pk:
  * @param[in]  x10: dptr_input, dmem pointer to input serialized sk
  * @param[in]  x15: dptr_modulus, dmem pointer to const_0x0fff
  * @param[out]  x12: dptr_output, dmem pointer to output polyvec sk
+ * @param[in]  x14: KYBER_K
  * @param[in]  w31: all-zero
  *
  * clobbered registers: x4-x8, w0-w5, w31
@@ -300,8 +304,8 @@ unpack_sk:
   bn.lid x7, 0(x15)
 
   /* Unpack sk */
-  .rept KYBER_K
+  LOOP x14, 2
     jal x1, poly_frombytes
-  .endr
+    nop
 
   ret

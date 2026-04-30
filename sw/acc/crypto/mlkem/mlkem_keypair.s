@@ -238,6 +238,7 @@ indcpa_keypair:
   li   a0, STACK_SKPV
   add  a0, fp, a0
   lw   a3, STACK_SK_ADDR(fp)
+  li   x14, KYBER_K
   jal  x1, pack_sk
 
   bn.wsrw 0x0, w22 /* MOD = 2*R | 2*Q */
@@ -330,6 +331,7 @@ indcpa_keypair:
   li   a0, STACK_A
   add  a0, fp, a0
   addi a1, fp, STACK_PUBLICSEED
+  li   x14, KYBER_K
   jal  x1, pack_pk
 
   ret

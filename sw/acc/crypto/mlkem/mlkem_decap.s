@@ -192,6 +192,7 @@ indcpa_dec:
   jal x1, unpack_ciphertext
 
   /*** unpack_sk ***/
+  li  x14, KYBER_K
   jal x1, unpack_sk
 
   bn.wsrr   w16, 0x0 /* w16 = R | Q */

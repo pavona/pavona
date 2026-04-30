@@ -195,6 +195,7 @@ indcpa_enc:
   addi a0, t2, 0
   la   a2, pkpv
   la   a3, const_0x0fff
+  li   x14, KYBER_K
   jal  x1, unpack_pk
 
   /*** save seed to dmem ***/
