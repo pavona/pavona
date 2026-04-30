@@ -297,16 +297,25 @@ OT_ALWAYS_INLINE void save_all_regs(uint32_t buffer[]) {
  * @param buffer: The buffer to store the register file content.
  */
 OT_ALWAYS_INLINE void save_tmp_regs(uint32_t buffer[]) {
-  asm volatile("mv %0, x5" : "=r"(buffer[kRegX5]));
-  asm volatile("mv %0, x6" : "=r"(buffer[kRegX6]));
-  asm volatile("mv %0, x7" : "=r"(buffer[kRegX7]));
-
+  // TODO: This code is not very stable across compiler versions. In LLVM
+  // 22.1.2, we move x12 (a2) first because otherwise it is clobbered first
+  // because the compiler tries to use it to store the base address in the
+  // target array.
+  //
+  // I attempted to make this function more stable by combining all the `mv`
+  // instructions to a single `asm` block, but forcing LLVM to use different
+  // registers in this way caused surrounding code with the same issue to break.
+  // This test could use a stability refactor in the future.
   asm volatile("mv %0, x12" : "=r"(buffer[kRegX12]));
   asm volatile("mv %0, x13" : "=r"(buffer[kRegX13]));
   asm volatile("mv %0, x14" : "=r"(buffer[kRegX14]));
   asm volatile("mv %0, x15" : "=r"(buffer[kRegX15]));
   asm volatile("mv %0, x16" : "=r"(buffer[kRegX16]));
   asm volatile("mv %0, x17" : "=r"(buffer[kRegX17]));
+
+  asm volatile("mv %0, x5" : "=r"(buffer[kRegX5]));
+  asm volatile("mv %0, x6" : "=r"(buffer[kRegX6]));
+  asm volatile("mv %0, x7" : "=r"(buffer[kRegX7]));
 
   asm volatile("mv %0, x28" : "=r"(buffer[kRegX28]));
   asm volatile("mv %0, x29" : "=r"(buffer[kRegX29]));
