@@ -78,7 +78,6 @@ jobs:
     runs-on:
       group: pavona-basic
     needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -129,7 +128,7 @@ jobs:
         run: ./ci/scripts/verible-lint.sh dv darjeeling
       - name: Verible FPV darjeeling
         run: ./ci/scripts/verible-lint.sh fpv darjeeling
-      - name: Validate alert classification for Earl Grey
+      - name: Validate alert classification for Earlgrey
         run: ./ci/scripts/validate_alert_classification.py earlgrey hw/top_earlgrey/ip_autogen/alert_handler/data/top_earlgrey_alert_handler.ipconfig.hjson "$(realpath hw/top_earlgrey/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
       - name: Validate alert classification for Darjeeling
         run: ./ci/scripts/validate_alert_classification.py darjeeling hw/top_darjeeling/ip_autogen/alert_handler/data/top_darjeeling_alert_handler.ipconfig.hjson "$(realpath hw/top_darjeeling/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
@@ -178,27 +177,6 @@ jobs:
           cargo install cargo-deny --version 0.18.4
           cargo deny --all-features --manifest-path third_party/rust/Cargo.toml check licenses
           cargo deny --all-features --manifest-path third_party/tock/Cargo.toml check licenses
-
-  build_docs:
-    name: Build documentation
-    runs-on:
-      group: pavona-basic
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Bitstream cache requires all commits.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Build documentation
-        run: util/site/build-docs.sh build
-      - name: Upload files as artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: docs
-          path: build-site/
-          overwrite: true
 
   verible_lint:
     name: Verible lint
@@ -255,7 +233,6 @@ jobs:
     needs: quick_lint
     runs-on:
       group: pavona-basic
-    if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -288,7 +265,6 @@ jobs:
     needs: quick_lint
     runs-on:
       group: pavona-basic
-    if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -300,11 +276,10 @@ jobs:
         run: ./bazelisk.sh test --test_tag_filters=-nightly --test_timeout=3600 //sw/acc/crypto/...
 
   verilator_earlgrey:
-    name: Verilated Earl Grey
+    name: Earlgrey Verilator Tests
     runs-on:
       group: pavona-large
     needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
@@ -318,21 +293,18 @@ jobs:
         with:
           artifact-name: verilator_earlgrey-test-results
 
-  chip_earlgrey_cw310_hyperdebug:
-    name: Earl Grey for CW310 Hyperdebug
+  chip_earlgrey_cw310:
+    name: Earlgrey for CW310
     needs: quick_lint
-    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
       top_name: earlgrey
       design_suffix: cw310_hyperdebug
-      vivado_version: '2024.1'
 
   chip_earlgrey_cw340:
-    name: Earl Grey for CW340
+    name: Earlgrey for CW340
     needs: quick_lint
-    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
@@ -340,21 +312,19 @@ jobs:
       design_suffix: cw340
 
   # Hyper310 FPGA jobs
-  execute_tests_hyper310:
-    name: Hyper310 Tests
-    needs: chip_earlgrey_cw310_hyperdebug
-    uses: ./.github/workflows/hyper310-pr.yml
-    if: ${{ github.event_name != 'merge_group' }}
+  execute_tests_cw310:
+    name: Earlgrey CW310 Tests
+    needs: chip_earlgrey_cw310
+    uses: ./.github/workflows/earlgrey-cw310-pr.yml
     secrets: inherit
     with:
       bitstream: chip_earlgrey_cw310_hyperdebug
 
   # CW340 FPGA jobs
   execute_tests_cw340:
-    name: CW340 Tests
+    name: Earlgrey CW340 Tests
     needs: chip_earlgrey_cw340
-    uses: ./.github/workflows/cw340-pr.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    uses: ./.github/workflows/earlgrey-cw340-pr.yml
     secrets: inherit
     with:
       bitstream: chip_earlgrey_cw340
@@ -365,7 +335,6 @@ jobs:
       group: pavona-large
     timeout-minutes: 120
     needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -394,7 +363,6 @@ jobs:
       group: pavona-large
     timeout-minutes: 120
     needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -422,7 +390,6 @@ jobs:
     runs-on:
       group: pavona-basic
     needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -438,7 +405,6 @@ jobs:
     runs-on:
       group: pavona-basic
     needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
         with:
