@@ -24,7 +24,7 @@
  * @param[in]  w16: sw0, where sw0.0 = Q, sw0.2 = Q^-1 mod 2^32
  * @param[out] x13: dmem pointer to result
  *
- * clobbered registers: x4-x30, w0-w23, w30
+ * clobbered registers: x4-x13, x15-x31, w0-w23, w30
  */
 
 .globl basemul
@@ -36,7 +36,7 @@ basemul:
   li x7, 3
   li x8, 4
   li x9, 5
-  li x14, 6
+  li x31, 6
   li x15, 7
   li x16, 8
   li x17, 9
@@ -56,7 +56,7 @@ basemul:
     bn.lid x7,  0(x29++)
     bn.lid x8,  0(x29++)
     bn.lid x9,  0(x29++)
-    bn.lid x14, 0(x29++)
+    bn.lid x31, 0(x29++)
     bn.lid x15, 0(x29++)
 
     bn.lid x16, 0(x11++)
@@ -227,7 +227,7 @@ basemul:
     bn.sid x7,  0(x13++)
     bn.sid x8,  0(x13++)
     bn.sid x9,  0(x13++)
-    bn.sid x14, 0(x13++)
+    bn.sid x31, 0(x13++)
     bn.sid x15, 0(x13++)
 
   ret
@@ -247,7 +247,7 @@ basemul:
  * @param[in]  x28: dptr_tw, dmem pointer to array of twiddles_basemul
  * @param[out] x13: dmem pointer to result
  *
- * clobbered registers: x4-x30, w0-w23, w30
+ * clobbered registers: x4-x13, x15-x31, w0-w23, w30
  */
 
 .globl basemul_acc
@@ -259,7 +259,7 @@ basemul_acc:
   li x7, 3
   li x8, 4
   li x9, 5
-  li x14, 6
+  li x31, 6
   li x15, 7
   li x16, 8
   li x17, 9
@@ -279,7 +279,7 @@ basemul_acc:
     bn.lid x7,  0(x29++)
     bn.lid x8,  0(x29++)
     bn.lid x9,  0(x29++)
-    bn.lid x14, 0(x29++)
+    bn.lid x31, 0(x29++)
     bn.lid x15, 0(x29++)
 
     bn.lid x16, 0(x11++)
@@ -473,7 +473,7 @@ basemul_acc:
     bn.sid x7,  0(x13++)
     bn.sid x8,  0(x13++)
     bn.sid x9,  0(x13++)
-    bn.sid x14, 0(x13++)
+    bn.sid x31, 0(x13++)
     bn.sid x15, 0(x13++)
 
   ret

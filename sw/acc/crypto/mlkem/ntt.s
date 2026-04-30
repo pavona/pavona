@@ -24,7 +24,7 @@
  * @param[in]  w16: sw0, where sw0.2 = Q^-1 mod 2^32, sw0.0 = Q
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4-x30, w0-w31
+ * clobbered registers: x4-x13, x15-x31, w0-w31
  */
 
 .globl ntt
@@ -37,7 +37,7 @@ ntt:
   li x8, 4
   li x9, 5
   li x13, 6
-  li x14, 7
+  li x31, 7
   li x15, 8
   li x16, 9
   li x17, 10
@@ -62,7 +62,7 @@ ntt:
   bn.lid x8,  0(x10++)
   bn.lid x9,  0(x10++)
   bn.lid x13, 0(x10++)
-  bn.lid x14, 0(x10++)
+  bn.lid x31, 0(x10++)
   bn.lid x15, 0(x10++)
   bn.lid x16, 0(x10++)
   bn.lid x17, 0(x10++)
@@ -579,7 +579,7 @@ ntt:
   bn.sid x8, 0(x12++)
   bn.sid x9, 0(x12++)
   bn.sid x13, 0(x12++)
-  bn.sid x14, 0(x12++)
+  bn.sid x31, 0(x12++)
   bn.sid x15, 0(x12++)
   bn.sid x16, 0(x12++)
   bn.sid x17, 0(x12++)
