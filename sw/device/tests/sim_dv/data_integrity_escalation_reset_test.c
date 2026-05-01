@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -71,9 +72,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/aon_timer.h"
+#include "hw/top/dt/rv_core_ibex.h"
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -82,7 +86,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -91,9 +94,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-OTTF_DEFINE_TEST_CONFIG();
+// Configure OTTF to skip configuring alerts, since that will get in the way
+// of the alert configuration needed for this test.
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 // This location will be update from SV to contain the address which will
 // trigger the fault on a read.
@@ -104,8 +107,9 @@ static volatile const uint32_t kErrorRamAddress = 0;
 // SRAM, and instruction errors in a program that is loaded in the main SRAM.
 static volatile const uint32_t kFaultTarget = 0;
 
-static const uint32_t kExpectedAlertNumber =
-    kTopEarlgreyAlertIdRvCoreIbexFatalHwErr;
+// This location will be update from SV to indicate the expected alert to be
+// triggered.
+static volatile const uint32_t kExpectedAlertNumber = 0;
 
 // Alert class to use for the test. Will be chosen randomly by the test SW.
 static volatile dif_alert_handler_class_t alert_class_to_use;
@@ -144,11 +148,11 @@ enum {
   // @0 us -> in this phase we will not do anything so that the exception
   // handlers have time to execute.
   kEscalationPhase0Micros = 400,
-  // @200 us -> in this phase we will raise an NMI
+  // @400 us -> in this phase we will raise an NMI
   kEscalationPhase1Micros = 400,
-  // @400 us -> in this phase we will assert lc_escalate_en
+  // @800 us -> in this phase we will assert lc_escalate_en
   kEscalationPhase2Micros = 200,
-  // @600 us -> in this phase we will reset the chip
+  // @1000 us -> in this phase we will reset the chip
   kEscalationPhase3Micros = 200,
   // These are set so that both events happen in Phase2 of the escalation
   // protocol, which asserts lc_escalate_en. That should prevent the Wdog
@@ -164,15 +168,16 @@ static_assert(
     kWdogBarkMicros < kWdogBiteMicros &&
         kWdogBarkMicros > (kEscalationPhase0Micros + kEscalationPhase1Micros),
     "The wdog bite shall after the NMI phase when lc_escalate_en is asserted.");
+
 /**
- * Main SRAM addresses used in the sram_function_test.
+ * Objects to access the peripherals used in this test via dif API.
  */
-enum {
-  kSramStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-  kSramEnd = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-             TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
-  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-};
+static const uint32_t kPlicTarget = 0;
+static dif_alert_handler_t alert_handler;
+static dif_aon_timer_t aon_timer;
+static dif_rstmgr_t rstmgr;
+static dif_rv_core_ibex_t rv_core_ibex;
+static dif_rv_plic_t plic;
 
 /**
  * Program in main SRAM to jump to for testing corruption of instruction
@@ -185,25 +190,21 @@ OT_SECTION(".data.sram_function_test")
 OT_NOINLINE
 static void sram_function_test(void) {
   uint32_t pc = 0;
+  const uint32_t sram_main_mem_start =
+      dt_sram_ctrl_memory_base(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
+  const uint32_t sram_main_mem_end =
+      sram_main_mem_start +
+      dt_sram_ctrl_memory_size(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
   asm("auipc %[pc], 0;" : [pc] "=r"(pc));
-  LOG_INFO("PC: %p, SRAM: [%p, %p)", pc, kSramStart, kSramEnd);
-  CHECK(pc >= kSramStart && pc < kSramEnd, "PC is outside the main SRAM");
+  LOG_INFO("PC: %p, SRAM: [%p, %p)", pc, sram_main_mem_start,
+           sram_main_mem_end);
+  CHECK(pc >= sram_main_mem_start && pc < sram_main_mem_end,
+        "PC is outside the main SRAM");
 }
 // Make the address of this function available via a global constant that SV can
 // read.
 volatile static const uint32_t kSramFunctionTestAddress =
     (uint32_t)sram_function_test;
-
-/**
- * Objects to access the peripherals used in this test via dif API.
- */
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
-static dif_alert_handler_t alert_handler;
-static dif_aon_timer_t aon_timer;
-static dif_flash_ctrl_state_t flash_ctrl_state;
-static dif_rstmgr_t rstmgr;
-static dif_rv_core_ibex_t rv_core_ibex;
-static dif_rv_plic_t plic;
 
 static void rv_core_ibex_fault_checker(bool enable) {
   dif_rv_core_ibex_error_status_t codes;
@@ -223,37 +224,31 @@ static void rv_core_ibex_fault_checker(bool enable) {
 void ottf_external_isr(uint32_t *exc_info) {
   dif_rv_plic_irq_id_t irq_id;
 
-  LOG_INFO("At regular external ISR");
-
   // There may be multiple interrupts due to the alert firing, so this keeps an
   // interrupt counter and errors-out if there are too many interrupts.
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterInterrupt));
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    uint32_t irq =
-        (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+  dt_instance_id_t peripheral_id = dt_plic_id_to_instance_id(irq_id);
+  if (peripheral_id == dt_aon_timer_instance_id(kDtAonTimerAon)) {
+    dt_aon_timer_irq_t irq =
+        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, irq_id);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
-    CHECK(
-        irq_id == kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use,
-        "Unexpected irq_id, expected %d, got %d",
-        kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use, irq_id);
+  } else if (peripheral_id == dt_alert_handler_instance_id(kDtAlertHandler)) {
+    dt_alert_handler_irq_t alert_handler_irq =
+        (dt_alert_handler_irq_t)alert_class_to_use;
+    dif_rv_plic_irq_id_t expected_irq_id =
+        dt_alert_handler_irq_to_plic_id(kDtAlertHandler, alert_handler_irq);
+    CHECK(irq_id == expected_irq_id, "Unexpected irq_id, expected %d, got %d",
+          expected_irq_id, irq_id);
 
     // Disable these interrupts from alert_handler so they don't keep happening
     // until NMI.
-    uint32_t irq =
-        (irq_id -
-         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
-    CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
-                                                   kDifToggleDisabled));
+    CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+        &alert_handler, alert_handler_irq, kDifToggleDisabled));
 
     // Disable this interrupt to prevent it from continuously firing. This
     // should not prevent escalation from continuing.
@@ -264,7 +259,6 @@ void ottf_external_isr(uint32_t *exc_info) {
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
-  LOG_INFO("Regular external ISR exiting");
 }
 
 /**
@@ -273,8 +267,6 @@ void ottf_external_isr(uint32_t *exc_info) {
  * Handles load integrity error exceptions on Ibex.
  */
 void ottf_load_integrity_error_handler(uint32_t *exc_info) {
-  LOG_INFO("At load integrity error handler");
-
   CHECK(kFaultTarget != kFaultTargetMainSramInstr,
         "Expected fault target 0 or 1, got %d", kFaultTarget);
 
@@ -285,7 +277,6 @@ void ottf_load_integrity_error_handler(uint32_t *exc_info) {
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterException));
 
   rv_core_ibex_fault_checker(true);
-  LOG_INFO("Load integrity error handler exiting");
 }
 
 /**
@@ -294,14 +285,11 @@ void ottf_load_integrity_error_handler(uint32_t *exc_info) {
  * Handles instruction access faults on Ibex.
  */
 void ottf_instr_access_fault_handler(uint32_t *exc_info) {
-  LOG_INFO("At instr access fault handler");
-
   CHECK(kFaultTargetMainSramInstr == 2, "Expected fault target 2, got %d",
         kFaultTarget);
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterException));
 
   rv_core_ibex_fault_checker(true);
-  LOG_INFO("Instr access fault handler exiting");
 }
 
 /**
@@ -311,7 +299,6 @@ void ottf_instr_access_fault_handler(uint32_t *exc_info) {
  */
 void ottf_external_nmi_handler(uint32_t *exc_info) {
   dif_rv_core_ibex_nmi_state_t nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
-  LOG_INFO("At NMI handler");
 
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterNmi));
 
@@ -343,33 +330,17 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
   // Acknowledge the cause, which doesn't affect escalation.
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler,
                                                    kExpectedAlertNumber));
-  LOG_INFO("NMI handler exiting");
 }
 
 /**
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
-
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kDtAonTimerAon, &aon_timer));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 }
 
 /**
@@ -378,7 +349,7 @@ static void init_peripherals(void) {
  */
 static void alert_handler_config(void) {
   alert_class_to_use = (dif_alert_handler_class_t)rand_testutils_gen32_range(
-      kDifAlertHandlerClassA, kDifAlertHandlerClassD);
+      kDtAlertHandlerIrqClassa, kDtAlertHandlerIrqClassd);
   dif_alert_handler_alert_t alerts[] = {kExpectedAlertNumber};
   dif_alert_handler_class_t alert_classes[] = {alert_class_to_use};
 
@@ -413,6 +384,7 @@ static void alert_handler_config(void) {
   uint16_t threshold = 0;
   LOG_INFO("Configuring class %d with %d cycles and %d occurrences",
            alert_class_to_use, deadline_cycles, threshold);
+  LOG_INFO("Configuring alert %d for class %d", alerts[0], alert_classes[0]);
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = threshold,
@@ -516,6 +488,11 @@ static void execute_test(void) {
 }
 
 bool test_main(void) {
+  // DO NOT REMOVE THIS LOG_INFO CALL
+  // It is used by the SV side to determine when to corrupt data, since
+  // befoe the test starts it is possible code could be touching any memory
+  // location, including the corrupted data, and that could trigger the error
+  // before it is expected.
   LOG_INFO("Entered test_main");
 
   // Enable global and external IRQ at Ibex.
@@ -528,22 +505,16 @@ bool test_main(void) {
 
   // Enable all the interrupts used in this test.
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
-  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
-  // Enable access to flash for storing info across resets.
-  LOG_INFO("Setting default region accesses");
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
+      &plic, kPlicTarget,
+      dt_aon_timer_irq_to_plic_id(kDtAonTimerAon,
+                                  kDtAonTimerIrqWkupTimerExpired),
+      dt_aon_timer_irq_to_plic_id(kDtAonTimerAon, kDtAonTimerIrqWdogTimerBark));
+  rv_plic_testutils_irq_range_enable(
+      &plic, kPlicTarget,
+      dt_alert_handler_irq_to_plic_id(kDtAlertHandler,
+                                      kDtAlertHandlerIrqClassa),
+      dt_alert_handler_irq_to_plic_id(kDtAlertHandler,
+                                      kDtAlertHandlerIrqClassd));
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
   rst_info = rstmgr_testutils_reason_get();

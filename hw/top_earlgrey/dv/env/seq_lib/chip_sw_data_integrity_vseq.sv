@@ -21,9 +21,13 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
     bit [ 7:0] sw_error_ram_base[4];
     bit [ 7:0] sw_error_ram_address[4];
     bit [ 7:0] sw_fault_target[4];
+    bit [ 7:0] sw_expected_alert[4];
 
     // This sequence will trigger a fatal sec_cm failure.
     super.body();
+
+    // Wait until the test and associated data in SRAM have been loaded.
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Entered test_main")
 
     // Randomly select either the main or the retention SRAM.
     `DV_CHECK_STD_RANDOMIZE_FATAL(fault_target)
@@ -71,13 +75,13 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
               UVM_MEDIUM)
     sw_symbol_backdoor_overwrite("kFaultTarget", sw_fault_target);
 
-    // Wait until the test and associated data in SRAM have been loaded.
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Entered test_main")
-
     // And corrupt the data.
+    sw_expected_alert = {<<byte{TopEarlgreyAlertIdRvCoreIbexFatalHwErr}};
     `uvm_info(`gfn, $sformatf(
-              "Corrupting memory at address 0x%x, for alert %0d", error_ram_address,
-              TopEarlgreyAlertIdRvCoreIbexFatalHwErr), UVM_MEDIUM)
+              "Corrupting memory at address 0x%x, for alert %0d, as bytes %p", error_ram_address,
+              TopEarlgreyAlertIdRvCoreIbexFatalHwErr, sw_expected_alert), UVM_MEDIUM)
+    sw_symbol_backdoor_overwrite("kExpectedAlertNumber", sw_expected_alert);
+
     if (fault_target == FaultTargetRetSramData) begin
       // Double check again that the address range is correct.
       error_ram_size = ral.sram_ctrl_ret_aon_ram.get_addr_mask() + 1;
