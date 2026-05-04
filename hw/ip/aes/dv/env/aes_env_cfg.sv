@@ -310,9 +310,11 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
         `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ROUND COUNTER INJECT INTERFACE %d",nn))
       end
     end
-    if (!uvm_config_db#(virtual fi_ghash_if)::get(null, "*.env", "aes_ghash_fi_vif",
-                         aes_ghash_fi_vif)) begin
-      `uvm_fatal(`gfn, "FAILED TO GET HANDLE TO GHASH FAULT INJECTION INTERFACE")
+    if (`EN_GCM) begin
+      if (!uvm_config_db#(virtual fi_ghash_if)::get(null, "*.env", "aes_ghash_fi_vif",
+                           aes_ghash_fi_vif)) begin
+        `uvm_fatal(`gfn, "FAILED TO GET HANDLE TO GHASH FAULT INJECTION INTERFACE")
+      end
     end
     if (!uvm_config_db#(virtual fi_core_if)::get(null, "*.env", "aes_core_fi_vif",
                          aes_core_fi_vif)) begin
