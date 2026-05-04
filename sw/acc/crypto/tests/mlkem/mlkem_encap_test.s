@@ -82,6 +82,7 @@ main:
   la   x11, ct
   la   x12, ss
   la   x13, ek
+  li   x14, KYBER_K
   jal  x1, crypto_kem_enc
 
   ecall
