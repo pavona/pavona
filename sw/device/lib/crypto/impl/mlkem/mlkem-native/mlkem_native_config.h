@@ -3,8 +3,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_CONFIG_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_CONFIG_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_MLKEM_NATIVE_CONFIG_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_MLKEM_NATIVE_CONFIG_H_
 
 /******************************************************************************
  * Name:        MLK_CONFIG_MULTILEVEL_BUILD
@@ -142,7 +142,7 @@
  *
  *****************************************************************************/
 #if !defined(__ASSEMBLER__)
-#include "sw/device/lib/crypto/impl/mlkem/mlkem_native_alloc.h"
+#include "sw/device/lib/crypto/impl/mlkem/mlkem-native/mlkem_native_alloc.h"
 
 #define MLK_CONFIG_CONTEXT_PARAMETER_TYPE mlk_alloc_ctx_t *
 
@@ -191,4 +191,4 @@
 
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_CONFIG_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_MLKEM_NATIVE_CONFIG_H_

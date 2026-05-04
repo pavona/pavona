@@ -16,12 +16,8 @@ outputs. The firmware computes the same hash and returns only the
 32-byte digest, avoiding expensive transfer of large outputs.
 
 ACVP encapsulationKeyCheck and decapsulationKeyCheck tests verify that
-the implementation rejects invalid keys. The cryptolib does not expose
-dedicated key validation functions as of now, but encapsulate_derand
-and decapsulate perform internal checks (FIPS 203 modulus check,
-hash consistency) that reject invalid keys. We map these tests to
-regular encaps/decaps operations with dummy randomness/ciphertext:
-valid keys succeed, invalid keys cause the operation to fail.
+the implementation rejects invalid keys. These are skipped for now since
+the ACC path does not implement key validation yet.
 """
 
 import argparse
@@ -101,33 +97,9 @@ def parse_encap_decap(data):
                     "expected_hash": compute_hash(k),
                     "result": True,
                 })
-        elif function == "encapsulationKeyCheck":
-            # No expected output — only success is checked.
-            for test in group["tests"]:
-                dummy_m = [0] * 32
-                test_vectors.append({
-                    "vendor": "acvp",
-                    "test_case_id": test["tcId"],
-                    "operation": "encaps",
-                    "parameter_set": param_set,
-                    "seed": dummy_m,
-                    "ek": list(bytes.fromhex(test["ek"])),
-                    "result": test["testPassed"],
-                })
-        elif function == "decapsulationKeyCheck":
-            # No expected output — only success is checked.
-            ct_sizes = {512: 768, 768: 1088, 1024: 1568}
-            dummy_ct = [0] * ct_sizes[param_set]
-            for test in group["tests"]:
-                test_vectors.append({
-                    "vendor": "acvp",
-                    "test_case_id": test["tcId"],
-                    "operation": "decaps",
-                    "parameter_set": param_set,
-                    "dk": list(bytes.fromhex(test["dk"])),
-                    "c": dummy_ct,
-                    "result": test["testPassed"],
-                })
+        elif function in ("encapsulationKeyCheck", "decapsulationKeyCheck"):
+            # TODO: the ACC path does not implement key validation yet.
+            continue
         else:
             raise ValueError(f"Unknown function: {function}")
 

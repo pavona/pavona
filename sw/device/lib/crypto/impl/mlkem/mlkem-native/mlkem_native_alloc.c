@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/impl/mlkem/mlkem_native_alloc.h"
+#include "sw/device/lib/crypto/impl/mlkem/mlkem-native/mlkem_native_alloc.h"
 
 #include "sw/device/lib/base/hardened.h"
 

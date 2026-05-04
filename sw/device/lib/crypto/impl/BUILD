@@ -340,20 +340,41 @@ cc_library(
     ],
 )
 
+_MLKEM_COMMON_DEPS = [
+    "//sw/device/lib/crypto/impl:integrity",
+    "//sw/device/lib/crypto/impl:keyblob",
+    "//sw/device/lib/crypto/impl:status",
+    "//sw/device/lib/crypto/include:datatypes",
+]
+
+cc_library(
+    name = "mlkem_native_backend",
+    srcs = ["mlkem.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mlkem.h"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = _MLKEM_COMMON_DEPS + [
+        "//sw/device/lib/crypto/impl/mlkem/mlkem-native:mlkem_native",
+    ],
+)
+
+cc_library(
+    name = "mlkem_acc_backend",
+    srcs = ["mlkem.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mlkem.h"],
+    defines = ["ACC_HAS_PQC"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = _MLKEM_COMMON_DEPS + [
+        "//sw/device/lib/crypto/impl/mlkem/acc:mlkem_acc",
+    ],
+)
+
 cc_library(
     name = "mlkem",
-    srcs = ["mlkem.c"],
-    hdrs = [
-        "//sw/device/lib/crypto/include:mlkem.h",
-    ],
     target_compatible_with = [PAVONA_CPU],
-    deps = [
-        ":status",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl/mlkem:mlkem_native",
-        "//sw/device/lib/crypto/include:datatypes",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/drivers:acc_has_pqc": [":mlkem_acc_backend"],
+        "//conditions:default": [":mlkem_native_backend"],
+    }),
 )
 
 cc_library(

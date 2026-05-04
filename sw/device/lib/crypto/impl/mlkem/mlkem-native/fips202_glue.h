@@ -3,8 +3,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_FIPS202_GLUE_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_FIPS202_GLUE_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_FIPS202_GLUE_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_FIPS202_GLUE_H_
 #include <stdint.h>
 
 #include "mlkem/src/common.h"
@@ -74,4 +74,4 @@ static MLK_INLINE void mlk_sha3_512(uint8_t *output, const uint8_t *input,
   otcrypto_sha3_512(d, &md);
 }
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_FIPS202_GLUE_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_FIPS202_GLUE_H_

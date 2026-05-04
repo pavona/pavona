@@ -3,8 +3,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_ALLOC_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_ALLOC_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_MLKEM_NATIVE_ALLOC_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_MLKEM_NATIVE_ALLOC_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -50,4 +50,4 @@ void *mlk_alloc(mlk_alloc_ctx_t *ctx, size_t size_bytes);
  */
 void mlk_free(void *ptr, mlk_alloc_ctx_t *ctx, size_t size_bytes);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_ALLOC_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLKEM_MLKEM_NATIVE_MLKEM_NATIVE_ALLOC_H_

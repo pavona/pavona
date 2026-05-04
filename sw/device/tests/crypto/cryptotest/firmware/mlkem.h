@@ -21,7 +21,7 @@ typedef struct mlkem_test_scratch {
   uint32_t pk[((kOtcryptoMlkem1024PublicKeyBytes + sizeof(uint32_t) - 1) /
                sizeof(uint32_t))];
   uint32_t sk[MLKEM_MAX_SK_BLOB_WORDS];
-  uint8_t ct[kOtcryptoMlkem1024CiphertextBytes + 32];
+  uint32_t ct[(kOtcryptoMlkem1024CiphertextBytes + 32) / sizeof(uint32_t)];
   // Crypto work area, dk import scratch, and hash scratch.
   union {
     uint32_t keypair[kOtcryptoMlkem1024WorkBufferKeypairWords];

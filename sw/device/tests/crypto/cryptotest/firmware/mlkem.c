@@ -89,7 +89,15 @@ static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
   };
   sk.checksum = integrity_blinded_checksum(&sk);
 
-  otcrypto_const_byte_buf_t seed = {.data = d.seed, .len = d.seed_len};
+  // Reject non-word-multiple input lengths; word-multiple-but-wrong lengths
+  // are caught by the library's word-count check.
+  if (d.seed_len % sizeof(uint32_t) != 0 || d.c_len % sizeof(uint32_t) != 0) {
+    return send_fail(uj);
+  }
+  uint32_t seed_words[MLKEM_CMD_MAX_SEED_BYTES / sizeof(uint32_t)];
+  memcpy(seed_words, d.seed, d.seed_len);
+  otcrypto_const_word32_buf_t seed = {.data = seed_words,
+                                      .len = d.seed_len / sizeof(uint32_t)};
   status_t keygen_status;
   switch (d.parameter_set) {
     case 512:
@@ -111,7 +119,10 @@ static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
     return send_fail(uj);
   }
 
-  otcrypto_const_byte_buf_t ct = {.data = d.c, .len = d.c_len};
+  memset(s->ct, 0, sizeof(s->ct));
+  memcpy(s->ct, d.c, d.c_len);
+  otcrypto_const_word32_buf_t ct = {.data = s->ct,
+                                    .len = d.c_len / sizeof(uint32_t)};
   otcrypto_key_config_t ss_config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeAesCtr,
@@ -215,7 +226,15 @@ static status_t handle_mlkem_keygen(ujson_t *uj, mlkem_test_scratch_t *s) {
   };
   sk.checksum = integrity_blinded_checksum(&sk);
 
-  otcrypto_const_byte_buf_t seed = {.data = d.seed, .len = d.seed_len};
+  // Reject non-word-multiple input lengths; word-multiple-but-wrong lengths
+  // are caught by the library's word-count check.
+  if (d.seed_len % sizeof(uint32_t) != 0) {
+    return send_fail(uj);
+  }
+  uint32_t seed_words[MLKEM_CMD_MAX_SEED_BYTES / sizeof(uint32_t)];
+  memcpy(seed_words, d.seed, d.seed_len);
+  otcrypto_const_word32_buf_t seed = {.data = seed_words,
+                                      .len = d.seed_len / sizeof(uint32_t)};
   status_t keygen_status;
   switch (d.parameter_set) {
     case 512:
@@ -287,10 +306,19 @@ static status_t handle_mlkem_encaps(ujson_t *uj, mlkem_test_scratch_t *s) {
       .key_mode = key_mode, .key_length = d.ek_len, .key = s->pk};
   pk.checksum = integrity_unblinded_checksum(&pk);
 
-  otcrypto_const_byte_buf_t m = {.data = d.seed, .len = d.seed_len};
+  // Reject non-word-multiple randomness lengths; word-multiple-but-wrong
+  // lengths are caught by the library's word-count check.
+  if (d.seed_len % sizeof(uint32_t) != 0) {
+    return send_fail(uj);
+  }
+  uint32_t m_words[MLKEM_CMD_MAX_SEED_BYTES / sizeof(uint32_t)];
+  memcpy(m_words, d.seed, d.seed_len);
+  otcrypto_const_word32_buf_t m = {.data = m_words,
+                                   .len = d.seed_len / sizeof(uint32_t)};
 
   memset(s->ct, 0, sizeof(s->ct));
-  otcrypto_byte_buf_t ct = {.data = s->ct, .len = ct_bytes};
+  otcrypto_word32_buf_t ct = {.data = s->ct,
+                              .len = ct_bytes / sizeof(uint32_t)};
 
   otcrypto_key_config_t ss_config = {
       .version = kOtcryptoLibVersion1,
@@ -393,7 +421,15 @@ static status_t handle_mlkem_decaps(ujson_t *uj, mlkem_test_scratch_t *s) {
   };
   sk.checksum = integrity_blinded_checksum(&sk);
 
-  otcrypto_const_byte_buf_t ct = {.data = d.c, .len = d.c_len};
+  // Reject non-word-multiple ciphertext lengths; word-multiple-but-wrong
+  // lengths are caught by the library's word-count check.
+  if (d.c_len % sizeof(uint32_t) != 0) {
+    return send_fail(uj);
+  }
+  memset(s->ct, 0, sizeof(s->ct));
+  memcpy(s->ct, d.c, d.c_len);
+  otcrypto_const_word32_buf_t ct = {.data = s->ct,
+                                    .len = d.c_len / sizeof(uint32_t)};
 
   otcrypto_key_config_t ss_config = {
       .version = kOtcryptoLibVersion1,

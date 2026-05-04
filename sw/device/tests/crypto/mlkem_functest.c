@@ -66,6 +66,10 @@ static const otcrypto_key_config_t kMlkem1024SharedSecretConfig = {
     .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
 };
 
+#ifdef ACC_HAS_PQC
+// The ACC backend uses no work buffer.
+static uint32_t mlkem_work_buffer[1];
+#else
 // Static work buffer for all ML-KEM operations
 // Use the maximum size across all ML-KEM-1024 operations
 #define MLKEM_MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -74,12 +78,13 @@ static const otcrypto_key_config_t kMlkem1024SharedSecretConfig = {
                       kOtcryptoMlkem1024WorkBufferEncapsWords), \
             kOtcryptoMlkem1024WorkBufferDecapsWords)
 static uint32_t mlkem_work_buffer[MLKEM_MAX_WORK_BUFFER_WORDS];
+#endif
 
 // Static buffers for all ML-KEM test operations (sized for ML-KEM-1024)
 static uint32_t
     pk_buf_data[(kOtcryptoMlkem1024PublicKeyBytes + sizeof(uint32_t) - 1) /
                 sizeof(uint32_t)];
-static uint8_t ct_buf_data[kOtcryptoMlkem1024CiphertextBytes];
+static uint32_t ct_buf_data[kOtcryptoMlkem1024CiphertextWords];
 static uint32_t
     sk_blob_data[((kOtcryptoMlkem1024SecretKeyBytes + sizeof(uint32_t) - 1) /
                   sizeof(uint32_t)) *
@@ -88,15 +93,16 @@ static uint32_t
 static void test_mlkem512_derand(void) {
   uint64_t t0;
 
-  uint8_t coins[kOtcryptoMlkem512KeygenSeedBytes] = {0};
-  uint8_t coinsE[kOtcryptoMlkem512SharedSecretBytes] = {1};
+  uint32_t coins[kOtcryptoMlkem512KeygenSeedWords] = {0};
+  uint32_t coinsE[kOtcryptoMlkem512SharedSecretWords] = {1};
 
   const uint8_t expected_key[] = {
       0x5f, 0x5f, 0x8c, 0xf5, 0x7c, 0x34, 0xd4, 0x68, 0x06, 0xa2, 0xe9,
       0xc9, 0x28, 0xba, 0x10, 0x5a, 0x46, 0xf2, 0x67, 0x1a, 0xc7, 0x81,
       0xdf, 0xf1, 0x4a, 0xbb, 0x27, 0xea, 0x46, 0x06, 0x46, 0x3c};
 
-  otcrypto_const_byte_buf_t coins_buf = {.data = coins, .len = sizeof(coins)};
+  otcrypto_const_word32_buf_t coins_buf = {.data = coins,
+                                           .len = ARRAYSIZE(coins)};
   otcrypto_unblinded_key_t pk_buf = {
       .key_mode = kOtcryptoKeyModeMlkem512,
       .key_length = kOtcryptoMlkem512PublicKeyBytes,
@@ -117,10 +123,10 @@ static void test_mlkem512_derand(void) {
                                                   mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem512_keygen_derand");
 
-  otcrypto_const_byte_buf_t coinsE_buf = {.data = coinsE,
-                                          .len = sizeof(coinsE)};
-  otcrypto_byte_buf_t ct_buf = {.data = ct_buf_data,
-                                .len = kOtcryptoMlkem512CiphertextBytes};
+  otcrypto_const_word32_buf_t coinsE_buf = {.data = coinsE,
+                                            .len = ARRAYSIZE(coinsE)};
+  otcrypto_word32_buf_t ct_buf = {.data = ct_buf_data,
+                                  .len = kOtcryptoMlkem512CiphertextWords};
   uint32_t key_b_blob[ceil_div(kOtcryptoMlkem512SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -136,8 +142,8 @@ static void test_mlkem512_derand(void) {
       &pk_buf, coinsE_buf, ct_buf, &key_b_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem512_encapsulate_derand");
 
-  otcrypto_const_byte_buf_t ct_const_buf = {
-      .data = ct_buf_data, .len = kOtcryptoMlkem512CiphertextBytes};
+  otcrypto_const_word32_buf_t ct_const_buf = {
+      .data = ct_buf_data, .len = kOtcryptoMlkem512CiphertextWords};
   uint32_t key_a_blob[ceil_div(kOtcryptoMlkem512SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -161,15 +167,16 @@ static void test_mlkem512_derand(void) {
 static void test_mlkem768_derand(void) {
   uint64_t t0;
 
-  uint8_t coins[kOtcryptoMlkem768KeygenSeedBytes] = {0};
-  uint8_t coinsE[kOtcryptoMlkem768SharedSecretBytes] = {1};
+  uint32_t coins[kOtcryptoMlkem768KeygenSeedWords] = {0};
+  uint32_t coinsE[kOtcryptoMlkem768SharedSecretWords] = {1};
 
   const uint8_t expected_key[] = {
       0x85, 0x21, 0xab, 0xc8, 0x14, 0xc7, 0x67, 0x70, 0x4f, 0xa6, 0x25,
       0xd9, 0x35, 0x95, 0xd0, 0x03, 0x79, 0xa8, 0xb3, 0x70, 0x35, 0x2c,
       0xa4, 0xba, 0xb3, 0xa6, 0x82, 0x46, 0x63, 0x0d, 0xb0, 0x8b};
 
-  otcrypto_const_byte_buf_t coins_buf = {.data = coins, .len = sizeof(coins)};
+  otcrypto_const_word32_buf_t coins_buf = {.data = coins,
+                                           .len = ARRAYSIZE(coins)};
   otcrypto_unblinded_key_t pk_buf = {
       .key_mode = kOtcryptoKeyModeMlkem768,
       .key_length = kOtcryptoMlkem768PublicKeyBytes,
@@ -190,10 +197,10 @@ static void test_mlkem768_derand(void) {
                                                   mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem768_keygen_derand");
 
-  otcrypto_const_byte_buf_t coinsE_buf = {.data = coinsE,
-                                          .len = sizeof(coinsE)};
-  otcrypto_byte_buf_t ct_buf = {.data = ct_buf_data,
-                                .len = kOtcryptoMlkem768CiphertextBytes};
+  otcrypto_const_word32_buf_t coinsE_buf = {.data = coinsE,
+                                            .len = ARRAYSIZE(coinsE)};
+  otcrypto_word32_buf_t ct_buf = {.data = ct_buf_data,
+                                  .len = kOtcryptoMlkem768CiphertextWords};
   uint32_t key_b_blob[ceil_div(kOtcryptoMlkem768SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -209,8 +216,8 @@ static void test_mlkem768_derand(void) {
       &pk_buf, coinsE_buf, ct_buf, &key_b_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem768_encapsulate_derand");
 
-  otcrypto_const_byte_buf_t ct_const_buf = {
-      .data = ct_buf_data, .len = kOtcryptoMlkem768CiphertextBytes};
+  otcrypto_const_word32_buf_t ct_const_buf = {
+      .data = ct_buf_data, .len = kOtcryptoMlkem768CiphertextWords};
   uint32_t key_a_blob[ceil_div(kOtcryptoMlkem768SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -234,15 +241,16 @@ static void test_mlkem768_derand(void) {
 static void test_mlkem1024_derand(void) {
   uint64_t t0;
 
-  uint8_t coins[kOtcryptoMlkem1024KeygenSeedBytes] = {0};
-  uint8_t coinsE[kOtcryptoMlkem1024SharedSecretBytes] = {1};
+  uint32_t coins[kOtcryptoMlkem1024KeygenSeedWords] = {0};
+  uint32_t coinsE[kOtcryptoMlkem1024SharedSecretWords] = {1};
 
   const uint8_t expected_key[] = {
       0x30, 0x4d, 0xbe, 0x54, 0xd6, 0x6f, 0x80, 0x66, 0xc6, 0xa8, 0x1c,
       0x6b, 0x36, 0xc4, 0x48, 0x9b, 0xf9, 0xe6, 0x05, 0x79, 0x83, 0x3c,
       0x4e, 0xdc, 0x8a, 0xc7, 0x92, 0xe5, 0x73, 0x0d, 0xdd, 0x85};
 
-  otcrypto_const_byte_buf_t coins_buf = {.data = coins, .len = sizeof(coins)};
+  otcrypto_const_word32_buf_t coins_buf = {.data = coins,
+                                           .len = ARRAYSIZE(coins)};
   otcrypto_unblinded_key_t pk_buf = {
       .key_mode = kOtcryptoKeyModeMlkem1024,
       .key_length = kOtcryptoMlkem1024PublicKeyBytes,
@@ -263,10 +271,10 @@ static void test_mlkem1024_derand(void) {
                                                    mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem1024_keygen_derand");
 
-  otcrypto_const_byte_buf_t coinsE_buf = {.data = coinsE,
-                                          .len = sizeof(coinsE)};
-  otcrypto_byte_buf_t ct_buf = {.data = ct_buf_data,
-                                .len = kOtcryptoMlkem1024CiphertextBytes};
+  otcrypto_const_word32_buf_t coinsE_buf = {.data = coinsE,
+                                            .len = ARRAYSIZE(coinsE)};
+  otcrypto_word32_buf_t ct_buf = {.data = ct_buf_data,
+                                  .len = kOtcryptoMlkem1024CiphertextWords};
   uint32_t key_b_blob[ceil_div(kOtcryptoMlkem1024SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -282,8 +290,8 @@ static void test_mlkem1024_derand(void) {
       &pk_buf, coinsE_buf, ct_buf, &key_b_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem1024_encapsulate_derand");
 
-  otcrypto_const_byte_buf_t ct_const_buf = {
-      .data = ct_buf_data, .len = kOtcryptoMlkem1024CiphertextBytes};
+  otcrypto_const_word32_buf_t ct_const_buf = {
+      .data = ct_buf_data, .len = kOtcryptoMlkem1024CiphertextWords};
   uint32_t key_a_blob[ceil_div(kOtcryptoMlkem1024SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -327,8 +335,8 @@ static void test_mlkem512_randomized(void) {
       otcrypto_mlkem512_keygen(&pk_buf, &sk_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem512_keygen");
 
-  otcrypto_byte_buf_t ct_buf = {.data = ct_buf_data,
-                                .len = kOtcryptoMlkem512CiphertextBytes};
+  otcrypto_word32_buf_t ct_buf = {.data = ct_buf_data,
+                                  .len = kOtcryptoMlkem512CiphertextWords};
   uint32_t key_b_blob[ceil_div(kOtcryptoMlkem512SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -344,8 +352,8 @@ static void test_mlkem512_randomized(void) {
                                                 mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem512_encapsulate");
 
-  otcrypto_const_byte_buf_t ct_const_buf = {
-      .data = ct_buf_data, .len = kOtcryptoMlkem512CiphertextBytes};
+  otcrypto_const_word32_buf_t ct_const_buf = {
+      .data = ct_buf_data, .len = kOtcryptoMlkem512CiphertextWords};
   uint32_t key_a_blob[ceil_div(kOtcryptoMlkem512SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -387,8 +395,8 @@ static void test_mlkem768_randomized(void) {
       otcrypto_mlkem768_keygen(&pk_buf, &sk_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem768_keygen");
 
-  otcrypto_byte_buf_t ct_buf = {.data = ct_buf_data,
-                                .len = kOtcryptoMlkem768CiphertextBytes};
+  otcrypto_word32_buf_t ct_buf = {.data = ct_buf_data,
+                                  .len = kOtcryptoMlkem768CiphertextWords};
   uint32_t key_b_blob[ceil_div(kOtcryptoMlkem768SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -404,8 +412,8 @@ static void test_mlkem768_randomized(void) {
                                                 mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem768_encapsulate");
 
-  otcrypto_const_byte_buf_t ct_const_buf = {
-      .data = ct_buf_data, .len = kOtcryptoMlkem768CiphertextBytes};
+  otcrypto_const_word32_buf_t ct_const_buf = {
+      .data = ct_buf_data, .len = kOtcryptoMlkem768CiphertextWords};
   uint32_t key_a_blob[ceil_div(kOtcryptoMlkem768SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -447,8 +455,8 @@ static void test_mlkem1024_randomized(void) {
       otcrypto_mlkem1024_keygen(&pk_buf, &sk_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem1024_keygen");
 
-  otcrypto_byte_buf_t ct_buf = {.data = ct_buf_data,
-                                .len = kOtcryptoMlkem1024CiphertextBytes};
+  otcrypto_word32_buf_t ct_buf = {.data = ct_buf_data,
+                                  .len = kOtcryptoMlkem1024CiphertextWords};
   uint32_t key_b_blob[ceil_div(kOtcryptoMlkem1024SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
@@ -464,8 +472,8 @@ static void test_mlkem1024_randomized(void) {
                                                  mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem1024_encapsulate");
 
-  otcrypto_const_byte_buf_t ct_const_buf = {
-      .data = ct_buf_data, .len = kOtcryptoMlkem1024CiphertextBytes};
+  otcrypto_const_word32_buf_t ct_const_buf = {
+      .data = ct_buf_data, .len = kOtcryptoMlkem1024CiphertextWords};
   uint32_t key_a_blob[ceil_div(kOtcryptoMlkem1024SharedSecretBytes,
                                sizeof(uint32_t)) *
                       2];
