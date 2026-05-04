@@ -8,12 +8,6 @@ load("//rules:acc.bzl", "acc_binary", "acc_library")
 
 package(default_visibility = ["//visibility:public"])
 
-NAME_BY_SEC_LEVEL = {
-    2: "mlkem512",
-    3: "mlkem768",
-    4: "mlkem1024",
-}
-
 acc_library(
     name = "ntt",
     srcs = [
@@ -42,116 +36,50 @@ acc_library(
     ],
 )
 
-[
-    acc_library(
-        name = name + "_poly",
-        srcs = [
-            "poly.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "poly",
+    srcs = ["poly.s"],
+)
 
 acc_library(
     name = "poly_gen_matrix",
-    srcs = [
-        "poly_gen_matrix.s",
-    ],
+    srcs = ["poly_gen_matrix.s"],
 )
 
-[
-    acc_library(
-        name = name + "_pack_ciphertext",
-        srcs = [
-            "pack_ciphertext.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "pack_ciphertext",
+    srcs = ["pack_ciphertext.s"],
+)
 
-[
-    acc_library(
-        name = name + "_pack_keys",
-        srcs = [
-            "pack_keys.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "pack_keys",
+    srcs = ["pack_keys.s"],
+)
 
-[
-    acc_library(
-        name = name + "_indcpa_enc",
-        srcs = [
-            "mlkem_indcpa_enc.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "indcpa_enc",
+    srcs = ["mlkem_indcpa_enc.s"],
+)
 
-[
-    acc_library(
-        name = name + "_keypair",
-        srcs = [
-            "mlkem_keypair.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "keypair",
+    srcs = ["mlkem_keypair.s"],
+)
 
-[
-    acc_library(
-        name = name + "_encap",
-        srcs = [
-            "mlkem_encap.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "encap",
+    srcs = ["mlkem_encap.s"],
+)
 
-[
-    acc_library(
-        name = name + "_decap",
-        srcs = [
-            "mlkem_decap.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "decap",
+    srcs = ["mlkem_decap.s"],
+)
 
-[
-    acc_library(
-        name = name + "_consts",
-        srcs = [
-            "mlkem_consts.s",
-        ],
-        copts = [
-            "-DKYBER_K=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "consts",
+    srcs = ["mlkem_consts.s"],
+)
 
 acc_library(
     name = "kmac_send_msg",
