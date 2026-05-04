@@ -200,8 +200,12 @@ static uint64_t prince_shift_rows(const uint64_t in, int inverse) {
   uint64_t shift_rows_out = 0;
   for (unsigned int i = 0; i < 4; i++) {
     const uint64_t row = in & (row_mask >> (4 * i));
-    const unsigned int shift = inverse ? i * 16 : 64 - i * 16;
-    shift_rows_out |= (row >> shift) | (row << (64 - shift));
+    if (i == 0) {
+      shift_rows_out |= row;
+    } else {
+      const unsigned int shift = inverse ? i * 16 : 64 - i * 16;
+      shift_rows_out |= (row >> shift) | (row << (64 - shift));
+    }
   }
   return shift_rows_out;
 }
