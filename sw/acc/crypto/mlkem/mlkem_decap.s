@@ -10,84 +10,7 @@
 
 .text
 
-#define KYBER_N 256
-#define KYBER_Q 3329
-#define KYBER_SYMBYTES 32   /* size in bytes of hashes, and seeds */
-#define KYBER_SSBYTES  32   /* size in bytes of shared key */
-#define KYBER_POLYBYTES		384
-#define KYBER_ETA2 2
-#if (KYBER_K == 2)
-  #define KYBER_POLYVECBYTES	768
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 640
-  #define KYBER_ETA1 3
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 800
-  #define KYBER_INDCPA_SECRETKEYBYTES 768
-  #define KYBER_INDCPA_BYTES          768
-
-  #define KYBER_PUBLICKEYBYTES  800
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  1632
-  #define KYBER_CIPHERTEXTBYTES 768
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 25
-  #define KYBER_CIPHERTEXT_WRS 24
-  #define KYBER_GEN_MATRIX_NONCE 254
-  #define KYBER_GEN_MATRIX_AT_NONCE -511
-  #define POLY -512
-  #define K_POLYS -1024
-  #define K_SQUARED_POLYS -2048
-
-#elif (KYBER_K == 3)
-  #define KYBER_POLYVECBYTES	1152
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 960
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1184
-  #define KYBER_INDCPA_SECRETKEYBYTES 1152
-  #define KYBER_INDCPA_BYTES          1088
-
-  #define KYBER_PUBLICKEYBYTES  1184
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  2400
-  #define KYBER_CIPHERTEXTBYTES 1088
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 37
-  #define KYBER_CIPHERTEXT_WRS 34
-  #define KYBER_GEN_MATRIX_NONCE 253
-  #define KYBER_GEN_MATRIX_AT_NONCE -767
-  #define POLY -512
-  #define K_POLYS -1536
-  #define K_SQUARED_POLYS -4608
-
-#elif (KYBER_K == 4)
-  #define KYBER_POLYVECBYTES	1536
-  #define KYBER_POLYCOMPRESSEDBYTES    160
-  #define KYBER_POLYVECCOMPRESSEDBYTES 1408
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1568
-  #define KYBER_INDCPA_SECRETKEYBYTES 1536
-  #define KYBER_INDCPA_BYTES          1568
-
-  #define KYBER_PUBLICKEYBYTES  1568
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  3168
-  #define KYBER_CIPHERTEXTBYTES 1568
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 49
-  #define KYBER_CIPHERTEXT_WRS 49
-  #define KYBER_GEN_MATRIX_NONCE 252
-  #define KYBER_GEN_MATRIX_AT_NONCE -1023
-  #define POLY -512
-  #define K_POLYS -2048
-  #define K_SQUARED_POLYS -8192
-#endif
+#define POLY -512
 
 /* Register aliases */
 .equ x0, zero
@@ -158,27 +81,17 @@
  * @param[in]  x10 (a0): dmem pointer to input ciphertext
  * @param[in]  x11 (a1): dmem pointer to input packed sk
  * @param[out] x13 (a3): dmem pointer to output message
+ * @param[in]  x14: KYBER_K
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 .globl indcpa_dec
 indcpa_dec:
-  /* Stack address mapping */
+  /* Stack layout (worst-case K=4). V and SKPV follow B contiguously:
+   *   STACK_DEC_B + K*512    : poly v
+   *   STACK_DEC_B + (K+1)*512: secret key polyvec */
   #define STACK_DEC_M_ADDR     -32
-#if (KYBER_K == 2)
-  #define STACK_DEC_SKPV     -1056
-  #define STACK_DEC_V        -1568
-  #define STACK_DEC_B        -2592
-#elif (KYBER_K == 3)
-  #define STACK_DEC_SKPV     -1568
-  #define STACK_DEC_V        -2080
-  #define STACK_DEC_B        -3616
-#elif (KYBER_K == 4)
-  #define STACK_DEC_SKPV     -2080
-  #define STACK_DEC_V        -2592
   #define STACK_DEC_B        -4640
-#else
-#endif
 
   /* Store parameters to stack */
   sw a3, STACK_DEC_M_ADDR(fp)
@@ -188,11 +101,9 @@ indcpa_dec:
   add a2, fp, a2
   la  a3, const_8
   la  a5, const_0x0fff
-  li  x14, KYBER_K
   jal x1, unpack_ciphertext
 
   /*** unpack_sk ***/
-  li  x14, KYBER_K
   jal x1, unpack_sk
 
   bn.wsrr   w16, 0x0 /* w16 = R | Q */
@@ -203,34 +114,43 @@ indcpa_dec:
   add a0, fp, a0
   la  a1, twiddles_ntt
   add a2, zero, a0
-  .rept KYBER_K
+  /* K iterations */
+  LOOP x14, 2
     jal x1, ntt
-  .endr
+    nop
 
   /* After NTT, w16 is still R | Q and MOD is still 2*R | 2*Q */
   /*** Vector vector multiplication ***/
-  addi x29, a0, K_POLYS
+  /* x29 = a0 - K * 512 */
+  slli t0, x14, 9
+  sub  x29, a0, t0
   addi a1, a2, 512
   add  a3, zero, x29
   la   x28, twiddles_basemul
   jal  x1, basemul
-  .rept KYBER_K-1
+  /* K-1 iterations */
+  addi t0, x14, -1
+  LOOP t0, 5
     addi a3, a3, POLY
     la   x28, twiddles_basemul
     jal  x1, basemul_acc
-  .endr
+    nop
 
   /* After basemul, w16 is still R | Q and MOD is still 2*R | 2*Q */
   /*** INTT ***/
-  add     a0, a0, K_POLYS
+  /* a0 -= K * 512 */
+  slli t0, x14, 9
+  sub  a0, a0, t0
   la      a1, twiddles_intt
   add     a2, zero, a0
   jal     x1, intt
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
   /*** SUB ***/
-  li   a0, STACK_DEC_V
+  li   a0, STACK_DEC_B
   add  a0, fp, a0
+  slli t0, x14, 9
+  add  a0, a0, t0
   addi a1, a2, POLY
   addi a2, a2, POLY
   jal  x1, poly_sub
@@ -262,6 +182,7 @@ indcpa_dec:
  * @param[in]  x10 (a0): dmem pointer to input ct
  * @param[in]  x11 (a1): dmem pointer to input sk
  * @param[out] x12 (a2): dmem pointer to output key_a
+ * @param[in]  x14: KYBER_K
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
@@ -273,37 +194,27 @@ crypto_kem_dec:
   #define STACK_KEM_DEC_CT_ADDR  -20
   #define STACK_KEM_DEC_PK_ADDR  -24
   #define STACK_KEM_DEC_CMP_ADDR -32
-#if (KYBER_K == 2)
-  #define STACK_KEM_DEC_KR     -3232
-  #define STACK_KEM_DEC_BUF    -3296
-  #define STACK_KEM_DEC_CMP    -2144
-#elif (KYBER_K == 3)
-  #define STACK_KEM_DEC_KR     -4256
-  #define STACK_KEM_DEC_BUF    -4320
-  #define STACK_KEM_DEC_CMP    -2656
-#elif (KYBER_K == 4)
+  /* Worst-case (K=4) stack offsets */
   #define STACK_KEM_DEC_KR     -5280
   #define STACK_KEM_DEC_BUF    -5344
   #define STACK_KEM_DEC_CMP    -3168
-#else
-#endif
   /* Set frame pointer */
   addi fp, sp, 0
-#if KYBER_K == 2
-    li  t0, -3296
-#elif KYBER_K == 3
-    li  t0, -4320
-#elif KYBER_K == 4
-    li  t0, -5344
-#endif
+  li   t0, -5344
   add  sp, sp, t0
 
   /* Save parameters to stack */
   sw   a0, STACK_KEM_DEC_CT_ADDR(fp)
   sw   a1, STACK_KEM_DEC_SK_ADDR(fp)
-  addi t0, a1, KYBER_INDCPA_SECRETKEYBYTES
+  /* t1 = K * 384 (size of sk = size of pk minus 32-byte seed) */
+  slli t0, x14, 7
+  slli t1, x14, 8
+  add  t1, t1, t0
+  add  t0, a1, t1
   sw   t0, STACK_KEM_DEC_PK_ADDR(fp)
-  addi t0, t0, KYBER_INDCPA_PUBLICKEYBYTES
+  /* t0 = pk + K*384 + 32 (h follows pk) */
+  add  t0, t0, t1
+  addi t0, t0, 32
   sw   t0, STACK_KEM_DEC_H_ADDR(fp)
   sw   a2, STACK_KEM_DEC_KEYA_ADDR(fp)
 
@@ -341,12 +252,17 @@ crypto_kem_dec:
   li   a3, STACK_KEM_DEC_CMP
   add  a3, fp, a3
   sw   a3, STACK_KEM_DEC_CMP_ADDR(fp)
-  li   x14, KYBER_K
   jal  x1, indcpa_enc
 
   /*** shake256(z||c,32) ***/
-  addi    a1, zero, 32
-  addi    a1, a1, KYBER_CIPHERTEXTBYTES
+  /* t1 = &kyber_ciphertext_sizes[K] */
+  la      t1, kyber_ciphertext_sizes
+  slli    t0, x14, 2
+  add     t1, t1, t0
+
+  /* a1 = 32 + KYBER_CIPHERTEXTBYTES */
+  lw      a1, 0(t1)
+  addi    a1, a1, 32
   slli    t0, a1, 5
   addi    t0, t0, SHAKE256_CFG
   csrrw   zero, KECCAK_CFG_REG, t0
@@ -357,7 +273,7 @@ crypto_kem_dec:
   jal     x1, keccak_send_message
   /* cmp */
   lw      a0, STACK_KEM_DEC_CT_ADDR(fp)
-  addi    a1, zero, KYBER_CIPHERTEXTBYTES
+  lw      a1, 0(t1)
   jal     x1, keccak_send_message
   /* output buffer */
   li      a2, STACK_KEM_DEC_KR
@@ -374,7 +290,13 @@ crypto_kem_dec:
   lw      a1, STACK_KEM_DEC_CMP_ADDR(fp)
   bn.subi w2, w31, 1  /* w2 = 2^256 - 1 (all ones) */
   bn.mov  w4, w31     /* w4 = 0 (difference accumulator) */
-  LOOPI KYBER_CIPHERTEXT_WRS, 5
+  /* t2 = KYBER_CIPHERTEXT_WRS = KYBER_CIPHERTEXTBYTES / 32 */
+  la      t2, kyber_ciphertext_sizes
+  slli    t3, x14, 2
+  add     t2, t2, t3
+  lw      t2, 0(t2)
+  srli    t2, t2, 5
+  LOOP t2, 5
     bn.lid t0, 0(a0++)
     bn.lid t1, 0(a1++)
     bn.cmp w0, w1
@@ -393,3 +315,14 @@ crypto_kem_dec:
   bn.sid  t0, 0(a0) /* return key */
 
   ret
+
+.data
+
+/* KYBER_CIPHERTEXTBYTES indexed by K. K=0,1 unused. */
+.balign 4
+kyber_ciphertext_sizes:
+.word 0     /* K=0 unused */
+.word 0     /* K=1 unused */
+.word 768   /* K=2 (ML-KEM-512) */
+.word 1088  /* K=3 (ML-KEM-768) */
+.word 1568  /* K=4 (ML-KEM-1024) */
