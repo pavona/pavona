@@ -25,6 +25,6 @@ jobs:
       item: "weekly"
       coverage: true
       timeout-minutes: 9000 # 150 hours
-      dashboard: "git@github.com:pavona/internal-dashboard.git"
-      publish: true
+      dashboard-private: "git@github.com:pavona/internal-dashboard.git"
+      dashboard-public: "git@github.com:pavona/public-dashboard.git"
       reseed-source: "hw/dv/grading/grading_report.hjson"

@@ -38,15 +38,18 @@ inputs:
   fusesoc-core-path:
     default: ""
     type: string
-  dashboard:
+  dashboard-private:
     type: string
-    default: "git@github.com:pavona/internal-dashboard.git"
-  publish:
-    type: boolean
-    default: true
+    default: ""
+  dashboard-public:
+    type: string
+    default: ""
   reseed-source:
     type: string
   dashboard-upload-key:
+    type: string
+    default: ""
+  public-upload-key:
     type: string
     default: ""
 
@@ -65,6 +68,7 @@ runs:
         echo "SHOULD_RERUN=$SHOULD_RERUN" >> $GITHUB_OUTPUT
         echo "Set SHOULD_RERUN to $SHOULD_RERUN"
       shell: bash
+
     - name: Setup SSH deploy key
       id: ssh_setup
       if: always()
@@ -84,6 +88,34 @@ runs:
         git config --global user.email "dvsim-bot@pavona.local"
         git config --global user.name "dvsim bot"
       shell: bash
+
+    - name: Checkout internal dashboard for regrading
+      if: ${{ inputs.item == 'weekly' }}
+      uses: actions/checkout@v4
+      with:
+        repository: pavona/internal-dashboard
+        ssh-key: ${{ inputs.dashboard-upload-key }}
+        path: internal-dashboard
+
+    - name: Run regrading mechanism
+      id: regrade
+      if: ${{ inputs.item == 'weekly' }}
+      run: |
+        FLOW_DIR="internal-dashboard/all_tops_batch_weekly_sim"
+        LATEST_VER=$(find "$FLOW_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | tail -1)
+        if [ -z "$LATEST_VER" ]; then
+          echo "No versions found under $FLOW_DIR - skipping regrade."
+          exit 0
+        fi
+        echo "Regrading against version: $LATEST_VER"
+        python3 util/grade_regression_vcs.py "$FLOW_DIR/$LATEST_VER" --skip-csv -o ./grading_report.hjson || true
+      shell: bash
+
+    - name: Clear regrade
+      if: ${{ inputs.item == 'weekly' }}
+      run: rm -rf internal-dashboard
+      shell: bash
+
     - name: Run DVSim
       id: dvsim
       if: ${{ inputs.run-type != 'quick' || steps.should_rerun.outputs.SHOULD_RERUN == '1' }}
@@ -97,32 +129,46 @@ runs:
           MP=${{ inputs.concurrent-jobs }}
         fi
         export FUSESOC_CORES=${{ inputs.fusesoc-core-path }}
-        DASH_REPO="${{ inputs.dashboard }}"
-        PUBLISH=""
-        if [ "${{ inputs.publish }}" == "true" ]; then
-          PUBLISH="--publish"
+        PUBLISH_PRIVATE=""
+        PUBLISH_PUBLIC=""
+        if [ -n "${{ inputs.dashboard-private }}" ]; then
+          PUBLISH_PRIVATE="--publish ${{ inputs.dashboard-private }} --publish-mode private"
+        fi
+        if [ -n "${{ inputs.dashboard-public }}" ]; then
+          PUBLISH_PUBLIC="--publish-prev ${{ inputs.dashboard-public }}"
         fi
         RESEED=""
-        if [ -n "${{ inputs.reseed-source }}" ]; then
+        if [ -f ./grading_report.hjson ]; then
+          RESEED="-rs ./grading_report.hjson"
+        elif [ -n "${{ inputs.reseed-source }}" ]; then
           RESEED="-rs ${{ inputs.reseed-source }}"
         fi
+
         util/dvsim/dvsim.py $COVERAGE \
           ${{ inputs.hjson }} \
           -t ${{ inputs.tool }} \
           -mp $MP \
           -i ${{ inputs.item }} ${{ inputs.extra-dvsim-flags }} \
-          ${PUBLISH} ${DASH_REPO} \
+          ${PUBLISH_PRIVATE} \
           ${RESEED} \
           || ! ${{ inputs.require-pass }}
+
+        if [ -n "$PUBLISH_PUBLIC" ]; then
+          ssh-add -D
+          printf '%s\n' "${{ inputs.public-upload-key }}" | ssh-add -
+
+          util/dvsim/dvsim.py \
+            ${{ inputs.hjson }} \
+            -t ${{ inputs.tool }} \
+            -i ${{ inputs.item }} \
+            ${PUBLISH_PUBLIC}
+        fi
       shell: bash
+
     - run: 'mkdir -p scratch/'
       shell: bash
       if: ${{ always() && env.SHOULD_RERUN == '1' }}
-    - uses: actions/upload-artifact@v4
-      if: ${{ always() }}
-      with:
-        name: results-${{ inputs.sim-name }}
-        path: scratch/
+
     - name: Clear scratch directory
       if: always()
       run: rm -rf scratch/

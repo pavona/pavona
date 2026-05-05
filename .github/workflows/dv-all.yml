@@ -30,12 +30,12 @@ on:
       timeout-minutes:
         type: number
         default: 1440  # 24 hours
-      dashboard:
+      dashboard-private:
         type: string
-        default: "git@github.com:pavona/internal-dashboard.git"
-      publish:
-        type: boolean
-        default: true
+        default: ""
+      dashboard-public:
+        type: string
+        default: ""
       reseed-source:
         type: string
 
@@ -69,7 +69,8 @@ jobs:
         item: ${{ inputs.item }}
         coverage: ${{ inputs.coverage }}
         concurrent-jobs: ${{ inputs.concurrent-jobs }}
-        dashboard: ${{ inputs.dashboard }}
-        publish: ${{ inputs.publish }}
+        dashboard-private: ${{ inputs.dashboard-private }}
+        dashboard-public: ${{ inputs.dashboard-public }}
         reseed-source: ${{ inputs.reseed-source }}
         dashboard-upload-key: ${{ secrets.DASHBOARD_UPLOAD_KEY }}
+        public-upload-key: ${{ secrets.PUBLIC_UPLOAD_KEY }}

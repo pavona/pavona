@@ -132,5 +132,5 @@ jobs:
       run-type: "nightly"
       coverage: true
       timeout-minutes: 2880 # 48 hours
-      dashboard: "git@github.com:pavona/internal-dashboard.git"
-      publish: true
+      dashboard-private: "git@github.com:pavona/internal-dashboard.git"
+      dashboard-public: "git@github.com:pavona/public-dashboard.git"
