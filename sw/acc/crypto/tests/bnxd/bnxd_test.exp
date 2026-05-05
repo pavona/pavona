@@ -1,3 +1,4 @@
+# Copyright zeroRISC Inc.
 # Copyright Ruben Niederhagen and Hoang Nguyen Hien Pham.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0

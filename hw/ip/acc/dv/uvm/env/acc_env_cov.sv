@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -2149,7 +2150,7 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
                  ({1'b0, wdr_operand_a} - {1'b0, wdr_operand_b} + {1'b0, mod} >= {1'b1, 256'b0}))
   endgroup
 
-  // Used by BN.LID/LD and BN.SID/SD
+  // Used by BN.LID and BN.SID
   covergroup insn_bn_xid_cg
     with function sample(mnem_str_t          mnemonic,
                          logic [14:0]        offset,
@@ -2274,6 +2275,7 @@ class acc_env_cov extends cip_base_env_cov #(.CFG_T(acc_env_cfg));
     `DEF_MNEM_CROSS(inc_both_and_bad_wdr_and_bad_addr)
   endgroup
 
+  // Used by BN.LD and BN.SD
   covergroup insn_bn_xd_cg
     with function sample(mnem_str_t          mnemonic,
                          logic [14:0]        offset,

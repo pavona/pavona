@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -226,7 +227,7 @@ class MisalignedLoadStore(SnippetGen):
             assert op_val_wrd is not None
 
             op_val = [op_val_wrd, op_val_grs1, bn_offset_val, 0]
-        
+
         elif insn.mnemonic == 'bn.sd':
             # Pick wrs randomly
             op_val_wrs = model.pick_operand_value(insn.operands[1].op_type)

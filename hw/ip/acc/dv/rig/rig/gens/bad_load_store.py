@@ -272,14 +272,14 @@ class BadLoadStore(SnippetGen):
             op_val_grs2 = random.choice(known_regs)[0]
 
             op_val = [op_val_grs1, op_val_grs2, bn_offset_val, 0, 0]
-        
+
         elif insn.mnemonic == 'bn.ld':
             # Pick wrd randomly
             op_val_wrd = model.pick_operand_value(insn.operands[0].op_type)
             assert op_val_wrd is not None
 
             op_val = [op_val_wrd, op_val_grs1, bn_offset_val, 0]
-        
+
         elif insn.mnemonic == 'bn.sd':
             # Pick wrs randomly
             op_val_wrs = model.pick_operand_value(insn.operands[1].op_type)

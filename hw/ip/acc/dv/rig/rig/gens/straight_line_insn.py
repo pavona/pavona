@@ -269,8 +269,8 @@ class StraightLineInsn(SnippetGen):
         return random.choices(options, weights=[1.0, wt10, wt01])[0]
 
     def _pick_inc_grs(self,
-                       idx0: int,
-                       model: Model) -> Tuple[int, int]:
+                      idx0: int,
+                      model: Model) -> int:
         '''Pick a value in 0, 1
 
         This is appropriate to use as the increment flag for
@@ -549,11 +549,13 @@ class StraightLineInsn(SnippetGen):
             if operand.name == 'grs_inc':
                 if insn.mnemonic == 'bn.ld':
                     enc_val = self._pick_inc_grs(enc_vals[1], model)
+                    assert enc_val is not None
                     enc_vals.append(enc_val)
                     continue
                 else:
                     assert insn.mnemonic == 'bn.sd'
                     enc_val = self._pick_inc_grs(enc_vals[0], model)
+                    assert enc_val is not None
                     enc_vals.append(enc_val)
                     continue
 

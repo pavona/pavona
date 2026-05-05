@@ -689,7 +689,7 @@ module acc_decoder
               ld_insn              = 1'b1;
               rf_we_bignum         = 1'b1;
               rf_ren_a_base        = 1'b1;
-              rf_wdata_sel_bignum  = RfWdSelLsu;            
+              rf_wdata_sel_bignum  = RfWdSelLsu;
             end
 
             if (insn[8]) begin
