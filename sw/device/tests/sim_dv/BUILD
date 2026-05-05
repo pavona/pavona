@@ -351,7 +351,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_darjeeling:sim_dv": None,
         "//hw/top_earlgrey:sim_dv": None,
-        },
+    },
     deps = [
         "//hw/top/dt:alert_handler",
         "//hw/top/dt:aon_timer",
