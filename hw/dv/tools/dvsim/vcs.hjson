@@ -211,6 +211,9 @@
   cov_report_txt:   "{cov_report_dir}/dashboard.txt"
   cov_report_page:  "dashboard.html"
 
+  // Knowledge database
+  knowledge_db_dir_name: "kdb.elab++"
+
   // UNR related.
   // All code coverage, assert isn't supported
   cov_unr_metrics: "line+cond+fsm+tgl+branch"
