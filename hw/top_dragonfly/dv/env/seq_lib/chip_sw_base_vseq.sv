@@ -750,8 +750,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_CHECK(cfg.get_mem_from_addr(addr, mem),
               $sformatf("Memory region containing SW symbol %0s @0x%08X could not be found",
               symbol, addr))
-    `DV_CHECK_FATAL(mem inside {Rom0, [RamMain0:RamMain15], [RamCtn0:RamCtn15],
-                                FlashBank0Data, FlashBank1Data},
+    `DV_CHECK_FATAL(mem inside {Rom0, [RamMain0:RamMain15], [RamCtn0:RamCtn15]},
         $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
 
     addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
@@ -759,9 +758,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     if (is_write) begin
       `uvm_info(`gfn, $sformatf({"Overwriting symbol \"%s\" via backdoor in %0s: ",
-                               "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
-                               "addr_mask = 0x%0h"},
-                              symbol, mem.name(), addr, mem_addr, size, addr_mask), UVM_LOW)
+                                 "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
+                                 "addr_mask = 0x%0h, data = %p"},
+                                symbol, mem.name(), addr, mem_addr, size, addr_mask, data), UVM_LOW)
       for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
 
       // TODO(#26486): Move this specialization to an extended class called rom_ctrl_bkdr_util.
@@ -778,9 +777,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       end
     end else begin
       `uvm_info(`gfn, $sformatf({"Reading symbol \"%s\" via backdoor in %0s: ",
-                             "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
-                             "addr_mask = 0x%0h"},
-                            symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
+                                 "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
+                                 "addr_mask = 0x%0h"},
+                                symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
       for (int i = 0; i < size; i++) mem_bkdr_read8(mem, mem_addr + i, data[i]);
     end
   endfunction
@@ -843,8 +842,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                        input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                        output byte data);
     // TODO(#26486): We cannot read from a number of the memories.
-    `DV_CHECK_FATAL(mem inside {FlashBank0Data, FlashBank1Data, FlashBank0Info, FlashBank1Info},
-                    "Currently unable to read from that (type of )memory")
+    `DV_CHECK_FATAL(mem inside {Rom0, [RamMain0:RamMain15], [RamRet0:RamRet15], [RamCtn0:RamCtn15]},
+                    "Currently unable to read from %s memory", mem.name())
     data = cfg.mem_bkdr_util_h[mem].read8(addr);
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h", addr, data), UVM_HIGH)
   endfunction
