@@ -25,7 +25,7 @@ from SimResults import SimResults
 from tabulate import tabulate
 from Test import Test
 from Testplan import Testplan
-from utils import TS_FORMAT, rm_path
+from utils import TS_FORMAT, rm_path, clean_odirs, mk_path
 
 # This affects the bucketizer failure report.
 _MAX_UNIQUE_TESTS = 5
@@ -554,6 +554,40 @@ class SimCfg(FlowCfg):
         for item in self.cfgs:
             item._cov_unr()
 
+    def _write_seed_manifest(self, run_results):
+        '''Write the seed manifest grouped by pass/fail/killed status.
+
+        Called once from _gen_results after dispatch. Runs missing from
+        run_results (e.g. killed before dispatch) and any non-P/F status
+        default to 'K'.
+        '''
+        if not self.runs:
+            return
+
+        latest_dir = Path(self.scratch_path) / "seeds" / "latest"
+        clean_odirs(odir=latest_dir, max_odirs=89)
+        mk_path(latest_dir)
+
+        buckets = {"P": [], "F": [], "K": []}
+        for r in self.runs:
+            status = run_results.get(r, "K")
+            buckets.get(status, buckets["K"]).append(r)
+
+        sections = [("P", "PASSED"), ("F", "FAILED"), ("K", "KILLED")]
+        manifest_path = latest_dir / "seeds.txt"
+        try:
+            with open(manifest_path, "w") as f:
+                f.write(f"# timestamp: {self.timestamp}\n")
+                f.write("# build_seed: {}\n".format(self.build_seed or "none"))
+                f.write("# status full_name.seed\n\n")
+                for code, label in sections:
+                    f.write(f"# {label}\n")
+                    for r in buckets[code]:
+                        f.write(f"{r.full_name}\n")
+                    f.write("\n")
+        except OSError as e:
+            log.warning(f"Failed to write seed manifest {manifest_path}: {e}")
+
     def _gen_json_results(self, run_results):
         """Returns the run results as json-formatted dictionary.
         """
@@ -801,6 +835,7 @@ class SimCfg(FlowCfg):
             fail_msgs.append("")
             return fail_msgs
 
+        self._write_seed_manifest(run_results)
         deployed_items = self.deploy
         results = SimResults(deployed_items, run_results)
 
