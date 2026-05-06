@@ -96,6 +96,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     // only support 1 outstanding TL items in tlul_adapter
     m_tl_agent_cfg.max_outstanding_req = 1;
     m_tl_agent_cfgs["otp_macro_prim_reg_block"].max_outstanding_req = 1;
+    // CSR accesses to the macro reg block is blocked if lc_dft_en is not enabled, so
+    // this enables the tl_agent blocker.
+    m_tl_agent_cfgs["otp_macro_prim_reg_block"].enable_blocker = 1'b1;
 
     // create the inputs cfg instance
     dut_cfg = otp_ctrl_ast_inputs_cfg::type_id::create("dut_cfg");

@@ -584,11 +584,17 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     `DV_CHECK_NE_FATAL(csr, null)
     `downcast(dv_reg, csr)
 
-    if (addr_phase_write) begin
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-    end else if (data_phase_read) begin
-      `DV_CHECK_EQ((csr.get_mirrored_value() | status_mask), (item.d_data | status_mask),
-                   $sformatf("reg name: status, compare_mask %0h", status_mask))
+    // If the item gets a d_error the write didn't go through so don't update the mirrored value
+    // for writes, and for reads rely on check_tl_read_value_after_error in the the cip scoreboard
+    // to check the data.
+    if (item.d_error == 1'b0) begin
+      if (addr_phase_write) begin
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      end else if (data_phase_read) begin
+        `DV_CHECK_EQ((csr.get_mirrored_value() | status_mask), (item.d_data | status_mask),
+                     $sformatf("block %s, csr %s, compare_mask %0h", ral_name, csr.get_name(),
+                               status_mask))
+      end
     end
   endfunction
 
@@ -2658,24 +2664,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     end
 
     return mem_access_allowed;
-  endfunction
-
-  protected virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
-    if (ral_name == "otp_macro_prim_reg_block" &&
-        cfg.otp_ctrl_vif.lc_dft_en_i != lc_ctrl_pkg::On) begin
-      if (channel == DataChannel) begin
-        `DV_CHECK_EQ(item.d_error, 1,
-            $sformatf({"On interface %0s, TL item: %0s, access gated by lc_dft_en_i"},
-            ral_name, item.sprint(uvm_default_line_printer)))
-
-        // In data read phase, check d_data when d_error = 1.
-        if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
-          check_tl_read_value_after_error(item, cfg.ral_models[ral_name]);
-        end
-      end
-      return 1;
-    end
-    return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
   virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);

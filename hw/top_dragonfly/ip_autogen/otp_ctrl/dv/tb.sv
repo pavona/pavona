@@ -9,11 +9,14 @@ module tb;
   import otp_ctrl_env_pkg::*;
   import otp_ctrl_test_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import lc_ctrl_pkg::lc_tx_t;
+  import lc_ctrl_pkg::lc_tx_test_false_loose;
   import mem_bkdr_util_pkg::mem_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  `include "prim_flop_macros.sv"
 
   // TB base test ENV_T & CFG_T specification
   //
@@ -179,6 +182,17 @@ module tb;
       .clk_i (clk),
       .rst_ni (rst_n)
   );
+
+  // Sample the blocker when the transaction gets accepted by the device.
+  // The blocker goes through synchronizers, so to get predictions right we
+  // need to access the post synchronizer value via xmr.
+  // We add a flop to delay it by one cycle
+  lc_tx_t sync_lc_dft_en_xmr;
+  assign sync_lc_dft_en_xmr = lc_tx_t'(otp_macro.u_tlul_lc_gate.lc_en_i);
+  logic blocked_d, blocked_q;
+  assign blocked_d = lc_tx_test_false_loose(sync_lc_dft_en_xmr);
+  `PRIM_FLOP_A(blocked_d, blocked_q, 1'b0, clk, rst_n)
+  assign prim_tl_if.a_blocked = prim_tl_if.h2d.a_valid && prim_tl_if.d2h.a_ready ? blocked_q : 1'b0;
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
     assign sram_req[i]              = sram_if[i].req;
