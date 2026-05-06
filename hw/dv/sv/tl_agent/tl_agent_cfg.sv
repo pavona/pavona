@@ -130,6 +130,11 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // return UVM_NOT_OK when the item is aborted without accepted.
   int unsigned csr_access_abort_pct_in_adapter = 0;
 
+  // Indicate whether a transaction blocker is enabled. This is typically to handle a tlul_lc_gate
+  // inserted in the device. If the transaction is blocked and enable_blocker is active the
+  // transaction will trigger an error.
+  bit enable_blocker = 1'b0;
+
   // Indicate whether to check TLUL errors.
   // Added to allow some TLUL checks to be ignored on certain scenarios.
   bit check_tl_errs = 1'b1;
@@ -146,7 +151,6 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   constraint invalidate_d_channel_op_c {
     invalidate_d_x dist { 1 := 7, 0 := 3};
   }
-
 
   `uvm_object_utils_begin(tl_agent_cfg)
     `uvm_field_int(max_outstanding_req,   UVM_DEFAULT)

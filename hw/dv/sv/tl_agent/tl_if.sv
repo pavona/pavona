@@ -13,6 +13,12 @@ interface tl_if(input clk, input rst_n);
   tlul_pkg::tl_h2d_t h2d_int; // req (internal)
   tlul_pkg::tl_d2h_t d2h_int; // rsp (internal)
 
+  // This indicates a transaction will be blocked, typically because some lc_ctrl prevents
+  // accesses to a register block or a memory:
+  // - Should be ignored unless tl_agent_cfg.enable_blocker is set.
+  // - When it is set and enabled we should expect an error response.
+  logic a_blocked;
+
   dv_utils_pkg::if_mode_e if_mode; // interface mode - Host or Device
 
   modport dut_host_mp(output h2d_int, input d2h_int);
@@ -36,6 +42,7 @@ interface tl_if(input clk, input rst_n);
     input  rst_n;
     input  h2d;
     input  d2h;
+    input  a_blocked;
   endclocking
   modport mon_mp(clocking mon_cb);
 
