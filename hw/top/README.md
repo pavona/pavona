@@ -1,6 +1,8 @@
 # OpenTitan top selection
 
-The `hw/top` bazel package provides a mechanism to select the OpentTitan top for which all targets (headers, binaries, tests) are built. This package also provides various bazel targets to expose hardware information about the top that could be useful for software and bazel rules. Finally, its provides a number of useful bazel macros that integrate with the build system to handle conditional handling of dependencies.
+The `hw/top` bazel package provides a mechanism to select the OpentTitan top for which all targets (headers, binaries, tests) are built.
+This package also provides various bazel targets to expose hardware information about the top that could be useful for software and bazel rules.
+Finally, its provides a number of useful bazel macros that integrate with the build system to handle conditional handling of dependencies.
 
 **Table of content**
 - [Top selection](#top-selection)
@@ -9,11 +11,13 @@ The `hw/top` bazel package provides a mechanism to select the OpentTitan top for
 
 ## Top selection
 
-This package provide a single target `//hw/top:top` (which can abbreviated as `//hw/top`) which is a [`string_flat`](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/common_settings_doc.md#string_flag). This means that:
+This package provide a single target `//hw/top:top` (which can abbreviated as `//hw/top`) which is a [`string_flat`](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/common_settings_doc.md#string_flag).
+This means that:
 - the top can be selected on bazel's command line using the syntax `--//hw/top=<top value>`,
 - the top can be selected by any bazel [transition](https://bazel.build/rules/lib/builtins/transition).
 
-The values accepted by this setting are the names of the tops configured with the build system. This includes, but is not limited to:
+The values accepted by this setting are the names of the tops configured with the build system.
+This includes, but is not limited to:
 - `earlgrey`
 - `darjeeling`
 - `englishbreakfast`
@@ -50,7 +54,8 @@ The headers for every IP are exposed as:
 ### Device Tables (DT)
 
 The various DT artifacts are exposed as:
-- `//hw/top/dt:api` for the generic DT API library (types and top level enums). This is a `cc_library`, in particular the plain source and header files are exposed as:
+- `//hw/top/dt:api` for the generic DT API library (types and top level enums).
+  This is a `cc_library`, in particular the plain source and header files are exposed as:
   - `//hw/top/dt:api_gen` for both the source and header files (`dt_api.h` and `dt_api.c`),
   - `//hw/top/dt:api_src` for the source file (`dt_api.c`),
   - `//hw/top/dt:api_hdr` for the header file (`dt_api.h`),
@@ -69,11 +74,15 @@ It is generally recommended that device code either depends on `//hw/top/dt` if 
 
 ### Top description
 
-Each top has a description in Bazel created by `opentitan_top` which can be used to tweak the build graph. See [./doc/top_desc.md] for more details.
+Each top has a description in Bazel created by `opentitan_top` which can be used to tweak the build graph.
+See [./doc/top_desc.md] for more details.
 
 ### Compatibility annotations
 
-Bazel provides a mechanism under which targets can be [annotated](https://bazel.build/extending/platforms) to only be available when certain configuration settings are met. This prevents accidental errors such as using an Earlgrey header when compiling for Darjeeling. The `//hw/top` package makes extensive usage of this feature. Generally speaking, if a target does not make sense for a given `//hw/top` value, then it will be marked as [`@platforms//:incompatible`](https://bazel.build/extending/platforms#expressive-constraints) which will result in build errors.
+Bazel provides a mechanism under which targets can be [annotated](https://bazel.build/extending/platforms) to only be available when certain configuration settings are met.
+This prevents accidental errors such as using an Earlgrey header when compiling for Darjeeling.
+The `//hw/top` package makes extensive usage of this feature.
+Generally speaking, if a target does not make sense for a given `//hw/top` value, then it will be marked as [`@platforms//:incompatible`](https://bazel.build/extending/platforms#expressive-constraints) which will result in build errors.
 
 For example, if we try to build Earlgrey headers for darjeeling:
 ```console
@@ -83,7 +92,9 @@ Dependency chain:
     //hw/top_earlgrey/sw/autogen:top_earlgrey (927671)   <-- target platform (@@platforms//host:host) didn't satisfy constraint @@platforms//:incompatible
 ```
 
-Note that this mechanism applies transitively, which has powerful consequences. For example, Darjeeling does not have a USB module. Let's look at what happens if try to compile to usbdev DIF for darjeeling:
+Note that this mechanism applies transitively, which has powerful consequences.
+For example, Darjeeling does not have a USB module.
+Let's look at what happens if try to compile to usbdev DIF for darjeeling:
 ```console
 $ ./bazelisk.sh build //sw/device/lib/dif:usbdev --//hw/top=darjeeling
 ERROR: Analysis of target '//sw/device/lib/dif:usbdev' failed; build aborted: Target //sw/device/lib/dif:usbdev is incompatible and cannot be built, but was explicitly requested.
@@ -99,8 +110,10 @@ You can create your own annotations by using the macros described in the next se
 
 ## The `//hw/top:defs.bzl` library
 
-This bazel library provides several important definitions are macros which can be used by rule creators and users to interact with the build system. See the documentation in [the file](./defs.bzl) for more details.
-- `opentitan_if_ip(ip, obj, default)` provides a way to conditionally do something the top selected by `//hw/top` contains at least one instance of a given IP. For example, if we want to conditionally compile code only if the usbdev block is present, we could do:
+This bazel library provides several important definitions are macros which can be used by rule creators and users to interact with the build system.
+See the documentation in [the file](https://github.com/lowRISC/opentitan/blob/master/hw/top/defs.bzl) for more details.
+- `opentitan_if_ip(ip, obj, default)` provides a way to conditionally do something the top selected by `//hw/top` contains at least one instance of a given IP.
+For example, if we want to conditionally compile code only if the usbdev block is present, we could do:
 Example:
 ```python
 # Optional dependency on the usbdev with a define.
@@ -110,14 +123,17 @@ cc_library(
     deps = opentitan_if_ip("usbdev", ["//sw/device/lib/dif:usbdev"], []),
 )
 ```
-- `opentitan_require_ip(ip)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid if the top has at least one instance of a given IP. Recall that compatibility requirements are transitive so this annotation will usually be redundant if the target depends on headers or the DT. Example:
+- `opentitan_require_ip(ip)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid if the top has at least one instance of a given IP.
+Recall that compatibility requirements are transitive so this annotation will usually be redundant if the target depends on headers or the DT.
+Example:
 ```python
 cc_library(
     name = "my_library",
     target_compatible_with = opentitan_require_ip("uart"),
 )
 ```
-- `opentitan_select_top(values, default)` provides a way to conditionally do something depending on the top. For example if we to create an alias on another library on Earlgrey but a different one on Darjeeling and English Breakfast, we could do:
+- `opentitan_select_top(values, default)` provides a way to conditionally do something depending on the top.
+For example if we to create an alias on another library on Earlgrey but a different one on Darjeeling and English Breakfast, we could do:
 ```python
 alias(
     name = "my_alias",
@@ -127,7 +143,9 @@ alias(
     }, "//something:default")
 )
 ```
-- `opentitan_require_top(top)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid on certan tops. Similarly to `opentitan_require_ip`, this requirement will usually be redundant if the target transitively depends on headers or the DT. Example:
+- `opentitan_require_top(top)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid on certan tops.
+Similarly to `opentitan_require_ip`, this requirement will usually be redundant if the target transitively depends on headers or the DT.
+Example:
 ```python
 cc_library(
     name = "my_library",
@@ -143,7 +161,8 @@ This section explains how to perform several common operations using Bazel.
 
 ### Inspect the C/Rust/DT generated source code
 
-The [bazel targets](#bazel-targets) compiles a lot of tool generated code which sometimes needs to be inspected. To access those files, you must perform the following two operations:
+The [bazel targets](#bazel-targets) compiles a lot of tool generated code which sometimes needs to be inspected.
+To access those files, you must perform the following two operations:
 - build the file(s) using the correct `//hw/top` configuration,
 - query the location of the output, **also** using the same `//hw/top` configuration.
 
