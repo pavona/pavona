@@ -166,17 +166,19 @@ class tl_monitor extends dv_base_monitor#(
       tl_seq_item req = tl_seq_item::type_id::create("req");
       tl_seq_item cloned_req;
       tlul_pkg::tl_h2d_t h2d = immediate ? cfg.vif.h2d : cfg.vif.mon_cb.h2d;
+      logic vif_a_blocked = immediate ? cfg.vif.a_blocked : cfg.vif.mon_cb.a_blocked;
 
       // Create a sequence item. Note: this is a field in the class, which ad_channels_thread() uses
       // to pass the transaction to the relevant analysis port/ports.
-      req.a_addr   = h2d.a_address;
-      req.a_opcode = h2d.a_opcode;
-      req.a_size   = h2d.a_size;
-      req.a_param  = h2d.a_param;
-      req.a_data   = h2d.a_data;
-      req.a_mask   = h2d.a_mask;
-      req.a_source = h2d.a_source;
-      req.a_user   = h2d.a_user;
+      req.a_addr    = h2d.a_address;
+      req.a_opcode  = h2d.a_opcode;
+      req.a_size    = h2d.a_size;
+      req.a_param   = h2d.a_param;
+      req.a_data    = h2d.a_data;
+      req.a_mask    = h2d.a_mask;
+      req.a_source  = h2d.a_source;
+      req.a_user    = h2d.a_user;
+      req.a_blocked = cfg.enable_blocker && vif_a_blocked;
       `uvm_info(`gfn, $sformatf("[%0s][a_chan] : %0s", agent_name, req.convert2string()), UVM_HIGH)
 
       if (cfg.en_cov) sample_outstanding_cov(req);

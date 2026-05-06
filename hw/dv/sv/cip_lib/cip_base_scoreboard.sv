@@ -179,7 +179,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endtask
 
   task process_tl_a_item(string ral_name, tl_seq_item item);
-    `uvm_info(`gfn, $sformatf("received tl a_chan item: %0s", item.convert2string()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf(
+              "block %s received tl a_chan item: %0s", ral_name, item.convert2string()),
+              UVM_HIGH)
 
     if (cfg.en_scb_tl_err_chk) begin
       if (predict_tl_err(item, AddrChannel, ral_name)) return;
@@ -190,7 +192,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endtask
 
   task process_tl_d_item(string ral_name, tl_seq_item item);
-    `uvm_info(`gfn, $sformatf("received tl d_chan item: %0s", item.convert2string()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf(
+              "block %s received tl d_chan item: %0s", ral_name, item.convert2string()),
+              UVM_HIGH)
 
     if (cfg.en_scb_tl_err_chk) begin
       // check tl packet integrity
@@ -437,14 +441,19 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
+  // Return true if the normalized version of addr is a csr address in the given reg block.
+  protected virtual function bit is_csr_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
+    return norm_addr inside {block.csr_addrs};
+  endfunction : is_csr_addr
+
   // Return true if item is a fetch from a mapped address in the given register block
   protected function bit is_csr_fetch(tl_seq_item item, dv_base_reg_block block);
     cip_tl_seq_item cip_item;
     `downcast(cip_item, item)
     return (item.a_opcode == tlul_pkg::Get &&
             cip_item.get_instr_type() == MuBi4True &&
-            is_tl_access_mapped_addr(item.a_addr, block) &&
-            !is_mem_addr(item.a_addr, block));
+            is_csr_addr(item.a_addr, block));
   endfunction
 
   // Return whether an A-channel access was invalid and check any D-channel response.
@@ -490,13 +499,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     tl_intg_err_e   tl_intg_err_type;
     logic           cmd_intg_err, data_intg_err;
     bit             write_w_instr_type_err, instr_type_err;
+    logic           trans_blocked;
 
     mem_access_err = !is_tl_mem_access_allowed(item, block, mem_byte_access_err, mem_wo_err,
                                                mem_ro_err, custom_err);
 
     `downcast(cip_item, item)
     cip_item.get_a_chan_err_info(tl_intg_err_type, cmd_intg_err, data_intg_err,
-                                 write_w_instr_type_err, instr_type_err);
+                                 write_w_instr_type_err, instr_type_err, trans_blocked);
 
     if (bus_intg_err) begin
       // On bus integrity error, update the mirrored value of bus integrity alert CSR fields.
@@ -522,9 +532,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         exp_d_error |= cfg.tl_mem_access_gated;
       end
 
+      if (trans_blocked) begin
+        `uvm_info(`gfn, $sformatf("trans_blocked=%b for ral %s", trans_blocked, ral_name),
+                  UVM_HIGH)
+      end
       exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
                      write_w_instr_type_err | instr_type_err |
-                     ecc_err | csr_read_err;
+                     ecc_err | csr_read_err | trans_blocked;
 
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
@@ -548,16 +562,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       `DV_CHECK_EQ(item.d_error, exp_d_error,
           $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
-                    "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
-                    "write_w_instr_type_err: %0d, ", "cfg.tl_mem_access_gated: %0d ",
-                    "ecc_err: %0d"},
+                     "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
+                     "write_w_instr_type_err: %0d, ", "cfg.tl_mem_access_gated: %0d ",
+                     "ecc_err: %0d ", "trans_blocked: %0d"},
                     ral_name, item.sprint(uvm_default_line_printer), unmapped_err, mem_access_err,
                     bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err,
-                    cfg.tl_mem_access_gated, ecc_err))
+                    cfg.tl_mem_access_gated, ecc_err, trans_blocked))
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
-        check_tl_read_value_after_error(item, block);
+        check_tl_read_value_after_error(item, block, trans_blocked);
       end
 
       // we don't have cross coverage for simultaneous errors because 1) they're not important,
@@ -584,22 +598,20 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   protected function void check_tl_read_value_after_error(tl_seq_item item,
-                                                          dv_base_reg_block block);
+                                                          dv_base_reg_block block,
+                                                          bit access_blocked);
     bit [DataWidth-1:0] exp_data;
     tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
 
     // Determine expected data.
-    // When the access target was a CSR, tlul_adapter_reg always returns a '1.
-    // When the access target was the memory, tlul_adapter_sram either returns
-    // DataWhenInstrError ('1) or DataWhenError ('0) depending whether it was a
-    // instruction type access or not.
+    // - If the transaction was blocked or it is a memory access tlul returns '0 for instruction
+    //   type accesses, else '1.
+    // - Otherwise it is a csr accesss and tlul_adapter_reg returns '1.
     uvm_reg_addr_t csr_addr = block.get_word_aligned_addr(item.a_addr);
-    if (csr_addr inside {block.csr_addrs}) begin
-      exp_data = '1;
+    if (access_blocked || is_mem_addr(item.a_addr, block)) begin
+      exp_data = (a_user.instr_type == prim_mubi_pkg::MuBi4True) ? '0 : '1;
     end else begin
-      // if error occurs when it's an instruction, return all 0 since it's an illegal instruction
-      if (a_user.instr_type == prim_mubi_pkg::MuBi4True) exp_data = 0;
-      else                                               exp_data = '1;
+      exp_data = '1;
     end
 
     `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
@@ -607,9 +619,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // Return true if the given address is mapped in the register block
   local function bit is_tl_access_mapped_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
-    uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
     // check if it's mem addr or reg addr
-    return is_mem_addr(addr, block) || norm_addr inside {block.csr_addrs};
+    return is_mem_addr(addr, block) || is_csr_addr(addr, block);
   endfunction
 
   // check if tl mem access will trigger error or not

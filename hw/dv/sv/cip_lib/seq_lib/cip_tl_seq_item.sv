@@ -247,7 +247,8 @@ class cip_tl_seq_item extends tl_seq_item;
                                             output logic         cmd_intg_err,
                                             output logic         data_intg_err,
                                             output bit           write_w_instr_type_err,
-                                            output bit           instr_type_err);
+                                            output bit           instr_type_err,
+                                            output bit           trans_blocked);
     import prim_secded_pkg::secded_64_57_t, prim_secded_pkg::secded_39_32_t;
     import prim_secded_pkg::prim_secded_inv_64_57_dec, prim_secded_pkg::prim_secded_inv_39_32_dec;
 
@@ -270,6 +271,7 @@ class cip_tl_seq_item extends tl_seq_item;
     write_w_instr_type_err = a_opcode inside {PutFullData, PutPartialData} &&
                              act_a_user.instr_type == MuBi4True;
     instr_type_err = !(act_a_user.instr_type inside {MuBi4True, MuBi4False});
+    trans_blocked = a_blocked;
   endfunction : get_a_chan_err_info
 
   virtual function void get_d_chan_err_info(output tl_intg_err_e tl_intg_err_type,
