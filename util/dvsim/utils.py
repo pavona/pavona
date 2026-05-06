@@ -619,6 +619,31 @@ def mk_symlink(path, link):
             rm_path(link)
 
 
+def cp_path(src, dest):
+    '''Copy the specified source path to the destination path.
+
+    'src' and 'dest' are Path-like objects. If src is a directory, it is
+    copied recursively, merging into dest if dest already exists. If src is
+    a file, it is copied with metadata preserved. Parent directories of
+    dest are created as needed.
+
+    Raises FileNotFoundError if src does not exist. The caller is expected
+    to handle this — depending on the situation, a missing source may be
+    fatal or merely warrant a warning.
+    '''
+    src = Path(src)
+    dest = Path(dest)
+
+    if not src.exists():
+        raise FileNotFoundError(f"Source path does not exist: {src}")
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if src.is_dir():
+        shutil.copytree(src, dest, dirs_exist_ok=True)
+    else:
+        shutil.copy2(src, dest)
+
+
 def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
     """Clean previous output directories.
 
