@@ -18,7 +18,7 @@ from CfgJson import set_target_attribute
 from LauncherFactory import get_launcher_cls
 from Scheduler import Scheduler
 from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
-                   md_results_to_html, mk_path, rm_path, subst_wildcards)
+                   md_results_to_html, mk_path, rm_path, subst_wildcards, cp_path)
 
 
 # Interface class for extensions.
@@ -497,8 +497,16 @@ class FlowCfg():
                                         relative_to)
         return "[%s](%s)" % (link_text, relative_link)
 
-    def publish_results(self, repository: str, test: str):
-        """Publish these results to a corresponding repository."""
+    def publish_results(self, repository: str, test: str, mode: str):
+        """Publish these results to a corresponding repository.
+
+        In 'public' mode, only sanitized report HTML is published, and the
+        Coverage Dashboard link in each report is stripped (since the native
+        reports are not published).
+
+        In 'private' mode, native tool databases and the
+        full cov_report directory are also published.
+        """
         log.info("Publishing results to %s", repository)
         repo_dir = os.path.expanduser("./scratch/results_repo")
 
@@ -544,22 +552,12 @@ class FlowCfg():
                                     'latest')
             os.makedirs(dest_dir, exist_ok=True)
             shutil.copy2(latest_report, os.path.join(dest_dir, 'report.html'))
-            log.info("Copied report for %s", item.name)
 
-            if self.args.cov_reports:
-                cov_dir = os.path.join(item.scratch_path, 'cov_report')
-                if not os.path.exists(cov_dir):
-                    log.warning("No coverage reports found for %s at %s, skipping.", item.name,
-                                cov_dir)
-                else:
-                    cov_dest_dir = os.path.join(repo_dir,
-                                                f"{self.name}_{test}_{self.flow}",
-                                                f"{self.name}_{test}_{self.flow}_{self.timestamp}",
-                                                os.path.basename(item.scratch_path),
-                                                'cov_report')
-                    os.makedirs(cov_dest_dir, exist_ok=True)
-                    shutil.copytree(cov_dir, cov_dest_dir, dirs_exist_ok=True)
-                    log.info("Copied coverage reports for %s", item.name)
+            if mode == "private":
+                self._publish_native_artifacts(item, repo_dir, test)
+            else:
+                self._strip_native_cov_link(Path(os.path.join(dest_dir, 'report.html')))
+            log.info("Copied report for %s", item.name)
 
         subprocess.run(["git", "-C", repo_dir, "add", "-A"], check=True, env=env)
         subprocess.run(["git", "-C", repo_dir, "commit", "-m",
@@ -700,6 +698,114 @@ class FlowCfg():
 
         with open(filepath, 'w') as f:
             f.write(str(soup))
+
+    def _publish_native_artifacts(self, item, repo_dir: str, test: str):
+        """Copy native coverage reports and tool databases for item into the published repo.
+
+        The destination layout mirrors the scratch layout,
+        so the dashboard link's existing relative path (../../cov_report/...)
+        resolves correctly inside the repo without any HTML rewriting.
+        """
+        item_dest_root = os.path.join(repo_dir,
+                                      f"{self.name}_{test}_{self.flow}",
+                                      f"{self.name}_{test}_{self.flow}_{self.timestamp}",
+                                      os.path.basename(item.scratch_path))
+
+        cov_src = os.path.join(item.scratch_path, 'cov_report')
+        cov_dest = os.path.join(item_dest_root, 'cov_report')
+        try:
+            cp_path(cov_src, cov_dest)
+            log.info(f"Copied native coverage reports for {item.name}")
+        except FileNotFoundError:
+            log.error(f"No native coverage reports found for {item.name} at {cov_src}.")
+            sys.exit(1)
+
+        seed_src = os.path.join(item.scratch_path, 'seeds', 'latest')
+        seed_dest = os.path.join(item_dest_root, 'seeds', 'latest')
+        try:
+            cp_path(seed_src, seed_dest)
+            log.info(f"Copied long seeds for {item.name}")
+        except FileNotFoundError:
+            log.error(f"No long seeds found for {item.name} at {seed_src}.")
+            sys.exit(1)
+
+        # Coverage databases (merged .vdb / equivalent and knowledge DB) go
+        # together under cov_data/ for downstream consumers to re-open in the
+        # native GUI.
+        cov_data_dest = os.path.join(item_dest_root, 'cov_data')
+
+        merged_src = item.cov_merge_db_dir
+        if merged_src:
+            merged_dest = os.path.join(cov_data_dest, os.path.basename(merged_src))
+            try:
+                cp_path(merged_src, merged_dest)
+                log.info(f"Copied merged coverage database for {item.name}")
+            except FileNotFoundError:
+                log.warning(f"No merged coverage database found for {item.name} at {merged_src}.")
+
+        kdb_name = getattr(item, 'knowledge_db_dir_name', None)
+        if kdb_name:
+            # The knowledge DB lives somewhere under scratch_path; locate it by
+            # name rather than assuming a fixed parent directory, so the same
+            # code works for VCS (under build_dir/simv.daidir) and Xcelium
+            # (under build_dir/xcelium.d, etc.).
+            scratch = Path(item.scratch_path)
+            matches = list(scratch.rglob(kdb_name))
+            if not matches:
+                log.warning(f"Knowledge database {kdb_name} not found under {scratch}"
+                            f" for {item.name}")
+            else:
+                for kdb_src in matches:
+                    # Preserve each KDB's location relative to scratch_path so
+                    # multiple matches (e.g. one per build_mode) don't collide.
+                    build_subdir = kdb_src.parent.parent.name
+                    kdb_dest = Path(cov_data_dest) / build_subdir / kdb_name
+                    cp_path(kdb_src, kdb_dest)
+                    log.info(f"Copied knowledge database "
+                             f"{build_subdir}/{kdb_name} for {item.name}")
+        else:
+            log.warning(f"No knowledge database for {item.name}. Current support only for VCS.")
+
+    def _strip_native_cov_link(self, html_path: Path):
+        """Remove the 'Coverage Dashboard' link heading from a published report.
+
+        Used in public-mode publishing, where the native coverage reports are
+        not pushed and the relative link in the dashboard would 404. Looks for
+        an <h3> (or <h2>/<h4>, defensively) whose anchor text is exactly
+        'Coverage Dashboard' and removes the heading entirely. The bare
+        'Coverage Dashboard' heading without a link (emitted when
+        cov_report_page is not configured) is left alone — there's nothing
+        private to strip.
+        """
+        if not html_path.exists():
+            return
+        try:
+            with open(html_path) as f:
+                soup = BeautifulSoup(f.read(), "html.parser")
+        except OSError:
+            log.error(f"Could not open {html_path}.")
+            sys.exit(1)
+
+        target = None
+        for heading in soup.find_all(["h2", "h3", "h4"]):
+            a = heading.find("a")
+            if a is None:
+                continue
+            if a.get_text(strip=True) == "Coverage Dashboard":
+                target = heading
+                break
+
+        if target is None:
+            return
+
+        target.decompose()
+
+        try:
+            with open(html_path, "w") as f:
+                f.write(str(soup))
+        except OSError:
+            log.error(f"Could not open {html_path}.")
+            sys.exit(1)
 
     def has_errors(self):
         return self.errors_seen

@@ -645,11 +645,6 @@ def parse_args():
                       help=('Rather than building or running any tests, '
                             'analyze the coverage from the last run.'))
 
-    covg.add_argument("--cov-reports",
-                      action='store_true',
-                      help=('Enable collection of coverage data, '
-                            'and include the generated reports.'))
-
     pubg = parser.add_argument_group('Generating and publishing results')
 
     pubg.add_argument("--map-full-testplan",
@@ -673,6 +668,17 @@ def parse_args():
                            "or the possession of a deploy key. "
                            "Also requires the corresponding tool and flow to be passed from "
                            "the sim_cfg or manually with the --tool and -i flags.")
+
+    pubg.add_argument("--publish-mode",
+                      choices=["public", "private"],
+                      default="public",
+                      help=("Mode for publishing results. 'public' (the default) "
+                            "publishes only sanitized report numbers. 'private' "
+                            "additionally publishes native tool databases "
+                            "(.vdb, kdb.elab++) and rewrites the dashboard's "
+                            "Coverage Dashboard link to point at the native "
+                            "Synopsys/Cadence reports inside the published repo. "
+                            "Only meaningful with --publish or --publish-prev."))
 
     dvg = parser.add_argument_group('Controlling DVSim itself')
 
@@ -750,10 +756,6 @@ def main():
     if args.publish:
         args.map_full_testplan = True
 
-    # Set coverage flag to true if passed the cov_reports flag
-    if args.cov_reports:
-        args.cov = True
-
     args.branch = resolve_branch(args.branch)
     proj_root_src, proj_root = resolve_proj_root(args)
     args.scratch_root = resolve_scratch_root(args.scratch_root, proj_root)
@@ -802,6 +804,11 @@ def main():
         cfg.print_list()
         sys.exit(0)
 
+    # --publish-mode is only meaningful when actually publishing.
+    if args.publish_mode == "private" and not (args.publish or args.publish_prev):
+        log.fatal("--publish-mode=private requires --publish or --publish-prev")
+        sys.exit(1)
+
     # Run --publish-prev if it was provided
     if args.publish_prev is not None:
         check_ssh_git_access(args.publish_prev, "publish-prev")
@@ -809,7 +816,7 @@ def main():
             log.fatal("We need to know the regression to publish it! Set the regression with -i")
             sys.exit(1)
 
-        cfg.publish_results(args.publish_prev, args.items[0])
+        cfg.publish_results(args.publish_prev, args.items[0], mode=args.publish_mode)
         sys.exit(0)
 
     # Purge the scratch path if --purge option is set.
@@ -833,7 +840,7 @@ def main():
     # Error out if it is a non-publishable config or if we don't have the passphrase
     if args.publish is not None:
         if cfg.flow == "sim":
-            if (not args.cov and not args.cov_reports) or not cfg.is_primary_cfg:
+            if not args.cov or not cfg.is_primary_cfg:
                 log.fatal("--publish requires --cov to be enabled for sim"
                           " and for the config file to be a batch sim_cfg")
                 sys.exit(1)
@@ -853,7 +860,7 @@ def main():
 
         # Publish results
         if args.publish is not None:
-            cfg.publish_results(args.publish, args.items[0])
+            cfg.publish_results(args.publish, args.items[0], mode=args.publish_mode)
 
     else:
         log.error("Nothing to run!")
