@@ -206,17 +206,24 @@ module tlul_lc_gate
       end
 
       StError: begin
-        err_en = On;
         if (lc_tx_test_true_strict(lc_en_i)) begin
-          state_d = StErrorOutstanding;
+          if (outstanding_txn == '0) begin
+            state_d = StActive;
+          end else begin
+            err_en = On;
+            state_d = StErrorOutstanding;
+          end
+        end else begin
+          err_en = On;
         end
       end
 
       StErrorOutstanding: begin
-        err_en = On;
         block_cmd = 1'b1;
         if (outstanding_txn == '0) begin
           state_d = StActive;
+        end else begin
+          err_en = On;
         end
       end
 
