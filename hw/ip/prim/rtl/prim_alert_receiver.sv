@@ -316,14 +316,15 @@ module prim_alert_receiver
         |->
         ##[0:SkewCycles] ping_ok_o,
         clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
-    // alert
+    // alert is flagged unless it is due to a pending ping. Notice the ping request can arrive
+    // some cycles after the state transitions away from Idle.
     `ASSERT(Alert_A,
         ##1 $rose(alert_tx_i.alert_p) &&
         (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
         state_q == Idle &&
         !ping_pending_q
         |->
-        ##[0:SkewCycles] alert_o,
+        ##[0:SkewCycles] ping_pending_q || alert_o,
         clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
   end else begin : gen_sync_assert
     // signal integrity check propagation
