@@ -28,7 +28,6 @@ from __future__ import annotations
 import argparse
 import csv
 import math
-import re
 import shutil
 import subprocess
 import sys
@@ -93,76 +92,110 @@ def run_urg_grade(unit: str, merged: Path, report: Path, dry_run: bool) -> tuple
 
 
 def parse_test_file(tests_file: Path,
-                    passing_tests_dir: Path) -> tuple[Counter, dict[str, list[str]]]:
+                    seed_map: dict[tuple[str, str], str]
+                    ) -> tuple[Counter, dict[str, list[str]]]:
+    """Parse the corresponding graded/unique tests file.
+
+    Returns (counts, seeds), where seeds maps test_name -> list of full
+    256-bit seeds resolved from the seed manifest.
     """
-    Parses the corresponding graded file and counts the instances of a test
-    within that file, returns the number of tests in that graded file and the
-    seeds.
-    """
-    INDEX_PREFIX_RE = re.compile(r"^(\d+)\.")    # leading run index
-    SEED_SUFFIX_RE = re.compile(r"\.(\d+)$")     # VCS seed
     counts: Counter = Counter()
-    seeds = defaultdict(list)
-    if not tests_file.is_file() or not passing_tests_dir.is_dir():
-        log.error("A file or passing tests directory has not been provided: (%s, %s)",
-                  tests_file.name, passing_tests_dir.name)
+    seeds: dict[str, list[str]] = defaultdict(list)
+
+    if not tests_file.is_file():
+        log.error(f"Test file not found: {tests_file}")
         sys.exit(1)
     try:
         with tests_file.open() as fh:
             for raw in fh:
                 line = raw.strip()
-                if not line or line.startswith("#") or line.startswith("//"):
+                if not line or line.startswith(("#", "//")):
                     continue
                 token = line.split()[0]
                 snippet = token.rsplit("/", 1)[-1]
 
-                idx_m = INDEX_PREFIX_RE.match(snippet)
-                seed_m = SEED_SUFFIX_RE.search(snippet)
-                short_seed = seed_m.group(1) if seed_m else None
-                run_idx = idx_m.group(1) if idx_m else None
+                try:
+                    run_idx, name, short_seed = snippet.split(".")
+                except ValueError:
+                    log.warning(f"Skipping malformed entry: {snippet}")
+                    continue
 
-                name = INDEX_PREFIX_RE.sub("", snippet, 1)
-                name = SEED_SUFFIX_RE.sub("", name)
-
-                if not name or run_idx is None or short_seed is None:
+                if not (run_idx.isdigit() and short_seed.isdigit() and name):
                     log.warning(f"Skipping malformed entry: {snippet}")
                     continue
 
                 counts[name] += 1
 
-                # Find seed passed by dvsim
-                seed = _find_long_seed(passing_tests_dir, run_idx, name, short_seed)
-                if int(seed).bit_count() < 16:
-                    log.warning("Bit count for seed %s is under 16 bits", seed)
-                seeds[name].append(seed)
+                long_seed = seed_map.get((run_idx, name))
+                if long_seed is None:
+                    log.error("No seed manifest entry for %s.%s.%s",
+                              run_idx, name, short_seed)
+                    sys.exit(1)
+
+                # Cross-check: the manifest's 256-bit seed truncated to 32
+                # bits must match the SV seed reported by URG.
+                if (int(long_seed) & 0xFFFFFFFF) != (int(short_seed) & 0xFFFFFFFF):
+                    log.error("Seed mismatch for %s.%s: manifest %s vs URG %s",
+                              run_idx, name, long_seed, short_seed)
+                    sys.exit(1)
+
+                if int(long_seed).bit_count() < 16:
+                    log.warning(f"Bit count for seed {long_seed} is under 16 bits")
+                seeds[name].append(long_seed)
     except OSError as e:
         log.error("Failed to open graded file %s: %s", tests_file, e)
         sys.exit(1)
     return counts, seeds
 
 
-def _find_long_seed(passing_tests_dir: Path, run_idx: str,
-                    name: str, short_seed: str) -> str | None:
-    """Look up the 256-bit seed from the passed/ directory.
-    We can't use SEED_SUFFIX_RE here because test names can overlap
-    (e.g. xbar_access_same_device vs xbar_access_same_device_slow_rsp),
-    so we rely on .isdigit() to isolate the seed suffix unambiguously.
+def parse_seed_manifest(seeds_file: Path) -> dict[tuple[str, str], str]:
+    """Parse scratch/{unit}-sim-vcs/seeds/latest/seeds.txt.
+
+    Each non-comment line has the form
+        {cfg_name}:{run_idx}.{test_name}.{long_seed}
+
+    Returns a mapping (run_idx, test_name) -> long_seed (256-bit, as a
+    decimal string).
     """
-    prefix = f"{run_idx}.{name}"
-    candidates = list(passing_tests_dir.glob(f"{prefix}*"))
-    for entry in candidates:
-        if entry.is_dir():
-            long_seed = entry.name[len(prefix) + 1:]
-            if (long_seed.isdigit() and
-               (int(long_seed) & 0xFFFFFFFF) == (int(short_seed) & 0xFFFFFFFF)):
-                return long_seed
-    # If a seed is not found, error out
-    candidate_names = [e.name for e in candidates] or ["(none)"]
-    log.error(
-        "Failed to obtain long seed for %s.%s.%s\n  Candidates:\n    %s",
-        run_idx, name, short_seed, "\n    ".join(candidate_names)
-    )
-    sys.exit(1)
+    if not seeds_file.is_file():
+        log.error(f"Seed manifest not found: {seeds_file}")
+        sys.exit(1)
+
+    mapping: dict[tuple[str, str], str] = {}
+    try:
+        with seeds_file.open() as fh:
+            for raw in fh:
+                line = raw.strip()
+                if not line or line.startswith(("#", "//")):
+                    continue
+
+                # Strip the "<cfg>:" prefix
+                _, sep, qual = line.partition(":")
+                if not sep:
+                    log.warning(f"Skipping malformed manifest line {line}")
+                    continue
+
+                try:
+                    run_idx, test_name, long_seed = qual.split(".")
+                except ValueError:
+                    log.warning(f"Skipping malformed manifest line {line}")
+                    continue
+
+                if not (run_idx.isdigit() and long_seed.isdigit() and test_name):
+                    log.warning(f"Skipping malformed manifest line {line}")
+                    continue
+
+                key = (run_idx, test_name)
+                if key in mapping and mapping[key] != long_seed:
+                    log.error("Duplicate manifest key %s with different seeds "
+                              "(%s vs %s)", key, mapping[key], long_seed)
+                    sys.exit(1)
+                mapping[key] = long_seed
+    except OSError as e:
+        log.error(f"Failed to read seed manifest {seeds_file}: {e}")
+        sys.exit(1)
+
+    return mapping
 
 
 def compute_targetcount(graded: int, unique: int, A: float, basecount: int) -> int:
@@ -290,11 +323,12 @@ def aggregate_units(args) -> tuple[list, list, list, list]:
             missing.append((unit, "gradedtests.txt missing"))
             continue
 
-        passing_tests_dir = cov_merge.parent / "passed"
-        graded, graded_seeds = parse_test_file(graded_path, passing_tests_dir)
+        seeds_file = cov_merge.parent / "seeds" / "latest" / "seeds.txt"
+        seed_map = parse_seed_manifest(seeds_file)
+        graded, graded_seeds = parse_test_file(graded_path, seed_map)
 
         if unique_path.is_file():
-            unique, _ = parse_test_file(unique_path, passing_tests_dir)
+            unique, _ = parse_test_file(unique_path, seed_map)
         else:
             unique = Counter()
 
