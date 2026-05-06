@@ -422,18 +422,21 @@
       // Don't test over 200 randomly picked CSRs at a time.
       run_opts: ["+test_timeout_ns=120_000_000", "+num_test_csrs=200"]
       run_timeout_mins: 180
+      en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
       name: "chip_csr_aliasing"
       run_timeout_mins: 180
       run_opts: ["+test_timeout_ns=120_000_000"]
+      en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
       name: "chip_same_csr_outstanding"
       run_timeout_mins: 120
       run_opts: ["+test_timeout_ns=120_000_000"]
+      en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_example_rom
