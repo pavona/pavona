@@ -14,17 +14,13 @@ module prim_secded_hamming_39_32_tb (
   output logic [1:0]  err_o,
   input        [38:0] error_inject_i
 );
+  import prim_secded_pkg::*;
 
-  prim_secded_hamming_39_32_enc prim_secded_hamming_39_32_enc (
-    .data_i,
-    .data_o(encoded_o)
-  );
+  // Instantiate secded encoder and decoder based on parameters.
+  `include "prim_secded_inc.svh"
 
-  prim_secded_hamming_39_32_dec prim_secded_hamming_39_32_dec (
-    .data_i(encoded_o ^ error_inject_i),
-    .data_o,
-    .syndrome_o,
-    .err_o
-  );
+  `SECDED_INST_ENC(SecdedHamming, 32, prim_secded_hamming_39_32_enc, data_i, encoded_o)
+
+  `SECDED_INST_DEC(SecdedHamming, 32, prim_secded_hamming_39_32_dec, encoded_o ^ error_inject_i, data_o, syndrome_o, err_o)
 
 endmodule : prim_secded_hamming_39_32_tb
