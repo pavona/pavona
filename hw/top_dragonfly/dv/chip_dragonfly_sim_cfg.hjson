@@ -834,15 +834,13 @@
       sw_images: ["//sw/device/tests:rstmgr_smoketest:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-    // TODO(Pavona #43): Needs Dragonfly execution environment
-    // {
-    //   name: chip_sw_pwrmgr_main_power_glitch_reset
-    //   uvm_test_seq: chip_sw_main_power_glitch_vseq
-    //   sw_images: ["//sw/device/tests/sim_dv:pwrmgr_main_power_glitch_test:6:new_rules"]
-    //   en_run_modes: ["sw_test_mode_test_rom"]
-    //   run_opts: ["+bypass_alert_ready_to_end_check=1"]
-    // }
-    // End of TODO(Pavona #43)
+    {
+      name: chip_sw_pwrmgr_main_power_glitch_reset
+      uvm_test_seq: chip_sw_main_power_glitch_vseq
+      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_main_power_glitch_test:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+bypass_alert_ready_to_end_check=1"]
+    }
     // {
     //   name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
     //   uvm_test_seq: chip_sw_random_sleep_all_reset_vseq
@@ -890,13 +888,13 @@
     //              "+sw_test_timeout_ns=24_000_000"]
     //   run_timeout_mins: 120
     // }
-    // {
-    //   name: chip_sw_pwrmgr_sleep_disabled
-    //   uvm_test_seq: chip_sw_base_vseq
-    //   sw_images: ["//sw/device/tests:pwrmgr_sleep_disabled_test:6:new_rules"]
-    //   en_run_modes: ["sw_test_mode_test_rom"]
-    // }
     // End of TODO(Pavona #43)
+    {
+      name: chip_sw_pwrmgr_sleep_disabled
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:pwrmgr_sleep_disabled_test:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
     {
       name: chip_sw_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
