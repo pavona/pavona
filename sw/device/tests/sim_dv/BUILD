@@ -405,8 +405,12 @@ pavona_test(
 pavona_test(
     name = "pwrmgr_main_power_glitch_test",
     srcs = ["pwrmgr_main_power_glitch_test.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+    },
     deps = [
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
