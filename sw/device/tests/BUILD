@@ -3981,12 +3981,14 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     verilator = verilator_params(tags = ["broken"]),
     deps = [
+        "//hw/top/dt",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
