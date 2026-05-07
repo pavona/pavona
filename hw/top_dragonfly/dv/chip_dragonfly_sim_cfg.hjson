@@ -656,13 +656,13 @@
     //   run_opts: ["+use_otp_image=OtpTypeLcStRma", "+otp_clear_secret2=1", "+otp_clear_secret3=1",
     //              "+sw_test_timeout_ns=100_000_000"]
     // }
-    // {
-    //   name: chip_sw_otp_ctrl_vendor_test_csr_access
-    //   uvm_test_seq: chip_sw_otp_ctrl_vendor_test_csr_access_vseq
-    //   sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_csr_access_test:6:new_rules"]
-    //   en_run_modes: ["sw_test_mode_test_rom"]
-    // }
     // End of TODO(Pavona #43)
+    {
+      name: chip_sw_otp_ctrl_vendor_test_csr_access
+      uvm_test_seq: chip_sw_otp_ctrl_vendor_test_csr_access_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_csr_access_test:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
     {
       name: chip_sw_otp_ctrl_escalation
       uvm_test_seq: chip_sw_otp_ctrl_escalation_vseq
