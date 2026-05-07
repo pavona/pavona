@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,8 +13,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
 
@@ -26,8 +25,7 @@ static void init_peripherals(void) {
       .consistency_period_mask = 0x3ffffff,
   };
   // Life cycle
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kDtLcCtrl, &lc));
   // OTP
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
