@@ -167,6 +167,7 @@ task ac_range_check_rst_safe_smoke_vseq::main_thread();
     csr_update(.csr(ral.log_config));
     check_logging();
   end
+  wait_no_outstanding_access();
 endtask : main_thread
 
 
