@@ -455,6 +455,13 @@ def main() -> int:
     # -------- Phase 2: Aggregate --------
     rows, per_unit_summary, missing, hjson_entries = aggregate_units(args)
 
+    if not hjson_entries:
+        log.error("No units produced grade reports; aborting without writing output.")
+        if missing:
+            for u, why in missing:
+                log.error(f"  {u}: {why}")
+        sys.exit(1)
+
     # -------- Phase 3: Write outputs --------
     if not args.skip_csv:
         write_csv_outputs(args, rows, per_unit_summary)
