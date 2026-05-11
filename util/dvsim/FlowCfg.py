@@ -743,29 +743,6 @@ class FlowCfg():
             except FileNotFoundError:
                 log.warning(f"No merged coverage database found for {item.name} at {merged_src}.")
 
-        kdb_name = getattr(item, 'knowledge_db_dir_name', None)
-        if kdb_name:
-            # The knowledge DB lives somewhere under scratch_path; locate it by
-            # name rather than assuming a fixed parent directory, so the same
-            # code works for VCS (under build_dir/simv.daidir) and Xcelium
-            # (under build_dir/xcelium.d, etc.).
-            scratch = Path(item.scratch_path)
-            matches = list(scratch.rglob(kdb_name))
-            if not matches:
-                log.warning(f"Knowledge database {kdb_name} not found under {scratch}"
-                            f" for {item.name}")
-            else:
-                for kdb_src in matches:
-                    # Preserve each KDB's location relative to scratch_path so
-                    # multiple matches (e.g. one per build_mode) don't collide.
-                    build_subdir = kdb_src.parent.parent.name
-                    kdb_dest = Path(cov_data_dest) / build_subdir / kdb_name
-                    cp_path(kdb_src, kdb_dest)
-                    log.info(f"Copied knowledge database "
-                             f"{build_subdir}/{kdb_name} for {item.name}")
-        else:
-            log.warning(f"No knowledge database for {item.name}. Current support only for VCS.")
-
     def _strip_native_cov_link(self, html_path: Path):
         """Remove the 'Coverage Dashboard' link heading from a published report.
 

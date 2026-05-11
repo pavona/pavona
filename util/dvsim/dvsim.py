@@ -677,7 +677,7 @@ def parse_args():
                       help=("Mode for publishing results. 'public' (the default) "
                             "publishes only sanitized report numbers. 'private' "
                             "additionally publishes native tool databases "
-                            "(.vdb, kdb.elab++) and rewrites the dashboard's "
+                            "(.vdb) and rewrites the dashboard's "
                             "Coverage Dashboard link to point at the native "
                             "Synopsys/Cadence reports inside the published repo. "
                             "Only meaningful with --publish or --publish-prev."))
