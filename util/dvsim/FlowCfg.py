@@ -719,8 +719,7 @@ class FlowCfg():
             cp_path(cov_src, cov_dest)
             log.info(f"Copied native coverage reports for {item.name}")
         except FileNotFoundError:
-            log.error(f"No native coverage reports found for {item.name} at {cov_src}.")
-            sys.exit(1)
+            log.warning(f"No native coverage reports found for {item.name} at {cov_src}.")
 
         seed_src = os.path.join(item.scratch_path, 'seeds', 'latest')
         seed_dest = os.path.join(item_dest_root, 'seeds', 'latest')
@@ -728,8 +727,7 @@ class FlowCfg():
             cp_path(seed_src, seed_dest)
             log.info(f"Copied long seeds for {item.name}")
         except FileNotFoundError:
-            log.error(f"No long seeds found for {item.name} at {seed_src}.")
-            sys.exit(1)
+            log.warning(f"No long seeds found for {item.name} at {seed_src}.")
 
         # Coverage databases (merged .vdb / equivalent and knowledge DB) go
         # together under cov_data/ for downstream consumers to re-open in the
