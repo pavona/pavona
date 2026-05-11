@@ -9,18 +9,20 @@ The Pavona [project](https://pavona.org) is an open silicon distribution focusin
 This codebase is an open silicon distribution built in part from a number of open source projects, including [OpenTitan](https://github.com/lowRISC/opentitan) technical collateral.
 
 Example technical collateral (IP + DV + SW) includes:
-- Cores: Ibex (RV32IMC), VexII (upcoming)
+- Cores: Ibex (RV32IMCB), VexII (upcoming)
   - PQC Stateless Hash-Based Digital Signatures support for DSA-SHA2 and SLH-DSA-SHAKE
 - Peripherals: I2C, GPIO, SPI host/device, pattgen
 - Crypto: Asymmetric Cryptography Coprocessor (ACC), HMAC, KMAC, AES, EDN, ASCON
   - PQC includes ML-KEM {512, 768, 1024} and ML-DSA {44, 65, 87} with KMAC acceleration
 - Security infrastructure: alert-handler, lifecycle control, key manager, ROM integrity, CSRNG, SFI
 - Other blocks: OTP/flash controllers, clock manager, AON timer, SRAM controller, JTAG, interrupt controller, RV debug, ADC controller
-- Software: embedded cryptolib, hardened ROM, ROM_EXT, host tools
+- Software: embedded cryptolib, hardened ROM, ROM\_EXT, host tools
 
 # Contributing & Getting Started
 
-Please see the [Contributing](CONTRIBUTING.md) page to determine how one can contribute.  Likewise, if you want to poke around Pavona please see the [Getting Started](TBD) page.
+To get started, read [Pavona 101](doc/getting_started/pavona_101.md).
+
+Please see the [Contributing](CONTRIBUTING.md) page to determine how one can contribute.
 
 
 ## License
