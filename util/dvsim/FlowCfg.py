@@ -565,8 +565,38 @@ class FlowCfg():
         subprocess.run(["git", "-C", repo_dir, "commit", "-m",
                         f"[dashboard] Update {self.name}_{test}_{self.flow} {self.timestamp}"],
                        check=True, env=env)
-        subprocess.run(["git", "-C", repo_dir, "push"], check=True, env=env)
+        subprocess.run(["git", "-C", repo_dir, "push", "origin", self.branch],
+                       check=True, env=env)
         log.info("Results published successfully.")
+
+    def check_remote_branch_exists(self, repository: str, flag: str):
+        """Verify the publish branch exists on the remote dashboard repo.
+
+        Called early in main() so we fail fast instead of running the whole
+        flow and then failing on the final push.
+        """
+        env = self._setup_ssh_env()
+        try:
+            result = subprocess.run(
+                ["git", "ls-remote", "--heads", repository, self.branch],
+                check=True, capture_output=True, text=True, env=env,
+            )
+        except FileNotFoundError:
+            log.fatal("git is not installed or not on PATH. Cannot publish results.")
+            sys.exit(1)
+        except subprocess.CalledProcessError as e:
+            log.fatal("Could not query %s for branch %r (--%s):\n%s",
+                      repository, self.branch, flag,
+                      e.stderr.strip() if e.stderr else "")
+            sys.exit(1)
+
+        if not result.stdout.strip():
+            log.fatal("Branch %r does not exist on dashboard repository %s. "
+                      "Create it there before publishing (--%s).",
+                      self.branch, repository, flag)
+            sys.exit(1)
+
+        log.info("Dashboard branch %r found on %s.", self.branch, repository)
 
     def _setup_ssh_env(self) -> dict:
         """Return an env dict with SSH configured, using passphrase or deploy key."""
@@ -605,7 +635,12 @@ class FlowCfg():
         return env
 
     def clone_or_pull(self, repository: str, local_path: str, env: dict):
-        """Clone the repo if it doesn't exist locally, otherwise pull latest."""
+        """Clone the repo if it doesn't exist locally, otherwise pull latest.
+
+        Operates on `self.branch`: we expect a matching branch on the dashboard
+        repository (verified up-front by check_remote_branch_exists).
+        """
+        branch = self.branch
         try:
             if os.path.exists(local_path):
                 result = subprocess.run(
@@ -617,11 +652,25 @@ class FlowCfg():
                     log.warning("Existing repo at %s points to %s, expected %s. Recloning.",
                                 local_path, existing_remote, repository)
                     shutil.rmtree(local_path)
-                    subprocess.run(["git", "clone", repository, local_path], check=True, env=env)
+                    subprocess.run(
+                        ["git", "clone", "-b", branch, repository, local_path],
+                        check=True, env=env)
                 else:
-                    subprocess.run(["git", "-C", local_path, "pull"], check=True, env=env)
+                    # The local clone may have been left on a different branch
+                    # by a previous run, so fetch + checkout + pull explicitly.
+                    subprocess.run(
+                        ["git", "-C", local_path, "fetch", "origin", branch],
+                        check=True, env=env)
+                    subprocess.run(
+                        ["git", "-C", local_path, "checkout", branch],
+                        check=True, env=env)
+                    subprocess.run(
+                        ["git", "-C", local_path, "pull", "origin", branch],
+                        check=True, env=env)
             else:
-                subprocess.run(["git", "clone", repository, local_path], check=True, env=env)
+                subprocess.run(
+                    ["git", "clone", "-b", branch, repository, local_path],
+                    check=True, env=env)
         except FileNotFoundError:
             log.error("git is not installed or not on PATH. Cannot publish results.")
             raise
@@ -629,7 +678,7 @@ class FlowCfg():
             log.error("Timed out trying to reach repository: %s", repository)
             raise
         except subprocess.CalledProcessError as e:
-            log.error("Git operation failed for %s:\n%s",
+            log.error("git operation failed for %s:\n%s",
                       repository, e.stderr.decode().strip() if e.stderr else "")
             raise
 

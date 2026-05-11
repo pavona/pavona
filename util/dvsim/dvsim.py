@@ -814,6 +814,7 @@ def main():
     # Run --publish-prev if it was provided
     if args.publish_prev is not None:
         check_ssh_git_access(args.publish_prev, "publish-prev")
+        cfg.check_remote_branch_exists(args.publish_prev, "publish-prev")
         if args.items is None:
             log.fatal("We need to know the regression to publish it! Set the regression with -i")
             sys.exit(1)
@@ -850,6 +851,7 @@ def main():
             log.fatal("--publish needs the config file to be a batch cfg")
             sys.exit(1)
         check_ssh_git_access(args.publish, "publish")
+        cfg.check_remote_branch_exists(args.publish, "publish")
 
     # Deploy the builds and runs
     if args.items:
