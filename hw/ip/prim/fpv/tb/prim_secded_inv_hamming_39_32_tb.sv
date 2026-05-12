@@ -21,6 +21,7 @@ module prim_secded_inv_hamming_39_32_tb (
 
   `SECDED_INST_ENC(SecdedInvHamming, 32, prim_secded_inv_hamming_39_32_enc, data_i, encoded_o)
 
-  `SECDED_INST_DEC(SecdedInvHamming, 32, prim_secded_inv_hamming_39_32_dec, encoded_o ^ error_inject_i, data_o, syndrome_o, err_o)
+  `SECDED_INST_DEC(SecdedInvHamming, 32, prim_secded_inv_hamming_39_32_dec, encoded_o ^ error_inject_i,
+                    data_o, syndrome_o, err_o)
 
 endmodule : prim_secded_inv_hamming_39_32_tb

@@ -21,6 +21,7 @@ module prim_secded_hamming_76_68_tb (
 
   `SECDED_INST_ENC(SecdedHamming, 68, prim_secded_hamming_76_68_enc, data_i, encoded_o)
 
-  `SECDED_INST_DEC(SecdedHamming, 68, prim_secded_hamming_76_68_dec, encoded_o ^ error_inject_i, data_o, syndrome_o, err_o)
+  `SECDED_INST_DEC(SecdedHamming, 68, prim_secded_hamming_76_68_dec, encoded_o ^ error_inject_i,
+                    data_o, syndrome_o, err_o)
 
 endmodule : prim_secded_hamming_76_68_tb
