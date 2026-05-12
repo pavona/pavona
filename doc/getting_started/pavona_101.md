@@ -283,8 +283,8 @@ Congratulations!
 You've just set up your system, downloaded the Pavona repository, and run a test on verilated hardware.
 There are many steps forward from here:
 
-* Pavona 102: Introduction to Hardware
-* Pavona 103: Introduction to Software
+* [Pavona 102: Introduction to Hardware](./intro_hardware.md)
+* [Pavona 103: Introduction to Software](./intro_software.md)
 * Build and run hardware on an FPGA
 * Write software
 * Run DV tests
