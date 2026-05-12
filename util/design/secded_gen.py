@@ -12,18 +12,18 @@ Hsiao SECDED codes, refer to https://ieeexplore.ieee.org/document/8110065.g
 """
 
 import argparse
-from collections import defaultdict
 import functools
 import itertools
 import logging as log
 import math
 import random
-import sys
-import hjson
 import subprocess
-from typing import Any, Dict, List, Tuple
+import sys
+from collections import defaultdict
 from pathlib import Path
+from typing import Any, Dict, List, Tuple
 
+import hjson
 from mako.template import Template
 
 # To enable importing util modules
@@ -83,10 +83,12 @@ C_H_FOOT = """
 #endif  // OPENTITAN_HW_IP_PRIM_DV_PRIM_SECDED_SECDED_ENC_H_
 """
 
-CODE_OPTIONS = {'hsiao': '',
-                'inv_hsiao': '_inv',
-                'hamming': '_hamming',
-                'inv_hamming': '_inv_hamming'}
+CODE_OPTIONS = {
+    'hsiao': '',
+    'inv_hsiao': '_inv',
+    'hamming': '_hamming',
+    'inv_hamming': '_inv_hamming'
+}
 
 # secded configurations
 SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
@@ -129,7 +131,7 @@ def ideal_fanin(k, m):
 def calc_fanin(width, codes):
     """Sum the ones in a column"""
     fanins = [0] * width
-    log.info("Calc Code: {}".format(codes))
+    log.info(f"Calc Code: {codes}")
     for i in codes:
         for e in i:
             fanins[e] += 1
@@ -297,7 +299,7 @@ data_o    =  ".data_o(_ENC_DATA));"
   endcase""")
 
 
-def get_type_name(code_type:str) -> str:
+def get_type_name(code_type: str) -> str:
     return Name(["Secded"] + code_type.split("_")).as_camel_case()
 
 
@@ -335,13 +337,8 @@ def get_secded_typed_enums_and_util_fns(cfgs):
     enc_instance_gen = enc_instance_gen.replace("\n", " \\\n")
     enc_instance_gen = enc_instance_comment + enc_instance_gen
 
-    return (
-        type_enum,
-        valid_width_fn,
-        synd_width_fn,
-        dec_instance_gen,
-        enc_instance_gen
-    )
+    return (type_enum, valid_width_fn, synd_width_fn, dec_instance_gen,
+            enc_instance_gen)
 
 
 def print_secded_enum_and_util_fns(cfgs):
@@ -431,16 +428,15 @@ def print_pkg_allzero(n, k, m, codes, suffix, codetype):
 
 
 def print_pkg_types(n, k, m, codes, suffix, codetype):
-    typename = "secded%s_%d_%d_t" % (suffix, n, k)
+    type_name = "secded%s_%d_%d_t" % (suffix, n, k)
 
-    typestr = '''
+    typestr = f'''
   typedef struct packed {{
-    logic [{}:0] data;
-    logic [{}:0] syndrome;
+    logic [{k - 1}:0] data;
+    logic [{m - 1}:0] syndrome;
     logic [1:0]  err;
-  }} {};
-'''.format((k - 1), (m - 1), typename)
-
+  }} {type_name};
+'''
     return typestr
 
 
@@ -448,33 +444,32 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
     enc_out = print_enc(n, k, m, codes, codetype)
     dec_out = print_dec(n, k, m, codes, codetype, "function")
 
-    typename = "secded%s_%d_%d_t" % (suffix, n, k)
+    type_name = "secded%s_%d_%d_t" % (suffix, n, k)
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
-    outstr = '''
-  function automatic logic [{}:0]
-      {}_enc (logic [{}:0] data_i);
-    logic [{}:0] data_o;
-{}    return data_o;
+    outstr = f'''
+  function automatic logic [{n - 1}:0]
+      {module_name}_enc (logic [{k - 1}:0] data_i);
+    logic [{n - 1}:0] data_o;
+{enc_out}    return data_o;
   endfunction
 
-  function automatic {}
-      {}_dec (logic [{}:0] data_i);
-    logic [{}:0] data_o;
-    logic [{}:0] syndrome_o;
+  function automatic {type_name}
+      {module_name}_dec (logic [{n - 1}:0] data_i);
+    logic [{k - 1}:0] data_o;
+    logic [{m - 1}:0] syndrome_o;
     logic [1:0]  err_o;
 
-    {} dec;
+    {type_name} dec;
 
-{}
+{dec_out}
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
     dec.err       = err_o;
     return dec;
 
   endfunction
-'''.format((n - 1), module_name, (k - 1), (n - 1), enc_out,
-           typename, module_name, (n - 1), (k - 1), (m - 1), typename, dec_out)
+'''
 
     return outstr
 
@@ -501,7 +496,7 @@ def print_enc(n, k, m, codes, codetype):
 
 
 def calc_syndrome(code):
-    log.info("in syndrome {}".format(code))
+    log.info(f"in syndrome {code}")
     return sum(map((lambda x: 2**x), code))
 
 
@@ -546,29 +541,33 @@ def verify(cfgs):
     for cfg in cfgs['cfgs']:
         if (cfg['k'] <= 1 or cfg['k'] > 120):
             error += 1
-            log.error("Current tool doesn't support the value k (%d)", cfg['k'])
+            log.error("Current tool doesn't support the value k (%d)",
+                      cfg['k'])
 
         if (cfg['m'] <= 1 or cfg['m'] > 20):
             error += 1
-            log.error("Current tool doesn't support the value m (%d)", cfg['m'])
+            log.error("Current tool doesn't support the value m (%d)",
+                      cfg['m'])
 
         # Calculate 'm' (parity size)
         min_m = min_paritysize(cfg['k'])
         if (cfg['m'] < min_m):
             error += 1
-            log.error("given \'m\' argument is smaller than minimum requirement " +
-                      "using calculated minimum (%d)", min_m)
+            log.error(
+                "given \'m\' argument is smaller than minimum requirement " +
+                "using calculated minimum (%d)", min_m)
 
         # Error check code selection
         if (cfg['code_type'] not in CODE_OPTIONS):
             error += 1
-            log.error("Invalid code {} selected, use one of {}".format(
-                cfg['code_type'], CODE_OPTIONS))
+            log.error(f"Invalid code {cfg['code_type']} selected, "
+                      f"use one of {CODE_OPTIONS}")
 
     return error
 
 
-def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, List[int], int]:
+def _ecc_pick_code(config: Dict[str, Any], codetype: str,
+                   k: int) -> Tuple[int, List[int], int]:
     # first check to see if bit width is supported among configuration
 
     codes = None
@@ -587,8 +586,7 @@ def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, 
 
 
 @functools.lru_cache(maxsize=None)
-def _ecc_encode(k: int,
-                m: int, bitmasks: List[int], invert: int,
+def _ecc_encode(k: int, m: int, bitmasks: List[int], invert: int,
                 dataword: int) -> int:
     assert 0 <= dataword < (1 << k)
 
@@ -615,7 +613,8 @@ def _ecc_encode(k: int,
     return codeword
 
 
-def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+def ecc_encode(config: Dict[str, Any], codetype: str, k: int,
+               dataword: int) -> Tuple[int, int]:
     log.info(f"Encoding ECC for {hex(dataword)}")
 
     m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
@@ -627,13 +626,12 @@ def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> 
     return int(codeword, 2), m
 
 
-def ecc_encode_some(config: Dict[str, Any],
-                    codetype: str,
-                    k: int,
+def ecc_encode_some(config: Dict[str, Any], codetype: str, k: int,
                     datawords: int) -> Tuple[List[int], int]:
     m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
-    codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
-                 for w in datawords]
+    codewords = [
+        int(_ecc_encode(k, m, bitmasks, invert, w), 2) for w in datawords
+    ]
     return codewords, m
 
 
@@ -644,7 +642,7 @@ def gen_code(codetype, k, m):
     old_rnd_state = random.getstate()
     random.seed(_RND_SEED)
     try:
-        return globals()["_{}_code".format(codetype)](k, m)
+        return globals()[f"_{codetype}_code"](k, m)
     finally:
         random.setstate(old_rnd_state)
 
@@ -669,7 +667,7 @@ def generate(cfgs, args):
         f.write(C_H_TOP)
 
     for cfg in cfgs['cfgs']:
-        log.debug("Working on {}".format(cfg))
+        log.debug(f"Working on {cfg}")
         k = cfg['k']
         m = cfg['m']
         n = k + m
@@ -795,7 +793,7 @@ def _hsiao_code(k, m):
             # Found everything!
             break
 
-    log.info("Hsiao codes {}".format(codes))
+    log.info(f"Hsiao codes {codes}")
     return codes
 
 
@@ -820,10 +818,11 @@ def _hamming_code(data_cnt, parity_cnt):
     # Include the closest previous parity bit if it's odd.
     # Also include the final parity bit since it includes everything.
     codes = [
-        tuple(p for p in range(last_parity) if (b >> p) & 1) + (last_parity,) for b in data_bits
+        tuple(p for p in range(last_parity) if (b >> p) & 1) + (last_parity, )
+        for b in data_bits
     ]
     # Final parity bit includes all ECC bits.
-    codes += [(last_parity,)] * last_parity
+    codes += [(last_parity, )] * last_parity
     log.info("Hamming codes %s", codes)
     return codes
 
@@ -890,7 +889,7 @@ def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
         # Form a single word from the incoming byte data
         f.write(f"{in_type} word = ")
         f.write(" | ".join(
-                [f"(({in_type})bytes[{i}] << {i*8})" for i in range(in_bytes)]))
+            [f"(({in_type})bytes[{i}] << {i*8})" for i in range(in_bytes)]))
         f.write(";\n\n")
 
         # AND the word with the codes, calculating parity of each and combine
@@ -898,10 +897,11 @@ def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
         f.write("return ")
         parity_bit_masks = enumerate(calc_bitmasks(k, m, codes, False))
         # Add ECC bit inversion if needed (see print_enc function).
-        f.write(" | ".join(
-                [f"(calc_parity(word & 0x{mask:x}, "
-                 f"{'true' if invert and (par_bit % 2) else 'false'}) << {par_bit})"
-                 for par_bit, mask in parity_bit_masks]))
+        f.write(" | ".join([
+            f"(calc_parity(word & 0x{mask:x}, "
+            f"{'true' if invert and (par_bit % 2) else 'false'}) << {par_bit})"
+            for par_bit, mask in parity_bit_masks
+        ]))
 
         f.write(";\n}\n")
 
@@ -915,9 +915,13 @@ def format_c_files(c_src_filename, c_h_filename):
     try:
         # Call clang-format to in-place format generated C code. If there are
         # any issues log a warning.
-        result = subprocess.run(['./bazelisk.sh', 'run', '//quality:clang_format_fix', '--',
-                                c_src_filename, c_h_filename], stderr=subprocess.PIPE,
-                                universal_newlines=True)
+        result = subprocess.run(
+            [
+                './bazelisk.sh', 'run', '//quality:clang_format_fix', '--',
+                c_src_filename, c_h_filename
+            ],
+            stderr=subprocess.PIPE,
+            universal_newlines=True)
         result.check_returncode()
     except Exception as e:
         stderr = ''
@@ -933,37 +937,36 @@ def write_enc_dec_files(n, k, m, codes, suffix, outdir, codetype):
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
     with open(outdir + "/" + module_name + "_enc.sv", "w") as f:
-        outstr = '''{}// SECDED encoder generated by util/design/secded_gen.py
+        outstr = f'''{COPYRIGHT}// SECDED encoder generated by util/design/secded_gen.py
 
-module {}_enc (
-  input        [{}:0] data_i,
-  output logic [{}:0] data_o
+module {module_name}_enc (
+  input        [{k - 1}:0] data_i,
+  output logic [{n - 1}:0] data_o
 );
 
   always_comb begin : p_encode
-{}  end
+{enc_out}  end
 
-endmodule : {}_enc
-'''.format(COPYRIGHT, module_name, (k - 1), (n - 1), enc_out, module_name)
+endmodule : {module_name}_enc
+'''
         f.write(outstr)
 
     dec_out = print_dec(n, k, m, codes, codetype)
 
     with open(outdir + "/" + module_name + "_dec.sv", "w") as f:
-        outstr = '''{}// SECDED decoder generated by util/design/secded_gen.py
+        outstr = f'''{COPYRIGHT}// SECDED decoder generated by util/design/secded_gen.py
 
-module {}_dec (
-  input        [{}:0] data_i,
-  output logic [{}:0] data_o,
-  output logic [{}:0] syndrome_o,
+module {module_name}_dec (
+  input        [{n - 1}:0] data_i,
+  output logic [{k - 1}:0] data_o,
+  output logic [{m - 1}:0] syndrome_o,
   output logic [1:0] err_o
 );
 
   always_comb begin : p_encode
-{}  end
-endmodule : {}_dec
-'''.format(COPYRIGHT, module_name, (n - 1), (k - 1), (m - 1),
-           dec_out, module_name)
+{dec_out}  end
+endmodule : {module_name}_dec
+'''
         f.write(outstr)
 
 
@@ -990,7 +993,8 @@ module {module_name}_tb (
 
   `SECDED_INST_ENC({type_name}, {k}, {module_name}_enc, data_i, encoded_o)
 
-  `SECDED_INST_DEC({type_name}, {k}, {module_name}_dec, encoded_o ^ error_inject_i, data_o, syndrome_o, err_o)
+  `SECDED_INST_DEC({type_name}, {k}, {module_name}_dec, encoded_o ^ error_inject_i,
+                    data_o, syndrome_o, err_o)
 
 endmodule : {module_name}_tb
 '''
@@ -1008,17 +1012,17 @@ endmodule : {module_name}_tb
         inv_asserts = ""
 
     with open(outdir + "/vip/" + module_name + "_assert_fpv.sv", "w") as f:
-        outstr = '''{}// SECDED FPV assertion file generated by util/design/secded_gen.py
+        outstr = f'''{COPYRIGHT}// SECDED FPV assertion file generated by util/design/secded_gen.py
 
-module {}_assert_fpv (
+module {module_name}_assert_fpv (
   input        clk_i,
   input        rst_ni,
-  input [{}:0] data_i,
-  input [{}:0] data_o,
-  input [{}:0] encoded_o,
-  input [{}:0] syndrome_o,
+  input [{k - 1}:0] data_i,
+  input [{k - 1}:0] data_o,
+  input [{n - 1}:0] encoded_o,
+  input [{m - 1}:0] syndrome_o,
   input [1:0]  err_o,
-  input [{}:0] error_inject_i
+  input [{n - 1}:0] error_inject_i
 );
 
   // Inject a maximum of two errors simultaneously.
@@ -1034,19 +1038,18 @@ module {}_assert_fpv (
   // Basic syndrome check
   `ASSERT(SyndromeCheck_A, |syndrome_o |-> $countones(error_inject_i) > 0)
   `ASSERT(SyndromeCheckReverse_A, $countones(error_inject_i) > 0 |-> |syndrome_o)
-{}
-endmodule : {}_assert_fpv
-'''.format(COPYRIGHT, module_name, (k - 1), (k - 1), (n - 1), (m - 1), (n - 1),
-           inv_asserts, module_name)
+{inv_asserts}
+endmodule : {module_name}_assert_fpv
+'''
         f.write(outstr)
 
     with open(outdir + "/tb/" + module_name + "_bind_fpv.sv", "w") as f:
-        outstr = '''{}// SECDED FPV bind file generated by util/design/secded_gen.py
+        outstr = f'''{COPYRIGHT}// SECDED FPV bind file generated by util/design/secded_gen.py
 
-module {}_bind_fpv;
+module {module_name}_bind_fpv;
 
-  bind {}_tb
-    {}_assert_fpv {}_assert_fpv (
+  bind {module_name}_tb
+    {module_name}_assert_fpv {module_name}_assert_fpv (
     .clk_i,
     .rst_ni,
     .data_i,
@@ -1057,17 +1060,16 @@ module {}_bind_fpv;
     .error_inject_i
   );
 
-endmodule : {}_bind_fpv
-'''.format(COPYRIGHT, module_name, module_name, module_name, module_name,
-           module_name)
+endmodule : {module_name}_bind_fpv
+'''
         f.write(outstr)
 
     with open(outdir + "/" + module_name + "_fpv.core", "w") as f:
-        outstr = '''CAPI=2:
+        outstr = f'''CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:fpv:{}_fpv:0.1"
+name: "lowrisc:fpv:{module_name}_fpv:0.1"
 description: "SECDED FPV target"
 filesets:
   files_formal:
@@ -1075,9 +1077,9 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:secded
     files:
-      - vip/{}_assert_fpv.sv
-      - tb/{}_tb.sv
-      - tb/{}_bind_fpv.sv
+      - vip/{module_name}_assert_fpv.sv
+      - tb/{module_name}_tb.sv
+      - tb/{module_name}_bind_fpv.sv
     file_type: systemVerilogSource
 
 targets:
@@ -1088,14 +1090,14 @@ targets:
     filesets:
       - files_formal
     toplevel:
-      - {}_tb
+      - {module_name}_tb
 
   formal:
     <<: *default_target
 
   lint:
     <<: *default_target
-'''.format(module_name, module_name, module_name, module_name, module_name)
+'''
         f.write(outstr)
 
 

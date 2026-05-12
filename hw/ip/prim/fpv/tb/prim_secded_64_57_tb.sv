@@ -21,6 +21,7 @@ module prim_secded_64_57_tb (
 
   `SECDED_INST_ENC(SecdedHsiao, 57, prim_secded_64_57_enc, data_i, encoded_o)
 
-  `SECDED_INST_DEC(SecdedHsiao, 57, prim_secded_64_57_dec, encoded_o ^ error_inject_i, data_o, syndrome_o, err_o)
+  `SECDED_INST_DEC(SecdedHsiao, 57, prim_secded_64_57_dec, encoded_o ^ error_inject_i,
+                    data_o, syndrome_o, err_o)
 
 endmodule : prim_secded_64_57_tb
