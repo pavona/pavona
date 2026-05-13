@@ -35,43 +35,46 @@ def simplify_addr(dev: Dict[Any, Any],
 
     addrs = dev["addr_range"]
     # Sort based on the base addr
-    newlist = sorted(addrs, key=lambda k: int(k['base_addrs'][asid], 0))
+    addrs = sorted(addrs, key=lambda k: int(k['base_addrs'][asid], 0))
     # check if overlap or contiguous
-    result: List[Dict[Any, Any]] = []
-    for e in newlist:
-        if len(result) == 0:
-            result.append(e)
+    simple_addrs: List[Dict[Any, Any]] = []
+    for addr in addrs:
+        if len(simple_addrs) == 0:
+            simple_addrs.append(addr)
             continue
+        last_base = int(simple_addrs[-1]['base_addrs'][asid], 0)
+        curr_base = int(addr['base_addrs'][asid], 0)
+        last_size = int(simple_addrs[-1]['size_byte'], 0)
+        curr_size = int(addr['size_byte'], 0)
+        next_value = (get_next_base_addr(addr["base_addrs"], xbar, dev["name"], asid)
+                      or 0x100000000)
+
         # if contiguous
-        if int(e["base_addrs"][asid], 0) == int(result[-1]["base_addrs"][asid], 0) + int(
-                result[-1]["size_byte"], 0):
+        if (last_base + last_size) == curr_base:
             # update previous entry size
-            result[-1]["size_byte"] = "0x{:x}".format(
-                int(result[-1]["size_byte"], 0) + int(e["size_byte"], 0))
+            size_byte = find_pow2_size(last_base, last_size + curr_size, next_value)
+            simple_addrs[-1]["size_byte"] = f"0x{size_byte:x}"
             continue
 
-        if no_device_in_range(xbar, dev["name"], result[-1], e, asid):
-            # Determine if size can be power of 2 value
-            next_value = (get_next_base_addr(e["base_addrs"], xbar,
-                                             dev["name"], asid) or
-                          0x100000000)
+        if (last_base + last_size) >= (curr_base + curr_size):
+            continue
 
-            calc_size = int(e["base_addrs"][asid], 0) + int(e["size_byte"], 0) - int(
-                result[-1]["base_addrs"][asid], 0)
+        if no_device_in_range(xbar, dev["name"], simple_addrs[-1], addr, asid):
+            # Determine if size can be power of 2 value
+            calc_size = curr_base + curr_size - last_base
 
             # find power of 2 if possible
-            size_byte = find_pow2_size(result[-1]["base_addrs"][asid], calc_size, next_value)
-
-            result[-1]["size_byte"] = "0x{:x}".format(size_byte)
+            size_byte = find_pow2_size(last_base, calc_size, next_value)
+            simple_addrs[-1]["size_byte"] = f"0x{size_byte:x}"
             continue
 
         # If overlapping (Should it be consider? TlGen will catch it)
 
         # Normal case
-        result.append(e)
+        simple_addrs.append(addr)
 
     # return result
-    return result
+    return simple_addrs
 
 
 def no_device_in_range(xbar: Dict[Any, Any],
@@ -141,7 +144,7 @@ def get_next_base_addr(addr: Union[str, int],
     return int(list(gte_list[0]["base_addrs"].values())[0], 0)
 
 
-def find_pow2_size(addr: str,
+def find_pow2_size(base_addr: str,
                    min_size: int,
                    next_value: int) -> int:
     """Find smallest power of 2 value greater than min_size by given addr.
@@ -154,8 +157,6 @@ def find_pow2_size(addr: str,
     should be less than or equal to 0x1_0000. Cannot be 0x4_0000. So, this
     case, the function returns the original min_size value 0x21000.
     """
-    base_addr = int(addr, 0)
-
     diff = next_value - base_addr
 
     # Find the least one bit position.
