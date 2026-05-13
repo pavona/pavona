@@ -266,6 +266,14 @@ def checkBaseSizeOverlap(addr_base: int, size: int) -> int:
     return ((size - 1) & addr_base)
 
 
+def validateMask(mask: int) -> bool:
+    while mask & 1 == 0:
+        mask >>= 1
+    while mask & 1 == 1:
+        mask >>= 1
+    return mask == 0
+
+
 def get_string_keys(what: str, raw: object) -> List[str]:
     if not isinstance(raw, dict):
         raise ValueError(f"{what} should be a dict and is {raw}.")
