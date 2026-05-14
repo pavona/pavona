@@ -260,3 +260,9 @@ sup {
 img {
     background-color: white;
 }
+
+#pavona-logo {
+    height: 35px;
+    vertical-align: middle;
+    background-color: transparent !important;
+}

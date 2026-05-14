@@ -13,6 +13,7 @@ filegroup(
     name = "doc_files",
     srcs = glob([
         "alert_handler.hjson",
+        "*.ipconfig.hjson",
         "*_testplan.hjson",
     ]),
 )

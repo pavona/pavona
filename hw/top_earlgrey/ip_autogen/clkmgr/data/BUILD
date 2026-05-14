@@ -10,6 +10,7 @@ filegroup(
     name = "doc_files",
     srcs = glob([
         "clkmgr.hjson",
+        "*.ipconfig.hjson",
         "*_testplan.hjson",
     ]),
 )

@@ -10,6 +10,7 @@ filegroup(
     name = "doc_files",
     srcs = glob([
         "ac_range_check.hjson",
+        "*.ipconfig.hjson",
         "*_testplan.hjson",
     ]),
 )

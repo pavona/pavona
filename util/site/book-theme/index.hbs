@@ -159,6 +159,10 @@
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                         {{/if}}
+                        <!-- link back to pavona.org -->
+                        <a href="https://pavona.org" title="Pavona website" aria-label="Pavona website">
+                            <img src="{{ path_to_root }}doc/pavona-logo.svg" alt="Pavona logo" id="pavona-logo" />
+                        </a>
                         {{#if git_repository_url}}
                         <a href="{{git_repository_url}}" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa {{git_repository_icon}}"></i>

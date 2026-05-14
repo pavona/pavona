@@ -10,6 +10,7 @@ filegroup(
     name = "doc_files",
     srcs = glob([
         "pinmux.hjson",
+        "*.ipconfig.hjson",
         "*_testplan.hjson",
     ]),
 )

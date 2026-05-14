@@ -8,5 +8,5 @@ exports_files(["top_${topname}_${module_instance_name}.ipconfig.hjson"])
 
 filegroup(
     name = "doc_files",
-    srcs = ["${module_instance_name}.hjson"],
+    srcs = ["${module_instance_name}.hjson"] + glob(["*.ipconfig.hjson"]),
 )

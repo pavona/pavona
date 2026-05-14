@@ -13,6 +13,7 @@ filegroup(
     name = "doc_files",
     srcs = glob([
         "${module_instance_name}.hjson",
+        "*.ipconfig.hjson",
         "*_testplan.hjson",
     ]),
 )

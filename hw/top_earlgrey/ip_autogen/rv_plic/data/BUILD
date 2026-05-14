@@ -10,6 +10,7 @@ filegroup(
     name = "doc_files",
     srcs = glob([
         "rv_plic.hjson",
+        "*.ipconfig.hjson",
         "*_testplan.hjson",
     ]),
 )

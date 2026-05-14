@@ -22,7 +22,7 @@
     --content-max-width: 65vw;
     --menu-bar-height: min(10vh, 60px);
     --mono-font: "Fragment Mono", monospace;
-    --code-font-size: 0.875em; /* please adjust the ace font size accordingly in editor.js */
+    --code-font-size: 0.875em;
 
     /* colors according to Pavona styling */
     --pink: #F2BFBF;
@@ -31,7 +31,8 @@
     --coral-bg: #FFBAA150;
     --dark-bg: #1E3644;
     --orange: #EB5A36;
-    --orange-bg: #ED640E50;
+    --orange-bg: #ED640E50; /* slightly less saturated orange */
+    --dark-orange: #D95F4A;
     --grey-text: #666667;
     --grey-link: #444444;
     --grey-code: #333333;
@@ -43,7 +44,7 @@
     --bg: #FFFFFF;
     --fg: var(--dark-bg);
 
-    --sidebar-bg: #D95F4A; /* slightly less saturated orange */
+    --sidebar-bg: var(--dark-orange);
     --sidebar-fg: #FFFFFF;
     --sidebar-non-existant: var(--grey-text);
     --sidebar-active: var(--grey-link);
@@ -64,7 +65,7 @@
     --theme-hover: var(--coral-bg);
 
     --quote-fg: #FFFFFF;
-    --quote-bg: var(--orange);
+    --quote-bg: var(--dark-orange);
     --quote-border: rgba(0 0 0 / 0);
 
     --warning-border: rgba(0 0 0 / 0);
@@ -117,7 +118,7 @@
     --theme-hover: #444444;
 
     --quote-fg: #FFFFFF;
-    --quote-bg: var(--orange);
+    --quote-bg: var(--dark-orange);
     --quote-border: rgba(0 0 0 / 0);
 
     --warning-border: #ff8e00;
