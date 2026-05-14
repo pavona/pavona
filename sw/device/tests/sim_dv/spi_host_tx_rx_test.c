@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,7 +17,9 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top_egret/sw/autogen/top_egret.h"
+#endif
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -34,6 +37,7 @@ static volatile const uint8_t kSPIHostIdx = 0x0;
 static dif_spi_host_t spi_host;
 static dif_pinmux_t pinmux;
 
+#if defined(OPENTITAN_IS_EGRET)
 // pinmap defined in chip_if.sv (spi_device1_if)
 static const top_egret_muxed_pads_t spi_host1_muxed_pads[6] = {
     kTopEgretMuxedPadsIob0,  // sck
@@ -43,6 +47,7 @@ static const top_egret_muxed_pads_t spi_host1_muxed_pads[6] = {
     kTopEgretMuxedPadsIob4,  // sio[1]
     kTopEgretMuxedPadsIob3,  // sio[0]
 };
+#endif
 
 // For spi_host1
 // sck       output
@@ -64,6 +69,7 @@ static const top_egret_muxed_pads_t spi_host1_muxed_pads[6] = {
  *
  */
 
+#if defined(OPENTITAN_IS_EGRET)
 typedef struct pinmux_select {
   dif_pinmux_index_t pad;
   dif_pinmux_index_t peripheral;
@@ -116,6 +122,7 @@ static const pinmux_select_t pinmux_in_config[] = {
         .peripheral = kTopEgretPinmuxPeripheralInSpiHost1Sd3,  // sio[3]
     },
 };
+#endif
 
 /**
  * Initialize the provided SPI host.
@@ -139,6 +146,7 @@ void init_spi_host(dif_spi_host_t *spi_host,
  *
  * This peripheral is 'muxed', so configure the pinmux as well as pads.
  */
+#if defined(OPENTITAN_IS_EGRET)
 void setup_pinmux_pads_spi_host1(void) {
   // Set weak pull-ups, fast slew rate and strong drive strengh for the pads
   dif_pinmux_pad_attr_t out_attr;
@@ -188,18 +196,20 @@ void setup_pinmux_pads_spi_host1(void) {
         dif_pinmux_output_select(&pinmux, setting.pad, setting.peripheral));
   }
 }
+#endif
 
 bool test_main(void) {
   // Initialize the pinmux.
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // Setup pinmux if required, enable weak pull-up on relevant pads, set slew
   // rate and drive strength.
   CHECK_STATUS_OK(
       spi_host_testutils_configure_host0_pad_attrs(&pinmux));  // direct
-  setup_pinmux_pads_spi_host1();                               // muxed
+#if defined(OPENTITAN_IS_EGRET)
+  setup_pinmux_pads_spi_host1();  // muxed
+#endif
 
   // Setup spi host configuration
   LOG_INFO("Testing spi_host%0d", kSPIHostIdx);
@@ -207,15 +217,17 @@ bool test_main(void) {
   uint64_t clkHz;
   switch (kSPIHostIdx) {
     case 0: {
-      base_addr = TOP_EGRET_SPI_HOST0_BASE_ADDR;
+      base_addr = dt_spi_host_primary_reg_block(kDtSpiHost0);
       clkHz = kClockFreqHiSpeedPeripheralHz;
       break;
     }
+#if defined(OPENTITAN_IS_EGRET)
     case 1: {
-      base_addr = TOP_EGRET_SPI_HOST1_BASE_ADDR;
+      base_addr = dt_spi_host_primary_reg_block(kDtSpiHost1);
       clkHz = kClockFreqPeripheralHz;
       break;
     }
+#endif
     default:
       LOG_FATAL("Invalid kSPIHostIdx: %d", kSPIHostIdx);
       return false;
