@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,14 +7,12 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -21,16 +20,35 @@
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
 #include "hw/top/rv_core_ibex_regs.h"   // Generated.
+
+#if defined(HAS_KEYMGR)
+#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
+#elif defined(HAS_KEYMGR_DPE)
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
+#endif
+
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top_egret/sw/autogen/top_egret.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
+#else
+#error Unsupported top
+#endif
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_clkmgr_t clkmgr;
-static dif_keymgr_t keymgr;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_uart_t uart;
+#if defined(HAS_KEYMGR)
+static dif_keymgr_t keymgr;
+#elif defined(HAS_KEYMGR_DPE)
+static dif_keymgr_dpe_t keymgr_dpe;
+#endif
 
 /**
  * External ISR.
@@ -60,8 +78,15 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
       &alert_handler, kDifAlertHandlerClassA, &state));
 
   // Now intentionally hang the device
+#if defined(OPENTITAN_IS_EGRET)
   CHECK_DIF_OK(dif_clkmgr_gateable_clock_set_enabled(
       &clkmgr, kTopEgretGateableClocksIoDiv4Peri, kDifToggleDisabled));
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  CHECK_DIF_OK(dif_clkmgr_gateable_clock_set_enabled(
+      &clkmgr, kTopDragonflyGateableClocksIoPeri, kDifToggleDisabled));
+#else
+#error Unsupported top
+#endif
 
   // access uart after clocks have been disabled
   CHECK_DIF_OK(dif_uart_disable_rx_timeout(&uart));
@@ -72,25 +97,16 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
  * Initialize the dif handles required for this test.
  */
 static void init_peripheral_handles(void) {
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR), &clkmgr));
-
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
-
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
-  CHECK_DIF_OK(
-      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR), &uart));
-
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
+  CHECK_DIF_OK(dif_uart_init_from_dt(kDtUart0, &uart));
+#if defined(HAS_KEYMGR)
+  CHECK_DIF_OK(dif_keymgr_init_from_dt(kDtKeymgr, &keymgr));
+#elif defined(HAS_KEYMGR_DPE)
+  CHECK_DIF_OK(dif_keymgr_dpe_init_from_dt(kDtKeymgrDpe, &keymgr_dpe));
+#endif
 }
 
 /**
@@ -131,10 +147,19 @@ static void config_alert_handler(void) {
   }};
 
   // set the alert we care about to class A
+#if defined(OPENTITAN_IS_EGRET)
   CHECK_DIF_OK(dif_alert_handler_configure_alert(
       &alert_handler, kTopEgretAlertIdRvCoreIbexRecovSwErr,
       kDifAlertHandlerClassA, /*enabled=*/kDifToggleEnabled,
       /*locked=*/kDifToggleEnabled));
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  CHECK_DIF_OK(dif_alert_handler_configure_alert(
+      &alert_handler, kTopDragonflyAlertIdRvCoreIbexRecovSwErr,
+      kDifAlertHandlerClassA, /*enabled=*/kDifToggleEnabled,
+      /*locked=*/kDifToggleEnabled));
+#else
+#error Unsupported top
+#endif
 
   // configure class A
   CHECK_DIF_OK(dif_alert_handler_configure_class(
@@ -160,8 +185,18 @@ bool test_main(void) {
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
   rst_info = rstmgr_testutils_reason_get();
-  rstmgr_testutils_reason_clear();
 
+  // The current rstmgr cause is needed by Dragonfly to initialize keymgr_dpe.
+  // keymgr_dpe_testutils_startup reads the rstmgr cause and needs the following
+  // progression: kDifRstmgrResetInfoPor -> kDifRstmgrResetInfoSw. Clearing here
+  // would result in DPE reading all 0 for reset cause and failing. Instead we
+  // clear after kDifRstmgrResetInfoSw to prepare for the escalation that will
+  // follow.
+#if defined(OPENTITAN_IS_EGRET)
+  rstmgr_testutils_reason_clear();
+#endif
+
+#if defined(OPENTITAN_IS_EGRET)
   if (rst_info & kDifRstmgrResetInfoPor) {
     config_alert_handler();
 
@@ -183,6 +218,7 @@ bool test_main(void) {
     wait_for_interrupt();
     LOG_ERROR("Should have reset before this line");
     return false;
+
   } else if (rst_info & kDifRstmgrResetInfoEscalation) {
     // DO NOT REMOVE, DV sync message
     LOG_INFO("Reset due to alert escalation");
@@ -192,4 +228,53 @@ bool test_main(void) {
   }
 
   return false;
+
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  if (rst_info & kDifRstmgrResetInfoPor) {
+    // Initialize keymgr_dpe with otp contents, this will cause a SW reset
+    CHECK_STATUS_OK(keymgr_dpe_testutils_startup(&keymgr_dpe,
+                                                 /*slot_dst_sel=*/1));
+
+    // Stop execution here and just wait for something to happen
+    wait_for_interrupt();
+    LOG_ERROR("Should have reset before this line");
+    return false;
+
+  } else if (rst_info & kDifRstmgrResetInfoSw) {
+    config_alert_handler();
+
+    // Finish initialization of keymgr_dpe
+    CHECK_STATUS_OK(keymgr_dpe_testutils_startup(&keymgr_dpe,
+                                                 /*slot_dst_sel=*/1));
+    // Clear the rstmgr SW initialized reset
+    rstmgr_testutils_reason_clear();
+
+    // DO NOT REMOVE, DV sync message
+    LOG_INFO("Keymgr entered Init State");
+
+    // Enable NMI
+    CHECK_DIF_OK(dif_rv_core_ibex_enable_nmi(&rv_core_ibex,
+                                             kDifRvCoreIbexNmiSourceAlert));
+
+    // force trigger the alert
+    CHECK_DIF_OK(dif_rv_core_ibex_alert_force(&rv_core_ibex,
+                                              kDifRvCoreIbexAlertRecovSwErr));
+
+    // Stop execution here and just wait for something to happen
+    wait_for_interrupt();
+    LOG_ERROR("Should have reset before this line");
+    return false;
+
+  } else if (rst_info & kDifRstmgrResetInfoEscalation) {
+    // DO NOT REMOVE, DV sync message
+    LOG_INFO("Reset due to alert escalation");
+    return true;
+  } else {
+    LOG_ERROR("Unexpected reset info %d", rst_info);
+  }
+
+  return false;
+#else
+#error Unsupported top
+#endif
 }
