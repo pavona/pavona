@@ -476,6 +476,7 @@ pavona_test(
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             # See #23038, this test requires a provisioned flash in sival.
             "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
@@ -487,12 +488,10 @@ pavona_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -502,12 +501,22 @@ pavona_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:flash_ctrl",
+                "//sw/device/lib/testing:keymgr_testutils",
+            ],
+            "dragonfly": [
+                "//sw/device/lib/testing:keymgr_dpe_testutils",
+            ],
+        },
+        []
+    ),
 )
 
 pavona_test(

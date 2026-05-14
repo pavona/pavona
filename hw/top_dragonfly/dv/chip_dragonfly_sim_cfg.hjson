@@ -1064,20 +1064,19 @@
       // processing alerts accurately from both ends.
       run_opts: ["+en_scb=0", "+sw_test_timeout_ns=24000000"]
     }
-    // TODO(Pavona #43): Needs Dragonfly execution environment
-    // {
-    //   name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
-    //   uvm_test_seq: chip_sw_base_vseq
-    //   sw_images: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test:6:new_rules"]
-    //   en_run_modes: ["sw_test_mode_test_rom"]
+    {
+      name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
       // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
       // cross-domain alert senders and receivers, the monitor from the chip level did not support
       // processing alerts accurately from both ends.
       // This test takes long due to the compile time configured reverse timeout. See test plan for
       // more details.
-    //   run_opts: ["+en_scb=0", "+sw_test_timeout_ns=300_000_000"]
-    //   run_timeout_mins: 240
-    // }
+      run_opts: ["+en_scb=0", "+sw_test_timeout_ns=300_000_000"]
+      run_timeout_mins: 240
+    }
     // TODO(Pavona #44): Needs sw_image Bazel target
     // {
     //   name: chip_sw_alert_handler_lpg_sleep_mode_alerts
