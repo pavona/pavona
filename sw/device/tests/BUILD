@@ -342,33 +342,55 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:silicon_creator": None,
         },
+    ),
+    local_defines = pavona_if_ip(
+        "keymgr",
+        ["HAS_KEYMGR"],
+        [],
+    ) + pavona_if_ip(
+        "keymgr_dpe",
+        ["HAS_KEYMGR_DPE"],
+        [],
     ),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:keymgr",
+                "//sw/device/lib/testing:keymgr_testutils",
+                "//hw/top_egret/sw/autogen:top_egret",
+            ],
+            "dragonfly": [
+                "//sw/device/lib/dif:keymgr_dpe",
+                "//sw/device/lib/testing:keymgr_dpe_testutils",
+                "//hw/top_dragonfly/sw/autogen:top_dragonfly",
+            ],
+        },
+        [],
+    ),
 )
 
 pavona_test(

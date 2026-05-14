@@ -1045,17 +1045,16 @@
     //   sw_images: ["//sw/device/tests/autogen/{top_chip}:alert_test:6:new_rules"]
     //   en_run_modes: ["sw_test_mode_test_rom"]
     // }
-    // TODO(Pavona #43): Needs Dragonfly execution environment
-    // {
-    //   name: chip_sw_alert_handler_escalation
-    //   uvm_test_seq: chip_sw_alert_handler_escalation_vseq
-    //   sw_images: ["//sw/device/tests:alert_handler_escalation_test:6:new_rules"]
-    //   en_run_modes: ["sw_test_mode_test_rom"]
+    {
+      name: chip_sw_alert_handler_escalation
+      uvm_test_seq: chip_sw_alert_handler_escalation_vseq
+      sw_images: ["//sw/device/tests:alert_handler_escalation_test:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
       // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
       // cross-domain alert senders and receivers, the monitor from the chip level did not support
       // processing alerts accurately from both ends.
-    //   run_opts: ["+en_scb=0", "+bypass_alert_ready_to_end_check=1"]
-    // }
+      run_opts: ["+en_scb=0", "+bypass_alert_ready_to_end_check=1"]
+    }
     {
       name: chip_sw_alert_handler_ping_timeout
       uvm_test_seq: chip_sw_base_vseq
@@ -1503,14 +1502,13 @@
     //   run_opts: ["+use_jtag_dmi=1"]
     // }
     // End of TODO(Pavona #44)
-    // TODO(Pavona #43): Needs Dragonfly execution environment
-    // {
-    //   name: chip_sw_rv_dm_access_after_escalation_reset
-    //   uvm_test_seq: "chip_sw_rv_dm_access_after_escalation_reset_vseq"
-    //   sw_images: ["//sw/device/tests:alert_handler_escalation_test:6:new_rules"]
-    //   en_run_modes: ["sw_test_mode_test_rom"]
-    //   run_opts: ["+use_jtag_dmi=1"]
-    // }
+    {
+      name: chip_sw_rv_dm_access_after_escalation_reset
+      uvm_test_seq: "chip_sw_rv_dm_access_after_escalation_reset_vseq"
+      sw_images: ["//sw/device/tests:alert_handler_escalation_test:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_jtag_dmi=1"]
+    }
     {
       name: chip_rv_dm_lc_disabled
       build_mode: "cover_reg_top"
