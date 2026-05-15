@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,7 +17,6 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
-#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
@@ -31,8 +31,18 @@
 #include "hw/top/i2c_regs.h"
 #include "hw/top/spi_device_regs.h"
 #include "hw/top/spi_host_regs.h"
+#if defined(HAS_USBDEV)
+#include "sw/device/lib/dif/dif_usbdev.h"
+
 #include "hw/top/usbdev_regs.h"
+#endif
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top_egret/sw/autogen/top_egret.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
+#else
+#error Unsupported top
+#endif
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -42,78 +52,97 @@ static dif_alert_handler_t alert_handler;
 static dif_rstmgr_t rstmgr;
 static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
-static dif_usbdev_t usbdev;
+static dif_rv_core_ibex_t ibex;
 static dif_i2c_t i2c0;
+#if defined(HAS_USBDEV)
+static dif_usbdev_t usbdev;
+#endif
+#if defined(OPENTITAN_IS_EGRET)
+static dif_spi_host_t spi_host1;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
-static dif_rv_core_ibex_t ibex;
 static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static const uint32_t kPlicTarget = kTopDragonflyPlicTargetIbex0;
+#else
+#error Unsupported top
+#endif
 
 /**
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_i2c_init_from_dt(kDtI2c0, &i2c0));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &ibex));
+  CHECK_DIF_OK(dif_spi_device_init_from_dt(kDtSpiDevice, &spi_dev.dev));
+  CHECK_DIF_OK(dif_spi_host_init_from_dt((dt_spi_host_t)0, &spi_host0));
 
-  base_addr = mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR);
-  CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
+#if defined(HAS_USBDEV)
+  CHECK_DIF_OK(dif_usbdev_init_from_dt(kDtUsbdev, &usbdev));
+#endif
 
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EGRET_USBDEV_BASE_ADDR), &usbdev));
-
-  CHECK_DIF_OK(dif_spi_device_init(
-      mmio_region_from_addr(TOP_EGRET_SPI_DEVICE_BASE_ADDR), &spi_dev.dev));
-
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spi_host0));
-
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR), &spi_host1));
-
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C0_BASE_ADDR), &i2c0));
-
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C1_BASE_ADDR), &i2c1));
-
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C2_BASE_ADDR), &i2c2));
-
-  mmio_region_t ibex_addr =
-      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
+#if defined(OPENTITAN_IS_EGRET)
+  CHECK_DIF_OK(dif_spi_host_init_from_dt((dt_spi_host_t)1, &spi_host0));
+  CHECK_DIF_OK(dif_i2c_init_from_dt(kDtI2c1, &i2c1));
+  CHECK_DIF_OK(dif_i2c_init_from_dt(kDtI2c2, &i2c2));
+#endif
 
   // Enable all the alert_handler interrupts used in this test.
+#if defined(OPENTITAN_IS_EGRET)
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
                                      kTopEgretPlicIrqIdAlertHandlerClassa,
                                      kTopEgretPlicIrqIdAlertHandlerClassd);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
+                                     kTopDragonflyPlicIrqIdAlertHandlerClassa,
+                                     kTopDragonflyPlicIrqIdAlertHandlerClassd);
+#else
+#error Unsupported top
+#endif
 }
 
 // List of alerts
+#if defined(OPENTITAN_IS_EGRET)
 static const uint32_t spidev_alerts[] = {kTopEgretAlertIdSpiDeviceFatalFault};
 static const uint32_t spihost0_alerts[] = {kTopEgretAlertIdSpiHost0FatalFault};
+static const uint32_t i2c0_alerts[] = {kTopEgretAlertIdI2c0FatalFault};
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static const uint32_t spidev_alerts[] = {
+    kTopDragonflyAlertIdSpiDeviceFatalFault};
+static const uint32_t spihost0_alerts[] = {
+    kTopDragonflyAlertIdSpiHost0FatalFault};
+static const uint32_t i2c0_alerts[] = {kTopDragonflyAlertIdI2c0FatalFault};
+#else
+#error Unsupported top
+#endif
+
+static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
+static const uint32_t num_spidev_alerts = ARRAYSIZE(spidev_alerts);
+static const uint32_t num_i2c0_alerts = ARRAYSIZE(i2c0_alerts);
+
+#if defined(OPENTITAN_IS_EGRET)
 static const uint32_t spihost1_alerts[] = {kTopEgretAlertIdSpiHost1FatalFault};
 static const uint32_t usbdev_alerts[] = {kTopEgretAlertIdUsbdevFatalFault};
-static const uint32_t i2c0_alerts[] = {kTopEgretAlertIdI2c0FatalFault};
 static const uint32_t i2c1_alerts[] = {kTopEgretAlertIdI2c1FatalFault};
 static const uint32_t i2c2_alerts[] = {kTopEgretAlertIdI2c2FatalFault};
 
-static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
 static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
 static const uint32_t num_usbdev_alerts = ARRAYSIZE(usbdev_alerts);
-static const uint32_t num_spidev_alerts = ARRAYSIZE(spidev_alerts);
-static const uint32_t num_i2c0_alerts = ARRAYSIZE(i2c0_alerts);
 static const uint32_t num_i2c1_alerts = ARRAYSIZE(i2c1_alerts);
 static const uint32_t num_i2c2_alerts = ARRAYSIZE(i2c2_alerts);
 
 static const size_t num_alerts =
     num_spihost0_alerts + num_spihost1_alerts + num_usbdev_alerts +
     num_i2c0_alerts + num_i2c1_alerts + num_i2c2_alerts + num_spidev_alerts;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static const size_t num_alerts =
+    num_spihost0_alerts + num_i2c0_alerts + num_spidev_alerts;
+#else
+#error Unsupported top
+#endif
 
 /**
  * A structure to keep the info for peripheral IPs
@@ -149,12 +178,25 @@ typedef struct test {
 static const test_t kPeripherals[] = {
     {
         .name = "SPI_HOST0",
+#if defined(OPENTITAN_IS_EGRET)
         .base = TOP_EGRET_SPI_HOST0_BASE_ADDR,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .base = TOP_DRAGONFLY_SPI_HOST0_BASE_ADDR,
+#else
+#error Unsupported top
+#endif
         .dif = &spi_host0,
         .alert_ids = spihost0_alerts,
         .num_alert_peri = num_spihost0_alerts,
+#if defined(OPENTITAN_IS_EGRET)
         .reset_index = kTopEgretResetManagerSwResetsSpiHost0,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .reset_index = kTopDragonflyResetManagerSwResetsSpiHost0,
+#else
+#error Unsupported top
+#endif
     },
+#if defined(OPENTITAN_IS_EGRET)
     {
         .name = "SPI_HOST1",
         .base = TOP_EGRET_SPI_HOST1_BASE_ADDR,
@@ -171,22 +213,48 @@ static const test_t kPeripherals[] = {
         .num_alert_peri = num_usbdev_alerts,
         .reset_index = kTopEgretResetManagerSwResetsUsb,
     },
+#endif
     {
         .name = "SPI_DEVICE",
+#if defined(OPENTITAN_IS_EGRET)
         .base = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .base = TOP_DRAGONFLY_SPI_DEVICE_BASE_ADDR,
+#else
+#error Unsupported top
+#endif
         .dif = &spi_dev.dev,
         .alert_ids = spidev_alerts,
         .num_alert_peri = num_spidev_alerts,
+#if defined(OPENTITAN_IS_EGRET)
         .reset_index = kTopEgretResetManagerSwResetsSpiDevice,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .reset_index = kTopDragonflyResetManagerSwResetsSpiDevice,
+#else
+#error Unsupported top
+#endif
     },
     {
         .name = "I2C0",
+#if defined(OPENTITAN_IS_EGRET)
         .base = TOP_EGRET_I2C0_BASE_ADDR,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .base = TOP_DRAGONFLY_I2C0_BASE_ADDR,
+#else
+#error Unsupported top
+#endif
         .dif = &i2c0,
         .alert_ids = i2c0_alerts,
         .num_alert_peri = num_i2c0_alerts,
+#if defined(OPENTITAN_IS_EGRET)
         .reset_index = kTopEgretResetManagerSwResetsI2c0,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .reset_index = kTopDragonflyResetManagerSwResetsI2c0,
+#else
+#error Unsupported top
+#endif
     },
+#if defined(OPENTITAN_IS_EGRET)
     {
         .name = "I2C1",
         .base = TOP_EGRET_I2C1_BASE_ADDR,
@@ -203,6 +271,7 @@ static const test_t kPeripherals[] = {
         .num_alert_peri = num_i2c2_alerts,
         .reset_index = kTopEgretResetManagerSwResetsI2c2,
     },
+#endif
 };
 
 /**
