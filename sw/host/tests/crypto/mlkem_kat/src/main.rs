@@ -135,7 +135,7 @@ fn run_mlkem_testcase(
         _ => panic!("Unsupported ML-KEM operation: {}", test_case.operation),
     }
 
-    let output = CryptotestMlkemOutput::recv(spi_console, opts.timeout, false)?;
+    let output = CryptotestMlkemOutput::recv(spi_console, opts.timeout, false, false)?;
 
     assert_eq!(
         output.success, test_case.result,
@@ -158,7 +158,7 @@ fn run_mlkem_testcase(
 
 fn test_mlkem(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;

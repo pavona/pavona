@@ -168,7 +168,7 @@ fn run_mldsa_testcase(
         _ => panic!("Unsupported ML-DSA operation: {}", test_case.operation),
     }
 
-    let output = CryptotestMldsaOutput::recv(spi_console, opts.timeout, false)?;
+    let output = CryptotestMldsaOutput::recv(spi_console, opts.timeout, false, false)?;
 
     assert_eq!(
         output.success, test_case.result,
@@ -191,7 +191,7 @@ fn run_mldsa_testcase(
 
 fn test_mldsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;

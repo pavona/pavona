@@ -97,7 +97,7 @@ fn run_ed25519_verify(
     }
     .send(spi_console)?;
 
-    let output = CryptotestEd25519VerifyOutput::recv(spi_console, opts.timeout, false)?;
+    let output = CryptotestEd25519VerifyOutput::recv(spi_console, opts.timeout, false, false)?;
     Ok(match output {
         CryptotestEd25519VerifyOutput::Success => true,
         CryptotestEd25519VerifyOutput::Failure => false,
@@ -141,7 +141,7 @@ fn run_ed25519_sign(
     }
     .send(spi_console)?;
 
-    let output = CryptotestEd25519SiggenOutput::recv(spi_console, opts.timeout, false)?;
+    let output = CryptotestEd25519SiggenOutput::recv(spi_console, opts.timeout, false, false)?;
     Ok(output.success == test_case.result
         && output.signature[..output.signature_len] == *test_case.expected_signature)
 }
@@ -185,7 +185,7 @@ fn run_ed25519_testcase(
 
 fn test_ed25519(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     let mut test_counter = 0u32;

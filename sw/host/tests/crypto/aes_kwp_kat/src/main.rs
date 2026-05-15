@@ -64,8 +64,12 @@ fn run_aes_kwp_testcase(
     AesKwpSubcommand::AesKwpOp.send(spi_console)?;
 
     match test_case.operation.as_str() {
-        "encrypt" => CryptotestAesKwpOperation::Wrap.send(spi_console)?,
-        "decrypt" => CryptotestAesKwpOperation::Unwrap.send(spi_console)?,
+        "encrypt" => {
+            CryptotestAesKwpOperation::Wrap.send(spi_console)?;
+        }
+        "decrypt" => {
+            CryptotestAesKwpOperation::Unwrap.send(spi_console)?;
+        }
         _ => panic!("Invalid AES-KWP operation"),
     }
 
@@ -101,7 +105,7 @@ fn run_aes_kwp_testcase(
     }
     .send(spi_console)?;
 
-    let output = CryptotestAesKwpOutput::recv(spi_console, opts.timeout, false)?;
+    let output = CryptotestAesKwpOutput::recv(spi_console, opts.timeout, false, false)?;
 
     // Check if the success flag matches.
     assert_eq!(output.success, expected_success);
@@ -121,7 +125,7 @@ fn run_aes_kwp_testcase(
 
 fn test_aes_kwp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
