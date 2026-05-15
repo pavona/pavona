@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -379,6 +380,7 @@ pavona_test(
     name = "alert_handler_lpg_clkoff_test",
     srcs = ["alert_handler_lpg_clkoff_test.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         # The test requires the Ibex core to wait long enough
         # before checking for the ping_timeout error.
@@ -397,9 +399,14 @@ pavona_test(
         },
     ),
     fpga = fpga_params(timeout = "moderate"),
+    local_defines = pavona_if_ip(
+        "usbdev",
+        ["HAS_USBDEV"],
+        [],
+    ),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:acc",
@@ -411,7 +418,6 @@ pavona_test(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -422,7 +428,15 @@ pavona_test(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:usbdev",
+            ],
+            "dragonfly": [],
+        },
+        [],
+    ),
 )
 
 pavona_test(
