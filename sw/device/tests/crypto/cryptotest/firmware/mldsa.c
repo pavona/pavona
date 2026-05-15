@@ -100,6 +100,8 @@ static status_t handle_mldsa_keygen(ujson_t *uj, mldsa_test_scratch_t *s) {
       keygen_status =
           otcrypto_mldsa87_keypair_derand(seed, &pk, &sk, s->work.keypair);
       break;
+    default:
+      return INVALID_ARGUMENT();
   }
   if (!status_ok(keygen_status)) {
     return send_fail(uj);
@@ -188,6 +190,8 @@ static status_t handle_mldsa_keygen_sign(ujson_t *uj, mldsa_test_scratch_t *s) {
       keygen_status =
           otcrypto_mldsa87_keypair_derand(seed, &pk, &sk, s->work.keypair);
       break;
+    default:
+      return INVALID_ARGUMENT();
   }
   if (!status_ok(keygen_status)) {
     return send_fail(uj);
@@ -219,6 +223,8 @@ static status_t handle_mldsa_keygen_sign(ujson_t *uj, mldsa_test_scratch_t *s) {
                                                  kOtcryptoMldsaSignModeMldsa,
                                                  rnd, signature, s->work.sign);
       break;
+    default:
+      return INVALID_ARGUMENT();
   }
   if (!status_ok(sign_status)) {
     return send_fail(uj);
@@ -313,6 +319,8 @@ static status_t handle_mldsa_siggen(ujson_t *uj, mldsa_test_scratch_t *s) {
                                                  kOtcryptoMldsaSignModeMldsa,
                                                  rnd, signature, s->work.sign);
       break;
+    default:
+      return INVALID_ARGUMENT();
   }
   if (!status_ok(sign_status)) {
     return send_fail(uj);
@@ -379,6 +387,8 @@ static status_t handle_mldsa_sigver(ujson_t *uj, mldsa_test_scratch_t *s) {
           &pk, message, context, kOtcryptoMldsaSignModeMldsa, signature,
           &verification_result, s->work.verify);
       break;
+    default:
+      return INVALID_ARGUMENT();
   }
 
   cryptotest_mldsa_output_t out;
