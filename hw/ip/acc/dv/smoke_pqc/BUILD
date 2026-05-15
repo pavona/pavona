@@ -12,7 +12,5 @@ acc_binary(
         "smoke_test.s",
     ],
     args = [
-        "--defsym",
-        "deterministic=1",
     ],
 )
