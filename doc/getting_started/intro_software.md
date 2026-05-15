@@ -1,7 +1,7 @@
 # Pavona 103: Introduction to software
 
-In Pavona 101, you learned how to clone the repository and run a Verilator test.
-In Pavona 102, you learned how ACE creates hardware from a single source of truth.
+In [Pavona 101](./pavona_101.md), you learned how to clone the repository and run a Verilator test.
+In [Pavona 102](./intro_hardware.md), you learned how ACE creates hardware from a single source of truth.
 This guide describes software in Pavona and its relationship to the hardware it runs on.
 
 ## Bazel
@@ -11,19 +11,19 @@ While this document will introduce basic Bazel commands needed to interact with 
 
 ## The software directories
 
-Pavona software resides broadly in the sw/ directory.
+Pavona software resides broadly in the `sw/` directory.
 Here are some of the most important subdirectories:
 
-* sw/device/, which contains software that will run on the general-purpose core, such as the Ibex, of a Pavona top-level design.
+* `sw/device/`, which contains software that will run on the general-purpose core, such as the Ibex, of a Pavona top-level design.
 This directory is broken down into several other directories; some important ones are:
-  * sw/device/examples/, which includes the "Hello, World!" example from Pavona 101\.
-  * sw/device/tests/, which contains hundreds of tests, encompassing peripheral smoke tests to fuller end-to-end tests.
-  * sw/device/silicon\_creator/ and sw/device/silicon\_owner/, which contain software serving root-of-trust and similar functions.
+  * `sw/device/examples/`, which includes the "Hello, World!" example from Pavona 101.
+  * `sw/device/tests/`, which contains hundreds of tests, encompassing peripheral smoke tests to fuller end-to-end tests.
+  * `sw/device/silicon_creator/` and `sw/device/silicon_owner/`, which contain software serving root-of-trust and similar functions.
     Here, you'll find the code for the ROM and ownership transfer code.
-* sw/device/acc/, which contains software that runs on the Asymmetric Cryptography Coprocessor (ACC).
+* `sw/device/acc/`, which contains software that runs on the Asymmetric Cryptography Coprocessor (ACC).
   Most ACC software is compiled into *cryptolib*, a library of cryptographic routines.
-* sw/host/, which contains software that runs on the machine (the "host") connected to a Pavona top-level design.
-  It's worth noting that this host code is distinct from code that is used to *generate* Pavona hardware, which generally lives in util/.
+* `sw/host/`, which contains software that runs on the machine (the "host") connected to a Pavona top-level design.
+  It's worth noting that this host code is distinct from code that is used to *generate* Pavona hardware, which generally lives in `util/`.
 
 The vast majority of general-purpose device code is written in C, with some RISC-V assembly where needed.
 ACC code is written in assembly, as it uses a custom ISA (although it sufficiently resembles RISC-V to reuse most of the tooling).
@@ -37,10 +37,10 @@ For more, see the Bazel documentation and the Pavona-specific Bazel documentatio
 ### Querying what targets are available
 
 Use `bazel query` to find out what software can be built from a particular directory.
-The following command lists the targets that can be built in sw/device/tests:
+The following command lists the targets that can be built in `sw/device/tests`:
 
-```
-(.venv) pavona $ bazel query sw/device/tests:*
+```shell
+$ bazel query sw/device/tests:*
 ...
 //sw/device/tests:BUILD
 //sw/device/tests:README.md
@@ -60,8 +60,8 @@ The following command lists the targets that can be built in sw/device/tests:
 Use `bazel build` to build a particular target.
 The following command builds the mask ROM (note that this is insufficient for a test, because you need an execution environment; read further).
 
-```
-(.venv) pavona $ bazel build sw/device/silicon_creator/rom:mask_rom
+```shell
+$ bazel build sw/device/silicon_creator/rom:mask_rom
 ...
 INFO: Analyzed target //sw/device/silicon_creator/rom:mask_rom (645 packages loaded, 25678 targets configured).
 INFO: Found 1 target...
@@ -87,10 +87,10 @@ Note also that building something else tends to blow away anything you've built 
 Use `bazel test` to run a test on Pavona.
 In Pavona, the name of a test is given by the binary as well as an execution environment, described below.
 To run a test, combine the test binary name with the name of the execution environment with an underscore.
-For example, to run a UART smoketest on the sim\_verilator execution environment, run the following command:
+For example, to run a UART smoketest on the `sim_verilator` execution environment, run the following command:
 
-```
-(.venv) pavona $ bazel test sw/device/tests:uart_smoketest_sim_verilator
+```shell
+$ bazel test sw/device/tests:uart_smoketest_sim_verilator
 ...
 INFO: Found 1 test target...
 Target //sw/device/tests:uart_smoketest_sim_verilator up-to-date:
@@ -108,8 +108,9 @@ Host tools are generally run, not tested; for these, use `bazel run`.
 For instance, opentitantool is the name of the tool for interacting with Pavona devices from an external host.
 To see the help menu for opentitantool:
 
-```
-(.venv) pavona $ bazel run //sw/host/opentitantool -- help...
+```shell
+$ bazel run //sw/host/opentitantool -- help
+   ...
 INFO: Build completed successfully, 1467 total actions
 INFO: Running command line: bazel-bin/sw/host/opentitantool/opentitantool <args omitted>
 A tool for interacting with OpenTitan chips.
@@ -133,22 +134,22 @@ Execution environments also encompass any ROM or firmware that supports the soft
 Some select between a test ROM and the full ROM; others select which keys to imbue into the ROM.
 
 The available execution environments also depend on the top-level hardware design being created.
-For a full list of execution environments, see rules/pavona/defs.bzl.
+For a full list of execution environments, see `rules/pavona/defs.bzl`.
 
 A complete test run of a given test on a given hardware, then, is given by combining the name of a test and the name of an execution environment.
-For instance, if a chip-level test is called "chip\_sw\_uart\_rx\_tx", and we'd like to run it in the "sim\_verilator" execution environment, we run a test whose name is formed by combining the test name and the execution environment with an underscore:
+For instance, if a chip-level test is called `chip_sw_uart_rx_tx`, and we'd like to run it in the `sim_verilator` execution environment, we run a test whose name is formed by combining the test name and the execution environment with an underscore:
 
-```
-(.venv) pavona $ bazel test sw/device/tests:chip_sw_uart_rx_tx_sim_verilator
+```shell
+$ bazel test sw/device/tests:chip_sw_uart_rx_tx_sim_verilator
 ```
 
 ## Writing a new test
 
-To write a new device test, it's easiest to look at existing tests in the sw/device/tests/ directory.
-In addition to the C code and any headers you may create, you'll need to add an entry to sw/device/tests/BUILD so that Bazel knows about your new test.
+To write a new device test, it's easiest to look at existing tests in the `sw/device/tests/` directory.
+In addition to the C code and any headers you may create, you'll need to add an entry to `sw/device/tests/BUILD` so that Bazel knows about your new test.
 Refer to the Bazel documentation for more information about how to write BUILD files.
 
-```
+```bazel
 opentitan_test(
     name = "my_new_test",
     srcs = ["my_new_test.c"],
@@ -173,7 +174,7 @@ opentitan_test(
 In order to finish a test, your test needs to print "PASS" or "FAIL".
 This file is a minimal passing test:
 
-```
+```c
 #include "hw/top/dt/uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/runtime/print_uart.h"
