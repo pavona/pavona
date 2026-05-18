@@ -92,18 +92,25 @@ runs:
         git config --global user.name "dvsim bot"
       shell: bash
 
-    - name: Checkout internal dashboard for regrading
-      if: ${{ inputs.item == 'weekly' }}
-      uses: actions/checkout@v4
-      with:
-        repository: pavona/internal-dashboard
-        ssh-key: ${{ inputs.dashboard-upload-key }}
-        path: internal-dashboard
-
     - name: Run regrading mechanism
       id: regrade
       if: ${{ inputs.item == 'weekly' }}
       run: |
+        # Clone the internal dashboard, matching the CI branch if it exists there.
+        # For PRs use the source branch; otherwise the branch/tag that triggered the run.
+        CURRENT_BRANCH="${{ github.head_ref || github.ref_name }}"
+        DASHBOARD_REPO="git@github.com:pavona/internal-dashboard.git"
+        echo "CI branch: '$CURRENT_BRANCH'"
+
+        if [ -n "$CURRENT_BRANCH" ] && \
+           git ls-remote --exit-code --heads "$DASHBOARD_REPO" "refs/heads/$CURRENT_BRANCH" >/dev/null 2>&1; then
+          echo "Matching branch '$CURRENT_BRANCH' found in pavona/internal-dashboard - checking it out."
+          git clone --depth=1 --branch "$CURRENT_BRANCH" "$DASHBOARD_REPO" internal-dashboard
+        else
+          echo "No matching branch in pavona/internal-dashboard - checking out default branch."
+          git clone --depth=1 "$DASHBOARD_REPO" internal-dashboard
+        fi
+
         FLOW_DIR="internal-dashboard/all_tops_batch_weekly_sim"
         LATEST_VER=$(find "$FLOW_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | tail -1)
         if [ -z "$LATEST_VER" ]; then
