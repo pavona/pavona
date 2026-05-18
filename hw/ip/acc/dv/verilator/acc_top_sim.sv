@@ -27,6 +27,10 @@ module acc_top_sim #(
   localparam logic [127:0] TestScrambleKey   = 128'h48ecf6c738f0f108a5b08620695ffd4d;
   localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
 
+  // Fixed kmac mask for verilator environment
+  localparam logic [255:0] TestKmacMask =
+    256'h6af4eef3d009bffea30cad5958e9b1abceddc59cc16e7481e562b3b77e7ed45e;
+
   logic      acc_done, acc_done_r, acc_done_rr;
   core_err_bits_t core_err_bits;
   err_bits_t acc_err_bits, acc_err_bits_r, acc_err_bits_rr;
@@ -64,6 +68,9 @@ module acc_top_sim #(
   kmac_pkg::app_rsp_t                                      acc_kmac_app_rsp;
   kmac_pkg::app_req_t [NumAppIntf-1:0]                     kmac_app_req_ifaces;
   kmac_pkg::app_rsp_t [NumAppIntf-1:0]                     kmac_app_rsp_ifaces;
+  logic [kmac_pkg::AppDigestW-1:0]                         kmac_unmasked_digest;
+  logic [kmac_pkg::AppDigestW-1:0]                         kmac_digest_share0;
+  logic [kmac_pkg::AppDigestW-1:0]                         kmac_digest_share1;
   keymgr_pkg::hw_key_req_t                                 kmac_sideload_key;
   edn_pkg::edn_req_t                                       kmac_edn_req;
   edn_pkg::edn_rsp_t                                       kmac_edn_rsp;
@@ -208,7 +215,43 @@ module acc_top_sim #(
                                           | (kmac_app_rsp_ifaces[1] != kmac_pkg::APP_RSP_DEFAULT)
                                           | (kmac_app_rsp_ifaces[2] != kmac_pkg::APP_RSP_DEFAULT)
                                           | |(kmac_alerts);
-  assign acc_kmac_app_rsp = kmac_app_rsp_ifaces[3];
+
+  // Apply a fixed mask to the KMAC output so that we can match the ISS environment
+  assign kmac_unmasked_digest = kmac_app_rsp_ifaces[3].digest_share0 ^
+                                kmac_app_rsp_ifaces[3].digest_share1 ^
+                                {128'b0, TestKmacMask};
+
+  logic mask_digest_q;
+
+  always_comb begin
+    if (!mask_digest_q) begin
+      kmac_digest_share0 = {128'b0, TestKmacMask};
+      kmac_digest_share1 = kmac_unmasked_digest;
+    end else begin
+      kmac_digest_share0 = kmac_unmasked_digest;
+      kmac_digest_share1 = {128'b0, TestKmacMask};
+    end
+  end
+
+  always_ff @(posedge IO_CLK, negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      mask_digest_q <= 1'b0;
+    end else begin
+      if (!kmac_app_req_ifaces[3].hold) begin
+        mask_digest_q <= 1'b0;
+      end else begin
+        if (kmac_app_rsp_ifaces[3].done) begin
+          mask_digest_q <= ~mask_digest_q;
+        end
+      end
+    end
+  end
+
+  assign acc_kmac_app_rsp.ready = kmac_app_rsp_ifaces[3].ready;
+  assign acc_kmac_app_rsp.done = kmac_app_rsp_ifaces[3].done;
+  assign acc_kmac_app_rsp.digest_share0 = kmac_digest_share0;
+  assign acc_kmac_app_rsp.digest_share1 = kmac_digest_share1;
+  assign acc_kmac_app_rsp.error = kmac_app_rsp_ifaces[3].error;
 
   assign kmac_sideload_key.key = {2{{256{1'b0}}}};
   assign kmac_sideload_key.valid = 1'b1;

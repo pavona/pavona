@@ -158,25 +158,6 @@ bn.wsrw 0x3, w3 /* ACC */
 bn.wsrr w4, 0xb
 bn.wsrr w5, 0x3
 
-bn.wsrr w1, 0x0 /* MOD 82a 4ea*/
-bn.not w2, w1
-li x23, 0x000008ea
-csrrw x0, kmac_cfg, x23
-li x23, 0x0000001a
-csrrw x0, kmac_partial_write, x23
-bn.wsrw 0x9, w1 /* MSG SHARE0 */
-li x23, 0x0000000d
-csrrw x0, kmac_partial_write, x23
-bn.wsrw 0x9, w1 /* MSG SHARE0 */
-bn.wsrw 0x9, w1 /* MSG SHARE0 */
-bn.wsrr w2, 0xa /* DIGEST SHARE0 */
-bn.wsrr w2, 0xa /* DIGEST SHARE0 */
-bn.wsrr w2, 0xa /* DIGEST SHARE0 */
-bn.wsrr w2, 0xa /* DIGEST SHARE0 */
-csrrs x24, kmac_status, x0
-li x23, 0x800008ea /* STOP CFG 0x8000040a */
-csrrw x0, kmac_cfg, x23
-
 # Note that some instructions used the fixed inputs (from w1 and w2) others use
 # results from previous instructions. When debugging an failure it is recommended
 # you first look at the failure from the lowest numbered register as failures
@@ -375,6 +356,25 @@ bn.mulv.8S.even.acc.z.lo w20, w0, w1
 bn.mulv.8S.odd.acc.z.lo  w21, w0, w1
 bn.mulv.8S.even.acc.z.hi w22, w0, w1
 bn.mulv.8S.odd.acc.z.hi  w23, w0, w1
+
+bn.wsrr w1, 0x0 /* MOD 82a 4ea*/
+bn.not w2, w1
+li x23, 0x000008ea
+csrrw x0, kmac_cfg, x23
+li x23, 0x0000001a
+csrrw x0, kmac_partial_write, x23
+bn.wsrw 0x9, w1 /* MSG SHARE0 */
+li x23, 0x0000000d
+csrrw x0, kmac_partial_write, x23
+bn.wsrw 0x9, w1 /* MSG SHARE0 */
+bn.wsrw 0x9, w1 /* MSG SHARE0 */
+bn.wsrr w2, 0xa /* DIGEST SHARE0 */
+bn.wsrr w2, 0xa /* DIGEST SHARE0 */
+bn.wsrr w2, 0xa /* DIGEST SHARE0 */
+bn.wsrr w2, 0xa /* DIGEST SHARE0 */
+csrrs x24, kmac_status, x0
+li x23, 0x800008ea /* STOP CFG 0x8000040a */
+csrrw x0, kmac_cfg, x23
 
 li     x4, 0
 li     x5, 17
