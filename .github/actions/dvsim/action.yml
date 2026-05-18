@@ -52,6 +52,9 @@ inputs:
   public-upload-key:
     type: string
     default: ""
+  cfgs:
+    type: string
+    default: ""
 
 runs:
   using: composite
@@ -143,6 +146,10 @@ runs:
         elif [ -n "${{ inputs.reseed-source }}" ]; then
           RESEED="-rs ${{ inputs.reseed-source }}"
         fi
+        CFGS=""
+        if [ -n "${{ inputs.cfgs }}" ]; then
+          CFGS="--select-cfgs ${{ inputs.cfgs }}"
+        fi
 
         util/dvsim/dvsim.py $COVERAGE \
           ${{ inputs.hjson }} \
@@ -151,6 +158,7 @@ runs:
           -i ${{ inputs.item }} ${{ inputs.extra-dvsim-flags }} \
           ${PUBLISH_PRIVATE} \
           ${RESEED} \
+          ${CFGS} \
           || ! ${{ inputs.require-pass }}
 
         if [ -n "$PUBLISH_PUBLIC" ]; then
@@ -161,7 +169,8 @@ runs:
             ${{ inputs.hjson }} \
             -t ${{ inputs.tool }} \
             -i ${{ inputs.item }} \
-            ${PUBLISH_PUBLIC}
+            ${PUBLISH_PUBLIC} \
+            ${CFGS}
         fi
       shell: bash
 
