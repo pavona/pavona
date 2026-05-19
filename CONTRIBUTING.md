@@ -33,7 +33,7 @@ The project offers several mailing lists open to everyone.
 Participation in the mailing lists only requires subscribing with an email address.
 They are:
 
-* technical@pavona.org – an open mailing list for broad technical discussions and open to all who subscribe.
+* pavona@pavona.org – an open mailing list for broad technical discussions and open to all who subscribe.
 * info@pavona.org – an inbound-only mailing list for general questions about the project.
 * announcements@pavona.org – an outbound-only low-volume channel for important announcements about the project.
 * security-disclosures@pavona.org – an inbound-only mailing list for confidential security disclosures.
