@@ -68,6 +68,11 @@ $ unzip [Pavona release name].zip
 ### Advanced: Clone the Pavona repository
 
 Developers and contributors interested in modifying Pavona can use Git to clone the repository.
+The Pavona Git repository contains the newest features and bugfixes, but it is considered experimental.
+For the best stability, use a Pavona release.
+
+If you'd like to contribute code to Pavona, create your own fork in order to open pull requests (see the [Github notes](../contributing/github_notes.md)).
+You cannot push a branch directly to the Pavona Git repository.
 
 ```shell
 $ sudo apt install -y git
