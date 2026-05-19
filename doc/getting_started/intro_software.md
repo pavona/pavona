@@ -136,7 +136,7 @@ Some select between a test ROM and the full ROM; others select which keys to imb
 The available execution environments also depend on the top-level hardware design being created.
 For a full list of execution environments, see `rules/pavona/defs.bzl`.
 
-A complete test run of a given test on a given hardware, then, is given by combining the name of a test and the name of an execution environment.
+A complete test run of a given test on a given hardware is given by combining the name of a test and the name of an execution environment.
 For instance, if a chip-level test is called `chip_sw_uart_rx_tx`, and we'd like to run it in the `sim_verilator` execution environment, we run a test whose name is formed by combining the test name and the execution environment with an underscore:
 
 ```shell

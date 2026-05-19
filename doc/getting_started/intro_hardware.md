@@ -8,8 +8,8 @@ After this guide, you will be able to make changes to existing top-level designs
 
 ## Basic setup
 
-This guide assumes you have set up your repository as described in Pavona 101.
-Remember to source your Python virtual environment.
+This guide assumes you have set up your repository as described in [Pavona 101](./README.md).
+Remember to activate your Python virtual environment.
 
 ## Repository structure
 
@@ -30,7 +30,7 @@ README.md          mypy.ini              util
 SUMMARY.md         pyproject.toml        yum-requirements.txt
 ```
 
-We explored some of the `sw/` directory in [Pavona 101](./pavona_101.md).
+We explored some of the `sw/` directory in [Pavona 101](./README.md).
 In there, you'll find:
 
 * `sw/device/`, which contains software that will run on a Pavona top-level design.
@@ -40,7 +40,7 @@ This includes tests as well as the "Hello, World!" example from Pavona 101.
 The other important directory is the `hw/` directory, which has several key subdirectories:
 
 * `hw/ip/` contains block-level IP for the Pavona ecosystem that does not need further "templatization" (see the next section).
-* `hw/ip_templates`, on the other hand, contains block-level IP that *does* need templatization
+* `hw/ip_templates`, on the other hand, contains block-level IP that *does* need templatization.
 * `hw/top_darjeeling`, `hw/top_earlgrey`, and `hw/top_englishbreakfast`, which represent the currently supported top-level reference designs in the Pavona project.
 
 Top-level designs (or "tops") organize IP into a design suited for a particular purpose or implementation methodology.
@@ -67,7 +67,7 @@ Darjeeling contains a proxy for communication to the wider SoC, which is not mea
 
 In each IP directory, you'll find several directories:
 
-* `data/` contains the IP block Hjson, which forms the "single source of truth" for this IP block.
+* `data/` contains the IP block [Hjson](https://hjson.github.io), which forms the "single source of truth" for this IP block.
 It contains information about inputs, outputs, registers, interrupts, and other crucial metadata about the IP block.
 This file is used extensively in templatization and top generation.
 `data/` also contains the testplan.
@@ -173,7 +173,7 @@ The top-level Hjson, among other things, identifies clocks, power domains, reset
 ## The top generation flow
 
 Pavona's Architectural Composition Engine (ACE) transforms a top-level Hjson into RTL, DV, software, documentation, and more for a top-level design.
-ACE is composed of many tools in the util/ directory whose names typically end in "-gen": topgen, ipgen, dtgen, reggen, and so forth.
+ACE is composed of many tools in the util/ directory whose names typically end in "gen": topgen, ipgen, dtgen, reggen, and so forth.
 
 To run ACE, pass this invocation to the Makefile.
 (If this fails with a missing "hjson" package, remember to source your Python virtual environment, then try again.)
