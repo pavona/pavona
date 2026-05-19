@@ -334,25 +334,3 @@ crypto_sign_keypair:
     /* Finish the SHAKE-256 operation. */
 
     ret
-
-.bss
-
-/* rho' intermediate value (64B). */
-.balign 32
-rhoprime:
-.zero 64
-
-/* Temporary polynomial buffer (1024B). */
-.balign 32
-tmp_poly:
-.zero 1024
-
-/* s1 intermediate polynomial buffer (1024B). */
-.balign 32
-s1_poly:
-.zero 1024
-
-/* t polynomial vector (K*1024B). */
-.balign 32
-t_polyvec:
-.zero POLYVECK_BYTES

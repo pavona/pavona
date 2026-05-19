@@ -56,6 +56,8 @@
 #define CRYPTO_BYTES 4627
 #endif
 
+#define POLYVECK_BYTES (K * 1024)
+
 #define MLDSA_PARAM_K_OFFSET 0
 #define MLDSA_PARAM_L_OFFSET 4
 #define MLDSA_PARAM_TAU_OFFSET 8
@@ -219,3 +221,42 @@ sig:
   .zero CRYPTO_BYTES
   .zero 12
 #endif
+
+.bss
+
+.balign 4
+.globl dptr_sig
+dptr_sig:
+  .zero 4
+
+.balign 32
+.globl mu
+mu:
+  .zero 64
+
+.balign 32
+.globl rhoprime
+rhoprime:
+  .zero 64
+
+.balign 32
+.globl c_poly
+c_poly:
+.globl y_poly
+y_poly:
+  .zero 1024
+
+.balign 32
+.globl tmp_poly
+tmp_poly:
+  .zero 1024
+
+.balign 32
+.globl w1_repvec
+w1_repvec:
+  .zero 256
+
+.balign 32
+.globl w0_polyvec
+w0_polyvec:
+  .zero POLYVECK_BYTES

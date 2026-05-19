@@ -42,6 +42,9 @@
     #define CRYPTO_PUBLICKEYBYTES 2592
 #endif
 
+#define POLYVECK_BYTES (K * 1024)
+#define POLYVECL_BYTES (L * 1024)
+
 #define MLDSA_PARAM_K_OFFSET 0
 #define MLDSA_PARAM_L_OFFSET 4
 #define MLDSA_PARAM_TAU_OFFSET 8
@@ -171,3 +174,40 @@ main:
 result:
     .byte 1
     .zero 31
+
+.bss
+
+.balign 4
+.globl dptr_sig
+dptr_sig:
+  .zero 4
+
+.balign 32
+.globl mu
+mu:
+  .zero 64
+
+.balign 32
+.globl ctilde
+ctilde:
+  .zero 64
+
+.balign 32
+.globl c_poly
+c_poly:
+  .zero 1024
+
+.balign 32
+.globl tmp_poly
+tmp_poly:
+  .zero 1024
+
+.balign 32
+.globl z_polyvec
+z_polyvec:
+  .zero POLYVECL_BYTES
+
+.balign 32
+.globl w1_polyvec
+w1_polyvec:
+  .zero POLYVECK_BYTES
