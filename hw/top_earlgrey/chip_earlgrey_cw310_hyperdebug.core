@@ -4,7 +4,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:systems:chip_earlgrey_cw310_hyperdebug:0.1"
-description: "Earl Grey toplevel for the ChipWhisperer CW310 board's hyperdebug variant"
+description: "Earlgrey toplevel for the ChipWhisperer CW310 board's hyperdebug variant"
 filesets:
   files_rtl_cw310:
     depend:

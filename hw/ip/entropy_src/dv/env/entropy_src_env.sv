@@ -41,7 +41,7 @@ class entropy_src_env extends cip_base_env #(
     // The default max delay is chosen such that the RNG model delivers one symbols every 6.5 clock
     // cycles (rng_max_delay = 12). To reach functional coverage metrics, the
     // entropy_src_rng_max_rate test configures the model to generate a symbol at the maximum rate
-    // (every other clock cycle, rng_max_delay = 1). For Earl Grey, this is an unrealistically high
+    // (every other clock cycle, rng_max_delay = 1). For Earlgrey, this is an unrealistically high
     // rate but it allows testing corner cases.
     cfg.m_rng_agent_cfg.host_delay_max = cfg.rng_max_delay;
     if (cfg.rng_max_delay == 1 && `RNG_BUS_WIDTH == 16) begin

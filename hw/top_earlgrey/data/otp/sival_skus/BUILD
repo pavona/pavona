@@ -4,7 +4,7 @@
 
 # SKU: SiVal Bringup. ASCII code `SV00`.
 # The SiVal bringup SKU is intended to be use in early bring-up stages of
-# Earl Grey silicon. Some of the countermeasures in the ROM are disabled to
+# Earlgrey silicon. Some of the countermeasures in the ROM are disabled to
 # de-risk bring-up and provisioning tests.
 
 load(

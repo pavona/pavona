@@ -104,10 +104,10 @@ Design verification simulator tool.
 
 End-to-End.
 
-#### Earl Grey
+#### Earlgrey
 
 A reference top-level system intended for implementation as a discrete chip.
-See [Earl Grey](../hw/top_earlgrey/README.md) for a the full specification.
+See [Earlgrey](../hw/top_earlgrey/README.md) for a the full specification.
 
 #### EDA
 

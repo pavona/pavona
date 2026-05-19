@@ -255,7 +255,7 @@ sim_qemu = rule(
         ),
         "otp_sv": attr.label(
             allow_single_file = True,
-            # TODO: should we really use Earl Grey as the default?
+            # TODO: should we really use Earlgrey as the default?
             default = Label("//hw/top_earlgrey/ip_autogen/otp_ctrl:rtl/otp_ctrl_part_pkg.sv"),
         ),
         "lc_sv": attr.label(

@@ -4,7 +4,7 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:englishbreakfast_constants:top_pkg"
-description: "Toplevel-wide constants for English Breakfast"
+description: "Toplevel-wide constants for Englishbreakfast"
 
 filesets:
   files_rtl:

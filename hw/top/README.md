@@ -133,7 +133,7 @@ cc_library(
 )
 ```
 - `opentitan_select_top(values, default)` provides a way to conditionally do something depending on the top.
-For example if we to create an alias on another library on Earlgrey but a different one on Darjeeling and English Breakfast, we could do:
+For example if we to create an alias on another library on Earlgrey but a different one on Darjeeling and Englishbreakfast, we could do:
 ```python
 alias(
     name = "my_alias",

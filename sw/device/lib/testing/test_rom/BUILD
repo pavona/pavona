@@ -92,7 +92,7 @@ legacy_rom_targets(
 ]
 
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator bootstrap
-# and other functions necessary to build the test_rom for the english breakfast top level.
+# and other functions necessary to build the test_rom for the Englishbreakfast top level.
 cc_library(
     name = "english_breakfast_test_rom_lib",
     srcs = [
@@ -100,7 +100,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
         "//sw/device/silicon_creator/rom:english_breakfast_test_rom_bootstrap_srcs",
     ],
-    # This should be built only for english breakfast and skipped if using wildcards.
+    # This should be built only for Englishbreakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
@@ -150,14 +150,14 @@ alias(
 )
 
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator manifest
-# implementation when building the test_rom for the english breakfast top level.
+# implementation when building the test_rom for the Englishbreakfast top level.
 cc_library(
     name = "english_breakfast_test_rom_manifest",
     srcs = [
         "//sw/device/silicon_creator/lib:english_breakfast_test_rom_manifest_srcs",
         "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
     ],
-    # This should be built only for english breakfast and skipped if using wildcards.
+    # This should be built only for Englishbreakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
         "//hw/top:flash_ctrl_c_regs",

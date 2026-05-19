@@ -1,19 +1,19 @@
-## Root Keys in OTP (Earl Grey)
+## Root Keys in OTP (Earlgrey)
 
-Earl Grey's secure boot root keys are now provisioned in OTP memory at manufacturing time, similar to the Darjeeling architecture.
+Earlgrey's secure boot root keys are now provisioned in OTP memory at manufacturing time, similar to the Darjeeling architecture.
 This allows the Silicon Creator to assign keys based on SKU configuration, enabling key rotation and also provisioning of keys for Silicon Owners that act as effective Silicon Creators.
 
 ## Supported Keys
 
 Secure boot requires support for hybrid signature schemes.
-For Earl Grey, this is based on ECDSA-P256-SHA256 and SLH-DSA.
+For Earlgrey, this is based on ECDSA-P256-SHA256 and SLH-DSA.
 In this document and in the code base we use "SPHINCS+", "spx", and/or "spx+" to refer to SLH-DSA.
 
 The following sections cover the data structures used to support these signature verification schemes.
 
 ### Common Key Header
 
-All keys in the current Earl Grey implementation use a common `key_type` and a `key_id` field.
+All keys in the current Earlgrey implementation use a common `key_type` and a `key_id` field.
 The `key_id` represents the first `uint32_t` word of the public key, independent of whether the key is ECDSA-P256 or SLH-DSA.
 
 The `key_type` determines the life cycle states in which the key is enabled for secure boot verification.
@@ -56,7 +56,7 @@ Each key can be in one of the following states: `BLANK`, `PROVISIONED`, `REVOKED
 The encoded values are such that transitions between `BLANK` → `PROVISIONED` → `REVOKED` are possible without causing ECC errors (this is a mechanism similar to how we manage life cycle state transitions).
 The partition is left unlocked to allow `STATE` updates in the field.
 The `ROM_EXT` is required to lock access to the OTP Direct Access Interface to prevent DoS attacks from malicious code executing on Silicon Owner partitions.
-DAI write locking is available in Earl Grey.
+DAI write locking is available in Earlgrey.
 
 ### Integrity Protection
 

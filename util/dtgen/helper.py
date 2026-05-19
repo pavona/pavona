@@ -1124,7 +1124,7 @@ This value is undefined if the block is not connected to the Alert Handler."""
                 else:
                     irqs.append(irq_name)
             # It can happen that a block declares some interrupts but the block is not connected to
-            # the PLIC. For example, on english breakfast, the rv_timer is directly connected to
+            # the PLIC. For example, on Englishbreakfast, the rv_timer is directly connected to
             # Ibex and not to the PLIC. In this case, we set the first_irq to None.
             #
             # TODO Handle this better in the future.

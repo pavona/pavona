@@ -1,14 +1,14 @@
-# OpenTitan Earl Grey Chip Specification
+# Earlgrey Chip Specification
 
-This document describes the OpenTitan Earl Grey chip functionality in detail.
-For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../datasheet.md).
+This document describes the Earlgrey chip functionality in detail.
+For an overview, refer to the [datasheet](../datasheet.md).
 
 # Theory of Operations
 
-The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board.
-The code for Ibex is developed in its own [lowRISC repo](https://github.com/lowrisc/ibex), and is [*vendored in*](../../../../doc/contributing/hw/vendor.md) to this repository.
-Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines](../../../../doc/contributing/hw/comportability/README.md) for lowRISC peripheral IP.
-Each of these IP has its own specification.
+The netlist `chip_earlgrey_asic` contains the features listed in the datasheet and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board.
+The code for Ibex is developed in its own [repo](https://github.com/lowrisc/ibex), and is [vendored in](../../../../doc/contributing/hw/vendor.md) to this repository.
+Surrounding Ibex is a suite of [comportable](../../../../doc/contributing/hw/comportability/README.md) peripherals.
+Each of these peripheral IPs has its own specification.
 See the table produced in the [hardware documentation page](../../../README.md) for links to those specifications.
 
 ## Design Details
@@ -19,36 +19,36 @@ This section also contains a brief overview of some of the features of the final
 
 ### Clocking and Reset
 
-Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](../../ip/ast/README.md) from this point onwards in the document.
+Clocks and resets are supplied from the Analog Sensor Top ([`ast`](../../ip/ast/README.md)).
 
 `ast` supplies a number of clocks into `top_earlgrey`.
-- sys: main jittery system clock used for higher performance blocks and security (processor, memory and crypto blocks).
-- io: a fixed clock used for peripheral blocks such as timers and I/O functionality, such as SPI or I2C.
-- usb: a fixed clock used specifically for usb operations.
-- aon: an always on, low frequency clock used for power management and low speed timers.
+- `sys`: main jittery system clock used for higher performance blocks and security (processor, memory and crypto blocks).
+- `io`: a fixed clock used for peripheral blocks such as timers and I/O functionality, such as SPI or I2C.
+- `usb`: a fixed clock used specifically for usb operations.
+- `aon`: an always-on, low frequency clock used for power management and low speed timers.
 
 These clocks are then divided down and distributed to the rest of the system.
-See [clock manager](../../ip_autogen/clkmgr/README.md) for more details.
+See the [clock manager](../../ip_autogen/clkmgr/README.md) docs for more details.
 
 `ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
-- vcaon_pok: The always on domain of the system is ready.
-- vcmain_pok: The main operating domain of the system is ready.
+- `vcaon_pok`: The always on domain of the system is ready.
+- `vcmain_pok`: The main operating domain of the system is ready.
 
 When one of these power-okay signals drop, the corresponding domain in `top_earlgrey` is reset.
-Please refer to [reset manager](../../ip_autogen/rstmgr/README.md) for more details.
-Resets throughout the design are asynchronous active low as per the Comportability specification.
+Please refer to the [reset manager](../../ip_autogen/rstmgr/README.md) docs for more details.
+Resets throughout the design are asynchronous active low as per the comportability specification.
 
 Once reset, the reset vector begins in ROM, whose job is to validate code in the embedded flash before jumping to it.
-Valid code is assumed to have been instantiated into the flash, if not, the ROM shuts down the device unless prompted to bootstrap.
+Valid code is assumed to have been instantiated into the flash, and if not, the ROM shuts down the device unless prompted to bootstrap.
 
 There are multiple avenues to load valid code into the flash:
 1. JTAG initiated flash programming.
-2. ROM bootstrap
+2. ROM bootstrap.
 
 #### AST Clocking and Reset Relationship
 
-While the ast supplies clocks and resets to the `top_earlgrey`, it also contains additional functions that interact with the design.
-These include the `RNG`, `ADC`, jittery clock controls and an assortment of other sensors.
+While the `ast` supplies clocks and resets to the `top_earlgrey`, it also contains additional functions that interact with the design.
+These include the `RNG`, `ADC`, jittery clock controls, and an assortment of other sensors.
 The operating clocks and resets for these interfaces are supplied by the device in order to ensure correct synchronous operations.
 The clock mapping is shown below:
 
@@ -93,42 +93,42 @@ Please see the [relevant section](../../ip/ast/README.md#main-vcc-power-detectio
 
 #### Reset due to Internal Request
 
-When the device receives an internal request to reset (for example [aon_timer](../../../ip/aon_timer/README.md#aon-watchdog-timer)), device power is kept on and the flash is directly reset.
+When the device receives an internal request to reset (for example, from [`aon_timer`](../../../ip/aon_timer/README.md#watchdog-timer)), device power is kept on and the flash is directly reset.
 It is assumed that the flash device, when powered, will be able to correctly handle such a sequence and properly protect itself.
 
 #### Reset due to Low Power Entry
 
-When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling) is responsible for ensuring the entry request is aborted.
+When the device receives a low power entry request while flash activity is ongoing, the [`pwrmgr`](../../ip_autogen/pwrmgr/doc/theory_of_operation.md#abort-handling) is responsible for ensuring the entry request is aborted.
 
 
 ### Main processor (`core_ibex`)
 
 The main processor (`core_ibex`) is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements the RV32IMC instruction set architecture.
-It was initially developed as part of the [PULP platform](https://www.pulp-platform.org) under the name "Zero-riscy" [\[1\]](https://doi.org/10.1109/PATMOS.2017.8106976), and has been contributed to [lowRISC](https://www.lowrisc.org) who maintains it and develops it further.
-See the [core_ibex specification](https://ibex-core.readthedocs.io/en/latest/) for more details of the core.
+It was initially developed as part of the [PULP platform](https://www.pulp-platform.org) under the name "Zero-riscy" [\[1\]](https://doi.org/10.1109/PATMOS.2017.8106976), and has been contributed to [lowRISC](https://www.lowrisc.org), which maintains it and develops it further.
+See the [`core_ibex` specification](https://ibex-core.readthedocs.io/en/latest/) for more details of the core.
 In addition to the standard RISC-V functionality, Ibex implements M (machine) and U (user) mode per the RISC-V standard.
 Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 
 #### JTAG / Debug module
 
-One feature available for Earl Grey processor core is debug access.
+One feature available for Earlgrey processor core is debug access.
 By interfacing with JTAG pins, logic in the debug module allows the core to enter debug mode (per RISC-V 0.13 debug spec), and gives the design the ability to inject code either into the device - by emulating an instruction - or into memory.
-Full details can be found in the [rv_dm specification](../../../ip/rv_dm/README.md).
+Full details can be found in the [`rv_dm` specification](../../../ip/rv_dm/README.md).
 
 #### Interrupt Controller
 
 Adjacent to the Ibex core is an interrupt controller that implements the RISC-V PLIC standard.
 This accepts a vector of interrupt sources within the device, and assigns leveling and priority to them before sending to the core for handling.
-See the details in the [rv_plic specification](../../ip_autogen/rv_plic/README.md).
+See the details in the [`rv_plic` specification](../../ip_autogen/rv_plic/README.md).
 
 #### Performance
 
-Ibex currently achieves a [CoreMark](https://www.eembc.org/coremark/) per MHz of 1.93 on Earl Grey.
+Ibex currently achieves a [CoreMark](https://www.eembc.org/coremark/) per MHz of 1.93 on Earlgrey.
 For a detailed analysis of where this number comes from, please refer to this [GitHub issue](https://github.com/lowRISC/opentitan/issues/17370#issuecomment-1453324348).
 In short, by [moving read-only data from Flash into SRAM](https://github.com/lowRISC/opentitan/issues/17370#issuecomment-1446719338) and by playing with optimization flags, A CoreMark/MHz of 2.15 is achievable.
 This number is close to the maximum achievable number for Ibex with an ideal single-cycle access memory system when using the LLVM compiler.
 
-When switching to GCC and combining the Ibex configuration used in OpenTitan Earl Grey with an idealistic single-cycle access Flash memory, a CoreMark/MHz number of 3.07 is achievable.
+When switching to GCC and combining the Ibex configuration used in Earlgrey with an idealistic single-cycle access Flash memory, a CoreMark/MHz number of 3.07 is achievable.
 To achieve this performance, CoreMark can be compiled with GCC 9.2.0 and with the following flags: `-march=rv32imc -mabi=ilp32 -mcmodel=medany -mtune=sifive-3-series -O3 -falign-functions=16 -funroll-all-loops -finline-functions -falign-jumps=4 -mstrict-align` .
 
 The Ibex documentation has more details on the current pipeline operation, including stall behavior for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/latest/03_reference/pipeline_details.html) section.
@@ -145,13 +145,13 @@ The details of this check will come at a later date.
 For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
 This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
 
-Earl Grey contains 1024kB of embedded-flash (e-flash) memory for code storage.
+Earlgrey contains 1024kB of embedded-flash (e-flash) memory for code storage.
 This is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
 At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
 
-Embedded-flash is the intended technology for a silicon design implementing the full OpenTitan device.
+Embedded-flash is the intended technology for a silicon design implementing the full device.
 It has interesting and challenging parameters that are unique to the technology that the silicon is implemented in.
-Earl Grey, as an FPGA proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
+Earlgrey, as an FPGA proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
 This includes the read-speeds, the page-sized erase and program interfaces, the two-bank update scheme, and the non-volatile nature of the memory.
 Since by definition these details can't be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
 We will choose parameters that are considered roughly equivalent of the state of the art embedded-flash macros on the market today.
@@ -171,8 +171,8 @@ The base address of the ROM, Flash, and SRAM are given in the address map sectio
 
 ### Secure boot
 
-Earlgrey follows the [Secure Boot](../../../../doc/security/specs/secure_boot/README.md) specification. The `ROM` has 3 key slots
-which are allocated as follows:
+Earlgrey follows the [Secure Boot](../../../../doc/security/specs/secure_boot/README.md) specification.
+The `ROM` has 3 key slots which are allocated as follows:
 
 | Slot | Role | Name |
 |------|------|------|
@@ -186,7 +186,7 @@ which are allocated as follows:
 
 ### Peripherals
 
-Earl Grey contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
+Earlgrey contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
 Each of these peripherals follows an interface scheme dictated in the [Comportability Specification.](../../../../doc/contributing/hw/comportability/README.md).
 That specification details how the processor communicates with the peripheral (via TLUL interconnect); how the peripheral communicates with the chip IO (via fixed or multiplexable IO); how the peripheral communicates with the processor (interrupts); and how the peripheral communicates security events (via alerts).
 See that specification for generic details on this scheme.
@@ -198,7 +198,7 @@ See that specification for generic details on this scheme.
 The pin multiplexor's purpose is to route between peripherals and the available multiplexable IO of the chip.
 At this time, the pin multiplexor is provided, but it is not used to its full potential.
 In addition, the multiplexor device manages control or pad attributes like drive strength, technology (OD, OS, etc), pull up, pull down, etc., of the chip's external IO.
-It is notable that there are many differences between an FPGA implementation of Earl Grey and an ASIC version when it comes to pins and pads.
+It is notable that there are many differences between an FPGA implementation of Earlgrey and an ASIC version when it comes to pins and pads.
 Some pad attributes with analog characteristics like drive strength, slew rate and Open Drain technology are not supported on all platforms.
 
 The pin multiplexor is a peripheral on the TLUL bus, with collections of registers that provide software configurability.
@@ -219,7 +219,6 @@ See the [GPIO specification](../../ip_autogen/gpio/README.md) for more details o
 See the [pinmux specification](../../ip_autogen/pinmux/README.md) for how to connect peripheral IO to chip IO.
 
 ##### SPI device
-
 
 The SPI device implements multiple modes:
 - Firmware mode
@@ -249,17 +248,17 @@ See the [USB device specification](../../../ip/usbdev/README.md) for more detail
 
 ##### I2C host
 
-In order to be able to command I2C devices on systems where Earl Grey will be included, I2C host functionality will be required.
+In order to be able to command I2C devices on systems where Earlgrey will be included, I2C host functionality will be required.
 This will include standard, full, and fast mode, up to 1Mbaud.
 More details of the I2C host module will come in a later specification update.
-The pins of the I2C host will be available to connect to any of the multiplexable IO (MIO) of the Earl Grey device.
+The pins of the I2C host will be available to connect to any of the multiplexable IO (MIO) of the Earlgrey device.
 More than one I2C host module might be instantiated in the top level.
 
 #### Security Peripherals
 
 ##### AES
 
-[AES](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf) is the primary [symmetric encryption](https://en.wikipedia.org/wiki/Symmetric-key_algorithm) and decryption mechanism used in OpenTitan protocols.
+[AES](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf) is the primary [symmetric encryption](https://en.wikipedia.org/wiki/Symmetric-key_algorithm) and decryption mechanism used.
 AES runs with key sizes of 128b, 192b, or 256b.
 The module can select encryption or decryption of data that arrives in 16 byte quantities to be encrypted or decrypted using different block cipher modes of operation.
 It supports [ECB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB), [CBC mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC), [CFB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CFB), [OFB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#OFB) and [CTR mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR).
@@ -271,8 +270,7 @@ Details on how to write key and data material into the peripheral, how to initia
 
 ##### SHA-256/HMAC
 
-SHA-256 is the primary
-[hashing algorithm](https://en.wikipedia.org/wiki/Cryptographic_hash_function) used in OpenTitan protocols.
+SHA-256 is the primary [hashing algorithm](https://en.wikipedia.org/wiki/Cryptographic_hash_function) used.
 SHA-256 is a member of the [SHA-2](https://en.wikipedia.org/wiki/SHA-2) family of hashing algorithms, where the digest (or hash output) is of 256b length, regardless of the data size of the input to be hashed.
 The data is sent into the SHA peripheral after declaring the beginning of a hash request (effectively zeroing out the internal state to initial conditions), 32b at a time.
 Once all data has been sent, the user can indicate the completion of the hash request (with optional partial-word final write).
@@ -359,7 +357,7 @@ For more details see the [flash controller module specification](../../ip_autoge
 ### Interconnection
 
 Interconnecting the processor and peripheral and memory units is a bus network built upon the TileLink-Uncached-Light protocol.
-See the [OpenTitan bus specification](../../../ip/tlul/README.md) for more details.
+See the [TL-UL bus specification](../../../ip/tlul/README.md) for more details.
 
 #### Topology
 `top_earlgrey` has a two-level hierarchy for its bus network.
@@ -493,7 +491,7 @@ All other pad types support neither open drain nor virtual open drain.
 
 # RTL Implementation Notes
 
-At this time, the top-level netlist for earlgrey is a combination of hand-written SystemVerilog RTL with auto-generated sections for wiring of comportability interfaces.
+At this time, the top-level netlist for Earlgrey is a combination of hand-written SystemVerilog RTL with auto-generated sections for wiring of comportability interfaces.
 There is a script for this auto-generation, centered around the top-level descriptor file `top_earlgrey.hjson` found in the repository.
 A full definition of this descriptor file, its features, and related scripting is forthcoming.
 This tooling generates the interconnecting crossbar (via `TLUL`) as well as the instantiations at the top level.
@@ -511,13 +509,8 @@ Where appropriate, including the block diagram below, notes will be provided whe
 
 ## FPGA Platform
 
-**TODO: This section needs to be updated once pin updates are complete.**
-
 In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_cw310`.
 This is done for ease of programming by the external host.
 
 ## References
-1. [Schiavone, Pasquale Davide, et al. "Slow and steady wins the race? A comparison of
- ultra-low-power RISC-V cores for Internet-of-Things applications."
- _27th International Symposium on Power and Timing Modeling, Optimization and Simulation
- (PATMOS 2017)_](https://doi.org/10.1109/PATMOS.2017.8106976)
+1. [Schiavone, Pasquale Davide, et al. "Slow and steady wins the race? A comparison of ultra-low-power RISC-V cores for Internet-of-Things applications." _27th International Symposium on Power and Timing Modeling, Optimization and Simulation (PATMOS 2017)_](https://doi.org/10.1109/PATMOS.2017.8106976)

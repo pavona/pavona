@@ -386,9 +386,9 @@
     - [Trivium/Bivium Testbench](./hw/ip/prim/pre_dv/prim_trivium/README.md)
 
 - [Common SystemVerilog and UVM Components](./hw/dv/sv/README.md)
+  - [Comportable IP Testbench Architecture](./hw/dv/sv/cip_lib/README.md)
   - [ALERT_ESC Agent](./hw/dv/sv/alert_esc_agent/README.md)
   - [Bus Params Package](./hw/dv/sv/bus_params_pkg/README.md)
-  - [Comportable IP Testbench Architecture](./hw/dv/sv/cip_lib/README.md)
   - [Common Interfaces](./hw/dv/sv/common_ifs/README.md)
   - [CSR Utils](./hw/dv/sv/csr_utils/README.md)
   - [CSRNG Agent](./hw/dv/sv/csrng_agent/README.md)
@@ -766,7 +766,6 @@
   - [Hardware Security Module (HSM) tool](./sw/host/hsmtool/README.md)
     - [Requirements](./sw/host/hsmtool/doc/requirements.md)
   - [Provisioning Orchestrator](./sw/host/provisioning/orchestrator/README.md)
-  - [Signing Guide](./signing/README.md)
   - [TPM2 Test Server](./sw/host/tpm2_test_server/README.md)
   - [USB Streaming Tests](./sw/host/tests/usbdev/usbdev_stream/README.md)
   - [Penetration Test Utilities](./sw/host/penetrationtests/python/README.md)

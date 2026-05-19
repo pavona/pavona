@@ -4,7 +4,7 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:earlgrey_constants:top_pkg"
-description: "Toplevel-wide constants for Earl Grey"
+description: "Toplevel-wide constants for Earlgrey"
 virtual:
   - lowrisc:virtual_constants:top_pkg
 

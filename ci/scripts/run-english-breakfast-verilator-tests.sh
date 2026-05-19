@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Only a single test is supported on English Breakfast (EB).
+# Only a single test is supported on Englishbreakfast (EB).
 # Currently, Bazel cannot build the EB Verilator model, so we only build the test with Bazel and then use opentitantool directly
 # EB Verilator model is built in a previous CI step
 

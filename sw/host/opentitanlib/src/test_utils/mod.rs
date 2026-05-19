@@ -7,7 +7,7 @@ pub mod bootstrap;
 pub mod crashdump;
 pub mod e2e_command;
 pub mod epmp;
-// The "english breakfast" variant of the chip doesn't have the same
+// The "Englishbreakfast" variant of the chip doesn't have the same
 // set of CSRs as the "earlgrey" chip.
 #[cfg(feature = "earlgrey")]
 pub mod extclk;
@@ -22,7 +22,7 @@ pub mod load_sram_program;
 pub mod mem;
 pub mod object;
 pub mod otp_ctrl;
-// The "english breakfast" variant of the chip doesn't have the same
+// The "Englishbreakfast" variant of the chip doesn't have the same
 // set of IO and pinmux constants as the "earlgrey" chip.
 #[cfg(not(feature = "english_breakfast"))]
 pub mod pinmux_config;

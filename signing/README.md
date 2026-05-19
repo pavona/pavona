@@ -107,14 +107,12 @@ https://cloud.google.com/sdk/docs/downloads-snap
 should open a webpage to select the account you want to use to login. The page
 may take a while to load, and in some cases you may have to copy paste the URL
 printed by the CLI into a browser to start the login process.
->
-> Make sure to use your opentitan.org account to login.
 
 ```console
 # Install the Google cloud CLI if you don't already have it.
 sudo apt install -y google-cloud-cli
 
-# Log into GCP using your opentitan.org credentials
+# Log into GCP
 gcloud auth login
 
 # Application default authentication

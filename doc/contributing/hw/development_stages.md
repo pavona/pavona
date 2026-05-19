@@ -3,38 +3,36 @@
 ## Document Goals
 
 Proper versioning of RTL designs is a complex topic.
-This document describes hardware development stages used by Pavona to evaluate IP blocks.
+This document describes hardware development stages for evaluating IP blocks.
 This includes design and verification stages meant to give a high-level view of the status of a design.
 
 This document also serves as a guide to the [Hardware Dashboard](../../../hw/README.md), which gives the status of all designs in the repository.
 
 ## Life Stages (L)
 
-The stages listed here are created to give insight into where a design is in its life from specification to silicon-ready sign-off.
+The stages listed here give insight into a design's progress, from specification to silicon-ready sign-off.
 At the moment, this is strictly limited to a hardware design, but could be expanded to other components of development.
 
 The first life stage is **Specification**.
 The proposed design is written up and submitted for approval.
-Pavona specifies new major IP blocks via an RFC process.
-Depending on the complexity of the design and received guidance, it is possible a single design might require multiple specification documents.
+For upstreaming new major IP blocks to the official Pavona repository, consult the RFC process.
+Depending on the complexity of the design and received guidance, a single design might require multiple specification documents.
 For example, a first document for the rationale, feature list, and a rough overview; followed by a more detailed one to get approval for the draft technical specification.
 As part of the specification process, the design author might reach out for feedback from a smaller group of reviewers while formulating their proposal.
-Once the specification has been shared and sufficient review has been completed, this phase is exited.
+This phase is complete once the specification has been shared and sufficiently reviewed.
 
 The next life stage is **Development**.
 The hardware IP is being developed, the specification is converted to Markdown, and design and verification planning is underway.
 This is a long phase expected to last until a more formal review is requested for full completion sign-off.
-When in Development phase, the stage tracking of the design and verification stages are valid.
-See those sections that follow for details there.
-To exit this stage, a sign-off review must occur.
-See the section on sign-off for details.
+When an IP block is in the development phase, its [design](#hardware-design-stages-d) and [verification](#hardware-verification-stages-v) stages are valid.
+This stage is complete when the design receives a [sign-off review](#sign-off-review).
 
 The final life stage is **Signed-Off**.
 At this point, a design is considered complete and not expected to be updated.
-There are exceptions if post-sign-off bugs are found, in which case the stage returns to Development and the version number is not updated.
-Once accepted, it results in creating a new version and return a design to the appropriate life stage, based upon the size of the change.
-See the [Versioning](#versioning) section of the document for more discussion.
-Signed-off fully-functioning (read: not buggy) designs stay in the "Signed-Off" life stage as an available complete IP, with an associated revision ID.
+There are exceptions if post-sign-off bugs are found.
+The life stage should be adjusted to reflect the stage of the newest version of the IP.
+See the [Versioning](#versioning) section of this document for more discussion.
+Signed-off, fully-functioning (read: not buggy) designs stay in the "Signed-Off" life stage as an available complete IP, with an associated revision ID.
 
 There exists a [template for IP checklists](../../../util/uvmdvgen/checklist.md.tpl).
 The DIF stages use a separate, [software-specific checklist](./checklist/sw_checklist.md.tpl).
@@ -43,20 +41,20 @@ All the checklist items are listed in the [Sign-off Checklist](./checklist/READM
 | **Stage** | **Name**      | **Definition**                                                              |
 | --------- | ------------- | --------------------------------------------------------------------------- |
 | L0        | Specification | Specification is being written, is in review process                        |
-| L1        | Development   | Design is in development in GitHub, possibly integrated in top level        |
+| L1        | Development   | Design is in development, possibly integrated in top level                  |
 | L2        | Signed-Off    | Design has been frozen at version number, signed-off, available for tapeout |
 
 
 ## Hardware Design Stages (D)
 
-The following development stages are for hardware peripheral designs, i.e. SystemVerilog RTL development.
+Design stages are for hardware peripheral designs, i.e. SystemVerilog RTL development.
 They are similar to typical chip design stages, but less rigid in the movement from one stage to the next.
-The metric here is the quality bar and feature completeness of the design.
+The design stage conveys quality and feature completeness of a design.
 
 The first design stage is **Initial Work**.
-This indicates the period of time between the Specification life stage and the RTL being functional enough to pass smoke checks.
+This stage spans between the specification life stage and the RTL being functional enough to pass smoke checks.
 The RTL is still in progress, registers being defined, etc.
-Once the device has passed a basic smoke check, has the lint flow setup, has the registers completely defined, it has completed the Initial Work stage.
+Once the device has passed a basic smoke check, has the lint flow setup, has the registers completely defined, it has completed the initial work stage.
 
 The second design stage is **Functional**.
 In this stage, the design is functional but not complete.
@@ -80,23 +78,22 @@ Once all bugs have been fixed, lint and CDC violations cleaned up, the design mo
 
 ## Hardware Verification Stages (V)
 
-The following development stages are for hardware peripheral verification work.
+Verification stages are for hardware peripheral verification work.
 They are similar to typical chip verification stages, but less rigid in the movement from one stage to the next.
-The metric here is the progress towards testing completion and proof of testing coverage.
-The verification stages can be applied to simulation-based DV and formal property verification (FPV) approaches.
+The verification stage communicates testing completion and coverage for both simulation-based DV and formal property verification (FPV) approaches.
 
 The first verification stage is **Initial Work**.
-This indicates the period of time between the beginning of verification planning and the testbench up and running.
+It includes work from the beginning of verification planning to getting the testbench up and running.
 The testbench is still being created, scoreboards implemented, DV document and testplan being written, nightly regressions running, etc.
-Once the verification environment is available for writing tests, with a testplan written including a testplan and a functional coverage plan, it has completed the Initial Work stage.
+Once the verification environment is available for writing tests, with a testplan and a functional coverage plan, it has completed the Initial Work stage.
 
 The second verification stage is **Under Test**.
-In this stage, the verification environment is available but not all tests in the testplan are completed and the coverpoints are not implemented.
+In this stage, the verification environment is available, but not all tests in the testplan are completed and not all coverpoints are implemented.
 Once all of the items in the testplan are implemented, it exits this stage.
 
 The third verification stage is **Testing Complete**.
 In this phase, no changes are expected on the testplan, no changes expected on the testbench, and no new tests are expected except to verify security countermeasures and to close coverage on the design.
-Once all coverage metrics have been met, waivers checked, the verification moves into: **Security Countermeasures Verified**.
+Once all coverage metrics have been met, waivers checked, the verification stage moves into: **Security Countermeasures Verified**.
 
 The fourth verification stage is **Security Countermeasures Verified**.
 In this phase, no changes are expected on the testplan, no changes expected on the testbench, and no new tests are expected except to close coverage on the design.
@@ -124,25 +121,24 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 
 ## Device Interface Function Stages (S)
 
-The following development stages are for [Device Interface Function (DIF)](../sw/device_interface_functions.md) work.
-These stages have a slightly different emphasis to the hardware design and verification stages, because software is much easier to change if bugs are found.
-The metric they are trying to capture is the stability and completeness of a low-level software interface to hardware design.
-We are aiming to keep this process fairly lightweight in the early stages, and not significantly burdensome to the associated HW designer through all stages.
+[Device Interface Function (DIF)](../sw/device_interface_functions.md) stages have a slightly different emphasis to the hardware design and verification stages because software is much easier to change if bugs are found.
+These stages capture stability and completeness of a hardware design's low-level software interface.
+This process should be fairly lightweight in the early stages and not significantly burdensome at any stage.
 
 There are explicit checkpoints in these stages to ensure that DIF development does not overtake design and verification.
 
 The first DIF stage is **Initial Work**.
-This indicates the period of time between starting the software API, and it being complete enough for other software to start using it.
+This work covers from starting the software API to making it complete enough for other software to start using it.
 The exact API is still being defined.
-Once the DIF is complete enough to cover all existing in-tree uses of the device, and has mock tests, it has completed the Initial Work stage.
+Once the DIF is complete enough to cover all existing in-tree uses of the device and has mock tests, the Initial Work stage is complete.
 
 The second stage is **Functional**.
-In this stage, the DIF can be used for basic operations, but may not cover all the specified functionality of the device.
-Once the DIF is complete enough to cover all the functionality of the device, in the way the hardware designer envisioned, and is used for DV testing, it has completed this stage.
+In this stage, the DIF can be used for basic operations but may not cover all the specified functionality of the device.
+Once the DIF is complete enough to cover all intended functionality of the device and is used for DV testing, it has completed this stage.
 
 The third stage is **Complete**.
 In this stage, no changes to the interface are expected.
-Once testing is complete, and we are satisfied that the interface will not change (except for bug fixes), the DIF moves into its final stage: **Stable**.
+Once testing is complete, and the interface should not change except for bug fixes, and the DIF moves into its final stage: **Stable**.
 
 | **Stage** | **Name**     | **Definition**                                                                                                                                                                                                                                                                                     |
 | --------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -163,17 +159,17 @@ Generally, this process would involve:
 *   All test items are confirmed complete
 *   All code coverage items are completed or waived
 *   Performance requirements are reviewed, performance metrics met
-*   Software interface (DIF) files are completed, tested, and signed off by software representative
+*   Software interface (DIF) files are completed, tested, and signed off
 
 ## Indicating Stages and Making Transitions
 
-For upstream contributions, stages are indicated via a text file and thus transitions can be reviewed through the standard pull request process.
+For upstream contributions, stages are indicated via a text file, and thus transitions can be reviewed through the standard pull request process.
 Transitions for these stages are _self-nominated_ in the sense that the design or verification maintainer can modify the text file and submit a pull request (PR) to transition the stage.
 In this manner, other reviewers can challenge the transition in the standard pull request review process.
 The PR summary and commit message should include all necessary detail on how the transition criteria have been met, as well as any other notes useful for a reviewer.
 
-The content below shows the format of the project related metadata, which can either be placed in the comportable IP Hjson file, or an Hjson file with the extension `.prj.hjson` if such a comportable IP Hjson file does not exist.
-Both files have to be placed under `hw/ip/<name>/data/<name>.hjson` or `hw/ip/<name>/data/<name>.prj.hjson` for a design named `<name>`.
+The content below shows the format of the project related metadata, which can be placed in a comportable IP Hjson file.
+In the Pavona repo, IP Hjson descriptions can typically be found at `hw/ip/<name>/data/<name>.hjson` for a design named `<name>`.
 
 For example, `file: gpio.hjson`:
 
@@ -230,11 +226,9 @@ It does not correspond to the version of the Pavona repository overall.
 Typically all designs are expected to simply be in 1.0 version, but there are reasons for exceptions.
 Designs which have a specification that defines an _intermediate goal_ are indicated as < 1.0 version.
 There are many times where this is useful: when the intermediate goal is a beneficial subset of functionality to enable other development; when the final feature set is not known but a sufficient set is ready for development; when the final feature set is postponed until a future date, but maintainers are keen to get the design started; etc.
-In essence, the sub-1.0 designation indicates that it is understood that the stage metrics are temporary pending a final feature set.
+In essence, the sub-1.0 designation indicates that the stage metrics are temporary pending a final feature set.
 Rarely will a sub-1.0 design be taken past Feature Complete and Testing Complete stages.
 An exception is a proof of concept to show what a sign-off process looks like for a design that has modifications expected in the future.
-This was the case with public launch, where we took five designs to completion to test out the sign-off process, the verification methodology, and the checklist system.
-In several of these cases, the feature set was not final product complete.
 
 Once a design has completed all stages for a product feature set, the sign-off process intends to end all development for that design.
 Its Life Stage should transition to sign-off after the review process, and no more modifications should be made.
@@ -242,9 +236,9 @@ The commit ID of the version that was signed off is recorded in the `commit_id` 
 
 After sign-off, three events could cause a change.
 
-* Possibility 1: If a bug is found in top-level testing, software development, etc., the design should stay in its current revision (assumedly 1.0) but revert in design and/or verification staging until the bug is fixed and a new sign-off process occurs, followed by a new tag to replace the previous one.
-* Possibility 2: if a small collection of new features are requested, a new version increment of 0.1 would be created, and the design and verification stages would be reset.
-The expectation is that this would create its life as a newly tracked revision number, while the previous (assumedly 1.0) version retains its status.
+* Possibility 1: If a bug is found in top-level testing, software development, etc., the design should stay in its current revision but revert in design and/or verification staging until the bug is fixed and a new sign-off process occurs, followed by a new tag to replace the previous one.
+* Possibility 2: if a small collection of new features are requested, a new version increment should be created, and the design and verification stages would be reset.
+The expectation is that this would create its life as a newly tracked revision number, while the previous version retains its status.
 * Possibility 3: if enough new features are requested to greatly change the spirit of the design, a new version increment of 1.0 would be created in a fashion similar to above.
 This would require a new RFC process, and thus the Life Stage would start again as L0 - Specification.
 
@@ -280,7 +274,7 @@ This is indicated as two versions as shown in this example.
 }
 ```
 
-One may choose to commemorate a non-signed-off version of a design if it reached enough maturity to be a useful version to checkpoint before regressing.
+The list of revisions can include a non-signed-off version of a design if that version reached enough maturity to be a useful version to checkpoint before regressing.
 No hard rules for version numbering are mandated at this stage.
 
 ## Reporting of Stages

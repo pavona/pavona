@@ -1,4 +1,4 @@
-# OpenTitan Earl Grey (Discrete Chip) Datasheet
+# Earlgrey (Discrete Chip) Datasheet
 
 # Overview
 
@@ -11,12 +11,12 @@ As can be seen in the block diagram, the system is split into a fast processor c
 Further, a portion of the peripheral domain, the analog sensor top and the padring can stay always-on.
 The rest of the system can be shut off as part of the sleep mode.
 
-The OpenTitan Earl Grey chip provides the following features:
+Earlgrey chip provides the following features:
 
 <table>
 <thead style='font-size:100%'>
   <tr>
-    <th colspan="2">OpenTitan Earl Grey Features</th>
+    <th colspan="2">OpenTitan Earlgrey Features</th>
   </tr>
 </thead>
 <tbody style='font-size:90%;line-height:110%'>
@@ -118,5 +118,5 @@ The OpenTitan Earl Grey chip provides the following features:
 
 # Detailed Specification
 
-For more detailed documentation including the pinout and system address map, see [OpenTitan Earl Grey Chip Specification](./design/README.md).
-The [OpenTitan Earl Grey Chip DV Document](../dv/README.md) describes the chip-level DV environment and contains the chip-level test plan.
+For more detailed documentation including the pinout and system address map, see [Earlgrey Chip Specification](./design/README.md).
+The [Earlgrey Chip DV Document](../dv/README.md) describes the chip-level DV environment and contains the chip-level test plan.

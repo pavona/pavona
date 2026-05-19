@@ -145,7 +145,7 @@ cc_library(
     srcs = [
         "//sw/device/silicon_creator/lib:english_breakfast_test_framework_manifest_def_srcs",
     ],
-    # This should be built only for english breakfast and skipped if using wildcards.
+    # This should be built only for Englishbreakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
         "//sw/device/lib/testing/test_rom:english_breakfast_test_rom_manifest",

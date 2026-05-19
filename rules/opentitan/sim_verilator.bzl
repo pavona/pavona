@@ -78,7 +78,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     elif ctx.attr.kind == "flash":
         # FIXME: We need to separate the concept of a software component from
         # the physical device and its properties; software test images are
-        # usually loaded into flash memory for English Breakfast and Earl Grey
+        # usually loaded into flash memory for Englishbreakfast and Earlgrey
         # but they are stored in the ConTrol Network RAM on Darjeeling targets.
         if exec_env.design == "darjeeling":
             vmem = convert_to_vmem(

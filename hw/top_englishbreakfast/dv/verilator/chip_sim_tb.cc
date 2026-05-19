@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
   simctrl.SetInitialResetDelay(1000);
   simctrl.SetResetDuration(10);
 
-  std::cout << "Simulation of OpenTitan English Breakfast" << std::endl
+  std::cout << "Simulation of OpenTitan Englishbreakfast" << std::endl
             << "=================================" << std::endl
             << std::endl;
 

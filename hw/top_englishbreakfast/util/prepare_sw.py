@@ -70,7 +70,7 @@ def shell_out(cmd):
 def main():
     parser = argparse.ArgumentParser(
         prog="prepare_sw",
-        description="Script to prepare SW sources for English Breakfast",
+        description="Script to prepare SW sources for Englishbreakfast",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--build',
                         '-b',
@@ -167,7 +167,7 @@ def main():
         new.write_text(text)
         (old.parent / new.name).write_text(text)
 
-    # Hack to make bindgen generate less for English Breakfast.
+    # Hack to make bindgen generate less for Englishbreakfast.
     new = REPO_TOP / 'sw/host/ot_hal/bindgen/BUILD'
     text = new.read_text()
     text = text.replace('_TOPLEVEL = "earlgrey"', '_TOPLEVEL = "englishbreakfast"')

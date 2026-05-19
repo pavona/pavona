@@ -79,7 +79,7 @@ set_property -dict { PACKAGE_PIN AH28 DRIVE 8 IOSTANDARD LVCMOS18 } [get_ports {
 set_property -dict { PACKAGE_PIN AH26 DRIVE 8 IOSTANDARD LVCMOS18 } [get_ports { IOR13 }]; # EarlGrey:GPIO(LED7)
 
 ## DIOs
-# For DIOs, the port name maps directly to the function in Earl Grey, so
+# For DIOs, the port name maps directly to the function in Earlgrey, so
 # instead, the net names on the PCB are provided in comments.
 
 ## SPI device

@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
   simctrl.SetInitialResetDelay(20000);
   simctrl.SetResetDuration(10);
 
-  std::cout << "Simulation of OpenTitan Earl Grey" << std::endl
+  std::cout << "Simulation of OpenTitan Earlgrey" << std::endl
             << "=================================" << std::endl
             << std::endl;
 

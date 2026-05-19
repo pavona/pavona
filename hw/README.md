@@ -45,13 +45,13 @@ Ibex is an in-order, 2- or 3-stage (configurable) pipelined processor that can s
 
 ## Top-level designs
 
-### Earl Grey top-level
+### Earlgrey top-level
 
 * [Datasheet](./top_earlgrey/doc/datasheet.md)
 * [Specification](./top_earlgrey/doc/design/README.md)
 * [Design Verification](./top_earlgrey/dv/README.md)
 
-### Earl Grey-specific comportable IPs
+### Earlgrey-specific comportable IPs
 
 {{#dashboard top_earlgrey }}
 

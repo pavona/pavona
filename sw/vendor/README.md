@@ -1,8 +1,13 @@
-# Third-Party/External Code
+# Vendored Software
 
 This directory contains "vendored" code, i.e. code which copied into this repository from external sources.
 Directory names generally follow the scheme `<vendor>_<library>`.
 
-## Work with software code in external repositories
+Vendored software available:
+- `cryptoc`
+- `eembc_coremark`
+- `freertos_freertos_kernel`
+- `google_wycheproof`
+- `secure-foundations_veri-titan`
 
-Please refer to [hardware vendoring](../../doc/contributing/hw/vendor.md) for more details on rationale of vendoring external repositories.
+Please refer to [the repo's hardware vendoring conventions](../../doc/contributing/hw/vendor.md) for more details on rationale of vendoring external repositories.

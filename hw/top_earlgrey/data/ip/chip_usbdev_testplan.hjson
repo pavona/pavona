@@ -120,7 +120,7 @@
             - This test extends from `chip_sw_usbdev_pullup` by checking that the device
               can receive packets from the host/DPI model.
             - Set `tx_differential_mode` to single-ended and `rx_differential_mode` to
-              differential. The other modes are not supported in OpenTitan Earl Grey.
+              differential. The other modes are not supported in OpenTitan Earlgrey.
             - Upon detection of the usbdev asserting its pull up on the DP line,
               indicating the presence of a Full Speed device, the first communication
               attempt from the host/DPI model will be a SETUP token packet.

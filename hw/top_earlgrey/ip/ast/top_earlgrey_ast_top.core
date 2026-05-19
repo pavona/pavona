@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:top_earlgrey_ast_top:0.1"
-description: "Pseudo top-level for Earl Grey's ast"
+description: "Pseudo top-level for Earlgrey's ast"
 filesets:
   files_rtl:
     depend:

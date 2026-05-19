@@ -1,30 +1,28 @@
 # Work with hardware code in external repositories
 
-Pavona is not a closed ecosystem: we incorporate code from third parties, and we split out pieces of our code to reach a wider audience.
-In both cases, we need to import and use code from external repositories in our code base.
-Read on for step-by-step instructions for common tasks, and for background information on the topic.
+The Pavona repository is an open ecosystem that incorporates code from third parties.
 
 ## Summary
 
-Code in subdirectories of `hw/vendor` is imported (copied in) from external repositories.
+Code in the subdirectories of `hw/vendor/`, `sw/vendor/`, or `third_party/` is imported (copied in) from external repositories.
 The external repository is called "upstream".
-Any development on imported in `hw/vendor` code should happen upstream when possible.
+Any development on imported `hw/vendor` code should happen upstream when possible.
 Files ending with `.vendor.hjson` indicate where the upstream repository is located.
 
 In particular, this means:
 
 - If you find a bug in imported code or want to enhance it, report it upstream.
 - Follow the rules and style guides of the upstream project.
-   They might differ from our own rules.
-- Use the upstream mechanisms to do code changes. In many cases, upstream uses GitHub just like we do with pull requests.
+  They might differ from our own rules.
+- Use the upstream mechanisms to do code changes.
+  In many cases, upstream uses GitHub just like we do with pull requests.
 - Work with upstream reviewers to get your changes merged into their code base.
 - Once the change is part of the upstream repository, the `util/vendor` tool can be used to copy the upstream code back into this repository.
 
 Read on for the longer version of these guidelines.
 
-Pushing changes upstream first isn't always possible or desirable: upstream might not accept changes, or be slow to respond.
-In some cases, code changes are needed which are irrelevant for upstream and need to be maintained by us.
-Our vendoring infrastructure is able to handle such cases, read on for more information on how to do it.
+Pushing changes upstream first isn't always possible or desirable: upstream might not accept changes, or they may be slow to respond.
+In some cases, code changes are irrelevant for the upstream repo, so this repository's vendoring infrastructure is able to handle such cases.
 
 ## Background
 
@@ -32,38 +30,21 @@ Pavona is developed in a "monorepo", a single repository containing all its sour
 This approach is beneficial for many reasons, ranging from an easier workflow to better reproducibility of the results, and that's why large companies like [Google](https://ai.google/research/pubs/pub45424) and Facebook are using monorepos.
 Monorepos are even more compelling for hardware development, which cannot make use of a standardized language-specific package manager like npm or pip.
 
-At the same time, open source is all about sharing and a free flow of code between projects.
-We want to take in code from others, but also to give back and grow a wider ecosystem around our output.
-To be able to do that, code repositories should be sufficiently modular and self-contained.
-For example, if a CPU core is buried deep in a repository containing a full SoC design, people will have a hard time using this CPU core for their designs and contributing to it.
-
-Our approach to this challenge: develop reusable parts of our code base in an external repository, and copy the source code back into our monorepo in an automated way.
+The strategy of this repository: develop reusable parts of the code base in an external repository, and copy the source code back into the monorepo in an automated way.
 The process of copying in external code is commonly called "vendoring".
 
-Vendoring code is a good thing.
-We continue to maintain a single code base which is easy to fork, tag and generally work with, as all the normal Git tooling works.
-By explicitly importing code we also ensure that no unreviewed code sneaks into our code base, and a "always buildable" configuration is maintained.
+Vendoring code allows the project to maintain a single code base which is easy to fork, tag, and generally work with; as all the normal Git tooling works.
+Explicitly importing the code also ensures that none of it is unreviewed and that an "always buildable" configuration is maintained.
 
 But what happens if the imported code needs to be modified?
-Ideally, all code changes are submitted upstream, integrated into the upstream code base, and then re-imported into our code base.
-This development methodology is called "upstream first".
-History has shown repeatedly that an upstream first policy can help significantly with the long-term maintenance of code.
-
-However, strictly following an upstream first policy isn't great either.
-Some changes might not be useful for the upstream community, others might be not acceptable upstream or only applied after a long delay.
-In these situations it must be possible to modify the code downstream, i.e. in our repository, as well.
-Our setup includes multiple options to achieve this goal.
-In many cases, applying patches on top of the imported code is the most sustainable option.
-
-To ease the pain points of vendoring code we have developed tooling and continue to do so.
-Please open an issue ticket if you see areas where the tooling could be improved.
+Ideally, all code changes are submitted upstream, integrated into the upstream code base, and then re-imported into our code base ("upstream first").
+However, in situations the code should be modified downstream instead, applying patches on top of the imported code is the most sustainable option.
 
 ## Basic concepts
 
 This section gives a quick overview how we include code from other repositories into our repository.
 
 All imported ("vendored") hardware code is by convention put into the `hw/vendor` directory.
-(We have more conventions for file and directory names which are discussed below when the import of new code is described.)
 To interact with code in this directory a tool called `util/vendor.py` is used.
 A "vendor description file" controls the vendoring process and serves as input to the `util/vendor` tool.
 
@@ -82,9 +63,8 @@ $ cat hw/vendor/lowrisc_ibex.vendor.hjson
 }
 ```
 
-This description file essentially says:
-We vendor a component called "lowrisc_ibex" and place the code into the "lowrisc_ibex" directory (relative to the description file).
-The code comes from the `master` branch of the Git repository found at https://github.com/lowRISC/ibex.git.
+This description file essentially conveys that: a component called "lowrisc_ibex" should be vendored in and its code placed into the "lowrisc_ibex" directory (relative to the description file).
+The code comes from the `master` branch of the Git repository found at `https://github.com/lowRISC/ibex.git`.
 
 With this description file written, the `util/vendor` tool can do its job.
 
@@ -100,8 +80,7 @@ INFO: Wrote lock file /home/foo/pavona/hw/vendor/lowrisc_ibex.lock.hjson
 INFO: Import finished
 ```
 
-Looking at the output, you might wonder: how did the `util/vendor` tool know what changed since the last import?
-It knows because it records the commit hash of the last import in a file called the "lock file".
+The vendoring tool records the commit hash of the last import in a file called the "lock file", so it can track changes to vendored code.
 This file can be found along the `.vendor.hjson` file, it's named `.lock.hjson`.
 
 In the example above, it looks roughly like this:

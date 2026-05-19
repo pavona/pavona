@@ -345,7 +345,7 @@ dif_result_t dif_alert_handler_configure_class(
       // TODO: this should be rewritten to allow combinations of all signals.
       // The alert handler supports the full phase -> signal mapping matrix.
       // I.e., it is possible to enable signal 0 and 3 in phase 1 for
-      // instance. For Top Earl Grey it is for instance also recommended to
+      // instance. For Top Earlgrey it is for instance also recommended to
       // trigger signals 1 and 2 at the same time since both trigger the same
       // action in the life cycle controller and serve as redundant
       // channels.

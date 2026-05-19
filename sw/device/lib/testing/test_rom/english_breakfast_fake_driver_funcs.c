@@ -9,10 +9,10 @@
 
 // TODO(#12905): This file includes fake definitions for the functions that are
 // used by the silicon_creator bootstrap implementation and to set reset_reason
-// but missing in the english breakfast top level due to hardware limitations.
+// but missing in the Englishbreakfast top level due to hardware limitations.
 
 #ifndef OPENTITAN_IS_ENGLISHBREAKFAST
-#error "This file should be compiled only for the english breakfast top level"
+#error "This file should be compiled only for the Englishbreakfast top level"
 #endif
 
 void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {

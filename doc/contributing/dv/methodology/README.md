@@ -1,11 +1,11 @@
 # Design Verification Methodology
 
-Verification combines the challenges of industry-strength verification methodologies with open source ambitions.
-When in conflict, quality must win, and thus we aim to create a verification product that is equal to the quality required from a full production silicon chip tapeout.
+Design verification (DV) is an integral part of determining and maintaining hardware quality.
 
-For the purpose of this document, each design (IPs or the full chip) verified will be referred to as the 'design under test' or 'DUT' ('RTL' or 'design' may be used interchangeably as well), and the design verification as 'DV'.
+Any design under test (DUT), whether a single IP or a full chip, should be supported by proper DV testing.
+The official Pavona DV coverage results are hosted at [dashboards.pavona.org](https://dashboards.pavona.org).
 
-## Language and Tool Selection
+## Language Selection
 
 The following are the key techniques used to perform design verification:
 
@@ -13,34 +13,21 @@ The following are the key techniques used to perform design verification:
 *  Formal Property Verification (FPV)
 
 For running dynamic simulations, the strategy is to use the [UVM1.2 methodology](https://www.accellera.org/downloads/standards/uvm) on top of a foundation of SystemVerilog based verification to develop constrained-random functional tests.
-Each DUT will include within the repository, a UVM testbench, a [testplan](./README.md#testplan), overall [DV document](./README.md#dv-document), a suite of tests, and a method to build, run tests and report the current status.
+Each DUT will include within the repository, a UVM testbench, a [testplan](#testplan), overall [DV document](#dv-document), a suite of tests, and a method to build, run tests and report the current status.
 For FPV, some DUTs may also include an SV testbench along with design properties captured in the SystemVerilog Assertions (SVA) language.
-As the project is still in development, the current status will not be completed for all IP, but that is the ultimate goal.
-See discussion below on tracking progress.
-
-For professional tooling, the team has chosen [Synopsys' VCS](https://www.synopsys.com/verification/simulation/vcs.html) as the simulator of choice with respect to the tracking of verification completeness and [JasperGold](https://www.cadence.com/content/cadence-www/global/en_US/home/tools/system-design-and-verification/formal-and-static-verification/jasper-gold-verification-platform.html) for FPV.
-Wherever possible we attempt to remain tool-agnostic, but we must choose a simulator as our ground truth for our own confidence of signoff-level assurances.
-Likewise, for FPV, [Synopsys VC Formal](https://www.synopsys.com/verification/static-and-formal-verification/vc-formal.html) is also supported within the same flow, and can be used by those with access to VC Formal licenses.
-At this time there is also some support for Cadence's Xcelium, for those organizations which have few Synopsys VCS licenses.
-However support is not as mature as for VCS, which remains the tool for signoff.
-Furthermore, as a project we promote other open source verification methodologies - Verilator, Yosys, cocoTB, etc - and work towards a future where these are signoff-grade.
-The discussions on how those are used within the program are carried out in a different user guide.
 
 ## Defining Verification Complete: Stages and Checklists
 
-Verification within the Pavona project comes in a variety of completion status levels.
+Verification can come in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of verification is important to gauge the confidence in the design's advertised feature set.
-To that end, we've designated a spectrum of design and verification stages in the [Hardware Development Stages](../../hw/development_stages.md) document.
-It defines the verification stages and references where one can find the current verification status of each of the designs in the repository.
-Splitting the effort in such a way enables the team to pace the development effort and allows the progress to be in lock-step with the design stages.
-The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists](../../hw/checklist/README.md) document.
+To that end, there is a spectrum of design and verification stages in the [Hardware Development Stages](../../hw/development_stages.md) document; it defines the verification stages and references where one can find the current verification status of each of the designs in the repository.
+The list of tasks that required to transition from one stage to the next is defined in the [checklists](../../hw/checklist/README.md) document.
 Verification is said to be complete when the checklist items for all stages are marked as done.
-We will explain some of the key items in those checklists in the remainder of this document.
 
 ## Documentation
 
-DV effort needs to be well documented to not only provide a detailed description of what tests are being planned and functionality covered, but also how the overall effort is strategized and implemented.
+DV should be well documented to not only provide a detailed description of what tests are being planned and functionality covered but also how the overall effort is strategized and implemented.
 The first is provided by the **testplan** document and the second, by the **DV document**.
 The [**project status**](../../hw/development_stages.md#indicating-stages-and-making-transitions) document tracks to progression of the effort through the stages.
 
@@ -63,11 +50,12 @@ The testplan is parsed into a data structure that serves the following purposes:
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
 
 The [testplanner](../../../../util/dvsim/doc/testplanner.md) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
-The [documentation tooling](../../doc/README.md) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
+[Documentation tooling](../../doc/README.md) works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
 
-### DV document
+### DV Document
 
-The DV document expands the testplan inline, in addition to capturing the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
+The DV document expands the testplan inline, in addition to capturing the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers.
+It also covers FPV goals, if applicable.
 This is written in [Markdown](../../style_guides/markdown_usage_style.md) and is made available in the corresponding `doc` directory of each DUT.
 
 A [template](../../../../hw/dv/doc/dv_doc_template.md) for the DV documentation is available to help with getting started.
@@ -75,7 +63,7 @@ A [template](../../../../hw/dv/doc/dv_doc_template.md) for the DV documentation 
 ### Regression Dashboard
 
 The DV document provides a link to the latest [nightly](#nightly) regression and coverage results dashboard uploaded to the web server.
-This dashboard contains information in a tabulated format mapping the written tests to planned tests (in the testplan) to provide ability to track progress towards executing the testplan.
+This dashboard contains information in a tabulated format mapping the written tests to planned tests (in the testplan) to provide the ability to track progress towards executing the testplan.
 
 ## Automation
 
@@ -88,44 +76,39 @@ These are described below.
 As is the case with design, we strive for conformity in our verification efforts as well.
 The motivation for this is not just aesthetics, but also to reap the advantages of [code reuse](#code-reuse), which we rely heavily on.
 To help achieve this, we provide a verification starter tool-kit called [uvmdvgen](../../../../util/uvmdvgen/README.md).
-It can be used to completely auto-generate the complete initial DV environment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as DV document), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
+It can be used to completely auto-generate the complete initial DV environment for a new DUT, including the [documentation](#documentation) pieces (testplan and DV document), the complete UVM environment (including the testbench), collaterals for building and running tests, and some common tests.
 This significantly helps reduce the development time.
 It can also be used to auto-generate the initial skeleton source code for building a new reusable verification component for an interface (a complete UVM agent).
 
 ### UVM Register Abstraction Layer (RAL) Model
 
 The UVM RAL model for DUTs containing CSRs is auto-generated using the [reggen](../../../../util/reggen/doc/setup_and_use.md) tool.
-The specification for capturing the CSRs in the Hjson format can be found in the [Register Tool](../../../../util/reggen/README.md) documentation.
-We currently check-in the auto-generated UVM RAL model along with our UVM testbench code and rely on CI checks for consistency.
-In the future we may move to a flow where it is not checked into the repository, but auto-generated on-the-fly as a part of the simulation.
+The specification for capturing the CSRs in the Hjson format can be found in the [register tool](../../../../util/reggen/README.md) documentation.
 
 ### Testbench Automation
 
-For a parameterized DUT that may possibly have multiple flavors instantiated in the chip, it would be prohibitively difficult to manually maintain the DV testbenches for all those flavors.
-To cater to this, we develop a generic UVM testbench and rely on custom tooling to auto-generate the specific parameter sets that are required to undergo the full verification till signoff.
-<!-- TODO: have this point to TLUL DV document -->
-An effort of this sort is planned for verifying the [TileLink XBAR](../../../../hw/ip/tlul/README.md).
+For parameterized DUTs, it can be prohibitively difficult to manually maintain the DV testbenches for each variation.
+Developing a generic UVM testbench and relying on custom tooling to auto-generate the parameter sets make verification easier.
 
 ## Code Reuse
 
 SystemVerilog / UVM is structured to make code highly reusable across different benches.
-To that end, several commonly used verification infrastructure pieces are provided to aid the testbench development, which are discussed below.
+To that end, several commonly used verification infrastructure pieces are provided to aid the testbench development, which are discussed below and in the [Common SystemVerilog and UVM Components](../../../../hw/dv/sv/README.md) section of the documentation.
 
 ### DV Base Library
 
 We provide an elementary scaffolding / base layer for constructing UVM testbenches via a [DV base library](../../../../hw/dv/sv/dv_lib/README.md) of classes to help us get off the ground quickly.
-Most, if not all, testbenches in Pavona (whether developed for a comportable IP or not) extend from this library, which provides a common set of features.
-A UVM testbench feature (stimulus / sequence, checking logic or functional coverage element) that is generic enough to be applicable for use in all testbenches is a valid candidate to be added to the DV base library.
-By doing so, we improve synergies across our testbenches and reduce the overall development effort & time to market.
-The features are discussed in more detail in the document referenced above.
-The actual UVM testbenches for some of the IPs extend from this library as the final layer.
+Most, if not all, testbenches in the Pavona repo (whether developed for a comportable IP or not) extend from this library, which provides a common set of features.
+The DV base library contains UVM testbench features (stimulus / sequence, checking logic or functional coverage element) that are generic enough to be applicable for use in all testbenches.
+Having a DV base library can reduce overall development effort and time to market.
+The actual UVM testbenches for some of the repo's built-in IPs extend from this library as the final layer.
 
 ### Comportable IP DV Library
 
-Defining a common ground to develop IPs as described in the [Comportable IP specification](../../hw/comportability/README.md) provides us an excellent path to maximize code reuse and shorten the testbench development time even further.
-In view of that, we provide the [Comportable IP DV library](../../../../hw/dv/sv/cip_lib/README.md) of classes, which themselves extend from DV base library to form the second layer.
-These provide a common set of DV features that are specific to Comportable IPs.
-The actual UVM testbenches for the Comportable IPs extend from this library as the third and the final layer.
+Defining common development standards for IPs such as those in the [Comportable IP Specification](../../hw/comportability/README.md) further maximizes code reuse and shortens testbench development time.
+The [Comportable IP DV library](../../../../hw/dv/sv/cip_lib/README.md) of classes extend from DV base library.
+These provide a common set of DV features that are specific to comportable IPs.
+The actual UVM testbenches for the comportable IPs can extend from this library.
 
 ### Common Verification Components
 
@@ -140,15 +123,12 @@ A few examples of these are as follows:
   *  [TileLink agent](../../../../hw/dv/sv/tl_agent/README.md)
   *  [UART agent](../../../../hw/dv/sv/usb20_agent/README.md)
 
-This is not an exhaustive list since we are still actively developing and adding more such components as we speak.
-Please navigate to the above code location to find more sure UVCs.
-
 ## DV Efforts
 
 Overall DV effort can be spread across 3 tiers:
 
 *  IP level DV
-*  Core (Ibex) level DV
+*  Core level DV
 *  Chip level DV
 
 ### IP Level DV
@@ -156,15 +136,17 @@ Overall DV effort can be spread across 3 tiers:
 IP level DV testbenches are small and provide fine grained control of stimulus and corner case generation.
 Tests at this level run relatively quickly and development cycles are shorter.
 Coverage closure is more intensive since there are typically no pre-verified sub-modules.
-To achieve our coverage goals, we take a constrained random approach to generate the stimulus.
+By default, this repo takes a constrained random approach to generate the stimulus.
 The DV environment models the behavior of the DUT more closely to perform checks (typically within the scoreboard or via SVAs) independently of the stimulus.
-In some IPs, specifically the ones that provide cryptographic functions, we also use open source third party C libraries as reference models to check the behavior of the DUT through DPI-C calls.
+For some IPs, specifically the ones that provide cryptographic functions, DV will integrate open-source, third-party C libraries as reference models to check the behavior of the DUT through DPI-C calls.
 
 Each of the IP level DV environments are described in further detail within their own [DV document](#dv-document).
 To find all of them, please navigate to this [landing page](../../../../hw/README.md).
 The [UART DV document](../../../../hw/ip/uart/dv/README.md) documentation can be used as a reference.
 
-### Core Ibex Level DV
+### Core Level DV
+
+DV may be more complex for a core than for a simple IP block.
 
 The RISC-V CPU core Ibex has its own DV testbench and it is verified to full coverage closure.
 Please see the [Ibex DV documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html) for more details.
@@ -172,13 +154,11 @@ Please see the [Ibex DV documentation](https://ibex-core.readthedocs.io/en/lates
 ### Chip Level DV
 
 The chip level DV effort is aimed at ensuring that all of the IPs are integrated correctly into the chip.
-For IPs that are pre-verified sub-modules, we perform [integration testing](#integration-testing).
+For IPs that are pre-verified sub-modules, the Pavona project performs [integration testing](#integration-testing).
 These are simple functional tests written in C which are cross-compiled and run natively on the Ibex core.
 The software compilation flow to enable this is explained in further detail in the [Building Software](../../../getting_started/build_sw.md) document.
 Further, there is a mechanism for the C test running on the CPU to signal the SystemVerilog testbench the test pass or fail indication based on the observed DUT behavior.
 We also provide an environment knob to 'stub' the CPU and use a TL agent to drive the traffic via the CPU's data channel instead, in cases where more intensive testing is needed.
-<!-- TODO: add link to chip DV document -->
-The chip DV document, which is currently under active development will explain these methodologies and flows in further detail.
 
 ## Key Test Focus Areas
 
@@ -195,6 +175,7 @@ These set of tests (not exhaustive) provide the confidence that the design is re
 At this stage, just a skeleton testbench environment is available and most components lack functionality.
 A basic sanity test drives the clock, brings the DUT out of reset, checks if all outputs are legal values (not unknown) and exercise a major datapath with simple set of checks.
 This paves the way for more complex testing.
+
 During the testplan and the DV document review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers working at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
 This test (or set of tests) is also included as a part of the sanity regression to maintain the code health.
 
@@ -211,12 +192,9 @@ These categories are fairly generic and apply to most DUTs.
 
 #### Power Tests
 
-It is vital to be able to predict the power consumption of our SoC in early development stages and refactor the design as needed to optimize the RTL.
+It is vital to be able to predict the power consumption of some SoCs in early development stages and refactor the design as needed to optimize the RTL.
 Typically, DV tests that mimic idle and high power consumption scenarios are written and FSDB generated from those tests are used for analysis.
-
-This is perhaps applicable when an actual ASIC will be built out of our SoC.
-At that time, we could have lower power requirements in terms of being able to put parts of the SoC in different power 'islands' in retention voltage or be power collapsed.
-If and when such requirements are fully specified for the product, we need to ensure that power-aware tests have been added to verify this.
+If and when power requirements are fully specified for a product, power-aware tests should be added.
 
 #### Performance Tests
 
@@ -228,18 +206,16 @@ These set of tests ensure that those requirements are indeed met.
 #### Security & Error Tests
 
 Error tests focus on generating stimulus that may not be considered legal and ensure that the DUT can detect, react and behave accordingly, instead of locking up or worse, exposing sensitive information.
-These types of tests are particularly important for a security chip such as ours.
+These types of tests are particularly important for security-centered designs.
 These are typically handled via directed tests since it can be prohibitively time consuming to develop complex scoreboards that can handle the error-checking when running completely unconstrained random sequences.
 A classic example of this is the illegal / error access tests via the TileLink interface, which are run for all DUTs.
 Here, we constrain a random sequence to generate TL accesses that are considered illegal and ensure that the DUT responds with an error when appropriate.
 Another example is testing RAMs that support ECC / error correction.
 
-While some of the examples listed above pertain to concrete features in the design, we are actively also exploring alternative ways of finding and covering security holes that may not be uncovered via traditional DV efforts.
-
 #### Debug Tests
 
 This mainly applies to DUTs that contain a processing element (CPU).
-These focus on verifying the debug features supported by the CPU at the chip level based on the [RISCV debug specification](https://riscv.org/specifications/debug-specification).
+These focus on verifying the debug features supported by the CPU at the chip level based on the [RISC-V debug specification](https://riscv.org/specifications/debug-specification).
 
 #### Stress Tests
 
@@ -260,27 +236,24 @@ Apart from that, there are cleanup activities to resolve all pending TODO items 
 Wherever possible, the assertion monitors developed for FPV are reused in UVM testbenches when running dynamic simulations.
 An example of this is the [TLUL Protocol Checker](../../../../hw/ip/tlul/doc/TlulProtocolChecker.md).
 
-Unlike design assertions, in DV assertions are typically created within SV interfaces bound to the DUT.
-This way assertions and any collateral code don't affect the design, and can reach any internal design signal if needed.
+Unlike design assertions, DV assertions are typically created within SV interfaces bound to the DUT.
+This way assertions and any collateral code don't affect the design and can reach any internal design signal if needed.
 For an example of this see the [clkmgr assertions](../../../../hw/top_earlgrey/ip_autogen/clkmgr/dv/sva).
 
 ## Regressions
 
-There are 2 main types of regressions suites - 'sanity' and 'nightly'.
+Regression suites are sets of DV tests that can escalate in how thoroughly a DUT is tested, ranging from 'sanity' to 'nightly' to 'weekly'.
 
 ### Sanity
 
 Due to heavy code reuse, breakages happen quite often.
-It is necessary for each DUT testbench to provide a set of simple sanity test that accesses a major datapath in the DUT.
+It is necessary for each DUT testbench to provide a set of simple sanity tests that accesses a major datapath in the DUT.
 Categorizing such tests into a sanity suite provides a quick path for users who touch common / shared piece of code to run those tests for all DUTs and ensure no breakages occur.
 If the DUT testbench has more than one compile-time configuration, there needs to be at least 1 sanity test per configuration.
 
-Ideally, the sanity regression is run as a part of the CI check whenever a PR is submitted. Due to use of proprietary tools for running DV simulations, this cannot be accomplished. Instead, we run a daily cron job locally on the up-to-date `master` branch to identify such breakages and deploy fixes quickly.
-
 ### Nightly
 
-While development mostly happens during the work day, nighttime and weekends are better utilized to run all of our simulations (a.k.a "regression").
-Achieving 100% pass rate in our nightly regressions consistently is a key to asserting 'verification complete'.
+While development mostly happens during the work day, nighttime and weekends are better utilized to run all of our simulations (a.k.a "regressions").
 The main goals (for all DUTs) are:
 
 *  Run each constrained random test with a sufficiently large number of seeds (arbitrarily chosen to be 100)
@@ -291,37 +264,32 @@ The main goals (for all DUTs) are:
 *  Publish the testplan-annotated regression and coverage results in the regression dashboard
 
 One of the key requirements of nightly regressions is to complete overnight, so that the results are available for analysis and triage the next morning.
-If test runtimes are longer, we could define a weekly regression based on need.
-In general, it is a good practice to periodically profile the simulation to identify bottlenecks in terms of simulation performance (which often is a result of specific coding style choices).
+In general, it is a good practice to periodically profile the simulation to identify bottlenecks in terms of simulation performance (which often are a result of specific coding style choices).
+
+### Weekly
+
+Weekly regressions are even more comprehensive than nightlies.
 
 ## Coverage Collection
 
-Collecting, analyzing, and reporting coverage with waivers is a requirement to assert 'verification complete'.
-Any gaps in our measured coverage need to be understood and either waived (no need to cover) or closed by additional testing.
-The end goal is to achieve 100% coverage across all applicable coverage metrics.
-This process is known as "coverage closure", and is done in close collaboration with the designer(s).
+Verification completeness relies on collecting, analyzing, and reporting coverage with waivers.
+Any gaps in measured coverage should be understood and either waived (no need to cover) or closed by additional testing.
+This process is known as "coverage closure", and is done in close collaboration with the DUT's designer(s).
 Coverage collected from all tests run as a part of the regression is merged into a database for analysis.
-Our primary tool of choice for our coverage closure needs is Synopsys VCS & Verdi.
-However, the use of other simulators is welcome.
 
 **Why do we need coverage?**
 
-The common answer is to flush out bugs in the design.
-This is not accurate enough.
-Making sure there are no bugs in a design is important, but not sufficient.
-One must also make sure the design works as intended.
-That is, it must provide all the functionality specified in the design specification.
-So a more precise answer for why we need coverage is to flush out flaws in the design.
-These flaws can be either design bugs or deficiencies in the design with respect to the specification.
+The answer is to flush out bugs in the design, but also to make sure the design works as intended.
+Coverage can also flush out flaws in the design; these flaws can be either design bugs or deficiencies in the design with respect to the specification.
 
-Another reason why we need coverage is to answer the seemingly simple but important question:
-**When are we done testing?**
-Do we need 1, 10, or 100 tests and should they run 10, 100, or 1000 regressions?
-Only coverage can answer this question for you.
+Another reason for coverage is the important question: **when are we done testing?**
+Coverage conveys how confidently one can rely on a design's functionality, and designs should continue to be developed and debugged until they achieve sufficient coverage.
+Do we need 1, 10, or 100 tests, and should they run 10, 100, or 1000 regressions?
+Only coverage can answer this question.
 
 There are two key types of coverage metrics: code coverage and functional coverage.
 Both are important and are covered in more detail below.
-For this topic, we define 'pre-verified sub-modules' as IPs within the DUT that have already been (or are planned to be) verified to complete sign-off within individual test benches.
+For this topic, we define 'pre-verified sub-modules' as IPs within the DUT that have already been (or are planned to be) verified to complete sign-off within individual testbenches.
 
 ### Code Coverage
 
@@ -345,7 +313,7 @@ Code coverage is sometimes referred to as implicit coverage as it is generated b
 
 ### Functional Coverage
 
-Unlike code coverage, functional coverage requires the designer and/or DV engineer to write additional cover points and covergroups.
+Unlike code coverage, functional coverage requires additional cover points and covergroups.
 For this reason functional coverage is sometimes referred to as explicit coverage.
 Cover points and covergroups are more complex constructs that capture whether signals (that reflect the current state of the design) have met an interesting set or a sequence of values (often called corner cases).
 These constructs also allow us to capture whether multiple scenarios have occurred simultaneously through crosses.
@@ -364,7 +332,7 @@ Here are the metrics used with a brief explanation:
   This is called a coverage cross.
 * **Cover Property coverage**:
    * **Assertion coverage using SVA**
-   * **procedural code**
+   * **Procedural code**
 
 Most often property coverage is implemented using SystemVerilog Assertions (SVA).
 This observes events or series of events.

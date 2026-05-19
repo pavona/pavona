@@ -137,15 +137,16 @@ The following table provides a more detailed summary of the supported features:
 </tbody>
 </table>
 
-## Discrete Earl Grey Differences
+## Discrete Earlgrey Differences
 
-The Darjeeling configuration derived from the OpenTitan's discrete "Earl Grey" has been extended to meet the requirements for an SoC-integrated RoT.
-The main processing elements and cryptographic features are significantly similar, while several unneeded IO peripherals in an integrated context have been removed. A set of new IP blocks have been developed to enable integration into a larger SoC:
+The Darjeeling configuration derived from the discrete "Earlgrey" has been extended to meet the requirements for an SoC-integrated RoT.
+The main processing elements and cryptographic features are significantly similar, while several unneeded IO peripherals in an integrated context have been removed.
+A set of new IP blocks have been developed to enable integration into a larger SoC:
 
 - An [extended key manager block](../../ip/keymgr_dpe/README.md) with support for TCG’s DICE Protection Environment (DPE)
 - A [DMA controller](../../ip/dma/README.md) facilitating data exchange between the OpenTitan IP and the SoC
 - A [mailbox](../../ip/mbx/README.md) with TL-UL bus interface, configurable shared memory regions, and support for the PCIe Data Object Exchange (DOE) protocol
-- A SoC proxy module that serves as a comportable fronted for external interrupts, alerts and the like
+- A [SoC proxy module](../ip/soc_proxy/README.md) that serves as a comportable fronted for external interrupts, alerts and the like
 - An [SoC debug controller](../../ip/soc_dbg_ctrl/README.md), which controls debug and test access to the SoC
 - An [access control range check module](../ip_autogen/ac_range_check/README.md) that ensures that Darjeeling can access only authorized addresses in the SoC
 - A [register-access control list controller](../ip_autogen/racl_ctrl/README.md) that defines role-based access permissions to Darjeeling's registers

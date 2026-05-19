@@ -20,12 +20,12 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   localparam uint BACKDOOR_RET_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / 8);
   localparam uint BACKDOOR_MAIN_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES / 8);
 
-  // Note that for Darjeeling the _REQ_INDEX values differ from those of Earl Grey; within the
+  // Note that for Darjeeling the _REQ_INDEX values differ from those of Earlgrey; within the
   // OTP controller KDI the `req` and `rsp` signals of the SRAM Ctrl are aggregated with the
   // those of other blocks.
   //
   // The `sram_otp_key_o` are, however, still separate so the _INDEX fields used for `key` and `ack`
-  // match those of Earl Grey.
+  // match those of Earlgrey.
   localparam string MAIN_INDEX = "0";
   localparam string MAIN_REQ_INDEX = "1";
   localparam string RET_INDEX = "1";
