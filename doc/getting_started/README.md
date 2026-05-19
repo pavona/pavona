@@ -1,182 +1,291 @@
-# Getting started
+# Pavona 101: Getting Started
 
-Welcome!
-This guide will help you set up your system, clone the repository, set up a hardware platform (FPGA, Verilator, or DV), and build a "Hello World!" test program.
+Welcome to the Pavona open-source silicon ecosystem!
+Pavona is vast, featuring dozens of high-quality IP blocks with tooling that can combine it in countless possible configurations.
+Pavona supports a wide variety of toolflows, from Verilator simulation to DV flows and tapeout-ready ASIC synthesis.
 
-## Workflow options
+This guide helps new users download the Pavona repository, install system requirements, and run a basic test that shows all of Pavona's components working together.
+For simplicity, this guide shows you just the steps you need to get a test running on your system.
+After this guide, you'll be able to refer to other guides to modify the hardware, run on an FPGA, run DV tests, and more.
 
-To run the software in this repository, you must also simulate the hardware.
-We currently support multiple build targets and workflows, shown in the diagram below.
-These include: Verilator, FPGA, and DV (commercial RTL simulators, such as VCS and Xcelium).
+## Basic system requirements
 
-**If you are new to the project, we recommend simulation with Verilator.**
-This uses only free tools, and does not require any additional hardware such as an FPGA.
+Commands you'll need to run in your terminal begin with `$`:
 
-![Getting Started Workflow](getting_started_workflow.svg)
-
-This guide will focus on the Verilator workflow, but indicate when those following FPGA or DV workflows should do something different.
-Just keep in mind, if you're a new user and you don't know you're part of the FPGA or DV crowd, "Verilator" means you!
-
-## Step 0: Clone the Pavona repository
-
-Clone the [repository](https://github.com/pavona/pavona):
-```console
-git clone https://github.com/pavona/pavona
+```shell
+$ echo 'Hello world!'
+Hello world!
 ```
 
-If you wish to *contribute* to this repository, you will need to make a fork on GitHub and may wish to clone the fork instead.
-We have some [notes for using GitHub](../contributing/github_notes.md) which explain how to work with your own fork (and perform many other GitHub tasks).
+Check that your system meets the following system requirements:
 
-***Note: throughout the documentation `$REPO_TOP` refers to the path where this repository is checked out.***
-Unless you've specified some other name in the clone, `$REPO_TOP` will be a directory called `pavona`.
-You can create the environment variable by calling the following command from the same directory where you ran `git clone`:
-```console
-export REPO_TOP=$PWD/pavona
+* Ubuntu 22.04, 24.04, or 26.04
+* At least 7 GiB RAM (32 GiB recommended)
+* At least 512 GiB of disk space
+
+This guide describes instructions for Ubuntu 22.04 ("jammy").
+
+First, check that you are running a suitable Linux distribution.
+
+```shell
+$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+  ...
 ```
 
-## Step 1: Check system requirements
+Ensure that you have the appropriate system dependencies to proceed to the next step.
 
-**This project requires Linux.**
-If you do not have Linux, please use the (experimental) [Docker container](../../util/container).
-You can then **skip to step 4** (building software).
-
-If you do have Linux, you are still welcome to try the Docker container.
-However, as the container option is currently experimental, we recommend following the steps below to build manually if you plan on being a long-term user or contributor for the project.
-
-Our continuous integration setup runs on Ubuntu 22.04 LTS, which gives us the most confidence that this distribution works out of the box.
-We do our best to support other distributions, but cannot guarantee they can be used "out of the box" and they might require updates of packages.
-Please file a [GitHub issue](https://github.com/pavona/pavona/issues) if you need help or would like to propose a change to increase compatibility with other distributions.
-
-You will need at least **7GiB of available RAM** in order to build the Verilator simulation.
-If you are building another form of simulation, this constraint does not apply.
-
-If you are specifying a new machine to run top-level simulations using Verilator, it is recommended that you have a minimum of **32GiB of physical RAM** and at least **512GiB of disk storage** for the build tools, repository and Ubuntu installation.
-
-## Step 2: Install dependencies using the package manager
-
-*Skip this step if using the Docker container.*
-
-A number of software packages from the distribution's package manager are required.
-On Ubuntu 20.04, the required packages can be installed with the following command.
-
-```sh
-sed '/^#/d' ./apt-requirements.txt | xargs sudo apt install -y
+```shell
+$ sudo apt update
+$ sudo apt upgrade
 ```
 
-## Step 3: Install Python libraries needed
+## Get Pavona
 
-Some tools in this repository are written in Python and require their dependencies to be installed through `pip`.
-To avoid conflicts between Python package versions required on the host system, a virtual environment for the Python dependencies is required.
+We recommend most people get a Pavona release from the Releases page.
 
-```console
-sudo apt install python3-venv
+More advanced users (developers and contributors) who are interested in working on bleeding-edge Pavona development should use Git to clone the Pavona repository.
+
+### Recommended: Download a Pavona release
+
+The best way to get Pavona is to download a release from the Releases page of the Pavona repository.
+The latest release is [https://github.com/pavona/pavona/releases/latest](https://github.com/pavona/pavona/releases/latest).
+Download the source code (available as a tarball or zip file) and decompress it.
+
+If you downloaded a tarball (\*.tar.gz), use:
+
+```shell
+$ tar -xzf [Pavona release name].tar.gz
 ```
 
-Then, create the virtual environment in your clone:
+If you downloaded a zip file (\*.zip), use:
 
-```console
-cd $REPO_TOP
-python3 -m venv .venv
+```shell
+$ unzip [Pavona release name].zip
 ```
 
-Then, activate the virtual environment by sourcing the shell script.
-The virtual environment must be activated in every shell/terminal window that interacts with this repository.
-Your shell prompt will be modified by the script to indicate that the virtual environment is activated for that session.
+### Advanced: Clone the Pavona repository
 
-```console
-source .venv/bin/activate
+Developers and contributors interested in modifying Pavona can use Git to clone the repository.
+
+```shell
+$ sudo apt install -y git
+$ git clone https://github.com/pavona/pavona
+Cloning into 'pavona'...
+   ...
+Updating files: 100% (13468/13468), done.
 ```
 
-Now install the additional Python dependencies to the virtual environment:
+Git clones the `main` branch by default; use `git switch` or `git checkout` to change to a release tag if desired.
+Release tags are named `release/[YYYY].[MM].p[#]`.
+See the available releases at [https://github.com/pavona/pavona/releases](the Pavona releases page).
 
-```console
-pip3 install "setuptools<66.0.0"
+Whether you used a Pavona release or cloned the Pavona repository, the following instructions assume the directory is named "pavona".
 
-pip3 install -r python-requirements.txt --require-hashes
+## Install system dependencies
+
+Change into the `pavona/` directory and you'll find the following files:
+
+```shell
+$ cd pavona
+$ ls
+BLOCKFILE          apt-requirements.txt  python-requirements.txt
+BUILD.bazel        bazelisk.sh           quality
+CLA                bench                 release
+CONTRIBUTING.md    book.toml             rules
+LICENSE            ci                    signing
+MODULE.bazel       compile_flags.txt     sw
+MODULE.bazel.lock  doc                   third_party
+NOTICE             hw                    toolchain
+README.md          mypy.ini              util
+SUMMARY.md         pyproject.toml        yum-requirements.txt
 ```
 
-## Step 4: Set up your simulation tool or FPGA
+The file `apt-requirements.txt` contains a list of the additional Ubuntu packages you'll need to install in order to work with Pavona.
+The following command processes this file and passes it to apt to install them:
 
-*Note: If you are using the pre-built Docker container, Verilator is already installed.
-Unless you know you need the FPGA or DV guides, you can skip this step.*
-
-In order to run the software, we need to have some way to simulate or emulate the hardware.
-There are a few different options depending on your equipment and use-case.
-Follow the guide(s) that applies to you:
-* **Option 1 (Verilator setup, recommended for new users):** [Verilator guide](./setup_verilator.md), or
-* Option 2 (FPGA setup): [FPGA guide](./setup_fpga.md), or
-* Option 3 (design verification setup): [DV guide](./setup_dv.md)
-
-## Step 5: Build software
-
-Follow the [dedicated guide](./build_sw.md) to build software and run tests.
-
-## Step 6: Optional additional steps
-
-If you have made it this far, congratulations!
-Hopefully you got a "Hello World!" demo using either the Verilator or FPGA targets.
-
-Depending on the specific way you want to use or contribute to Pavona, there may be a few extra steps you want to do.
-In particular:
-* *If you want to contribute SystemVerilog code upstream*, follow step 6a to install Verible.
-* *If you want to run supported formal verification flows with tools like JasperGold,* follow step 6b to set up formal verification.
-* *If you want to simulate hardware with Siemens Questa,* follow step 6c to set it up.
-
-It also may make sense to stick with the basic setup and come back to these steps if you find you need them later.
-
-### Step 6a: Install Verible (optional)
-
-Verible is an open source SystemVerilog style linter and formatting tool.
-The style linter is relatively mature and we use it as part of our RTL design flow.
-The formatter is still under active development, and hence its usage is more experimental.
-
-You can download and build Verible from scratch as explained on the [Verible GitHub page](https://github.com/google/verible/).
-But since this requires the Bazel build system the recommendation is to download and install a pre-built binary as described below.
-
-Go to [this page](https://github.com/google/verible/releases) and download the correct binary archive for your machine.
-
-The example below is for a generic Linux OS:
-
-```console
-export VERIBLE_VERSION={{#tool-version verible }}
-wget https:wget https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz
-tar -xf verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz
+```shell
+$ sed '/^#/d' apt-requirements.txt | xargs sudo apt install -y
 ```
 
-Then install Verible within 'tools' using:
+You'll also need to set up a Pavona-specific Python environment.
+This process keeps Pavona-specific Python package versions from clashing with others that may already exist on your system.
+
+First, install the python3-venv package from apt, then create your virtual environment:
+
+```shell
+$ sudo apt install python3-venv
+$ python3 -m venv .venv
+```
+
+### Activating your Pavona Python environment
+
+The second step creates a hidden directory called `.venv` in your `pavona/` directory.
+In order to use Pavona's Python-based tools, you'll need to *activate* this environment:
+
+```shell
+$ source .venv/bin/activate
+(.venv) $
+```
+
+The `(.venv)` prepended to your shell prompt indicates that the virtual environment is now activated.
+If you close your terminal and later return to use the Pavona repository, **be sure to re-activate your virtual environment by running the above command**.
+Alternatively, you may activate your environment as part of your shell rc file (e.g. bashrc, cshrc, zshrc).
+
+Once you've activated your Pavona environment, install the Python dependencies.
+You'll need to do this only once.
+
+```shell
+$ pip3 install -r python-requirements.txt --require-hashes
+```
+
+## Install Verilator
+
+Pavona currently relies on Verilator version 4.210.
+We'll need to match this version, not what's in apt, so you'll need to fetch the sources and build Verilator from scratch:
+
+```shell
+$ cd ..
+$ git clone https://github.com/verilator/verilator
+$ cd verilator
+$ git checkout v4.210
+$ sudo apt install -y flex bison help2man
+$ make -j
+$ sudo make install
+```
+
+Verify that your Verilator installation succeeded with the following:
+
+```shell
+$ which verilator
+/usr/local/bin/verilator
+$ verilator --version
+Verilator 4.210 2021-07-07 rev v4.210
+```
+
+Return to the Pavona directory:
+
+```shell
+$ cd ../pavona
+```
+
+## Build and run a test
+
+### Build a test with Bazel
+
+Bazel is the tool used to build software that runs on Pavona.
+We'd like to build the "Hello, world!" application, which lives in the `sw/device/examples/hello_world` directory:
+
+```shell
+$ ls sw/device/examples/hello_world/
+BUILD  README.md  hello_world.c
+```
+
+If you examine `hello_world.c`, you'll see that the main test code is located in `_ottf_main(void)`, which contains the following C macro invocations:
+
+```c
+void _ottf_main(void) {
+  ...
+  LOG_INFO("Hello World!");
+  ...
+  LOG_INFO("Built at: " __DATE__ ", " __TIME__);
+  ...
+}
+```
+
+To build this test, invoke Bazel through a script called `bazelisk.sh`, which fetches the correct version of Bazel for you, then builds the `hello_world` binary.
+Note that there is an extra colon (`:`) between the directory (`sw/device/examples/hello_world`) and the name of the target (`hello_world`).
+
+```shell
+$ ./bazelisk.sh build sw/device/examples/hello_world:hello_world
+...
+Target //sw/device/examples/hello_world:hello_world up-to-date:
+  ...
+  bazel-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.vmem
+  bazel-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf
+  bazel-bin/sw/device/examples/hello_world/hello_world_sim_verilator.dis
+  bazel-bin/sw/device/examples/hello_world/hello_world_sim_verilator.map
+  ...
+INFO: Build completed successfully, 49 total actions
+```
+
+The output (with some trimming) shows the files that were built.
+You can examine the RISC-V (dis)assembly in the `bazel-bin/sw/device/examples/hello_world/hello_world_sim_verilator.dis` file.
+
+### Run a test on Verilator
+
+Run the "Hello, World!" binary by using Bazel:
+
+```shell
+$ ./bazelisk.sh test sw/device/examples/hello_world:hello_world_sim_verilator --test_output=streamed
+```
+
+In the Pavona project, a specific run is assembled by concatenating the name of the binary (`hello_world`) with the name of an *execution environment* (`sim_verilator`).
+Bazel uses this to set up the correct environment by building the Verilator binary.
+This process takes about 10 minutes.
+After this, the test run begins.
+The simulated Pavona top-level will begin printing to the display because of the `--test_output=streamed` flag.
+The test itself takes about 60 seconds to run.
 
 ```
-sudo mkdir -p /tools/verible/${VERIBLE_VERSION}/
-sudo mv verible-${VERIBLE_VERSION}/* /tools/verible/${VERIBLE_VERSION}/
+I00001 test_rom.c:193] kChipInfo: scm_revision=54697461
+I00002 test_rom.c:270] Test ROM complete, jumping to flash (addr: 20000480)!
+I00000 hello_world.c:37] Hello World!
+I00001 hello_world.c:40] Built at: Mar 01 2026, 12:34:56
+I00002 hello_world.c:44] PASS!
+[... INFO  opentitantool::command::console] ExitSuccess("PASS!\r\n")
+[... INFO  opentitantool] Command result: success.
+[... INFO  opentitantool] Command result: success.
+INFO: Found 1 test target...
+Target //sw/device/examples/hello_world:hello_world_sim_verilator up-to-date:
+  bazel-bin/sw/device/examples/hello_world/hello_world_sim_verilator.bash
+INFO: Elapsed time: 59.108s, Critical Path: 58.46s
+INFO: 2 processes: 12 action cache hit, 2 processwrapper-sandbox.
+INFO: Build completed successfully, 2 total actions
+//sw/device/examples/hello_world:hello_world_sim_verilator               PASSED in 58.2s
+
+Executed 1 out of 1 test: 1 test passes.
 ```
 
-After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your `PATH` environment variable.
+### Rerunning a test
 
-Note that we currently use version {{#tool-version verible }}, but it is expected that this version is going to be updated frequently, since the tool is under active development.
+If you'd like to run the test again, you'll likely see:
 
-### Step 6b: Set up formal verification (optional)
+```shell
+$ ./bazelisk.sh test sw/device/examples/hello_world:hello_world_sim_verilator
+...
+INFO: Analyzed target //sw/device/examples/hello_world:hello_world_sim_verilator (0 packages loaded, 4 targets configured).
+INFO: Found 1 test target...
+Target //sw/device/examples/hello_world:hello_world_sim_verilator up-to-date:
+  bazel-bin/sw/device/examples/hello_world/hello_world_sim_verilator.bash
+INFO: Elapsed time: 0.612s, Critical Path: 0.22s
+INFO: 1 process: 13 action cache hit, 1 internal.
+INFO: Build completed successfully, 1 total action
+//sw/device/examples/hello_world:hello_world_sim_verilator      (cached) PASSED in 58.2s
 
-See the [formal verification setup guide](./setup_formal.md)
+Executed 0 out of 1 test: 1 test passes.
+```
 
-### Step 6c: Set up Siemens Questa (optional)
+This is because Bazel caches your test results, which is useful if you haven't changed your code.
+To re-run a test, pass the additional flag `--cache_test_results=false` to your bazelisk invocation.
 
-Once a standard installation of Questa has been completed, add `QUESTA_HOME` as an environment variable which points to the Questa installation directory.
+## Modify a test
 
-## Step 7: Additional resources
+Your first step to exploring the Pavona repository will be to get your hands dirty (just a little bit).
+Modify the `hello_world.c` file to say something other than "Hello World!".
+Build and run the test with the above `./bazelisk.sh test` invocation.
+(Bazel automatically rebuilds any modified tests.)
 
-This repository is under active development in many different areas.
-Check out the additional resources below.
+## Next steps
 
-### General
-* [Directory Structure](../contributing/directory_structure.md)
-* [GitHub Notes](../contributing/github_notes.md)
-* [Building Documentation](../contributing/doc/README.md)
-* [Introduction to ACC](../../hw/ip/acc/doc/acc_intro.md)
+Congratulations!
+You've just set up your system, downloaded the Pavona repository, and run a test on verilated hardware.
+There are many steps forward from here:
 
-### Hardware
-* [Hardware Introduction](../../hw/README.md)
-
-### Software
-* [Software Introduction](../../sw/README.md)
-* [Writing and Building Software for ACC](../contributing/sw/acc_sw.md)
-* [Rust for Embedded C Programmers](../contributing/sw/rust_for_c_devs.md)
+* [Pavona 102: Introduction to Hardware](./intro_hardware.md)
+* [Pavona 103: Introduction to Software](./intro_software.md)
+* Build and run hardware on an FPGA
+* Write software
+* Run DV tests
+* Start a synthesis backend
