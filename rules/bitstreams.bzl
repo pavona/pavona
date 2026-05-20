@@ -110,7 +110,7 @@ bitstreams_repo = repository_rule(
     attrs = {
         "bucket_url": attr.string(
             doc = "Location of the GCP bitstream bucket.",
-            default = "https://storage.googleapis.com/expo-bitstreams/",
+            default = "https://storage.googleapis.com/pavona-bitstreams/",
         ),
         "cache": attr.string(
             doc = "Location of bitstreams cache.",

@@ -302,7 +302,7 @@ jobs:
       top_name: earlgrey
       design_suffix: cw340
 
-  # Hyper310 FPGA jobs
+  # CW310 FPGA jobs
   execute_tests_cw310:
     name: Earlgrey CW310 Tests
     needs: chip_earlgrey_cw310

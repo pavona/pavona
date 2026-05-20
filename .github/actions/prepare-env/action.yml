@@ -128,8 +128,7 @@ runs:
       uses: google-github-actions/auth@71fee32a0bb7e97b4d33d548e7d957010649d8fa # v2.1.3
       with:
         workload_identity_provider: projects/951672875677/locations/global/workloadIdentityPools/github-actions-pool/providers/${{ github.event.repository.name }}
-        service_account: ${{ github.event.repository.name }}-gh-actions-sa@expo-caches-3492dd4e.iam.gserviceaccount.com
-
+        service_account: ${{ github.event.repository.name }}-gh-actions-sa@pavona-caches-3492dd4e.iam.gserviceaccount.com
 
     # The above action creates a credential file in workspace and it doesn't provide a way to configure
     # it. This influences with a few scripts that assume clean workspace, and introduce security risk
@@ -152,7 +151,7 @@ runs:
     - name: Configure ~/.bazelrc
       if: inputs.configure-bazel == 'true'
       run: |
-        echo "common --remote_cache=https://storage.googleapis.com/expo-bazel-cache" >> ~/.bazelrc
+        echo "common --remote_cache=https://storage.googleapis.com/pavona-bazel-cache" >> ~/.bazelrc
         # Inject the OS version into a parameter used in the action key computation to
         # avoid collisions between different operating systems in the caches.
         # See #14695 for more information.

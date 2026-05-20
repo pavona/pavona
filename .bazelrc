@@ -146,5 +146,5 @@ run --sandbox_explicit_pseudoterminal
 build --incompatible_strict_action_env
 
 # Bazel remote cache configuration.
-common --remote_cache=https://storage.googleapis.com/expo-bazel-cache"
+common --remote_cache=https://storage.googleapis.com/pavona-bazel-cache"
 build --remote_upload_local_results=false

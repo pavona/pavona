@@ -87,7 +87,7 @@ jobs:
             $PWD/build-bin/**/manifest.json
       - name: Upload bitstreams to GCP bucket
         run: |
-          BUCKET_URI=gs://expo-bitstreams/${{ github.ref_name }}
+          BUCKET_URI=gs://pavona-bitstreams/${{ github.ref_name }}
           printf "$(date -u +%Y-%m-%dT%H:%M:%S)\n${{ github.sha }}" > latest.txt
           gcloud storage cp build-bin/bitstream-cache/bitstream-cache.tar.gz $BUCKET_URI/bitstream-${{ github.sha }}.tar.gz
           gcloud storage cp latest.txt $BUCKET_URI/latest.txt
