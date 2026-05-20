@@ -966,6 +966,7 @@ class SimCfg(FlowCfg):
             all_keys = list(dict.fromkeys(key for row in all_rows for key in row))
             # Move the "Overall Coverage" key to the end (only if coverage is enabled)
             if "Overall Coverage" in all_keys:
+                all_keys.remove("Score Coverage")
                 all_keys.remove("Overall Coverage")
                 all_keys.append("Overall Coverage")
 

@@ -190,11 +190,11 @@
     background-color: #1E3A6F !important;
 }
 
-.results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+12) {
+.results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+11) {
     background-color: #152747 !important;
 }
 
-.results table.col-12 thead tr th:nth-child(13) {
+.results table.col-12 thead tr th:nth-child(12) {
     background-color: #1E3A6F !important;
 }
 
@@ -270,13 +270,13 @@ html body .results table.col-12 thead tr th:nth-child(1),
 
 html body .results table.col-12 thead tr th:nth-child(4),
 
-html body .results table.col-12 thead tr th:nth-child(13) {
+html body .results table.col-12 thead tr th:nth-child(12) {
   background-color: #1E3A6F !important;
 }
 
 html body .results table.col-12 thead tr th:nth-child(n+2):nth-child(-n+3),
 
-html body .results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+12) {
+html body .results table.col-12 thead tr th:nth-child(n+5):nth-child(-n+11) {
   background-color: #152747 !important;
 }
 
