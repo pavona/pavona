@@ -41,14 +41,14 @@ The other important directory is the `hw/` directory, which has several key subd
 
 * `hw/ip/` contains block-level IP for the Pavona ecosystem that does not need further "templatization" (see the next section).
 * `hw/ip_templates`, on the other hand, contains block-level IP that *does* need templatization.
-* `hw/top_darjeeling`, `hw/top_earlgrey`, and `hw/top_englishbreakfast`, which represent the currently supported top-level reference designs in the Pavona project.
+* `hw/top_dragonfly`, `hw/top_egret`, and `hw/top_scafi_deprecated`, which represent the currently supported top-level reference designs in the Pavona project.
 
 Top-level designs (or "tops") organize IP into a design suited for a particular purpose or implementation methodology.
 We briefly introduce Pavona's three top-level designs here, but refer to their individual datasheets (located in each top directory's corresponding `doc/` directory) for more information.
 
-* `top_earlgrey` is a full discrete root of trust design ready for tapeout.
-* `top_darjeeling` is another root of trust design intended for integration within a broader SoC.
-* `top_englishbreakfast` is a reduction of `top_earlgrey` designed to facilitate side channel analysis and fault injection experiments.
+* `top_egret` is a full discrete root of trust design ready for tapeout.
+* `top_dragonfly` is another root of trust design intended for integration within a broader SoC.
+* `top_scafi_deprecated` is a reduction of `top_egret` designed to facilitate side channel analysis and fault injection experiments.
 
 In these top-specific directories, you will also find another set of IP directories: `hw/top_*/ip` and `hw/top_*/ip_autogen`.
 This brings us to a discussion of the three types of IP in Pavona:
@@ -60,8 +60,8 @@ The first two are simple to understand:
 
 * `hw/ip` contains IPs that are broadly applicable to any top and do not require customization (beyond the capabilities of SystemVerilog parameters).
 * `hw/top_*/ip` contains IP that is specific to that top and is not intended to be used by another top.
-This includes the Analog Sensor Top (AST) and crossbar IPs for both Earlgrey and Darjeeling, which are specific to their respective top.
-Darjeeling contains a proxy for communication to the wider SoC, which is not meaningful in Earlgrey.
+This includes the Analog Sensor Top (AST) and crossbar IPs for both Egret and Dragonfly, which are specific to their respective top.
+Dragonfly contains a proxy for communication to the wider SoC, which is not meaningful in Egret.
 
 ### IP collateral
 
@@ -105,7 +105,7 @@ Instead, the syntax `${module_instance_name}` is substituted by Pavona tooling t
 Templated IPs are also widely used to help maintain consistency between disparate parts of the code base, from hardware to software to drivers and even documentation.
 
 As part of the top generation flow, top-level designs that use IP templates in `hw/ip_templates` will pass parameters to these templates, which in turn get generated and placed in `hw/top_*/ip_autogen`.
-For example, Darjeeling uses the GPIO IP, so the Darjeeling-specific GPIO module RTL is in `hw/top_darjeeling/ip_autogen/gpio`.
+For example, Dragonfly uses the GPIO IP, so the Dragonfly-specific GPIO module RTL is in `hw/top_dragonfly/ip_autogen/gpio`.
 
 ## Hjson, the single source of truth
 
@@ -115,11 +115,11 @@ An Hjson file is just like an ordinary JSON file, except that it allows comments
 Hjson files are the primary way of encoding metadata in Pavona.
 As such, this top-level file is often called "the single source of truth".
 
-For instance, the Darjeeling design is entirely contained in `hw/top_darjeeling/data/top_darjeeling.hjson`.
+For instance, the Dragonfly design is entirely contained in `hw/top_dragonfly/data/top_dragonfly.hjson`.
 The following snippet shows a very small number of fields:
 
 ```json
-{ name: "darjeeling",
+{ name: "dragonfly",
   ...
   clocks: {
     srcs: [
@@ -164,9 +164,9 @@ The following snippet shows a very small number of fields:
 ```
 
 Here, this snippet says that there is a 1 GHz main clock and a 250 MHz IO clock, neither of which is always-on.
-Darjeeling instantiates a UART called "uart0" (among many other modules), clocked with the slower IO clock, and on the peripheral clock domain.
+Dragonfly instantiates a UART called "uart0" (among many other modules), clocked with the slower IO clock, and on the peripheral clock domain.
 The base address for its control/status register file is at 0x30010000.
-Darjeeling also instantiates the GPIO IP template, as indicated by the "`template_type`" key, with 8 input period counters (`num_inp_period_counters`).
+Dragonfly also instantiates the GPIO IP template, as indicated by the "`template_type`" key, with 8 input period counters (`num_inp_period_counters`).
 
 The top-level Hjson, among other things, identifies clocks, power domains, reset domains; address spaces and memories; module instantiation and connection; as well as pin connections to and from the top-level design.
 
@@ -181,14 +181,14 @@ To run ACE, pass this invocation to the Makefile.
 ```shell
 $ make -C hw all
 make: Entering directory ...
-.../util/topgen.py -t .../hw/top_darjeeling/data/top_darjeeling.hjson ... -o hw/top_darjeeling
+.../util/topgen.py -t .../hw/top_dragonfly/data/top_dragonfly.hjson ... -o hw/top_dragonfly
    ...
 (cd ...; find . -name "*.md" -print0 | \
  xargs -0 -P 8 -I '{}' ./util/cmdgen.py -u {})
-INFO:__main__:hw/top_darjeeling/ip_autogen/clkmgr/doc/interfaces.md:L3: Updating generated content.
-INFO:__main__:hw/top_darjeeling/ip_autogen/clkmgr/doc/registers.md:L3: Updating generated content.
-INFO:__main__:hw/top_darjeeling/ip_autogen/ac_range_check/doc/interfaces.md:L3: Updating generated content.
-INFO:__main__:hw/top_darjeeling/ip_autogen/ac_range_check/doc/registers.md:L3: Updating generated content.
+INFO:__main__:hw/top_dragonfly/ip_autogen/clkmgr/doc/interfaces.md:L3: Updating generated content.
+INFO:__main__:hw/top_dragonfly/ip_autogen/clkmgr/doc/registers.md:L3: Updating generated content.
+INFO:__main__:hw/top_dragonfly/ip_autogen/ac_range_check/doc/interfaces.md:L3: Updating generated content.
+INFO:__main__:hw/top_dragonfly/ip_autogen/ac_range_check/doc/registers.md:L3: Updating generated content.
   ...
 make: Leaving directory ...
 ```
@@ -198,7 +198,7 @@ Always run ACE by using `make -C hw all` from the top-level directory of the Pav
 ## Customizing your own top
 
 Customizing the top almost always starts with the top-level Hjson file.
-For example, change `num_inp_period_counters` to zero in `top_darjeeling.hjson`:
+For example, change `num_inp_period_counters` to zero in `top_dragonfly.hjson`:
 
 ```json
 ...
@@ -217,7 +217,7 @@ For example, change `num_inp_period_counters` to zero in `top_darjeeling.hjson`:
 $ make -C hw all
 ```
 
-You'll notice that `hw/top_darjeeling/ip_autogen/gpio/rtl/gpio.sv` is now much shorter.
+You'll notice that `hw/top_dragonfly/ip_autogen/gpio/rtl/gpio.sv` is now much shorter.
 That's because the templatization removes all the code related to input period counting if there are no input period counters.
 
 Templatization in Pavona is a powerful concept; it can drastically alter hardware by removing inputs and outputs, change register layouts, and even customize DV sequences.
@@ -228,5 +228,5 @@ Instantiating a new module in Pavona requires filling in a new entry in the `mod
 In general, you'll follow the pattern of other module instantiations in filling out the name, type, clocks, resets, and base address.
 In addition to the module entry, you'll need to add your module to the `addr_spaces` key.
 You will also need to configure the crossbar to connect to your module.
-Crossbar descriptions are located in the same `data/` directory as the top-level Hjson – to add your module to the main (1 GHz) Darjeeling crossbar, you'll need to edit `hw/top_darjeeling/data/xbar_main.hjson` .
+Crossbar descriptions are located in the same `data/` directory as the top-level Hjson – to add your module to the main (1 GHz) Dragonfly crossbar, you'll need to edit `hw/top_dragonfly/data/xbar_main.hjson` .
 A document showing how to add, remove, and customize modules is coming soon.

@@ -10,13 +10,13 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/sram_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace retention_sram_unittest {
 namespace {
 class RetentionSramTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR;
+  uint32_t base_ = TOP_EGRET_SRAM_CTRL_RET_AON_REGS_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
 };
 

@@ -25,7 +25,7 @@
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top/otp_ctrl_regs.h"    // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -89,9 +89,9 @@ enum {
   kRomExtSlotBFirstPageIndex = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
 
   // Addresses of the first words in each ROM_EXT slot.
-  kRomExtSlotAFirstAddr = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-  kRomExtSlotBFirstAddr = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                          (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2),
+  kRomExtSlotAFirstAddr = TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR,
+  kRomExtSlotBFirstAddr = TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
+                          (TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES / 2),
 
   // Addresses of the manifest identifiers words in each ROM_EXT slot.
   kRomExtSlotAManifestIdAddr = kRomExtSlotAFirstAddr + kManifestIdOffest,
@@ -193,12 +193,11 @@ static const corruption_word_t kWords2Corrupt[] = {
 
 static void init_peripherals(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash_ctrl, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 }
 
 /**

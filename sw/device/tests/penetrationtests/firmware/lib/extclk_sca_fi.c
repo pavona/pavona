@@ -16,7 +16,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/penetrationtests/json/extclk_sca_fi_commands.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // Switching to external clocks causes the clocks to be unstable for some time.
 // This is used to delay further action when the switch happens.
@@ -35,7 +35,7 @@ status_t handle_extclk_sca_fi_configure(ujson_t *uj) {
   penetrationtest_extclk_sca_fi_cfg_t uj_data;
   TRY(ujson_deserialize_penetrationtest_extclk_sca_fi_cfg_t(uj, &uj_data));
 
-  TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
+  TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR),
                       &clkmgr));
   LOG_INFO("Configuring Extclk...");
 

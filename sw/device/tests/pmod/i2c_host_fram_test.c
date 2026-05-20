@@ -17,7 +17,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/i2c_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -136,7 +136,7 @@ static status_t throughput(dif_i2c_t *i2c, uint32_t expected_kbps) {
 
   dif_rv_core_ibex_t rv_core_ibex;
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   const uint8_t kAddr[2] = {0x04, 0x00};
@@ -176,16 +176,16 @@ static status_t throughput(dif_i2c_t *i2c, uint32_t expected_kbps) {
 static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
                               uint8_t i2c_instance,
                               i2c_pinmux_platform_id_t platform) {
-  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
-                                         TOP_EARLGREY_I2C1_BASE_ADDR,
-                                         TOP_EARLGREY_I2C2_BASE_ADDR};
+  const uintptr_t kI2cBaseAddrTable[] = {TOP_EGRET_I2C0_BASE_ADDR,
+                                         TOP_EGRET_I2C1_BASE_ADDR,
+                                         TOP_EGRET_I2C2_BASE_ADDR};
   TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
 
   mmio_region_t base_addr =
       mmio_region_from_addr(kI2cBaseAddrTable[i2c_instance]);
   TRY(dif_i2c_init(base_addr, i2c));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
 
   TRY(i2c_testutils_select_pinmux(pinmux, i2c_instance, platform));
 
@@ -221,7 +221,7 @@ bool test_main(void) {
   dif_i2c_t i2c;
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   if (kDeviceType == kDeviceSilicon) {
     // On silicon, set tighter thresholds as we expect to be much closer

@@ -9,7 +9,7 @@ set -eoux pipefail
 
 if [ $# != 2 ]; then
     echo >&2 "Usage: sw-build-test.sh <top> <target>"
-    echo >&2 "E.g. ./sw-build-test.sh earlgrey //..."
+    echo >&2 "E.g. ./sw-build-test.sh egret //..."
     exit 1
 fi
 top=$1

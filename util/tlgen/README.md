@@ -2,7 +2,7 @@
 
 The crossbar tool `tlgen.py` is used to build the TL-UL crossbar RTL.
 It can be used standalone or invoked as part of top module generation process (details of top generation forthcoming).
-The RTL files found `hw/top_earlgrey/ip/xbar/rtl/autogen` are generated with the crossbar tool.
+The RTL files found `hw/top_egret/ip/xbar/rtl/autogen` are generated with the crossbar tool.
 This document does not specify the details of the internal blocks.
 See the [bus specification](../../hw/ip/tlul/README.md) for details on the protocol and the components used in the crossbar.
 

@@ -5,7 +5,7 @@
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "pavona_test",
@@ -63,7 +63,7 @@ cc_test(
 pavona_test(
     name = "crc32_functest",
     srcs = ["crc32_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -77,9 +77,9 @@ pavona_test(
     name = "crc32_perftest",
     srcs = ["crc32_perftest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     fpga = fpga_params(
@@ -217,7 +217,7 @@ cc_library(
 pavona_test(
     name = "memory_perftest",
     srcs = ["memory_perftest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     deps = [
         ":macros",
         ":memory",
@@ -263,7 +263,7 @@ cc_test(
 pavona_test(
     name = "hardened_functest",
     srcs = ["hardened_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),

@@ -17,7 +17,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/i2c_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -161,16 +161,16 @@ static status_t write_read_page_with_irq(dif_i2c_t *i2c) {
 static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
                               uint8_t i2c_instance,
                               i2c_pinmux_platform_id_t platform) {
-  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
-                                         TOP_EARLGREY_I2C1_BASE_ADDR,
-                                         TOP_EARLGREY_I2C2_BASE_ADDR};
+  const uintptr_t kI2cBaseAddrTable[] = {TOP_EGRET_I2C0_BASE_ADDR,
+                                         TOP_EGRET_I2C1_BASE_ADDR,
+                                         TOP_EGRET_I2C2_BASE_ADDR};
   TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
 
   mmio_region_t base_addr =
       mmio_region_from_addr(kI2cBaseAddrTable[i2c_instance]);
   TRY(dif_i2c_init(base_addr, i2c));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
 
   TRY(i2c_testutils_select_pinmux(pinmux, i2c_instance, platform));
 
@@ -189,7 +189,7 @@ bool test_main(void) {
   dif_pinmux_t pinmux;
   dif_i2c_t i2c;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   i2c_pinmux_platform_id_t platform = I2cPinmuxPlatformIdCw310Pmod;
   status_t test_result = OK_STATUS();

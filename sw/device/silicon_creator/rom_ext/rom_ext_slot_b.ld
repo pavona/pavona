@@ -12,7 +12,7 @@
  * the upper half of flash), this linker script only targets Slot B.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE hw/top_egret/sw/autogen/top_egret_memory.ld
 
 /* Slot B starts at the half-size mark of the eFlash. */
 _rom_ext_size = LENGTH(eflash) / 2;

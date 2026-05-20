@@ -1136,7 +1136,7 @@ def validate_alert(top, module, block, handlers, default_handler=None):
     Note that it's possible for the module `alert_handler` to be null,
     the toplevel `default_alert_handler` to be null, or both, and for
     this not to be an error (in the case that a handler doesn't exist
-    at all, like in Englishbreakfast).
+    at all, like in Scafi_Deprecated).
     """
     errors = 0
     name = module.name if isinstance(module, IpBlock) else module['name']

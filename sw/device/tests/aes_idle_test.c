@@ -27,10 +27,10 @@ static const uint8_t kKeyShare1[] = {
 OTTF_DEFINE_TEST_CONFIG();
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kAesClock =
-#if defined(OPENTITAN_IS_EARLGREY)
-    kTopEarlgreyHintableClocksMainAes
-#elif defined(OPENTITAN_IS_DARJEELING)
-    kTopDarjeelingHintableClocksMainAes
+#if defined(OPENTITAN_IS_EGRET)
+    kTopEgretHintableClocksMainAes
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+    kTopDragonflyHintableClocksMainAes
 #else
 #error Unsupported top
 #endif

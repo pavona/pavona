@@ -20,7 +20,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -147,7 +147,7 @@ bool test_main(void) {
       .mode = kDifPinmuxWakeupModeNegativeEdge,
       .signal_filter = false,
       .pad_type = kDifPinmuxPadKindMio,
-      .pad_select = kTopEarlgreyPinmuxInselIoa8,
+      .pad_select = kTopEgretPinmuxInselIoa8,
   };
   CHECK_DIF_OK(
       dif_pinmux_wakeup_detector_enable(&pinmux, detector, wakeup_cfg));
@@ -155,65 +155,64 @@ bool test_main(void) {
   // Phase1: spi sleep test
   LOG_INFO("Setting SPI_DIO1 to high when sleeping");
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd0, kDifPinmuxPadKindDio,
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd0, kDifPinmuxPadKindDio,
       kDifPinmuxSleepModeHigh));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd1, kDifPinmuxPadKindDio,
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd1, kDifPinmuxPadKindDio,
       kDifPinmuxSleepModeHigh));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd2, kDifPinmuxPadKindDio,
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd2, kDifPinmuxPadKindDio,
       kDifPinmuxSleepModeHigh));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd3, kDifPinmuxPadKindDio,
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd3, kDifPinmuxPadKindDio,
       kDifPinmuxSleepModeHigh));
   LOG_INFO("Use IOA7 to let host know when sleep is active.");
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio0,
-                                       kTopEarlgreyPinmuxInselIoa8));
-  CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(&pinmux, kTopEarlgreyMuxedPadsIoa7,
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInGpioGpio0, kTopEgretPinmuxInselIoa8));
+  CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(&pinmux, kTopEgretMuxedPadsIoa7,
                                            kDifPinmuxPadKindMio,
                                            kDifPinmuxSleepModeLow));
   enter_low_power();
-  CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-      &pinmux, kTopEarlgreyMuxedPadsIoa7, kDifPinmuxPadKindMio));
+  CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(&pinmux, kTopEgretMuxedPadsIoa7,
+                                                kDifPinmuxPadKindMio));
 
   LOG_INFO("Setting SPI_DIO1 to low when sleeping");
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd0, kDifPinmuxPadKindDio,
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd0, kDifPinmuxPadKindDio,
       kDifPinmuxSleepModeLow));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd1, kDifPinmuxPadKindDio,
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd1, kDifPinmuxPadKindDio,
       kDifPinmuxSleepModeLow));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd2, kDifPinmuxPadKindDio,
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd2, kDifPinmuxPadKindDio,
       kDifPinmuxSleepModeLow));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd3, kDifPinmuxPadKindDio,
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd3, kDifPinmuxPadKindDio,
       kDifPinmuxSleepModeLow));
 
-  CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(&pinmux, kTopEarlgreyMuxedPadsIoa7,
+  CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(&pinmux, kTopEgretMuxedPadsIoa7,
                                            kDifPinmuxPadKindMio,
                                            kDifPinmuxSleepModeLow));
   enter_low_power();
-  CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-      &pinmux, kTopEarlgreyMuxedPadsIoa7, kDifPinmuxPadKindMio));
+  CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(&pinmux, kTopEgretMuxedPadsIoa7,
+                                                kDifPinmuxPadKindMio));
 
   CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd0, kDifPinmuxPadKindDio));
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd0, kDifPinmuxPadKindDio));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_disable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd0, kDifPinmuxPadKindDio));
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd0, kDifPinmuxPadKindDio));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd1, kDifPinmuxPadKindDio));
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd1, kDifPinmuxPadKindDio));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_disable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd1, kDifPinmuxPadKindDio));
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd1, kDifPinmuxPadKindDio));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd2, kDifPinmuxPadKindDio));
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd2, kDifPinmuxPadKindDio));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_disable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd2, kDifPinmuxPadKindDio));
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd2, kDifPinmuxPadKindDio));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd3, kDifPinmuxPadKindDio));
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd3, kDifPinmuxPadKindDio));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_disable(
-      &pinmux, kTopEarlgreyDirectPadsSpiDeviceSd3, kDifPinmuxPadKindDio));
+      &pinmux, kTopEgretDirectPadsSpiDeviceSd3, kDifPinmuxPadKindDio));
 
   // Phase2: spi wake-up test
   // Configures to wake up when the spi cs goes low.
@@ -221,7 +220,7 @@ bool test_main(void) {
       .mode = kDifPinmuxWakeupModeAnyEdge,
       .signal_filter = false,
       .pad_type = kDifPinmuxPadKindDio,
-      .pad_select = kTopEarlgreyDirectPadsSpiDeviceCsb,
+      .pad_select = kTopEgretDirectPadsSpiDeviceCsb,
   };
   CHECK_DIF_OK(
       dif_pinmux_wakeup_detector_enable(&pinmux, detector, wakeup_cfg));

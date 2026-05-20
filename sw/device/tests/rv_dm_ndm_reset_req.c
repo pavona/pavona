@@ -13,7 +13,7 @@
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top/dt/adc_ctrl.h"     // Generated
 #include "hw/top/dt/flash_ctrl.h"   // Generated
 #include "hw/top/dt/keymgr.h"       // Generated
@@ -23,7 +23,7 @@
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/keymgr_regs.h"
 #include "hw/top/sysrst_ctrl_regs.h"
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 #include "hw/top/dt/keymgr_dpe.h"  // Generated
 
 #include "hw/top/keymgr_dpe_regs.h"
@@ -34,7 +34,7 @@
 /*
    RV_DM NDM RESET REQUEST TEST
 
-   In top_earlgrey and top_darjeeling, the CSRs can be divided into 3 groups as
+   In top_egret and top_dragonfly, the CSRs can be divided into 3 groups as
    below.
      1. Group1 : Device under por_reset
         - pwrmgr, rstmgr
@@ -50,13 +50,13 @@
        OTP_CTRL.DIRECT_ACCESS_WDATA0      0x0      0x0609_2022
        PINMUX.WKUP_DETECTOR_CNT_TH_1      0X0      0X44 --> move to LC
        SRAM RET ADDRESS(8)                ?        0xDDAA_55BB
-    Group3 (earlgrey):
+    Group3 (egret):
                                           RESET    PRGM (ARBITRARY VALUE)
        ADC_CTRL.ADC_SAMPLE_CTL            0x9B     0x37
        SYSRST_CTRL.EC_RST_CTL             0x7D0    0x567
        KEYMGR.MAX_OWNER_KEY_VER_SHADOWED  0x0      0x1600_ABBA
        FLASH_CTRL.SCRATCH                 0x0      0x3927
-    Group3 (darjeeling):
+    Group3 (dragonfly):
                                           RESET    PRGM (ARBITRARY VALUE)
        KEYMGR_DPE.MAX_KEY_VER_SHADOWED    0x0      0x1600_ABBA
 
@@ -132,7 +132,7 @@ bool test_main(void) {
           .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
 
       },
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
       {
           .name = "ADC_CTRL",
           .base = dt_adc_ctrl_primary_reg_block(kDtAdcCtrlAon),
@@ -164,7 +164,7 @@ bool test_main(void) {
           .write_val = 0x3927,
           .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
       },
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
       {
           .name = "KEYMGR_DPE",
           .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),

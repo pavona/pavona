@@ -6,10 +6,10 @@
 
 #include "sw/device/silicon_creator/lib/manifest.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 
 enum {
-  kFlashHalf = TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2,
+  kFlashHalf = TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES / 2,
 };
 
 const manifest_t *rom_ext_manifest(void) {

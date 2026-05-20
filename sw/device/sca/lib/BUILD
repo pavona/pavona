@@ -34,7 +34,7 @@ cc_library(
     hdrs = ["simple_serial.h"],
     deps = [
         ":prng",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",

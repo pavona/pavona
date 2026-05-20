@@ -58,7 +58,7 @@ rom_e2e_keymgr_init_configs = [
 [
     otp_image(
         name = "otp_img_keymgr_{}".format(config["name"]),
-        src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+        src = "//hw/top_egret/data/otp:otp_json_rma",
         overlays = STD_OTP_OVERLAYS + [":otp_json_keymgr_{}".format(config["name"])],
         visibility = ["//visibility:private"],
     )
@@ -75,11 +75,11 @@ rom_e2e_keymgr_init_configs = [
         ),
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),

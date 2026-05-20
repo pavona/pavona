@@ -25,4 +25,4 @@ bazel run //sw/host/opentitantool -- help
 
 OpenTitanTool reads additional CLI arguments from the file at `$HOME/.config/opentitantool/config`.
 
-[strapping]: ../../../hw/top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation
+[strapping]: ../../../hw/top_egret/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation

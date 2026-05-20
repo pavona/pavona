@@ -137,7 +137,7 @@ buildSite () {
 
     # Block diagram stats
     mkdir -p "${build_dir}/reports"
-    python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
+    python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/egret-stats.json"
 
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
 

@@ -9,11 +9,11 @@ IMM_SECTION_MINOR_VERSION = 3
 IMM_SECTION_VERSION = "{}.{}".format(IMM_SECTION_MAJOR_VERSION, IMM_SECTION_MINOR_VERSION)
 
 DEFAULT_EXEC_ENV = [
-    "//hw/top_earlgrey:fpga_cw310",
-    "//hw/top_earlgrey:fpga_cw340",
-    "//hw/top_earlgrey:sim_dv_base",
-    "//hw/top_earlgrey:sim_verilator_base",
-    "//hw/top_earlgrey:silicon_creator",
+    "//hw/top_egret:fpga_cw310",
+    "//hw/top_egret:fpga_cw340",
+    "//hw/top_egret:sim_dv_base",
+    "//hw/top_egret:sim_verilator_base",
+    "//hw/top_egret:silicon_creator",
 ]
 
 # CAUTION: The message below should match the message defined in:

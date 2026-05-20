@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 alias(
     name = "aes_serial_aes_testutils",
     actual = select({
-        "//sw/device:is_english_breakfast": "//sw/device:nothing",
+        "//sw/device:is_scafi_deprecated": "//sw/device:nothing",
         "//conditions:default": "//sw/device/lib/testing:aes_testutils",
     }),
     visibility = ["//visibility:private"],
@@ -20,11 +20,11 @@ pavona_binary(
     testonly = True,
     srcs = ["aes_serial.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_egret:fpga_cw305",
+        "//hw/top_egret:fpga_cw310",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
@@ -44,11 +44,11 @@ pavona_binary(
     testonly = True,
     srcs = ["kmac_serial.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_egret:fpga_cw305",
+        "//hw/top_egret:fpga_cw310",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
@@ -65,11 +65,11 @@ pavona_binary(
     testonly = True,
     srcs = ["sha3_serial.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_egret:fpga_cw305",
+        "//hw/top_egret:fpga_cw310",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
@@ -86,11 +86,11 @@ pavona_binary(
     testonly = True,
     srcs = ["ecc384_serial.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_egret:fpga_cw305",
+        "//hw/top_egret:fpga_cw310",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/acc/crypto:p384_ecdsa_sca",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:acc",
@@ -110,11 +110,11 @@ pavona_binary(
     testonly = True,
     srcs = ["ecc256_sign_serial.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_egret:fpga_cw305",
+        "//hw/top_egret:fpga_cw310",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/acc/crypto:p256_ecdsa_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",

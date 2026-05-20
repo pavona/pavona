@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::util::bitfield::BitField;
-#[cfg(any(feature = "earlgrey", feature = "darjeeling"))]
+#[cfg(any(feature = "egret", feature = "dragonfly"))]
 use crate::with_unknown;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -61,7 +61,7 @@ impl RstmgrAlertInfoCtrl {
     };
 }
 
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 with_unknown! {
     pub enum DifRstmgrResetInfo: u32 {
         Por = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoPor,
@@ -76,7 +76,7 @@ with_unknown! {
     }
 }
 
-#[cfg(feature = "darjeeling")]
+#[cfg(feature = "dragonfly")]
 with_unknown! {
     pub enum DifRstmgrResetInfo: u32 {
         Por = ot_bindgen_dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoPor,

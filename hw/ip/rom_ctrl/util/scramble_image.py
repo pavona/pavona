@@ -190,7 +190,7 @@ class MemoryController:
                 " but it does not exist in the top configuration"
 
             if mode == ScramblingMode.ROM0.value:
-                # Earlgrey has only one ROM, named `rom_ctrl`, while Darjeeling's
+                # Egret has only one ROM, named `rom_ctrl`, while Dragonfly's
                 # first ROM is named `rom_ctrl0`
                 if entry_name in ("rom_ctrl", "rom_ctrl0"):
                     if entry_type == "rom_ctrl":

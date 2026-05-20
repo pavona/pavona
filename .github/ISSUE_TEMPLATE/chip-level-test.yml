@@ -13,7 +13,7 @@ body:
       label: Test point name
       description: Test point name with link to entry in test plan.
       placeholder: >
-        Example: [chip_sw_uart_tx_rx](https://github.com/lowRISC/opentitan/blob/65e2c995beb96806d13bf04dcd8ef25ca64ac6c5/hw/top_earlgrey/data/chip_testplan.hjson#L24)
+        Example: [chip_sw_uart_tx_rx](https://github.com/pavona/pavona/blob/main/hw/top_egret/data/chip_testplan.hjson#L24)
     validations:
       required: true
   - type: dropdown

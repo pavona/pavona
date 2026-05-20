@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/pwm_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * SLEEP PWM PULSES test
@@ -51,21 +51,21 @@ static const dt_pwm_t kPwmDt = 0;
 static_assert(kDtPwmCount == 1, "this test expects a pwm");
 
 static const dif_pinmux_index_t kPinmuxOutsel[PWM_PARAM_N_OUTPUTS] = {
-    kTopEarlgreyPinmuxOutselPwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm1,
-    kTopEarlgreyPinmuxOutselPwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm3,
-    kTopEarlgreyPinmuxOutselPwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm5,
+    kTopEgretPinmuxOutselPwmAonPwm0, kTopEgretPinmuxOutselPwmAonPwm1,
+    kTopEgretPinmuxOutselPwmAonPwm2, kTopEgretPinmuxOutselPwmAonPwm3,
+    kTopEgretPinmuxOutselPwmAonPwm4, kTopEgretPinmuxOutselPwmAonPwm5,
 };
 
 static const dif_pinmux_index_t kPinmuxMioOut[PWM_PARAM_N_OUTPUTS] = {
-    kTopEarlgreyPinmuxMioOutIob10, kTopEarlgreyPinmuxMioOutIob11,
-    kTopEarlgreyPinmuxMioOutIob12, kTopEarlgreyPinmuxMioOutIoc10,
-    kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxMioOutIoc12,
+    kTopEgretPinmuxMioOutIob10, kTopEgretPinmuxMioOutIob11,
+    kTopEgretPinmuxMioOutIob12, kTopEgretPinmuxMioOutIoc10,
+    kTopEgretPinmuxMioOutIoc11, kTopEgretPinmuxMioOutIoc12,
 };
 
 // Duty cycle in the unit of beat
 // These are random numbers betwen [1,beats_per_pulse_cycle)
 // make 'static volatile' to overwrite from
-// hw/top_earlgrey/dv/env/seq_lib/chip_sw_pwm_pulses_vseq.sv
+// hw/top_egret/dv/env/seq_lib/chip_sw_pwm_pulses_vseq.sv
 // via backdoor
 static volatile const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {
     6, 11, 27, 8, 17, 7,

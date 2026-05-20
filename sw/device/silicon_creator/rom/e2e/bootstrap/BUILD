@@ -58,7 +58,7 @@ otp_json(
 # lifecycle state in order to test the transition from PROD to RMA.
 otp_image(
     name = "otp_img_bootstrap_rma",
-    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_bootstrap_rma",
     ],
@@ -73,8 +73,8 @@ pavona_test(
         CONST.LCV.PROD,
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -88,7 +88,7 @@ pavona_test(
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -99,7 +99,7 @@ pavona_test(
 pavona_test(
     name = "e2e_bootstrap_disabled",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         # Since the bitstream disables bootstrap, there is no firmware to
@@ -108,7 +108,7 @@ pavona_test(
         binaries = {
             "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
         },
-        otp = "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
+        otp = "//hw/top_egret/data/otp:img_bootstrap_disabled",
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
     ),
     manifest = None,

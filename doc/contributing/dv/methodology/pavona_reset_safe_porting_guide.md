@@ -525,7 +525,7 @@ The `ac_range_check` IP is the canonical reference for this porting pattern insi
 `ac_range_check` is an auto-generated IP, so the file lives under `ip_autogen/`:
 
 ```
-hw/top_darjeeling/ip_autogen/ac_range_check/dv/env/seq_lib/
+hw/top_dragonfly/ip_autogen/ac_range_check/dv/env/seq_lib/
   ac_range_check_rand_rst_safe_base_vseq.sv
 ```
 

@@ -5,7 +5,7 @@ This document describes the signature verification module (sigverify) which is r
 ## TL;DR
 
 Secure boot requires support for hybrid signature schemes.
-For Earlgrey, this is based on ECDSA-P256-SHA256 and SLH-DSA.
+For Egret, this is based on ECDSA-P256-SHA256 and SLH-DSA.
 
 ## Signature Verification
 

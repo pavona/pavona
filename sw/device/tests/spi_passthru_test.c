@@ -23,7 +23,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf_commands.h"
 #include "sw/device/lib/ujson/ujson.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -246,7 +246,7 @@ bool test_main(void) {
     // and `HOLD`.
     dif_pinmux_t pinmux;
     mmio_region_t base_addr =
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+        mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
     CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
     dif_pinmux_pad_attr_t out_attr;
@@ -257,28 +257,28 @@ bool test_main(void) {
                  kDifPinmuxPadAttrPullResistorUp};
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sck,
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEgretDirectPadsSpiHost0Sck,
                                    kDifPinmuxPadKindDio, in_attr, &out_attr));
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd0,
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEgretDirectPadsSpiHost0Sd0,
                                    kDifPinmuxPadKindDio, in_attr, &out_attr));
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd1,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
-
-    CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd2,
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEgretDirectPadsSpiHost0Sd1,
                                    kDifPinmuxPadKindDio, in_attr, &out_attr));
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd3,
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEgretDirectPadsSpiHost0Sd2,
+                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEgretDirectPadsSpiHost0Sd3,
                                    kDifPinmuxPadKindDio, in_attr, &out_attr));
   }
 
   const uint32_t spi_host_clock_freq_hz =
       (uint32_t)kClockFreqHiSpeedPeripheralHz;
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spih));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spih));
   dif_spi_host_config_t config = {
       .spi_clock = spi_host_clock_freq_hz / 4,
       .peripheral_clock_freq_hz = spi_host_clock_freq_hz,
@@ -293,7 +293,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spih, /*enabled=*/true));
 
   CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spid));
+      mmio_region_from_addr(TOP_EGRET_SPI_DEVICE_BASE_ADDR), &spid));
 
   // We want to block passthru of the first 5 read commands, corresponding to
   // ReadStatus{1,2,3}, ReadJedecID and ReadSfdp.

@@ -89,12 +89,12 @@ export HW_TOKEN_PIN=123456
 
 # Generate the CSR:
 openssl req -new -engine pkcs11 -keyform engine -config ../dice_ca.conf -out dice_ca.csr \
-  -key "pkcs11:pin-value=${HW_TOKEN_PIN};object=sv00-earlgrey-a1-ca-dice-0"
+  -key "pkcs11:pin-value=${HW_TOKEN_PIN};object=sv00-egret-a1-ca-dice-0"
 
 # Generate the X.509 certificate in PEM format:
 openssl x509 -req -engine pkcs11 -keyform engine -in dice_ca.csr -out dice_ca.pem \
   -days 3650 -extfile ../dice_ca.conf -extensions v3_ca \
-  -signkey "pkcs11:pin-value=${HW_TOKEN_PIN};object=sv00-earlgrey-a1-ca-dice-0"
+  -signkey "pkcs11:pin-value=${HW_TOKEN_PIN};object=sv00-egret-a1-ca-dice-0"
 
 # Examine the generated certificate:
 openssl x509 -in dice_ca.pem -text

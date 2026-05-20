@@ -18,7 +18,7 @@ pavona_binary(
     testonly = True,
     srcs = ["sw_straps_test.c"],
     exec_env = [
-        "//hw/top_earlgrey:sim_verilator",
+        "//hw/top_egret:sim_verilator",
     ],
     deps = [
         "//sw/device/lib/base:status",
@@ -41,7 +41,7 @@ strap_combinations_test(
         # Furthermore, we can leave the test_rom variant of this test disabled
         # because the `sw_strap_value` test below effectively tests the same
         # thing: whether the chip can read the weak/strong values.
-        #"//hw/top_earlgrey:sim_verilator": ":straps_unsigned",
+        #"//hw/top_egret:sim_verilator": ":straps_unsigned",
 
         # When running against the mask_rom, we don't want a binary loaded
         # so that sigverify will be skipped and the ROM will fault quickly.
@@ -51,7 +51,7 @@ strap_combinations_test(
         #
         # We want the mask_rom variant enabled because it tests that the
         # ROM recognizes its two strapping values and no others.
-        "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": "empty.vmem",
+        "//hw/top_egret:sim_verilator_rom_with_fake_keys": "empty.vmem",
     },
     tags = [
         "verilator",
@@ -62,8 +62,8 @@ pavona_test(
     name = "sw_strap_value",
     srcs = ["sw_straps_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        "//hw/top_egret:sim_verilator": None,
+        "//hw/top_egret:silicon_owner_sival_rom_ext": None,
     },
     silicon = silicon_params(
         test_cmd = """

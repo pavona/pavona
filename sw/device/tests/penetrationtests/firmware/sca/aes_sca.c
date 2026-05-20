@@ -17,11 +17,11 @@
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifndef OPENTITAN_IS_SCAFI_DEPRECATED
 #include "sw/device/lib/testing/aes_testutils.h"
 #endif
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * Enable FPGA mode.
@@ -121,7 +121,7 @@ static status_t aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
   }
   TRY(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifndef OPENTITAN_IS_SCAFI_DEPRECATED
   if (transaction.force_masks) {
     // Disable masking. Force the masking PRNG output value to 0.
     TRY(aes_sca_load_fixed_seed());
@@ -365,7 +365,7 @@ status_t handle_aes_pentest_init(ujson_t *uj) {
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralIoDiv4 | kPentestPeripheralAes);
 
-  if (dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes) !=
+  if (dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes) !=
       kDifOk) {
     return ABORTED();
   }
@@ -391,13 +391,13 @@ status_t handle_aes_pentest_seed_lfsr(ujson_t *uj) {
   }
   pentest_seed_lfsr(seed_local, kPentestLfsrMasking);
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifndef OPENTITAN_IS_SCAFI_DEPRECATED
   if (transaction.force_masks) {
     LOG_INFO("Disabling masks.");
     const dif_csrng_t csrng = {
-        .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+        .base_addr = mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR)};
     const dif_edn_t edn0 = {
-        .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+        .base_addr = mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR)};
 
     status_t res = aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0);
     if (res.value != 0) {

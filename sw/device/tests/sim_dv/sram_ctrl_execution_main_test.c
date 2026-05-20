@@ -21,7 +21,7 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -37,10 +37,9 @@ static volatile bool exception_observed;
 /**
  * Main SRAM start and end addresses (inclusive).
  */
-static const uint32_t kRamStartAddr = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
-static const uint32_t kRamEndAddr = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-                                    TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES -
-                                    1;
+static const uint32_t kRamStartAddr = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
+static const uint32_t kRamEndAddr = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
+                                    TOP_EGRET_SRAM_CTRL_MAIN_RAM_SIZE_BYTES - 1;
 
 /**
  * OTP HW partition relative IFETCH offset in bytes.
@@ -61,7 +60,7 @@ void execute_code_in_sram(void) { asm volatile("jalr zero, 0(ra)"); }
 static bool otp_ifetch_enabled(void) {
   dif_otp_ctrl_t otp;
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,
@@ -196,7 +195,7 @@ bool test_main(void) {
         func_address);
 
   CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
       &sram_ctrl));
 
   bool locked;
@@ -206,7 +205,7 @@ bool test_main(void) {
 
   dif_lc_ctrl_t lc;
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
+      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc));
 
   bool debug_func = false;
   CHECK_STATUS_OK(lc_ctrl_testutils_debug_func_enabled(&lc, &debug_func));

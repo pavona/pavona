@@ -168,7 +168,7 @@ If CSRNG is running in [fully deterministic mode](../../csrng/doc/programmers_gu
 An [`ENTROPY_PERIOD.wait_timer`](registers.md#entropy_period--wait_timer) value of 5000 in combination with an [`ENTROPY_PERIOD.prescaler`](registers.md#entropy_period--prescaler) value of 0 is adequate.
 
 If CSRNG is running in [regular, non-deterministic mode](../../csrng/doc/programmers_guide.md#regular-non-deterministic-mode), it can happen that the PRNG reseed request of the KMAC module triggers a reseed request from EDN0 to CSRNG.
-For [Top Earlgrey](../../../top_earlgrey/README.md), producing a single CSRNG seed value is expected to take roughly 5ms.
+For [Top Egret](../../../top_egret/README.md), producing a single CSRNG seed value is expected to take roughly 5ms.
 In the worst case, ENTROPY_SRC must first generate two more seeds to reseed all the other two CSRNG instances.
 In this case, the PRNG reseed request of KMAC should get served after roughly 15ms.
 If the ENTROPY_SRC is disabled, the interrupt latency and the delay for the startup health testing of the ENTROPY_SRC also need to be factored in to define the [`ENTROPY_PERIOD`](registers.md#entropy_period) configuration value.

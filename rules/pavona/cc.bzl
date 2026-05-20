@@ -205,7 +205,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     )
 
     manifest = get_fallback(ctx, "file.manifest", exec_env)
-    if manifest and str(manifest.owner) == "@@//hw/top_earlgrey:none_manifest":
+    if manifest and str(manifest.owner) == "@@//hw/top_egret:none_manifest":
         manifest = None
 
     ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)
@@ -272,14 +272,14 @@ def _pavona_binary(ctx):
             default_info.extend(provides["logs"])
 
         # FIXME: vmem is a special case for ram targets used in ROM e2e test
-        # cases. Some tops like Darjeeling expect a different word size than
-        # Earlgrey.
+        # cases. Some tops like Dragonfly expect a different word size than
+        # Egret.
         if provides.get("vmem"):
             default_info.append(provides["vmem"])
         if provides.get("vmem32"):
             default_info.append(provides["vmem32"])
 
-        # FIXME(cfrantz): Special case: The englishbreakfast verilator model
+        # FIXME(cfrantz): Special case: The scafi_deprecated verilator model
         # requires a non-scrambled ROM image.
         #
         # DV simulation might also need non-scrambled ROM to reduce simulation

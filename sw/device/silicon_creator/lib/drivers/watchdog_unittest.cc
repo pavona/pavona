@@ -16,7 +16,7 @@
 #include "hw/top/aon_timer_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pwrmgr_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace watchdog_unittest {
 namespace {
@@ -61,8 +61,8 @@ class WatchdogTest : public rom_test::RomTest {
     ExpectCdcSync();
   }
 
-  uint32_t pwrmgr_ = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR;
-  uint32_t wdog_ = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR;
+  uint32_t pwrmgr_ = TOP_EGRET_PWRMGR_AON_BASE_ADDR;
+  uint32_t wdog_ = TOP_EGRET_AON_TIMER_AON_BASE_ADDR;
   rom_test::MockAbsMmio abs_;
   rom_test::MockSecMmio sec_;
   rom_test::MockOtp otp_;

@@ -30,7 +30,7 @@ pavona_binary(
     # This can be any other source of the pentest framework
     srcs = ["//sw/device/tests/penetrationtests/firmware:firmware_cryptolib_fi_sym.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     deps = [
         "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
@@ -112,7 +112,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_rom_ext_fi",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_ext_fi",
     ],
@@ -150,7 +150,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_rom_rollback_fi",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_rollback_fi",
     ],
@@ -188,7 +188,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_rom_ext_rollback_fi",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_ext_rollback_fi",
     ],
@@ -228,7 +228,7 @@ otp_json_immutable_rom_ext(
 otp_image(
     name = "otp_img_rom_ext_imm_skip_fi",
     testonly = True,
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_ext_imm_skip_fi",
     ],

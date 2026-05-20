@@ -18,7 +18,7 @@
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -38,12 +38,12 @@ static dif_rstmgr_t rstmgr;
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR),
+                       &lc_ctrl));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR),
                       &rstmgr));
   return OK_STATUS();
 }

@@ -15,7 +15,7 @@ OUTPUT_ARCH(riscv)
  */
 __DYNAMIC = 0;
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE hw/top_egret/sw/autogen/top_egret_memory.ld
 
 /**
  * The boot address, which indicates the location of the initial interrupt

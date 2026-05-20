@@ -16,11 +16,11 @@
 #include "hw/top/aon_timer_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pwrmgr_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
-  kBase = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR,
-  kPwrMgrBase = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR,
+  kBase = TOP_EGRET_AON_TIMER_AON_BASE_ADDR,
+  kPwrMgrBase = TOP_EGRET_PWRMGR_AON_BASE_ADDR,
 
   kCtrlEnable = 1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT,
   kCtrlDisable = 0 << AON_TIMER_WDOG_CTRL_ENABLE_BIT,
@@ -79,7 +79,7 @@ void watchdog_configure(watchdog_config_t config) {
   sec_mmio_write32(
       kPwrMgrBase + PWRMGR_RESET_EN_REG_OFFSET,
       bitfield_bit32_write(
-          0, kTopEarlgreyPowerManagerResetRequestsAonTimerAonAonTimerRstReq,
+          0, kTopEgretPowerManagerResetRequestsAonTimerAonAonTimerRstReq,
           true));
   pwrmgr_cdc_sync(1);
 

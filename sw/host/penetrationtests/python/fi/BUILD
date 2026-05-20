@@ -174,7 +174,7 @@ py_binary(
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-egret.cfg",
         "@llvm_toolchain_llvm//:bin/lldb",
     ],
     deps = [
@@ -193,7 +193,7 @@ py_binary(
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-egret.cfg",
         "@llvm_toolchain_llvm//:bin/lldb",
     ],
     deps = [
@@ -212,7 +212,7 @@ py_binary(
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-egret.cfg",
         "@llvm_toolchain_llvm//:bin/lldb",
     ],
     deps = [
@@ -231,7 +231,7 @@ py_binary(
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-egret.cfg",
         "@llvm_toolchain_llvm//:bin/lldb",
     ],
     deps = [
@@ -266,7 +266,7 @@ py_binary(
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-egret.cfg",
         "@llvm_toolchain_llvm//:bin/lldb",
     ],
     deps = [
@@ -285,7 +285,7 @@ py_binary(
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-egret.cfg",
         "@llvm_toolchain_llvm//:bin/lldb",
     ],
     deps = [
@@ -325,7 +325,7 @@ py_binary(
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-egret.cfg",
         "@llvm_toolchain_llvm//:bin/lldb",
     ],
     deps = [
@@ -347,7 +347,7 @@ py_binary(
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-egret.cfg",
         "@llvm_toolchain_llvm//:bin/lldb",
     ],
     deps = [

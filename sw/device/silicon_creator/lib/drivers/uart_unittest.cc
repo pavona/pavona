@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/uart_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace uart_unittest {
 namespace {
@@ -42,7 +42,7 @@ const std::vector<uint8_t> kBytesArray = {
 
 class UartTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_UART0_BASE_ADDR;
+  uint32_t base_ = TOP_EGRET_UART0_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
 
   void ExpectDeviceReset() {

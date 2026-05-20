@@ -62,7 +62,7 @@ status_t spi_host_testutils_flush(dif_spi_host_t *spi_host) {
   return OK_STATUS();
 }
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 /**
  * Define a spi pinmux configuration.
  */
@@ -141,8 +141,8 @@ status_t spi_host1_pinmux_connect_to_bob(const dif_pinmux_t *pinmux,
   TRY(dif_pinmux_mio_select_output(pinmux, platform->sd3, sd3));
   return OK_STATUS();
 }
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling only has a single SPI host
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly only has a single SPI host
 #else
 #error "spi_host_testutils does not support this top"
 #endif

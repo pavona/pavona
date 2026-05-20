@@ -25,8 +25,8 @@ package(default_visibility = ["//visibility:public"])
 [
     otp_image(
         name = "img_{}_exec_disabled".format(lc_state),
-        src = "//hw/top_earlgrey/data/otp:otp_json_" + lc_state,
-        overlays = STD_OTP_OVERLAYS + ["//hw/top_earlgrey/data/otp:otp_json_exec_disabled"],
+        src = "//hw/top_egret/data/otp:otp_json_" + lc_state,
+        overlays = STD_OTP_OVERLAYS + ["//hw/top_egret/data/otp:otp_json_exec_disabled"],
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()
@@ -41,7 +41,7 @@ package(default_visibility = ["//visibility:public"])
         name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -92,7 +92,7 @@ test_suite(
         name = "openocd_asm_interrupt_handler_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -135,7 +135,7 @@ test_suite(
         name = "openocd_shutdown_execution_asm_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -178,7 +178,7 @@ test_suite(
         name = "openocd_asm_watchdog_bark_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -220,7 +220,7 @@ test_suite(
         name = "openocd_asm_watchdog_bite_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -267,8 +267,8 @@ LC_STATES_DEBUG_DISALLOWED = [
         name = "openocd_debug_test_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
         fpga = fpga_params(
             timeout = "moderate",

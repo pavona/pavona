@@ -17,7 +17,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -103,11 +103,11 @@ const screen_bitmap_t *kScreenBitmaps[kScreenBitmapsInCycle] = {
 
 static status_t peripheral_init(void) {
   // Initialize DIFs.
-  TRY(dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c));
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+  TRY(dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C0_BASE_ADDR), &i2c));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
-  TRY(dif_spi_host_init(mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR),
+  TRY(dif_spi_host_init(mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR),
                         &spi_host));
 
   // Initialize Screen.
@@ -116,28 +116,28 @@ static status_t peripheral_init(void) {
   screen.data_command_gpio = kScreenSpiDataCommandGpio;
 
   // Initialize pinmux for LED I2C.
-  TRY(dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-                              kTopEarlgreyPinmuxInselIob9));
-  TRY(dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-                              kTopEarlgreyPinmuxInselIob10));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
-                               kTopEarlgreyPinmuxOutselI2c0Scl));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
-                               kTopEarlgreyPinmuxOutselI2c0Sda));
+  TRY(dif_pinmux_input_select(&pinmux, kTopEgretPinmuxPeripheralInI2c0Scl,
+                              kTopEgretPinmuxInselIob9));
+  TRY(dif_pinmux_input_select(&pinmux, kTopEgretPinmuxPeripheralInI2c0Sda,
+                              kTopEgretPinmuxInselIob10));
+  TRY(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob9,
+                               kTopEgretPinmuxOutselI2c0Scl));
+  TRY(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob10,
+                               kTopEgretPinmuxOutselI2c0Sda));
 
   // Initialize pinmux for Screen SPI (CS, SCK, data out).
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Csb));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob7,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sck));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob2,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sd0));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoa2,
+                                        kTopEgretPinmuxOutselSpiHost1Csb));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob7,
+                                        kTopEgretPinmuxOutselSpiHost1Sck));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob2,
+                                        kTopEgretPinmuxOutselSpiHost1Sd0));
 
   // Initialize pinmux for Screen GPIOs (IOC6 and 9).
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc6,
-                                        kTopEarlgreyPinmuxOutselConstantOne));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc9,
-                                        kTopEarlgreyPinmuxOutselGpioGpio1));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoc6,
+                                        kTopEgretPinmuxOutselConstantOne));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoc9,
+                                        kTopEgretPinmuxOutselGpioGpio1));
 
   // Pinmux pad configurations.
   pinmux_testutils_configure_pads(&pinmux, kPinmuxPadAttrs,

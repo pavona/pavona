@@ -4,22 +4,22 @@
 
 load(
     "@provisioning_exts//:cfg.bzl",
-    "EXT_EARLGREY_OTP_CFGS",
-    "EXT_EARLGREY_SKUS",
+    "EXT_EGRET_OTP_CFGS",
+    "EXT_EGRET_SKUS",
 )
 
 # A list of OTP configurations that will be used to autogenerate FT
 # individualization binaries that configure OTP with the constants defined in
 # these bazel targets.
-EARLGREY_OTP_CFGS = {
-    "sv00": "//hw/top_earlgrey/data/otp/sival_skus:otp_consts",
-    "em00": "//hw/top_earlgrey/data/otp/emulation:otp_consts",
-} | EXT_EARLGREY_OTP_CFGS
+EGRET_OTP_CFGS = {
+    "sv00": "//hw/top_egret/data/otp/sival_skus:otp_consts",
+    "em00": "//hw/top_egret/data/otp/emulation:otp_consts",
+} | EXT_EGRET_OTP_CFGS
 
 # A dictionary of SKU configurations that will be used to generate FT
 # personalization binaries that configure OTP and flash info pages as defined
 # in these bazel targets.
-EARLGREY_SKUS = {
+EGRET_SKUS = {
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: None
     "emulation": {
         "otp": "em00",
@@ -81,14 +81,14 @@ EARLGREY_SKUS = {
     #     # TODO(cfrantz, ttrippel): This owner_fw isn't signed with the sival owner keys,
     #     # so we expect the ROM_EXT to BFV with `kErrorOwnershipKeyNotFound`,
     #     "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
-    #     "ecdsa_key": {"//hw/top_earlgrey/data/otp/skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
+    #     "ecdsa_key": {"//hw/top_egret/data/otp/skus/sival/keys:keyset": "sv00-egret-a1-root-ecdsa-prod-0"},
     #     "spx_key": {},
     #     "signature_prefix": None,
     #     "perso_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
     #     "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
     #     "offline": True,
     # },
-} | EXT_EARLGREY_SKUS
+} | EXT_EGRET_SKUS
 
 # TODO(lowRISC#27275): Refactor build/signing rules for perso binaries.
 def disqualified_for_signing(name, data):

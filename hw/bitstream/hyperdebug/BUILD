@@ -13,8 +13,8 @@ filegroup(
     srcs = select({
         "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
         "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_test_rom_hyp"],
-        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream"],
+        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_egret_cw310_hyperdebug_bitstream"],
+        "//conditions:default": ["@bitstreams//:chip_egret_cw310_hyperdebug_bitstream"],
     }),
     tags = ["manual"],
 )
@@ -25,8 +25,8 @@ filegroup(
     srcs = select({
         "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
         "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:cw310_hyperdebug_mmi"],
-        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_mmi"],
+        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_egret_cw310_hyperdebug_mmi"],
+        "//conditions:default": ["@bitstreams//:chip_egret_cw310_hyperdebug_mmi"],
     }),
     tags = ["manual"],
 )

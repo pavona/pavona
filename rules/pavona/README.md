@@ -33,9 +33,9 @@ pavona_binary(
     name = "hello_world",
     srcs = ["hello_world.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:sim_dv",
-        "//hw/top_earlgrey:sim_verilator",
+        "//hw/top_egret:fpga_cw310",
+        "//hw/top_egret:sim_dv",
+        "//hw/top_egret:sim_verilator",
     ],
     deps = [
         ":hello_world_lib",
@@ -74,12 +74,12 @@ pavona_test(
     srcs = ["uart_smoketest.c"],
     fpga = fpga_params(timeout = "long"),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_egret:fpga_cw310_test_rom": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
     },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",

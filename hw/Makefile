@@ -49,7 +49,7 @@ IPS ?= acc                 \
        uart                \
        usbdev
 
-TOPS ?= top_darjeeling top_earlgrey top_englishbreakfast
+TOPS ?= top_dragonfly top_egret top_scafi_deprecated
 
 # Conditional flags: use VERBOSE=1 for adding -v flag.
 VERBOSE ?= 0
@@ -92,7 +92,7 @@ $(ips_reg): %_reg:
 top_and_cmdgen: cmdgen
 
 dvgen:
-	${PRJ_DIR}/util/gen_ip_collection.py --flow sim_dv --tops top_earlgrey top_darjeeling
+	${PRJ_DIR}/util/gen_ip_collection.py --flow sim_dv --tops top_egret top_dragonfly
 
 all: cmdgen regs dvgen
 

@@ -40,7 +40,7 @@ def legacy_rom_targets(target, suffixes, testonly = False):
             name = "{}_{}".format(target, suffix),
             srcs = [":{}".format(target)],
             output_group = select({
-                "//sw/device:is_english_breakfast": "{}_rom32".format(suffix),
+                "//sw/device:is_scafi_deprecated": "{}_rom32".format(suffix),
                 "//conditions:default": "{}_rom".format(suffix),
             }),
             testonly = testonly,

@@ -12,8 +12,8 @@ py_library(
     srcs = ["device_id.py"],
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
-        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
-        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:egret_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:egret_a2.hjson",
     ],
     imports = ["."],
     deps = [
@@ -55,8 +55,8 @@ py_library(
     srcs = ["sku_config.py"],
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
-        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
-        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:egret_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:egret_a2.hjson",
     ],
     deps = [
         ":ca_config",

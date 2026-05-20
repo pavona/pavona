@@ -19,17 +19,17 @@
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
 #include "hw/top/uart_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
   /**
    * Base address of the pinmux registers.
    */
-  kPinmuxBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
+  kPinmuxBase = TOP_EGRET_PINMUX_AON_BASE_ADDR,
   /**
    * Base address of the UART registers.
    */
-  kUartBase = TOP_EARLGREY_UART0_BASE_ADDR,
+  kUartBase = TOP_EGRET_UART0_BASE_ADDR,
 };
 
 /**
@@ -54,7 +54,7 @@ static void setup_stdout(void) {
  * Trigger an instruction access fault.
  */
 static void fault(void) {
-  ((void (*)(void))TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR)();
+  ((void (*)(void))TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR)();
 }
 
 /**
@@ -131,8 +131,7 @@ static void pinmux_init_test(void) {
     // GPIO 22 (input 22) -> IOC0 (MIO pad 22)
     uint32_t insel_gpio22 =
         abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_22_REG_OFFSET);
-    CHECK_EQ(insel_gpio22, kTopEarlgreyPinmuxInselIoc0,
-             "GPIO 22 input selector");
+    CHECK_EQ(insel_gpio22, kTopEgretPinmuxInselIoc0, "GPIO 22 input selector");
 
     // Pad 22 attributes: pull-down selected and enabled (if legal).
     uint32_t attr22 =
@@ -148,8 +147,7 @@ static void pinmux_init_test(void) {
     // GPIO 23 (input 23) -> IOC1 (MIO pad 23)
     uint32_t insel_gpio23 =
         abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_23_REG_OFFSET);
-    CHECK_EQ(insel_gpio23, kTopEarlgreyPinmuxInselIoc1,
-             "GPIO 23 input selector");
+    CHECK_EQ(insel_gpio23, kTopEgretPinmuxInselIoc1, "GPIO 23 input selector");
 
     // Pad 23 attributes: pull-down selected and enabled (if legal).
     uint32_t attr23 =
@@ -165,8 +163,7 @@ static void pinmux_init_test(void) {
     // GPIO 24 (input 24) -> IOC2 (MIO pad 24)
     uint32_t insel_gpio24 =
         abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_24_REG_OFFSET);
-    CHECK_EQ(insel_gpio24, kTopEarlgreyPinmuxInselIoc2,
-             "GPIO 24 input selector");
+    CHECK_EQ(insel_gpio24, kTopEgretPinmuxInselIoc2, "GPIO 24 input selector");
 
     // Pad 24 attributes: pull-down selected and enabled (if legal).
     uint32_t attr24 =
@@ -183,12 +180,12 @@ static void pinmux_init_test(void) {
   // UART RX (input 42) -> IOC3 (MIO pad 25)
   uint32_t insel_uartrx =
       abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_42_REG_OFFSET);
-  CHECK_EQ(insel_uartrx, kTopEarlgreyPinmuxInselIoc3, "UART Rx input selector");
+  CHECK_EQ(insel_uartrx, kTopEgretPinmuxInselIoc3, "UART Rx input selector");
 
   // IOC4 (MIO pad 26) -> UART TX (output 42)
   uint32_t outsel_ioc4 =
       abs_mmio_read32(kPinmuxBase + PINMUX_MIO_OUTSEL_26_REG_OFFSET);
-  CHECK_EQ(outsel_ioc4, kTopEarlgreyPinmuxOutselUart0Tx,
+  CHECK_EQ(outsel_ioc4, kTopEgretPinmuxOutselUart0Tx,
            "UART Tx output selector");
 }
 

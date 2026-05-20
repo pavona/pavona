@@ -16,7 +16,7 @@
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * Peripheral handles.
@@ -38,7 +38,7 @@ static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   return OK_STATUS();
 }
 

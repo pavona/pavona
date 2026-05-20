@@ -8,8 +8,8 @@
 set -e
 
 dirs_with_testplan_files=(
-    "hw/top_earlgrey/data"
-    "hw/top_earlgrey/data/ip"
+    "hw/top_egret/data"
+    "hw/top_egret/data/ip"
 )
 testplan_schema="hw/lint/sival_testplan_schema.hjson"
 

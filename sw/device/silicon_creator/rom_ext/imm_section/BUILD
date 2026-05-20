@@ -89,7 +89,7 @@ cc_library(
         "-Wno-enum-enum-conversion",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:epmp_state",
@@ -104,7 +104,7 @@ ld_library(
     name = "ld_common",
     includes = ["imm_section_common.ld"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_egret/sw/autogen:top_egret_memory",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
         "//sw/device/silicon_creator/lib/base:static_dice_sections",
@@ -117,7 +117,7 @@ ld_library(
         script = "imm_section_slot_{}.ld".format(slot),
         deps = [
             ":ld_common",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+            "//hw/top_egret/sw/autogen:top_egret_memory",
         ],
     )
     for slot in SLOTS
@@ -128,7 +128,7 @@ ld_library(
         name = "main_binaries_{}_slot_{}".format(variation_name, slot),
         exec_env = DEFAULT_EXEC_ENV,
         linker_script = ":ld_slot_{}".format(slot),
-        manifest = "//hw/top_earlgrey:none_manifest",
+        manifest = "//hw/top_egret:none_manifest",
         transitive_features = [
             "minsize",
             "use_lld",

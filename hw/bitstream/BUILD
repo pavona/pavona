@@ -67,8 +67,8 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["//hw/bitstream/universal:none"],
         "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_test_rom"],
-        "bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_bitstream"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_bitstream"],
+        "bitstream_gcp_splice": ["@bitstreams//:chip_egret_cw310_bitstream"],
+        "//conditions:default": ["@bitstreams//:chip_egret_cw310_bitstream"],
     }),
     tags = ["manual"],
 )
@@ -79,74 +79,75 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["//hw/bitstream/universal:none"],
         "bitstream_vivado": ["//hw/bitstream/vivado:cw310_mmi"],
-        "bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_mmi"],
+        "bitstream_gcp_splice": ["@bitstreams//:chip_egret_cw310_mmi"],
+        "//conditions:default": ["@bitstreams//:chip_egret_cw310_mmi"],
     }),
     tags = ["manual"],
 )
 
 # Create manifest fragments for all the cached bitstreams
 bitstream_fragment_from_manifest(
-    name = "chip_earlgrey_cw310_cached_fragment",
+    name = "chip_egret_cw310_cached_fragment",
     testonly = True,
     srcs = [
-        "@bitstreams//:chip_earlgrey_cw310_bitstream",
-        "@bitstreams//:chip_earlgrey_cw310_mmi",
+        "@bitstreams//:chip_egret_cw310_bitstream",
+        "@bitstreams//:chip_egret_cw310_mmi",
     ],
-    design = "chip_earlgrey_cw310",
+    design = "chip_egret_cw310",
     manifest = "@bitstreams//:manifest",
     tags = ["manual"],
 )
 
 pkg_tar(
-    name = "chip_earlgrey_cw310_cached_archive",
+    name = "chip_egret_cw310_cached_archive",
     testonly = True,
-    srcs = [":chip_earlgrey_cw310_cached_fragment"],
+    srcs = [":chip_egret_cw310_cached_fragment"],
     mode = "0444",
-    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310",
-    strip_prefix = "/hw/bitstream/chip_earlgrey_cw310_cached_fragment",
+    package_dir = "build-bin/hw/top_egret/chip_egret_cw310",
+    strip_prefix = "/hw/bitstream/chip_egret_cw310_cached_fragment",
     tags = ["manual"],
 )
 
 bitstream_fragment_from_manifest(
-    name = "chip_earlgrey_cw310_hyperdebug_cached_fragment",
+    name = "chip_egret_cw310_hyperdebug_cached_fragment",
+    testonly = True,
     srcs = [
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_mmi",
+        "@bitstreams//:chip_egret_cw310_hyperdebug_bitstream",
+        "@bitstreams//:chip_egret_cw310_hyperdebug_mmi",
     ],
-    design = "chip_earlgrey_cw310_hyperdebug",
+    design = "chip_egret_cw310_hyperdebug",
     manifest = "@bitstreams//:manifest",
     tags = ["manual"],
 )
 
 pkg_tar(
-    name = "chip_earlgrey_cw310_hyperdebug_cached_archive",
+    name = "chip_egret_cw310_hyperdebug_cached_archive",
     testonly = True,
-    srcs = [":chip_earlgrey_cw310_hyperdebug_cached_fragment"],
+    srcs = [":chip_egret_cw310_hyperdebug_cached_fragment"],
     mode = "0444",
-    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug",
-    strip_prefix = "/hw/bitstream/chip_earlgrey_cw310_hyperdebug_cached_fragment",
+    package_dir = "build-bin/hw/top_egret/chip_egret_cw310_hyperdebug",
+    strip_prefix = "/hw/bitstream/chip_egret_cw310_hyperdebug_cached_fragment",
     tags = ["manual"],
 )
 
 bitstream_fragment_from_manifest(
-    name = "chip_earlgrey_cw340_cached_fragment",
+    name = "chip_egret_cw340_cached_fragment",
     testonly = True,
     srcs = [
-        "@bitstreams//:chip_earlgrey_cw340_bitstream",
-        "@bitstreams//:chip_earlgrey_cw340_mmi",
+        "@bitstreams//:chip_egret_cw340_bitstream",
+        "@bitstreams//:chip_egret_cw340_mmi",
     ],
-    design = "chip_earlgrey_cw340",
+    design = "chip_egret_cw340",
     manifest = "@bitstreams//:manifest",
     tags = ["manual"],
 )
 
 pkg_tar(
-    name = "chip_earlgrey_cw340_cached_archive",
+    name = "chip_egret_cw340_cached_archive",
     testonly = True,
-    srcs = [":chip_earlgrey_cw340_cached_fragment"],
+    srcs = [":chip_egret_cw340_cached_fragment"],
     mode = "0444",
-    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw340",
-    strip_prefix = "/hw/bitstream/chip_earlgrey_cw340_cached_fragment",
+    package_dir = "build-bin/hw/top_egret/chip_egret_cw340",
+    strip_prefix = "/hw/bitstream/chip_egret_cw340_cached_fragment",
     tags = ["manual"],
 )

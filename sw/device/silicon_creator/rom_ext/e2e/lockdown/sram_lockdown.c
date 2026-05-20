@@ -8,16 +8,16 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/sram_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 status_t test_sram_lockdown(void) {
   uint32_t exec, regwen;
 
-  exec = abs_mmio_read32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
+  exec = abs_mmio_read32(TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
                          SRAM_CTRL_EXEC_REG_OFFSET);
-  regwen = abs_mmio_read32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
+  regwen = abs_mmio_read32(TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
                            SRAM_CTRL_EXEC_REGWEN_REG_OFFSET);
   LOG_INFO("sram_exec = %x", exec);
   LOG_INFO("sram_exec_regwen = %x", regwen);

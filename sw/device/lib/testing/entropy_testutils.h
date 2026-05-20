@@ -12,8 +12,8 @@
 /**
  * Initializes the top-specific entropy source with default configuration.
  *
- * On Earlgrey, it initializes the entropy_src.
- * On Darjeeling, this is a no-op.
+ * On Egret, it initializes the entropy_src.
+ * On Dragonfly, this is a no-op.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_entropy_src_init(void);

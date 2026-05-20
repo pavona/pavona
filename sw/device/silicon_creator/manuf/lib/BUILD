@@ -11,7 +11,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_OTP_CFGS",
+    "EGRET_OTP_CFGS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -24,7 +24,7 @@ ld_library(
     non_page_aligned_segments = True,
     script = "sram_program.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_egret/sw/autogen:top_egret_memory",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
@@ -45,7 +45,7 @@ cc_library(
         "//hw/top:csrng_c_regs",
         "//hw/top:edn_c_regs",
         "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/crt",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
     ],
@@ -61,7 +61,7 @@ cc_library(
         "//hw/top:csrng_c_regs",
         "//hw/top:edn_c_regs",
         "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/crt",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
     ],
@@ -103,7 +103,7 @@ cc_library(
     hdrs = ["util.h"],
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
@@ -141,19 +141,19 @@ pavona_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
         changes_otp = True,
-        otp = "//hw/top_earlgrey/data/otp:img_test_unlocked1",
+        otp = "//hw/top_egret/data/otp:img_test_unlocked1",
         tags = ["manuf"],
     ),
     deps = [
         ":flash_info_fields",
         ":individualize",
         ":otp_fields",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
@@ -179,7 +179,7 @@ cc_library(
         ":otp_img_types",
         ":util",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
@@ -192,7 +192,7 @@ cc_library(
 )
 
 # As more SKUs are created with different OTP configurations, libraries can be
-# added by updating EARLGREY_OTP_CFGS accordingly.
+# added by updating EGRET_OTP_CFGS accordingly.
 [
     cc_library(
         name = "individualize_sw_cfg_{}".format(cfg),
@@ -201,19 +201,19 @@ cc_library(
             "{}".format(target),
         ],
     )
-    for cfg, target in EARLGREY_OTP_CFGS.items()
+    for cfg, target in EGRET_OTP_CFGS.items()
 ]
 
 pavona_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
-        otp = "//hw/top_earlgrey/data/otp:img_test_unlocked1",
+        otp = "//hw/top_egret/data/otp:img_test_unlocked1",
         tags = ["manuf"],
         test_cmd = """
             --bootstrap={firmware}
@@ -225,7 +225,7 @@ pavona_test(
         # Testing sival SKU only should be sufficient.
         ":individualize_sw_cfg_em00",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
@@ -269,12 +269,12 @@ pavona_test(
     srcs = ["personalize_functest.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_individualized",
+        otp = "//hw/top_egret/data/otp/emulation:otp_img_dev_manuf_individualized",
         tags = [
             "lc_dev",
             "manuf",
@@ -291,7 +291,7 @@ pavona_test(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:lc_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
@@ -312,7 +312,7 @@ cc_library(
     srcs = ["ast_program.c"],
     deps = [
         ":flash_info_fields",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:pinmux",
@@ -332,14 +332,14 @@ pavona_test(
         "AST_PROGRAM_UNITTEST=1",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         tags = ["manuf"],
     ),
     deps = [
         ":flash_info_fields",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",

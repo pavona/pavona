@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
 
 #include "hw/top/flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // RAM copy of the owner INFO pages from flash.
 extern owner_block_t owner_page[2];
@@ -64,8 +64,8 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
     ecdsa = &signature->ecdsa;
   } else {
     const owner_detached_signature_t *detached = ownership_signature_scan(
-        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-        TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES, command, nonce);
+        TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR, TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES,
+        command, nonce);
     if (detached == NULL) {
       return kErrorOwnershipSignatureNotFound;
     }

@@ -178,7 +178,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
             s["name"],
         ),
         testonly = True,
-        src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+        src = "//hw/top_egret/data/otp:otp_json_prod",
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_immutable_rom_ext_{}_{}".format(
                 t["name"],
@@ -197,12 +197,12 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         testonly = True,
         srcs = ["immutable_rom_ext_section_test.c"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_sival",
+            "//hw/top_egret:fpga_cw310_sival",
         ],
         linker_script = s["linker_script"],
         deps = [
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -221,7 +221,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
             s["name"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
         fpga = fpga_params(
             assemble = "{firmware}@{offset}",
@@ -278,12 +278,12 @@ BAD_SECTION_BINS = {
             "IMMUTABLE_MESSAGE={}".format(param["message"]),
         ],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_sival",
+            "//hw/top_egret:fpga_cw310_sival",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_virtual",
         deps = [
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -301,7 +301,7 @@ BAD_SECTION_BINS = {
 pavona_test(
     name = "immutable_section_invalid_ok_when_disabled",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
         assemble = "{invalid}@0",
@@ -318,7 +318,7 @@ pavona_test(
 pavona_test(
     name = "immutable_section_a_bad_b_good",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
         assemble = "{invalid}@0 {valid}@0x80000",
@@ -337,7 +337,7 @@ pavona_test(
 pavona_test(
     name = "immutable_section_a_bad_b_bad",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
         assemble = "{invalid}@0 {invalid}@0x80000",

@@ -115,35 +115,35 @@ spx_key_by_name = _spx_key_by_name
 
 pavona_manual_test = _pavona_manual_test
 
-# The default set of test environments for Earlgrey.
-EARLGREY_TEST_ENVS = {
-    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-    "//hw/top_earlgrey:sim_dv": None,
-    "//hw/top_earlgrey:sim_verilator": None,
-    "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+# The default set of test environments for Egret.
+EGRET_TEST_ENVS = {
+    "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+    "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+    "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+    "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+    "//hw/top_egret:sim_dv": None,
+    "//hw/top_egret:sim_verilator": None,
+    "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
 }
 
-# The default set of test environments for Earlgrey.
-EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
-    "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+# The default set of test environments for Egret.
+EGRET_SILICON_OWNER_ROM_EXT_ENVS = {
+    "//hw/top_egret:silicon_owner_sival_rom_ext": None,
 } | EXT_EXEC_ENV_SILICON_ROM_EXT
 
-# All CW340 test environments for Earlgrey.
-EARLGREY_CW340_TEST_ENVS = {
-    "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-    "//hw/top_earlgrey:fpga_cw340_sival": None,
-    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+# All CW340 test environments for Egret.
+EGRET_CW340_TEST_ENVS = {
+    "//hw/top_egret:fpga_cw340_test_rom": None,
+    "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+    "//hw/top_egret:fpga_cw340_sival": None,
+    "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+    "//hw/top_egret:fpga_cw340_rom_ext": None,
 }
 
-# The default set of test environments for Darjeeling.
-DARJEELING_TEST_ENVS = {
-    "//hw/top_darjeeling:sim_dv": None,
-    "//hw/top_darjeeling:sim_verilator": None,
+# The default set of test environments for Dragonfly.
+DRAGONFLY_TEST_ENVS = {
+    "//hw/top_dragonfly:sim_dv": None,
+    "//hw/top_dragonfly:sim_verilator": None,
 }
 
 # Messages we expect for possible test outcomes.
@@ -214,10 +214,10 @@ def exec_env_to_top_map(exec_env):
     For this to work, this macros expects that all executions environments satisfy
     one of the two following requirements:
     - either they must be defined in the corresponding top's directory, e.g.
-      //hw/top_earlgrey:<name_of_exec_env>. This directory is determined from the path
+      //hw/top_egret:<name_of_exec_env>. This directory is determined from the path
       of the top's hjson created by topgen.
     - or the target name must start with "top_<topname>", e.g.
-      top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper
+      top_egret_fpga_cw310_sival_rom_ext_no_hyper
     """
     top_map = {}
     for top in ALL_TOPS:
@@ -427,8 +427,8 @@ def pavona_test(
         all_test_kwargs[env] = test_args
 
     # With multitop, it is possible to have several exec_env with the same suffix
-    # but which belong to different tops, e.g. //hw/top_earlgrey:sim_dv and
-    # //hw/top_darjeeling:sim_dv. In this case, we still create a single
+    # but which belong to different tops, e.g. //hw/top_egret:sim_dv and
+    # //hw/top_dragonfly:sim_dv. In this case, we still create a single
     # test call "<testname>_<sim_dv>" but the definition will use select() statements
     # based on the top. To do that, first we precompute a map from suffixes to list
     # of exec env.

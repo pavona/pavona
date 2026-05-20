@@ -18,10 +18,10 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "DARJEELING_TEST_ENVS",
-    "EARLGREY_CW340_TEST_ENVS",
-    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "EARLGREY_TEST_ENVS",
+    "DRAGONFLY_TEST_ENVS",
+    "EGRET_CW340_TEST_ENVS",
+    "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
+    "EGRET_TEST_ENVS",
     "PAVONA_CPU",
     "dv_params",
     "ecdsa_key_for_lc_state",
@@ -66,8 +66,8 @@ pavona_test(
     name = "aes_masking_off_test",
     srcs = ["aes_masking_off_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
@@ -89,12 +89,12 @@ pavona_test(
     name = "aes_entropy_test",
     srcs = ["aes_entropy_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -114,16 +114,16 @@ pavona_test(
     srcs = ["aes_idle_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             [
-                "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
+                "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
+                "//hw/top_egret:fpga_cw310_sival_rom_ext",
             ],
         ),
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -149,11 +149,11 @@ pavona_test(
     name = "aes_interrupt_encryption_test",
     srcs = ["aes_interrupt_encryption_test.c"],
     exec_env = dicts.add(
-        DARJEELING_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
     ),
     verilator = verilator_params(
@@ -175,7 +175,7 @@ pavona_test(
 alias(
     name = "aes_smoketest_entropy_testutils",
     actual = select({
-        "//sw/device:is_english_breakfast": "//sw/device:nothing",
+        "//sw/device:is_scafi_deprecated": "//sw/device:nothing",
         "//conditions:default": "//sw/device/lib/testing:entropy_testutils",
     }),
     visibility = ["//visibility:private"],
@@ -185,20 +185,20 @@ pavona_test(
     name = "aes_smoketest",
     srcs = ["aes_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     # Use this test to ensure that all execution environments are tested in CI.
-    run_in_ci = EARLGREY_TEST_ENVS.keys() + DARJEELING_TEST_ENVS.keys() + [
-        "//hw/top_earlgrey:fpga_cw310_sival",
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
+    run_in_ci = EGRET_TEST_ENVS.keys() + DRAGONFLY_TEST_ENVS.keys() + [
+        "//hw/top_egret:fpga_cw310_sival",
+        "//hw/top_egret:fpga_cw310_sival_rom_ext",
+        "//hw/top_egret:fpga_cw310_rom_ext",
     ],
     deps = [
         "//hw/ip/aes:model",
@@ -216,14 +216,14 @@ pavona_test(
     name = "aes_force_prng_reseed_test",
     srcs = ["aes_force_prng_reseed_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -249,14 +249,14 @@ pavona_test(
     name = "aes_prng_reseed_test",
     srcs = ["aes_prng_reseed_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -284,14 +284,14 @@ pavona_test(
     name = "aes_stall_test",
     srcs = ["aes_stall_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -319,11 +319,11 @@ pavona_test(
     name = "alert_handler_escalation_test",
     srcs = ["alert_handler_escalation_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -331,7 +331,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -354,9 +354,9 @@ pavona_test(
     name = "alert_handler_ping_timeout_test",
     srcs = ["alert_handler_ping_timeout_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     fpga = fpga_params(timeout = "moderate"),
     verilator = verilator_params(timeout = "long"),
@@ -382,7 +382,7 @@ pavona_test(
     name = "alert_handler_lpg_clkoff_test",
     srcs = ["alert_handler_lpg_clkoff_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         # The test requires the Ibex core to wait long enough
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
@@ -391,18 +391,18 @@ pavona_test(
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:sim_verilator"],
+            EGRET_TEST_ENVS,
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     fpga = fpga_params(timeout = "moderate"),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:acc",
@@ -433,11 +433,11 @@ pavona_test(
     srcs = ["alert_handler_reverse_ping_in_deep_sleep_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
             # See #23038, this test requires a provisioned flash in sival.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
@@ -445,7 +445,7 @@ pavona_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -472,7 +472,7 @@ pavona_test(
     name = "alert_handler_lpg_reset_toggle_test",
     srcs = ["alert_handler_lpg_reset_toggle.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         # The test requires the Ibex core to wait long enough
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
@@ -481,12 +481,12 @@ pavona_test(
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:sim_verilator"],
+            EGRET_TEST_ENVS,
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -498,7 +498,7 @@ pavona_test(
         "//hw/top:spi_device_c_regs",
         "//hw/top:spi_host_c_regs",
         "//hw/top:usbdev_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -533,22 +533,22 @@ pavona_test(
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:sim_verilator"],
+            EGRET_TEST_ENVS,
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
             # See #23038, this test requires a provisioned flash in sival.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         timeout = "moderate",
     ),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -575,12 +575,12 @@ pavona_test(
     name = "alert_handler_ping_ok_test",
     srcs = ["alert_handler_ping_ok_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -603,10 +603,10 @@ pavona_test(
     name = "aon_timer_irq_test",
     srcs = ["aon_timer_irq_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        EARLGREY_TEST_ENVS,
-        DARJEELING_TEST_ENVS,
-        {"//hw/top_earlgrey:silicon_creator": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
+        {"//hw/top_egret:silicon_creator": None},
     ),
     deps = [
         "//hw/top/dt",
@@ -628,9 +628,9 @@ pavona_test(
     name = "aon_timer_smoketest",
     srcs = ["aon_timer_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -647,12 +647,12 @@ pavona_test(
     name = "aon_timer_wdog_bite_reset_test",
     srcs = ["aon_timer_wdog_bite_reset_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(tags = ["broken"]),
@@ -674,11 +674,11 @@ pavona_test(
     name = "pwrmgr_wdog_reset_reqs_test",
     srcs = ["pwrmgr_wdog_reset_reqs_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -699,9 +699,9 @@ pavona_test(
     name = "aon_timer_wdog_lc_escalate_test",
     srcs = ["aon_timer_wdog_lc_escalate_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -728,9 +728,9 @@ pavona_test(
     name = "aon_timer_sleep_wdog_sleep_pause_test",
     srcs = ["aon_timer_sleep_wdog_sleep_pause_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
     # in CI/nightlies.
@@ -753,10 +753,10 @@ pavona_test(
     name = "chip_power_idle_load_test",
     srcs = ["chip_power_idle_load_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:silicon_owner_sival_rom_ext": "silicon_owner",
         },
     ),
     silicon_owner = silicon_params(
@@ -785,10 +785,10 @@ pavona_test(
     name = "chip_power_sleep_load_test",
     srcs = ["chip_power_sleep_load_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
         },
     ),
     deps = [
@@ -817,7 +817,7 @@ cc_library(
     hdrs = ["clkmgr_external_clk_src_for_sw_impl.h"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
@@ -838,19 +838,19 @@ pavona_test(
         # RMA keys, while we need DEV, and the infrastructure doesn't allow
         # changing the key for a single environment.
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             [
-                "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-                "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+                "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
+                "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
             ],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
-        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_personalized",
+        otp = "//hw/top_egret/data/otp/emulation:otp_img_dev_manuf_personalized",
     ),
     verilator = verilator_params(tags = ["broken"]),
     deps = [
@@ -863,11 +863,11 @@ pavona_test(
     name = "clkmgr_external_clk_src_for_sw_slow_test",
     srcs = ["clkmgr_external_clk_src_for_sw_slow_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
     },
     fpga = fpga_params(
-        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_personalized",
+        otp = "//hw/top_egret/data/otp/emulation:otp_img_dev_manuf_personalized",
         # TODO(lowrisc/opentitan#19620): fpga doesn't support lowering main clk frequency
         tags = ["broken"],
     ),
@@ -882,18 +882,18 @@ pavona_test(
     name = "clkmgr_jitter_frequency_test",
     srcs = ["clkmgr_jitter_frequency_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     # Broken on Verilator. See #24182.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
@@ -912,11 +912,11 @@ pavona_test(
     name = "clkmgr_jitter_test",
     srcs = ["clkmgr_jitter_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -931,16 +931,16 @@ pavona_test(
     name = "clkmgr_off_peri_test",
     srcs = ["clkmgr_off_peri_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(timeout = "eternal"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aon_timer",
@@ -988,14 +988,14 @@ pavona_test(
     name = "clkmgr_off_aes_trans_test",
     srcs = ["clkmgr_off_aes_trans_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = ["clkmgr_off_trans_impl"],
@@ -1005,14 +1005,14 @@ pavona_test(
     name = "clkmgr_off_hmac_trans_test",
     srcs = ["clkmgr_off_hmac_trans_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = ["clkmgr_off_trans_impl"],
@@ -1022,14 +1022,14 @@ pavona_test(
     name = "clkmgr_off_kmac_trans_test",
     srcs = ["clkmgr_off_kmac_trans_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = ["clkmgr_off_trans_impl"],
@@ -1039,13 +1039,13 @@ pavona_test(
     name = "clkmgr_off_acc_trans_test",
     srcs = ["clkmgr_off_acc_trans_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
         },
     ),
     deps = ["clkmgr_off_trans_impl"],
@@ -1055,18 +1055,18 @@ pavona_test(
     name = "clkmgr_reset_frequency_test",
     srcs = ["clkmgr_reset_frequency_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:sensor_ctrl",
@@ -1085,18 +1085,18 @@ pavona_test(
     name = "clkmgr_sleep_frequency_test",
     srcs = ["clkmgr_sleep_frequency_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     # TODO(#13611): Splice ast_init in FPGA/Verilator.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rv_plic",
@@ -1118,11 +1118,11 @@ pavona_test(
     name = "clkmgr_smoketest",
     srcs = ["clkmgr_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -1138,12 +1138,12 @@ pavona_test(
     name = "crt_test",
     srcs = ["crt_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -1167,13 +1167,13 @@ pavona_test(
     name = "csrng_edn_concurrency_test",
     srcs = ["csrng_edn_concurrency_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:silicon_owner_sival_rom_ext": "silicon_owner",
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     silicon_owner = silicon_params(
         tags = ["broken"],
@@ -1211,11 +1211,11 @@ pavona_test(
     name = "csrng_kat_test",
     srcs = ["csrng_kat_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     silicon = silicon_params(
@@ -1235,11 +1235,11 @@ pavona_test(
     name = "csrng_smoketest",
     srcs = ["csrng_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
@@ -1258,12 +1258,12 @@ pavona_test(
     name = "edn_auto_mode",
     srcs = ["edn_auto_mode.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -1299,12 +1299,12 @@ pavona_test(
     name = "edn_boot_mode",
     srcs = ["edn_boot_mode.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -1336,17 +1336,17 @@ pavona_test(
     srcs = ["edn_sw_mode.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             [
-                "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
+                "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
+                "//hw/top_egret:fpga_cw310_sival_rom_ext",
             ],
         ),
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
@@ -1374,12 +1374,12 @@ pavona_test(
     name = "edn_kat",
     srcs = ["edn_kat.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
@@ -1407,12 +1407,12 @@ pavona_test(
     name = "entropy_src_fw_ovr_test",
     srcs = ["entropy_src_fw_ovr_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     silicon = silicon_params(
         tags = ["broken"],
@@ -1452,11 +1452,11 @@ pavona_test(
     name = "entropy_src_kat_test",
     srcs = ["entropy_src_kat_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -1473,11 +1473,11 @@ pavona_test(
     name = "entropy_src_smoketest",
     srcs = ["entropy_src_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -1497,11 +1497,11 @@ pavona_test(
     name = "entropy_src_ast_rng_req_test",
     srcs = ["entropy_src_ast_rng_req_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -1518,13 +1518,13 @@ pavona_test(
     name = "entropy_src_csrng_test",
     srcs = ["entropy_src_csrng_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
@@ -1554,12 +1554,12 @@ pavona_test(
     name = "entropy_src_fw_observe_many_contiguous_test",
     srcs = ["entropy_src_fw_observe_many_contiguous.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
     # in CI/nightlies.
@@ -1587,12 +1587,12 @@ pavona_test(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -1627,15 +1627,15 @@ pavona_test(
     name = "entropy_src_bypass_mode_health_test",
     srcs = ["entropy_src_bypass_mode_health_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -1669,15 +1669,15 @@ pavona_test(
     name = "entropy_src_fips_mode_health_test",
     srcs = ["entropy_src_fips_mode_health_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     # This test uses carefully tuned health test threshold values to trigger health test alerts
     # inside ENTROPY_SRC. Due to the probabilistic nature of the analog noise source producing the
@@ -1724,9 +1724,9 @@ pavona_test(
     name = "example_concurrency_test",
     srcs = ["example_concurrency_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//sw/device/lib/runtime:log",
@@ -1739,8 +1739,8 @@ pavona_test(
     name = "example_mem_ujcmd_test",
     srcs = ["example_mem_ujcmd.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
     ),
     fpga = fpga_params(
         test_cmd = " ".join([
@@ -1768,7 +1768,7 @@ pavona_test(
 pavona_test(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     deps = [
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1779,9 +1779,9 @@ pavona_test(
     name = "example_test_from_rom",
     srcs = ["example_test_from_rom.c"],
     exec_env = {
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_darjeeling:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
+        "//hw/top_dragonfly:sim_dv": None,
     },
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `pavona_test` rule aware
@@ -1809,11 +1809,11 @@ pavona_test(
     name = "flash_ctrl_idle_low_power_test",
     srcs = ["flash_ctrl_idle_low_power_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:flash_ctrl",
@@ -1835,17 +1835,17 @@ pavona_test(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
     run_in_ci = [
-        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_egret:fpga_cw340_sival_rom_ext",
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
     ],
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -1864,7 +1864,7 @@ pavona_test(
 pavona_test(
     name = "flash_ctrl_info_access_lc",
     srcs = ["flash_ctrl_info_access_lc.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {"//hw/top_egret:sim_dv": None},
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/base:mmio",
@@ -1900,14 +1900,14 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
-            otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state),
+            otp = "//hw/top_egret/data/otp:img_{}".format(lc_state),
         ),
         deps = [
             "//hw/top/dt",
@@ -1938,16 +1938,16 @@ test_suite(
         name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),
         srcs = ["flash_ctrl_info_access_lc.c"],
         dv = dv_params(
-            otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_{}_manuf_personalized".format(lc_state),
+            otp = "//hw/top_egret/data/otp/emulation:otp_img_{}_manuf_personalized".format(lc_state),
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
         fpga = fpga_params(
-            otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_{}_manuf_personalized".format(lc_state),
+            otp = "//hw/top_egret/data/otp/emulation:otp_img_{}_manuf_personalized".format(lc_state),
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/dif:lc_ctrl",
@@ -1985,13 +1985,13 @@ pavona_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
     run_in_ci = [
-        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_egret:fpga_cw340_sival_rom_ext",
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -2012,21 +2012,21 @@ pavona_test(
     name = "flash_ctrl_test",
     srcs = ["flash_ctrl_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
     run_in_ci = [
-        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_egret:fpga_cw340_sival_rom_ext",
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -2042,13 +2042,13 @@ pavona_test(
     name = "flash_ctrl_write_clear_test",
     srcs = ["flash_ctrl_write_clear_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -2064,19 +2064,19 @@ pavona_test(
     srcs = ["flash_ctrl_mem_protection_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+            "//hw/top_egret:silicon_owner_sival_rom_ext": None,
             # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -2092,12 +2092,12 @@ pavona_test(
     name = "flash_ctrl_rma_test",
     srcs = ["flash_ctrl_rma_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_personalized",
+        otp = "//hw/top_egret/data/otp/emulation:otp_img_dev_manuf_personalized",
         tags = [
             "broken",
             "lc_dev",
@@ -2111,7 +2111,7 @@ pavona_test(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:flash_ctrl",
@@ -2134,15 +2134,15 @@ pavona_test(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         # Not compatible with the verilated top level.
         dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:sim_verilator"],
+            EGRET_TEST_ENVS,
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
@@ -2158,10 +2158,10 @@ pavona_test(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
         },
     ),
     fpga = fpga_params(
@@ -2190,10 +2190,10 @@ pavona_test(
     name = "gpio_intr_test",
     srcs = ["gpio_intr_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
         },
     ),
     fpga = fpga_params(
@@ -2228,11 +2228,11 @@ pavona_test(
     name = "hmac_enc_test",
     srcs = ["hmac_enc_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
     ),
     deps = [
@@ -2250,13 +2250,13 @@ pavona_test(
     name = "hmac_enc_idle_test",
     srcs = ["hmac_enc_idle_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -2274,12 +2274,12 @@ pavona_test(
     name = "hmac_endianness_test",
     srcs = ["hmac_endianness_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
@@ -2299,13 +2299,13 @@ pavona_test(
     name = "hmac_secure_wipe_test",
     srcs = ["hmac_secure_wipe_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -2322,14 +2322,14 @@ pavona_test(
     name = "hmac_smoketest",
     srcs = ["hmac_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -2346,11 +2346,11 @@ pavona_test(
     name = "keymgr_key_derivation_test",
     srcs = ["keymgr_key_derivation_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
             # This test is not supported by the silicon_owner_sival_rom_ext
             # configuration.
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -2370,12 +2370,12 @@ pavona_test(
     name = "keymgr_derive_sealing_test",
     srcs = ["keymgr_derive_cdi_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -2403,12 +2403,12 @@ pavona_test(
     srcs = ["keymgr_derive_cdi_test.c"],
     copts = ["-DDERIVE_ATTESTATION"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -2464,7 +2464,7 @@ otp_json(
 
 otp_image(
     name = "otp_ctrl_descrambling_otp_image",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_ctrl_descrambling_otp_json"],
     visibility = ["//visibility:private"],
 )
@@ -2477,15 +2477,15 @@ pavona_test(
     ),
     exec_env = dicts.add(
         {
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_test_rom": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
             # This test is not expected to run on silicon, as it would require a very specific OTP configuration that is only useful for this test.
         },
     ),
@@ -2496,7 +2496,7 @@ pavona_test(
         otp = ":otp_ctrl_descrambling_otp_image",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -2509,12 +2509,12 @@ pavona_binary(
     testonly = True,
     srcs = ["otp_ctrl_rot_auth_config_test.c"],
     exec_env = [
-        "//hw/top_earlgrey:sim_dv",
+        "//hw/top_egret:sim_dv",
     ],
     kind = "ram",
     linker_script = "//sw/device/examples/sram_program:sram_program_linker_script",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
@@ -2535,10 +2535,10 @@ pavona_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -2571,10 +2571,10 @@ pavona_test(
     name = "keymgr_sideload_kmac_test",
     srcs = ["keymgr_sideload_kmac_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -2604,10 +2604,10 @@ pavona_test(
     name = "keymgr_sideload_acc_test",
     srcs = ["keymgr_sideload_acc_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -2641,11 +2641,11 @@ pavona_test(
     srcs = ["keymgr_sideload_acc_test.c"],
     copts = ["-DTEST_SIMPLE_CASE_ONLY"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -2680,34 +2680,34 @@ _KMAC_APP_ROM_LIST = [
     (
         "//sw/device/lib/testing/test_rom:test_rom_sim_verilator_hashfile",
         "sim_verilator",
-        ["//hw/top_earlgrey"],
+        ["//hw/top_egret"],
     ),
     (
         "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_hashfile",
         "fpga_cw310_test_rom",
-        ["//hw/top_earlgrey"],
+        ["//hw/top_egret"],
     ),
     (
         "//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile",
         "fpga_cw310_rom_with_fake_keys",
-        ["//hw/top_earlgrey"],
+        ["//hw/top_egret"],
     ),
     (
         "//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile",
         "fpga_cw310_sival",
-        ["//hw/top_earlgrey"],
+        ["//hw/top_egret"],
     ),
     (
         "//sw/device/silicon_creator/rom:mask_rom_fpga_cw340_hashfile",
         "fpga_cw340_sival",
-        ["//hw/top_earlgrey"],
+        ["//hw/top_egret"],
     ),
     (
         "//sw/device/lib/testing/test_rom:test_rom_sim_dv_hashfile",
         "sim_dv",
         [
-            "//hw/top_earlgrey",
-            "//hw/top_darjeeling",
+            "//hw/top_egret",
+            "//hw/top_dragonfly",
         ],
     ),
 ]
@@ -2746,11 +2746,11 @@ pavona_test(
     name = "kmac_endianess_test",
     srcs = ["kmac_endianess_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -2768,12 +2768,12 @@ pavona_test(
     name = "kmac_entropy_test",
     srcs = ["kmac_entropy_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -2792,13 +2792,13 @@ pavona_test(
     name = "kmac_error_conditions_test",
     srcs = ["kmac_error_conditions_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -2820,11 +2820,11 @@ pavona_test(
     name = "kmac_entropy_stress_test",
     srcs = ["kmac_entropy_stress_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
         },
     ),
     verilator = verilator_params(timeout = "eternal"),
@@ -2841,12 +2841,12 @@ pavona_test(
     name = "kmac_idle_test",
     srcs = ["kmac_idle_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -2863,12 +2863,12 @@ pavona_test(
     name = "kmac_kmac_key_sideload_test",
     srcs = ["kmac_kmac_key_sideload_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -2899,11 +2899,11 @@ pavona_test(
     name = "kmac_mode_cshake_test",
     srcs = ["kmac_mode_cshake_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -2922,11 +2922,11 @@ pavona_test(
     name = "kmac_mode_kmac_test",
     srcs = ["kmac_mode_kmac_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -2944,12 +2944,12 @@ pavona_test(
     name = "kmac_smoketest",
     srcs = ["kmac_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -2965,9 +2965,9 @@ pavona_test(
 pavona_test(
     name = "lc_ctrl_otp_hw_cfg0_test",
     srcs = ["lc_ctrl_otp_hw_cfg0_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -2983,11 +2983,11 @@ pavona_test(
     name = "acc_ecdsa_op_irq_test",
     srcs = ["acc_ecdsa_op_irq_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -3010,13 +3010,13 @@ pavona_test(
     name = "acc_irq_test",
     srcs = ["acc_irq_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -3039,13 +3039,13 @@ pavona_test(
     name = "acc_mem_scramble_test",
     srcs = ["acc_mem_scramble_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -3080,12 +3080,12 @@ pavona_test(
     name = "acc_randomness_test",
     srcs = ["acc_randomness_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -3110,11 +3110,11 @@ pavona_test(
     name = "acc_rsa_test",
     srcs = ["acc_rsa_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(timeout = "eternal"),
@@ -3134,13 +3134,13 @@ pavona_test(
     name = "acc_smoketest",
     srcs = ["acc_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -3162,12 +3162,12 @@ pavona_test(
     name = "acc_isa_test",
     srcs = ["acc_isa_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -3185,10 +3185,10 @@ pavona_test(
     srcs = ["otp_ctrl_mem_access_test.c"],
     exec_env = {
         # This test needs to program OTP which is blocked by rom_ext.
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -3197,7 +3197,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -3215,13 +3215,13 @@ pavona_test(
     srcs = ["otp_ctrl_smoketest.c"],
     exec_env = {
         # This test needs to program OTP which is blocked by rom_ext.
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_darjeeling:sim_dv": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
+        "//hw/top_dragonfly:sim_dv": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -3242,11 +3242,11 @@ pavona_test(
     name = "plic_sw_irq_test",
     srcs = ["plic_sw_irq_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -3265,9 +3265,9 @@ pavona_test(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -3283,9 +3283,9 @@ pavona_test(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -3301,11 +3301,11 @@ pavona_test(
     name = "pwm_smoketest",
     srcs = ["pwm_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_owner_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -3323,7 +3323,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/pwm_smoketest",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwm",
@@ -3343,7 +3343,7 @@ cc_library(
     target_compatible_with = [PAVONA_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -3371,11 +3371,11 @@ pavona_test(
     name = "pwrmgr_all_reset_reqs_test",
     srcs = ["pwrmgr_all_reset_reqs_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     fpga = fpga_params(
@@ -3394,7 +3394,7 @@ pavona_test(
     # sival ROM_EXT above. Remove this line when fixed. See #21706.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -3414,8 +3414,8 @@ pavona_test(
     name = "pwrmgr_random_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        EARLGREY_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
     ),
     fpga = fpga_params(
         test_cmd = """
@@ -3433,7 +3433,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -3453,10 +3453,10 @@ pavona_test(
     name = "pwrmgr_deep_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_deep_sleep_all_reset_reqs_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        EARLGREY_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     fpga = fpga_params(
@@ -3471,7 +3471,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -3491,8 +3491,8 @@ pavona_test(
     name = "pwrmgr_normal_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_normal_sleep_all_reset_reqs_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         test_cmd = "--bootstrap={firmware}",
@@ -3523,10 +3523,10 @@ pavona_test(
     name = "pwrmgr_deep_sleep_por_reset_test",
     srcs = ["pwrmgr_deep_sleep_por_reset_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -3563,10 +3563,10 @@ pavona_test(
     name = "pwrmgr_normal_sleep_por_reset_test",
     srcs = ["pwrmgr_normal_sleep_por_reset_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -3657,12 +3657,12 @@ pavona_test(
     name = "pwrmgr_normal_sleep_all_wake_ups",
     srcs = ["pwrmgr_normal_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     fpga = fpga_params(
@@ -3693,12 +3693,12 @@ pavona_test(
     name = "pwrmgr_deep_sleep_all_wake_ups",
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     fpga = fpga_params(
@@ -3731,12 +3731,12 @@ pavona_test(
     name = "pwrmgr_random_sleep_all_wake_ups",
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     fpga = fpga_params(
@@ -3774,8 +3774,8 @@ pavona_test(
     name = "sleep_pin_wake_test",
     srcs = ["sleep_pin_wake_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         test_cmd = """
@@ -3792,7 +3792,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_wake",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:pinmux",
@@ -3812,7 +3812,7 @@ pavona_test(
 pavona_test(
     name = "pwrmgr_sensor_ctrl_deep_sleep_wake_up",
     srcs = ["pwrmgr_sensor_ctrl_deep_sleep_wake_up.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {"//hw/top_egret:sim_dv": None},
     deps = [
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -3830,11 +3830,11 @@ pavona_test(
     name = "pwrmgr_smoketest",
     srcs = ["pwrmgr_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -3860,10 +3860,10 @@ pavona_test(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     verilator = verilator_params(tags = ["broken"]),
@@ -3882,10 +3882,10 @@ pavona_test(
     name = "pwrmgr_usb_clk_disabled_when_active_test",
     srcs = ["pwrmgr_usb_clk_disabled_when_active_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     # Broken on Verilator. See #24182.
@@ -3906,11 +3906,11 @@ pavona_test(
     name = "rstmgr_smoketest",
     srcs = ["rstmgr_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -3932,11 +3932,11 @@ pavona_test(
     name = "rstmgr_cpu_info_test",
     srcs = ["rstmgr_cpu_info_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -3963,12 +3963,12 @@ pavona_test(
     name = "rstmgr_sw_req_test",
     srcs = ["rstmgr_sw_req_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     qemu = qemu_params(
@@ -3990,12 +3990,12 @@ pavona_test(
     name = "rstmgr_sw_rst_ctrl_test",
     srcs = ["rstmgr_sw_rst_ctrl_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
     ),
     local_defines = pavona_if_ip(
@@ -4021,12 +4021,12 @@ pavona_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ] + pavona_select_top(
         {
-            "earlgrey": [
+            "egret": [
                 "//hw/top:usbdev_c_regs",
                 "//sw/device/lib/dif:usbdev",
             ],
-            # Darjeeling doesn't have a USB Device to test
-            "darjeeling": [],
+            # Dragonfly doesn't have a USB Device to test
+            "dragonfly": [],
         },
         ["@platforms//:incompatible"],
     ),
@@ -4036,11 +4036,11 @@ pavona_test(
     name = "rv_plic_smoketest",
     srcs = ["rv_plic_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -4060,11 +4060,11 @@ pavona_test(
     name = "rv_timer_smoketest",
     srcs = ["rv_timer_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -4083,14 +4083,14 @@ pavona_test(
     srcs = ["rv_timer_systick_test.c"],
     copts = ["-Wno-enum-float-conversion"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
@@ -4104,12 +4104,12 @@ pavona_test(
     name = "spi_device_tpm_tx_rx_test",
     srcs = ["spi_device_tpm_tx_rx_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
         },
     ),
     fpga = fpga_params(
@@ -4132,7 +4132,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
@@ -4152,8 +4152,8 @@ pavona_test(
     name = "spi_device_flash_smoketest",
     srcs = ["spi_device_flash_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         test_cmd = """
@@ -4173,7 +4173,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -4193,10 +4193,10 @@ pavona_test(
     name = "spi_device_ujson_console_test",
     srcs = ["spi_device_ujson_console_test.c"],
     exec_env = dicts.add(
-        EARLGREY_CW340_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
     ),
     fpga = fpga_params(
@@ -4207,7 +4207,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/spi_device_ujson_console_test",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:spi_flash_testutils",
@@ -4223,11 +4223,11 @@ pavona_test(
     name = "spi_device_sleep_test",
     srcs = ["spi_device_sleep_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_CW340_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -4271,7 +4271,7 @@ cc_library(
     hdrs = ["spi_host_flash_test_impl.h"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4294,22 +4294,22 @@ pavona_test(
         # which is not available in Verilator.
         dicts.add(
             dicts.omit(
-                EARLGREY_TEST_ENVS,
-                ["//hw/top_earlgrey:sim_verilator"],
+                EGRET_TEST_ENVS,
+                ["//hw/top_egret:sim_verilator"],
             ),
             # Currently broken on CW340.
             {
-                "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-                "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
-                "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+                "//hw/top_egret:fpga_cw340_test_rom": "broken",
+                "//hw/top_egret:fpga_cw340_rom_with_fake_keys": "broken",
+                "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
             },
         ),
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(timeout = "moderate"),
     deps = [
         ":spi_host_flash_test_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4329,12 +4329,12 @@ pavona_test(
     srcs = ["spi_host_winbond_flash_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # This test requires an SPI flash on the bus, and therefore
             # cannot be tested in Verilator where this is not available.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     # TODO: Remove when zeroRISC CI supports SPI flash.
     fpga = fpga_params(
@@ -4342,7 +4342,7 @@ pavona_test(
     ),
     deps = [
         ":spi_host_flash_test_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4361,10 +4361,10 @@ pavona_test(
     name = "spi_host_config_test",
     srcs = ["spi_host_config_test.c"],
     exec_env = dicts.add(
-        EARLGREY_CW340_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_CW340_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
         },
     ),
     fpga = fpga_params(
@@ -4383,7 +4383,7 @@ pavona_test(
     ),
     deps = [
         ":spi_host_flash_test_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4403,11 +4403,11 @@ pavona_test(
     name = "spi_host_irq_test",
     srcs = ["spi_host_irq_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4428,15 +4428,15 @@ pavona_test(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
         "//hw/top:sensor_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -4462,10 +4462,10 @@ pavona_test(
     name = "sensor_ctrl_wakeup_test",
     srcs = ["sensor_ctrl_wakeup_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     silicon = silicon_params(
@@ -4499,10 +4499,10 @@ pavona_test(
     name = "sleep_pwm_pulses_test",
     srcs = ["sleep_pwm_pulses_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -4511,7 +4511,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top:pwm_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pinmux",
@@ -4531,12 +4531,12 @@ pavona_test(
     srcs = ["sram_ctrl_execution_test.c"],
     exec_env = dicts.omit(
         dicts.add(
-            EARLGREY_TEST_ENVS,
-            DARJEELING_TEST_ENVS,
-            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+            EGRET_TEST_ENVS,
+            DRAGONFLY_TEST_ENVS,
+            EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         ),
         # TODO (#26100): QEMU's `flashgen.py` script does not like this test.
-        ["//hw/top_earlgrey:sim_qemu_rom_with_fake_keys"],
+        ["//hw/top_egret:sim_qemu_rom_with_fake_keys"],
     ),
     deps = [
         "//hw/top/dt",
@@ -4577,8 +4577,8 @@ pavona_test(
     name = "ottf_console_with_gpio_tx_indicator_test",
     srcs = ["ottf_console_with_gpio_tx_indicator_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         # We run this as part of the manuf test suite as we want to run it in
@@ -4595,7 +4595,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/ottf_console_with_gpio_tx_indicator",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/json:provisioning_data",
@@ -4609,10 +4609,10 @@ pavona_test(
     srcs = ["spi_device_ottf_console_test.c"],
     exec_env = dicts.add(
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
-        EARLGREY_CW340_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
     ),
     fpga = fpga_params(
         test_cmd = """
@@ -4622,7 +4622,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:spi_flash_testutils",
@@ -4636,17 +4636,17 @@ pavona_test(
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
-        EARLGREY_CW340_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
         {
             # Currently broken on CW340.
-            "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_test_rom": "broken",
+            "//hw/top_egret:fpga_cw340_sival": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": "broken",
         },
     ),
     fpga = fpga_params(
@@ -4656,7 +4656,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/ottf_dual_console",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:uart_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -4667,11 +4667,11 @@ pavona_test(
     name = "sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_no_scramble_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -4690,11 +4690,11 @@ pavona_test(
     name = "sram_ctrl_sleep_sram_ret_contents_scramble_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_scramble_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -4713,9 +4713,9 @@ pavona_test(
     name = "sram_ctrl_smoketest",
     srcs = ["sram_ctrl_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -4733,11 +4733,11 @@ pavona_test(
     name = "sram_ctrl_subword_access_test",
     srcs = ["sram_ctrl_subword_access_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        DARJEELING_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -4756,12 +4756,12 @@ pavona_test(
     name = "uart_smoketest",
     srcs = ["uart_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_CW340_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -4787,8 +4787,8 @@ pavona_test(
     name = "usbdev_pincfg_test",
     srcs = ["usbdev_pincfg_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     # TODO: Remove when zeroRISC CI supports USB.
     fpga = fpga_params(
@@ -4805,7 +4805,7 @@ pavona_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:usbdev",
@@ -4821,8 +4821,8 @@ pavona_test(
     name = "usbdev_vbus_test",
     srcs = ["usbdev_vbus_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -4844,7 +4844,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4858,8 +4858,8 @@ pavona_test(
     name = "usbdev_pullup_test",
     srcs = ["usbdev_pullup_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -4880,7 +4880,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4897,7 +4897,7 @@ pavona_test(
     name = "usbdev_aon_wake_disconnect_test",
     srcs = ["usbdev_aon_wake_disconnect_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -4909,7 +4909,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4924,8 +4924,8 @@ pavona_test(
     name = "usbdev_aon_pullup_test",
     srcs = ["usbdev_aon_pullup_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -4946,7 +4946,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4965,13 +4965,13 @@ pavona_test(
     srcs = ["usbdev_aon_wake_reset_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             [
-                "//hw/top_earlgrey:sim_dv",
-                "//hw/top_earlgrey:sim_verilator",
+                "//hw/top_egret:sim_dv",
+                "//hw/top_egret:sim_verilator",
             ],
         ),
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         tags = ["manual"],
@@ -4991,7 +4991,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -5006,8 +5006,8 @@ pavona_test(
     name = "usbdev_setuprx_test",
     srcs = ["usbdev_setuprx_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -5030,7 +5030,7 @@ pavona_test(
     # Broken on Verilator. See #24182.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -5044,8 +5044,8 @@ pavona_test(
     name = "usbdev_config_host_test",
     srcs = ["usbdev_config_host_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -5071,7 +5071,7 @@ pavona_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -5086,8 +5086,8 @@ pavona_test(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         tags = ["manual"],
@@ -5121,11 +5121,11 @@ pavona_test(
     name = "usbdev_mem_test",
     srcs = ["usbdev_mem_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -5143,8 +5143,8 @@ pavona_test(
         ":usbdev_stream_host_harness",
     ],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -5166,7 +5166,7 @@ pavona_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5184,8 +5184,8 @@ pavona_test(
         ":usbdev_stream_host_harness",
     ],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -5207,7 +5207,7 @@ pavona_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5225,8 +5225,8 @@ pavona_test(
         ":usbdev_stream_host_harness",
     ],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -5248,7 +5248,7 @@ pavona_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5263,8 +5263,8 @@ pavona_test(
     name = "usbdev_toggle_restore_test",
     srcs = ["usbdev_toggle_restore_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         # TODO: Remove when zeroRISC CI supports USB.
@@ -5285,7 +5285,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5298,9 +5298,9 @@ pavona_test(
     name = "usbdev_logging_test",
     srcs = ["usbdev_logging_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_egret:fpga_cw310_test_rom": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
     },
     fpga = fpga_params(
         timeout = "eternal",
@@ -5315,7 +5315,7 @@ pavona_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5333,7 +5333,7 @@ cc_library(
     hdrs = ["usbdev_suspend.h"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
@@ -5369,12 +5369,12 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -5409,12 +5409,12 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -5450,12 +5450,12 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -5494,12 +5494,12 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -5535,12 +5535,12 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -5576,12 +5576,12 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -5617,12 +5617,12 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -5650,9 +5650,9 @@ pavona_test(
     # This test cannot be implemented on the CW310/CW340 because
     # there is no VBUS control so we cannot disconnect the device.
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -5677,16 +5677,16 @@ pavona_test(
     srcs = ["rstmgr_alert_info_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
             # TODO(lowrisc/opentitan#20589): Enable _sival* tests when bug is fixed
-            "//hw/top_earlgrey:fpga_cw310_sival": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival": "broken",
+            "//hw/top_egret:fpga_cw340_sival": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_dragonfly:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -5734,7 +5734,7 @@ pavona_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ] + pavona_select_top(
         {
-            "earlgrey": [
+            "egret": [
                 "//sw/device/lib/dif:flash_ctrl",
                 "//sw/device/lib/testing:flash_ctrl_testutils",
                 "//sw/device/lib/testing:keymgr_testutils",
@@ -5751,12 +5751,12 @@ pavona_test(
         "rv_core_ibex_rnd_test.c",
     ],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -5778,13 +5778,13 @@ pavona_test(
     ],
     exec_env = {
         # This test needs access address translation unit which is blocked by rom_ext.
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_darjeeling:sim_dv": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
+        "//hw/top_dragonfly:sim_dv": None,
     },
     deps = [
         "//hw/top/dt",
@@ -5802,12 +5802,12 @@ pavona_test(
     name = "rv_core_ibex_nmi_irq_test",
     srcs = ["rv_core_ibex_nmi_irq_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     silicon = silicon_params(
@@ -5832,11 +5832,11 @@ pavona_test(
     name = "rv_core_ibex_icache_invalidate_test",
     srcs = ["rv_core_ibex_icache_invalidate_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     deps = [
@@ -5849,12 +5849,12 @@ pavona_test(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
@@ -5892,7 +5892,7 @@ otp_json(
 
 otp_image(
     name = "power_virus_systemtest_otp_img_rma",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":power_virus_systemtest_otp_overlay"],
     visibility = ["//visibility:private"],
 )
@@ -5904,20 +5904,20 @@ pavona_test(
         otp = ":power_virus_systemtest_otp_img_rma",
     ),
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
             # This test does not support the fpga_cw310_sival target because the
             # test program doesn't fit inside the ROM_EXT partition size (~64KB).
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_test_rom": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
-        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_prod_manuf_personalized",
+        otp = "//hw/top_egret/data/otp/emulation:otp_img_prod_manuf_personalized",
         test_cmd = """
             --bootstrap="{firmware}"
         """,
@@ -5942,7 +5942,7 @@ pavona_test(
         "//hw/top:spi_host_c_regs",
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:acc",
@@ -5983,8 +5983,8 @@ pavona_test(
     name = "spi_passthru_test",
     srcs = ["spi_passthru_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         timeout = "long",
@@ -6036,7 +6036,7 @@ otp_json(
 
 otp_image(
     name = "flash_scrambling_smoketest_otp_img_rma",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":flash_scrambling_smoketest_otp_overlay"],
     visibility = ["//visibility:private"],
 )
@@ -6048,7 +6048,7 @@ pavona_test(
         otp = ":flash_scrambling_smoketest_otp_img_rma",
     ),
     exec_env = {
-        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
     },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -6056,12 +6056,12 @@ pavona_test(
 )
 
 _SIVAL_OTP_IMAGE = {
-    "test_unlocked1": "//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked1_manuf_individualized",
-    "test_locked0": "//hw/top_earlgrey/data/otp/emulation:otp_img_test_locked0_manuf_initialized",
-    "dev": "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_personalized",
-    "prod": "//hw/top_earlgrey/data/otp/emulation:otp_img_prod_manuf_personalized",
-    "prod_end": "//hw/top_earlgrey/data/otp/emulation:otp_img_prod_end_manuf_personalized",
-    "rma": "//hw/top_earlgrey/data/otp/emulation:otp_img_rma_manuf_personalized",
+    "test_unlocked1": "//hw/top_egret/data/otp/emulation:otp_img_test_unlocked1_manuf_individualized",
+    "test_locked0": "//hw/top_egret/data/otp/emulation:otp_img_test_locked0_manuf_initialized",
+    "dev": "//hw/top_egret/data/otp/emulation:otp_img_dev_manuf_personalized",
+    "prod": "//hw/top_egret/data/otp/emulation:otp_img_prod_manuf_personalized",
+    "prod_end": "//hw/top_egret/data/otp/emulation:otp_img_prod_end_manuf_personalized",
+    "rma": "//hw/top_egret/data/otp/emulation:otp_img_rma_manuf_personalized",
 }
 
 _RV_DM_JTAG_LC_STATES = get_lc_items(
@@ -6087,7 +6087,7 @@ _RV_DM_TEST_CONFIGURATIONS = [
         "name": "dev_rv_dm_delayed_enabled",
         "lc_state": "dev",
         "rv_dm_delayed_en": "--rv-dm-delayed-enable",
-        "otp": "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
+        "otp": "//hw/top_egret/data/otp/emulation:otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
     },
     {
         "name": "rma",
@@ -6102,8 +6102,8 @@ _RV_DM_TEST_CONFIGURATIONS = [
         name = "rv_dm_csr_rw_{}".format(test_cfg["name"]),
         srcs = ["rv_dm_delayed_enable.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6145,8 +6145,8 @@ test_suite(
         name = "rv_dm_mem_access_{}".format(test_cfg["name"]),
         srcs = ["rv_dm_delayed_enable.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             timeout = "moderate",
@@ -6190,8 +6190,8 @@ test_suite(
         name = "rv_dm_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6230,10 +6230,10 @@ _RV_DM_TAP_SEL_LC_STATES = get_lc_items(
         name = "rv_dm_jtag_tap_sel_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = dicts.add(
-            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
+            EGRET_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
             {
-                "//hw/top_earlgrey:fpga_cw310_sival": None,
-                "//hw/top_earlgrey:fpga_cw340_sival": None,
+                "//hw/top_egret:fpga_cw310_sival": None,
+                "//hw/top_egret:fpga_cw340_sival": None,
             },
         ),
         fpga = fpga_params(
@@ -6297,10 +6297,10 @@ _LC_STATES_DEBUG_DISALLOWED = [
         name = "rv_dm_lc_disabled_tl_{}".format(lc_state),
         srcs = ["rv_dm_lc_disabled.c"],
         exec_env = dicts.add(
-            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
+            EGRET_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
             {
-                "//hw/top_earlgrey:fpga_cw310_sival": None,
-                "//hw/top_earlgrey:fpga_cw340_sival": None,
+                "//hw/top_egret:fpga_cw310_sival": None,
+                "//hw/top_egret:fpga_cw340_sival": None,
             },
         ),
         fpga = fpga_params(
@@ -6310,7 +6310,7 @@ _LC_STATES_DEBUG_DISALLOWED = [
             ],
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:lc_ctrl_testutils",
@@ -6334,10 +6334,10 @@ test_suite(
         name = "rv_dm_lc_disabled_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = dicts.add(
-            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
+            EGRET_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
             {
-                "//hw/top_earlgrey:fpga_cw310_sival": None,
-                "//hw/top_earlgrey:fpga_cw340_sival": None,
+                "//hw/top_egret:fpga_cw310_sival": None,
+                "//hw/top_egret:fpga_cw340_sival": None,
             },
         ),
         fpga = fpga_params(
@@ -6376,10 +6376,10 @@ test_suite(
         name = "rv_dm_ndm_reset_req_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6405,7 +6405,7 @@ test_suite(
             "//sw/device/lib/testing/test_framework:ottf_main",
         ] + pavona_select_top(
             {
-                "darjeeling": [
+                "dragonfly": [
                     "//hw/top:keymgr_dpe_c_regs",
                 ],
             },
@@ -6434,10 +6434,10 @@ test_suite(
         name = "rv_dm_ndm_reset_req_when_cpu_halted_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6477,9 +6477,9 @@ test_suite(
         name = "rv_dm_dtm_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_dv": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6493,7 +6493,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:dtm",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
@@ -6519,9 +6519,9 @@ test_suite(
         name = "rv_dm_control_status_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_dv": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6535,7 +6535,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:control_status",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
@@ -6561,9 +6561,9 @@ test_suite(
         name = "rv_dm_access_after_wakeup_{}".format(lc_state),
         srcs = ["rv_dm_access_after_wakeup.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_dv": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6620,8 +6620,8 @@ test_suite(
         name = "rv_dm_access_after_hw_reset_{}".format(lc_state),
         srcs = ["rv_dm_access_after_hw_reset.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6662,12 +6662,12 @@ pavona_test(
     name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp:img_test_unlocked0",
+        otp = "//hw/top_egret/data/otp:img_test_unlocked0",
         # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = ["broken"],
         test_cmd = """
@@ -6687,7 +6687,7 @@ pavona_test(
         "i2c_target_smbus_arp_test.c",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
         test_cmd = """
@@ -6716,9 +6716,9 @@ pavona_test(
         "i2c_host_override_test.c",
     ],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -6759,9 +6759,9 @@ pavona_test(
         "i2c_target_test.c",
     ],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -6806,7 +6806,7 @@ pavona_test(
     name = "status_report_test",
     srcs = ["status_report_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_egret:fpga_cw310_test_rom": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS!",
@@ -6831,7 +6831,7 @@ pavona_test(
     name = "status_report_overflow_test",
     srcs = ["status_report_overflow_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_egret:fpga_cw310_test_rom": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS!",
@@ -6850,10 +6850,10 @@ pavona_test(
     # platforms (as well as the RTL sim platforms) as these are the only
     # compatible with both pre- and post-silicon test environments.
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
     },
     fpga = fpga_params(
         test_cmd = " ".join([
@@ -6876,11 +6876,11 @@ pavona_test(
     srcs = ["sysrst_ctrl_inputs_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -6898,7 +6898,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_inputs",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
@@ -6915,11 +6915,11 @@ pavona_test(
     srcs = ["sysrst_ctrl_outputs_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -6954,11 +6954,11 @@ pavona_test(
     srcs = ["sysrst_ctrl_in_irq_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -6976,7 +6976,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_in_irq",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
@@ -6994,11 +6994,11 @@ pavona_test(
     name = "sysrst_ctrl_ec_rst_l_test",
     srcs = ["sysrst_ctrl_ec_rst_l_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -7014,7 +7014,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ec_rst_l",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
@@ -7034,11 +7034,11 @@ pavona_test(
     srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -7076,11 +7076,11 @@ pavona_test(
     srcs = ["sysrst_ctrl_reset_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -7116,9 +7116,9 @@ pavona_test(
     name = "sram_ctrl_memset_test",
     srcs = ["sram_ctrl_memset_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -7136,9 +7136,9 @@ pavona_test(
     name = "sram_ctrl_readback_test",
     srcs = ["sram_ctrl_readback_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     deps = [
         "//hw/top/dt",
@@ -7159,12 +7159,12 @@ pavona_test(
         # This test is not compatible with the test_rom because the test_rom
         # does not respect the exec_disabled OTP config word.
         dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:fpga_cw310_test_rom"],
+            EGRET_TEST_ENVS,
+            ["//hw/top_egret:fpga_cw310_test_rom"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
     fpga = fpga_params(
@@ -7203,8 +7203,8 @@ pavona_binary(
         "rv_core_ibex_isa_test.c",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -7222,8 +7222,8 @@ pavona_test(
         "rv_core_ibex_isa_test.c",
     ],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
         "//sw/device/lib/runtime:log",
@@ -7249,12 +7249,12 @@ pavona_test(
         # This test is not compatible with the test_rom because the test_rom
         # does not respect the exec_disabled OTP config word.
         dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:fpga_cw310_test_rom"],
+            EGRET_TEST_ENVS,
+            ["//hw/top_egret:fpga_cw310_test_rom"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -7292,10 +7292,10 @@ pavona_binary(
     ],
     exec_env = dicts.add(
         {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -7321,18 +7321,18 @@ pavona_test(
     srcs = ["uart_tx_rx_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        #EARLGREY_CW340_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        #EGRET_CW340_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
             # See #23468, currently broken on SAM3X execution environments.
-            "//hw/top_earlgrey:fpga_cw310_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
-            "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_test_rom": "broken",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_test_rom": "broken",
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -7380,13 +7380,13 @@ pavona_test(
         # This test is not compatible with the test_rom because the test_rom
         # does not respect the exec_disabled OTP config word.
         dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:fpga_cw310_test_rom"],
+            EGRET_TEST_ENVS,
+            ["//hw/top_egret:fpga_cw310_test_rom"],
         ),
         {
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -7422,16 +7422,16 @@ pavona_binary(
     testonly = True,
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:silicon_creator": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         "//hw/top:pwm_c_regs",
         "//hw/top:rv_timer_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:flash_ctrl",
@@ -7453,15 +7453,15 @@ pavona_test(
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:sim_verilator"],
+            EGRET_TEST_ENVS,
+            ["//hw/top_egret:sim_verilator"],
         ),
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
         "//hw/top:pwm_c_regs",
         "//hw/top:rv_timer_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:flash_ctrl",
@@ -7491,11 +7491,11 @@ pavona_test(
     srcs = ["uart_baud_rate_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": "broken",
         },
     ),
     fpga = fpga_params(
@@ -7516,7 +7516,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
@@ -7534,15 +7534,15 @@ pavona_test(
     srcs = ["uart_loopback_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
             # See #23468: currently broken over the SAM3X interface.
-            "//hw/top_earlgrey:fpga_cw310_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
-            "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_test_rom": "broken",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_test_rom": "broken",
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -7563,7 +7563,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
@@ -7579,12 +7579,12 @@ pavona_test(
     name = "entropy_src_fw_override_test",
     srcs = ["entropy_src_fw_override_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     # This takes around 2 hours to run on Verilator, and so should only be
     # run manually for debugging purposes.
@@ -7620,16 +7620,16 @@ pavona_test(
     srcs = ["uart_parity_break_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
             # See #23468: currently broken over the SAM3X interface.
-            "//hw/top_earlgrey:fpga_cw310_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
-            "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_test_rom": "broken",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_test_rom": "broken",
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -7668,11 +7668,11 @@ pavona_test(
     name = "sram_ctrl_scrambled_access_test",
     srcs = ["sram_ctrl_scrambled_access_test.c"],
     exec_env = dicts.add(
-        EARLGREY_CW340_TEST_ENVS,
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_CW340_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
     ),
     deps = [
@@ -7694,8 +7694,8 @@ pavona_test(
     name = "pwrmgr_usbdev_smoketest",
     srcs = ["pwrmgr_usbdev_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     # Broken on Verilator. See #24182.
     verilator = verilator_params(tags = ["broken"]),
@@ -7714,8 +7714,8 @@ pavona_test(
     name = "pwrmgr_lowpower_cancel_test",
     srcs = ["pwrmgr_lowpower_cancel_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
         "//hw/top:pwrmgr_c_regs",
@@ -7738,13 +7738,13 @@ pavona_test(
     name = "sram_ctrl_lc_escalation_test",
     srcs = ["sram_ctrl_lc_escalation_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
         timeout = "moderate",
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_rma_manuf_personalized",
+        otp = "//hw/top_egret/data/otp/emulation:otp_img_rma_manuf_personalized",
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
@@ -7770,12 +7770,12 @@ pavona_test(
     name = "sleep_pin_mio_dio_val_test",
     srcs = ["sleep_pin_mio_dio_val_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -7811,15 +7811,15 @@ pavona_test(
     srcs = ["sleep_pin_retention_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
             # See #23468, currently broken in SAM3X execution environments.
-            "//hw/top_earlgrey:fpga_cw310_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
-            "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_test_rom": "broken",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_test_rom": "broken",
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -7856,13 +7856,13 @@ pavona_test(
     name = "pattgen_ios_test",
     srcs = ["pattgen_ios_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -7883,7 +7883,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/pattgen:pattgen_ios",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pattgen",
@@ -7902,12 +7902,12 @@ pavona_test(
     name = "hmac_error_conditions_test",
     srcs = ["hmac_error_conditions_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
         },
-        DARJEELING_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
@@ -7928,7 +7928,7 @@ cc_library(
     srcs = ["rom_exit_immediately.S"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ],
@@ -7937,7 +7937,7 @@ cc_library(
 pavona_test(
     name = "rom_exit_immediately",
     exec_env = {
-        "//hw/top_earlgrey:sim_qemu_base": None,
+        "//hw/top_egret:sim_qemu_base": None,
     },
     kind = "rom",
     linker_script = "//sw/device/lib/testing/test_rom:linker_script",
@@ -7951,7 +7951,7 @@ pavona_test(
 pavona_test(
     name = "dma_inline_hashing",
     srcs = ["dma_inline_hashing.c"],
-    exec_env = DARJEELING_TEST_ENVS,
+    exec_env = DRAGONFLY_TEST_ENVS,
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/base:macros",
@@ -7971,7 +7971,7 @@ pavona_test(
 pavona_test(
     name = "dma_abort",
     srcs = ["dma_abort.c"],
-    exec_env = DARJEELING_TEST_ENVS,
+    exec_env = DRAGONFLY_TEST_ENVS,
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/base:macros",
@@ -7989,7 +7989,7 @@ pavona_test(
 pavona_test(
     name = "keymgr_dpe_key_derivation_test",
     srcs = ["keymgr_dpe_key_derivation_test.c"],
-    exec_env = DARJEELING_TEST_ENVS,
+    exec_env = DRAGONFLY_TEST_ENVS,
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/arch:device",
@@ -8007,9 +8007,9 @@ pavona_test(
 pavona_test(
     name = "mbx_smoketest",
     srcs = ["mbx_smoketest.c"],
-    exec_env = DARJEELING_TEST_ENVS,
+    exec_env = DRAGONFLY_TEST_ENVS,
     deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
         "//sw/device/lib/dif:mbx",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:sram_ctrl",
@@ -8023,9 +8023,9 @@ pavona_test(
 pavona_test(
     name = "soc_proxy_smoketest",
     srcs = ["soc_proxy_smoketest.c"],
-    exec_env = DARJEELING_TEST_ENVS,
+    exec_env = DRAGONFLY_TEST_ENVS,
     deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -8042,9 +8042,9 @@ pavona_test(
 pavona_test(
     name = "soc_proxy_external_wakeup",
     srcs = ["soc_proxy_external_wakeup.c"],
-    exec_env = DARJEELING_TEST_ENVS,
+    exec_env = DRAGONFLY_TEST_ENVS,
     deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
@@ -8061,9 +8061,9 @@ pavona_test(
 pavona_test(
     name = "soc_proxy_gpios",
     srcs = ["soc_proxy_gpios.c"],
-    exec_env = DARJEELING_TEST_ENVS,
+    exec_env = DRAGONFLY_TEST_ENVS,
     deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:soc_proxy",
         "//sw/device/lib/runtime:log",
@@ -8077,8 +8077,8 @@ pavona_test(
     name = "ottf_alert_catch_test",
     srcs = ["ottf_alert_catch_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         exit_failure = "FAIL!",

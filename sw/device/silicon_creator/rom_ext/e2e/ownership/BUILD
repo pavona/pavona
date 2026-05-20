@@ -30,8 +30,8 @@ pavona_binary(
         "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
     },
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     deps = [
         "//sw/device/lib/base:status",
@@ -51,12 +51,12 @@ pavona_binary(
         "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
     },
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -375,7 +375,7 @@ ownership_transfer_test(
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_log",
@@ -460,7 +460,7 @@ _FLASH_PERMISSION_TESTS = {
         ),
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -632,11 +632,11 @@ pavona_binary(
         "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
     },
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -679,7 +679,7 @@ ownership_transfer_test(
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/testing/test_framework:ottf_main",

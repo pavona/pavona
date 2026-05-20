@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/drivers/usb.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 typedef struct rescue_mode_properties {
   // The FourCC of the mode we want to set.

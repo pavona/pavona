@@ -175,7 +175,7 @@ class Mapfile(object):
         self.sections = []
         self.memory = {
             # It appears the clang-lld mapfile doesn't include the memory layout.
-            # Punt and supply the earlgrey layout.
+            # Punt and supply the egret layout.
             'ram_ret_aon': (0x40600000, 0x40601000),
             'eflash': (0x20000000, 0x20100000),
             'ram_main': (0x10000000, 0x10020000),

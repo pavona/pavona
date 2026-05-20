@@ -10,7 +10,7 @@ The documentation generated will consist of a set of RACL configuration tables f
 The SV parameters generated will the be a set of parameters of type `racl_policy_sel_t` that characterize the given IP's RACL policies.
 The SV output is partially derived from the topgen template [`toplevel_racl_pkg_parameters.tpl`](../topgen/templates/toplevel_racl_pkg_parameters.tpl).
 
-For an example of what raclgen output looks like, consult [`hw/top_darjeeling/ip_autogen/racl_ctrl/doc/racl_configuration.md`](../../hw/top_darjeeling/ip_autogen/racl_ctrl/doc/racl_configuration.md) and [`hw/top_darjeeling/rtl/autogen/top_darjeeling_racl_pkg.sv`](../../hw/top_darjeeling/rtl/autogen/top_darjeeling_racl_pkg.sv).
+For an example of what raclgen output looks like, consult [`hw/top_dragonfly/ip_autogen/racl_ctrl/doc/racl_configuration.md`](../../hw/top_dragonfly/ip_autogen/racl_ctrl/doc/racl_configuration.md) and [`hw/top_dragonfly/rtl/autogen/top_dragonfly_racl_pkg.sv`](../../hw/top_dragonfly/rtl/autogen/top_dragonfly_racl_pkg.sv).
 
 Like ipgen, raclgen can be used both as a command line tool and a Python library.
 

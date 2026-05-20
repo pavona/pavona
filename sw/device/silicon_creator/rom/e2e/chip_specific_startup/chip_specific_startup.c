@@ -25,7 +25,7 @@
 #include "hw/top/lc_ctrl_regs.h"  // Generated.
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
@@ -65,9 +65,9 @@ void entropy_config_read(rom_entropy_config_t *entropy) {
   // We read the entropy and rng configs directly from the peripherals because
   // we want to evaluate the mubi values in the test harness.
   mmio_region_t entropy_src =
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
-  mmio_region_t csrng = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
-  mmio_region_t edn = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR);
+  mmio_region_t csrng = mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR);
+  mmio_region_t edn = mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR);
 
   entropy->entropy_src =
       mmio_region_read32(entropy_src, ENTROPY_SRC_CONF_REG_OFFSET);
@@ -83,13 +83,13 @@ status_t test_chip_specific_startup(ujson_t *uj) {
 
   LOG_INFO("Initializing DIFs");
   TRY(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
       &sram_ctrl));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
-  TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR),
+                       &lc));
+  TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR),
                       &clkmgr));
 
   LOG_INFO("Querying hardware");
@@ -135,7 +135,7 @@ status_t test_chip_specific_startup(ujson_t *uj) {
   // Read out the AST_DONE bit.  The test harness will evaluate it for
   // correctness based on the OTP configuration.
   mmio_region_t sensor_ctrl =
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_SENSOR_CTRL_AON_BASE_ADDR);
   cs.ast_init_done = bitfield_bit32_read(
       mmio_region_read32(sensor_ctrl, SENSOR_CTRL_STATUS_REG_OFFSET),
       SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT);

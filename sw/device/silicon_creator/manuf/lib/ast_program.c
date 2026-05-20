@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #ifndef AST_PROGRAM_UNITTEST
 // In normal operation, AST writes should go directly to the AST
@@ -34,15 +34,15 @@ dif_uart_t uart0;
 
 static status_t setup_uart(bool enable) {
   if (enable) {
-    TRY(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-    TRY(dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInUart0Rx,
-                                kTopEarlgreyPinmuxInselIoc3));
-    TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc3,
-                                 kTopEarlgreyPinmuxOutselConstantHighZ));
-    TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc4,
-                                 kTopEarlgreyPinmuxOutselUart0Tx));
-    TRY(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
+    TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
+                        &pinmux));
+    TRY(dif_pinmux_input_select(&pinmux, kTopEgretPinmuxPeripheralInUart0Rx,
+                                kTopEgretPinmuxInselIoc3));
+    TRY(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoc3,
+                                 kTopEgretPinmuxOutselConstantHighZ));
+    TRY(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoc4,
+                                 kTopEgretPinmuxOutselUart0Tx));
+    TRY(dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR),
                       &uart0));
     TRY(dif_uart_configure(&uart0,
                            (dif_uart_config_t){
@@ -66,7 +66,7 @@ status_t ast_program_init(bool verbose) {
   // Initialize the flash_ctrl DIF.
   TRY(dif_flash_ctrl_init_state(
       &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(flash_ctrl_testutils_wait_for_init(&flash_state));
 
   // Set up parameters for accessing the AST calibration data in flash info page
@@ -105,7 +105,7 @@ status_t ast_program_config(bool verbose) {
   // they will get copied to OTP later and written by the ROM on boot.
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords - 3;
        ++i) {
-    uint32_t addr = TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t);
+    uint32_t addr = TOP_EGRET_AST_BASE_ADDR + i * sizeof(uint32_t);
     uint32_t data = ast_data[i];
     LOG_INFO("\tAddress = 0x%08x, Data = 0x%08x", addr, data);
     ast_write(addr, data);

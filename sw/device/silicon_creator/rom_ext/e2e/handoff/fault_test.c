@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
 #include "hw/top/uart_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 dif_rv_plic_t plic;
 
@@ -52,29 +52,28 @@ void fault_test_main(void) {
   //
   // We expeect the ROM_EXT to report BFV:8b524902.
   dif_result_t result = dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic);
+      mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR), &plic);
   dbg_printf("plic_init = 0x%x\r\n", result);
   // Set IRQ priorities to MAX
   result = (dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdUart0TxWatermark, kDifRvPlicMaxPriority));
+      &plic, kTopEgretPlicIrqIdUart0TxWatermark, kDifRvPlicMaxPriority));
   dbg_printf("plic_set_priority = 0x%x\r\n", result);
   // Set Ibex IRQ priority threshold level
-  result = (dif_rv_plic_target_set_threshold(&plic, kTopEarlgreyPlicTargetIbex0,
+  result = (dif_rv_plic_target_set_threshold(&plic, kTopEgretPlicTargetIbex0,
                                              kDifRvPlicMinPriority));
   dbg_printf("plic_target_set_threshold = 0x%x\r\n", result);
   // Enable IRQs in PLIC
-  result = dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdUart0TxWatermark, kTopEarlgreyPlicTargetIbex0,
-      kDifToggleEnabled);
+  result =
+      dif_rv_plic_irq_set_enabled(&plic, kTopEgretPlicIrqIdUart0TxWatermark,
+                                  kTopEgretPlicTargetIbex0, kDifToggleEnabled);
   dbg_printf("plic_set_enabled = 0x%x\r\n", result);
   irq_global_ctrl(true);
   irq_external_ctrl(true);
   uint32_t val =
       bitfield_bit32_write(0, UART_INTR_COMMON_TX_WATERMARK_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET,
+  abs_mmio_write32(TOP_EGRET_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET,
                    val);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_TEST_REG_OFFSET,
-                   val);
+  abs_mmio_write32(TOP_EGRET_UART0_BASE_ADDR + UART_INTR_TEST_REG_OFFSET, val);
   dbg_printf("HARDWARE_INTERRUPT: FAIL!\r\n");
 #elif defined(NO_FAULT)
   dbg_printf("NO_FAULT: PASS!\r\n");

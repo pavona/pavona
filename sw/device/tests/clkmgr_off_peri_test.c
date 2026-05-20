@@ -23,7 +23,7 @@
 #include "hw/top/spi_host_regs.h"
 #include "hw/top/uart_regs.h"
 #include "hw/top/usbdev_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static const dt_pwrmgr_t kPwrmgrDt = 0;
 static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
@@ -75,15 +75,15 @@ OT_NOINLINE static void usbdev_csr_access(void) {
   CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
 }
 
-peri_context_t peri_context[kTopEarlgreyGateableClocksLast + 1] = {
+peri_context_t peri_context[kTopEgretGateableClocksLast + 1] = {
     {"uart0", uart0_csr_access,
-     TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_STATE_REG_OFFSET},
+     TOP_EGRET_UART0_BASE_ADDR + UART_INTR_STATE_REG_OFFSET},
     {"spi_host1", spi_host1_csr_access,
-     TOP_EARLGREY_SPI_HOST1_BASE_ADDR + SPI_HOST_CONTROL_REG_OFFSET},
+     TOP_EGRET_SPI_HOST1_BASE_ADDR + SPI_HOST_CONTROL_REG_OFFSET},
     {"spi_host0", spi_host0_csr_access,
-     TOP_EARLGREY_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_STATE_REG_OFFSET},
+     TOP_EGRET_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_STATE_REG_OFFSET},
     {"usbdev", usbdev_csr_access,
-     TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET}};
+     TOP_EGRET_USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET}};
 
 /**
  * Test that disabling a 'gateable' unit's clock causes the unit to become
@@ -135,26 +135,26 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_EGRET_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
   // Initialize peripherals.
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+  CHECK_DIF_OK(
+      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host0));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spi_host0));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host1));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR), &spi_host1));
   CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+      mmio_region_from_addr(TOP_EGRET_USBDEV_BASE_ADDR), &usbdev));
 
   // Initialize the retention sram utils.
   ret_sram_testutils_init();
@@ -165,7 +165,7 @@ bool test_main(void) {
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     // Starting clock.
-    dif_clkmgr_gateable_clock_t clock = kTopEarlgreyGateableClocksIoDiv4Peri;
+    dif_clkmgr_gateable_clock_t clock = kTopEgretGateableClocksIoDiv4Peri;
     uint32_t prev_value = 0;
     uint32_t value = 0;
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
@@ -216,7 +216,7 @@ bool test_main(void) {
              peri_context[clock].peripheral_name);
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
 
-    if (clock < kTopEarlgreyGateableClocksLast) {
+    if (clock < kTopEgretGateableClocksLast) {
       CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &clock));
       LOG_INFO("Next clock to test %d", clock);
 

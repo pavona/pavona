@@ -30,7 +30,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
+#define USBDEV_BASE_ADDR TOP_EGRET_USBDEV_BASE_ADDR
 
 /**
  * USB device handle
@@ -145,11 +145,11 @@ bool test_main(void) {
 
   // Ensure that the VBUS/SENSE signal is routed through to the usbdev.
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-      kTopEarlgreyPinmuxInselIoc7));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInUsbdevSense,
+                                       kTopEgretPinmuxInselIoc7));
 
   // Initialize and configure the usbdev with pin flipping set appropriately.
   CHECK_DIF_OK(

@@ -19,7 +19,7 @@
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
 #include "sw/device/silicon_creator/lib/rescue/sfdp.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 const uint32_t rescue_type = kRescueProtocolSpiDfu;
 
@@ -27,7 +27,7 @@ enum {
   /**
    * Base address of the spi_device registers.
    */
-  kBase = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+  kBase = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
   /**
    * The flash buffer is a 2K region within the egress buffer, starting at the
    * beginning of the egress buffer.

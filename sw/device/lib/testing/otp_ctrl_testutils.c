@@ -154,10 +154,10 @@ status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
   // to read the value and compare it against the expected value before
   // performing the write.
   bool check_before_write = (
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
       partition == kDifOtpCtrlPartitionRotCreatorAuthCodesign ||
       partition == kDifOtpCtrlPartitionRotCreatorAuthState ||
-#endif  // OPENTITAN_IS_EARLGREY
+#endif  // OPENTITAN_IS_EGRET
       partition == kDifOtpCtrlPartitionCreatorSwCfg ||
       partition == kDifOtpCtrlPartitionOwnerSwCfg);
   uint32_t stop_address = start_address + (len * sizeof(uint32_t));

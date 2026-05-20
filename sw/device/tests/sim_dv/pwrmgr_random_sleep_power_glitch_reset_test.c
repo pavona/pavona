@@ -33,12 +33,12 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[12] = {0, 1, 2, 3, 4,  5,
                                              6, 7, 8, 9, 10, 11};
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
 
 /**
  * Objects to access the peripherals used in this test via dif API.
@@ -105,34 +105,34 @@ static_assert(
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_egret_plic_peripheral_t peripheral;
   dif_rv_plic_irq_id_t irq_id;
   uint32_t irq = 0;
   uint32_t alert = 0;
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  peripheral = (top_egret_plic_peripheral_t)
+      top_egret_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopEgretPlicPeripheralAonTimerAon) {
     irq =
         (dif_aon_timer_irq_t)(irq_id -
                               (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                                  kTopEgretPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // Stops escalation process.
     CHECK_DIF_OK(dif_alert_handler_escalation_clear(&alert_handler,
                                                     kDifAlertHandlerClassA));
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
 
-    CHECK(irq != kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
+    CHECK(irq != kTopEgretPlicIrqIdAonTimerAonWdogTimerBark,
           "AON Timer Wdog should not bark");
 
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  } else if (peripheral == kTopEgretPlicPeripheralAlertHandler) {
     irq = (dif_rv_plic_irq_id_t)(irq_id -
                                  (dif_rv_plic_irq_id_t)
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+                                     kTopEgretPlicIrqIdAlertHandlerClassa);
 
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, alert));
 
@@ -173,8 +173,8 @@ void init_peripherals(void) {
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
 
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &plic, kPlicTarget, kTopEgretPlicIrqIdAonTimerAonWkupTimerExpired,
+      kTopEgretPlicIrqIdAonTimerAonWdogTimerBark);
 
   // Initialize alert handler.
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
@@ -196,7 +196,7 @@ void init_peripherals(void) {
  * wdog is programed to bark.
  */
 static void alert_handler_config(void) {
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[] = {kTopEgretAlertIdPwrmgrAonFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
   uint32_t cycles[3] = {0};
@@ -406,8 +406,8 @@ bool test_main(void) {
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+                                     kTopEgretPlicIrqIdAlertHandlerClassa,
+                                     kTopEgretPlicIrqIdAlertHandlerClassd);
 
   alert_handler_config();
 

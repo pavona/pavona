@@ -87,12 +87,11 @@ status_t execute_test(void) {
   TRY(dif_aes_init_from_dt(kDtAes, &aes));
   TRY(dif_aes_reset(&aes));
   // Initialize EDN0, EDN1, CSRNG and Entropy Source
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
-  TRY(dif_csrng_init(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                     &csrng));
+  TRY(dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR), &edn0));
+  TRY(dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN1_BASE_ADDR), &edn1));
+  TRY(dif_csrng_init(mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR), &csrng));
   TRY(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+      mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR), &entropy_src));
 
   // Generate key with index 0
   generate_new_key(&key, 0);
@@ -117,7 +116,7 @@ status_t execute_test(void) {
   // Create plaintext with random data
   dif_rv_core_ibex_t rv_core_ibex;
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
   for (uint32_t i = 0; i < ARRAYSIZE(plain_text); ++i) {
     for (uint32_t j = 0; j < kDifAesBlockNumBytes; ++j) {

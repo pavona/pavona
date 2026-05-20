@@ -1,0 +1,1 @@
+../../../../top_egret/ip/ast/rtl/sys_osc.sv

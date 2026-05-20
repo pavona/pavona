@@ -5,15 +5,15 @@
 #include "sw/device/lib/testing/dma_testutils.h"
 
 #include "hw/top/spi_host_regs.h"  // Generated.
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 
-static const top_darjeeling_direct_pads_t spi_host0_direct_pads[6] = {
-    kTopDarjeelingDirectPadsSpiHost0Sck,   // sck
-    kTopDarjeelingDirectPadsSpiHost0Csb,   // csb
-    kTopDarjeelingDirectPadsSpiHost0Sd3,   // sio[3]
-    kTopDarjeelingDirectPadsSpiHost0Sd2,   // sio[2]
-    kTopDarjeelingDirectPadsSpiHost0Sd1,   // sio[1]
-    kTopDarjeelingDirectPadsSpiHost0Sd0};  // sio[0]
+static const top_dragonfly_direct_pads_t spi_host0_direct_pads[6] = {
+    kTopDragonflyDirectPadsSpiHost0Sck,   // sck
+    kTopDragonflyDirectPadsSpiHost0Csb,   // csb
+    kTopDragonflyDirectPadsSpiHost0Sd3,   // sio[3]
+    kTopDragonflyDirectPadsSpiHost0Sd2,   // sio[2]
+    kTopDragonflyDirectPadsSpiHost0Sd1,   // sio[1]
+    kTopDragonflyDirectPadsSpiHost0Sd0};  // sio[0]
 
 /**
  * Initialize the provided SPI host for being used in the DMA hardware handshake
@@ -69,7 +69,7 @@ void setup_spi_dma_transaction(dif_spi_host_t *spi_host, dif_dma_t *dma,
 
   // Configure the DMA to read from SPI in hardware-handshake mode
   dif_dma_transaction_t transaction = {
-      .source = {.address = TOP_DARJEELING_SPI_HOST0_BASE_ADDR +
+      .source = {.address = TOP_DRAGONFLY_SPI_HOST0_BASE_ADDR +
                             SPI_HOST_RXDATA_REG_OFFSET,
                  .asid = kDifDmaOpentitanInternalBus},
       .destination = {.address = (uint32_t)&rx_buffer[0],
@@ -81,8 +81,8 @@ void setup_spi_dma_transaction(dif_spi_host_t *spi_host, dif_dma_t *dma,
       .width = kDifDmaTransWidth4Bytes};
 
   CHECK_DIF_OK(
-      dif_dma_memory_range_set(dma, TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-                               TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES));
+      dif_dma_memory_range_set(dma, TOP_DRAGONFLY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+                               TOP_DRAGONFLY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES));
   // Enable LSIO trigger for SPI host at bit 1
   CHECK_DIF_OK(dif_dma_handshake_irq_enable(dma, 0x2));
   CHECK_DIF_OK(dif_dma_configure(dma, transaction));

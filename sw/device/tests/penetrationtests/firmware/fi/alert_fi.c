@@ -47,7 +47,7 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/alert_fi_commands.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -98,128 +98,127 @@ enum { kNumberTestRegisters = 63 };
 
 static status_t init_peripherals(void) {
   mmio_region_t base_addr;
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR);
   TRY(dif_alert_handler_init(base_addr, &alert_handler));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_ADC_CTRL_AON_BASE_ADDR);
   TRY(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR);
   TRY(dif_aes_init(base_addr, &aes));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_AON_TIMER_AON_BASE_ADDR);
   TRY(dif_aon_timer_init(base_addr, &aon_timer_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR);
   TRY(dif_clkmgr_init(base_addr, &clkmgr_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR);
   TRY(dif_csrng_init(base_addr, &csrng));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR);
   TRY(dif_edn_init(base_addr, &edn0));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_EDN1_BASE_ADDR);
   TRY(dif_edn_init(base_addr, &edn1));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR);
   TRY(dif_entropy_src_init(base_addr, &entropy_src));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR);
   TRY(dif_flash_ctrl_init(base_addr, &flash_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR);
   TRY(dif_gpio_init(base_addr, &gpio));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_HMAC_BASE_ADDR);
   TRY(dif_hmac_init(base_addr, &hmac));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_I2C0_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c0));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_I2C1_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c1));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_I2C2_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c2));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR);
   TRY(dif_keymgr_init(base_addr, &keymgr));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR);
   TRY(dif_kmac_init(base_addr, &kmac));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR);
   TRY(dif_lc_ctrl_init(base_addr, &lc_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR);
   TRY(dif_acc_init(base_addr, &acc));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR);
   TRY(dif_otp_ctrl_init(base_addr, &otp_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PATTGEN_BASE_ADDR);
   TRY(dif_pattgen_init(base_addr, &pattgen));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PWM_AON_BASE_ADDR);
   TRY(dif_pwm_init(base_addr, &pwm_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PWRMGR_AON_BASE_ADDR);
   TRY(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_ROM_CTRL_REGS_BASE_ADDR);
   TRY(dif_rom_ctrl_init(base_addr, &rom_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR);
   TRY(dif_rstmgr_init(base_addr, &rstmgr_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR);
   TRY(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &rv_plic));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_RV_TIMER_BASE_ADDR);
   TRY(dif_rv_timer_init(base_addr, &rv_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SENSOR_CTRL_AON_BASE_ADDR);
   TRY(dif_sensor_ctrl_init(base_addr, &sensor_ctrl_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SPI_DEVICE_BASE_ADDR);
   TRY(dif_spi_device_init(base_addr, &spi_device));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR);
   TRY(dif_spi_host_init(base_addr, &spi_host0));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR);
   TRY(dif_spi_host_init(base_addr, &spi_host1));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR);
   TRY(dif_sram_ctrl_init(base_addr, &sram_ctrl_main));
 
-  base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
   TRY(dif_sram_ctrl_init(base_addr, &sram_ctrl_ret_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SYSRST_CTRL_AON_BASE_ADDR);
   TRY(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR);
   TRY(dif_uart_init(base_addr, &uart0));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_UART1_BASE_ADDR);
   TRY(dif_uart_init(base_addr, &uart1));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_UART2_BASE_ADDR);
   TRY(dif_uart_init(base_addr, &uart2));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_UART3_BASE_ADDR);
   TRY(dif_uart_init(base_addr, &uart3));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_USBDEV_BASE_ADDR);
   TRY(dif_usbdev_init(base_addr, &usbdev));
 
   return OK_STATUS();
@@ -636,7 +635,7 @@ status_t handle_alert_fi_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   // Initialize all HW blocks

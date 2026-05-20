@@ -68,7 +68,7 @@ fn chip_sw_sysrst_ctrl_input(
     setup_pins(transport, config)?;
 
     /* Follow the sequence as in
-     * hw/top_earlgrey/dv/env/seq_lib/chip_sw_sysrst_ctrl_inputs_vseq.sv */
+     * hw/top_egret/dv/env/seq_lib/chip_sw_sysrst_ctrl_inputs_vseq.sv */
     let phase_values = [
         0b00000000u8, /* Phase 0 */
         0b00000001u8,

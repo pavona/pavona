@@ -79,7 +79,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let mut tests = [
         ("aes", top::AES_BASE_ADDR, dif::AES_IV_0_REG_OFFSET),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "adc_ctrl",
             top::ADC_CTRL_AON_BASE_ADDR,
@@ -107,7 +107,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             top::ENTROPY_SRC_BASE_ADDR,
             dif::ENTROPY_SRC_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "flash_ctrl",
             top::FLASH_CTRL_CORE_BASE_ADDR,
@@ -124,17 +124,17 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::HMAC_INTR_ENABLE_REG_OFFSET,
         ),
         ("i2c0", top::I2C0_BASE_ADDR, dif::I2C_INTR_ENABLE_REG_OFFSET),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         ("i2c1", top::I2C1_BASE_ADDR, dif::I2C_INTR_ENABLE_REG_OFFSET),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         ("i2c2", top::I2C2_BASE_ADDR, dif::I2C_INTR_ENABLE_REG_OFFSET),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "keymgr",
             top::KEYMGR_BASE_ADDR,
             dif::KEYMGR_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "darjeeling")]
+        #[cfg(feature = "dragonfly")]
         (
             "keymgr_dpe",
             top::KEYMGR_DPE_BASE_ADDR,
@@ -151,7 +151,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             top::OTP_CTRL_CORE_BASE_ADDR,
             dif::OTP_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "pattgen",
             top::PATTGEN_BASE_ADDR,
@@ -162,7 +162,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             top::PINMUX_AON_BASE_ADDR,
             dif::PINMUX_MIO_PAD_ATTR_0_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         ("pwm", top::PWM_AON_BASE_ADDR, dif::PWM_INVERT_REG_OFFSET),
         (
             "pwrmgr",
@@ -180,7 +180,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             top::RV_TIMER_BASE_ADDR,
             dif::RV_TIMER_INTR_ENABLE0_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "sensor_ctrl",
             top::SENSOR_CTRL_AON_BASE_ADDR,
@@ -196,13 +196,13 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             top::SPI_HOST0_BASE_ADDR,
             dif::SPI_HOST_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "spi_host1",
             top::SPI_HOST1_BASE_ADDR,
             dif::SPI_HOST_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "sysrst_ctrl",
             top::SYSRST_CTRL_AON_BASE_ADDR,
@@ -213,25 +213,25 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             top::UART0_BASE_ADDR,
             dif::UART_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "uart1",
             top::UART1_BASE_ADDR,
             dif::UART_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "uart2",
             top::UART2_BASE_ADDR,
             dif::UART_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "uart3",
             top::UART3_BASE_ADDR,
             dif::UART_INTR_ENABLE_REG_OFFSET,
         ),
-        #[cfg(feature = "earlgrey")]
+        #[cfg(feature = "egret")]
         (
             "usbdev",
             top::USBDEV_BASE_ADDR,

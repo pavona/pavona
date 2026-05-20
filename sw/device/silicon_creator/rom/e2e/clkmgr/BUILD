@@ -38,7 +38,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_jitter_enabled",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_jitter_enabled"],
 )
 
@@ -62,13 +62,13 @@ JITTER_TESTCASES = [
         name = "jitter_{}_test".format(testcase["name"]),
         srcs = ["jitter_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = testcase["fpga"],
         local_defines = testcase["defines"],
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/dif:base",
             "//sw/device/lib/dif:clkmgr",
             "//sw/device/lib/testing/test_framework:ottf_main",

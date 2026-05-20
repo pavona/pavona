@@ -23,10 +23,10 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/pwrmgr_sleep_resets_lib.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
 
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
@@ -39,8 +39,8 @@ bool test_main(void) {
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+                                     kTopEgretPlicIrqIdAlertHandlerClassa,
+                                     kTopEgretPlicIrqIdAlertHandlerClassd);
 
   config_alert_handler();
 
@@ -78,8 +78,8 @@ bool test_main(void) {
 
   switch (reset_case) {
     case 0:
-      config_sysrst(kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
-                                                : kTopEarlgreyPinmuxInselIoc0);
+      config_sysrst(kDeviceType == kDeviceSimDV ? kTopEgretPinmuxInselIor13
+                                                : kTopEgretPinmuxInselIoc0);
       prepare_for_sysrst(kPwrmgrSleepResetsLibModesNormalSleep);
       break;
     case 1:

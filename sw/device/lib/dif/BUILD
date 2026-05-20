@@ -41,11 +41,11 @@ DIFS = {
     "acc": {},
     "aes": {},
     "alert_handler": {
-        "ut_target_compatible_with": pavona_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("egret"),
     },
     "aon_timer": {},
     "clkmgr": {
-        "ut_target_compatible_with": pavona_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("egret"),
     },
     "csrng": {
         "deps": [":csrng_shared"],
@@ -69,22 +69,22 @@ DIFS = {
         "deps": ["//sw/device/lib/base:abs_mmio"],
     },
     "otp_ctrl": {
-        "ut_target_compatible_with": pavona_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("egret"),
     },
     "pattgen": {},
     "pinmux": {
-        "ut_target_compatible_with": pavona_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("egret"),
     },
     "pwm": {},
     "pwrmgr": {
-        "ut_target_compatible_with": pavona_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("egret"),
     },
     "rom_ctrl": {},
     "rstmgr": {},
     "rv_core_ibex": {},
     "rv_dm": {},
     "rv_plic": {
-        "ut_target_compatible_with": pavona_require_top("earlgrey"),
+        "ut_target_compatible_with": pavona_require_top("egret"),
     },
     "rv_timer": {},
     "soc_dbg_ctrl": {

@@ -30,7 +30,7 @@ static_assert(kDtGpioPeriphIoCount == kDifGpioNumPins,
  *
  * On FPGA, these patterns are tested as-is. In DV, this symbol is overwritten
  * by the testbench to test completely random patterns. This is done in
- * `hw/top_earlgrey/dv/env/seq_lib/chip_sw_gpio_smoke_vseq.sv`. The DV test
+ * `hw/top_egret/dv/env/seq_lib/chip_sw_gpio_smoke_vseq.sv`. The DV test
  * also checks GPIO pin values at the chip periphery for correctness.
  */
 static const uint32_t kGpioVals[] = {0xAAAAAAAA, 0x55555555, 0xA5A5A5A5,

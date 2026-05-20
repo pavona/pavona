@@ -6,7 +6,7 @@
 gen_ip_collection.py
 Collects IP and top-level sim cfg files and generates batch hjson files.
 Usage:
-    ./gen_ip_collection.py --flow sim_dv --tops top_earlgrey top_darjeeling
+    ./gen_ip_collection.py --flow sim_dv --tops top_egret top_dragonfly
 """
 import argparse
 import glob
@@ -241,7 +241,7 @@ def parse_args():
         required=True,
         nargs="+",
         metavar="TOP",
-        help="One or more tops to collect for (e.g. --tops top_earlgrey top_darjeeling)",
+        help="One or more tops to collect for (e.g. --tops top_egret top_dragonfly)",
     )
     parser.add_argument(
         "--dry-run",

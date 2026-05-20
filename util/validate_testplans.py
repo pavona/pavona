@@ -7,9 +7,9 @@
 This script validates the various opentitan testplan.hjson files.
 Usage:
     ./util/validate_testplans.py --schema hw/lint/sival_testplan_schema.hjson \
-                                 --dir hw/top_earlgrey/data/
+                                 --dir hw/top_egret/data/
     ./util/validate_testplans.py --schema hw/lint/sival_testplan_schema.hjson \
-                                 --dir hw/top_earlgrey/data/ip/
+                                 --dir hw/top_egret/data/ip/
 """
 
 import argparse

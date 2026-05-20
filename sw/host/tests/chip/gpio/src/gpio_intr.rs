@@ -37,7 +37,7 @@ struct Config {
 static CONFIG: LazyLock<HashMap<&'static str, Config>> = LazyLock::new(|| {
     collection! {
          // from:https://github.com/lowRISC/opentitan/
-         // blob/master/hw/top_earlgrey/data/pins_cw310_hyperdebug.xdc
+         // blob/master/hw/top_egret/data/pins_cw310_hyperdebug.xdc
         "hyper310" => Config {
             input: collection! {
                 // The commented lines represent multi-fuction pins.  These will

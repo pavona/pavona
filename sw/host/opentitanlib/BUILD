@@ -65,8 +65,8 @@ RUSTC_ENV = {
 run_binary(
     name = "alert_handler_rust_regs",
     srcs = select({
-        "//hw/top:earlgrey": ["//hw/top_earlgrey/ip_autogen/alert_handler/data:alert_handler.hjson"],
-        "//hw/top:darjeeling": ["//hw/top_darjeeling/ip_autogen/alert_handler/data:alert_handler.hjson"],
+        "//hw/top:egret": ["//hw/top_egret/ip_autogen/alert_handler/data:alert_handler.hjson"],
+        "//hw/top:dragonfly": ["//hw/top_dragonfly/ip_autogen/alert_handler/data:alert_handler.hjson"],
     }),
     outs = ["src/otp/alert_handler_regs.rs"],
     args = [
@@ -74,8 +74,8 @@ run_binary(
         "--outfile",
         "$(location :src/otp/alert_handler_regs.rs)",
     ] + select({
-        "//hw/top:earlgrey": ["$(location //hw/top_earlgrey/ip_autogen/alert_handler/data:alert_handler.hjson)"],
-        "//hw/top:darjeeling": ["$(location //hw/top_darjeeling/ip_autogen/alert_handler/data:alert_handler.hjson)"],
+        "//hw/top:egret": ["$(location //hw/top_egret/ip_autogen/alert_handler/data:alert_handler.hjson)"],
+        "//hw/top:dragonfly": ["$(location //hw/top_dragonfly/ip_autogen/alert_handler/data:alert_handler.hjson)"],
     }),
     tool = "//util:regtool",
 )
@@ -226,12 +226,12 @@ rust_library(
         "src/util/voltage.rs",
         ":src/otp/alert_handler_regs.rs",
     ] + select({
-        "//sw/device:is_english_breakfast": [],
-        "//hw/top:earlgrey": [
+        "//sw/device:is_scafi_deprecated": [],
+        "//hw/top:egret": [
             "src/test_utils/extclk.rs",
             "src/test_utils/pinmux_config.rs",
         ],
-        "//hw/top:darjeeling": [
+        "//hw/top:dragonfly": [
             "src/test_utils/pinmux_config.rs",
         ],
     }),
@@ -245,19 +245,19 @@ rust_library(
         ":ottf",
         "//sw/host/opentitanlib/bindgen:rom_error_enum",
     ] + select({
-        "//hw/top:earlgrey": [
-            "//util/openocd/target:lowrisc-earlgrey.cfg",
-            "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
+        "//hw/top:egret": [
+            "//util/openocd/target:lowrisc-egret.cfg",
+            "//util/openocd/target:lowrisc-egret-lc.cfg",
         ],
-        "//hw/top:darjeeling": [
-            "//util/openocd/target:lowrisc-darjeeling.cfg",
-            "//util/openocd/target:lowrisc-darjeeling-lc.cfg",
+        "//hw/top:dragonfly": [
+            "//util/openocd/target:lowrisc-dragonfly.cfg",
+            "//util/openocd/target:lowrisc-dragonfly-lc.cfg",
         ],
     }),
     crate_features = select({
-        "//sw/device:is_english_breakfast": ["english_breakfast"],
-        "//hw/top:earlgrey": ["earlgrey"],
-        "//hw/top:darjeeling": ["darjeeling"],
+        "//sw/device:is_scafi_deprecated": ["scafi_deprecated"],
+        "//hw/top:egret": ["egret"],
+        "//hw/top:dragonfly": ["dragonfly"],
         "//conditions:default": [],
     }),
     crate_name = "opentitanlib",
@@ -265,18 +265,18 @@ rust_library(
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
     rustc_env = select({
-        "//hw/top:earlgrey": dicts.add(
+        "//hw/top:egret": dicts.add(
             RUSTC_ENV,
             {
-                "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey.cfg)",
-                "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey-lc.cfg)",
+                "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-egret.cfg)",
+                "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-egret-lc.cfg)",
             },
         ),
-        "//hw/top:darjeeling": dicts.add(
+        "//hw/top:dragonfly": dicts.add(
             RUSTC_ENV,
             {
-                "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-darjeeling.cfg)",
-                "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-darjeeling-lc.cfg)",
+                "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-dragonfly.cfg)",
+                "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-dragonfly-lc.cfg)",
             },
         ),
     }),

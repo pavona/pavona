@@ -7,7 +7,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // This is an ad-hoc definition rather than DIF because we normally do not
 // communicate with RV-DM from Ibex core, but use JTAG instead.
@@ -26,8 +26,7 @@ void ottf_load_store_fault_handler(uint32_t *exc_info) {
 }
 
 status_t execute_test(bool debug_func) {
-  mmio_region_t region =
-      mmio_region_from_addr(TOP_EARLGREY_RV_DM_MEM_BASE_ADDR);
+  mmio_region_t region = mmio_region_from_addr(TOP_EGRET_RV_DM_MEM_BASE_ADDR);
 
   // Attempt to write to RV-DM register and read.
   access_exception_seen = false;
@@ -44,7 +43,7 @@ status_t execute_test(bool debug_func) {
 bool test_main(void) {
   dif_lc_ctrl_t lc;
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
+      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc));
 
   bool debug_func = false;
   CHECK_STATUS_OK(lc_ctrl_testutils_debug_func_enabled(&lc, &debug_func));

@@ -82,7 +82,7 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["lc_state"],
             t["bite_threshold"],
         ),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(t["lc_state"]),
+        src = "//hw/top_egret/data/otp:otp_json_{}".format(t["lc_state"]),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_shutdown_watchdog_{}_{}".format(
                 t["lc_state"],
@@ -105,7 +105,7 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["lc_state_val"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             exit_success = t["exit_success"],

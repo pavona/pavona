@@ -10,7 +10,7 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "pavona_test",
@@ -52,7 +52,7 @@ def rv_compliance_test(name, arch):
         verilator = verilator_params(
             timeout = "long",
         ),
-        exec_env = EARLGREY_TEST_ENVS,
+        exec_env = EGRET_TEST_ENVS,
         linkopts = ["-Wl,--no-relax"],
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",

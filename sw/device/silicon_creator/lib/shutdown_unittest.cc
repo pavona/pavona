@@ -25,7 +25,7 @@
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rv_core_ibex_regs.h"
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top/dt/flash_ctrl.h"
 
 #include "hw/top/flash_ctrl_regs.h"
@@ -180,7 +180,7 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("Dummy78",                        X, X, X, X), \
       Xmacro("Dummy79",                        X, X, X, X)
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 #define LOC_ALERTS(Xmacro) \
       Xmacro("LocAlertPingFail",               A, A, X, X), \
       Xmacro("LocEscPingFail",                 A, A, X, X), \
@@ -199,7 +199,7 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("LocDummy14",                     X, X, X, X), \
       Xmacro("LocDummy15",                     X, X, X, X),
 
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 #define LOC_ALERTS(Xmacro) \
       Xmacro("LocAlertPingFail",               A, A, X, X), \
       Xmacro("LocEscPingFail",                 A, A, X, X), \
@@ -213,8 +213,8 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 
 struct OtpConfiguration {
   uint32_t rom_error_reporting;
-#if defined(OPENTITAN_IS_EARLGREY)
-  // Darjeeling does not include this value in its OTP memory map.
+#if defined(OPENTITAN_IS_EGRET)
+  // Dragonfly does not include this value in its OTP memory map.
   uint32_t rom_bootstrap_en;
 #endif
   uint32_t rom_alert_class_en;
@@ -241,7 +241,7 @@ struct DefaultAlertClassification {
 
 constexpr OtpConfiguration kOtpConfig = {
     .rom_error_reporting = (uint32_t)kShutdownErrorRedactNone,
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     .rom_bootstrap_en = 1,
 #endif
     .rom_alert_class_en = Pack32(kAlertEnableLocked, kAlertEnableEnabled,
@@ -619,7 +619,7 @@ TEST_F(ShutdownTest, ShutdownFinalize) {
 }
 
 TEST_F(ShutdownTest, FlashKill) {
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   const uint32_t flash_ctrl_base =
       dt_flash_ctrl_reg_block(kDtFlashCtrl, kDtFlashCtrlRegBlockCore);
   EXPECT_ABS_WRITE32(flash_ctrl_base + FLASH_CTRL_DIS_REG_OFFSET, 0);

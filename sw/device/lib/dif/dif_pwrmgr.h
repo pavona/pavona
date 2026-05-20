@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/book/hw/top_earlgrey/ip_autogen/pwrmgr/">Power Manager</a>
+ * @brief <a href="/book/hw/top_egret/ip_autogen/pwrmgr/">Power Manager</a>
  * Device Interface Functions
  */
 
@@ -54,7 +54,7 @@ typedef enum dif_pwrmgr_domain_option {
    * Enable input/output (IO) clock in low power state.
    */
   kDifPwrmgrDomainOptionIoClockInLowPower = (1u << 1),
-#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+#if defined(OPENTITAN_IS_EGRET) || defined(OPENTITAN_IS_SCAFI_DEPRECATED)
   /**
    * Enable USB clock in low power state.
    */
@@ -67,7 +67,7 @@ typedef enum dif_pwrmgr_domain_option {
    * Enable main power domain in low power state.
    */
   kDifPwrmgrDomainOptionMainPowerInLowPower = (1u << 4),
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   /**
    * Enable main power domain in low power state.
    */

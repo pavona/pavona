@@ -51,7 +51,7 @@ AES = pavona_ip(
     hjson = "//hw/ip/aes:data/aes.hjson",
 )
 ```
-For concrete examples, you can look at the [AES module](../../ip/aes/defs.bzl) or the [AST module](../../top_earlgrey/ip/ast/defs.bzl).
+For concrete examples, you can look at the [AES module](../../ip/aes/defs.bzl) or the [AST module](../../top_egret/ip/ast/defs.bzl).
 
 ### Registering generated IPs
 
@@ -98,16 +98,16 @@ To do this, edit [`hw/top/defs.bzl`](../../top/defs.bzl) and add the following l
 ```py
 # In hw/top/defs.bzl`:
 load("//rules/pavona:hw.bzl", "pavona_top")
-load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY")
-load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING")
-load("//hw/top_englishbreakfast/data/autogen:defs.bzl", "ENGLISHBREAKFAST")
+load("//hw/top_egret/data/autogen:defs.bzl", "EGRET")
+load("//hw/top_dragonfly/data/autogen:defs.bzl", "DRAGONFLY")
+load("//hw/top_scafi_deprecated/data/autogen:defs.bzl", "SCAFI_DEPRECATED")
 # NEW: load your top's description
 load("//hw/top_matcha/data/autogen:defs.bzl", "MATCHA")
 
 ALL_TOPS = [
-    EARLGREY,
-    DARJEELING,
-    ENGLISHBREAKFAST,
+    EGRET,
+    DRAGONFLY,
+    SCAFI_DEPRECATED,
     # NEW: add your top to the build system
     MATCHA,
 ]
@@ -145,10 +145,10 @@ sim_dv(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",
-        "//hw/top_darjeeling/sw/dt:sim_dv",
+        "//hw/top_dragonfly/sw/dt:sim_dv",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rom_scramble_config = "//hw/top_darjeeling/data/autogen:top_matcha.secrets.testing.gen.hjson",
+    rom_scramble_config = "//hw/top_dragonfly/data/autogen:top_matcha.secrets.testing.gen.hjson",
 )
 
 sim_dv(
@@ -159,7 +159,7 @@ sim_dv(
     rom = "//sw/device/lib/testing/test_rom:test_rom",
 )
 ```
-For concrete examples see [Darjeeling (simple)](../../top_darjeeling/BUILD) or [Earlgrey (very complex)](../../top_earlgrey/BUILD).
+For concrete examples see [Dragonfly (simple)](../../top_dragonfly/BUILD) or [Egret (very complex)](../../top_egret/BUILD).
 
 **Important note:** creating an execution environment does not automatically enroll tests, those must manually be enabled for your execution environment.
 
@@ -173,7 +173,7 @@ pavona_binary(
     name = "test_rom",
     exec_env = [
         # ...
-        "//hw/top_darjeeling:sim_dv_base",
+        "//hw/top_dragonfly:sim_dv_base",
         # NEW: note that this is using the sim_dv_base environment
         "//hw/top_matcha:sim_dv_base",
     ],
@@ -196,9 +196,9 @@ pavona_test(
     name = "example_test_from_rom",
     srcs = ["example_test_from_rom.c"],
     exec_env = {
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_darjeeling:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
+        "//hw/top_dragonfly:sim_dv": None,
         # NEW:
         "//hw/top_matcha:sim_dv": None,
     },
@@ -231,14 +231,14 @@ pavona_test(
     name = "uart_smoketest",
     srcs = ["uart_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
-        DARJEELING_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_CW340_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
         # NEW
         MATCHA_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ),
 )

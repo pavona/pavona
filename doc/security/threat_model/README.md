@@ -3,7 +3,7 @@
 This threat model aims to identify in-scope design assets, attacker profiles, attack methods and attack surfaces.
 This is used to produce security requirements and implementation guidelines that cover hardware, software and the design process.
 
-The threat model is considered for the Earlgrey and Darjeeling top-level systems, which may include external non-volatile memory.
+The threat model is considered for the Egret and Dragonfly top-level systems, which may include external non-volatile memory.
 
 **Assets**
 

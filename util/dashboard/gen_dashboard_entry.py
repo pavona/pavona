@@ -225,7 +225,7 @@ def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]],
     SoC generation process.
     e.g
     Path  ->  `hw/ip/aes/data/aes.hjson`
-    Tuple -> (`hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson`,
+    Tuple -> (`hw/top_egret/ip/clkmgr/data/autogen/clkmgr.hjson`,
               `hw/ip/clkmgr/`)
     """
     # TODO: the tuple is obsolete since there are no more "templated" IPs.

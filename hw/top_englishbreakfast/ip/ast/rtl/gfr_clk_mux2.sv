@@ -1,1 +1,0 @@
-../../../../top_earlgrey/ip/ast/rtl/gfr_clk_mux2.sv

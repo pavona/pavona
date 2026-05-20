@@ -37,7 +37,7 @@ typedef struct pinmux_testutils_mio_pin {
  *
  * Also ensures IOR0 and IOR1 outputs are disabled, for use as USB sense inputs.
  *
- * This function is specific to top_earlgrey and top_englishbreakfast.
+ * This function is specific to top_egret and top_scafi_deprecated.
  */
 void pinmux_testutils_init(dif_pinmux_t *pinmux);
 
@@ -109,7 +109,7 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
  *
  * The value returned is the combination of 2-bit values returned from
  * [IOC2, IOC1, IOC0] and ranges from [0..63].
- * This function assumes the Earlgrey configuration where the external
+ * This function assumes the Egret configuration where the external
  * pads IOC{0,1,2} are used as software straps and that the pinmux is
  * configured to map those pads to GPIOs 22, 23 and 24.
  *

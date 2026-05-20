@@ -1,0 +1,1 @@
+../../top_egret/templates/chiplevel.sv.tpl

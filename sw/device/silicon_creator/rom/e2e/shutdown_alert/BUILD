@@ -7,12 +7,12 @@ load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
-    "DARJEELING_LOC_ALERTS",
-    "EARLGREY_LOC_ALERTS",
+    "DRAGONFLY_LOC_ALERTS",
+    "EGRET_LOC_ALERTS",
     "get_lc_items",
 )
-load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
-load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING_ALERTS")
+load("//hw/top_egret/data/autogen:defs.bzl", "EGRET_ALERTS")
+load("//hw/top_dragonfly/data/autogen:defs.bzl", "DRAGONFLY_ALERTS")
 load(
     "//rules/pavona:defs.bzl",
     "cw310_params",
@@ -59,10 +59,10 @@ ALERT_LC_STATES = get_lc_items(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
-            otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state),
+            otp = "//hw/top_egret/data/otp:img_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         local_defines = [
@@ -135,7 +135,7 @@ OWNER_SW_CFG_ITEMS = {
 otp_json(
     name = "shutdown_alert_owner_sw_cfg",
     partitions = select({
-        "//hw/top:earlgrey": [
+        "//hw/top:egret": [
             otp_partition(
                 name = "OWNER_SW_CFG",
                 items = dicts.add(
@@ -144,21 +144,21 @@ otp_json(
                         # Classify UART0 alerts (alert source 0) as class A and
                         # leave others as unconfigured.
                         "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
-                            alert_list = EARLGREY_ALERTS,
+                            alert_list = EGRET_ALERTS,
                             # The ordering is "prod, prod_end, dev, rma"
                             default = "          X, X, X, X",
                             uart0_fatal_fault = "A, A, A, A",
                         ),
                         # Leave local alert classification as unconfigured.
                         "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
-                            alert_list = EARLGREY_LOC_ALERTS,
+                            alert_list = EGRET_LOC_ALERTS,
                             default = "X, X, X, X",
                         ),
                     },
                 ),
             ),
         ],
-        "//hw/top:darjeeling": [
+        "//hw/top:dragonfly": [
             otp_partition(
                 name = "OWNER_SW_CFG",
                 items = dicts.add(
@@ -167,14 +167,14 @@ otp_json(
                         # Classify UART0 alerts (alert source 0) as class A and
                         # leave others as unconfigured.
                         "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
-                            alert_list = DARJEELING_ALERTS,
+                            alert_list = DRAGONFLY_ALERTS,
                             # The ordering is "prod, prod_end, dev, rma"
                             default = "          X, X, X, X",
                             uart0_fatal_fault = "A, A, A, A",
                         ),
                         # Leave local alert classification as unconfigured.
                         "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
-                            alert_list = DARJEELING_LOC_ALERTS,
+                            alert_list = DRAGONFLY_LOC_ALERTS,
                             default = "X, X, X, X",
                         ),
                     },
@@ -192,7 +192,7 @@ otp_alert_digest(
 [
     otp_image(
         name = "otp_img_shutdown_alert_{}".format(lc_state),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
+        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [
             ":shutdown_alert_owner_sw_cfg",
             ":shutdown_alert_digest_cfg",
@@ -210,7 +210,7 @@ otp_alert_digest(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_shutdown_alert_{}".format(lc_state),

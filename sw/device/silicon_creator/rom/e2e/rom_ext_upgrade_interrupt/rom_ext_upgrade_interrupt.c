@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -32,8 +32,7 @@ static void print_boot_data(const boot_data_t *boot_data) {
 static void increment_flash_counter(void) {
   dif_flash_ctrl_state_t flash_ctrl;
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash_ctrl, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash_ctrl,
       /*rd_en*/ true,

@@ -15,8 +15,8 @@
 
 ## Manufacturing Stages
 
-The following section describes the EarlGrey manufacturing stages with respect
-to the state of OTP. See `//hw/top_earlgrey/data/otp/emulation/BUILD`
+The following section describes the Egret manufacturing stages with respect
+to the state of OTP. See `//hw/top_egret/data/otp/emulation/BUILD`
 for more details.
 
 ### `MANUF_EMPTY`

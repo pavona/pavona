@@ -8,7 +8,7 @@ load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "pavona_binary",
@@ -82,12 +82,12 @@ _CONFIGS = {
             "WITH_MANIFEST=1",
         ],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
-            "//hw/top_earlgrey:fpga_cw340_rom_ext",
+            "//hw/top_egret:fpga_cw310_rom_ext",
+            "//hw/top_egret:fpga_cw340_rom_ext",
         ],
         linker_script = position["linker_script"],
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib:boot_log",
@@ -102,8 +102,8 @@ _CONFIGS = {
     pavona_test(
         name = "rescue_firmware_{}_{}".format(name, protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -161,8 +161,8 @@ genrule(
     pavona_test(
         name = "rescue_rom_ext_{}_update_{}".format(rxslot, name),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{rom_ext}@{rom_ext_offset}",
@@ -201,8 +201,8 @@ genrule(
     pavona_test(
         name = "next_slot_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{rom_ext}@{rom_ext_slot_a} {slot_a:signed_bin}@{owner_slot_a} {slot_b:signed_bin}@{owner_slot_b}",
@@ -240,8 +240,8 @@ genrule(
     pavona_test(
         name = "primary_slot_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{rom_ext}@{rom_ext_slot_a} {slot_a:signed_bin}@{owner_slot_a} {slot_b:signed_bin}@{owner_slot_b}",
@@ -282,8 +282,8 @@ genrule(
 pavona_test(
     name = "rescue_rate_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "",
@@ -312,8 +312,8 @@ pavona_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -354,8 +354,8 @@ pavona_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -393,8 +393,8 @@ pavona_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -431,8 +431,8 @@ pavona_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -462,8 +462,8 @@ pavona_test(
     pavona_test(
         name = "rescue_enter_on_fail_{}".format(name),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -495,8 +495,8 @@ pavona_test(
     pavona_test(
         name = "rescue_get_boot_log_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -518,8 +518,8 @@ pavona_test(
     pavona_test(
         name = "rescue_get_device_id_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -543,8 +543,8 @@ pavona_test(
     pavona_test(
         name = "rescue_get_owner_page_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
@@ -570,8 +570,8 @@ pavona_test(
 pavona_test(
     name = "rescue_disability_xmodem",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
@@ -593,8 +593,8 @@ pavona_test(
 pavona_test(
     name = "rescue_disability_spidfu",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",

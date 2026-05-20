@@ -18,7 +18,7 @@ package(default_visibility = ["//visibility:public"])
 
 otp_image(
     name = "otp_img_sigverify_spx_prod",
-    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom/e2e/sigverify_spx:otp_json_sigverify_spx_enabled_true",
     ],
@@ -34,9 +34,9 @@ otp_image(
 #    ),
 #    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
 #    exec_env = {
-#        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-#        "//hw/top_earlgrey:sim_dv": None,
-#        "//hw/top_earlgrey:silicon_creator": None,  # This is added to support GLS and bringup environments.
+#        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+#        "//hw/top_egret:sim_dv": None,
+#        "//hw/top_egret:silicon_creator": None,  # This is added to support GLS and bringup environments.
 #    },
 #    fpga = fpga_params(
 #        otp = ":otp_img_sigverify_spx_prod",
@@ -44,8 +44,8 @@ otp_image(
 #    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
 #    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
 #    deps = [
-#        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-#        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+#        "//hw/top_egret/sw/autogen:top_egret",
+#        "//hw/top_egret/sw/autogen:top_egret_memory",
 #        "//sw/device/lib/base:status",
 #        "//sw/device/lib/runtime:print",
 #        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",

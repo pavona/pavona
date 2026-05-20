@@ -16,7 +16,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -46,7 +46,7 @@ void boot_measurements_test(void) {
 
   dif_hmac_t hmac;
   CHECK_DIF_OK(
-      dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
+      dif_hmac_init(mmio_region_from_addr(TOP_EGRET_HMAC_BASE_ADDR), &hmac));
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(
       &hmac, (dif_hmac_transaction_t){
                  .digest_endianness = kDifHmacEndiannessLittle,

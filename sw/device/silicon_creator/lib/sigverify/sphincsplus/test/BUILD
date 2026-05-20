@@ -9,7 +9,7 @@ load(
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "pavona_test",
@@ -23,9 +23,9 @@ pavona_test(
     name = "fors_test",
     srcs = ["fors_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -47,9 +47,9 @@ pavona_test(
     name = "mgf1_test",
     srcs = ["mgf1_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -68,9 +68,9 @@ pavona_test(
     name = "thash_test",
     srcs = ["thash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -107,7 +107,7 @@ autogen_cryptotest_header(
 pavona_test(
     name = "verify_test_hardcoded",
     srcs = ["verify_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -125,9 +125,9 @@ pavona_test(
     name = "wots_test",
     srcs = ["wots_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -224,12 +224,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -247,12 +247,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -270,12 +270,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -293,12 +293,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -316,12 +316,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -339,12 +339,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -362,12 +362,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -385,12 +385,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -408,12 +408,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [
@@ -431,12 +431,12 @@ pavona_test(
     srcs = ["verify_test.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Test set is too large for Verilator.
-            ["//hw/top_earlgrey:sim_verilator"],
+            ["//hw/top_egret:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     deps = [

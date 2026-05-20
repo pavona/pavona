@@ -9,7 +9,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -17,17 +17,17 @@ bool test_main(void) {
   dif_pinmux_t pinmux = {};
 
   // Map muxable SoC GPIs in pinmux.
-  top_darjeeling_pinmux_peripheral_in_t peripheral_in[] = {
-      kTopDarjeelingPinmuxPeripheralInSocProxySocGpi12,
-      kTopDarjeelingPinmuxPeripheralInSocProxySocGpi13,
-      kTopDarjeelingPinmuxPeripheralInSocProxySocGpi14,
-      kTopDarjeelingPinmuxPeripheralInSocProxySocGpi15,
+  top_dragonfly_pinmux_peripheral_in_t peripheral_in[] = {
+      kTopDragonflyPinmuxPeripheralInSocProxySocGpi12,
+      kTopDragonflyPinmuxPeripheralInSocProxySocGpi13,
+      kTopDragonflyPinmuxPeripheralInSocProxySocGpi14,
+      kTopDragonflyPinmuxPeripheralInSocProxySocGpi15,
   };
-  top_darjeeling_pinmux_insel_t insel[] = {
-      kTopDarjeelingPinmuxInselMio4,
-      kTopDarjeelingPinmuxInselMio5,
-      kTopDarjeelingPinmuxInselMio6,
-      kTopDarjeelingPinmuxInselMio7,
+  top_dragonfly_pinmux_insel_t insel[] = {
+      kTopDragonflyPinmuxInselMio4,
+      kTopDragonflyPinmuxInselMio5,
+      kTopDragonflyPinmuxInselMio6,
+      kTopDragonflyPinmuxInselMio7,
   };
   static_assert(ARRAYSIZE(peripheral_in) == ARRAYSIZE(insel),
                 "Illegal pinmux input configuration arrays!");
@@ -37,17 +37,17 @@ bool test_main(void) {
   LOG_INFO("Muxable SoC GPIs mapped.");
 
   // Map muxable SoC GPOs in pinmux.
-  top_darjeeling_pinmux_mio_out_t mio_out[] = {
-      kTopDarjeelingPinmuxMioOutMio4,
-      kTopDarjeelingPinmuxMioOutMio5,
-      kTopDarjeelingPinmuxMioOutMio6,
-      kTopDarjeelingPinmuxMioOutMio7,
+  top_dragonfly_pinmux_mio_out_t mio_out[] = {
+      kTopDragonflyPinmuxMioOutMio4,
+      kTopDragonflyPinmuxMioOutMio5,
+      kTopDragonflyPinmuxMioOutMio6,
+      kTopDragonflyPinmuxMioOutMio7,
   };
-  top_darjeeling_pinmux_outsel_t outsel[] = {
-      kTopDarjeelingPinmuxOutselSocProxySocGpo12,
-      kTopDarjeelingPinmuxOutselSocProxySocGpo13,
-      kTopDarjeelingPinmuxOutselSocProxySocGpo14,
-      kTopDarjeelingPinmuxOutselSocProxySocGpo15,
+  top_dragonfly_pinmux_outsel_t outsel[] = {
+      kTopDragonflyPinmuxOutselSocProxySocGpo12,
+      kTopDragonflyPinmuxOutselSocProxySocGpo13,
+      kTopDragonflyPinmuxOutselSocProxySocGpo14,
+      kTopDragonflyPinmuxOutselSocProxySocGpo15,
   };
   static_assert(ARRAYSIZE(mio_out) == ARRAYSIZE(outsel),
                 "Illegal pinmux output configuration arrays!");

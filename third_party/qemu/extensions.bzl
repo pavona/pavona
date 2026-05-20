@@ -95,6 +95,10 @@ def _qemu_pavona_repos():
         build_file = Label(":BUILD.qemu_opentitan.bazel"),
         sha256 = "85091287ee67dee337968071b7d10d39d44bb582c90991eae3d61f11a13ccf29",
         patch_cmds = ["touch {}".format(_ARCHIVE_MARKER_FILE)],
+        patches = [
+            Label("//third_party/qemu/patches:topnames.patch"),
+        ],
+        patch_args = ["-p1"],
     )
 
     qemu_bazel_build_or_forward(

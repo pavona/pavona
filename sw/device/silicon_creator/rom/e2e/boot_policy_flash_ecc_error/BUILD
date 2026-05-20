@@ -78,14 +78,14 @@ otp_json(
 
 otp_image(
     name = "otp_img_boot_policy_flash_ecc_error",
-    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [":otp_json_flash_data_cfg_default_scr_and_ecc_enabled"],
     visibility = ["//visibility:private"],
 )
 
 otp_image(
     name = "otp_img_flash_exc_handler_disabled",
-    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
         ":otp_json_flash_exc_handler_disabled",
@@ -111,7 +111,7 @@ otp_image(
         # Use the prod key because it is valid in every LC state.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         # This image always get the lower security version as we want the image that self-corrupts the ECC
@@ -139,7 +139,7 @@ otp_image(
         # Use the prod key because it is valid in every LC state.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         local_defines = [
@@ -151,7 +151,7 @@ otp_image(
         deps = [
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
@@ -181,7 +181,7 @@ otp_image(
     pavona_test(
         name = t["name"].format(c["cause"]),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
@@ -202,7 +202,7 @@ otp_image(
 pavona_test(
     name = "flash_exc_handler_disabled_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",

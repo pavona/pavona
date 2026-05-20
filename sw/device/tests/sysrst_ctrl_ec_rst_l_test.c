@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /* We need control flow for the ujson messages exchanged
  * with the host in OTTF_WAIT_FOR on real devices. */
@@ -42,13 +42,13 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonKey0In,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonKey1In,
 };
 
 static const dif_pinmux_index_t kInputPads[] = {
-    kTopEarlgreyPinmuxInselIor6,
-    kTopEarlgreyPinmuxInselIor7,
+    kTopEgretPinmuxInselIor6,
+    kTopEgretPinmuxInselIor7,
 };
 
 // Threshold/Duration values are not specific to a real-world debounce

@@ -22,7 +22,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -62,7 +62,7 @@ enum {
   kEscalationPhase2Micros = 100,         // 100 us
   kIrqDeadlineMicros = 10,               // 10 us
   kTick1us = 1 * 1000 * 1000,            // 1MHz - 1us.
-  kHart = kTopEarlgreyPlicTargetIbex0,
+  kHart = kTopEgretPlicTargetIbex0,
   kTimeThresholdUs = 5000,  // 5ms expressed in microseconds.
 };
 
@@ -142,7 +142,7 @@ static void alert_handler_config(void) {
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
   }};
 
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[] = {kTopEgretAlertIdPwrmgrAonFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
   dif_alert_handler_class_t classes[] = {kDifAlertHandlerClassA};
   dif_alert_handler_config_t config = {

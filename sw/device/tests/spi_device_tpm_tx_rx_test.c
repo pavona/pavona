@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -49,17 +49,17 @@ static volatile bool header_interrupt_received = false;
 static void en_plic_irqs(dif_rv_plic_t *plic) {
   // Enable functional interrupts as well as error interrupts to make sure
   // everything is behaving as expected.
-  const top_earlgrey_plic_irq_id_t kIrqs[] = {
-      kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
-      kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadNotEmpty,
-      kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadOverflow,
-      kTopEarlgreyPlicIrqIdSpiDeviceReadbufWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceReadbufFlip,
-      kTopEarlgreyPlicIrqIdSpiDeviceTpmHeaderNotEmpty};
+  const top_egret_plic_irq_id_t kIrqs[] = {
+      kTopEgretPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
+      kTopEgretPlicIrqIdSpiDeviceUploadPayloadNotEmpty,
+      kTopEgretPlicIrqIdSpiDeviceUploadPayloadOverflow,
+      kTopEgretPlicIrqIdSpiDeviceReadbufWatermark,
+      kTopEgretPlicIrqIdSpiDeviceReadbufFlip,
+      kTopEgretPlicIrqIdSpiDeviceTpmHeaderNotEmpty};
 
   for (uint32_t i = 0; i < ARRAYSIZE(kIrqs); ++i) {
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        plic, kIrqs[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+        plic, kIrqs[i], kTopEgretPlicTargetIbex0, kDifToggleEnabled));
 
     // Assign a default priority
     CHECK_DIF_OK(
@@ -87,18 +87,18 @@ static void en_spi_device_irqs(dif_spi_device_t *spi_device) {
 
 void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                             .hart_id = kTopEarlgreyPlicTargetIbex0};
+                             .hart_id = kTopEgretPlicTargetIbex0};
 
   // We should only be receiving the tpm header interrupt during this test, but
   // the tpm rdfifo cmd end intr_state will go high for read FIFO commands.
   spi_device_isr_ctx_t spi_device_ctx = {
       .spi_device = &spi_device.dev,
       .plic_spi_device_start_irq_id =
-          kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
+          kTopEgretPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
       .expected_irq = kDifSpiDeviceIrqTpmHeaderNotEmpty,
       .is_only_irq = false};
 
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_egret_plic_peripheral_t peripheral;
   dif_spi_device_irq_t spi_device_irq;
   isr_testutils_spi_device_isr(plic_ctx, spi_device_ctx, false, &peripheral,
                                &spi_device_irq);
@@ -128,20 +128,20 @@ static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));
+      mmio_region_from_addr(TOP_EGRET_SPI_DEVICE_BASE_ADDR), &spi_device));
 
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR), &plic));
 
   // Set IoA7 for tpm csb.
   // Longer term this needs to migrate to a top specific, platform specific
   // setting.
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb,
-      kTopEarlgreyPinmuxInselIoa7));
+      &pinmux, kTopEgretPinmuxPeripheralInSpiDeviceTpmCsb,
+      kTopEgretPinmuxInselIoa7));
 
   if (kDeviceType == kDeviceSimDV) {
     dif_pinmux_pad_attr_t out_attr;
@@ -151,7 +151,7 @@ bool test_main(void) {
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp};
 
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoa7,
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEgretMuxedPadsIoa7,
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
   }

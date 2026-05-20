@@ -13,10 +13,10 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/lc_ctrl_regs.h"
-#if defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#if defined(OPENTITAN_IS_EGRET)
+#include "hw/top_egret/sw/autogen/top_egret.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 #endif
 
 namespace lifecycle_unittest {
@@ -25,10 +25,10 @@ using ::testing::ElementsAreArray;
 
 class LifecycleTest : public rom_test::RomTest {
  protected:
-#if defined(OPENTITAN_IS_EARLGREY)
-  uint32_t base_ = TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR;
-#elif defined(OPENTITAN_IS_DARJEELING)
-  uint32_t base_ = TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR;
+#if defined(OPENTITAN_IS_EGRET)
+  uint32_t base_ = TOP_EGRET_LC_CTRL_REGS_BASE_ADDR;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  uint32_t base_ = TOP_DRAGONFLY_LC_CTRL_REGS_BASE_ADDR;
 #endif
   rom_test::MockSecMmio mmio_;
 };

@@ -12,8 +12,8 @@
 #include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
+#include "hw/top_egret/sw/autogen/top_egret_memory.h"
 
 OTTF_DEFINE_TEST_CONFIG(.silence_console_prints = true);
 
@@ -57,12 +57,11 @@ extern const char _rom_chip_info_start[];
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
   hmac_digest_t rom_hash;
-  hmac_sha256((void *)TOP_EARLGREY_ROM_BASE_ADDR, kGoldenRomSizeBytes,
-              &rom_hash);
+  hmac_sha256((void *)TOP_EGRET_ROM_BASE_ADDR, kGoldenRomSizeBytes, &rom_hash);
   // Use printf directly here instead of the `LOG()` macros which print extra
   // filenames and line numbers which bloat DV and GLS runtimes.
   // DO NOT MODIFY the printf immediately below without modifying the check in
-  // `hw/top_earlgrey/dv/env/seq_lib/chip_sw_rom_e2e_self_hash_gls_vseq.sv`
+  // `hw/top_egret/dv/env/seq_lib/chip_sw_rom_e2e_self_hash_gls_vseq.sv`
   base_printf("ROM Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x\r\n",
               rom_hash.digest[7], rom_hash.digest[6], rom_hash.digest[5],
               rom_hash.digest[4], rom_hash.digest[3], rom_hash.digest[2],

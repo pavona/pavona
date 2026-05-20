@@ -28,7 +28,7 @@
 #endif
 
 // FIXME disabled for now
-#ifndef OPENTITAN_IS_DARJEELING
+#ifndef OPENTITAN_IS_DRAGONFLY
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #endif
 
@@ -47,7 +47,7 @@
 #include "hw/top/otp_ctrl_regs.h"
 #endif
 
-#ifdef OPENTITAN_IS_DARJEELING
+#ifdef OPENTITAN_IS_DRAGONFLY
 #include "hw/top/dt/soc_proxy.h"
 #endif
 
@@ -115,7 +115,7 @@ bool rom_test_main(void) {
   // Check the otp to see if execute should start
   const uint32_t otp_ctrl_base = dt_otp_ctrl_primary_reg_block(kOtpCtrlDt);
 
-#ifndef OPENTITAN_IS_DARJEELING
+#ifndef OPENTITAN_IS_DRAGONFLY
   uint32_t otp_val =
       abs_mmio_read32(otp_ctrl_base + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
                       OTP_CTRL_PARAM_CREATOR_SW_CFG_ROM_EXEC_EN_OFFSET);
@@ -128,7 +128,7 @@ bool rom_test_main(void) {
 #endif
 #endif
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifndef OPENTITAN_IS_SCAFI_DEPRECATED
   // Initialize Ibex cpuctrl (contains icache / security feature enablements).
   uint32_t cpuctrl_csr;
   CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
@@ -226,7 +226,7 @@ bool rom_test_main(void) {
   }
 
   // FIXME Disabled for now
-#ifndef OPENTITAN_IS_DARJEELING
+#ifndef OPENTITAN_IS_DRAGONFLY
   if (bootstrap_requested() == kHardenedBoolTrue) {
     // This log statement is used to synchronize the rom and DV testbench
     // for specific test cases.

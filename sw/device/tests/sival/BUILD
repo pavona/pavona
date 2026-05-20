@@ -19,9 +19,9 @@ test_suite(
 test_suite(
     name = "sv2_tests",
     tests = [
-        "//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_0",
-        "//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_10",
-        "//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_20",
+        "//hw/top_egret/sw/autogen/tests:plic_all_irqs_test_0",
+        "//hw/top_egret/sw/autogen/tests:plic_all_irqs_test_10",
+        "//hw/top_egret/sw/autogen/tests:plic_all_irqs_test_20",
         "//sw/device/silicon_creator/lib:acc_boot_services_functest",
         "//sw/device/tests:acc_smoketest",
         "//sw/device/tests:aes_smoketest",
@@ -78,8 +78,8 @@ test_suite(
 test_suite(
     name = "sv3_tests",
     tests = [
-        "//hw/top_earlgrey/sw/autogen/tests:alert_test",
-        "//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_0",
+        "//hw/top_egret/sw/autogen/tests:alert_test",
+        "//hw/top_egret/sw/autogen/tests:plic_all_irqs_test_0",
         "//sw/device/silicon_creator/rom/e2e:rom_e2e_smoke",
         "//sw/device/tests:acc_ecdsa_op_irq_test",
         "//sw/device/tests:acc_irq_test",
@@ -241,7 +241,7 @@ test_suite(
 test_suite(
     name = "sv4_tests",
     tests = [
-        "//third_party/coremark/top_earlgrey:coremark_test",
+        "//third_party/coremark/top_egret:coremark_test",
     ],
 )
 

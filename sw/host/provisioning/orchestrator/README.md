@@ -1,7 +1,7 @@
 # Provisioning Orchestrator
 
 The provisioning orchestrator is a Python script that enables running benchtop
-provisioning flows for Earlgrey chips. The script can be run in two different
+provisioning flows for Egret chips. The script can be run in two different
 ways:
 1. via Bazel, or
 2. directly.
@@ -14,8 +14,8 @@ To run on an FPGA for testing, run:
 # Select either cw340 or cw310
 export FPGA_TARGET=hyper310
 bazel run \
-  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_${FPGA_TARGET}_rom_with_fake_keys \
-  --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
+  --//hw/bitstream/universal:env=//hw/top_egret:fpga_${FPGA_TARGET}_rom_with_fake_keys \
+  --//hw/bitstream/universal:otp=//hw/top_egret/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
     --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/sival.hjson \
     --test-unlock-token="0x11111111_11111111_11111111_11111111" \
@@ -46,8 +46,8 @@ dependencies.
 ```
 export FPGA_TARGET=hyper310
 bazel build \
-  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_${FPGA_TARGET}_rom_with_fake_keys \
-  --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
+  --//hw/bitstream/universal:env=//hw/top_egret:fpga_${FPGA_TARGET}_rom_with_fake_keys \
+  --//hw/bitstream/universal:otp=//hw/top_egret/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator.zip
 ```
 

@@ -19,7 +19,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/tests/spi_host_flash_test_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -48,11 +48,11 @@ static status_t configure_pinmux(const dif_pinmux_t *pinmux);
 bool test_main(void) {
   dif_spi_host_t spi_host;
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
 
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host));
 
   configure_pinmux(&pinmux);
@@ -92,21 +92,21 @@ static status_t spi_config_test(dif_spi_host_t *spi) {
 
 static status_t configure_pinmux(const dif_pinmux_t *pinmux) {
   // CSB.
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor10,
-                               kTopEarlgreyPinmuxOutselSpiHost1Csb));
+  TRY(dif_pinmux_output_select(pinmux, kTopEgretPinmuxMioOutIor10,
+                               kTopEgretPinmuxOutselSpiHost1Csb));
   // SCLK.
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor11,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sck));
+  TRY(dif_pinmux_output_select(pinmux, kTopEgretPinmuxMioOutIor11,
+                               kTopEgretPinmuxOutselSpiHost1Sck));
   // SD0.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
-                              kTopEarlgreyPinmuxInselIor12));
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor12,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd0));
+  TRY(dif_pinmux_input_select(pinmux, kTopEgretPinmuxPeripheralInSpiHost1Sd0,
+                              kTopEgretPinmuxInselIor12));
+  TRY(dif_pinmux_output_select(pinmux, kTopEgretPinmuxMioOutIor12,
+                               kTopEgretPinmuxOutselSpiHost1Sd0));
 
   // SD1.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
-                              kTopEarlgreyPinmuxInselIor13));
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor13,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd1));
+  TRY(dif_pinmux_input_select(pinmux, kTopEgretPinmuxPeripheralInSpiHost1Sd1,
+                              kTopEgretPinmuxInselIor13));
+  TRY(dif_pinmux_output_select(pinmux, kTopEgretPinmuxMioOutIor13,
+                               kTopEgretPinmuxOutselSpiHost1Sd1));
   return OK_STATUS();
 }

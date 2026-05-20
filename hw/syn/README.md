@@ -1,6 +1,6 @@
 # Synthesis Flow
 
-This readme gives some quick instructions on how to run synthesis in Pavona, using `top_earlgrey` as an example.
+This readme gives some quick instructions on how to run synthesis in Pavona, using `top_egret` as an example.
 
 ## Normal Synthesis Through dvsim
 
@@ -8,11 +8,11 @@ To run synthesis through dvsim, use a command like the following:
 
 ```
 $ cd $REPO_TOP
-$ ./util/dvsim/dvsim.py -t dc hw/top_earlgrey/syn/chip_earlgrey_asic_syn_cfg.hjson --purge --local
+$ ./util/dvsim/dvsim.py -t dc hw/top_egret/syn/chip_egret_asic_syn_cfg.hjson --purge --local
 ```
 
 This comment will invoke dvsim to run synthesis and terminate upon success or failure.
-The synthesis results are placed in the scratch area under `$SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/` for this example command.
+The synthesis results are placed in the scratch area under `$SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/` for this example command.
 
 The main script that powers synthesis is `hw/syn/tools/dc/run-syn.tcl`.
 
@@ -20,24 +20,24 @@ To follow the progress of the different synthesis flow stages (analysis, elabora
 
 For example, overall status can be observed with
 ```
-tail -f `$SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/default/synthesis.log`
+tail -f `$SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default/synthesis.log`
 ```
 
 Another example would be the elaboration status
 ```
-tail -f `$SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/default/REPORTS/elab.rpt`
+tail -f `$SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default/REPORTS/elab.rpt`
 ```
 
 ## Re-run Interactive Synthesis
 
 Assuming the above synthesis steps produces an error or creates a situation where we must run synthesis interactively for debug, it can be done as follows.
 
-When the normal synthesis steps are run (see example above), an output file called `env_variables.tcl` is created in the synthesis scratch area, `$SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/default` in the above example.
+When the normal synthesis steps are run (see example above), an output file called `env_variables.tcl` is created in the synthesis scratch area, `$SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default` in the above example.
 
 To re-run this synthesis interactively, do the following:
 
 ```
-$ cd $SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/default/syn-icarus
+$ cd $SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default/syn-icarus
 $ dc_shell
 
 ```
@@ -59,7 +59,7 @@ If you do not wish for synthesis to run that far, `run_syn.tcl` can be directly 
 If a synthesis job has completed and you would like to reload the session for more details, follow the steps below
 
 ```
-$ cd $SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/default/syn-icarus
+$ cd $SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default/syn-icarus
 $ dc_shell
 
 ```

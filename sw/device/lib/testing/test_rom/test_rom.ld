@@ -22,7 +22,7 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
 /**
  * Region aliases.
  */
-#ifdef OPENTITAN_IS_DARJEELING
+#ifdef OPENTITAN_IS_DRAGONFLY
 REGION_ALIAS("test_rom", rom0)
 /**
  * Origin of the second ROM binary.

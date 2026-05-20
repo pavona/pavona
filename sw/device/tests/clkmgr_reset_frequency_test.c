@@ -13,7 +13,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -43,10 +43,10 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
   CHECK_DIF_OK(dif_sensor_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_SENSOR_CTRL_AON_BASE_ADDR),
       &sensor_ctrl));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // The test will trigger many measurement errors which cause an alert that
   // fires constantly with each new measurement and cannot really be

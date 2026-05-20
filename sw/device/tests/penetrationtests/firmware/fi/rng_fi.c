@@ -21,7 +21,7 @@
 #include "sw/device/tests/penetrationtests/json/rng_fi_commands.h"
 
 #include "hw/top/edn_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),
@@ -289,13 +289,12 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   pentest_clear_sensor_recov_alerts();
 
   TRY(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
-  TRY(dif_csrng_init(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                     &csrng));
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
+      mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+  TRY(dif_csrng_init(mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR), &csrng));
+  TRY(dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR), &edn0));
+  TRY(dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN1_BASE_ADDR), &edn1));
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   dif_edn_auto_params_t edn_params =
@@ -421,16 +420,15 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   // Initialize peripherals used in this FI test.
   TRY(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
-  TRY(dif_csrng_init(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                     &csrng));
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
+      mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+  TRY(dif_csrng_init(mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR), &csrng));
+  TRY(dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR), &edn0));
+  TRY(dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN1_BASE_ADDR), &edn1));
 
   return OK_STATUS();
 }
@@ -629,11 +627,11 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   // Initialize CSRNG.
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 

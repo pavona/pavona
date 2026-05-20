@@ -1,1 +1,0 @@
-../../../top_earlgrey/ip/sensor_ctrl/README.md

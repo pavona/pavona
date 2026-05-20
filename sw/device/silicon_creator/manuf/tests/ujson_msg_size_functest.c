@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * Peripheral handles.
@@ -36,7 +36,7 @@ static perso_blob_t perso_blob_msg;
 
 OTTF_DEFINE_TEST_CONFIG(
         .console.type = kOttfConsoleSpiDevice,
-        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.base_addr = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
         .console.test_may_clobber = false, .console.putbuf_buffered = true,
         .silence_console_prints = true, .console_tx_indicator.enable = true,
         .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
@@ -44,8 +44,8 @@ OTTF_DEFINE_TEST_CONFIG(
             kGpioPinSpiConsoleTxReady);
 
 static status_t peripheral_handles_init(void) {
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
   return OK_STATUS();
 }
@@ -53,12 +53,12 @@ static status_t peripheral_handles_init(void) {
 static status_t configure_ate_gpio_indicators(void) {
   // IOA6 / GPIO4 is for SPI console RX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+      &pinmux, kTopEgretPinmuxMioOutIoa6,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
   // IOA5 / GPIO3 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+      &pinmux, kTopEgretPinmuxMioOutIoa5,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
   TRY(dif_gpio_output_set_enabled_all(&gpio, 0x3));  // Enable first 2 GPIOs.
   TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
   return OK_STATUS();

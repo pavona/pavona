@@ -47,7 +47,7 @@ BOOT_POLICY_VALID_CASES = [
 [
     otp_image(
         name = "otp_img_boot_policy_valid_{}".format(lc_state),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
+        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS,
     )
     for lc_state, _ in get_lc_items()
@@ -61,7 +61,7 @@ BOOT_POLICY_VALID_CASES = [
             b["desc"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             assemble = "{{slot_a}}@{} {{slot_b}}@{}".format(

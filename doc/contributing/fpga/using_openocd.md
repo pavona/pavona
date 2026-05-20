@@ -11,7 +11,7 @@ It's not directly runnable, so we provide a runnable wrapper: `//third_party/ope
 
 OpenOCD ships with a library of config files.
 Instead of using whichever config files happen to be installed on the system, users should prefer Bazel targets that expose config files directly from OpenOCD's source tree.
-Currently supported top-level systems (Earlgrey, Darjeeling) have a default JTAG adapter config of `//third_party/openocd:jtag_olimex_cfg`.
+Currently supported top-level systems (Egret, Dragonfly) have a default JTAG adapter config of `//third_party/openocd:jtag_olimex_cfg`.
 
 ```sh
 # Manually run OpenOCD:

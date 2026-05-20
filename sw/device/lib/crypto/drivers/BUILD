@@ -14,7 +14,7 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "pavona_test",
@@ -47,7 +47,7 @@ cc_library(
 pavona_test(
     name = "aes_test",
     srcs = ["aes_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -86,11 +86,11 @@ pavona_test(
     srcs = ["keymgr_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
             # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     qemu = qemu_params(
@@ -189,7 +189,7 @@ cc_library(
 pavona_test(
     name = "entropy_test",
     srcs = ["entropy_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],  # TODO #16672 test broken by icache
@@ -253,7 +253,7 @@ dual_cc_library(
 pavona_test(
     name = "rv_core_ibex_test",
     srcs = ["rv_core_ibex_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),

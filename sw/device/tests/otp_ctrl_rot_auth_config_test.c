@@ -10,14 +10,14 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   dif_otp_ctrl_t otp_ctrl;
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   CHECK_STATUS_OK(
       manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
   CHECK_STATUS_OK(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));

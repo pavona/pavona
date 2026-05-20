@@ -10,42 +10,42 @@
 #include "hw/top/edn_regs.h"
 #include "hw/top/sram_ctrl_regs.h"
 
-#if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+#if defined(OPENTITAN_IS_SCAFI_DEPRECATED)
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast_memory.h"
-#define OTP_CTRL_CORE_BASE_ADDR             TOP_ENGLISHBREAKFAST_OTP_CTRL_CORE_BASE_ADDR
-#define AST_BASE_ADDR                       TOP_ENGLISHBREAKFAST_AST_BASE_ADDR
-#define CLKMGR_AON_BASE_ADDR                TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR
-#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_REGS_BASE_ADDR
-#define ENTROPY_SRC_BASE_ADDR               TOP_ENGLISHBREAKFAST_ENTROPY_SRC_BASE_ADDR
-#define CSRNG_BASE_ADDR                     TOP_ENGLISHBREAKFAST_CSRNG_BASE_ADDR
-#define EDN0_BASE_ADDR                      TOP_ENGLISHBREAKFAST_EDN0_BASE_ADDR
-#define SENSOR_CTRL_BASE_ADDR               TOP_ENGLISHBREAKFAST_SENSOR_CTRL_AON_BASE_ADDR
+#include "hw/top_scafi_deprecated/sw/autogen/top_scafi_deprecated_memory.h"
+#define OTP_CTRL_CORE_BASE_ADDR             TOP_SCAFI_DEPRECATED_OTP_CTRL_CORE_BASE_ADDR
+#define AST_BASE_ADDR                       TOP_SCAFI_DEPRECATED_AST_BASE_ADDR
+#define CLKMGR_AON_BASE_ADDR                TOP_SCAFI_DEPRECATED_CLKMGR_AON_BASE_ADDR
+#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_SCAFI_DEPRECATED_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#define ENTROPY_SRC_BASE_ADDR               TOP_SCAFI_DEPRECATED_ENTROPY_SRC_BASE_ADDR
+#define CSRNG_BASE_ADDR                     TOP_SCAFI_DEPRECATED_CSRNG_BASE_ADDR
+#define EDN0_BASE_ADDR                      TOP_SCAFI_DEPRECATED_EDN0_BASE_ADDR
+#define SENSOR_CTRL_BASE_ADDR               TOP_SCAFI_DEPRECATED_SENSOR_CTRL_AON_BASE_ADDR
 
-#elif defined(OPENTITAN_IS_EARLGREY)
+#elif defined(OPENTITAN_IS_EGRET)
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
-#define OTP_CTRL_CORE_BASE_ADDR             TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR
-#define AST_BASE_ADDR                       TOP_EARLGREY_AST_BASE_ADDR
-#define CLKMGR_AON_BASE_ADDR                TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
-#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
-#define ENTROPY_SRC_BASE_ADDR               TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-#define CSRNG_BASE_ADDR                     TOP_EARLGREY_CSRNG_BASE_ADDR
-#define EDN0_BASE_ADDR                      TOP_EARLGREY_EDN0_BASE_ADDR
-#define SENSOR_CTRL_BASE_ADDR               TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR
+#include "hw/top_egret/sw/autogen/top_egret_memory.h"
+#define OTP_CTRL_CORE_BASE_ADDR             TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR
+#define AST_BASE_ADDR                       TOP_EGRET_AST_BASE_ADDR
+#define CLKMGR_AON_BASE_ADDR                TOP_EGRET_CLKMGR_AON_BASE_ADDR
+#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#define ENTROPY_SRC_BASE_ADDR               TOP_EGRET_ENTROPY_SRC_BASE_ADDR
+#define CSRNG_BASE_ADDR                     TOP_EGRET_CSRNG_BASE_ADDR
+#define EDN0_BASE_ADDR                      TOP_EGRET_EDN0_BASE_ADDR
+#define SENSOR_CTRL_BASE_ADDR               TOP_EGRET_SENSOR_CTRL_AON_BASE_ADDR
 
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
-#define OTP_CTRL_CORE_BASE_ADDR             TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR
-#define AST_BASE_ADDR                       TOP_DARJEELING_AST_BASE_ADDR
-#define CLKMGR_AON_BASE_ADDR                TOP_DARJEELING_CLKMGR_AON_BASE_ADDR
-#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR
-#define ENTROPY_SRC_BASE_ADDR               TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
-#define CSRNG_BASE_ADDR                     TOP_DARJEELING_CSRNG_BASE_ADDR
-#define EDN0_BASE_ADDR                      TOP_DARJEELING_EDN0_BASE_ADDR
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly_memory.h"
+#define OTP_CTRL_CORE_BASE_ADDR             TOP_DRAGONFLY_OTP_CTRL_CORE_BASE_ADDR
+#define AST_BASE_ADDR                       TOP_DRAGONFLY_AST_BASE_ADDR
+#define CLKMGR_AON_BASE_ADDR                TOP_DRAGONFLY_CLKMGR_AON_BASE_ADDR
+#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_DRAGONFLY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#define ENTROPY_SRC_BASE_ADDR               TOP_DRAGONFLY_ENTROPY_SRC_BASE_ADDR
+#define CSRNG_BASE_ADDR                     TOP_DRAGONFLY_CSRNG_BASE_ADDR
+#define EDN0_BASE_ADDR                      TOP_DRAGONFLY_EDN0_BASE_ADDR
 #undef SENSOR_CTRL_BASE_ADDR                /* No sensor control */
 
 #else
@@ -188,7 +188,7 @@ _reset_start:
   .global _start
   .type _start, @function
 _start:
-  // Certain tops like Darjeeling lock down everything but the ROM by default.
+  // Certain tops like Dragonfly lock down everything but the ROM by default.
   //
   // Remove address space protections by configuring entry 15 as
   // read-write-execute for the entire address space and then clearing
@@ -204,7 +204,7 @@ _start:
   csrw pmpcfg1, zero
   csrw pmpcfg2, zero
 
-#ifdef OPENTITAN_IS_DARJEELING
+#ifdef OPENTITAN_IS_DRAGONFLY
   // Copy all required AST words.
   li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
@@ -233,7 +233,7 @@ _start:
   call crt_section_copy
 #endif
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
   // Wait for AST initialization to complete.
   li   a0, SENSOR_CTRL_BASE_ADDR
 .L_ast_done_loop:

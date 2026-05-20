@@ -15,7 +15,7 @@
 #include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_asym_impl.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_sca_asym_commands.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 status_t trigger_cryptolib_sca_asym_rsa_dec(
     uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, size_t mode,

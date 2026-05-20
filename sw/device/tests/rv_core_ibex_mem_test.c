@@ -36,15 +36,15 @@
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/pwm_regs.h"
 #include "hw/top/rv_timer_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   // Search within this ROM region to find `c.jr x1`, so execution can be
   // tested.
-  kRomTestLocStart = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + 0x400,
-  kRomTestLocEnd = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + 0x500,
+  kRomTestLocStart = TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR + 0x400,
+  kRomTestLocEnd = TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR + 0x500,
   kRomTestLocContent = 0x8082,
 
   // Number of bytes per page.
@@ -58,7 +58,7 @@ enum {
   // partition in bank 1, otherwise known as owner partition B.
   kBank1StartPageNum = 256 + kRomExtPageCount,
 
-  kFlashTestLoc = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+  kFlashTestLoc = TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
                   kBank1StartPageNum * kFlashBytesPerPage,
   // The ROM_EXT protects itself using regions 0-1.
   kFlashRegionNum = 2,
@@ -70,12 +70,12 @@ const uint32_t kFlashTestLocContent = 0x00008067;
 void (*flash_test_gadget)(void) = (void (*)(void))kFlashTestLoc;
 
 volatile uint32_t *kMMIOTestLoc1 =
-    (uint32_t *)(TOP_EARLGREY_RV_TIMER_BASE_ADDR +
+    (uint32_t *)(TOP_EGRET_RV_TIMER_BASE_ADDR +
                  RV_TIMER_COMPARE_LOWER0_0_REG_OFFSET);
 const uint32_t kMMIOTestLoc1Content = 0x126d8c15;  // a random value
 
 volatile uint32_t *kMMIOTestLoc2 =
-    (uint32_t *)(TOP_EARLGREY_PWM_AON_BASE_ADDR + PWM_DUTY_CYCLE_0_REG_OFFSET);
+    (uint32_t *)(TOP_EGRET_PWM_AON_BASE_ADDR + PWM_DUTY_CYCLE_0_REG_OFFSET);
 const uint32_t kMMIOTestLoc2Content = 0xe4210e64;  // a random value
 
 /**
@@ -87,7 +87,7 @@ static void setup_uart(void) {
 
   // Initialise DIF handles
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   // Initialise UART console.
   pinmux_testutils_init(&pinmux);
@@ -119,9 +119,9 @@ static void setup_flash(void) {
       .lock = kPmpRegionLockLocked,
       .permissions = kPmpRegionPermissionsReadWriteExecute,
   };
-  pmp_region_configure_napot_result_t result = pmp_region_configure_napot(
-      8, config, TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-      TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES);
+  pmp_region_configure_napot_result_t result =
+      pmp_region_configure_napot(8, config, TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR,
+                                 TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES);
   CHECK(result == kPmpRegionConfigureNapotOk,
         "Load configuration failed, error code = %d", result);
   // When running as ROM_EXT, ROM configures the flash memory to be readonly.
@@ -135,8 +135,7 @@ static void setup_flash(void) {
   // Initialise the flash controller.
   dif_flash_ctrl_state_t flash_ctrl;
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash_ctrl, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
 
   CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
 

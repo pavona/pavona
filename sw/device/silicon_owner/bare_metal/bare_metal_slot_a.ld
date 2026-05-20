@@ -12,7 +12,7 @@
  * linker script only targets Slot A.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE hw/top_egret/sw/autogen/top_egret_memory.ld
 
 /* Slot A starts at the start of the eFlash plus the fixed size of the first
  * Silicon Owner stage */

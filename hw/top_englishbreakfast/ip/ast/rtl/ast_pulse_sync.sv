@@ -1,1 +1,0 @@
-../../../../top_earlgrey/ip/ast/rtl/ast_pulse_sync.sv

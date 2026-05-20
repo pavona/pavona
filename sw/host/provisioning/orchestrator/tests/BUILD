@@ -6,7 +6,7 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_SKUS",
+    "EGRET_SKUS",
 )
 load(
     "//sw/host/provisioning/orchestrator/tests:transition.bzl",
@@ -55,8 +55,8 @@ py_test(
 )
 
 # These transitions have the same effect as supplying the following flags to bazel test:
-#  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_<fpga>_rom_with_fake_keys
-#  --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty
+#  --//hw/bitstream/universal:env=//hw/top_egret:fpga_<fpga>_rom_with_fake_keys
+#  --//hw/bitstream/universal:otp=//hw/top_egret/data/otp/emulation:otp_img_test_unlocked0_manuf_empty
 orchestrator_cw310_test_settings_transition(
     name = "orchestrator_cw310_zip",
     testonly = True,
@@ -150,7 +150,7 @@ orchestrator_cw340_test_settings_transition(
             "manual",
         ] if cfg.get("offline", False) else []),
     )
-    for sku, cfg in EARLGREY_SKUS.items()
+    for sku, cfg in EGRET_SKUS.items()
     for fpga in [
         "cw310",
         "cw340",
@@ -181,7 +181,7 @@ orchestrator_cw340_test_settings_transition(
             "manual",
         ] if cfg.get("offline", False) else []),
     )
-    for sku, cfg in EARLGREY_SKUS.items()
+    for sku, cfg in EGRET_SKUS.items()
     for fpga in [
         "cw310",
         "cw340",
@@ -194,7 +194,7 @@ orchestrator_cw340_test_settings_transition(
         tags = ["manual"],
         tests = [
             ":e2e_{}_{}_test".format(sku, fpga)
-            for sku, config in EARLGREY_SKUS.items()
+            for sku, config in EGRET_SKUS.items()
             if not config.get("offline", False)
         ],
     )
@@ -210,7 +210,7 @@ orchestrator_cw340_test_settings_transition(
         tags = ["manual"],
         tests = [
             ":e2e_{}_{}_test".format(sku, fpga)
-            for sku in EARLGREY_SKUS.keys()
+            for sku in EGRET_SKUS.keys()
         ],
     )
     for fpga in [

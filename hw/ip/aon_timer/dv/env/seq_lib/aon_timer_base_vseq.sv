@@ -14,7 +14,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // not, they start in parallel. Since the fast clock is *much* quicker, the practical result is
   // that it starts first.
   // Currently set to 1 always so AON clock always start first. The testbench doesn't correctly
-  // support AON and fast clock starting together. Within Pavona earlgrey the aon clock is always
+  // support AON and fast clock starting together. Within Pavona egret the aon clock is always
   // active before the fast path so the reset_aon_first == 0 mode isn't required. Leaving the
   // functionality in for now whilst we decide if we want to support reset_aon_first == 0 in the
   // testbench or remove this functionality entirely.

@@ -37,12 +37,12 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
 #include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
-#endif  // OPENTITAN_IS_EARLGREY
+#endif  // OPENTITAN_IS_EGRET
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
 
@@ -127,10 +127,10 @@ static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
 static const dt_aon_timer_t kAonTimerDt = 0;
 static const dt_pwrmgr_t kPwrmgrDt = 0;
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
 static dif_flash_ctrl_state_t flash_ctrl;
 static const dt_flash_ctrl_t kFlashCtrlDt = 0;
-#endif  // OPENTITAN_IS_EARLGREY
+#endif  // OPENTITAN_IS_EGRET
 
 static_assert(kDtRstmgrCount > 0, "test requires a reset manager");
 static_assert(kDtAlertHandlerCount > 0, "test requires an alert handler");
@@ -724,10 +724,10 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
   CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
   CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
-#endif  // OPENTITAN_IS_EARLGREY
+#endif  // OPENTITAN_IS_EGRET
 
   peripheral_init();
 
@@ -766,7 +766,7 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kEventCounter));
     LOG_INFO("Test round %d", event_idx);
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
     // If not running rom_ext we need to initialize the info FLASH partitions
     // storing the Creator and Owner secrets to avoid getting the flash
     // controller into a fatal error state.
@@ -775,7 +775,7 @@ bool test_main(void) {
                                                   &kOwnerSecret));
     }
     CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
-#endif  // OPENTITAN_IS_EARLGREY
+#endif  // OPENTITAN_IS_EGRET
 
     global_test_round = kRound1;
     prgm_alert_handler_round1();

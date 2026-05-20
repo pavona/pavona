@@ -33,7 +33,7 @@ XBAR testbench has been constructed based on the `hw/dv/sv/dv_lib`
 ![Block diagram](tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/tlul/dv/tb/tb.sv`. It instantiates the XBAR DUT module `hw/top_earlgrey/ip/xbar/rtl/autogen/xbar_main.sv`.
+Top level testbench is located at `hw/ip/tlul/dv/tb/tb.sv`. It instantiates the XBAR DUT module `hw/top_egret/ip/xbar/rtl/autogen/xbar_main.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
@@ -118,7 +118,7 @@ Here's how to run a smoke test:
 ```console
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/$XBAR_IP/dv/autogen/${XBAR_IP}_sim_cfg.hjson -i xbar_smoke
 ```
-In this run command, $XBAR_IP can be xbar_main, xbar_peri, etc. $CHIP can be top_earlgrey, etc.
+In this run command, $XBAR_IP can be xbar_main, xbar_peri, etc. $CHIP can be top_egret, etc.
 
 ## Testplan
 [Testplan](../../data/tlul_testplan.hjson)

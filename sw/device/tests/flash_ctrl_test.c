@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define CHECK_EQZ(x) CHECK((x) == 0)
 #define CHECK_NEZ(x) CHECK((x) != 0)
@@ -75,7 +75,7 @@ static void test_basic_io(void) {
       FLASH_PAGES_PER_BANK * FLASH_PAGE_SZ + FLASH_PAGE_SZ * 5;
 
   mmio_region_t flash_test_page = mmio_region_from_addr(
-      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_test_page_addr);
+      TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_test_page_addr);
 
   // Test erasing flash data partition; this should turn the whole bank to all
   // ones.
@@ -152,7 +152,7 @@ static void test_basic_io(void) {
   uint32_t flash_bank_0_last_page_addr =
       (FLASH_PAGES_PER_BANK - 1) * FLASH_PAGE_SZ;
   mmio_region_t flash_bank_0_last_page =
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
                             (uintptr_t)flash_bank_0_last_page_addr);
   CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
       &flash, flash_bank_0_last_page_addr,
@@ -205,7 +205,7 @@ static void test_memory_protection(void) {
       .size = 0x1,
       .properties = protected_properties};
 
-  uintptr_t ok_region_start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+  uintptr_t ok_region_start = TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
                               (protected_region.base * FLASH_PAGE_SZ);
   uintptr_t ok_region_end =
       ok_region_start + (protected_region.size * FLASH_PAGE_SZ);

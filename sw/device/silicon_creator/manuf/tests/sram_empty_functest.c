@@ -11,7 +11,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -19,7 +19,7 @@ bool test_main(void) {
   // Initialize the pinmux (will setup UART0 pins).
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
   // Initialize UART console.
   ottf_console_init();

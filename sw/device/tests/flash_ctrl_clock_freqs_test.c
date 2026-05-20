@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
@@ -60,7 +60,7 @@ static uint32_t flash_bank_1_page_index_last;
  */
 static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   mmio_region_t flash_addr =
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr);
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + addr);
   uint32_t host_data[kDataSize];
   for (int i = 0; i < kDataSize; ++i) {
     host_data[i] =
@@ -108,8 +108,7 @@ static void do_data_partition_test(uint32_t bank_number) {
     // against the host interface read.
     uint32_t address = 0;
     uint32_t otp_val = abs_mmio_read32(
-        TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
-        OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+        TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
         OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
 
     dif_flash_ctrl_region_properties_t region_properties = {
@@ -183,13 +182,13 @@ bool test_main(void) {
 
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
 
   for (int i = 0; i < kNumLoops; ++i) {
     if (kBootStage != kBootStageOwner) {

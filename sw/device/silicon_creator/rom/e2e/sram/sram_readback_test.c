@@ -11,13 +11,13 @@
 
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sram_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kSramCtrlBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR,
-  kRetRamCtrlBase = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
+  kSramCtrlBase = TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR,
+  kRetRamCtrlBase = TOP_EGRET_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
 };
 
 bool test_main(void) {

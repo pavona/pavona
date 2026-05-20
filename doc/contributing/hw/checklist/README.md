@@ -354,7 +354,7 @@ The nightly regression should finish overnight so that the results are available
 
 ### FPV_REGRESSION_SETUP
 
-An FPV regression has been set up by adding the module to the `hw/top_earlgrey/formal/top_earlgrey_fpv_cfgs.hjson` file.
+An FPV regression has been set up by adding the module to the `hw/top_egret/formal/top_egret_fpv_cfgs.hjson` file.
 
 ### SIM_COVERAGE_MODEL_ADDED
 

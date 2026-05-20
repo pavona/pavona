@@ -18,7 +18,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/i2c_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -97,14 +97,14 @@ static status_t take_measurement(void) {
 
 static status_t test_init(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR);
 
   TRY(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_I2C2_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
   TRY(i2c_testutils_select_pinmux(&pinmux, 2, I2cPinmuxPlatformIdCw310Pmod));
@@ -116,10 +116,10 @@ static status_t test_init(void) {
 
 static status_t reset_i2c_and_check(void) {
   dif_rstmgr_t rstmgr;
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR),
                       &rstmgr));
 
-  TRY(dif_rstmgr_software_reset(&rstmgr, kTopEarlgreyResetManagerSwResetsI2c2,
+  TRY(dif_rstmgr_software_reset(&rstmgr, kTopEgretResetManagerSwResetsI2c2,
                                 kDifRstmgrSoftwareReset));
 
   dif_i2c_status_t i2c_status;

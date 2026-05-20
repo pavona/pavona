@@ -14,9 +14,9 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_CW340_TEST_ENVS",
-    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_CW340_TEST_ENVS",
+    "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
+    "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_test",
     "qemu_params",
@@ -27,7 +27,7 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "english_breakfast_test_rom_driver_srcs",
+    name = "scafi_deprecated_test_rom_driver_srcs",
     srcs = [
         "flash_ctrl.c",
         "flash_ctrl.h",
@@ -80,7 +80,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":alert"),
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:crc32",
         "@googletest//:gtest_main",
     ],
@@ -89,7 +89,7 @@ cc_test(
 pavona_test(
     name = "alert_functest",
     srcs = ["alert_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -101,7 +101,7 @@ pavona_test(
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -119,7 +119,7 @@ cc_library(
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -251,7 +251,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":hmac"),
         "//hw/top:hmac_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -263,15 +263,15 @@ pavona_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         ":hmac",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/testing:hexstr",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
@@ -344,13 +344,13 @@ pavona_test(
     srcs = ["keymgr_functest.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:silicon_creator": None,
             # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     qemu = qemu_params(
@@ -368,7 +368,7 @@ pavona_test(
         ":lifecycle",
         ":retention_sram",
         "//hw/top:kmac_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
@@ -393,7 +393,7 @@ cc_library(
     deps = [
         "//hw/top:kmac_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
@@ -414,15 +414,15 @@ pavona_test(
     name = "kmac_functest",
     srcs = ["kmac_functest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_CW340_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         ":kmac",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:hexstr",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -546,7 +546,7 @@ cc_library(
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
@@ -561,7 +561,7 @@ cc_test(
     srcs = ["pinmux_unittest.cc"],
     deps = [
         ":pinmux",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:sim_dv",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -594,7 +594,7 @@ cc_test(
     srcs = ["retention_sram_unittest.cc"],
     deps = [
         ":retention_sram",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -604,13 +604,13 @@ cc_test(
 pavona_test(
     name = "retention_sram_functest",
     srcs = ["retention_sram_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         ":retention_sram",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -662,7 +662,7 @@ cc_test(
         ":otp",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -677,17 +677,17 @@ pavona_test(
     srcs = ["rnd_functest.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
             # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     deps = [
         ":otp",
         ":rnd",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:crc32",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:entropy_src",
@@ -744,7 +744,7 @@ cc_test(
 pavona_test(
     name = "rstmgr_functest",
     srcs = ["rstmgr_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     qemu = qemu_params(
         globals = {
             # Test uses rstmgr, keep running on fatal resets:
@@ -782,7 +782,7 @@ cc_test(
     srcs = ["uart_unittest.cc"],
     deps = [
         ":uart",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -793,10 +793,10 @@ cc_test(
 pavona_test(
     name = "uart_functest",
     srcs = ["uart_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     deps = [
         ":uart",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
     ],
@@ -812,7 +812,7 @@ cc_library(
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -827,7 +827,7 @@ cc_test(
         ":watchdog",
         "//hw/top:aon_timer_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -839,7 +839,7 @@ cc_test(
 pavona_test(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -900,7 +900,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":spi_device"),
         "//hw/top:spi_device_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -932,7 +932,7 @@ cc_library(
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
@@ -947,7 +947,7 @@ cc_test(
         ":sensor_ctrl",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "@googletest//:gtest_main",
     ],
 )
@@ -957,7 +957,7 @@ cc_library(
     srcs = ["epmp.c"],
     hdrs = ["epmp.h"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",
@@ -987,7 +987,7 @@ cc_library(
     ],
     deps = [
         "//hw/top:usbdev_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
@@ -999,8 +999,8 @@ pavona_test(
     name = "usb_functest",
     srcs = ["usb_functest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         tags = ["skip_in_ci"],

@@ -24,9 +24,9 @@ filegroup(
 )
 """
 
-# Exports the earlgrey-cw310 crate sources so we can build a local copy
+# Exports the egret-cw310 crate sources so we can build a local copy
 # of the upstream kernel.
-_EARLGREY_CW310_BUILD = """
+_EGRET_CW310_BUILD = """
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
@@ -73,7 +73,7 @@ def _tock_repos():
                     "//capsules/extra:capsules-extra",
                 ],
             ),
-            "boards/opentitan/earlgrey-cw310/BUILD": _EARLGREY_CW310_BUILD,
+            "boards/opentitan/earlgrey-cw310/BUILD": _EGRET_CW310_BUILD,
             "capsules/aes_gcm/BUILD": crate_build(
                 name = "capsules-aes-gcm",
                 deps = [

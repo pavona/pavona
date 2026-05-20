@@ -234,14 +234,14 @@ Before running FPV, please make sure the target has been added to one of the [th
 
 For example, to run formal property verification (FPV) using JasperGold on the prim module `prim_arbiter_fixed`, type:
 ```
-  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_fpv_prim_cfgs.hjson --select-cfgs prim_arbiter_fixed_fpv
+  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_egret/formal/top_egret_fpv_prim_cfgs.hjson --select-cfgs prim_arbiter_fixed_fpv
 ```
 JasperGold will then report which assertions have been proven or disproven, and whether or not there are any unreachable assertions or coverpoints.
 Adding a `--gui` option will open the JasperGold GUI.
 
 To run formal property verification for all prim modules, type:
 ```
-  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_prim_fpv_cfgs.hjson
+  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_egret/formal/top_egret_prim_fpv_cfgs.hjson
 ```
 
 ### Synopsys VC Formal
@@ -249,14 +249,14 @@ To run formal property verification for all prim modules, type:
 If you have access to VC Formal from Synopsys, you can formally verify your assertions.
 For example, to run formal property verification (FPV) using VC Formal on module `gpio`, type:
 ```
-  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_fpv_prim_cfgs.hjson --select-cfgs prim_arbiter_fixed_fpv -t vcformal
+  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_egret/formal/top_egret_fpv_prim_cfgs.hjson --select-cfgs prim_arbiter_fixed_fpv -t vcformal
 ```
 VC Formal will then report which assertions have been proven or disproven, and whether or not there are any unreachable assertions or coverpoints.
 Adding a `--gui` option will open the VCFormal GUI.
 
 To run formal property verification for all prim modules, type:
 ```
-  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_fpv_prim_cfgs.hjson -t vcformal
+  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_egret/formal/top_egret_fpv_prim_cfgs.hjson -t vcformal
 ```
 This script generates a report of all FPV runs.
 The report is printed at the end of the run, which lists the total number of assertions and the number of proven, vacuous, covered and failing assertions for each block. CRASH identifies modules that fail to run VC Formal.
@@ -266,10 +266,10 @@ Connectivity tests use formal method to exhaustively verify system-level connect
 
 ### Cadence JasperGold on dvsim
 The `dvsim` formal flow supports connectivity test. Each top-level can create its own connectivity setting with a customized Hjson file.
-For example, `top_earlgrey` has `hw/top_earlgrey/formal/chip_conn_cfgs.hjson` that specifies its top_level name, fusesoc_core file, and csv file path.
-You can trigger top_earlgrey's connectivity test using `dvsim`:
+For example, `top_egret` has `hw/top_egret/formal/chip_conn_cfgs.hjson` that specifies its top_level name, fusesoc_core file, and csv file path.
+You can trigger top_egret's connectivity test using `dvsim`:
 ```
-  util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfgs.hjson
+  util/dvsim/dvsim.py hw/top_egret/formal/chip_conn_cfgs.hjson
 ```
 Adding a `--gui` option will open the JaperGold GUI.
 
@@ -296,7 +296,7 @@ Then we will let formal environment to randomly drive these outputs and run secu
 
 ### Set up FPV security check environment
 To set up the FPV security check environment, please follow the steps below:
-1. Add an item under `hw/top_earlgrey/formal/top_earlgrey_sec_cm_fpv_cfgs.hjson` with the naming convention "{ip_name}_sec_cm".
+1. Add an item under `hw/top_egret/formal/top_egret_sec_cm_fpv_cfgs.hjson` with the naming convention "{ip_name}_sec_cm".
 2. Under the item add an entry "task" with value "FpvSecCm".
 This entry tells the tcl file to black-box security prim modules in the FPV environment, and define required macros.
 This "task" entry also tells the tcl file to disable regular assertions and only analyze macro defined security assertions with prefix `FpvSecCm`.

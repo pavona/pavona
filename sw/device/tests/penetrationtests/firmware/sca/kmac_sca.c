@@ -17,7 +17,7 @@
 #include "sw/device/tests/penetrationtests/json/kmac_sca_commands.h"
 
 #include "hw/top/kmac_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
   /**
@@ -456,7 +456,7 @@ status_t handle_kmac_pentest_init(ujson_t *uj) {
   // Configure the device.
   pentest_setup_device(uj, false, false);
 
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
 
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,

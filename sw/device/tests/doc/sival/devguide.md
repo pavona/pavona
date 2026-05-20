@@ -1,4 +1,4 @@
-## Earlgrey SiVal Test Development Guidelines
+## Egret SiVal Test Development Guidelines
 
 ## General Guidelines
 
@@ -79,11 +79,11 @@ Silicon bring-up and validation activities have to be planned in a way that
 minimizes the number of OTP configurations given that there may be limited
 availability of samples during early post-silicon stages.
 
-* `//hw/top_earlgrey/data/otp/emulation/BUILD`: contains the OTP
+* `//hw/top_egret/data/otp/emulation/BUILD`: contains the OTP
   configurations used for pre-silicon simulation and emulation, as well as for
   Silicon Validation (SiVal) targets running on the FPGA.
-* `//hw/top_earlgrey/data/otp/sival_skus/BUILD`: contains the OTP
-  configurations used in Silicon Validation (SiVal) for the EarlGrey design.
+* `//hw/top_egret/data/otp/sival_skus/BUILD`: contains the OTP
+  configurations used in Silicon Validation (SiVal) for the Egret design.
 
 ### `:otp_img_test_unlocked0_manuf_empty`
 
@@ -174,8 +174,8 @@ The following OTP partitions are configured:
 
 ## Emulation Targets
 
-`//hw/top_earlgrey/BUILD` contains the targets used for silicon emulation for
-the EarlGrey design. The following sections describe the targets in more
+`//hw/top_egret/BUILD` contains the targets used for silicon emulation for
+the Egret design. The following sections describe the targets in more
 detail.
 
 ### `:fpga_cw310_sival`
@@ -190,7 +190,7 @@ Configuration:
 ```python
 {
     rom = "//sw/device/silicon_creator/rom:mask_rom",
-    otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_prod_manuf_personalized",
+    otp = "//hw/top_egret/data/otp/emulation:otp_img_prod_manuf_personalized",
 }
 ```
 
@@ -202,7 +202,7 @@ stage. This is the recommended option for test cases that implemented to run in
 
 ## Silicon Targets
 
-`//hw/top_earlgrey/BUILD` defines targets for silicon execution. The following
+`//hw/top_egret/BUILD` defines targets for silicon execution. The following
 sections describe the targets in more detail.
 
 ### `:silicon_creator`

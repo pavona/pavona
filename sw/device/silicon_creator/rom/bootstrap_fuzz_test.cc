@@ -13,7 +13,7 @@
 
 #include "hw/top/gpio_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace {
 using bootstrap_fuzzer::AbstractBootstrapMockGroup;
@@ -31,8 +31,7 @@ class RomMockGroup : public AbstractBootstrapMockGroup {
         .WillByDefault(::testing::Return(stream_.ParseIntOr<hardened_bool_t>(
             "bootstrap_enabled", kHardenedBoolFalse)));
 
-    ON_CALL(mmio_,
-            Read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET))
+    ON_CALL(mmio_, Read32(TOP_EGRET_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET))
         .WillByDefault(
             ::testing::Return(stream_.ParseIntOr<uint32_t>("strapping", 0)));
   }

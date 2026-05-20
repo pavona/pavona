@@ -80,8 +80,8 @@ def pavona_select_top(values, default):
     alias(
       name = "my_alias",
       actual = pavona_select_top({
-        "earlgrey": "//something:earlgrey",
-        ("englishbreakfast", "darjeeling"): "//something:else",
+        "egret": "//something:egret",
+        ("scafi_deprecated", "dragonfly"): "//something:else",
       }, "//something:error")
     )
     ```
@@ -99,14 +99,14 @@ def pavona_require_top(top):
     """
     Return a value that can be used with `target_compatible_with` to
     express that this target only works on the requested top.
-    The argument can either be a string ("earlgrey") or a list of strings
-    (["earlgrey", "darjeeling"]).
+    The argument can either be a string ("egret") or a list of strings
+    (["egret", "dragonfly"]).
 
     Example:
     ```python
     cc_library(
       name = "my_library",
-      target_compatible_with = pavona_require_top("darjeeling"),
+      target_compatible_with = pavona_require_top("dragonfly"),
     )
     ```
     """

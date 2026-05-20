@@ -23,7 +23,7 @@
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
@@ -149,15 +149,15 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
   key_manager_init = false;
 
   // Init HMAC.
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EGRET_HMAC_BASE_ADDR);
   TRY(dif_hmac_init(base_addr, &hmac));
 
   // Init AES.
-  TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  TRY(dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes));
   TRY(dif_aes_reset(&aes));
 
   // Init ACC.
-  TRY(dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
+  TRY(dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
 
   // Load p256 keygen from seed app into ACC.
   // This is not used, but just set so it receives input,

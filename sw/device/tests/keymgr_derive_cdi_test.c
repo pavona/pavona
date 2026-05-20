@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
@@ -33,7 +33,7 @@ enum {
   // The retention SRAM testutils allocate some internal data as well as a
   // number of counters; both of which should not be overwritten by this
   // test. Hence, the actual base address is offset to account for this.
-  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+  kRetSramBaseAddr = TOP_EGRET_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
                      offsetof(retention_sram_t, owner) +
                      4 * kRetSramTestutilsNumberOfCounters,
 
@@ -91,12 +91,12 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
       &sram_ctrl));
   CHECK_DIF_OK(
-      dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
+      dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
 }
 
 /**

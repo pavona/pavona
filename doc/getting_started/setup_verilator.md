@@ -75,9 +75,9 @@ bazel test --test_tag_filters=verilator --test_output=streamed //sw/device/tests
 
 You should expect to see something like:
 ```console
-Invoking: sw/host/opentitantool/opentitantool --rcfile= --logging=info --interface=verilator --verilator-bin=hw/build.verilator_real/sim-verilator/Vchip_sim_tb --verilator-rom=sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem --verilator-flash=sw/device/tests/uart_smoketest_prog_sim_verilator.64.scr.vmem --verilator-otp=hw/top_earlgrey/data/otp/img_rma.vmem console --exit-failure=(FAIL|FAULT).*\n --exit-success=PASS.*\n --timeout=3600s
-[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::subprocess] Spawning verilator: "hw/build.verilator_real/sim-verilator/Vchip_sim_tb" ["--meminit=rom,sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem", "--meminit=flash,sw/device/tests/uart_smoketest_prog_sim_verilator.64.scr.vmem", "--meminit=otp,hw/top_earlgrey/data/otp/img_rma.vmem"]
-[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] Simulation of OpenTitan Earl Grey
+Invoking: sw/host/opentitantool/opentitantool --rcfile= --logging=info --interface=verilator --verilator-bin=hw/build.verilator_real/sim-verilator/Vchip_sim_tb --verilator-rom=sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem --verilator-flash=sw/device/tests/uart_smoketest_prog_sim_verilator.64.scr.vmem --verilator-otp=hw/top_egret/data/otp/img_rma.vmem console --exit-failure=(FAIL|FAULT).*\n --exit-success=PASS.*\n --timeout=3600s
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::subprocess] Spawning verilator: "hw/build.verilator_real/sim-verilator/Vchip_sim_tb" ["--meminit=rom,sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem", "--meminit=flash,sw/device/tests/uart_smoketest_prog_sim_verilator.64.scr.vmem", "--meminit=otp,hw/top_egret/data/otp/img_rma.vmem"]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] Simulation of OpenTitan Egret
 [2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] =================================
 [2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
 [2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
@@ -120,7 +120,7 @@ Invoking: sw/host/opentitantool/opentitantool --rcfile= --logging=info --interfa
 Starting interactive console
 [CTRL+C] to exit.
 
-I00000 test_rom.c:81] Version:    earlgrey_silver_release_v5-5775-gefa09d3b8
+I00000 test_rom.c:81] Version:    egret_silver_release_v5-5775-gefa09d3b8
 Build Date: 2022-06-09, 00:12:35
 
 I00001 test_rom.c:118] Test ROM complete, jumping to flash!
@@ -180,7 +180,7 @@ Then, connect with OpenOCD using the following command.
 
 ```console
 cd $REPO_TOP
-bazel run //third_party/openocd -- -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
+bazel run //third_party/openocd -- -s util/openocd -f board/lowrisc-egret-verilator.cfg
 ```
 
 Lastly, connect GDB using the following command (noting it needs to be altered to point to the sw binary in use).

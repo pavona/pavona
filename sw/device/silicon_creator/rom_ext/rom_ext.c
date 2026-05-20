@@ -58,10 +58,10 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_verify.h"
 
-#include "hw/top/flash_ctrl_regs.h"                   // Generated.
-#include "hw/top/otp_ctrl_regs.h"                     // Generated.
-#include "hw/top/sram_ctrl_regs.h"                    // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top/flash_ctrl_regs.h"             // Generated.
+#include "hw/top/otp_ctrl_regs.h"               // Generated.
+#include "hw/top/sram_ctrl_regs.h"              // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 
 // Useful constants for flash sizes and ROM_EXT locations.
 enum {
@@ -116,11 +116,11 @@ static uint32_t rom_ext_current_slot(void) {
     asm("auipc %[pc], 0;" : [pc] "=r"(pc));
   }
 
-  const uint32_t kFlashSlotA = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  const uint32_t kFlashSlotA = TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR;
   const uint32_t kFlashSlotB =
-      kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2;
+      kFlashSlotA + TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES / 2;
   const uint32_t kFlashSlotEnd =
-      kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES;
+      kFlashSlotA + TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES;
   uint32_t side = 0;
   if (pc >= kFlashSlotA && pc < kFlashSlotB) {
     // Running in Slot A.
@@ -177,26 +177,26 @@ void rom_ext_sram_exec(owner_sram_exec_mode_t mode) {
       // In enabled mode, we do not lock the register so owner code can disable
       // SRAM exec at some later time.
       HARDENED_CHECK_EQ(mode, kOwnerSramExecModeEnabled);
-      sec_mmio_write32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
-                           SRAM_CTRL_EXEC_REG_OFFSET,
-                       kMultiBitBool4True);
+      sec_mmio_write32(
+          TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_EXEC_REG_OFFSET,
+          kMultiBitBool4True);
       break;
     case kOwnerSramExecModeDisabled:
       // In disabled mode, we do not lock the register so owner code can enable
       // SRAM exec at some later time.
       HARDENED_CHECK_EQ(mode, kOwnerSramExecModeDisabled);
-      sec_mmio_write32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
-                           SRAM_CTRL_EXEC_REG_OFFSET,
-                       kMultiBitBool4False);
+      sec_mmio_write32(
+          TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_EXEC_REG_OFFSET,
+          kMultiBitBool4False);
       break;
     case kOwnerSramExecModeDisabledLocked:
     default:
       // In disabled locked mode, we lock the register so the mode cannot be
       // changed.
-      sec_mmio_write32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
-                           SRAM_CTRL_EXEC_REG_OFFSET,
-                       kMultiBitBool4False);
-      sec_mmio_write32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
+      sec_mmio_write32(
+          TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_EXEC_REG_OFFSET,
+          kMultiBitBool4False);
+      sec_mmio_write32(TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
                            SRAM_CTRL_EXEC_REGWEN_REG_OFFSET,
                        0);
       break;
@@ -365,7 +365,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   // location for checking expectations.  However, rnd_uint32 read from OTP
   // to know if it's allowed to used the CSRNG and OTP is locked down.
   sec_mmio_check_values_except_otp(/*rnd_uint32()*/ 0,
-                                   TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+                                   TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR);
 
   HARDENED_CHECK_EQ(*flash_exec, kSigverifyFlashExec);
 

@@ -13,10 +13,10 @@ pavona_test(
     name = "teacup_leds_demo",
     srcs = ["teacup_leds_demo.c"],
     exec_env = {
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        "//hw/top_egret:silicon_owner_sival_rom_ext": None,
     },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/boards/teacup_v1_3_0:leds",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
@@ -30,11 +30,11 @@ pavona_test(
     name = "teacup_leds_and_screen_demo",
     srcs = ["teacup_leds_and_screen_demo.c"],
     exec_env = {
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        "//hw/top_egret:silicon_owner_sival_rom_ext": None,
     },
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/examples/teacup_demos/data:bitmaps",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/boards/teacup_v1_3_0:leds",

@@ -12,7 +12,7 @@
       Component:RomExt/E2e/Test
     ]
     project: OpenTitan
-    milestone: Earlgrey-PROD.ROM_EXT
+    milestone: Egret-PROD.ROM_EXT
     priority: P1
   }
   testpoints:

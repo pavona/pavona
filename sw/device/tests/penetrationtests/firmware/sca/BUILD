@@ -120,7 +120,7 @@ cc_library(
     srcs = ["ecc256_keygen_sca.c"],
     hdrs = ["ecc256_keygen_sca.h"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/acc/crypto:p256_key_from_seed_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",

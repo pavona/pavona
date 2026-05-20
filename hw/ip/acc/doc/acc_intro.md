@@ -307,7 +307,7 @@ Look below for instructions on how to reproduce these benchmarks.
 
 A few notes:
 - Because some ACC code is still under development, these cycle counts are expected to change a bit as we optimize the code and add hardening countermeasures against fault injection and power/EM side-channel attacks.
-- Some of these benchmarks include significant overhead from these countermeasures (for example, we run the inner loop of P-256 scalar multiplication 320 times instead of 256), but in the Darjeeling threat model the price is worthwhile.
+- Some of these benchmarks include significant overhead from these countermeasures (for example, we run the inner loop of P-256 scalar multiplication 320 times instead of 256), but in the Dragonfly threat model the price is worthwhile.
 - For non-constant-time code, due to the nature of the ACC benchmarks, it is currently difficult to run multiple tests, so the numbers above reflect only one test each and should be treated as a rough estimate.
 
 ### Benchmark reproduction

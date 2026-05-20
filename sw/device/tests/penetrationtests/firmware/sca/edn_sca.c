@@ -16,7 +16,7 @@
 
 #include "hw/top/edn_regs.h"           // Generated
 #include "hw/top/rv_core_ibex_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),
@@ -66,7 +66,7 @@ static status_t read_rnd_data_reg(uint32_t ibex_rnd_data[4]) {
   asm volatile(NOP30);
   asm volatile("li t0, %0"
                :
-               : "i"(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR)
+               : "i"(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR)
                : "t0");
   asm volatile("lw t1, %0(t0)"
                :
@@ -130,7 +130,7 @@ status_t handle_edn_sca_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   return OK_STATUS();

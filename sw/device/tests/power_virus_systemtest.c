@@ -51,7 +51,7 @@
 #include "hw/top/pwm_regs.h"          // Generated.
 #include "hw/top/spi_host_regs.h"     // Generated.
 #include "hw/top/uart_regs.h"         // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .enable_uart_flow_control = true);
@@ -330,12 +330,12 @@ void ottf_external_isr(uint32_t *exc_info) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&rv_plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
+      dif_rv_plic_irq_claim(&rv_plic, kTopEgretPlicTargetIbex0, &irq_id));
 
-  top_earlgrey_plic_peripheral_t periph =
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  top_egret_plic_peripheral_t periph =
+      top_egret_plic_interrupt_for_peripheral[irq_id];
   switch (periph) {
-    case kTopEarlgreyPlicPeripheralEntropySrc:
+    case kTopEgretPlicPeripheralEntropySrc:
       log_entropy_src_alert_failures();
       CHECK(false);
       break;
@@ -350,60 +350,59 @@ void ottf_external_isr(uint32_t *exc_info) {
  */
 static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
+      mmio_region_from_addr(TOP_EGRET_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
-  CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
   CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn_0));
+      dif_csrng_init(mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR), &csrng));
   CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn_1));
+      dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR), &edn_0));
+  CHECK_DIF_OK(
+      dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN1_BASE_ADDR), &edn_1));
   CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+      mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   CHECK_DIF_OK(
-      dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
+      dif_hmac_init(mmio_region_from_addr(TOP_EGRET_HMAC_BASE_ADDR), &hmac));
   CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+      dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
   CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
   // UART 0 is already configured (and used) by the OTTF.
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR), &uart_1));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR), &uart_2));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR), &uart_3));
   CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c_0));
+      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART1_BASE_ADDR), &uart_1));
   CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR), &i2c_1));
+      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART2_BASE_ADDR), &uart_2));
   CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c_2));
+      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART3_BASE_ADDR), &uart_3));
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C0_BASE_ADDR), &i2c_0));
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C1_BASE_ADDR), &i2c_1));
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C2_BASE_ADDR), &i2c_2));
   CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));
+      mmio_region_from_addr(TOP_EGRET_SPI_DEVICE_BASE_ADDR), &spi_device));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host_0));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spi_host_0));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host_1));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR), &spi_host_1));
   CHECK_DIF_OK(
-      dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
+      dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
   CHECK_DIF_OK(dif_pattgen_init(
-      mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR), &pattgen));
-  CHECK_DIF_OK(dif_pwm_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
+      mmio_region_from_addr(TOP_EGRET_PATTGEN_BASE_ADDR), &pattgen));
+  CHECK_DIF_OK(
+      dif_pwm_init(mmio_region_from_addr(TOP_EGRET_PWM_AON_BASE_ADDR), &pwm));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash_ctrl, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
+      mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR), &rv_plic));
 }
 
 static void configure_pinmux(void) {
@@ -411,19 +410,18 @@ static void configure_pinmux(void) {
   pinmux_testutils_init(&pinmux);
 
   // Configure GPIO max-power period indicator pin on IOB8.
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob8,
-                                        kTopEarlgreyPinmuxOutselGpioGpio0));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob8,
+                                        kTopEgretPinmuxOutselGpioGpio0));
 
   // UART1:
   //    RX on IOA4
   //    TX on IOA5
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart1Rx,
-                                       kTopEarlgreyPinmuxInselIoa4));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa4,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-                                        kTopEarlgreyPinmuxOutselUart1Tx));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInUart1Rx, kTopEgretPinmuxInselIoa4));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoa4,
+                                        kTopEgretPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoa5,
+                                        kTopEgretPinmuxOutselUart1Tx));
 
   // Apply this configuration only for the FPGA.
   // For the simulation, apply the config in configure_pinmux_sim().
@@ -431,82 +429,73 @@ static void configure_pinmux(void) {
     // UART2:
     //    RX on IOB4
     //    TX on IOB5
-    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                         kTopEarlgreyPinmuxPeripheralInUart2Rx,
-                                         kTopEarlgreyPinmuxInselIob4));
-    CHECK_DIF_OK(
-        dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob4,
-                                 kTopEarlgreyPinmuxOutselConstantHighZ));
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob5,
-                                          kTopEarlgreyPinmuxOutselUart2Tx));
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        &pinmux, kTopEgretPinmuxPeripheralInUart2Rx, kTopEgretPinmuxInselIob4));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob4,
+                                          kTopEgretPinmuxOutselConstantHighZ));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob5,
+                                          kTopEgretPinmuxOutselUart2Tx));
   }
 
   // UART3:
   //    RX on IOA0
   //    TX on IOA1
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart3Rx,
-                                       kTopEarlgreyPinmuxInselIoa0));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa0,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa1,
-                                        kTopEarlgreyPinmuxOutselUart3Tx));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInUart3Rx, kTopEgretPinmuxInselIoa0));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoa0,
+                                        kTopEgretPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoa1,
+                                        kTopEgretPinmuxOutselUart3Tx));
 
   // I2C0:
   //    SDA on IOA7
   //    SCL on IOA8
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-                                       kTopEarlgreyPinmuxInselIoa8));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-                                       kTopEarlgreyPinmuxInselIoa7));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa8,
-                                        kTopEarlgreyPinmuxOutselI2c0Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa7,
-                                        kTopEarlgreyPinmuxOutselI2c0Sda));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInI2c0Scl, kTopEgretPinmuxInselIoa8));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInI2c0Sda, kTopEgretPinmuxInselIoa7));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoa8,
+                                        kTopEgretPinmuxOutselI2c0Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoa7,
+                                        kTopEgretPinmuxOutselI2c0Sda));
 
   // I2C1:
   //    SCL on IOB9
   //    SDA on IOB10
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c1Scl,
-                                       kTopEarlgreyPinmuxInselIob9));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c1Sda,
-                                       kTopEarlgreyPinmuxInselIob10));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
-                                        kTopEarlgreyPinmuxOutselI2c1Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
-                                        kTopEarlgreyPinmuxOutselI2c1Sda));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInI2c1Scl, kTopEgretPinmuxInselIob9));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInI2c1Sda, kTopEgretPinmuxInselIob10));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob9,
+                                        kTopEgretPinmuxOutselI2c1Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob10,
+                                        kTopEgretPinmuxOutselI2c1Sda));
 
   // I2C2:
   //    SCL on IOB11
   //    SDA on IOB12
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c2Scl,
-                                       kTopEarlgreyPinmuxInselIob11));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c2Sda,
-                                       kTopEarlgreyPinmuxInselIob12));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob11,
-                                        kTopEarlgreyPinmuxOutselI2c2Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
-                                        kTopEarlgreyPinmuxOutselI2c2Sda));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInI2c2Scl, kTopEgretPinmuxInselIob11));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInI2c2Sda, kTopEgretPinmuxInselIob12));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob11,
+                                        kTopEgretPinmuxOutselI2c2Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob12,
+                                        kTopEgretPinmuxOutselI2c2Sda));
 
   // PATTGEN:
   //    Channel 0 PDA on IOR0
   //    Channel 0 PCL on IOR1
   //    Channel 1 PDA on IOR2
   //    Channel 1 PCL on IOR3
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor0,
-                                        kTopEarlgreyPinmuxOutselPattgenPda0Tx));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor1,
-                                        kTopEarlgreyPinmuxOutselPattgenPcl0Tx));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor2,
-                                        kTopEarlgreyPinmuxOutselPattgenPda1Tx));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor3,
-                                        kTopEarlgreyPinmuxOutselPattgenPcl1Tx));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor0,
+                                        kTopEgretPinmuxOutselPattgenPda0Tx));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor1,
+                                        kTopEgretPinmuxOutselPattgenPcl0Tx));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor2,
+                                        kTopEgretPinmuxOutselPattgenPda1Tx));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor3,
+                                        kTopEgretPinmuxOutselPattgenPcl1Tx));
 
   // PWM:
   //    Channel 0 on IOB1
@@ -518,19 +507,19 @@ static void configure_pinmux(void) {
   // Apply this channel 0 configuration only for the FPGA.
   // For the simulation, apply the config in configure_pinmux_sim().
   if (kDeviceType == kDeviceFpgaCw305 || kDeviceType == kDeviceFpgaCw310) {
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
-                                          kTopEarlgreyPinmuxOutselPwmAonPwm0));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob1,
+                                          kTopEgretPinmuxOutselPwmAonPwm0));
   }
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob2,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm1));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor5,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm2));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor6,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm3));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor7,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm4));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor10,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm5));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob2,
+                                        kTopEgretPinmuxOutselPwmAonPwm1));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor5,
+                                        kTopEgretPinmuxOutselPwmAonPwm2));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor6,
+                                        kTopEgretPinmuxOutselPwmAonPwm3));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor7,
+                                        kTopEgretPinmuxOutselPwmAonPwm4));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor10,
+                                        kTopEgretPinmuxOutselPwmAonPwm5));
 
   // Apply this configuration only for the FPGA.
   // For the simulation, apply the config in configure_pinmux_sim().
@@ -542,33 +531,30 @@ static void configure_pinmux(void) {
     //    SD1 on IOR11
     //    SD2 on IOR12
     //    SD3 on IOR13
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob0,
-                                          kTopEarlgreyPinmuxOutselSpiHost1Csb));
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob3,
-                                          kTopEarlgreyPinmuxOutselSpiHost1Sck));
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
-                                          kTopEarlgreyPinmuxOutselSpiHost1Sd0));
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                          kTopEarlgreyPinmuxMioOutIor11,
-                                          kTopEarlgreyPinmuxOutselSpiHost1Sd1));
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                          kTopEarlgreyPinmuxMioOutIor12,
-                                          kTopEarlgreyPinmuxOutselSpiHost1Sd2));
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                          kTopEarlgreyPinmuxMioOutIor13,
-                                          kTopEarlgreyPinmuxOutselSpiHost1Sd3));
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
-        kTopEarlgreyPinmuxInselIoa2));
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
-        kTopEarlgreyPinmuxInselIor11));
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2,
-        kTopEarlgreyPinmuxInselIor12));
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3,
-        kTopEarlgreyPinmuxInselIor13));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob0,
+                                          kTopEgretPinmuxOutselSpiHost1Csb));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob3,
+                                          kTopEgretPinmuxOutselSpiHost1Sck));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIoa2,
+                                          kTopEgretPinmuxOutselSpiHost1Sd0));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor11,
+                                          kTopEgretPinmuxOutselSpiHost1Sd1));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor12,
+                                          kTopEgretPinmuxOutselSpiHost1Sd2));
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor13,
+                                          kTopEgretPinmuxOutselSpiHost1Sd3));
+    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                         kTopEgretPinmuxPeripheralInSpiHost1Sd0,
+                                         kTopEgretPinmuxInselIoa2));
+    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                         kTopEgretPinmuxPeripheralInSpiHost1Sd1,
+                                         kTopEgretPinmuxInselIor11));
+    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                         kTopEgretPinmuxPeripheralInSpiHost1Sd2,
+                                         kTopEgretPinmuxInselIor12));
+    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                         kTopEgretPinmuxPeripheralInSpiHost1Sd3,
+                                         kTopEgretPinmuxInselIor13));
   }
 }
 
@@ -638,30 +624,30 @@ static void configure_pinmux_sim(void) {
   //    SD1 on IOB4
   //    SD2 on IOB5
   //    SD3 on IOB6
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Csb));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob0,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sck));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob3,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sd0));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob4,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sd1));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob5,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sd2));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob6,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sd3));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
-      kTopEarlgreyPinmuxInselIob3));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
-      kTopEarlgreyPinmuxInselIob4));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2,
-      kTopEarlgreyPinmuxInselIob5));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3,
-      kTopEarlgreyPinmuxInselIob6));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob1,
+                                        kTopEgretPinmuxOutselSpiHost1Csb));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob0,
+                                        kTopEgretPinmuxOutselSpiHost1Sck));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob3,
+                                        kTopEgretPinmuxOutselSpiHost1Sd0));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob4,
+                                        kTopEgretPinmuxOutselSpiHost1Sd1));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob5,
+                                        kTopEgretPinmuxOutselSpiHost1Sd2));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob6,
+                                        kTopEgretPinmuxOutselSpiHost1Sd3));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInSpiHost1Sd0,
+                                       kTopEgretPinmuxInselIob3));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInSpiHost1Sd1,
+                                       kTopEgretPinmuxInselIob4));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInSpiHost1Sd2,
+                                       kTopEgretPinmuxInselIob5));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInSpiHost1Sd3,
+                                       kTopEgretPinmuxInselIob6));
 
   // UART2 (simulation):
   // On FPGA, UART2 uses IOB4/IOB5 as RX/TX.
@@ -669,21 +655,20 @@ static void configure_pinmux_sim(void) {
   // To prevent contamination in DVSIM, switch UART2 RX/TX to other MIOs.
   //    RX on IOR12
   //    TX on IOR11
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart2Rx,
-                                       kTopEarlgreyPinmuxInselIor12));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor12,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor13,
-                                        kTopEarlgreyPinmuxOutselUart2Tx));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEgretPinmuxPeripheralInUart2Rx, kTopEgretPinmuxInselIor12));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor12,
+                                        kTopEgretPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor13,
+                                        kTopEgretPinmuxOutselUart2Tx));
 
   // PWM (Simulation):
   // On FPGA, PWM channel 0 uses IOB1.
   // In chip_if.sv, IOB1 is connected to the spi_device_agent1.
   // To prevent contamination in DVSIM, switch PWM 0 to another available MIO.
   //    Channel 0 on IOR11
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor11,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm0));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIor11,
+                                        kTopEgretPinmuxOutselPwmAonPwm0));
 
   // Configure fast slew rate, strong drive strength, and weak pull-ups for SPI
   // Host 0 pads.
@@ -764,10 +749,10 @@ static void configure_entropy_complex(void) {
 
   // Enable entropy_src interrupts for health-test alert detection.
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &rv_plic, kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed, 0x1));
+      &rv_plic, kTopEgretPlicIrqIdEntropySrcEsHealthTestFailed, 0x1));
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &rv_plic, kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed,
-      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+      &rv_plic, kTopEgretPlicIrqIdEntropySrcEsHealthTestFailed,
+      kTopEgretPlicTargetIbex0, kDifToggleEnabled));
   CHECK_DIF_OK(dif_entropy_src_irq_set_enabled(
       &entropy_src, kDifEntropySrcIrqEsHealthTestFailed, kDifToggleEnabled));
 

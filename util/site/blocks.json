@@ -2,16 +2,16 @@
     "high-speed-crossbar": {
         "name": "High Speed Crossbar",
         "data_file": "hw/ip/tlul/data/tlul.hjson",
-        "report": "/hw/top_earlgrey/ip/xbar_main/dv/autogen"
+        "report": "/hw/top_egret/ip/xbar_main/dv/autogen"
     },
     "ibex": {
         "name": "Ibex",
-        "data_file": "hw/top_earlgrey/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson",
+        "data_file": "hw/top_egret/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson",
         "report": null
     },
     "interrupt-controller": {
         "name": "Interrupt Controller",
-        "data_file": "hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson",
+        "data_file": "hw/top_egret/ip_autogen/rv_plic/data/rv_plic.hjson",
         "report": null
     },
     "debug-module": {
@@ -56,8 +56,8 @@
     },
     "flash": {
         "name": "Flash",
-        "data_file": "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
-        "report": "/hw/top_earlgrey/ip_autogen/flash_ctrl/dv"
+        "data_file": "hw/top_egret/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
+        "report": "/hw/top_egret/ip_autogen/flash_ctrl/dv"
     },
     "edn": {
         "name": "EDN",
@@ -92,12 +92,12 @@
     "peripheral-crossbar": {
         "name": "Peripheral Crossbar",
         "data_file": "hw/ip/tlul/data/tlul.hjson",
-        "report": "/hw/top_earlgrey/ip/xbar_peri/dv/autogen"
+        "report": "/hw/top_egret/ip/xbar_peri/dv/autogen"
     },
     "otp-fuse-controller": {
         "name": "OTP Fuse Controller",
-        "data_file": "hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson",
-        "report": "/hw/top_earlgrey/ip_autogen/otp_ctrl/dv"
+        "data_file": "hw/top_egret/ip_autogen/otp_ctrl/data/otp_ctrl.hjson",
+        "report": "/hw/top_egret/ip_autogen/otp_ctrl/dv"
     },
     "life-cycle": {
         "name": "Life Cycle",
@@ -106,8 +106,8 @@
     },
     "alert-handler": {
         "name": "Alert Handler",
-        "data_file": "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
-        "report": "/hw/top_earlgrey/ip_autogen/alert_handler/dv"
+        "data_file": "hw/top_egret/ip_autogen/alert_handler/data/alert_handler.hjson",
+        "report": "/hw/top_egret/ip_autogen/alert_handler/dv"
     },
     "uart": {
         "name": "UART",
@@ -121,8 +121,8 @@
     },
     "gpio": {
         "name": "GPIO",
-        "data_file": "hw/top_earlgrey/ip_autogen/gpio/data/gpio.hjson",
-        "report": "/hw/top_earlgrey/ip_autogen/gpio/dv"
+        "data_file": "hw/top_egret/ip_autogen/gpio/data/gpio.hjson",
+        "report": "/hw/top_egret/ip_autogen/gpio/dv"
     },
     "i2c": {
         "name": "I2C",
@@ -141,8 +141,8 @@
     },
     "pwm": {
         "name": "PWM",
-        "data_file": "hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson",
-        "report": "/hw/top_earlgrey/ip_autogen/pwm/dv"
+        "data_file": "hw/top_egret/ip_autogen/pwm/data/pwm.hjson",
+        "report": "/hw/top_egret/ip_autogen/pwm/dv"
     },
     "retention-sram": {
         "name": "Retention SRAM",
@@ -151,8 +151,8 @@
     },
     "power-manager": {
         "name": "Power Manager",
-        "data_file": "hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson",
-        "report": "/hw/top_earlgrey/ip_autogen/pwrmgr/dv"
+        "data_file": "hw/top_egret/ip_autogen/pwrmgr/data/pwrmgr.hjson",
+        "report": "/hw/top_egret/ip_autogen/pwrmgr/dv"
     },
     "sysrst-controller": {
         "name": "SYSRST Controller",
@@ -166,12 +166,12 @@
     },
     "clkrst-managers": {
         "name": "CLK/RST Managers",
-        "data_file": "hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson",
-        "report": "hw/top_earlgey/ip_autogen/clkmgr/dv"
+        "data_file": "hw/top_egret/ip_autogen/clkmgr/data/clkmgr.hjson",
+        "report": "hw/top_egret/ip_autogen/clkmgr/dv"
     },
     "pinmux-padctrl": {
         "name": "PINMUX/PADCTRL",
-        "data_file": "hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson",
+        "data_file": "hw/top_egret/ip_autogen/pinmux/data/pinmux.hjson",
         "report": null
     },
     "adc-controller": {
@@ -181,12 +181,12 @@
     },
     "sensor-control": {
         "name": "Sensor Controller",
-        "data_file": "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",
+        "data_file": "hw/top_egret/ip/sensor_ctrl/data/sensor_ctrl.hjson",
         "report": null
     },
     "analog-sensor-top": {
         "name": "Analog Sensor Top",
-        "data_file": "hw/top_earlgrey/ip/ast/data/ast.hjson",
+        "data_file": "hw/top_egret/ip/ast/data/ast.hjson",
         "report": null
     },
     "padring": {

@@ -6,15 +6,15 @@
 
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
-#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
-#define EFLASH_SIZE_BYES TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES
-#elif defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#define EFLASH_SIZE_BYES TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#define EFLASH_SIZE_BYES TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES
+#if defined(OPENTITAN_IS_SCAFI_DEPRECATED)
+#include "hw/top_scafi_deprecated/sw/autogen/top_scafi_deprecated.h"
+#define EFLASH_SIZE_BYES TOP_SCAFI_DEPRECATED_FLASH_CTRL_MEM_SIZE_BYTES
+#elif defined(OPENTITAN_IS_EGRET)
+#include "hw/top_egret/sw/autogen/top_egret.h"
+#define EFLASH_SIZE_BYES TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
+#define EFLASH_SIZE_BYES TOP_DRAGONFLY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES
 #else
 #error unsupported top
 #endif

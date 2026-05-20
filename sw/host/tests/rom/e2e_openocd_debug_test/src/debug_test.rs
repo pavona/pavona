@@ -312,7 +312,7 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     // Read and write memory (both SRAM and device)
-    // See hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
+    // See hw/top_egret/sw/autogen/top_egret_memory.h
     let sram_base = top::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
     let sram_len = top::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32;
 

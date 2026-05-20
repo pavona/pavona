@@ -53,8 +53,8 @@ cc_library(
     deps = [
         "//sw/device/lib/ujson",
     ] + select({
-        "//hw/top:earlgrey": ["//hw/top_earlgrey/sw/autogen:top_earlgrey"],
-        "//hw/top:darjeeling": ["//hw/top_darjeeling/sw/autogen:top_darjeeling"],
+        "//hw/top:egret": ["//hw/top_egret/sw/autogen:top_egret"],
+        "//hw/top:dragonfly": ["//hw/top_dragonfly/sw/autogen:top_dragonfly"],
     }),
 )
 

@@ -7,7 +7,7 @@ ALERT_ESC UVM Agent is extended from DV library agent classes.
 This agent implements both alert(alert_rx, alert_tx) and escalation (esc_rx,
 esc_tx) interface protocols, and can be configured to behave in both host and
 device modes. For design documentation, please refer to [alert_handler
-spec](../../../top_earlgrey/ip_autogen/alert_handler/README.md).
+spec](../../../top_egret/ip_autogen/alert_handler/README.md).
 
 ### Alert Agent
 

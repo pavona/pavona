@@ -24,7 +24,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[5] = {3, 30, 130, 5, 50};
@@ -67,14 +67,14 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
   // Configure pinmux
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(
       sysrst_ctrl_aon, sysrst_ctrl_input_change_config));
 
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-      kTopEarlgreyPinmuxInselIor13));
+      &pinmux, kTopEgretPinmuxPeripheralInSysrstCtrlAonKey0In,
+      kTopEgretPinmuxInselIor13));
 
   // Wait for sysrst.
   busy_spin_micros(10 * 1000);
@@ -149,23 +149,22 @@ bool test_main(void) {
   // Initialize sysrst_ctrl.
   dif_sysrst_ctrl_t sysrst_ctrl_aon;
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl_aon));
 
   // Initialize rstmgr to check the reset reason.
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // Initialize aon timer to use the wdog.
   dif_aon_timer_t aon_timer;
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_EGRET_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
   // Initialize flash_ctrl
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash_ctrl, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Enable flash access
   CHECK_STATUS_OK(

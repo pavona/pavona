@@ -13,7 +13,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/ast_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -73,10 +73,10 @@ bool test_main(void) {
       dif_clkmgr_find_measure_clock(&clkmgr, usb_clk, &clkmgr_measure_clk_usb));
 
   CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+      mmio_region_from_addr(TOP_EGRET_USBDEV_BASE_ADDR), &usbdev));
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   aon_clk_period_us =
       cast_safely(udiv64_slow(1000 * 1000, kClockFreqAonHz, NULL));
@@ -91,9 +91,9 @@ bool test_main(void) {
 
   // First, connect usb.
   LOG_INFO("Enable usb");
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-      kTopEarlgreyPinmuxInselConstantOne));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInUsbdevSense,
+                                       kTopEgretPinmuxInselConstantOne));
 
   CHECK_DIF_OK(dif_usbdev_interface_enable(&usbdev, kDifToggleEnabled));
 

@@ -12,13 +12,13 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/kmac_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
   /**
    * Base address of the KMAC hardware MMIO interface.
    */
-  kBase = TOP_EARLGREY_KMAC_BASE_ADDR,
+  kBase = TOP_EGRET_KMAC_BASE_ADDR,
   /**
    * Keccak capacity for SHAKE256.
    *

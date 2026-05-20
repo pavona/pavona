@@ -13,27 +13,27 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_uart_t uart0;
 static dif_pinmux_t pinmux;
 
 enum {
-  kSramStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-  kSramEnd = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-             TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
+  kSramStart = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+  kSramEnd = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
+             TOP_EGRET_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
 };
 
 bool test_main(void) {
   if (kDeviceType != kDeviceSimDV) {
     // Configure the pinmux.
     CHECK_DIF_OK(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+        mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
     pinmux_testutils_init(&pinmux);
 
     // Initialize UART.
-    CHECK_DIF_OK(dif_uart_init(
-        mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+    CHECK_DIF_OK(dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR),
+                               &uart0));
     CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
     CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
           "kClockFreqPeripheralHz must fit in uint32_t");

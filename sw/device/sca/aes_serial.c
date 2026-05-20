@@ -13,11 +13,11 @@
 #include "sw/device/sca/lib/simple_serial.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifndef OPENTITAN_IS_SCAFI_DEPRECATED
 #include "sw/device/lib/testing/aes_testutils.h"
 #endif
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * OpenTitan program for AES side-channel analysis.
@@ -223,17 +223,17 @@ static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
     key_shares.share0[i] =
         pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifndef OPENTITAN_IS_SCAFI_DEPRECATED
   const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR)};
+  const dif_edn_t edn0 = {.base_addr =
+                              mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR)};
 
   CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0));
 #endif
   SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifndef OPENTITAN_IS_SCAFI_DEPRECATED
   if (transaction.force_masks) {
     // Disable masking. Force the masking PRNG output value to 0.
     aes_sca_load_fixed_seed();
@@ -776,7 +776,7 @@ static void aes_serial_set_default_values(const uint8_t *data,
  */
 static void init_aes(void) {
   SS_CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes));
   SS_CHECK_DIF_OK(dif_aes_reset(&aes));
 }
 
@@ -810,13 +810,13 @@ bool test_main(void) {
   LOG_INFO("Initializing AES unit.");
   init_aes();
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifndef OPENTITAN_IS_SCAFI_DEPRECATED
   if (transaction.force_masks) {
     LOG_INFO("Initializing entropy complex.");
     const dif_csrng_t csrng = {
-        .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+        .base_addr = mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR)};
     const dif_edn_t edn0 = {
-        .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+        .base_addr = mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR)};
 
     CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0));
     aes_sca_load_fixed_seed();

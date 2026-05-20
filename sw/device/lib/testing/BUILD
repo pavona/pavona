@@ -188,7 +188,7 @@ cc_library(
     deps = [
         ":flash_ctrl_testutils",
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
     ],
@@ -255,7 +255,7 @@ cc_library(
         ":rstmgr_testutils",
         "//hw/top:keymgr_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -529,7 +529,7 @@ cc_library(
     target_compatible_with = [PAVONA_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
         "//sw/device/lib/runtime:log",
@@ -566,7 +566,7 @@ cc_library(
     ],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/testing/test_framework:check",
     ],
@@ -612,7 +612,7 @@ cc_library(
     hdrs = ["dma_testutils.h"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
         "//sw/device/lib/dif:dma",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_host",
@@ -668,7 +668,7 @@ doxygen_gather_cc(
            ip not in TESTUTILS_EXCEPTIONS
     ]) + pavona_select_top(
         {
-            "earlgrey": ["{}_testutils".format(ip) for ip in TESTUTILS_EXCEPTIONS],
+            "egret": ["{}_testutils".format(ip) for ip in TESTUTILS_EXCEPTIONS],
         },
         [],
     ),

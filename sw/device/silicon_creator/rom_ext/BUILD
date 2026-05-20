@@ -48,7 +48,7 @@ cc_library(
     hdrs = ["rom_ext_manifest.h"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:manifest",
     ],
@@ -73,7 +73,7 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib:manifest",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
         ],
     ),
 )
@@ -84,7 +84,7 @@ cc_library(
     hdrs = ["rom_ext_boot_policy.h"],
     deps = [
         ":rom_ext_boot_policy_ptrs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/silicon_creator/lib:boot_data",
@@ -148,7 +148,7 @@ cc_library(
     target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:dbg_print",
@@ -189,7 +189,7 @@ ld_library(
     script = "rom_ext_slot_a.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_egret/sw/autogen:top_egret_memory",
     ],
 )
 
@@ -198,7 +198,7 @@ ld_library(
     script = "rom_ext_slot_b.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_egret/sw/autogen:top_egret_memory",
     ],
 )
 
@@ -207,7 +207,7 @@ ld_library(
     script = "rom_ext_slot_virtual.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_egret/sw/autogen:top_egret_memory",
     ],
 )
 
@@ -298,11 +298,11 @@ ROM_EXT_FEATURES = [
         # TODO(#22780): Integrate real keys for A1 flows.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:fpga_cw340",
-            "//hw/top_earlgrey:sim_dv_base",
-            "//hw/top_earlgrey:sim_verilator_base",
-            "//hw/top_earlgrey:silicon_creator",
+            "//hw/top_egret:fpga_cw310",
+            "//hw/top_egret:fpga_cw340",
+            "//hw/top_egret:sim_dv_base",
+            "//hw/top_egret:sim_verilator_base",
+            "//hw/top_egret:silicon_creator",
         ],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = ":manifest",
@@ -328,8 +328,8 @@ ROM_EXT_FEATURES = [
         testonly = True,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:fpga_cw340",
+            "//hw/top_egret:fpga_cw310",
+            "//hw/top_egret:fpga_cw340",
         ],
         linker_script = ":ld_slot_a",
         manifest = ":manifest",
@@ -357,10 +357,10 @@ pavona_binary(
     testonly = True,
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top_egret:fpga_cw310",
+        "//hw/top_egret:fpga_cw340",
+        "//hw/top_egret:sim_dv_base",
+        "//hw/top_egret:sim_verilator_base",
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_bad_address_translation",

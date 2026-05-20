@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 use bitflags::bitflags;
 
-#[cfg(any(feature = "earlgrey", feature = "darjeeling"))]
+#[cfg(any(feature = "egret", feature = "dragonfly"))]
 use ot_bindgen_dif as dif;
 
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 use crate::util::bitfield::BitField;
 
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u32)]
 pub enum ClkmgrReg {
@@ -39,7 +39,7 @@ pub enum ClkmgrReg {
     FatalErrCode = dif::CLKMGR_FATAL_ERR_CODE_REG_OFFSET,
 }
 
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct ClkmgrExtclkCtrlRegwen: u32 {
@@ -48,10 +48,10 @@ bitflags! {
 }
 
 /// BitFields for the CLKMGR_EXTCLK_CTRL register.
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 pub struct ClkmgrExtclkCtrl;
 
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 impl ClkmgrExtclkCtrl {
     pub const HI_SPEED_SEL: BitField = BitField {
         offset: dif::CLKMGR_EXTCLK_CTRL_HI_SPEED_SEL_OFFSET,
@@ -68,7 +68,7 @@ impl ClkmgrExtclkCtrl {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u32)]
-#[cfg(feature = "darjeeling")]
+#[cfg(feature = "dragonfly")]
 pub enum ClkmgrReg {
     AlertTest = dif::CLKMGR_ALERT_TEST_REG_OFFSET,
     JitterRegwen = dif::CLKMGR_JITTER_REGWEN_REG_OFFSET,

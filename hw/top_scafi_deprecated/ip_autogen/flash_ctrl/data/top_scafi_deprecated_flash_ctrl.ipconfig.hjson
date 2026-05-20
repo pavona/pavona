@@ -1,0 +1,26 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_scafi_deprecated_flash_ctrl
+  param_values:
+  {
+    banks: 2
+    data_width: 64
+    info_types: 3
+    infos_per_bank:
+    [
+      10
+      1
+      2
+    ]
+    pages_per_bank: 16
+    program_resolution: 8
+    words_per_page: 256
+    integrity_width: 4
+    size: 65536
+    topname: scafi_deprecated
+    uniquified_modules: {}
+    module_instance_name: flash_ctrl
+  }
+}

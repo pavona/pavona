@@ -50,7 +50,7 @@ status_t handle_gdb_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   return OK_STATUS();

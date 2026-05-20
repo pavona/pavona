@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf_commands.h"
 #include "sw/device/lib/ujson/ujson.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * Tests SPI device integration with the ujson OTTF console.
@@ -25,7 +25,7 @@
  */
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+                        .console.base_addr = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
                         .console.test_may_clobber = false, );
 
 volatile uint8_t kTestBytes[256];

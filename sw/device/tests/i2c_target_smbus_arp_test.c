@@ -41,7 +41,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 #include "hw/top/i2c_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -237,24 +237,24 @@ void i2c_isr(dif_i2c_irq_t irq) {
  * External interrupt handler.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+  const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
   dif_rv_plic_irq_id_t plic_irq_id = 0;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  top_egret_plic_peripheral_t peripheral = (top_egret_plic_peripheral_t)
+      top_egret_plic_interrupt_for_peripheral[plic_irq_id];
 
   switch (peripheral) {
-    case kTopEarlgreyPlicPeripheralUart0:
+    case kTopEgretPlicPeripheralUart0:
       if (!ottf_console_flow_control_isr(exc_info)) {
         goto unexpected_irq;
       };
       break;
-    case kTopEarlgreyPlicPeripheralI2c0: {
+    case kTopEgretPlicPeripheralI2c0: {
       // Check that the ID matches the expected interrupt, then mask it, since
       // it's a status type.
       dif_i2c_irq_t irq =
-          (dif_i2c_irq_t)(plic_irq_id - kTopEarlgreyPlicIrqIdI2c0FmtThreshold);
+          (dif_i2c_irq_t)(plic_irq_id - kTopEgretPlicIrqIdI2c0FmtThreshold);
       i2c_isr(irq);
     } break;
     default:
@@ -287,13 +287,13 @@ static status_t command_processor(ujson_t *uj) {
 
 static status_t test_init(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &plic));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_I2C0_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c));
 
   TRY(i2c_testutils_select_pinmux(&pinmux, 0, I2cPinmuxPlatformIdHyper310));
@@ -327,14 +327,14 @@ static status_t test_init(void) {
   TRY(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));
 
   // Enable all I2C interrupts.
-  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+  const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold; irq <= kDifI2cIrqHostTimeout;
        ++irq) {
     CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c, irq, kDifToggleEnabled));
   }
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdI2c0FmtThreshold,
-                                     kTopEarlgreyPlicIrqIdI2c0HostTimeout);
+                                     kTopEgretPlicIrqIdI2c0FmtThreshold,
+                                     kTopEgretPlicIrqIdI2c0HostTimeout);
 
   // Initialize the message buffer.
   memset(message, 0, sizeof(message));

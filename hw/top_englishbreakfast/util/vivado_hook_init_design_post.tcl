@@ -1,1 +1,0 @@
-../../top_earlgrey/util/vivado_hook_init_design_post.tcl

@@ -57,7 +57,7 @@ Note however that the PRNG sequence does not have strong security guarantees, si
 ### Code Execution from SRAM
 
 The SRAM controller contains an access control mechanism for filtering instruction fetches from the processor.
-As illustrated below, an OTP switch EN_SRAM_IFETCH (for example, see earlgrey's [OTP memory map](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../../lc_ctrl/README.md#hw_debug_en)), or it can be enabled / disabled via the [`EXEC`](registers.md#exec) CSR.
+As illustrated below, an OTP switch EN_SRAM_IFETCH (for example, see egret's [OTP memory map](../../../top_egret/ip_autogen/otp_ctrl/README.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../../lc_ctrl/README.md#hw_debug_en)), or it can be enabled / disabled via the [`EXEC`](registers.md#exec) CSR.
 
 ![SRAM Code Execution](../doc/sram_ctrl_sram_execution.svg)
 
@@ -74,7 +74,7 @@ The different configuration options are listed in the table below:
 Note that the execute from SRAM feature may only be enabled on certain SRAM controller instances in the top-level design.
 If the feature is turned off via the `InstrExec` parameter, the execute from SRAM feature is permanently disabled, and the status of the OTP switch, the life cycle state and the value of the EXEC register are irrelevant.
 
-As an example, the `top_earlgrey` design only enables this feature on the main SRAM, and permanently disables it on the retention SRAM.
+As an example, the `top_egret` design only enables this feature on the main SRAM, and permanently disables it on the retention SRAM.
 
 ### Read and Write Sequencing
 

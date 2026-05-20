@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(
     OTP_CTRL_PARAM_VENDOR_TEST_SIZE % sizeof(uint32_t) == 0,
@@ -110,7 +110,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       // CreatorSwCfg fields have not yet been set.
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char
-                       *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                       *)(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR +
                           OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
                           OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET),
           .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
@@ -121,7 +121,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
     } break;
     case kDifOtpCtrlPartitionOwnerSwCfg: {
       otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+          .data = (unsigned char *)(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR +
                                     OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
                                     OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET),
           .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -

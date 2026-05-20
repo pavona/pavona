@@ -164,7 +164,7 @@ bool test_main(void) {
     // aon timer clean up
     CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
     //    mmio_region_write32(
-    //        mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
+    //        mmio_region_from_addr(TOP_EGRET_AON_TIMER_AON_BASE_ADDR),
     //        AON_TIMER_WKUP_CAUSE_REG_OFFSET, 0);
     CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
     // sysrst ctrl status clean up

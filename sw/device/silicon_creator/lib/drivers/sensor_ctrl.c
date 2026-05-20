@@ -11,10 +11,10 @@
 
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
-  kBase = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR,
+  kBase = TOP_EGRET_SENSOR_CTRL_AON_BASE_ADDR,
   kSensorCtrlAlertConfig =
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG_OFFSET,
   kSensorCtrlAlertSize = SENSOR_CTRL_ALERT_EN_MULTIREG_COUNT,

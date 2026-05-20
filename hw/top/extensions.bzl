@@ -52,9 +52,9 @@ _register = tag_class(
     doc = """
 Register a top with the build system. To do so, you must have a bazel file exporting
 a variable containing the top description created by `pavona_top`. For example,
-Earlgrey's top description is located in hw/top_earlgrey/defs.bzl which exports
-a variable named `EARLGREY`. In this case, you need to pass the label to the
-`hw/top_earlgrey/defs.bzl` in `bazel_file` and `EARLGREY` in `top_var`.
+Egret's top description is located in hw/top_egret/defs.bzl which exports
+a variable named `EGRET`. In this case, you need to pass the label to the
+`hw/top_egret/defs.bzl` in `bazel_file` and `EGRET` in `top_var`.
 """,
 )
 

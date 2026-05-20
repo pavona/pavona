@@ -71,8 +71,8 @@ Specifically, you can build the [`//hw/bitstream/universal:splice`](../../hw/bit
 For example, to splice a CW310 bitstream with the mask ROM image and a specific OTP image, you can run
 ```sh
 bazel build \
-    --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp:img_dev \
-    --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys \
+    --//hw/bitstream/universal:otp=//hw/top_egret/data/otp:img_dev \
+    --//hw/bitstream/universal:env=//hw/top_egret:fpga_cw310_rom_with_fake_keys \
     //hw/bitstream/universal:splice
 ```
 
@@ -124,18 +124,18 @@ Now the Vivado GUI opens and loads the project.
 
 ```sh
 cd $REPO_TOP
-fusesoc --cores-root hw run --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_${BOARD}
+fusesoc --cores-root hw run --target=synth --no-export --setup lowrisc:systems:chip_egret_${BOARD}
 ```
 
 You can then navigate to the created project directory, and open Vivado
 ```sh
 . /tools/Xilinx/Vivado/{{#tool-version vivado }}/settings64.sh
-cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_${BOARD}_0.1/synth-vivado/vivado
+cd $REPO_TOP/build/lowrisc_systems_chip_egret_${BOARD}_0.1/synth-vivado/vivado
 ```
 
 Finally, using the Tcl console, you can kick off the project setup with
 ```sh
-source lowrisc_systems_chip_earlgrey_${BOARD}_0.1.tcl
+source lowrisc_systems_chip_egret_${BOARD}_0.1.tcl
 ```
 
 ## Connecting ChipWhisperer FPGA (and HyperDebug) Boards to your PC
@@ -229,9 +229,9 @@ On your HyperDebug board:
 
 On your CW340 base board (the red board):
 1. Move the following single pin-to-pin jumpers in the bottom right corner of the board to `HD` (for "HyperDebug").
-    1. UART0 RX/TX (Earlgrey pins IOC3/4): JP1 & JP2
-    2. UART1 RX/TX (Earlgrey pins IOA0/1): JP3 & JP4
-    3. JTAG TAP select straps (Earlgrey pins IOC5/8): JP11 & JP12
+    1. UART0 RX/TX (Egret pins IOC3/4): JP1 & JP2
+    2. UART1 RX/TX (Egret pins IOA0/1): JP3 & JP4
+    3. JTAG TAP select straps (Egret pins IOC5/8): JP11 & JP12
 2. Connect the following blue socket-to-socket jumpers in the middle of the board to `HD` (for "HyperDebug").
     1. SPI Device: connect J23 to J25
     2. JTAG: connect J12 to J13
@@ -354,7 +354,7 @@ To flash the bitstream onto the FPGA using `opentitantool`, use the following co
 ##### If you downloaded the bitstream from the Internet:
 ```sh
 cd $REPO_TOP
-bazel run //sw/host/opentitantool -- fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
+bazel run //sw/host/opentitantool -- fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_egret_${BOARD}_0.1.bit.orig
 ```
 ##### if you built the bitstream yourself:
 ```sh
@@ -366,7 +366,7 @@ Depending on the FPGA device, the flashing itself may take several seconds.
 After completion, a message like this should be visible from the UART:
 
 ```console
-I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
+I00000 test_rom.c:81] Version: egret_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
 I00001 test_rom.c:87] TestROM:6b2ca9a1
 I00002 test_rom.c:118] Test ROM complete, jumping to flash!
 ```
@@ -392,9 +392,9 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW340 board follow the 
 
    And then output like this should appear from the UART:
    ```console
-   I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
+   I00000 test_rom.c:81] Version: egret_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
    I00001 test_rom.c:87] TestROM:6b2ca9a1
-   I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
+   I00000 test_rom.c:81] Version: egret_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
    I00001 test_rom.c:87] TestROM:6b2ca9a1
    I00002 test_rom.c:118] Test ROM complete, jumping to flash!
    I00000 hello_world.c:66] Hello World!
@@ -492,7 +492,7 @@ cd $REPO_TOP
 bazel run //third_party/openocd -- \
     -f "util/openocd/board/cw340_ftdi.cfg" \
     -c "adapter speed 500; transport select jtag; reset_config trst_only" \
-    -f util/openocd/target/lowrisc-earlgrey.cfg
+    -f util/openocd/target/lowrisc-egret.cfg
 ```
 
 #### CW310 - Olimex adapter
@@ -502,7 +502,7 @@ cd $REPO_TOP
 bazel run //third_party/openocd -- \
     -f "bazel-pavona/$(bazel outquery //third_party/openocd:jtag_olimex_cfg)" \
     -c "adapter speed 500; transport select jtag; reset_config trst_only" \
-    -f util/openocd/target/lowrisc-earlgrey.cfg
+    -f util/openocd/target/lowrisc-egret.cfg
 ```
 
 Example OpenOCD output:
@@ -622,9 +622,9 @@ To download the bitstream:
 1. Open your PR on Github and navigate to the "Checks" tab.
 2. On the left sidebar, click the "CI" top-level item.
 3. Scroll down to bottom of the page.
-4. Download the artifact for "partial-build-bin-chip_earlgrey_cw340".
+4. Download the artifact for "partial-build-bin-chip_egret_cw340".
 
-After extracting the artifact, the bitstream is located at `build-bin/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw340_0.1.bit.{splice,orig}`.
+After extracting the artifact, the bitstream is located at `build-bin/hw/top_egret/lowrisc_systems_chip_egret_cw340_0.1.bit.{splice,orig}`.
 The `.splice` bitstream has the ROM spliced in, and the `.orig` bitstream has the test ROM.
 
 Next, load the bitstream with opentitantool, and run the test.

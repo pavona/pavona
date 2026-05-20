@@ -8,8 +8,8 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
+    "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_test",
     "silicon_params",

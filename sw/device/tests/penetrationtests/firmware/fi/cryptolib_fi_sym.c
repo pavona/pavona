@@ -14,7 +14,7 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_fi_sym_commands.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 status_t handle_cryptolib_fi_sym_aes(ujson_t *uj) {
   cryptolib_fi_sym_aes_in_t uj_input;

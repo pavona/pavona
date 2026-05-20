@@ -17,7 +17,7 @@
 #include "sw/device/silicon_creator/lib/rescue/dfu.h"
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 const uint32_t rescue_type = kRescueProtocolUsbDfu;
 

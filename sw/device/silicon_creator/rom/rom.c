@@ -56,7 +56,7 @@
 #include "hw/top/hmac_regs.h"  // Generated.
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rstmgr_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * Table of forward branch Control Flow Integrity (CFI) counters.
@@ -521,12 +521,12 @@ static rom_error_t rom_measure_otp_partitions(
        OTP_CTRL_OWNER_SW_CFG_DIGEST_MULTIREG_COUNT / 8) == sizeof(uint64_t),
       "OwnerSwCfg OTP partition digest no longer 64 bits.");
   hmac_sha256_update(
-      (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+      (unsigned char *)(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR +
                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
                         OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET),
       sizeof(uint64_t));
   hmac_sha256_update(
-      (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+      (unsigned char *)(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR +
                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
                         OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET),
       sizeof(uint64_t));

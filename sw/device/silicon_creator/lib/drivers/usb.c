@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/hardened.h"
 
 #include "hw/top/usbdev_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define USBDEV_NUM_BUFFERS 32
 #define CFG_PIN_FLIP false
@@ -17,7 +17,7 @@
 #define CFG_TX_USE_D_SE0 false
 
 enum {
-  kBase = TOP_EARLGREY_USBDEV_BASE_ADDR,
+  kBase = TOP_EGRET_USBDEV_BASE_ADDR,
 };
 
 // The buffer_pool is a bitmap of allocated buffers.

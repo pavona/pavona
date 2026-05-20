@@ -4,8 +4,8 @@
 
 def _orchestrator_cw310_settings_impl(settings, attr):
     return {
-        "//hw/bitstream/universal:otp": "//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty",
-        "//hw/bitstream/universal:env": "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+        "//hw/bitstream/universal:otp": "//hw/top_egret/data/otp/emulation:otp_img_test_unlocked0_manuf_empty",
+        "//hw/bitstream/universal:env": "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
     }
 
 _orchestrator_cw310_settings = transition(
@@ -19,8 +19,8 @@ _orchestrator_cw310_settings = transition(
 
 def _orchestrator_cw340_settings_impl(settings, attr):
     return {
-        "//hw/bitstream/universal:otp": "//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty",
-        "//hw/bitstream/universal:env": "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/bitstream/universal:otp": "//hw/top_egret/data/otp/emulation:otp_img_test_unlocked0_manuf_empty",
+        "//hw/bitstream/universal:env": "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
     }
 
 _orchestrator_cw340_settings = transition(

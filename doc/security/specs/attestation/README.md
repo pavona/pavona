@@ -367,7 +367,7 @@ manager. The triggering mechanism for updating the value is covered in the
 
 ## Asymmetric Keys
 
-Earlgrey and Darjeeling use ECDSA attestation keys conformant to
+Egret and Dragonfly use ECDSA attestation keys conformant to
 [FIPS 186-4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf). Future
 revisions of this specification may add support for other signature schemes.
 

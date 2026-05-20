@@ -39,7 +39,7 @@ otp_json(
 # OTP images that enable the watchdog.
 otp_image(
     name = "otp_img_reset_reason",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_reset_reason"],
 )
 
@@ -47,7 +47,7 @@ pavona_test(
     name = "reset_reasons_test",
     srcs = ["reset_reasons_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         otp = ":otp_img_reset_reason",
@@ -131,7 +131,7 @@ RESET_CORRUPTION_SCENARIOS = [
 [
     otp_image(
         name = "otp_img_reset_reason_{}".format(t["name"]),
-        src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+        src = "//hw/top_egret/data/otp:otp_json_rma",
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_reset_reason_{}".format(t["name"]),
         ],
@@ -144,7 +144,7 @@ RESET_CORRUPTION_SCENARIOS = [
         name = "reset_reason_{}".format(t["name"]),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             exit_failure = t["exit_failure"],

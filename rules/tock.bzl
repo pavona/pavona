@@ -130,7 +130,7 @@ def _tock_image_impl(ctx):
         arguments = [
             "flash",
             "--board",
-            "pavona_earlgrey",
+            "pavona_egret",
             "--flash-file",
             images[0].path,
             "--address",
@@ -154,7 +154,7 @@ def _tock_image_impl(ctx):
               cp {} {} &&\
               chmod +rw {} &&\
               {} install\
-                --board pavona_earlgrey\
+                --board pavona_egret\
                 --flash-file {}\
                 --app-address {}\
                 {}\

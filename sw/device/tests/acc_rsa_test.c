@@ -43,7 +43,7 @@
  *
  * Encryption is reasonably fast in RSA, taking between 50 thousand instructions
  * for RSA 512, up to 17 million instructions for RSA 4096.
- * Assuming a typical Verilator-based simulation of Earlgrey at 5 kHz, this
+ * Assuming a typical Verilator-based simulation of Egret at 5 kHz, this
  * results in simulation times between a couple of seconds and an hour for RSA
  * encrypt.
  *

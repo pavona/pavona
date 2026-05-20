@@ -41,7 +41,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_reset_ret_ram",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_reset_ret_ram_overlay"],
     visibility = ["//visibility:private"],
 )
@@ -50,7 +50,7 @@ pavona_test(
     name = "rom_e2e_ret_ram_init",
     srcs = ["rom_e2e_ret_ram_init_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         otp = ":otp_img_reset_ret_ram",
@@ -70,7 +70,7 @@ pavona_test(
     name = "rom_e2e_ret_ram_keep",
     srcs = ["rom_e2e_ret_ram_keep_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         tags = maybe_skip_in_ci(CONST.LCV.RMA),

@@ -18,8 +18,8 @@ pavona_binary(
     testonly = True,
     srcs = ["print_certs.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     deps = [
@@ -35,8 +35,8 @@ pavona_binary(
 pavona_test(
     name = "print_certs_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         binaries = {

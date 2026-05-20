@@ -52,29 +52,29 @@ def get_otp_images():
     """
 
     img_targets = [
-        "//hw/top_earlgrey/data/otp:img_dev",
-        "//hw/top_earlgrey/data/otp:img_rma",
-        "//hw/top_earlgrey/data/otp:img_test_locked0",
-        "//hw/top_earlgrey/data/otp:img_test_locked1",
-        "//hw/top_earlgrey/data/otp:img_test_locked2",
-        "//hw/top_earlgrey/data/otp:img_test_locked3",
-        "//hw/top_earlgrey/data/otp:img_test_locked4",
-        "//hw/top_earlgrey/data/otp:img_test_locked5",
-        "//hw/top_earlgrey/data/otp:img_test_locked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked0",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1_initial",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked2",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked3",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked4",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked5",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked7",
-        "//hw/top_earlgrey/data/otp:img_prod",
-        "//hw/top_earlgrey/data/otp:img_prod_end",
-        "//hw/top_earlgrey/data/otp:img_exec_disabled",
-        "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
-        "//hw/top_earlgrey/data/otp:img_raw",
+        "//hw/top_egret/data/otp:img_dev",
+        "//hw/top_egret/data/otp:img_rma",
+        "//hw/top_egret/data/otp:img_test_locked0",
+        "//hw/top_egret/data/otp:img_test_locked1",
+        "//hw/top_egret/data/otp:img_test_locked2",
+        "//hw/top_egret/data/otp:img_test_locked3",
+        "//hw/top_egret/data/otp:img_test_locked4",
+        "//hw/top_egret/data/otp:img_test_locked5",
+        "//hw/top_egret/data/otp:img_test_locked6",
+        "//hw/top_egret/data/otp:img_test_unlocked0",
+        "//hw/top_egret/data/otp:img_test_unlocked1",
+        "//hw/top_egret/data/otp:img_test_unlocked1_initial",
+        "//hw/top_egret/data/otp:img_test_unlocked2",
+        "//hw/top_egret/data/otp:img_test_unlocked3",
+        "//hw/top_egret/data/otp:img_test_unlocked4",
+        "//hw/top_egret/data/otp:img_test_unlocked5",
+        "//hw/top_egret/data/otp:img_test_unlocked6",
+        "//hw/top_egret/data/otp:img_test_unlocked7",
+        "//hw/top_egret/data/otp:img_prod",
+        "//hw/top_egret/data/otp:img_prod_end",
+        "//hw/top_egret/data/otp:img_exec_disabled",
+        "//hw/top_egret/data/otp:img_bootstrap_disabled",
+        "//hw/top_egret/data/otp:img_raw",
     ]
 
     out = []
@@ -430,7 +430,7 @@ def otp_alert_classification(alert_list, default = None, ordered_params = {}, **
 
     Example usage:
         otp_alert_classification(
-            alert_list = EARLGREY_ALERTS,
+            alert_list = EGRET_ALERTS,
             # The ordering is "prod, prod_end, dev, rma"
             default = "                   X, X, X, X",
             gpio_fatal_fault = "          X, X, X, X",

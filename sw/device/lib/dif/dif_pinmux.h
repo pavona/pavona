@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/top_earlgrey/ip_autogen/pinmux/doc/">Pin Multiplexer</a>
+ * @brief <a href="/hw/top_egret/ip_autogen/pinmux/doc/">Pin Multiplexer</a>
  * Device Interface Functions
  */
 

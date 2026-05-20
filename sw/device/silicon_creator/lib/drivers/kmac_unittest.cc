@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/kmac_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace kmac_unittest {
 namespace {
@@ -65,7 +65,7 @@ class KmacTest : public rom_test::RomTest {
   void ExpectCmdWrite(uint32_t cmd) {
     EXPECT_ABS_WRITE32(base_ + KMAC_CMD_REG_OFFSET, cmd << KMAC_CMD_CMD_OFFSET);
   }
-  uint32_t base_ = TOP_EARLGREY_KMAC_BASE_ADDR;
+  uint32_t base_ = TOP_EGRET_KMAC_BASE_ADDR;
   const size_t shake256_rate_words_ = (1600 - 512) / 32;
   const uint32_t share0_addr_ = base_ + KMAC_STATE_REG_OFFSET;
   const uint32_t share1_addr_ =

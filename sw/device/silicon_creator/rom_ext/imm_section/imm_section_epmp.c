@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 
 // Address populated by the linker.
 extern char _rom_ext_immutable_start[];
@@ -21,19 +21,19 @@ extern char _text_end[];
 extern char _stack_start[];  // Lowest stack address.
 
 static const epmp_region_t kMmioRegion = {
-    .start = TOP_EARLGREY_MMIO_BASE_ADDR,
-    .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES,
+    .start = TOP_EGRET_MMIO_BASE_ADDR,
+    .end = TOP_EGRET_MMIO_BASE_ADDR + TOP_EGRET_MMIO_SIZE_BYTES,
 };
 
 static const epmp_region_t kFlashRegion = {
-    .start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-    .end = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-           TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES,
+    .start = TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR,
+    .end = TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
+           TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES,
 };
 
 static const epmp_region_t kRvDmRegion = {
-    .start = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR,
-    .end = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR + TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES,
+    .start = TOP_EGRET_RV_DM_MEM_BASE_ADDR,
+    .end = TOP_EGRET_RV_DM_MEM_BASE_ADDR + TOP_EGRET_RV_DM_MEM_SIZE_BYTES,
 };
 
 static const epmp_region_t kStackGuard = {.start = (uintptr_t)_stack_start,

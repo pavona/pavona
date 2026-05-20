@@ -17,7 +17,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // RAM copy of the owner INFO pages from flash.
 owner_block_t owner_page[2];
@@ -106,7 +106,7 @@ hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
 
 static inline hardened_bool_t is_owner_page(const uint8_t bank,
                                             const uint8_t page) {
-  // On earlgrey_a1, in banks 0 and 1, pages 5-8 (inclusive) are reserved
+  // On egret_a1, in banks 0 and 1, pages 5-8 (inclusive) are reserved
   // for the owner.
   if (page >= 5 && page <= 8) {
     return kHardenedBoolTrue;
@@ -557,8 +557,8 @@ rom_error_t owner_block_rescue_apply(const owner_rescue_config_t *rescue) {
   bool gpio_value = bitfield_bit32_read(rescue->gpio, RESCUE_GPIO_VALUE_BIT);
   switch (detect) {
     case kRescueDetectGpio:
-      if (index <= kTopEarlgreyMuxedPadsLast) {
-        // Set the pad for input as Gpio0.  On earlgrey, the pad index is two
+      if (index <= kTopEgretMuxedPadsLast) {
+        // Set the pad for input as Gpio0.  On egret, the pad index is two
         // less than the peripheral input select.
         pinmux_configure_input(0, index + 2);
         // If configured, enable the pull resistor in the opposite direction of

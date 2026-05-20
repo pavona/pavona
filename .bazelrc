@@ -133,7 +133,7 @@ build --@rules_rust//:clippy_flags="-Wclippy::undocumented_unsafe_blocks,-Dwarni
 try-import .bazelrc-site
 
 # Shortcut for enabling Cloud KMS certificate endorsement during test
-build --flag_alias=ckms_cert_endorsement=//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:endorse_certs_with_ckms
+build --flag_alias=ckms_cert_endorsement=//sw/device/silicon_creator/manuf/skus/egret_a0/sival_bringup:endorse_certs_with_ckms
 
 # cquery output option.
 cquery --output=files

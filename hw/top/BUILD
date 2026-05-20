@@ -31,28 +31,28 @@ filegroup(
 # Use this flag to select the top.
 string_flag(
     name = "top",
-    build_setting_default = "earlgrey",
+    build_setting_default = "egret",
     values = ALL_TOP_NAMES,
 )
 
 config_setting(
-    name = "englishbreakfast",
+    name = "scafi_deprecated",
     flag_values = {
-        "top": "englishbreakfast",
+        "top": "scafi_deprecated",
     },
 )
 
 config_setting(
-    name = "earlgrey",
+    name = "egret",
     flag_values = {
-        "top": "earlgrey",
+        "top": "egret",
     },
 )
 
 config_setting(
-    name = "darjeeling",
+    name = "dragonfly",
     flag_values = {
-        "top": "darjeeling",
+        "top": "dragonfly",
     },
 )
 

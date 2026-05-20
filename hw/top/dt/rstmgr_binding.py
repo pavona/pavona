@@ -167,10 +167,10 @@ class RstmgrExt(Extension):
             sw_rsts[str(idx)] = Name.from_snake_case(rst)
         hw_reqs = {}
         for (idx, reset) in enumerate(self.ipconfig.hw_reset_req_list()):
-            # NOTE Englishbreakfast pretends to have an escalation signal but
+            # NOTE Scafi_Deprecated pretends to have an escalation signal but
             # in fact does not have an alert_handler so we need to special case
             # that. Similarly there is no rv_dm.
-            if self.ip_helper.top_helper.top["name"] == "englishbreakfast" and \
+            if self.ip_helper.top_helper.top["name"] == "scafi_deprecated" and \
                     reset["module"] in ["alert_handler", "rv_dm"]:
                 inst_id = Name(["unknown"])
             else:

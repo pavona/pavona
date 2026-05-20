@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/top_earlgrey/ip/sensor_ctrl/doc/">Sensor Controller</a>
+ * @brief <a href="/hw/top_egret/ip/sensor_ctrl/doc/">Sensor Controller</a>
  * Device Interface Functions
  */
 

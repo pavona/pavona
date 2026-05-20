@@ -4,7 +4,7 @@
 
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_SKUS",
+    "EGRET_SKUS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -22,6 +22,6 @@ filegroup(
     name = "ca_data_all",
     srcs = depset([
         config["ca_data"]
-        for _, config in EARLGREY_SKUS.items()
+        for _, config in EGRET_SKUS.items()
     ]).to_list(),
 )

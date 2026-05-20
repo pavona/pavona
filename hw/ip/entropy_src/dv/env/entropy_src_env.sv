@@ -41,14 +41,14 @@ class entropy_src_env extends cip_base_env #(
     // The default max delay is chosen such that the RNG model delivers one symbols every 6.5 clock
     // cycles (rng_max_delay = 12). To reach functional coverage metrics, the
     // entropy_src_rng_max_rate test configures the model to generate a symbol at the maximum rate
-    // (every other clock cycle, rng_max_delay = 1). For Earlgrey, this is an unrealistically high
+    // (every other clock cycle, rng_max_delay = 1). For Egret, this is an unrealistically high
     // rate but it allows testing corner cases.
     cfg.m_rng_agent_cfg.host_delay_max = cfg.rng_max_delay;
     if (cfg.rng_max_delay == 1 && `RNG_BUS_WIDTH == 16) begin
-      // On Darjeeling, in the worst case, there is a new 16-bit entropy word from the RNG every
+      // On Dragonfly, in the worst case, there is a new 16-bit entropy word from the RNG every
       // 3 clock cycles. To model this actually realistic scenario, we set both the min and max
       // delay to two clock cycles for the entropy_src_rng_max_rate test. We could also test the
-      // Darjeeling configuration with a rng_max_delay of 1, but this would require a deeper
+      // Dragonfly configuration with a rng_max_delay of 1, but this would require a deeper
       // Distribution FIFO to properly handle the conditioner back pressure. This is not desirable
       // from an area perspective.
       cfg.m_rng_agent_cfg.host_delay_min = 2;

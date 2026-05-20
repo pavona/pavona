@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 // Below includes are generated during compile time.
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
@@ -45,7 +45,7 @@ enum {
   kPlicTarget = 0,
 };
 
-static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
+static const uint32_t kNumDio = 16;  // top_egret has 16 DIOs
 
 // kDirectDio is a list of Dio index that TB cannot control the PAD value.
 // The list should be incremental order (see the code below)
@@ -125,8 +125,7 @@ bool test_main(void) {
     if (kDeviceType == kDeviceSimDV) {
       CHECK_STATUS_OK(flash_ctrl_testutils_write(
           &flash_ctrl_state,
-          (uint32_t)(&wakeup_detector_idx) -
-              TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+          (uint32_t)(&wakeup_detector_idx) - TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR,
           0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
     }
     LOG_INFO("detector %d is selected", wakeup_detector_selected);
@@ -134,7 +133,7 @@ bool test_main(void) {
     // disabled for this test. Remove this later.
     dif_pinmux_pad_attr_t out_attr;
     dif_pinmux_pad_attr_t in_attr = {0};
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoc3,
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEgretMuxedPadsIoc3,
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
 
@@ -178,7 +177,7 @@ bool test_main(void) {
     } else {
       // MIO: 0, 1 are tie-0, tie-1
       if (kDeviceType == kDeviceSimDV) {
-        pad_sel = rand_testutils_gen32_range(2, kTopEarlgreyPinmuxInselLast);
+        pad_sel = rand_testutils_gen32_range(2, kTopEgretPinmuxInselLast);
       } else {
         OTTF_WAIT_FOR(sival_mio_pad != -1, 1000000);
         pad_sel = (uint32_t)sival_mio_pad + 2;  // skip 0, 1 (see above)
@@ -192,7 +191,7 @@ bool test_main(void) {
       // skip if locked.
       // Turn off Pinmux output selection
       CHECK_DIF_OK(dif_pinmux_output_select(
-          &pinmux, pad_sel - 2, kTopEarlgreyPinmuxOutselConstantHighZ));
+          &pinmux, pad_sel - 2, kTopEgretPinmuxOutselConstantHighZ));
     }
 
     wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;

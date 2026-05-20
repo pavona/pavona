@@ -50,13 +50,13 @@ The following attributes have a well-defined meaning in the codebase.
 - `top_lib`: label string of the top's `cc_library` created by `topgen`. This library contains all the top-specific constants.
 - `top_ld`: label string of the top's `ld_library` created by `topgen`. This library contains all the top-specific linker constants.
 
-Example for Earlgrey:
+Example for Egret:
 ```py
-EARLGREY = pavona_top(
-    name = "earlgrey",
-    hjson = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
-    top_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-    top_ld = "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+EGRET = pavona_top(
+    name = "egret",
+    hjson = "//hw/top_egret/data/autogen:top_egret.gen.hjson",
+    top_lib = "//hw/top_egret/sw/autogen:top_egret",
+    top_ld = "//hw/top_egret/sw/autogen:top_egret_memory",
     ips = [...],
 )
 ```
@@ -81,9 +81,9 @@ More complex example for the `clkmgr` IP.
 ```py
 CLKMGR = pavona_ip(
     name = "clkmgr",
-    hjson = "//hw/top_earlgrey/ip_autogen/clkmgr:data/clkmgr.hjson",
-    ipconfig = "//hw/top_earlgrey/ip_autogen/clkmgr:data/top_earlgrey_clkmgr.ipconfig.hjson",
-    extension = "//hw/top_earlgrey/ip_autogen/clkmgr/util:dt",
+    hjson = "//hw/top_egret/ip_autogen/clkmgr:data/clkmgr.hjson",
+    ipconfig = "//hw/top_egret/ip_autogen/clkmgr:data/top_egret_clkmgr.ipconfig.hjson",
+    extension = "//hw/top_egret/ip_autogen/clkmgr/util:dt",
 )
 ```
 
@@ -117,19 +117,19 @@ A similar set of API exists for IP attributes, see `pavona_select_ip_attr`, `pav
 
 #### A simple top label
 
-Consider the case where we want to add a new `ast_init` attribute to the Darjeeling top.
+Consider the case where we want to add a new `ast_init` attribute to the Dragonfly top.
 This attribute should be a label string to a `cc_library` that is used to initialize the AST registers in a top-specific manner.
-We start by creating a new file in `hw/top_darjeeling/sw`:
+We start by creating a new file in `hw/top_dragonfly/sw`:
 ```c
-// In hw/top_darjeeling/sw/ast_lib.c
+// In hw/top_dragonfly/sw/ast_lib.c
 
 void ast_init(void) {
   // Some top-specific code.
 }
 ```
-Next, we create a `cc_library` in `hw/top_darjeeling/sw/BUILD`:
+Next, we create a `cc_library` in `hw/top_dragonfly/sw/BUILD`:
 ```py
-# In hw/top_darjeeling/sw/BUILD
+# In hw/top_dragonfly/sw/BUILD
 cc_library(
     name = "ast_lib",
     srcs = ["ast_lib.c"],
@@ -137,11 +137,11 @@ cc_library(
 ```
 Now we can add an attribute to the top:
 ```py
-DARJEELING = pavona_top(
-    name = "earlgrey",
+DRAGONFLY = pavona_top(
+    name = "egret",
     # ...
     # NEW:
-    ast_lib = "//hw/top_darjeeling/sw:ast_lib",
+    ast_lib = "//hw/top_dragonfly/sw:ast_lib",
 )
 ```
 The attribute is now registered but still unused.

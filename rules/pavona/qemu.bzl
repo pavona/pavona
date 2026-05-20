@@ -34,6 +34,11 @@ echo Invoking test: {test_harness} {args} "$@"
 {test_harness} {args} "$@"
 """
 
+_TOP_EQUIVALENTS = {
+    "dragonfly": "darjeeling",
+    "egret": "earlgrey",
+}
+
 def qemu_params(
         tags = [],
         timeout = "short",
@@ -96,7 +101,7 @@ def gen_cfg(ctx, **kwargs):
             "--out",
             out.path,
             "--top",
-            top_name,
+            _TOP_EQUIVALENTS.get(top_name, top_name),
             "--topcfg",
             top_hjson.path,
             "--otpconst",
@@ -255,8 +260,8 @@ sim_qemu = rule(
         ),
         "otp_sv": attr.label(
             allow_single_file = True,
-            # TODO: should we really use Earlgrey as the default?
-            default = Label("//hw/top_earlgrey/ip_autogen/otp_ctrl:rtl/otp_ctrl_part_pkg.sv"),
+            # TODO: should we really use Egret as the default?
+            default = Label("//hw/top_egret/ip_autogen/otp_ctrl:rtl/otp_ctrl_part_pkg.sv"),
         ),
         "lc_sv": attr.label(
             allow_single_file = True,
@@ -264,7 +269,7 @@ sim_qemu = rule(
         ),
         "top_hjson": attr.label(
             allow_single_file = True,
-            default = Label("//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson"),
+            default = Label("//hw/top_egret/data/autogen:top_egret.gen.hjson"),
         ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
@@ -342,7 +347,7 @@ def _test_dispatch(ctx, exec_env, firmware):
     qemu_args = []
 
     qemu_args += ["-display", "none"]
-    qemu_args += ["-M", "ot-{}".format(exec_env.design)]
+    qemu_args += ["-M", "ot-{}".format(_TOP_EQUIVALENTS.get(exec_env.design, exec_env.design))]
 
     # Provide top-specific files.
     qemu_args += ["-readconfig", "{}".format(firmware.qemu_cfg.short_path)]

@@ -123,9 +123,9 @@ bool test_main(void) {
 
   static const uint32_t kGpioMask = 0x00000004;
 
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(&pinmux, (kTopEarlgreyPinmuxMioOutIoa0 + 2),
-                               (kTopEarlgreyPinmuxOutselGpioGpio0 + 2)));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
+                                        (kTopEgretPinmuxMioOutIoa0 + 2),
+                                        (kTopEgretPinmuxOutselGpioGpio0 + 2)));
 
   // Set output modes of all GPIO pins
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask));
@@ -136,7 +136,7 @@ bool test_main(void) {
   LOG_INFO("GPIO active");
 
   // RV Timer
-  static const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
+  static const uint32_t kHart = (uint32_t)kTopEgretPlicTargetIbex0;
   static const uint32_t kComparator = 0;
   static const uint64_t kTickFreqHz = 1000000;
   static const uint64_t kDeadline = UINT32_MAX;
@@ -245,14 +245,14 @@ bool test_main(void) {
   };
 
   static const dif_pinmux_index_t kPinmuxMioOut[PWM_PARAM_N_OUTPUTS] = {
-      kTopEarlgreyPinmuxMioOutIob10, kTopEarlgreyPinmuxMioOutIob11,
-      kTopEarlgreyPinmuxMioOutIob12, kTopEarlgreyPinmuxMioOutIoc10,
-      kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxMioOutIoc12,
+      kTopEgretPinmuxMioOutIob10, kTopEgretPinmuxMioOutIob11,
+      kTopEgretPinmuxMioOutIob12, kTopEgretPinmuxMioOutIoc10,
+      kTopEgretPinmuxMioOutIoc11, kTopEgretPinmuxMioOutIoc12,
   };
   static const dif_pinmux_index_t kPinmuxOutsel[PWM_PARAM_N_OUTPUTS] = {
-      kTopEarlgreyPinmuxOutselPwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm1,
-      kTopEarlgreyPinmuxOutselPwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm3,
-      kTopEarlgreyPinmuxOutselPwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm5,
+      kTopEgretPinmuxOutselPwmAonPwm0, kTopEgretPinmuxOutselPwmAonPwm1,
+      kTopEgretPinmuxOutselPwmAonPwm2, kTopEgretPinmuxOutselPwmAonPwm3,
+      kTopEgretPinmuxOutselPwmAonPwm4, kTopEgretPinmuxOutselPwmAonPwm5,
   };
 
   CHECK_DIF_OK(dif_pwm_configure(&pwm, config_));

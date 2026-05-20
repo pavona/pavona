@@ -13,7 +13,7 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/lc_ctrl_fi_commands.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_lc_ctrl_t lc;
@@ -31,12 +31,12 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   // Configure LC Controller.
   mmio_region_t lc_reg =
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR);
   TRY(dif_lc_ctrl_init(lc_reg, &lc));
 
   return OK_STATUS();

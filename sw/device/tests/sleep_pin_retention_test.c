@@ -15,7 +15,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -157,19 +157,18 @@ void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
   // Configure PINMUX to GPIO
   for (int i = 0; i < num_gpio_pads; i++) {
     CHECK_DIF_OK(dif_pinmux_input_select(
-        pinmux,
-        (dif_pinmux_index_t)(kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i),
+        pinmux, (dif_pinmux_index_t)(kTopEgretPinmuxPeripheralInGpioGpio0 + i),
         (dif_pinmux_index_t)(first_gpio_pin + i)));
     CHECK_DIF_OK(dif_pinmux_output_select(
         pinmux, (dif_pinmux_index_t)(first_gpio_pin + i),
-        (dif_pinmux_index_t)(kTopEarlgreyPinmuxOutselGpioGpio0 + i)));
+        (dif_pinmux_index_t)(kTopEgretPinmuxOutselGpioGpio0 + i)));
   }
 
   // Configure PINMUX an additional GPIO pin for the SiVal host to sync with
   // the device and indicate the round can end.
   CHECK_DIF_OK(dif_pinmux_input_select(
-      pinmux, (dif_pinmux_index_t)kTopEarlgreyPinmuxPeripheralInGpioGpio8,
-      (dif_pinmux_index_t)kTopEarlgreyPinmuxInselIor11));
+      pinmux, (dif_pinmux_index_t)kTopEgretPinmuxPeripheralInGpioGpio8,
+      (dif_pinmux_index_t)kTopEgretPinmuxInselIor11));
 }
 
 bool test_main(void) {
@@ -178,8 +177,8 @@ bool test_main(void) {
   num_gpio_pads =
       kDeviceType == kDeviceSimDV ? kNumGpioPadsDv : kNumGpioPadsSiVal;
   gpio_mask = (1 << num_gpio_pads) - 1;
-  first_gpio_pin = kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxMioOutIoa0
-                                               : kTopEarlgreyPinmuxMioOutIob0;
+  first_gpio_pin = kDeviceType == kDeviceSimDV ? kTopEgretPinmuxMioOutIoa0
+                                               : kTopEgretPinmuxMioOutIob0;
 
   dif_pinmux_wakeup_config_t wakeup_cfg;
 
@@ -208,8 +207,8 @@ bool test_main(void) {
   wakeup_cfg.signal_filter = false;
   wakeup_cfg.pad_type = kDifPinmuxPadKindMio;
   wakeup_cfg.pad_select = kDeviceType == kDeviceSimDV
-                              ? kTopEarlgreyPinmuxInselIoa8
-                              : kTopEarlgreyPinmuxInselIor10;
+                              ? kTopEgretPinmuxInselIoa8
+                              : kTopEgretPinmuxInselIor10;
 
   // Configure Wakeup Detector 0
   CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(&pinmux, 0, wakeup_cfg));

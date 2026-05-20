@@ -31,14 +31,14 @@ enum {
 /**
  * Retention SRAM start address (inclusive).
  */
-#if defined(OPENTITAN_IS_EARLGREY)
-  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+#if defined(OPENTITAN_IS_EGRET)
+  kRetSramBaseAddr = TOP_EGRET_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
   kRetRamLastAddr =
-      kRetSramBaseAddr + TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
-#elif defined(OPENTITAN_IS_DARJEELING)
-  kRetSramBaseAddr = TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+      kRetSramBaseAddr + TOP_EGRET_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  kRetSramBaseAddr = TOP_DRAGONFLY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
   kRetRamLastAddr =
-      kRetSramBaseAddr + TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
+      kRetSramBaseAddr + TOP_DRAGONFLY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
 #else
 #error Unsupported top
 #endif

@@ -3,7 +3,7 @@
 # Overview
 
 This document outlines a recipe for going in and out of low power modes for suspending and resuming, respectively.
-It assumes the design uses the `usbdev_aon_wake` and `pinmux` modules to handle critical signals in low-power mode like `top_earlgrey`.
+It assumes the design uses the `usbdev_aon_wake` and `pinmux` modules to handle critical signals in low-power mode like `top_egret`.
 
 The `pinmux` module ensures the D+ and D- pins are high-Z / input only.
 The `usbdev_aon_wake` module maintains the pull-up state, monitors the D+ and D- pins for events to leave the suspended state, and provides the wake-up signal.

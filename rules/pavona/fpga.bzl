@@ -74,7 +74,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             top_secret_cfg = exec_env.top_secret_cfg,
         )
 
-        # The englishbreakfast verilator model does not understand ROM
+        # The scafi_deprecated verilator model does not understand ROM
         # scrambling, so we also create a non-scrambled VMEM file.
         rom32 = convert_to_vmem(
             ctx,

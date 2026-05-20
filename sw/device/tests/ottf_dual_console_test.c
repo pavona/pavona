@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/uart_testutils.h"
 #include "sw/device/lib/ujson/ujson.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * Test the ability to have several independent consoles. The main
@@ -25,10 +25,10 @@ static ottf_console_t debug_console;
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, /* uart= */ 1,
                                                kUartPinmuxChannelDut));
-  ottf_console_configure_uart(&debug_console, TOP_EARLGREY_UART1_BASE_ADDR);
+  ottf_console_configure_uart(&debug_console, TOP_EGRET_UART1_BASE_ADDR);
   LOG_INFO("Main UART console");
   base_fprintf(ottf_console_get_buffer_sink(&debug_console),
                "Second UART console\n");

@@ -1,0 +1,31 @@
+diff --git a/scripts/opentitan/cfggen.py b/scripts/opentitan/cfggen.py
+index 1265405721..5d12ce680d 100755
+--- a/scripts/opentitan/cfggen.py
++++ b/scripts/opentitan/cfggen.py
+@@ -235,13 +235,16 @@ def main():
+         'darjeeling': 'dj',
+         'earlgrey': 'eg',
+     }
++    equivalent_tops = {"dragonfly": "darjeeling",
++                       "egret": "earlgrey"}
+     try:
+         desc = sys.modules[__name__].__doc__.split('.', 1)[0].strip()
+         argparser = ArgumentParser(description=f'{desc}.')
+         files = argparser.add_argument_group(title='Files')
+         files.add_argument('opentitan', nargs='?', metavar='OTDIR',
+                            help='OpenTitan root directory')
+-        files.add_argument('-T', '--top', choices=top_map.keys(),
++        files.add_argument('-T', '--top', choices=(set(top_map.keys())
++                                                   | set(equivalent_tops.keys())),
+                            help='OpenTitan top name')
+         files.add_argument('-o', '--out', metavar='CFG',
+                            help='Filename of the config file to generate')
+@@ -294,7 +297,7 @@ def main():
+             if not isfile(topcfg):
+                 argparser.error(f'No such top file: {topcfg}')
+             cfg.load_top_config(topcfg)
+-            ltop = cfg.top_name
++            ltop = equivalent_tops.get(cfg.top_name, cfg.top_name)
+             if not ltop:
+                 argparser.error('Unknown top name')
+             log.info("Top: '%s'", cfg.top_name)

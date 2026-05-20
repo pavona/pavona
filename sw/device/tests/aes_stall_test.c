@@ -78,7 +78,7 @@ status_t execute_test(void) {
   // Create plaintext with random data
   dif_rv_core_ibex_t rv_core_ibex;
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
   for (uint32_t i = 0; i < ARRAYSIZE(plain_text); ++i) {
     for (uint32_t j = 0; j < kDifAesBlockNumBytes; ++j) {

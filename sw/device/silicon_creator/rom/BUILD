@@ -51,7 +51,7 @@ dual_cc_library(
         ],
         shared = [
             "//sw/device/silicon_creator/lib:manifest",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
         ],
     ),
 )
@@ -85,7 +85,7 @@ ld_library(
     name = "linker_script",
     script = "rom.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_egret/sw/autogen:top_egret_memory",
         "//sw/device:info_sections",
     ],
 )
@@ -103,7 +103,7 @@ cc_library(
     target_compatible_with = [PAVONA_CPU],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
@@ -133,7 +133,7 @@ cc_library(
         "//hw/top:rv_core_ibex_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
         "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib/base:chip",
@@ -218,12 +218,12 @@ pavona_binary(
     name = "mask_rom",
     collect_code_coverage = 0,
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-        "//hw/top_earlgrey:sim_qemu_base",
-        "//hw/top_earlgrey:silicon_creator",
+        "//hw/top_egret:fpga_cw310",
+        "//hw/top_egret:fpga_cw340",
+        "//hw/top_egret:sim_dv_base",
+        "//hw/top_egret:sim_verilator_base",
+        "//hw/top_egret:sim_qemu_base",
+        "//hw/top_egret:silicon_creator",
     ],
     kind = "rom",
     linker_script = ":linker_script",
@@ -245,8 +245,8 @@ pavona_binary(
 # the rom VMEM files.
 legacy_rom_targets(
     suffixes = {
-        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
-        "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
+        "fpga_cw310": ["//hw/top_egret:fpga_cw310"],
+        "fpga_cw340": ["//hw/top_egret:fpga_cw340"],
     },
     target = "mask_rom",
 )
@@ -274,7 +274,7 @@ cc_library(
     hdrs = ["rom_epmp.h"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
@@ -311,7 +311,7 @@ pavona_test(
     # loading the default test ROM, or any other ROM that may be specified via
     # Verilator or CW310 params).
     exec_env = {
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_egret:sim_verilator": None,
     },
     kind = "rom",
     linker_script = ":linker_script",
@@ -348,7 +348,7 @@ pavona_test(
 )
 
 filegroup(
-    name = "english_breakfast_test_rom_bootstrap_srcs",
+    name = "scafi_deprecated_test_rom_bootstrap_srcs",
     srcs = [
         "bootstrap.c",
         "bootstrap.h",
@@ -365,7 +365,7 @@ cc_library(
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
@@ -385,7 +385,7 @@ cc_test(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "@googletest//:gtest_main",
     ],
@@ -503,7 +503,7 @@ pkg_files(
     name = "package",
     testonly = True,
     srcs = [":pre_package"],
-    prefix = "earlgrey/rom",
+    prefix = "egret/rom",
 )
 
 pavona_manual_test(
@@ -639,6 +639,6 @@ pavona_test(
         """,
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
 )

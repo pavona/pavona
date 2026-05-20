@@ -13,7 +13,7 @@ usage () {
   echo "  -l                            Mark this new bitstream cache entry as the latest; default 0 (false)."
   echo "  -c CACHE_DIR                  Cache directory; defaults to ~/.cache/pavona-bitstreams."
   echo "  -r REF                        Git ref to mark this as; defaults to current commit or 'default'."
-  echo "  -t TOP                        Top level system to build bitstream for; default is earlgrey."
+  echo "  -t TOP                        Top level system to build bitstream for; default is egret."
   echo "  TARGET                        FPGA bitstream target to build for new cache entry."
   echo "  -h                            Print the command line usage for this script."
 }
@@ -50,7 +50,7 @@ while getopts "hlc:r:t:" OPTION; do
     esac
 done
 if (( ${#tops[@]} == 0 )); then
-  tops=("earlgrey")
+  tops=("egret")
 fi
 shift $(($OPTIND - 1))
 targets=( "$@" )

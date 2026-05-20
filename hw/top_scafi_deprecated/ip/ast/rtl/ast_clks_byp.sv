@@ -1,0 +1,1 @@
+../../../../top_egret/ip/ast/rtl/ast_clks_byp.sv

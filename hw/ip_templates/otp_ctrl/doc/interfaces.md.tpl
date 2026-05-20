@@ -5,7 +5,7 @@ ${"##"} Parameters
 The following table lists the instantiation parameters of OTP.
 Note that parameters prefixed with `RndCnst` are random netlist constants that need to be regenerated via topgen before the tapeout (typically by the silicon creator).
 
-Parameter                   | Default (Max) | Top Earlgrey | Description
+Parameter                   | Default (Max) | Top Egret | Description
 ----------------------------|---------------|--------------|---------------
 `AlertAsyncOn`              | 2'b11         | 2'b11        |
 `RndCnstLfsrSeed`           | (see RTL)     | (see RTL)    | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.

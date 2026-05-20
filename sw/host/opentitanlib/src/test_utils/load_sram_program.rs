@@ -350,7 +350,7 @@ pub fn load_sram_program(jtag: &mut dyn Jtag, file: &SramProgramFile) -> Result<
 /// [0]: sw/device/silicon_creator/rom/doc/memory_protection.md
 /// [1]: https://github.com/lowRISC/opentitan/issues/14978
 /// [2]: https://riscv.org/wp-content/uploads/2019/03/riscv-debug-release.pdf
-/// [3]: hw/top_earlgrey/rtl/ibex_pmp_reset_pkg.sv
+/// [3]: hw/top_egret/rtl/ibex_pmp_reset_pkg.sv
 pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     // Setup ePMP for SRAM execution.
     log::info!("Configure ePMP for SRAM execution.");
@@ -379,14 +379,14 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     log::info!("New value of pmpcfg2: {:x}", pmpcfg2);
     jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG2), pmpcfg2)?;
     // Write pmpaddr10 and pmpaddr11 to map the MMIO range.
-    #[cfg(feature = "earlgrey")]
-    let base = top::TOP_EARLGREY_MMIO_BASE_ADDR as u32;
-    #[cfg(feature = "earlgrey")]
-    let size = top::TOP_EARLGREY_MMIO_SIZE_BYTES as u32;
-    #[cfg(feature = "darjeeling")]
-    let base = top::TOP_DARJEELING_MMIO_BASE_ADDR as u32;
-    #[cfg(feature = "darjeeling")]
-    let size = top::TOP_DARJEELING_MMIO_SIZE_BYTES as u32;
+    #[cfg(feature = "egret")]
+    let base = top::TOP_EGRET_MMIO_BASE_ADDR as u32;
+    #[cfg(feature = "egret")]
+    let size = top::TOP_EGRET_MMIO_SIZE_BYTES as u32;
+    #[cfg(feature = "dragonfly")]
+    let base = top::TOP_DRAGONFLY_MMIO_BASE_ADDR as u32;
+    #[cfg(feature = "dragonfly")]
+    let size = top::TOP_DRAGONFLY_MMIO_SIZE_BYTES as u32;
     // make sure that this is a power of two
     assert!(size & (size - 1) == 0);
     let pmpaddr10 = base >> 2;

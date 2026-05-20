@@ -4,16 +4,16 @@
 
 mod autogen;
 
-#[cfg(feature = "earlgrey")]
-pub use autogen::earlgrey::{
+#[cfg(feature = "egret")]
+pub use autogen::egret::{
     DirectPads, MuxedPads, PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
 };
-#[cfg(feature = "earlgrey")]
-pub use top_earlgrey::top_earlgrey::*;
+#[cfg(feature = "egret")]
+pub use top_egret::top_egret::*;
 
-#[cfg(feature = "darjeeling")]
-pub use autogen::darjeeling::{
+#[cfg(feature = "dragonfly")]
+pub use autogen::dragonfly::{
     DirectPads, MuxedPads, PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
 };
-#[cfg(feature = "darjeeling")]
-pub use top_darjeeling::top_darjeeling::*;
+#[cfg(feature = "dragonfly")]
+pub use top_dragonfly::top_dragonfly::*;

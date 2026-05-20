@@ -28,7 +28,7 @@ The memory map configuration schema is:
 ## Life Cycle State Encoding Generator
 
 The `gen-lc-state-enc.py` script is used to generate the redundant life cycle state encoding and print the constants and type definitions into the life cycle state package.
-The life cycle definition file for top_earlgrey is currently located at `hw/ip/lc_ctrl/data/lc_ctrl_state.hjson`.
+The life cycle definition file for top_egret is currently located at `hw/ip/lc_ctrl/data/lc_ctrl_state.hjson`.
 
 The script can either be invoked via the makefile
 ```console
@@ -190,16 +190,16 @@ The following snippet shows a memory image configuration that puts the device in
 }
 ```
 
-Common example configuration files that can be used for simulation and emulation are checked in under `hw/top_earlgrey/data/otp`, e.g. `hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson` which provisions all buffered partitions and puts the device into the `DEV` life cycle.
+Common example configuration files that can be used for simulation and emulation are checked in under `hw/top_egret/data/otp`, e.g. `hw/top_egret/data/otp/otp_ctrl_img_dev.hjson` which provisions all buffered partitions and puts the device into the `DEV` life cycle.
 
 Note that the preload image generator script automatically scrambles secret partitions, computes digests of locked partitions using the PRESENT cipher, and computes the OTP ECC bits.
 
 The OTP preload image generator expects at least one main image configuration file to be specified with the `--img-cfg` switch and a top secret configuration provided vie the `--top-secret-cfg` switch, for example:
 ```console
 $ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
-                               --mmap-def hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson \
-                               --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.testing.gen.hjson \
+$ ./util/design/gen-otp-img.py --img-cfg hw/top_egret/data/otp/otp_ctrl_img_dev.hjson \
+                               --mmap-def hw/top_egret/data/otp/otp_ctrl_mmap.hjson \
+                               --top-secret-cfg hw/top_egret/data/autogen/top_egret.secrets.testing.gen.hjson \
                                --out otp-img.mem
 ```
 
@@ -245,8 +245,8 @@ For example, this can be used to patch in additional software configuration data
 The generator script call would then look as follows:
 ```console
 $ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
-                               --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.testing.gen.hjson \
+$ ./util/design/gen-otp-img.py --img-cfg hw/top_egret/data/otp/otp_ctrl_img_dev.hjson \
+                               --top-secret-cfg hw/top_egret/data/autogen/top_egret.secrets.testing.gen.hjson \
                                --add-cfg otp_ctrl_img_sw_cfg.hjson \
                                --out otp-img.mem
 ```

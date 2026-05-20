@@ -267,8 +267,8 @@ if __name__ == "__main__":
     # Get the openocd config files.
     # The config file for jtag
     CONFIG_FILE_CHIP = r.Rlocation("openocd/tcl/interface/cmsis-dap.cfg")
-    # The config for the earlgrey design
-    CONFIG_FILE_DESIGN = r.Rlocation("pavona_pavona/util/openocd/target/lowrisc-earlgrey.cfg")
+    # The config for the egret design
+    CONFIG_FILE_DESIGN = r.Rlocation("pavona_pavona/util/openocd/target/lowrisc-egret.cfg")
     # Get the opentitantool path.
     opentitantool_path = r.Rlocation("pavona_pavona/sw/host/opentitantool/opentitantool")
     # The path for GDB and the default port (set up by OpenOCD)

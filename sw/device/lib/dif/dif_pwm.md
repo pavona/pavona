@@ -1,6 +1,6 @@
 # PWM DIF Checklist
 
-This checklist is for [Development Stage](../../../../doc/contributing/hw/development_stages.md) transitions for the [PWM DIF](../../../../hw/top_earlgrey/ip_autogen/pwm/README.md).
+This checklist is for [Development Stage](../../../../doc/contributing/hw/development_stages.md) transitions for the [PWM DIF](../../../../hw/top_egret/ip_autogen/pwm/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/contributing/hw/checklist/README.md).
 
 <h2>DIF Checklist</h2>

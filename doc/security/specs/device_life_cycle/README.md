@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the device operational states supported for manufacturing, provisioning, regular operation and RMA of hardware roots of trust, such as the Earlgrey and Darjeeling top levels[^1].
+This document describes the device operational states supported for manufacturing, provisioning, regular operation and RMA of hardware roots of trust, such as the Egret and Dragonfly top levels[^1].
 
 Provisioning refers to the process in which a device creates a unique and trusted identity.
 
@@ -14,7 +14,7 @@ The technical specification of the corresponding life cycle controller IP can be
 
 First see [here](../../logical_security_model/README.md) for logical entity breakdowns.
 
-Earlgrey and Darjeeling implement standard device life cycle manufacturing states which are configured via OTP[^2] memory.
+Egret and Dragonfly implement standard device life cycle manufacturing states which are configured via OTP[^2] memory.
 These states allow the **Silicon Creator** to manage the state of the device as it is being manufactured and provisioned for shipment.
 
 An additional set of life cycle states are used to encode the device ownership

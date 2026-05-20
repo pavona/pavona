@@ -17,7 +17,7 @@
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
 
 #include "hw/top/kmac_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
   /**
@@ -366,7 +366,7 @@ status_t handle_sha3_sca_disable_masking(ujson_t *uj) {
   cryptotest_sha3_sca_masks_off_t uj_data;
   TRY(ujson_deserialize_cryptotest_sha3_sca_masks_off_t(uj, &uj_data));
 
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
 
   if (uj_data.masks_off == 0x01) {
     config.entropy_fast_process = kDifToggleEnabled;
@@ -599,7 +599,7 @@ status_t handle_sha3_pentest_init(ujson_t *uj) {
   pentest_init(kPentestTriggerSourceKmac,
                kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
 
   TRY(dif_kmac_configure(&kmac, config));
 

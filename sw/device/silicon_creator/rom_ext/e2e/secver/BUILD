@@ -77,8 +77,8 @@ _TEST_ROM_EXTS = {
         testonly = True,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:fpga_cw340",
+            "//hw/top_egret:fpga_cw310",
+            "//hw/top_egret:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_virtual",
         manifest = param["manifest"],
@@ -103,8 +103,8 @@ _TEST_ROM_EXTS = {
 pavona_test(
     name = "secver_write_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         timeout = "moderate",
@@ -158,8 +158,8 @@ pavona_test(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_{}".format(slot),
         deps = [

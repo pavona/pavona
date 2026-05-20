@@ -292,7 +292,7 @@
       desc: '''
             In addition to the internal health tests, ENTROPY_SRC features an interface for vendor-defined health tests implemented externally to ENTROPY_SRC.
 
-            Note: Earlgrey does not implement external vendor-defined health tests.
+            Note: Egret does not implement external vendor-defined health tests.
             '''
     },
     {

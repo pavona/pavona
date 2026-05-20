@@ -7,14 +7,14 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   // Get the initial jitter state: this is right after reset so it should be
   // disabled.

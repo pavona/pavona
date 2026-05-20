@@ -9,7 +9,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -26,7 +26,7 @@ void print_progress(const char *prefix, dif_aon_timer_t *aon_timer,
 bool test_main(void) {
   dif_aon_timer_t aon_timer;
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_EGRET_AON_TIMER_AON_BASE_ADDR), &aon_timer));
   /* Pet the watchdog to have make sure that we start from a known value */
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
   ibex_timeout_t timeout = ibex_timeout_init(HANG_SECS * 1000000);

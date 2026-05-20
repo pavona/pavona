@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /* We need control flow for the ujson messages exchanged
  * with the host in OTTF_WAIT_FOR on real devices. */
@@ -28,7 +28,7 @@ static dif_rv_plic_t plic;
 enum {
   kCurrentTestPhaseTimeoutUsecDV = 20,
   kCurrentTestPhaseTimeoutUsecReal = 1000000,
-  kPlicTarget = kTopEarlgreyPlicTargetIbex0,
+  kPlicTarget = kTopEgretPlicTargetIbex0,
 };
 
 static volatile bool irq_triggered;
@@ -50,26 +50,26 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonKey0In,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonKey1In,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonKey2In,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonAcPresent,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonLidOpen,
 };
 
 static const dif_pinmux_index_t kInputPadsDV[] = {
-    kTopEarlgreyPinmuxInselIob3, kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob8, kTopEarlgreyPinmuxInselIor13,
-    kTopEarlgreyPinmuxInselIoc7, kTopEarlgreyPinmuxInselIoc9,
+    kTopEgretPinmuxInselIob3, kTopEgretPinmuxInselIob6,
+    kTopEgretPinmuxInselIob8, kTopEgretPinmuxInselIor13,
+    kTopEgretPinmuxInselIoc7, kTopEgretPinmuxInselIoc9,
 };
 
 // We need different pins on the hyperdebug boards since certain
 // pins are not routed to the hyperdebug.
 static const dif_pinmux_index_t kInputPadsReal[] = {
-    kTopEarlgreyPinmuxInselIor10, kTopEarlgreyPinmuxInselIor11,
-    kTopEarlgreyPinmuxInselIor12, kTopEarlgreyPinmuxInselIor5,
-    kTopEarlgreyPinmuxInselIor6,  kTopEarlgreyPinmuxInselIor7,
+    kTopEgretPinmuxInselIor10, kTopEgretPinmuxInselIor11,
+    kTopEgretPinmuxInselIor12, kTopEgretPinmuxInselIor5,
+    kTopEgretPinmuxInselIor6,  kTopEgretPinmuxInselIor7,
 };
 
 void test_phase_sync(void) {
@@ -210,26 +210,26 @@ void sysrst_ctrl_key_combo_detect(dif_sysrst_ctrl_key_combo_t key_combo,
  * External interrupt handler.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+  const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
   dif_rv_plic_irq_id_t plic_irq_id = 0;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  top_egret_plic_peripheral_t peripheral = (top_egret_plic_peripheral_t)
+      top_egret_plic_interrupt_for_peripheral[plic_irq_id];
 
   switch (peripheral) {
-    case kTopEarlgreyPlicPeripheralUart0:
+    case kTopEgretPlicPeripheralUart0:
       if (!ottf_console_flow_control_isr(exc_info)) {
         goto unexpected_irq;
       };
       break;
-    case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
+    case kTopEgretPlicPeripheralSysrstCtrlAon: {
       // Check that the ID matches the expected interrupt, then mask it, since
       // it's a status type.
       dif_sysrst_ctrl_irq_t irq =
           (dif_sysrst_ctrl_irq_t)(plic_irq_id -
                                   (dif_rv_plic_irq_id_t)
-                                      kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+                                      kTopEgretPlicIrqIdSysrstCtrlAonEventDetected);
       CHECK(irq == kDifSysrstCtrlIrqEventDetected);
       CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl, irq,
                                                    kDifToggleDisabled));
@@ -255,23 +255,23 @@ bool test_main(void) {
 
   // Initialize the PLIC.
   mmio_region_t plic_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic));
 
   // Enable all the SYSRST CTRL interrupts on PLIC.
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
-      kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+      &plic, kPlicTarget, kTopEgretPlicIrqIdSysrstCtrlAonEventDetected,
+      kTopEgretPlicIrqIdSysrstCtrlAonEventDetected);
 
   // Initialize sysrst ctrl.
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
 
   // Set input pins.
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   // On real devices, we also need to configure the DIO pins.
   if (kDeviceType != kDeviceSimDV) {

@@ -18,9 +18,9 @@ pavona_binary(
         "-Wno-date-time",
     ],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:sim_dv",
-        "//hw/top_earlgrey:sim_verilator",
+        "//hw/top_egret:fpga_cw310",
+        "//hw/top_egret:sim_dv",
+        "//hw/top_egret:sim_verilator",
     ],
     deps = [
         ":hello_usbdev_lib",
@@ -32,7 +32,7 @@ cc_library(
     name = "hello_usbdev_lib",
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/examples:demos",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/crt",

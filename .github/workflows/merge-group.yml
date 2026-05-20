@@ -46,20 +46,20 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
 
-  chip_earlgrey_cw310:
-    name: Earlgrey for CW310
+  chip_egret_cw310:
+    name: Egret for CW310
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
-      top_name: earlgrey
+      top_name: egret
       design_suffix: cw310_hyperdebug
 
-  chip_earlgrey_cw340:
-    name: Earlgrey for CW340
+  chip_egret_cw340:
+    name: Egret for CW340
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
-      top_name: earlgrey
+      top_name: egret
       design_suffix: cw340
 
   cache_bitstreams:
@@ -67,8 +67,8 @@ jobs:
     runs-on:
       group: pavona-basic
     needs:
-      - chip_earlgrey_cw310
-      - chip_earlgrey_cw340
+      - chip_egret_cw310
+      - chip_egret_cw340
     steps:
       - uses: actions/checkout@v4
       - name: Prepare environment
@@ -76,7 +76,7 @@ jobs:
       - name: Download partial build-bin
         uses: ./.github/actions/download-partial-build-bin
         with:
-          job-patterns: chip_earlgrey_{cw310_hyperdebug,cw340}
+          job-patterns: chip_egret_{cw310_hyperdebug,cw340}
       - name: Create bitstream cache archive
         run: |
           shopt -s globstar # Allow use of **

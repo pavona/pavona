@@ -26,9 +26,9 @@ filegroup(
         "//hw/ip:doc_files",
         "//hw/ip_templates:doc_files",
         "//hw/top:doc_files",
-        "//hw/top_darjeeling:doc_files",
-        "//hw/top_earlgrey:doc_files",
-        "//hw/top_englishbreakfast:doc_files",
+        "//hw/top_dragonfly:doc_files",
+        "//hw/top_egret:doc_files",
+        "//hw/top_scafi_deprecated:doc_files",
     ],
 )
 
@@ -186,6 +186,6 @@ filegroup(
 pkg_files(
     name = "package",
     srcs = ["verilator_bin"],
-    prefix = "earlgrey/verilator",
+    prefix = "egret/verilator",
     visibility = ["//visibility:public"],
 )

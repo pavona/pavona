@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:systems:pinmux_chip_fpv:0.1")}
-description: "pinmux FPV target with chip_earlgrey parameters"
+description: "pinmux FPV target with chip_egret parameters"
 
 filesets:
   files_formal:

@@ -346,7 +346,7 @@ enum {
   /**
    * Retention SRAM start address
    */
-  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kRetSramBaseAddr = TOP_EGRET_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
   /**
    * Retention SRAM address at which we may store some state.
    */
@@ -1847,9 +1847,9 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
   // Initialize pinmux.
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   pinmux_testutils_init(&pinmux);
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-      kTopEarlgreyPinmuxInselIoc7));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInUsbdevSense,
+                                       kTopEgretPinmuxInselIoc7));
 
   // Initialize pwrmgr.
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));

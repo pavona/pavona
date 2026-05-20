@@ -154,8 +154,8 @@ pavona_test(
     name = "my_new_test",
     srcs = ["my_new_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
     },
     deps = [
         # Some dependencies you may need

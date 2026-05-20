@@ -15,13 +15,13 @@ void sigverify_usage_constraints_get(
   usage_constraints->selector_bits = selector_bits;
   lifecycle_device_id_get(&usage_constraints->device_id);
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   usage_constraints->manuf_state_creator =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET);
   usage_constraints->manuf_state_owner =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_MANUF_STATE_OFFSET);
-#elif defined(OPENTITAN_IS_DARJEELING)
-  // TODO: Does Darjeeling have equivalent values in OTP?
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  // TODO: Does Dragonfly have equivalent values in OTP?
   usage_constraints->manuf_state_creator = 0;
   usage_constraints->manuf_state_owner = 0;
 #endif

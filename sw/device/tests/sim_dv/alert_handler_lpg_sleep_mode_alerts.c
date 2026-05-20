@@ -28,7 +28,7 @@
 
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/pwrmgr_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -252,11 +252,11 @@ void cleanup_wakeup_src(void) {
 }
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
+                                  .hart_id = kTopEgretPlicTargetIbex0};
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopEgretPlicIrqIdPwrmgrAonWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
@@ -279,9 +279,9 @@ void init_test_components(void) {
   ret_sram_testutils_init();
 
   // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  rv_plic_testutils_irq_range_enable(&plic, kTopEgretPlicTargetIbex0,
+                                     kTopEgretPlicIrqIdPwrmgrAonWakeup,
+                                     kTopEgretPlicIrqIdPwrmgrAonWakeup);
 
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
@@ -402,12 +402,12 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
  */
 void ottf_external_isr(uint32_t *exc_info) {
   dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_egret_plic_peripheral_t peripheral;
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopEgretPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }
@@ -434,8 +434,8 @@ bool test_main(void) {
   // No local alerts is expected to be fired.
   while (test_step_cnt < num_total_wakeups) {
     // TODO: It seems to be that the only way to continue the SW execution
-    // after a kTopEarlgreyAlertIdFlashCtrlFatalStdErr or
-    // kTopEarlgreyAlertIdSramCtrlMainFatalError a reset. In this test, we are
+    // after a kTopEgretAlertIdFlashCtrlFatalStdErr or
+    // kTopEgretAlertIdSramCtrlMainFatalError a reset. In this test, we are
     // only interested in the shallow sleep mode. Figure out a method to handle
     // those alerts in C code. Currently, they are bypassed by the SV through
     // aplusarg (avoid_inject_fatal_error_for_ips).

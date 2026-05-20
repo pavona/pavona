@@ -14,10 +14,10 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#if defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#if defined(OPENTITAN_IS_EGRET)
+#include "hw/top_egret/sw/autogen/top_egret.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 #endif
 
 namespace otp_unittest {
@@ -29,10 +29,10 @@ constexpr int kMaxOtpWordsToRead = 10;
 
 class OtpTest : public rom_test::RomTest {
  protected:
-#if defined(OPENTITAN_IS_EARLGREY)
-  uint32_t base_ = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR;
-#elif defined(OPENTITAN_IS_DARJEELING)
-  uint32_t base_ = TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR;
+#if defined(OPENTITAN_IS_EGRET)
+  uint32_t base_ = TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  uint32_t base_ = TOP_DRAGONFLY_OTP_CTRL_CORE_BASE_ADDR;
 #endif
   rom_test::MockSecMmio mmio_;
   rom_test::MockAbsMmio abs_mmio_;
@@ -114,7 +114,7 @@ TEST_P(OtpPartitionDigestTest, ReadDigest) {
             0x1234567887654321);
 }
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 INSTANTIATE_TEST_SUITE_P(
     ReadPartitionDigests, OtpPartitionDigestTest,
     testing::Values(
@@ -144,7 +144,7 @@ INSTANTIATE_TEST_SUITE_P(
             .partition = kOtpPartitionHwCfg1,
             .digest_offest = OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET,
         }));
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 INSTANTIATE_TEST_SUITE_P(
     ReadPartitionDigests, OtpPartitionDigestTest,
     testing::Values(

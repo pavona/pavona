@@ -68,7 +68,7 @@ However, depending on the permissions defined for the `rot_private`-designated p
 ### RACL Controller
 
 For a top-level that uses RACL, there is an associated RACL Controller (`racl_ctrl`), which acts as the interface between the TileLink bus and the RACL matching logic.
-For example, see the documentation for the [Darjeeling racl_ctrl](../../../../hw/top_darjeeling/ip_autogen/racl_ctrl/README.md).
+For example, see the documentation for the [Dragonfly racl_ctrl](../../../../hw/top_dragonfly/ip_autogen/racl_ctrl/README.md).
 The RACL Controller implements the policy registers, distributes them to subscribing IPs and collects error logs from them through its hardware interface.
 
 ### RACL Controller Groups
@@ -169,7 +169,7 @@ Components that bridge fabric transactions may substitute the role in incoming t
 RACL is configured in two ways.
 First, through a top-level configuration file, and second, through a per-instance racl-mapping configuration file.
 These are detailed below.
-The specific configuration for Darjeeling is given [here](../../../../hw/top_darjeeling/ip_autogen/racl_ctrl/doc/racl_configuration.md)
+The specific configuration for Dragonfly is given [here](../../../../hw/top_dragonfly/ip_autogen/racl_ctrl/doc/racl_configuration.md)
 
 ### Top-level RACL Configuration
 
@@ -340,7 +340,7 @@ If the system does not use RACL at all, there is no overhead in terms of additio
 
 RACL may also be used outside of Pavona.
 For this purpose, the RACL controller provides an additional input to collect error logs from externally subscribing IPs.
-See the [interface documentation for the Darjeeling racl_ctrl](../../../../hw/top_darjeeling/ip_autogen/racl_ctrl/doc/interfaces.md).
+See the [interface documentation for the Dragonfly racl_ctrl](../../../../hw/top_dragonfly/ip_autogen/racl_ctrl/doc/interfaces.md).
 Additionally, the [`util/raclgen.py`](../../../../util/raclgen/README.md) tool can be used to generate the necessary policy selection vectors.
 
 ## RACL Configuration and Mapping

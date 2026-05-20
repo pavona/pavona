@@ -70,10 +70,10 @@ To ensure that the most recently enabled EDN will get next priority for physical
 Once that has happened, the next EDN can be enabled.
 
 If using boot-time request mode, the CSRNG seed material used for the first-activated EDN is the special pre-FIPS seed, which is specifically tested quickly to improve latency.
-For [Top Earlgrey](../../../top_earlgrey/README.md), the first random values distributed from this EDN are therefore expected to be available roughly 2ms after reset.
+For [Top Egret](../../../top_egret/README.md), the first random values distributed from this EDN are therefore expected to be available roughly 2ms after reset.
 
 The `entropy_src` only creates one pre-FIPS seed, so any other EDNs must wait for their seeds to pass the full FIPS-recommended health checks.
-This means that for [Top Earlgrey](../../../top_earlgrey/README.md), each subsequent EDN must wait an additional 5ms before it can start distributing data.
+This means that for [Top Egret](../../../top_egret/README.md), each subsequent EDN must wait an additional 5ms before it can start distributing data.
 For instance, if there are three boot-time request mode EDN's in the system, the first will start distributing data 2ms after reset, the second will start distributing data 7ms after reset, and the third will start distributing data 12ms after reset.
 
 ### Auto Request Mode
@@ -103,7 +103,7 @@ If some hang condition were to occur when in this mode, the main state machine d
 ### Note on State Machine Shutdown Delays
 
 When leaving boot-time request mode or auto request mode, the EDN state machine waits for completion of the last command, before sending a shutdown acknowledgement to firmware.
-The longest possible commands are the `instantiate` or `reseed` requests, which typically take about 5ms in [Top Earlgrey](../../../top_earlgrey/README.md), due to the time required to gather the necessary physical entropy.
+The longest possible commands are the `instantiate` or `reseed` requests, which typically take about 5ms in [Top Egret](../../../top_egret/README.md), due to the time required to gather the necessary physical entropy.
 By contrast, the largest possible `generate` command allowed by [NIST SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf) is for 2<sup>19</sup> bits (or 4096 AES codewords).
 Assuming an AES encryption delay of 16 clocks, a 100 MHz clock frequency, and that entropy consumers are able to immediately consume the distributed entropy, the longest allowable `generate` command would take only 0.7 ms to complete.
 

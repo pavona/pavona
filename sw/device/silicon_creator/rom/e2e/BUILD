@@ -23,7 +23,7 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
     "cw310_params",
     "dv_params",
     "ecdsa_key_by_name",
@@ -50,7 +50,7 @@ otp_json(
             state = "TEST_UNLOCKED0",
         ),
     ] + select({
-        "//hw/top:earlgrey": [
+        "//hw/top:egret": [
             otp_partition(
                 name = "CREATOR_SW_CFG",
                 items = {
@@ -58,7 +58,7 @@ otp_json(
                 },
             ),
         ],
-        "//hw/top:darjeeling": [],
+        "//hw/top:dragonfly": [],
     }),
 )
 
@@ -73,7 +73,7 @@ pavona_test(
     name = "rom_e2e_default_otp_bootup",
     srcs = [":empty_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         otp = ":otp_img_default",
@@ -93,10 +93,10 @@ pavona_test(
         testonly = True,
         srcs = [":empty_test"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:sim_dv",
-            "//hw/top_earlgrey:sim_verilator",
-            "//hw/top_darjeeling:sim_dv",
+            "//hw/top_egret:fpga_cw310",
+            "//hw/top_egret:sim_dv",
+            "//hw/top_egret:sim_verilator",
+            "//hw/top_dragonfly:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
@@ -132,10 +132,10 @@ pavona_test(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:sim_dv",
-            "//hw/top_earlgrey:sim_verilator",
-            "//hw/top_darjeeling:sim_dv",
+            "//hw/top_egret:fpga_cw310",
+            "//hw/top_egret:sim_dv",
+            "//hw/top_egret:sim_verilator",
+            "//hw/top_dragonfly:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
@@ -157,10 +157,10 @@ pavona_test(
         srcs = [":empty_test"],
         ecdsa_key = ecdsa_key_by_name(ECDSA_ONLY_KEY_STRUCTS, key),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_darjeeling:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         # We need to specify the manifest because the simulation environments do not
@@ -277,8 +277,8 @@ pavona_test(
     name = "rom_e2e_flash_ctrl_init",
     srcs = ["rom_e2e_flash_ctrl_init_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
     },
     deps = [
         "//hw/top/dt",
@@ -296,9 +296,9 @@ pavona_test(
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:sim_verilator_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         # Note: This test never prints a failure message so it will fail only
@@ -313,7 +313,7 @@ pavona_test(
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ],
@@ -327,11 +327,11 @@ pavona_test(
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_egret:fpga_cw310_sival": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
+        "//hw/top_egret:silicon_creator": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
     },
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
@@ -352,9 +352,9 @@ pavona_test(
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
@@ -373,7 +373,7 @@ pavona_test(
     name = "rom_e2e_c_init",
     srcs = ["rom_e2e_c_init_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
@@ -383,7 +383,7 @@ pavona_test(
         "//hw/top:pinmux_c_regs",
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -401,10 +401,10 @@ pavona_test(
     name = "e2e_bootup_success_otp_dev",
     srcs = [":empty_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        otp = "//hw/top_earlgrey/data/otp:img_dev",
+        otp = "//hw/top_egret/data/otp:img_dev",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
@@ -427,7 +427,7 @@ pavona_test(
         "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:unauthorized_key_0_ecdsa_p256": "unauthorized_key_0",
     },
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         exit_failure = MSG_PASS,
@@ -448,7 +448,7 @@ pavona_test(
     name = "rom_ext_upgrade",
     srcs = ["rom_ext_upgrade_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS

@@ -292,7 +292,7 @@ FIRMWARE_DEPS = [
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
     "//sw/device/lib/ujson",
-    "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    "//hw/top_egret/sw/autogen:top_egret",
 
     # Include all JSON commands.
     "//sw/device/tests/crypto/cryptotest/json:commands",
@@ -303,9 +303,9 @@ pavona_binary(
     testonly = True,
     srcs = [":firmware.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
+        "//hw/top_egret:fpga_cw310",
+        "//hw/top_egret:fpga_cw340",
+        "//hw/top_egret:silicon_owner_sival_rom_ext",
     ],
     deps = FIRMWARE_DEPS,
 )

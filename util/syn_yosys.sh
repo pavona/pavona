@@ -20,7 +20,7 @@
 #-------------------------------------------------------------------------
 \rm -Rf build syn_out
 fusesoc --cores-root ../hw run --target=syn \
-  --setup lowrisc:systems:top_earlgrey > /dev/null 2>&1
+  --setup lowrisc:systems:top_egret > /dev/null 2>&1
 
 # copy all files into directory "syn_out"
 mkdir syn_out
@@ -65,7 +65,7 @@ rm combined.v
 #-------------------------------------------------------------------------
 printf "\n\nLEC RESULTS:\n"
 
-# all of top_earlgrey's submodules
+# all of top_egret's submodules
 declare -a modules=(
   "rv_dm"
   "spi_device"
@@ -91,7 +91,7 @@ declare -a modules=(
   "flash_phy"
 )
 
-# TODO: top_earlgrey appears to be too large for verification under the current
+# TODO: top_egret appears to be too large for verification under the current
 # setup. Consider adding verification using `hier_compare`.
 
 for module in "${modules[@]}"; do
@@ -119,7 +119,7 @@ done
 printf "\n\nYosys:\n"
 yosys -QTqp "
   read_verilog *.v;
-  hierarchy -check -top top_earlgrey;
+  hierarchy -check -top top_egret;
   synth_xilinx;
   write_blif out.blif;
   write_edif out.edif;

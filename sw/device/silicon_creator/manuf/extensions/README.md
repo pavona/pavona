@@ -1,11 +1,11 @@
 # Provisioning Flow Extensions
 
-Provisioning an Earlgrey chip requires executing code on device during two core
+Provisioning an Egret chip requires executing code on device during two core
 phases:
 
 1. Chip Probe (CP): when the wafer is still intact, and
 2. Final Test (FT): when each chip has been packaged and loaded into a socket.
-For the most part, the CP process is the same across all Earlgrey chips,
+For the most part, the CP process is the same across all Egret chips,
 regardless of the SKU. However, the FT process can differ based on the target
 SKU.
 
@@ -31,7 +31,7 @@ repo called `@provisioning_exts`.
 ## OTP Image Definitions
 
 To define additional OTP configurations downstream, one must add OTP targets
-to the `EXT_EARLGREY_OTP_CFGS` and `EXT_EARLGREY_SKUS` dictionaries in their
+to the `EXT_EGRET_OTP_CFGS` and `EXT_EGRET_SKUS` dictionaries in their
 downstream `@provisioning_exts` Bazel repo.
 
 ## Execution Environments
@@ -58,5 +58,5 @@ closed-source personalization FW extensions, that can make use of open-source
 code.
 
 To configure a SKU to use downstream hooks, on must update their SKUs
-configuration definition in the `EXT_EARLGREY_SKUS` dictionary in the
+configuration definition in the `EXT_EGRET_SKUS` dictionary in the
 `@provisioning_exts` repo.

@@ -6,12 +6,12 @@ ${gencmd}
 <%
 import topgen.lib as lib
 
-## TODO: Darjeeling contains peripherals which expose IRQs/Alerts to the RV
+## TODO: Dragonfly contains peripherals which expose IRQs/Alerts to the RV
 ## PLIC and Alert Handler respectively, but are not accessible from the hart
 ## address space and thus cannot be tested directly (via the IRQ_TEST and
 ## ALERT_TEST registers). While this issue remains, we specifically hard-code
 ## for excluding these IRQs from the test.
-IGNORE_PERIPHERALS = [("ac_range_check", "darjeeling"), ("racl_ctrl", "darjeeling")]
+IGNORE_PERIPHERALS = [("ac_range_check", "dragonfly"), ("racl_ctrl", "dragonfly")]
 plics = lib.find_modules(top["module"], "rv_plic")
 irq_peripherals = [p for plic in plics for p in helper.irq_peripherals[plic["name"]][addr_space]
                    if (p.inst_name, top["name"]) not in IGNORE_PERIPHERALS]

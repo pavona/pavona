@@ -58,7 +58,7 @@ class cip_tl_seq_item extends tl_seq_item;
     // location. ctn_uid is forced to '0' for now
     // user.rsvd = top_racl_pkg::tlul_build_user_rsvd_vec(racl_role, 0);
 
-    // TODO: CI fails for earlgray and english as top_racl_pkg is not implemented in both
+    // TODO: CI fails for egret and scafi_deprecated as top_racl_pkg is not implemented in both
     // for now forcing user.rsvd bits until we can cleanly implement a generic solution to
     // set this field
     user.rsvd = 0;

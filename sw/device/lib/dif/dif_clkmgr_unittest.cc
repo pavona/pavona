@@ -19,7 +19,7 @@ using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
 using testing::Test;
 
-// Matches the Earlgrey layout.
+// Matches the Egret layout.
 enum {
   /**
    * The Io clock.

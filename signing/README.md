@@ -2,7 +2,7 @@
 
 ## Configuration of NitroKeys
 
-> The following configuration only works in the `earlgrey_es_sival` branch.
+> The following configuration only works in the `egret_es_sival` branch.
 
 NitroKeys are a personal security token used to hold the signing keys for
 TEST and DEV devices.  NitroKeys can be used to sign tests and binaries for
@@ -21,8 +21,8 @@ mode to 600.
 
 ```json
 {
-  "earlgrey_a0": {
-    "token": "earlgrey_a0_000",
+  "egret_a0": {
+    "token": "egret_a0_000",
     "user": "user",
     "pin": "xxxxxx"
   }
@@ -31,7 +31,7 @@ mode to 600.
 
 ## Signing with a token
 
-> The following configuration only works in the `earlgrey_es_sival` branch.
+> The following configuration only works in the `egret_es_sival` branch.
 
 Once a profile configuration is in place, you can build binaries signed by
 the keyset by telling bazel that you want to use a token.
@@ -51,7 +51,7 @@ keyset in question.  For `silicon_creator` code, the keyset is
 ```console
 bazel build \
     --//signing:token=//signing/tokens:nitrokey \
-    --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
+    --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=egret_a0_dev_0 \
     //label-of-target
 ```
 
@@ -68,8 +68,8 @@ mode to 600.
 
 ```json
 {
-  "earlgrey_z0_sival": {
-    "token": "ot-earlgrey-z0-sival",
+  "egret_z0_sival": {
+    "token": "ot-egret-z0-sival",
     "user": "user"
   }
 }
@@ -80,13 +80,13 @@ example:
 
 ```json
 {
-  "earlgrey_a0": {
-    "token": "earlgrey_a0_000",
+  "egret_a0": {
+    "token": "egret_a0_000",
     "user": "user",
     "pin": "XXXXXX"
   },
-  "earlgrey_z0_sival": {
-    "token": "ot-earlgrey-z0-sival",
+  "egret_z0_sival": {
+    "token": "ot-egret-z0-sival",
     "user": "user"
   }
 }
@@ -125,7 +125,7 @@ by requesting the `cloud_kms_sival` token:
 > You may have to update the permissions on the KMS configuration file as
 follows:
 >
-> `chmod 600 signing/tokens/earlgrey_z1_sival.yaml`
+> `chmod 600 signing/tokens/egret_z1_sival.yaml`
 
 ```console
 bazel build --//signing:token=//signing/tokens:cloud_kms_sival //label-of-target

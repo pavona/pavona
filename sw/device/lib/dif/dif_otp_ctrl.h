@@ -6,7 +6,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/top_earlgrey/ip_autogen/otp_ctrl/doc/">
+ * @brief <a href="/hw/top_egret/ip_autogen/otp_ctrl/doc/">
  * OTP Controller</a> Device Interface Functions
  */
 
@@ -52,7 +52,7 @@ typedef enum dif_otp_ctrl_partition {
    * modes if verification fails.
    */
   kDifOtpCtrlPartitionOwnerSwCfg,
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   /**
    * This OTP partition is used to store four P-256 keys and four Sphincs+ keys.
    *
@@ -76,10 +76,10 @@ typedef enum dif_otp_ctrl_partition {
    * the OTP Direct Access Interface to prevent DoS
    * attacks from malicious code executing on Silicon
    * Owner partitions. DAI write locking is available in
-   * EarlGrey.
+   * Egret.
    */
   kDifOtpCtrlPartitionRotCreatorAuthState,
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   /**
    * SW managed asset ownership states partition.
    *
@@ -208,15 +208,15 @@ typedef enum dif_otp_ctrl_partition {
    * This contains RMA unlock token, creator root key, and creator seed.
    */
   kDifOtpCtrlPartitionSecret2,
-#if defined(OPENTITAN_IS_DARJEELING)
+#if defined(OPENTITAN_IS_DRAGONFLY)
   /**
    * Secret partition 3.
    *
    * This contains the owner seed.
    */
   kDifOtpCtrlPartitionSecret3,
-#elif defined(OPENTITAN_IS_EARLGREY)
-// Earlgrey only has 3 secret partitions.
+#elif defined(OPENTITAN_IS_EGRET)
+// Egret only has 3 secret partitions.
 #else
 #error "dif_otp_ctrl does not support this top"
 #endif

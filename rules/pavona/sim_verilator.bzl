@@ -53,7 +53,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             top_secret_cfg = exec_env.top_secret_cfg,
         )
 
-        # The englishbreakfast verilator model does not understand ROM
+        # The scafi_deprecated verilator model does not understand ROM
         # scrambling, so we also create a non-scrambled VMEM file.
         rom32 = convert_to_vmem(
             ctx,
@@ -78,9 +78,9 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     elif ctx.attr.kind == "flash":
         # FIXME: We need to separate the concept of a software component from
         # the physical device and its properties; software test images are
-        # usually loaded into flash memory for Englishbreakfast and Earlgrey
-        # but they are stored in the ConTrol Network RAM on Darjeeling targets.
-        if exec_env.design == "darjeeling":
+        # usually loaded into flash memory for Scafi_Deprecated and Egret
+        # but they are stored in the ConTrol Network RAM on Dragonfly targets.
+        if exec_env.design == "dragonfly":
             vmem = convert_to_vmem(
                 ctx,
                 name = name,

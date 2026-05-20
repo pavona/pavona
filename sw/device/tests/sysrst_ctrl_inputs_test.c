@@ -11,7 +11,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /* We need control flow for the ujson messages exchanged
  * with the host in OTTF_WAIT_FOR on real devices. */
@@ -38,26 +38,26 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonKey0In,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonKey1In,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonKey2In,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonAcPresent,
+    kTopEgretPinmuxPeripheralInSysrstCtrlAonLidOpen,
 };
 
 static const dif_pinmux_index_t kInputPadsDV[] = {
-    kTopEarlgreyPinmuxInselIob3, kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob8, kTopEarlgreyPinmuxInselIor13,
-    kTopEarlgreyPinmuxInselIoc7, kTopEarlgreyPinmuxInselIoc9,
+    kTopEgretPinmuxInselIob3, kTopEgretPinmuxInselIob6,
+    kTopEgretPinmuxInselIob8, kTopEgretPinmuxInselIor13,
+    kTopEgretPinmuxInselIoc7, kTopEgretPinmuxInselIoc9,
 };
 
 // We need different pins on the hyperdebug boards since certain
 // pins are not routed to the hyperdebug.
 static const dif_pinmux_index_t kInputPadsReal[] = {
-    kTopEarlgreyPinmuxInselIor10, kTopEarlgreyPinmuxInselIor11,
-    kTopEarlgreyPinmuxInselIor12, kTopEarlgreyPinmuxInselIor5,
-    kTopEarlgreyPinmuxInselIor6,  kTopEarlgreyPinmuxInselIor7,
+    kTopEgretPinmuxInselIor10, kTopEgretPinmuxInselIor11,
+    kTopEgretPinmuxInselIor12, kTopEgretPinmuxInselIor5,
+    kTopEgretPinmuxInselIor6,  kTopEgretPinmuxInselIor7,
 };
 
 static const dif_sysrst_ctrl_pin_t kSysrstCtrlInputs[] = {
@@ -80,12 +80,12 @@ static uint8_t read_input_pins(void) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
 
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   /* On real devices, we also need to configure the DIO pins */
   if (kDeviceType != kDeviceSimDV) {

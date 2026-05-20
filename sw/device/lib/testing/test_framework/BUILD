@@ -8,7 +8,7 @@ load("//rules:linker.bzl", "ld_library")
 load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_test",
     "verilator_params",
@@ -138,17 +138,17 @@ ld_library(
 )
 
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator
-# manifest_def implementation when building the test_framework for the english
-# breakfast top level.
+# manifest_def implementation when building the test_framework for the
+# scafi_deprecated top level.
 cc_library(
-    name = "english_breakfast_test_framework_manifest_def",
+    name = "scafi_deprecated_test_framework_manifest_def",
     srcs = [
-        "//sw/device/silicon_creator/lib:english_breakfast_test_framework_manifest_def_srcs",
+        "//sw/device/silicon_creator/lib:scafi_deprecated_test_framework_manifest_def_srcs",
     ],
-    # This should be built only for Englishbreakfast and skipped if using wildcards.
+    # This should be built only for Scafi_Deprecated and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//sw/device/lib/testing/test_rom:english_breakfast_test_rom_manifest",
+        "//sw/device/lib/testing/test_rom:scafi_deprecated_test_rom_manifest",
     ],
     # The manifest section should be populated anytime this is added as a
     # dependency, even if the manifest is not referenced by software.
@@ -158,7 +158,7 @@ cc_library(
 alias(
     name = "test_framework_manifest_def",
     actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_framework_manifest_def",
+        "//sw/device:is_scafi_deprecated": ":scafi_deprecated_test_framework_manifest_def",
         "//conditions:default": "//sw/device/silicon_creator/lib:manifest_def",
     }),
 )
@@ -189,7 +189,7 @@ cc_library(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
     ] + pavona_select_top(
-        {"englishbreakfast": []},
+        {"scafi_deprecated": []},
         [
             ":ottf_alerts",
             "//sw/device/lib/dif:alert_handler",
@@ -305,7 +305,7 @@ cc_library(
         "@manufacturer_test_hooks//:test_hooks",
     ] + pavona_select_top(
         {
-            "englishbreakfast": [],
+            "scafi_deprecated": [],
         },
         [
             ":ottf_alerts",
@@ -463,9 +463,9 @@ pavona_test(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     fpga = fpga_params(

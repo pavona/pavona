@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/book/hw/top_earlgrey/ip_autogen/rstmgr/">Reset Manager</a>
+ * @brief <a href="/book/hw/top_egret/ip_autogen/rstmgr/">Reset Manager</a>
  * Device Interface Functions
  */
 
@@ -84,7 +84,7 @@ typedef enum dif_rstmgr_reset_info {
    * escalation, watchdog or anything else.
    */
   kDifRstmgrResetInfoHwReq = (0x1f << 3),
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   /**
    * Device has reset due to the peripheral system reset control request.
    */
@@ -93,7 +93,7 @@ typedef enum dif_rstmgr_reset_info {
    * Device has reset due to watchdog bite.
    */
   kDifRstmgrResetInfoWatchdog = (1 << 4),
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   /**
    * Device has reset due to watchdog bite.
    */

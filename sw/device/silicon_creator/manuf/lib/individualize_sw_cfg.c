@@ -17,7 +17,7 @@
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top/otp_ctrl_regs.h"    // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define MODULE_ID MAKE_MODULE_ID('i', 's', 'c')
 

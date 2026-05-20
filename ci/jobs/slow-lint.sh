@@ -32,20 +32,20 @@ bazel test //quality:buildifier_check --test_output=streamed
 echo "### Check vendored directories are up-to-date"
 ci/scripts/check-vendoring.sh
 
-echo -e "\n### Style-Lint RTL Verilog source files with Verible for earlgrey"
-ci/scripts/verible-lint.sh rtl earlgrey
+echo -e "\n### Style-Lint RTL Verilog source files with Verible for egret"
+ci/scripts/verible-lint.sh rtl egret
 
-echo -e "\n### Style-Lint DV Verilog source files with Verible for earlgrey"
-ci/scripts/verible-lint.sh dv earlgrey
+echo -e "\n### Style-Lint DV Verilog source files with Verible for egret"
+ci/scripts/verible-lint.sh dv egret
 
-echo -e "\n### Style-Lint FPV Verilog source files with Verible for earlgrey"
-ci/scripts/verible-lint.sh fpv earlgrey
+echo -e "\n### Style-Lint FPV Verilog source files with Verible for egret"
+ci/scripts/verible-lint.sh fpv egret
 
-echo -e "\n### Style-Lint RTL Verilog source files with Verible for darjeeling"
-ci/scripts/verible-lint.sh rtl darjeeling
+echo -e "\n### Style-Lint RTL Verilog source files with Verible for dragonfly"
+ci/scripts/verible-lint.sh rtl dragonfly
 
-echo -e "\n### Style-Lint DV Verilog source files with Verible for darjeeling"
-ci/scripts/verible-lint.sh dv darjeeling
+echo -e "\n### Style-Lint DV Verilog source files with Verible for dragonfly"
+ci/scripts/verible-lint.sh dv dragonfly
 
-echo -e "\n### Style-Lint FPV Verilog source files with Verible for darjeeling"
-ci/scripts/verible-lint.sh fpv darjeeling
+echo -e "\n### Style-Lint FPV Verilog source files with Verible for dragonfly"
+ci/scripts/verible-lint.sh fpv dragonfly

@@ -26,7 +26,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 #define kAlertSet true
@@ -132,12 +132,10 @@ static void check_alert_state(dif_toggle_t fatal) {
   bool recov_cause = false;
 
   CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlAonFatalAlert,
-      &fatal_cause));
+      &alert_handler, kTopEgretAlertIdSensorCtrlAonFatalAlert, &fatal_cause));
 
   CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlAonRecovAlert,
-      &recov_cause));
+      &alert_handler, kTopEgretAlertIdSensorCtrlAonRecovAlert, &recov_cause));
 
   if (dif_toggle_to_bool(fatal)) {
     CHECK(fatal_cause & !recov_cause,
@@ -148,9 +146,9 @@ static void check_alert_state(dif_toggle_t fatal) {
   }
 
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlAonRecovAlert));
+      &alert_handler, kTopEgretAlertIdSensorCtrlAonRecovAlert));
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlAonFatalAlert));
+      &alert_handler, kTopEgretAlertIdSensorCtrlAonFatalAlert));
 }
 
 /**
@@ -233,12 +231,12 @@ static void configure_adc_ctrl(const dif_adc_ctrl_t *adc_ctrl) {
 }
 
 static void en_plic_irqs(dif_rv_plic_t *plic) {
-  top_earlgrey_plic_irq_id_t plic_irqs[] = {
-      kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending};
+  top_egret_plic_irq_id_t plic_irqs[] = {
+      kTopEgretPlicIrqIdAdcCtrlAonMatchPending};
 
   for (uint32_t i = 0; i < ARRAYSIZE(plic_irqs); ++i) {
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        plic, plic_irqs[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+        plic, plic_irqs[i], kTopEgretPlicTargetIbex0, kDifToggleEnabled));
 
     // Assign a default priority
     CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_irqs[i], 0x1));
@@ -308,10 +306,10 @@ void ast_enter_sleep_states_and_check_functionality(
   uint32_t read_fifo_depth_val = 0;
   uint32_t unhealthy_fifos, errors, alerts;
 
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+  const dif_edn_t edn0 = {.base_addr =
+                              mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR)};
+  const dif_edn_t edn1 = {.base_addr =
+                              mmio_region_from_addr(TOP_EGRET_EDN1_BASE_ADDR)};
 
   if ((pwrmgr_config & (~kDifPwrmgrDomainOptionUsbClockInActivePower)) == 0) {
     deepsleep = true;
@@ -341,9 +339,9 @@ void ast_enter_sleep_states_and_check_functionality(
 
     // Enable all the AON interrupts used in this test.
     rv_plic_testutils_irq_range_enable(
-        &rv_plic, kTopEarlgreyPlicTargetIbex0,
-        kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending,
-        kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending);
+        &rv_plic, kTopEgretPlicTargetIbex0,
+        kTopEgretPlicIrqIdAdcCtrlAonMatchPending,
+        kTopEgretPlicIrqIdAdcCtrlAonMatchPending);
     CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
     // Setup low power.
@@ -425,11 +423,11 @@ void ast_enter_sleep_states_and_check_functionality(
  */
 void set_edn_auto_mode(void) {
   const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR)};
+  const dif_edn_t edn0 = {.base_addr =
+                              mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR)};
+  const dif_edn_t edn1 = {.base_addr =
+                              mmio_region_from_addr(TOP_EGRET_EDN1_BASE_ADDR)};
 
   // Disable the entropy complex
   CHECK_STATUS_OK(entropy_testutils_stop_all());
@@ -527,20 +525,20 @@ void set_edn_auto_mode(void) {
 
 void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,
-                             .hart_id = kTopEarlgreyPlicTargetIbex0};
+                             .hart_id = kTopEgretPlicTargetIbex0};
 
   adc_ctrl_isr_ctx_t adc_ctrl_ctx = {
       .adc_ctrl = &adc_ctrl,
-      .plic_adc_ctrl_start_irq_id = kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending,
+      .plic_adc_ctrl_start_irq_id = kTopEgretPlicIrqIdAdcCtrlAonMatchPending,
       .expected_irq = 0,
       .is_only_irq = true};
 
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_egret_plic_peripheral_t peripheral;
   dif_adc_ctrl_irq_t adc_ctrl_irq;
   isr_testutils_adc_ctrl_isr(plic_ctx, adc_ctrl_ctx, false, &peripheral,
                              &adc_ctrl_irq);
 
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralAdcCtrlAon);
+  CHECK(peripheral == kTopEgretPlicPeripheralAdcCtrlAon);
   CHECK(adc_ctrl_irq == kDifAdcCtrlIrqMatchPending);
   interrupt_serviced = true;
 }
@@ -555,10 +553,10 @@ bool test_main(void) {
 
   // Enable both recoverable and fatal alerts
   CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlAonRecovAlert,
+      &alert_handler, kTopEgretAlertIdSensorCtrlAonRecovAlert,
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
   CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlAonFatalAlert,
+      &alert_handler, kTopEgretAlertIdSensorCtrlAonFatalAlert,
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
 
   LOG_INFO("1 test alert/rng after Deep sleep 1");

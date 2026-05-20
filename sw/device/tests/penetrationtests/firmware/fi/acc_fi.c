@@ -20,7 +20,7 @@
 #include "sw/device/tests/penetrationtests/json/acc_fi_commands.h"
 
 #include "hw/top/acc_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -1325,11 +1325,11 @@ status_t handle_acc_fi_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   // Init the ACC core.
-  TRY(dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
+  TRY(dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
 
   // The load integrity, key sideloading, and char_mem tests get initialized at
   // the first run.
@@ -1343,8 +1343,8 @@ status_t handle_acc_fi_init(ujson_t *uj) {
 
 status_t handle_acc_fi_init_keymgr(ujson_t *uj) {
   dif_kmac_t kmac;
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
-  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
+  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR),
                       &keymgr));
   TRY(keymgr_testutils_initialize(&keymgr, &kmac));
 

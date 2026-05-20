@@ -21,7 +21,7 @@ FAKE_TARGETS = [
 ]
 
 
-# Copied from hw/top_earlgrey/dv/env/chip_env_pkg.sv for the type definitions.
+# Copied from hw/top_egret/dv/env/chip_env_pkg.sv for the type definitions.
 class SwType(Enum):
     ROM = 0  # Ibex SW - first stage boot ROM.
     TEST_SLOT_A = 1  # Ibex SW - test SW in (flash) slot A.
@@ -51,9 +51,9 @@ def check_sw_image(name: str, sw_image: str, valid_bazel_targets: List[str]) -> 
     # requires a signed image.
     #
     # See:
-    # - hw/top_earlgrey/dv/env/chip_env_cfg.sv for the actual parsing code
+    # - hw/top_egret/dv/env/chip_env_cfg.sv for the actual parsing code
     # - hw/dv/tools/dvsim/sim.mk for the makefile that copies files
-    # - hw/top_earlgrey/dv/env/chip_env_pkg.sv for the type definitions.
+    # - hw/top_egret/dv/env/chip_env_pkg.sv for the type definitions.
     try:
         bazel_module, bazel_label, other = sw_image.split(':', 2)
         other = other.split(':')

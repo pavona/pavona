@@ -12,14 +12,14 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/lib/testing/uart_testutils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static const uint8_t kSendData[] = "Loopback test!";
 static const uint32_t kBaseAddrs[4] = {
-    TOP_EARLGREY_UART0_BASE_ADDR,
-    TOP_EARLGREY_UART1_BASE_ADDR,
-    TOP_EARLGREY_UART2_BASE_ADDR,
-    TOP_EARLGREY_UART3_BASE_ADDR,
+    TOP_EGRET_UART0_BASE_ADDR,
+    TOP_EGRET_UART1_BASE_ADDR,
+    TOP_EGRET_UART2_BASE_ADDR,
+    TOP_EGRET_UART3_BASE_ADDR,
 };
 enum {
   kTestTimeoutMicros = 1000000,
@@ -46,15 +46,14 @@ bool test_main(void) {
   // Wait for the testbench to set the `uart_idx`.
   OTTF_WAIT_FOR(uart_idx != 0xff, kTestTimeoutMicros);
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
   // If we're testing UART0 we need to move the console to UART1.
   if (uart_idx == 0) {
     CHECK_STATUS_OK(
         uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
-    ottf_console_configure_uart(ottf_console_get(),
-                                TOP_EARLGREY_UART1_BASE_ADDR);
+    ottf_console_configure_uart(ottf_console_get(), TOP_EGRET_UART1_BASE_ADDR);
   }
 
   // Attach the UART under test to the DUT channel.

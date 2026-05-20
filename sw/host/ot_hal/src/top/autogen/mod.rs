@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Include top-specific HALs.
-#[cfg(feature = "darjeeling")]
-pub mod darjeeling;
-#[cfg(feature = "earlgrey")]
-pub mod earlgrey;
+#[cfg(feature = "dragonfly")]
+pub mod dragonfly;
+#[cfg(feature = "egret")]
+pub mod egret;

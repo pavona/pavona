@@ -11,10 +11,10 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/rstmgr_regs.h"  // Generated.
-#if defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#if defined(OPENTITAN_IS_EGRET)
+#include "hw/top_egret/sw/autogen/top_egret.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 #endif
 
 namespace rstmgr_unittest {
@@ -23,10 +23,10 @@ using ::testing::ElementsAre;
 
 class RstmgrTest : public rom_test::RomTest {
  protected:
-#if defined(OPENTITAN_IS_EARLGREY)
-  uint32_t base_ = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR;
-#elif defined(OPENTITAN_IS_DARJEELING)
-  uint32_t base_ = TOP_DARJEELING_RSTMGR_AON_BASE_ADDR;
+#if defined(OPENTITAN_IS_EGRET)
+  uint32_t base_ = TOP_EGRET_RSTMGR_AON_BASE_ADDR;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  uint32_t base_ = TOP_DRAGONFLY_RSTMGR_AON_BASE_ADDR;
 #endif
   rom_test::MockAbsMmio mmio_;
 };

@@ -50,7 +50,7 @@ otp_json(
 [
     otp_image(
         name = "otp_img_watchdog_enable_{}".format(lc_state),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
+        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_watchdog_enable"],
     )
     for lc_state, _ in get_lc_items()
@@ -85,8 +85,8 @@ WATCHDOG_TEST_CASES = {
             lc_state_val,
         ),
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:sim_verilator",
+            "//hw/top_egret:fpga_cw310",
+            "//hw/top_egret:sim_verilator",
         ],
         local_defines = [
             "EXPECT_WATCHDOG_{}".format(watchdog_config.upper()),
@@ -95,7 +95,7 @@ WATCHDOG_TEST_CASES = {
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         deps = [
             "//hw/top:aon_timer_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -109,7 +109,7 @@ WATCHDOG_TEST_CASES = {
 ]
 
 WATCHDOG_OTP = {
-    "disable": "//hw/top_earlgrey/data/otp:img_{}",
+    "disable": "//hw/top_egret/data/otp:img_{}",
     "enable": ":otp_img_watchdog_enable_{}",
 }
 
@@ -120,8 +120,8 @@ WATCHDOG_OTP = {
             lc_state,
         ),
         exec_env = {
-            "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "@//hw/top_earlgrey:sim_verilator": None,
+            "@//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "@//hw/top_egret:sim_verilator": None,
         },
         fpga = fpga_params(
             binaries = {

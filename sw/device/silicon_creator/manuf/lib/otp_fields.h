@@ -55,7 +55,7 @@ enum {
   kSecret0TestExitTokenSizeIn64BitWords =
       kSecret0TestExitTokenSizeInBytes / sizeof(uint64_t),
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   /**
    * SECRET1 partition OTP fields.
    */

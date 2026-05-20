@@ -24,7 +24,7 @@
 #include "sw/device/tests/penetrationtests/json/acc_sca_commands.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define MAX_BATCH_SIZE 256
 #define BYTES_IN_WDR 32
@@ -474,7 +474,7 @@ status_t handle_acc_pentest_init(ujson_t *uj) {
   pentest_setup_device(uj, false, true);
 
   // Init the ACC core.
-  TRY(dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
+  TRY(dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
 
   // Load p256 keygen from seed app into ACC.
   if (acc_load_app(kAccAppP256KeyFromSeed).value != OTCRYPTO_OK.value) {
@@ -498,13 +498,13 @@ status_t handle_acc_pentest_init_keymgr(ujson_t *uj) {
                                      kDifKeymgrStateOwnerIntermediateKey));
     LOG_INFO("Keymgr entered OwnerIntKey State");
   } else {
-    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
+    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR),
                         &keymgr));
     TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
   }
 
   dif_acc_t acc;
-  TRY(dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
+  TRY(dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
 
   return OK_STATUS();
 }

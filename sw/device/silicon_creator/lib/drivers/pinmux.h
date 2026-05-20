@@ -32,9 +32,9 @@ void pinmux_init_uart0_tx(void);
 /**
  * Sets the input pad for the specified peripheral input.
  *
- * @param periph A peripheral input (e.g. top_earlgrey_pinmux_peripheral_in_t
+ * @param periph A peripheral input (e.g. top_egret_pinmux_peripheral_in_t
  * periph).
- * @param insel An MIO pad to link it to (e.g. top_earlgrey_pinmux_insel_t
+ * @param insel An MIO pad to link it to (e.g. top_egret_pinmux_insel_t
  * insel).
  */
 void pinmux_configure_input(uint32_t periph, uint32_t insel);
@@ -42,7 +42,7 @@ void pinmux_configure_input(uint32_t periph, uint32_t insel);
 /**
  * Enables or disables pull-up/pull-down for the specified pad.
  *
- * @param pad A MIO pad (e.g. top_earlgrey_muxed_pads_t).
+ * @param pad A MIO pad (e.g. top_egret_muxed_pads_t).
  * @param enable Whether the internal pull resistor should be enabled.
  * @param up Whether the pull resistor should pull up(true) or down(false).
  */

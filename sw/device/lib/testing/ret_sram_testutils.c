@@ -35,17 +35,17 @@ enum { kOffsetOfTestutils = offsetof(retention_sram_t, owner) };
 
 // TODO: Replace with a DT API call when memory size information is exposed
 // via dtgen.
-#if defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#if defined(OPENTITAN_IS_EGRET)
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(kOffsetOfTestutils + sizeof(testing_utilities_t) <
-                  TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES,
+                  TOP_EGRET_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES,
               "Testing utilities spill out of retention SRAM");
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 
 static_assert(kOffsetOfTestutils + sizeof(testing_utilities_t) <
-                  TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES,
+                  TOP_DRAGONFLY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES,
               "Testing utilities spill out of retention SRAM");
 #else
 #error "ret_sram_testutils does not support this top"

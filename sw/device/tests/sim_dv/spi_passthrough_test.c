@@ -58,7 +58,7 @@ static_assert(kDtSpiHostCount >= 1,
 
 // Enable pull-ups for spi_host data pins to avoid floating inputs.
 static const pinmux_pad_attributes_t pinmux_pad_config[] = {
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     {
         .pad = kDtPadIob1,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
@@ -69,8 +69,8 @@ static const pinmux_pad_attributes_t pinmux_pad_config[] = {
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
     },
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not need these pads pulled-up
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly does not need these pads pulled-up
 #else
 #error "spi_passthrough_test does not support this top"
 #endif
@@ -96,7 +96,7 @@ static const pinmux_pad_attributes_t pinmux_pad_config[] = {
     },
 };
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 /**
  * A convenience struct to associate a mux selection that connects a pad and
  * peripheral. This can be used for an input mux or an output mux.
@@ -164,8 +164,8 @@ static const pinmux_select_t pinmux_in_config[] = {
     //         .peripheral_sig = kDtSpiHostPeriphIoSd3,
     //     },
 };
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling only has 1 SPI host, so SpiHost1 does not exist
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly only has 1 SPI host, so SpiHost1 does not exist
 #else
 #error "spi_passthrough_test does not support this top"
 #endif
@@ -393,7 +393,7 @@ bool test_main(void) {
   pinmux_testutils_init(&pinmux);
   pinmux_testutils_configure_pads(&pinmux, pinmux_pad_config,
                                   ARRAYSIZE(pinmux_pad_config));
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   for (int i = 0; i < ARRAYSIZE(pinmux_in_config); ++i) {
     pinmux_select_t setting = pinmux_in_config[i];
     dt_periph_io_t peripheral =
@@ -407,8 +407,8 @@ bool test_main(void) {
     CHECK_DIF_OK(
         dif_pinmux_mio_select_output(&pinmux, setting.pad, peripheral));
   }
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling only has 1 SPI Host, and so does not need these pinmux settings
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly only has 1 SPI Host, and so does not need these pinmux settings
 #else
 #error "spi_passthrough_test does not support this top"
 #endif

@@ -412,12 +412,11 @@ status_t usb_logging_init(usb_testutils_ctx_t *usbutils, uint8_t ep_first,
     ctx->usbutils = &usbdev;
     ep_first = 1u;
 
-    TRY(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+    TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
+                        &pinmux));
     pinmux_testutils_init(&pinmux);
-    TRY(dif_pinmux_input_select(&pinmux,
-                                kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-                                kTopEarlgreyPinmuxInselIoc7));
+    TRY(dif_pinmux_input_select(&pinmux, kTopEgretPinmuxPeripheralInUsbdevSense,
+                                kTopEgretPinmuxInselIoc7));
 
     // Total length of the configuration descriptor; validate caller buffer.
     size_t cfg_len = USB_CFG_DSCR_LEN +

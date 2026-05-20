@@ -1,7 +1,7 @@
 # SiVAL owner and application keys
 
 The keys in this directory are the owner and application keys for the SiVAL owner.
-The private components of these keys are stored in CloudKMS in the `ot-earlgrey-z0-sival` keyring.
+The private components of these keys are stored in CloudKMS in the `ot-egret-z0-sival` keyring.
 
 These keys were generated using the `gcloud` command line tool:
 
@@ -17,7 +17,7 @@ KEYS=(
 
 for KEY in ${KEYS[@]}; do
     gcloud kms keys create ${KEY} \
-        --keyring ot-earlgrey-z0-sival \
+        --keyring ot-egret-z0-sival \
         --location us-west1 \
         --purpose "asymmetric-signing" \
         --default-algorithm "ec-sign-p256-sha256" \
@@ -29,7 +29,7 @@ The keys were then exported from CloudKMS using `hsmtool` and converted to C hea
 
 ```bash
 for KEY in ${KEYS[@]}; do
-    hsmtool --token ot-earlgrey-z0-sival \
+    hsmtool --token ot-egret-z0-sival \
         ecdsa export \
         -l ${KEY} \
         -f der \

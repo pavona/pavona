@@ -1,6 +1,6 @@
 # Rv core ibex DIF Checklist
 
-This checklist is for [Development Stage](../../../../doc/contributing/hw/development_stages.md) transitions for the [Rv core ibex DIF](../../../../hw/top_earlgrey/ip_autogen/rv_core_ibex/README.md).
+This checklist is for [Development Stage](../../../../doc/contributing/hw/development_stages.md) transitions for the [Rv core ibex DIF](../../../../hw/top_egret/ip_autogen/rv_core_ibex/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/contributing/hw/checklist/README.md).
 
 <h2>DIF Checklist</h2>

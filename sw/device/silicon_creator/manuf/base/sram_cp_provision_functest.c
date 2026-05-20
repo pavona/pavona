@@ -27,13 +27,13 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 0;
 
 OTTF_DEFINE_TEST_CONFIG(
         .console.type = kOttfConsoleSpiDevice,
-        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.base_addr = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
         .console.test_may_clobber = false, .silence_console_prints = true,
         .console_tx_indicator.enable = true,
         .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
@@ -52,13 +52,13 @@ static dif_pinmux_t pinmux;
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
-  TRY(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR),
+                       &lc_ctrl));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
   return OK_STATUS();
 }
@@ -69,8 +69,8 @@ static status_t peripheral_handles_init(void) {
 static status_t configure_ate_gpio_indicators(void) {
   // IOA5 / GPIO0 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+      &pinmux, kTopEgretPinmuxMioOutIoa5,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
   TRY(dif_gpio_output_set_enabled_all(&gpio, 0x1));  // Enable first GPIO.
   TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
   return OK_STATUS();

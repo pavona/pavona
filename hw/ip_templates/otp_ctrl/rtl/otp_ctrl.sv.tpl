@@ -931,7 +931,7 @@ end
   // This is specialised for different tops that use it but the req/ack protocol is the same in each
   // case. For one example, see
   //
-  // hw/top_earlgrey/
+  // hw/top_egret/
   //    ip_autogen/otp_ctrl/doc/interfaces.md#interfaces-to-sram-and-acc-scramblers
 
 

@@ -63,15 +63,15 @@ static status_t get_i2c_pads_for_platform(dt_i2c_t i2c_dt,
                                           i2c_pinmux_platform_id_t platform,
                                           dt_pad_t *sda_pad,
                                           dt_pad_t *scl_pad) {
-#if defined(OPENTITAN_IS_DARJEELING)
-  // Darjeeling only has I2C0 and uses dedicated pads
+#if defined(OPENTITAN_IS_DRAGONFLY)
+  // Dragonfly only has I2C0 and uses dedicated pads
   if (i2c_dt != kDtI2c0) {
     return INVALID_ARGUMENT();
   }
   *sda_pad = kDtPadI2c0Sda;
   *scl_pad = kDtPadI2c0Scl;
-#elif defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
-  // For Earlgrey and EnglishBreakfast platforms
+#elif defined(OPENTITAN_IS_EGRET) || defined(OPENTITAN_IS_SCAFI_DEPRECATED)
+  // For Egret and Scafi_Deprecated platforms
   switch (platform) {
     case I2cPinmuxPlatformIdHyper310:  // CW310 HyperDebug
       *sda_pad = kDtPadIoa7;

@@ -124,7 +124,7 @@ If you need to debug signals from many different modules, you may want to instan
 ## Parametrizing the ILA and getting it synthesized in Vivado
 
 Next, we need to create an ILA *IP core* from Vivado's library, parametrize it, and synthesize it before synthesizing the rest of our design.
-To execute commands in Vivado before synthesis of the Earlgrey design, we have to add them to `hw/top_earlgrey/util/vivado_hook_synth_design_pre.tcl`.
+To execute commands in Vivado before synthesis of the Egret design, we have to add them to `hw/top_egret/util/vivado_hook_synth_design_pre.tcl`.
 The commands to create and configure an ILA core can be obtained from Vivado's GUI, although we have to tweak them to work with our flow, which uses Vivado *in-memory projects*.
 
 Open Vivado's GUI (creating a project is not necessary), click on *Window* -> *IP Catalog*, and search for *ILA*.
@@ -149,13 +149,13 @@ Click *OK* and then *Generate*.
 You will now get an error ("[Common 17-53] User Exception: No open project. Please use Save Project As to save your work and re-do this operation"), which you can close as it is not critical.
 
 The output we need from this step is the `set_property` command that configures the ILA, which got printed in the *Tcl Console* window.
-Copy that command from the Vivado GUI, open `hw/top_earlgrey/util/vivado_hook_synth_design_pre.tcl`, and paste it at the end of that file.
+Copy that command from the Vivado GUI, open `hw/top_egret/util/vivado_hook_synth_design_pre.tcl`, and paste it at the end of that file.
 
 Add the following two commands *before* the command that configures the ILA:
 ```tcl
 # Save the current 'in-memory' project as actual project.  This is required for some of the commands
 # below, such as `get_fileset`.
-save_project_as -force lowrisc_systems_chip_earlgrey_cw310_0.1
+save_project_as -force lowrisc_systems_chip_egret_cw310_0.1
 
 # Create ILA IP core.
 set ila_xci_path [ create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_0 ]
@@ -171,17 +171,17 @@ config_ip_cache -export [get_ips -all ila_0]
 export_ip_user_files -of_objects [get_files $ila_xci_path] -no_script -sync -force -quiet
 create_ip_run [get_files -of_objects [get_fileset sources_1] $ila_xci_path]
 
-# Synthesize ILA OOC ahead of Earlgrey synthesis.
+# Synthesize ILA OOC ahead of Egret synthesis.
 launch_runs ila_0_synth_1 -jobs 12
 wait_on_run ila_0_synth_1
 ```
 Again, replace `ila_0` with the module name of your ILA if necessary.
 
-As a complete example for the ILA instantiated above, the end of `hw/top_earlgrey/util/vivado_hook_synth_design_pre.tcl` now could look as follows:
+As a complete example for the ILA instantiated above, the end of `hw/top_egret/util/vivado_hook_synth_design_pre.tcl` now could look as follows:
 ```tcl
 # Save the current 'in-memory' project as actual project.  This is required for some of the commands
 # below, such as `get_fileset`.
-save_project_as -force lowrisc_systems_chip_earlgrey_cw310_0.1
+save_project_as -force lowrisc_systems_chip_egret_cw310_0.1
 
 # Create ILA IP core.
 set ila_xci_path [ create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_0 ]
@@ -202,23 +202,23 @@ config_ip_cache -export [get_ips -all ila_0]
 export_ip_user_files -of_objects [get_files $ila_xci_path] -no_script -sync -force -quiet
 create_ip_run [get_files -of_objects [get_fileset sources_1] $ila_xci_path]
 
-# Synthesize ILA OOC ahead of Earlgrey synthesis.
+# Synthesize ILA OOC ahead of Egret synthesis.
 launch_runs ila_0_synth_1 -jobs 12
 wait_on_run ila_0_synth_1
 ```
 
 If you have more than one ILA module, repeat the commands starting from *Create ILA IP core* with a different module name for each module.
 
-Finally, open `hw/top_earlgrey/util/vivado_hook_init_design_post.tcl` in your editor.
+Finally, open `hw/top_egret/util/vivado_hook_init_design_post.tcl` in your editor.
 The commands in this file get executed at the end of initialization of Vivado's implementation step.
-As we synthesize the ILA out of context (OOC), we need to load those synthesis results separately before running Earlgrey's implementation.
+As we synthesize the ILA out of context (OOC), we need to load those synthesis results separately before running Egret's implementation.
 Append the following two commands to do this:
 ```tcl
 # Load synthesized ILA from checkpoint.
-add_files ../../lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/ila_0_synth_1/ila_0.dcp
+add_files ../../lowrisc_systems_chip_egret_cw310_0.1.runs/synth_1/lowrisc_systems_chip_egret_cw310_0.1.runs/ila_0_synth_1/ila_0.dcp
 
 # Link design (again) as otherwise the ILA would remain a black box for implementation.
-link_design -top chip_earlgrey_cw310 -part xc7k410tfbg676-1
+link_design -top chip_egret_cw310 -part xc7k410tfbg676-1
 ```
 Again, change the `ila_0` module name and/or repeat the first command as required for your setup.
 
@@ -232,11 +232,11 @@ So you can ignore this warning, but it's worth keeping in mind *if* you should s
 With the steps above complete, building a first bitstream that includes the defined ILAs is as simple as `bazel build //hw/bitstream:rom --define bitstream=vivado`.
 While synthesis, implementation, and bitstream generation runs (which can easily take 2 h), keep an eye on the logs.
 Especially during RTL elaboration, which happens very early, check the logs for any unexpected warnings.
-The path to the synthesis log file is usually `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/runme.log`.
+The path to the synthesis log file is usually `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_egret_cw310_0.1.runs/synth_1/runme.log`.
 
 Once Vivado has successfully generated a bitstream, locate its directory with `dirname $(./bazelisk.sh outquery-all //hw/bitstream:rom --define bitstream=vivado)` (it will usually be `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado`).
 Append `/build.fpga_cw310/synth-vivado` to that path.
-In the resulting directory, you should find `memories.mmi` and `lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
+In the resulting directory, you should find `memories.mmi` and `lowrisc_systems_chip_egret_cw310_0.1.bit`.
 We will next copy those files into a local bitstream cache that Bazel can use.
 
 If you don't have a local bitstream cache yet, create one as follows:
@@ -254,7 +254,7 @@ Create a directory with the name of the Git hash for which you have built the bi
 (You can find the relevant Git hash with `git log`, for example.
 If you have not committed the changes to implement the ILA yet, we recommend doing so at least locally.)
 Copy `memories.mmi` to that directory.
-Copy `lowrisc_systems_chip_earlgrey_cw310_0.1.bit` also to that directory, then rename the copy to `lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig`.
+Copy `lowrisc_systems_chip_egret_cw310_0.1.bit` also to that directory, then rename the copy to `lowrisc_systems_chip_egret_cw310_0.1.bit.orig`.
 
 Now instruct Bazel to use a bitstream from the local cache by setting an `--offline` argument in the `BITSTREAM` environment variable; for example:
 ```sh
@@ -274,7 +274,7 @@ Otherwise, select the only targets and click *Next* and *Finish* to connect to t
 
 Click *Program device*.
 As *Bitstream file*, select the file identified at the end of the previous section.
-As *Debug probes file*, navigate to the `synth-vivado` directory identified in the previous section, then go to `lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1` and select `debug_nets.ltx`.
+As *Debug probes file*, navigate to the `synth-vivado` directory identified in the previous section, then go to `lowrisc_systems_chip_egret_cw310_0.1.runs/impl_1` and select `debug_nets.ltx`.
 Click *Program* and wait for programming to complete.
 
 You should now see a window with one tab per ILA.

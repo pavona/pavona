@@ -9,7 +9,7 @@ This page describes the directory structure, presents the comportable hardware I
 Hardware development happens at both the top-level and the block-level.
 
 Top-level designs serve as reference designs instantiating a specific combination and connection of hardware IP blocks.
-The present top-level designs -- Earlgrey, Darjeeling, and Englishbreakfast -- are found in `top_earlgrey/`, `top_darjeeling/`, and `top_englishbreakfast/` respectively.
+The present top-level designs -- Egret, Dragonfly, and Scafi_Deprecated -- are found in `top_egret/`, `top_dragonfly/`, and `top_scafi_deprecated/` respectively.
 These top-level designs are by no means fixed; they serve as suggested starting points for further development and experimentation.
 
 Hardware IP blocks can be top-agnostic or top-specific, and the organization of this directory reflects this distinction.
@@ -45,16 +45,16 @@ Ibex is an in-order, 2- or 3-stage (configurable) pipelined processor that can s
 
 ## Top-level designs
 
-### Earlgrey top-level
+### Egret top-level
 
-* [Datasheet](./top_earlgrey/doc/datasheet.md)
-* [Specification](./top_earlgrey/doc/design/README.md)
-* [Design Verification](./top_earlgrey/dv/README.md)
+* [Datasheet](./top_egret/doc/datasheet.md)
+* [Specification](./top_egret/doc/design/README.md)
+* [Design Verification](./top_egret/dv/README.md)
 
-### Earlgrey-specific comportable IPs
+### Egret-specific comportable IPs
 
-{{#dashboard top_earlgrey }}
+{{#dashboard top_egret }}
 
-### Darjeeling top-level
+### Dragonfly top-level
 
-* [Datasheet](./top_darjeeling/doc/datasheet.md)
+* [Datasheet](./top_dragonfly/doc/datasheet.md)

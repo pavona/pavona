@@ -4,5 +4,5 @@
 
 exports_files([
     "cw340_ftdi.cfg",
-    "lowrisc-earlgrey-verilator.cfg",
+    "lowrisc-egret-verilator.cfg",
 ])

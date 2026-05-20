@@ -6,12 +6,12 @@ ${gencmd.replace("//", "#")}
 <%
 import topgen.lib as lib
 
-## TODO: Darjeeling contains peripherals which expose IRQs/Alerts to the RV
+## TODO: Dragonfly contains peripherals which expose IRQs/Alerts to the RV
 ## PLIC and Alert Handler respectively, but are not accessible from the hart
 ## address space and thus cannot be tested directly (via the IRQ_TEST and
 ## ALERT_TEST registers). While this issue remains, we specifically hard-code
 ## for excluding these IRQs/Alerts from the tests.
-IGNORE_PERIPHERALS = [("ac_range_check", "darjeeling"), ("racl_ctrl", "darjeeling")]
+IGNORE_PERIPHERALS = [("ac_range_check", "dragonfly"), ("racl_ctrl", "dragonfly")]
 plics = lib.find_modules(top["module"], "rv_plic")
 irq_peripheral_names = sorted({p.name for plic in plics for p in helper.irq_peripherals[plic["name"]][addr_space]
                                if (p.inst_name, top["name"]) not in IGNORE_PERIPHERALS})
@@ -21,18 +21,18 @@ alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals[addr_s
                                 }) if has_alert_handler else []
 
 ## Collect the execution environments based on the target top-level
-if top["name"] == "earlgrey":
+if top["name"] == "egret":
     exec_envs = [
-        "EARLGREY_TEST_ENVS",
-        "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+        "EGRET_TEST_ENVS",
+        "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:silicon_creator": None,
         },
     ]
-elif top["name"] == "darjeeling":
-    exec_envs = [{"//hw/top_darjeeling:sim_dv": None}]
+elif top["name"] == "dragonfly":
+    exec_envs = [{"//hw/top_dragonfly:sim_dv": None}]
 else:
     exec_envs = []
 
@@ -52,9 +52,9 @@ defs_imports = sorted(
 irq_per_test = 10
 irq_test_count = len(irq_peripheral_names) // 10 + 1
 expected_irq_tests = {
-    "earlgrey": 3,
-    "darjeeling": 2,
-    "englishbreakfast": 1,
+    "egret": 3,
+    "dragonfly": 2,
+    "scafi_deprecated": 1,
 }
 
 ## If this check fails, the testplans / DV tests need to be updated to account

@@ -40,7 +40,7 @@ Transition StOutstanding->StFlush "231->76"
 // FSM immediately follows `StError` (cycle 0) -> `StErrorOutstanding` (cycle 1). To meet the
 // condition we are excluding here (i.e., `outstanding_txn` is nonzero), we would need no enqueue
 // a transaction in cycle 0. This would definitely be possible in the DV environment. However,
-// for Earlgrey this cannot happen as the only host that accesses the SRAM is Ibex. As the
+// for Egret this cannot happen as the only host that accesses the SRAM is Ibex. As the
 // boot address of Ibex points to the ROM and not the SRAM controller, a TL-UL request to the
 // SRAM in the first cycle cannot happen.
 CHECKSUM: "998580748 3219254590"

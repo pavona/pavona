@@ -233,7 +233,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         // has no flash configuration at all.
         //
         // Note: The number of regions and indices of the regions is currently
-        // Earlgrey-specific.
+        // Egret-specific.
         //
         // Note: when in an unlocked state, flash lockdown doesn't apply, so neither
         // the `protect_when_active` nor `lock` bits for individual regions will

@@ -13,7 +13,7 @@
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

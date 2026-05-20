@@ -9,487 +9,487 @@
 extern "C" {
 #endif
 
-// Note: these definitions rely on constants from top_earlgrey.h
+// Note: these definitions rely on constants from top_egret.h
 // and therefore this library cannot be used with the `ujson_rust`
 // bazel rule.  Instead, these constants are imported into rust
 // by way of a bindgen rule and recreated as Rust datatypes with
 // appropriate aliases to be used by other `ujson` libraries.
 #ifndef RUST_PREPROCESSOR_EMIT
-#if defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#if defined(OPENTITAN_IS_EGRET)
+#include "hw/top_egret/sw/autogen/top_egret.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 #endif
 #endif
 // clang-format off
 
-#if defined(OPENTITAN_IS_EARLGREY)
-#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN(_, value) \
-    value(_, GpioGpio0, kTopEarlgreyPinmuxPeripheralInGpioGpio0) \
-    value(_, GpioGpio1, kTopEarlgreyPinmuxPeripheralInGpioGpio1) \
-    value(_, GpioGpio2, kTopEarlgreyPinmuxPeripheralInGpioGpio2) \
-    value(_, GpioGpio3, kTopEarlgreyPinmuxPeripheralInGpioGpio3) \
-    value(_, GpioGpio4, kTopEarlgreyPinmuxPeripheralInGpioGpio4) \
-    value(_, GpioGpio5, kTopEarlgreyPinmuxPeripheralInGpioGpio5) \
-    value(_, GpioGpio6, kTopEarlgreyPinmuxPeripheralInGpioGpio6) \
-    value(_, GpioGpio7, kTopEarlgreyPinmuxPeripheralInGpioGpio7) \
-    value(_, GpioGpio8, kTopEarlgreyPinmuxPeripheralInGpioGpio8) \
-    value(_, GpioGpio9, kTopEarlgreyPinmuxPeripheralInGpioGpio9) \
-    value(_, GpioGpio10, kTopEarlgreyPinmuxPeripheralInGpioGpio10) \
-    value(_, GpioGpio11, kTopEarlgreyPinmuxPeripheralInGpioGpio11) \
-    value(_, GpioGpio12, kTopEarlgreyPinmuxPeripheralInGpioGpio12) \
-    value(_, GpioGpio13, kTopEarlgreyPinmuxPeripheralInGpioGpio13) \
-    value(_, GpioGpio14, kTopEarlgreyPinmuxPeripheralInGpioGpio14) \
-    value(_, GpioGpio15, kTopEarlgreyPinmuxPeripheralInGpioGpio15) \
-    value(_, GpioGpio16, kTopEarlgreyPinmuxPeripheralInGpioGpio16) \
-    value(_, GpioGpio17, kTopEarlgreyPinmuxPeripheralInGpioGpio17) \
-    value(_, GpioGpio18, kTopEarlgreyPinmuxPeripheralInGpioGpio18) \
-    value(_, GpioGpio19, kTopEarlgreyPinmuxPeripheralInGpioGpio19) \
-    value(_, GpioGpio20, kTopEarlgreyPinmuxPeripheralInGpioGpio20) \
-    value(_, GpioGpio21, kTopEarlgreyPinmuxPeripheralInGpioGpio21) \
-    value(_, GpioGpio22, kTopEarlgreyPinmuxPeripheralInGpioGpio22) \
-    value(_, GpioGpio23, kTopEarlgreyPinmuxPeripheralInGpioGpio23) \
-    value(_, GpioGpio24, kTopEarlgreyPinmuxPeripheralInGpioGpio24) \
-    value(_, GpioGpio25, kTopEarlgreyPinmuxPeripheralInGpioGpio25) \
-    value(_, GpioGpio26, kTopEarlgreyPinmuxPeripheralInGpioGpio26) \
-    value(_, GpioGpio27, kTopEarlgreyPinmuxPeripheralInGpioGpio27) \
-    value(_, GpioGpio28, kTopEarlgreyPinmuxPeripheralInGpioGpio28) \
-    value(_, GpioGpio29, kTopEarlgreyPinmuxPeripheralInGpioGpio29) \
-    value(_, GpioGpio30, kTopEarlgreyPinmuxPeripheralInGpioGpio30) \
-    value(_, GpioGpio31, kTopEarlgreyPinmuxPeripheralInGpioGpio31) \
-    value(_, I2c0Sda, kTopEarlgreyPinmuxPeripheralInI2c0Sda) \
-    value(_, I2c0Scl, kTopEarlgreyPinmuxPeripheralInI2c0Scl) \
-    value(_, I2c1Sda, kTopEarlgreyPinmuxPeripheralInI2c1Sda) \
-    value(_, I2c1Scl, kTopEarlgreyPinmuxPeripheralInI2c1Scl) \
-    value(_, I2c2Sda, kTopEarlgreyPinmuxPeripheralInI2c2Sda) \
-    value(_, I2c2Scl, kTopEarlgreyPinmuxPeripheralInI2c2Scl) \
-    value(_, SpiHost1Sd0, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0) \
-    value(_, SpiHost1Sd1, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1) \
-    value(_, SpiHost1Sd2, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2) \
-    value(_, SpiHost1Sd3, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3) \
-    value(_, Uart0Rx, kTopEarlgreyPinmuxPeripheralInUart0Rx) \
-    value(_, Uart1Rx, kTopEarlgreyPinmuxPeripheralInUart1Rx) \
-    value(_, Uart2Rx, kTopEarlgreyPinmuxPeripheralInUart2Rx) \
-    value(_, Uart3Rx, kTopEarlgreyPinmuxPeripheralInUart3Rx) \
-    value(_, SpiDeviceTpmCsb, kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb) \
-    value(_, FlashCtrlTck, kTopEarlgreyPinmuxPeripheralInFlashMacroWrapperTck) \
-    value(_, FlashCtrlTms, kTopEarlgreyPinmuxPeripheralInFlashMacroWrapperTms) \
-    value(_, FlashCtrlTdi, kTopEarlgreyPinmuxPeripheralInFlashMacroWrapperTdi) \
-    value(_, SysrstCtrlAonAcPresent, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent) \
-    value(_, SysrstCtrlAonKey0In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In) \
-    value(_, SysrstCtrlAonKey1In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In) \
-    value(_, SysrstCtrlAonKey2In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In) \
-    value(_, SysrstCtrlAonPwrbIn, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn) \
-    value(_, SysrstCtrlAonLidOpen, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen) \
-    value(_, UsbdevSense, kTopEarlgreyPinmuxPeripheralInUsbdevSense) \
-    value(_, End, kTopEarlgreyPinmuxPeripheralInLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(PinmuxPeripheralIn, pinmux_peripheral_in_t, TOP_EARLGREY_PINMUX_PERIPHERAL_IN, WITH_UNKNOWN));
+#if defined(OPENTITAN_IS_EGRET)
+#define TOP_EGRET_PINMUX_PERIPHERAL_IN(_, value) \
+    value(_, GpioGpio0, kTopEgretPinmuxPeripheralInGpioGpio0) \
+    value(_, GpioGpio1, kTopEgretPinmuxPeripheralInGpioGpio1) \
+    value(_, GpioGpio2, kTopEgretPinmuxPeripheralInGpioGpio2) \
+    value(_, GpioGpio3, kTopEgretPinmuxPeripheralInGpioGpio3) \
+    value(_, GpioGpio4, kTopEgretPinmuxPeripheralInGpioGpio4) \
+    value(_, GpioGpio5, kTopEgretPinmuxPeripheralInGpioGpio5) \
+    value(_, GpioGpio6, kTopEgretPinmuxPeripheralInGpioGpio6) \
+    value(_, GpioGpio7, kTopEgretPinmuxPeripheralInGpioGpio7) \
+    value(_, GpioGpio8, kTopEgretPinmuxPeripheralInGpioGpio8) \
+    value(_, GpioGpio9, kTopEgretPinmuxPeripheralInGpioGpio9) \
+    value(_, GpioGpio10, kTopEgretPinmuxPeripheralInGpioGpio10) \
+    value(_, GpioGpio11, kTopEgretPinmuxPeripheralInGpioGpio11) \
+    value(_, GpioGpio12, kTopEgretPinmuxPeripheralInGpioGpio12) \
+    value(_, GpioGpio13, kTopEgretPinmuxPeripheralInGpioGpio13) \
+    value(_, GpioGpio14, kTopEgretPinmuxPeripheralInGpioGpio14) \
+    value(_, GpioGpio15, kTopEgretPinmuxPeripheralInGpioGpio15) \
+    value(_, GpioGpio16, kTopEgretPinmuxPeripheralInGpioGpio16) \
+    value(_, GpioGpio17, kTopEgretPinmuxPeripheralInGpioGpio17) \
+    value(_, GpioGpio18, kTopEgretPinmuxPeripheralInGpioGpio18) \
+    value(_, GpioGpio19, kTopEgretPinmuxPeripheralInGpioGpio19) \
+    value(_, GpioGpio20, kTopEgretPinmuxPeripheralInGpioGpio20) \
+    value(_, GpioGpio21, kTopEgretPinmuxPeripheralInGpioGpio21) \
+    value(_, GpioGpio22, kTopEgretPinmuxPeripheralInGpioGpio22) \
+    value(_, GpioGpio23, kTopEgretPinmuxPeripheralInGpioGpio23) \
+    value(_, GpioGpio24, kTopEgretPinmuxPeripheralInGpioGpio24) \
+    value(_, GpioGpio25, kTopEgretPinmuxPeripheralInGpioGpio25) \
+    value(_, GpioGpio26, kTopEgretPinmuxPeripheralInGpioGpio26) \
+    value(_, GpioGpio27, kTopEgretPinmuxPeripheralInGpioGpio27) \
+    value(_, GpioGpio28, kTopEgretPinmuxPeripheralInGpioGpio28) \
+    value(_, GpioGpio29, kTopEgretPinmuxPeripheralInGpioGpio29) \
+    value(_, GpioGpio30, kTopEgretPinmuxPeripheralInGpioGpio30) \
+    value(_, GpioGpio31, kTopEgretPinmuxPeripheralInGpioGpio31) \
+    value(_, I2c0Sda, kTopEgretPinmuxPeripheralInI2c0Sda) \
+    value(_, I2c0Scl, kTopEgretPinmuxPeripheralInI2c0Scl) \
+    value(_, I2c1Sda, kTopEgretPinmuxPeripheralInI2c1Sda) \
+    value(_, I2c1Scl, kTopEgretPinmuxPeripheralInI2c1Scl) \
+    value(_, I2c2Sda, kTopEgretPinmuxPeripheralInI2c2Sda) \
+    value(_, I2c2Scl, kTopEgretPinmuxPeripheralInI2c2Scl) \
+    value(_, SpiHost1Sd0, kTopEgretPinmuxPeripheralInSpiHost1Sd0) \
+    value(_, SpiHost1Sd1, kTopEgretPinmuxPeripheralInSpiHost1Sd1) \
+    value(_, SpiHost1Sd2, kTopEgretPinmuxPeripheralInSpiHost1Sd2) \
+    value(_, SpiHost1Sd3, kTopEgretPinmuxPeripheralInSpiHost1Sd3) \
+    value(_, Uart0Rx, kTopEgretPinmuxPeripheralInUart0Rx) \
+    value(_, Uart1Rx, kTopEgretPinmuxPeripheralInUart1Rx) \
+    value(_, Uart2Rx, kTopEgretPinmuxPeripheralInUart2Rx) \
+    value(_, Uart3Rx, kTopEgretPinmuxPeripheralInUart3Rx) \
+    value(_, SpiDeviceTpmCsb, kTopEgretPinmuxPeripheralInSpiDeviceTpmCsb) \
+    value(_, FlashCtrlTck, kTopEgretPinmuxPeripheralInFlashMacroWrapperTck) \
+    value(_, FlashCtrlTms, kTopEgretPinmuxPeripheralInFlashMacroWrapperTms) \
+    value(_, FlashCtrlTdi, kTopEgretPinmuxPeripheralInFlashMacroWrapperTdi) \
+    value(_, SysrstCtrlAonAcPresent, kTopEgretPinmuxPeripheralInSysrstCtrlAonAcPresent) \
+    value(_, SysrstCtrlAonKey0In, kTopEgretPinmuxPeripheralInSysrstCtrlAonKey0In) \
+    value(_, SysrstCtrlAonKey1In, kTopEgretPinmuxPeripheralInSysrstCtrlAonKey1In) \
+    value(_, SysrstCtrlAonKey2In, kTopEgretPinmuxPeripheralInSysrstCtrlAonKey2In) \
+    value(_, SysrstCtrlAonPwrbIn, kTopEgretPinmuxPeripheralInSysrstCtrlAonPwrbIn) \
+    value(_, SysrstCtrlAonLidOpen, kTopEgretPinmuxPeripheralInSysrstCtrlAonLidOpen) \
+    value(_, UsbdevSense, kTopEgretPinmuxPeripheralInUsbdevSense) \
+    value(_, End, kTopEgretPinmuxPeripheralInLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(PinmuxPeripheralIn, pinmux_peripheral_in_t, TOP_EGRET_PINMUX_PERIPHERAL_IN, WITH_UNKNOWN));
 
-#define TOP_EARLGREY_PINMUX_INSEL(_, value) \
-    value(_, ConstantZero, kTopEarlgreyPinmuxInselConstantZero) \
-    value(_, ConstantOne, kTopEarlgreyPinmuxInselConstantOne) \
-    value(_, Ioa0, kTopEarlgreyPinmuxInselIoa0) \
-    value(_, Ioa1, kTopEarlgreyPinmuxInselIoa1) \
-    value(_, Ioa2, kTopEarlgreyPinmuxInselIoa2) \
-    value(_, Ioa3, kTopEarlgreyPinmuxInselIoa3) \
-    value(_, Ioa4, kTopEarlgreyPinmuxInselIoa4) \
-    value(_, Ioa5, kTopEarlgreyPinmuxInselIoa5) \
-    value(_, Ioa6, kTopEarlgreyPinmuxInselIoa6) \
-    value(_, Ioa7, kTopEarlgreyPinmuxInselIoa7) \
-    value(_, Ioa8, kTopEarlgreyPinmuxInselIoa8) \
-    value(_, Iob0, kTopEarlgreyPinmuxInselIob0) \
-    value(_, Iob1, kTopEarlgreyPinmuxInselIob1) \
-    value(_, Iob2, kTopEarlgreyPinmuxInselIob2) \
-    value(_, Iob3, kTopEarlgreyPinmuxInselIob3) \
-    value(_, Iob4, kTopEarlgreyPinmuxInselIob4) \
-    value(_, Iob5, kTopEarlgreyPinmuxInselIob5) \
-    value(_, Iob6, kTopEarlgreyPinmuxInselIob6) \
-    value(_, Iob7, kTopEarlgreyPinmuxInselIob7) \
-    value(_, Iob8, kTopEarlgreyPinmuxInselIob8) \
-    value(_, Iob9, kTopEarlgreyPinmuxInselIob9) \
-    value(_, Iob10, kTopEarlgreyPinmuxInselIob10) \
-    value(_, Iob11, kTopEarlgreyPinmuxInselIob11) \
-    value(_, Iob12, kTopEarlgreyPinmuxInselIob12) \
-    value(_, Ioc0, kTopEarlgreyPinmuxInselIoc0) \
-    value(_, Ioc1, kTopEarlgreyPinmuxInselIoc1) \
-    value(_, Ioc2, kTopEarlgreyPinmuxInselIoc2) \
-    value(_, Ioc3, kTopEarlgreyPinmuxInselIoc3) \
-    value(_, Ioc4, kTopEarlgreyPinmuxInselIoc4) \
-    value(_, Ioc5, kTopEarlgreyPinmuxInselIoc5) \
-    value(_, Ioc6, kTopEarlgreyPinmuxInselIoc6) \
-    value(_, Ioc7, kTopEarlgreyPinmuxInselIoc7) \
-    value(_, Ioc8, kTopEarlgreyPinmuxInselIoc8) \
-    value(_, Ioc9, kTopEarlgreyPinmuxInselIoc9) \
-    value(_, Ioc10, kTopEarlgreyPinmuxInselIoc10) \
-    value(_, Ioc11, kTopEarlgreyPinmuxInselIoc11) \
-    value(_, Ioc12, kTopEarlgreyPinmuxInselIoc12) \
-    value(_, Ior0, kTopEarlgreyPinmuxInselIor0) \
-    value(_, Ior1, kTopEarlgreyPinmuxInselIor1) \
-    value(_, Ior2, kTopEarlgreyPinmuxInselIor2) \
-    value(_, Ior3, kTopEarlgreyPinmuxInselIor3) \
-    value(_, Ior4, kTopEarlgreyPinmuxInselIor4) \
-    value(_, Ior5, kTopEarlgreyPinmuxInselIor5) \
-    value(_, Ior6, kTopEarlgreyPinmuxInselIor6) \
-    value(_, Ior7, kTopEarlgreyPinmuxInselIor7) \
-    value(_, Ior10, kTopEarlgreyPinmuxInselIor10) \
-    value(_, Ior11, kTopEarlgreyPinmuxInselIor11) \
-    value(_, Ior12, kTopEarlgreyPinmuxInselIor12) \
-    value(_, Ior13, kTopEarlgreyPinmuxInselIor13) \
-    value(_, End, kTopEarlgreyPinmuxInselLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(PinmuxInsel, pinmux_insel_t, TOP_EARLGREY_PINMUX_INSEL, WITH_UNKNOWN));
+#define TOP_EGRET_PINMUX_INSEL(_, value) \
+    value(_, ConstantZero, kTopEgretPinmuxInselConstantZero) \
+    value(_, ConstantOne, kTopEgretPinmuxInselConstantOne) \
+    value(_, Ioa0, kTopEgretPinmuxInselIoa0) \
+    value(_, Ioa1, kTopEgretPinmuxInselIoa1) \
+    value(_, Ioa2, kTopEgretPinmuxInselIoa2) \
+    value(_, Ioa3, kTopEgretPinmuxInselIoa3) \
+    value(_, Ioa4, kTopEgretPinmuxInselIoa4) \
+    value(_, Ioa5, kTopEgretPinmuxInselIoa5) \
+    value(_, Ioa6, kTopEgretPinmuxInselIoa6) \
+    value(_, Ioa7, kTopEgretPinmuxInselIoa7) \
+    value(_, Ioa8, kTopEgretPinmuxInselIoa8) \
+    value(_, Iob0, kTopEgretPinmuxInselIob0) \
+    value(_, Iob1, kTopEgretPinmuxInselIob1) \
+    value(_, Iob2, kTopEgretPinmuxInselIob2) \
+    value(_, Iob3, kTopEgretPinmuxInselIob3) \
+    value(_, Iob4, kTopEgretPinmuxInselIob4) \
+    value(_, Iob5, kTopEgretPinmuxInselIob5) \
+    value(_, Iob6, kTopEgretPinmuxInselIob6) \
+    value(_, Iob7, kTopEgretPinmuxInselIob7) \
+    value(_, Iob8, kTopEgretPinmuxInselIob8) \
+    value(_, Iob9, kTopEgretPinmuxInselIob9) \
+    value(_, Iob10, kTopEgretPinmuxInselIob10) \
+    value(_, Iob11, kTopEgretPinmuxInselIob11) \
+    value(_, Iob12, kTopEgretPinmuxInselIob12) \
+    value(_, Ioc0, kTopEgretPinmuxInselIoc0) \
+    value(_, Ioc1, kTopEgretPinmuxInselIoc1) \
+    value(_, Ioc2, kTopEgretPinmuxInselIoc2) \
+    value(_, Ioc3, kTopEgretPinmuxInselIoc3) \
+    value(_, Ioc4, kTopEgretPinmuxInselIoc4) \
+    value(_, Ioc5, kTopEgretPinmuxInselIoc5) \
+    value(_, Ioc6, kTopEgretPinmuxInselIoc6) \
+    value(_, Ioc7, kTopEgretPinmuxInselIoc7) \
+    value(_, Ioc8, kTopEgretPinmuxInselIoc8) \
+    value(_, Ioc9, kTopEgretPinmuxInselIoc9) \
+    value(_, Ioc10, kTopEgretPinmuxInselIoc10) \
+    value(_, Ioc11, kTopEgretPinmuxInselIoc11) \
+    value(_, Ioc12, kTopEgretPinmuxInselIoc12) \
+    value(_, Ior0, kTopEgretPinmuxInselIor0) \
+    value(_, Ior1, kTopEgretPinmuxInselIor1) \
+    value(_, Ior2, kTopEgretPinmuxInselIor2) \
+    value(_, Ior3, kTopEgretPinmuxInselIor3) \
+    value(_, Ior4, kTopEgretPinmuxInselIor4) \
+    value(_, Ior5, kTopEgretPinmuxInselIor5) \
+    value(_, Ior6, kTopEgretPinmuxInselIor6) \
+    value(_, Ior7, kTopEgretPinmuxInselIor7) \
+    value(_, Ior10, kTopEgretPinmuxInselIor10) \
+    value(_, Ior11, kTopEgretPinmuxInselIor11) \
+    value(_, Ior12, kTopEgretPinmuxInselIor12) \
+    value(_, Ior13, kTopEgretPinmuxInselIor13) \
+    value(_, End, kTopEgretPinmuxInselLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(PinmuxInsel, pinmux_insel_t, TOP_EGRET_PINMUX_INSEL, WITH_UNKNOWN));
 
-#define TOP_EARLGREY_PINMUX_MIO_OUT(_, value) \
-    value(_, Ioa0, kTopEarlgreyPinmuxMioOutIoa0) \
-    value(_, Ioa1, kTopEarlgreyPinmuxMioOutIoa1) \
-    value(_, Ioa2, kTopEarlgreyPinmuxMioOutIoa2) \
-    value(_, Ioa3, kTopEarlgreyPinmuxMioOutIoa3) \
-    value(_, Ioa4, kTopEarlgreyPinmuxMioOutIoa4) \
-    value(_, Ioa5, kTopEarlgreyPinmuxMioOutIoa5) \
-    value(_, Ioa6, kTopEarlgreyPinmuxMioOutIoa6) \
-    value(_, Ioa7, kTopEarlgreyPinmuxMioOutIoa7) \
-    value(_, Ioa8, kTopEarlgreyPinmuxMioOutIoa8) \
-    value(_, Iob0, kTopEarlgreyPinmuxMioOutIob0) \
-    value(_, Iob1, kTopEarlgreyPinmuxMioOutIob1) \
-    value(_, Iob2, kTopEarlgreyPinmuxMioOutIob2) \
-    value(_, Iob3, kTopEarlgreyPinmuxMioOutIob3) \
-    value(_, Iob4, kTopEarlgreyPinmuxMioOutIob4) \
-    value(_, Iob5, kTopEarlgreyPinmuxMioOutIob5) \
-    value(_, Iob6, kTopEarlgreyPinmuxMioOutIob6) \
-    value(_, Iob7, kTopEarlgreyPinmuxMioOutIob7) \
-    value(_, Iob8, kTopEarlgreyPinmuxMioOutIob8) \
-    value(_, Iob9, kTopEarlgreyPinmuxMioOutIob9) \
-    value(_, Iob10, kTopEarlgreyPinmuxMioOutIob10) \
-    value(_, Iob11, kTopEarlgreyPinmuxMioOutIob11) \
-    value(_, Iob12, kTopEarlgreyPinmuxMioOutIob12) \
-    value(_, Ioc0, kTopEarlgreyPinmuxMioOutIoc0) \
-    value(_, Ioc1, kTopEarlgreyPinmuxMioOutIoc1) \
-    value(_, Ioc2, kTopEarlgreyPinmuxMioOutIoc2) \
-    value(_, Ioc3, kTopEarlgreyPinmuxMioOutIoc3) \
-    value(_, Ioc4, kTopEarlgreyPinmuxMioOutIoc4) \
-    value(_, Ioc5, kTopEarlgreyPinmuxMioOutIoc5) \
-    value(_, Ioc6, kTopEarlgreyPinmuxMioOutIoc6) \
-    value(_, Ioc7, kTopEarlgreyPinmuxMioOutIoc7) \
-    value(_, Ioc8, kTopEarlgreyPinmuxMioOutIoc8) \
-    value(_, Ioc9, kTopEarlgreyPinmuxMioOutIoc9) \
-    value(_, Ioc10, kTopEarlgreyPinmuxMioOutIoc10) \
-    value(_, Ioc11, kTopEarlgreyPinmuxMioOutIoc11) \
-    value(_, Ioc12, kTopEarlgreyPinmuxMioOutIoc12) \
-    value(_, Ior0, kTopEarlgreyPinmuxMioOutIor0) \
-    value(_, Ior1, kTopEarlgreyPinmuxMioOutIor1) \
-    value(_, Ior2, kTopEarlgreyPinmuxMioOutIor2) \
-    value(_, Ior3, kTopEarlgreyPinmuxMioOutIor3) \
-    value(_, Ior4, kTopEarlgreyPinmuxMioOutIor4) \
-    value(_, Ior5, kTopEarlgreyPinmuxMioOutIor5) \
-    value(_, Ior6, kTopEarlgreyPinmuxMioOutIor6) \
-    value(_, Ior7, kTopEarlgreyPinmuxMioOutIor7) \
-    value(_, Ior10, kTopEarlgreyPinmuxMioOutIor10) \
-    value(_, Ior11, kTopEarlgreyPinmuxMioOutIor11) \
-    value(_, Ior12, kTopEarlgreyPinmuxMioOutIor12) \
-    value(_, Ior13, kTopEarlgreyPinmuxMioOutIor13) \
-    value(_, End, kTopEarlgreyPinmuxMioOutLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EARLGREY_PINMUX_MIO_OUT, WITH_UNKNOWN));
+#define TOP_EGRET_PINMUX_MIO_OUT(_, value) \
+    value(_, Ioa0, kTopEgretPinmuxMioOutIoa0) \
+    value(_, Ioa1, kTopEgretPinmuxMioOutIoa1) \
+    value(_, Ioa2, kTopEgretPinmuxMioOutIoa2) \
+    value(_, Ioa3, kTopEgretPinmuxMioOutIoa3) \
+    value(_, Ioa4, kTopEgretPinmuxMioOutIoa4) \
+    value(_, Ioa5, kTopEgretPinmuxMioOutIoa5) \
+    value(_, Ioa6, kTopEgretPinmuxMioOutIoa6) \
+    value(_, Ioa7, kTopEgretPinmuxMioOutIoa7) \
+    value(_, Ioa8, kTopEgretPinmuxMioOutIoa8) \
+    value(_, Iob0, kTopEgretPinmuxMioOutIob0) \
+    value(_, Iob1, kTopEgretPinmuxMioOutIob1) \
+    value(_, Iob2, kTopEgretPinmuxMioOutIob2) \
+    value(_, Iob3, kTopEgretPinmuxMioOutIob3) \
+    value(_, Iob4, kTopEgretPinmuxMioOutIob4) \
+    value(_, Iob5, kTopEgretPinmuxMioOutIob5) \
+    value(_, Iob6, kTopEgretPinmuxMioOutIob6) \
+    value(_, Iob7, kTopEgretPinmuxMioOutIob7) \
+    value(_, Iob8, kTopEgretPinmuxMioOutIob8) \
+    value(_, Iob9, kTopEgretPinmuxMioOutIob9) \
+    value(_, Iob10, kTopEgretPinmuxMioOutIob10) \
+    value(_, Iob11, kTopEgretPinmuxMioOutIob11) \
+    value(_, Iob12, kTopEgretPinmuxMioOutIob12) \
+    value(_, Ioc0, kTopEgretPinmuxMioOutIoc0) \
+    value(_, Ioc1, kTopEgretPinmuxMioOutIoc1) \
+    value(_, Ioc2, kTopEgretPinmuxMioOutIoc2) \
+    value(_, Ioc3, kTopEgretPinmuxMioOutIoc3) \
+    value(_, Ioc4, kTopEgretPinmuxMioOutIoc4) \
+    value(_, Ioc5, kTopEgretPinmuxMioOutIoc5) \
+    value(_, Ioc6, kTopEgretPinmuxMioOutIoc6) \
+    value(_, Ioc7, kTopEgretPinmuxMioOutIoc7) \
+    value(_, Ioc8, kTopEgretPinmuxMioOutIoc8) \
+    value(_, Ioc9, kTopEgretPinmuxMioOutIoc9) \
+    value(_, Ioc10, kTopEgretPinmuxMioOutIoc10) \
+    value(_, Ioc11, kTopEgretPinmuxMioOutIoc11) \
+    value(_, Ioc12, kTopEgretPinmuxMioOutIoc12) \
+    value(_, Ior0, kTopEgretPinmuxMioOutIor0) \
+    value(_, Ior1, kTopEgretPinmuxMioOutIor1) \
+    value(_, Ior2, kTopEgretPinmuxMioOutIor2) \
+    value(_, Ior3, kTopEgretPinmuxMioOutIor3) \
+    value(_, Ior4, kTopEgretPinmuxMioOutIor4) \
+    value(_, Ior5, kTopEgretPinmuxMioOutIor5) \
+    value(_, Ior6, kTopEgretPinmuxMioOutIor6) \
+    value(_, Ior7, kTopEgretPinmuxMioOutIor7) \
+    value(_, Ior10, kTopEgretPinmuxMioOutIor10) \
+    value(_, Ior11, kTopEgretPinmuxMioOutIor11) \
+    value(_, Ior12, kTopEgretPinmuxMioOutIor12) \
+    value(_, Ior13, kTopEgretPinmuxMioOutIor13) \
+    value(_, End, kTopEgretPinmuxMioOutLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EGRET_PINMUX_MIO_OUT, WITH_UNKNOWN));
 
-#define TOP_EARLGREY_PINMUX_OUTSEL(_, value) \
-    value(_, ConstantZero, kTopEarlgreyPinmuxOutselConstantZero) \
-    value(_, ConstantOne, kTopEarlgreyPinmuxOutselConstantOne) \
-    value(_, ConstantHighZ, kTopEarlgreyPinmuxOutselConstantHighZ) \
-    value(_, GpioGpio0, kTopEarlgreyPinmuxOutselGpioGpio0) \
-    value(_, GpioGpio1, kTopEarlgreyPinmuxOutselGpioGpio1) \
-    value(_, GpioGpio2, kTopEarlgreyPinmuxOutselGpioGpio2) \
-    value(_, GpioGpio3, kTopEarlgreyPinmuxOutselGpioGpio3) \
-    value(_, GpioGpio4, kTopEarlgreyPinmuxOutselGpioGpio4) \
-    value(_, GpioGpio5, kTopEarlgreyPinmuxOutselGpioGpio5) \
-    value(_, GpioGpio6, kTopEarlgreyPinmuxOutselGpioGpio6) \
-    value(_, GpioGpio7, kTopEarlgreyPinmuxOutselGpioGpio7) \
-    value(_, GpioGpio8, kTopEarlgreyPinmuxOutselGpioGpio8) \
-    value(_, GpioGpio9, kTopEarlgreyPinmuxOutselGpioGpio9) \
-    value(_, GpioGpio10, kTopEarlgreyPinmuxOutselGpioGpio10) \
-    value(_, GpioGpio11, kTopEarlgreyPinmuxOutselGpioGpio11) \
-    value(_, GpioGpio12, kTopEarlgreyPinmuxOutselGpioGpio12) \
-    value(_, GpioGpio13, kTopEarlgreyPinmuxOutselGpioGpio13) \
-    value(_, GpioGpio14, kTopEarlgreyPinmuxOutselGpioGpio14) \
-    value(_, GpioGpio15, kTopEarlgreyPinmuxOutselGpioGpio15) \
-    value(_, GpioGpio16, kTopEarlgreyPinmuxOutselGpioGpio16) \
-    value(_, GpioGpio17, kTopEarlgreyPinmuxOutselGpioGpio17) \
-    value(_, GpioGpio18, kTopEarlgreyPinmuxOutselGpioGpio18) \
-    value(_, GpioGpio19, kTopEarlgreyPinmuxOutselGpioGpio19) \
-    value(_, GpioGpio20, kTopEarlgreyPinmuxOutselGpioGpio20) \
-    value(_, GpioGpio21, kTopEarlgreyPinmuxOutselGpioGpio21) \
-    value(_, GpioGpio22, kTopEarlgreyPinmuxOutselGpioGpio22) \
-    value(_, GpioGpio23, kTopEarlgreyPinmuxOutselGpioGpio23) \
-    value(_, GpioGpio24, kTopEarlgreyPinmuxOutselGpioGpio24) \
-    value(_, GpioGpio25, kTopEarlgreyPinmuxOutselGpioGpio25) \
-    value(_, GpioGpio26, kTopEarlgreyPinmuxOutselGpioGpio26) \
-    value(_, GpioGpio27, kTopEarlgreyPinmuxOutselGpioGpio27) \
-    value(_, GpioGpio28, kTopEarlgreyPinmuxOutselGpioGpio28) \
-    value(_, GpioGpio29, kTopEarlgreyPinmuxOutselGpioGpio29) \
-    value(_, GpioGpio30, kTopEarlgreyPinmuxOutselGpioGpio30) \
-    value(_, GpioGpio31, kTopEarlgreyPinmuxOutselGpioGpio31) \
-    value(_, I2c0Sda, kTopEarlgreyPinmuxOutselI2c0Sda) \
-    value(_, I2c0Scl, kTopEarlgreyPinmuxOutselI2c0Scl) \
-    value(_, I2c1Sda, kTopEarlgreyPinmuxOutselI2c1Sda) \
-    value(_, I2c1Scl, kTopEarlgreyPinmuxOutselI2c1Scl) \
-    value(_, I2c2Sda, kTopEarlgreyPinmuxOutselI2c2Sda) \
-    value(_, I2c2Scl, kTopEarlgreyPinmuxOutselI2c2Scl) \
-    value(_, SpiHost1Sd0, kTopEarlgreyPinmuxOutselSpiHost1Sd0) \
-    value(_, SpiHost1Sd1, kTopEarlgreyPinmuxOutselSpiHost1Sd1) \
-    value(_, SpiHost1Sd2, kTopEarlgreyPinmuxOutselSpiHost1Sd2) \
-    value(_, SpiHost1Sd3, kTopEarlgreyPinmuxOutselSpiHost1Sd3) \
-    value(_, Uart0Tx, kTopEarlgreyPinmuxOutselUart0Tx) \
-    value(_, Uart1Tx, kTopEarlgreyPinmuxOutselUart1Tx) \
-    value(_, Uart2Tx, kTopEarlgreyPinmuxOutselUart2Tx) \
-    value(_, Uart3Tx, kTopEarlgreyPinmuxOutselUart3Tx) \
-    value(_, PattgenPda0Tx, kTopEarlgreyPinmuxOutselPattgenPda0Tx) \
-    value(_, PattgenPcl0Tx, kTopEarlgreyPinmuxOutselPattgenPcl0Tx) \
-    value(_, PattgenPda1Tx, kTopEarlgreyPinmuxOutselPattgenPda1Tx) \
-    value(_, PattgenPcl1Tx, kTopEarlgreyPinmuxOutselPattgenPcl1Tx) \
-    value(_, SpiHost1Sck, kTopEarlgreyPinmuxOutselSpiHost1Sck) \
-    value(_, SpiHost1Csb, kTopEarlgreyPinmuxOutselSpiHost1Csb) \
-    value(_, FlashMacroWrapperTdo, kTopEarlgreyPinmuxOutselFlashMacroWrapperTdo) \
-    value(_, SensorCtrlAstDebugOut0, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut0) \
-    value(_, SensorCtrlAstDebugOut1, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut1) \
-    value(_, SensorCtrlAstDebugOut2, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut2) \
-    value(_, SensorCtrlAstDebugOut3, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut3) \
-    value(_, SensorCtrlAstDebugOut4, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut4) \
-    value(_, SensorCtrlAstDebugOut5, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut5) \
-    value(_, SensorCtrlAstDebugOut6, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut6) \
-    value(_, SensorCtrlAstDebugOut7, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut7) \
-    value(_, SensorCtrlAstDebugOut8, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut8) \
-    value(_, PwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm0) \
-    value(_, PwmAonPwm1, kTopEarlgreyPinmuxOutselPwmAonPwm1) \
-    value(_, PwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm2) \
-    value(_, PwmAonPwm3, kTopEarlgreyPinmuxOutselPwmAonPwm3) \
-    value(_, PwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm4) \
-    value(_, PwmAonPwm5, kTopEarlgreyPinmuxOutselPwmAonPwm5) \
-    value(_, OtpMacroTest0, kTopEarlgreyPinmuxOutselOtpMacroTest0) \
-    value(_, SysrstCtrlAonBatDisable, kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable) \
-    value(_, SysrstCtrlAonKey0Out, kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out) \
-    value(_, SysrstCtrlAonKey1Out, kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out) \
-    value(_, SysrstCtrlAonKey2Out, kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out) \
-    value(_, SysrstCtrlAonPwrbOut, kTopEarlgreyPinmuxOutselSysrstCtrlAonPwrbOut) \
-    value(_, SysrstCtrlAonZ3Wakeup, kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup) \
-    value(_, End, kTopEarlgreyPinmuxOutselLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_EARLGREY_PINMUX_OUTSEL, WITH_UNKNOWN));
+#define TOP_EGRET_PINMUX_OUTSEL(_, value) \
+    value(_, ConstantZero, kTopEgretPinmuxOutselConstantZero) \
+    value(_, ConstantOne, kTopEgretPinmuxOutselConstantOne) \
+    value(_, ConstantHighZ, kTopEgretPinmuxOutselConstantHighZ) \
+    value(_, GpioGpio0, kTopEgretPinmuxOutselGpioGpio0) \
+    value(_, GpioGpio1, kTopEgretPinmuxOutselGpioGpio1) \
+    value(_, GpioGpio2, kTopEgretPinmuxOutselGpioGpio2) \
+    value(_, GpioGpio3, kTopEgretPinmuxOutselGpioGpio3) \
+    value(_, GpioGpio4, kTopEgretPinmuxOutselGpioGpio4) \
+    value(_, GpioGpio5, kTopEgretPinmuxOutselGpioGpio5) \
+    value(_, GpioGpio6, kTopEgretPinmuxOutselGpioGpio6) \
+    value(_, GpioGpio7, kTopEgretPinmuxOutselGpioGpio7) \
+    value(_, GpioGpio8, kTopEgretPinmuxOutselGpioGpio8) \
+    value(_, GpioGpio9, kTopEgretPinmuxOutselGpioGpio9) \
+    value(_, GpioGpio10, kTopEgretPinmuxOutselGpioGpio10) \
+    value(_, GpioGpio11, kTopEgretPinmuxOutselGpioGpio11) \
+    value(_, GpioGpio12, kTopEgretPinmuxOutselGpioGpio12) \
+    value(_, GpioGpio13, kTopEgretPinmuxOutselGpioGpio13) \
+    value(_, GpioGpio14, kTopEgretPinmuxOutselGpioGpio14) \
+    value(_, GpioGpio15, kTopEgretPinmuxOutselGpioGpio15) \
+    value(_, GpioGpio16, kTopEgretPinmuxOutselGpioGpio16) \
+    value(_, GpioGpio17, kTopEgretPinmuxOutselGpioGpio17) \
+    value(_, GpioGpio18, kTopEgretPinmuxOutselGpioGpio18) \
+    value(_, GpioGpio19, kTopEgretPinmuxOutselGpioGpio19) \
+    value(_, GpioGpio20, kTopEgretPinmuxOutselGpioGpio20) \
+    value(_, GpioGpio21, kTopEgretPinmuxOutselGpioGpio21) \
+    value(_, GpioGpio22, kTopEgretPinmuxOutselGpioGpio22) \
+    value(_, GpioGpio23, kTopEgretPinmuxOutselGpioGpio23) \
+    value(_, GpioGpio24, kTopEgretPinmuxOutselGpioGpio24) \
+    value(_, GpioGpio25, kTopEgretPinmuxOutselGpioGpio25) \
+    value(_, GpioGpio26, kTopEgretPinmuxOutselGpioGpio26) \
+    value(_, GpioGpio27, kTopEgretPinmuxOutselGpioGpio27) \
+    value(_, GpioGpio28, kTopEgretPinmuxOutselGpioGpio28) \
+    value(_, GpioGpio29, kTopEgretPinmuxOutselGpioGpio29) \
+    value(_, GpioGpio30, kTopEgretPinmuxOutselGpioGpio30) \
+    value(_, GpioGpio31, kTopEgretPinmuxOutselGpioGpio31) \
+    value(_, I2c0Sda, kTopEgretPinmuxOutselI2c0Sda) \
+    value(_, I2c0Scl, kTopEgretPinmuxOutselI2c0Scl) \
+    value(_, I2c1Sda, kTopEgretPinmuxOutselI2c1Sda) \
+    value(_, I2c1Scl, kTopEgretPinmuxOutselI2c1Scl) \
+    value(_, I2c2Sda, kTopEgretPinmuxOutselI2c2Sda) \
+    value(_, I2c2Scl, kTopEgretPinmuxOutselI2c2Scl) \
+    value(_, SpiHost1Sd0, kTopEgretPinmuxOutselSpiHost1Sd0) \
+    value(_, SpiHost1Sd1, kTopEgretPinmuxOutselSpiHost1Sd1) \
+    value(_, SpiHost1Sd2, kTopEgretPinmuxOutselSpiHost1Sd2) \
+    value(_, SpiHost1Sd3, kTopEgretPinmuxOutselSpiHost1Sd3) \
+    value(_, Uart0Tx, kTopEgretPinmuxOutselUart0Tx) \
+    value(_, Uart1Tx, kTopEgretPinmuxOutselUart1Tx) \
+    value(_, Uart2Tx, kTopEgretPinmuxOutselUart2Tx) \
+    value(_, Uart3Tx, kTopEgretPinmuxOutselUart3Tx) \
+    value(_, PattgenPda0Tx, kTopEgretPinmuxOutselPattgenPda0Tx) \
+    value(_, PattgenPcl0Tx, kTopEgretPinmuxOutselPattgenPcl0Tx) \
+    value(_, PattgenPda1Tx, kTopEgretPinmuxOutselPattgenPda1Tx) \
+    value(_, PattgenPcl1Tx, kTopEgretPinmuxOutselPattgenPcl1Tx) \
+    value(_, SpiHost1Sck, kTopEgretPinmuxOutselSpiHost1Sck) \
+    value(_, SpiHost1Csb, kTopEgretPinmuxOutselSpiHost1Csb) \
+    value(_, FlashMacroWrapperTdo, kTopEgretPinmuxOutselFlashMacroWrapperTdo) \
+    value(_, SensorCtrlAstDebugOut0, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut0) \
+    value(_, SensorCtrlAstDebugOut1, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut1) \
+    value(_, SensorCtrlAstDebugOut2, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut2) \
+    value(_, SensorCtrlAstDebugOut3, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut3) \
+    value(_, SensorCtrlAstDebugOut4, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut4) \
+    value(_, SensorCtrlAstDebugOut5, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut5) \
+    value(_, SensorCtrlAstDebugOut6, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut6) \
+    value(_, SensorCtrlAstDebugOut7, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut7) \
+    value(_, SensorCtrlAstDebugOut8, kTopEgretPinmuxOutselSensorCtrlAonAstDebugOut8) \
+    value(_, PwmAonPwm0, kTopEgretPinmuxOutselPwmAonPwm0) \
+    value(_, PwmAonPwm1, kTopEgretPinmuxOutselPwmAonPwm1) \
+    value(_, PwmAonPwm2, kTopEgretPinmuxOutselPwmAonPwm2) \
+    value(_, PwmAonPwm3, kTopEgretPinmuxOutselPwmAonPwm3) \
+    value(_, PwmAonPwm4, kTopEgretPinmuxOutselPwmAonPwm4) \
+    value(_, PwmAonPwm5, kTopEgretPinmuxOutselPwmAonPwm5) \
+    value(_, OtpMacroTest0, kTopEgretPinmuxOutselOtpMacroTest0) \
+    value(_, SysrstCtrlAonBatDisable, kTopEgretPinmuxOutselSysrstCtrlAonBatDisable) \
+    value(_, SysrstCtrlAonKey0Out, kTopEgretPinmuxOutselSysrstCtrlAonKey0Out) \
+    value(_, SysrstCtrlAonKey1Out, kTopEgretPinmuxOutselSysrstCtrlAonKey1Out) \
+    value(_, SysrstCtrlAonKey2Out, kTopEgretPinmuxOutselSysrstCtrlAonKey2Out) \
+    value(_, SysrstCtrlAonPwrbOut, kTopEgretPinmuxOutselSysrstCtrlAonPwrbOut) \
+    value(_, SysrstCtrlAonZ3Wakeup, kTopEgretPinmuxOutselSysrstCtrlAonZ3Wakeup) \
+    value(_, End, kTopEgretPinmuxOutselLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_EGRET_PINMUX_OUTSEL, WITH_UNKNOWN));
 
-#define TOP_EARLGREY_DIRECT_PADS(_, value) \
-    value(_, UsbdevUsbDp, kTopEarlgreyDirectPadsUsbdevUsbDp) \
-    value(_, UsbdevUsbDn, kTopEarlgreyDirectPadsUsbdevUsbDn) \
-    value(_, SpiHost0Sd0, kTopEarlgreyDirectPadsSpiHost0Sd0) \
-    value(_, SpiHost0Sd1, kTopEarlgreyDirectPadsSpiHost0Sd1) \
-    value(_, SpiHost0Sd2, kTopEarlgreyDirectPadsSpiHost0Sd2) \
-    value(_, SpiHost0Sd3, kTopEarlgreyDirectPadsSpiHost0Sd3) \
-    value(_, SpiDeviceSd0, kTopEarlgreyDirectPadsSpiDeviceSd0) \
-    value(_, SpiDeviceSd1, kTopEarlgreyDirectPadsSpiDeviceSd1) \
-    value(_, SpiDeviceSd2, kTopEarlgreyDirectPadsSpiDeviceSd2) \
-    value(_, SpiDeviceSd3, kTopEarlgreyDirectPadsSpiDeviceSd3) \
-    value(_, SysrstCtrlAonEcRstL, kTopEarlgreyDirectPadsSysrstCtrlAonEcRstL) \
-    value(_, SysrstCtrlAonFlashWpL, kTopEarlgreyDirectPadsSysrstCtrlAonFlashWpL) \
-    value(_, SpiDeviceSck, kTopEarlgreyDirectPadsSpiDeviceSck) \
-    value(_, SpiDeviceCsb, kTopEarlgreyDirectPadsSpiDeviceCsb) \
-    value(_, SpiHost0Sck, kTopEarlgreyDirectPadsSpiHost0Sck) \
-    value(_, SpiHost0Csb, kTopEarlgreyDirectPadsSpiHost0Csb) \
-    value(_, End, kTopEarlgreyDirectPadsLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(DirectPads, direct_pads_t, TOP_EARLGREY_DIRECT_PADS, WITH_UNKNOWN));
+#define TOP_EGRET_DIRECT_PADS(_, value) \
+    value(_, UsbdevUsbDp, kTopEgretDirectPadsUsbdevUsbDp) \
+    value(_, UsbdevUsbDn, kTopEgretDirectPadsUsbdevUsbDn) \
+    value(_, SpiHost0Sd0, kTopEgretDirectPadsSpiHost0Sd0) \
+    value(_, SpiHost0Sd1, kTopEgretDirectPadsSpiHost0Sd1) \
+    value(_, SpiHost0Sd2, kTopEgretDirectPadsSpiHost0Sd2) \
+    value(_, SpiHost0Sd3, kTopEgretDirectPadsSpiHost0Sd3) \
+    value(_, SpiDeviceSd0, kTopEgretDirectPadsSpiDeviceSd0) \
+    value(_, SpiDeviceSd1, kTopEgretDirectPadsSpiDeviceSd1) \
+    value(_, SpiDeviceSd2, kTopEgretDirectPadsSpiDeviceSd2) \
+    value(_, SpiDeviceSd3, kTopEgretDirectPadsSpiDeviceSd3) \
+    value(_, SysrstCtrlAonEcRstL, kTopEgretDirectPadsSysrstCtrlAonEcRstL) \
+    value(_, SysrstCtrlAonFlashWpL, kTopEgretDirectPadsSysrstCtrlAonFlashWpL) \
+    value(_, SpiDeviceSck, kTopEgretDirectPadsSpiDeviceSck) \
+    value(_, SpiDeviceCsb, kTopEgretDirectPadsSpiDeviceCsb) \
+    value(_, SpiHost0Sck, kTopEgretDirectPadsSpiHost0Sck) \
+    value(_, SpiHost0Csb, kTopEgretDirectPadsSpiHost0Csb) \
+    value(_, End, kTopEgretDirectPadsLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(DirectPads, direct_pads_t, TOP_EGRET_DIRECT_PADS, WITH_UNKNOWN));
 
-#define TOP_EARLGREY_MUXED_PADS(_, value) \
-    value(_, Ioa0, kTopEarlgreyMuxedPadsIoa0) \
-    value(_, Ioa1, kTopEarlgreyMuxedPadsIoa1) \
-    value(_, Ioa2, kTopEarlgreyMuxedPadsIoa2) \
-    value(_, Ioa3, kTopEarlgreyMuxedPadsIoa3) \
-    value(_, Ioa4, kTopEarlgreyMuxedPadsIoa4) \
-    value(_, Ioa5, kTopEarlgreyMuxedPadsIoa5) \
-    value(_, Ioa6, kTopEarlgreyMuxedPadsIoa6) \
-    value(_, Ioa7, kTopEarlgreyMuxedPadsIoa7) \
-    value(_, Ioa8, kTopEarlgreyMuxedPadsIoa8) \
-    value(_, Iob0, kTopEarlgreyMuxedPadsIob0) \
-    value(_, Iob1, kTopEarlgreyMuxedPadsIob1) \
-    value(_, Iob2, kTopEarlgreyMuxedPadsIob2) \
-    value(_, Iob3, kTopEarlgreyMuxedPadsIob3) \
-    value(_, Iob4, kTopEarlgreyMuxedPadsIob4) \
-    value(_, Iob5, kTopEarlgreyMuxedPadsIob5) \
-    value(_, Iob6, kTopEarlgreyMuxedPadsIob6) \
-    value(_, Iob7, kTopEarlgreyMuxedPadsIob7) \
-    value(_, Iob8, kTopEarlgreyMuxedPadsIob8) \
-    value(_, Iob9, kTopEarlgreyMuxedPadsIob9) \
-    value(_, Iob10, kTopEarlgreyMuxedPadsIob10) \
-    value(_, Iob11, kTopEarlgreyMuxedPadsIob11) \
-    value(_, Iob12, kTopEarlgreyMuxedPadsIob12) \
-    value(_, Ioc0, kTopEarlgreyMuxedPadsIoc0) \
-    value(_, Ioc1, kTopEarlgreyMuxedPadsIoc1) \
-    value(_, Ioc2, kTopEarlgreyMuxedPadsIoc2) \
-    value(_, Ioc3, kTopEarlgreyMuxedPadsIoc3) \
-    value(_, Ioc4, kTopEarlgreyMuxedPadsIoc4) \
-    value(_, Ioc5, kTopEarlgreyMuxedPadsIoc5) \
-    value(_, Ioc6, kTopEarlgreyMuxedPadsIoc6) \
-    value(_, Ioc7, kTopEarlgreyMuxedPadsIoc7) \
-    value(_, Ioc8, kTopEarlgreyMuxedPadsIoc8) \
-    value(_, Ioc9, kTopEarlgreyMuxedPadsIoc9) \
-    value(_, Ioc10, kTopEarlgreyMuxedPadsIoc10) \
-    value(_, Ioc11, kTopEarlgreyMuxedPadsIoc11) \
-    value(_, Ioc12, kTopEarlgreyMuxedPadsIoc12) \
-    value(_, Ior0, kTopEarlgreyMuxedPadsIor0) \
-    value(_, Ior1, kTopEarlgreyMuxedPadsIor1) \
-    value(_, Ior2, kTopEarlgreyMuxedPadsIor2) \
-    value(_, Ior3, kTopEarlgreyMuxedPadsIor3) \
-    value(_, Ior4, kTopEarlgreyMuxedPadsIor4) \
-    value(_, Ior5, kTopEarlgreyMuxedPadsIor5) \
-    value(_, Ior6, kTopEarlgreyMuxedPadsIor6) \
-    value(_, Ior7, kTopEarlgreyMuxedPadsIor7) \
-    value(_, Ior10, kTopEarlgreyMuxedPadsIor10) \
-    value(_, Ior11, kTopEarlgreyMuxedPadsIor11) \
-    value(_, Ior12, kTopEarlgreyMuxedPadsIor12) \
-    value(_, Ior13, kTopEarlgreyMuxedPadsIor13) \
-    value(_, End, kTopEarlgreyMuxedPadsLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(MuxedPads, muxed_pads_t, TOP_EARLGREY_MUXED_PADS, WITH_UNKNOWN));
+#define TOP_EGRET_MUXED_PADS(_, value) \
+    value(_, Ioa0, kTopEgretMuxedPadsIoa0) \
+    value(_, Ioa1, kTopEgretMuxedPadsIoa1) \
+    value(_, Ioa2, kTopEgretMuxedPadsIoa2) \
+    value(_, Ioa3, kTopEgretMuxedPadsIoa3) \
+    value(_, Ioa4, kTopEgretMuxedPadsIoa4) \
+    value(_, Ioa5, kTopEgretMuxedPadsIoa5) \
+    value(_, Ioa6, kTopEgretMuxedPadsIoa6) \
+    value(_, Ioa7, kTopEgretMuxedPadsIoa7) \
+    value(_, Ioa8, kTopEgretMuxedPadsIoa8) \
+    value(_, Iob0, kTopEgretMuxedPadsIob0) \
+    value(_, Iob1, kTopEgretMuxedPadsIob1) \
+    value(_, Iob2, kTopEgretMuxedPadsIob2) \
+    value(_, Iob3, kTopEgretMuxedPadsIob3) \
+    value(_, Iob4, kTopEgretMuxedPadsIob4) \
+    value(_, Iob5, kTopEgretMuxedPadsIob5) \
+    value(_, Iob6, kTopEgretMuxedPadsIob6) \
+    value(_, Iob7, kTopEgretMuxedPadsIob7) \
+    value(_, Iob8, kTopEgretMuxedPadsIob8) \
+    value(_, Iob9, kTopEgretMuxedPadsIob9) \
+    value(_, Iob10, kTopEgretMuxedPadsIob10) \
+    value(_, Iob11, kTopEgretMuxedPadsIob11) \
+    value(_, Iob12, kTopEgretMuxedPadsIob12) \
+    value(_, Ioc0, kTopEgretMuxedPadsIoc0) \
+    value(_, Ioc1, kTopEgretMuxedPadsIoc1) \
+    value(_, Ioc2, kTopEgretMuxedPadsIoc2) \
+    value(_, Ioc3, kTopEgretMuxedPadsIoc3) \
+    value(_, Ioc4, kTopEgretMuxedPadsIoc4) \
+    value(_, Ioc5, kTopEgretMuxedPadsIoc5) \
+    value(_, Ioc6, kTopEgretMuxedPadsIoc6) \
+    value(_, Ioc7, kTopEgretMuxedPadsIoc7) \
+    value(_, Ioc8, kTopEgretMuxedPadsIoc8) \
+    value(_, Ioc9, kTopEgretMuxedPadsIoc9) \
+    value(_, Ioc10, kTopEgretMuxedPadsIoc10) \
+    value(_, Ioc11, kTopEgretMuxedPadsIoc11) \
+    value(_, Ioc12, kTopEgretMuxedPadsIoc12) \
+    value(_, Ior0, kTopEgretMuxedPadsIor0) \
+    value(_, Ior1, kTopEgretMuxedPadsIor1) \
+    value(_, Ior2, kTopEgretMuxedPadsIor2) \
+    value(_, Ior3, kTopEgretMuxedPadsIor3) \
+    value(_, Ior4, kTopEgretMuxedPadsIor4) \
+    value(_, Ior5, kTopEgretMuxedPadsIor5) \
+    value(_, Ior6, kTopEgretMuxedPadsIor6) \
+    value(_, Ior7, kTopEgretMuxedPadsIor7) \
+    value(_, Ior10, kTopEgretMuxedPadsIor10) \
+    value(_, Ior11, kTopEgretMuxedPadsIor11) \
+    value(_, Ior12, kTopEgretMuxedPadsIor12) \
+    value(_, Ior13, kTopEgretMuxedPadsIor13) \
+    value(_, End, kTopEgretMuxedPadsLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(MuxedPads, muxed_pads_t, TOP_EGRET_MUXED_PADS, WITH_UNKNOWN));
 
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 
-#define TOP_DARJEELING_PINMUX_PERIPHERAL_IN(_, value) \
-    value(_, SocProxySocGpi12, kTopDarjeelingPinmuxPeripheralInSocProxySocGpi12) \
-    value(_, SocProxySocGpi13, kTopDarjeelingPinmuxPeripheralInSocProxySocGpi13) \
-    value(_, SocProxySocGpi14, kTopDarjeelingPinmuxPeripheralInSocProxySocGpi14) \
-    value(_, SocProxySocGpi15, kTopDarjeelingPinmuxPeripheralInSocProxySocGpi15) \
-    value(_, End, kTopDarjeelingPinmuxPeripheralInLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(PinmuxPeripheralIn, pinmux_peripheral_in_t, TOP_DARJEELING_PINMUX_PERIPHERAL_IN, WITH_UNKNOWN));
+#define TOP_DRAGONFLY_PINMUX_PERIPHERAL_IN(_, value) \
+    value(_, SocProxySocGpi12, kTopDragonflyPinmuxPeripheralInSocProxySocGpi12) \
+    value(_, SocProxySocGpi13, kTopDragonflyPinmuxPeripheralInSocProxySocGpi13) \
+    value(_, SocProxySocGpi14, kTopDragonflyPinmuxPeripheralInSocProxySocGpi14) \
+    value(_, SocProxySocGpi15, kTopDragonflyPinmuxPeripheralInSocProxySocGpi15) \
+    value(_, End, kTopDragonflyPinmuxPeripheralInLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(PinmuxPeripheralIn, pinmux_peripheral_in_t, TOP_DRAGONFLY_PINMUX_PERIPHERAL_IN, WITH_UNKNOWN));
 
-#define TOP_DARJEELING_PINMUX_INSEL(_, value) \
-    value(_, ConstantZero, kTopDarjeelingPinmuxInselConstantZero) \
-    value(_, ConstantOne, kTopDarjeelingPinmuxInselConstantOne) \
-    value(_, Mio0, kTopDarjeelingPinmuxInselMio0) \
-    value(_, Mio1, kTopDarjeelingPinmuxInselMio1) \
-    value(_, Mio2, kTopDarjeelingPinmuxInselMio2) \
-    value(_, Mio3, kTopDarjeelingPinmuxInselMio3) \
-    value(_, Mio4, kTopDarjeelingPinmuxInselMio4) \
-    value(_, Mio5, kTopDarjeelingPinmuxInselMio5) \
-    value(_, Mio6, kTopDarjeelingPinmuxInselMio6) \
-    value(_, Mio7, kTopDarjeelingPinmuxInselMio7) \
-    value(_, Mio8, kTopDarjeelingPinmuxInselMio8) \
-    value(_, Mio9, kTopDarjeelingPinmuxInselMio9) \
-    value(_, Mio10, kTopDarjeelingPinmuxInselMio10) \
-    value(_, Mio11, kTopDarjeelingPinmuxInselMio11) \
-    value(_, End, kTopDarjeelingPinmuxInselLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(PinmuxInsel, pinmux_insel_t, TOP_DARJEELING_PINMUX_INSEL, WITH_UNKNOWN));
+#define TOP_DRAGONFLY_PINMUX_INSEL(_, value) \
+    value(_, ConstantZero, kTopDragonflyPinmuxInselConstantZero) \
+    value(_, ConstantOne, kTopDragonflyPinmuxInselConstantOne) \
+    value(_, Mio0, kTopDragonflyPinmuxInselMio0) \
+    value(_, Mio1, kTopDragonflyPinmuxInselMio1) \
+    value(_, Mio2, kTopDragonflyPinmuxInselMio2) \
+    value(_, Mio3, kTopDragonflyPinmuxInselMio3) \
+    value(_, Mio4, kTopDragonflyPinmuxInselMio4) \
+    value(_, Mio5, kTopDragonflyPinmuxInselMio5) \
+    value(_, Mio6, kTopDragonflyPinmuxInselMio6) \
+    value(_, Mio7, kTopDragonflyPinmuxInselMio7) \
+    value(_, Mio8, kTopDragonflyPinmuxInselMio8) \
+    value(_, Mio9, kTopDragonflyPinmuxInselMio9) \
+    value(_, Mio10, kTopDragonflyPinmuxInselMio10) \
+    value(_, Mio11, kTopDragonflyPinmuxInselMio11) \
+    value(_, End, kTopDragonflyPinmuxInselLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(PinmuxInsel, pinmux_insel_t, TOP_DRAGONFLY_PINMUX_INSEL, WITH_UNKNOWN));
 
-#define TOP_DARJEELING_PINMUX_MIO_OUT(_, value) \
-    value(_, Mio0, kTopDarjeelingPinmuxMioOutMio0) \
-    value(_, Mio1, kTopDarjeelingPinmuxMioOutMio1) \
-    value(_, Mio2, kTopDarjeelingPinmuxMioOutMio2) \
-    value(_, Mio3, kTopDarjeelingPinmuxMioOutMio3) \
-    value(_, Mio4, kTopDarjeelingPinmuxMioOutMio4) \
-    value(_, Mio5, kTopDarjeelingPinmuxMioOutMio5) \
-    value(_, Mio6, kTopDarjeelingPinmuxMioOutMio6) \
-    value(_, Mio7, kTopDarjeelingPinmuxMioOutMio7) \
-    value(_, Mio8, kTopDarjeelingPinmuxMioOutMio8) \
-    value(_, Mio9, kTopDarjeelingPinmuxMioOutMio9) \
-    value(_, Mio10, kTopDarjeelingPinmuxMioOutMio10) \
-    value(_, Mio11, kTopDarjeelingPinmuxMioOutMio11) \
-    value(_, End, kTopDarjeelingPinmuxMioOutLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_DARJEELING_PINMUX_MIO_OUT, WITH_UNKNOWN));
+#define TOP_DRAGONFLY_PINMUX_MIO_OUT(_, value) \
+    value(_, Mio0, kTopDragonflyPinmuxMioOutMio0) \
+    value(_, Mio1, kTopDragonflyPinmuxMioOutMio1) \
+    value(_, Mio2, kTopDragonflyPinmuxMioOutMio2) \
+    value(_, Mio3, kTopDragonflyPinmuxMioOutMio3) \
+    value(_, Mio4, kTopDragonflyPinmuxMioOutMio4) \
+    value(_, Mio5, kTopDragonflyPinmuxMioOutMio5) \
+    value(_, Mio6, kTopDragonflyPinmuxMioOutMio6) \
+    value(_, Mio7, kTopDragonflyPinmuxMioOutMio7) \
+    value(_, Mio8, kTopDragonflyPinmuxMioOutMio8) \
+    value(_, Mio9, kTopDragonflyPinmuxMioOutMio9) \
+    value(_, Mio10, kTopDragonflyPinmuxMioOutMio10) \
+    value(_, Mio11, kTopDragonflyPinmuxMioOutMio11) \
+    value(_, End, kTopDragonflyPinmuxMioOutLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_DRAGONFLY_PINMUX_MIO_OUT, WITH_UNKNOWN));
 
-#define TOP_DARJEELING_PINMUX_OUTSEL(_, value) \
-    value(_, ConstantZero, kTopDarjeelingPinmuxOutselConstantZero) \
-    value(_, ConstantOne, kTopDarjeelingPinmuxOutselConstantOne) \
-    value(_, ConstantHighZ, kTopDarjeelingPinmuxOutselConstantHighZ) \
-    value(_, lSocProxySocGpo12, kTopDarjeelingPinmuxOutselSocProxySocGpo12) \
-    value(_, SocProxySocGpo13, kTopDarjeelingPinmuxOutselSocProxySocGpo13) \
-    value(_, SocProxySocGpo14, kTopDarjeelingPinmuxOutselSocProxySocGpo14) \
-    value(_, SocProxySocGpo15, kTopDarjeelingPinmuxOutselSocProxySocGpo15) \
-    value(_, OtpMacroTest0, kTopDarjeelingPinmuxOutselOtpMacroTest0) \
-    value(_, End, kTopDarjeelingPinmuxOutselLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_DARJEELING_PINMUX_OUTSEL, WITH_UNKNOWN));
+#define TOP_DRAGONFLY_PINMUX_OUTSEL(_, value) \
+    value(_, ConstantZero, kTopDragonflyPinmuxOutselConstantZero) \
+    value(_, ConstantOne, kTopDragonflyPinmuxOutselConstantOne) \
+    value(_, ConstantHighZ, kTopDragonflyPinmuxOutselConstantHighZ) \
+    value(_, lSocProxySocGpo12, kTopDragonflyPinmuxOutselSocProxySocGpo12) \
+    value(_, SocProxySocGpo13, kTopDragonflyPinmuxOutselSocProxySocGpo13) \
+    value(_, SocProxySocGpo14, kTopDragonflyPinmuxOutselSocProxySocGpo14) \
+    value(_, SocProxySocGpo15, kTopDragonflyPinmuxOutselSocProxySocGpo15) \
+    value(_, OtpMacroTest0, kTopDragonflyPinmuxOutselOtpMacroTest0) \
+    value(_, End, kTopDragonflyPinmuxOutselLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_DRAGONFLY_PINMUX_OUTSEL, WITH_UNKNOWN));
 
-#define TOP_DARJEELING_DIRECT_PADS(_, value) \
-    value(_, SpiHost0Sd0, kTopDarjeelingDirectPadsSpiHost0Sd0) \
-    value(_, SpiHost0Sd1, kTopDarjeelingDirectPadsSpiHost0Sd1) \
-    value(_, SpiHost0Sd2, kTopDarjeelingDirectPadsSpiHost0Sd2) \
-    value(_, SpiHost0Sd3, kTopDarjeelingDirectPadsSpiHost0Sd3) \
-    value(_, SpiDeviceSd0, kTopDarjeelingDirectPadsSpiDeviceSd0) \
-    value(_, SpiDeviceSd1, kTopDarjeelingDirectPadsSpiDeviceSd1) \
-    value(_, SpiDeviceSd2, kTopDarjeelingDirectPadsSpiDeviceSd2) \
-    value(_, SpiDeviceSd3, kTopDarjeelingDirectPadsSpiDeviceSd3) \
-    value(_, I2c0Scl, kTopDarjeelingDirectPadsI2c0Scl) \
-    value(_, I2c0Sda, kTopDarjeelingDirectPadsI2c0Sda) \
-    value(_, GpioGpio0, kTopDarjeelingDirectPadsGpioGpio0) \
-    value(_, GpioGpio1, kTopDarjeelingDirectPadsGpioGpio1) \
-    value(_, GpioGpio2, kTopDarjeelingDirectPadsGpioGpio2) \
-    value(_, GpioGpio3, kTopDarjeelingDirectPadsGpioGpio3) \
-    value(_, GpioGpio4, kTopDarjeelingDirectPadsGpioGpio4) \
-    value(_, GpioGpio5, kTopDarjeelingDirectPadsGpioGpio5) \
-    value(_, GpioGpio6, kTopDarjeelingDirectPadsGpioGpio6) \
-    value(_, GpioGpio7, kTopDarjeelingDirectPadsGpioGpio7) \
-    value(_, GpioGpio8, kTopDarjeelingDirectPadsGpioGpio8) \
-    value(_, GpioGpio9, kTopDarjeelingDirectPadsGpioGpio9) \
-    value(_, GpioGpio10, kTopDarjeelingDirectPadsGpioGpio10) \
-    value(_, GpioGpio11, kTopDarjeelingDirectPadsGpioGpio11) \
-    value(_, GpioGpio12, kTopDarjeelingDirectPadsGpioGpio12) \
-    value(_, GpioGpio13, kTopDarjeelingDirectPadsGpioGpio13) \
-    value(_, GpioGpio14, kTopDarjeelingDirectPadsGpioGpio14) \
-    value(_, GpioGpio15, kTopDarjeelingDirectPadsGpioGpio15) \
-    value(_, GpioGpio16, kTopDarjeelingDirectPadsGpioGpio16) \
-    value(_, GpioGpio17, kTopDarjeelingDirectPadsGpioGpio17) \
-    value(_, GpioGpio18, kTopDarjeelingDirectPadsGpioGpio18) \
-    value(_, GpioGpio19, kTopDarjeelingDirectPadsGpioGpio19) \
-    value(_, GpioGpio20, kTopDarjeelingDirectPadsGpioGpio20) \
-    value(_, GpioGpio21, kTopDarjeelingDirectPadsGpioGpio21) \
-    value(_, GpioGpio22, kTopDarjeelingDirectPadsGpioGpio22) \
-    value(_, GpioGpio23, kTopDarjeelingDirectPadsGpioGpio23) \
-    value(_, GpioGpio24, kTopDarjeelingDirectPadsGpioGpio24) \
-    value(_, GpioGpio25, kTopDarjeelingDirectPadsGpioGpio25) \
-    value(_, GpioGpio26, kTopDarjeelingDirectPadsGpioGpio26) \
-    value(_, GpioGpio27, kTopDarjeelingDirectPadsGpioGpio27) \
-    value(_, GpioGpio28, kTopDarjeelingDirectPadsGpioGpio28) \
-    value(_, GpioGpio29, kTopDarjeelingDirectPadsGpioGpio29) \
-    value(_, GpioGpio30, kTopDarjeelingDirectPadsGpioGpio30) \
-    value(_, GpioGpio31, kTopDarjeelingDirectPadsGpioGpio31) \
-    value(_, SpiDeviceSck, kTopDarjeelingDirectPadsSpiDeviceSck) \
-    value(_, SpiDeviceCsb, kTopDarjeelingDirectPadsSpiDeviceCsb) \
-    value(_, SpiDeviceTpmCsb, kTopDarjeelingDirectPadsSpiDeviceTpmCsb) \
-    value(_, Uart0Rx, kTopDarjeelingDirectPadsUart0Rx) \
-    value(_, SocProxySocGpi0, kTopDarjeelingDirectPadsSocProxySocGpi0) \
-    value(_, SocProxySocGpi1, kTopDarjeelingDirectPadsSocProxySocGpi1) \
-    value(_, SocProxySocGpi2, kTopDarjeelingDirectPadsSocProxySocGpi2) \
-    value(_, SocProxySocGpi3, kTopDarjeelingDirectPadsSocProxySocGpi3) \
-    value(_, SocProxySocGpi4, kTopDarjeelingDirectPadsSocProxySocGpi4) \
-    value(_, SocProxySocGpi5, kTopDarjeelingDirectPadsSocProxySocGpi5) \
-    value(_, SocProxySocGpi6, kTopDarjeelingDirectPadsSocProxySocGpi6) \
-    value(_, SocProxySocGpi7, kTopDarjeelingDirectPadsSocProxySocGpi7) \
-    value(_, SocProxySocGpi8, kTopDarjeelingDirectPadsSocProxySocGpi8) \
-    value(_, SocProxySocGpi9, kTopDarjeelingDirectPadsSocProxySocGpi9) \
-    value(_, SocProxySocGpi10, kTopDarjeelingDirectPadsSocProxySocGpi10) \
-    value(_, SocProxySocGpi11, kTopDarjeelingDirectPadsSocProxySocGpi11) \
-    value(_, SpiHost0Sck, kTopDarjeelingDirectPadsSpiHost0Sck) \
-    value(_, SpiHost0Csb, kTopDarjeelingDirectPadsSpiHost0Csb) \
-    value(_, Uart0Tx, kTopDarjeelingDirectPadsUart0Tx) \
-    value(_, SocProxySocGpo0, kTopDarjeelingDirectPadsSocProxySocGpo0) \
-    value(_, SocProxySocGpo1, kTopDarjeelingDirectPadsSocProxySocGpo1) \
-    value(_, SocProxySocGpo2, kTopDarjeelingDirectPadsSocProxySocGpo2) \
-    value(_, SocProxySocGpo3, kTopDarjeelingDirectPadsSocProxySocGpo3) \
-    value(_, SocProxySocGpo4, kTopDarjeelingDirectPadsSocProxySocGpo4) \
-    value(_, SocProxySocGpo5, kTopDarjeelingDirectPadsSocProxySocGpo5) \
-    value(_, SocProxySocGpo6, kTopDarjeelingDirectPadsSocProxySocGpo6) \
-    value(_, SocProxySocGpo7, kTopDarjeelingDirectPadsSocProxySocGpo7) \
-    value(_, SocProxySocGpo8, kTopDarjeelingDirectPadsSocProxySocGpo8) \
-    value(_, SocProxySocGpo9, kTopDarjeelingDirectPadsSocProxySocGpo9) \
-    value(_, SocProxySocGpo10, kTopDarjeelingDirectPadsSocProxySocGpo10) \
-    value(_, SocProxySocGpo11, kTopDarjeelingDirectPadsSocProxySocGpo11) \
-    value(_, End, kTopDarjeelingDirectPadsLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(DirectPads, direct_pads_t, TOP_DARJEELING_DIRECT_PADS, WITH_UNKNOWN));
+#define TOP_DRAGONFLY_DIRECT_PADS(_, value) \
+    value(_, SpiHost0Sd0, kTopDragonflyDirectPadsSpiHost0Sd0) \
+    value(_, SpiHost0Sd1, kTopDragonflyDirectPadsSpiHost0Sd1) \
+    value(_, SpiHost0Sd2, kTopDragonflyDirectPadsSpiHost0Sd2) \
+    value(_, SpiHost0Sd3, kTopDragonflyDirectPadsSpiHost0Sd3) \
+    value(_, SpiDeviceSd0, kTopDragonflyDirectPadsSpiDeviceSd0) \
+    value(_, SpiDeviceSd1, kTopDragonflyDirectPadsSpiDeviceSd1) \
+    value(_, SpiDeviceSd2, kTopDragonflyDirectPadsSpiDeviceSd2) \
+    value(_, SpiDeviceSd3, kTopDragonflyDirectPadsSpiDeviceSd3) \
+    value(_, I2c0Scl, kTopDragonflyDirectPadsI2c0Scl) \
+    value(_, I2c0Sda, kTopDragonflyDirectPadsI2c0Sda) \
+    value(_, GpioGpio0, kTopDragonflyDirectPadsGpioGpio0) \
+    value(_, GpioGpio1, kTopDragonflyDirectPadsGpioGpio1) \
+    value(_, GpioGpio2, kTopDragonflyDirectPadsGpioGpio2) \
+    value(_, GpioGpio3, kTopDragonflyDirectPadsGpioGpio3) \
+    value(_, GpioGpio4, kTopDragonflyDirectPadsGpioGpio4) \
+    value(_, GpioGpio5, kTopDragonflyDirectPadsGpioGpio5) \
+    value(_, GpioGpio6, kTopDragonflyDirectPadsGpioGpio6) \
+    value(_, GpioGpio7, kTopDragonflyDirectPadsGpioGpio7) \
+    value(_, GpioGpio8, kTopDragonflyDirectPadsGpioGpio8) \
+    value(_, GpioGpio9, kTopDragonflyDirectPadsGpioGpio9) \
+    value(_, GpioGpio10, kTopDragonflyDirectPadsGpioGpio10) \
+    value(_, GpioGpio11, kTopDragonflyDirectPadsGpioGpio11) \
+    value(_, GpioGpio12, kTopDragonflyDirectPadsGpioGpio12) \
+    value(_, GpioGpio13, kTopDragonflyDirectPadsGpioGpio13) \
+    value(_, GpioGpio14, kTopDragonflyDirectPadsGpioGpio14) \
+    value(_, GpioGpio15, kTopDragonflyDirectPadsGpioGpio15) \
+    value(_, GpioGpio16, kTopDragonflyDirectPadsGpioGpio16) \
+    value(_, GpioGpio17, kTopDragonflyDirectPadsGpioGpio17) \
+    value(_, GpioGpio18, kTopDragonflyDirectPadsGpioGpio18) \
+    value(_, GpioGpio19, kTopDragonflyDirectPadsGpioGpio19) \
+    value(_, GpioGpio20, kTopDragonflyDirectPadsGpioGpio20) \
+    value(_, GpioGpio21, kTopDragonflyDirectPadsGpioGpio21) \
+    value(_, GpioGpio22, kTopDragonflyDirectPadsGpioGpio22) \
+    value(_, GpioGpio23, kTopDragonflyDirectPadsGpioGpio23) \
+    value(_, GpioGpio24, kTopDragonflyDirectPadsGpioGpio24) \
+    value(_, GpioGpio25, kTopDragonflyDirectPadsGpioGpio25) \
+    value(_, GpioGpio26, kTopDragonflyDirectPadsGpioGpio26) \
+    value(_, GpioGpio27, kTopDragonflyDirectPadsGpioGpio27) \
+    value(_, GpioGpio28, kTopDragonflyDirectPadsGpioGpio28) \
+    value(_, GpioGpio29, kTopDragonflyDirectPadsGpioGpio29) \
+    value(_, GpioGpio30, kTopDragonflyDirectPadsGpioGpio30) \
+    value(_, GpioGpio31, kTopDragonflyDirectPadsGpioGpio31) \
+    value(_, SpiDeviceSck, kTopDragonflyDirectPadsSpiDeviceSck) \
+    value(_, SpiDeviceCsb, kTopDragonflyDirectPadsSpiDeviceCsb) \
+    value(_, SpiDeviceTpmCsb, kTopDragonflyDirectPadsSpiDeviceTpmCsb) \
+    value(_, Uart0Rx, kTopDragonflyDirectPadsUart0Rx) \
+    value(_, SocProxySocGpi0, kTopDragonflyDirectPadsSocProxySocGpi0) \
+    value(_, SocProxySocGpi1, kTopDragonflyDirectPadsSocProxySocGpi1) \
+    value(_, SocProxySocGpi2, kTopDragonflyDirectPadsSocProxySocGpi2) \
+    value(_, SocProxySocGpi3, kTopDragonflyDirectPadsSocProxySocGpi3) \
+    value(_, SocProxySocGpi4, kTopDragonflyDirectPadsSocProxySocGpi4) \
+    value(_, SocProxySocGpi5, kTopDragonflyDirectPadsSocProxySocGpi5) \
+    value(_, SocProxySocGpi6, kTopDragonflyDirectPadsSocProxySocGpi6) \
+    value(_, SocProxySocGpi7, kTopDragonflyDirectPadsSocProxySocGpi7) \
+    value(_, SocProxySocGpi8, kTopDragonflyDirectPadsSocProxySocGpi8) \
+    value(_, SocProxySocGpi9, kTopDragonflyDirectPadsSocProxySocGpi9) \
+    value(_, SocProxySocGpi10, kTopDragonflyDirectPadsSocProxySocGpi10) \
+    value(_, SocProxySocGpi11, kTopDragonflyDirectPadsSocProxySocGpi11) \
+    value(_, SpiHost0Sck, kTopDragonflyDirectPadsSpiHost0Sck) \
+    value(_, SpiHost0Csb, kTopDragonflyDirectPadsSpiHost0Csb) \
+    value(_, Uart0Tx, kTopDragonflyDirectPadsUart0Tx) \
+    value(_, SocProxySocGpo0, kTopDragonflyDirectPadsSocProxySocGpo0) \
+    value(_, SocProxySocGpo1, kTopDragonflyDirectPadsSocProxySocGpo1) \
+    value(_, SocProxySocGpo2, kTopDragonflyDirectPadsSocProxySocGpo2) \
+    value(_, SocProxySocGpo3, kTopDragonflyDirectPadsSocProxySocGpo3) \
+    value(_, SocProxySocGpo4, kTopDragonflyDirectPadsSocProxySocGpo4) \
+    value(_, SocProxySocGpo5, kTopDragonflyDirectPadsSocProxySocGpo5) \
+    value(_, SocProxySocGpo6, kTopDragonflyDirectPadsSocProxySocGpo6) \
+    value(_, SocProxySocGpo7, kTopDragonflyDirectPadsSocProxySocGpo7) \
+    value(_, SocProxySocGpo8, kTopDragonflyDirectPadsSocProxySocGpo8) \
+    value(_, SocProxySocGpo9, kTopDragonflyDirectPadsSocProxySocGpo9) \
+    value(_, SocProxySocGpo10, kTopDragonflyDirectPadsSocProxySocGpo10) \
+    value(_, SocProxySocGpo11, kTopDragonflyDirectPadsSocProxySocGpo11) \
+    value(_, End, kTopDragonflyDirectPadsLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(DirectPads, direct_pads_t, TOP_DRAGONFLY_DIRECT_PADS, WITH_UNKNOWN));
 
-#define TOP_DARJEELING_MUXED_PADS(_, value) \
-    value(_, Mio0, kTopDarjeelingMuxedPadsMio0) \
-    value(_, Mio1, kTopDarjeelingMuxedPadsMio1) \
-    value(_, Mio2, kTopDarjeelingMuxedPadsMio2) \
-    value(_, Mio3, kTopDarjeelingMuxedPadsMio3) \
-    value(_, Mio4, kTopDarjeelingMuxedPadsMio4) \
-    value(_, Mio5, kTopDarjeelingMuxedPadsMio5) \
-    value(_, Mio6, kTopDarjeelingMuxedPadsMio6) \
-    value(_, Mio7, kTopDarjeelingMuxedPadsMio7) \
-    value(_, Mio8, kTopDarjeelingMuxedPadsMio8) \
-    value(_, Mio9, kTopDarjeelingMuxedPadsMio9) \
-    value(_, Mio10, kTopDarjeelingMuxedPadsMio10) \
-    value(_, Mio11, kTopDarjeelingMuxedPadsMio11) \
-    value(_, End, kTopDarjeelingMuxedPadsLast + 1)
-C_ONLY(UJSON_SERDE_ENUM(MuxedPads, muxed_pads_t, TOP_DARJEELING_MUXED_PADS, WITH_UNKNOWN));
+#define TOP_DRAGONFLY_MUXED_PADS(_, value) \
+    value(_, Mio0, kTopDragonflyMuxedPadsMio0) \
+    value(_, Mio1, kTopDragonflyMuxedPadsMio1) \
+    value(_, Mio2, kTopDragonflyMuxedPadsMio2) \
+    value(_, Mio3, kTopDragonflyMuxedPadsMio3) \
+    value(_, Mio4, kTopDragonflyMuxedPadsMio4) \
+    value(_, Mio5, kTopDragonflyMuxedPadsMio5) \
+    value(_, Mio6, kTopDragonflyMuxedPadsMio6) \
+    value(_, Mio7, kTopDragonflyMuxedPadsMio7) \
+    value(_, Mio8, kTopDragonflyMuxedPadsMio8) \
+    value(_, Mio9, kTopDragonflyMuxedPadsMio9) \
+    value(_, Mio10, kTopDragonflyMuxedPadsMio10) \
+    value(_, Mio11, kTopDragonflyMuxedPadsMio11) \
+    value(_, End, kTopDragonflyMuxedPadsLast + 1)
+C_ONLY(UJSON_SERDE_ENUM(MuxedPads, muxed_pads_t, TOP_DRAGONFLY_MUXED_PADS, WITH_UNKNOWN));
 #endif
 
 // clang-format on

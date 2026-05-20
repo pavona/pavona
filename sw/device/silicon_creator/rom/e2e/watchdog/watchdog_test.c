@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
 #include "hw/top/aon_timer_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -19,7 +19,7 @@ enum {
   /**
    * Base address of the aon_timer registers.
    */
-  kBase = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR,
+  kBase = TOP_EGRET_AON_TIMER_AON_BASE_ADDR,
 };
 
 #ifdef EXPECT_WATCHDOG_DISABLED

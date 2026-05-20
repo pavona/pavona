@@ -52,7 +52,7 @@ A protocol for authentication devices to communicate with a host computer.
 
 ## D
 
-* __Darjeeling__: A reference top-level system that can be integrated into a larger SOC.
+* __Dragonfly__: A reference top-level system that can be integrated into a larger SOC.
 
 * __DD__: Digital Design.
 
@@ -66,10 +66,10 @@ A protocol for authentication devices to communicate with a host computer.
 
 * __E2E__: End-to-End.
 
-#### Earlgrey
+#### Egret
 
 A reference top-level system intended for implementation as a discrete chip.
-See [Earlgrey](../hw/top_earlgrey/README.md) for a the full specification.
+See [Egret](../hw/top_egret/README.md) for a the full specification.
 
 * __EDA__: Electronic Design Automation.
 

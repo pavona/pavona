@@ -18,15 +18,15 @@ This means that:
 
 The values accepted by this setting are the names of the tops configured with the build system.
 This includes, but is not limited to:
-- `earlgrey`
-- `darjeeling`
-- `englishbreakfast`
+- `egret`
+- `dragonfly`
+- `scafi_deprecated`
 
-The default value of this setting is `earlgrey`, meaning that unless explicitely specified, bazel will compile for Earlgrey.
+The default value of this setting is `egret`, meaning that unless explicitely specified, bazel will compile for Egret.
 
-For example, to build the UART headers for Darjeeling, use:
+For example, to build the UART headers for Dragonfly, use:
 ```console
-./bazelisk.sh build --//hw/top=darjeeling //hw/top:uart_c_regs
+./bazelisk.sh build --//hw/top=dragonfly //hw/top:uart_c_regs
 ```
 
 ## Bazel targets
@@ -36,8 +36,8 @@ The `//hw/top` package provides a number of important targets that expose inform
 ### Top library, linker script and defines
 
 Each top's libraries is exposed as
-- `//hw/top:top_lib`which is an alias to the actual top's library (e.g. `top_earlgrey.h`).
-- `//hw/top:top_ld` which is an alias to the actual top's linker script (e.g. `top_earlgrey_memory.ld`).
+- `//hw/top:top_lib`which is an alias to the actual top's library (e.g. `top_egret.h`).
+- `//hw/top:top_ld` which is an alias to the actual top's linker script (e.g. `top_egret_memory.ld`).
 
 Furthermore, adding `//hw/top:top_lib` or `//hw/top:top_ld` as a dependency of a C library or linker script will automatically make the following defines available:
 - `OPENTITAN_IS_<TOPNAME>`: this define can be used for conditional compilation.
@@ -80,23 +80,23 @@ See [./doc/top_desc.md] for more details.
 ### Compatibility annotations
 
 Bazel provides a mechanism under which targets can be [annotated](https://bazel.build/extending/platforms) to only be available when certain configuration settings are met.
-This prevents accidental errors such as using an Earlgrey header when compiling for Darjeeling.
+This prevents accidental errors such as using an Egret header when compiling for Dragonfly.
 The `//hw/top` package makes extensive usage of this feature.
 Generally speaking, if a target does not make sense for a given `//hw/top` value, then it will be marked as [`@platforms//:incompatible`](https://bazel.build/extending/platforms#expressive-constraints) which will result in build errors.
 
-For example, if we try to build Earlgrey headers for darjeeling:
+For example, if we try to build Egret headers for dragonfly:
 ```console
-$ ./bazelisk.sh build //hw/top_earlgrey/sw/autogen:top_earlgrey --//hw/top=darjeeling
-ERROR: Analysis of target '//hw/top_earlgrey/sw/autogen:top_earlgrey' failed; build aborted: Target //hw/top_earlgrey/sw/autogen:top_earlgrey is incompatible and cannot be built, but was explicitly requested.
+$ ./bazelisk.sh build //hw/top_egret/sw/autogen:top_egret --//hw/top=dragonfly
+ERROR: Analysis of target '//hw/top_egret/sw/autogen:top_egret' failed; build aborted: Target //hw/top_egret/sw/autogen:top_egret is incompatible and cannot be built, but was explicitly requested.
 Dependency chain:
-    //hw/top_earlgrey/sw/autogen:top_earlgrey (927671)   <-- target platform (@@platforms//host:host) didn't satisfy constraint @@platforms//:incompatible
+    //hw/top_egret/sw/autogen:top_egret (927671)   <-- target platform (@@platforms//host:host) didn't satisfy constraint @@platforms//:incompatible
 ```
 
 Note that this mechanism applies transitively, which has powerful consequences.
-For example, Darjeeling does not have a USB module.
-Let's look at what happens if try to compile to usbdev DIF for darjeeling:
+For example, Dragonfly does not have a USB module.
+Let's look at what happens if try to compile to usbdev DIF for dragonfly:
 ```console
-$ ./bazelisk.sh build //sw/device/lib/dif:usbdev --//hw/top=darjeeling
+$ ./bazelisk.sh build //sw/device/lib/dif:usbdev --//hw/top=dragonfly
 ERROR: Analysis of target '//sw/device/lib/dif:usbdev' failed; build aborted: Target //sw/device/lib/dif:usbdev is incompatible and cannot be built, but was explicitly requested.
 Dependency chain:
     //sw/device/lib/dif:usbdev (927671)
@@ -104,7 +104,7 @@ Dependency chain:
     //sw/device/lib/dif/autogen:usbdev_src (927671)
     //sw/device/lib/dif/autogen:usbdev_gen (927671)   <-- target platform (@@platforms//host:host) didn't satisfy constraint @@platforms//:incompatible
 ```
-As we can see, this DIF indirectly depends on generated top-specific code which does make sense on a platform without a usbdev and therefore bazel will not let us compile this target for Darjeeling.
+As we can see, this DIF indirectly depends on generated top-specific code which does make sense on a platform without a usbdev and therefore bazel will not let us compile this target for Dragonfly.
 
 You can create your own annotations by using the macros described in the next section.
 
@@ -133,13 +133,13 @@ cc_library(
 )
 ```
 - `pavona_select_top(values, default)` provides a way to conditionally do something depending on the top.
-For example if we want to create an alias on another library on Earlgrey but a different one on Darjeeling and Englishbreakfast, we could do:
+For example if we want to create an alias on another library on Egret but a different one on Dragonfly and Scafi_Deprecated, we could do:
 ```python
 alias(
     name = "my_alias",
     actual = pavona_select_top({
-    "earlgrey": "//something:earlgrey",
-    ("englishbreakfast", "darjeeling"): "//something:dj_eb",
+    "egret": "//something:egret",
+    ("scafi_deprecated", "dragonfly"): "//something:df_eb",
     }, "//something:default")
 )
 ```
@@ -149,7 +149,7 @@ Example:
 ```python
 cc_library(
     name = "my_library",
-    target_compatible_with = pavona_require_top("darjeeling"),
+    target_compatible_with = pavona_require_top("dragonfly"),
 )
 ```
 
@@ -166,11 +166,11 @@ To access those files, you must perform the following two operations:
 - build the file(s) using the correct `//hw/top` configuration,
 - query the location of the output, **also** using the same `//hw/top` configuration.
 
-For example to query the UART C headers for Darjeeling, run:
+For example to query the UART C headers for Dragonfly, run:
 ```console
-$ ./bazelisk.sh build --//hw/top=darjeeling //hw/top:uart_c_regs
-# NOTE that both commands use the same --//hw/top=darjeeling setting!
-$ ./bazelisk.sh cquery --//hw/top=darjeeling //hw/top:uart_c_regs
+$ ./bazelisk.sh build --//hw/top=dragonfly //hw/top:uart_c_regs
+# NOTE that both commands use the same --//hw/top=dragonfly setting!
+$ ./bazelisk.sh cquery --//hw/top=dragonfly //hw/top:uart_c_regs
 bazel-out/k8-fastbuild/bin/hw/top/uart_regs.h
 ```
 You can now open `bazel-out/k8-fastbuild/bin/hw/top/uart_regs.h` (path may vary between machines).
@@ -183,8 +183,8 @@ The DT headers and source have individual targets for technical reasons and shou
 
 For example:
 ```console
-$ ./bazelisk.sh build --//hw/top=darjeeling //hw/top/dt:uart_hdr
-# NOTE that both commands use the same --//hw/top=darjeeling setting!
-$ ./bazelisk.sh cquery --//hw/top=darjeeling //hw/top/dt:uart_hdr
+$ ./bazelisk.sh build --//hw/top=dragonfly //hw/top/dt:uart_hdr
+# NOTE that both commands use the same --//hw/top=dragonfly setting!
+$ ./bazelisk.sh cquery --//hw/top=dragonfly //hw/top/dt:uart_hdr
 bazel-out/k8-fastbuild/bin/hw/top/uart_regs.h
 ```

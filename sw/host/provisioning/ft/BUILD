@@ -5,7 +5,7 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_SKUS",
+    "EGRET_SKUS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -35,13 +35,13 @@ package(default_visibility = ["//visibility:public"])
             "@lowrisc_serde_annotate//serde_annotate",
         ],
     )
-    for sku in EARLGREY_SKUS.keys()
+    for sku in EGRET_SKUS.keys()
 ]
 
 filegroup(
     name = "ft_all",
     srcs = [
         ":ft_{}".format(sku)
-        for sku in EARLGREY_SKUS.keys()
+        for sku in EGRET_SKUS.keys()
     ],
 )

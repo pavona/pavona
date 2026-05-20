@@ -16,7 +16,7 @@
 
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/spi_device_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace spi_device_unittest {
 namespace {
@@ -25,7 +25,7 @@ using ::testing::SetArgPointee;
 
 class SpiDeviceTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR;
+  uint32_t base_ = TOP_EGRET_SPI_DEVICE_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
   rom_test::MockLifecycle lifecycle_;
 };

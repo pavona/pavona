@@ -18,7 +18,7 @@ pub struct Config {
     pub pullup_pins: Vec<&'static str>,
 }
 
-/// Configure earlgrey and debugger pins.
+/// Configure egret and debugger pins.
 pub fn setup_pins(transport: &TransportWrapper, config: &Config) -> Result<()> {
     log::info!("Configuring transport GPIOs");
     // Since the EC reset and flash WP pins are open drain, configure those hyperdebug pins as

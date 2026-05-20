@@ -10,7 +10,7 @@ Each test is divided into components:
    As a result, we run some tests with several different OTP images to increase coverage of ROM execution paths.
    There is more information in the documentation for the OTP layout.
    That documentation is specialized for the different tops.
-   For an example, see earlgrey's [OTP memory map](../../../../../hw/top_earlgrey/ip_autogen/otp_ctrl/README.md#direct-access-memory-map).
+   For an example, see egret's [OTP memory map](../../../../../hw/top_egret/ip_autogen/otp_ctrl/README.md#direct-access-memory-map).
  - **FPGA bitstream**, Hardware implementation of a device synthesized for the FPGA built by `bazel` and `vivado`.
  - **Device test firmware**, a C program (built by bazel to run on the device) that is loaded into flash, and booted by the ROM stage. It checks the HW registers and/or memory configurations performed by the ROM and relays information to the Host test software.
  - **opentitantool**, a Rust program that provides a common interface to interact with a device. `opentitantool` uses `opentitanlib` which provides the abstractions to communicate with a device.

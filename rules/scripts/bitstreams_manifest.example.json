@@ -1,10 +1,10 @@
 {
   "schema_version": 3,
   "designs": {
-    "chip_earlgrey_cw310": {
+    "chip_egret_cw310": {
       "build_id": "aabbcc",
       "bitstream": {
-        "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit",
+        "file": "lowrisc_systems_chip_egret_cw310_0.1.bit",
         "build_target": "//hw/bitstream/vivado:fpga_cw310"
       },
       "memory_map_info": {
@@ -16,14 +16,14 @@
         ]
       }
     },
-    "chip_earlgrey_cw310_hyperdebug": {
+    "chip_egret_cw310_hyperdebug": {
       "build_id": "ddeeff",
       "bitstream": {
-        "file": "chip_earlgrey_cw310_hyperdebug/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit",
+        "file": "chip_egret_cw310_hyperdebug/lowrisc_systems_chip_egret_cw310_hyperdebug_0.1.bit",
         "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug"
       },
       "memory_map_info": {
-        "file": "chip_earlgrey_cw310_hyperdebug/memories.mmi",
+        "file": "chip_egret_cw310_hyperdebug/memories.mmi",
         "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
         "memories": [
           "otp",

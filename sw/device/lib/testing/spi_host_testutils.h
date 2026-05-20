@@ -52,7 +52,7 @@ static inline status_t spi_host_testutils_is_active(dif_spi_host_t *spi_host) {
 OT_WARN_UNUSED_RESULT
 status_t spi_host_testutils_flush(dif_spi_host_t *spi_host);
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 /**
  * Connect the spi host 1 to the BoB.
  *
@@ -68,8 +68,8 @@ OT_WARN_UNUSED_RESULT
 status_t spi_host1_pinmux_connect_to_bob(const dif_pinmux_t *pinmux,
                                          dt_pad_t csb_outsel,
                                          spi_pinmux_platform_id_t platform_id);
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling only has a single SPI host
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly only has a single SPI host
 #else
 #error "spi_host_testutils does not support this top"
 #endif

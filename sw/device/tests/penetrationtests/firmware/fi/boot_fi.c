@@ -28,29 +28,29 @@
 
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/rom_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
 
 static manifest_t *get_rom_ext_manifest_a(void) {
-  return (manifest_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  return (manifest_t *)TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR;
 }
 
 static manifest_t *get_rom_ext_manifest_b(void) {
-  return (manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                        (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2));
+  return (manifest_t *)(TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
+                        (TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES / 2));
 }
 
 static manifest_t *get_firmware_manifest_a(void) {
-  return (manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+  return (manifest_t *)(TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
                         CHIP_ROM_EXT_SIZE_MAX);
 }
 
 static manifest_t *get_firmware_manifest_b(void) {
-  return (manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+  return (manifest_t *)(TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
                         CHIP_ROM_EXT_SIZE_MAX +
-                        (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2));
+                        (TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES / 2));
 }
 
 status_t handle_inactive_firmware_invalidation(ujson_t *uj) {
@@ -74,7 +74,7 @@ status_t handle_inactive_firmware_invalidation(ujson_t *uj) {
                            .erase = kMultiBitBool4False});
 
   uint32_t sig_offset = (uint32_t)&manifest->ecdsa_signature.r[0] -
-                        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+                        TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR;
 
   uint32_t zero_val = 0;
   rom_error_t err = flash_ctrl_data_write(sig_offset, 1, &zero_val);
@@ -89,7 +89,7 @@ status_t handle_inactive_firmware_invalidation(ujson_t *uj) {
 
   if (err == kErrorOk && spx_ext != NULL) {
     uint32_t spx_offset =
-        (uint32_t)&spx_ext->signature - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+        (uint32_t)&spx_ext->signature - TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR;
 
     err = flash_ctrl_data_write(spx_offset, 1, &zero_val);
 
@@ -260,7 +260,7 @@ status_t handle_boot_fi_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   return OK_STATUS();

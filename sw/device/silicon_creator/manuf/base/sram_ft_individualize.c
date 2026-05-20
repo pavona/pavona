@@ -28,7 +28,7 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top/ast_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
@@ -49,7 +49,7 @@ static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
 #ifndef ATE
 OTTF_DEFINE_TEST_CONFIG(
         .console.type = kOttfConsoleSpiDevice,
-        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.base_addr = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
         .console.test_may_clobber = false, .silence_console_prints = true,
         .console_tx_indicator.enable = true,
         .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
@@ -65,11 +65,11 @@ OTTF_DEFINE_TEST_CONFIG();
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
   return OK_STATUS();
 }
@@ -80,24 +80,24 @@ static status_t peripheral_handles_init(void) {
 static status_t configure_ate_gpio_indicators(void) {
   // IOA6 / GPIO4 is for SPI console RX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+      &pinmux, kTopEgretPinmuxMioOutIoa6,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
   // IOA5 / GPIO3 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+      &pinmux, kTopEgretPinmuxMioOutIoa5,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
   // IOA0 / GPIO2 is for error reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestError));
+      &pinmux, kTopEgretPinmuxMioOutIoa0,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinTestError));
   // IOA1 / GPIO1 is for test done reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestDone));
+      &pinmux, kTopEgretPinmuxMioOutIoa1,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinTestDone));
   // IOA4 / GPIO0 is for test start reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestStart));
+      &pinmux, kTopEgretPinmuxMioOutIoa4,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinTestStart));
   TRY(dif_gpio_output_set_enabled_all(&gpio,
                                       0x1f));       // Enable first 5 GPIOs.
   TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));  // Intialize all to 0.
@@ -134,7 +134,7 @@ static status_t patch_ast_config_value(void) {
     }
     // Write patch value.
     abs_mmio_write32(
-        TOP_EARLGREY_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),
+        TOP_EGRET_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),
         ast_patch_value);
   }
 

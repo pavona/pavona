@@ -310,6 +310,6 @@ This will create the complete dma DV testbench extended from DV lib.
 It does not instantiate any downstream agents due to absence of `-ea` switch.
 
 ```console
-$ util/uvmdvgen.py chip -e -ea uart i2c jtag -eo hw/top_earlgrey/dv
+$ util/uvmdvgen.py chip -e -ea uart i2c jtag -eo hw/top_egret/dv
 ```
 This will create the complete chip testbench DV lib and will instantiate `uart_agent`, `i2c_agent` and `jtag_agent` in the env.

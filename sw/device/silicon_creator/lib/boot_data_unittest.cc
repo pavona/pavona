@@ -15,7 +15,7 @@
 
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 bool operator==(flash_ctrl_perms_t lhs, flash_ctrl_perms_t rhs) {
   return std::memcmp(&lhs, &rhs, sizeof(flash_ctrl_perms_t)) == 0;

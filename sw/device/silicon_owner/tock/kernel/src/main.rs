@@ -17,8 +17,8 @@ use crate::hil::symmetric_encryption::AES128_BLOCK_SIZE;
 use capsules_aes_gcm::aes_gcm;
 use capsules_core::virtualizers::virtual_aes_ccm;
 use capsules_core::virtualizers::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
-use earlgrey::chip::EarlGreyDefaultPeripherals;
-use earlgrey::chip_config::EarlGreyConfig;
+use egret::chip::EgretDefaultPeripherals;
+use egret::chip_config::EgretConfig;
 use kernel::capabilities;
 use kernel::component::Component;
 use kernel::hil;
@@ -50,20 +50,19 @@ static mut PROCESSES: [Option<&'static dyn kernel::process::Process>; 4] = [None
 
 // Test access to the peripherals
 #[cfg(test)]
-static mut PERIPHERALS: Option<&'static EarlGreyDefaultPeripherals<ChipConfig>> = None;
+static mut PERIPHERALS: Option<&'static EgretDefaultPeripherals<ChipConfig>> = None;
 // Test access to board
 #[cfg(test)]
 static mut BOARD: Option<&'static kernel::Kernel> = None;
 // Test access to platform
 #[cfg(test)]
-static mut PLATFORM: Option<&'static EarlGrey> = None;
+static mut PLATFORM: Option<&'static Egret> = None;
 // Test access to main loop capability
 #[cfg(test)]
 static mut MAIN_CAP: Option<&dyn kernel::capabilities::MainLoopCapability> = None;
 // Test access to alarm
-static mut ALARM: Option<
-    &'static MuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
-> = None;
+static mut ALARM: Option<&'static MuxAlarm<'static, egret::timer::RvTimer<'static, ChipConfig>>> =
+    None;
 // Test access to TicKV
 static mut TICKV: Option<
     &capsules_extra::tickv::TicKVSystem<
@@ -80,7 +79,7 @@ static mut TICKV: Option<
 static mut AES: Option<
     &aes_gcm::Aes128Gcm<
         'static,
-        virtual_aes_ccm::VirtualAES128CCM<'static, earlgrey::aes::Aes<'static>>,
+        virtual_aes_ccm::VirtualAES128CCM<'static, egret::aes::Aes<'static>>,
     >,
 > = None;
 // Test access to SipHash
@@ -93,7 +92,7 @@ static mut RSA_HARDWARE: Option<&lowrisc::rsa::AccRsa<'static>> = None;
 static mut SHA256SOFT: Option<&capsules_extra::sha256::Sha256Software<'static>> = None;
 
 static mut CHIP: Option<
-    &'static earlgrey::chip::EarlGrey<EarlGreyDefaultPeripherals<ChipConfig>, ChipConfig>,
+    &'static egret::chip::Egret<EgretDefaultPeripherals<ChipConfig>, ChipConfig>,
 > = None;
 static mut PROCESS_PRINTER: Option<&'static kernel::process::ProcessPrinterText> = None;
 
@@ -106,7 +105,7 @@ const FAULT_RESPONSE: kernel::process::PanicFaultPolicy = kernel::process::Panic
 pub static mut STACK_MEMORY: [u8; 0x1400] = [0; 0x1400];
 
 enum ChipConfig {}
-impl EarlGreyConfig for ChipConfig {
+impl EgretConfig for ChipConfig {
     const NAME: &'static str = "fpga_cw310";
     const CPU_FREQ: u32 = 24_000_000;
     const PERIPHERAL_FREQ: u32 = 6_000_000;
@@ -116,17 +115,17 @@ impl EarlGreyConfig for ChipConfig {
 
 /// A structure representing this platform that holds references to all
 /// capsules for this platform. We've included an alarm and console.
-struct EarlGrey {
+struct Egret {
     led: &'static capsules_core::led::LedDriver<
         'static,
-        LedHigh<'static, earlgrey::gpio::GpioPin<'static>>,
+        LedHigh<'static, egret::gpio::GpioPin<'static>>,
         8,
     >,
-    gpio: &'static capsules_core::gpio::GPIO<'static, earlgrey::gpio::GpioPin<'static>>,
+    gpio: &'static capsules_core::gpio::GPIO<'static, egret::gpio::GpioPin<'static>>,
     console: &'static capsules_core::console::Console<'static>,
     alarm: &'static capsules_core::alarm::AlarmDriver<
         'static,
-        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
+        VirtualMuxAlarm<'static, egret::timer::RvTimer<'static, ChipConfig>>,
     >,
     hmac: &'static capsules_extra::hmac::HmacDriver<'static, lowrisc::hmac::Hmac<'static>, 32>,
     lldb: &'static capsules_core::low_level_debug::LowLevelDebug<
@@ -147,7 +146,7 @@ struct EarlGrey {
         'static,
         aes_gcm::Aes128Gcm<
             'static,
-            virtual_aes_ccm::VirtualAES128CCM<'static, earlgrey::aes::Aes<'static>>,
+            virtual_aes_ccm::VirtualAES128CCM<'static, egret::aes::Aes<'static>>,
         >,
     >,
     kv_driver: &'static capsules_extra::kv_driver::KVStoreDriver<
@@ -175,13 +174,13 @@ struct EarlGrey {
     syscall_filter: &'static TbfHeaderFilterDefaultAllow,
     scheduler: &'static PrioritySched,
     scheduler_timer: &'static VirtualSchedulerTimer<
-        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
+        VirtualMuxAlarm<'static, egret::timer::RvTimer<'static, ChipConfig>>,
     >,
     watchdog: &'static lowrisc::aon_timer::AonTimer,
 }
 
 /// Mapping of integer syscalls to objects that implement syscalls.
-impl SyscallDriverLookup for EarlGrey {
+impl SyscallDriverLookup for Egret {
     fn with_driver<F, R>(&self, driver_num: usize, f: F) -> R
     where
         F: FnOnce(Option<&dyn kernel::syscall::SyscallDriver>) -> R,
@@ -205,21 +204,16 @@ impl SyscallDriverLookup for EarlGrey {
 
 impl
     KernelResources<
-        earlgrey::chip::EarlGrey<
-            'static,
-            EarlGreyDefaultPeripherals<'static, ChipConfig>,
-            ChipConfig,
-        >,
-    > for EarlGrey
+        egret::chip::Egret<'static, EgretDefaultPeripherals<'static, ChipConfig>, ChipConfig>,
+    > for Egret
 {
     type SyscallDriverLookup = Self;
     type SyscallFilter = TbfHeaderFilterDefaultAllow;
     type ProcessFault = ();
     type CredentialsCheckingPolicy = ();
     type Scheduler = PrioritySched;
-    type SchedulerTimer = VirtualSchedulerTimer<
-        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
-    >;
+    type SchedulerTimer =
+        VirtualSchedulerTimer<VirtualMuxAlarm<'static, egret::timer::RvTimer<'static, ChipConfig>>>;
     type WatchDog = lowrisc::aon_timer::AonTimer;
     type ContextSwitchCallback = ();
 
@@ -251,16 +245,12 @@ impl
 
 unsafe fn setup() -> (
     &'static kernel::Kernel,
-    &'static EarlGrey,
-    &'static earlgrey::chip::EarlGrey<
-        'static,
-        EarlGreyDefaultPeripherals<'static, ChipConfig>,
-        ChipConfig,
-    >,
-    &'static EarlGreyDefaultPeripherals<'static, ChipConfig>,
+    &'static Egret,
+    &'static egret::chip::Egret<'static, EgretDefaultPeripherals<'static, ChipConfig>, ChipConfig>,
+    &'static EgretDefaultPeripherals<'static, ChipConfig>,
 ) {
     // Ibex-specific handler
-    earlgrey::chip::configure_trap_handler();
+    egret::chip::configure_trap_handler();
 
     // initialize capabilities
     let process_mgmt_cap = create_capability!(capabilities::ProcessManagementCapability);
@@ -269,8 +259,8 @@ unsafe fn setup() -> (
     let board_kernel = static_init!(kernel::Kernel, kernel::Kernel::new(&PROCESSES));
 
     let peripherals = static_init!(
-        EarlGreyDefaultPeripherals<ChipConfig>,
-        EarlGreyDefaultPeripherals::new()
+        EgretDefaultPeripherals<ChipConfig>,
+        EgretDefaultPeripherals::new()
     );
     peripherals.init();
 
@@ -289,7 +279,7 @@ unsafe fn setup() -> (
     // LEDs
     // Start with half on and half off
     let led = components::led::LedsComponent::new().finalize(components::led_component_static!(
-        LedHigh<'static, earlgrey::gpio::GpioPin>,
+        LedHigh<'static, egret::gpio::GpioPin>,
         LedHigh::new(&peripherals.gpio_port[8]),
         LedHigh::new(&peripherals.gpio_port[9]),
         LedHigh::new(&peripherals.gpio_port[10]),
@@ -304,7 +294,7 @@ unsafe fn setup() -> (
         board_kernel,
         capsules_core::gpio::DRIVER_NUM,
         components::gpio_component_helper!(
-            earlgrey::gpio::GpioPin,
+            egret::gpio::GpioPin,
             0 => &peripherals.gpio_port[0],
             1 => &peripherals.gpio_port[1],
             2 => &peripherals.gpio_port[2],
@@ -315,18 +305,18 @@ unsafe fn setup() -> (
             7 => &peripherals.gpio_port[15]
         ),
     )
-    .finalize(components::gpio_component_static!(earlgrey::gpio::GpioPin));
+    .finalize(components::gpio_component_static!(egret::gpio::GpioPin));
 
     let hardware_alarm = static_init!(
-        earlgrey::timer::RvTimer<ChipConfig>,
-        earlgrey::timer::RvTimer::new()
+        egret::timer::RvTimer<ChipConfig>,
+        egret::timer::RvTimer::new()
     );
     hardware_alarm.setup();
 
     // Create a shared virtualization mux layer on top of a single hardware
     // alarm.
     let mux_alarm = static_init!(
-        MuxAlarm<'static, earlgrey::timer::RvTimer<ChipConfig>>,
+        MuxAlarm<'static, egret::timer::RvTimer<ChipConfig>>,
         MuxAlarm::new(hardware_alarm)
     );
     hil::time::Alarm::set_alarm_client(hardware_alarm, mux_alarm);
@@ -335,13 +325,13 @@ unsafe fn setup() -> (
 
     // Alarm
     let virtual_alarm_user = static_init!(
-        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<ChipConfig>>,
+        VirtualMuxAlarm<'static, egret::timer::RvTimer<ChipConfig>>,
         VirtualMuxAlarm::new(mux_alarm)
     );
     virtual_alarm_user.setup();
 
     let scheduler_timer_virtual_alarm = static_init!(
-        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<ChipConfig>>,
+        VirtualMuxAlarm<'static, egret::timer::RvTimer<ChipConfig>>,
         VirtualMuxAlarm::new(mux_alarm)
     );
     scheduler_timer_virtual_alarm.setup();
@@ -349,7 +339,7 @@ unsafe fn setup() -> (
     let alarm = static_init!(
         capsules_core::alarm::AlarmDriver<
             'static,
-            VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<ChipConfig>>,
+            VirtualMuxAlarm<'static, egret::timer::RvTimer<ChipConfig>>,
         >,
         capsules_core::alarm::AlarmDriver::new(
             virtual_alarm_user,
@@ -359,15 +349,13 @@ unsafe fn setup() -> (
     hil::time::Alarm::set_alarm_client(virtual_alarm_user, alarm);
 
     let scheduler_timer = static_init!(
-        VirtualSchedulerTimer<
-            VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
-        >,
+        VirtualSchedulerTimer<VirtualMuxAlarm<'static, egret::timer::RvTimer<'static, ChipConfig>>>,
         VirtualSchedulerTimer::new(scheduler_timer_virtual_alarm)
     );
 
     let chip = static_init!(
-        earlgrey::chip::EarlGrey<EarlGreyDefaultPeripherals<ChipConfig>, ChipConfig>,
-        earlgrey::chip::EarlGrey::new(peripherals, hardware_alarm)
+        egret::chip::Egret<EgretDefaultPeripherals<ChipConfig>, ChipConfig>,
+        egret::chip::Egret::new(peripherals, hardware_alarm)
     );
     CHIP = Some(chip);
 
@@ -448,7 +436,7 @@ unsafe fn setup() -> (
     //     capsules_extra::usb::usb_user::DRIVER_NUM,
     //     &peripherals.usb,
     // )
-    // .finalize(components::usb_component_static!(earlgrey::usbdev::Usb));
+    // .finalize(components::usb_component_static!(egret::usbdev::Usb));
 
     // Kernel storage region, allocated with the storage_volume!
     // macro in common/utils.rs
@@ -664,21 +652,21 @@ unsafe fn setup() -> (
     const CRYPT_SIZE: usize = 7 * AES128_BLOCK_SIZE;
 
     let ccm_mux = static_init!(
-        virtual_aes_ccm::MuxAES128CCM<'static, earlgrey::aes::Aes<'static>>,
+        virtual_aes_ccm::MuxAES128CCM<'static, egret::aes::Aes<'static>>,
         virtual_aes_ccm::MuxAES128CCM::new(&peripherals.aes)
     );
     kernel::deferred_call::DeferredCallClient::register(ccm_mux);
     peripherals.aes.set_client(ccm_mux);
 
     let ccm_client = components::aes::AesVirtualComponent::new(ccm_mux).finalize(
-        components::aes_virtual_component_static!(earlgrey::aes::Aes<'static>),
+        components::aes_virtual_component_static!(egret::aes::Aes<'static>),
     );
 
     let crypt_buf2 = static_init!([u8; CRYPT_SIZE], [0x00; CRYPT_SIZE]);
     let gcm_client = static_init!(
         aes_gcm::Aes128Gcm<
             'static,
-            virtual_aes_ccm::VirtualAES128CCM<'static, earlgrey::aes::Aes<'static>>,
+            virtual_aes_ccm::VirtualAES128CCM<'static, egret::aes::Aes<'static>>,
         >,
         aes_gcm::Aes128Gcm::new(ccm_client, crypt_buf2)
     );
@@ -692,7 +680,7 @@ unsafe fn setup() -> (
     .finalize(components::aes_driver_component_static!(
         aes_gcm::Aes128Gcm<
             'static,
-            virtual_aes_ccm::VirtualAES128CCM<'static, earlgrey::aes::Aes<'static>>,
+            virtual_aes_ccm::VirtualAES128CCM<'static, egret::aes::Aes<'static>>,
         >,
     ));
 
@@ -748,9 +736,9 @@ unsafe fn setup() -> (
         .finalize(components::priority_component_static!());
     let watchdog = &peripherals.watchdog;
 
-    let earlgrey = static_init!(
-        EarlGrey,
-        EarlGrey {
+    let egret = static_init!(
+        Egret,
+        Egret {
             gpio,
             led,
             console,
@@ -836,7 +824,7 @@ unsafe fn setup() -> (
     });
     debug!("OpenTitan (downstream) initialisation complete. Entering main loop");
 
-    (board_kernel, earlgrey, chip, peripherals)
+    (board_kernel, egret, chip, peripherals)
 }
 
 /// Main function.
@@ -850,11 +838,11 @@ pub unsafe fn main() {
 
     #[cfg(not(test))]
     {
-        let (board_kernel, earlgrey, chip, _peripherals) = setup();
+        let (board_kernel, egret, chip, _peripherals) = setup();
 
         let main_loop_cap = create_capability!(capabilities::MainLoopCapability);
 
-        board_kernel.kernel_loop(earlgrey, chip, None::<&kernel::ipc::IPC<0>>, &main_loop_cap);
+        board_kernel.kernel_loop(egret, chip, None::<&kernel::ipc::IPC<0>>, &main_loop_cap);
     }
 }
 
@@ -864,10 +852,10 @@ use kernel::platform::watchdog::WatchDog;
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) {
     unsafe {
-        let (board_kernel, earlgrey, _chip, peripherals) = setup();
+        let (board_kernel, egret, _chip, peripherals) = setup();
 
         BOARD = Some(board_kernel);
-        PLATFORM = Some(&earlgrey);
+        PLATFORM = Some(&egret);
         PERIPHERALS = Some(peripherals);
         MAIN_CAP = Some(&create_capability!(capabilities::MainLoopCapability));
 

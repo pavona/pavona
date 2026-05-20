@@ -32,7 +32,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_cpu_info_enabled",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_cpu_info_enabled"],
 )
 
@@ -56,8 +56,8 @@ CPU_INFO_TESTCASES = [
         name = "cpu_info_{}_test".format(testcase["name"]),
         srcs = ["cpu_info_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = testcase["fpga"],
         local_defines = testcase["defines"],
@@ -92,7 +92,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_alert_info_enabled",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_alert_info_enabled",
         "//sw/device/silicon_creator/rom/e2e/shutdown_alert:shutdown_alert_owner_sw_cfg",
@@ -122,15 +122,15 @@ ALERT_INFO_TESTCASES = [
         name = "alert_info_{}_test".format(testcase["name"]),
         srcs = ["alert_info_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = testcase["fpga"],
         local_defines = testcase["defines"],
         deps = [
             "//hw/top:uart_c_regs",
             "//hw/top/dt",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/runtime:log",

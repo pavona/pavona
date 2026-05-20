@@ -20,10 +20,10 @@
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 #include "sw/device/lib/testing/usb_testutils_simpleserial.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 
 // These just for the '/' printout
-#define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
+#define USBDEV_BASE_ADDR TOP_EGRET_USBDEV_BASE_ADDR
 #include "hw/top/usbdev_regs.h"  // Generated.
 
 #define REG32(add) *((volatile uint32_t *)(add))
@@ -111,40 +111,40 @@ static const uint32_t kDiffXcvrMask = (1 << 9);
 static const uint32_t kUPhyMask = (1 << 10);
 
 static dif_pinmux_index_t leds[] = {
-    kTopEarlgreyPinmuxMioOutIor10,
-    kTopEarlgreyPinmuxMioOutIor11,
-    kTopEarlgreyPinmuxMioOutIor12,
-    kTopEarlgreyPinmuxMioOutIor13,
+    kTopEgretPinmuxMioOutIor10,
+    kTopEgretPinmuxMioOutIor11,
+    kTopEgretPinmuxMioOutIor12,
+    kTopEgretPinmuxMioOutIor13,
 };
 
 static dif_pinmux_index_t switches[] = {
-    kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob9,
-    kTopEarlgreyPinmuxInselIob10,
-    kTopEarlgreyPinmuxInselIor5,
+    kTopEgretPinmuxInselIob6,
+    kTopEgretPinmuxInselIob9,
+    kTopEgretPinmuxInselIob10,
+    kTopEgretPinmuxInselIor5,
 };
 
 void configure_pinmux(void) {
   pinmux_testutils_init(&pinmux);
   // Hook up some LEDs.
   for (size_t i = 0; i < ARRAYSIZE(leds); ++i) {
-    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
+    dif_pinmux_index_t gpio = kTopEgretPinmuxOutselGpioGpio0 + i;
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, leds[i], gpio));
   }
   // Hook up DIP switches.
   for (size_t i = 0; i < ARRAYSIZE(switches); ++i) {
-    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxPeripheralInGpioGpio8 + i;
+    dif_pinmux_index_t gpio = kTopEgretPinmuxPeripheralInGpioGpio8 + i;
     CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, switches[i]));
   }
 }
 
 void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
   configure_pinmux();
 
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
+  CHECK_DIF_OK(
+      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR), &uart));
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
         "kClockFreqPeripheralHz must fit in uint32_t");
@@ -160,7 +160,7 @@ void _ottf_main(void) {
   base_uart_stdout(&uart);
 
   CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+      dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x000ff));
 
@@ -181,13 +181,13 @@ void _ottf_main(void) {
            differential_xcvr, uphy);
   // Connect correct VBUS detection pin
   if (uphy) {
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-        kTopEarlgreyPinmuxInselIoc7));
+    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                         kTopEgretPinmuxPeripheralInUsbdevSense,
+                                         kTopEgretPinmuxInselIoc7));
   } else {
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-        kTopEarlgreyPinmuxInselConstantOne));
+    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                         kTopEgretPinmuxPeripheralInUsbdevSense,
+                                         kTopEgretPinmuxInselConstantOne));
   }
 
   // The TI phy always uses a differential TX interface

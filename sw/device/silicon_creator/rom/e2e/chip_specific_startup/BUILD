@@ -24,7 +24,7 @@ package(default_visibility = ["//visibility:public"])
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_{}".format(lc_state),
@@ -41,7 +41,7 @@ package(default_visibility = ["//visibility:public"])
             "//hw/top:entropy_src_c_regs",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:sensor_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:clkmgr",
             "//sw/device/lib/dif:lc_ctrl",

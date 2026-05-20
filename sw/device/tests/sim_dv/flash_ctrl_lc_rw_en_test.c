@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_flash_ctrl_state_t flash;
 static dif_keymgr_t keymgr;
@@ -165,15 +165,15 @@ static const partition_check_cfg_t kTest[] = {
  */
 static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
   CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
+      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
 }
 
 static void partition_check(const partition_check_cfg_t cfg) {

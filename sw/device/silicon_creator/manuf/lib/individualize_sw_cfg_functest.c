@@ -19,7 +19,7 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -46,10 +46,10 @@ static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR),
                       &rstmgr));
   return OK_STATUS();
 }
@@ -130,7 +130,7 @@ static status_t check_otp_sw_cfg_digest(dif_otp_ctrl_partition_t partition) {
   // Compute expected_digest.
   hmac_sha256_init();
   const unsigned char *const kOtpSwCfgWindowBase =
-      (const unsigned char *)TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+      (const unsigned char *)TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR +
       OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET;
   switch (partition) {
     case kDifOtpCtrlPartitionCreatorSwCfg:

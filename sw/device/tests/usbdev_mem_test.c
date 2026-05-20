@@ -20,10 +20,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_usbdev_autogen.h"
 
-#define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
+#define USBDEV_BASE_ADDR TOP_EGRET_USBDEV_BASE_ADDR
 
 #ifndef USBDEV_BUFFER_REG_OFFSET
 #define USBDEV_BUFFER_REG_OFFSET 0x800u

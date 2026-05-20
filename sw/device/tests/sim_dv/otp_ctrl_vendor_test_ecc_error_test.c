@@ -11,7 +11,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // This is the address that has an ecc error injected.
 static volatile const uint32_t kTestAddress = 0;
@@ -28,7 +28,7 @@ static void init_peripherals(void) {
   };
   // OTP
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
 }
 

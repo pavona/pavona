@@ -12,7 +12,7 @@ load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library
 load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_test",
     "verilator_params",
@@ -50,7 +50,7 @@ dual_cc_library(
             "//hw/top/dt",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
         ],
@@ -86,15 +86,15 @@ pavona_test(
     srcs = ["boot_data_functest.c"],
     exec_env = dicts.add(
         dicts.omit(
-            EARLGREY_TEST_ENVS,
+            EGRET_TEST_ENVS,
             # Not intended for ROM_EXT environments.
             [
-                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
-                "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+                "//hw/top_egret:fpga_cw310_sival_rom_ext",
+                "//hw/top_egret:fpga_cw340_sival_rom_ext",
             ],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     verilator = verilator_params(
@@ -104,7 +104,7 @@ pavona_test(
     ),
     deps = [
         ":boot_data",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
     ],
@@ -228,7 +228,7 @@ cc_library(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top:rstmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:multibits",
     ],
 )
@@ -236,14 +236,14 @@ cc_library(
 pavona_test(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         ":error",
         ":irq_asm",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -339,7 +339,7 @@ dual_cc_library(
 )
 
 filegroup(
-    name = "english_breakfast_test_framework_manifest_def_srcs",
+    name = "scafi_deprecated_test_framework_manifest_def_srcs",
     srcs = [
         "manifest_def.c",
         "manifest_def.h",
@@ -359,7 +359,7 @@ cc_test(
 )
 
 filegroup(
-    name = "english_breakfast_test_rom_manifest_srcs",
+    name = "scafi_deprecated_test_rom_manifest_srcs",
     srcs = [
         "manifest.c",
         "manifest.h",
@@ -471,7 +471,7 @@ cc_library(
     hdrs = ["bootstrap_fuzzer_util.h"],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -491,7 +491,7 @@ cc_library(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
 )
@@ -545,13 +545,13 @@ pavona_test(
     srcs = ["acc_boot_services_functest.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_sival": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
             # See #21706, expects keymgr state 0 so not working after ROM_EXT.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
@@ -561,7 +561,7 @@ pavona_test(
     deps = [
         ":acc_boot_services",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",

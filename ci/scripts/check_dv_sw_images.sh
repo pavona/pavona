@@ -7,6 +7,6 @@
 set -e
 
 ./ci/scripts/check_dv_sw_images.py \
-    hw/top_earlgrey/dv/chip_earlgrey_sim_cfg.hjson \
-    hw/top_earlgrey/dv/chip_rom_tests.hjson \
-    hw/top_earlgrey/dv/chip_smoketests.hjson
+    hw/top_egret/dv/chip_egret_sim_cfg.hjson \
+    hw/top_egret/dv/chip_rom_tests.hjson \
+    hw/top_egret/dv/chip_smoketests.hjson

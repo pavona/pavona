@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/hmac_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace hmac_unittest {
 namespace {
@@ -79,7 +79,7 @@ class HmacTest : public rom_test::RomTest {
     EXPECT_ABS_READ32(base_ + HMAC_DIGEST_0_REG_OFFSET, digest[7]);
   }
 
-  uint32_t base_ = TOP_EARLGREY_HMAC_BASE_ADDR;
+  uint32_t base_ = TOP_EGRET_HMAC_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
 };
 

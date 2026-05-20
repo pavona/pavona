@@ -222,7 +222,7 @@ static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
       .mode = kDifPinmuxWakeupModeAnyEdge,
       .signal_filter = false,
       .pad_type = kDifPinmuxPadKindMio,
-      .pad_select = kTopEarlgreyPinmuxInselIoa7,
+      .pad_select = kTopEgretPinmuxInselIoa7,
   };
   TRY(dif_pinmux_wakeup_detector_enable(&pinmux, 0, wakeup_cfg));
   dif_pwrmgr_domain_config_t pwrmgr_domain_cfg = 0;

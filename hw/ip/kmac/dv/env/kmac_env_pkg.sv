@@ -72,7 +72,7 @@ package kmac_env_pkg;
 
   parameter uint NUM_EDN = 1;
 
-  // Earlgrey has 4 application interfaces
+  // Egret has 4 application interfaces
   parameter app_config_t APP_CFG[kmac_app_agent_pkg::NUM_APP_INTF] =
     '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl,
       kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgACC};

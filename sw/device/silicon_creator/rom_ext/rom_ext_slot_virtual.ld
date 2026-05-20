@@ -14,7 +14,7 @@
  * to the virtual address.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE hw/top_egret/sw/autogen/top_egret_memory.ld
 
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.

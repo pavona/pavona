@@ -17,7 +17,7 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -43,10 +43,10 @@ static const uint32_t kTestDeviceId[kDeviceIdSizeIn32BitWords] = {
  * Initialize all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
   return OK_STATUS();
 }
 

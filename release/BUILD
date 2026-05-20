@@ -13,7 +13,7 @@ pkg_tar(
     srcs = [
         "//hw:package",
         "//hw/bitstream/vivado:package",
-        "//hw/top_earlgrey/data/otp:package",
+        "//hw/top_egret/data/otp:package",
         "//sw/device/examples/hello_world:package",
         "//sw/device/lib/testing/test_rom:package",
         "//sw/device/silicon_creator/rom:package",

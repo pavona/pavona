@@ -18,11 +18,11 @@ load(
 # - cw340
 # - silicon
 CRYPTOTEST_EXEC_ENVS = {
-    "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
-    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_cw340",
-    "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
+    "//hw/top_egret:fpga_cw310_test_rom": None,
+    "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
+    "//hw/top_egret:fpga_cw340_test_rom": "fpga_cw340",
+    "//hw/top_egret:fpga_cw340_sival_rom_ext": "fpga_cw340",
+    "//hw/top_egret:silicon_owner_sival_rom_ext": "silicon",
 }
 
 FIRMWARE_DEPS = [

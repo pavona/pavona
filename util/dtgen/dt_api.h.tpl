@@ -82,7 +82,7 @@ static const dt_plic_irq_id_t kDtPlicIrqIdNone = ${helper.the_plic_irq_id_type_n
 /**
  * Get the instance ID for a given PLIC IRQ ID.
  *
- * For example, on earlgrey, the instance ID of `kTopEarlgreyPlicIrqIdUart0TxWatermark`
+ * For example, on egret, the instance ID of `kTopEgretPlicIrqIdUart0TxWatermark`
  * is `kDtInstanceIdUart0`. One can then use the type specific function to retrieve the
  * IRQ name, for example `dt_uart_irq_from_plic_id` for the UART.
  *
@@ -111,7 +111,7 @@ enum {
 /**
  * Get the instance ID for a given alert ID.
  *
- * For example, on earlgrey, the instance ID of `kTopEarlgreyAlertIdUart0FatalFault` is
+ * For example, on egret, the instance ID of `kTopEgretAlertIdUart0FatalFault` is
  * `kDtInstanceIdUart0`. One can then use the type specific function to retrieve the
  * alert name, for example `dt_uart_alert_from_alert_id` for the UART.
  *

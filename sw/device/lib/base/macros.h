@@ -425,10 +425,10 @@ extern "C++" {
 
 /**
  * A macro indicating whether software should assume reduced hardware
- * support (for the `top_englishbreakafst` toplevel).
+ * support (for the `top_scafi_deprecated` toplevel).
  */
-#ifdef OT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
-#define OT_IS_ENGLISH_BREAKFAST 1
+#ifdef OT_IS_SCAFI_DEPRECATED_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+#define OT_IS_SCAFI_DEPRECATED 1
 #endif
 
 /**

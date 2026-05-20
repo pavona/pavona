@@ -12,7 +12,7 @@ read library -sv09 -f formal_0.scr
 // read golden design
 read design -golden -sv09 \
   ../../../../ip/prim/rtl/prim_assert.sv \
-  ../../../../top_earlgrey/rtl/*_pkg.sv \
+  ../../../../top_egret/rtl/*_pkg.sv \
   ../../../../ip/*/rtl/*_pkg.sv \
   ../../../../vendor/*/*/*_pkg.sv \
   $LEC_GOLDEN
@@ -20,7 +20,7 @@ read design -golden -sv09 \
 // read revised design
 read design -revised -sv09 \
   ../../../../ip/prim/rtl/prim_assert.sv \
-  ../../../../top_earlgrey/rtl/*_pkg.sv \
+  ../../../../top_egret/rtl/*_pkg.sv \
   ../../../../ip/*/rtl/*_pkg.sv \
   ../../../../vendor/*/*/*_pkg.sv \
   $LEC_REVISED

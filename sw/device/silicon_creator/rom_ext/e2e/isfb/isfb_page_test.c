@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
 #include "hw/top/flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -76,7 +76,7 @@ status_t isfb_page_test(dif_flash_ctrl_state_t *f) {
 bool test_main(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   status_t sts = isfb_page_test(&flash_state);
   if (status_err(sts)) {
     LOG_ERROR("isfb_page_test: %r", sts);

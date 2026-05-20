@@ -24,10 +24,10 @@ static const uint32_t kPlicTarget = 0;
 
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kAccClock =
-#if defined(OPENTITAN_IS_EARLGREY)
-    kTopEarlgreyHintableClocksMainAcc
-#elif defined(OPENTITAN_IS_DARJEELING)
-    kTopDarjeelingHintableClocksMainAcc
+#if defined(OPENTITAN_IS_EGRET)
+    kTopEgretHintableClocksMainAcc
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+    kTopDragonflyHintableClocksMainAcc
 #else
 #error Unsupported top
 #endif

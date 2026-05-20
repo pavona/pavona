@@ -40,7 +40,7 @@ The following points should be considered.
 - For the same reasons, the weak spot is often not the transition of the sensitive asset (e.g. over a bus into a peripheral register) but the usage of it, i.e., the heavy and predictable processing using the sensitive asset inside peripherals such as AES.
   To protect such critical cores, designers resort to different countermeasures for security hardening and this suggests that the susceptibility to reset glitch attacks should be viewed in the context of these measures (see below).
 - Sidenote: Relying on glitch detectors for detecting localized glitches and initiating a complete system reset or alternatively a wipe with random data on top of the asynchronous reset is probably not sufficient as even a minimal delay of a couple of cycles between the glitch and the wipe can suffice to capture the Hamming distance.
-  In Earlgrey and Darjeeling, already the alert handler triggering the system reset has a delay of multiple cycles.
+  In Egret and Dragonfly, already the alert handler triggering the system reset has a delay of multiple cycles.
 
 ### Non-reset flops
 
@@ -68,7 +68,7 @@ Theoretically, scan mode could be misused to simply scan sensitive assets out of
 The obvious approach of taking all registers potentially holding sensitive data off the scan chain is not a viable solution.
 This may affect many registers (e.g. ~1400 flops for unhardened AES) and have a very big impact on design for testability (DFT).
 
-In Earlgrey and Darjeeling, the device is only allowed to enter scan mode in the TEST and RMA life-cycle states, in which no device root secrets are in the device yet or any more, respectively. Consequently, what really needs to be protected is i) the life-cycle transition from PROD to RMA where the critical hardware secrets are “erased/overwritten” (this transition should itself force a device reset), ii) scan mode entry while the device is in PROD state, and iii) scan mode exit while the device is in PROD state (to prevent the use of scan mode for arbitrary data injection).
+In Egret and Dragonfly, the device is only allowed to enter scan mode in the TEST and RMA life-cycle states, in which no device root secrets are in the device yet or any more, respectively. Consequently, what really needs to be protected is i) the life-cycle transition from PROD to RMA where the critical hardware secrets are “erased/overwritten” (this transition should itself force a device reset), ii) scan mode entry while the device is in PROD state, and iii) scan mode exit while the device is in PROD state (to prevent the use of scan mode for arbitrary data injection).
 This protection is needed irrespective of the selected flop type and whether registers potentially holding sensitive assets have been disconnected from the scan chain.
 This means that there is no benefit in taking such registers off the scan chain.
 Scan mode needs to be protected anyway.

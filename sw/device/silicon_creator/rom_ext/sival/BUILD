@@ -37,17 +37,17 @@ ROM_EXT_FEATURES = [
 # You can manually create such a bitstream with:
 #
 # bazel build //hw/bitstream/universal:splice \
-#   --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_hyper310_rom_ext \
-#   --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized
+#   --//hw/bitstream/universal:env=//hw/top_egret:fpga_hyper310_rom_ext \
+#   --//hw/bitstream/universal:otp=//hw/top_egret/data/otp/sival_skus:otp_img_prod_manuf_personalized
 [
     pavona_binary(
         name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
         collect_code_coverage = 0,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:silicon_creator",
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:fpga_cw340",
+            "//hw/top_egret:silicon_creator",
+            "//hw/top_egret:fpga_cw310",
+            "//hw/top_egret:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         # In order to prevent the linker from prematurely discarding symbols, we
@@ -80,9 +80,9 @@ ROM_EXT_FEATURES = [
         name = "rom_ext_{}_prod_slot_{}".format(variation, slot),
         collect_code_coverage = 0,
         exec_env = [
-            "//hw/top_earlgrey:silicon_creator",
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:fpga_cw340",
+            "//hw/top_egret:silicon_creator",
+            "//hw/top_egret:fpga_cw310",
+            "//hw/top_egret:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = [

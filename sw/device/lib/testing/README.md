@@ -23,7 +23,7 @@ code will live in: `sw/device/lib/testing/test\_framework`.
 - All `testutils` functions should return **status_t**, if appropriate the `kOk` return can encapsulate a value such as a **bool**.
   `testutils` functions should never abort, which means that `CHECK*()` macros shall not be used but its siblings `TRY_CHECK*()` defined in `sw/device/lib/testing/check.h` instead.
 - All `testutils` functions should be marked with **OT_WARN_UNUSED_RESULT** to avoid mistakenly ignoring errors.
-- Try to keep `testutils` libraries toplevel agnostic (e.g., don’t include `hw/top_earlgrey/sw/autogen/top_earlgrey.h` if you can avoid it).
+- Try to keep `testutils` libraries toplevel agnostic (e.g., don’t include `hw/top_egret/sw/autogen/top_egret.h` if you can avoid it).
   This means `dif_<ip>_init()` DIFs should be invoked in chip-level tests, *not* `testutils`, and the DIF handles should be passed in as parameters to `testutils` functions.
 - Pass-through `sw/device/lib/dif_base.h` types where appropriate.
   This allows testutils functions to easily mix with DIFs within chip-level tests.

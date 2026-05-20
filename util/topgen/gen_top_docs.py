@@ -155,7 +155,7 @@ def gen_pinmux_docs(top, c_helper, out_path):
                 └── targets.md        # Summary table
     """
 
-    # 'out_path' is the top-level directory for a generated top (e.g. hw/top_earlgrey)
+    # 'out_path' is the top-level directory for a generated top (e.g. hw/top_egret)
     pinmux_top_doc_path = out_path / 'ip_autogen' / 'pinmux' / 'doc'
     pinmux_top_doc_path.mkdir(parents=True, exist_ok=True)
 

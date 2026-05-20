@@ -12,7 +12,7 @@
 
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -25,7 +25,7 @@ enum {
   /**
    * Base address of the flash_ctrl registers.
    */
-  kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
+  kBase = TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
 typedef struct flash_cfg_reg {

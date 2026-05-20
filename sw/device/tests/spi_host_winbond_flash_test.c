@@ -18,7 +18,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/spi_host_flash_test_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -28,11 +28,11 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   dif_spi_host_t spi_host;
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spi_host));
 
   uint32_t spi_speed = 10000000;  // 10MHz
   if (kDeviceType == kDeviceSilicon) {
-    // On Earlgrey, Silicon's SPI core clock is 96 MHz, meaning the max SCK
+    // On Egret, Silicon's SPI core clock is 96 MHz, meaning the max SCK
     // rate is 48 MHz. The speed is set via a divider, meaning the largest
     // possible configurations are 12, 16, 24 and 48 MHz. By adding a small CS
     // idle time we can support 24 MHz reliably, but 48 MHz likely requires a
@@ -41,7 +41,7 @@ bool test_main(void) {
 
     dif_pinmux_t pinmux;
     mmio_region_t base_addr =
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+        mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
     CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
     dif_pinmux_pad_attr_t out_attr;
@@ -52,11 +52,11 @@ bool test_main(void) {
                  kDifPinmuxPadAttrPullResistorUp};
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd2,
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEgretDirectPadsSpiHost0Sd2,
                                    kDifPinmuxPadKindDio, in_attr, &out_attr));
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd3,
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEgretDirectPadsSpiHost0Sd3,
                                    kDifPinmuxPadKindDio, in_attr, &out_attr));
   }
 

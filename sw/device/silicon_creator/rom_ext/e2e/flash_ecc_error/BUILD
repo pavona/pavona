@@ -66,7 +66,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_flash_ecc_error",
-    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
     ],
@@ -75,7 +75,7 @@ otp_image(
 
 otp_image(
     name = "otp_img_flash_exc_handler_disabled",
-    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
         ":otp_json_flash_exc_handler_disabled",
@@ -89,8 +89,8 @@ pavona_binary(
     srcs = ["secret_page_setup.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
     ],
     deps = [
         "//sw/device/lib/runtime:log",
@@ -105,8 +105,8 @@ pavona_binary(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:uncorrupted_test_src"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
-            "//hw/top_earlgrey:fpga_cw340_rom_ext",
+            "//hw/top_egret:fpga_cw310_rom_ext",
+            "//hw/top_egret:fpga_cw340_rom_ext",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_{}".format(slot),
         deps = [
@@ -128,8 +128,8 @@ pavona_binary(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:flash_ecc_error_test_src"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
-            "//hw/top_earlgrey:fpga_cw340_rom_ext",
+            "//hw/top_egret:fpga_cw310_rom_ext",
+            "//hw/top_egret:fpga_cw340_rom_ext",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_{}".format(slot),
         local_defines = [
@@ -139,7 +139,7 @@ pavona_binary(
         deps = [
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
@@ -169,8 +169,8 @@ pavona_binary(
     pavona_test(
         name = t["name"].format(c["cause"]),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{rom_ext}@0 {fw_a}@{slot_a} {rom_ext}@0x80000 {fw_b}@{slot_b}",
@@ -211,8 +211,8 @@ pavona_binary(
 pavona_test(
     name = "flash_exc_handler_disabled_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {fw_a}@{slot_a} {rom_ext}@0x80000 {fw_b}@{slot_b}",

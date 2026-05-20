@@ -95,9 +95,9 @@ pavona_binary(
         CONST.LCV.RMA,
     ),
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-        "//hw/top_earlgrey:sim_dv",
-        "//hw/top_earlgrey:sim_verilator",
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
+        "//hw/top_egret:sim_dv",
+        "//hw/top_egret:sim_verilator",
     ],
     kind = "flash",
     spx_key = spx_key_for_lc_state(
@@ -135,7 +135,7 @@ pavona_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
+        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_sigverify_spx_{}".format(t["name"]),
         ],
@@ -157,7 +157,7 @@ pavona_binary(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             exit_success = t["exit_success"][lc_state],
@@ -204,7 +204,7 @@ pavona_test(
         "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_1_ecdsa_p256": "prod_key_1",
     },
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         otp = ":otp_img_sigverify_spx_prod_enabled_true",

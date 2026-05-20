@@ -29,11 +29,11 @@ package(default_visibility = ["//visibility:public"])
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:sim_verilator": None,
         },
         fpga = fpga_params(
-            otp = "//hw/top_earlgrey/data/otp:img_" + lc_state,
+            otp = "//hw/top_egret/data/otp:img_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         local_defines = [
@@ -46,11 +46,11 @@ package(default_visibility = ["//visibility:public"])
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         verilator = verilator_params(
             timeout = "eternal",
-            otp = "//hw/top_earlgrey/data/otp:img_" + lc_state,
+            otp = "//hw/top_egret/data/otp:img_" + lc_state,
             rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/dif:lc_ctrl",
             "//sw/device/lib/runtime:log",

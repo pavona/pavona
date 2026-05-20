@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_library")
-load("//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl", "EARLGREY_SKUS")
+load("//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl", "EGRET_SKUS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -34,5 +34,5 @@ package(default_visibility = ["//visibility:public"])
             "@crate_index//:zerocopy",
         ] + config["host_ext_libs"],
     )
-    for sku, config in EARLGREY_SKUS.items()
+    for sku, config in EGRET_SKUS.items()
 ]

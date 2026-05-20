@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -223,8 +223,7 @@ bool test_main(void) {
   // Initialize flash.
   dif_flash_ctrl_state_t flash_ctrl;
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash_ctrl, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
 
   // Program the attestation key seeds in flash. The setup step only needs to

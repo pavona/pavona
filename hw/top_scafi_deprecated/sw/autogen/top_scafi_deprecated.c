@@ -1,0 +1,108 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_scafi_deprecated/data/top_scafi_deprecated.hjson
+//                -o hw/top_scafi_deprecated/
+
+#include "hw/top_scafi_deprecated/sw/autogen/top_scafi_deprecated.h"
+
+/**
+ * PLIC Interrupt Source to Peripheral Map
+ *
+ * This array is a mapping from `top_scafi_deprecated_plic_irq_id_t` to
+ * `top_scafi_deprecated_plic_peripheral_t`.
+ */
+const top_scafi_deprecated_plic_peripheral_t
+    top_scafi_deprecated_plic_interrupt_for_peripheral[88] = {
+  [kTopScafiDeprecatedPlicIrqIdNone] = kTopScafiDeprecatedPlicPeripheralUnknown,
+  [kTopScafiDeprecatedPlicIrqIdUart0TxWatermark] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart0RxWatermark] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart0TxDone] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart0RxOverflow] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart0RxFrameErr] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart0RxBreakErr] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart0RxTimeout] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart0RxParityErr] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart0TxEmpty] = kTopScafiDeprecatedPlicPeripheralUart0,
+  [kTopScafiDeprecatedPlicIrqIdUart1TxWatermark] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdUart1RxWatermark] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdUart1TxDone] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdUart1RxOverflow] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdUart1RxFrameErr] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdUart1RxBreakErr] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdUart1RxTimeout] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdUart1RxParityErr] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdUart1TxEmpty] = kTopScafiDeprecatedPlicPeripheralUart1,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio0] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio1] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio2] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio3] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio4] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio5] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio6] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio7] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio8] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio9] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio10] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio11] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio12] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio13] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio14] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio15] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio16] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio17] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio18] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio19] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio20] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio21] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio22] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio23] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio24] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio25] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio26] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio27] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio28] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio29] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio30] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdGpioGpio31] = kTopScafiDeprecatedPlicPeripheralGpio,
+  [kTopScafiDeprecatedPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty] = kTopScafiDeprecatedPlicPeripheralSpiDevice,
+  [kTopScafiDeprecatedPlicIrqIdSpiDeviceUploadPayloadNotEmpty] = kTopScafiDeprecatedPlicPeripheralSpiDevice,
+  [kTopScafiDeprecatedPlicIrqIdSpiDeviceUploadPayloadOverflow] = kTopScafiDeprecatedPlicPeripheralSpiDevice,
+  [kTopScafiDeprecatedPlicIrqIdSpiDeviceReadbufWatermark] = kTopScafiDeprecatedPlicPeripheralSpiDevice,
+  [kTopScafiDeprecatedPlicIrqIdSpiDeviceReadbufFlip] = kTopScafiDeprecatedPlicPeripheralSpiDevice,
+  [kTopScafiDeprecatedPlicIrqIdSpiDeviceTpmHeaderNotEmpty] = kTopScafiDeprecatedPlicPeripheralSpiDevice,
+  [kTopScafiDeprecatedPlicIrqIdSpiDeviceTpmRdfifoCmdEnd] = kTopScafiDeprecatedPlicPeripheralSpiDevice,
+  [kTopScafiDeprecatedPlicIrqIdSpiDeviceTpmRdfifoDrop] = kTopScafiDeprecatedPlicPeripheralSpiDevice,
+  [kTopScafiDeprecatedPlicIrqIdSpiHost0Error] = kTopScafiDeprecatedPlicPeripheralSpiHost0,
+  [kTopScafiDeprecatedPlicIrqIdSpiHost0SpiEvent] = kTopScafiDeprecatedPlicPeripheralSpiHost0,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevPktReceived] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevPktSent] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevDisconnected] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevHostLost] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevLinkReset] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevLinkSuspend] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevLinkResume] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevAvOutEmpty] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevRxFull] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevAvOverflow] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevLinkInErr] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevRxCrcErr] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevRxPidErr] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevRxBitstuffErr] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevFrame] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevPowered] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevLinkOutErr] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdUsbdevAvSetupEmpty] = kTopScafiDeprecatedPlicPeripheralUsbdev,
+  [kTopScafiDeprecatedPlicIrqIdPwrmgrAonWakeup] = kTopScafiDeprecatedPlicPeripheralPwrmgrAon,
+  [kTopScafiDeprecatedPlicIrqIdAonTimerAonWkupTimerExpired] = kTopScafiDeprecatedPlicPeripheralAonTimerAon,
+  [kTopScafiDeprecatedPlicIrqIdAonTimerAonWdogTimerBark] = kTopScafiDeprecatedPlicPeripheralAonTimerAon,
+  [kTopScafiDeprecatedPlicIrqIdFlashCtrlProgEmpty] = kTopScafiDeprecatedPlicPeripheralFlashCtrl,
+  [kTopScafiDeprecatedPlicIrqIdFlashCtrlProgLvl] = kTopScafiDeprecatedPlicPeripheralFlashCtrl,
+  [kTopScafiDeprecatedPlicIrqIdFlashCtrlRdFull] = kTopScafiDeprecatedPlicPeripheralFlashCtrl,
+  [kTopScafiDeprecatedPlicIrqIdFlashCtrlRdLvl] = kTopScafiDeprecatedPlicPeripheralFlashCtrl,
+  [kTopScafiDeprecatedPlicIrqIdFlashCtrlOpDone] = kTopScafiDeprecatedPlicPeripheralFlashCtrl,
+  [kTopScafiDeprecatedPlicIrqIdFlashCtrlCorrErr] = kTopScafiDeprecatedPlicPeripheralFlashCtrl,
+};

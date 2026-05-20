@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top/dt/usbdev.h"              // Generated
 #include "sw/device/lib/dif/dif_usbdev.h"  // Generated
 
 #include "hw/top/usbdev_regs.h"  // Generated
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have a USB device
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly does not have a USB device
 #else
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
 #endif
@@ -40,7 +40,7 @@ OTTF_DEFINE_TEST_CONFIG();
  *
  *  This test checks RSTMGR.SW_RST_CTRL_N[index] with peripheral devices.
  *
- *  On Earlgrey, the RSTMGR.SW_RST_CTRL_N register has 8 bits. One of these
+ *  On Egret, the RSTMGR.SW_RST_CTRL_N register has 8 bits. One of these
  *  controls USB_AON which has no software writeable CSRs, so it is not
  *  amenable to this test yet it is still reset with the expectation that
  *  it has no side-effects. The various bits control peripheral resets as
@@ -57,7 +57,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * // 6     | I2C1       |  TIMING1       |  0x0         |  0x114010d8
  * // 7     | I2C2       |  TIMING2       |  0x0         |  0x19ec1595
  *
- * On Darjeeling, there are only 3 bits:
+ * On Dragonfly, there are only 3 bits:
  *
  * // index | device     |  test register |  reset value |  prgm value |
  * // ------------------------------------------------------------------
@@ -131,7 +131,7 @@ static void spi_host0_config(void *dif) {
   CHECK_DIF_OK(dif_spi_host_configure(dif, cfg));
 }
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 static void spi_host1_config(void *dif) {
   dif_spi_host_config_t cfg = {
       .spi_clock = 2500000,
@@ -148,8 +148,8 @@ static void spi_host1_config(void *dif) {
   };
   CHECK_DIF_OK(dif_spi_host_configure(dif, cfg));
 }
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling only has 1 SPI Host
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly only has 1 SPI Host
 #else
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
 #endif
@@ -162,7 +162,7 @@ static void i2c0_config(void *dif) {
   CHECK_DIF_OK(dif_i2c_configure(dif, cfg));
 }
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 static void i2c1_config(void *dif) {
   dif_i2c_config_t cfg = {
       .rise_cycles = 4312,
@@ -178,8 +178,8 @@ static void i2c2_config(void *dif) {
   };
   CHECK_DIF_OK(dif_i2c_configure(dif, cfg));
 }
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling only has 1 I2C Controller
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly only has 1 I2C Controller
 #else
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
 #endif
@@ -188,13 +188,13 @@ static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
 static dif_i2c_t i2c0;
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
-#elif defined(OPENTITAN_IS_DARJEELING)
-/* Darjeeling does not have a USB device, and only has 1 I2C Controller and
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+/* Dragonfly does not have a USB device, and only has 1 I2C Controller and
 SPI Host. */
 #else
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
@@ -286,7 +286,7 @@ static const test_t kPeripherals[] = {
         .reset_index = kDtSpiHostResetRst,
         .get_rstmgr_rst_index = spi_host_rstmgr_reset,
     },
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     {
         .name = "SPI_HOST1",
         .get_base_address = spi_host_base_addr,
@@ -312,8 +312,8 @@ static const test_t kPeripherals[] = {
         .reset_index = kDtUsbdevResetRst,
         .get_rstmgr_rst_index = usbdev_rstmgr_reset,
     },
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have a USB Device, and only has 1 SPI Host
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly does not have a USB Device, and only has 1 SPI Host
 #else
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
 #endif
@@ -330,7 +330,7 @@ static const test_t kPeripherals[] = {
         .reset_index = kDtI2cResetRst,
         .get_rstmgr_rst_index = i2c_rstmgr_reset,
     },
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     {
         .name = "I2C1",
         .get_base_address = i2c_base_addr,
@@ -357,8 +357,8 @@ static const test_t kPeripherals[] = {
         .reset_index = kDtI2cResetRst,
         .get_rstmgr_rst_index = i2c_rstmgr_reset,
     },
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling only has 1 I2C Controller
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly only has 1 I2C Controller
 #else
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
 #endif

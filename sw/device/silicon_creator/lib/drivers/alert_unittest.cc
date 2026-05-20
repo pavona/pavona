@@ -14,7 +14,7 @@
 
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace alert_unittest {
 namespace {
@@ -23,7 +23,7 @@ using ::testing::Return;
 
 class AlertTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR;
+  uint32_t base_ = TOP_EGRET_ALERT_HANDLER_BASE_ADDR;
   rom_test::MockCrc32 crc32_;
   rom_test::MockAbsMmio abs_mmio_;
   rom_test::MockOtp otp_;

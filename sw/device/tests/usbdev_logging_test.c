@@ -33,7 +33,7 @@
 // Presently we must reinstate the UART output manually.
 #include "sw/device/lib/dif/dif_uart.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 
 /**
  * Number of concurrent logging streams to test.
@@ -84,8 +84,8 @@ bool test_main(void) {
   }
 
   // Just a quantity of data as ASCII hex...
-  const uint32_t kSramStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
-  const uint32_t kSramSize = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
+  const uint32_t kSramStart = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
+  const uint32_t kSramSize = TOP_EGRET_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
   base_hexdump((char *)kSramStart, kSramSize);
 
   CHECK_STATUS_OK(usb_logging_fin(true, true));

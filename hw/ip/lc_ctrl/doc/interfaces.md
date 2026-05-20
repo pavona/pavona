@@ -4,7 +4,7 @@
 
 Note that parameters prefixed with `RndCnst` are random netlist constants that need to be regenerated via topgen before the tapeout (typically by the silicon creator).
 
-Parameter                        | Default (Max)  | Top Earlgrey   | Description
+Parameter                        | Default (Max)  | Top Egret   | Description
 ---------------------------------|----------------|----------------|---------------
 `AlertAsyncOn`                   | 2'b11          | 2'b11          |
 `IdcodeValue`                    | `32'h00000001` | `32'h00000001` | Idcode for the LC JTAG TAP.
@@ -153,11 +153,11 @@ The power manager uses that indication to determine whether a power down request
 Since the power manager may run in a different clock domain, the `pwr_lc_i.lc_init` signal is synchronized within the life cycle controller.
 The power manager is responsible for synchronizing the `pwr_lc_o.lc_done` and `pwr_lc_o.lc_idle` signals.
 
-See also [power manager documentation](../../../top_earlgrey/ip_autogen/pwrmgr/README.md).
+See also [power manager documentation](../../../top_egret/ip_autogen/pwrmgr/README.md).
 
 #### OTP Interfaces
 
-All interfaces to and from OTP are explained in detail in the OTP Specification Document (for example, see [earlgrey's OTP specification](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#life-cycle-interfaces)).
+All interfaces to and from OTP are explained in detail in the OTP Specification Document (for example, see [egret's OTP specification](../../../top_egret/ip_autogen/otp_ctrl/README.md#life-cycle-interfaces)).
 
 #### KMAC Interface
 

@@ -19,7 +19,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
 #include "hw/top/i2c_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -73,10 +73,10 @@ static status_t test_override(void) {
 
 static status_t test_init(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR);
   TRY(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
   return OK_STATUS();
@@ -88,9 +88,9 @@ static status_t i2c_detach_instance(uint8_t i2c_instance) {
 }
 
 static status_t i2c_configure_instance(uint8_t i2c_instance) {
-  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
-                                         TOP_EARLGREY_I2C1_BASE_ADDR,
-                                         TOP_EARLGREY_I2C2_BASE_ADDR};
+  const uintptr_t kI2cBaseAddrTable[] = {TOP_EGRET_I2C0_BASE_ADDR,
+                                         TOP_EGRET_I2C1_BASE_ADDR,
+                                         TOP_EGRET_I2C2_BASE_ADDR};
   LOG_INFO("%d", i2c_instance);
   TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
 

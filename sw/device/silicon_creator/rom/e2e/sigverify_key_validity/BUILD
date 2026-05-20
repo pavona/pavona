@@ -197,7 +197,7 @@ KEY_VALIDITY_TESTS = [
             test["name"],
             lc_state,
         ),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
+        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_sigverify_key_validity_{}".format(test["name"]),
         ],
@@ -217,7 +217,7 @@ KEY_VALIDITY_TESTS = [
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         ecdsa_key = {key.ecdsa.label: key.ecdsa.name},
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             exit_failure = test["exit_failure"][lc_state],

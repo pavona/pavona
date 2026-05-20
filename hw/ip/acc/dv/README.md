@@ -45,7 +45,7 @@ ACC has the following interfaces:
 - One interrupt
 - An [alert interface](../../../dv/sv/alert_esc_agent/README.md)
 - A life cycle escalation interface
-- An OTP: for example, see earlgrey's [OTP](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md) connection
+- An OTP: for example, see egret's [OTP](../../../top_egret/ip_autogen/otp_ctrl/README.md) connection
 - Two [EDN](../../edn/README.md) connections
 - A KMAC interface for message hashing
 - A RAM configuration interface, which is passed through to the SRAM macros

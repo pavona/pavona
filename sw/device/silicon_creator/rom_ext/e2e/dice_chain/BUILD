@@ -31,8 +31,8 @@ package(default_visibility = ["//visibility:public"])
         name = "no_refresh_{}_test".format(variation),
         srcs = ["no_refresh_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             exit_failure = "Rebooting[\\s\\S]*CDI_1 certificate not valid[\\s\\S]*Rebooted",
@@ -62,8 +62,8 @@ pavona_binary(
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = ":owner_manifest",
@@ -86,8 +86,8 @@ pavona_binary(
             ":print_certs_for_assemble": OWNER_SLOTS["a"],
         },
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
@@ -108,8 +108,8 @@ _VARIATION_INTEROP_TEST_CASES = [
     pavona_test(
         name = "variation_interop_{}_first_test".format(tc["first"]),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -144,7 +144,7 @@ pavona_binary(
     testonly = True,
     srcs = ["modify_digest.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
     ],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
@@ -162,7 +162,7 @@ pavona_test(
     name = "corrupted_digest_test",
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         binaries = {

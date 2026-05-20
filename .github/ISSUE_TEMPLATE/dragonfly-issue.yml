@@ -1,0 +1,15 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Dragonfly
+description: Issues specific to top_dragonfly.
+title: "[top_dragonfly] "
+labels: ["Component:Dragonfly"]
+body:
+  - type: textarea
+    id: desc
+    attributes:
+      label: desc
+      value: |
+        Please describe issue or task

@@ -27,7 +27,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top/dt/adc_ctrl.h"     // Generated
 #include "hw/top/dt/entropy_src.h"  // Generated
 #include "hw/top/dt/flash_ctrl.h"   // Generated
@@ -40,7 +40,7 @@
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 #include "hw/top/dt/keymgr_dpe.h"  // Generated
 #else
 #error "all_escalation_resets_test does not support this top"
@@ -190,7 +190,7 @@ static uint32_t kSramRetStart;
  * Objects to access the peripherals used in this test via dif/dt APIs.
  */
 // Top-specific objects
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 static dif_flash_ctrl_state_t flash_ctrl_state;
 dt_flash_ctrl_t kFlashCtrlDt = (dt_flash_ctrl_t)0;
 static_assert(kDtFlashCtrlCount >= 1, "This test requires a Flash Ctrl");
@@ -199,7 +199,7 @@ static dt_rom_ctrl_t kRomCtrlDt = (dt_rom_ctrl_t)0;
 static_assert(kDtRomCtrlCount >= 1, "This test requires a ROM CTRL");
 
 static const char *flash_fatal_check = "flash_fatal_check";
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 static dif_sram_ctrl_t sram_ctrl_mbox;
 static dt_sram_ctrl_t kSramCtrlMboxDt = kDtSramCtrlMbox;
 static dif_rom_ctrl_t rom_ctrl0;
@@ -276,7 +276,7 @@ static void restore_fault_checker(fault_checker_t *fault_checker) {
 }
 
 // Instance name definitions. TODO: It would be handy to generate these.
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 static const char *adc_ctrl_inst_name = "adc_ctrl";
 static const char *entropy_src_inst_name = "entropy_src";
 static const char *flash_ctrl_inst_name = "flash_ctrl";
@@ -293,7 +293,7 @@ static const char *uart1_inst_name = "uart1";
 static const char *uart2_inst_name = "uart2";
 static const char *uart3_inst_name = "uart3";
 static const char *usbdev_inst_name = "usbdev";
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 static const char *keymgr_dpe_inst_name = "keymgr_dpe";
 static const char *sram_ctrl_mbox_inst_name = "sram_ctrl_mbox";
 static const char *rom_ctrl0_inst_name = "rom_ctrl0";
@@ -363,7 +363,7 @@ static void generic_sram_ctrl_fault_checker(const dif_sram_ctrl_t *sram_ctrl,
 }
 
 // Fault checkers for Top-specific IP
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
                                      const char *type) {
   dif_flash_ctrl_faults_t faults;
@@ -423,7 +423,7 @@ static void rom_ctrl_fault_checker(bool enable, const char *ip_inst,
                                    const char *type) {
   return generic_rom_ctrl_fault_checker(enable, ip_inst, type, &rom_ctrl);
 }
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 static void keymgr_dpe_fault_checker(bool enable, const char *ip_inst,
                                      const char *type) {
   // TODO(#14518)
@@ -761,11 +761,11 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   CHECK_DIF_OK(
       dif_flash_ctrl_init_state_from_dt(&flash_ctrl_state, kFlashCtrlDt));
   CHECK_DIF_OK(dif_rom_ctrl_init_from_dt(kRomCtrlDt, &rom_ctrl));
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   CHECK_DIF_OK(dif_rom_ctrl_init_from_dt(kRomCtrl0Dt, &rom_ctrl0));
   CHECK_DIF_OK(dif_rom_ctrl_init_from_dt(kRomCtrl1Dt, &rom_ctrl1));
   CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kSramCtrlMboxDt, &sram_ctrl_mbox));
@@ -888,7 +888,7 @@ static void set_aon_timers(const dif_aon_timer_t *aon_timer) {
  * Initialise the map of fault checkers to use for different fault alerts.
  */
 static void init_fault_checkers(fault_checker_t *checkers) {
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   checkers[dt_adc_ctrl_alert_to_alert_id(kDtAdcCtrlAon,
                                          kDtAdcCtrlAlertFatalFault)] =
       (fault_checker_t){trivial_fault_checker, adc_ctrl_inst_name, we_check};
@@ -955,7 +955,7 @@ static void init_fault_checkers(fault_checker_t *checkers) {
                                        kDtUsbdevAlertFatalFault)] =
       (fault_checker_t){trivial_fault_checker, usbdev_inst_name, we_check};
   static_assert(kDtUsbdevCount >= 1, "This test needs a USB Device");
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   checkers[dt_keymgr_dpe_alert_to_alert_id(
       (dt_keymgr_dpe_t)0, kDtKeymgrDpeAlertFatalFaultErr)] = (fault_checker_t){
       keymgr_dpe_fault_checker, keymgr_dpe_inst_name, we_check};
@@ -1145,7 +1145,7 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     LOG_INFO("OTP_CTRL error inject done");
   }
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   // FlashCtrlFatalErr test requires host read request.
   if (kExpectedAlertNumber == dt_flash_ctrl_alert_to_alert_id(
                                   kFlashCtrlDt, kDtFlashCtrlAlertFatalErr)) {
@@ -1160,8 +1160,8 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
             dt_flash_ctrl_memory_base(kFlashCtrlDt, kDtFlashCtrlMemoryMem)),
         FLASH_CTRL_PARAM_BYTES_PER_BANK, &host_data, kNumTestBytes);
   }
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have a Flash Controller
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+// Dragonfly does not have a Flash Controller
 #else
 #error "all_escalation_resets_test does not support this top"
 #endif
@@ -1286,7 +1286,7 @@ bool test_main(void) {
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     // ISRs should not run if flash_ctrl or sram_ctrl_main get a fault because
     // flash or sram accesses are blocked in those cases. For lc_ctrl fatal
     // state, otp_fatal alerts tha will trigger LC to escalate, the lc_ctrl
@@ -1315,7 +1315,7 @@ bool test_main(void) {
       CHECK(interrupt_count == 1, "Expected exactly one regular interrupt");
       CHECK(nmi_count > 0, "Expected at least one nmi");
     }
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
     // ISRs should not run if sram_ctrl_main gets a fault because sram accesses
     // are blocked in that cases. For lc_ctrl fatal state, otp_fatal alerts that
     // will trigger LC to escalate, the lc_ctrl blocks the CPU.

@@ -9,7 +9,7 @@ It has three main tasks:
 - Generate a checksum of the ROM contents and feed its value to [keymgr](../keymgr/README.md) to be included in the device identity.
 - Inform pwrmgr, once the checksum has been computed and looks reasonable, to allow the rest of the chip startup.
   This power manager is a templated class which is documented separately for the different instantiations.
-  The instantiation in Earlgrey is documented [here](../../top_earlgrey/ip_autogen/pwrmgr/README.md).
+  The instantiation in Egret is documented [here](../../top_egret/ip_autogen/pwrmgr/README.md).
 
 In order to fulfil the first task, the ROM controller attaches as a peripheral to the system bus.
 The contents of the ROM are laid out in a scrambled order.

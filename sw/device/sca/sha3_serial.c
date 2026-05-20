@@ -15,7 +15,7 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top/kmac_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * OpenTitan program for side-channel analysis of the absorb step of a KMAC128
@@ -356,7 +356,7 @@ static dif_result_t sha3_get_digest(uint32_t *out, size_t len) {
  */
 static void kmac_init(void) {
   SS_CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
 
   SS_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
@@ -371,7 +371,7 @@ static void kmac_init(void) {
 static void kmac_disable_masking(const uint8_t *masks_off, size_t off_len) {
   SS_CHECK(off_len == 1);
   SS_CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
 
   if (masks_off[0]) {
     config.entropy_fast_process = kDifToggleEnabled;

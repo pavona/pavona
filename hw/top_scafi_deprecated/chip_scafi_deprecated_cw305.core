@@ -1,0 +1,75 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:chip_scafi_deprecated_cw305:0.1"
+description: "Scafi_Deprecated toplevel for the ChipWhisperer CW305 board"
+
+filesets:
+  files_rtl_cw305:
+    depend:
+      - lowrisc:prim_xilinx:prim_xilinx_default_pkg
+      - lowrisc:systems:top_scafi_deprecated:0.1
+      - lowrisc:systems:top_scafi_deprecated_pkg
+      - lowrisc:systems:top_scafi_deprecated_ast
+      - lowrisc:systems:top_egret_padring
+      - lowrisc:ip:flash_macro_wrapper_reg_top
+      - lowrisc:egret_systems:scan_role_pkg
+      - lowrisc:prim_xilinx:all
+    files:
+      - rtl/clkgen_xil7series.sv
+      - rtl/usr_access_xil7series.sv
+      - rtl/autogen/chip_scafi_deprecated_cw305.sv
+    file_type: systemVerilogSource
+
+  files_constraints:
+    files:
+      - data/pins_cw305.xdc
+      - data/clocks.xdc
+    file_type: xdc
+
+  files_tcl:
+    files:
+      - util/vivado_setup_hooks.tcl: { file_type: tclSource }
+      # File copied by fusesoc into the workroot (the file containing the
+      # .eda.yml file), and referenced from vivado_setup_hooks.tcl
+      - util/vivado_hook_synth_design_pre.tcl: { file_type: user, copyto: vivado_hook_synth_design_pre.tcl }
+      - util/vivado_hook_init_design_post.tcl: { file_type: user, copyto: vivado_hook_init_design_post.tcl }
+      - util/vivado_hook_write_bitstream_pre.tcl: { file_type: user, copyto: vivado_hook_write_bitstream_pre.tcl }
+      - util/vivado_hook_opt_design_post.tcl: { file_type: user, copyto: vivado_hook_opt_design_post.tcl }
+
+parameters:
+  # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
+  # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
+  # --BootRomInitFile=$PWD/build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw305.32.vmem
+  # XXX: The VMEM file should be added to the sources of the Vivado project to
+  # make the Vivado dependency tracking work. However this requires changes to
+  # fusesoc first.
+  BootRomInitFile:
+    datatype: str
+    description: Boot ROM initialization file in 32 bit vmem hex format
+    default: ""
+    paramtype: vlogparam
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl_cw305
+    toplevel: chip_scafi_deprecated_cw305
+
+  synth:
+    default_tool: vivado
+    filesets:
+      - files_rtl_cw305
+      - files_constraints
+      - files_tcl
+    toplevel: chip_scafi_deprecated_cw305
+    parameters:
+      - BootRomInitFile
+      - AST_BYPASS_CLK=true
+    tools:
+      vivado:
+        part: "xc7a100tftg256-2" # CW305 Board

@@ -30,9 +30,9 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
 
 static_assert(
     kWdogBarkMicros < kWdogBiteMicros &&
@@ -107,8 +107,8 @@ void init_peripherals(void) {
   plic = &plic_actual;
 
   rv_plic_testutils_irq_range_enable(
-      plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      plic, kPlicTarget, kTopEgretPlicIrqIdAonTimerAonWkupTimerExpired,
+      kTopEgretPlicIrqIdAonTimerAonWdogTimerBark);
 
   // Initialize alert handler.
   CHECK_DIF_OK(
@@ -126,7 +126,7 @@ void init_peripherals(void) {
 }
 
 void config_alert_handler(void) {
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[] = {kTopEgretAlertIdPwrmgrAonFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
   uint32_t cycles[4] = {0};
@@ -212,13 +212,13 @@ void config_sysrst(dif_pinmux_index_t pad_pin) {
   // Configure pinmux
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
 
   CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(
       sysrst_ctrl_aon, sysrst_ctrl_input_change_config));
 
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In, pad_pin));
+      &pinmux, kTopEgretPinmuxPeripheralInSysrstCtrlAonKey0In, pad_pin));
 }
 
 void config_wdog(uint64_t bark_micros, uint64_t bite_micros) {
@@ -314,34 +314,34 @@ void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode) {
 }
 
 void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_egret_plic_peripheral_t peripheral;
   dif_rv_plic_irq_id_t irq_id;
   uint32_t irq = 0;
   uint32_t alert = 0;
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(plic, kPlicTarget, &irq_id));
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  peripheral = (top_egret_plic_peripheral_t)
+      top_egret_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopEgretPlicPeripheralAonTimerAon) {
     irq =
         (dif_aon_timer_irq_t)(irq_id -
                               (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                                  kTopEgretPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // Stops escalation process.
     CHECK_DIF_OK(dif_alert_handler_escalation_clear(alert_handler,
                                                     kDifAlertHandlerClassA));
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(aon_timer, irq));
 
-    CHECK(irq != kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
+    CHECK(irq != kTopEgretPlicIrqIdAonTimerAonWdogTimerBark,
           "AON Timer Wdog should not bark");
 
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  } else if (peripheral == kTopEgretPlicPeripheralAlertHandler) {
     irq = (dif_rv_plic_irq_id_t)(irq_id -
                                  (dif_rv_plic_irq_id_t)
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+                                     kTopEgretPlicIrqIdAlertHandlerClassa);
 
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(alert_handler, alert));
 

@@ -30,7 +30,7 @@ Note that since this optional data diffusion can affect end-to-end bus and memor
 The following table lists the instantiation parameters of the `prim_ram_1p_scr` primitive.
 These are not exposed in the `sram_ctrl` IP, but have to be set directly when instantiating `prim_ram_1p_scr` in the top.
 
-Parameter                   | Default (Max)         | Top Earlgrey | Description
+Parameter                   | Default (Max)         | Top Egret | Description
 ----------------------------|-----------------------|--------------|---------------
 `Depth`                     | 512                   | multiple     | SRAM depth, needs to be a power of 2 if `NumAddrScrRounds` > 0.
 `Width`                     | 32                    | 32           | Effective SRAM width without redundancy.

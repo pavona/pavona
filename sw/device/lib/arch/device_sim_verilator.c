@@ -26,8 +26,8 @@ static inline uintptr_t rv_core_ibex_base(void) {
 const device_type_t kDeviceType = kDeviceSimVerilator;
 
 // Changes to the clock frequency or UART baud rate must also be reflected at
-// `hw/top_earlgrey/rtl/chip_earlgrey_verilator.sv` and
-// `test/systemtest/earlgrey/test_sim_verilator.py`.
+// `hw/top_egret/rtl/chip_egret_verilator.sv` and
+// `test/systemtest/egret/test_sim_verilator.py`.
 #define CPU_FREQ_HZ 500 * 1000
 const uint64_t kClockFreqCpuHz = CPU_FREQ_HZ;  // 500kHz
 

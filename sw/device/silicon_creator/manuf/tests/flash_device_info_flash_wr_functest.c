@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/tests/test_wafer_auth_secret.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -27,9 +27,9 @@ static dif_lc_ctrl_t lc_ctrl;
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR),
+                       &lc_ctrl));
   return OK_STATUS();
 }
 

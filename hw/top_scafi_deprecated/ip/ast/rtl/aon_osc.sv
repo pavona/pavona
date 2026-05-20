@@ -1,0 +1,1 @@
+../../../../top_egret/ip/ast/rtl/aon_osc.sv

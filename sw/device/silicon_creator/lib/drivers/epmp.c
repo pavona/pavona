@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define EPMP_SET(cfg_reg, addr_reg, mask, cfg, addr) \
   CSR_CLEAR_BITS(CSR_REG_PMPCFG##cfg_reg, mask);     \

@@ -15,7 +15,7 @@
 #include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_sym_impl.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_sca_sym_commands.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static status_t trigger_cryptolib_aes(
     uint8_t data_in[AES_CMD_MAX_MSG_BYTES], size_t data_in_len,

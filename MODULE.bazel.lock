@@ -218,8 +218,8 @@
   "moduleExtensions": {
     "//hw/top:extensions.bzl%top": {
       "general": {
-        "bzlTransitiveDigest": "tZLF6ENIS0Zv1FXkxWE60KSAKZbjn4/13zJWgZ6OdeE=",
-        "usagesDigest": "pLPV7xTn1Phm2JQSazGRbxUKgo7ipeJaRnnFhRNtDd0=",
+        "bzlTransitiveDigest": "7VoHwvBmwXOVQiLOiFaAd/FwtsVcx1Ij6vACDW6Tqyo=",
+        "usagesDigest": "E9C6RABn7M6zO6MS5s4jSzkT/krse4skZxPmkI2svvQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -228,14 +228,14 @@
             "repoRuleId": "@@//hw/top:extensions.bzl%top_desc_repo",
             "attributes": {
               "bazel_files": [
-                "@@//hw/top_earlgrey:defs.bzl",
-                "@@//hw/top_darjeeling:defs.bzl",
-                "@@//hw/top_englishbreakfast:defs.bzl"
+                "@@//hw/top_egret:defs.bzl",
+                "@@//hw/top_dragonfly:defs.bzl",
+                "@@//hw/top_scafi_deprecated:defs.bzl"
               ],
               "top_vars": [
-                "EARLGREY",
-                "DARJEELING",
-                "ENGLISHBREAKFAST"
+                "EGRET",
+                "DRAGONFLY",
+                "SCAFI_DEPRECATED"
               ],
               "top_names": [
                 "",
@@ -848,7 +848,7 @@
     },
     "//third_party/qemu:extensions.bzl%qemu": {
       "general": {
-        "bzlTransitiveDigest": "ZPVnpqWiCOEMptL86aJVp5uVhNqDzgTwfSpFc+/SYtY=",
+        "bzlTransitiveDigest": "RK7MDWnboFshQG2AjL02K4Qulp0unv7A6EFRlFB8GW8=",
         "usagesDigest": "S58vA9PDQWiGF0IXyb5sOYsYTS4P271Fc343QPN/pN8=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -862,6 +862,12 @@
               "sha256": "85091287ee67dee337968071b7d10d39d44bb582c90991eae3d61f11a13ccf29",
               "patch_cmds": [
                 "touch .this.is.the.archive"
+              ],
+              "patches": [
+                "@@//third_party/qemu/patches:topnames.patch"
+              ],
+              "patch_args": [
+                "-p1"
               ]
             }
           },
@@ -1029,7 +1035,7 @@
     },
     "//third_party/tock:extensions.bzl%tock": {
       "general": {
-        "bzlTransitiveDigest": "C2f4NtX52o14R9TtkJwTl1wZ63j5YYUiTHoJdz0DUHE=",
+        "bzlTransitiveDigest": "VyVGFbx/wLIgm6ouQDzVbSBrumezJEfAcMoyDNKUOr8=",
         "usagesDigest": "aa3oAvnhtopBIeIiSwYixlx7oLnkBboKv1evl6EMOjE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

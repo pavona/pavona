@@ -49,8 +49,8 @@ set_port_direction_handling coercion_weak_bbox
 
 elaborate -top $env(DUT_TOP)
 
-# Currently only for top_earlgrey
-if {$env(DUT_TOP) == "chip_earlgrey_asic"} {
+# Currently only for top_egret
+if {$env(DUT_TOP) == "chip_egret_asic"} {
   # Because in JasperGold we can only drive primary inputs, we put a stopat to
   # avoid the clock and reset inputs from being driven internally. Any logic
   # driving these signals is not included in the analysis. This includes e.g.:
@@ -62,9 +62,9 @@ if {$env(DUT_TOP) == "chip_earlgrey_asic"} {
   stopat -env POR_N
   reset -expr {POR_N}
   # Add this assumption to avoid a false functional loop.
-  assume -env {top_earlgrey.u_pinmux_aon.reg2hw.mio_pad_sleep_status == '1}
+  assume -env {top_egret.u_pinmux_aon.reg2hw.mio_pad_sleep_status == '1}
   # Add this assumption to avoid signal inversion in the pad wrappers.
-  assume -env {top_earlgrey.u_pinmux_aon.dio_pad_attr_q == '0}
+  assume -env {top_egret.u_pinmux_aon.dio_pad_attr_q == '0}
 
   # run additional assume commands for foundry implementation if needed
   if {[info exists ::env(PARTNER_TCL)]} {

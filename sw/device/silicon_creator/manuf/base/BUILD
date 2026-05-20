@@ -15,7 +15,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_SKUS",
+    "EGRET_SKUS",
     "disqualified_for_signing",
 )
 load(
@@ -56,16 +56,16 @@ pavona_binary(
     testonly = True,
     srcs = ["sram_cp_provision.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:silicon_creator": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         ":cp_device_id_library",
         ":flash_info_permissions",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
@@ -95,9 +95,9 @@ pavona_binary(
     testonly = True,
     srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:silicon_creator": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -106,7 +106,7 @@ pavona_binary(
         ":flash_info_permissions",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -135,8 +135,8 @@ pavona_binary(
 pavona_test(
     name = "cp_provision_functest",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         timeout = "long",
@@ -146,7 +146,7 @@ pavona_test(
         },
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp:img_raw",
+        otp = "//hw/top_egret/data/otp:img_raw",
         tags = ["manuf"],
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
@@ -164,7 +164,7 @@ pavona_test(
         sku_config = config["orchestrator_cfg"],
         template = ":ft_device_id.c.tpl",
     )
-    for sku, config in EARLGREY_SKUS.items()
+    for sku, config in EGRET_SKUS.items()
 ]
 
 [
@@ -173,10 +173,10 @@ pavona_test(
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:silicon_creator": None,
+            "//hw/top_egret:sim_dv": None,
         },
         kind = "ram",
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -185,7 +185,7 @@ pavona_test(
             ":flash_info_permissions",
             ":ft_device_id_{}_library".format(sku),
             "//hw/top:ast_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
@@ -208,7 +208,7 @@ pavona_test(
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(config["otp"]),
         ],
     )
-    for sku, config in EARLGREY_SKUS.items()
+    for sku, config in EGRET_SKUS.items()
     for variant, defines in {
         "": [],
         "_ate": ["ATE=1"],
@@ -220,7 +220,7 @@ filegroup(
     testonly = True,
     srcs = [
         ":sram_ft_individualize_{}{}".format(sku, variant)
-        for sku in EARLGREY_SKUS.keys()
+        for sku in EGRET_SKUS.keys()
         for variant in [
             "",
             "_ate",
@@ -305,9 +305,9 @@ manifest(d = {
         srcs = ["ft_personalize.c"],
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_egret:silicon_creator": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         manifest = ":manifest_perso",
@@ -358,7 +358,7 @@ manifest(d = {
             "//sw/device/silicon_creator/manuf/lib:personalize",
         ] + config["dice_libs"] + config["device_ext_libs"] + config.get("ownership_libs", []),
     )
-    for sku, config in EARLGREY_SKUS.items()
+    for sku, config in EGRET_SKUS.items()
 ]
 
 [
@@ -376,12 +376,12 @@ manifest(d = {
             config["owner_fw"]: OWNER_SLOTS["b"],
         },
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
-            "//hw/top_earlgrey:silicon_creator",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
+            "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
+            "//hw/top_egret:silicon_creator",
         ],
     )
-    for sku, config in EARLGREY_SKUS.items()
+    for sku, config in EGRET_SKUS.items()
 ]
 
 filegroup(
@@ -399,11 +399,11 @@ filegroup(
                           "perso_bin",
                           ":ft_personalize_{}".format(sku),
                       )
-                      for sku, config in EARLGREY_SKUS.items()
+                      for sku, config in EGRET_SKUS.items()
                   ] +
                   [
                       ":ft_fw_bundle_{}".format(sku)
-                      for sku in EARLGREY_SKUS.keys()
+                      for sku in EGRET_SKUS.keys()
                   ]).to_list(),
 )
 
@@ -417,7 +417,7 @@ filegroup(
         spx_key = data["spx_key"],
         tags = ["manual"],
     )
-    for sku, data in EARLGREY_SKUS.items()
+    for sku, data in EGRET_SKUS.items()
     if not disqualified_for_signing(sku, data)
 ]
 
@@ -426,7 +426,7 @@ pkg_tar(
     testonly = True,
     srcs = [
         ":provisioning_{}".format(sku)
-        for sku, data in EARLGREY_SKUS.items()
+        for sku, data in EGRET_SKUS.items()
         if not disqualified_for_signing(sku, data)
     ],
     mode = "0644",
@@ -438,21 +438,21 @@ offline_signature_attach(
     testonly = True,
     srcs = [
         ":provisioning_{}".format(sku)
-        for sku, data in EARLGREY_SKUS.items()
+        for sku, data in EGRET_SKUS.items()
         if not disqualified_for_signing(sku, data)
     ],
     ecdsa_signatures = [
         "//sw/device/silicon_creator/manuf/base/signatures:ecdsa_signatures",
     ] + depset([
         "{}:ecdsa_signatures".format(data["signature_prefix"])
-        for sku, data in EARLGREY_SKUS.items()
+        for sku, data in EGRET_SKUS.items()
         if data["signature_prefix"] and not disqualified_for_signing(sku, data)
     ]).to_list(),
     spx_signatures = [
         "//sw/device/silicon_creator/manuf/base/signatures:spx_signatures",
     ] + depset([
         "{}:spx_signatures".format(data["signature_prefix"])
-        for sku, data in EARLGREY_SKUS.items()
+        for sku, data in EGRET_SKUS.items()
         if data["signature_prefix"] and not disqualified_for_signing(sku, data)
     ]).to_list(),
     tags = ["manual"],

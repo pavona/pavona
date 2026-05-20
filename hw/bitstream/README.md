@@ -35,15 +35,15 @@ pavona_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     fpga = fpga_params(
-        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_initialized",
+        otp = "//hw/top_egret/data/otp/emulation:otp_img_test_unlocked0_manuf_initialized",
         tags = ["manuf"],
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        ":individualize_sw_cfg_earlgrey_sku_sival",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ":individualize_sw_cfg_egret_sku_sival",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
@@ -81,11 +81,11 @@ pavona_test(
         tags = ["manuf"],
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        ":individualize_sw_cfg_earlgrey_sku_sival",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ":individualize_sw_cfg_egret_sku_sival",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",

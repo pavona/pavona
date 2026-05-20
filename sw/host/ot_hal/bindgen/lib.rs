@@ -4,5 +4,5 @@
 
 pub use alert;
 pub use dif;
-pub use earlgrey;
+pub use egret;
 pub use multibits;

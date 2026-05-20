@@ -23,7 +23,7 @@ _CW310_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem"
 
 _CW340_TESTROM = _CW310_TESTROM
 
-_OTP_RMA = "//hw/top_earlgrey/data/otp:img_rma"
+_OTP_RMA = "//hw/top_egret/data/otp:img_rma"
 
 _CW310_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _CW310_TESTROM)
 
@@ -52,11 +52,11 @@ fusesoc_build(
         "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "lowrisc_systems_chip_earlgrey_cw310_0.1.bit")],
-        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "memories.mmi")],
-        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "lowrisc_systems_chip_earlgrey_cw310_0.1.runs/")],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_egret_cw310", "lowrisc_systems_chip_egret_cw310_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_egret_cw310", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_egret_cw310", "lowrisc_systems_chip_egret_cw310_0.1.runs/")],
     },
-    systems = ["lowrisc:systems:chip_earlgrey_cw310"],
+    systems = ["lowrisc:systems:chip_egret_cw310"],
     tags = ["manual"],
     target = "synth",
 )
@@ -93,11 +93,11 @@ fusesoc_build(
         "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit")],
-        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "memories.mmi")],
-        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/")],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_egret_cw310_hyperdebug", "lowrisc_systems_chip_egret_cw310_hyperdebug_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_egret_cw310_hyperdebug", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_egret_cw310_hyperdebug", "lowrisc_systems_chip_egret_cw310_hyperdebug_0.1.runs/")],
     },
-    systems = ["lowrisc:systems:chip_earlgrey_cw310_hyperdebug"],
+    systems = ["lowrisc:systems:chip_egret_cw310_hyperdebug"],
     tags = ["manual"],
     target = "synth",
 )
@@ -134,11 +134,11 @@ fusesoc_build(
         "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],
-        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "memories.mmi")],
-        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.runs/")],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_egret_cw340", "lowrisc_systems_chip_egret_cw340_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_egret_cw340", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_egret_cw340", "lowrisc_systems_chip_egret_cw340_0.1.runs/")],
     },
-    systems = ["lowrisc:systems:chip_earlgrey_cw340"],
+    systems = ["lowrisc:systems:chip_egret_cw340"],
     tags = ["manual"],
     target = "synth",
 )
@@ -161,11 +161,11 @@ filegroup(
 
 # Bitstream cache manifest fragment targets
 bitstream_manifest_fragment(
-    name = "earlgrey_cw310_manifest",
+    name = "egret_cw310_manifest",
     testonly = True,
     srcs = [":fpga_cw310"],
     bitstream = "bitstream",
-    design = "chip_earlgrey_cw310",
+    design = "chip_egret_cw310",
     memories = [
         "rom",
         "otp",
@@ -181,21 +181,21 @@ bitstream_manifest_fragment(
 )
 
 pkg_tar(
-    name = "earlgrey_cw310_archive",
+    name = "egret_cw310_archive",
     testonly = True,
-    srcs = [":earlgrey_cw310_manifest"],
+    srcs = [":egret_cw310_manifest"],
     mode = "0444",
-    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310",
-    strip_prefix = "/hw/bitstream/vivado/earlgrey_cw310_manifest",
+    package_dir = "build-bin/hw/top_egret/chip_egret_cw310",
+    strip_prefix = "/hw/bitstream/vivado/egret_cw310_manifest",
     tags = ["manual"],
 )
 
 bitstream_manifest_fragment(
-    name = "earlgrey_cw310_hyperdebug_manifest",
+    name = "egret_cw310_hyperdebug_manifest",
     testonly = True,
     srcs = [":fpga_cw310_hyperdebug"],
     bitstream = "bitstream",
-    design = "chip_earlgrey_cw310_hyperdebug",
+    design = "chip_egret_cw310_hyperdebug",
     memories = [
         "rom",
         "otp",
@@ -211,21 +211,21 @@ bitstream_manifest_fragment(
 )
 
 pkg_tar(
-    name = "earlgrey_cw310_hyperdebug_archive",
+    name = "egret_cw310_hyperdebug_archive",
     testonly = True,
-    srcs = [":earlgrey_cw310_hyperdebug_manifest"],
+    srcs = [":egret_cw310_hyperdebug_manifest"],
     mode = "0444",
-    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug",
-    strip_prefix = "/hw/bitstream/vivado/earlgrey_cw310_hyperdebug_manifest",
+    package_dir = "build-bin/hw/top_egret/chip_egret_cw310_hyperdebug",
+    strip_prefix = "/hw/bitstream/vivado/egret_cw310_hyperdebug_manifest",
     tags = ["manual"],
 )
 
 bitstream_manifest_fragment(
-    name = "earlgrey_cw340_manifest",
+    name = "egret_cw340_manifest",
     testonly = True,
     srcs = [":fpga_cw340"],
     bitstream = "bitstream",
-    design = "chip_earlgrey_cw340",
+    design = "chip_egret_cw340",
     memories = [
         "rom",
         "otp",
@@ -241,12 +241,12 @@ bitstream_manifest_fragment(
 )
 
 pkg_tar(
-    name = "earlgrey_cw340_archive",
+    name = "egret_cw340_archive",
     testonly = True,
-    srcs = [":earlgrey_cw340_manifest"],
+    srcs = [":egret_cw340_manifest"],
     mode = "0444",
-    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw340",
-    strip_prefix = "/hw/bitstream/vivado/earlgrey_cw340_manifest",
+    package_dir = "build-bin/hw/top_egret/chip_egret_cw340",
+    strip_prefix = "/hw/bitstream/vivado/egret_cw340_manifest",
     tags = ["manual"],
 )
 
@@ -258,7 +258,7 @@ pkg_files(
         ":cw310_mmi",
         ":fpga_cw310_test_rom",
     ],
-    prefix = "earlgrey/fpga_cw310/standard",
+    prefix = "egret/fpga_cw310/standard",
     tags = ["manual"],
 )
 
@@ -269,7 +269,7 @@ pkg_files(
         ":cw310_hyperdebug_mmi",
         ":fpga_cw310_test_rom_hyp",
     ],
-    prefix = "earlgrey/fpga_cw310/hyperdebug",
+    prefix = "egret/fpga_cw310/hyperdebug",
     tags = ["manual"],
 )
 

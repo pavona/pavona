@@ -223,10 +223,10 @@ def error_redact(error, lc_state, redact):
         return CONST.BFV.UNKNOWN
     return error & _REDACTION_MAP.get(redact)
 
-# Must match with hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
+# Must match with hw/top_egret/ip_autogen/alert_handler/data/alert_handler.hjson
 # The order of this list must match the order of the alerts in the OTP. Do not
 # use a set here.
-EARLGREY_LOC_ALERTS = [
+EGRET_LOC_ALERTS = [
     "alert_pingfail",
     "esc_pingfail",
     "alert_integfail",
@@ -236,10 +236,10 @@ EARLGREY_LOC_ALERTS = [
     "shadow_reg_storage_error",
 ]
 
-# Must match with hw/top_darjeeling/ip_autogen/alert_handler/data/alert_handler.hjson
+# Must match with hw/top_dragonfly/ip_autogen/alert_handler/data/alert_handler.hjson
 # The order of this list must match the order of the alerts in the OTP. Do not
 # use a set here.
-DARJEELING_LOC_ALERTS = [
+DRAGONFLY_LOC_ALERTS = [
     "alert_pingfail",
     "esc_pingfail",
     "alert_integfail",

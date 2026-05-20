@@ -10,12 +10,12 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_rv_timer_t timer;
 
 enum {
-  kHart = kTopEarlgreyPlicTargetIbex0,
+  kHart = kTopEgretPlicTargetIbex0,
   kComparator = 0,
   kReferenceTimeMillis = 5,
   kWrapTimeMillis = 5,
@@ -100,7 +100,7 @@ static status_t test_wrap(uint32_t tick_hz) {
  */
 bool test_main(void) {
   CHECK_DIF_OK(dif_rv_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+      mmio_region_from_addr(TOP_EGRET_RV_TIMER_BASE_ADDR), &timer));
   CHECK_DIF_OK(dif_rv_timer_reset(&timer));
 
   const uint32_t kTickHz[] = {

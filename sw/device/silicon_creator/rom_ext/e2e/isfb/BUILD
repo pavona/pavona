@@ -53,13 +53,13 @@ pavona_binary(
     testonly = True,
     srcs = ["isfb_page_test.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_ext",
+        "//hw/top_egret:fpga_cw310_rom_ext",
+        "//hw/top_egret:fpga_cw340_rom_ext",
     ],
     manifest = ":manifest_allow_isfb_erase",
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:print",
@@ -72,8 +72,8 @@ pavona_test(
     name = "isfb_page_test",
     srcs = ["isfb_page_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -84,7 +84,7 @@ pavona_test(
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:print",
@@ -97,8 +97,8 @@ pavona_test(
     name = "isfb_page_bad_erase_constraint_test",
     srcs = ["isfb_page_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -113,7 +113,7 @@ pavona_test(
     manifest = ":manifest_bad_erase_contraint",
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:print",
@@ -216,8 +216,8 @@ _ISFB_CONTRAINT_TESTS = {
         name = "isfb_{}_test".format(name),
         srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             binaries = {

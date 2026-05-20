@@ -14,8 +14,8 @@ pavona_test(
     name = "otp_creator_lockdown",
     srcs = ["otp_creator_lockdown.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|BFV:.*\r\n",
@@ -27,7 +27,7 @@ pavona_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -38,8 +38,8 @@ pavona_test(
     name = "otp_dai_lockdown",
     srcs = ["otp_dai_lockdown.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|BFV:.*\r\n",
@@ -53,7 +53,7 @@ pavona_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -64,15 +64,15 @@ pavona_test(
     name = "sram_lockdown",
     srcs = ["sram_lockdown.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         tags = ["broken"],
     ),
     deps = [
         "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -82,14 +82,14 @@ pavona_test(
     name = "epmp_rlb_lockdown",
     srcs = ["epmp_rlb_lockdown.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:dbg_print",

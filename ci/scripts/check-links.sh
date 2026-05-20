@@ -18,7 +18,7 @@ rm -f sw/vendor/eembc_coremark/docs/html/index/General2.html
     --exclude-path hw/ip_templates/ \
     --exclude-path hw/dv/doc/dv_doc_template.md \
     --exclude-path doc/rust_for_c_devs.md \
-    --exclude-path hw/top_earlgrey/ip/pinmux/doc/autogen/targets.md \
+    --exclude-path hw/top_egret/ip/pinmux/doc/autogen/targets.md \
     --exclude-path util/site/landing.html \
     || {
       echo -n "::error::"

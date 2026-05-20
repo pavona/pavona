@@ -16,7 +16,7 @@
 #include "sw/device/tests/penetrationtests/json/otp_fi_commands.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_otp_ctrl_t otp;
 
@@ -175,7 +175,7 @@ status_t handle_otp_fi_init(ujson_t *uj) {
                    kPentestPeripheralKmac | kPentestPeripheralAcc);
 
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   init_otp_mem_dump_buffers();
 

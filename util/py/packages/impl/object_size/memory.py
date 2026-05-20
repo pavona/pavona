@@ -8,7 +8,7 @@ from util.py.packages.impl.object_size.types import Memory
 
 @cache
 def parse_memory_file() -> dict[str, Memory]:
-    # FIXME: Actually parse hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+    # FIXME: Actually parse hw/top_egret/sw/autogen/top_egret_memory.ld
     memories = (
         ("rom", range(0x00008000, 0x00008000 + 0x8000)),
         ("ram_main", range(0x10000000, 0x10000000 + 0x20000)),

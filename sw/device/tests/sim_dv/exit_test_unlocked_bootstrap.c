@@ -13,20 +13,20 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   dif_lc_ctrl_t lc_ctrl;
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
 
   dif_lc_ctrl_state_t state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &state));
 
   uint32_t rom_en = abs_mmio_read32(
-      TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+      TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
       OTP_CTRL_PARAM_CREATOR_SW_CFG_ROM_EXEC_EN_OFFSET);
 
   if (rom_en == 0) {

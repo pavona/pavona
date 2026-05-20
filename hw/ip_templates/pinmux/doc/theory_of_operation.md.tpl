@@ -44,7 +44,7 @@ See the [retention logic](#retention-logic) and [wakeup detectors](#wakeup-detec
 % if enable_usb_wakeup:
 ${"###"} USB Wakeup Detection Module
 
-The USB device in the Earlgrey top-level is not in the AON power domain and hence the associated wakeup detection module is placed inside the pinmux IP in that top-level.
+The USB device in the Egret top-level is not in the AON power domain and hence the associated wakeup detection module is placed inside the pinmux IP in that top-level.
 The USB wakeup module is not connected to any pinmux infrastructure or CSRs except for the `usb_wkup_req` signal going to the power manager.
 See [USB device documentation](../../../../ip/usbdev/README.md) for more information on the USB wakeup mechanism.
 

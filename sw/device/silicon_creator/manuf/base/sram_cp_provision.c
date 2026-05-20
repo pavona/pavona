@@ -27,7 +27,7 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // ATE Indicator GPIOs.
 static const dif_gpio_pin_t kGpioPinTestStart = 0;
@@ -38,7 +38,7 @@ static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
 
 OTTF_DEFINE_TEST_CONFIG(
         .console.type = kOttfConsoleSpiDevice,
-        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.base_addr = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
         .console.test_may_clobber = false, .silence_console_prints = true,
         .console_tx_indicator.enable = true,
         .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
@@ -59,13 +59,13 @@ static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
-  TRY(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR),
+                       &lc_ctrl));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
   return OK_STATUS();
 }
@@ -76,24 +76,24 @@ static status_t peripheral_handles_init(void) {
 static status_t configure_ate_gpio_indicators(void) {
   // IOA6 / GPIO4 is for SPI console RX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+      &pinmux, kTopEgretPinmuxMioOutIoa6,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
   // IOA5 / GPIO3 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+      &pinmux, kTopEgretPinmuxMioOutIoa5,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
   // IOA0 / GPIO2 is for error reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestError));
+      &pinmux, kTopEgretPinmuxMioOutIoa0,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinTestError));
   // IOA1 / GPIO1 is for test done reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestDone));
+      &pinmux, kTopEgretPinmuxMioOutIoa1,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinTestDone));
   // IOA4 / GPIO0 is for test start reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestStart));
+      &pinmux, kTopEgretPinmuxMioOutIoa4,
+      kTopEgretPinmuxOutselGpioGpio0 + kGpioPinTestStart));
   TRY(dif_gpio_output_set_enabled_all(&gpio,
                                       0x1f));       // Enable first 5 GPIOs.
   TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));  // Intialize all to 0.
@@ -102,8 +102,7 @@ static status_t configure_ate_gpio_indicators(void) {
 
 static void manually_init_ast(uint32_t *data) {
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-    abs_mmio_write32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t),
-                     data[i]);
+    abs_mmio_write32(TOP_EGRET_AST_BASE_ADDR + i * sizeof(uint32_t), data[i]);
   }
 }
 
@@ -155,10 +154,10 @@ static status_t flash_info_page_0_read_and_validate(
   // HW origin portion of CP device.
   // "0x00034001" encodes:
   //   - a SiliconCreator ID of "0x4001" for "Nuvoton", and
-  //   - a Product ID of "0x0003" for Earlgrey A2 silicon.
+  //   - a Product ID of "0x0003" for Egret A2 silicon.
   console_out->cp_device_id[0] = kCpDeviceId[0];
   TRY_CHECK(kCpDeviceId[0] == 0x00034001u,
-            "Expected to find Earlgrey A2 hardware origin in CP device ID.");
+            "Expected to find Egret A2 hardware origin in CP device ID.");
   // Device Identification Number portion of CP device ID.
   uint32_t year = (lot_name >> 24) & 0xf;
   uint32_t week = (lot_name >> 16) & 0xff;

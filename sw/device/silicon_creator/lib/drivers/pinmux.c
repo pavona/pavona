@@ -14,49 +14,49 @@
 #include "hw/top/gpio_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 enum {
   /**
    * Base address of the pinmux registers.
    */
-  kBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
+  kBase = TOP_EGRET_PINMUX_AON_BASE_ADDR,
 };
 
 /**
  * A peripheral input and MIO pad to link it to.
  */
 typedef struct pinmux_input {
-  top_earlgrey_pinmux_peripheral_in_t periph;
-  top_earlgrey_pinmux_insel_t insel;
-  top_earlgrey_muxed_pads_t pad;
+  top_egret_pinmux_peripheral_in_t periph;
+  top_egret_pinmux_insel_t insel;
+  top_egret_muxed_pads_t pad;
 } pinmux_input_t;
 
 /**
  * An MIO pad and a peripheral output to link it to.
  */
 typedef struct pinmux_output {
-  top_earlgrey_pinmux_mio_out_t mio;
-  top_earlgrey_pinmux_outsel_t outsel;
-  top_earlgrey_muxed_pads_t pad;
+  top_egret_pinmux_mio_out_t mio;
+  top_egret_pinmux_outsel_t outsel;
+  top_egret_muxed_pads_t pad;
 } pinmux_output_t;
 
 /**
  * UART RX pin.
  */
 static const pinmux_input_t kInputUart0 = {
-    .periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
-    .insel = kTopEarlgreyPinmuxInselIoc3,
-    .pad = kTopEarlgreyMuxedPadsIoc3,
+    .periph = kTopEgretPinmuxPeripheralInUart0Rx,
+    .insel = kTopEgretPinmuxInselIoc3,
+    .pad = kTopEgretMuxedPadsIoc3,
 };
 
 /**
  * UART TX pin.
  */
 static const pinmux_output_t kOutputUart0 = {
-    .mio = kTopEarlgreyPinmuxMioOutIoc4,
-    .outsel = kTopEarlgreyPinmuxOutselUart0Tx,
-    .pad = kTopEarlgreyMuxedPadsIoc4,
+    .mio = kTopEgretPinmuxMioOutIoc4,
+    .outsel = kTopEgretPinmuxOutselUart0Tx,
+    .pad = kTopEgretMuxedPadsIoc4,
 };
 
 /**
@@ -65,27 +65,27 @@ static const pinmux_output_t kOutputUart0 = {
 #define PINMUX_ASSERT_EQ_(a, b) \
   static_assert((a) == (b), "Unexpected software strap configuration.")
 
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio22);
-PINMUX_ASSERT_EQ_(SW_STRAP_0_INSEL, kTopEarlgreyPinmuxInselIoc0);
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PAD, kTopEarlgreyMuxedPadsIoc0);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH, kTopEgretPinmuxPeripheralInGpioGpio22);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_INSEL, kTopEgretPinmuxInselIoc0);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_PAD, kTopEgretMuxedPadsIoc0);
 static const pinmux_input_t kInputSwStrap0 = {
     .periph = SW_STRAP_0_PERIPH,
     .insel = SW_STRAP_0_INSEL,
     .pad = SW_STRAP_0_PAD,
 };
 
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio23);
-PINMUX_ASSERT_EQ_(SW_STRAP_1_INSEL, kTopEarlgreyPinmuxInselIoc1);
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PAD, kTopEarlgreyMuxedPadsIoc1);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH, kTopEgretPinmuxPeripheralInGpioGpio23);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_INSEL, kTopEgretPinmuxInselIoc1);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_PAD, kTopEgretMuxedPadsIoc1);
 static const pinmux_input_t kInputSwStrap1 = {
     .periph = SW_STRAP_1_PERIPH,
     .insel = SW_STRAP_1_INSEL,
     .pad = SW_STRAP_1_PAD,
 };
 
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio24);
-PINMUX_ASSERT_EQ_(SW_STRAP_2_INSEL, kTopEarlgreyPinmuxInselIoc2);
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PAD, kTopEarlgreyMuxedPadsIoc2);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH, kTopEgretPinmuxPeripheralInGpioGpio24);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_INSEL, kTopEgretPinmuxInselIoc2);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_PAD, kTopEgretMuxedPadsIoc2);
 static const pinmux_input_t kInputSwStrap2 = {
     .periph = SW_STRAP_2_PERIPH,
     .insel = SW_STRAP_2_INSEL,
@@ -96,16 +96,16 @@ static const pinmux_input_t kInputSwStrap2 = {
  * USB dev sense pin.
  */
 static const pinmux_input_t kInputUsbdevSense = {
-    .periph = kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-    .insel = kTopEarlgreyPinmuxInselConstantOne,
+    .periph = kTopEgretPinmuxPeripheralInUsbdevSense,
+    .insel = kTopEgretPinmuxInselConstantOne,
 };
 
 /**
  * Sets the input pad for the specified peripheral input.
  *
- * @param periph A peripheral input (e.g. top_earlgrey_pinmux_peripheral_in_t
+ * @param periph A peripheral input (e.g. top_egret_pinmux_peripheral_in_t
  * periph).
- * @param insel An MIO pad to link it to (e.g. top_earlgrey_pinmux_insel_t
+ * @param insel An MIO pad to link it to (e.g. top_egret_pinmux_insel_t
  * insel).
  */
 void pinmux_configure_input(uint32_t periph, uint32_t insel) {
@@ -119,7 +119,7 @@ void pinmux_configure_input(uint32_t periph, uint32_t insel) {
 /**
  * Enables or disables pull-up/pull-down for the specified pad.
  *
- * @param pad A MIO pad (e.g. top_earlgrey_muxed_pads_t).
+ * @param pad A MIO pad (e.g. top_egret_muxed_pads_t).
  * @param enable Whether the internal pull resistor should be enabled.
  * @param up Whether the pull resistor should pull up(true) or down(false).
  */
@@ -155,7 +155,7 @@ static uint32_t read_strap_pin(pinmux_input_t input) {
   pinmux_enable_pull(input.pad, false, false);
   pinmux_prop_delay();
   uint32_t val =
-      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+      abs_mmio_read32(TOP_EGRET_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
   uint32_t state = bitfield_bit32_read(val, input.periph);
   uint32_t res = state ? 2 : 0;
 
@@ -165,7 +165,7 @@ static uint32_t read_strap_pin(pinmux_input_t input) {
   pinmux_enable_pull(input.pad, true, !state);
   pinmux_prop_delay();
 
-  val = abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+  val = abs_mmio_read32(TOP_EGRET_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
   state = bitfield_bit32_read(val, input.periph);
   res += state ? 1 : 0;
   return res;
@@ -224,6 +224,6 @@ uint32_t pinmux_read_straps(void) {
 
 bool pinmux_read_gpio(uint32_t gpio) {
   uint32_t val =
-      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+      abs_mmio_read32(TOP_EGRET_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
   return bitfield_bit32_read(val, gpio);
 }

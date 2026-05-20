@@ -24,7 +24,7 @@ While most of these tests are top-level agnostic, some are not.
 ## Subfoldering Rules
 *   Smoke tests will be placed in (one per IP):
     *   (generic) **sw/device/tests/**
-    *   (earlgrey-specific) **sw/device/tests/earlgrey/**
+    *   (egret-specific) **sw/device/tests/egret/**
     *   ({toplevel}-specific) **sw/device/tests/{toplevel}/**
 *   IP Integration tests will be placed in the same folders as above.
 *   System-level tests will be placed in the same folders as above.

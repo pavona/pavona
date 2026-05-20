@@ -18,7 +18,7 @@
 static const dt_gpio_t kGpioDt = kDtGpio;
 static const dt_uart_t kUart0Dt = kDtUart0;
 
-#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+#if defined(OPENTITAN_IS_EGRET) || defined(OPENTITAN_IS_SCAFI_DEPRECATED)
 static const dt_pad_t kPadUart0Tx = kDtPadIoc4;
 static const dt_pad_t kPadUart0Rx = kDtPadIoc3;
 #define HAS_UART1
@@ -29,7 +29,7 @@ static const dt_pad_t kPadStrap0 = kDtPadIoc0;
 static const dt_pad_t kPadStrap1 = kDtPadIoc1;
 static const dt_pad_t kPadStrap2 = kDtPadIoc2;
 
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 static const dt_pad_t kPadUart0Tx = kDtPadUart0Tx;
 static const dt_pad_t kPadUart0Rx = kDtPadUart0Rx;
 /* No UART1 */
@@ -62,7 +62,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
       pinmux, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoTx), kDtPeriphIoDirOut,
       kPadUart0Tx));
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
   // Enable pull-ups on UART0 RX
   // Pull-ups are available only on certain platforms.
   if (kDeviceType == kDeviceSimDV) {
@@ -89,7 +89,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
       kPadUart1Tx));
 #endif /* HAS_UART1 */
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
   // Configure a higher drive strength for the USB_P and USB_N pads because
   // the pad drivers must be capable of overpowering the 'pull' signal
   // strength of the internal pull ups in the differential receiver.
@@ -115,7 +115,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   // Configure USBDEV SENSE outputs to be high-Z (IOC7)
   CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kDtPadIoc7,
                                             kDtPeriphIoConstantHighZ));
-#endif /* OPENTITAN_IS_EARLGREY* */
+#endif /* OPENTITAN_IS_EGRET* */
 }
 
 status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
@@ -164,11 +164,11 @@ status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
 // IOs are allocated to the GPIO peripheral, even for testing. The DV testbench
 // does not have this limitation, and is able to allocate as many chip IOs as
 // the number of GPIOs supported by the peripheral. At this time, these pin
-// assignments matches DV (see `hw/top_earlgrey/dv/env/chip_if.sv`).
+// assignments matches DV (see `hw/top_egret/dv/env/chip_if.sv`).
 //
 // The pinout spreadsheet allocates fewer pins to GPIOs than what the GPIO IP
 // supports. This oversubscription is intentional to maximize testing.
-#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+#if defined(OPENTITAN_IS_EGRET) || defined(OPENTITAN_IS_SCAFI_DEPRECATED)
 const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins] = {
     kDtPadIoa0,  kDtPadIoa1, kDtPadIoa2,  kDtPadIoa3,  kDtPadIoa4,
     kDtPadIoa5,  kDtPadIoa6, kDtPadIoa7,  kDtPadIoa8,  kDtPadIob6,
@@ -177,7 +177,7 @@ const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins] = {
     kDtPadIor0,  kDtPadIor1, kDtPadIor2,  kDtPadIor3,  kDtPadIor4,
     kDtPadIor5,  kDtPadIor6, kDtPadIor7,  kDtPadIor10, kDtPadIor11,
     kDtPadIor12, kDtPadIor13};
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins] = {
     kDtPadGpioGpio0,  kDtPadGpioGpio1,  kDtPadGpioGpio2,  kDtPadGpioGpio3,
     kDtPadGpioGpio4,  kDtPadGpioGpio5,  kDtPadGpioGpio6,  kDtPadGpioGpio7,

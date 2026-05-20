@@ -22,7 +22,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -87,7 +87,7 @@ static_assert(kExitTokenSizeInBytes == ARRAYSIZE(kLcExitToken.data),
  */
 static void kmac_init(void) {
   CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
 
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
@@ -103,20 +103,20 @@ static void kmac_init(void) {
  * Initializes the peripherals used in this test.
  */
 static void peripherals_init(void) {
-  CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+  CHECK_DIF_OK(
+      dif_csrng_init(mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR), &csrng));
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+      mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
 
   kmac_init();
 }
@@ -311,7 +311,7 @@ bool test_main(void) {
       kPartitionId = 0,
     };
     uint32_t address =
-        (uint32_t)(nv_csrng_output)-TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+        (uint32_t)(nv_csrng_output)-TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR;
     uint32_t expected[kEntropyFifoBufferSize];
     csrng_static_generate_run(expected, ARRAYSIZE(expected));
     CHECK_STATUS_OK(flash_ctrl_testutils_write(&flash_ctrl_state, address,

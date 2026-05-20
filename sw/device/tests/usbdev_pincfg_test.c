@@ -39,7 +39,7 @@
 #include "sw/device/lib/testing/usb_testutils.h"
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 
 /**
  * Configuration values for USB.
@@ -89,13 +89,13 @@ bool test_main(void) {
   LOG_INFO("Running USBDEV PINCFG test");
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-      kTopEarlgreyPinmuxInselIoc7));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInUsbdevSense,
+                                       kTopEgretPinmuxInselIoc7));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // Construct the test list appropriate to this target
   struct {
@@ -204,13 +204,13 @@ bool test_main(void) {
       LOG_INFO(" - Hold reset");
     }
     CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr,
-                                           kTopEarlgreyResetManagerSwResetsUsb,
+                                           kTopEgretResetManagerSwResetsUsb,
                                            kDifRstmgrSoftwareResetHold));
     if (verbose) {
       LOG_INFO(" - Release reset");
     }
     CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr,
-                                           kTopEarlgreyResetManagerSwResetsUsb,
+                                           kTopEgretResetManagerSwResetsUsb,
                                            kDifRstmgrSoftwareResetRelease));
   }
 

@@ -110,7 +110,7 @@ Many targets will choose to resolve their virtual cores by only including one im
 Top-level cores will typically specialize generic systems and modules for a particular hardware target or application by adding constraints and wrappers for that target.
 One part of this may be choosing a technology library to resolve all technology-dependent primitives to implementations specialized or optimized for the given application.
 To reduce the hassle of pulling in implementations for all virtual cores in a given technology library, this repository's built-in prim libraries provide an `:all` core, e.g. `lowrisc:prim_generic:all` or `lowrisc:prim_xilinx_ultrascale:all`.
-For example, the core [`hw/top_earlgrey/chip_earlgrey_cw310.core`](../../top_earlgrey/chip_earlgrey_cw310.core) targeting a synthesis for a specific Xilinx FPGA depends on `lowrisc:prim_xilinx:all` to select a Xilinx Series-7 technology library.
+For example, the core [`hw/top_egret/chip_egret_cw310.core`](../../top_egret/chip_egret_cw310.core) targeting a synthesis for a specific Xilinx FPGA depends on `lowrisc:prim_xilinx:all` to select a Xilinx Series-7 technology library.
 
 ### Mappings
 
@@ -161,28 +161,28 @@ At the HWIP level, the UART is described generally, so its dependencies do not c
 Instead, the [DVSim verification tool](../../../util/dvsim/README.md) passes a set of mappings via CLI flags to FuseSoC to resolve all virtual cores for the specific linting job.
 This allows the block to be linted for multiple different primitives (and top-level constants).
 
-Mappings may be present in top-level core files, e.g. in [`hw/top_earlgrey/top_earlgrey.core`](../../top_earlgrey/top_earlgrey.core) (depicted below), to specialize block-level flows for top specific implementations, as described previously.
+Mappings may be present in top-level core files, e.g. in [`hw/top_egret/top_egret.core`](../../top_egret/top_egret.core) (depicted below), to specialize block-level flows for top specific implementations, as described previously.
 
 ```yaml
-# hw/top_earlgrey/top_earlgrey.core
-name: "lowrisc:systems:top_earlgrey:0.1"
-description: "Technology-independent Earlgrey toplevel"
+# hw/top_egret/top_egret.core
+name: "lowrisc:systems:top_egret:0.1"
+description: "Technology-independent Egret toplevel"
 
 mapping:
-  "lowrisc:virtual_constants:top_pkg": "lowrisc:earlgrey_constants:top_pkg"
-  "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:earlgrey_constants:top_racl_pkg"
-  "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
-  "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
+  "lowrisc:virtual_constants:top_pkg": "lowrisc:egret_constants:top_pkg"
+  "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:egret_constants:top_racl_pkg"
+  "lowrisc:systems:ast_pkg": "lowrisc:systems:top_egret_ast_pkg"
+  "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:egret_ip:flash_ctrl_prim_reg_top"
 ```
 
-The following example shows how the UART lint flow is specialized for the earlgrey top.
+The following example shows how the UART lint flow is specialized for the egret top.
 ```yaml
-# hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson
+# hw/top_egret/lint/top_egret_lint_cfgs.hjson
 {
   name: uart
   fusesoc_core: lowrisc:ip:uart
   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_egret:0.1"
   rel_path: "hw/ip/uart/lint/{tool}"
 },
 ```
@@ -249,7 +249,7 @@ If they do not, you need to make sure the path to them is given to FuseSoC with 
 [Resolution of Concrete Implementations](#resolution-of-concrete-implementations) outlines how technology libraries are selected.
 
 If you have your own target which requires a particular primitive, you should add the technology library's VLNV to its dependencies.
-[`hw/top_earlgrey/chip_earlgrey_cw310.core`](../../top_earlgrey/chip_earlgrey_cw310.core) is an example of an core requiring a particular technology library--namely `lowrisc:prim_xilinx:all`.
+[`hw/top_egret/chip_egret_cw310.core`](../../top_egret/chip_egret_cw310.core) is an example of an core requiring a particular technology library--namely `lowrisc:prim_xilinx:all`.
 You'll notice this VLNV in its dependencies.
 
 If you are running a target which supports different technology libraries, then you should use mappings to select the technology library you would like to use.
@@ -260,23 +260,23 @@ You should provide the `fileset_partner` flag to disable the default implementat
 
 As an example:
 ```yaml
-# hw/top_earlgrey/chip_earlgrey_asic.core
-name: "lowrisc:systems:chip_earlgrey_asic:0.1"
-description: "Earlgrey chip level"
+# hw/top_egret/chip_egret_asic.core
+name: "lowrisc:systems:chip_egret_asic:0.1"
+description: "Egret chip level"
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:systems:top_earlgrey:0.1
-      - lowrisc:systems:top_earlgrey_pkg
-      - lowrisc:systems:top_earlgrey_padring
-      - lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top
-      - "fileset_partner ? (partner:systems:top_earlgrey_ast)"
-      - "fileset_partner ? (partner:systems:top_earlgrey_scan_role_pkg)"
+      - lowrisc:systems:top_egret:0.1
+      - lowrisc:systems:top_egret_pkg
+      - lowrisc:systems:top_egret_padring
+      - lowrisc:egret_ip:flash_ctrl_prim_reg_top
+      - "fileset_partner ? (partner:systems:top_egret_ast)"
+      - "fileset_partner ? (partner:systems:top_egret_scan_role_pkg)"
       - "fileset_partner ? (partner:prim_tech:all)"
       - "fileset_partner ? (partner:prim_tech:flash)"
-      - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast)"
-      - "!fileset_partner ? (lowrisc:earlgrey_systems:scan_role_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:top_egret_ast)"
+      - "!fileset_partner ? (lowrisc:egret_systems:scan_role_pkg)"
       - "!fileset_partner ? (lowrisc:prim_generic:all)"
       - "!fileset_partner ? (lowrisc:prim_generic:flash)"
 ```
@@ -287,7 +287,7 @@ fusesoc \
     run \
     --flag fileset_partner \                   # Disable default implementation
     --mapping <vendor>:prim_<tech_lib>:all \   # Select alternate implementation via mappings
-    lowrisc:systems:chip_earlgrey_asic
+    lowrisc:systems:chip_egret_asic
 ```
 
 ### `prim_asap7` example

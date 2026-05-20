@@ -32,7 +32,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kHart = kTopDarjeelingPlicTargetIbex0,
+  kHart = kTopDragonflyPlicTargetIbex0,
   kIrqVoid = UINT32_MAX,
 };
 
@@ -74,13 +74,13 @@ static void init_interrupts(void) {
   // - enable
   // - set prio > 0
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &rv_plic, kTopDarjeelingPlicIrqIdDmaDmaDone, kHart, kDifToggleEnabled));
+      &rv_plic, kTopDragonflyPlicIrqIdDmaDmaDone, kHart, kDifToggleEnabled));
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &rv_plic, kTopDarjeelingPlicIrqIdDmaDmaError, kHart, kDifToggleEnabled));
+      &rv_plic, kTopDragonflyPlicIrqIdDmaDmaError, kHart, kDifToggleEnabled));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &rv_plic, kTopDarjeelingPlicIrqIdDmaDmaDone, kDifRvPlicMaxPriority));
+      &rv_plic, kTopDragonflyPlicIrqIdDmaDmaDone, kDifRvPlicMaxPriority));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &rv_plic, kTopDarjeelingPlicIrqIdDmaDmaError, kDifRvPlicMaxPriority));
+      &rv_plic, kTopDragonflyPlicIrqIdDmaDmaError, kDifRvPlicMaxPriority));
   // Enable IRQs at the peripheral
   CHECK_DIF_OK(
       dif_dma_irq_set_enabled(&dma, kDifDmaIrqDmaDone, kDifToggleEnabled));
@@ -102,7 +102,7 @@ static void init_interrupts(void) {
 static status_t external_isr(void) {
   dif_dma_irq_t dma_irq_id;
   dif_rv_plic_irq_id_t plic_irq_id;
-  top_darjeeling_plic_peripheral_t peripheral;
+  top_dragonfly_plic_peripheral_t peripheral;
 
   // (1) First, find which interrupt fired at PLIC by claiming it.
   TRY(dif_rv_plic_irq_claim(&rv_plic, kHart, &plic_irq_id));
@@ -110,17 +110,17 @@ static status_t external_isr(void) {
   // Check the plic_irq is actually from a DMA peripheral
   // This test currently cannot handle any other interrupts, as the logic/ISRs
   // are not sufficiently robust.
-  CHECK(plic_irq_id >= kTopDarjeelingPlicIrqIdDmaDmaDone &&
-            plic_irq_id <= kTopDarjeelingPlicIrqIdDmaDmaError,
+  CHECK(plic_irq_id >= kTopDragonflyPlicIrqIdDmaDmaDone &&
+            plic_irq_id <= kTopDragonflyPlicIrqIdDmaDmaError,
         "got an irq from a plic_peripheral that is not a DMA!");
 
-  peripheral = (top_darjeeling_plic_peripheral_t)
-      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
+  peripheral = (top_dragonfly_plic_peripheral_t)
+      top_dragonfly_plic_interrupt_for_peripheral[plic_irq_id];
 
   dif_rv_plic_irq_id_t plic_periph_base_irq_id =
-      kTopDarjeelingPlicIrqIdDmaDmaDone;
+      kTopDragonflyPlicIrqIdDmaDmaDone;
 
-  if (peripheral != kTopDarjeelingPlicPeripheralDma) {
+  if (peripheral != kTopDragonflyPlicPeripheralDma) {
     CHECK(false, "Invalid plic_irq_id that from a DMA!");
   }
 

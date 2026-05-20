@@ -2,33 +2,33 @@
 
 A tool to manipulate and extract information from the testplans.
 
-## Exporting a csv for the top earlgrey:
+## Exporting a csv for the top egret:
 ```sh
 python util/testplantool/testplantool.py export-csv \
-hw/top_earlgrey/data/chip_testplan.hjson /tmp/earlgrey.csv
+hw/top_egret/data/chip_testplan.hjson /tmp/egret.csv
 ```
 or with bazel:
 ```sh
 bazel run util/testplantool -- export-csv \
-$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson /tmp/earlgrey.csv
+$(pwd)/hw/top_egret/data/chip_testplan.hjson /tmp/egret.csv
 ```
 
 ## Query testpoints
 With DEV lifecycle:
 ```sh
 bazel run util/testplantool -- query \
-$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson --lc-state="DEV"
+$(pwd)/hw/top_egret/data/chip_testplan.hjson --lc-state="DEV"
 ```
 With PROD lifecycle and `aes` in the name:
 ```sh
 bazel run util/testplantool -- query \
-$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson --name=".*aes.*" --lc-state="DEV"
+$(pwd)/hw/top_egret/data/chip_testplan.hjson --name=".*aes.*" --lc-state="DEV"
 ```
 
 With PROD lifecycle and `aes` in the name, only add the fields `name` and `bazel` to the output:
 ```sh
 bazel run util/testplantool -- query \
-$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson --name=".*aes.*" \
+$(pwd)/hw/top_egret/data/chip_testplan.hjson --name=".*aes.*" \
 --lc-state="DEV" --fields="name,bazel"
 ```
 Available testpoint filters:
@@ -44,12 +44,12 @@ fields filters:
 Based on SiVal stage
 ```sh
 bazel run util/testplantool -- export-testsuite \
-$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson $(pwd)/sw/device/tests/sival/BUILD
+$(pwd)/hw/top_egret/data/chip_testplan.hjson $(pwd)/sw/device/tests/sival/BUILD
 ```
 
 Based on `lc_state`
 ```sh
 mkdir -p sw/device/tests/lc_state
 bazel run util/testplantool -- export-testsuite -g "lc_state" \
-$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson $(pwd)/sw/device/tests/lc_state/BUILD
+$(pwd)/hw/top_egret/data/chip_testplan.hjson $(pwd)/sw/device/tests/lc_state/BUILD
 ```

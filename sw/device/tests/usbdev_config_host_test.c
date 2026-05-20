@@ -23,7 +23,7 @@
 #include "sw/device/lib/testing/usb_testutils.h"
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
 
 /**
  * Configuration values for USB.
@@ -67,11 +67,11 @@ bool test_main(void) {
   }
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-      kTopEarlgreyPinmuxInselIoc7));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEgretPinmuxPeripheralInUsbdevSense,
+                                       kTopEgretPinmuxInselIoc7));
 
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while

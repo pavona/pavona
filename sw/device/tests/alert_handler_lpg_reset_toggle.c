@@ -32,7 +32,7 @@
 #include "hw/top/spi_device_regs.h"
 #include "hw/top/spi_host_regs.h"
 #include "hw/top/usbdev_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -48,64 +48,60 @@ static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
 static dif_rv_core_ibex_t ibex;
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
 
 /**
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+      mmio_region_from_addr(TOP_EGRET_USBDEV_BASE_ADDR), &usbdev));
 
   CHECK_DIF_OK(dif_spi_device_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_dev.dev));
+      mmio_region_from_addr(TOP_EGRET_SPI_DEVICE_BASE_ADDR), &spi_dev.dev));
 
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host0));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spi_host0));
 
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host1));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR), &spi_host1));
 
   CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c0));
+      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C0_BASE_ADDR), &i2c0));
 
   CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR), &i2c1));
+      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C1_BASE_ADDR), &i2c1));
 
   CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c2));
+      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C2_BASE_ADDR), &i2c2));
 
   mmio_region_t ibex_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
 
   // Enable all the alert_handler interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+                                     kTopEgretPlicIrqIdAlertHandlerClassa,
+                                     kTopEgretPlicIrqIdAlertHandlerClassd);
 }
 
 // List of alerts
-static const uint32_t spidev_alerts[] = {
-    kTopEarlgreyAlertIdSpiDeviceFatalFault};
-static const uint32_t spihost0_alerts[] = {
-    kTopEarlgreyAlertIdSpiHost0FatalFault};
-static const uint32_t spihost1_alerts[] = {
-    kTopEarlgreyAlertIdSpiHost1FatalFault};
-static const uint32_t usbdev_alerts[] = {kTopEarlgreyAlertIdUsbdevFatalFault};
-static const uint32_t i2c0_alerts[] = {kTopEarlgreyAlertIdI2c0FatalFault};
-static const uint32_t i2c1_alerts[] = {kTopEarlgreyAlertIdI2c1FatalFault};
-static const uint32_t i2c2_alerts[] = {kTopEarlgreyAlertIdI2c2FatalFault};
+static const uint32_t spidev_alerts[] = {kTopEgretAlertIdSpiDeviceFatalFault};
+static const uint32_t spihost0_alerts[] = {kTopEgretAlertIdSpiHost0FatalFault};
+static const uint32_t spihost1_alerts[] = {kTopEgretAlertIdSpiHost1FatalFault};
+static const uint32_t usbdev_alerts[] = {kTopEgretAlertIdUsbdevFatalFault};
+static const uint32_t i2c0_alerts[] = {kTopEgretAlertIdI2c0FatalFault};
+static const uint32_t i2c1_alerts[] = {kTopEgretAlertIdI2c1FatalFault};
+static const uint32_t i2c2_alerts[] = {kTopEgretAlertIdI2c2FatalFault};
 
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
 static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
@@ -153,59 +149,59 @@ typedef struct test {
 static const test_t kPeripherals[] = {
     {
         .name = "SPI_HOST0",
-        .base = TOP_EARLGREY_SPI_HOST0_BASE_ADDR,
+        .base = TOP_EGRET_SPI_HOST0_BASE_ADDR,
         .dif = &spi_host0,
         .alert_ids = spihost0_alerts,
         .num_alert_peri = num_spihost0_alerts,
-        .reset_index = kTopEarlgreyResetManagerSwResetsSpiHost0,
+        .reset_index = kTopEgretResetManagerSwResetsSpiHost0,
     },
     {
         .name = "SPI_HOST1",
-        .base = TOP_EARLGREY_SPI_HOST1_BASE_ADDR,
+        .base = TOP_EGRET_SPI_HOST1_BASE_ADDR,
         .dif = &spi_host1,
         .alert_ids = spihost1_alerts,
         .num_alert_peri = num_spihost1_alerts,
-        .reset_index = kTopEarlgreyResetManagerSwResetsSpiHost1,
+        .reset_index = kTopEgretResetManagerSwResetsSpiHost1,
     },
     {
         .name = "USB",
-        .base = TOP_EARLGREY_USBDEV_BASE_ADDR,
+        .base = TOP_EGRET_USBDEV_BASE_ADDR,
         .dif = &usbdev,
         .alert_ids = usbdev_alerts,
         .num_alert_peri = num_usbdev_alerts,
-        .reset_index = kTopEarlgreyResetManagerSwResetsUsb,
+        .reset_index = kTopEgretResetManagerSwResetsUsb,
     },
     {
         .name = "SPI_DEVICE",
-        .base = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .base = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
         .dif = &spi_dev.dev,
         .alert_ids = spidev_alerts,
         .num_alert_peri = num_spidev_alerts,
-        .reset_index = kTopEarlgreyResetManagerSwResetsSpiDevice,
+        .reset_index = kTopEgretResetManagerSwResetsSpiDevice,
     },
     {
         .name = "I2C0",
-        .base = TOP_EARLGREY_I2C0_BASE_ADDR,
+        .base = TOP_EGRET_I2C0_BASE_ADDR,
         .dif = &i2c0,
         .alert_ids = i2c0_alerts,
         .num_alert_peri = num_i2c0_alerts,
-        .reset_index = kTopEarlgreyResetManagerSwResetsI2c0,
+        .reset_index = kTopEgretResetManagerSwResetsI2c0,
     },
     {
         .name = "I2C1",
-        .base = TOP_EARLGREY_I2C1_BASE_ADDR,
+        .base = TOP_EGRET_I2C1_BASE_ADDR,
         .dif = &i2c1,
         .alert_ids = i2c1_alerts,
         .num_alert_peri = num_i2c1_alerts,
-        .reset_index = kTopEarlgreyResetManagerSwResetsI2c1,
+        .reset_index = kTopEgretResetManagerSwResetsI2c1,
     },
     {
         .name = "I2C2",
-        .base = TOP_EARLGREY_I2C2_BASE_ADDR,
+        .base = TOP_EGRET_I2C2_BASE_ADDR,
         .dif = &i2c2,
         .alert_ids = i2c2_alerts,
         .num_alert_peri = num_i2c2_alerts,
-        .reset_index = kTopEarlgreyResetManagerSwResetsI2c2,
+        .reset_index = kTopEgretResetManagerSwResetsI2c2,
     },
 };
 
@@ -358,11 +354,11 @@ void ottf_external_isr(uint32_t *exc_info) {
   // We don't expect any interrupt to be fired.
   // If an interrupt is fired, the test will be ended.
   CHECK(false, "Unexpected external interrupt triggered.");
-  // top_earlgrey_plic_peripheral_t peripheral_serviced;
+  // top_egret_plic_peripheral_t peripheral_serviced;
   // dif_alert_handler_irq_t irq_serviced;
   // isr_testutils_alert_handler_isr(plic_ctx, alert_handler_ctx,
   //                                 &peripheral_serviced, &irq_serviced);
-  // CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAlertHandler,
+  // CHECK(peripheral_serviced == kTopEgretPlicPeripheralAlertHandler,
   //       "Interurpt from unexpected peripheral: %d", peripheral_serviced);
 }
 

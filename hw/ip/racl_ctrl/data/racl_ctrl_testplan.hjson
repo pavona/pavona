@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // This is a testplan for racl_ctrl. That IP block is actually templated (for example, see
-// hw/top_darjeeling/ip_autogen), but the testplan is the same for each instantiation.
+// hw/top_dragonfly/ip_autogen), but the testplan is the same for each instantiation.
 
 {
   name: "racl_ctrl"

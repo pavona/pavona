@@ -15,14 +15,14 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/lib/testing/uart_testutils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static const uint8_t kSendData[] = "UART baud test!";
 static const uint32_t kBaseAddrs[4] = {
-    TOP_EARLGREY_UART0_BASE_ADDR,
-    TOP_EARLGREY_UART1_BASE_ADDR,
-    TOP_EARLGREY_UART2_BASE_ADDR,
-    TOP_EARLGREY_UART3_BASE_ADDR,
+    TOP_EGRET_UART0_BASE_ADDR,
+    TOP_EGRET_UART1_BASE_ADDR,
+    TOP_EGRET_UART2_BASE_ADDR,
+    TOP_EGRET_UART3_BASE_ADDR,
 };
 static const uint32_t kBauds[11] = {
     4800, 9600, 19200, 38400, 57600, 115200, 230400, 128000, 256000, 1000000,
@@ -94,7 +94,7 @@ bool test_main(void) {
 
   mmio_region_t base_addr;
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
   base_addr = mmio_region_from_addr(kBaseAddrs[uart_idx]);
@@ -103,8 +103,7 @@ bool test_main(void) {
   if (uart_idx == 0) {
     CHECK_STATUS_OK(
         uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
-    ottf_console_configure_uart(ottf_console_get(),
-                                TOP_EARLGREY_UART1_BASE_ADDR);
+    ottf_console_configure_uart(ottf_console_get(), TOP_EGRET_UART1_BASE_ADDR);
   }
 
   CHECK_STATUS_OK(

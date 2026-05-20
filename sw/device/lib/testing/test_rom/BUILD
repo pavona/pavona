@@ -36,13 +36,13 @@ pavona_binary(
     name = "test_rom",
     collect_code_coverage = 0,
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-        "//hw/top_darjeeling:sim_dv_base",
-        "//hw/top_darjeeling:sim_verilator_base",
+        "//hw/top_egret:fpga_cw310",
+        "//hw/top_egret:fpga_cw305",
+        "//hw/top_egret:fpga_cw340",
+        "//hw/top_egret:sim_dv_base",
+        "//hw/top_egret:sim_verilator_base",
+        "//hw/top_dragonfly:sim_dv_base",
+        "//hw/top_dragonfly:sim_verilator_base",
     ],
     features = ["use_lld"],
     kind = "rom",
@@ -69,9 +69,9 @@ pavona_binary(
 # can find the test_rom VMEM files.
 legacy_rom_targets(
     suffixes = {
-        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
-        "fpga_cw305": ["//hw/top_earlgrey:fpga_cw305"],
-        "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
+        "fpga_cw310": ["//hw/top_egret:fpga_cw310"],
+        "fpga_cw305": ["//hw/top_egret:fpga_cw305"],
+        "fpga_cw340": ["//hw/top_egret:fpga_cw340"],
     },
     target = "test_rom",
 )
@@ -92,15 +92,15 @@ legacy_rom_targets(
 ]
 
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator bootstrap
-# and other functions necessary to build the test_rom for the Englishbreakfast top level.
+# and other functions necessary to build the test_rom for the Scafi_Deprecated top level.
 cc_library(
-    name = "english_breakfast_test_rom_lib",
+    name = "scafi_deprecated_test_rom_lib",
     srcs = [
-        "english_breakfast_fake_driver_funcs.c",
-        "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
-        "//sw/device/silicon_creator/rom:english_breakfast_test_rom_bootstrap_srcs",
+        "scafi_deprecated_fake_driver_funcs.c",
+        "//sw/device/silicon_creator/lib/drivers:scafi_deprecated_test_rom_driver_srcs",
+        "//sw/device/silicon_creator/rom:scafi_deprecated_test_rom_bootstrap_srcs",
     ],
-    # This should be built only for Englishbreakfast and skipped if using wildcards.
+    # This should be built only for Scafi_Deprecated and skipped if using wildcards.
     tags = ["manual"],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
@@ -117,7 +117,7 @@ cc_library(
 )
 
 cc_library(
-    name = "earl_grey_test_rom_lib",
+    name = "egret_test_rom_lib",
     deps = [
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -127,9 +127,9 @@ cc_library(
 )
 
 cc_library(
-    name = "darjeeling_test_rom_lib",
+    name = "dragonfly_test_rom_lib",
     srcs = [
-        "darjeeling_fake_driver_funcs.c",
+        "dragonfly_fake_driver_funcs.c",
     ],
     deps = [
         "//sw/device/lib/dif:rstmgr",
@@ -141,23 +141,23 @@ alias(
     name = "target_test_rom_lib",
     actual = pavona_select_top(
         {
-            "darjeeling": ":darjeeling_test_rom_lib",
-            "englishbreakfast": ":english_breakfast_test_rom_lib",
+            "dragonfly": ":dragonfly_test_rom_lib",
+            "scafi_deprecated": ":scafi_deprecated_test_rom_lib",
         },
-        ":earl_grey_test_rom_lib",
+        ":egret_test_rom_lib",
     ),
     visibility = ["//visibility:private"],
 )
 
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator manifest
-# implementation when building the test_rom for the Englishbreakfast top level.
+# implementation when building the test_rom for the Scafi_Deprecated top level.
 cc_library(
-    name = "english_breakfast_test_rom_manifest",
+    name = "scafi_deprecated_test_rom_manifest",
     srcs = [
-        "//sw/device/silicon_creator/lib:english_breakfast_test_rom_manifest_srcs",
-        "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
+        "//sw/device/silicon_creator/lib:scafi_deprecated_test_rom_manifest_srcs",
+        "//sw/device/silicon_creator/lib/drivers:scafi_deprecated_test_rom_driver_srcs",
     ],
-    # This should be built only for Englishbreakfast and skipped if using wildcards.
+    # This should be built only for Scafi_Deprecated and skipped if using wildcards.
     tags = ["manual"],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
@@ -181,7 +181,7 @@ alias(
     name = "test_rom_manifest",
     actual = pavona_select_top(
         {
-            "englishbreakfast": ":english_breakfast_test_rom_manifest",
+            "scafi_deprecated": ":scafi_deprecated_test_rom_manifest",
         },
         "//sw/device/silicon_creator/lib:manifest",
     ),
@@ -203,12 +203,12 @@ cc_library(
         [],
     ) + pavona_select_top(
         {
-            "englishbreakfast": [],
+            "scafi_deprecated": [],
         },
         ["HAS_RETENTION_RAM"],
     ) + pavona_select_top(
         {
-            "darjeeling": ["HAS_ROM_CTRL1"],
+            "dragonfly": ["HAS_ROM_CTRL1"],
         },
         [],
     ),
@@ -279,10 +279,10 @@ pavona_test(
     name = "test_rom_test",
     srcs = ["test_rom_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_darjeeling:sim_verilator": None,
+        "//hw/top_egret:fpga_cw310_test_rom": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:sim_verilator": None,
+        "//hw/top_dragonfly:sim_verilator": None,
     },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -314,12 +314,12 @@ output_groups(
         "sim_verilator_rom",
         "sim_verilator_mapfile",
     ],
-    target_compatible_with = pavona_require_top("earlgrey"),
+    target_compatible_with = pavona_require_top("egret"),
 )
 
 pkg_files(
     name = "package",
     testonly = True,
     srcs = [":pre_package"],
-    prefix = "earlgrey/test_rom",
+    prefix = "egret/test_rom",
 )

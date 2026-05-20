@@ -18,7 +18,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/mbx_regs.h"  // Generated
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -82,7 +82,7 @@ static void increment_array_uint32(uint32_t *arr, uint32_t size) {
 ////////////////////////
 
 enum {
-  kSramCtrlMbxSize = TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES,
+  kSramCtrlMbxSize = TOP_DRAGONFLY_SRAM_CTRL_MBOX_RAM_SIZE_BYTES,
   kMbxSizeDWORDS = 8,  // The size we are allocating to each mbx for this test
                        // (imbx + ombx == kMbxSizeDWORDS * 2)
 };

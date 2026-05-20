@@ -403,15 +403,15 @@ register_toolchains("//toolchain:cc_toolchain_opentitan")
 # Register tops
 top_desc = use_extension("//hw/top:extensions.bzl", "top")
 top_desc.register(
-    bazel_file = "//hw/top_earlgrey:defs.bzl",
-    top_var = "EARLGREY",
+    bazel_file = "//hw/top_egret:defs.bzl",
+    top_var = "EGRET",
 )
 top_desc.register(
-    bazel_file = "//hw/top_darjeeling:defs.bzl",
-    top_var = "DARJEELING",
+    bazel_file = "//hw/top_dragonfly:defs.bzl",
+    top_var = "DRAGONFLY",
 )
 top_desc.register(
-    bazel_file = "//hw/top_englishbreakfast:defs.bzl",
-    top_var = "ENGLISHBREAKFAST",
+    bazel_file = "//hw/top_scafi_deprecated:defs.bzl",
+    top_var = "SCAFI_DEPRECATED",
 )
 use_repo(top_desc, "tops_desc")

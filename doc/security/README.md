@@ -2,13 +2,13 @@
 
 A fundamental part of Pavona's quality lies in the trustworthy nature of its hardware security-related assets.
 
-Both the Earlgrey and Darjeeling top levels are hardware root-of-trust (RoT) systems which adhere to these standards and utilize the security resources within Pavona.
+Both the Egret and Dragonfly top levels are hardware root-of-trust (RoT) systems which adhere to these standards and utilize the security resources within Pavona.
 
 ## Specifications and Standards
 
-### [Earlgrey Security Model Specification][security_model]
+### [Egret Security Model Specification][security_model]
 
-The [Earlgrey Security Model Specification][security_model] defines the logical security properties of Earlgrey, a discrete IC RoT.
+The [Egret Security Model Specification][security_model] defines the logical security properties of Egret, a discrete IC RoT.
 It covers device and software attestation, provisioning, secure boot, chip lifecycle, firmware update, chip identity, and chip ownership transfer.
 
 ### [Logical Security Model][logical_security_model]
@@ -24,7 +24,7 @@ To that end, the [Secure Hardware Design Guidelines][implementation_guidelines] 
 
 ### [Lightweight Threat Model][threat_model]
 
-The [Lightweight Threat Model][threat_model] delineates the anticipated design assets, attacker profiles, attack methods, and attack surfaces for Earlgrey and Darjeeling.
+The [Lightweight Threat Model][threat_model] delineates the anticipated design assets, attacker profiles, attack methods, and attack surfaces for Egret and Dragonfly.
 
 ## Security Primitives
 
@@ -71,7 +71,7 @@ Public key algorithm accelerator with support for bignum operations in hardware.
 Aggregates alert signals from other system components designated as potential security threats, converting them to processor interrupts.
 It also supports alert policy assignments to handle alerts completely in hardware depending on the assigned severity.
 
-## Using Earlgrey and Darjeeling
+## Using Egret and Dragonfly
 
 At the functional level, these top level RoTs should:
 
@@ -87,7 +87,7 @@ At the functional level, these top level RoTs should:
 
 
 [aes]: ../../hw/ip/aes/README.md
-[alert_handler]: ../../hw/top_earlgrey/ip_autogen/alert_handler/README.md
+[alert_handler]: ../../hw/top_egret/ip_autogen/alert_handler/README.md
 [comportable_ip]: ../contributing/hw/comportability/README.md
 [csrng]: ../../hw/ip/csrng/README.md
 [entropy_source]: ../../hw/ip/entropy_src/README.md

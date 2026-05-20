@@ -17,7 +17,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -236,7 +236,7 @@ rom_error_t test_rnd(void) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+      mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR), &entropy_src));
 
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, test_rnd);

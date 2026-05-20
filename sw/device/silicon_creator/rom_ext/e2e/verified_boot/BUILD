@@ -56,7 +56,7 @@ otp_json_immutable_rom_ext(
 otp_image(
     name = "otp_img_with_imm_romext_enabled",
     testonly = True,
-    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
         ":otp_json_with_imm_romext_enabled",
@@ -153,8 +153,8 @@ _POSITIONS = {
         name = "position_{}".format(name),
         srcs = [":boot_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
@@ -196,8 +196,8 @@ pavona_test(
     name = "bad_manifest_test",
     srcs = [":boot_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
@@ -259,8 +259,8 @@ _KEYS = {
         srcs = [":boot_test"],
         ecdsa_key = keyinfo["ecdsa"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
         },
         fpga = fpga_params(
             exit_failure = keyinfo["exit_failure"],
@@ -305,8 +305,8 @@ pavona_test(
     srcs = [":boot_test"],
     ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(),
     manifest = ":isfb_manifest",

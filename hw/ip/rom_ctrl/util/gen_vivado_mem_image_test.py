@@ -8,7 +8,7 @@ import unittest
 from gen_vivado_mem_image import (UpdatememSimulator,
                                   otp_words_to_updatemem_pieces, swap_bytes)
 
-EARLGREY_OTP_SIZE = 1024
+EGRET_OTP_SIZE = 1024
 
 
 class TestGenVivadoMemImage(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestOtpWordsToUpdatememPieces(unittest.TestCase):
 
     def test_all_ones(self) -> None:
         words = [0x3fffff] * 4
-        updatemem_pieces = otp_words_to_updatemem_pieces(EARLGREY_OTP_SIZE, words)
+        updatemem_pieces = otp_words_to_updatemem_pieces(EGRET_OTP_SIZE, words)
         expected = ["@0"] + \
             ["FFFFFC00000"] + ["00000000000"] * 7 + \
             ["FFFFFC00000"] + ["00000000000"] * 7 + \
@@ -38,7 +38,7 @@ class TestOtpWordsToUpdatememPieces(unittest.TestCase):
 
     def test_reverses_bits(self) -> None:
         words = [0x3df00d for _ in range(4)]
-        updatemem_pieces = otp_words_to_updatemem_pieces(EARLGREY_OTP_SIZE, words)
+        updatemem_pieces = otp_words_to_updatemem_pieces(EGRET_OTP_SIZE, words)
         expected = ["@0"] + \
             ["B00FBC00000"] + ["00000000000"] * 7 + \
             ["B00FBC00000"] + ["00000000000"] * 7 + \
@@ -50,7 +50,7 @@ class TestOtpWordsToUpdatememPieces(unittest.TestCase):
         words = [0x3df00d, 0x2df00d, 0x1df00d, 0x0df00d] * 4 + \
                 [0x3fffff, 0x3fffff, 0x3fffff, 0x3fffff] * 3 + \
                 [0x3df00d, 0x2df00d, 0x1df00d, 0x0df00d]
-        updatemem_pieces = otp_words_to_updatemem_pieces(EARLGREY_OTP_SIZE, words)
+        updatemem_pieces = otp_words_to_updatemem_pieces(EGRET_OTP_SIZE, words)
 
         quadword1 = ["B00FBC00000"] + ["00000000000"] * 7 + \
             ["B00FB400000"] + ["00000000000"] * 7 + \

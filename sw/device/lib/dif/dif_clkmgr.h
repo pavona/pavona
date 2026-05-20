@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/top_earlgrey/ip_autogen/clkmgr/doc/">Clock Manager</a>
+ * @brief <a href="/hw/top_egret/ip_autogen/clkmgr/doc/">Clock Manager</a>
  * Device Interface Functions
  */
 
@@ -43,7 +43,7 @@ typedef uint32_t dif_clkmgr_hintable_clock_t;
 typedef uint32_t dif_clkmgr_measure_clock_t;
 
 typedef enum dif_clkmgr_recov_err_type {
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
   /**
    * A recoverable update error for one of the clocks.
    */
@@ -88,7 +88,7 @@ typedef enum dif_clkmgr_recov_err_type {
    * A recoverable timeout error for USB clock.
    */
   kDifClkmgrRecovErrTypeUsbTimeout = 1u << 10,
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   /**
    * A recoverable update error for one of the clocks.
    */
@@ -319,7 +319,7 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
     dif_toggle_t *state);
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 /**
  * Check if external clock control is locked.
  * @param clkmgr Clock Manager Handle.
@@ -510,7 +510,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_fatal_err_code_get_codes(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_fatal_err_codes_t *codes);
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 /**
  * Wait for external clock switch to finish.
  *

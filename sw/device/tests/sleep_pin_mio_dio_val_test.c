@@ -34,12 +34,12 @@ OTTF_DEFINE_TEST_CONFIG();
  * the expected and measured values.
  */
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
 static const dt_pad_t kOptOut[] = {
     kDtPadSpiDeviceSck,
     kDtPadSpiDeviceCsb,
 };
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 static const dt_pad_t kOptOut[] = {};
 #else
 #error Unsupported top
@@ -180,14 +180,14 @@ bool test_main(void) {
     uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
     bool deepsleep = (deep_powerdown_en) ? true : false;
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
     // disabled for this test. Remove this later.
     dif_pinmux_pad_attr_t out_attr;
     dif_pinmux_pad_attr_t in_attr = {0};
     CHECK_DIF_OK(
         dif_pinmux_pad_write_attrs_dt(&pinmux, kDtPadIoc3, in_attr, &out_attr));
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
     // Nothing to be done
 #else
 #error Unsupported top

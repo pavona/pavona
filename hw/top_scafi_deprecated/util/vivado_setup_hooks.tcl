@@ -1,0 +1,1 @@
+../../top_egret/util/vivado_setup_hooks.tcl

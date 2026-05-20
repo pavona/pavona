@@ -8,8 +8,8 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
+    "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_binary",
     "pavona_test",
@@ -21,10 +21,10 @@ package(default_visibility = ["//visibility:public"])
 
 PENTEST_EXEC_ENVS = dicts.add(
     {
-        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_test_rom": None,
+        "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
     },
-    EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    EGRET_SILICON_OWNER_ROM_EXT_ENVS,
 )
 
 FIRMWARE_DEPS_FI = [

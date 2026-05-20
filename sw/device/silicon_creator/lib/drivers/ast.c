@@ -13,7 +13,7 @@
 #include "hw/top/ast_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #ifndef OT_PLATFORM_RV32
 // Provide a definition for off-target unit tests.
@@ -21,8 +21,8 @@ const uint32_t kAstCheckPollCpuCycles = 10000;
 #endif
 
 enum {
-  kBaseSensorCtrl = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR,
-  kBaseAst = TOP_EARLGREY_AST_BASE_ADDR,
+  kBaseSensorCtrl = TOP_EGRET_SENSOR_CTRL_AON_BASE_ADDR,
+  kBaseAst = TOP_EGRET_AST_BASE_ADDR,
 };
 
 rom_error_t ast_check(lifecycle_state_t lc_state) {

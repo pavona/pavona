@@ -37,7 +37,7 @@ status_t ottf_alerts_enable_all(void) {
 
   for (dif_alert_handler_alert_t alert = 0, cfg_idx = 0;
        alert < ARRAYSIZE(alerts); alert++, cfg_idx++) {
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
     // Temporarily skip alert 37 (`flash_ctrl_fatal_err`) on FPGAs and sims at
     // the owner stage since flash will not be provisioned with expected data.
     // See #23038.

@@ -21,7 +21,7 @@
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
 #include "hw/top/rv_core_ibex_regs.h"   // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -61,7 +61,7 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
 
   // Now intentionally hang the device
   CHECK_DIF_OK(dif_clkmgr_gateable_clock_set_enabled(
-      &clkmgr, kTopEarlgreyGateableClocksIoDiv4Peri, kDifToggleDisabled));
+      &clkmgr, kTopEgretGateableClocksIoDiv4Peri, kDifToggleDisabled));
 
   // access uart after clocks have been disabled
   CHECK_DIF_OK(dif_uart_disable_rx_timeout(&uart));
@@ -73,24 +73,24 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
  */
 static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
 
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
+  CHECK_DIF_OK(
+      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR), &uart));
 
   CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
 }
 
 /**
@@ -132,7 +132,7 @@ static void config_alert_handler(void) {
 
   // set the alert we care about to class A
   CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, kTopEarlgreyAlertIdRvCoreIbexRecovSwErr,
+      &alert_handler, kTopEgretAlertIdRvCoreIbexRecovSwErr,
       kDifAlertHandlerClassA, /*enabled=*/kDifToggleEnabled,
       /*locked=*/kDifToggleEnabled));
 

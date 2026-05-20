@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
 #include "hw/top/uart_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
@@ -19,7 +19,7 @@ enum {
   /**
    * Base address of uart.
    */
-  kBaseUart = TOP_EARLGREY_UART0_BASE_ADDR,
+  kBaseUart = TOP_EGRET_UART0_BASE_ADDR,
 };
 
 static void uart_alert_trigger(void) {

@@ -12,7 +12,7 @@
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * Macro for ignoring return values.

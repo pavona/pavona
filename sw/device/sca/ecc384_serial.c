@@ -14,7 +14,7 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top/acc_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * OpenTitan program for ACC ECDSA-P384 side-channel analysis.
@@ -250,7 +250,7 @@ static void ecc384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
   LOG_INFO("SSECDSA starting...");
   SS_CHECK_STATUS_OK(acc_load_app(kAccAppP384Ecdsa));
   LOG_INFO("acc_status: 0x%08x",
-           abs_mmio_read32(TOP_EARLGREY_ACC_BASE_ADDR + ACC_STATUS_REG_OFFSET));
+           abs_mmio_read32(TOP_EGRET_ACC_BASE_ADDR + ACC_STATUS_REG_OFFSET));
 
   uint32_t ecc384_signature_r[kEcc384NumWords];
   uint32_t ecc384_signature_s[kEcc384NumWords];

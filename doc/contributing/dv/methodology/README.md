@@ -238,7 +238,7 @@ An example of this is the [TLUL Protocol Checker](../../../../hw/ip/tlul/doc/Tlu
 
 Unlike design assertions, DV assertions are typically created within SV interfaces bound to the DUT.
 This way assertions and any collateral code don't affect the design and can reach any internal design signal if needed.
-For an example of this see the [clkmgr assertions](../../../../hw/top_earlgrey/ip_autogen/clkmgr/dv/sva).
+For an example of this see the [clkmgr assertions](../../../../hw/top_egret/ip_autogen/clkmgr/dv/sva).
 
 ## Regressions
 
@@ -536,7 +536,7 @@ If the problematic code is in a SV process, Xprop can be disabled adding the `xp
 There are cases where the problematic constructs are not in processes, and the code cannot be rewritten to make it Xprop-friendly.
 In these cases we need to disable Xprop for the full module or interface using a custom xprop configuration file.
 This uses the `vcs_xprop_cfg_file` field in the corresponding sim_cfg hjson file.
-See the [top_earlgrey vcs xprop configuration file](../../../../hw/top_earlgrey/dv/vcs_xprop.cfg) and `vcs_xprop_cfg_file` override in the [top_earlgrey sim_cfg hjson file](../../../../hw/top_earlgrey/dv/chip_earlgrey_sim_cfg.hjson) for an example.
+See the [top_egret vcs xprop configuration file](../../../../hw/top_egret/dv/vcs_xprop.cfg) and `vcs_xprop_cfg_file` override in the [top_egret sim_cfg hjson file](../../../../hw/top_egret/dv/chip_egret_sim_cfg.hjson) for an example.
 
 ## FPV
 

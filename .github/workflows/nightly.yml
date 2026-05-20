@@ -27,24 +27,24 @@ jobs:
     secrets: inherit
 
   # Hyper310 nightly FPGA jobs
-  execute_nightly_tests_earlgrey_cw310:
-    name: Earlgrey CW310 Nightly Tests
+  execute_nightly_tests_egret_cw310:
+    name: Egret CW310 Nightly Tests
     needs: on-demand
     if: success() || failure()
-    uses: ./.github/workflows/earlgrey-cw310-nightly.yml
+    uses: ./.github/workflows/egret-cw310-nightly.yml
     secrets: inherit
     with:
-      bitstream: chip_earlgrey_cw310_hyperdebug
+      bitstream: chip_egret_cw310_hyperdebug
 
   # CW340 nightly FPGA jobs
-  execute_nightly_tests_earlgrey_cw340:
-    name: Earlgrey CW340 Nightly Tests
+  execute_nightly_tests_egret_cw340:
+    name: Egret CW340 Nightly Tests
     needs: on-demand
     if: success() || failure()
-    uses: ./.github/workflows/earlgrey-cw340-nightly.yml
+    uses: ./.github/workflows/egret-cw340-nightly.yml
     secrets: inherit
     with:
-      bitstream: chip_earlgrey_cw340
+      bitstream: chip_egret_cw340
 
   # DVSim nightly
   dvsim-all:

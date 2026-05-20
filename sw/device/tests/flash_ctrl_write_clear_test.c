@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
 #include "hw/top/flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // See chip_sw_flash_ctrl_write_clear in chip_flash_ctrl_testplan.hjson for
 // test description.
@@ -107,7 +107,7 @@ static void flash_ctrl_write_clear_test(
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // The ROM_EXT configures the default region access. We can't modify the
   // values after configured.

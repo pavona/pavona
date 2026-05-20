@@ -88,10 +88,10 @@ jobs:
         uses: ./.github/actions/prepare-env
         with:
           install-verible: true
-      - name: Countermeasures implemented (earlgrey)
-        run: ./ci/scripts/check-countermeasures.sh earlgrey
-      - name: Countermeasures implemented (englishbreakfast)
-        run: ./ci/scripts/check-countermeasures.sh englishbreakfast
+      - name: Countermeasures implemented (egret)
+        run: ./ci/scripts/check-countermeasures.sh egret
+      - name: Countermeasures implemented (scafi_deprecated)
+        run: ./ci/scripts/check-countermeasures.sh scafi_deprecated
       - name: Bazel test suite tags
         run: ./ci/scripts/check_bazel_test_suites.py
         continue-on-error: true
@@ -118,22 +118,22 @@ jobs:
         run: ./bazelisk.sh test //quality:buildifier_check
       - name: Vendored files
         run: ./ci/scripts/check-vendoring.sh
-      - name: Verible RTL earlgrey
-        run: ./ci/scripts/verible-lint.sh rtl earlgrey
-      - name: Verible DV earlgrey
-        run: ./ci/scripts/verible-lint.sh dv earlgrey
-      - name: Verible FPV earlgrey
-        run: ./ci/scripts/verible-lint.sh fpv earlgrey
-      - name: Verible RTL darjeeling
-        run: ./ci/scripts/verible-lint.sh rtl darjeeling
-      - name: Verible DV darjeeling
-        run: ./ci/scripts/verible-lint.sh dv darjeeling
-      - name: Verible FPV darjeeling
-        run: ./ci/scripts/verible-lint.sh fpv darjeeling
-      - name: Validate alert classification for Earlgrey
-        run: ./ci/scripts/validate_alert_classification.py earlgrey hw/top_earlgrey/ip_autogen/alert_handler/data/top_earlgrey_alert_handler.ipconfig.hjson "$(realpath hw/top_earlgrey/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
-      - name: Validate alert classification for Darjeeling
-        run: ./ci/scripts/validate_alert_classification.py darjeeling hw/top_darjeeling/ip_autogen/alert_handler/data/top_darjeeling_alert_handler.ipconfig.hjson "$(realpath hw/top_darjeeling/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
+      - name: Verible RTL egret
+        run: ./ci/scripts/verible-lint.sh rtl egret
+      - name: Verible DV egret
+        run: ./ci/scripts/verible-lint.sh dv egret
+      - name: Verible FPV egret
+        run: ./ci/scripts/verible-lint.sh fpv egret
+      - name: Verible RTL dragonfly
+        run: ./ci/scripts/verible-lint.sh rtl dragonfly
+      - name: Verible DV dragonfly
+        run: ./ci/scripts/verible-lint.sh dv dragonfly
+      - name: Verible FPV dragonfly
+        run: ./ci/scripts/verible-lint.sh fpv dragonfly
+      - name: Validate alert classification for Egret
+        run: ./ci/scripts/validate_alert_classification.py egret hw/top_egret/ip_autogen/alert_handler/data/top_egret_alert_handler.ipconfig.hjson "$(realpath hw/top_egret/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
+      - name: Validate alert classification for Dragonfly
+        run: ./ci/scripts/validate_alert_classification.py dragonfly hw/top_dragonfly/ip_autogen/alert_handler/data/top_dragonfly_alert_handler.ipconfig.hjson "$(realpath hw/top_dragonfly/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
 
   dependency-licenses:
     name: Check software dependency licenses
@@ -274,8 +274,8 @@ jobs:
           ./bazelisk.sh test --test_output=errors --test_tag_filters=-nightly \
             --local_test_jobs=4 --test_timeout=3600 //sw/acc/crypto/...
 
-  verilator_earlgrey:
-    name: Earlgrey Verilator Tests
+  verilator_egret:
+    name: Egret Verilator Tests
     runs-on:
       group: pavona-large
     needs: quick_lint
@@ -290,46 +290,46 @@ jobs:
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
         with:
-          artifact-name: verilator_earlgrey-test-results
+          artifact-name: verilator_egret-test-results
 
-  chip_earlgrey_cw310:
-    name: Earlgrey for CW310
+  chip_egret_cw310:
+    name: Egret for CW310
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
-      top_name: earlgrey
+      top_name: egret
       design_suffix: cw310_hyperdebug
 
-  chip_earlgrey_cw340:
-    name: Earlgrey for CW340
+  chip_egret_cw340:
+    name: Egret for CW340
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
-      top_name: earlgrey
+      top_name: egret
       design_suffix: cw340
 
   # CW310 FPGA jobs
   execute_tests_cw310:
-    name: Earlgrey CW310 Tests
-    needs: chip_earlgrey_cw310
-    uses: ./.github/workflows/earlgrey-cw310-pr.yml
+    name: Egret CW310 Tests
+    needs: chip_egret_cw310
+    uses: ./.github/workflows/egret-cw310-pr.yml
     secrets: inherit
     with:
-      bitstream: chip_earlgrey_cw310_hyperdebug
+      bitstream: chip_egret_cw310_hyperdebug
 
   # CW340 FPGA jobs
   execute_tests_cw340:
-    name: Earlgrey CW340 Tests
-    needs: chip_earlgrey_cw340
-    uses: ./.github/workflows/earlgrey-cw340-pr.yml
+    name: Egret CW340 Tests
+    needs: chip_egret_cw340
+    uses: ./.github/workflows/egret-cw340-pr.yml
     secrets: inherit
     with:
-      bitstream: chip_earlgrey_cw340
+      bitstream: chip_egret_cw340
 
   sw_build_test:
-    name: Build and test software (Earlgrey)
+    name: Build and test software (Egret)
     runs-on:
       group: pavona-large
     timeout-minutes: 120
@@ -346,7 +346,7 @@ jobs:
           ./ci/scripts/test-empty-bitstream-cache.sh
           ./bazelisk.sh build --nobuild //...
       - name: Build and test software targets
-        run: ./ci/scripts/sw-build-test.sh earlgrey //...
+        run: ./ci/scripts/sw-build-test.sh egret //...
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
@@ -356,8 +356,8 @@ jobs:
         run: ./ci/scripts/check-unrunnable-tests.sh
         continue-on-error: true
 
-  dj_sw_build_test:
-    name: Build and test software (Darjeeling)
+  df_sw_build_test:
+    name: Build and test software (Dragonfly)
     runs-on:
       group: pavona-large
     timeout-minutes: 120
@@ -372,9 +372,9 @@ jobs:
         run: |
           # Test the graph with both an empty and filled bitstream cache.
           ./ci/scripts/test-empty-bitstream-cache.sh
-          ./bazelisk.sh build --nobuild --//hw/top=darjeeling //...
+          ./bazelisk.sh build --nobuild --//hw/top=dragonfly //...
       - name: Build and test software targets
-        run: ./ci/scripts/sw-build-test.sh darjeeling //...
+        run: ./ci/scripts/sw-build-test.sh dragonfly //...
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}

@@ -31,8 +31,8 @@ ld_library(
 pavona_binary(
     name = "test_second_rom",
     exec_env = [
-        "//hw/top_darjeeling:sim_dv_base",
-        "//hw/top_darjeeling:sim_verilator_base",
+        "//hw/top_dragonfly:sim_dv_base",
+        "//hw/top_dragonfly:sim_verilator_base",
     ],
     features = ["use_lld"],
     kind = "rom",
@@ -72,9 +72,9 @@ pavona_binary(
 ]
 
 cc_library(
-    name = "darjeeling_test_second_rom_lib",
+    name = "dragonfly_test_second_rom_lib",
     srcs = [
-        "darjeeling_fake_driver_funcs.c",
+        "dragonfly_fake_driver_funcs.c",
     ],
 )
 
@@ -85,7 +85,7 @@ cc_library(
         "test_second_rom_start.S",
     ],
     deps = [
-        ":darjeeling_test_second_rom_lib",
+        ":dragonfly_test_second_rom_lib",
         "//hw/top:ast_c_regs",
         "//hw/top:clkmgr_c_regs",
         "//hw/top:csrng_c_regs",
@@ -124,8 +124,8 @@ pavona_test(
     name = "test_second_rom_test",
     srcs = ["test_second_rom_test.c"],
     exec_env = {
-        "//hw/top_darjeeling:sim_dv": None,
-        "//hw/top_darjeeling:sim_verilator": None,
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_dragonfly:sim_verilator": None,
     },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -153,7 +153,7 @@ pkg_files(
     srcs = [":pre_package"],
     prefix = pavona_select_top(
         {
-            "darjeeling": "darjeeling/test_second_rom",
+            "dragonfly": "dragonfly/test_second_rom",
         },
         "test_second_rom",
     ),

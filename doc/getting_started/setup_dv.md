@@ -108,7 +108,7 @@ $ git checkout -b <temp_branch> FETCH_HEAD
 
 3. This is the command that CI runs for the smoke regression.
 ```console
-$ util/dvsim/dvsim.py hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson -i smoke --fixed-seed=1
+$ util/dvsim/dvsim.py hw/top_egret/dv/top_egret_sim_cfgs.hjson -i smoke --fixed-seed=1
 ```
 Since the CI runs tests with pseudo-random behavior driven from 'seed' numbers, to be confident of reproducing the failure we must supply the exact seed that CI used.
 

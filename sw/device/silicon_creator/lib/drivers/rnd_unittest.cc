@@ -18,7 +18,7 @@
 #include "hw/top/entropy_src_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rv_core_ibex_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 namespace rnd_unittest {
 namespace {
@@ -27,8 +27,8 @@ using ::testing::Return;
 
 class RndTest : public rom_test::RomTest {
  protected:
-  uint32_t base_rv_ = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR;
-  uint32_t base_es_ = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR;
+  uint32_t base_rv_ = TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR;
+  uint32_t base_es_ = TOP_EGRET_ENTROPY_SRC_BASE_ADDR;
 
   rom_test::MockCrc32 crc32_;
   rom_test::MockAbsMmio mmio_;

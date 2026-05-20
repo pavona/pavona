@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/top_earlgrey/ip_autogen/flash_ctrl/doc/">Flash
+ * @brief <a href="/hw/top_egret/ip_autogen/flash_ctrl/doc/">Flash
  * Controller</a> Device Interface Functions
  */
 

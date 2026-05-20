@@ -38,7 +38,7 @@ otp_json(
 # OTP images that enable the watchdog.
 otp_image(
     name = "otp_img_readback_enable",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_readback_enable"],
 )
 
@@ -56,7 +56,7 @@ _TESTS = {
         name = "sram_readback_{}_test".format(name),
         srcs = ["sram_readback_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = param["otp"],
@@ -64,7 +64,7 @@ _TESTS = {
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:sram_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",

@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /* TODO This configuration should be split into per-top headers */
-#ifdef OPENTITAN_IS_DARJEELING
+#ifdef OPENTITAN_IS_DRAGONFLY
 MEMORY {
     /* There is a 1MiB RAM within the CTN at offset 16MiB to hold the
      * firmware under test in DV. */
@@ -14,9 +14,9 @@ REGION_ALIAS("ottf_storage", ctn_ram)
 REGION_ALIAS("ottf_storage", eflash)
 #endif
 
-#ifdef OPENTITAN_IS_ENGLISHBREAKFAST
-/* Disable non-volatile scratch region and counters if building for english
- * breakfast. This should appear before the linker script. */
+#ifdef OPENTITAN_IS_SCAFI_DEPRECATED
+/* Disable non-volatile scratch region and counters if building for
+ * scafi_deprecated. This should appear before the linker script. */
 no_ottf_nv_scratch = 1
 no_ottf_nv_counter = 1
 #endif

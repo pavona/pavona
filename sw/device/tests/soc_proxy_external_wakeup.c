@@ -11,7 +11,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -20,28 +20,28 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rv_plic_t plic;
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopDarjeelingPlicTargetIbex0};
+                                  .hart_id = kTopDragonflyPlicTargetIbex0};
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopDragonflyPlicIrqIdPwrmgrAonWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DRAGONFLY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DRAGONFLY_RV_PLIC_BASE_ADDR), &plic));
 
   // Enable global and external IRQ in Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
   // Enable wakeup interrupt output from Power Manager.
-  rv_plic_testutils_irq_range_enable(&plic, kTopDarjeelingPlicTargetIbex0,
-                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
-                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
+  rv_plic_testutils_irq_range_enable(&plic, kTopDragonflyPlicTargetIbex0,
+                                     kTopDragonflyPlicIrqIdPwrmgrAonWakeup,
+                                     kTopDragonflyPlicIrqIdPwrmgrAonWakeup);
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
   // Get currently enabled sources for wakeup requests in Power Manager.
@@ -51,7 +51,7 @@ bool test_main(void) {
 
   // Enable external wakeup request in Power Manager.
   const dif_pwrmgr_request_sources_t ext_wkup_req =
-      (1u << kTopDarjeelingPowerManagerWakeUpsSocProxyWkupExternalReq);
+      (1u << kTopDragonflyPowerManagerWakeUpsSocProxyWkupExternalReq);
   wakeup_req_srcs |= ext_wkup_req;
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, wakeup_req_srcs, kDifToggleEnabled));
@@ -81,12 +81,12 @@ bool test_main(void) {
 // Interrupt service routine
 void ottf_external_isr(void) {
   dif_pwrmgr_irq_t irq_id;
-  top_darjeeling_plic_peripheral_t peripheral;
+  top_dragonfly_plic_peripheral_t peripheral;
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that peripheral and IRQ ID are correct.
-  CHECK(peripheral == kTopDarjeelingPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopDragonflyPlicPeripheralPwrmgrAon,
         "IRQ peripheral %d is incorrect!", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID %d is incorrect!", irq_id);
 }

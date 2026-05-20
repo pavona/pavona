@@ -1,0 +1,167 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_dragonfly_clkmgr
+  param_values:
+  {
+    ext_clk_bypass: false
+    src_clks:
+    {
+      main:
+      {
+        name: main
+        aon: false
+        freq: 1000000000
+        ref: false
+      }
+      io:
+      {
+        name: io
+        aon: false
+        freq: 250000000
+        ref: false
+      }
+      aon:
+      {
+        name: aon
+        aon: true
+        freq: 62500000
+        ref: true
+      }
+    }
+    derived_clks: {}
+    typed_clocks:
+    {
+      ast_clks:
+      {
+        clk_main_i:
+        {
+          src_name: main
+          endpoint_ip: clkmgr_aon
+        }
+        clk_io_i:
+        {
+          src_name: io
+          endpoint_ip: clkmgr_aon
+        }
+        clk_aon_i:
+        {
+          src_name: aon
+          endpoint_ip: clkmgr_aon
+        }
+      }
+      ft_clks:
+      {
+        clk_io_powerup:
+        {
+          src_name: io
+          endpoint_ip: pwrmgr_aon
+        }
+        clk_aon_powerup:
+        {
+          src_name: aon
+          endpoint_ip: pwrmgr_aon
+        }
+        clk_main_powerup:
+        {
+          src_name: main
+          endpoint_ip: rstmgr_aon
+        }
+        clk_aon_infra:
+        {
+          src_name: aon
+          endpoint_ip: soc_proxy
+        }
+        clk_aon_timers:
+        {
+          src_name: aon
+          endpoint_ip: aon_timer_aon
+        }
+      }
+      rg_clks:
+      {
+        clk_io_infra:
+        {
+          src_name: io
+          endpoint_ip: ast
+        }
+        clk_main_infra:
+        {
+          src_name: main
+          endpoint_ip: soc_proxy
+        }
+        clk_io_secure:
+        {
+          src_name: io
+          endpoint_ip: otp_ctrl
+        }
+        clk_main_secure:
+        {
+          src_name: main
+          endpoint_ip: otp_ctrl
+        }
+        clk_io_timers:
+        {
+          src_name: io
+          endpoint_ip: rv_timer
+        }
+      }
+      sw_clks:
+      {
+        clk_io_peri:
+        {
+          src_name: io
+          endpoint_ip: uart0
+        }
+      }
+      hint_clks:
+      {
+        clk_main_acc:
+        {
+          src_name: main
+          endpoint_ip: acc
+        }
+        clk_main_aes:
+        {
+          src_name: main
+          endpoint_ip: aes
+        }
+        clk_main_hmac:
+        {
+          src_name: main
+          endpoint_ip: hmac
+        }
+        clk_main_kmac:
+        {
+          src_name: main
+          endpoint_ip: kmac
+        }
+      }
+    }
+    hint_names:
+    {
+      clk_main_acc: HintMainAcc
+      clk_main_aes: HintMainAes
+      clk_main_hmac: HintMainHmac
+      clk_main_kmac: HintMainKmac
+    }
+    parent_child_clks:
+    {
+      main:
+      [
+        main
+      ]
+      io:
+      [
+        io
+      ]
+    }
+    exported_clks: {}
+    number_of_clock_groups: 7
+    with_alert_handler: true
+    topname: dragonfly
+    uniquified_modules: {}
+    module_instance_name: clkmgr
+  }
+}

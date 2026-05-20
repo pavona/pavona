@@ -14,8 +14,8 @@ def pavona_ip(name, **kwargs):
     ```
     pavona_ip(
         name = "pwrmgr",
-        'hjson' = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/pwrmgr.hjson",
-        'ipconfig' = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/top_earlgrey_pwrmgr.ipconfig.hjson",
+        'hjson' = "//hw/top_egret/ip_autogen/pwrmgr:data/pwrmgr.hjson",
+        'ipconfig' = "//hw/top_egret/ip_autogen/pwrmgr:data/top_egret_pwrmgr.ipconfig.hjson",
     )
     ```
 

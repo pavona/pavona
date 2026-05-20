@@ -1,6 +1,6 @@
-# Earlgrey Security Model Specification
+# Egret Security Model Specification
 
-This security model specification applies to the Earlgrey (discrete Root-of-Trust chip) top-level system.
+This security model specification applies to the Egret (discrete Root-of-Trust chip) top-level system.
 
 The following diagram shows the interaction between the different specification
 components.
@@ -10,7 +10,7 @@ components.
 
 ## [Device Life Cycle][device_life_cycle]
 
-Earlgrey supports a set of operational states configured via One Time Programmable (OTP) memory, allowing the [Silicon Creator][silicon_creator] to manage the state of the device as it is being manufactured and provisioned for shipment.
+Egret supports a set of operational states configured via One Time Programmable (OTP) memory, allowing the [Silicon Creator][silicon_creator] to manage the state of the device as it is being manufactured and provisioned for shipment.
 
 An additional set of life cycle states are also available to encapsulate the device ownership state.
 A device that has been personalized with a unique [Creator Identity][creator_identity] can be provisioned with [Silicon Owner][silicon_owner] credentials.
@@ -18,7 +18,7 @@ This enables the [Silicon Owner][silicon_owner] to run signed code on the device
 
 ## [Secure Boot][secure_boot]
 
-Earlgrey supports a secure boot implementation anchored in the silicon ROM.
+Egret supports a secure boot implementation anchored in the silicon ROM.
 The ROM contains a set of public keys used to verify the first boot stage stored in flash.
 
 Each boot stage is in charge of verifying the signature of the next stage and locking out portions of the chip that are not required by later stages.
@@ -26,7 +26,7 @@ Once the boot flow reaches kernel execution, the implementation may opt to imple
 
 ## [Firmware Update][firmware_update]
 
-Earlgrey supports a firmware layout with two flash partitions, supporting active and non-active instances of each software component.
+Egret supports a firmware layout with two flash partitions, supporting active and non-active instances of each software component.
 This enables a firmware update implementation in which the active partition flashes the new software into the non-active region with minimal downtime.
 Secure boot ensures the integrity and stability of the new software before marking it as active.
 
@@ -37,7 +37,7 @@ This scheme is based on a symmetric key manager with support for software bindin
 
 ## [Attestation][attestation]
 
-Covers the mechanism in which software verifies the authenticity and integrity of Earlgrey hardware and software configuration.
+Covers the mechanism in which software verifies the authenticity and integrity of Egret hardware and software configuration.
 
 ## [Ownership Transfer][ownership_transfer]
 

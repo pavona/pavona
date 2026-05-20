@@ -78,14 +78,14 @@ _MANUF_TEST_LOCKED_KEY = None
         srcs = ["empty_functest.c"],
         ecdsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else ecdsa_key_for_lc_state(ECDSA_SPX_KEY_STRUCTS, lc_val),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
             needs_jtag = True,
-            otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state.lower()),
+            otp = "//hw/top_egret/data/otp:img_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = (
                 "" if (
@@ -119,13 +119,13 @@ pavona_test(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp:img_raw",
+        otp = "//hw/top_egret/data/otp:img_raw",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
     ),
@@ -142,12 +142,12 @@ pavona_test(
     name = "manuf_cp_volatile_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp:img_raw",
+        otp = "//hw/top_egret/data/otp:img_raw",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_volatile_unlock_raw",
     ),
@@ -164,10 +164,10 @@ pavona_test(
 [
     otp_image(
         name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked{}".format(i),
+        src = "//hw/top_egret/data/otp:otp_json_test_unlocked{}".format(i),
         overlays = [
-            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
-            "//hw/top_earlgrey/data/otp:otp_json_exec_disabled",
+            "//hw/top_egret/data/otp:otp_json_fixed_secret0",
+            "//hw/top_egret/data/otp:otp_json_exec_disabled",
         ] + OTP_SIGVERIFY_FAKE_KEYS,
         visibility = ["//visibility:public"],
     )
@@ -179,8 +179,8 @@ pavona_test(
         name = "manuf_cp_yield_test_functest_{}".format(lc_state.lower()),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             changes_otp = True,
@@ -228,14 +228,14 @@ cc_library(
 [
     otp_image(
         name = "otp_img_sram_exec_en_test_unlocked{}".format(i),
-        src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked{}".format(i),
+        src = "//hw/top_egret/data/otp:otp_json_test_unlocked{}".format(i),
         overlays = [
-            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
-            "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
-            "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
-            "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
-            "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
-            "//hw/top_earlgrey/data/otp:otp_json_exec_disabled",
+            "//hw/top_egret/data/otp:otp_json_fixed_secret0",
+            "//hw/top_egret/data/otp:otp_json_creator_sw_cfg",
+            "//hw/top_egret/data/otp:otp_json_owner_sw_cfg",
+            "//hw/top_egret/data/otp:otp_json_alert_digest_cfg",
+            "//hw/top_egret/data/otp:otp_json_hw_cfg1",
+            "//hw/top_egret/data/otp:otp_json_exec_disabled",
         ],
         visibility = ["//visibility:private"],
     )
@@ -251,9 +251,9 @@ cc_library(
         name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
         srcs = ["sram_empty_functest.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:silicon_creator": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -271,7 +271,7 @@ cc_library(
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/dif:pinmux",
@@ -301,15 +301,15 @@ pavona_binary(
     testonly = True,
     srcs = ["sram_device_info_flash_wr_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         ":test_wafer_auth_secret",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:flash_ctrl",
@@ -343,8 +343,8 @@ pavona_binary(
             CONST.LCV.PROD,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -398,14 +398,14 @@ pavona_binary(
     testonly = True,
     srcs = ["sram_exec_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:otp_ctrl",
@@ -429,8 +429,8 @@ pavona_binary(
         name = "manuf_cp_ast_test_execution_{}_functest".format(lc_state.lower()),
         srcs = ["idle_functest.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -467,8 +467,8 @@ pavona_test(
     name = "manuf_cp_test_lock_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -488,7 +488,7 @@ pavona_test(
 
 otp_image(
     name = "otp_img_otp_ctrl_functest",
-    src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked0",
+    src = "//hw/top_egret/data/otp:otp_json_test_unlocked0",
     visibility = ["//visibility:private"],
 )
 
@@ -496,7 +496,7 @@ pavona_test(
     name = "otp_ctrl_functest",
     srcs = [":empty_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -520,8 +520,8 @@ pavona_test(
         testonly = True,
         srcs = ["empty_functest.c"],
         exec_env = {
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:silicon_creator": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
@@ -540,8 +540,8 @@ pavona_binary_assemble(
         ":empty_test_b": SLOTS["b"],
     },
     exec_env = [
-        "//hw/top_earlgrey:sim_dv",
-        "//hw/top_earlgrey:silicon_creator",
+        "//hw/top_egret:sim_dv",
+        "//hw/top_egret:silicon_creator",
     ],
 )
 
@@ -555,8 +555,8 @@ pavona_test(
     name = "ujson_msg_size_functest",
     srcs = ["ujson_msg_size_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         tags = ["manuf"],
@@ -577,8 +577,8 @@ pavona_test(
     name = "ujson_msg_padding_functest",
     srcs = ["ujson_msg_padding_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:fpga_cw340_sival": None,
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         tags = ["manuf"],

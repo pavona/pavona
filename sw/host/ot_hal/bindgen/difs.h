@@ -9,7 +9,7 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 
-#ifdef OT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+#ifdef OT_IS_SCAFI_DEPRECATED_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
 
 #include "hw/top/aon_timer_regs.h"  // Generated.
 #include "hw/top/clkmgr_regs.h"     // Generated.
@@ -20,7 +20,7 @@
 #include "hw/top/uart_regs.h"       // Generated.
 
 #endif
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
 
 #include "hw/top/acc_regs.h"            // Generated.
 #include "hw/top/adc_ctrl_regs.h"       // Generated.
@@ -54,7 +54,7 @@
 #include "hw/top/usbdev_regs.h"         // Generated.
 
 #endif
-#ifdef OPENTITAN_IS_DARJEELING
+#ifdef OPENTITAN_IS_DRAGONFLY
 
 #include "hw/top/acc_regs.h"            // Generated.
 #include "hw/top/aes_regs.h"            // Generated.

@@ -27,7 +27,7 @@ ld_library(
     script = "fault_slot_a.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_egret/sw/autogen:top_egret_memory",
     ],
 )
 
@@ -63,8 +63,8 @@ _FAULT_TEST_CASES = {
         ],
         defines = test_data["defines"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_egret:fpga_cw310_rom_ext": None,
+            "//hw/top_egret:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             exit_success = test_data["exit_success"],
@@ -97,8 +97,8 @@ pavona_test(
     name = "epmp_test",
     srcs = ["epmp_print.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         # Note: the application stage may have a dependency on the ePMP
@@ -139,8 +139,8 @@ pavona_test(
     name = "rom_ext_device_status_test",
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_egret:fpga_cw310_rom_ext": None,
+        "//hw/top_egret:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         device_status = "0x1",

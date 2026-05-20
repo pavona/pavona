@@ -15,7 +15,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 /**
  * FLASH_CTRL memory protection test
@@ -75,7 +75,7 @@ typedef struct test {
 
 #define BANK1_START_PAGE 256
 #define START_PAGE_ADDR \
-  TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + FLASH_CTRL_PARAM_BYTES_PER_BANK
+  TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + FLASH_CTRL_PARAM_BYTES_PER_BANK
 
 static const test_t kRegion[] = {
     {.region_index = 0,

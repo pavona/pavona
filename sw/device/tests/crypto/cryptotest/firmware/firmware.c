@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // Include commands
 #include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
@@ -53,7 +53,7 @@ static union {
 } cryptotest_scratch;
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+                        .console.base_addr = TOP_EGRET_SPI_DEVICE_BASE_ADDR,
                         .console.test_may_clobber = false, );
 
 status_t process_cmd(ujson_t *uj) {

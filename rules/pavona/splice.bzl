@@ -121,14 +121,14 @@ def _bitstream_splice_impl(ctx):
 
     # OTP size in number of 2-byte words.
     top_name = ctx.attr._top[BuildSettingInfo].value
-    if top_name == "earlgrey":
-        # Earlgrey: 2K OTP == 1024 2-byte words
+    if top_name == "egret":
+        # Egret: 2K OTP == 1024 2-byte words
         otp_size = 1024
-    elif top_name == "darjeeling":
-        # Darjeeling: 16K OTP == 8192 2-byte words
+    elif top_name == "dragonfly":
+        # Dragonfly: 16K OTP == 8192 2-byte words
         otp_size = 8192
     else:
-        fail("Top name should be 'earlgrey' or 'darjeeling' for bitstream splice; got `{}`".format(top_name))
+        fail("Top name should be 'egret' or 'dragonfly' for bitstream splice; got `{}`".format(top_name))
     if rom and rom.label.name != "none":
         rom = get_one_binary_file(rom, field = "rom", providers = [exec_env.provider])
         mem = gen_vivado_mem_file(

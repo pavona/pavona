@@ -172,7 +172,7 @@ if {$env(DUT_TOP) == "aes"} {
   # TO CHECK WHEN MODULE IS ENABLED
   create_clock clk_main_i -period 100
   create_reset rst_main_ni -sense low
-} elseif {$env(DUT_TOP) == "top_earlgrey"} {
+} elseif {$env(DUT_TOP) == "top_egret"} {
   # TO CHECK WHEN MODULE IS ENABLED
   create_clock clk_i -period 100
   create_clock jtag_tck_i -period 100
@@ -242,10 +242,10 @@ fvassume -regexp {^\w*\.scanmodeKnown}
 # TODO: If scanmode is set to 0, then JasperGold errors out complaining
 # about combo loops, which should be debugged further. For now, below
 # lines work around this issue
-#if {$env(DUT_TOP) == "top_earlgrey"} {
+#if {$env(DUT_TOP) == "top_egret"} {
 #  assume {scanmode_i == 1}
 #}
-if {$env(DUT_TOP) == "top_earlgrey"} {
+if {$env(DUT_TOP) == "top_egret"} {
   set_constant scanmode_i -value 1'b0 -global
 }
 

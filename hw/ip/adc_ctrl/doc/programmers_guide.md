@@ -52,7 +52,7 @@ The ADC must meet some minimum specifications:
 * Absolute maximum error must be +/- 15 mV in the 0.25 - 0.45 V range
 * Absolute maximum error must be +/- 30 mV in the rest of the 0.0 - 2.2 V range
 
-Note that the ADC in the Earlgrey integration with Nuvoton has a full range of 0.0V - 2.3V.
+Note that the ADC in the Egret integration with Nuvoton has a full range of 0.0V - 2.3V.
 
 The following assumes:
 * Full scale range is 0.0V to 2.3V

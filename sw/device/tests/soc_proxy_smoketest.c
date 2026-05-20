@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/soc_proxy_regs.h"
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

@@ -39,7 +39,7 @@
 #include "hw/top/kmac_regs.h"
 #include "hw/top/spi_host_regs.h"
 #include "hw/top/usbdev_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -56,7 +56,7 @@ static dif_kmac_t kmac;
 static dif_acc_t acc;
 static dif_rstmgr_t rstmgr;
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
 
 static plic_isr_ctx_t plic_ctx = {
     .rv_plic = &plic,
@@ -71,7 +71,7 @@ static plic_isr_ctx_t plic_ctx = {
  */
 static alert_handler_isr_ctx_t alert_handler_ctx = {
     .alert_handler = &alert_handler,
-    .plic_alert_handler_start_irq_id = kTopEarlgreyPlicIrqIdAlertHandlerClassa,
+    .plic_alert_handler_start_irq_id = kTopEgretPlicIrqIdAlertHandlerClassa,
     .expected_irq = kDifAlertHandlerIrqClassb,
     .is_only_irq = false,
 };
@@ -80,55 +80,51 @@ static alert_handler_isr_ctx_t alert_handler_ctx = {
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host0));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spi_host0));
 
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host1));
+      mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR), &spi_host1));
 
   CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+      mmio_region_from_addr(TOP_EGRET_USBDEV_BASE_ADDR), &usbdev));
 
   CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes));
 
   CHECK_DIF_OK(
-      dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
+      dif_hmac_init(mmio_region_from_addr(TOP_EGRET_HMAC_BASE_ADDR), &hmac));
 
   CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
 
   CHECK_DIF_OK(
-      dif_acc_init(mmio_region_from_addr(TOP_EARLGREY_ACC_BASE_ADDR), &acc));
+      dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 }
 
 // List of alerts
-static const uint32_t aes_alerts[] = {kTopEarlgreyAlertIdAesFatalFault,
-                                      kTopEarlgreyAlertIdAesRecovCtrlUpdateErr};
-static const uint32_t hmac_alerts[] = {kTopEarlgreyAlertIdHmacFatalFault};
-static const uint32_t kmac_alerts[] = {
-    kTopEarlgreyAlertIdKmacFatalFaultErr,
-    kTopEarlgreyAlertIdKmacRecovOperationErr};
-static const uint32_t acc_alerts[] = {kTopEarlgreyAlertIdAccFatal,
-                                      kTopEarlgreyAlertIdAccRecov};
-static const uint32_t spihost0_alerts[] = {
-    kTopEarlgreyAlertIdSpiHost0FatalFault};
-static const uint32_t spihost1_alerts[] = {
-    kTopEarlgreyAlertIdSpiHost1FatalFault};
-static const uint32_t usbdev_alerts[] = {kTopEarlgreyAlertIdUsbdevFatalFault};
+static const uint32_t aes_alerts[] = {kTopEgretAlertIdAesFatalFault,
+                                      kTopEgretAlertIdAesRecovCtrlUpdateErr};
+static const uint32_t hmac_alerts[] = {kTopEgretAlertIdHmacFatalFault};
+static const uint32_t kmac_alerts[] = {kTopEgretAlertIdKmacFatalFaultErr,
+                                       kTopEgretAlertIdKmacRecovOperationErr};
+static const uint32_t acc_alerts[] = {kTopEgretAlertIdAccFatal,
+                                      kTopEgretAlertIdAccRecov};
+static const uint32_t spihost0_alerts[] = {kTopEgretAlertIdSpiHost0FatalFault};
+static const uint32_t spihost1_alerts[] = {kTopEgretAlertIdSpiHost1FatalFault};
+static const uint32_t usbdev_alerts[] = {kTopEgretAlertIdUsbdevFatalFault};
 
 static const uint32_t num_aes_alerts = ARRAYSIZE(aes_alerts);
 static const uint32_t num_hmac_alerts = ARRAYSIZE(hmac_alerts);
@@ -190,80 +186,80 @@ static const test_t kPeripherals[] = {
     // Hintable clock IPS
     {
         .name = "AES",
-        .base = TOP_EARLGREY_AES_BASE_ADDR,
+        .base = TOP_EGRET_AES_BASE_ADDR,
         .offset = AES_ALERT_TEST_REG_OFFSET,
         .dif = &aes,
         .fatal_alert_bit = kDifAesAlertFatalFault,
         .alert_ids = aes_alerts,
         .num_alert_peri = num_aes_alerts,
-        .clk_index = kTopEarlgreyHintableClocksMainAes,
+        .clk_index = kTopEgretHintableClocksMainAes,
         .is_hintable = true,
     },
     {
         .name = "HMAC",
-        .base = TOP_EARLGREY_HMAC_BASE_ADDR,
+        .base = TOP_EGRET_HMAC_BASE_ADDR,
         .offset = HMAC_ALERT_TEST_REG_OFFSET,
         .dif = &hmac,
         .fatal_alert_bit = kDifHmacAlertFatalFault,
         .alert_ids = hmac_alerts,
         .num_alert_peri = num_hmac_alerts,
-        .clk_index = kTopEarlgreyHintableClocksMainHmac,
+        .clk_index = kTopEgretHintableClocksMainHmac,
         .is_hintable = true,
     },
     {
         .name = "KMAC",
-        .base = TOP_EARLGREY_KMAC_BASE_ADDR,
+        .base = TOP_EGRET_KMAC_BASE_ADDR,
         .offset = KMAC_ALERT_TEST_REG_OFFSET,
         .dif = &kmac,
         .fatal_alert_bit = kDifKmacAlertFatalFault,
         .alert_ids = kmac_alerts,
         .num_alert_peri = num_kmac_alerts,
-        .clk_index = kTopEarlgreyHintableClocksMainKmac,
+        .clk_index = kTopEgretHintableClocksMainKmac,
         .is_hintable = true,
     },
     {
         .name = "ACC",
-        .base = TOP_EARLGREY_ACC_BASE_ADDR,
+        .base = TOP_EGRET_ACC_BASE_ADDR,
         .offset = ACC_ALERT_TEST_REG_OFFSET,
         .dif = &acc,
         .fatal_alert_bit = kDifAccAlertFatal,
         .alert_ids = acc_alerts,
         .num_alert_peri = num_acc_alerts,
-        .clk_index = kTopEarlgreyHintableClocksMainAcc,
+        .clk_index = kTopEgretHintableClocksMainAcc,
         .is_hintable = true,
     },
     // Gateable clock IPs
     {
         .name = "SPI_HOST0",
-        .base = TOP_EARLGREY_SPI_HOST0_BASE_ADDR,
+        .base = TOP_EGRET_SPI_HOST0_BASE_ADDR,
         .offset = SPI_HOST_ALERT_TEST_REG_OFFSET,
         .dif = &spi_host0,
         .fatal_alert_bit = 0,
         .alert_ids = spihost0_alerts,
         .num_alert_peri = num_spihost0_alerts,
-        .clk_index = kTopEarlgreyGateableClocksIoPeri,
+        .clk_index = kTopEgretGateableClocksIoPeri,
         .is_hintable = false,
     },
     {
         .name = "SPI_HOST1",
-        .base = TOP_EARLGREY_SPI_HOST1_BASE_ADDR,
+        .base = TOP_EGRET_SPI_HOST1_BASE_ADDR,
         .offset = SPI_HOST_ALERT_TEST_REG_OFFSET,
         .dif = &spi_host1,
         .fatal_alert_bit = 0,
         .alert_ids = spihost1_alerts,
         .num_alert_peri = num_spihost1_alerts,
-        .clk_index = kTopEarlgreyGateableClocksIoDiv2Peri,
+        .clk_index = kTopEgretGateableClocksIoDiv2Peri,
         .is_hintable = false,
     },
     {
         .name = "USB",
-        .base = TOP_EARLGREY_USBDEV_BASE_ADDR,
+        .base = TOP_EGRET_USBDEV_BASE_ADDR,
         .offset = USBDEV_ALERT_TEST_REG_OFFSET,
         .dif = &usbdev,
         .fatal_alert_bit = 0,
         .alert_ids = usbdev_alerts,
         .num_alert_peri = num_usbdev_alerts,
-        .clk_index = kTopEarlgreyGateableClocksUsbPeri,
+        .clk_index = kTopEgretGateableClocksUsbPeri,
         .is_hintable = false,
     },
 };
@@ -403,11 +399,11 @@ void wait_enough_for_alert_ping(void) {
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral_serviced;
+  top_egret_plic_peripheral_t peripheral_serviced;
   dif_alert_handler_irq_t irq_serviced;
   isr_testutils_alert_handler_isr(plic_ctx, alert_handler_ctx,
                                   &peripheral_serviced, &irq_serviced);
-  CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAlertHandler,
+  CHECK(peripheral_serviced == kTopEgretPlicPeripheralAlertHandler,
         "Interrupt from unexpected peripheral: %d", peripheral_serviced);
 }
 

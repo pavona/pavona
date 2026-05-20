@@ -18,7 +18,7 @@ Some IPs currently have these extensions, including [`pwrmgr`](../../hw/top/dt/p
 ## Ipgen-based extensions
 
 `dtgen` provides a standard interface to expose [`ipgen`](../ipgen/README.md) parameters in the DT.
-For this to work, you must ensure that `dtgen` has access to the `ipconfig` of the IP, e.g. [Darjeeling's GPIO](../../hw/top_darjeeling/ip_autogen/gpio/data/top_darjeeling_gpio.ipconfig.hjson).
+For this to work, you must ensure that `dtgen` has access to the `ipconfig` of the IP, e.g. [Dragonfly's GPIO](../../hw/top_dragonfly/ip_autogen/gpio/data/top_dragonfly_gpio.ipconfig.hjson).
 This is done by passing this file on the command-line using `--ipconfig`.
 See the documentation on [top creation](../../hw/top/doc/create_top.md) for more information.
 
@@ -27,7 +27,7 @@ This dictionary can contain the following keys:
 - `type` (mandatory): type of the variable exposed in the DT API (see below)
 - `name` (optional): name of the variable (if not set, same as the parameter name)
 
-Here is an [example](../../hw/top_darjeeling/ip_autogen/gpio/data/top_darjeeling_gpio.ipconfig.hjson):
+Here is an [example](../../hw/top_dragonfly/ip_autogen/gpio/data/top_dragonfly_gpio.ipconfig.hjson):
 ```hjson
 {
   template_param_list: [

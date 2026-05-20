@@ -72,8 +72,8 @@ run_cmds () {
 echo "Running basic checks for gitless..."
 run_cmds 'make -C hw all'
 run_cmds \
-  './ci/scripts/sw-build-test.sh earlgrey //...' \
-  './ci/scripts/sw-build-test.sh darjeeling //...'
+  './ci/scripts/sw-build-test.sh egret //...' \
+  './ci/scripts/sw-build-test.sh dragonfly //...'
 
 if [ "$(which verilator)" ]; then
   run_cmds './ci/scripts/run-verilator-tests.sh'  # verilator tests first as sanity check
@@ -84,8 +84,8 @@ fi
 echo "Running DV tests [requires dvsim capabilities]..."
 if [ "$TOOL" = "vcs" ] || [ "$TOOL" = "quest" ] || [ "$TOOL" = "xcelium" ] || [ "$TOOL" = "ascentlint" ] || [ "$TOOL" = "verixcdc" ] || [ "$TOOL" = "mrdc" ] || [ "$TOOL" = "veriblelint" ] || [ "$TOOL" = "verilator" ] || [ "$TOOL" = "dc" ]; then  # possible tools listed in util/dvsim/dvsim.py
   run_cmds \
-    './util/dvsim/dvsim.py -t '"$TOOL"' --cov ./hw/top_darjeeling/dv/top_darjeeling_sim_cfgs.hjson' \
-    './util/dvsim/dvsim.py -t '"$TOOL"' --cov ./hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson'
+    './util/dvsim/dvsim.py -t '"$TOOL"' --cov ./hw/top_dragonfly/dv/top_dragonfly_sim_cfgs.hjson' \
+    './util/dvsim/dvsim.py -t '"$TOOL"' --cov ./hw/top_egret/dv/top_egret_sim_cfgs.hjson'
 else
   echo "    No valid tool passed in. Skipping dvsim tests."
 fi

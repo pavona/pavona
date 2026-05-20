@@ -215,7 +215,7 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
       *reg_offset = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_REG_OFFSET;
       *index = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OWNER_SW_CFG_READ_LOCK_BIT;
       break;
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
       *reg_offset = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_REG_OFFSET;
       *index =
@@ -226,7 +226,7 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
       *index =
           OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_ROT_CREATOR_AUTH_STATE_READ_LOCK_BIT;
       break;
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
     case kDifOtpCtrlPartitionOwnershipSlotState:
       *reg_offset = OTP_CTRL_OWNERSHIP_SLOT_STATE_READ_LOCK_REG_OFFSET;
       *index =
@@ -495,7 +495,7 @@ static const partition_info_t kPartitions[] = {
         .is_software = true,
         .has_digest = true,
         .is_lifecycle = false},
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     [kDifOtpCtrlPartitionRotCreatorAuthCodesign] = {
         .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
         .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE,
@@ -510,7 +510,7 @@ static const partition_info_t kPartitions[] = {
         .is_software = true,
         .has_digest = true,
         .is_lifecycle = false},
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
     [kDifOtpCtrlPartitionOwnershipSlotState] = {
         .start_addr = OTP_CTRL_PARAM_OWNERSHIP_SLOT_STATE_OFFSET,
         .len = OTP_CTRL_PARAM_OWNERSHIP_SLOT_STATE_SIZE,
@@ -633,7 +633,7 @@ static const partition_info_t kPartitions[] = {
         .is_software = false,
         .has_digest = true,
         .is_lifecycle = false},
-#if defined(OPENTITAN_IS_DARJEELING)
+#if defined(OPENTITAN_IS_DRAGONFLY)
     [kDifOtpCtrlPartitionSecret3] = {
         .start_addr = OTP_CTRL_PARAM_SECRET3_OFFSET,
         .len = OTP_CTRL_PARAM_SECRET3_SIZE,
@@ -641,8 +641,8 @@ static const partition_info_t kPartitions[] = {
         .is_software = false,
         .has_digest = true,
         .is_lifecycle = false},
-#elif defined(OPENTITAN_IS_EARLGREY)
-// Earlgrey only has 3 secret partitions.
+#elif defined(OPENTITAN_IS_EGRET)
+// Egret only has 3 secret partitions.
 #else
 #error "dif_otp_ctrl does not support this top"
 #endif
@@ -879,7 +879,7 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET;
       break;
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
       *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_REG_OFFSET;
@@ -888,7 +888,7 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_REG_OFFSET;
       break;
-#elif defined(OPENTITAN_IS_DARJEELING)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
     case kDifOtpCtrlPartitionRotCreatorIdentity:
       *reg0 = OTP_CTRL_ROT_CREATOR_IDENTITY_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_ROT_CREATOR_IDENTITY_DIGEST_1_REG_OFFSET;
@@ -952,13 +952,13 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET;
       break;
-#if defined(OPENTITAN_IS_DARJEELING)
+#if defined(OPENTITAN_IS_DRAGONFLY)
     case kDifOtpCtrlPartitionSecret3:
       *reg0 = OTP_CTRL_SECRET3_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_SECRET3_DIGEST_1_REG_OFFSET;
       break;
-#elif defined(OPENTITAN_IS_EARLGREY)
-// Earlgrey only has 3 secret partitions.
+#elif defined(OPENTITAN_IS_EGRET)
+// Egret only has 3 secret partitions.
 #else
 #error "dif_otp_ctrl does not support this top"
 #endif

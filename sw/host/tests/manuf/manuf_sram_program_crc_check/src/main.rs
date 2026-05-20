@@ -17,7 +17,7 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::uart::console::UartConsole;
 
-// use ot_hal::top::earlgrey as top_earlgrey;
+// use ot_hal::top::egret as top_egret;
 
 #[derive(Debug, Parser)]
 struct Opts {

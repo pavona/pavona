@@ -49,7 +49,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_secret2_locked_rma",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/top_egret/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_secret2_locked",
     ],
@@ -70,7 +70,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_secret2_locked_preserve_reset_prod",
-    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_secret2_locked",
         ":otp_json_reset_reason",

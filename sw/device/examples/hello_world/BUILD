@@ -17,12 +17,12 @@ pavona_binary(
         "-Wno-date-time",
     ],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv",
-        "//hw/top_earlgrey:sim_verilator",
-        # For some reason, this target makes englishbreakfast builds fail.
-        #"//hw/top_earlgrey:silicon_owner_sival_rom_ext",
+        "//hw/top_egret:fpga_cw310",
+        "//hw/top_egret:fpga_cw340",
+        "//hw/top_egret:sim_dv",
+        "//hw/top_egret:sim_verilator",
+        # For some reason, this target makes scafi_deprecated builds fail.
+        #"//hw/top_egret:silicon_owner_sival_rom_ext",
     ],
     deps = [
         ":hello_world_lib",
@@ -33,7 +33,7 @@ pavona_binary(
 cc_library(
     name = "hello_world_lib",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/examples:demos",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/crt",
@@ -54,5 +54,5 @@ pkg_files(
     name = "package",
     testonly = True,
     srcs = [":hello_world"],
-    prefix = "earlgrey/examples",
+    prefix = "egret/examples",
 )

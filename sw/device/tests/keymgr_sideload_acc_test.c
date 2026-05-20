@@ -21,7 +21,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
@@ -45,9 +45,9 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 static void init_peripheral_handles(void) {
   CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
   CHECK_DIF_OK(dif_acc_init_from_dt(kAccDt, &acc));
 }
 

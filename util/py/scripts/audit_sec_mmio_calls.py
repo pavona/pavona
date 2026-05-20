@@ -43,7 +43,7 @@ from util.reggen.register import Register  # noqa:E402
 
 # This Bazel query pattern selects the targets to audit. Originally, this
 # pattern was "//sw/device/...", but this led to some aspect analysis errors
-# related to english_breakfast targets. For the purposes of this audit, it
+# related to scafi_deprecated targets. For the purposes of this audit, it
 # should be sufficient to simply select dependencies of the ROM and ROM_EXT.
 BAZEL_PATTERN = """
 kind("^cc_(binary|library) rule$",
@@ -68,7 +68,7 @@ class BazelTool:
         query_lines = run.run(
             "./bazelisk.sh",
             "cquery",
-            "labels(ip_hjson, //hw/top:top_earlgrey_desc)",
+            "labels(ip_hjson, //hw/top:top_egret_desc)",
             "--output=files",
         )
         return [Path(line) for line in query_lines]

@@ -12,8 +12,8 @@ rust_binary(
     srcs = [
         "src/main.rs",
     ],
-    # TODO: Darjeeling support
-    target_compatible_with = pavona_require_top("earlgrey"),
+    # TODO: Dragonfly support
+    target_compatible_with = pavona_require_top("egret"),
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",

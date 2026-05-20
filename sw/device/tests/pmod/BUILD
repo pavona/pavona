@@ -4,8 +4,8 @@
 
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
+    "EGRET_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "pavona_test",
@@ -27,9 +27,9 @@ package(default_visibility = ["//visibility:public"])
 # & interface for the CW310 as opposed to the hyperdebug variants, due to the
 # PMOD tests requiring the PMOD pins that are not available with hyperdebug.
 fpga_cw310(
-    name = "top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper",
+    name = "top_egret_fpga_cw310_sival_rom_ext_no_hyper",
     testonly = True,
-    base = "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
+    base = "//hw/top_egret:fpga_cw310_sival_rom_ext",
     # Override the hyperdebug bitstream, interface, and OTP & ROM MMIs.
     base_bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_sival_rom_ext_no_hyper",
@@ -47,8 +47,8 @@ pavona_test(
     name = "spi_host_macronix1Gb_flash_test",
     srcs = ["spi_host_macronix1Gb_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -61,7 +61,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -81,8 +81,8 @@ pavona_test(
     name = "spi_host_macronix128Mb_flash_test",
     srcs = ["spi_host_macronix128Mb_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -95,7 +95,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -115,8 +115,8 @@ pavona_test(
     name = "spi_host_gigadevice256Mb_flash_test",
     srcs = ["spi_host_gigadevice256Mb_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -129,7 +129,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -150,8 +150,8 @@ pavona_test(
     name = "spi_host_gigadevice1Gb_flash_test",
     srcs = ["spi_host_gigadevice1Gb_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -164,7 +164,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -185,8 +185,8 @@ pavona_test(
     name = "spi_host_issi256Mb_flash_test",
     srcs = ["spi_host_issi256Mb_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -199,7 +199,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -220,8 +220,8 @@ pavona_test(
     name = "spi_host_micron512Mb_flash_test",
     srcs = ["spi_host_micron512Mb_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -234,7 +234,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -255,8 +255,8 @@ pavona_test(
     name = "spi_host_winbond1Gb_flash_test",
     srcs = ["spi_host_winbond1Gb_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -269,7 +269,7 @@ pavona_test(
     ),
     deps = [
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -290,8 +290,8 @@ pavona_test(
     name = "i2c_host_accelerometer_test",
     srcs = ["i2c_host_accelerometer_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -303,7 +303,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -321,8 +321,8 @@ pavona_test(
     name = "i2c_host_ambient_light_detector_test",
     srcs = ["i2c_host_ambient_light_detector_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -334,7 +334,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -352,8 +352,8 @@ pavona_test(
     name = "i2c_host_hdc1080_humidity_temp_test",
     srcs = ["i2c_host_hdc1080_humidity_temp_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -365,7 +365,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -383,8 +383,8 @@ pavona_test(
     name = "i2c_host_clock_stretching_test",
     srcs = ["i2c_host_clock_stretching_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -396,7 +396,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -416,8 +416,8 @@ pavona_test(
     name = "i2c_host_compass_test",
     srcs = ["i2c_host_compass_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -429,7 +429,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -448,8 +448,8 @@ pavona_test(
     name = "i2c_host_eeprom_test",
     srcs = ["i2c_host_eeprom_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -461,7 +461,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -479,8 +479,8 @@ pavona_test(
     name = "i2c_host_fram_test",
     srcs = ["i2c_host_fram_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -495,7 +495,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -513,8 +513,8 @@ pavona_test(
     name = "i2c_host_gas_sensor_test",
     srcs = ["i2c_host_gas_sensor_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -526,7 +526,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -544,8 +544,8 @@ pavona_test(
     name = "i2c_host_power_monitor_test",
     srcs = ["i2c_host_power_monitor_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -557,7 +557,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -575,8 +575,8 @@ pavona_test(
     name = "i2c_host_irq_test",
     srcs = ["i2c_host_irq_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {":top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper": None},
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        {":top_egret_fpga_cw310_sival_rom_ext_no_hyper": None},
     ),
     fpga = fpga_params(
         tags = [
@@ -588,7 +588,7 @@ pavona_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",

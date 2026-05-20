@@ -75,9 +75,9 @@ static void sysrst_ctrl_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-      kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
-                                  : kTopEarlgreyPinmuxInselIoc0));
+      &pinmux, kTopEgretPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+      kDeviceType == kDeviceSimDV ? kTopEgretPinmuxInselIor13
+                                  : kTopEgretPinmuxInselIoc0));
 }
 
 static void sysrst_ctrl_wakeup_check(dt_pwrmgr_wakeup_src_t src) {
@@ -165,12 +165,12 @@ static void adc_ctrl_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
  */
 static void pinmux_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   INIT_DIF_DT(pinmux, src, pinmux)
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
   // Make sure the pin has a pulldown before we enable it for wakeup.
   // FPGA doesn't implement pullup/down, so just use that attribute for SimDV.
   dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
-                                      ? kTopEarlgreyPinmuxInselIob7
-                                      : kTopEarlgreyPinmuxInselIoc0;
+                                      ? kTopEgretPinmuxInselIob7
+                                      : kTopEgretPinmuxInselIoc0;
 #else
 #error Unsupported top, please provide a pin configuration
 #endif

@@ -162,7 +162,7 @@ where
 - \\(n_{uarch}\\) (= 5) is the latency of the ENTROPY_SRC micro architecture between producing seeds, and
 - the -32 and -64 terms are to account for the number of entropy bits stored in the `postht` and the `precon` FIFOs, respectively.
 
-For [Top Earlgrey](../../../top_earlgrey/README.md), the assumption is that the PTRNG noise source generates entropy bits at a rate of roughly 50 kbps.
+For [Top Egret](../../../top_egret/README.md), the assumption is that the PTRNG noise source generates entropy bits at a rate of roughly 50 kbps.
 With the ENTROPY_SRC block running at 100 MHz, this leads to noise source rate \\(r_{ptrng}\\) = 1/8000.
 
 The noise source model inside the DV environment generates symbols with an average rate of 1 4-bit symbol every 6.5 clock cycles.

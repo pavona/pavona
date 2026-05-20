@@ -61,7 +61,7 @@ SEC_VERS = [
         # Use the prod key because it is valid in every LC state.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         local_defines = [
@@ -106,7 +106,7 @@ BOOT_POLICY_NEWER_CASES = [
 [
     otp_image(
         name = "otp_img_boot_policy_newer_{}".format(lc_state),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
+        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS,
     )
     for lc_state, _ in get_lc_items()
@@ -120,7 +120,7 @@ BOOT_POLICY_NEWER_CASES = [
             t["b"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",

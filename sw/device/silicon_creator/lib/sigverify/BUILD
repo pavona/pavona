@@ -10,7 +10,7 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "EARLGREY_TEST_ENVS",
+    "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_test",
     "qemu_params",
@@ -94,7 +94,7 @@ cc_test(
 pavona_test(
     name = "mod_exp_ibex_functest_hardcoded",
     srcs = ["mod_exp_ibex_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -113,9 +113,9 @@ pavona_test(
     name = "mod_exp_ibex_functest_wycheproof",
     srcs = ["mod_exp_ibex_functest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     fpga = fpga_params(
@@ -148,10 +148,10 @@ pavona_test(
     name = "ecdsa_p256_verify_functest",
     srcs = ["ecdsa_p256_verify_functest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -180,9 +180,9 @@ pavona_test(
     name = "rsa_verify_functest",
     srcs = ["rsa_verify_functest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -216,7 +216,7 @@ cc_library(
 pavona_test(
     name = "spx_verify_functest",
     srcs = ["spx_verify_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -289,7 +289,7 @@ cc_test(
 pavona_test(
     name = "sigverify_dynamic_functest_hardcoded",
     srcs = ["sigverify_dynamic_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -308,10 +308,10 @@ pavona_test(
     name = "sigverify_dynamic_functest_wycheproof",
     srcs = ["sigverify_dynamic_functest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        EGRET_TEST_ENVS,
         {
             # Test set is too large as ROM_EXT
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_egret:fpga_cw310_test_rom": None,
         },
     ),
     fpga = fpga_params(

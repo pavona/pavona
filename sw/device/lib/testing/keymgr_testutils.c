@@ -20,7 +20,7 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 't')
 
@@ -107,7 +107,7 @@ static status_t check_lock_otp_partition(void) {
 
 static status_t dif_init(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   // Initialize KMAC in preparation for keymgr use.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), kmac));
+  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), kmac));
 
   // We shouldn't use the KMAC block's default entropy setting for keymgr, so
   // configure it to use software entropy (and a sideloaded key, although it
@@ -115,7 +115,7 @@ static status_t dif_init(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   TRY(kmac_testutils_config(kmac, /*sideload=*/true));
 
   // Initialize keymgr context.
-  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
+  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR),
                       keymgr));
   return OK_STATUS();
 }
@@ -191,7 +191,7 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
   dif_rstmgr_t rstmgr;
   dif_otp_ctrl_t otp_ctrl;
 
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR),
                       &rstmgr));
   const dif_rstmgr_reset_info_bitfield_t reset_info =
       rstmgr_testutils_reason_get();
@@ -201,10 +201,9 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
     LOG_INFO("Powered up for the first time, program flash");
 
     TRY(dif_flash_ctrl_init_state(
-        &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+        &flash, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
     TRY(dif_otp_ctrl_init(
-        mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR),
-        &otp_ctrl));
+        mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
 
     bool secret2_computed = false;
     TRY(dif_otp_ctrl_is_digest_computed(&otp_ctrl, kDifOtpCtrlPartitionSecret2,
@@ -252,7 +251,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
 
   TRY(keymgr_testutils_init_nvm_then_reset());
 
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR),
                       &rstmgr));
   const dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
 

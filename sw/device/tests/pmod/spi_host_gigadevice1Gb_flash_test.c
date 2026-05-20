@@ -20,7 +20,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/spi_host_flash_test_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -30,7 +30,7 @@ OTTF_DEFINE_TEST_CONFIG();
 static void init_test(dif_spi_host_t *spi_host) {
   dif_pinmux_t pinmux;
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
   spi_pinmux_platform_id_t platform_id = kSpiPinmuxPlatformIdCount;
@@ -52,7 +52,7 @@ static void init_test(dif_spi_host_t *spi_host) {
   CHECK_STATUS_OK(
       spi_host1_pinmux_connect_to_bob(&pinmux, csb_pad, platform_id));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, spi_host));
 
   CHECK(kClockFreqUsbHz <= UINT32_MAX, "kClockFreqUsbHz must fit in uint32_t");

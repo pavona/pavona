@@ -11,7 +11,7 @@
 
 #include "hw/top/otp_ctrl_regs.h"
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifdef OPENTITAN_IS_EGRET
 enum {
   // Offset of the `ROT_CREATOR_AUTH_CODESIGN` partition.
   kAuthcodesignPartitionOffset =
@@ -55,7 +55,7 @@ static_assert(
     "partition");
 #endif
 
-#ifdef OPENTITAN_IS_DARJEELING
+#ifdef OPENTITAN_IS_DRAGONFLY
 enum {
   // Offset of the `ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN` partition.
   kAuthcodesignPartitionOffset =
@@ -219,8 +219,8 @@ rom_error_t sigverify_otp_keys_init(sigverify_otp_key_ctx_t *ctx) {
   }
   HARDENED_CHECK_EQ(i, kAuthCodesignPartitionSizeInWords);
 
-  // Darjeeling does not use an auth state structure.
-#ifdef OPENTITAN_IS_EARLGREY
+  // Dragonfly does not use an auth state structure.
+#ifdef OPENTITAN_IS_EGRET
   uint32_t *raw_state = (uint32_t *)&ctx->states;
   for (i = 0; launder32(i) < kAuthStatePartitionSizeInWords; ++i) {
     raw_state[i] = otp_read32(kAuthStatePartitionOffset + i * sizeof(uint32_t));
@@ -231,8 +231,8 @@ rom_error_t sigverify_otp_keys_init(sigverify_otp_key_ctx_t *ctx) {
 }
 
 rom_error_t sigverify_otp_keys_check(sigverify_otp_key_ctx_t *ctx) {
-  // Darjeeling does not use digests over the signing keys.
-#if defined(OPENTITAN_IS_EARLGREY)
+  // Dragonfly does not use digests over the signing keys.
+#if defined(OPENTITAN_IS_EGRET)
   hmac_digest_t got;
   hmac_sha256(&ctx->keys, kAuthcodesignPartitionMsgSize, &got);
   size_t i = 0;
@@ -282,11 +282,11 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
         array_get_generic(params.key_array, params.key_size, i);
     if (k->key_id == params.key_id) {
       HARDENED_CHECK_EQ(k->key_id, params.key_id);
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
       bool valid_auth_state =
           params.key_states[i] == kSigVerifyKeyAuthStateProvisioned;
 #else
-      // Darjeeling does not use an auth state data structure.
+      // Dragonfly does not use an auth state data structure.
       bool valid_auth_state = true;
 #endif
       if (valid_auth_state) {
@@ -320,11 +320,11 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
     HARDENED_CHECK_LT(cand_key_index, params.key_cnt);
     const sigverify_rom_key_header_t *cand_key =
         array_get_generic(params.key_array, params.key_size, cand_key_index);
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EGRET)
     bool valid_auth_state =
         params.key_states[cand_key_index] == kSigVerifyKeyAuthStateProvisioned;
 #else
-    // Darjeeling does not use an auth state data structure.
+    // Dragonfly does not use an auth state data structure.
     bool valid_auth_state = true;
 #endif
     if (valid_auth_state) {

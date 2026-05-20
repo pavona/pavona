@@ -1,1 +1,0 @@
-../../../../top_earlgrey/ip/ast/rtl/vcmain_pgd.sv

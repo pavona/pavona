@@ -22,7 +22,7 @@ declare -a blocks=(
   "tlul_socket_1n"
   "tlul_socket_m1"
   "sram2tlul"
-  "top_earlgrey"
+  "top_egret"
 )
 
 #-------------------------------------------------------------------------
@@ -41,14 +41,14 @@ echo "------------------------------"
 for block in "${blocks[@]}" ; do
 
   # set full path to module $block
-  if [ $block == "top_earlgrey" ]; then
+  if [ $block == "top_egret" ]; then
     block_full="../${block}/rtl/${block}.sv"
   elif [ $block == "usb_fs_nb_pe" ]; then
     block_full="../ip/usbfs_nb_pe/rtl/${block}.sv"
   elif [[ $block =~ "tlul" ]]; then
     block_full="../ip/tlul/rtl/${block}.sv"
   elif [[ $block == "rv_plic" ]]; then
-    block_full="../top_earlgrey/ip_autogen/${block}/rtl/${block}.sv"
+    block_full="../top_egret/ip_autogen/${block}/rtl/${block}.sv"
   else
     block_full="../ip/${block}/rtl/${block}.sv"
   fi

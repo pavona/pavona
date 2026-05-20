@@ -4,7 +4,7 @@
 
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_SKUS",
+    "EGRET_SKUS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -15,6 +15,6 @@ filegroup(
     name = "all",
     srcs = depset([
         config["orchestrator_cfg"]
-        for _, config in EARLGREY_SKUS.items()
+        for _, config in EGRET_SKUS.items()
     ]).to_list(),
 )

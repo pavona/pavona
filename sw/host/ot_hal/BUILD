@@ -29,22 +29,22 @@ rust_library(
         "src/util/multibits.rs",
         "src/util/unknown.rs",
     ] + select({
-        "//sw/device:is_english_breakfast": [],
-        "//hw/top:earlgrey": [
+        "//sw/device:is_scafi_deprecated": [],
+        "//hw/top:egret": [
             "src/dif/clkmgr.rs",
             "src/dif/pinmux.rs",
-            "src/top/autogen/earlgrey.rs",
+            "src/top/autogen/egret.rs",
         ],
-        "//hw/top:darjeeling": [
+        "//hw/top:dragonfly": [
             "src/dif/clkmgr.rs",
             "src/dif/pinmux.rs",
-            "src/top/autogen/darjeeling.rs",
+            "src/top/autogen/dragonfly.rs",
         ],
     }),
     crate_features = select({
-        "//sw/device:is_english_breakfast": ["english_breakfast"],
-        "//hw/top:earlgrey": ["earlgrey"],
-        "//hw/top:darjeeling": ["darjeeling"],
+        "//sw/device:is_scafi_deprecated": ["scafi_deprecated"],
+        "//hw/top:egret": ["egret"],
+        "//hw/top:dragonfly": ["dragonfly"],
     }),
     deps = [
         "//sw/host/ot_hal/bindgen",
@@ -56,8 +56,8 @@ rust_library(
         "@crate_index//:strum",
         "@crate_index//:thiserror",
     ] + select({
-        "//hw/top:earlgrey": ["//hw/top_earlgrey/sw/autogen/chip:top_earlgrey"],
-        "//hw/top:darjeeling": ["//hw/top_darjeeling/sw/autogen/chip:top_darjeeling"],
+        "//hw/top:egret": ["//hw/top_egret/sw/autogen/chip:top_egret"],
+        "//hw/top:dragonfly": ["//hw/top_dragonfly/sw/autogen/chip:top_dragonfly"],
     }),
 )
 

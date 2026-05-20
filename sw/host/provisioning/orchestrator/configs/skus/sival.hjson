@@ -4,7 +4,7 @@
 
 {
   name: "sival",
-  product: "earlgrey_a2",
+  product: "egret_a2",
   si_creator: "nuvoton",
   package: "npcr10",
   target_lc_state: "prod",
@@ -13,7 +13,7 @@
   # owner_fw_boot_str: "Bare metal PASS!"
   dice_ca: {
     certificate: "sw/device/silicon_creator/manuf/keys/sival/dice_ca.pem",
-    key: "sv00-earlgrey-a1-ca-dice-0",
+    key: "sv00-egret-a1-ca-dice-0",
     key_type: "Token",
     key_id: "0x0"
   }
@@ -21,7 +21,7 @@
   // we use the same CA as the DICE CA.
   ext_ca: {
     certificate: "sw/device/silicon_creator/manuf/keys/sival/dice_ca.pem",
-    key: "sv00-earlgrey-a1-ca-dice-0",
+    key: "sv00-egret-a1-ca-dice-0",
     key_type: "Token",
     key_id: "0x0"
   }

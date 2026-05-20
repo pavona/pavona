@@ -17,7 +17,7 @@
 #include "sw/device/tests/penetrationtests/json/rom_fi_commands.h"
 
 #include "hw/top/rom_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -90,12 +90,12 @@ status_t handle_rom_fi_init(ujson_t *uj) {
 
   // Initialize rom_ctrl.
   mmio_region_t rom_ctrl_reg =
-      mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
+      mmio_region_from_addr(TOP_EGRET_ROM_CTRL_REGS_BASE_ADDR);
   TRY(dif_rom_ctrl_init(rom_ctrl_reg, &rom_ctrl));
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   return OK_STATUS();

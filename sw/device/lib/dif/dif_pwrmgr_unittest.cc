@@ -18,7 +18,7 @@ namespace dif_pwrmgr_unittest {
 namespace {
 
 /**
- * The following values are for Earlgrey.
+ * The following values are for Egret.
  */
 typedef enum dif_pwrmgr_wakeup_request_source {
   kDifPwrmgrWakeupRequestSourceOne = (1u << 0),

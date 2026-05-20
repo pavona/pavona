@@ -15,7 +15,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 #define FLASH_CTRL_NUM_IRQS 5
@@ -42,12 +42,12 @@ static dif_flash_ctrl_t flash_ctrl;
 
 static plic_isr_ctx_t plic_ctx = {
     .rv_plic = &plic0,
-    .hart_id = kTopEarlgreyPlicTargetIbex0,
+    .hart_id = kTopEgretPlicTargetIbex0,
 };
 
 static flash_ctrl_isr_ctx_t flash_ctx = {
     .flash_ctrl = &flash_ctrl,
-    .plic_flash_ctrl_start_irq_id = kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty,
+    .plic_flash_ctrl_start_irq_id = kTopEgretPlicIrqIdFlashCtrlProgEmpty,
     .is_only_irq = false,
 };
 
@@ -115,12 +115,12 @@ static volatile bool fired_irqs[FLASH_CTRL_NUM_IRQS];
  * This function overrides the default OTTF external ISR.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral_serviced;
+  top_egret_plic_peripheral_t peripheral_serviced;
   dif_flash_ctrl_irq_t irq_serviced;
   // Instruct the ISR to mute any status interrupt that is firing.
   isr_testutils_flash_ctrl_isr(plic_ctx, flash_ctx, true, &peripheral_serviced,
                                &irq_serviced);
-  CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralFlashCtrl,
+  CHECK(peripheral_serviced == kTopEgretPlicPeripheralFlashCtrl,
         "Interurpt from unexpected peripheral: %d", peripheral_serviced);
   fired_irqs[irq_serviced] = true;
 }
@@ -171,7 +171,7 @@ static void compare_and_clear_irq_variables(void) {
  */
 static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   mmio_region_t flash_addr =
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr);
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + addr);
   uint32_t host_data[kDataSize];
   for (int i = 0; i < kDataSize; ++i) {
     host_data[i] =
@@ -253,7 +253,7 @@ static void do_info_partition_test(uint32_t partition_number,
 static void do_bank0_data_partition_test(void) {
   uint32_t address = 0;
   uint32_t otp_val = abs_mmio_read32(
-      TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+      TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
       OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
 
   dif_flash_ctrl_region_properties_t region_properties = {
@@ -442,14 +442,14 @@ bool test_main(void) {
   flash_bank_1_page_index_scr = flash_info.data_pages * 2 - 1;
 
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic0));
+      mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR), &plic0));
 
   flash_ctrl_init_with_event_irqs(
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR),
-      &flash_state, &flash_ctrl);
+      mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR), &flash_state,
+      &flash_ctrl);
   rv_plic_testutils_irq_range_enable(&plic0, plic_ctx.hart_id,
-                                     kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty,
-                                     kTopEarlgreyPlicIrqIdFlashCtrlOpDone);
+                                     kTopEgretPlicIrqIdFlashCtrlProgEmpty,
+                                     kTopEgretPlicIrqIdFlashCtrlOpDone);
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);

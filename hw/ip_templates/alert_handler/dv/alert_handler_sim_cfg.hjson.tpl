@@ -48,7 +48,7 @@
   overrides: [
     {
       name: cover_reg_top_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/ip_autogen/${module_instance_name}/dv/cov/${module_instance_name}_cover_reg_top.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
+      value: "-cm_hier {proj_root}/hw/top_egret/ip_autogen/${module_instance_name}/dv/cov/${module_instance_name}_cover_reg_top.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
     }
     {
       name: scratch_path

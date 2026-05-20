@@ -7,11 +7,11 @@
 #include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define MODULE_ID MAKE_MODULE_ID('u', 's', 't')
 
-#define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
+#define USBDEV_BASE_ADDR TOP_EGRET_USBDEV_BASE_ADDR
 
 static dif_usbdev_t usbdev;
 static dif_usbdev_buffer_pool_t buffer_pool;

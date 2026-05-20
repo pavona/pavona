@@ -24,7 +24,7 @@
 #include "hw/top/aes_regs.h"
 #include "hw/top/hmac_regs.h"
 #include "hw/top/kmac_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define SHADOW_REG_ACCESS(shadow_reg_addr, tmp)    \
   abs_mmio_write32_shadowed(shadow_reg_addr, tmp); \
@@ -91,7 +91,7 @@ static dif_aes_transaction_t transaction = {
 static inline uint32_t aes_spin_until(uint32_t bit) {
   while (true) {
     uint32_t reg =
-        abs_mmio_read32(TOP_EARLGREY_AES_BASE_ADDR + AES_STATUS_REG_OFFSET);
+        abs_mmio_read32(TOP_EGRET_AES_BASE_ADDR + AES_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, AES_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT) ||
         bitfield_bit32_read(reg, AES_STATUS_ALERT_FATAL_FAULT_BIT)) {
       return 1;
@@ -230,10 +230,10 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
                    kPentestPeripheralHmac);
 
   // Init the AES block.
-  TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  TRY(dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes));
 
   // Init the KMAC block.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
 
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
@@ -249,12 +249,12 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
   TRY(dif_kmac_configure(&kmac, config));
 
   // Init the HMAC block.
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EGRET_HMAC_BASE_ADDR);
   TRY(dif_hmac_init(base_addr, &hmac));
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   return OK_STATUS();
@@ -600,7 +600,7 @@ status_t handle_crypto_fi_hmac(ujson_t *uj) {
   // Write the key.
   if (uj_data.enable_hmac) {
     for (size_t i = 0; i < key_word_size; ++i) {
-      abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_KEY_0_REG_OFFSET +
+      abs_mmio_write32(TOP_EGRET_HMAC_BASE_ADDR + HMAC_KEY_0_REG_OFFSET +
                            i * sizeof(uint32_t),
                        uj_input.key[i]);
     }
@@ -721,7 +721,7 @@ status_t handle_crypto_fi_shadow_reg_access(ujson_t *uj) {
       ctrl_reg_kmac, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 1);
 
   uint32_t ctrl_reg_kmac_addr =
-      TOP_EARLGREY_KMAC_BASE_ADDR + KMAC_CFG_SHADOWED_REG_OFFSET;
+      TOP_EGRET_KMAC_BASE_ADDR + KMAC_CFG_SHADOWED_REG_OFFSET;
 
   pentest_set_trigger_high();
   asm volatile(NOP10);
@@ -743,8 +743,8 @@ status_t handle_crypto_fi_shadow_reg_access(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Read back KMAC shadow registers.
-  uint32_t ctrl_reg_kmac_read = abs_mmio_read32(TOP_EARLGREY_KMAC_BASE_ADDR +
-                                                KMAC_CFG_SHADOWED_REG_OFFSET);
+  uint32_t ctrl_reg_kmac_read =
+      abs_mmio_read32(TOP_EGRET_KMAC_BASE_ADDR + KMAC_CFG_SHADOWED_REG_OFFSET);
   uj_output.result[0] = ctrl_reg_kmac_read;
   // Zeroize unused
   uj_output.result[1] = 0;
@@ -790,7 +790,7 @@ status_t handle_crypto_fi_shadow_reg_read(ujson_t *uj) {
   ctrl_reg_aes_init = bitfield_bit32_write(
       ctrl_reg_aes_init, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
   abs_mmio_write32_shadowed(
-      TOP_EARLGREY_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET,
+      TOP_EGRET_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET,
       ctrl_reg_aes_init);
   aes_spin_until(AES_STATUS_IDLE_BIT);
 
@@ -810,15 +810,15 @@ status_t handle_crypto_fi_shadow_reg_read(ujson_t *uj) {
   ctrl_reg_kmac_init = bitfield_bit32_write(
       ctrl_reg_kmac_init, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
   abs_mmio_write32_shadowed(
-      TOP_EARLGREY_KMAC_BASE_ADDR + KMAC_CFG_SHADOWED_REG_OFFSET,
+      TOP_EGRET_KMAC_BASE_ADDR + KMAC_CFG_SHADOWED_REG_OFFSET,
       ctrl_reg_kmac_init);
 
   pentest_set_trigger_high();
   asm volatile(NOP30);
-  uint32_t ctrl_reg_aes_read = abs_mmio_read32(TOP_EARLGREY_AES_BASE_ADDR +
-                                               AES_CTRL_SHADOWED_REG_OFFSET);
-  uint32_t ctrl_reg_kmac_read = abs_mmio_read32(TOP_EARLGREY_KMAC_BASE_ADDR +
-                                                KMAC_CFG_SHADOWED_REG_OFFSET);
+  uint32_t ctrl_reg_aes_read =
+      abs_mmio_read32(TOP_EGRET_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET);
+  uint32_t ctrl_reg_kmac_read =
+      abs_mmio_read32(TOP_EGRET_KMAC_BASE_ADDR + KMAC_CFG_SHADOWED_REG_OFFSET);
   asm volatile(NOP30);
   pentest_set_trigger_low();
 

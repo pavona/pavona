@@ -33,11 +33,11 @@ def _pavona_transition_impl(settings, attr):
 
 pavona_transition = transition(
     implementation = _pavona_transition_impl,
-    # In order to build the englishbreakfast binaries, we need to pass through
+    # In order to build the scafi_deprecated binaries, we need to pass through
     # the `--copt` and `--features` flags:
-    # - The copt flag defines a preprocessor symbol indicating englishbreakfast.
+    # - The copt flag defines a preprocessor symbol indicating scafi_deprecated.
     # - The features flags turn off compiler support for CPU extensions not
-    #   present in the englishbreakfast rv32i implementation.
+    #   present in the scafi_deprecated rv32i implementation.
     inputs = [
         "//command_line_option:copt",
         "//command_line_option:collect_code_coverage",

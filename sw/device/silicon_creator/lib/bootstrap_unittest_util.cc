@@ -12,7 +12,7 @@
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/gpio_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 bool operator==(flash_ctrl_perms_t lhs, flash_ctrl_perms_t rhs) {
   return memcmp(&lhs, &rhs, sizeof(flash_ctrl_perms_t)) == 0;
@@ -35,8 +35,7 @@ void BootstrapTest::ExpectBootstrapRequestCheck(bool requested) {
   if (!requested) {
     pins = ~pins;
   }
-  EXPECT_ABS_READ32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET,
-                    pins);
+  EXPECT_ABS_READ32(TOP_EGRET_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET, pins);
 }
 
 void BootstrapTest::ExpectSpiCmd(spi_device_cmd_t cmd) {

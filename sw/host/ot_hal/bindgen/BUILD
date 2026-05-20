@@ -7,10 +7,10 @@ load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen", "rust_bindgen_library")
 
 package(default_visibility = ["//visibility:public"])
 
-# NOTE: This variable is modified during English breakfast SW build from prepare_sw.py.
-_TOPLEVEL = "earlgrey"
+# NOTE: This variable is modified during scafi_deprecated SW build from prepare_sw.py.
+_TOPLEVEL = "egret"
 
-_ENGLISH_BREAKFAST_DEPS = [
+_SCAFI_DEPRECATED_DEPS = [
     "//sw/device/lib/dif:aon_timer",
     "//sw/device/lib/dif:clkmgr",
     "//sw/device/lib/dif:lc_ctrl",
@@ -20,7 +20,7 @@ _ENGLISH_BREAKFAST_DEPS = [
     "//sw/device/lib/dif:uart",
 ]
 
-_EARLGREY_DEPS = [
+_EGRET_DEPS = [
     "//sw/device/lib/dif:adc_ctrl",
     "//sw/device/lib/dif:aes",
     "//sw/device/lib/dif:alert_handler",
@@ -53,7 +53,7 @@ _EARLGREY_DEPS = [
     "//sw/device/lib/dif:usbdev",
 ]
 
-_DARJEELING_DEPS = [
+_DRAGONFLY_DEPS = [
     "//sw/device/lib/dif:acc",
     "//sw/device/lib/dif:aes",
     "//sw/device/lib/dif:alert_handler",
@@ -79,9 +79,9 @@ _DARJEELING_DEPS = [
     "//sw/device/lib/dif:uart",
 ]
 
-_DEPS = _ENGLISH_BREAKFAST_DEPS if _TOPLEVEL == "englishbreakfast" else select({
-    "//hw/top:earlgrey": _EARLGREY_DEPS,
-    "//hw/top:darjeeling": _DARJEELING_DEPS,
+_DEPS = _SCAFI_DEPRECATED_DEPS if _TOPLEVEL == "scafi_deprecated" else select({
+    "//hw/top:egret": _EGRET_DEPS,
+    "//hw/top:dragonfly": _DRAGONFLY_DEPS,
 })
 
 cc_library(
@@ -155,8 +155,8 @@ rust_bindgen_library(
     ],
     cc_lib = ":difs",
     clang_flags = [
-        "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_",
-    ] if _TOPLEVEL == "englishbreakfast" else [
+        "-DOT_IS_SCAFI_DEPRECATED_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_",
+    ] if _TOPLEVEL == "scafi_deprecated" else [
     ],
     crate_name = "ot_bindgen_dif",
     header = "difs.h",
@@ -168,25 +168,25 @@ rust_bindgen_library(
 )
 
 rust_bindgen_library(
-    name = "earlgrey",
+    name = "egret",
     bindgen_flags = [
-        "--allowlist-type=top_earlgrey_alert_peripheral",
-        "--allowlist-type=top_earlgrey_alert_id",
-        "--allowlist-type=top_earlgrey_pinmux_peripheral_in",
-        "--allowlist-type=top_earlgrey_pinmux_insel",
-        "--allowlist-type=top_earlgrey_pinmux_mio_out",
-        "--allowlist-type=top_earlgrey_pinmux_outsel",
-        "--allowlist-type=top_earlgrey_direct_pads",
-        "--allowlist-type=top_earlgrey_muxed_pads",
-        "--allowlist-type=top_earlgrey_power_manager_wake_ups",
-        "--allowlist-type=top_earlgrey_reset_manager_sw_resets",
-        "--allowlist-type=top_earlgrey_power_manager_reset_requests",
-        "--allowlist-type=top_earlgrey_gateable_clocks",
-        "--allowlist-type=top_earlgrey_hintable_clocks",
+        "--allowlist-type=top_egret_alert_peripheral",
+        "--allowlist-type=top_egret_alert_id",
+        "--allowlist-type=top_egret_pinmux_peripheral_in",
+        "--allowlist-type=top_egret_pinmux_insel",
+        "--allowlist-type=top_egret_pinmux_mio_out",
+        "--allowlist-type=top_egret_pinmux_outsel",
+        "--allowlist-type=top_egret_direct_pads",
+        "--allowlist-type=top_egret_muxed_pads",
+        "--allowlist-type=top_egret_power_manager_wake_ups",
+        "--allowlist-type=top_egret_reset_manager_sw_resets",
+        "--allowlist-type=top_egret_power_manager_reset_requests",
+        "--allowlist-type=top_egret_gateable_clocks",
+        "--allowlist-type=top_egret_hintable_clocks",
     ],
-    cc_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-    crate_name = "ot_bindgen_earlgrey",
-    header = "//hw/top_earlgrey/sw/autogen:top_earlgrey.h",
+    cc_lib = "//hw/top_egret/sw/autogen:top_egret",
+    crate_name = "ot_bindgen_egret",
+    header = "//hw/top_egret/sw/autogen:top_egret.h",
     rustc_flags = [
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",
@@ -195,25 +195,25 @@ rust_bindgen_library(
 )
 
 rust_bindgen_library(
-    name = "darjeeling",
+    name = "dragonfly",
     bindgen_flags = [
-        "--allowlist-type=top_darjeeling_alert_peripheral",
-        "--allowlist-type=top_darjeeling_alert_id",
-        "--allowlist-type=top_darjeeling_pinmux_peripheral_in",
-        "--allowlist-type=top_darjeeling_pinmux_insel",
-        "--allowlist-type=top_darjeeling_pinmux_mio_out",
-        "--allowlist-type=top_darjeeling_pinmux_outsel",
-        "--allowlist-type=top_darjeeling_direct_pads",
-        "--allowlist-type=top_darjeeling_muxed_pads",
-        "--allowlist-type=top_darjeeling_power_manager_wake_ups",
-        "--allowlist-type=top_darjeeling_reset_manager_sw_resets",
-        "--allowlist-type=top_darjeeling_power_manager_reset_requests",
-        "--allowlist-type=top_darjeeling_gateable_clocks",
-        "--allowlist-type=top_darjeeling_hintable_clocks",
+        "--allowlist-type=top_dragonfly_alert_peripheral",
+        "--allowlist-type=top_dragonfly_alert_id",
+        "--allowlist-type=top_dragonfly_pinmux_peripheral_in",
+        "--allowlist-type=top_dragonfly_pinmux_insel",
+        "--allowlist-type=top_dragonfly_pinmux_mio_out",
+        "--allowlist-type=top_dragonfly_pinmux_outsel",
+        "--allowlist-type=top_dragonfly_direct_pads",
+        "--allowlist-type=top_dragonfly_muxed_pads",
+        "--allowlist-type=top_dragonfly_power_manager_wake_ups",
+        "--allowlist-type=top_dragonfly_reset_manager_sw_resets",
+        "--allowlist-type=top_dragonfly_power_manager_reset_requests",
+        "--allowlist-type=top_dragonfly_gateable_clocks",
+        "--allowlist-type=top_dragonfly_hintable_clocks",
     ],
-    cc_lib = "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-    crate_name = "ot_bindgen_darjeeling",
-    header = "//hw/top_darjeeling/sw/autogen:top_darjeeling.h",
+    cc_lib = "//hw/top_dragonfly/sw/autogen:top_dragonfly",
+    crate_name = "ot_bindgen_dragonfly",
+    header = "//hw/top_dragonfly/sw/autogen:top_dragonfly.h",
     rustc_flags = [
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",
@@ -243,7 +243,7 @@ rust_library_group(
         ":dif",
         ":multibits",
     ] + select({
-        "//hw/top:earlgrey": [":earlgrey"],
-        "//hw/top:darjeeling": [":darjeeling"],
+        "//hw/top:egret": [":egret"],
+        "//hw/top:dragonfly": [":dragonfly"],
     }),
 )

@@ -105,7 +105,7 @@ def exec_env_common_attrs(**kwargs):
         ),
         "design": attr.string(
             default = kwargs.get("design", ""),
-            doc = "Top-level hardware design name (e.g. `earlgrey`)",
+            doc = "Top-level hardware design name (e.g. `egret`)",
         ),
         "exec_env": attr.string(
             default = kwargs.get("exec_env", "{name}"),

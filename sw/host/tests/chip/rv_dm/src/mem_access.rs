@@ -42,15 +42,15 @@ struct Opts {
 
 const NUM_ACCESSES_PER_REGION: usize = 32;
 
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 const ROM_BASE_ADDR: u32 = top::ROM_CTRL_ROM_BASE_ADDR as u32;
 // The last 32 bytes of ROM (ROM digest) are not accessible.
-#[cfg(feature = "earlgrey")]
+#[cfg(feature = "egret")]
 const ROM_ACCESSIBLE_BYTES: usize = top::ROM_CTRL_ROM_SIZE_BYTES - 32;
 
-#[cfg(feature = "darjeeling")]
+#[cfg(feature = "dragonfly")]
 const ROM_BASE_ADDR: u32 = top::ROM_CTRL0_ROM_BASE_ADDR as u32;
-#[cfg(feature = "darjeeling")]
+#[cfg(feature = "dragonfly")]
 const ROM_ACCESSIBLE_BYTES: usize = top::ROM_CTRL0_ROM_SIZE_BYTES - 32;
 
 fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {

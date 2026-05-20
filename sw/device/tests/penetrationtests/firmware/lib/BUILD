@@ -72,7 +72,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership",
         "//sw/device/tests/penetrationtests/json:pentest_lib_commands",
     ] + select({
-        "//sw/device:is_english_breakfast": [],
+        "//sw/device:is_scafi_deprecated": [],
         "//conditions:default": [
             "//sw/device/lib/crypto/drivers:acc",
             "//sw/device/lib/testing:entropy_testutils",

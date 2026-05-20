@@ -11,7 +11,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -31,10 +31,10 @@ static dif_rv_dm_t rv_dm;
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
 
   CHECK_DIF_OK(dif_rv_dm_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_DM_REGS_BASE_ADDR), &rv_dm));
+      mmio_region_from_addr(TOP_EGRET_RV_DM_REGS_BASE_ADDR), &rv_dm));
 
   dif_lc_ctrl_state_t state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &state));

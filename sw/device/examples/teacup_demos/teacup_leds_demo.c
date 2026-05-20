@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -58,19 +58,19 @@ static const led_rgb_color_t kLedColorGreen = {
 
 static status_t peripheral_init(void) {
   // Initialize DIFs.
-  TRY(dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+  TRY(dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C0_BASE_ADDR), &i2c));
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
 
   // Initialize pinmux.
-  TRY(dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-                              kTopEarlgreyPinmuxInselIob9));
-  TRY(dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-                              kTopEarlgreyPinmuxInselIob10));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
-                               kTopEarlgreyPinmuxOutselI2c0Scl));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
-                               kTopEarlgreyPinmuxOutselI2c0Sda));
+  TRY(dif_pinmux_input_select(&pinmux, kTopEgretPinmuxPeripheralInI2c0Scl,
+                              kTopEgretPinmuxInselIob9));
+  TRY(dif_pinmux_input_select(&pinmux, kTopEgretPinmuxPeripheralInI2c0Sda,
+                              kTopEgretPinmuxInselIob10));
+  TRY(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob9,
+                               kTopEgretPinmuxOutselI2c0Scl));
+  TRY(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob10,
+                               kTopEgretPinmuxOutselI2c0Sda));
 
   return OK_STATUS();
 }

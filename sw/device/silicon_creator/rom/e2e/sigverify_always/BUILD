@@ -39,7 +39,7 @@ package(default_visibility = ["//visibility:public"])
 
 [otp_image(
     name = "otp_img_sigverify_always_{}".format(lc_state),
-    src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
+    src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
     overlays = STD_OTP_OVERLAYS,
 ) for lc_state, _ in get_lc_items()]
 
@@ -74,7 +74,7 @@ SIGVERIFY_BAD_CASES = [
             case["b"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             assemble = " ".join([

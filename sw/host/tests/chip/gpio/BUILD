@@ -12,7 +12,7 @@ rust_binary(
     srcs = [
         "src/gpio_pinmux.rs",
     ],
-    target_compatible_with = pavona_require_top("earlgrey"),
+    target_compatible_with = pavona_require_top("egret"),
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",
@@ -29,7 +29,7 @@ rust_binary(
     srcs = [
         "src/gpio_intr.rs",
     ],
-    target_compatible_with = pavona_require_top("earlgrey"),
+    target_compatible_with = pavona_require_top("egret"),
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",

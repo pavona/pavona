@@ -11,7 +11,7 @@ cc_library(
     srcs = ["ecc256_keygen_serial.c"],
     hdrs = ["ecc256_keygen_serial.h"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/acc/crypto:p256_key_from_seed_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -32,7 +32,7 @@ cc_library(
     srcs = ["ecc256_modinv_serial.c"],
     hdrs = ["ecc256_modinv_serial.h"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/acc/crypto:p256_mod_inv_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -53,11 +53,11 @@ pavona_binary(
     testonly = True,
     srcs = ["acc_vertical_serial.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_egret:fpga_cw305",
+        "//hw/top_egret:fpga_cw310",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/acc/crypto:p256_mod_inv_sca",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
