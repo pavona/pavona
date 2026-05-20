@@ -174,15 +174,39 @@
       name: aes_control_fi
       uvm_test: aes_fi_test
       uvm_test_seq: aes_control_fi_vseq
-      reseed: 300 // Test must cover 150 bins. Overseed by 2x to get reasonable coverage.
+      reseed: 50 // Random-pattern diversity. Walking variant (below) provides bin coverage.
       run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+    }
+    {
+      // Deterministic (target, state, if_num) walk over the aes_ctrl_fsm_cg cross.
+      // reseed = num_targets (21) * num_states (7) * num_redundant_rails (3) = 441.
+      // The vseq derives (target, state, if_num) from +fi_walk_id passed in via {index}.
+      name: aes_control_fi_walk
+      uvm_test: aes_fi_test
+      uvm_test_seq: aes_control_fi_vseq
+      reseed: 441
+      run_opts: ["+fi_walk_id={index}"]
+      run_timeout_mins: 1
     }
     {
       name: aes_cipher_fi
       uvm_test: aes_fi_test
       uvm_test_seq: aes_cipher_fi_vseq
-      reseed: 350 // Test must cover 175 bins. Overseed by 2x to get reasonable coverage.
+      reseed: 50 // Random-pattern diversity. Walking variant (below) provides bin coverage.
       run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+    }
+    {
+      // Deterministic (target, state, if_num) walk over the aes_cipher_fsm_cg cross.
+      // reseed = num_targets (26) * num_states (7) * num_redundant_rails (3) = 546.
+      // In unmasked, the iterations targeting CIPHER_CTRL_PRNG_RESEED are wasted (state is
+      // unreachable) but those bins are dropped by the build-conditional ignore_bins in
+      // fi_cipher_if.sv, so they don't pull the score down.
+      name: aes_cipher_fi_walk
+      uvm_test: aes_fi_test
+      uvm_test_seq: aes_cipher_fi_vseq
+      reseed: 546
+      run_opts: ["+fi_walk_id={index}"]
+      run_timeout_mins: 1
     }
     {
       name: aes_ctr_fi
@@ -194,7 +218,16 @@
       name: aes_core_fi
       uvm_test: aes_fi_test
       uvm_test_seq: aes_core_fi_vseq
-      reseed: 70 // Test must cover 35 bins. Overseed by 2x to get reasonable coverage.
+      reseed: 20 // Random-pattern diversity. Walking variant (below) provides bin coverage.
+    }
+    {
+      // Deterministic (target, state) walk over the aes_core_cg cross.
+      // reseed = num_targets (5) * num_states (7) = 35.
+      name: aes_core_fi_walk
+      uvm_test: aes_fi_test
+      uvm_test_seq: aes_core_fi_vseq
+      reseed: 35
+      run_opts: ["+fi_walk_id={index}"]
     }
     // This test runs several sequences back-to-back with random resets between the individual
     // sequences. We shouldn't need many seeds here because aes_stress is the real stress test.

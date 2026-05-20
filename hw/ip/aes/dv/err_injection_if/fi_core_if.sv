@@ -106,4 +106,11 @@ interface fi_core_if
     aes_core_cg_inst.sample(target);
   endfunction // cg_aes_core_sample
 
+  // Sample the FI covergroup with the current FSM state. The vseq's fork-watcher pattern
+  // calls this exactly when aes_ctrl_cs == requested state, so the cross bin gets sampled
+  // with the right (target, state) pair instead of racing the force.
+  function automatic void sample_cg_now(int target);
+    aes_core_cg_inst.sample(target);
+  endfunction
+
 endinterface

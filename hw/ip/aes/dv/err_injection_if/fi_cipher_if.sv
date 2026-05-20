@@ -228,8 +228,11 @@ interface fi_cipher_if
 
     // A fault is injected in each state.  Ignore the error state because it is the result of
     // a fault and not a regular operating condition in which faults are expected to be handled.
+    // The PRNG Reseed state is structurally unreachable in the unmasked implementation, so
+    // exclude it from the coverage denominator there. The bin remains active in masked builds.
     cp_state: coverpoint aes_cipher_ctrl_cs {
-      ignore_bins error = {aes_pkg::CIPHER_CTRL_ERROR};
+      ignore_bins error                = {aes_pkg::CIPHER_CTRL_ERROR};
+      ignore_bins prng_reseed_unmasked = {aes_pkg::CIPHER_CTRL_PRNG_RESEED} iff (`EN_MASKING == 0);
     }
 
     // Each target signal is faulted in each state.
@@ -238,4 +241,11 @@ interface fi_cipher_if
 
   //aes_cipher_fsm_cg my_cg = new(intf_array.size() + intf_mul_array.size() -1);
   `DV_FCOV_INSTANTIATE_CG(aes_cipher_fsm_cg, 1'b1,(intf_array.size() + intf_mul_array.size()) )
+
+  // Sample the FI covergroup with the current FSM state. The vseq's fork-watcher pattern
+  // calls this exactly when aes_cipher_ctrl_cs == requested state, so the cross bin gets
+  // sampled with the right (target, state) pair instead of racing the force.
+  function automatic void sample_cg_now(int target);
+    aes_cipher_fsm_cg_inst.sample(target);
+  endfunction
 endinterface

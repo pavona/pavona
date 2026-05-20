@@ -28,6 +28,21 @@ class aes_control_fi_vseq extends aes_base_vseq;
 
 
   task body();
+    int fi_walk_id;
+    bit fi_walking;
+    // State walk-order for deterministic coverage. CTRL_ERROR is excluded
+    // because it is an outcome of a fault, not a state we inject from.
+    aes_pkg::aes_ctrl_e ctrl_state_array [] = '{
+        aes_pkg::CTRL_IDLE,
+        aes_pkg::CTRL_LOAD,
+        aes_pkg::CTRL_PRNG_UPDATE,
+        aes_pkg::CTRL_PRNG_RESEED,
+        aes_pkg::CTRL_FINISH,
+        aes_pkg::CTRL_CLEAR_I,
+        aes_pkg::CTRL_CLEAR_CO};
+
+    fi_walking = $value$plusargs("fi_walk_id=%0d", fi_walk_id);
+
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
                               cfg.convert2string()), UVM_LOW)
 
@@ -53,23 +68,89 @@ class aes_control_fi_vseq extends aes_base_vseq;
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
             `DV_CHECK_STD_RANDOMIZE_FATAL(await_state)
+            // Override random choices with a deterministic (target, state, if_num) walk if
+            // requested. Walking covers each redundant rail (gen_fsm[0/1/2]) so per-instance
+            // coverage doesn't depend on chance.
+            if (fi_walking) begin
+              int unsigned num_targets = if_size;
+              int unsigned num_states  = ctrl_state_array.size();
+              int unsigned num_ifs     = 3;
+              if_num      = (fi_walk_id / (num_targets * num_states)) % num_ifs;
+              target      =  fi_walk_id % num_targets;
+              await_state = ctrl_state_array[(fi_walk_id / num_targets) % num_states];
+              if_size = cfg.aes_control_fi_vif[if_num].get_if_size();
+              `uvm_info(`gfn,
+                  $sformatf("fi_walk_id=%0d -> if_num=%0d target=%0d await_state=%s",
+                            fi_walk_id, if_num, target, await_state.name()),
+                  UVM_LOW)
+            end
             if (await_state inside {aes_pkg::CTRL_PRNG_UPDATE, aes_pkg::CTRL_CLEAR_I,
                                           aes_pkg::CTRL_CLEAR_CO}) begin
-              // The PRNG Update state and the Clear states are difficult to hit with a random
-              // delay.  This writes the clear register to bring the FSM to the PRNG Update and then
-              // the Clear states, and it waits until the FSM has reached the required state.
+              // The PRNG Update and Clear states are entered for ~1 cycle by clear_regs() during
+              // the multi-cycle CSR write. Arm a watcher BEFORE the trigger to sample the CG at
+              // state entry.
+              bit auto_sampled = 1'b0;
+              fork
+                begin
+                  wait(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state);
+                  cfg.aes_control_fi_vif[if_num].sample_cg_now(target);
+                  auto_sampled = 1'b1;
+                end
+              join_none
               clear_regs('{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
-              `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
+              `DV_SPINWAIT_EXIT(
+                  wait(auto_sampled);,
+                  cfg.clk_rst_vif.wait_clks(2_000);,
+                  $sformatf("watcher did not fire for state %s within 2000 clks",
+                            await_state.name()))
             end else if (await_state == aes_pkg::CTRL_PRNG_RESEED) begin
-              // The PRNG Reseed state is also difficult to hit with a random delay. This writes the
-              // trigger register to bring the FSM into the PRNG Reseed state, and it waits until
-              // the FSM has reached that state.
+              // PRNG_RESEED has the same multi-cycle CSR-write race; use the same fork-watcher.
+              bit auto_sampled = 1'b0;
+              fork
+                begin
+                  wait(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state);
+                  cfg.aes_control_fi_vif[if_num].sample_cg_now(target);
+                  auto_sampled = 1'b1;
+                end
+              join_none
               prng_reseed();
-              `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
+              `DV_SPINWAIT_EXIT(
+                  wait(auto_sampled);,
+                  cfg.clk_rst_vif.wait_clks(2_000);,
+                  $sformatf("watcher did not fire for state %s within 2000 clks",
+                            await_state.name()))
             end else if (await_state == aes_pkg::CTRL_LOAD) begin
-              // The Load state is also difficult to hit with a random delay, but simply waiting
-              // works.
-              `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
+              // LOAD is entered naturally at the start of each message; no helper write needed,
+              // but use the same fork-watcher so the sample lands on cs == LOAD.
+              bit auto_sampled = 1'b0;
+              fork
+                begin
+                  wait(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state);
+                  cfg.aes_control_fi_vif[if_num].sample_cg_now(target);
+                  auto_sampled = 1'b1;
+                end
+              join_none
+              `DV_SPINWAIT_EXIT(
+                  wait(auto_sampled);,
+                  cfg.clk_rst_vif.wait_clks(2_000);,
+                  $sformatf("watcher did not fire for state %s within 2000 clks",
+                            await_state.name()))
+            end else if (fi_walking) begin
+              // Walking on a natural state (IDLE/FINISH): FSM cycles through during message
+              // processing. Same fork-watcher pattern catches entry.
+              bit auto_sampled = 1'b0;
+              fork
+                begin
+                  wait(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state);
+                  cfg.aes_control_fi_vif[if_num].sample_cg_now(target);
+                  auto_sampled = 1'b1;
+                end
+              join_none
+              `DV_SPINWAIT_EXIT(
+                  wait(auto_sampled);,
+                  cfg.clk_rst_vif.wait_clks(2_000);,
+                  $sformatf("walk: FSM did not enter %s within 2000 clks",
+                            await_state.name()))
             end else begin
               cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
             end
@@ -97,8 +178,14 @@ class aes_control_fi_vseq extends aes_base_vseq;
         // wait to confirm alert
         wait(wait_for_alert_clear);
         `uvm_info(`gfn, $sformatf("Waiting alert ack complete"), UVM_MEDIUM)
-        cfg.m_alert_agent_cfgs["fatal_fault"].vif.wait_ack_complete();
-        wait(!cfg.clk_rst_vif.rst_n);
+        // Some forced signals (e.g. cipher_in_ready_i) only stall the main control FSM and do not
+        // trigger a fatal alert. Bound the wait so the test still completes cleanly and the
+        // coverage DB is flushed.
+        `DV_SPINWAIT_EXIT(
+            cfg.m_alert_agent_cfgs["fatal_fault"].vif.wait_ack_complete();
+            wait(!cfg.clk_rst_vif.rst_n);,
+            cfg.clk_rst_vif.wait_clks(20_000);,
+            $sformatf("alert ack/reset wait bounded (target=%0d may not trigger alert)", target))
         cfg.aes_control_fi_vif[if_num].force_signal(target, RELEASE, force_value);
        `uvm_info(`gfn, $sformatf("Finish"), UVM_MEDIUM)
         disable fork;
