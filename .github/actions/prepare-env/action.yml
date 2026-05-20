@@ -120,6 +120,53 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
 
+    # Log into Google Cloud using workload_identity_provider.
+    - id: auth
+      name: Authenticate to Google Cloud
+      # This uses secrets, so it does not work on pull requests from forks.
+      if: github.event_name != 'pull_request'
+      uses: google-github-actions/auth@71fee32a0bb7e97b4d33d548e7d957010649d8fa # v2.1.3
+      with:
+        workload_identity_provider: projects/951672875677/locations/global/workloadIdentityPools/github-actions-pool/providers/${{ github.event.repository.name }}
+        service_account: ${{ github.event.repository.name }}-gh-actions-sa@expo-caches-3492dd4e.iam.gserviceaccount.com
+
+
+    # The above action creates a credential file in workspace and it doesn't provide a way to configure
+    # it. This influences with a few scripts that assume clean workspace, and introduce security risk
+    # that it may be exposed when uploading to buckets.
+    - name: Move Google credentials out from workspace
+      if: github.event_name != 'pull_request'
+      run: |
+        SOURCE=${{ steps.auth.outputs.credentials_file_path }}
+        TARGET=${{ runner.temp }}/$(basename "$SOURCE")
+        mv $SOURCE $TARGET
+        echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$TARGET" >> $GITHUB_ENV
+        echo "GOOGLE_APPLICATION_CREDENTIALS=$TARGET" >> $GITHUB_ENV
+        echo "GOOGLE_GHA_CREDS_PATH=$TARGET" >> $GITHUB_ENV
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - uses: google-github-actions/setup-gcloud@v2
+      if: github.event_name != 'pull_request'
+
+    - name: Configure ~/.bazelrc
+      if: inputs.configure-bazel == 'true'
+      run: |
+        echo "common --remote_cache=https://storage.googleapis.com/expo-bazel-cache" >> ~/.bazelrc
+        # Inject the OS version into a parameter used in the action key computation to
+        # avoid collisions between different operating systems in the caches.
+        # See #14695 for more information.
+        echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -ds)\"" >> ~/.bazelrc
+
+        if ${{ github.event_name != 'pull_request' }}; then
+          echo "Will upload to the cache." >&2
+        else
+          echo "Download from cache only." >&2
+          echo "build --remote_upload_local_results=false" >> ~/.bazelrc
+        fi
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
     - name: Install merge-junit
       run: |
         MERGE_JUNIT_PATH="/tools/merge-junit"
