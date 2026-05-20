@@ -31,6 +31,14 @@
 #define MLDSA_PARAM_CRYPTO_PUBLICKEYBYTES_OFFSET 24
 #define MLDSA_PARAM_CRYPTO_BYTES_OFFSET 44
 
+/**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
 /* Register aliases */
 .equ x2, sp
 .equ x3, fp
@@ -90,13 +98,10 @@
  * next 32B boundary so wide-reads succeed.
  *
  * @param[in] x10: *sig, pointer to signature in DMEM
- * @param[in] dmem[msg]: message
- * @param[in] x11: byte-length of message
- * @param[in] dmem[ctx]: context value (0-256B)
- * @param[in] x12: byte-length of context
+ * @param[in] dmem[mu]: externally computed mu (64B)
  * @param[in] dmem[mldsa_params]: active mode parameters
  * @param[in] dmem[pk]: public key
- * @param[out] dmem[result]: 0 on success, 0xffffff on failure
+ * @param[out] dmem[result]: HARDENED_BOOL_TRUE if valid, HARDENED_BOOL_FALSE otherwise
  *
  */
 .globl crypto_sign_verify_internal
@@ -462,13 +467,13 @@ _skip_mask_ctilde:
     /* Free space on the stack */
     addi sp, fp, 0
 _success_crypto_sign_verify_internal:
-    li a0, 0
+    addi a0, x0, HARDENED_BOOL_TRUE
     la a1, result
     sw a0, 0(a1)
     ret
 
 _fail_crypto_sign_verify_internal:
-    li a0, -1
+    addi a0, x0, HARDENED_BOOL_FALSE
     la a1, result
     sw a0, 0(a1)
     /*unimp*/

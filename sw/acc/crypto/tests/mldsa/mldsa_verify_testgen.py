@@ -53,8 +53,9 @@ def gen_verify_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
     # Write expected register values (none).
     write_test_exp({}, exp_file)
 
-    # Write expected dmem values.
-    write_test_dexp({'result': bytes([0] * 32)}, dexp_file)
+    # Write expected dmem values (HARDENED_BOOL_TRUE for a valid signature).
+    result = (0x739).to_bytes(4, 'little') + bytes([0] * 28)
+    write_test_dexp({'result': result}, dexp_file)
 
 
 if __name__ == '__main__':

@@ -512,3 +512,24 @@ acc_binary(
         "//sw/acc/crypto/mlkem:poly_gen_matrix",
     ],
 )
+
+acc_binary(
+    name = "run_mldsa",
+    srcs = [
+        "run_mldsa.s",
+    ],
+    deps = [
+        "//sw/acc/crypto/mldsa:consts",
+        "//sw/acc/crypto/mldsa:intt",
+        "//sw/acc/crypto/mldsa:keypair",
+        "//sw/acc/crypto/mldsa:kmac_send_msg",
+        "//sw/acc/crypto/mldsa:ntt",
+        "//sw/acc/crypto/mldsa:poly",
+        "//sw/acc/crypto/mldsa:poly_add",
+        "//sw/acc/crypto/mldsa:poly_pointwise",
+        "//sw/acc/crypto/mldsa:poly_sub",
+        "//sw/acc/crypto/mldsa:rounding",
+        "//sw/acc/crypto/mldsa:sign",
+        "//sw/acc/crypto/mldsa:verify",
+    ],
+)

@@ -96,10 +96,7 @@
  * next 32B boundary so wide-reads succeed.
  *
  * @param[in]  x10: *sig (destination pointer)
- * @param[in]  dmem[msg]: message
- * @param[in]  x11: message length in bytes
- * @param[in]  dmem[ctx]: context value (0-256B)
- * @param[in]  x12: context length in bytes
+ * @param[in]  dmem[mu]: externally computed mu (64B)
  * @param[in]  dmem[sk]: secret key, 32B aligned
  * @param[in]  dmem[rnd]: signature randomization value (32B)
  * @param[out] x10: 0 (success)
