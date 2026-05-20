@@ -82,6 +82,25 @@ def _fusesoc_build_impl(ctx):
     args.add_all(ctx.attr.systems)
     args.add_all(flags)
 
+
+    vivado_envs = dicts.add(ENV, {
+        "HOME": home_dir,
+        # Obtain the non-hermetic binary path and append Bazel's default PATH.
+        "PATH": BIN_PATHS["vivado"] + ":/bin:/usr/bin:/usr/local/bin",
+        "LD_PRELOAD": "/lib/x86_64-linux-gnu/libudev.so.1",
+    })
+    verilator_envs = {
+        # Contains the `execroot`-relative paths for verilator and C/C++
+        # compiler provided by Bazel. `fusesoc_build.py` converts these
+        # into absolute paths once the working directory is known.
+        "PATH": "/usr/bin",
+        "VERILATOR_BINARY": ctx.executable._verilator.path,
+        "VERILATOR_AR": ctx.executable._ar.path,
+        "VERILATOR_CC": ctx.executable._cc.path,
+        "VERILATOR_CXX": ctx.executable._cxx.path,
+        "VERILATOR_LIBCXX": ctx.files._libcxx[0].path,
+        "VERILATOR_INCLUDE": ctx.files._include[0].path,
+    }
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,
@@ -97,26 +116,7 @@ def _fusesoc_build_impl(ctx):
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
-        env = dicts.add(
-            # Verilator build doesn't need nonhermetic environment variables
-            ENV if ctx.attr.target == "synth" else {
-                # Contains the `execroot`-relative paths for verilator and C/C++
-                # compiler provided by Bazel. `fusesoc_build.py` converts these
-                # into absolute paths once the working directory is known.
-                "VERILATOR_BINARY": ctx.executable._verilator.path,
-                "VERILATOR_AR": ctx.executable._ar.path,
-                "VERILATOR_CC": ctx.executable._cc.path,
-                "VERILATOR_CXX": ctx.executable._cxx.path,
-                "VERILATOR_LIBCXX": ctx.files._libcxx[0].path,
-                "VERILATOR_INCLUDE": ctx.files._include[0].path,
-            },
-            {
-                "HOME": home_dir,
-                # Obtain the non-hermetic binary path and append Bazel's default PATH.
-                "PATH": (BIN_PATHS["vivado"] + ":" if ctx.attr.target == "synth" else "") + "/bin:/usr/bin:/usr/local/bin",
-                "LD_PRELOAD": "/lib/x86_64-linux-gnu/libudev.so.1",
-            },
-        ),
+        env = vivado_envs if ctx.attr.target == "synth" else verilator_envs,
     )
     return [
         DefaultInfo(
