@@ -4,8 +4,9 @@
 
 name: Post-Merge Artifacts
 on:
-  merge_group:
-    branches: [ main ]
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
