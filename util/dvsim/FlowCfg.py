@@ -523,17 +523,21 @@ class FlowCfg():
         os.makedirs(dest_batch_dir, exist_ok=True)
         shutil.copy2(latest_batch_report, os.path.join(dest_batch_dir, 'report.html'))
         log.info("Copied report for %s", self.name)
+        capitalized_test = test.capitalize()
 
         self._write_index_html(os.path.join(repo_dir, f"{self.name}_{test}_{self.flow}"),
                                f"{self.name}_{test}_{self.flow}",
                                f"{self.name}_{test}_{self.flow}_index",
                                f"{{entry}}/{self.name}/reports/latest/report.html",
-                               max_entries=10)
+                               max_entries=10,
+                               embed_latest=(f"Latest {capitalized_test}",
+                                             f"{self.name}_{test}_{self.flow}_{self.timestamp}"))
 
         self._write_index_html(repo_dir,
                                "Reports",
                                "index",
-                               "{entry}/{entry}_index.html")
+                               "{entry}/{entry}_index.html",
+                               embed_latest=("Latest Weekly", "all_tops_batch_weekly_sim"))
 
         shutil.copy2(os.path.join(self.proj_root, 'util', 'dvsim', 'style.css'), repo_dir)
 
@@ -679,7 +683,7 @@ class FlowCfg():
             raise
 
     def _write_index_html(self, repo_dir: str, title: str, filename: str,
-                          link_template: str, max_entries: int = None):
+                          link_template: str, max_entries: int = None, embed_latest: tuple = None):
         """Regenerate an index html file from the subdirectories of repo_dir.
 
         `link_template` is the relative link for each row, with `{entry}`
@@ -740,13 +744,61 @@ class FlowCfg():
             tr = soup.new_tag('tr')
             td = soup.new_tag('td')
             a = soup.new_tag('a', href=link_for(entry))
-            a.string = entry
+            if filename == "index":
+                testname = entry.split("_")[-2].capitalize()
+                a.string = f"{testname} DV regressions"
+            else:
+                a.string = entry
             td.append(a)
             tr.append(td)
             tbody.append(tr)
 
+        if embed_latest is not None:
+            self._embed_latest_table(soup, repo_dir, link_template, embed_latest)
+
         with open(filepath, 'w') as f:
             f.write(str(soup))
+
+    def _embed_latest_table(self, soup, repo_dir: str, link_template: str,
+                            embed_latest: tuple) -> None:
+        """Append the latest report's main <table> below the index page."""
+        label, entry = embed_latest
+        idx = Path(repo_dir) / link_template.format(entry=entry)
+
+        def first_table(path):
+            if not path.exists():
+                return None
+            return BeautifulSoup(path.read_text(), 'html.parser').find('table')
+
+        if idx.name.endswith('_index.html'):
+            idx_table = first_table(idx)
+            latest_a = idx_table and idx_table.select_one('tbody tr:first-of-type a[href]')
+            if latest_a is None:
+                log.warning("[index] embed_latest: no entries under %s", idx)
+                return
+            report = (idx.parent / latest_a['href']).resolve()
+        else:
+            report = idx
+
+        table = first_table(report)
+        if table is None:
+            log.warning("[index] embed_latest: report %s missing", report)
+            return
+
+        base = Path(repo_dir).resolve()
+        for a in table.find_all('a', href=True):
+            href = a['href']
+            if href.startswith(('http', '#', '/')):
+                continue
+            try:
+                a['href'] = os.path.relpath((report.parent / href).resolve(), base)
+            except ValueError:
+                log.warning("Could not resolve relative paths in embedded table.")
+
+        div = soup.find('div', class_='results')
+        h2 = soup.new_tag('h2', style='margin-top: 3.5em;')
+        h2.string = label
+        div.extend([h2, table])
 
     def _publish_native_artifacts(self, item, repo_dir: str, test: str):
         """Copy native coverage reports and tool databases for item into the published repo.

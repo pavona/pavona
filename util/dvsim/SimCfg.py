@@ -966,9 +966,11 @@ class SimCfg(FlowCfg):
             all_keys = list(dict.fromkeys(key for row in all_rows for key in row))
             # Move the "Overall Coverage" key to the end (only if coverage is enabled)
             if "Overall Coverage" in all_keys:
-                all_keys.remove("Score Coverage")
                 all_keys.remove("Overall Coverage")
                 all_keys.append("Overall Coverage")
+            # Take out "Score Coverage" as it is the same thing as "Overall Coverage"
+            if "Score Coverage" in all_keys:
+                all_keys.remove("Score Coverage")
 
             for batchgroup, group_rows in rows.items():
                 if batchgroups:
