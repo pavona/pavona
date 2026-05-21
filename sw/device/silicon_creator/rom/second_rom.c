@@ -312,29 +312,31 @@ static rom_error_t rom_try_boot(void) {
       &manifest->ecdsa_signature, ecdsa_key, &act_digest, &flash_exec));
 
   // Set up virtual addressing for ROM_EXT.
-  if (manifest->address_translation != kHardenedBoolTrue) {
-    return kErrorRomBootFailed;
-  }
-  HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
   epmp_region_t text_region = manifest_code_region_get(manifest);
   uintptr_t entry_point = manifest_entry_point_get(manifest);
-  HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
-  ibex_addr_remap_set(0, (uintptr_t)_rom_ext_virtual_start, (uintptr_t)manifest,
-                      (size_t)_rom_ext_virtual_size);
-  SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
-  // Move the ROM_EXT execution section from the load address to the virtual
-  // address.
-  text_region.start = rom_ext_vma_get(manifest, text_region.start);
-  text_region.end = rom_ext_vma_get(manifest, text_region.end);
-  entry_point = rom_ext_vma_get(manifest, entry_point);
+  // Enable address translation if it is enabled in the manifest.
+  if (manifest->address_translation == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
+    ibex_addr_remap_set(0, (uintptr_t)_rom_ext_virtual_start,
+                        (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
+    SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
+    // Move the ROM_EXT execution section from the load address to the virtual
+    // address.
+    text_region.start = rom_ext_vma_get(manifest, text_region.start);
+    text_region.end = rom_ext_vma_get(manifest, text_region.end);
+    entry_point = rom_ext_vma_get(manifest, entry_point);
+  } else {
+    HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
+  }
 
-  // Unlock read-only for the whole rom_ext virtual memory.
+  // Unlock read-only for the whole rom_ext [virtual] memory.
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
   second_rom_epmp_unlock_rom_ext(
       text_region,
       (epmp_region_t){.start = rom_ext_lma,
-                      .end = rom_ext_lma + (uintptr_t)_rom_ext_virtual_size});
+                      .end = rom_ext_lma + (uintptr_t)_rom_ext_virtual_size},
+      manifest->address_translation);
 
   dbg_printf("Jumping to ROM_EXT entry point at 0x%x\r\n",
              (unsigned)entry_point);
