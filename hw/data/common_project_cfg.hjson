@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   project:          pavona
-  repo_server:      "github.com/pavona/pavona-staging"
+  repo_server:      "github.com/pavona/pavona"
   book:             pavona.org/book
   doc_server:       docs.pavona.org
   results_server:   reports.pavona.org
