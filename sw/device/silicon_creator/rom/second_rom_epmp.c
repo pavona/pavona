@@ -107,13 +107,19 @@ void second_rom_epmp_state_init(lifecycle_state_t lc_state) {
 }
 
 void second_rom_epmp_unlock_rom_ext(epmp_region_t rom_ext_text,
-                                    epmp_region_t rom_ext_lma) {
+                                    epmp_region_t rom_ext_lma,
+                                    hardened_bool_t address_translation) {
   const epmp_region_t rom_ext_vma = {.start = (uintptr_t)_rom_ext_virtual_start,
                                      .end = (uintptr_t)_rom_ext_virtual_start +
                                             (uintptr_t)_rom_ext_virtual_size};
-  // Make sure rom_ext_text is a subset of rom_ext_vma
-  HARDENED_CHECK_GE(rom_ext_text.start, rom_ext_vma.start);
-  HARDENED_CHECK_LE(rom_ext_text.end, rom_ext_vma.end);
+  if (address_translation == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(address_translation, kHardenedBoolTrue);
+    // Make sure rom_ext_text is a subset of rom_ext_vma
+    HARDENED_CHECK_GE(rom_ext_text.start, rom_ext_vma.start);
+    HARDENED_CHECK_LE(rom_ext_text.end, rom_ext_vma.end);
+  } else {
+    HARDENED_CHECK_EQ(address_translation, kHardenedBoolFalse);
+  }
   // Update the hardware configuration (CSRs).
   //
   //            32          24          16           8           0

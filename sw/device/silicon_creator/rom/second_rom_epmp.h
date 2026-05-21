@@ -71,7 +71,8 @@ void second_rom_epmp_state_init(lifecycle_state_t lc_state);
  *                     permission (LMA).
  */
 void second_rom_epmp_unlock_rom_ext(epmp_region_t rom_ext_text,
-                                    epmp_region_t rom_ext_lma);
+                                    epmp_region_t rom_ext_lma,
+                                    hardened_bool_t address_translation);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
