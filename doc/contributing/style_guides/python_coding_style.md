@@ -50,6 +50,7 @@ In this case, no explanatory comment is required and yapf can be disabled for th
 Coding style should match [PEP8](https://www.python.org/dev/peps/pep-0008/) with the following options:
 * Bitwise operators should be placed before a line split
 * Logical operators should be placed before a line split
+* Line length may be up to 100 characters in length for code
 
 To avoid doubt, the interpretation of PEP8 is done by [yapf](https://github.com/google/yapf) and the style guide is set using a `.style.yapf` file in the top level directory of the repository.
 This just sets the base style to pep8 and overrides with the exceptions given above.
@@ -138,16 +139,6 @@ Follows PEP8.
 #### POSIX File Endings
 
 ***All lines on non-empty files must end with a newline (`"\n"`).***
-
-#### Line Length
-
-***Wrap the code at 79 characters per line.***
-
-The maximum line length follows PEP8.
-
-Exceptions:
-
--   Any place where line wraps are impossible (for example, an include path might extend past 79 characters).
 
 #### No Tabs
 
