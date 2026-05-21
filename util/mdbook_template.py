@@ -81,8 +81,11 @@ if __name__ == "__main__":
     for chapter in md_utils.chapters(book["sections"]):
         src_path = chapter["source_path"]
 
+        if src_path is None:
+            continue
+
         # render template descriptions
-        if ".tpldesc.hjson" in src_path:
+        elif ".tpldesc.hjson" in src_path:
             params = get_parameters(src_path)
             chapter["content"] = TPLDESC_TEXT.format(make_parameter_table(params))
 

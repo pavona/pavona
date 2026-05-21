@@ -36,6 +36,14 @@
     --grey-text: #666667;
     --grey-link: #444444;
     --grey-code: #333333;
+
+    /* keep sidebar the same in both light and dark mode */
+    --sidebar-bg: var(--dark-orange);
+    --sidebar-fg: #FFFFFF;
+    --sidebar-non-existant: #D6D6D6;
+    --sidebar-active: black;
+    --sidebar-spacer: var(--sidebar-bg);
+    --sidebar-header-border-color: var(--grey-link);
 }
 
 /* Themes */
@@ -43,13 +51,6 @@
 .light {
     --bg: #FFFFFF;
     --fg: var(--dark-bg);
-
-    --sidebar-bg: var(--dark-orange);
-    --sidebar-fg: #FFFFFF;
-    --sidebar-non-existant: var(--grey-text);
-    --sidebar-active: black;
-    --sidebar-spacer: var(--sidebar-bg);
-    --sidebar-header-border-color: var(--grey-link);
 
     --scrollbar: var(--sidebar-fg);
 
@@ -96,13 +97,6 @@
 
     --bg: var(--dark-bg);
     --fg: #FFFFFF;
-
-    --sidebar-bg: var(--dark-orange);
-    --sidebar-fg: #FFFFFF;
-    --sidebar-non-existant: var(--grey-text);
-    --sidebar-active: black;
-    --sidebar-spacer: var(--sidebar-bg);
-    --sidebar-header-border-color: var(--grey-link);
 
     --scrollbar: var(--sidebar-fg);
 
