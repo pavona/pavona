@@ -527,17 +527,13 @@ class FlowCfg():
         self._write_index_html(os.path.join(repo_dir, f"{self.name}_{test}_{self.flow}"),
                                f"{self.name}_{test}_{self.flow}",
                                f"{self.name}_{test}_{self.flow}_index",
-                               f"{self.name}_{test}_{self.flow}_{self.timestamp}",
-                               os.path.join(f"{self.name}_{test}_{self.flow}_{self.timestamp}",
-                                            self.name,
-                                            'reports', 'latest', 'report.html'))
+                               f"{{entry}}/{self.name}/reports/latest/report.html",
+                               max_entries=10)
 
         self._write_index_html(repo_dir,
                                "Reports",
                                "index",
-                               f"{self.name}_{test}_{self.flow}",
-                               f"{self.name}_{test}_{self.flow}/"
-                               f"{self.name}_{test}_{self.flow}_index.html")
+                               "{entry}/{entry}_index.html")
 
         shutil.copy2(os.path.join(self.proj_root, 'util', 'dvsim', 'style.css'), repo_dir)
 
@@ -682,70 +678,72 @@ class FlowCfg():
                       repository, e.stderr.decode().strip() if e.stderr else "")
             raise
 
-    def _write_index_html(self, repo_dir: str, title: str, filename: str, version: str, link: str):
-        """Create or update an index html file with a versioned link, kept alphabetically."""
-        os.makedirs(repo_dir, exist_ok=True)
+    def _write_index_html(self, repo_dir: str, title: str, filename: str,
+                          link_template: str, max_entries: int = None):
+        """Regenerate an index html file from the subdirectories of repo_dir.
+
+        `link_template` is the relative link for each row, with `{entry}`
+        substituted in for the subdirectory's name. For example
+        `"{entry}/{entry}_index.html"` at the top level, or
+        `"{entry}/all_tops_batch/reports/latest/report.html"` per flow.
+        """
         style_src = os.path.join(os.path.dirname(__file__), 'style.css')
         shutil.copy2(style_src, repo_dir)
         filepath = os.path.join(repo_dir, f"{filename}.html")
-        if not os.path.exists(filepath):
-            html = f"""<!DOCTYPE html>
-            <html lang="en">
-                <head>
-                    <meta charset="utf-8"/>
-                    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-                    <title>{title}</title>
-                    <link href="style.css" rel="stylesheet"/>
-                </head>
-            <body style="background-color: #ffffff; margin: 0; padding: 0;">
-                <div class="results index-page">
-                    <h1>{title}</h1>
-                    <table>
-                        <thead>
-                        <tr><th>Version</th></tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-            </body>
-            </html>"""
-            with open(filepath, 'w') as f:
-                f.write(html)
 
-        with open(filepath, 'r') as f:
-            soup = BeautifulSoup(f.read(), 'html.parser')
+        def link_for(entry: str) -> str:
+            return link_template.format(entry=entry)
 
+        # Enumerate subdirectories whose expected report file actually exists.
+        # This drops stale entries (directory deleted, but old index still
+        # mentioned it)
+        entries = []
+        for name in sorted(os.listdir(repo_dir), reverse=True):
+            full = os.path.join(repo_dir, name)
+            if not os.path.isdir(full):
+                continue
+            if os.path.exists(os.path.join(repo_dir, link_for(name))):
+                entries.append(name)
+
+        # Trim history, deleting the oldest based on timestamp
+        if max_entries is not None and len(entries) > max_entries:
+            for old in entries[max_entries:]:
+                shutil.rmtree(os.path.join(repo_dir, old), ignore_errors=True)
+                log.info("[index] Pruned old entry: %s", old)
+            entries = entries[:max_entries]
+
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <title>{title}</title>
+        <link href="style.css" rel="stylesheet"/>
+    </head>
+<body style="background-color: #ffffff; margin: 0; padding: 0;">
+    <div class="results index-page">
+        <h1>{title}</h1>
+        <table>
+            <thead>
+                <tr><th>Version</th></tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>"""
+        soup = BeautifulSoup(html, 'html.parser')
         tbody = soup.find('tbody')
 
-        for tr in tbody.find_all('tr'):
-            a = tr.find('a')
-            if a and a.text == version:
-                if a['href'] == link:
-                    log.info("Version %s already exists in %s, skipping.", version, filepath)
-                    return
-                else:
-                    a['href'] = link
-                    with open(filepath, 'w') as f:
-                        f.write(str(soup))
-                    return
-
-        new_tr = soup.new_tag('tr')
-        new_td = soup.new_tag('td')
-        new_a = soup.new_tag('a', href=link)
-        new_a.string = version
-        new_td.append(new_a)
-        new_tr.append(new_td)
-
-        inserted = False
-        for tr in tbody.find_all('tr'):
-            a = tr.find('a')
-            if a and a.text > version:
-                tr.insert_before(new_tr)
-                inserted = True
-                break
-        if not inserted:
-            tbody.append(new_tr)
+        for entry in entries:
+            tr = soup.new_tag('tr')
+            td = soup.new_tag('td')
+            a = soup.new_tag('a', href=link_for(entry))
+            a.string = entry
+            td.append(a)
+            tr.append(td)
+            tbody.append(tr)
 
         with open(filepath, 'w') as f:
             f.write(str(soup))
