@@ -1,0 +1,79 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* Comment */
+.hljs-comment,
+.hljs-quote {
+  color: #cccccc;
+}
+
+/* Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-attribute,
+.hljs-attr,
+.hljs-tag,
+.hljs-name,
+.hljs-regexp,
+.hljs-link,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: #ff4040;
+}
+
+/* Orange */
+.hljs-number,
+.hljs-meta,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params {
+  color: #ff863e;
+}
+
+/* Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet {
+  color: #77ff1a;
+}
+
+/* Blue */
+.hljs-title,
+.hljs-section {
+  color: #5fcbff;
+}
+
+/* Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+  color: #da87f9;
+}
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  background: var(--code-highlight);
+  color: var(--inline-code-color);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-addition {
+  color: #22863a;
+  background-color: #f0fff4;
+}
+
+.hljs-deletion {
+  color: #b31d28;
+  background-color: #ffeef0;
+}

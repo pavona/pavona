@@ -25,6 +25,7 @@
 - [Hardware Overview](./hw/README.md)
   - [Comportability](./doc/contributing/hw/comportability/README.md)
   - [Development Stages](./doc/contributing/hw/development_stages.md)
+  - [Checklists](./doc/contributing/hw/checklist/README.md)
   - [Cores](./hw/doc/cores.md)
   - [IP Template Generation](./util/ipgen/README.md)
 
@@ -824,6 +825,7 @@
 # Contributing
 
 - [Contributing](./CONTRIBUTING.md)
+  - [Vendoring Philosophy](./doc/contributing/hw/vendor.md)
 - [Directory Structure](./doc/contributing/directory_structure.md)
 - [GitHub Notes](./doc/contributing/github_notes.md)
 - [Bazel Notes](./doc/contributing/bazel_notes.md)

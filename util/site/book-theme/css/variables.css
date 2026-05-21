@@ -47,7 +47,7 @@
     --sidebar-bg: var(--dark-orange);
     --sidebar-fg: #FFFFFF;
     --sidebar-non-existant: var(--grey-text);
-    --sidebar-active: var(--grey-link);
+    --sidebar-active: black;
     --sidebar-spacer: var(--sidebar-bg);
     --sidebar-header-border-color: var(--grey-link);
 
@@ -97,12 +97,12 @@
     --bg: var(--dark-bg);
     --fg: #FFFFFF;
 
-    --sidebar-bg: var(--darker-bg);
+    --sidebar-bg: var(--dark-orange);
     --sidebar-fg: #FFFFFF;
     --sidebar-non-existant: var(--grey-text);
-    --sidebar-active: #000000;
+    --sidebar-active: black;
     --sidebar-spacer: var(--sidebar-bg);
-    --sidebar-header-border-color: var(--orange-bg);
+    --sidebar-header-border-color: var(--grey-link);
 
     --scrollbar: var(--sidebar-fg);
 
@@ -111,7 +111,7 @@
 
     --links: var(--orange);
 
-    --inline-code-color: #DDDDDD;
+    --inline-code-color: #FFFFFF;
 
     --theme-popup-bg: var(--darker-bg);
     --theme-popup-border: #FFFFFF;
@@ -141,5 +141,5 @@
     --copy-button-filter: var(--icons);
     --copy-button-filter-hover: var(--sidebar-active);
 
-    --code-highlight: #FFFFFF40;
+    --code-highlight: #FFFFFF15;
 }

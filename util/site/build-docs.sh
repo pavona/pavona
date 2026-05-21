@@ -141,8 +141,9 @@ buildSite () {
 
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
 
-    # Put landing page in docs directory, fix links from book/ to gen/
+    # Put landing page and dark mode highlighting in docs directory, fix links from book/ to gen/
     cp "$(dirname $0)/landing.html" "${build_dir}/index.html"
+    cp "$(dirname $0)/book-theme/dark-highlight.css" "${build_dir}/book/dark-highlight.css"
     for doxy_ref_file in $(grep "#DOXYGEN" -lr ./build-site); do
       path_to_build_dir=$(realpath --relative-to=$doxy_ref_file $build_dir)
       path_to_doxy=$(realpath --relative-to=$book_out ${build_dir}/gen/doxy)
