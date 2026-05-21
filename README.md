@@ -20,7 +20,7 @@ Example technical collateral (IP + DV + SW) includes:
 
 # Contributing & Getting Started
 
-To get started, read [Pavona 101](doc/getting_started/pavona_101.md).
+To get started, read [Pavona 101](doc/getting_started/README.md).
 
 Please see the [Contributing](CONTRIBUTING.md) page to determine how one can contribute.
 

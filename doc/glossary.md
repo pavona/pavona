@@ -1,379 +1,237 @@
 # Glossary
 
-#### ACC
+[A](#a)  |  [B](#b)  |  [C](#c)  |  [D](#d)  |  [E](#e)  |  [F](#f)  |  [G](#g)  |  [H](#h)  |  [I](#i)  |  J  |  [K](#k)  |  [L](#l)  |  [M](#m)  |  [N](#n)  |  [O](#o)  |  [P](#p)  |  Q  |  [R](#r)  |  [S](#s)  |  [T](#t)  |  [U](#u)  |  [V](#v)  |  W  |  X  |  Y  |  Z
 
-Asymmetric Cryptographic Coprocessor, a RISC-V-like programmable coprocessor for cyptographic algorithms.
+## A
 
-#### ACE
+* __ACC__: Asymmetric Cryptographic Coprocessor, a RISC-V-like programmable coprocessor for cyptographic algorithms.
 
-Architectural Composition Engine, the tooling in Pavona that generates a system from its component specifications.
+* __ACE__: Architectural Composition Engine, the tooling in Pavona that generates a system from its component specifications.
 
-#### ADC
+* __ADC__: Analog-to-Digital Converter.
 
-Analog-to-Digital Converter.
+* __AES__: Advanced Encryption Standard.
 
-#### AES
+* __Airgapped__: Isolated from the surrounding environment, particularly from networks or the operating system.
 
-Advanced Encryption Standard.
+* __AON__: Always On.
 
-#### Airgapped
+* __ASM__: Assembly code.
 
-Isolated from the surrounding environment, particularly from networks or the operating system.
+* __Attestation__: The process of a device taking some measurement and checking it matches what is expected.
 
-#### AON
+## B
 
-Always On.
-
-#### ASM
-
-Assembly code.
-
-#### Attestation
-
-The process of a device taking some measurement and checking it matches what is expected.
-
-#### Baud
-
-Unit of measurement for "symbols per second" where symbols are some unit being communicated over a channel.
+* __Baud__: Unit of measurement for "symbols per second" where symbols are some unit being communicated over a channel.
 
 Often abbreviated to Bd, kBd (1000 Bd), MBd (1000 kBd), and GBd (1000 MBd).
 
-#### BFV
+* __BFV__: Boot Fault Value.
 
-Boot Fault Value.
+## C
 
-#### CIP
+* __CIP__: Comportable (hardware) Intellectual Property.
 
-Comportable (hardware) Intellectual Property.
+* __Comportable__: See the [comportability specification](./contributing/hw/comportability/README.md).
 
-#### Comportable
+* __CP__: Circuit Probe.
 
-See the [comportability specification](./contributing/hw/comportability/README.md).
+* __CRC__: Cyclic Redundancy Check.
 
-#### CP
+* __CSR__: Control/Status Register.
 
-Circuit Probe.
+* __CSRNG__: Cryptographically Secure Random Number Generator.
 
-#### CRC
-
-Cyclic Redundancy Check.
-
-#### CSR
-
-Control/Status Register.
-
-#### CSRNG
-
-Cryptographically Secure Random Number Generator.
-
-#### CTAP
-
-Client to Authenticator Protocol.
+* __CTAP__: Client to Authenticator Protocol.
 
 A protocol for authentication devices to communicate with a host computer.
 
-#### CW310
+* __CW310__: [ChipWhisperer CW310](https://rtfm.newae.com/Targets/CW310%20Bergen%20Board/) "Bergen" FPGA board.
 
-[ChipWhisperer CW310](https://rtfm.newae.com/Targets/CW310%20Bergen%20Board/) "Bergen" FPGA board.
+* __CW340__: [ChipWhisperer CW340](https://github.com/newaetech/cw340-luna-board) "Luna" FPGA baseboard.
 
-#### CW340
+## D
 
-[ChipWhisperer CW340](https://github.com/newaetech/cw340-luna-board) "Luna" FPGA baseboard.
+* __Darjeeling__: A reference top-level system that can be integrated into a larger SOC.
 
-#### Darjeeling
+* __DD__: Digital Design.
 
-A reference top-level system that can be integrated into a larger SOC.
+* __DIF__: Device Interface Function.
 
-#### DD
+* __DV__: Design Verification.
 
-Digital Design.
+* __dvsim__: Design verification simulator tool.
 
-#### DIF
+## E
 
-Device Interface Function.
-
-#### DV
-
-Design Verification.
-
-#### dvsim
-
-Design verification simulator tool.
-
-#### E2E
-
-End-to-End.
+* __E2E__: End-to-End.
 
 #### Earlgrey
 
 A reference top-level system intended for implementation as a discrete chip.
 See [Earlgrey](../hw/top_earlgrey/README.md) for a the full specification.
 
-#### EDA
+* __EDA__: Electronic Design Automation.
 
-Electronic Design Automation.
+* __EDN__: Entropy Distribution Network.
 
-#### EDN
+* __ePIC__: Embedded Position Independent Code.
 
-Entropy Distribution Network.
+* __ePMP__: Enhanced Physical Memory Protection.
+  A RISC-V extension to the physical memory protection part of the RISC-V privileged architecture specification.
+  Also known as "Smepmp".
 
-#### ePIC
+## F
 
-Embedded Position Independent Code.
+* __FI__: Fault Injection.
 
-#### ePMP
+* __FIDO2__: Fast Identity Online version 2.
+  A collection of protocol specifications for authenticating a user with a device or server.
 
-Enhanced Physical Memory Protection.
+* __FIPS__: Federal Information Process Standards.
 
-A RISC-V extension to the physical memory protection part of the RISC-V privileged architecture specification.
-Also known as "Smepmp".
+* __Flash__: A type of non-volatile reprogrammable memory.
 
-#### FI
+* __FPGA__: Field Programmable Gate Array.
 
-Fault Injection.
+* __FPV__: Formal Property Verification.
 
-#### FIDO2
+* __FT__: Final Test.
 
-Fast Identity Online version 2.
+## G
 
-A collection of protocol specifications for authenticating a user with a device or server.
+* __GCM__: Galois/Counter Mode.
 
-#### FIPS
+* __GF2__: Galois Field of order 2.
 
-Federal Information Process Standards.
+* __GPIO__: General-Purpose Input/Output.
 
-#### Flash
+## H
 
-A type of non-volatile reprogrammable memory.
+* __HDL__: Hardware Description Language.
 
-#### FPGA
+* __HMAC__: Hash-based Message Authentication Code.
 
-Field Programmable Gate Array.
+* __HSM__: Hardware Security Module.
 
-#### FPV
+* __HyperDebug__: A custom development harness for testing and debugging deployments on CW310 and CW340 FPGA boards.
 
-Formal Property Verification.
+## I
 
-#### FT
+* __I<sup>2</sup>C__: Inter-Integrated Circuit.
 
-Final Test.
+* __Ibex__: A 32-bit RISC-V core.
 
-#### GCM
+* __IP__: Intellectual Property.
 
-Galois/Counter Mode.
+* __IRQ__: Interrupt (request).
 
-#### GF2
+* __IV__: Initialization vector.
 
-Galois Field of order 2.
+## K
 
-#### GPIO
+* __KMAC__: Keccak Message Authentication Code.
 
-General-Purpose Input/Output.
+## L
 
-#### HDL
+* __LC__: Life-Cycle (controller).
 
-Hardware Description Language.
+* __LCV__: Life Cycle Value.
 
-#### HMAC
+## M
 
-Hash-based Message Authentication Code.
+* __Mask ROM__: Read-Only Memory encoded into the "mask" used to fabricate silicon.
 
-#### HSM
+* __MCU__: Microcontroller Unit.
 
-Hardware Security Module.
+* __Mux__: Multiplexer.
 
-#### HyperDebug
+## N
 
-A custom development harness for testing and debugging deployments on CW310 and CW340 FPGA boards.
+* __Netlist__: A list of connections between nodes of a circuit.
 
-#### I<sup>2</sup>C
+* __NMI__: Non-Maskable Interrupt.
 
-Inter-Integrated Circuit.
+## O
 
-#### Ibex
+* __OTP__: One-Time Programmable (memory).
 
-A 32-bit RISC-V core.
+## P
 
-#### IP
+* __PIC__: Position-Independent Code.
 
-Intellectual Property.
+* __Pinmux__: Pin Multiplexer.
 
-#### IRQ
+* __PKI__: Public Key Infrastructure.
 
-Interrupt (request).
+* __PLIC__: Platform Level Interrupt Controller.
 
-#### IV
+* __PMP__: Physical Memory Protection.
 
-Initialization vector.
+* __POR__: Power-On Reset.
 
-#### KMAC
+* __PQC__: Post-Quantum Cryptography.
 
-Keccak Message Authentication Code.
+* __PRNG__: Pseudorandom Number Generator.
 
-#### LC
+* __PWM__: Pulse-Width Modulation.
 
-Life-Cycle (controller).
+## R
 
-#### LCV
+* __RAM__: Random-Access Memory.
 
-Life Cycle Value.
+* __RFC__: Request For Comments.
 
-#### Mask ROM
+* __RISC-V__: An open source instruction set architecture.
 
-Read-Only Memory encoded into the "mask" used to fabricate silicon.
+* __RNG__: Random Number Generator.
 
-#### MCU
+* __ROM__: Read-Only Memory.
 
-Microcontroller Unit.
+* __RoT__: Root of Trust.
 
-#### Mux
+* __RTL__: Register-Transfer Level.
 
-Multiplexer.
+* __RV DM__: RISC-V Debug Module.
 
-#### Netlist
+## S
 
-A list of connections between nodes of a circuit.
+* __SCA__: Side-Channel Analysis.
 
-#### NMI
+* __SHA__: Secure Hash Algorithms.
 
-Non-Maskable Interrupt.
+* __Silicon__: The semiconductor material that most microchips are made from.
 
-#### OTP
+* __Smoketest__: A simple test used to check that some feature works to some degree, even if not in depth.
 
-One-Time Programmable (memory).
+* __SoC__: System on a Chip.
 
-#### PIC
+* __SPI__: Serial Peripheral Interface.
 
-Position-Independent Code.
+* __SRAM__: Static Random-Access Memory.
 
-#### Pinmux
+* __Configuration Straps / Pin Straps__: Externally-exposed pins used to provide early-boot configuration.
 
-Pin Multiplexer.
+## T
 
-#### PKI
+* __TAP__: Test Access Port.
 
-Public Key Infrastructure.
+* __Tapeout__: The process of fabricating a chip.
 
-#### PLIC
+* __TCB__: Trusted Computing Base.
 
-Platform Level Interrupt Controller.
+* __TL-UL__: TileLink Uncached Lightweight (bus/crossbar).
 
-#### PMP
+* __Tock__: An embedded operating system implemented in Rust.
 
-Physical Memory Protection.
+* __Top(-level)__: A full chip design, including all its components and external connections.
 
-#### POR
+* __TPM__: Trusted Platform Module.
 
-Power-On Reset.
+## U
 
-#### PQC
+* __UART__: Universal Asynchronous Receiver-Transmitter.
 
-Post-Quantum Cryptography.
+## V
 
-#### PRNG
-
-Pseudorandom Number Generator.
-
-#### PWM
-
-Pulse-Width Modulation.
-
-#### RAM
-
-Random-Access Memory.
-
-#### RFC
-
-Request For Comments.
-
-#### RISC-V
-
-An open source instruction set architecture.
-
-#### RNG
-
-Random Number Generator.
-
-#### ROM
-
-Read-Only Memory.
-
-#### RoT
-
-Root of Trust.
-
-#### RTL
-
-Register-Transfer Level.
-
-#### RV DM
-
-RISC-V Debug Module.
-
-#### SCA
-
-Side-Channel Analysis.
-
-#### SHA
-
-Secure Hash Algorithms.
-
-#### Silicon
-
-The semiconductor material that most microchips are made from.
-
-#### Smoketest
-
-A simple test used to check that some feature works to some degree, even if not in depth.
-
-#### SoC
-
-System on a Chip.
-
-#### SPI
-
-Serial Peripheral Interface.
-
-#### SRAM
-
-Static Random-Access Memory.
-
-#### Configuration Straps / Pin Straps
-
-Externally-exposed pins used to provide early-boot configuration.
-
-#### TAP
-
-Test Access Port.
-
-#### Tapeout
-
-The process of fabricating a chip.
-
-#### TCB
-
-Trusted Computing Base.
-
-#### TL-UL
-
-TileLink Uncached Lightweight (bus/crossbar).
-
-#### Tock
-
-An embedded operating system implemented in Rust.
-
-#### Top(-level)
-
-A full chip design, including all its components and external connections.
-
-#### TPM
-
-Trusted Platform Module.
-
-#### UART
-
-Universal Asynchronous Receiver-Transmitter.
-
-#### VER
-
-Version.
+* __VER__: Version.
