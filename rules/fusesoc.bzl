@@ -28,6 +28,7 @@ def _corefiles2rootarg(core):
 def _fusesoc_build_impl(ctx):
     build_dir = "build.{}".format(ctx.label.name)
     out_dir = "{}/{}/{}".format(ctx.bin_dir.path, ctx.label.package, build_dir)
+    pre_system_flags = ctx.attr.pre_system_flags
     flags = [ctx.expand_location(f, ctx.attr.srcs) for f in ctx.attr.flags]
     outputs = []
     groups = {}
@@ -79,6 +80,7 @@ def _fusesoc_build_impl(ctx):
     ])
     args.add(out_dir, format = "--build-root=%s")
 
+    args.add_all(pre_system_flags)
     args.add_all(ctx.attr.systems)
     args.add_all(flags)
 
@@ -135,6 +137,12 @@ fusesoc_build = rule(
         "target": attr.string(mandatory = True, doc = "Target name (e.g. 'sim')"),
         "systems": attr.string_list(mandatory = True, doc = "Systems to build"),
         "flags": attr.string_list(doc = "Flags controlling the FuseSOC system build"),
+        "pre_system_flags": attr.string_list(
+            doc = """
+                Flags controlling the FuseSOC system build that
+                must go before the name of the system (e.g. any --flag).
+            """,
+        ),
         "output_groups": attr.string_list_dict(
             allow_empty = True,
             doc = """

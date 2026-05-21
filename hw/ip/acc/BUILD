@@ -47,6 +47,7 @@ filegroup(
         "//hw/ip/acc/dv/model:cores",
         "//hw/ip/acc/dv/tracer:cores",
         "//hw/ip/acc/dv/uvm/env/pqc_off_env_pkg:cores",
+        "//hw/ip/acc/dv/uvm/env/pqc_on_env_pkg:cores",
         "//hw/ip/acc/dv/verilator:cores",
     ],
 )
@@ -73,6 +74,7 @@ filegroup(
         "//hw/ip/acc/dv/model:rtl_files",
         "//hw/ip/acc/dv/tracer:rtl_files",
         "//hw/ip/acc/dv/uvm/env/pqc_off_env_pkg:rtl_files",
+        "//hw/ip/acc/dv/uvm/env/pqc_on_env_pkg:rtl_files",
         "//hw/ip/acc/dv/verilator:rtl_files",
     ],
 )

@@ -21,6 +21,11 @@ lint_off -rule UNOPTFLAT -file "*/kmac_app.sv"
 lint_off -rule UNOPTFLAT -file "*/kmac_errchk.sv"
 lint_off -rule UNOPTFLAT -file "*/kmac.sv"
 
+lint_off -rule UNOPTFLAT -file "*/kmac_entropy.sv"
+lint_off -rule UNOPTFLAT -file "*/sha3pad.sv"
+lint_off -rule UNOPTFLAT -file "*/prim_trivium.sv"
+lint_off -rule UNOPTFLAT -file "*/prim_sync_reqack.sv"
+
 // UNDRIVEN: Read-only WSRs in ACC are not tracked in ispr_write/ispr_read because
 // they are tracked by WDR writes
 lint_off -rule UNDRIVEN -file "*/acc_trace_if.sv" -match "*'ispr_read'*"
