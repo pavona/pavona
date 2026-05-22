@@ -9,10 +9,9 @@ on:
   pull_request_target:
     types: [opened,closed,synchronize]
 
-# explicitly configure permissions, in case your GITHUB_TOKEN workflow permissions are set to read-only in repository settings
 permissions:
   actions: write
-  contents: read # this can be 'read' if the signatures are in remote repository
+  contents: read
   pull-requests: write
   statuses: write
 
@@ -21,31 +20,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "CLA Assistant"
-        if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I certify that I have read and agree that my contributions will be bound by the Pavona CLA.') || github.event_name == 'pull_request_target'
-        uses: zerorisc/cla-assistant-lite@v0.1.1
+        if: (github.event.comment.body == 'recheck' || github.event_name == 'pull_request_target')
+        uses: pavona/cla-assistant@v0.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # the below token should have repo scope and must be manually added by you in the repository's secret
-          # This token is required only if you have configured to store the signatures in a remote repository/organization
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          # Token grants access to store signatures in remote repository.
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.CLA_ASSISTANT_TOKEN }}
         with:
-          path-to-signatures: 'signatures.json'
-          path-to-document: 'https://gist.github.com/rtorok-zr/7c1f95a78d6c63a2f3b0179dcf4b1b48' # e.g. a CLA or a DCO document
-          branch: 'main'
+          path-to-signatures: signatures.json
+          # Path to CLA document.
+          path-to-document: https://github.com/pavona/pavona/blob/main/CLA-Individual
+          branch: main
 
-          # Optional inputs - If the optional inputs are not given, then default values will be taken
-          #
-          # enter the remote organization name where the signatures should be stored (Default is storing the signatures in the same repository)
-          remote-organization-name: zerorisc
-          # enter the  remote repository name where the signatures should be stored (Default is storing the signatures in the same repository)
-          remote-repository-name: expo-cla-signatures
-          # 'For example: Creating file for storing CLA Signatures'
-          #create-file-commit-message:
-          # 'pull request comment with Introductory message to ask new contributors to sign'
-          custom-notsigned-prcomment: 'Welcome! Before accepting your contribution, the Pavona project requires you to sign the [Contributor License Agreement](https://gist.github.com/rtorok-zr/1ca3a78e9367cca492b183e553dc39d5). To indicate your agreement, please post a comment on this Pull Request with the message below.<br/><br/>If you are contributing on behalf of a company, please inform your supervisor to [contact zeroRISC](mailto:info@zerorisc.com) to sign a Corporate CLA instead.'
-          #'The signature to be committed in order to sign the CLA'
-          custom-pr-sign-comment: 'I certify that I have read and agree that my contributions will be bound by the Pavona CLA.'
+          # GitHub organization name of the repository that stores the signatures.
+          remote-organization-name: pavona
+          # Remote repository that stores the signatures.
+          remote-repository-name: cla-signatures
+          # Pull request comment containing instructions for signing the CLA.
+          custom-notsigned-prcomment: |
+            Welcome to the Pavona Project! Before your contribution can be merged, the Pavona Project Foundation requires you to sign the Contributor License Agreement (CLA). Note that all CLAs are based on those from Apache.
+
+            If you are contributing on behalf of your employer and they are a member of GlobalPlatform, no further action is required and your contribution can be accepted for review. Please reach out to your employer for any questions regarding the GlobalPlatform IPR.
+
+            If your employer is _not_ a member of GlobalPlatform, please have an authorized party of your organization complete, sign and submit the [CLA-Corporate](https://github.com/pavona/pavona/blob/main/CLA-Corporate) on their behalf.
+
+            If you are an independent contributor, please complete, sign and submit the [CLA-Individual](https://github.com/pavona/pavona/blob/main/CLA-Individual).
+
+            To submit your CLA, e-mail it along your GitHub username(s), to secretariat@globalplatform.org. If your company is a member of GlobalPlatform, or has already completed a Corporate CLA, please email secretariat@globalplatform.org _from your corporate email address_ with your GitHub username to properly associate your GitHub account with your company. Please reference the Pavona Project Foundation in your email.
+
+            Once the executed CLA has been received, the project will be able to merge your contribution upon its review and acceptance.
           # 'pull request comment when all contributors has signed, defaults to **CLA Assistant Lite bot** All Contributors have signed the CLA.'
-          custom-allsigned-prcomment: "**Pavona CLA Assistant** All committers have signed the CLA."
-          #lock-pullrequest-aftermerge: false - if you don't want this bot to automatically lock the pull request after merging (default - true)
-          #use-dco-flag: true - If you are using DCO instead of CLA
+          custom-allsigned-prcomment: 'All committers have signed the CLA.<br/>'
