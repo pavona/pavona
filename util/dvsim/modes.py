@@ -104,6 +104,17 @@ class Mode:
                 setattr(self, attr, mode_attr_val)
                 continue
 
+            # If the attribute wouldn't otherwise merge, but it's a reseed
+            # value, (as introduced by the --reseed-source) it with the
+            # lesser of the two.
+            if attr == "reseed":
+                log.warn(f"For merging reseed value of {mode.name} "
+                         f"(reseed={mode_attr_val}) into {self.name} "
+                         f"(reseed={self_attr_val}), selecting the smaller "
+                         "value.")
+                setattr(self, attr, min(mode_attr_val, self_attr_val))
+                continue
+
             # If we get to here then neither value is the default value and
             # they are not equal. Raise an error because we don't know how to
             # merge them.
@@ -217,8 +228,9 @@ def find_mode_list(mode_names: List[str], modes: List[Mode]) -> List[Mode]:
     for mode_name in mode_names:
         mode = find_mode(mode_name, modes)
         if mode is None:
-            log.error("Cannot find requested mode ({}) in list. Known names: {}"
-                      .format(mode_name, [m.name for m in modes]))
+            log.error(
+                "Cannot find requested mode ({}) in list. Known names: {}".
+                format(mode_name, [m.name for m in modes]))
             sys.exit(1)
 
         found_list.append(mode)
