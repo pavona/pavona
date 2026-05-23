@@ -56,7 +56,7 @@ The generated file is placed in the simulation build scratch area instead of bei
 
 The use of advanced verification constructs such as SystemVerilog classes (on which UVM is based on) requires commercial simulators.
 The [DV simulation flow](../../util/dvsim/README.md) fully supports Synopsys VCS.
-There is support for Cadence Xcelium as well, which is being slowly ramped up.
+There is support for Cadence Xcelium as well.
 
 ## Building and Running Tests
 

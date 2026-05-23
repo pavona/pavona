@@ -299,10 +299,10 @@ It is recommended to only use designated initializers with types which use C-sty
 
 ### Naming
 **Structs, Classes and Methods**
-As stated by the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html#Type_Names), the names of Structs, Classes and Methods must be in `CamelCase` format.
+The names of Structs, Classes and Methods must be in `CamelCase` format.
 
 **Variable and Class Members Naming**
-As stated by the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html#Variable_Names), the names of variables (including function parameters) and data members must be in `lower_snake_case` format. Data members of Classes (but not Structs) additionally have trailing underscores, unless the variable represents a constant that should follow the [rule](#function-enum-struct-and-typedef-naming).
+The names of variables (including function parameters) and data members must be in `lower_snake_case` format. Data members of Classes (but not Structs) additionally have trailing underscores, unless the variable represents a constant that should follow the [rule](#function-enum-struct-and-typedef-naming).
 
 For example:
 ```cpp
@@ -327,7 +327,8 @@ Avoid using `C-style` features in C++ code, here are some examples:
 - Use the `nullptr` keyword rather than `NULL`.
 - Use `std::endl` rather than `'\n'`.
 - Use `new` and `delete` rather than `malloc()` and `free()`.
-- Use smart pointers rather than pointers. Refer to [Ownership and Smart Pointers](https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers) for more details.
+- Use smart pointers rather than pointers.
+  Refer to [Ownership and Smart Pointers](https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers) for more details.
 
 ## C Style Guide
 

@@ -146,7 +146,7 @@ To program any FPGAs or HyperDebug boards users need permissions to access USB d
 Depending on your security policy you can take different steps to enable this access.
 One way of doing so is given in the udev rule outlined below.
 
-To do so, create a file named `/etc/udev/rules.d/90-lowrisc.rules` and add the following content to it:
+To do so, create a file named `/etc/udev/rules.d/90-pavona.rules` and add the following content to it:
 
 ```
 # Grant access to board peripherals connected over USB:

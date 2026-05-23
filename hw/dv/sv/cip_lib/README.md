@@ -489,7 +489,7 @@ Users should randomize the values of all the MUBI CSRs in non-CSR tests and chec
 The helper functions `cip_base_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` can be used to get the random values.
 
 ### Security Verification for MUBI/LC_TX type ports
-In OpenTitan [Design Verification Methodology](../../../../doc/contributing/dv/methodology/README.md), it's mandatory to have 100% toggle coverage on all the ports.
+In the [Design Verification Methodology](../../../../doc/contributing/dv/methodology/README.md), it's mandatory to have 100% toggle coverage on all the ports.
 However, the MUBI defined values (`True` and `False`) are complement numbers.
 If users only test with `True` and `False` without using other values, toggle coverage can be 100%.
 Hence, user should add a functional covergroup for each MUBI type input port, via binding the interface `cip_mubi_cov_if` which contains a covergroup for MUBI.

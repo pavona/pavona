@@ -34,7 +34,7 @@ Having written a new test vector file, the `fusesoc` configuration needs to be m
 
 ## Building and Running the Verilator Testbench
 
-To build the testbench, execute from the OpenTitan top level:
+To build the testbench, execute from the top level:
 
 ```sh
 fusesoc --cores-root=. --verbose run --setup --build lowrisc:dv_verilator:aes_tlul_shim_tb

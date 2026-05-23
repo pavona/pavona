@@ -20,6 +20,7 @@
   - [Formal Verification Setup](./doc/getting_started/setup_formal.md)
 - [Synthesis Flow](./hw/syn/README.md)
   - [Linting](./hw/lint/README.md)
+- [License](./LICENSE)
 
 # Contributing
 
@@ -784,7 +785,6 @@
   - [Transports](./sw/host/ot_transports/README.md)
   - [Hardware Security Module (HSM) tool](./sw/host/hsmtool/README.md)
     - [Requirements](./sw/host/hsmtool/doc/requirements.md)
-  - [Signing Guide](./signing/README.md)
   - [TPM2 Test Server](./sw/host/tpm2_test_server/README.md)
   - [USB Streaming Tests](./sw/host/tests/usbdev/usbdev_stream/README.md)
   - [Penetration Test Utilities](./sw/host/penetrationtests/python/README.md)

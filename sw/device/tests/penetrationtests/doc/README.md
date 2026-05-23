@@ -2,9 +2,9 @@
 
 The purpose of this framework is to perform side-channel analysis (SCA) and fault injection (FI) attacks on the FPGA as well as on the chip.
 
-![Full hardware setup](pentest_setup.png)
+![Full hardware setup](pentest_setup.png#white-bg)
 
-As shown in the block diagram, the pentest framework runs on the target and receives configuration commands by the SCA and FI [ot-sca](https://github.com/lowRISC/ot-sca) framework.
+As shown in the block diagram, the pentest framework runs on the target and receives configuration commands by the SCA and FI framework.
 
 ## Usage
 

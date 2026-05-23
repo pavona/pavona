@@ -1,10 +1,5 @@
 # Device Provisioning
 
-<p style="color: red; text-align: right;">
-  Status: Pre-RFC
-</p>
-
-
 ## Overview
 
 This document describes the Pavona-supported provisioning flow which is divided into two stages:
@@ -111,7 +106,7 @@ The following diagram shows the physical connections between test components.
 <table>
   <tr>
      <td>
-        <img src="img_ate_setup.svg" style="width: 800px;">
+        <img src="img_ate_setup.svg#white-bg" style="width: 800px;">
      </td>
   </tr>
   <tr><td style="text-align:center;">Figure: FT Connectivity</td></tr>
@@ -172,7 +167,7 @@ flow with emphasis on the personalization process.
 <table>
   <tr>
     <td>
-      <img src="img_provisioning_overview.svg" style="width: 900px;">
+      <img src="img_provisioning_overview.svg#white-bg" style="width: 900px;">
     </td>
   </tr>
   <tr>
@@ -227,7 +222,7 @@ provisioning appliance during personalization.
 
 This section describes the personalization injection mode in detail.
 
-<img src="img_provisioning_injection.svg" style="width: 900px;">
+<img src="img_provisioning_injection.svg#white-bg" style="width: 900px;">
 
 **P0. Get device identifier**
 
@@ -406,7 +401,7 @@ This section describes the personalization self-generate mode in detail. In this
 mode, The device generates its own device secrets and the provisioning appliance
 is used to sign the endorsement certificate.
 
-<img src="img_provisioning_self_gen.svg" style="width: 900px;">
+<img src="img_provisioning_self_gen.svg#white-bg" style="width: 900px;">
 
 **PS0. Get device identifier**
 
@@ -550,7 +545,7 @@ role of the HOST.
 <table>
   <tr>
     <td>
-      <img src="img_provisioning_owner.svg" style="width: 900px;">
+      <img src="img_provisioning_owner.svg#white-bg" style="width: 900px;">
     </td>
   </tr>
   <tr>
@@ -582,7 +577,7 @@ Steps:
 <table>
   <tr>
     <td>
-      <img src="img_provisioning_owner_injection.svg" style="width: 900px;">
+      <img src="img_provisioning_owner_injection.svg#white-bg" style="width: 900px;">
     </td>
   </tr>
   <tr>
@@ -707,7 +702,7 @@ architecture:
 <table>
   <tr>
     <td>
-      <img src="img_ecies_encryption.svg" style="width: 900px;">
+      <img src="img_ecies_encryption.svg#white-bg" style="width: 900px;">
     </td>
   </tr>
   <tr>
@@ -796,7 +791,7 @@ data_enc, tag =
 <table>
   <tr>
     <td>
-      <img src="img_ecies_decryption.svg" style="width: 900px;">
+      <img src="img_ecies_decryption.svg#white-bg" style="width: 900px;">
     </td>
   </tr>
   <tr>

@@ -8,7 +8,6 @@ Verilog is the main logic design language for hardware in Pavona.
 
 Verilog and SystemVerilog (often generically referred to as just "Verilog" in this document) can be written in vastly different styles, which can lead to code conflicts and code review latency.
 This style guide aims to promote Verilog readability across groups.
-To quote the [Google C++ style guide](https://google.github.io/styleguide/cppguide.html): "Creating common, required idioms and patterns makes code much easier to understand."
 
 The goals of this guide are to:
 
@@ -140,7 +139,7 @@ Unless otherwise noted, the following terminology conventions apply to this styl
 
 ### Default to C-like Formatting
 
-***Where appropriate, format code consistent with https://google.github.io/styleguide/cppguide.html***
+***Where appropriate, format code consistent with [https://google.github.io/styleguide/cppguide.html](https://google.github.io/styleguide/cppguide.html)***
 
 Verilog is a C-like language, and where appropriate, we default to being consistent with [Google's C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
 

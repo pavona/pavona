@@ -13,10 +13,10 @@ The set of policies is then distributed by `racl_ctrl` through a single vector c
 ## Error logs
 
 A subscribing IP can log an error with `racl_ctrl` using the IP's item in the `racl_error_i` port.
-Similarly, a RACL error from outside of OpenTitan can be reported through a particular index of the `racl_error_external_i` port.
+Similarly, a RACL error from outside of the system can be reported through a particular index of the `racl_error_external_i` port.
 If multiple errors are logged at the same cycle, arbitration will record the one with the lowest index in this list:
 - Items from `racl_error_i` (internal errors)
-- Items from `racl_error_external_i` (errors from outside of OpenTitan)
+- Items from `racl_error_external_i` (errors from outside of the system)
 - An error reported by `racl_ctrl` itself.
 
 If there is more than one error reported (concurrently or over several cycles), the `error_log.overflow` field will be set.

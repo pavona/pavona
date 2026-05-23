@@ -8,7 +8,7 @@ development.
 How to build and run the testbench
 ----------------------------------
 
-From the OpenTitan top level execute
+From the top level execute
 
    ```sh
    fusesoc --cores-root=. run --setup --build lowrisc:dv_verilator:prim_ascon_round_tb

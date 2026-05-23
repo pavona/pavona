@@ -18,7 +18,7 @@ Parameter                   | Default (Max) | Top Egret | Description
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${topname}/ip_autogen/otp_ctrl/data/otp_ctrl.hjson -->
 <!-- END CMDGEN -->
 
-The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.
+The OTP controller contains various interfaces that connect to other comportable IPs, and these are briefly explained further below.
 
 ${"###"} EDN Interface
 

@@ -18,7 +18,7 @@ from typing import Tuple
 import hjson  # type: ignore
 
 REPO_TOP = Path(__file__).parents[2].resolve()
-REPORTS_URL_BASE = "https://reports.opentitan.org/{}report.json"  # TODO
+REPORTS_URL_BASE = "https://dashboards.pavona.org/{}report.json"
 
 block_level_urls = {
     "adc-controller": "hw/ip/adc_ctrl/dv/latest/",

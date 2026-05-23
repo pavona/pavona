@@ -51,7 +51,7 @@ All others CAN be device unique and are stored in OTP.
 For conditional transitions, there is a limit to how many times they can be attempted.
 This is to prevent an attacker from brute-forcing any specific token, as this also helps to reduce the overall required token size.
 
-For OpenTitan, the total amount of state transitions and transition attempts is limited to 24.
+The total amount of state transitions and transition attempts is limited to 24.
 Once this number is reached, the life cycle controller rejects further attempts, effectively locking the device into its current state.
 
 The token counters are maintained in the OTP.
@@ -139,7 +139,7 @@ See also accessibility description of the [isolated flash partition](#iso_part_s
 HW_DEBUG_EN refers to the general ungating of both invasive (JTAG control of the processor, bidirectional analog test points) and non-invasive debug (debug bus observation, and register access error returns).
 
 This signal thus needs to be routed to all security-aware and debug capable peripherals.
-This signal is used to determine whether OpenTitan peripheral register interfaces should [silently error](../../../../util/reggen/README.md#error-responses).
+This signal is used to determine whether peripheral register interfaces should [silently error](../../../../util/reggen/README.md#error-responses).
 If HW_DEBUG_EN is set to ON, normal errors should be returned.
 If HW_DEBUG_EN is set to OFF, errors should return silently.
 
@@ -413,7 +413,7 @@ Note that an initiated life cycle transition request always ends in `PostTransSt
 The life cycle controller contains two escalation channels that are connected to the alert handler.
 
 When the first channel `esc_wipe_secrets` is asserted, the life cycle controller permanently asserts the `lc_escalate_en` life cycle signal.
-That signal is routed to various security modules in OpenTitan and triggers local wiping and invalidation features.
+That signal is routed to various security modules and triggers local wiping and invalidation features.
 Note that this first escalation action does not affect the life cycle state.
 
 When the second channel `esc_scrap_state` is asserted, the life cycle controller moves the life cycle state into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.

@@ -92,7 +92,7 @@ Additionally, FPGA jobs may not start right away because our FPGAs can only serv
 
 Thank you for your interest and support!
 We are interested in allowing collaborators to provide hardware and EDA software licenses to the CI.
-If this is of interest to you, please contact us by opening a [support ticket](mailto:expo-ci-support@zerorisc.com).
+If this is of interest to you, please [contact us](http://pavona.org/get-engaged).
 
 ## Troubleshooting
 
@@ -136,16 +136,17 @@ If you continue to have issues troubleshooting your job on the CI, feel free to 
 <!-- markdownlint-disable MD026 -->
 ### How can I get help with CI issues?
 
-If something isn't working, we recommend filing an issue on `pavona` so others can benefit from your findings. For more personalized assistance, you can open a support ticket by contacting [expo-ci-support@zerorisc.com](mailto:expo-ci-support@zerorisc.com).
+If something isn't working, we recommend filing an issue on `pavona` so others can benefit from your findings.
+For more personalized assistance, you can open a support ticket by [contacting us](https://pavona.org/get-engaged).
 
 <!-- markdownlint-disable MD026 -->
 ### How can I find out about new features and planned maintenance on the CI?
 
-Request to be added to our [mailing list](https://groups.google.com/a/zerorisc.com/g/expo-ci-no-reply)!
+Request to be added to our [mailing lists](https://pavona.org/get-engaged)!
 We post updates regarding soon-to-release CI features and notifications about planned maintenance outages.
 
 <!-- markdownlint-disable MD026 -->
 ### How can I request new features for the CI?
 
 The Pavona project is interested in user feedback on how to make the CI better.
-If there is something you would like to see on the CI that we do not support yet, please create a GitHub Issue or [open a support ticket](mailto:expo-ci-support@zerorisc.com).
+If there is something you would like to see on the CI that we do not support yet, please create a [GitHub Issue](https://github.com/pavona/pavona/issues) or [reach out to us](https://pavona.org/get-engaged).

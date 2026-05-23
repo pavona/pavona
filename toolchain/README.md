@@ -2,11 +2,6 @@
 
 This directory contains the Bazel configuration for a RISC-V toolchain.
 
-This LLVM toolchain comes from the [lowrisc-toolchains] repository.
-See `third_party/lowrisc/BUILD.lowrisc_toolchain.bazel` for changing the toolchain version.
-
-[lowrisc-toolchains]: https://github.com/lowRISC/lowrisc-toolchains
-
 ## Configuration
 
 There are four rules used to configure the toolchain:

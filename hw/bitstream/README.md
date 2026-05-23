@@ -14,7 +14,7 @@ that are part of the code base and can be used to sign objects. `fake` keys
 are **not for production use cases**.
 
 `life_cycle_state` maps to any of the life cycle states supported by the
-OpenTitan design.
+design.
 
 The following command shows a list of targets provided by `//hw/bitstream`:
 

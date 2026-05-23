@@ -1,4 +1,4 @@
-# OpenTitan Dragonfly (Integrated Admissible Architecture) Datasheet
+# Dragonfly (Integrated Admissible Architecture) Datasheet
 
 ## Overview
 
@@ -30,7 +30,7 @@ The following table provides a more detailed summary of the supported features:
 <table>
 <thead style='font-size:100%'>
   <tr>
-    <th colspan="2">OpenTitan Dragonfly Features</th>
+    <th colspan="2">Dragonfly Features</th>
   </tr>
 </thead>
 <tbody style='font-size:90%;line-height:110%'>
@@ -121,7 +121,7 @@ The following table provides a more detailed summary of the supported features:
           <ul>
             <li>Boot ROM code implementing secure boot, including owner-approved second signing, and chip configuration</li>
             <li>Bare metal top-level tests</li>
-            <li>OpenTitan Crypto Library with ACC accelerated standard algorithms for </li>
+            <li>Pavona Crypto Library with ACC accelerated standard algorithms for </li>
             <ul>
               <li>RSA 2K, 3K, 4K</li>
               <li>ECC with NIST P256/P384, Brainpool P256r1 or X25519/Ed25519</li>
@@ -144,7 +144,7 @@ The main processing elements and cryptographic features are significantly simila
 A set of new IP blocks have been developed to enable integration into a larger SoC:
 
 - An [extended key manager block](../../ip/keymgr_dpe/README.md) with support for TCG’s DICE Protection Environment (DPE)
-- A [DMA controller](../../ip/dma/README.md) facilitating data exchange between the OpenTitan IP and the SoC
+- A [DMA controller](../../ip/dma/README.md) facilitating data exchange between the IP and the SoC
 - A [mailbox](../../ip/mbx/README.md) with TL-UL bus interface, configurable shared memory regions, and support for the PCIe Data Object Exchange (DOE) protocol
 - A [SoC proxy module](../ip/soc_proxy/README.md) that serves as a comportable fronted for external interrupts, alerts and the like
 - An [SoC debug controller](../../ip/soc_dbg_ctrl/README.md), which controls debug and test access to the SoC

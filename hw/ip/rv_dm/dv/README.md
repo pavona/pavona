@@ -76,7 +76,7 @@ The RV_DM testbench instantiates the sub-components of [jtag_dmi_agent](../../..
 
 ### UVM RAL Model
 
-On OpenTitan, the DV RAL models are typically generated with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulations are run.
+The DV RAL models are typically generated with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulations are run.
 `ralgen` invokes the `reggen` tool underneath, which takes the design specification `hjson` file as input, which contains the register descriptions.
 This generator is invoked by FuseSoC when it processes the RV_DM environment
 core file located at `hw/ip/rv_dm/dv/env/rv_dm_env.core`.

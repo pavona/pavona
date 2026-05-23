@@ -15,7 +15,7 @@ import dashboard.dashboard_validate as dashboard_validate
 import hjson
 import mistletoe as mk
 
-REPO_TOP = Path(__file__).parent.parent.parent.resolve().absolute()
+REPO_TOP = Path(__file__).parents[2].resolve()
 
 
 def genout(outfile, msg):
@@ -94,8 +94,8 @@ def get_linked_dv_doc(obj):
 # Link the version to the commit id (if available).
 def get_linked_version(rev):
     version = html.escape(rev['version'])
-    tree = rev['commit_id'] if 'commit_id' in rev else 'master'
-    url = f"https://github.com/lowrisc/opentitan/tree/{tree}"
+    tree = 'main'
+    url = f"https://github.com/pavona/pavona/tree/{tree}"
     return f"<span title='{tree}'><a href=\"{url}\">{version}</a></span>"
 
 
@@ -116,8 +116,10 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
     # checklist html.
     # Else, link to the template.
     if 'hw_checklist' in obj and 'commit_id' in rev and not is_latest_rev:
-        url = (f"https://github.com/lowrisc/opentitan/tree/{rev['commit_id']}/"
-               f"{obj['hw_checklist']}.md{in_page_ref}")
+        relpath = str(
+            (REPO_TOP / obj['_ip_desc_hjson_dir'] / obj['hw_checklist']).relative_to(REPO_TOP))
+        url = (f"https://github.com/pavona/pavona/tree/{'main'}/"
+               f"{relpath}.md{in_page_ref}")
     elif 'hw_checklist' in obj:
         url = get_doc_url(obj['_ip_desc_hjson_dir'],
                           obj['hw_checklist'] + ".html" + in_page_ref)
@@ -126,7 +128,7 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
         # doc/project/hw_checklist.md.tpl is a symlink to ip_checklist.md.tpl,
         # and github doesn't auto-render symlinks, so we have to use the url
         # where the symlink points to.
-        url = "https://github.com/lowrisc/opentitan/tree/master/"
+        url = "https://github.com/pavona/pavona/tree/main/"
         url += "util/uvmdvgen/checklist.md.tpl"
 
     return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
@@ -149,15 +151,15 @@ def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
     # checklist html.
     # Else, link to the template.
     if 'sw_checklist' in obj and 'commit_id' in rev and not is_latest_rev:
-        url = "https://github.com/lowrisc/opentitan/tree/{}/{}.md{}".format(
-            rev['commit_id'], obj['sw_checklist'], in_page_ref)
+        url = "https://github.com/pavona/pavona/tree/{}/{}.md{}".format(
+            'main', obj['sw_checklist'], in_page_ref)
     elif 'sw_checklist' in obj:
         url = get_doc_url(obj['_ip_desc_hjson_dir'],
                           obj['sw_checklist'] + ".html" + in_page_ref)
     else:
         # There is no checklist available, so point to the template.
-        url = "https://github.com/lowrisc/opentitan/tree/master/"
-        url += "doc/project/sw_checklist.md.tpl"
+        url = "https://github.com/pavona/pavona/tree/main/"
+        url += "doc/contributing/hw/sw_checklist.md.tpl"
 
     return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
 
@@ -228,14 +230,8 @@ def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]],
     Tuple -> (`hw/top_egret/ip/clkmgr/data/autogen/clkmgr.hjson`,
               `hw/ip/clkmgr/`)
     """
-    # TODO: the tuple is obsolete since there are no more "templated" IPs.
-
-    if isinstance(config, Tuple):
-        hjson_path = config[0]
-        ip_desc_hjson_dir = str((config[1] / "data").relative_to(REPO_TOP))
-    else:
-        hjson_path = config
-        ip_desc_hjson_dir = str(hjson_path.parent.relative_to(REPO_TOP))
+    hjson_path = config
+    ip_desc_hjson_dir = str(hjson_path.parent.relative_to(REPO_TOP))
 
     try:
         with open(str(hjson_path)) as prjfile:

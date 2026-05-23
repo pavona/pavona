@@ -20,7 +20,7 @@
 
 /**
  * @file
- * @brief Shared datatypes for the OpenTitan cryptography library.
+ * @brief Shared datatypes for the Pavona cryptography library.
  *
  * This header defines status codes, byte buffer representations, and key
  * representations that are shared between different algorithms within the
@@ -34,7 +34,7 @@ extern "C" {
 /**
  * Return values for the crypto library.
  *
- * The crypto library's return value is defined as OpenTitan's internal
+ * The crypto library's return value is defined as Pavona's internal
  * `status_t` in order to simplify testing. However, informally the library
  * guarantees that the concrete value contained in the status will be one of
  * the members of the `otcrypto_status_value` enum below.
@@ -48,7 +48,7 @@ typedef status_t otcrypto_status_t;
  * codes returned by the cryptolib should be bit-by-bit equivalent with one of
  * the values in this enum.
  *
- * Values are built to be bit-compatible with OpenTitan's internal `status_t`
+ * Values are built to be bit-compatible with Pavona's internal `status_t`
  * datatypes. The highest (sign) bit indicates if the value is an error (1) or
  * not (0). For non-error statuses, the rest can be anything; in cryptolib
  * status codes it is always `kHardenedBoolTrue`. For errors:
@@ -348,7 +348,7 @@ typedef enum otcrypto_mldsa_key_mode {
 } otcrypto_mldsa_key_mode_t;
 
 /**
- * Enum for opentitan crypto modes that use a key.
+ * Enum for crypto modes that use a key.
  *
  * Denotes the crypto mode for which the provided key is to be used.
  * This `otcrypto_key_mode_t` will be a parameter in the

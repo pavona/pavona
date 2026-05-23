@@ -1,12 +1,11 @@
-# OpenTitan HSM Tooling
+# HSM Tooling
 
 ## Requirements
 
-The OpenTitan tooling for HSM interactions should facilitate the generation and management of keys and the signing operations needed during the ceremony.
+The tooling for HSM interactions should facilitate the generation and management of keys and the signing operations needed during the ceremony.
 Managing the quorum and HSM configuration are typically proprietary operations that are not well serviced by the standard PKCS#11 interface.
 These operations will be performed by the HSM vendor tools.
 
-The tooling required to generate and manage keys and perform the signing operations should be developed by the OpenTitan software team.
 This tooling (referred to as `hsmtool`) should be a small stand-alone program that can be built to run in the offline signing environment.
 
 The software should have the following capabilities:
@@ -33,7 +32,7 @@ The PKCS#11 interface presents a generic object/attribute mechanism for managing
 ### Signing
 
 `hsmtool` should support signing items (ie: SHA256 hashes) with HSM keys.
-Signing should support any necessary transformations of the inputs and outputs required by the opentitan ROM (ie: the ROM works on PKCS#1 v1.5 signatures in little-endian order, but PKCS#11 requires entities to be in big-endian order).
+Signing should support any necessary transformations of the inputs and outputs required by the ROM (ie: the ROM works on PKCS#1 v1.5 signatures in little-endian order, but PKCS#11 requires entities to be in big-endian order).
 
 ## Implementation Principles
 

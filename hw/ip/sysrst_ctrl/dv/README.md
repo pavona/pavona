@@ -2,10 +2,7 @@
 
 <!-- Copy this file to hw/ip/sysrst_ctrl/doc/dv/index.md and make changes as needed.
 For convenience 'sysrst_ctrl' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram
-located at OpenTitan team drive / 'design verification'
-as a starting point and modify it to reflect your sysrst_ctrl testbench and save it
-to hw/ip/sysrst_ctrl/doc/dv/tb.svg. It should get linked and rendered under the block
+desired IP (with case sensitivity!). It should get linked and rendered under the block
 diagram section below. Please update / modify / remove sections below as
 applicable. Once done, remove this comment before making a PR. -->
 

@@ -16,7 +16,7 @@ Egret chip provides the following features:
 <table>
 <thead style='font-size:100%'>
   <tr>
-    <th colspan="2">OpenTitan Egret Features</th>
+    <th colspan="2">Egret Features</th>
   </tr>
 </thead>
 <tbody style='font-size:90%;line-height:110%'>
@@ -101,7 +101,7 @@ Egret chip provides the following features:
           <ul>
             <li>Boot ROM code implementing secure boot and chip configuration</li>
             <li>Bare metal top-level tests</li>
-            <li>OpenTitan Crypto Library with ACC accelerated standard algorithms for </li>
+            <li>Pavona Crypto Library with ACC accelerated standard algorithms for </li>
             <ul>
               <li>RSA 2K, 3K, 4K</li>
               <li>ECC with NIST P256/P384, Brainpool P256r1 or X25519/Ed25519</li>

@@ -16,7 +16,7 @@ There are also some other standalone firmware images in the repository, which ar
 
 - [`sw/device/tests`](./tests/README.md) contains several categories of chip-level tests, including smoke, IP integration, and system-level (use case) tests.
 
-- [`sw/vendor/eembc_coremark`](../vendor/eembc_coremark/README.md) contains infrastructure for running the [CoreMark](https://github.com/eembc/coremark) benchmark suite on the OpenTitan device.
+- [`sw/vendor/eembc_coremark`](../vendor/eembc_coremark/README.md) contains infrastructure for running the [CoreMark](https://github.com/eembc/coremark) benchmark suite on the device.
 - `sw/device/riscv_compliance_support` contains infrastructure so we can run the [RISC-V Compliance](https://github.com/riscv/riscv-compliance) tests.
 - `sw/device/sca` contains on-device software used for Side-Channel Analysis.
 - `sw/device/prebuilt` contains pre-built Tock images, which may not be up-to-date.

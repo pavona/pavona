@@ -110,7 +110,7 @@ The individual tool-specific setup such as setting the environment variables `$P
 
 # Architecture
 
-![Architecture](architecture.png)
+![Architecture](architecture.png#white-bg)
 
 ### EDA tool flow steps
 

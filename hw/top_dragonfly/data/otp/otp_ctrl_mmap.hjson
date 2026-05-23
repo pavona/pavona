@@ -1539,8 +1539,7 @@
                     inv_default: "<random>",
                 desc: '''
                 Unique device identifier that is always exposed through the
-                lifecycle JTAG tap. See OpenTitan documentation on Device
-                Identifiers.
+                lifecycle JTAG tap. See documentation on Device Identifiers.
                 '''
                 },
             ],

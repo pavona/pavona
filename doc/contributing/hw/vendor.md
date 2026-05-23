@@ -64,7 +64,7 @@ $ cat hw/vendor/lowrisc_ibex.vendor.hjson
 }
 ```
 
-This description file essentially conveys that: a component called "lowrisc_ibex" should be vendored in and its code placed into the "lowrisc_ibex" directory (relative to the description file).
+This description file essentially conveys that: a component called "lowrisc\_ibex" should be vendored in and its code placed into the "lowrisc\_ibex" directory (relative to the description file).
 The code comes from the `master` branch of the Git repository found at `https://github.com/lowRISC/ibex.git`.
 
 With this description file written, the `util/vendor` tool can do its job.

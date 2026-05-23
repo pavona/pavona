@@ -15,7 +15,7 @@ The override logic allows the output to be overridden (i.e. not follow the corre
 This allows the security chip to take over the inputs for its own use without disturbing the main user.
 
 The `sysrst_ctrl` also controls two active-low open-drain I/Os named `flash_wp_l_i` / `flash_wp_l_o` and `ec_rst_l_i` / `ec_rst_l_o`.
-The `ec_rst_l_i` / `ec_rst_l_o` signals are connected to the same bidirectional pin of the OpenTitan chip, and are used to either reset the embedded controller (EC), or to detect self-reset of the EC and stretch the reset pulse (hence the bidirectional nature of this pin).
+The `ec_rst_l_i` / `ec_rst_l_o` signals are connected to the same bidirectional pin, and are used to either reset the embedded controller (EC), or to detect self-reset of the EC and stretch the reset pulse (hence the bidirectional nature of this pin).
 This output is always asserted when `sysrst_ctrl` is reset (allowing its use as a power-on reset) and remains asserted until released by software.
 The flash write-protect output `flash_wp_l_o` is typically connected to the BIOS flash chip in the system.
 This output is always asserted when the `sysrst_ctrl` block is reset and remains asserted until released by software.
@@ -49,7 +49,7 @@ If the timing condition (2 seconds) is met, `systrst_ctrl` will enable combo det
 If a transition is seen, and the timing condition is met (10 seconds), `sysrst_ctrl` will assert `ec_rst_l_o`, the interrupt request and set the interrupt status register [`COMBO_INTR_STATUS`](registers.md#combo_intr_status) to indicate the interrupt cause.
 The software interrupt handler should then read the [`COMBO_INTR_STATUS`](registers.md#combo_intr_status) register and clear the interrupt via the [`INTR_STATE`](registers.md#intr_state) register.
 
-Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
+Note that an interrupt will also issue a wakeup request to the power manager via `wkup_req_o`.
 Software should therefore read and clear the [`WKUP_STATUS`](registers.md#wkup_status) register as well.
 
 ### Combo actions
@@ -59,13 +59,13 @@ The following four combo actions can be triggered:
 - Drive the `bat_disable` output high until the next reset.
 - Issue an interrupt to the processor via `intr_event_detected_o`.
 - Assert `ec_rst_l_o` for the amount of cycles configured in [`EC_RST_CTL`](registers.md#ec_rst_ctl).
-- Issue a reset request via `rst_req_o` to the reset manager of the OpenTitan system. Note that once a reset request is issued, it will remain asserted until the next reset.
+- Issue a reset request via `rst_req_o` to the reset manager of the system.
+  Note that once a reset request is issued, it will remain asserted until the next reset.
 
 These actions can be configured via the [`COM_OUT_CTL_0`](registers.md#com_out_ctl) register for each of the combo blocks as described in the previous section.
 Note that configuring both the assertion of `ec_rst_l_o` and the issue of a reset request may have unexpected effects.
-This is because the hardware will start counting cycles in parallel to the reset request being sent. If the reset request leads to the `sysrst_ctrl`
-block being reset, the `ec_rst_l_o` pulse might be interrupted or cancelled, depending on the relative timing of the pulse width
-and the reset.
+This is because the hardware will start counting cycles in parallel to the reset request being sent.
+If the reset request leads to the `sysrst_ctrl` block being reset, the `ec_rst_l_o` pulse might be interrupted or cancelled, depending on the relative timing of the pulse width and the reset.
 
 ### Hardwired reset stretching functionality
 
@@ -95,7 +95,7 @@ Likewise, when the power button is released, `pwrb_in_i` goes from logic 0 to lo
 When `sysrst_ctrl` detects a transition (H->L or L->H) as specified in [`KEY_INTR_CTL`](registers.md#key_intr_ctl) and it meets the debounce requirement in [`KEY_INTR_DEBOUNCE_CTL`](registers.md#key_intr_debounce_ctl), `sysrst_ctrl` sets the [`KEY_INTR_STATUS`](registers.md#key_intr_status) register to indicate the interrupt cause and send out a consolidated interrupt to the PLIC.
 The software interrupt handler should then read the [`KEY_INTR_STATUS`](registers.md#key_intr_status) register and clear the interrupt via the [`INTR_STATE`](registers.md#intr_state) register.
 
-Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
+Note that an interrupt will also issue a wakeup request to the power manager via `wkup_req_o`.
 Software should therefore read and clear the [`WKUP_STATUS`](registers.md#wkup_status) register as well.
 
 ## Ultra-low-power Wakeup Feature
@@ -119,7 +119,7 @@ Once the above configuration is active, `sysrst_ctrl` will start the timer when 
 Once the timing condition is met, `sysrst_ctrl` will assert `z3_wakeup` output signal, the interrupt request and set the interrupt status register [`ULP_STATUS`](registers.md#ulp_status) to indicate the interrupt cause.
 The software interrupt handler should then read the [`ULP_STATUS`](registers.md#ulp_status) register and clear the interrupt via the [`INTR_STATE`](registers.md#intr_state) register.
 
-Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
+Note that an interrupt will also issue a wakeup request to the power manager via `wkup_req_o`.
 Software should therefore read and clear the [`WKUP_STATUS`](registers.md#wkup_status) register as well.
 
 Also note that the detection status is sticky.
@@ -139,20 +139,20 @@ The output signal override feature always has higher priority than any of the co
 
 The selection of output signals to override, and the override values are programmable and lockable via the [`PIN_ALLOWED_CTL`](registers.md#pin_allowed_ctl) register.
 For example, [`PIN_ALLOWED_CTL.EC_RST_L_0`](registers.md#pin_allowed_ctl) to 1 and [`PIN_ALLOWED_CTL.EC_RST_L_1`](registers.md#pin_allowed_ctl) to 0 means that software allows `ec_rst_l_o` to be overridden with logic 0, but not with logic 1.
-If the SW locks the configuration with [`REGWEN`](registers.md#regwen), [`PIN_ALLOWED_CTL`](registers.md#pin_allowed_ctl) cannot be modified until the next OpenTitan reset.
+If the SW locks the configuration with [`REGWEN`](registers.md#regwen), [`PIN_ALLOWED_CTL`](registers.md#pin_allowed_ctl) cannot be modified until the next reset.
 
 When the system is up and running, the software can modify [`PIN_OUT_CTL`](registers.md#pin_out_ctl) and [`PIN_OUT_VALUE`](registers.md#pin_out_value) to enable or disable the feature.
-For example, to release `ec_rst_l_o` after OpenTitan completes the reset, software can set [`PIN_OUT_CTL`](registers.md#pin_out_ctl) to 0 to stop the hardware from driving `ec_rst_l_o` to 0.
+For example, to release `ec_rst_l_o` after the system completes the reset, software can set [`PIN_OUT_CTL`](registers.md#pin_out_ctl) to 0 to stop the hardware from driving `ec_rst_l_o` to 0.
 
 The input / output signal inversions can be programmed via the [`KEY_INVERT_CTL`](registers.md#key_invert_ctl) register.
 Input signals will be inverted before the combo detection logic, while output signals will be inverted after the output signal override logic.
 
 ## EC and Power-on-reset
 
-OpenTitan and EC will be reset together during power-on.
-When OpenTitan is in reset, `ec_rst_l_o` will be asserted (active low).
-The power-on-reset value of [`PIN_ALLOWED_CTL.EC_RST_L_1`](registers.md#pin_allowed_ctl) and [`PIN_OUT_CTL.EC_RST_L`](registers.md#pin_out_ctl) will guarantee that `ec_rst_l_o` remains asserted after OpenTitan reset is released.
-The software can release `ec_rst_l_o` explicitly by setting [`PIN_OUT_CTL.EC_RST_L`](registers.md#pin_out_ctl) to 0 during boot in order to complete the OpenTitan and EC power-on-reset sequence.
+The overall system and EC will be reset together during power-on.
+When the system is in reset, `ec_rst_l_o` will be asserted (active low).
+The power-on-reset value of [`PIN_ALLOWED_CTL.EC_RST_L_1`](registers.md#pin_allowed_ctl) and [`PIN_OUT_CTL.EC_RST_L`](registers.md#pin_out_ctl) will guarantee that `ec_rst_l_o` remains asserted after system reset is released.
+The software can release `ec_rst_l_o` explicitly by setting [`PIN_OUT_CTL.EC_RST_L`](registers.md#pin_out_ctl) to 0 during boot in order to complete the system and EC power-on-reset sequence.
 
 Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../../../ip_templates/pinmux/README.md) before releasing `ec_rst_l_o`.
 

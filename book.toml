@@ -23,6 +23,11 @@ preferred_dark_theme = "dark"
 additional-css = ["util/site/book-theme/wavejson.css"]
 additional-js = ["util/site/book-theme/codeblock-conversions.js"]
 
+[output.html.redirect]
+"/hw/dv/doc/dv_doc_template.html" = "https://github.com/pavona/pavona/blob/main/hw/dv/doc/dv_doc_template.md?plain=1"
+"/util/uvmdvgen/checklist.html" = "https://github.com/pavona/pavona/blob/main/util/uvmdvgen/checklist.md.tpl"
+"/LICENSE" = "/LICENSE.html"
+
 [output.html.print]
 enable = false
 

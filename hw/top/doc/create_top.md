@@ -15,7 +15,7 @@ This page assumes a minimal amount of familiarity with Bazel, but you should at 
 
 Before running `topgen`, you must ensure that every IP (including top-specific and generated IPs) contains a `BUILD` file and associated `defs.bzl` file describing the IP to the build system, in the root directory of the IP.
 This sections explains those steps in detail.
-These steps are only necessary if you have custom IPs, as all IPs in the OpenTitan repository are already setup.
+These steps are only necessary if you have custom IPs, as all IPs in the repository are already setup.
 
 ### Registering non-generated IPs
 

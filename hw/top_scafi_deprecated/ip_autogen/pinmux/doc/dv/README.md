@@ -9,7 +9,6 @@
 
 * [Design & verification stage](../../../../../README.md)
   * [HW development stages](../../../../../../doc/contributing/hw/development_stages.md)
-* [FPV dashboard](https://reports.opentitan.org/hw/top_scafi_deprecated/formal/summary.html)
 
 For detailed information on PINMUX design features, please see the
 [PINMUX design specification](../../README.md).

@@ -112,7 +112,7 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 
 <!-- END CMDGEN -->
 
-The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.
+The OTP controller contains various interfaces that connect to other comportable IPs, and these are briefly explained further below.
 
 ### EDN Interface
 

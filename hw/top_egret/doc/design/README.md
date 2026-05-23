@@ -103,7 +103,7 @@ When the device receives a low power entry request while flash activity is ongoi
 
 ### Main processor (`core_ibex`)
 
-The main processor (`core_ibex`) is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements the RV32IMC instruction set architecture.
+The main processor (`core_ibex`) is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements the RV32IMCB instruction set architecture.
 It was initially developed as part of the [PULP platform](https://www.pulp-platform.org) under the name "Zero-riscy" [\[1\]](https://doi.org/10.1109/PATMOS.2017.8106976), and has been contributed to [lowRISC](https://www.lowrisc.org), which maintains it and develops it further.
 See the [`core_ibex` specification](https://ibex-core.readthedocs.io/en/latest/) for more details of the core.
 In addition to the standard RISC-V functionality, Ibex implements M (machine) and U (user) mode per the RISC-V standard.
@@ -125,7 +125,7 @@ See the details in the [`rv_plic` specification](../../ip_autogen/rv_plic/README
 
 Ibex currently achieves a [CoreMark](https://www.eembc.org/coremark/) per MHz of 1.93 on Egret.
 For a detailed analysis of where this number comes from, please refer to this [GitHub issue](https://github.com/lowRISC/opentitan/issues/17370#issuecomment-1453324348).
-In short, by [moving read-only data from Flash into SRAM](https://github.com/lowRISC/opentitan/issues/17370#issuecomment-1446719338) and by playing with optimization flags, A CoreMark/MHz of 2.15 is achievable.
+In short, by [moving read-only data from Flash into SRAM](https://github.com/lowRISC/opentitan/issues/17370#issuecomment-1446719338) and by playing with optimization flags, a CoreMark/MHz of 2.15 is achievable.
 This number is close to the maximum achievable number for Ibex with an ideal single-cycle access memory system when using the LLVM compiler.
 
 When switching to GCC and combining the Ibex configuration used in Egret with an idealistic single-cycle access Flash memory, a CoreMark/MHz number of 3.07 is achievable.

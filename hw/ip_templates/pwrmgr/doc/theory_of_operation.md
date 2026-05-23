@@ -274,7 +274,7 @@ Because of this, the software also cannot distinguish between these two reset ca
 
 ## Supported Low Power Modes
 
-This section details the various low power modes supported by OpenTitan.
+This section details the various low power modes supported.
 
 
 ### Deep Sleep or Standby

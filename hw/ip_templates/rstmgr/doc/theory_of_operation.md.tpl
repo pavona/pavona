@@ -1,6 +1,6 @@
 <%text># Theory of Operation</%text>
 
-The OpenTitan reset topology and reset controller block diagram are shown in the diagram below.
+The reset topology and reset controller block diagram are shown in the diagram below.
 The reset controller is closely related to the [power controller](../../pwrmgr/README.md), please refer to that spec for details on how reset controller inputs are controlled.
 
 ![Reset Topology](../doc/reset_topology.svg)
@@ -63,7 +63,7 @@ The Core domain consists of all remaining logic and contains 4 sub reset trees, 
 <p>
 <code>This reset is derived from rst_lc_n and sets only the targeted module and nothing else.</code>
 <p>
-<code>For OpenTitan, the only current targets are spi_device, all instances of spi_host, all instances of i2c and usbdev</code>
+<code>The only current targets are spi_device, all instances of spi_host, all instances of i2c and usbdev</code>
    </td>
   </tr>
 </table>
@@ -106,7 +106,7 @@ These requests primarily come from the following sources:
 
 <%text>### Shadow Resets</%text>
 
-OpenTitan supports the shadow configuration registers.
+This reset manager supports the shadow configuration registers.
 These are registers stored in two constantly checking copies to ensure the values are not maliciously or accidentally disturbed.
 For these components, the reset manager outputs a shadow reset dedicated to resetting only the shadow storage.
 This reset separation ensures that a targetted attack on the reset line cannot easily defeat shadow registers.
@@ -242,7 +242,7 @@ SW controlled reset request       | `rstmgr` SW_RST_CTRL_N                      
 <%text>## Reset Information</%text>
 
 The reset information register is a reflection of the reset state from the perspective of the system.
-In OpenTitan, since there is only 1 host, it is thus from the perspective of the processor.
+Since there is only 1 host, it is thus from the perspective of the processor.
 This also suggests that if the design had multiple processors, there would need to be multiple such registers.
 
 If a reset does not cause the processor to reset, there is no reason for the reset information to change (this is also why there is a strong security link between the reset of the processor and the rest of the system).

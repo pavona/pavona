@@ -903,7 +903,7 @@ to propagate an alert signal if either P is high or N is low.
 
 ## Countermeasures
 
-Most countermeasure enablement is controlled by Nuvoton via the
+Most countermeasure enablement is controlled via the
 registers interface. Clock jitter is an exception because there is a
 reasoning for dynamically turning it on and off (security/performance
 tradeoff). Unless stated otherwise, countermeasures are active in all

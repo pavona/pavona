@@ -10,9 +10,8 @@ the input and output data widths are the same. Because masking options are not
 supported, the larger data size must be an even multiple of the smaller size.
 The controls for this module are modelled after the `prim_fifo_sync` module,
 both in name and functional behavior.
-It is one of a set of shared primitive modules
-available for use within OpenTitan as referred to in the Comportability
-Specification section on shared primitives.
+It is one of a set of shared, comportable  primitive modules
+available for use in this repo.
 
 ## Parameters
 

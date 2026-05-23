@@ -4,7 +4,7 @@
 
 This document specifies the functionality of the life cycle controller.
 The life cycle controller is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
-For the high-level description of the life cycle architecture of OpenTitan, please refer to the [Device Life Cycle Architecture](../../../doc/security/specs/device_life_cycle/README.md).
+For the high-level description of the life cycle architecture, please refer to the [Device Life Cycle Architecture](../../../doc/security/specs/device_life_cycle/README.md).
 The life cycle implementation refers to the design that encompasses all life cycle functions.
 This touches on the functionality of the following modules, listed in no particular order:
 - The life cycle controller itself - A new peripheral

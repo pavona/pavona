@@ -43,7 +43,7 @@ Thus the security of both volatile (OTP controller) and non-volatile (OTP IP) st
 
 ### Partition Listing and Description
 
-The OTP controller for this OpenTitan top-level contains the logical partitions shown below.
+The OTP controller for this top-level contains the logical partitions shown below.
 
 {{#include otp_ctrl_partitions.md}}
 
@@ -586,7 +586,7 @@ Note that the open source OTP controller allows up to two outstanding OTP comman
 #### Generic Simulation and FPGA Emulation Model
 
 For open-source simulation and FPGA emulation, a synthesizable and generic OTP wrapper module is provided (`otp_macro`).
-This is automatically selected in the OpenTitan build flow via the technology primitive mechanism if no proprietary OTP macro is available for a specific technology.
+This is automatically selected in the build flow via the technology primitive mechanism if no proprietary OTP macro is available for a specific technology.
 The OTP storage in `otp_macro` is emulated using a standard RAM primitive `prim_generic_ram_1p`.
 While this storage element is volatile, the primitive is constructed such that the contents are not wiped upon a system-wide reset.
 I.e., only a power-cycle wipes the RAM primitive, thereby enabling limited emulation of the OTP function and life cycle transitions also on an FPGA device.

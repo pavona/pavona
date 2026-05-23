@@ -168,13 +168,9 @@ These tests will check for valid operation of the bootstrap flows and will check
 Because the bootstrap module implements the real-world programming interface, testing flows must be developed which verify bootstrap functionality on FPGA devices paired with real programmer devices such as the Dediprog SF100.
 Any difficulties encountered with the physical devices should result in enhanced tests performed in the unit tests or function tests.
 
-## Alternatives Considered
+## Note
 
-The pre-existing bootstrap protocol used on current Google Titan-Class chips is well known (at least within Google) and has existing library support both in Google's codebase and in Open Source repositories (i.e.: the `spiflash` utility).
-
-Although this protocol is well known and has existing support, this protocol requires the device driving the bootstrap sequence support SPI in generic mode and be a full-duplex SPI transceiver.
-
-The author has on very rare occasions observed peculiar problems with the exiting bootstrap protocol which usually present as corrupted SHA checksums (usually in the form of a dropped bit).
+On rare occasions, there will be a problem with the exiting bootstrap protocol, which usually presents as corrupted SHA checksums (usually in the form of a dropped bit).
 These can normally be worked around by ignoring the checksums.
 
 There are also reports of occasional synchronization issues with the full-duplex protocol.

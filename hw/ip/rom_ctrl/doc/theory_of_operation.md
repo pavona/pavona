@@ -83,14 +83,14 @@ The diagram below shows the operation of the simple FSM.
 
 ## What does the ROM check do?
 
-One of the possible physical attacks on a system like OpenTitan is to subvert the ROM.
+One of the possible physical attacks on a system is to subvert the ROM.
 The regular structure of a ROM is useful because it makes metal fixes easy, but (for the same reasons) it makes the ROM quite an easy target for an attacker.
 See \[SKO-05\][^SKO-05], section 2.1.1, for a description of ROMs and attacks on them.
 
 [^SKO-05]: **SKO-05**: Skorobogatov, [*Semi-Invasive Attacks - A New Approach to Hardware Security Analysis*](https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-630.html), University of Cambridge Computer Laboratory Technical Report 630, 2005
 
 Since the code in ROM is the first thing to execute, an attacker that modifies it undetected can completely subvert the chain of trust.
-As such, OpenTitan needs some form of ROM integrity checking and the ROM checker is the module in charge of providing it.
+As such, the system needs some form of ROM integrity checking and the ROM checker is the module in charge of providing it.
 
 After bringing the ROM controller module out of reset, the power manager must wait until `pwrgr_data_o.done` is asserted before starting the host processor.
 The ROM controller also passes the `pwrmgr_data_o.good` signal.

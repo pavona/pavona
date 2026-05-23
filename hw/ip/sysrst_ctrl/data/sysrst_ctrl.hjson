@@ -43,12 +43,12 @@
   ],
   wakeup_list: [
     { name: "wkup_req",
-      desc: "OpenTitan wake request signal to `pwrmgr` (running on AON clock).",
+      desc: "Wake request signal to `pwrmgr` (running on AON clock).",
     }
   ],
   reset_request_list: [
     { name: "rst_req",
-      desc: "OpenTitan reset request to `rstmgr` (running on AON clock)."
+      desc: "Reset request to `rstmgr` (running on AON clock)."
     },
   ],
   param_list: [
@@ -152,9 +152,9 @@
     {
       name: "SYSRST_CTRL.HARDWARE_RESET_STRETCH"
       desc: '''
-            When OpenTitan is in reset, ec_rst_l_o will be asserted (active low).
+            When the top-level system is in reset, ec_rst_l_o will be asserted (active low).
             The power-on-reset value of PIN_ALLOWED_CTL.EC_RST_L_1 and PIN_OUT_CTL.EC_RST_L will
-            guarantee that ec_rst_l_o remains asserted after OpenTitan reset is released.
+            guarantee that ec_rst_l_o remains asserted after system reset is released.
             '''
     }
     {
@@ -932,9 +932,9 @@
         desc: '''
               To define the actions once the combo is detected
               [0]: bat_disable
-              [1]: interrupt (to OpenTitan processor)
+              [1]: interrupt (to processor)
               [2]: ec_rst (for Embedded Controller)
-              [3]: rst_req (to OpenTitan reset manager)
+              [3]: rst_req (to reset manager)
               ''',
         count: "NumCombo",
         cname: "sysrst_ctrl",

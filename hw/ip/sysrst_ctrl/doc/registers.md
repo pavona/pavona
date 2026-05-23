@@ -628,9 +628,9 @@ To define the duration that the combo should be pressed
 ## COM_OUT_CTL
 To define the actions once the combo is detected
 [0]: bat_disable
-[1]: interrupt (to OpenTitan processor)
+[1]: interrupt (to processor)
 [2]: ec_rst (for Embedded Controller)
-[3]: rst_req (to OpenTitan reset manager)
+[3]: rst_req (to reset manager)
 - Reset default: `0x0`
 - Reset mask: `0xf`
 - Register enable: [`REGWEN`](#regwen)

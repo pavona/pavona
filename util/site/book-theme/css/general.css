@@ -257,7 +257,7 @@ sup {
     font-style: italic;
 }
 
-img {
+img[src*="#white-bg"] {
     background-color: white;
 }
 

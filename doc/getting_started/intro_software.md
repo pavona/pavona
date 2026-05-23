@@ -1,6 +1,6 @@
 # Pavona 103: Introduction to software
 
-In [Pavona 101](./pavona_101.md), you learned how to clone the repository and run a Verilator test.
+In [Pavona 101](./README.md), you learned how to clone the repository and run a Verilator test.
 In [Pavona 102](./intro_hardware.md), you learned how ACE creates hardware from a single source of truth.
 This guide describes software in Pavona and its relationship to the hardware it runs on.
 

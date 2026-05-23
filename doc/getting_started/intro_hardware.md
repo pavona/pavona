@@ -2,7 +2,7 @@
 
 Pavona's differentiating feature is its principled modular design that makes customizing IP blocks and top-level designs effortless.
 
-[Pavona 101](./pavona_101.md) shows new users how to clone the repo, install system prerequisites, and run a basic chip-level simulation.
+[Pavona 101](./README.md) shows new users how to clone the repo, install system prerequisites, and run a basic chip-level simulation.
 This guide builds on Pavona 101 by explaining the repository and infrastructure for hardware design and development.
 After this guide, you will be able to make changes to existing top-level designs and run tests on them.
 

@@ -235,7 +235,7 @@ This execution environment is used to execute on silicon targets containing a
 `rom_ext` stage. This is the recommended option for test cases that implemented
 to run in `prod` or `prod_end` life cycle states.
 
-> This execution environment requires access to the OpenTitan Cloud KMS
+> This execution environment requires access to a Cloud KMS
 service. See
 [CloudKMS](../../../../../signing/README.md#configuration-for-silicon_owner-sival-signing)
 for more details.

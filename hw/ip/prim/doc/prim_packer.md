@@ -3,9 +3,8 @@
 # Overview
 
 `prim_packer` is a module that receives partial writes then packs and creates
-full configurable width writes. It is one of a set of shared primitive modules
-available for use within OpenTitan as referred to in the Comportability
-Specification section on shared primitives.
+full configurable width writes. It is one of a set of shared, comportable primitive modules
+available for use within this repo.
 
 ## Parameters
 

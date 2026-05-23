@@ -521,13 +521,12 @@ This register holds the SILICON_CREATOR_ID and the PRODUCT_ID.
 
 ### HW_REVISION0 . SILICON_CREATOR_ID
 ID of the silicon creator.
-Assigned by the OpenTitan project.
 Zero is an invalid value.
 The encoding must follow the following range constraints:
 
 0x0000: invalid value
-0x0001 - 0x3FFF: reserved for use in the open-source OpenTitan project
-0x4000 - 0x7FFF: reserved for real integrations of OpenTitan
+0x0001 - 0x3FFF: reserved for use in the open-source Pavona project
+0x4000 - 0x7FFF: reserved for real integrations
 0x8000 - 0xFFFF: reserved for future use
 
 ### HW_REVISION0 . PRODUCT_ID

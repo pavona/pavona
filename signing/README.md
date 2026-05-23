@@ -95,7 +95,7 @@ example:
 ### Cloud KMS authentication
 
 In order to sign with the cloud-kms key, you need to authenticate to Google
-cloud using your opentitan.org account.
+cloud using your Pavona-recognized account.
 
 > See additional instructions on how to install the `google-cloud-cli` package
 for various OS distributions: https://cloud.google.com/sdk/docs/install.

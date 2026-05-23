@@ -1,6 +1,6 @@
 <%text># Theory of Operation</%text>
 
-Clock management in OpenTitan is divided into groups.
+Clock management is divided into groups.
 Each group has specific attributes and controls whether software is allowed to influence individual clocks during the active power state.
 For low power states, please see [power manager](../../pwrmgr/README.md).
 

@@ -1,4 +1,4 @@
-# OpenTitan Egret Chip DV Document
+# Egret Chip DV Document
 
 ## Goals
 * **DV**
@@ -11,7 +11,7 @@
 * **FPV**
   * Verify the connectivity of signals (that are excluded from functional DV above) from point A to point B.
   * Secure verification
-    * Check for leakage of secure data into unsecure locations / paths and vice-versa using the Cadence SPV tool.
+    * Check for leakage of secure data into unsecure locations / paths and vice-versa.
 
 ## Current status
 * [Design & verification stage](../../README.md)
