@@ -27,7 +27,8 @@ In some cases, code changes are irrelevant for the upstream repo, so this reposi
 ## Background
 
 Pavona is developed in a "monorepo", a single repository containing all its source code.
-This approach is beneficial for many reasons, ranging from an easier workflow to better reproducibility of the results, and that's why large companies like [Google](https://ai.google/research/pubs/pub45424) and Facebook are using monorepos.
+This approach is beneficial for reasons ranging from an easier workflow to better reproducibility of results.
+Many established companies like Google and Facebook use monorepos as a result.
 Monorepos are even more compelling for hardware development, which cannot make use of a standardized language-specific package manager like npm or pip.
 
 The strategy of this repository: develop reusable parts of the code base in an external repository, and copy the source code back into the monorepo in an automated way.
