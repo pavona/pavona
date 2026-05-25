@@ -10,9 +10,20 @@
 
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
+
+// TODO: A separate header should be made for the keymgr_dpe-based
+// implementations to make this a true multitop library.
+#if defined(HAS_KEYMGR)
+#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#elif defined(HAS_KEYMGR_DPE)
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
+
+#define sc_keymgr_key_type_t sc_keymgr_dpe_key_type_t
+#define sc_keymgr_diversification_t sc_keymgr_dpe_diversification_t
+#define sc_keymgr_ecc_key_t sc_keymgr_dpe_ecc_key_t
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -168,29 +179,6 @@ rom_error_t acc_boot_sigverify(const ecdsa_p256_public_key_t *key,
                                const ecdsa_p256_signature_t *sig,
                                const hmac_digest_t *digest,
                                uint32_t *recovered_r);
-
-/**
- * Retrieve an additional attestation key generation seed.
- *
- * This function retrieves an optional, secondary key seed to be loaded it into
- * the ACC data memory (DMEM). This seed complements the primary seed
- * side-loaded from the `keymgr` used by ACC for generating the attestation
- * key.
- *
- * This implementation is **top-specific** because the seed's origin, storage
- * location and availability vary across OpenTitan hardware configurations.
- *
- * Tops that do not require or provide a secondary seed must indicate this by
- * setting the `seed` parameter to zero and returning 'kErrorOk'.
- *
- * @param seed_idx The index of the seed, if multiple are stored.
- * @param seed The retrieved 32-bit seed. Set to zero if not provided.
- * @return An `error.h` defined error if retrieval fails. Returns `kErrorOk`
- * if the seed is successfully retrieved, or if no seed is required/available
- * by the hardware top (in which case `seed` must be zeroed).
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t acc_boot_attestation_keygen_seed(uint32_t seed_idx, uint32_t *seed);
 
 /**
  * Start an ECDSA-P256 signature verify on ACC.

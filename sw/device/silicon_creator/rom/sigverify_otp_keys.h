@@ -17,6 +17,7 @@
 extern "C" {
 #endif  // __cplusplus
 
+#ifdef DISCRETE_OTP_MMAP
 enum {
   /**Maximum number of ECDSA keys supported in OTP. */
   kSigVerifyOtpKeysEcdsaCount = 4,
@@ -47,6 +48,32 @@ typedef struct sigverify_otp_keys {
    */
   hmac_digest_t integrity_measurement;
 } sigverify_otp_keys_t;
+
+#elif INTEGRATED_OTP_MMAP
+/*
+ * In the integrated OTP memory map, the OTP stores a single key whose algorithm
+ * is untagged. The key contains an additional key_role field after the key_type
+ * (see sigverify_key_types.h).
+ */
+enum {
+  /**Maximum number of ECDSA keys supported in OTP. */
+  kSigVerifyOtpKeysEcdsaCount = 1,
+  /**Maximum number of SPX keys supported in OTP. */
+  kSigVerifyOtpKeysSpxCount = 1,
+};
+
+typedef union sigverify_otp_keys {
+  /**
+   * ECDSA P-256 keys.
+   */
+  sigverify_rom_ecdsa_p256_key_t ecdsa[1];
+  /**
+   * SPX keys.
+   */
+  sigverify_rom_spx_key_t spx[1];
+} sigverify_otp_keys_t;
+
+#endif
 
 /**
  * SRAM representation of the OTP `ROT_CREATOR_AUTH_STATE` partition.

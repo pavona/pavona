@@ -17,6 +17,11 @@ label_flag(
 )
 
 label_flag(
+    name = "second_rom",
+    build_setting_default = ":none",
+)
+
+label_flag(
     name = "otp",
     build_setting_default = ":none",
 )
@@ -34,5 +39,6 @@ universal_splice(
     exec_env = ":env",
     otp = ":otp",
     rom = ":rom",
+    second_rom = ":second_rom",
     tags = ["manual"],
 )

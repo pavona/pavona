@@ -16,7 +16,7 @@ use crate::app::TransportWrapper;
 use crate::debug::openocd::OpenOcd;
 use crate::impl_serializable_error;
 
-#[derive(Debug, Args, Clone)]
+#[derive(Debug, Args, Clone, Serialize, Deserialize)]
 pub struct JtagParams {
     /// OpenOCD binary path.
     #[arg(long, default_value = "openocd")]

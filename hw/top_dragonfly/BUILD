@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top_dragonfly:defs.bzl", "DRAGONFLY_SLOTS")
 load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -55,8 +56,9 @@ sim_verilator(
         "//sw/device/lib/arch:sim_verilator",
         "//hw/top_dragonfly/sw/dt:sim_verilator",
     ],
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_virtual",
     otp = "//hw/top_dragonfly/data/otp:img_rma",
+    slot_spec = DRAGONFLY_SLOTS,
     test_cmd = "testing-not-supported",
 )
 
@@ -68,7 +70,8 @@ sim_verilator(
         "--logging=info",
         "--interface=verilator",
         "--verilator-bin=$(rootpath //hw:verilator)",
-        "--verilator-rom={rom}",
+        "--verilator-rom={rom}:0",
+        "--verilator-rom={second_rom}:1",
         "--verilator-otp={otp}",
         "--verilator-ctn-ram={firmware}",
     ],
@@ -83,10 +86,22 @@ sim_verilator(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     rom = "//sw/device/lib/testing/test_rom:test_rom",
+    second_rom = "//sw/device/lib/testing/test_second_rom:test_second_rom",
     test_cmd = """
         --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
+)
+
+sim_verilator(
+    name = "sim_verilator_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_verilator",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
+    exec_env = "sim_verilator_rom_with_fake_keys",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    rom = "//sw/device/silicon_creator/rom:base_rom",
+    second_rom = "//sw/device/silicon_creator/rom:second_rom",
 )
 
 ###########################################################################
@@ -110,6 +125,7 @@ sim_dv(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp_mmap = "//hw/top_dragonfly/data/otp:otp_ctrl_mmap.hjson",
+    slot_spec = DRAGONFLY_SLOTS,
 )
 
 sim_dv(
