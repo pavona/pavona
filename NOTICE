@@ -1,4 +1,22 @@
 ========================================
+Pavona Notices
+========================================
+
+This project, Pavona, includes modifications by its contributors
+and is maintained as a community open source project.
+
+Copyright 2026 Pavona contributors.
+
+========================================
+Expo Notices
+========================================
+
+This project, expo, includes modifications by its contributors
+and is maintained as a community open source project.
+
+Copyright 2025, 2026 expo contributors.
+
+========================================
 OpenTitan Notices
 ========================================
 
@@ -22,13 +40,5 @@ Bologna under the name zero-riscy. Ibex verification, performance enhancement
 and security hardening have been supported by the OpenTitan project
 (https://www.opentitan.org).
 
-========================================
-Expo Notices
-========================================
-
-This project, expo, includes modifications by its contributors
-and is maintained as a community open source project.
-
-Copyright 2025 expo contributors
 
 Licensed under the Apache License, Version 2.0
