@@ -64,6 +64,7 @@ suff_re="\\.\\(${suff_re:0:-2}\\)$"
 excl_paths=(
     '.*/vendor/.*'
     COMMITTERS
+    CONTRIBUTORS
     hw/ip/usbdev/pmod/tusb1106pmod-kicad/fp-info-cache
     'signing/softhsm/tokens/.*'
     site/landing/data/partner_quotes.json
