@@ -118,22 +118,6 @@ module chip_dragonfly_asic #(
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:           TckPadIdx,
-    tms_idx:           TmsPadIdx,
-    trst_idx:          TrstNPadIdx,
-    tdi_idx:           TdiPadIdx,
-    tdo_idx:           TdoPadIdx,
-    tap_strap0_idx:    Tap0PadIdx,
-    tap_strap1_idx:    Tap1PadIdx,
-    dft_strap0_idx:    Dft0PadIdx,
-    dft_strap1_idx:    Dft1PadIdx,
-    // TODO: check whether there is a better way to pass these USB-specific params
-    // The use of these indexes is gated behind a parameter, but to synthesize they
-    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
-    // Hence, set to zero.
-    usb_dp_idx:        0,
-    usb_dn_idx:        0,
-    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO soc_proxy_soc_gpo
@@ -1239,8 +1223,6 @@ module chip_dragonfly_asic #(
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
 
-  prim_mubi_pkg::mubi4_t ast_init_done;
-
   ast #(
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
@@ -1260,7 +1242,7 @@ module chip_dragonfly_asic #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done ),
+    .ast_init_done_o       ( ),
     // buffered clocks & resets
     .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_infra),
     .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_secure),
