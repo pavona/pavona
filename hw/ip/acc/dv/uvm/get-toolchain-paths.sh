@@ -28,3 +28,4 @@ RV32_TOOL_AS=$(${BAZEL_CMD} query \
   --output location | cut -f1 -d:)
 export RV32_TOOL_LD
 export RV32_TOOL_AS
+export RV32_TOOL_GCC=${RV32_TOOL_AS}
