@@ -1,0 +1,387 @@
+Aaron Durbin <89539379+adurbin-rivos@users.noreply.github.com>
+Aaron Durbin <adurbin@meta.com>
+Abdullah Varici <abdullah.varici@lowrisc.org>
+Adam H. Leventhal <ahl@oxide.computer>
+Adrian Lees <a.lees@lowrisc.org>
+Adrien Grassein <adrien.grassein@gmail.com>
+Aimee Sutton <aimee.sutton@metrics.ca>
+alees24 <117650394+alees24@users.noreply.github.com>
+Alex Bradbury <asb@asbradbury.org>
+Alex Bradbury <asb@lowrisc.org>
+Alex Jones <alex.jones@lowrisc.org>
+alex sapozhnikov <alex.sapozhnikov@wdc.com>
+Alex Williams <a-will@users.noreply.github.com>
+Alexander Williams <awill@google.com>
+Alexander Williams <awill@opentitan.org>
+Alice Ziuziakowska <a.ziuziakowska@lowrisc.org>
+Alistair Francis <alistair.francis@wdc.com>
+Alphan Ulusoy <alphan@google.com>
+Alphan Ulusoy <alphan@opentitan.org>
+Alyssa Haroldsen <kupiakos@google.com>
+Amaury Pouly <amaury.pouly@gmail.com>
+Amaury Pouly <amaury.pouly@lowrisc.org>
+Amaury Pouly <amaury.pouly@opentitan.org>
+Amin Abdulrahman <amin@abdulrahman.de>
+Amit Kumar-Hermosillo <amitkh@google.com>
+Andrea Caforio <andrea.caforio@lowrisc.org>
+Andreas Kurth <adk@lowrisc.org>
+Andreas Kurth <github@akurth.net>
+Andres Meza <anmeza@ucsd.edu>
+Anthony Chen <antchen@google.com>
+Antonio <amz@lowrisc.org>
+Antonio Martinez Zambrana <amz@lowrisc.org>
+apinise <eapinis@zerorisc.com>
+Ariel Cohen <ariel.cohen@nuvoton.com>
+arielc <ariel.cohen@nuvoton.com>
+Arnon Sharlin <arnon.sharlin@opentitan.org>
+Arun Thomas <arunthomas@google.com>
+ayann-snps <ayann@synopsys.com>
+Basit Mehmood <basit.impare@gmail.com>
+Ben Bender <ben.bender@nuvoton.com>
+Bilgiday Yuce <bilgiday@google.com>
+Bilgiday Yuce <bilgiday@opentitan.org>
+Bobby Reyes <bobby@rivosinc.com>
+Bojan Uljarevic <bojan.uljarevic@gi-de.com>
+Brian Granaghan <granaghan@google.com>
+Brian Orr <brianorr@google.com>
+bunnie <bunnie@kosagi.com>
+Canberk Topal <87007427+ctopal@users.noreply.github.com>
+Canberk Topal <ctopal@lowrisc.org>
+cehann <shihhanchang@google.com>
+cfrantz <frantzcj+github@gmail.com>
+Chia-Chi Teng <ccteng@google.com>
+Chia-Wei Liu <lchiawei@google.com>
+Chih-Hsueh "Josh" Huang <huangjs@gmail.com>
+Chris Frantz <cfrantz@google.com>
+Cindy <chencindy@google.com>
+Cindy Chen <chencindy@google.com>
+Cindy Chen <chencindy@opentitan.org>
+Cindy Chen <cindy.chen0316@gmail.com>
+Cindy Liu <hcindyl@google.com>
+cindychip <cindy.chen0316@gmail.com>
+Colin O'Flynn <coflynn@newae.com>
+Collin MacDonald <cmacd@google.com>
+ctopal@lowrisc.org <ctopal@lowrisc.org>
+Dan McArdle <dmcardle@google.com>
+Dan McArdle <dmcardle@opentitan.org>
+Dan McArdle <zingermc@gmail.com>
+Dan Nussbaum <dansn@google.com>
+Dan Petrisko <petrisko@cs.washington.edu>
+Dana Agur <dana.agur@opentitan.org>
+Daniel Beitel <dbeitel@rivosinc.com>
+Daniel Mlynek <danielm@aldec.com.pl>
+Dariusz Stachanczyk <dariusz.stachanczyk@aldec.com.pl>
+Dave Williams <dave.williams@ensilica.com>
+David Pudner <davidpudner@protonmail.com>
+David Schrammel <davidschrammel@rivosinc.com>
+Dawid Zimonczyk <dawidz@aldec.com.pl>
+Dharanendra Kumar <dharanendra.kumar@ensilica.com>
+Douglas Reis <65042207+engdoreis@users.noreply.github.com>
+Douglas Reis <doreis@lowrisc.org>
+Drew Macrae <drewmacrae@gmail.com>
+Drew Macrae <drewmacrae@google.com>
+Dror Kabely <dror.kabely@nuvoton.com>
+Dror Kabely <dror.kabely@opentitan.org>
+Eitan Shapira <eitan.shapira@nuvoton.com>
+Eitan Shapira <eitanshapira89@gmail.com>
+Eli Kim <eli@opentitan.org>
+Eli Kim <github@elikim.dev>
+Eli Kim <me@eunchan.kim>
+Elieva Pignat <elievap@google.com>
+Elliot Baptist <elliot.baptist@lowrisc.org>
+Ellis Sarza-Nguyen <sarzanguyen@google.com>
+Emmanuel Blot <eblot@rivosinc.com>
+Emmanuel Ferdman <emmanuelferdman@gmail.com>
+Eran Meisner <eran.meisner@nuvoton.com>
+Eric Shiu <eshiu@google.com>
+eshapira <78012616+eshapira@users.noreply.github.com>
+Eunchan Kim <eunchan@google.com>
+Eunchan Kim <eunchan@opentitan.org>
+Eunchan Kim <github@eunchan.kim>
+Eunchan Kim <me@eunchan.kim>
+Evan Apinis <70480355+apinise@users.noreply.github.com>
+Evan Apinis <eapinis@zerorisc.com>
+Fatih Balli <fatihballi@google.com>
+Fatih Balli <fatihballi@opentitan.org>
+Felix Miller <felix.miller@gi-de.com>
+Felix Miller <felix.miller@lowrisc.org>
+Felix Miller <felix@opentitan.org>
+Felix Miller <mail@felix-miller.de>
+Florian Glaser <glaserf@lowrisc.org>
+Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+Garret Kelly <Garret.Kelly@gmail.com>
+Garret Kelly <gdk@google.com>
+Gary Guo <gary.guo@lowrisc.org>
+Gary Guo <gary@garyguo.net>
+Gaurang Chitroda <chitrodagaurang@gmail.com>
+Gaurang Chitroda <gaurangg@google.com>
+Ghada Dessouky <gdessouky@google.com>
+Greg Chadwick <gac@lowrisc.org>
+Greg Chadwick <mail@gregchadwick.co.uk>
+Guillermo Maturana <maturana@google.com>
+Guillermo Maturana <maturana@opentitan.org>
+Guillermo Maturana <matute@zerorisc.com>
+Gurleen Grewal <gurleen.grewal@opentitan.org>
+h-filali <h.filali98@gmail.com>
+Hakim Filali <hfilali@lowrisc.org>
+Harry Callahan <hcallahan@lowrisc.org>
+hasheddan <georgedanielmangum@gmail.com>
+Henner Zeller <h.zeller@acm.org>
+Hoang Nguyen Hien Pham <hien@zerorisc.com>
+Hoang Tung <Hoang.Tung@wdc.com>
+Huang Zhaobin <Huang.Zhaobin@proton.me>
+Hugo McNally <45573837+HU90m@users.noreply.github.com>
+Hugo McNally <hugo.mcnally@gmail.com>
+igk8 <53956010+igk8@users.noreply.github.com>
+Igor Kouznetsov <igor.kouznetsov@wdc.com>
+Itay Sadovnik <itay.sadovnik@nuvoton.com>
+Jacob Levy <jacob.levy@nuvoton.com>
+Jacob Levy <jacob.levy@opentitan.org>
+Jade Philipoom <jadep@google.com>
+Jade Philipoom <jadep@zerorisc.com>
+jadephilipoom <jade.philipoom@gmail.com>
+jadephilipoom <jadep@google.com>
+Jaedon Kim <jdonjdon@google.com>
+Jaedon Kim <jdonjdon@opentitan.org>
+Jake Ke <jackieke724@hotmail.com>
+James McCorrie <james.mccorrie@lowrisc.org>
+James Wainwright <james.wainwright@lowrisc.org>
+Jan Van Winkel <jan.van_winkel@dxplore.eu>
+Jason Hoddinett <jason.hoddinett.ensilica@opentitan.org>
+Javier Mora <cousteaulecommandant@gmail.com>
+Jay Alphey <jay.alphey@lowrisc.org>
+Jayesh Patel <jayesh@aarishtech.com>
+jdon <jdon@jdon-laptop.tail4597c.ts.net>
+jdonjdon <99843637+jdonjdon@users.noreply.github.com>
+Jes B. Klinke <jbk@chromium.org>
+jesultra <jes@bodi-klinke.dk>
+Jett Rink <jettrink@google.com>
+Johann Heyszl <johannheyszl@google.com>
+Johann Heyszl <johannheyszl@opentitan.org>
+Johnathan Van Why <jrvanwhy@google.com>
+Jon Flatley <47988881+jon-flatley@users.noreply.github.com>
+Jon Flatley <jflat@google.com>
+Jon Flatley <jflat@opentitan.org>
+Jon Murphy <jpmurphy@google.com>
+jon-flatley <47988881+jon-flatley@users.noreply.github.com>
+Jorge Prendes <jorge.prendes@gmail.com>
+Joseph Bellahcen <joeclb@icloud.com>
+Joshua Park <jeoong@google.com>
+Juergen Pulkus <Juergen.Pulkus@gmail.com>
+Julien Cretin <cretin@google.com>
+Kat Fox <kat@zerorisc.com>
+Kevin Broch <kbroch@rivosinc.com>
+Kevin Virgen <kevin@kevin.ba.rivosinc.com>
+Kevin Zhang <zhakevin@google.com>
+Kinza Qamar <kqzaman@lowrisc.org>
+Kip Walker <kip@rivosinc.com>
+Kor Nielsen <kor@google.com>
+Kosta Kojdic <kosta.kojdic@ensilica.com>
+kosta-kojdic <kosta.kojdic@ensilica.com>
+Loïc Lefort <loic@rivosinc.com>
+Louis <47877802+LouisTheLuis@users.noreply.github.com>
+LouisTheLuis <luism@zerorisc.com>
+lowRISC Contributors <ghbot@lowrisc.org>
+Lucas Baizer <lucasallenbaizer@gmail.com>
+Luís Marques <luis@luismarques.eu>
+Luís Marques <luismarques@lowrisc.org>
+Luís Marques <luismarques@opentitan.org>
+Luis Martinez <luism@zerorisc.com>
+Lukasz Dalek <ldalek@antmicro.com>
+Maayan Kashani <maayan.kashani@nuvoton.com>
+Madhuri Patel <madhuri.patel@ensilica.com>
+Marcelo Carvalho Faleiro de Almeida <marcelo.carvalho@lowrisc.org>
+Mariusz Glebocki <mglebocki@antmicro.com>
+Mark Branstad <mark.branstad@wdc.com>
+Mark Hayter <mark.hayter@gmail.com>
+Marno van der Maas <34654485+marnovandermaas@users.noreply.github.com>
+Marno van der Maas <mvdmaas+git@lowrisc.org>
+Martin LB <martin.lueker-boden@wdc.com>
+Martin Lueker-Boden <47870387+martin-lueker@users.noreply.github.com>
+Martin Lueker-Boden <martin.lueker-boden@wdc.com>
+Martin Velay <mvelay@lowrisc.org>
+martin-lueker <47870387+martin-lueker@users.noreply.github.com>
+Mateusz Półchłopek <mateusz@plasteli.net>
+Mathieu Vaquez <mathieu@rivosinc.com>
+Matthias J. Kannwischer <matthias@kannwischer.eu>
+Matthias J. Kannwischer <matthias@zerorisc.com>
+Matute <maturana@google.com>
+Matute <maturana@opentitan.org>
+Matute <matute@zerorisc.com>
+Maximilian Schiller <schiller.maxi@gmail.com>
+Md Sadman Sakib <sadmansakib@google.com>
+Michael Gautschi <mgautschi@lowrisc.org>
+Michael Munday <mike.munday@lowrisc.org>
+Michael Schaffner <msf@google.com>
+Michael Schaffner <msf@opentitan.org>
+Michael Tempelmeier <michael.tempelmeier@gi-de.com>
+Michal Mazurek <maz@semihalf.com>
+Michał Mazurek <maz@semihalf.com>
+Michał Mazurek <mazurekm@google.com>
+Miguel O <miguelaosoriol@gmail.com>
+Miguel Osorio <miguelaosoriol@gmail.com>
+Miguel Osorio <miguelosorio@google.com>
+Miguel Osorio <moidx@opentitan.org>
+Miguel Young <mcyoung@google.com>
+Miguel Young de la Sota <mcyoung@google.com>
+MikePopoloski <mike@popoloski.com>
+Miles Dai <20648156+milesdai@users.noreply.github.com>
+Miles Dai <milesdai@google.com>
+Miles Dai <milesdai@opentitan.org>
+Miles Dai <milesdai16@gmail.com>
+moidx <migue48@gmail.com>
+Moritz Wettermann <moritz.wettermann@gi-de.com>
+msfschaffner <msf@google.com>
+Mubashir <mubashir.impare@gmail.com>
+Mubashir Saleem <mubashir.impare@gmail.com>
+Muqing Liu <muqing.liu@wdc.com>
+Musawir Hussain <Musawir745@gmail.com>
+mwbranstad <52834797+mwbranstad@users.noreply.github.com>
+Nadia Hanif <nadiahanif.impare@gmail.com>
+nagendra modadugu <ngm@meta.com>
+Naoya Hatta <dalance@gmail.com>
+Neeraj Upasani <neeraj@neeraj.ba.rivosinc.com>
+Neeraj Upasani <neeraj@opentitan.org>
+Neeraj Upasani <neeraj@rivosinc.com>
+Nicholas Mosier <nmosier@google.com>
+Nigel Scales <nigel.scales@gmail.com>
+Nikola Miladinovic <nikola.miladinovic@ensilica.com>
+Nils Graf <nilsg@google.com>
+NilsGraf <49500697+NilsGraf@users.noreply.github.com>
+Noah Moroze <moroze@mit.edu>
+Noah Moroze <noah@opentitan.org>
+Noah Moroze <noahmoroze@gmail.com>
+Ohad Russo <ohadrusso@google.com>
+Olof Kindgren <olof.kindgren@gmail.com>
+Palmer Dabbelt <palmer@rivosinc.com>
+Parasinder Mohan <mohanparasinder@gmail.com>
+parker-research <166864283+parker-research@users.noreply.github.com>
+Pascal Etterli <pascal.etterli@lowrisc.org>
+Pascal Nasahl <nasahl@google.com>
+Pascal Nasahl <nasahlpa@lowrisc.org>
+Pascal Nasahl <pascal@nasahl.net>
+Pham Hoang Nguyen Hien <nguyenhien.phamhoang@gmail.com>
+Phani Peri <pperi@lowrisc.org>
+Philipp Wagner <mail@philipp-wagner.com>
+Philipp Wagner <phw@lowrisc.org>
+Pirmin Vogel <vogelpi@lowrisc.org>
+Prajwala Puttappa <prajwalaputtappa@lowrisc.org>
+Quan Nguyen <qmn@zerorisc.com>
+Quan Nguyen <qmnguyenmw@gmail.com>
+Rafal Kapuscik <rkapuscik@antmicro.com>
+Ram Babu Penugonda <rampenugonda@google.com>
+Ram Penugonda <48806665+rpenugo@users.noreply.github.com>
+Ram Penugonda <rampenugonda@google.com>
+Ramesh Prakash <rprakas@google.com>
+Raphael Isemann <teemperor@gmail.com>
+Rasmus Madsen <rasmus.madsen@wdc.com>
+rasmus-madsen <53917183+rasmus-madsen@users.noreply.github.com>
+Ravi Teja Chatta <crteja@lowrisc.org>
+Raviteja C <124047397+crteja@users.noreply.github.com>
+Raviteja Chatta <crteja@lowrisc.org>
+Ray Lau <ray.lau@lowrisc.org>
+Robert Schilling <rschilling@rivosinc.com>
+Robert Schilling <rschilling@student.tugraz.at>
+Robert Schilling <schilling.ro@gmail.com>
+Rupert Swarbrick <rswarbrick@gmail.com>
+Rupert Swarbrick <rswarbrick@lowrisc.org>
+Ryan Torok <rtorok@opentitan.org>
+Ryan Torok <rtorok@zerorisc.com>
+Saad Anees <saad.impare@gmail.com>
+Sam Elliott <sam@lenary.co.uk>
+Sam Elliott <selliott@lowrisc.org>
+Samuel Ortiz <sameo@rivosinc.com>
+Samuel Riedel <sriedel@lowrisc.org>
+Santiago Arranz Olmos <sarranz@google.com>
+sarah mazhar <sarah.impare@gmail.com>
+Sarah Mazhar <sarah.mazhar60@gmail.com>
+sarahmazhar-impare <sarah.impare@gmail.com>
+Satnam Singh <satnam@google.com>
+Scott Johnson <41092437+sjgitty@users.noreply.github.com>
+Scott Johnson <scottdj@google.com>
+Shahid Mehmood <shahid.impare@gmail.com>
+Shail Kushwah <kushwahs@google.com>
+Shailendra Kushwah <kushwahs@google.com>
+shakushw <er.shalendra@gmail.com>
+Shareef Jalloq <shareef@jalloq.co.uk>
+Sharon Topaz <sharon.topaz@nuvoton.com>
+Shawn Nematbakhsh <shawn@rivosinc.com>
+Siemen Dhooghe <sdhooghe@google.com>
+Siemen Dhooghe <sdhooghe@kraaike.corp.google.com>
+Silvestrs Timofejevs <silvestrst@lowrisc.org>
+Skandeh135 <67437629+Skandeh135@users.noreply.github.com>
+skfwe wang <wcq-062821@163.com>
+Slava Litvinov <slaval@google.com>
+SlavaL <slaval@google.com>
+Srikrishna <sriyer@google.com>
+Srikrishna Iyer <46467186+sriyerg@users.noreply.github.com>
+Srikrishna Iyer <sriyer@google.com>
+Srinivasan Y <srinivasan.yadhunathan@seagate.com>
+Srinivasan Yadhunathan <srini.sg@yahoo.com>
+sriyerg <46467186+sriyerg@users.noreply.github.com>
+Stefan Lippuner <lstefan@iis.ee.ethz.ch>
+Stefan Wallentowitz <stefan.wallentowitz@gi-de.com>
+Stefan Wallentowitz <stefan.wallentowitz@hm.edu>
+Stephen Kandeh <skandeh@zerorisc.com>
+Steve Nelson <steve.nelson@wdc.com>
+Steve Nelson <Steve.Nelson@wdc.com>
+Steven Tsai <steventsai@google.com>
+Sven Bauer <sven.bauer@gi-de.com>
+Sydney Gibson <sydney@zerorisc.com>
+Tao Liu <taliu@google.com>
+Tarik Graba <tarik.graba@telecom-paris.fr>
+Thomas Rosted Jensen <thomas@rosted.net>
+TIM EWINS <tim.ewins@ensilica.com>
+Tim Hutt <tdhutt@gmail.com>
+Tim Shepard <tjshep@google.com>
+Tim Trippel <ttrippel@google.com>
+Timothy <timothytim@google.com>
+Timothy Chen <timothytim@google.com>
+Timothy Trippel <5633066+timothytrippel@users.noreply.github.com>
+Timothy Trippel <ttrippel@google.com>
+tjaychen <timothytim@google.com>
+tjshep <51791992+tjshep@users.noreply.github.com>
+Tobias Woelfel <towoe@users.noreply.github.com>
+Tobias Wölfel <tobias.woelfel@mailbox.org>
+Tobias Wölfel <towoe@users.noreply.github.com>
+Todd Broch <tbroch@rivosinc.com>
+Tom Houri <tom.houri@nuvoton.com>
+Tom Roberts <53745528+tomroberts-lowrisc@users.noreply.github.com>
+Tom Roberts <tomroberts@lowrisc.org>
+Tomasz Gorochowik <tgorochowik@antmicro.com>
+Tommy Chiu <tommychiu@google.com>
+Tung Hoang <53881329+tunghoang290780@users.noreply.github.com>
+Tung Hoang <hoang.tung@wdc.com>
+Tung Hoang <tung.hoang.290780@gmail.com>
+Udi Jonnalagadda <udij@google.com>
+udinator <udij@google.com>
+Vadim Bendebury <vbendeb@chromium.org>
+Vadim Bendebury <vbendeb@google.com>
+Varunkumar Trivedi <varunkumart@google.com>
+Venkat Krishnan <venkateswarank.opentitan@gmail.com>
+Venkat Krishnan <venkateswarank@google.com>
+venkatk-ot <venkateswarank.opentitan@gmail.com>
+Vincent Palatin <vpalatin@rivosinc.com>
+Viswanadha Bazawada <viswanadha.bazawada@ensilica.com>
+Viveca Pannell <vpannell@zerorisc.com>
+Vladimir Rozic <vrozic@lowrisc.org>
+vlpannel <103673975+vlpannel@users.noreply.github.com>
+vrozic <vrozic@lowrisc.org>
+Walaa Hattab <whattab@nuvoton.com>
+Weicai Yang <weicai@google.com>
+weicaiyang <49293026+weicaiyang@users.noreply.github.com>
+whattab <whattab@nuvoton.com>
+Will Chen <haihui@synopsys.com>
+Willy Zhang <willyzhang@google.com>
+Wojciech Sipak <wsipak@antmicro.com>
+Yehuda Bahar <yehuda.bachar@nuvoton.com>
+Yen-Kai Wang <ykwang@google.com>
+Yenkai Wang <ykwang@google.com>
+Yi-Hsuan Deng <yhdeng@google.com>
+Yogish Sekhar <160029258+ysekhar@users.noreply.github.com>
+Yogish Sekhar <yogish.sekhar@zerorisc.com>
+Youming Lu <yl8025@nyu.edu>
+Zachary Snow <zach@zachjs.com>
+Zeeshan Rafique <zeeshanrafique23@gmail.com>
+Zhongyi Chen <zhongyi.chen@gmail.com>
+Ziv Hershman <ziv.hershman@nuvoton.com>
