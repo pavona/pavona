@@ -49,14 +49,14 @@ def get_design(topdir, outfile_path):
 
 def get_targets(topdir):
     top_cfg = topdir / "data" / f"{topdir.name}.hjson"
-    corefile = topdir / f"{topdir.name}.core"
+    topname = topdir.name.removeprefix("top_")
+    verilator_file = topdir / f"chip_{topname}_verilator.core"
 
-    if corefile.is_file():
-        sim_tools = []
-        if "sim_verilator" in corefile.read_text():
-            sim_tools.append("verilator")  # only one known sim target
-        sim_targets = ", ".join(sim_tools)
+    sim_targets = ""
+    if verilator_file.is_file():
+        sim_targets = "verilator"  # only one known sim target
 
+    hw_targets = ""
     if top_cfg.is_file():
         top_data = hjson.loads(top_cfg.read_text())
         target_names = [t["name"] for t in top_data["targets"]]
