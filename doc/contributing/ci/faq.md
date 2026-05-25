@@ -68,7 +68,7 @@ Depending on what platform support your job needs, make sure you configure the c
 <!-- markdownlint-disable MD026 -->
 ### What platforms are available for testing?
 
-All runners use a container image based on Ubuntu 22.04.
+All runners use a container image based on Ubuntu 24.04.
 This image comes with Pavona's `apt-requirements.txt` pre-installed, but contains very few packages otherwise installed.
 Language-specific tools like `rustc` must be installed separately by jobs if needed.
 
@@ -120,7 +120,7 @@ While our CI environment is designed to replicate a generic Pavona development e
 If you are unable to reproduce a failure locally, here are some things to check:
 
 - **Missing Packages**: Does your test implicitly rely on packages that are not listed in `apt-requirements.txt`, or `python-requirements.txt`?
-  Our CI environment automatically installs packages listed in these files, but is otherwise a bare Ubuntu 22.04 environment.
+  Our CI environment automatically installs packages listed in these files, but is otherwise a bare Ubuntu 24.04 environment.
 - **Environment Variables**: Does your test require specific environment variables to be set that are not specified in the Bazel target?
   `Command not found` errors due to missing entries in `$PATH` are a common failure mode.
   Also note that GitHub Actions does not maintain environment variables or `PATH` entries between steps in a job unless the settings are written to `GITHUB_ENV` or `GITHUB_PATH`, respectively (see `.github/actions/prepare-env/action.yml` for examples).
