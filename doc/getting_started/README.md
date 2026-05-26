@@ -145,36 +145,6 @@ You'll need to do this only once.
 $ pip3 install -r python-requirements.txt --require-hashes
 ```
 
-## Install Verilator
-
-Pavona currently relies on Verilator version 4.210.
-We'll need to match this version, not what's in apt, so you'll need to fetch the sources and build Verilator from scratch:
-
-```shell
-$ cd ..
-$ git clone https://github.com/verilator/verilator
-$ cd verilator
-$ git checkout v4.210
-$ sudo apt install -y flex bison help2man
-$ make -j
-$ sudo make install
-```
-
-Verify that your Verilator installation succeeded with the following:
-
-```shell
-$ which verilator
-/usr/local/bin/verilator
-$ verilator --version
-Verilator 4.210 2021-07-07 rev v4.210
-```
-
-Return to the Pavona directory:
-
-```shell
-$ cd ../pavona
-```
-
 ## Build and run a test
 
 ### Build a test with Bazel
