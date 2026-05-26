@@ -33,7 +33,7 @@ The following interfaces are also used, which the testbench instantiates, connec
 - [Clock and reset interfaces](../../../dv/sv/common_ifs/README.md) for the USB and AON clock domains.
 - A [TileLink interface](../../../dv/sv/tl_agent/README.md).
   USBDEV is a TL-UL device, which expects to communicate with a TL-UL host.
-  In the Earlgrey and Darjeeling tops, this will be the Ibex core.
+  In the Egret and Dragonfly tops, this will be the Ibex core.
 - An interface `usb20_if` that provides the ASIC-level interface to the USB DPI model, using true USB signaling with tri-stating, pull ups and no externally-visible driver enable signals.
 - An interface `usb20_block_if` representing the USB interface between the `usb20_agent` and the DUT.
 This interface carries additional signals that are not part of the USB.
