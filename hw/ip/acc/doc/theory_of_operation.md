@@ -6,11 +6,36 @@
 
 ## Design Details
 
+### Configurations
+
+The ACC processor core supports two configurations: a classical mode supporting algorithms such as ECDSA, ECDH, RSA, alongside a post-quantum enabled mode that supports the classical operations in addition to ML-KEM and ML-DSA across all parameter sets.
+ACC requires different hardware configurations to meet these specifications, and is controlled at synthesis time through the `AccPQCEn` RTL parameter.
+The instruction and data memory sizes are configured separately from the rest of the RTL, but both are configured in the [acc.hjson](../data/acc.hjson) file.
+Furthermore, the single source of truth for a top-level design that instantiates ACC will be in the top-level hjson, both [egret](../../../top_egret/data/top_egret.hjson) and [dragonfly](../../../top_dragonfly/data/top_dragonfly.hjson) show this.
+The following table outlines the key differences between the classical and post-quantum ready ACC.
+To support first-order-masking of the ML-DSA and ML-KEM parameter sets, the IMEM and DMEM has been increased to 32 KiB each.
+Additionally, a vector ISA extension and direct connection to KMAC were added to accelerate the PQC algorithms, these features are not present in the classical hardware configuration.
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>IMEM</th>
+      <th>DMEM</th>
+      <th>ISA</th>
+      <th>KMAC Interface</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Classical</td><td>8 KiB</td><td>4 KiB</td><td>Base + Bignum</td><td>No</td></tr>
+    <tr><td>Post-Quantum</td><td>32 KiB</td><td>32 KiB</td><td>Base + Bignum + Vector</td><td>Yes</td></tr>
+  </tbody>
+</table>
+
 ### Memories
 
 The ACC processor core has access to two dedicated memories: an instruction memory (IMEM), and a data memory (DMEM).
-In the classical instantiation mode the IMEM is 8 KiB and the DMEM is 4 KiB.
-If ACC is instantiated with `AccPQCEn` to enable PQC, IMEM and DMEM should be 32 KiB each to support first-order-masking of ML-DSA-87.
+For exact memory sizes refer to the hardware configuration [table](#configurations).
 
 The memory layout follows the Harvard architecture.
 Both memories are byte-addressed, with addresses starting at 0.
@@ -38,8 +63,7 @@ Functionally it should be impossible for either ACC or a host processor to make 
 ACC is in the busy state whilst keys are requested so ACC will not execute any programs and a host processor access will generated an `ILLEGAL_BUS_ACCESS` fatal error.
 Should a request not be granted due to a fault, a `BAD_INTERNAL_STATE` fatal error will be raised.
 
-While DMEM is 4 KiB, only the first 3 KiB (at addresses `0x0` to `0xbff`) is visible through the register interface.
-When ACC is operating in its PQC mode the first 31 KiB are visible through the register interface.
+Regardless of the [DMEM](#configurations) size, all but the last 1 KiB is visible through the register interface.
 This is to allow ACC applications to store sensitive information in the other 1 KiB, making it harder for that information to leak back to Ibex.
 
 Each memory write through the register interface updates a checksum.

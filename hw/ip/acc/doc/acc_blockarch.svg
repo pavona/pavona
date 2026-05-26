@@ -618,15 +618,7 @@
        sodipodi:role="line"
        x="147.54691"
        y="398.65118"
-       id="tspan2411-0">memory</tspan><tspan
-       sodipodi:role="line"
-       x="147.54691"
-       y="415.31781"
-       id="tspan2413-5">2048x32</tspan><tspan
-       sodipodi:role="line"
-       x="147.54691"
-       y="431.98444"
-       id="tspan2415-7">(8kB)</tspan></text>
+       id="tspan2411-0">memory</tspan></text>
   <path
      style="fill:#e3e3e3;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.09228981;stroke-linecap:square;stroke-miterlimit:10;stroke-opacity:1"
      inkscape:connector-curvature="0"
@@ -648,17 +640,7 @@
        sodipodi:role="line"
        x="877.26978"
        y="396.22568"
-       id="tspan2411-7-9">memory</tspan><tspan
-       style="fill:#000000;fill-opacity:1;stroke-width:0.993928"
-       sodipodi:role="line"
-       x="877.26978"
-       y="412.79108"
-       id="tspan2413-3-4">128x256</tspan><tspan
-       style="fill:#000000;fill-opacity:1;stroke-width:0.993928"
-       sodipodi:role="line"
-       x="877.26978"
-       y="429.35651"
-       id="tspan2415-1-1">(4kB)</tspan></text>
+       id="tspan2411-7-9">memory</tspan></text>
   <path
      style="fill:none;stroke:#0000ff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1"
      d="m 339.88469,724.35575 h 60 v 0"
@@ -2507,7 +2489,7 @@
    style="font-weight:bold"
    id="tspan3811">A</tspan>symmetric <tspan
    style="font-weight:bold"
-   id="tspan3813">C</tspan>ryptographic <tspan
+   id="tspan3813">C</tspan>ryptography <tspan
    style="font-weight:bold"
    id="tspan3809">C</tspan>oprocessor - ACC</tspan></text>
   <path
