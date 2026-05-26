@@ -75,7 +75,8 @@ Crossbar node description. It can be host, device, or internal nodes.
         'inst_type': ['s', 'Instance type'],
         'xbar': ['pb', 'If true, the node is connected to another Xbar'],
         'addr_range': ['lg', addrs],
-        'stub': ['pb', 'Real node or stub.  Stubs only occupy address ranges']
+        'stub': ['pb', 'Real node or stub.  Stubs only occupy address ranges'],
+        'external': ['pb', 'If true, the port does not have a module within the top']
     },
     'added': {}
 }

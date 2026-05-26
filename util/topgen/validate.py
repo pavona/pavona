@@ -312,7 +312,14 @@ module_optional = {
     'plic': ['s', 'Interrupt controller managing this module\'s interrupts'],
     'targets': ['l', 'Optional list of targets for this PLIC'],
     'alert_handler': ['s', 'Alert handler managing this module\'s alerts'],
-    "otp_map": ["g", "OTP Map information for OTP Ctrl"]
+    "otp_map": ["g", "OTP Map information for OTP Ctrl"],
+    'external': ['s', 'Optional key indicating whether the corresponding '
+                 'module is external to the current top and is not to be '
+                 'instantiated within it'
+    ],
+    'external_size': ['s', 'int byte sizes for each of the addresses of '
+                      'the peripheral'
+    ]
 }
 
 module_added = {
@@ -937,6 +944,9 @@ def check_clocks_resets(top: ConfigT, ip_name_to_block: IpBlocksT,
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
+        if ipcfg.get("external"):
+            continue
+
         ipcfg_name = ipcfg['type']
         log.info("Checking clock/resets for %s" % ipcfg_name)
         error += validate_reset(ipcfg, ip_name_to_block[ipcfg_name],
