@@ -61,6 +61,8 @@ def get_targets(topdir):
         top_data = hjson.loads(top_cfg.read_text())
         target_names = [t["name"] for t in top_data["targets"]]
         hw_targets = ", ".join(target_names)
+    else:
+        raise Exception(f"Could not find top_cfg within {topdir}.")
 
     return sim_targets + (", " * int(bool(sim_targets and hw_targets))) + hw_targets
 
@@ -88,11 +90,14 @@ def render_table(table):
 def make_tops_table(outfile_path=DEFAULT_OUTFILE):
     table = [TABLE_COLUMNS, ("---",) * len(TABLE_COLUMNS)]
     for topdir in sorted(REPO_TOP.glob("hw/top_*")):
-        table.append((
-            get_design(topdir, outfile_path),
-            get_targets(topdir),
-            get_description(topdir)
-        ))
+        try:
+            table.append((
+                get_design(topdir, outfile_path),
+                get_targets(topdir),
+                get_description(topdir)
+            ))
+        except Exception:
+            continue
     return render_table(table)
 
 
