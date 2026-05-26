@@ -3,8 +3,7 @@
 This page is intended for users of the cryptographic library.
 The library is written in C and uses hardware blocks for accelerated cryptography.
 It generally attempts to minimize code size and protect against side-channel and fault-injection attacks, including by physically present attackers.
-
-**Note: the crypto library is still under development, and not all algorithms described in this page are fully implemented and tested.**
+For a high-level overview of the library's design goals, see the [zeroRISC blog post introducing the cryptolib][cryptolib-blog].
 
 This page:
 - Lists a quick reference for [supported algorithms](#supported-algorithms)
@@ -15,6 +14,8 @@ This page:
   - [Message authentication](#message-authentication)
   - [RSA operations](#rsa)
   - [Elliptic curve cryptography](#elliptic-curve-cryptography)
+  - [ML-KEM key encapsulation](#ml-kem)
+  - [ML-DSA digital signatures](#ml-dsa)
   - [Deterministic random bit generation (DRBG)](#deterministic-random-bit-generation)
   - [Key derivation functions (KDF)](#key-derivation)
   - [Key transport](#key-transport)
@@ -34,6 +35,8 @@ For more details, see later sections (links in the "category" column).
 | [**Message authentication**](#message-authentication) | HMAC-SHA256<br>KMAC{128,256} |
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
 | [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
+| [**ML-KEM**](#ml-kem) | ML-KEM-{512,768,1024} |
+| [**ML-DSA**](#ml-dsa) | ML-DSA-{44,65,87} |
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
 | [**Key derivation**](#key-derivation) | HMAC-KDF-CTR<br>KMAC-KDF-CTR |
 
@@ -119,6 +122,8 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_rsa_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_ecc_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_kdf_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_mlkem_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_mldsa_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_mode }}
 
 ### Algorithm-specific data structures
@@ -139,6 +144,10 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_padding }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_size }}
+
+#### ML-DSA data structures
+
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa_sign_mode }}
 
 ### Private data structures
 
@@ -431,6 +440,71 @@ Each party should generate a key pair, exchange public keys, and then generate t
 {{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_finalize }}
 
+## ML-KEM
+
+ML-KEM (Module-Lattice-Based Key-Encapsulation Mechanism) is a post-quantum key-encapsulation mechanism standardized in [FIPS 203][fips-203].
+Cryptolib supports the ML-KEM-512, ML-KEM-768, and ML-KEM-1024 parameter sets, each offering key generation, encapsulation, and decapsulation.
+Public (encapsulation) keys are unblinded keys; secret (decapsulation) keys and shared secrets are blinded keys.
+Each operation takes a caller-allocated work buffer sized by the `kOtcryptoMlkem*WorkBuffer*Words` constants in `mlkem.h`.
+The `keygen` and `encapsulate` functions sample randomness internally; the `_derand` variants instead take caller-supplied randomness and are intended only for testing.
+
+### ML-KEM-512
+
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem512_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem512_keygen_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem512_encapsulate }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem512_encapsulate_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem512_decapsulate }}
+
+### ML-KEM-768
+
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem768_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem768_keygen_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem768_encapsulate }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem768_encapsulate_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem768_decapsulate }}
+
+### ML-KEM-1024
+
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_keygen_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_encapsulate }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_encapsulate_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_decapsulate }}
+
+## ML-DSA
+
+ML-DSA (Module-Lattice-Based Digital Signature Algorithm) is a post-quantum signature scheme standardized in [FIPS 204][fips-204].
+Cryptolib supports the ML-DSA-44, ML-DSA-65, and ML-DSA-87 parameter sets, each offering key-pair generation, signing, and verification.
+Public keys are unblinded keys and secret keys are blinded keys.
+Signing and verification take an optional context string (which may be empty) and a signature mode selected with **otcrypto\_mldsa\_sign\_mode\_t**; currently only pure ML-DSA is supported (HashML-DSA is not yet integrated).
+Each operation takes a caller-allocated work buffer sized by the `kOtcryptoMldsa*WorkBuffer*Words` constants in `mldsa.h`.
+The `keygen` and `sign` functions sample randomness internally; the `_derand` variants instead take caller-supplied randomness and are intended only for testing.
+
+### ML-DSA-44
+
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa44_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa44_keypair_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa44_sign }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa44_sign_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa44_verify }}
+
+### ML-DSA-65
+
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa65_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa65_keypair_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa65_sign }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa65_sign_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa65_verify }}
+
+### ML-DSA-87
+
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa87_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa87_keypair_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa87_sign }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa87_sign_derand }}
+{{#header-snippet sw/device/lib/crypto/include/mldsa.h otcrypto_mldsa87_verify }}
+
 ## Deterministic random bit generation
 
 The [CSRNG][csrng] (Cryptographically Secure Random Number Generator) uses a block cipher based deterministic random bit generation (DRBG) mechanism (AES-CTR-DRBG) as specified in [NIST SP800-90A][nist-drbg-spec].
@@ -595,6 +669,12 @@ The table below summarizes the security strength for the supported [cryptographi
 | ECC            | NIST P-256     | 128                              |                                                       |
 | ECC            | NIST P-384     | 192                              |                                                       |
 | ECC            | X25519/Ed25519 | 128                              |                                                       |
+| ML-KEM         | ML-KEM-512     | 128                              |                                                       |
+| ML-KEM         | ML-KEM-768     | 192                              |                                                       |
+| ML-KEM         | ML-KEM-1024    | 256                              |                                                       |
+| ML-DSA         | ML-DSA-44      | 128                              |                                                       |
+| ML-DSA         | ML-DSA-65      | 192                              |                                                       |
+| ML-DSA         | ML-DSA-87      | 256                              |                                                       |
 | DRBG           | CTR_DRBG       | 256                              | Based on AES-CTR-256                                  |
 | KDF            | KDF_CTR        | 128                              | With HMAC or KMAC as PRF                              |
 
@@ -638,6 +718,10 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 9. [IETF RFC 8032][eddsa-rfc]: Edwards-Curve Digital Signature Algorithm (EdDSA)
 10. [NIST SP800-186][nist-ecc-domain-params]: Recommendations for Discrete Logarithm-Based Cryptography: Elliptic Curve Domain Parameters
 
+**Post-quantum cryptography**
+1. [FIPS 203][fips-203]: Module-Lattice-Based Key-Encapsulation Mechanism Standard
+2. [FIPS 204][fips-204]: Module-Lattice-Based Digital Signature Standard
+
 **Deterministic random bit generation**
 1. [NIST SP800-90A][nist-drbg-spec]: Recommendation for Random Number Generation Using Deterministic Random Bit Generators
 2. [NIST SP800-90B][nist-entropy-spec]: Recommendation for the Entropy Sources Used for Random Bit Generation
@@ -658,6 +742,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [aes-basic-modes-spec]: https://csrc.nist.gov/publications/detail/sp/800-38a/final
 [brainpool-rfc]: https://datatracker.ietf.org/doc/html/rfc5639
 [bsi-ais31]: https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Certification/Interpretations/AIS_31_Functionality_classes_for_random_number_generators_e.html
+[cryptolib-blog]: https://www.zerorisc.com/blog/fast-flexible-future-proof-the-cryptolib-embedded-cryptography-library
 [csrng]:  ../../../hw/ip/csrng/README.md
 [ecc-rfc]: https://datatracker.ietf.org/doc/html/rfc7448
 [ecc-tls-rfc]: https://datatracker.ietf.org/doc/html/rfc4492
@@ -665,6 +750,8 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [eddsa-rfc]: https://datatracker.ietf.org/doc/html/rfc8032
 [entropy-src]:  ../../../hw/ip/entropy_src/README.md
 [fips-186]: https://csrc.nist.gov/publications/detail/fips/186/5/final
+[fips-203]: https://csrc.nist.gov/pubs/fips/203/final
+[fips-204]: https://csrc.nist.gov/pubs/fips/204/final
 [gcm-spec]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
 [hkdf-rfc]: https://datatracker.ietf.org/doc/html/rfc5869
 [hmac]:  ../../../hw/ip/hmac/README.md
