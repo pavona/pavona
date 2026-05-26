@@ -198,7 +198,7 @@
 #endif
 
 /******************************************************************************
- * Name:        MLD_CONFIG_REDUCE_RAM [EXPERIMENTAL]
+ * Name:        MLD_CONFIG_REDUCE_RAM
  *
  * Description: Set this to reduce RAM usage.
  *              This trades memory for performance.
@@ -209,9 +209,6 @@
  *              This option is useful for embedded systems with tight RAM
  *              constraints but relaxed performance requirements.
  *
- *              WARNING: This option is experimental!
- *              CBMC proofs do not currently cover this configuration option.
- *              Its scope and configuration may change at any time.
  *
  *****************************************************************************/
 #define MLD_CONFIG_REDUCE_RAM
