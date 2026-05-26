@@ -50,4 +50,6 @@ jobs:
 
             Once the executed CLA has been received, the project will be able to merge your contribution upon its review and acceptance.
           # 'pull request comment when all contributors has signed, defaults to **CLA Assistant Lite bot** All Contributors have signed the CLA.'
+          # Suppress auto-sign prompt.
+          custom-pr-sign-comment: ' '
           custom-allsigned-prcomment: 'All committers have signed the CLA.<br/>'
