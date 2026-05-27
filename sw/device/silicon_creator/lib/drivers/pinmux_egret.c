@@ -1,44 +1,44 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
-
+#include "hw/top/dt/pinmux.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 
 #include "hw/top/gpio_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
-enum {
-  /**
-   * Base address of the pinmux registers.
-   */
-  kBase = TOP_EGRET_PINMUX_AON_BASE_ADDR,
-};
+/**
+ * Base address of the pinmux registers.
+ */
+static inline uint32_t pinmux_reg_base(void) {
+  return dt_pinmux_reg_block(kDtPinmuxAon, kDtPinmuxRegBlockCore);
+}
 
 /**
  * A peripheral input and MIO pad to link it to.
  */
 typedef struct pinmux_input {
-  top_egret_pinmux_peripheral_in_t periph;
-  top_egret_pinmux_insel_t insel;
-  top_egret_muxed_pads_t pad;
+  dt_pinmux_peripheral_in_t periph;
+  dt_pinmux_insel_t insel;
+  dt_pinmux_muxed_pad_t pad;
 } pinmux_input_t;
 
 /**
  * An MIO pad and a peripheral output to link it to.
  */
 typedef struct pinmux_output {
-  top_egret_pinmux_mio_out_t mio;
-  top_egret_pinmux_outsel_t outsel;
-  top_egret_muxed_pads_t pad;
+  dt_pinmux_mio_out_t mio;
+  dt_pinmux_outsel_t outsel;
+  dt_pinmux_muxed_pad_t pad;
 } pinmux_output_t;
 
 /**
@@ -103,23 +103,23 @@ static const pinmux_input_t kInputUsbdevSense = {
 /**
  * Sets the input pad for the specified peripheral input.
  *
- * @param periph A peripheral input (e.g. top_egret_pinmux_peripheral_in_t
+ * @param periph A peripheral input (e.g. dt_pinmux_peripheral_in_t
  * periph).
- * @param insel An MIO pad to link it to (e.g. top_egret_pinmux_insel_t
+ * @param insel An MIO pad to link it to (e.g. dt_pinmux_insel_t
  * insel).
  */
 void pinmux_configure_input(uint32_t periph, uint32_t insel) {
   // TODO: what is the consequence of an illegal insel value?  The legal range
   // is [0..48], but there are enough bits for [0..63].
-  abs_mmio_write32(
-      kBase + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET + periph * sizeof(uint32_t),
-      insel);
+  abs_mmio_write32(pinmux_reg_base() + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
+                       periph * sizeof(uint32_t),
+                   insel);
 }
 
 /**
  * Enables or disables pull-up/pull-down for the specified pad.
  *
- * @param pad A MIO pad (e.g. top_egret_muxed_pads_t).
+ * @param pad A MIO pad (e.g. dt_pinmux_muxed_pad_t).
  * @param enable Whether the internal pull resistor should be enabled.
  * @param up Whether the pull resistor should pull up(true) or down(false).
  */
@@ -127,8 +127,9 @@ void pinmux_enable_pull(uint32_t pad, bool enable, bool up) {
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, enable);
   reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, up);
-  abs_mmio_write32(
-      kBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET + pad * sizeof(uint32_t), reg);
+  abs_mmio_write32(pinmux_reg_base() + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET +
+                       pad * sizeof(uint32_t),
+                   reg);
 }
 
 /**
@@ -177,9 +178,9 @@ static uint32_t read_strap_pin(pinmux_input_t input) {
  * @param output An MIO pad and a peripheral output to link it to.
  */
 static void configure_output(pinmux_output_t output) {
-  abs_mmio_write32(
-      kBase + PINMUX_MIO_OUTSEL_0_REG_OFFSET + output.mio * sizeof(uint32_t),
-      output.outsel);
+  abs_mmio_write32(pinmux_reg_base() + PINMUX_MIO_OUTSEL_0_REG_OFFSET +
+                       output.mio * sizeof(uint32_t),
+                   output.outsel);
 }
 
 void pinmux_init_uart0_tx(void) { configure_output(kOutputUart0); }
