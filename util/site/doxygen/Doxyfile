@@ -99,6 +99,7 @@ GENERATE_HTML          = YES
 
 # Relative to `OUTPUT_DIRECTORY`
 HTML_OUTPUT            = "doxy/"
+SITEMAP_URL            = "https://docs.pavona.org/gen/doxy/"
 
 HTML_COLORSTYLE_HUE    = 271
 
