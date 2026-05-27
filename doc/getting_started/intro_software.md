@@ -20,7 +20,7 @@ This directory is broken down into several other directories; some important one
   * `sw/device/tests/`, which contains hundreds of tests, encompassing peripheral smoke tests to fuller end-to-end tests.
   * `sw/device/silicon_creator/` and `sw/device/silicon_owner/`, which contain software serving root-of-trust and similar functions.
     Here, you'll find the code for the ROM and ownership transfer code.
-* `sw/device/acc/`, which contains software that runs on the Asymmetric Cryptography Coprocessor (ACC).
+* `sw/acc/`, which contains software that runs on the Asymmetric Cryptography Coprocessor (ACC).
   Most ACC software is compiled into *cryptolib*, a library of cryptographic routines.
 * `sw/host/`, which contains software that runs on the machine (the "host") connected to a Pavona top-level design.
   It's worth noting that this host code is distinct from code that is used to *generate* Pavona hardware, which generally lives in `util/`.

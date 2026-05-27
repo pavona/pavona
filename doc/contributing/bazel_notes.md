@@ -18,14 +18,6 @@ The `$REPO_TOP` directory is defined as a Bazel workspace by the `//WORKSPACE` f
 
 .bzl files are used to specify custom rules to build artifacts that require specific attention like on-device test rules and project specific binaries.
 
-## WORKSPACE file
-
-The `WORKSPACE` file controls external dependencies such that builds can be made reproducible and hermetic.
-Bazel loads specific external dependencies, such as various language toolchains.
-It uses them to build Pavona targets (like it does with bazel\_embedded) or to satisfy dependencies (as it does with abseil).
-To produce increasingly stable releases the external dependencies loaded in `WORKSPACE` file attempts to fix all external `http_archive`s to a specific SHA.
-As we add more dependencies to the workspace, builds and tests will become less sensitive to external updates, and we will vastly simplify the [Getting Started](../../doc/getting_started/README.md) instructions.
-
 ## BUILD files
 
 Throughout the Pavona repository, `BUILD` files describe targets and dependencies in the same directory (and subdirectories that lack their own `BUILD` files).

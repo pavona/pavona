@@ -8,13 +8,13 @@ title = "Pavona Documentation"
 
 [build]
 create-missing = false
-use-default-preprocessors = false
+use-default-preprocessors = true
 
 [output.html]
 site-url = "book/"
 fold = { enable = true}
 git-repository-url = "https://github.com/pavona/pavona"
-edit-url-template = "https://github.com/pavona/pavona/edit/master/{path}"
+edit-url-template = "https://github.com/pavona/pavona/edit/main/{path}"
 smart-punctuation = true
 mathjax-support = true
 theme = "util/site/book-theme"

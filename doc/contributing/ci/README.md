@@ -40,4 +40,6 @@ It then processes the workflow description and queues and dispatches test jobs t
 After the runner has completed a test job it reports back the result GitHub Actions, which makes this information (build artifacts and logs) available to users through the web UI.
 The status of GitHub Actions is displayed below a pull request, as marks next to commits, and in various other places.
 
+---
+
 *Pavona's CI instance was donated by zeroRISC Inc.*
