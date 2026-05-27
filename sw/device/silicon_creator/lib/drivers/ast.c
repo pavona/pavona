@@ -1,9 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 
+#include "hw/top/dt/ast.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/csr.h"
@@ -12,18 +14,24 @@
 
 #include "hw/top/ast_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
+
+#ifdef HAS_SENSOR_CTRL
+#include "hw/top/dt/sensor_ctrl.h"
+
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
+
+/**
+ * Base address of the sensor_ctrl registers.
+ */
+static inline uint32_t sensor_ctrl_reg_base(void) {
+  return dt_sensor_ctrl_reg_block(kDtSensorCtrlAon, kDtSensorCtrlRegBlockCore);
+}
+#endif
 
 #ifndef OT_PLATFORM_RV32
 // Provide a definition for off-target unit tests.
 const uint32_t kAstCheckPollCpuCycles = 10000;
 #endif
-
-enum {
-  kBaseSensorCtrl = TOP_EGRET_SENSOR_CTRL_AON_BASE_ADDR,
-  kBaseAst = TOP_EGRET_AST_BASE_ADDR,
-};
 
 rom_error_t ast_check(lifecycle_state_t lc_state) {
   // In some lifecycle states we want to continue the boot process even if the
@@ -49,6 +57,7 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
       HARDENED_TRAP();
   }
 
+#ifdef HAS_SENSOR_CTRL
   // OTP can be configured to skip AST initialization. In this situation we do
   // not check that AST_INIT_DONE is set.
   uint32_t en = otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET);
@@ -56,6 +65,7 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
     HARDENED_CHECK_EQ(en, kMultiBitBool4False);
     return kErrorOk;
   }
+#endif
 
   // AST initialization may take up to 100us. It is most likely already complete
   // at this point but for resilience poll for up to 100us.
@@ -76,17 +86,20 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
   return res;
 }
 
+#ifdef HAS_SENSOR_CTRL
 OT_WARN_UNUSED_RESULT
 static bool done_bit_get(void) {
   uint32_t reg =
-      abs_mmio_read32(kBaseSensorCtrl + SENSOR_CTRL_STATUS_REG_OFFSET);
+      abs_mmio_read32(sensor_ctrl_reg_base() + SENSOR_CTRL_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT);
 }
+#endif
 
 hardened_bool_t ast_init_done(void) {
   static_assert(kHardenedBoolTrue == 0x739,
                 "This function expects kHardenedBoolTrue to be 0x739");
 
+#ifdef HAS_SENSOR_CTRL
   // The code below reads the AST_INIT_DONE bit twice and modifies `res` with
   // the result of each attempt. `res` should be `kHardenedBoolTrue` if all
   // attempts return true.
@@ -98,4 +111,7 @@ hardened_bool_t ast_init_done(void) {
     return kHardenedBoolFalse;
   }
   return res;
+#else
+  return kHardenedBoolTrue;
+#endif
 }

@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top_dragonfly:defs.bzl", "DRAGONFLY_SLOTS")
 load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -57,6 +58,7 @@ sim_verilator(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/top_dragonfly/data/otp:img_rma",
+    slot_spec = DRAGONFLY_SLOTS,
     test_cmd = "testing-not-supported",
 )
 
@@ -110,6 +112,7 @@ sim_dv(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp_mmap = "//hw/top_dragonfly/data/otp:otp_ctrl_mmap.hjson",
+    slot_spec = DRAGONFLY_SLOTS,
 )
 
 sim_dv(

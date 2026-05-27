@@ -34,6 +34,13 @@ enum {
   kAttestationKeyGenVersion0 = 0,
 };
 
+/**
+ * Holds an additional seed for use in attestation key generation.
+ */
+typedef struct attestation_seed {
+  uint32_t seed[kAttestationSeedWords];
+} attestation_seed_t;
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

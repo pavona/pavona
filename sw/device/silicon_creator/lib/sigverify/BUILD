@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_select_top")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_device_library_of",
@@ -236,6 +237,12 @@ cc_library(
     copts = [
         "-Wno-enum-enum-conversion",
     ],
+    defines = pavona_select_top(
+        {
+            "egret": ["OTP_MANUF_STATE"],
+        },
+        [],
+    ),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top/dt",
