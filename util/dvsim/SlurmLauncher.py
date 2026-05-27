@@ -7,6 +7,8 @@ import os
 import shlex
 import shutil
 import subprocess
+import tempfile
+import sys
 
 from Launcher import ErrorMessage, Launcher, LauncherError
 
@@ -31,6 +33,7 @@ class SlurmLauncher(Launcher):
         # Popen object when launching the job.
         self.process = None
         self.slurm_log_file = self.deploy.get_log_path() + '.slurm'
+        self.slurm_script_file = None
 
     def _do_launch(self):
         # replace the values in the shell's env vars if the keys match.
@@ -44,18 +47,29 @@ class SlurmLauncher(Launcher):
         # Makefile with Make variables from any wrapper that called dvsim.
         if 'MAKEFLAGS' in exports:
             del exports['MAKEFLAGS']
-
         self._dump_env_vars(exports)
 
-        # Add a command delimiter if necessary
-        slurm_setup_cmd = SLURM_SETUP_CMD
-        if slurm_setup_cmd and not slurm_setup_cmd.endswith(';'):
-            slurm_setup_cmd += ';'
+        # Write command to a script on shared storage to avoid quoting issues
+        # with bash -c "..." when the command contains double quotes.
+        script_dir = os.path.dirname(self.slurm_log_file)
+        try:
+            os.makedirs(script_dir, exist_ok=True)
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.sh',
+                                             dir=script_dir, delete=False) as f:
+                f.write('#!/bin/bash\n')
+                if SLURM_SETUP_CMD:
+                    f.write(f'{SLURM_SETUP_CMD}\n')
+                f.write(f'{self.deploy.cmd}\n')
+                self.slurm_script_file = f.name
+            os.chmod(self.slurm_script_file, 0o755)
+        except OSError as e:
+            log.error(f"OSError: {e}\nCouldn't make directory {script_dir}")
+            sys.exit(1)
 
         # Encapsulate the run command with the slurm invocation
-        slurm_cmd = f'srun -p {SLURM_QUEUE} --mem={SLURM_MEM} --mincpus={SLURM_MINCPUS} ' \
-                    f'--time={SLURM_TIMEOUT} --cpus-per-task={SLURM_CPUS_PER_TASK} ' \
-                    f'bash -c "{slurm_setup_cmd} {self.deploy.cmd}"'
+        slurm_cmd = (f'srun -p {SLURM_QUEUE} --mem={SLURM_MEM} --mincpus={SLURM_MINCPUS} '
+                     f'--time={SLURM_TIMEOUT} --cpus-per-task={SLURM_CPUS_PER_TASK} '
+                     f'{self.slurm_script_file}')
 
         try:
             with open(self.slurm_log_file, 'w') as out_file:
@@ -63,6 +77,7 @@ class SlurmLauncher(Launcher):
                 out_file.flush()
 
                 log.info(f'Executing slurm command: {slurm_cmd}')
+                log.info(f'Script contents:\n{SLURM_SETUP_CMD}\n{self.deploy.cmd}')
                 self.process = subprocess.Popen(shlex.split(slurm_cmd),
                                                 bufsize=4096,
                                                 universal_newlines=True,
@@ -133,6 +148,9 @@ class SlurmLauncher(Launcher):
 
     def _post_finish(self, status, err_msg):
         super()._post_finish(status, err_msg)
+        if self.slurm_script_file and os.path.exists(self.slurm_script_file):
+            os.remove(self.slurm_script_file)
+            self.slurm_script_file = None
         self._close_process()
         self.process = None
 
