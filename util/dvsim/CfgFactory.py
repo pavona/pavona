@@ -106,8 +106,11 @@ def reseed_source(graded_reseeds: dict, seed_index: dict, default_reseed: int):
             key = (candidate, graded_reseeds["name"], variant)
             if key in seed_index:
                 hit = True
-                hjson_test["reseed"] = seed_index[key]["reseed"]
-                hjson_test["seeds"] = seed_index[key]["seeds"]
+                entry = seed_index[key]
+                if "reseed" in entry:
+                    hjson_test["reseed"] = entry["reseed"]
+                if "seeds" in entry:
+                    hjson_test["seeds"] = entry["seeds"]
                 break  # Assume one match per test
 
     if "reseed" in graded_reseeds.keys() and hit:

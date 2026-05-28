@@ -105,14 +105,13 @@ class Mode:
                 continue
 
             # If the attribute wouldn't otherwise merge, but it's a reseed
-            # value, (as introduced by the --reseed-source) it with the
-            # lesser of the two.
+            # value (as introduced by the --reseed-source), it should always go with
+            # the corresponding sourced attribute.
             if attr == "reseed":
                 log.warn(f"For merging reseed value of {mode.name} "
                          f"(reseed={mode_attr_val}) into {self.name} "
-                         f"(reseed={self_attr_val}), selecting the smaller "
-                         "value.")
-                setattr(self, attr, min(mode_attr_val, self_attr_val))
+                         f"(reseed={self_attr_val}), selecting the default value.")
+                setattr(self, attr, self_attr_val)
                 continue
 
             # If we get to here then neither value is the default value and
