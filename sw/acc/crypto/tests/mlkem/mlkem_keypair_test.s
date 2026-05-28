@@ -85,6 +85,7 @@ main:
   la   x10, coins
   la   x11, ek
   la   x12, dk
+  li   x14, KYBER_K
   jal  x1, crypto_kem_keypair
 
   ecall

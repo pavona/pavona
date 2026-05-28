@@ -10,84 +10,7 @@
 
 .text
 
-#define KYBER_N 256
-#define KYBER_Q 3329
-#define KYBER_SYMBYTES 32   /* size in bytes of hashes, and seeds */
-#define KYBER_SSBYTES  32   /* size in bytes of shared key */
-#define KYBER_POLYBYTES		384
-#define KYBER_ETA2 2
-#if (KYBER_K == 2)
-  #define KYBER_POLYVECBYTES	768
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 640
-  #define KYBER_ETA1 3
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 800
-  #define KYBER_INDCPA_SECRETKEYBYTES 768
-  #define KYBER_INDCPA_BYTES          768
-
-  #define KYBER_PUBLICKEYBYTES  800
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  1632
-  #define KYBER_CIPHERTEXTBYTES 768
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 25
-  #define KYBER_CIPHERTEXT_WRS 24
-  #define KYBER_GEN_MATRIX_NONCE 254
-  #define KYBER_GEN_MATRIX_AT_NONCE -511
-  #define POLY -512
-  #define K_POLYS -1024
-  #define K_SQUARED_POLYS -2048
-
-#elif (KYBER_K == 3)
-  #define KYBER_POLYVECBYTES	1152
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 960
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1184
-  #define KYBER_INDCPA_SECRETKEYBYTES 1152
-  #define KYBER_INDCPA_BYTES          1088
-
-  #define KYBER_PUBLICKEYBYTES  1184
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  2400
-  #define KYBER_CIPHERTEXTBYTES 1088
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 37
-  #define KYBER_CIPHERTEXT_WRS 34
-  #define KYBER_GEN_MATRIX_NONCE 253
-  #define KYBER_GEN_MATRIX_AT_NONCE -767
-  #define POLY -512
-  #define K_POLYS -1536
-  #define K_SQUARED_POLYS -4608
-
-#elif (KYBER_K == 4)
-  #define KYBER_POLYVECBYTES	1536
-  #define KYBER_POLYCOMPRESSEDBYTES    160
-  #define KYBER_POLYVECCOMPRESSEDBYTES 1408
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1568
-  #define KYBER_INDCPA_SECRETKEYBYTES 1536
-  #define KYBER_INDCPA_BYTES          1568
-
-  #define KYBER_PUBLICKEYBYTES  1568
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  3168
-  #define KYBER_CIPHERTEXTBYTES 1568
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 49
-  #define KYBER_CIPHERTEXT_WRS 49
-  #define KYBER_GEN_MATRIX_NONCE 252
-  #define KYBER_GEN_MATRIX_AT_NONCE -1023
-  #define POLY -512
-  #define K_POLYS -2048
-  #define K_SQUARED_POLYS -8192
-#endif
+#define POLY -512
 
 /* Register aliases */
 .equ x0, zero
@@ -156,12 +79,13 @@
  * @param[in]  x10 (a0): pointer to seed (KYBER_SYMBYTES = 32)
  * @param[out] x11 (a1): dmem pointer to public key pk_addr
  * @param[out] x12 (a2): dmem pointer to secret key sk_addr
+ * @param[in]  x14: KYBER_K
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 
 indcpa_keypair:
-  /* Stack address mapping */
+  /* Stack address mapping. Worst-case (K=4) sizes throughout. */
   #define STACK_PK_ADDR        -32
   #define STACK_SK_ADDR        -24
   #define STACK_COINS_ADDR     -16
@@ -170,17 +94,8 @@ indcpa_keypair:
     #define STACK_NOISESEED    -96
     #define STACK_NONCE        -64
   #define STACK_TMP           -640
-#if (KYBER_K == 2)
-  #define STACK_A            -1664
-  #define STACK_SKPV         -2688
-#elif (KYBER_K == 3)
-  #define STACK_A            -2176
-  #define STACK_SKPV         -3712
-#elif (KYBER_K == 4)
   #define STACK_A            -2688
   #define STACK_SKPV         -4736
-#else
-#endif
 
   /* Store parameters to stack */
   sw  a0, STACK_COINS_ADDR(fp)
@@ -196,8 +111,7 @@ indcpa_keypair:
   addi  a1, zero, 32
   jal   x1, keccak_send_message
   addi  a0, fp, STACK_BUF
-  addi  a1, zero, KYBER_K
-  sw    a1, 0(a0)
+  sw    x14, 0(a0)
   addi  a1, zero, 1
   jal   x1, keccak_send_message
   addi  a2, fp, STACK_BUF
@@ -213,7 +127,8 @@ indcpa_keypair:
   li   a3, STACK_NONCE
   add  a3, a3, fp
   li   a2, 0
-  LOOPI KYBER_K, 6
+  /* K iterations */
+  LOOP x14, 6
     add  t1, fp, a5
     addi a0, fp, STACK_NOISESEED
     sw   a2, STACK_NONCE(fp)
@@ -229,9 +144,10 @@ indcpa_keypair:
   add  a0, fp, a0
   la   a1, twiddles_ntt
   add  a2, zero, a0
-  .rept KYBER_K
+  /* K iterations */
+  LOOP x14, 2
     jal x1, ntt
-  .endr
+    nop
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
   /*** Packing sk ***/
@@ -245,7 +161,8 @@ indcpa_keypair:
   li   a1, STACK_A
   add  a1, fp, a1
   bn.xor w30, w30, w30
-  .rept KYBER_K
+  /* K iterations */
+  LOOP x14, 28
     /* Gen 1st mat poly */
     addi a0, fp, STACK_PUBLICSEED
     jal  x1, poly_gen_matrix_init
@@ -260,7 +177,9 @@ indcpa_keypair:
     la   x28, twiddles_basemul
     jal  x1, basemul
 
-    .rept KYBER_K-1
+    /* K-1 iterations */
+    addi t1, x14, -1
+    LOOP t1, 10
       /* Gen next mat poly */
       addi a0, fp, STACK_PUBLICSEED
       jal  x1, poly_gen_matrix_init
@@ -273,9 +192,12 @@ indcpa_keypair:
       la   x28, twiddles_basemul
       jal  x1, basemul_acc
       addi a1, a1, POLY /* points back to A[0][1] */
-    .endr
-    bn.addi w30, w30, KYBER_GEN_MATRIX_NONCE
-  .endr
+
+    /* w30 += 256 - K (= KYBER_GEN_MATRIX_NONCE) */
+    bn.addi w30, w30, 256
+    LOOP x14, 1
+      bn.subi w30, w30, 1
+    nop
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
   /* After basemul, w16 is still R | Q */
@@ -283,9 +205,10 @@ indcpa_keypair:
   li  a0, STACK_A
   add a0, fp, a0
   la  a1, const_tomont
-  LOOPI KYBER_K, 2
+  /* K iterations */
+  LOOP x14, 2
     jal x1, poly_tomont
-    NOP
+    nop
 
   /*** CBD e ***/
   li   a5, STACK_TMP
@@ -293,8 +216,9 @@ indcpa_keypair:
   add  a1, fp, a1
   li   a3, STACK_NONCE
   add  a3, a3, fp
-  li   a2, KYBER_K
-  LOOPI KYBER_K, 6
+  addi a2, x14, 0
+  /* K iterations */
+  LOOP x14, 6
     add  t1, fp, a5
     addi a0, fp, STACK_NOISESEED
     sw   a2, STACK_NONCE(fp)
@@ -310,9 +234,10 @@ indcpa_keypair:
   add  a0, fp, a0
   la   a1, twiddles_ntt
   add  a2, zero, a0
-  .rept KYBER_K
+  /* K iterations */
+  LOOP x14, 2
     jal x1, ntt
-  .endr
+    nop
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
   /* Polyvec add */
@@ -321,9 +246,10 @@ indcpa_keypair:
   li   a1, STACK_SKPV
   add  a1, fp, a1
   add  a2, x0, a0
-  .rept KYBER_K
+  /* K iterations */
+  LOOP x14, 2
     jal x1, poly_add
-  .endr
+    nop
 
   /*** Packing ***/
   lw   a3, STACK_PK_ADDR(fp)
@@ -349,6 +275,7 @@ indcpa_keypair:
  * @param[in]  x10 (a0): pointer to seed (2*KYBER_SYMBYTES = 64)
  * @param[out] x11 (a1): dmem pointer to kem_pk
  * @param[out] x12 (a2): dmem pointer to kem_sk
+ * @param[in]  x14: KYBER_K
  *
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
@@ -357,13 +284,7 @@ indcpa_keypair:
 crypto_kem_keypair:
   /* Set frame pointer */
   addi fp, sp, 0
-#if KYBER_K == 2
-    li  t0, -2688
-#elif KYBER_K == 3
-    li  t0, -3712
-#elif KYBER_K == 4
-    li  t0, -4736
-#endif
+  li   t0, -4736
   add  sp, sp, t0
 
   /*** indcpa_keypair ***/
@@ -371,21 +292,39 @@ crypto_kem_keypair:
   li   x4, 0
   lw   a0, STACK_PK_ADDR(fp)
   lw   a1, STACK_SK_ADDR(fp)
-  addi a1, a1, KYBER_INDCPA_SECRETKEYBYTES
-  LOOPI KYBER_INDCPA_PUBLICKEYBYTES_WRS, 2
+  /* a1 += KYBER_INDCPA_SECRETKEYBYTES = K * 384 */
+  slli t0, x14, 7
+  slli t1, x14, 8
+  add  t0, t0, t1
+  add  a1, a1, t0
+  /* t1 = KYBER_INDCPA_PUBLICKEYBYTES_WRS = K * 12 + 1 */
+  slli t0, x14, 3
+  slli t1, x14, 2
+  add  t1, t0, t1
+  addi t1, t1, 1
+  LOOP t1, 2
     bn.lid x4, 0(a0++)
     bn.sid x4, 0(a1++)
 
   /*** hash_h ***/
   lw      a0, STACK_PK_ADDR(fp)
-  addi    a1, zero, KYBER_PUBLICKEYBYTES
+  /* a1 = KYBER_PUBLICKEYBYTES = K * 384 + 32 */
+  slli    t0, x14, 7
+  slli    a1, x14, 8
+  add     a1, a1, t0
+  addi    a1, a1, 32
   slli    t0, a1, 5
   addi    t0, t0, SHA3_256_CFG
   csrrw   zero, KECCAK_CFG_REG, t0
   jal     x1, keccak_send_message
   lw      a2, STACK_SK_ADDR(fp)
-  addi    a2, a2, KYBER_INDCPA_PUBLICKEYBYTES
-  addi    a2, a2, KYBER_INDCPA_SECRETKEYBYTES
+  /* a2 += KYBER_INDCPA_PUBLICKEYBYTES + KYBER_INDCPA_SECRETKEYBYTES
+   *    = (K*384+32) + K*384 = 2*K*384 + 32 */
+  slli    t0, x14, 8
+  slli    t1, x14, 9
+  add     t0, t0, t1
+  addi    t0, t0, 32
+  add     a2, a2, t0
   li      t0, 8
   bn.wsrr w8, 0xA /* KECCAK_DIGEST */
   bn.sid  t0, 0(a2++) /* Store into buffer */

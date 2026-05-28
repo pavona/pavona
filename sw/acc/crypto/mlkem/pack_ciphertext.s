@@ -10,16 +10,11 @@
 
 .text
 
-#if (KYBER_K == 2)
-#define KYBER_POLYVECCOMPRESSED_LOOP 4
-#elif (KYBER_K == 3)
-#define KYBER_POLYVECCOMPRESSED_LOOP 6
-#endif
-
 /*
- * Name:        poly_compress
+ * Name:        poly_compress_dv4
  *
- * Description: Compression and subsequent serialization of a polynomial
+ * Description: Compression and subsequent serialization of a polynomial with
+ *              dv=4 bits per coefficient. Used by ML-KEM-512 and ML-KEM-768.
  *
  * Arguments:   - uint8_t r: output byte array (of length KYBER_POLYCOMPRESSEDBYTES)
  *              - poly a: input polynomial, n=256, q=3329
@@ -29,15 +24,13 @@
  * @param[in]  x11: dptr_input, dmem pointer to input polynomial
  * @param[out] x12: dptr_output, dmem pointer to output byte array
  * @param[in]  x13 (w3): const_80635
- * @param[in]  x14 (w6): modulus_bn
  * @param[in]  x15 (w2): dptr_modulus_over_2
  * @param[in]  w31: all-zero
  *
  * clobbered registers: x0-x30, w0-w31
  */
 
-poly_compress:
-#if (KYBER_K == 2 || KYBER_K == 3)
+poly_compress_dv4:
   /* Multiply the constant 80635 with 2**4 so that later we shift to the right
    * 32 bits instead of 28 bits. This means we can return the high parts of
    * the 64-bit products within the multiplication instruction. */
@@ -59,7 +52,29 @@ poly_compress:
         bn.rshi w1, w31, w1 >> 16
       NOP
     bn.sid x4, 0(x12++)
-#elif (KYBER_K == 4)
+  ret
+
+/*
+ * Name:        poly_compress_dv5
+ *
+ * Description: Compression and subsequent serialization of a polynomial with
+ *              dv=5 bits per coefficient. Used by ML-KEM-1024.
+ *
+ * Arguments:   - uint8_t r: output byte array (of length KYBER_POLYCOMPRESSEDBYTES)
+ *              - poly a: input polynomial, n=256, q=3329
+ *
+ * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x11: dptr_input, dmem pointer to input polynomial
+ * @param[out] x12: dptr_output, dmem pointer to output byte array
+ * @param[in]  x13 (w3): const_80635
+ * @param[in]  x15 (w2): dptr_modulus_over_2
+ * @param[in]  w31: all-zero
+ *
+ * clobbered registers: x0-x30, w0-w31
+ */
+
+poly_compress_dv5:
   bn.shv.8S w3, w2 >> 17 /* w3 = (0x340)^8 */
   bn.shv.8S w3, w3 << 1 /* w3 = (0x680)^8 */
   /* Multiply the constant 40318 with 2**5 (1290176) so that later we shift to the
@@ -182,7 +197,6 @@ poly_compress:
       bn.rshi w1, w31, w1 >> 16
     NOP
   bn.sid  x4, 0(x12++)
-#endif
   ret
 
 /*
@@ -214,40 +228,40 @@ poly_compress_16:
   ret
 
 /*
- * Name:        polyvec_compress
+ * Name:        polyvec_compress_du10
  *
- * Description: Compress and serialize vector of polynomials
+ * Description: Compress and serialize vector of polynomials with du=10 bits
+ *              per coefficient. Used by ML-KEM-512 and ML-KEM-768.
  *
- * Arguments:   - uint8_t r: output byte array (of length KYBER_POLYCOMPRESSEDBYTES)
- *              - poly a: input polynomial, n=256, q=3329
+ * Arguments:   - uint8_t r: output byte array (of length KYBER_POLYVECCOMPRESSEDBYTES)
+ *              - polyvec a: input vector of polynomials, n=256, q=3329
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x10: dptr_input, dmem pointer to input polynomial
+ * @param[in]  x10: dptr_input, dmem pointer to input polynomial vector
  * @param[out] x12: dptr_output, dmem pointer to output byte array
- * @param[in]  x13: const_1290167
- * @param[in]  x14: modulus_bn
- * @param[in]  x15: dptr_modulus_over_2
+ * @param[in]  x14: KYBER_K (2 or 3)
  * @param[in]  w31: all-zero
  *
  * clobbered registers: x0-x30, w0-w31
  */
-polyvec_compress:
-#if (KYBER_K == 2 || KYBER_K == 3)
+polyvec_compress_du10:
   bn.shv.8S w3, w2 >> 16 /* w2 = (0x681)^8 */
   bn.mov    w16, w5 /* w16 = (1290167) */
-  LOOPI KYBER_POLYVECCOMPRESSED_LOOP, 61
+  /* outer iteration count is 2*KYBER_K (4 for K=2, 6 for K=3) */
+  slli      x29, x14, 1
+  LOOP x29, 61
     /* First WDR: 160 bits (16 coeffs) + (Reload) 90 bits (9 coeffs) + 6 bits */
     /* Load the first batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du10
     /* Pack 160 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     /* Load the second batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du10
     /* Pack 90 bits */
     LOOPI 9, 2
       bn.rshi w4, w1, w4 >> 10
@@ -264,14 +278,14 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the third batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du10
     /* Pack 160 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     /* Load the fourth batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du10
     /* Pack 30 bits */
     LOOPI 3, 2
       bn.rshi w4, w1, w4 >> 10
@@ -287,7 +301,7 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the fifth batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du10
     /* Pack 120 bits */
     LOOPI 12, 2
       bn.rshi w4, w1, w4 >> 10
@@ -304,14 +318,14 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the sixth batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du10
     /* Pack 160 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     /* Load the seventh batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du10
     /* Pack 60 bits */
     LOOPI 6, 2
       bn.rshi w4, w1, w4 >> 10
@@ -327,31 +341,50 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the eighth batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du10
     /* Pack 160 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     bn.sid  x4, 0(x12++)
-#elif (KYBER_K == 4)
+  ret
+
+/*
+ * Name:        polyvec_compress_du11
+ *
+ * Description: Compress and serialize vector of polynomials with du=11 bits
+ *              per coefficient. Used by ML-KEM-1024.
+ *
+ * Arguments:   - uint8_t r: output byte array (of length KYBER_POLYVECCOMPRESSEDBYTES)
+ *              - polyvec a: input vector of polynomials, n=256, q=3329
+ *
+ * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x10: dptr_input, dmem pointer to input polynomial vector
+ * @param[out] x12: dptr_output, dmem pointer to output byte array
+ * @param[in]  w31: all-zero
+ *
+ * clobbered registers: x0-x30, w0-w31
+ */
+polyvec_compress_du11:
   bn.shv.8S w3, w2 >> 17 /* w3 = (0x340)^8 */
   bn.shv.8S w3, w3 << 1 /* w3 = (0x680)^8 */
   /* Multiply the constant 645084 with 2 (1290168) so that later we shift to the
    * right 32 bits instead of 28 bits. This means we can return the high parts of
    * the 64-bit products within the multiplication instruction. */
   bn.addi w16, w5, 1 /* w16 = 1290168 */
-  LOOPI KYBER_K, 130
+  LOOPI 4, 130
     /* 1st WDR: 176 bits (16 bits) + (Reload) 77 bits + 3 bits */
     /* Load the 1st batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 176 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 11
       bn.rshi w1, w31, w1 >> 16
     /* Load the 2nd batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 77 bits */
     LOOPI 7, 2
       bn.rshi w4, w1, w4 >> 11
@@ -367,7 +400,7 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 3rd batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 154 bits */
     LOOPI 14, 2
       bn.rshi w4, w1, w4 >> 11
@@ -383,14 +416,14 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 4th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 176 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 11
       bn.rshi w1, w31, w1 >> 16
     /* Load the 5th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 55 bits */
     LOOPI 5, 2
       bn.rshi w4, w1, w4 >> 11
@@ -406,7 +439,7 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 6th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 143 bits */
     LOOPI 13, 2
       bn.rshi w4, w1, w4 >> 11
@@ -423,14 +456,14 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 7th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 176 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 11
       bn.rshi w1, w31, w1 >> 16
     /* Load the 8th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 44 bits */
     LOOPI 4, 2
       bn.rshi w4, w1, w4 >> 11
@@ -446,7 +479,7 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 9th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 121 bits */
     LOOPI 11, 2
       bn.rshi w4, w1, w4 >> 11
@@ -463,14 +496,14 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 10th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 176 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 11
       bn.rshi w1, w31, w1 >> 16
     /* Load the 11th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 22 bits */
     LOOPI 2, 2
       bn.rshi w4, w1, w4 >> 11
@@ -486,7 +519,7 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 12th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 110 bits */
     LOOPI 10, 2
       bn.rshi w4, w1, w4 >> 11
@@ -503,14 +536,14 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 13th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 176 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 11
       bn.rshi w1, w31, w1 >> 16
     /* Load the 14th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 11 bits */
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
@@ -525,7 +558,7 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 15th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 88 bits */
     LOOPI 8, 2
       bn.rshi w4, w1, w4 >> 11
@@ -541,46 +574,67 @@ polyvec_compress:
       bn.rshi w1, w31, w1 >> 16
     /* Load the 16th batch */
     bn.lid x0, 0(x10++)
-    jal    x1, polyvec_compress_16
+    jal    x1, polyvec_compress_16_du11
     /* Pack 176 bits */
     LOOPI 16, 2
       bn.rshi w4, w1, w4 >> 11
       bn.rshi w1, w31, w1 >> 16
     bn.sid x4, 0(x12++)
-#endif
   ret
 
 /*
- * Name:        polyvec_compress_16
+ * Name:        polyvec_compress_16_du10
  *
- * Description: Subroutine of polyvec_compress for compressing 16 coefficients
+ * Description: Subroutine of polyvec_compress_du10 for compressing 16
+ *              coefficients. Used by ML-KEM-512 and ML-KEM-768.
  *
  * @param[in]   w0: input vector with 16 16-bit coefficients
- * @param[in]   w3: (0x681)^8 or (0x680)^8
- * @param[in]  w16: const_1290167 or const_1290168
+ * @param[in]   w3: (0x681)^8
+ * @param[in]  w16: const_1290167
  * @param[in]  w31: all-zero
  * @param[out]  w1: output vector with 16 compressed coefficients
  *
  * clobbered registers:
  */
 
-polyvec_compress_16:
+polyvec_compress_16_du10:
   bn.trn1.16H          w1, w0, w31 /* Put even coeffs to 32-bit slots */
-#if (KYBER_K == 2 || KYBER_K == 3)
   bn.shv.8S            w1, w1 << 10 /* << 10 */
-#elif (KYBER_K == 4)
-  bn.shv.8S            w1, w1 << 11 /* << 11 */
-#endif
-  bn.addv.8S           w1, w1, w3 /* +1665 or +1664 */
+  bn.addv.8S           w1, w1, w3 /* +1665 */
   bn.mulv.l.8S.even.hi w1, w1, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
   bn.mulv.l.8S.odd.hi  w1, w1, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
   bn.trn2.16H          w0, w0, w31 /* Put odd coeffs to 32-bit slots */
-#if (KYBER_K == 2 || KYBER_K == 3)
   bn.shv.8S            w0, w0 << 10 /* << 10 */
-#elif (KYBER_K == 4)
+  bn.addv.8S           w0, w0, w3 /* +1665 */
+  bn.mulv.l.8S.even.hi w0, w0, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
+  bn.mulv.l.8S.odd.hi  w0, w0, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
+  bn.trn1.16H          w1, w1, w0 /* Interleaving the results to original order */
+  ret
+
+/*
+ * Name:        polyvec_compress_16_du11
+ *
+ * Description: Subroutine of polyvec_compress_du11 for compressing 16
+ *              coefficients. Used by ML-KEM-1024.
+ *
+ * @param[in]   w0: input vector with 16 16-bit coefficients
+ * @param[in]   w3: (0x680)^8
+ * @param[in]  w16: const_1290168
+ * @param[in]  w31: all-zero
+ * @param[out]  w1: output vector with 16 compressed coefficients
+ *
+ * clobbered registers:
+ */
+
+polyvec_compress_16_du11:
+  bn.trn1.16H          w1, w0, w31 /* Put even coeffs to 32-bit slots */
+  bn.shv.8S            w1, w1 << 11 /* << 11 */
+  bn.addv.8S           w1, w1, w3 /* +1664 */
+  bn.mulv.l.8S.even.hi w1, w1, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
+  bn.mulv.l.8S.odd.hi  w1, w1, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
+  bn.trn2.16H          w0, w0, w31 /* Put odd coeffs to 32-bit slots */
   bn.shv.8S            w0, w0 << 11 /* << 11 */
-#endif
-  bn.addv.8S           w0, w0, w3 /* +1665 or +1664 */
+  bn.addv.8S           w0, w0, w3 /* +1664 */
   bn.mulv.l.8S.even.hi w0, w0, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
   bn.mulv.l.8S.odd.hi  w0, w0, sw0.0 /* >> 32 is taking the high parts of 64-bit products */
   bn.trn1.16H          w1, w1, w0 /* Interleaving the results to original order */
@@ -603,6 +657,7 @@ polyvec_compress_16:
  * @param[in]  x11: dptr_v, dmem pointer to second input polynomial
  * @param[out] x12: dptr_output, dmem pointer to output byte array
  * @param[in]  x13: const_1290167
+ * @param[in]  x14: KYBER_K
  * @param[in]  x15: dptr_modulus_over_2
  * @param[in]  w31: all-zero
  *
@@ -622,17 +677,27 @@ pack_ciphertext:
 
   /* Zeroize w31 */
   bn.xor w31, w31, w31
-  jal    x1, polyvec_compress
-  jal    x1, poly_compress
 
+  /* Dispatch on x14: K==4 (ML-KEM-1024) uses du=11/dv=5, else du=10/dv=4. */
+  li     x28, 4
+  beq    x14, x28, _pack_ciphertext_k4
+  /* ML-KEM-512/768 */
+  jal    x1, polyvec_compress_du10
+  jal    x1, poly_compress_dv4
+  ret
+_pack_ciphertext_k4:
+  /* ML-KEM-1024 */
+  jal    x1, polyvec_compress_du11
+  jal    x1, poly_compress_dv5
   ret
 
 
 /*
- * Name:        poly_decompress
+ * Name:        poly_decompress_dv4
  *
- * Description: De-serialization and subsequent decompression of a polynomial;
- *              approximate inverse of poly_compress
+ * Description: De-serialization and subsequent decompression of a polynomial
+ *              with dv=4 bits per coefficient. Used by ML-KEM-512 and
+ *              ML-KEM-768.
  *
  * Arguments:   - uint8_t r: input byte array (of length KYBER_POLYCOMPRESSEDBYTES)
  *              - poly a: output polynomial, n=256, q=3329
@@ -646,8 +711,7 @@ pack_ciphertext:
  * clobbered registers: x0-x30, w0-w31
  */
 
-poly_decompress:
-#if (KYBER_K == 2 || KYBER_K == 3)
+poly_decompress_dv4:
   bn.shv.16H w2, w2 >> 8 /* 0xf */
   LOOPI 4, 11
     bn.lid x0, 0(x10++)
@@ -661,7 +725,27 @@ poly_decompress:
       bn.shv.16H       w1, w1 >> 4
       bn.sid           x4, 0(x12++)
     NOP
-#elif (KYBER_K == 4)
+  ret
+
+/*
+ * Name:        poly_decompress_dv5
+ *
+ * Description: De-serialization and subsequent decompression of a polynomial
+ *              with dv=5 bits per coefficient. Used by ML-KEM-1024.
+ *
+ * Arguments:   - uint8_t r: input byte array (of length KYBER_POLYCOMPRESSEDBYTES)
+ *              - poly a: output polynomial, n=256, q=3329
+ *
+ * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x10: dptr_input, dmem pointer to input byte array
+ * @param[in]  x12: dptr_output, dmem pointer to output polynomial
+ * @param[in]  w31: all-zero
+ *
+ * clobbered registers: x0-x30, w0-w31
+ */
+
+poly_decompress_dv5:
   /* Before, we used bn.mulv.l.8S.{even,odd}.lo to compute 16 16x16-bit
    * multiplications, because we need the full 32-bit results to shift them by
    * a certain number of bits. The computation is:
@@ -769,7 +853,6 @@ poly_decompress:
       bn.rshi w0, w31, w0 >> 5
     jal    x1, poly_decompress_16
     bn.sid x4, 0(x12++)
-#endif
   ret
 
 /*
@@ -792,10 +875,132 @@ poly_decompress_16:
   ret
 
 /*
- * Name:        polyvec_decompress
+ * Name:        polyvec_decompress_du10
  *
- * Description: De-serialize and decompress vector of polynomials;
- *              approximate inverse of polyvec_compress
+ * Description: De-serialize and decompress vector of polynomials with du=10
+ *              bits per coefficient. Used by ML-KEM-512 and ML-KEM-768.
+ *
+ * Arguments:   - polyvec *r:       pointer to output vector of polynomials
+ *              - const uint8_t *a: pointer to input byte array
+ *                                  (of length KYBER_POLYVECCOMPRESSEDBYTES)
+ * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x10: dptr_input, dmem pointer to input byte array
+ * @param[in]  x14: KYBER_K (2 or 3)
+ * @param[in]  w31: all-zero
+ * @param[in]  w2: const_0x0fff
+ * @param[in]  w3: (0x00008000)^8
+ * @param[out] x12: dptr_output, dmem pointer to output polynomials
+ *
+ * clobbered registers: x0-x30, w0-w31
+ */
+
+polyvec_decompress_du10:
+  /* Before, we used bn.mulv.l.8S.{even,odd}.lo to compute 16 16x16-bit
+   * multiplications, because we need the full 32-bit results to shift them by
+   * a certain number of bits. The computation is:
+   * (((a & mask_num_bits) * KYBER_Q) + const) >> num_bits
+   * To use compute 16 16x16-bit multiplications and adding with const at once,
+   * we do the following trick:
+   * ((((a*mask_num_bits)<<(16-num_bits))* KYBER_Q)+(const<<(16-num_bits)))>>16
+   * The addition is the accumulation to ACC(H), so we need to write
+   * (const<<(16-num_bits)) to ACC(H) before the multiplication. The final shift
+   * to the right 16 bits is taking the high parts of the multiplication
+   * results. All of this can be done in bn.mulv.l.16H.acc.hi. */
+  /* outer iteration count is 2*KYBER_K (4 for K=2, 6 for K=3) */
+  slli x29, x14, 1
+  LOOP x29, 69
+    /* First WDR: 160 bits of w0 */
+    bn.lid x0, 0(x10++)
+    LOOPI 16, 2
+      bn.rshi w1, w0, w1 >> 16  /* Extract 10 bit from input to a 16-bit vector slot */
+      bn.rshi w0, w31, w0 >> 10 /* Shift out used bits */
+    jal    x1, polyvec_decompress_16_du10
+    bn.sid x4, 0(x12++)
+
+    /* Second WDR: 90 bits + 6 bits + (Reload) 4 bits + 60 bits */
+    LOOPI 9, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    bn.rshi w1, w0, w1 >> 6 /* Move the final 6 bits of w0 to w1 */
+    bn.lid  x0, 0(x10++) /* Load the second batch of input to w0 */
+    bn.rshi w1, w0, w1 >> 10 /* Move the first 4 bits of w0 to w1 to form 10 bits */
+    bn.rshi w0, w31, w0 >> 4 /* Shift out the used 4 bits */
+    LOOPI 6, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    jal x1, polyvec_decompress_16_du10
+    bn.sid x4, 0(x12++)
+
+    /* Third WDR: 160 bits */
+    LOOPI 16, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    jal    x1, polyvec_decompress_16_du10
+    bn.sid x4, 0(x12++)
+
+    /* Fourth WDR: 30 bits + 2 bits + (Reload) 8 bits + 120 bits */
+    LOOPI 3, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    bn.rshi w1, w0, w1 >> 2 /* Move the final 2 bits of w0 to w1 */
+    bn.lid  x0, 0(x10++) /* Load the third batch of input */
+    bn.rshi w1, w0, w1 >> 14 /* Move the first 8 bits of w0 to w1 to form 10 bits */
+    bn.rshi w0, w31, w0 >> 8 /* Shift out used bits */
+    LOOPI 12, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    jal    x1, polyvec_decompress_16_du10
+    bn.sid x4, 0(x12++)
+
+    /* Fifth WDR: 120 bits + 8 bits + (Reload) 2 bits + 30 bits */
+    LOOPI 12, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    bn.rshi w1, w0, w1 >> 8 /* Move the final 8 bits of w0 to w1 */
+    bn.lid  x0, 0(x10++) /* Load the fourth batch of input to w0 */
+    bn.rshi w1, w0, w1 >> 8 /* Move the first 2 bits of w0 to w1 to form 10 bits */
+    bn.rshi w0, w31, w0 >> 2 /* Shift out used bits */
+    LOOPI 3, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    jal    x1, polyvec_decompress_16_du10
+    bn.sid x4, 0(x12++)
+
+    /* Sixth WDR: 160 bits */
+    LOOPI 16, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    jal    x1, polyvec_decompress_16_du10
+    bn.sid x4, 0(x12++)
+
+    /* Seventh WDR: 60 bits + 4 bits + (Reload) 6 bits + 90 bits */
+    LOOPI 6, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    bn.rshi      w1, w0, w1 >> 4 /* Move the final 4 bits of w0 to w1 */
+    bn.lid       x0, 0(x10++) /* Load the fifth batch of input to w0 */
+    bn.rshi      w1, w0, w1 >> 12 /* Move the first 6 bits of w0 to w1 to form 10 bits */
+    bn.rshi      w0, w31, w0 >> 6 /* Shift out used bits */
+    LOOPI 9, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    jal    x1, polyvec_decompress_16_du10
+    bn.sid x4, 0(x12++)
+
+    /* Eigth WDR: 160 bits */
+    LOOPI 16, 2
+      bn.rshi w1, w0, w1 >> 16
+      bn.rshi w0, w31, w0 >> 10
+    jal    x1, polyvec_decompress_16_du10
+    bn.sid x4, 0(x12++)
+  ret
+
+/*
+ * Name:        polyvec_decompress_du11
+ *
+ * Description: De-serialize and decompress vector of polynomials with du=11
+ *              bits per coefficient. Used by ML-KEM-1024.
  *
  * Arguments:   - polyvec *r:       pointer to output vector of polynomials
  *              - const uint8_t *a: pointer to input byte array
@@ -811,112 +1016,14 @@ poly_decompress_16:
  * clobbered registers: x0-x30, w0-w31
  */
 
-polyvec_decompress:
-  /* Before, we used bn.mulv.l.8S.{even,odd}.lo to compute 16 16x16-bit
-   * multiplications, because we need the full 32-bit results to shift them by
-   * a certain number of bits. The computation is:
-   * (((a & mask_num_bits) * KYBER_Q) + const) >> num_bits
-   * To use compute 16 16x16-bit multiplications and adding with const at once,
-   * we do the following trick:
-   * ((((a*mask_num_bits)<<(16-num_bits))* KYBER_Q)+(const<<(16-num_bits)))>>16
-   * The addition is the accumulation to ACC(H), so we need to write
-   * (const<<(16-num_bits)) to ACC(H) before the multiplication. The final shift
-   * to the right 16 bits is taking the high parts of the multiplication
-   * results. All of this can be done in bn.mulv.l.16H.acc.hi. */
-#if (KYBER_K == 2 || KYBER_K == 3)
-  LOOPI KYBER_POLYVECCOMPRESSED_LOOP, 69
-    /* First WDR: 160 bits of w0 */
-    bn.lid x0, 0(x10++)
-    LOOPI 16, 2
-      bn.rshi w1, w0, w1 >> 16  /* Extract 10 bit from input to a 16-bit vector slot */
-      bn.rshi w0, w31, w0 >> 10 /* Shift out used bits */
-    jal    x1, polyvec_decompress_16
-    bn.sid x4, 0(x12++)
-
-    /* Second WDR: 90 bits + 6 bits + (Reload) 4 bits + 60 bits */
-    LOOPI 9, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    bn.rshi w1, w0, w1 >> 6 /* Move the final 6 bits of w0 to w1 */
-    bn.lid  x0, 0(x10++) /* Load the second batch of input to w0 */
-    bn.rshi w1, w0, w1 >> 10 /* Move the first 4 bits of w0 to w1 to form 10 bits */
-    bn.rshi w0, w31, w0 >> 4 /* Shift out the used 4 bits */
-    LOOPI 6, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    jal x1, polyvec_decompress_16
-    bn.sid x4, 0(x12++)
-
-    /* Third WDR: 160 bits */
-    LOOPI 16, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    jal    x1, polyvec_decompress_16
-    bn.sid x4, 0(x12++)
-
-    /* Fourth WDR: 30 bits + 2 bits + (Reload) 8 bits + 120 bits */
-    LOOPI 3, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    bn.rshi w1, w0, w1 >> 2 /* Move the final 2 bits of w0 to w1 */
-    bn.lid  x0, 0(x10++) /* Load the third batch of input */
-    bn.rshi w1, w0, w1 >> 14 /* Move the first 8 bits of w0 to w1 to form 10 bits */
-    bn.rshi w0, w31, w0 >> 8 /* Shift out used bits */
-    LOOPI 12, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    jal    x1, polyvec_decompress_16
-    bn.sid x4, 0(x12++)
-
-    /* Fifth WDR: 120 bits + 8 bits + (Reload) 2 bits + 30 bits */
-    LOOPI 12, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    bn.rshi w1, w0, w1 >> 8 /* Move the final 8 bits of w0 to w1 */
-    bn.lid  x0, 0(x10++) /* Load the fourth batch of input to w0 */
-    bn.rshi w1, w0, w1 >> 8 /* Move the first 2 bits of w0 to w1 to form 10 bits */
-    bn.rshi w0, w31, w0 >> 2 /* Shift out used bits */
-    LOOPI 3, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    jal    x1, polyvec_decompress_16
-    bn.sid x4, 0(x12++)
-
-    /* Sixth WDR: 160 bits */
-    LOOPI 16, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    jal    x1, polyvec_decompress_16
-    bn.sid x4, 0(x12++)
-
-    /* Seventh WDR: 60 bits + 4 bits + (Reload) 6 bits + 90 bits */
-    LOOPI 6, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    bn.rshi      w1, w0, w1 >> 4 /* Move the final 4 bits of w0 to w1 */
-    bn.lid       x0, 0(x10++) /* Load the fifth batch of input to w0 */
-    bn.rshi      w1, w0, w1 >> 12 /* Move the first 6 bits of w0 to w1 to form 10 bits */
-    bn.rshi      w0, w31, w0 >> 6 /* Shift out used bits */
-    LOOPI 9, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    jal    x1, polyvec_decompress_16
-    bn.sid x4, 0(x12++)
-
-    /* Eigth WDR: 160 bits */
-    LOOPI 16, 2
-      bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w31, w0 >> 10
-    jal    x1, polyvec_decompress_16
-    bn.sid x4, 0(x12++)
-#elif (KYBER_K == 4)
-  LOOPI KYBER_K, 149
+polyvec_decompress_du11:
+  LOOPI 4, 149
     /* First WDR: 176 bits */
     bn.lid x0, 0(x10++)
     LOOPI 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 2nd WDR: 77 bits + 3 bits + (Reload) 8 bits + 88 bits */
@@ -930,7 +1037,7 @@ polyvec_decompress:
     LOOPI 8, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* Third WDR: 154 bits + 6 bits + (Reload) 5 bits + 11 bits */
@@ -943,14 +1050,14 @@ polyvec_decompress:
     bn.rshi              w0, w31, w0 >> 5
     bn.rshi              w1, w0, w1 >> 16
     bn.rshi              w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 4th WDR: 176 bits */
     LOOPI 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 5th WDR: 55 bits + 9 bits + (Reload) 2 bits + 110 bits*/
@@ -964,7 +1071,7 @@ polyvec_decompress:
     LOOPI 10, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 6th WDR:  143 bits + 1 bits + (Reload) 10 bits + 22 bits */
@@ -978,14 +1085,14 @@ polyvec_decompress:
     LOOPI 2, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 7th WDR: 176 bits */
     LOOPI 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 8th WDR: 44 bits + 4 bits + (Reload) 7 bits + 121 bits */
@@ -999,7 +1106,7 @@ polyvec_decompress:
     LOOPI 11, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 9th WDR: 121 bits + 7 bits + (Reload) 4 bits + 44 bits */
@@ -1013,14 +1120,14 @@ polyvec_decompress:
     LOOPI 4, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 10th WDR: 176 bits */
     LOOPI 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 11th WDR: 22 bits + 10 bits + (Reload) 1 bits + 143 bits */
@@ -1034,7 +1141,7 @@ polyvec_decompress:
     LOOPI 13, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 12th WDR: 110 bits + 2 bits + (Reload) 9 bits + 55 bits */
@@ -1048,14 +1155,14 @@ polyvec_decompress:
     LOOPI 5, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 13th WDR: 176 bits*/
     LOOPI 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 14th WDR: 11 bits + 5 bits + (Reload) 6 bits + 154 bits */
@@ -1068,7 +1175,7 @@ polyvec_decompress:
     LOOPI 14, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 15th WDR: 88 bits + 8 bits + (Reload) 3 bits + 77 bits */
@@ -1082,22 +1189,22 @@ polyvec_decompress:
     LOOPI 7, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
 
     /* 16th WDR: 176 bits */
     LOOPI 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 11
-    jal    x1, polyvec_decompress_16
+    jal    x1, polyvec_decompress_16_du11
     bn.sid x4, 0(x12++)
-#endif
   ret
 
 /*
- * Name:        polyvec_decompress_16
+ * Name:        polyvec_decompress_16_du10
  *
- * Description: Subroutine of polyvec_decompress for decompressing 16 coefficients
+ * Description: Subroutine of polyvec_decompress_du10 for decompressing 16
+ *              coefficients. Used by ML-KEM-512 and ML-KEM-768.
  *
  * @param[inout]   w1: input/output vector with 16 16-bit coefficients
  * @param[in]     w16: KYBER_Q
@@ -1105,12 +1212,27 @@ polyvec_decompress:
  *
  * clobbered registers:
  */
-polyvec_decompress_16:
-#if (KYBER_K == 2 || KYBER_K == 3)
+polyvec_decompress_16_du10:
   bn.shv.16H           w1, w1 << 6 /* *(2**6) */
-#elif (KYBER_K == 4)
+  bn.wsrw              0x3, w3 /* Write w3 to ACC */
+  bn.wsrw              0xb, w3 /* Write w3 to ACCH */
+  bn.mulv.l.16H.acc.hi w1, w1, sw0.0 /* *KYBER_Q + ACC */
+  ret
+
+/*
+ * Name:        polyvec_decompress_16_du11
+ *
+ * Description: Subroutine of polyvec_decompress_du11 for decompressing 16
+ *              coefficients. Used by ML-KEM-1024.
+ *
+ * @param[inout]   w1: input/output vector with 16 16-bit coefficients
+ * @param[in]     w16: KYBER_Q
+ * @param[in]     w31: all-zero
+ *
+ * clobbered registers:
+ */
+polyvec_decompress_16_du11:
   bn.shv.16H           w1, w1 << 5 /* *(2**5) */
-#endif
   bn.wsrw              0x3, w3 /* Write w3 to ACC */
   bn.wsrw              0xb, w3 /* Write w3 to ACCH */
   bn.mulv.l.16H.acc.hi w1, w1, sw0.0 /* *KYBER_Q + ACC */
@@ -1128,7 +1250,7 @@ polyvec_decompress_16:
  *
  * @param[in]  x10: dptr_input, dmem pointer to first input byte array
  * @param[in]  x13: const_8
- * @param[in]  x14: modulus_bn
+ * @param[in]  x14: KYBER_K
  * @param[in]  x15: const_0x0fff
  * @param[out] x12: dptr_output, dmem pointer to output ciphertext
  * @param[in]  w31: all-zero
@@ -1161,7 +1283,15 @@ unpack_ciphertext:
   /* Zeroize w31 */
   bn.xor     w31, w31, w31
 
-  jal        x1, polyvec_decompress
-  jal        x1, poly_decompress
-
+  /* Dispatch on x14: K==4 (ML-KEM-1024) uses du=11/dv=5, else du=10/dv=4. */
+  li         x28, 4
+  beq        x14, x28, _unpack_ciphertext_k4
+  /* ML-KEM-512/768 */
+  jal        x1, polyvec_decompress_du10
+  jal        x1, poly_decompress_dv4
+  ret
+_unpack_ciphertext_k4:
+  /* ML-KEM-1024 */
+  jal        x1, polyvec_decompress_du11
+  jal        x1, poly_decompress_dv5
   ret

@@ -10,88 +10,6 @@
 
 .text
 
-#define KYBER_N 256
-#define KYBER_Q 3329
-#define KYBER_SYMBYTES 32   /* size in bytes of hashes, and seeds */
-#define KYBER_SSBYTES  32   /* size in bytes of shared key */
-#define KYBER_POLYBYTES		384
-#define KYBER_ETA2 2
-#if (KYBER_K == 2)
-  #define KYBER_POLYVECBYTES	768
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 640
-  #define KYBER_ETA1 3
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 800
-  #define KYBER_INDCPA_SECRETKEYBYTES 768
-  #define KYBER_INDCPA_BYTES          768
-
-  #define KYBER_PUBLICKEYBYTES  800
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  1632
-  #define KYBER_CIPHERTEXTBYTES 768
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 25
-  #define KYBER_CIPHERTEXT_WRS 24
-  #define KYBER_GEN_MATRIX_NONCE 254
-  #define KYBER_GEN_MATRIX_AT_NONCE -511
-  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 511
-  #define POLY -512
-  #define K_POLYS -1024
-  #define K_SQUARED_POLYS -2048
-
-#elif (KYBER_K == 3)
-  #define KYBER_POLYVECBYTES	1152
-  #define KYBER_POLYCOMPRESSEDBYTES    128
-  #define KYBER_POLYVECCOMPRESSEDBYTES 960
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1184
-  #define KYBER_INDCPA_SECRETKEYBYTES 1152
-  #define KYBER_INDCPA_BYTES          1088
-
-  #define KYBER_PUBLICKEYBYTES  1184
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  2400
-  #define KYBER_CIPHERTEXTBYTES 1088
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 37
-  #define KYBER_CIPHERTEXT_WRS 34
-  #define KYBER_GEN_MATRIX_NONCE 253
-  #define KYBER_GEN_MATRIX_AT_NONCE -767
-  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 767
-  #define POLY -512
-  #define K_POLYS -1536
-  #define K_SQUARED_POLYS -4608
-
-#elif (KYBER_K == 4)
-  #define KYBER_POLYVECBYTES	1536
-  #define KYBER_POLYCOMPRESSEDBYTES    160
-  #define KYBER_POLYVECCOMPRESSEDBYTES 1408
-  #define KYBER_ETA1 2
-
-  #define KYBER_INDCPA_MSGBYTES       32
-  #define KYBER_INDCPA_PUBLICKEYBYTES 1568
-  #define KYBER_INDCPA_SECRETKEYBYTES 1536
-  #define KYBER_INDCPA_BYTES          1568
-
-  #define KYBER_PUBLICKEYBYTES  1568
-  /* 32 bytes of additional space to save H(pk) */
-  #define KYBER_SECRETKEYBYTES  3168
-  #define KYBER_CIPHERTEXTBYTES 1568
-
-  #define KYBER_INDCPA_PUBLICKEYBYTES_WRS 49
-  #define KYBER_CIPHERTEXT_WRS 49
-  #define KYBER_GEN_MATRIX_NONCE 252
-  #define KYBER_GEN_MATRIX_AT_NONCE -1023
-  #define KYBER_GEN_MATRIX_AT_NONCE_NEG 1023
-  #define POLY -512
-  #define K_POLYS -2048
-  #define K_SQUARED_POLYS -8192
-#endif
-
 /* Register aliases */
 .equ x2, sp
 .equ x3, fp
@@ -161,6 +79,7 @@
  * @param[out] dmem[ct]: output ciphertext
  * @param[out] dmem[ss]: output shared secret
  * @param[in]  dmem[ek]: input public key
+ * @param[in]  x14: KYBER_K
  *
  * clobbered registers: x4 to x29, w0 to w31, acc, acch, mod
  * clobbered flag groups: FG0
@@ -170,7 +89,11 @@ crypto_kem_enc:
 
   /*** hash_h(pk) ***/
   la      a0, ek
-  addi    a1, x0, KYBER_PUBLICKEYBYTES
+  /* a1 = KYBER_PUBLICKEYBYTES = KYBER_K * 384 + 32 */
+  slli    a1, x14, 7
+  slli    t0, x14, 8
+  add     a1, a1, t0
+  addi    a1, a1, 32
   slli    t0, a1, 5
   addi    t0, t0, SHA3_256_CFG
   csrrw   x0, KECCAK_CFG_REG, t0

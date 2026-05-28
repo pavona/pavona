@@ -25,7 +25,7 @@
  * @param[in]  x12: dptr_output, dmem pointer to output polynomial
  * @param[in]  w31: all-zero
  *
- * clobbered registers: x4-x30, w0-w23, w30
+ * clobbered registers: x4-x13, x15-x31, w0-w23, w30
  */
 
 .globl intt
@@ -41,7 +41,7 @@ intt:
   li x8, 4
   li x9, 5
   li x13, 6
-  li x14, 7
+  li x31, 7
   li x15, 8
   li x16, 9
   li x17, 10
@@ -62,7 +62,7 @@ intt:
   bn.lid x8,  0(x10++)
   bn.lid x9,  0(x10++)
   bn.lid x13, 0(x10++)
-  bn.lid x14, 0(x10++)
+  bn.lid x31, 0(x10++)
   bn.lid x15, 0(x10++)
   bn.lid x16, 0(x10++)
   bn.lid x17, 0(x10++)
@@ -635,7 +635,7 @@ intt:
   bn.sid x8, 0(x12++)
   bn.sid x9, 0(x12++)
   bn.sid x13, 0(x12++)
-  bn.sid x14, 0(x12++)
+  bn.sid x31, 0(x12++)
   bn.sid x15, 0(x12++)
   bn.sid x16, 0(x12++)
   bn.sid x17, 0(x12++)
