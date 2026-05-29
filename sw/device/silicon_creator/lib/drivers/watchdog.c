@@ -16,12 +16,37 @@
 #include "hw/top/aon_timer_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pwrmgr_regs.h"
+
+#ifdef PAVONA_IS_EGRET
 #include "hw/top_egret/sw/autogen/top_egret.h"
+enum {
+  kPowerManagerResetRequestsAonTimerAonAonTimerRstReq =
+      kTopEgretPowerManagerResetRequestsAonTimerAonAonTimerRstReq,
+};
+#endif
+#ifdef PAVONA_IS_DRAGONFLY
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
+enum {
+  kPowerManagerResetRequestsAonTimerAonAonTimerRstReq =
+      kTopDragonflyPowerManagerResetRequestsAonTimerAonAonTimerRstReq,
+};
+#endif
+
+/**
+ * Base address of the aon_timer registers.
+ */
+static inline uint32_t aon_timer_reg_base(void) {
+  return dt_aon_timer_reg_block(kDtAonTimerAon, kDtAonTimerRegBlockCore);
+}
+
+/**
+ * Base address of the pwrmgr registers.
+ */
+static inline uint32_t pwrmgr_reg_base(void) {
+  return dt_pwrmgr_reg_block(kDtPwrmgrAon, kDtPwrmgrRegBlockCore);
+}
 
 enum {
-  kBase = TOP_EGRET_AON_TIMER_AON_BASE_ADDR,
-  kPwrMgrBase = TOP_EGRET_PWRMGR_AON_BASE_ADDR,
-
   kCtrlEnable = 1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT,
   kCtrlDisable = 0 << AON_TIMER_WDOG_CTRL_ENABLE_BIT,
 };
@@ -77,18 +102,18 @@ void watchdog_configure(watchdog_config_t config) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioConfigure, 4);
   // Tell pwrmgr we want watchdog reset events to reset the chip.
   sec_mmio_write32(
-      kPwrMgrBase + PWRMGR_RESET_EN_REG_OFFSET,
+      pwrmgr_reg_base() + PWRMGR_RESET_EN_REG_OFFSET,
       bitfield_bit32_write(
-          0, kTopEgretPowerManagerResetRequestsAonTimerAonAonTimerRstReq,
-          true));
+          0, kPowerManagerResetRequestsAonTimerAonAonTimerRstReq, true));
   pwrmgr_cdc_sync(1);
 
   // Set the watchdog bite and bark thresholds.
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
-  abs_mmio_write32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
-  abs_mmio_write32(kBase + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
+  sec_mmio_write32(aon_timer_reg_base() + AON_TIMER_WDOG_CTRL_REG_OFFSET,
+                   kCtrlDisable);
+  abs_mmio_write32(aon_timer_reg_base() + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
+  abs_mmio_write32(aon_timer_reg_base() + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
                    config.bark_threshold);
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET,
+  sec_mmio_write32(aon_timer_reg_base() + AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET,
                    config.bite_threshold);
 
   // Enable or disable the watchdog as requested.
@@ -105,7 +130,7 @@ void watchdog_configure(watchdog_config_t config) {
     default:
       HARDENED_TRAP();
   }
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, ctrl);
+  sec_mmio_write32(aon_timer_reg_base() + AON_TIMER_WDOG_CTRL_REG_OFFSET, ctrl);
 
   // Redundantly re-request the pwrmgr configuration sync since it isn't
   // possible to use sec_mmio for it.
@@ -114,13 +139,15 @@ void watchdog_configure(watchdog_config_t config) {
 
 void watchdog_disable(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioDisable, 1);
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
+  sec_mmio_write32(aon_timer_reg_base() + AON_TIMER_WDOG_CTRL_REG_OFFSET,
+                   kCtrlDisable);
 }
 
 void watchdog_pet(void) {
-  abs_mmio_write32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
+  abs_mmio_write32(aon_timer_reg_base() + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
 }
 
 uint32_t watchdog_get(void) {
-  return abs_mmio_read32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET);
+  return abs_mmio_read32(aon_timer_reg_base() +
+                         AON_TIMER_WDOG_COUNT_REG_OFFSET);
 }

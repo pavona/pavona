@@ -23,6 +23,7 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_require_ip", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -112,14 +113,17 @@ cc_library(
     name = "ast",
     srcs = ["ast.c"],
     hdrs = ["ast.h"],
+    defines = pavona_if_ip(
+        "sensor_ctrl",
+        ["HAS_SENSOR_CTRL"],
+        [],
+    ),
     deps = [
         ":lifecycle",
         ":otp",
         "//hw/top:ast_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top:sensor_ctrl_c_regs",
-        "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt:ast",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -128,12 +132,25 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:error",
-    ],
+    ] + pavona_if_ip(
+        "sensor_ctrl",
+        [
+            "//hw/top/dt:sensor_ctrl",
+            "//hw/top:sensor_ctrl_c_regs",
+        ],
+        [],
+    ),
 )
 
 cc_test(
     name = "ast_unittest",
     srcs = ["ast_unittest.cc"],
+    defines = pavona_if_ip(
+        "sensor_ctrl",
+        ["HAS_SENSOR_CTRL"],
+        [],
+    ),
+    target_compatible_with = pavona_require_ip("sensor_ctrl"),
     deps = [
         ":ast",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -318,7 +335,7 @@ cc_library(
     hdrs = ["keymgr.h"],
     deps = [
         "//hw/top:keymgr_c_regs",
-        "//hw/top/dt",
+        "//hw/top/dt:keymgr",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:hart",
@@ -382,6 +399,22 @@ pavona_test(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
+    name = "keymgr_dpe",
+    srcs = ["keymgr_dpe.c"],
+    hdrs = ["keymgr_dpe.h"],
+    deps = [
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top/dt:keymgr_dpe",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -539,14 +572,16 @@ cc_test(
 
 cc_library(
     name = "pinmux",
-    srcs = ["pinmux.c"],
+    srcs = select({
+        "//hw/top:egret": ["pinmux_egret.c"],
+        "//hw/top:dragonfly": ["pinmux_dragonfly.c"],
+    }),
     hdrs = ["pinmux.h"],
     deps = [
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
@@ -806,18 +841,30 @@ cc_library(
     name = "watchdog",
     srcs = ["watchdog.c"],
     hdrs = ["watchdog.h"],
+    defines = pavona_select_top(
+        {
+            "egret": ["PAVONA_IS_EGRET"],
+            "dragonfly": ["PAVONA_IS_DRAGONFLY"],
+        },
+        [],
+    ),
     deps = [
         ":pwrmgr",
         "//hw/top:aon_timer_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": ["//hw/top_egret/sw/autogen:top_egret"],
+            "dragonfly": ["//hw/top_dragonfly/sw/autogen:top_dragonfly"],
+        },
+        [],
+    ),
 )
 
 cc_test(

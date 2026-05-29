@@ -6,7 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_alias_top_attr", "pavona_if_ip", "pavona_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_alias_top_attr", "pavona_if_ip", "pavona_require_ip", "pavona_require_top", "pavona_select_top")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/pavona:defs.bzl", "PAVONA_CPU")
@@ -20,12 +20,6 @@ load(
 load("//rules/pavona:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
-
-pavona_alias_top_attr(
-    name = "silicon_creator_hooks",
-    attr_name = "silicon_creator_hooks",
-    required = True,
-)
 
 cc_library(
     name = "boot_data_header",
@@ -220,17 +214,34 @@ cc_test(
 )
 
 cc_library(
+    name = "irq_registers",
+    srcs = ["irq_registers.c"],
+    hdrs = ["irq_registers.h"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        "//hw/top/dt:rstmgr",
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        ["//hw/top/dt:flash_ctrl"],
+        [],
+    ),
+)
+
+cc_library(
     name = "irq_asm",
     srcs = ["irq_asm.S"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
+        ":irq_registers",
         "//hw/top:aon_timer_c_regs",
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top:rstmgr_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:multibits",
-    ],
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        ["//hw/top:flash_ctrl_c_regs"],
+        [],
+    ),
 )
 
 pavona_test(
@@ -519,11 +530,23 @@ cc_library(
     name = "acc_boot_services",
     srcs = ["acc_boot_services.c"],
     hdrs = ["acc_boot_services.h"],
+    defines = pavona_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ) + pavona_if_ip(
+        "keymgr",
+        ["HAS_KEYMGR"],
+        [],
+    ) + pavona_if_ip(
+        "keymgr_dpe",
+        ["HAS_KEYMGR_DPE"],
+        [],
+    ),
     # This target uses ACC pointers internally, so it cannot work host-side.
     target_compatible_with = [PAVONA_CPU],
     deps = [
         ":attestation",
-        ":silicon_creator_hooks",
         "//sw/acc/crypto:boot",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -532,12 +555,22 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/drivers:acc",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-    ],
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        [":attestation_seed_flash"],
+        [":attestation_seed_otp"],
+    ) + pavona_if_ip(
+        "keymgr",
+        ["//sw/device/silicon_creator/lib/drivers:keymgr"],
+        [],
+    ) + pavona_if_ip(
+        "keymgr_dpe",
+        ["//sw/device/silicon_creator/lib/drivers:keymgr_dpe"],
+        [],
+    ),
 )
 
 pavona_test(
@@ -561,12 +594,45 @@ pavona_test(
     deps = [
         ":acc_boot_services",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        [":attestation_seed_flash"],
+        [":attestation_seed_otp"],
+    ),
+)
+
+cc_library(
+    name = "attestation_seed_flash",
+    srcs = ["attestation_seed_flash.c"],
+    hdrs = ["attestation_seed.h"],
+    target_compatible_with = pavona_require_ip("flash_ctrl"),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_library(
+    name = "attestation_seed_otp",
+    srcs = ["attestation_seed_otp.c"],
+    hdrs = ["attestation_seed.h"],
+    target_compatible_with = pavona_require_ip("otp_ctrl"),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
 
@@ -579,5 +645,25 @@ cc_library(
     ],
     deps = [
         "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+)
+
+cc_library(
+    name = "rom_patch",
+    srcs = ["rom_patch.c"],
+    hdrs = ["rom_patch.h"],
+    target_compatible_with = pavona_require_top("dragonfly"),
+    deps = [
+        ":error",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify",
     ],
 )

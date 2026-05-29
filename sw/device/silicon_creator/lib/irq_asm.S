@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/multibits_asm.h"
-#include "hw/top_egret/sw/autogen/top_egret_memory.h"
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/rstmgr_regs.h"
+
+#ifdef HAS_FLASH_CTRL
+#include "hw/top/flash_ctrl_regs.h"
+#endif
 
   // Place this code into the .crt section to be able to call it early in
   // the boot process before ePMP is reconfigured.
@@ -25,17 +27,21 @@
   .type _asm_exception_handler, @function
 _asm_exception_handler:
 .L_exception_loop:
+  .extern rstmgr_reg_base
   // Request a system reset.
-  li t0, TOP_EGRET_RSTMGR_AON_BASE_ADDR
+  call rstmgr_reg_base
   li t1, MULTIBIT_ASM_BOOL4_TRUE
-  sw t1, RSTMGR_RESET_REQ_REG_OFFSET(t0)
+  sw t1, RSTMGR_RESET_REQ_REG_OFFSET(a0)
 
+#ifdef HAS_FLASH_CTRL
+  .extern flash_ctrl_reg_base
   // Disable access to flash.
   //
   // This is done after requesting a reset so that this function will
   // work even if it is in flash.
-  li t0, TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR
-  sw zero, FLASH_CTRL_DIS_REG_OFFSET(t0)
+  call flash_ctrl_reg_base
+  sw zero, FLASH_CTRL_DIS_REG_OFFSET(a0)
+#endif
 
   wfi
   j   .L_exception_loop

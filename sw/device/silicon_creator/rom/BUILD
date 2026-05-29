@@ -4,6 +4,7 @@
 
 load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("//hw/top:defs.bzl", "pavona_select_top")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
@@ -410,6 +411,13 @@ cc_library(
     name = "sigverify_otp_keys",
     srcs = ["sigverify_otp_keys.c"],
     hdrs = ["sigverify_otp_keys.h"],
+    defines = pavona_select_top(
+        {
+            "egret": ["DISCRETE_OTP_MMAP"],
+            "dragonfly": ["INTEGRATED_OTP_MMAP"],
+        },
+        ["DISCRETE_OTP_MMAP"],
+    ),
     deps = [
         ":sigverify_key_types",
         "//hw/top:otp_ctrl_c_regs",
@@ -641,4 +649,119 @@ pavona_test(
     exec_env = {
         "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
+)
+
+# First-stage boot ROM for integrated top-level designs.
+cc_library(
+    name = "base_rom_common",
+    srcs = [
+        "base_rom.c",
+        "base_rom.h",
+    ],
+    deps = [
+        ":base_rom_epmp",
+        ":sigverify_keys_ecdsa_p256",
+        ":sigverify_keys_spx",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:stdasm",
+        "//sw/device/lib/crt",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/silicon_creator/lib:cfi",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:irq_asm",
+        "//sw/device/silicon_creator/lib:rom_patch",
+        "//sw/device/silicon_creator/lib:shutdown",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/drivers:alert",
+        "//sw/device/silicon_creator/lib/drivers:ast",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
+        "//sw/device/silicon_creator/lib/sigverify",
+    ],
+)
+
+cc_library(
+    name = "base_rom_lib",
+    srcs = ["base_rom_start.S"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        ":base_rom_common",
+        ":base_rom_epmp",
+        "//hw/top:aon_timer_c_regs",
+        "//hw/top:ast_c_regs",
+        "//hw/top:clkmgr_c_regs",
+        "//hw/top:csrng_c_regs",
+        "//hw/top:edn_c_regs",
+        "//hw/top:entropy_src_c_regs",
+        "//hw/top:gpio_c_regs",
+        "//hw/top:lc_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:pinmux_c_regs",
+        "//hw/top:pwrmgr_c_regs",
+        "//hw/top:rstmgr_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top:sram_ctrl_c_regs",
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib/base:chip",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "base_rom_epmp",
+    srcs = [
+        "base_rom_epmp.c",
+        "base_rom_epmp_init.S",
+    ],
+    hdrs = ["base_rom_epmp.h"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
+        "//sw/device/silicon_creator/lib:epmp_state",
+    ],
+)
+
+ld_library(
+    name = "base_rom_linker_script",
+    script = "base_rom.ld",
+    deps = [
+        "//hw/top_dragonfly/sw/autogen:top_dragonfly_memory",
+        "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+    ],
+)
+
+pavona_binary(
+    name = "base_rom",
+    exec_env = [
+        "//hw/top_dragonfly:sim_dv_base",
+        "//hw/top_dragonfly:sim_verilator_base",
+    ],
+    kind = "rom",
+    linker_script = ":base_rom_linker_script",
+    transitive_features = [
+        "use_lld",
+        "lto",
+        "minsize",
+    ],
+    deps = [
+        ":base_rom_lib",
+    ],
 )
