@@ -378,7 +378,7 @@ function void ac_range_check_predictor::update_log(tl_seq_item item, int index, 
 
   if (`gmv(log_config_csr.log_enable)) begin
     if (`gmv(log_status_csr.deny_cnt) == 0 && !overflow_flag &&
-        `gmv(range_attr_csr.log_denied_access) == MuBi4True) begin
+        `gmv(range_attr_csr.log_denied_access || no_match) == MuBi4True) begin
       deny_cnt = deny_cnt + 8'd1;
       `uvm_info(`gfn, $sformatf({"First deny log information:\n",
               " - deny_range_index: %0d\n",
@@ -416,7 +416,7 @@ function void ac_range_check_predictor::update_log(tl_seq_item item, int index, 
           (.value(deny_cnt), .kind(UVM_PREDICT_DIRECT)));
       void'(env_cfg.ral.log_address.predict
           (.value(log_address), .kind(UVM_PREDICT_DIRECT)));
-    end else if (`gmv(range_attr_csr.log_denied_access) == MuBi4True) begin
+    end else if (`gmv(range_attr_csr.log_denied_access) == MuBi4True || no_match) begin
       overflow_flag = (deny_cnt == (1 << DenyCountWidth)-1) ? 1'b1 : 1'b0;
       deny_cnt = (overflow_flag) ? (1 << DenyCountWidth)-1 : deny_cnt + 8'd1;
       void'(env_cfg.ral.log_status.deny_cnt.predict
