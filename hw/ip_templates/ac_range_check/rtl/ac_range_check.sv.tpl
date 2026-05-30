@@ -296,11 +296,17 @@ module ${module_instance_name}
   // Always clear the log_clear bit from hardware
   assign hw2reg.log_config.log_clear.d  = 1'b0;
 
+  // When no range matches at all, deny_mask is all zeros and deny_index defaults to 0
+  // via prim_leading_one_ppc. In that case, the per-range log_enable_mask check must be
+  // bypasssed so that unmatched denies are always logged (when global logging is enabled).
+  logic no_range_match;
+  assign no_range_match = range_check_fail & (deny_mask == '0)
+
   // Only increment the deny counter if logging is globally enabled and for the particular range,
   // we are not clearing the counter in this cycle, and see a failing range check
-  assign deny_cnt_incr = log_enable_q                &
-                         log_enable_mask[deny_index] &
-                         ~clear_log                  &
+  assign deny_cnt_incr = log_enable_q                                   &
+                         (log_enable_mask[deny_index] | no_range_match) &
+                         ~clear_log                                     &
                          range_check_fail;
   // Determine if we are doing the first log. This one is special, since it also needs to log
   // diagnostics data
