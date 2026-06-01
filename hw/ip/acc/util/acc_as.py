@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 # Modified by Authors of "Towards ML-KEM & ML-DSA on OpenTitan" (https://eprint.iacr.org/2024/1192).
@@ -568,7 +569,23 @@ def expand_la(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
     ]
 
 
-_PSEUDO_OP_ASSEMBLERS = {'li': expand_li, 'la': expand_la}
+def expand_endloop(where: str,
+                   op_to_expr: Dict[str, Optional[str]]) -> List[str]:
+    '''Pseudo-op assembler for endloop.
+
+    endloop emits no instruction; it is handled specially in
+    Transformer.gen_line, which emits the as-side loop-body size check. This
+    only exists so endloop can be marked python-pseudo-op.
+    '''
+    if op_to_expr:
+        raise RuntimeError('{}: endloop does not take any operands.'
+                           .format(where))
+    return []
+
+
+_PSEUDO_OP_ASSEMBLERS = {'li': expand_li,
+                         'la': expand_la,
+                         'endloop': expand_endloop}
 
 
 class Transformer:
@@ -632,6 +649,12 @@ class Transformer:
         self.mnem_to_rve = mnem_to_rve
 
         self.line_number = 0
+
+        # State for the optional endloop check. Each loop/loopi pushes a frame
+        # (body_label, mnemonic, bodysize_expr) that the matching endloop pops.
+        # loop_id makes the body labels unique.
+        self.loop_id = 0
+        self.loop_stack = []  # type: List[Tuple[str, str, Optional[str]]]
 
         # Strings that should be spat out verbatim
         self.acc = []   # type: List[str]
@@ -776,10 +799,36 @@ class Transformer:
 
         return '.insn {} {}'.format(rve.rvfmt.name, ', '.join(rv_str_list))
 
+    def _open_loop(self, insn: Insn,
+                   op_to_expr: Dict[str, Optional[str]]) -> None:
+        '''Emit a body-start label after a loop/loopi and record the frame.'''
+        self.loop_id += 1
+        label = '.L__acc_loopbody_{}_{}'.format(self.in_idx, self.loop_id)
+        self.out_handle.write(f'{label}:\n')
+        self.loop_stack.append((label, insn.mnemonic, op_to_expr.get('bodysize')))
+
+    def _emit_endloop_check(self) -> None:
+        '''Turn an endloop marker into an as-side loop-body size check.'''
+        if not self.loop_stack:
+            raise RuntimeError('{}:{}: endloop with no open loop.'
+                               .format(self.in_path, self.line_number))
+        label, mnem, bodysize = self.loop_stack.pop()
+        self.out_handle.write(
+            f'.if (. - {label}) != (({bodysize}) * 4)\n'
+            f'.error "{mnem}: loop body size does not match declared '
+            f'bodysize ({bodysize})"\n'
+            '.endif\n')
+
     def gen_line(self, insn: Insn, op_to_expr: Dict[str,
                                                     Optional[str]]) -> None:
         '''Build and write out a line for this instruction'''
         assert self.key_sym is not None
+
+        # endloop is an assembler-only marker: it emits no instruction, just an
+        # as-side check that the preceding loop body had the declared size.
+        if insn.mnemonic == 'endloop':
+            self._emit_endloop_check()
+            return
 
         expansion = None
 
@@ -852,6 +901,10 @@ class Transformer:
         self.out_handle.write(f'.line {self.line_number - 1}\n')
         self.out_handle.write(f'.loc {self.in_idx + 1} {self.line_number}\n')
         self.out_handle.write(f'{line}\n')
+
+        # After a loop/loopi, drop the body-start label for the endloop check.
+        if insn.mnemonic in ('loop', 'loopi'):
+            self._open_loop(insn, op_to_expr)
 
     def _continue_block_comment(self, line: str, pos: int) -> int:
         '''Continue whitespace matching in a block comment

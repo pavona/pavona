@@ -636,6 +636,16 @@
     - A `LOOP` error if `iterations` is zero.
     - *loop-at-end
 
+- mnemonic: endloop
+  synopsis: Mark end of a loop body
+  operands: []
+  doc: |
+    Optional assembler-only marker for the end of a `LOOP`/`LOOPI` body. It
+    emits no instruction, but lets the assembler check that the loop body
+    really is `bodysize` instructions long. With nested loops, each `endloop`
+    closes the innermost loop that is still open.
+  python-pseudo-op: true
+
 - mnemonic: nop
   synopsis: No Operation
   rv32i: true
