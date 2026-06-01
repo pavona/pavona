@@ -181,10 +181,7 @@ def parse_required_constants(constants: List[str]) -> Dict[str, int]:
                 f'Cannot parse required constant {token}: {reg} is not a '
                 'valid GPR name.')
         try:
-            if value.startswith('0x'):
-                value = int(value, 16)
-            else:
-                value = int(value)
+            value = int(value, 0)
         except ValueError:
             raise ValueError(
                 f'Cannot parse required constant {token}: {value} is not a '

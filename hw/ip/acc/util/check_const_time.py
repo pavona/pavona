@@ -91,7 +91,6 @@ def main() -> int:
             public_nodes.add(parse_information_flow_node(public))
 
     # Compute control graph and get all nodes that influence control flow.
-    program = decode_elf(args.elf)
     if args.subroutine is None:
         graph = program_control_graph(program)
         to_analyze = 'entire program'
@@ -130,7 +129,7 @@ def main() -> int:
         # nodes could influence control flow.
         secret_control_deps = {
             node: pcs
-            for node, pcs in control_deps.items() if node in args.secret
+            for node, pcs in control_deps.items() if node in secret_nodes
         }
 
     secret_control_deps_filt = {k: v for k, v in secret_control_deps.items()
