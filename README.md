@@ -1,4 +1,4 @@
-![Pavona logo](./doc/pavona-logo-lockup.svg)
+![Pavona logo](./doc/pavona-logo-lockup.svg#no-bg)
 
 [Pavona](https://pavona.org) is the open-source silicon distribution for composable secure silicon.
 

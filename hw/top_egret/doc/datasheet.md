@@ -2,7 +2,7 @@
 
 # Overview
 
-![Top Level Block Diagram](top_egret_block_diagram.svg)
+![Top Level Block Diagram](top_egret_block_diagram.svg#no-bg)
 
 The Egret chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
 The block diagram is shown above and shows the system configuration, including the Ibex processor and all of the memories and comportable IPs.

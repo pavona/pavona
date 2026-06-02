@@ -257,8 +257,18 @@ sup {
     font-style: italic;
 }
 
-img[src*="#white-bg"] {
+
+/*
+ Add a white background when:
+ - Dark mode is on
+ - The image is an SVG
+ - The SVG has no fragment identifier (e.g. #no-bg)
+ - The SVG is not the Pavona logo
+*/
+.dark img[src$=".svg"]:not(#pavona-logo) {
     background-color: white;
+    padding: 2px;
+    box-sizing: border-box;
 }
 
 #pavona-logo {

@@ -5,7 +5,7 @@
 Dragonfly is a system-on-a-chip Secure Execution Environment, capable of serving as a root of trust (RoT) for measurement and attestation among other applications, for instantiation within a larger system.
 It can serve as the SoC root of trust, a platform root of trust, or even be integrated and leveraged for individual chiplet RoTs.
 
-![Top Level Block Diagram](top_dragonfly_block_diagram.svg)
+![Top Level Block Diagram](top_dragonfly_block_diagram.svg#no-bg)
 
 Dragonfly's block diagram shows the system configuration, including the RISC-V Ibex processor and all of the memories and comportable peripheral IPs.
 The system is split into a high speed domain (e.g. 1 GHz clock in a recent process node) and a peripheral domain (e.g. 250 MHz).
