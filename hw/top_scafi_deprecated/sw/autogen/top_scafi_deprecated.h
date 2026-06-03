@@ -189,7 +189,7 @@ extern "C" {
  * address between #TOP_SCAFI_DEPRECATED_RSTMGR_AON_BASE_ADDR and
  * `TOP_SCAFI_DEPRECATED_RSTMGR_AON_BASE_ADDR + TOP_SCAFI_DEPRECATED_RSTMGR_AON_SIZE_BYTES`.
  */
-#define TOP_SCAFI_DEPRECATED_RSTMGR_AON_SIZE_BYTES 0x80u
+#define TOP_SCAFI_DEPRECATED_RSTMGR_AON_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for clkmgr_aon in top scafi_deprecated.

@@ -1954,17 +1954,6 @@
           index: -1
         }
         {
-          name: alert_dump
-          desc: Alert handler crash dump information.
-          struct: alert_crashdump
-          package: alert_handler_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: rstmgr_aon
-          index: -1
-        }
-        {
           name: cpu_dump
           desc: Main processing element crash dump information.
           struct: cpu_crash_dump
@@ -6077,7 +6066,7 @@
               {
                 hart: 0x40410000
               }
-              size_byte: 0x80
+              size_byte: 0x40
             }
           ]
           xbar: false
@@ -10419,17 +10408,6 @@
         inst_name: rstmgr_aon
         default: ""
         top_signame: rstmgr_aon_rst_en
-        index: -1
-      }
-      {
-        name: alert_dump
-        desc: Alert handler crash dump information.
-        struct: alert_crashdump
-        package: alert_handler_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: rstmgr_aon
         index: -1
       }
       {

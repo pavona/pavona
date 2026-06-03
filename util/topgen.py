@@ -612,8 +612,11 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     n_rstreqs = len(top["reset_requests"]["peripheral"])
 
     # Will connect to alert_handler
-    with_alert_handler = lib.find_module(top['module'],
-                                         'alert_handler') is not None
+    with_alert_dump = lib.find_module(top['module'],
+                                      'alert_handler') is not None
+
+    # Will have an instance of Ibex
+    with_cpu_dump = lib.find_module(top['module'], 'rv_core_ibex') is not None
 
     ipgen_params = get_ipgen_params(rstmgr)
     ipgen_params.update({
@@ -626,7 +629,8 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "leaf_rsts": leaf_rsts,
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": top["exported_rsts"],
-        "with_alert_handler": with_alert_handler,
+        "with_alert_dump": with_alert_dump,
+        "with_cpu_dump": with_cpu_dump
     })
     return ipgen_params
 

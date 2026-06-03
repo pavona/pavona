@@ -138,7 +138,6 @@ The reset manager then checks as follows:
 
 The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the reset manager outputs a 4bit MuBi signal for each reset domain that indicates whether its reset is active.
-For more information on this mechanism, see [alert handler documentation](../../alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
 
 ## Design Details
 

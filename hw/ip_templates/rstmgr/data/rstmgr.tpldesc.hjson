@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
@@ -124,8 +125,14 @@
       default: {}
     }
     {
-      name: "with_alert_handler"
-      desc: "Generate outputs for a rstmgr that would connect to an alert handler"
+      name: "with_alert_dump"
+      desc: "Generate inputs and CSRs to capture an alert dump."
+      type: "bool"
+      default: "1"
+    }
+    {
+      name: "with_cpu_dump"
+      desc: "Generate inputs and CSRs to capture a cpu dump."
       type: "bool"
       default: "1"
     }
