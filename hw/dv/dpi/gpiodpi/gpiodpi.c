@@ -227,6 +227,8 @@ svBitVecVal gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
   struct gpiodpi_ctx *ctx = (struct gpiodpi_ctx *)ctx_void;
   assert(ctx);
 
+  *req_exit = 0;
+
   if (ctx->counter % TICKS_PER_SYSCALL == 0) {
     char gpio_str[256];
     ssize_t read_len =

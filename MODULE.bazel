@@ -102,6 +102,24 @@ rust.repository_set(
     versions = ["1.90.0"],
 )
 rust.repository_set(
+    name = "rust_host_aarch64",
+    edition = "2024",
+    exec_triple = "aarch64-unknown-linux-gnu",
+    sha256s = {
+        "rustc-1.90.0-aarch64-unknown-linux-gnu.tar.xz": "4e1a9987a11d7d91f0d5afbf5333feb62f44172e4a31f33ce7246549003217f2",
+        "clippy-1.90.0-aarch64-unknown-linux-gnu.tar.xz": "1a7f969c5712c17d960d6fba8235b33f264a9484b369dc388766a540f1ba464f",
+        "cargo-1.90.0-aarch64-unknown-linux-gnu.tar.xz": "bd8d1da6fe88ea7e29338f24277c22156267447adbfc47d690467ad32d02c2a7",
+        "llvm-tools-1.90.0-aarch64-unknown-linux-gnu.tar.xz": "3f559ee41cf201a818630b1877e53ee0b9cd32793ee99c297ef56225a8aeafd6",
+        "rust-std-1.90.0-aarch64-unknown-linux-gnu.tar.xz": "4952abb7d9d3ed7cea4f7ea44dcb23dc67631fae4ac44a5f059b90a4b5e9223f",
+    },
+    target_compatible_with = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:linux",
+    ],
+    target_triple = "aarch64-unknown-linux-gnu",
+    versions = ["1.90.0"],
+)
+rust.repository_set(
     name = "rust_tock",
     edition = "2021",
     exec_triple = "x86_64-unknown-linux-gnu",
@@ -112,6 +130,26 @@ rust.repository_set(
         "2023-07-30/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz": "dc71b9ae6a4a4b9fa259724b29f4ad19467197ced89a8aad675f5af112c4fb77",
         "2023-07-30/rust-std-nightly-riscv32imc-unknown-none-elf.tar.xz": "9790d50d4510443bbf4c13b68227a273345d28b84d29372bc5f5ea2d14d05f2d",
         "2023-07-30/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "b5a589a243923c5fa2a1f08e7b902bb0a64ae08010067b9074501a6e1fb8b042",
+    },
+    target_compatible_with = [
+        "@platforms//cpu:riscv32",
+    ],
+    target_triple = "riscv32imc-unknown-none-elf",
+    # For RISC-V toolchain, we currently don't support LLVM 16+ due to old binutils version.
+    # Rust updated its LLVM 17 on 2023-08-08.
+    versions = ["nightly/2023-07-30"],
+)
+rust.repository_set(
+    name = "rust_tock_aarch64",
+    edition = "2021",
+    exec_triple = "aarch64-unknown-linux-gnu",
+    sha256s = {
+        "2023-07-30/rustc-nightly-aarch64-unknown-linux-gnu.tar.xz": "0de37244e50f6f0eb04064deecbd8a10f87f80de1adef26400db9bd1db0cb5f4",
+        "2023-07-30/clippy-nightly-aarch64-unknown-linux-gnu.tar.xz": "effe90fefd5752065c5ee4c3d9db59c4ee3d2bb7f9bedfb3f56a440cb4582e27",
+        "2023-07-30/cargo-nightly-aarch64-unknown-linux-gnu.tar.xz": "6d3a7f41e58e79801812b57df61f276ea6634873784166cccda9277805fc5d8b",
+        "2023-07-30/llvm-tools-nightly-aarch64-unknown-linux-gnu.tar.xz": "471abc44bc0bbb81ee7b084e73060a8b149667a9bf208614e22a3a961dad0d9d",
+        "2023-07-30/rust-std-nightly-riscv32imc-unknown-none-elf.tar.xz": "9790d50d4510443bbf4c13b68227a273345d28b84d29372bc5f5ea2d14d05f2d",
+        "2023-07-30/rust-std-nightly-aarch64-unknown-linux-gnu.tar.xz": "a415f05a3ddc83caa7b5f0372159a1c07ea0b076f1ee66430692787b327fc30f",
     },
     target_compatible_with = [
         "@platforms//cpu:riscv32",
@@ -134,6 +172,7 @@ crate.from_cargo(
     # By default rules_rust will analyze dependencies for all supported target triples, which is very slow.
     # Restrict to ones that we're interested in. See https://github.com/bazelbuild/rules_rust/issues/2876
     supported_platform_triples = [
+        "aarch64-unknown-linux-gnu",
         "x86_64-unknown-linux-gnu",
     ],
 )
@@ -180,6 +219,7 @@ crate.from_cargo(
     cargo_lockfile = "//third_party/mdbook:Cargo.lock",
     manifests = ["//third_party/mdbook:Cargo.toml"],
     supported_platform_triples = [
+        "aarch64-unknown-linux-gnu",
         "x86_64-unknown-linux-gnu",
     ],
 )
@@ -202,19 +242,27 @@ llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 llvm.toolchain(
     name = "llvm_toolchain",
     llvm_versions = {"": "22.1.2"},
-    sha256 = {"": "ff32497b6801267ee427bc69cdaeecfb2d19578af8c2a942e864c45215f9a2ac"},
+    sha256 = {
+        "linux-aarch64": "cf2e84d965a95954971cafc71d18c0eb38e723c3ac7276286fd5636df4374b3a",
+        "linux-x86_64": "ff32497b6801267ee427bc69cdaeecfb2d19578af8c2a942e864c45215f9a2ac",
+    },
     strip_prefix = {
-        "": "LLVM-22.1.2-Linux-X64",
+        "linux-aarch64": "LLVM-22.1.2-Linux-ARM64",
+        "linux-x86_64": "LLVM-22.1.2-Linux-X64",
     },
     urls = {
-        "": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-X64.tar.xz"],
+        "linux-aarch64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-ARM64.tar.xz"],
+        "linux-x86_64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-X64.tar.xz"],
     },
 )
 use_repo(llvm, "llvm_toolchain")
 use_repo(llvm, "llvm_toolchain_llvm")
 
+# Device software toolchain.
+register_toolchains("//toolchain:cc_toolchain_opentitan")
+
 # Host software toolchain.
-register_toolchains("@llvm_toolchain//:cc-toolchain-x86_64-linux")
+register_toolchains("@llvm_toolchain//:all")
 
 # Python toolchain:
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
@@ -261,6 +309,7 @@ crate.from_cargo(
     cargo_lockfile = "@elf2tab//:Cargo.lock",
     manifests = ["@elf2tab//:Cargo.toml"],
     supported_platform_triples = [
+        "aarch64-unknown-linux-gnu",
         "x86_64-unknown-linux-gnu",
     ],
 )
@@ -397,8 +446,6 @@ use_repo(
 # Local toolchains
 
 register_toolchains("//rules/pavona:localtools")
-
-register_toolchains("//toolchain:cc_toolchain_opentitan")
 
 # Register tops
 top_desc = use_extension("//hw/top:extensions.bzl", "top")

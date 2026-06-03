@@ -20,6 +20,7 @@ libftdi
 libftdi-devel
 libudev-devel
 libusbx
+libzstd-devel
 make
 openssl-devel
 redhat-lsb-core

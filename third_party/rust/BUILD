@@ -30,7 +30,10 @@ cc_import(
 
 cc_import(
     name = "libcxx",
-    shared_library = "@llvm_toolchain_llvm//:lib/x86_64-unknown-linux-gnu/libc++.so",
+    shared_library = select({
+        "@platforms//cpu:aarch64": "@llvm_toolchain_llvm//:lib/aarch64-unknown-linux-gnu/libc++.so",
+        "//conditions:default": "@llvm_toolchain_llvm//:lib/x86_64-unknown-linux-gnu/libc++.so",
+    }),
 )
 
 rust_bindgen_toolchain(
