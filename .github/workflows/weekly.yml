@@ -28,6 +28,7 @@ jobs:
       dashboard-private: "git@github.com:pavona/internal-dashboard.git"
       dashboard-public: "git@github.com:pavona/public-dashboard.git"
       reseed-source: "hw/dv/grading/grading_report.hjson"
+      concurrent-jobs: 28
 
   gitless:
     name: Run gitless check (repo packaging check)
