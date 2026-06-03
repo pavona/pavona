@@ -5,7 +5,7 @@ The following proposes one method for how this can be done.
 
 Assume first the system has the power states described [above](theory_of_operation.md#supported-low-power-modes).
 
-## Programmer Sequence for Entering Low Power
+${"##"} Programmer Sequence for Entering Low Power
 
 1. Disable interrupt handling.
 2. Mask all interrupt sources that should not prevent low power entry.
@@ -22,7 +22,7 @@ Assume first the system has the power states described [above](theory_of_operati
 Note that entering low power mode requires that pwrmgr's `pwr_cpu_i.core_sleeping` input be at logic high long enough to be sampled.
 A wait-for-interrupt instruction does not guarantee entry into low power, since the CPU could immediately resume execution in some cases.
 
-### Possible Exits
+${"###"} Possible Exits
 
 Once low power is initiated, the system may exit due to several reasons.
 1. Graceful low power exit - This exit occurs when some source in the system gracefully wakes up the power manager.
@@ -45,24 +45,28 @@ To check the exit condition, software can follow these steps:
 2. Check [`WAKE_INFO`](registers.md#wake_info) to get the condition.
   - If no bits are set, then this was a fast fall through, where low power entry was not attempted.
 
-## Programmer Sequence for Exiting Low Power
+${"##"} Programmer Sequence for Exiting Low Power
 
 There are two separate cases for low power exit.
 One is exiting from deep sleep, and the other is exiting from normal sleep.
 
-### Exiting from Deep Sleep
+${"###"} Exiting from Deep Sleep
 
 When exiting from deep sleep, the system begins execution in ROM.
 
 1. Complete normal preparation steps.
+% if not no_top:
 2. Check reset cause in [rstmgr](../../rstmgr/README.md)
+% else:
+2. Check reset cause in rstmgr
+% endif
 3. Re-enable modules that have powered down.
 4. Disable wakeup recording through [`WAKE_INFO_CAPTURE_DIS`](registers.md#wake_info_capture_dis).
 5. Check which source woke up the system through [`WAKE_INFO`](registers.md#wake_info).
 6. Take appropriate steps to handle the wake and resume normal operation.
 7. Once wake is handled, clear the wake indication in [`WAKE_INFO`](registers.md#wake_info).
 
-### Exiting from Normal Sleep
+${"###"} Exiting from Normal Sleep
 
 The handling for fall-through and abort are similar to normal sleep exit.
 Since in these scenarios the system was not reset, software continues executing the instruction after the wait-for-interrupt invocation.
@@ -74,6 +78,6 @@ Since in these scenarios the system was not reset, software continues executing 
 5. Re-enable interrupts for normal operation and wakeup handling.
 6. Once wake is handled, clear the wake indication in [`WAKE_INFO`](registers.md#wake_info).
 
-## Device Interface Functions (DIFs)
+${"##"} Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../../sw/device/lib/dif/dif_pwrmgr.h)

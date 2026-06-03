@@ -45,7 +45,7 @@ def action_generate(ip_template: IpTemplate, args: argparse.Namespace) -> None:
     # Render the IP template into an IP block.
     try:
         renderer = IpBlockRenderer(ip_template, ip_config)
-        renderer.render(output_path, overwrite_output_dir)
+        renderer.render(output_path, overwrite_output_dir, args.no_top)
     except TemplateRenderError as e:
         logging.error(e.verbose_str())
         sys.exit(1)
@@ -89,6 +89,11 @@ def main() -> int:
         type=Path,
         required=True,
         help='IP template directory',
+    )
+    parent_parser.add_argument(
+        '--no-top',
+        help="Generate standalone IP without top-specific references",
+        action="store_true"
     )
 
     subparsers = parser.add_subparsers(

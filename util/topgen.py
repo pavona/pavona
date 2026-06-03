@@ -168,7 +168,7 @@ def ipgen_render(template_name: str, topname: str, params: ParamsT,
     try:
         renderer = IpBlockRenderer(ip_template, ip_config)
         renderer.render(out_path / "ip_autogen" / module_name,
-                        overwrite_output_dir=True)
+                        overwrite_output_dir=True, no_top=False)
     except TemplateRenderError as e:
         log.error(e.verbose_str())
         sys.exit(1)

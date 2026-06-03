@@ -47,7 +47,7 @@ class IpTemplateRendererBase:
                 raise KeyError(f"No parameter named {name!r} exists.")
 
     def get_template_parameter_values(
-            self) -> Dict[str, Union[str, int, object]]:
+            self, no_top: bool) -> Dict[str, Union[str, int, object]]:
         """ Get a typed mapping of all template parameters and their values.
         """
         ret = {}
@@ -83,6 +83,7 @@ class IpTemplateRendererBase:
 
             ret[name] = val_typed
 
+        ret['no_top'] = no_top
         return ret
 
     def _get_mako_template_lookup(self) -> MakoTemplateLookup:
@@ -159,7 +160,7 @@ class IpTemplateRendererBase:
                                                 rewritten_vlnv))
         return rewritten_vlnv
 
-    def _render_mako_template_to_str(self, template_filepath: Path) -> str:
+    def _render_mako_template_to_str(self, template_filepath: Path, no_top: bool) -> str:
         """ Render a template and return the rendered text. """
 
         lookup = self._get_mako_template_lookup()
@@ -175,7 +176,7 @@ class IpTemplateRendererBase:
         tpl_args = {
             "instance_name": self.ip_config.instance_name,  # type: ignore
             **helper_funcs,  # type: ignore
-            **self.get_template_parameter_values()  # type: ignore
+            **self.get_template_parameter_values(no_top)  # type: ignore
         }
         try:
             return template.render(**tpl_args)
@@ -183,10 +184,10 @@ class IpTemplateRendererBase:
             raise TemplateRenderError(
                 "Unable to render template: " +
                 mako_exceptions.text_error_template().render(),
-                self.get_template_parameter_values()) from None
+                self.get_template_parameter_values(no_top)) from None
 
     def _render_mako_template_to_file(self, template_filepath: Path,
-                                      outdir_path: Path) -> None:
+                                      outdir_path: Path, no_top: bool) -> None:
         """ Render a file template into a file in outdir_path.
 
         The name of the output file matches the file name of the template file,
@@ -197,7 +198,7 @@ class IpTemplateRendererBase:
 
         outfile_name = self._filename_without_tpl_suffix(template_filepath)
 
-        rendered_str = self._render_mako_template_to_str(template_filepath)
+        rendered_str = self._render_mako_template_to_str(template_filepath, no_top)
         try:
             with open(outdir_path / outfile_name, 'w') as f:
                 f.write(rendered_str)
@@ -233,7 +234,7 @@ class IpDescriptionOnlyRenderer(IpTemplateRendererBase):
         hjson_tpl_path = (self.ip_template.template_path / 'data' /
                           f'{self.ip_template.name}.hjson.tpl')
         if hjson_tpl_path.is_file():
-            return self._render_mako_template_to_str(hjson_tpl_path)
+            return self._render_mako_template_to_str(hjson_tpl_path, False)
 
         raise TemplateRenderError(
             f"No IP description template at {hjson_tpl_path}")
@@ -292,7 +293,7 @@ class IpBlockRenderer(IpTemplateRendererBase):
                        'Please remove it manually.')
                 raise TemplateRenderError(msg).with_traceback(e.__traceback__)
 
-    def render(self, output_dir: Path, overwrite_output_dir: bool) -> None:
+    def render(self, output_dir: Path, overwrite_output_dir: bool, no_top: bool) -> None:
         """ Render the IP template into output_dir.
 
         Generates the IP directory in a staging area and atomically moves it
@@ -338,7 +339,7 @@ class IpBlockRenderer(IpTemplateRendererBase):
                 outdir_path = staging_dir / template_filepath_rel.parent
 
                 self._render_mako_template_to_file(template_filepath,
-                                                   outdir_path)
+                                                   outdir_path, no_top)
         except Exception:
             shutil.rmtree(staging_dir, ignore_errors=True)
             raise

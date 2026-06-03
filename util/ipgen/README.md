@@ -178,8 +178,8 @@ actions:
 <!-- BEGIN CMDGEN util/selfdoc.py quote:util/ipgen.py generate --help -->
 ```
 $ util/ipgen.py generate --help
-usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR -o OUTDIR [--force]
-                         --config-file CONFIG_FILE
+usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR [--no-top] -o OUTDIR
+                         [--force] --config-file CONFIG_FILE
 
 Generate an IP block from an IP template
 
@@ -188,6 +188,7 @@ options:
   --verbose             More info messages
   -C TEMPLATE_DIR, --template-dir TEMPLATE_DIR
                         IP template directory
+  --no-top              Generate standalone IP without top-specific references
   -o OUTDIR, --outdir OUTDIR
                         output directory for the resulting IP block
   --force, -f           overwrite the output directory, if it exists
@@ -201,8 +202,8 @@ options:
 <!-- BEGIN CMDGEN util/selfdoc.py quote:util/ipgen.py generate --help -->
 ```
 $ util/ipgen.py generate --help
-usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR -o OUTDIR [--force]
-                         --config-file CONFIG_FILE
+usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR [--no-top] -o OUTDIR
+                         [--force] --config-file CONFIG_FILE
 
 Generate an IP block from an IP template
 
@@ -211,6 +212,7 @@ options:
   --verbose             More info messages
   -C TEMPLATE_DIR, --template-dir TEMPLATE_DIR
                         IP template directory
+  --no-top              Generate standalone IP without top-specific references
   -o OUTDIR, --outdir OUTDIR
                         output directory for the resulting IP block
   --force, -f           overwrite the output directory, if it exists

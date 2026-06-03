@@ -236,7 +236,7 @@ This ensures wakeup events are not missed until software has set up the appropri
 Recording needs clocks to be active, and during low power they are usually not.
 For this reason, it is important for wakeups to be level and remain active until software clears them.
 
-The software is also able to enable recording during `Active` state if it chooses to do so.  The recording enables are OR’d together for hardware purposes.
+The software is also able to enable recording during `Active` state if it chooses to do so.  The recording enables are OR'd together for hardware purposes.
 
 
 ## Flash Handling
@@ -285,7 +285,7 @@ During this state:
 *   All clocks other than the always-on slow clock are turned off at the source.
 *   All non-always-on digital domains are powered off.
 *   I/O power domains may or may not be off.
-    *   The state of the IO power domain has no impact on the digital core’s power budget, e.g. the IO power being off does not cause the accompanying digital logic in pads or elsewhere to leak more.
+    *   The state of the IO power domain has no impact on the digital core's power budget, e.g. the IO power being off does not cause the accompanying digital logic in pads or elsewhere to leak more.
 
 
 ### Normal Sleep
@@ -297,7 +297,7 @@ During this state:
 *   All power domains are kept on for fast resume.
 *   Sensor countermeasures can be opportunistically on.
 *   I/O power domains may or may not be off.
-    *   The state of the IO power domain has no impact on the digital core’s power budget, e.g. the IO power being off does not cause the accompanying digital logic in pads or elsewhere to leak more.
+    *   The state of the IO power domain has no impact on the digital core's power budget, e.g. the IO power being off does not cause the accompanying digital logic in pads or elsewhere to leak more.
 
 ## Debug
 
