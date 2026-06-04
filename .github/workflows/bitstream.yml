@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -15,19 +16,19 @@ on:
         type: string
 
 jobs:
-  bitstream:
-    name: Build bitstream
+  check-cache:
+    name: Check for cached bitstream
     runs-on:
-      group: pavona-vivado
-    timeout-minutes: 240
+      group: pavona-basic
+    timeout-minutes: 20
+    outputs:
+      bitstreamStrategy: ${{ steps.strategy.outputs.bitstreamStrategy }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required by get-bitstream-strategy.sh
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-        with:
-          vivado-version: ${{ inputs.vivado_version }}
       - name: Configure bitstream strategy
         id: strategy
         run: |
@@ -56,8 +57,27 @@ jobs:
           bitstream_archive=$(./bazelisk.sh outquery "${cached_archive}")
           cp -Lv ${bitstream_archive} build-bin.tar
 
+      - name: Upload step outputs
+        if: steps.strategy.outputs.bitstreamStrategy == 'cached'
+        uses: actions/upload-artifact@v4
+        with:
+          name: partial-build-bin-chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
+          path: build-bin.tar
+
+  bitstream:
+    name: Build bitstream
+    runs-on:
+      group: pavona-vivado
+    needs: check-cache
+    if: needs.check-cache.outputs.bitstreamStrategy != 'cached'
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          vivado-version: ${{ inputs.vivado_version }}
       - name: Build and splice bitstream with Vivado
-        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
         run: |
           bazel_package=//hw/bitstream/vivado
           bitstream_target=${bazel_package}:fpga_${{ inputs.design_suffix }}
@@ -79,7 +99,6 @@ jobs:
           ./bazelisk.sh build ${archive_target}
 
       - name: Display synthesis & implementation logs
-        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
         run: |
           . util/build_consts.sh
 
