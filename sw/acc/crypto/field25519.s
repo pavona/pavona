@@ -335,6 +335,7 @@ fe_inv:
   loopi   5,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^10-1) */
   jal     x1, fe_mul
@@ -347,6 +348,7 @@ fe_inv:
   loopi   10,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^20-1) */
   jal     x1, fe_mul
@@ -357,6 +359,7 @@ fe_inv:
   loopi   20,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^40-1) */
   jal     x1, fe_mul
@@ -365,6 +368,7 @@ fe_inv:
   loopi   10,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w15 = a^(2^50-1) */
   bn.mov  w23, w15
@@ -378,6 +382,7 @@ fe_inv:
   loopi   50,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^100-1) */
   jal     x1, fe_mul
@@ -388,6 +393,7 @@ fe_inv:
   loopi   100,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^200-1) */
   jal     x1, fe_mul
@@ -396,6 +402,7 @@ fe_inv:
   loopi   50,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w15 = a^(2^250-1) */
   bn.mov  w23, w15
@@ -405,6 +412,7 @@ fe_inv:
   loopi   5,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w14 = a^(2^255 - 2^5 + 11) = a^(2^255 - 21) = a^(p-2) */
   bn.mov  w23, w14

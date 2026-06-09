@@ -283,9 +283,15 @@ sha512_compact:
         /* nop to prevent same final instruction in both loop bodies */
         nop
 
+        /* End of innermost loop */
+        endloop
+
 
     /* Add compressed chunk to current hash value */
     addi      x2, x0, 15
+
+    /* End of intermediate loop */
+    endloop
 
     /* H_0 <= H_0 + a */
     bn.lid    x2, 0(x17)
@@ -327,7 +333,10 @@ sha512_compact:
     bn.add   w15, w7, w15
     bn.sid    x2, 224(x17)
 
-ret
+  /* End of outermost loop */
+  endloop
+
+  ret
 
 .bss
 

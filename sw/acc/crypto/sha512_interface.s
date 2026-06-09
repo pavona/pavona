@@ -37,6 +37,7 @@ sha512_init:
   loopi    8, 2
     bn.lid   x20, 0(x2++)
     bn.sid   x20, 0(x3++)
+  endloop
 
   /* dmem[sha512_dptr_state] <= state */
   la       x2, sha512_dptr_state
@@ -67,6 +68,7 @@ sha512_init:
   la       x2, partial
   loopi    8, 1
     bn.sid   x3, 0(x2++)
+  endloop
 
   ret
 
@@ -238,10 +240,12 @@ sha512_final:
       bn.and   w21, w21, w30
       /* w28 <= H[i] ^ (w28 << 64) */
       bn.xor   w28, w21, w28 << 64
+    endloop
     /* w28 <= reverse_bytes(w28) */
     jal      x1, reverse_bytes
     /* dmem[dptr_result+i*32] <= w28 */
     bn.sid   x28, 0(x3++)
+  endloop
 
   ret
 
@@ -326,6 +330,7 @@ copy:
   beq      x11, x0, _copy_dst_offset_zero
   loop     x11, 1
     bn.rshi  w21, w21, w21 >> 8
+  endloop
   _copy_dst_offset_zero:
 
   /* Now shift in bytes starting from the source pointer. The number of bytes
@@ -333,10 +338,12 @@ copy:
   beq      x10, x0, _copy_src_offset_zero
   loop     x10, 1
     bn.rshi  w20, w20, w20 >> 8
+  endloop
   _copy_src_offset_zero:
   loop     x19, 2
     bn.rshi  w21, w20, w21 >> 8
     bn.rshi  w20, w20, w20 >> 8
+  endloop
 
   /* Finally, finish rotating the word until the old values of the destination
      are in their original position. */
@@ -346,6 +353,7 @@ copy:
   beq      x2, x0, _copy_no_final_bytes
   loop     x2, 1
     bn.rshi  w21, w21, w21 >> 8
+  endloop
   _copy_no_final_bytes:
 
   /* Store the result.
@@ -431,6 +439,7 @@ sha512_format_blocks:
     jal      x1, bswap64
     /* dmem[x12++] <= w28 */
     bn.sid   x28, 0(x12++)
+  endloop
 
   ret
 

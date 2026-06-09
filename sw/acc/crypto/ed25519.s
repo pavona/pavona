@@ -1256,6 +1256,8 @@ ext_scmul:
 
   /* End loop. From the loop invariants, we know
        [w13:w10] = P = a * (X1, Y1, Z1, T1) */
+  endloop
+
   ret
 
 /**
@@ -1340,6 +1342,8 @@ ext_scmul_var:
     /* Shift the scalar value to prepare for the next loop iteration.
          w28 <= w28 >> 1 = a << ((i + 1) + 3) */
     bn.rshi  w28, w28, w31 >> 255
+
+  endloop
 
   ret
 
@@ -1765,6 +1769,7 @@ fe_pow_2252m3:
   loopi   5,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^10-1) */
   jal     x1, fe_mul
@@ -1777,6 +1782,7 @@ fe_pow_2252m3:
   loopi   10,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^20-1) */
   jal     x1, fe_mul
@@ -1787,6 +1793,7 @@ fe_pow_2252m3:
   loopi   20,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^40-1) */
   jal     x1, fe_mul
@@ -1795,6 +1802,7 @@ fe_pow_2252m3:
   loopi   10,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w15 = a^(2^50-1) */
   bn.mov  w23, w15
@@ -1808,6 +1816,7 @@ fe_pow_2252m3:
   loopi   50,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^100-1) */
   jal     x1, fe_mul
@@ -1818,6 +1827,7 @@ fe_pow_2252m3:
   loopi   100,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w23 = a^(2^200-1) */
   jal     x1, fe_mul
@@ -1826,6 +1836,7 @@ fe_pow_2252m3:
   loopi   50,2
     jal     x1, fe_square
     nop
+  endloop
 
   /* w22 <= w22 * w15 = a^(2^250-1) */
   bn.mov  w23, w15

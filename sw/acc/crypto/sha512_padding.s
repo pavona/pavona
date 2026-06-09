@@ -103,6 +103,7 @@ sha512_pad_message:
   loop    x4, 2
     sw      x0, 0(x21)
     addi    x21, x21, 4
+  endloop
 
   /* Convert the message byte-length to bit-length in-place.
        dmem[dptr_len] <= dmem[dptr_len] << 3 */
@@ -121,6 +122,7 @@ sha512_pad_message:
     jal     x1, bswap32
     sw      x23, 0(x21)
     addi    x21, x21, 4
+  endloop
 
   ret
 
