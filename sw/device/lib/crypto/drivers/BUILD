@@ -26,6 +26,13 @@ load(
     "dicts",
 )
 
+config_setting(
+    name = "acc_has_pqc",
+    define_values = {
+        "acc_has_pqc": "true",
+    },
+)
+
 cc_library(
     name = "aes",
     srcs = ["aes.c"],
@@ -273,6 +280,10 @@ cc_library(
     name = "acc",
     srcs = ["acc.c"],
     hdrs = ["acc.h"],
+    local_defines = select({
+        ":acc_has_pqc": ["ACC_HAS_PQC"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":entropy",
         "//hw/top:acc_c_regs",

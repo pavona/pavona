@@ -120,8 +120,13 @@ static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
  */
 static void update_checksum_for_write(uint32_t *checksum, uint32_t addr,
                                       uint32_t value) {
+#ifdef ACC_HAS_PQC
+  // Calculate prefix: addr[14:2]
+  uint16_t prefix = (addr & 0x7fff) >> 2;
+#else
   // Calculate prefix: addr[11:2]
   uint16_t prefix = (addr & 0xfff) >> 2;
+#endif
   unsigned char *prefix_bytes = (unsigned char *)&prefix;
 
   // The value and prefix are reversed here because of the little-endian
