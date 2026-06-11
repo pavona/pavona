@@ -14,23 +14,6 @@
 
 #define Q 8380417
 
-#if DILITHIUM_MODE == 2
-#define ETA 2
-#define GAMMA1 131072
-#define GAMMA2 95232
-
-#elif DILITHIUM_MODE == 3
-#define ETA 4
-#define GAMMA1 524288
-#define GAMMA2 261888
-
-#elif DILITHIUM_MODE == 5
-#define ETA 2
-#define GAMMA1 524288
-#define GAMMA2 261888
-
-#endif
-
 .data
 
 /* Modulus for reduction */
@@ -634,16 +617,28 @@ power2round_D_preprocessed:
     .word 0xfff
 
 .balign 32
-.globl eta
-eta:
-    .word ETA
-    .word ETA
-    .word ETA
-    .word ETA
-    .word ETA
-    .word ETA
-    .word ETA
-    .word ETA
+.globl eta_2
+eta_2:
+    .word 2
+    .word 2
+    .word 2
+    .word 2
+    .word 2
+    .word 2
+    .word 2
+    .word 2
+
+.balign 32
+.globl eta_4
+eta_4:
+    .word 4
+    .word 4
+    .word 4
+    .word 4
+    .word 4
+    .word 4
+    .word 4
+    .word 4
 
 .balign 32
 .globl polyt0_pack_const
@@ -658,9 +653,8 @@ polyt0_pack_const:
     .word 0x1000
 
 .balign 32
-.globl decompose_const
-decompose_const:
-#if GAMMA2 == (Q-1)/88
+.globl decompose_const_88
+decompose_const_88:
     .word 0x00002c0b
     .word 0x00002c0b
     .word 0x00002c0b
@@ -669,40 +663,66 @@ decompose_const:
     .word 0x00002c0b
     .word 0x00002c0b
     .word 0x00002c0b
-#elif GAMMA2 == (Q-1)/32
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-#endif
 
 .balign 32
-.globl gamma1_vec_const
-gamma1_vec_const:
-    .word GAMMA1
-    .word GAMMA1
-    .word GAMMA1
-    .word GAMMA1
-    .word GAMMA1
-    .word GAMMA1
-    .word GAMMA1
-    .word GAMMA1
+.globl decompose_const_32
+decompose_const_32:
+    .word 1025
+    .word 1025
+    .word 1025
+    .word 1025
+    .word 1025
+    .word 1025
+    .word 1025
+    .word 1025
 
 .balign 32
-.globl gamma2_vec_const
-gamma2_vec_const:
-    .word GAMMA2
-    .word GAMMA2
-    .word GAMMA2
-    .word GAMMA2
-    .word GAMMA2
-    .word GAMMA2
-    .word GAMMA2
-    .word GAMMA2
+.globl gamma1_vec_const_17
+gamma1_vec_const_17:
+    .word 131072
+    .word 131072
+    .word 131072
+    .word 131072
+    .word 131072
+    .word 131072
+    .word 131072
+    .word 131072
+
+.balign 32
+.globl gamma1_vec_const_19
+gamma1_vec_const_19:
+    .word 524288
+    .word 524288
+    .word 524288
+    .word 524288
+    .word 524288
+    .word 524288
+    .word 524288
+    .word 524288
+
+.balign 32
+.globl gamma2_vec_const_88
+gamma2_vec_const_88:
+    .word 95232
+    .word 95232
+    .word 95232
+    .word 95232
+    .word 95232
+    .word 95232
+    .word 95232
+    .word 95232
+
+.balign 32
+.globl gamma2_vec_const_32
+gamma2_vec_const_32:
+    .word 261888
+    .word 261888
+    .word 261888
+    .word 261888
+    .word 261888
+    .word 261888
+    .word 261888
+    .word 261888
 
 .balign 32
 .globl qm1half_const
@@ -729,9 +749,8 @@ decompose_127_const:
     .word 0x0000007f
 
 .balign 32
-.globl decompose_43_const
-decompose_43_const:
-#if GAMMA2 == (Q-1)/88
+.globl decompose_43_const_88
+decompose_43_const_88:
     .word 0x0000002b
     .word 0x0000002b
     .word 0x0000002b
@@ -740,21 +759,22 @@ decompose_43_const:
     .word 0x0000002b
     .word 0x0000002b
     .word 0x0000002b
-#elif GAMMA2 == (Q-1)/32
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-#endif
 
 .balign 32
-.globl polyeta_unpack_mask
-polyeta_unpack_mask:
-#if ETA == 2
+.globl decompose_43_const_32
+decompose_43_const_32:
+    .word 0x000000f
+    .word 0x000000f
+    .word 0x000000f
+    .word 0x000000f
+    .word 0x000000f
+    .word 0x000000f
+    .word 0x000000f
+    .word 0x000000f
+
+.balign 32
+.globl polyeta_unpack_mask_eta_2
+polyeta_unpack_mask_eta_2:
     .word 0x07
     .word 0x07
     .word 0x07
@@ -763,7 +783,10 @@ polyeta_unpack_mask:
     .word 0x07
     .word 0x07
     .word 0x07
-#elif ETA == 4
+
+.balign 32
+.globl polyeta_unpack_mask_eta_4
+polyeta_unpack_mask_eta_4:
     .word 0x0f
     .word 0x0f
     .word 0x0f
@@ -772,7 +795,6 @@ polyeta_unpack_mask:
     .word 0x0f
     .word 0x0f
     .word 0x0f
-#endif
 
 .balign 32
 .globl polyt1_unpack_mask
@@ -799,9 +821,8 @@ polyt0_unpack_mask:
     .word 0x1fff
 
 .balign 32
-.globl polyz_unpack_mask
-polyz_unpack_mask:
-#if GAMMA1 == (1 << 17)
+.globl polyz_unpack_mask_17
+polyz_unpack_mask_17:
     .word 0x3ffff
     .word 0x3ffff
     .word 0x3ffff
@@ -810,7 +831,10 @@ polyz_unpack_mask:
     .word 0x3ffff
     .word 0x3ffff
     .word 0x3ffff
-#elif GAMMA1 == (1 << 19)
+
+.balign 32
+.globl polyz_unpack_mask_19
+polyz_unpack_mask_19:
     .word 0xfffff
     .word 0xfffff
     .word 0xfffff
@@ -819,7 +843,6 @@ polyz_unpack_mask:
     .word 0xfffff
     .word 0xfffff
     .word 0xfffff
-#endif
 
 .balign 32
 .globl poly_uniform_eta_205
@@ -860,3 +883,23 @@ poly_uniform_eta_5:
 .globl poly_wdr2gpr
 poly_wdr2gpr:
     .zero 32
+
+/* Mode-derived parameters. Caller (test harness or driver) writes the
+   active mode's values here before calling any mldsa entry point.
+   Layout (word offsets):
+     0  K
+     4  L
+     8  TAU
+    12  OMEGA
+    16  GAMMA1 - BETA
+    20  POLYW1_PACKEDBYTES
+    24  CRYPTO_PUBLICKEYBYTES
+    28  GAMMA2
+    32  GAMMA2 - BETA
+    36  SK_S2_OFFSET            (128 + L*POLYETA_PACKEDBYTES)
+    40  SK_T0_OFFSET            (128 + (L+K)*POLYETA_PACKEDBYTES)
+    44  CRYPTO_BYTES */
+.balign 32
+.globl mldsa_params
+mldsa_params:
+    .zero 64

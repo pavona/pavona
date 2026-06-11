@@ -8,6 +8,12 @@
 
 .section .text.start
 
+#if DILITHIUM_MODE == 2
+#define GAMMA2 95232
+#else
+#define GAMMA2 261888
+#endif
+
 main:
   /* Prepare all-zero register. */
   bn.xor w31, w31, w31
@@ -15,6 +21,7 @@ main:
   /* Call poly_make_hint. */
   la     x10, result
   la     x11, low_poly
+  li     x12, GAMMA2
   la     x2, high_bits
   bn.lid x0, 0(x2)
   jal x1, poly_make_hint

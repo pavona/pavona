@@ -6,92 +6,10 @@
 
 .text
 
-#define SEEDBYTES 32
 #define CRHBYTES 64
-#define TRBYTES 64
-#define RNDBYTES 32
 #define N 256
 #define Q 8380417
 #define D 13
-#define ROOT_OF_UNITY 1753
-
-#if DILITHIUM_MODE == 2
-#define K 4
-#define L 4
-#define ETA 2
-#define TAU 39
-#define BETA 78
-#define GAMMA1 131072
-#define GAMMA2 95232
-#define OMEGA 80
-#define CTILDEBYTES 32
-
-#define POLYVECK_BYTES 4096
-#define POLYVECL_BYTES 4096
-
-#define CRYPTO_PUBLICKEYBYTES 1312
-#define CRYPTO_SECRETKEYBYTES 2560
-#define CRYPTO_BYTES 2420
-
-#elif DILITHIUM_MODE == 3
-#define K 6
-#define L 5
-#define ETA 4
-#define TAU 49
-#define BETA 196
-#define GAMMA1 524288
-#define GAMMA2 261888
-#define OMEGA 55
-#define CTILDEBYTES 48
-
-#define POLYVECK_BYTES 6144
-#define POLYVECL_BYTES 5120
-
-#define CRYPTO_PUBLICKEYBYTES 1952
-#define CRYPTO_SECRETKEYBYTES 4032
-#define CRYPTO_BYTES 3309
-
-#elif DILITHIUM_MODE == 5
-#define K 8
-#define L 7
-#define ETA 2
-#define TAU 60
-#define BETA 120
-#define GAMMA1 524288
-#define GAMMA2 261888
-#define OMEGA 75
-#define CTILDEBYTES 64
-
-#define POLYVECK_BYTES 8192
-#define POLYVECL_BYTES 7168
-
-#define CRYPTO_PUBLICKEYBYTES 2592
-#define CRYPTO_SECRETKEYBYTES 4896
-#define CRYPTO_BYTES 4627
-
-#endif
-
-#define POLYT1_PACKEDBYTES  320
-#define POLYT0_PACKEDBYTES  416
-#define POLYVECH_PACKEDBYTES (OMEGA + K)
-
-#if GAMMA1 == (1 << 17)
-#define POLYZ_PACKEDBYTES   576
-#elif GAMMA1 == (1 << 19)
-#define POLYZ_PACKEDBYTES   640
-#endif
-
-#if GAMMA2 == (Q-1)/88
-#define POLYW1_PACKEDBYTES  192
-#elif GAMMA2 == (Q-1)/32
-#define POLYW1_PACKEDBYTES  128
-#endif
-
-#if ETA == 2
-#define POLYETA_PACKEDBYTES  96
-#elif ETA == 4
-#define POLYETA_PACKEDBYTES 128
-#endif
 
 /* Register aliases */
 .equ x0, zero
@@ -253,7 +171,7 @@ _inner_polyt1_unpack:
     ret
 
 /**
- * polyz_unpack
+ * polyz_unpack_17 / polyz_unpack_19
  *
  * Unpack polynomial z with coefficients in [-(GAMMA1 - 1), GAMMA1] fitting into
  * 18 bits.
@@ -261,21 +179,28 @@ _inner_polyt1_unpack:
  * Returns: -
  *
  * @param[in]  a1: pointer to input byte array with POLYZ_PACKEDBYTES bytes
+ * @param[in]  x14: K (used by polyz_unpack dispatcher only)
  * @param[out] a0: pointer to output polynomial
  *
  * clobbered registers: a0-a1, t0-t6
  */
 .global polyz_unpack
 polyz_unpack:
-#if GAMMA1 == (1 << 17)
+    /* Dispatch on x14 (K): K==4 means GAMMA1=2^17, otherwise 2^19. */
+    li  t0, 4
+    beq x14, t0, polyz_unpack_17
+    jal x0, polyz_unpack_19
+
+.global polyz_unpack_17
+polyz_unpack_17:
      /* Load gamma1 as a vector into w4 */
     li t2, 4
-    la t3, gamma1_vec_const
+    la t3, gamma1_vec_const_17
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
     li t5, 5
-    la t3, polyz_unpack_mask
+    la t3, polyz_unpack_mask_17
     bn.lid t5, 0(t3)
 
     /* Setup WDR */
@@ -286,72 +211,65 @@ polyz_unpack:
     LOOPI 2, 42
         bn.lid  t6, 0(a1++)
         bn.mov  w1, w6
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 144
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.rshi w1, bn0, w3 >> 32
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 176
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.rshi w1, bn0, w6 >> 64
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 208
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.rshi w1, bn0, w3 >> 96
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 240
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 128
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.rshi w1, bn0, w3 >> 16
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 160
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.rshi w1, bn0, w6 >> 48
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 192
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.rshi w1, bn0, w3 >> 80
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 224
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
 
         bn.rshi w1, bn0, w6 >> 112
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_17
         nop /* Must not end on branch */
 
     ret
 
-/**
- * _inner_polyz_unpack
- *
- * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyz_unpack.
- * Does not adhere to calling convention.
- */
-_inner_polyz_unpack:
+_inner_polyz_unpack_17:
     /* Unpack 8 coefficients in one go */
     loopi 8, 2
         /* Shift one coefficient into the output register, ignoring the
@@ -365,15 +283,17 @@ _inner_polyz_unpack:
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
     bn.sid     t2, 0(a0++)
     ret
-#elif GAMMA1 == (1 << 19)
+
+.global polyz_unpack_19
+polyz_unpack_19:
     /* Load gamma1 as a vector into w4 */
     li t2, 4
-    la t3, gamma1_vec_const
+    la t3, gamma1_vec_const_19
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
     li t5, 5
-    la t3, polyz_unpack_mask
+    la t3, polyz_unpack_mask_19
     bn.lid t5, 0(t3)
 
     /* Setup WDR */
@@ -384,44 +304,37 @@ _inner_polyz_unpack:
     LOOPI 4, 22
         bn.lid  t6, 0(a1++)
         bn.mov  w1, w6
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_19
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 160
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_19
 
         bn.rshi w1, bn0, w3 >> 64
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_19
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 224
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_19
 
         bn.lid  t3, 0(a1++)
         bn.rshi w1, w3, w6 >> 128
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_19
 
         bn.rshi w1, bn0, w3 >> 32
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_19
 
         bn.lid  t6, 0(a1++)
         bn.rshi w1, w6, w3 >> 192
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_19
 
         bn.rshi w1, bn0, w6 >> 96
-        jal     x1, _inner_polyz_unpack
+        jal     x1, _inner_polyz_unpack_19
         nop /* Must not end on branch */
 
     ret
 
-/**
- * _inner_polyz_unpack
- *
- * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyz_unpack.
- * Does not adhere to calling convention.
- */
-_inner_polyz_unpack:
+_inner_polyz_unpack_19:
     /* Unpack 8 coefficients in one go */
     loopi 8, 2
         /* Shift one coefficient into the output register, ignoring the
@@ -435,7 +348,6 @@ _inner_polyz_unpack:
     bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
     bn.sid     t2, 0(a0++)
     ret
-#endif
 
 /**
  * poly_chknorm
@@ -526,6 +438,8 @@ poly_chknorm:
  *
  * @param[in]  a1: mu byte array containing seed of length CTILDEBYTES
  * @param[out] a0: pointer to output polynomial
+ * @param[in]  a2: CTILDEBYTES
+ * @param[in]  a3: TAU
  *
  * clobbered registers: a0-a5, t0-t4, w0-w3
  */
@@ -537,7 +451,7 @@ poly_challenge:
     /* Initialize a SHAKE256 operation. */
     addi a0, a1, 0 /* a0 <= *mu */
 
-    li    a1, CTILDEBYTES /* a1 <= CTILDEBYTES */
+    addi  a1, a2, 0 /* a1 <= CTILDEBYTES */
     slli  t0, a1, 5
     addi  t0, t0, SHAKE256_CFG
     csrrw zero, KECCAK_CFG_REG, t0
@@ -588,13 +502,14 @@ poly_challenge:
     /* a2 <= number of remaining bits in buf */
     li a2, 192
 
-    li t1, TAU
+    addi t1, a3, 0
     li a4, N
     /* a3 <= i = N-TAU */
     sub a3, a4, t1
     li t3, 1
 
-    LOOPI TAU, 25
+    /* Loop TAU times. */
+    LOOP t1, 25
     /* get address of c->coeffs[i], the current coefficient */
     slli a5, a3, 2 /* i * 4 for byte position */
     add  a5, a5, a0 /* Add the array start address: c->coeffs + i * 4 */
@@ -1296,7 +1211,7 @@ poly_uniform_mask_and_check_vectors:
 
 
 /**
- * poly_uniform_eta
+ * poly_uniform_eta_eta_2 / poly_uniform_eta_eta_4
  *
  * Returns: -
  *
@@ -1305,18 +1220,22 @@ poly_uniform_mask_and_check_vectors:
  * @param[in]     a0: pointer to rho
  * @param[in]     a2: nonce
  * @param[in]     a1: dmem pointer to polynomial
+ * @param[in]     x14: K (used by poly_uniform_eta dispatcher only)
  *
  * clobbered registers: a1, a3-a5, w8-w15, w20, t0-t6
  */
 .global poly_uniform_eta
 poly_uniform_eta:
+    /* Dispatch on x14 (K): K==6 means ETA=4, otherwise ETA=2. */
+    li  t0, 6
+    beq x14, t0, poly_uniform_eta_eta_4
+    jal x0, poly_uniform_eta_eta_2
+
+.global poly_uniform_eta_eta_2
+poly_uniform_eta_eta_2:
     /* Save nonce to memory (use poly tmp buffer). */
     la t0, poly_wdr2gpr
     sw a2, 0(t0)
-
-    /* Load a3 <= Q */
-    la t0, modulus
-    lw a3, 0(t0)
 
     /* Initialize a SHAKE256 operation. */
     addi a4, a1, 0               /* save output pointer */
@@ -1343,15 +1262,9 @@ poly_uniform_eta:
     li t6, 10
     li t3, 15
 
-    bn.movr t5, t6 /* DEBUG */
-
     /* Initialize constants */
     bn.addi w14, bn0, 0x0F
-#if ETA == 2
     bn.addi w21, bn0, 15
-#elif ETA == 4
-    bn.addi w21, bn0, 9
-#endif
     li a5, 8
     li a6, 2
 
@@ -1363,7 +1276,7 @@ poly_uniform_eta:
     li t4, 0
     bn.lid t4, 0(t6)
 
-    la t6, eta
+    la t6, eta_2
     li t4, 1
     bn.lid t4, 0(t6)
 
@@ -1372,65 +1285,176 @@ poly_uniform_eta:
     /* First squeeze */
     #define shake_reg w8
 
-_rej_eta_sample_loop:
+_rej_eta_sample_loop_eta_2:
         bn.wsrr  shake_reg, 0xA /* KECCAK_DIGEST */
 LOOPI 64, 13
-        beq a1, t0, _rej_eta_sample_loop_continue
+        beq a1, t0, _rej_eta_sample_loop_continue_eta_2
         /* Process 4 bits */
         bn.and  w9, shake_reg, w14            /* Mask out all other bits */
 
-        /* Check "t0" < {15,9} */
+        /* Check "t0" < 15 */
         bn.cmp w9, w21
         csrrs a4, 0x7C0, zero
-        /* If the MSB of t0 - {15,9} is not set, we know that t0 >= {15,9}
+        /* If the MSB of t0 - 15 is not set, we know that t0 >= 15
            and thus, we have to reject. */
         and a4, a4, a6
-        beq a4, zero, _rej_eta_sample_loop_continue
+        beq a4, zero, _rej_eta_sample_loop_continue_eta_2
 
         addi t6, t6, -1 /* Found one more valid 4-bit value */
 
         /* Put each 4-bit value into one of 32-bit words in the WDR */
         bn.rshi w20, w9, w20 >> 32
 
-        bne zero, t6, _rej_eta_sample_loop_continue
+        bne zero, t6, _rej_eta_sample_loop_continue_eta_2
 
         /* Vectorized part for arithmetic */
 
         /* "t{0,1}" indicate the variable names from the reference code */
         /* Compute "t0" = "t0" - (205 * "t0" >> 10) * 5 from reference code */
-        jal x1, _poly_uniform_eta_arithmetic
+        jal x1, _poly_uniform_eta_arithmetic_eta_2
 
         /* Store coefficient value from WDR into target polynomial */
         bn.sid t5, 0(a1++)
         li t6, 8
-_rej_eta_sample_loop_continue:
+_rej_eta_sample_loop_continue_eta_2:
         bn.rshi shake_reg, bn0, shake_reg >> 4 /* shift out the used nibble */
 
 /* Loop logic */
-    bne  a1, t0, _rej_eta_sample_loop /* Continue sampling */
+    bne  a1, t0, _rej_eta_sample_loop_eta_2 /* Continue sampling */
 
-_end_rej_eta_sample_loop:
     /* Finish the SHAKE-256 operation. */
 
     ret
 
-_poly_uniform_eta_arithmetic:
-#if ETA == 2
+
+.global poly_uniform_eta_eta_4
+poly_uniform_eta_eta_4:
+    /* Save nonce to memory (use poly tmp buffer). */
+    la t0, poly_wdr2gpr
+    sw a2, 0(t0)
+
+    /* Initialize a SHAKE256 operation. */
+    addi a4, a1, 0               /* save output pointer */
+
+    addi  a1, zero, 66 /* len(rho) + len(nonce) */
+    slli  t0, a1, 5
+    addi  t0, t0, SHAKE256_CFG
+    csrrw zero, KECCAK_CFG_REG, t0
+
+    /* Send the messages to the Keccak core. */
+    addi a1, zero, 64            /* set rho length */
+    addi a0, a0, 0
+    jal  x1, keccak_send_message /* a0 already contains the input buffer */
+    addi a1, zero, 2             /* set nonce length */
+    la   a0, poly_wdr2gpr        /* After rho, absorb nonce */
+    jal  x1, keccak_send_message
+    addi a1, a4, 0 /* move output pointer back to a1 */
+
+    /* t0 = 1024, stop address*/
+    addi t0, a1, 1024
+
+    /* Initialize constants for WDR index */
+    li t5, 9
+    li t6, 10
+    li t3, 15
+
+    /* Initialize constants */
+    bn.addi w14, bn0, 0x0F
+    bn.addi w21, bn0, 9
+    li a5, 8
+    li a6, 2
+
+    la t6, poly_uniform_eta_205
+    li t4, 12
+    bn.lid t4, 0(t6)
+
+    la t6, poly_uniform_eta_5/* Merge into one const for lane use */
+    li t4, 0
+    bn.lid t4, 0(t6)
+
+    la t6, eta_4
+    li t4, 1
+    bn.lid t4, 0(t6)
+
+    li t6, 8 /* coeffs to be collected in register */
+
+_rej_eta_sample_loop_eta_4:
+        bn.wsrr  shake_reg, 0xA /* KECCAK_DIGEST */
+LOOPI 64, 13
+        beq a1, t0, _rej_eta_sample_loop_continue_eta_4
+        /* Process 4 bits */
+        bn.and  w9, shake_reg, w14            /* Mask out all other bits */
+
+        /* Check "t0" < 9 */
+        bn.cmp w9, w21
+        csrrs a4, 0x7C0, zero
+        /* If the MSB of t0 - 9 is not set, we know that t0 >= 9
+           and thus, we have to reject. */
+        and a4, a4, a6
+        beq a4, zero, _rej_eta_sample_loop_continue_eta_4
+
+        addi t6, t6, -1 /* Found one more valid 4-bit value */
+
+        /* Put each 4-bit value into one of 32-bit words in the WDR */
+        bn.rshi w20, w9, w20 >> 32
+
+        bne zero, t6, _rej_eta_sample_loop_continue_eta_4
+
+        /* Vectorized part for arithmetic */
+
+        /* "t{0,1}" indicate the variable names from the reference code */
+        /* Compute "t0" = "t0" - (205 * "t0" >> 10) * 5 from reference code */
+        jal x1, _poly_uniform_eta_arithmetic_eta_4
+
+        /* Store coefficient value from WDR into target polynomial */
+        bn.sid t5, 0(a1++)
+        li t6, 8
+_rej_eta_sample_loop_continue_eta_4:
+        bn.rshi shake_reg, bn0, shake_reg >> 4 /* shift out the used nibble */
+
+/* Loop logic */
+    bne  a1, t0, _rej_eta_sample_loop_eta_4 /* Continue sampling */
+
+    /* Finish the SHAKE-256 operation. */
+
+    ret
+
+_poly_uniform_eta_arithmetic_eta_2:
     bn.mulv.8S.even.lo w13, w20, w12
     bn.mulv.8S.odd.lo  w13, w13, w12
     bn.shv.8S  w13, w13 >> 10
     bn.mulv.8S.even.lo w13, w13, w0
     bn.mulv.8S.odd.lo  w13, w13, w0
     bn.subv.8S w20, w20, w13
-#endif
+    bn.subvm.8S w9, w1, w20
+    ret
+
+_poly_uniform_eta_arithmetic_eta_4:
     bn.subvm.8S w9, w1, w20
     ret
 
 
 /**
- * poly_use_hint
+ * poly_use_hint_88 / poly_use_hint_32
  *
  * Use hint polynomial to correct the high bits of a polynomial.
+ *
+ * The _88 and _32 variants implement the same loop and differ only in the
+ * GAMMA2-dependent constants they load. In pseudocode, for input polynomial r:
+ *   for i = 0..255:
+ *     r0, r1 = decompose(r[i])
+ *     if hint == 0:
+ *       return r1
+ *     if r0 > 0:
+ *       return (r1 + 1) % ((q - 1) / (2 * gamma2))
+ *     else:
+ *       return (r1 - 1) % ((q - 1) / (2 * gamma2))
+ * The if/else cases are implemented with bitwise operations so that the loop
+ * can be vectorized; the code does not need to be constant-time. Hint values
+ * are assumed to be 0 or 1, and decompose output is assumed to be
+ * <= (q - 1) / (2 * gamma2) (16 or 44 depending on gamma2). The reference code
+ * calls r0, r1 "a0" and "a1", but we use r here to avoid confusion with
+ * register names.
  *
  * Returns:
  *
@@ -1439,96 +1463,117 @@ _poly_uniform_eta_arithmetic:
  * @param[in]     a0: output poly pointer
  * @param[out]    a1: input poly pointer
  * @param[out]    a2: input hint poly pointer
+ * @param[in]     x14: K (used by poly_use_hint dispatcher only)
  *
  * clobbered registers: a0-a2, t0-t1, w0-w15, w30
  */
 .global poly_use_hint
 poly_use_hint:
-    /* WDR constants for decompose */
+    /* Dispatch on x14 (K): K==4 means GAMMA2=(Q-1)/88, otherwise (Q-1)/32. */
+    li  t0, 4
+    beq x14, t0, poly_use_hint_88
+    jal x0, poly_use_hint_32
+
+.global poly_use_hint_88
+poly_use_hint_88:
     la t0, decompose_127_const
     li t1, 5
-    /* w5 <= decompose_127_const */
     bn.lid t1++, 0(t0)
 
-    la t0, decompose_const
-    /* w6 <= decompose_const */
+    la t0, decompose_const_88
     bn.lid t1++, 0(t0)
 
     la t0, reduce32_const
-    /* w7 <= reduce32_const */
     bn.lid t1++, 0(t0)
 
-    la t0, decompose_43_const
-    /* w8 <= decompose_43_const */
+    la t0, decompose_43_const_88
     bn.lid t1++, 0(t0)
 
-    la t0, gamma2_vec_const
-    /* w9 <= gamma2_vec_const */
+    la t0, gamma2_vec_const_88
     bn.lid t1++, 0(t0)
 
     la t0, qm1half_const
-    /* w10 <= qm1half_const */
     bn.lid t1++, 0(t0)
 
     la t0, modulus
-    /* w11 <= modulus */
     bn.lid t1++, 0(t0)
 
-    /* Save the value from the modulus register. */
     bn.wsrr w15, MOD
 
-    /* Construct the modulus for the hint (decompose_43_const + 1). This is
-       either (vectorized) 44 or 16, depending on the parameters. */
     bn.shv.8S w12, w5 >> 6
     bn.addv.8S w12, w12, w8
     bn.wsrw MOD, w12
 
-    /* In pseudocode, this loop implements (for input polynomial r):
-       for i = 0..255:
-         r0, r1 = decompose(r[i])
-         if hint == 0:
-           return r1
-         if r0 > 0:
-           return (r1 + 1) % ((q - 1) / (2 * gamma2))
-         else:
-           return (r1 - 1) % ((q - 1) / (2 * gamma2))
-       We implement the if/else cases using bitwise operations so that we can
-       vectorize the process, but the code does not actually need to be
-       constant-time.
-
-       The hint values are assumed to be always 0 or 1, and decompose output is
-       assumed to be <= (q - 1) / 2 * gamma2 (16 or 44 depending on gamma2).
-
-       The reference code calls r0, r1 "a0" and "a1", but we use r here to
-       avoid confusion with register names.
-    */
     LOOPI 32, 11
-      /* Load the next values from the input polynomial and decompose them.
-           w1 <= r0[i*8:(i+1)*8]
-           w2 <= r1[i*8:(i+1)*8] */
       bn.lid x0, 0(a1++)
-      jal    x1, decompose
+      jal    x1, decompose_88
 
-      /* Load the next values from the hint into w0. */
       bn.lid x0, 0(a2++)
 
-      /* w12[j] <= 1 if r0[8*i+j] < 0 or r0[8*i+j] == 0 and h == 1, otherwise 0 */
       bn.subv.8S w1, w1, w0
       bn.shv.8S w12, w1 >> 31
 
-      /* w13[j] <= 1 if h[8*i+j] == 1 and r0[8*i+j] <= 0 */
       bn.and w13, w12, w0
 
-      /* w12[j] <= 1 if h[8*i+j] == 1 and r0[8*i+j] > 0 */
       bn.xor w12, w12, w0
       bn.and w12, w12, w0
 
-      /* Compute and store the final result. */
       bn.addvm.8S w0, w2, w12
       bn.subvm.8S w0, w0, w13
       bn.sid x0, 0(a0++)
 
-    /* Restore the previous value of the MOD register. */
+    bn.wsrw MOD, w15
+
+    ret
+
+.global poly_use_hint_32
+poly_use_hint_32:
+    la t0, decompose_127_const
+    li t1, 5
+    bn.lid t1++, 0(t0)
+
+    la t0, decompose_const_32
+    bn.lid t1++, 0(t0)
+
+    la t0, reduce32_const
+    bn.lid t1++, 0(t0)
+
+    la t0, decompose_43_const_32
+    bn.lid t1++, 0(t0)
+
+    la t0, gamma2_vec_const_32
+    bn.lid t1++, 0(t0)
+
+    la t0, qm1half_const
+    bn.lid t1++, 0(t0)
+
+    la t0, modulus
+    bn.lid t1++, 0(t0)
+
+    bn.wsrr w15, MOD
+
+    bn.shv.8S w12, w5 >> 6
+    bn.addv.8S w12, w12, w8
+    bn.wsrw MOD, w12
+
+    LOOPI 32, 11
+      bn.lid x0, 0(a1++)
+      jal    x1, decompose_32
+
+      bn.lid x0, 0(a2++)
+
+      bn.subv.8S w1, w1, w0
+      bn.shv.8S w12, w1 >> 31
+
+      bn.and w13, w12, w0
+
+      bn.xor w12, w12, w0
+      bn.and w12, w12, w0
+
+      bn.addvm.8S w0, w2, w12
+      bn.subvm.8S w0, w0, w13
+      bn.sid x0, 0(a0++)
+
     bn.wsrw MOD, w15
 
     ret
@@ -1649,7 +1694,7 @@ _inner_polyt1_pack:
 
 
 /**
- * polyeta_pack
+ * polyeta_pack_eta_2 / polyeta_pack_eta_4
  *
  * Bit-pack polynomial with coefficients in [-ETA,ETA].
  *
@@ -1660,12 +1705,19 @@ _inner_polyt1_pack:
  * @param[out] a0: pointer to output byte array with at least
                    POLYETA_PACKEDBYTES bytes
  * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x14: K (used by polyeta_pack dispatcher only)
  *
  * clobbered registers: a0-a1, t0-t3, w1, w2
  */
 .global polyeta_pack
 polyeta_pack:
-#if ETA == 2
+    /* Dispatch on x14 (K): K==6 means ETA=4, otherwise ETA=2. */
+    li  t0, 6
+    beq x14, t0, polyeta_pack_eta_4
+    jal x0, polyeta_pack_eta_2
+
+.global polyeta_pack_eta_2
+polyeta_pack_eta_2:
     /* Compute ETA - coeff */
     /* Setup WDRs */
     li t1, 1
@@ -1673,11 +1725,11 @@ polyeta_pack:
     li t3, 3
 
     /* Load precomputed, vectorized eta */
-    la t0, eta
+    la t0, eta_2
     bn.lid t3, 0(t0)
 
     /* 1 */
-    jal x1, _inner_polyeta_pack
+    jal x1, _inner_polyeta_pack_eta_2
 
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
@@ -1696,7 +1748,7 @@ polyeta_pack:
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
 
     /* 2 */
-    jal x1, _inner_polyeta_pack
+    jal x1, _inner_polyeta_pack_eta_2
 
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
@@ -1715,18 +1767,18 @@ polyeta_pack:
         bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
 
     /* 3 */
-    jal x1, _inner_polyeta_pack
+    jal x1, _inner_polyeta_pack_eta_2
     bn.sid t2, 0(a0++)
     ret
 
 /**
- * _inner_polyeta_pack
+ * _inner_polyeta_pack_eta_2
  *
  * Inner part of packing function to reduce the code size. Could be inlined.
- * Do not call from anywhere but polyeta_pack.
+ * Do not call from anywhere but polyeta_pack_eta_2.
  * Does not adhere to calling convention.
  */
-_inner_polyeta_pack:
+_inner_polyeta_pack_eta_2:
     LOOPI 10, 18
         bn.lid t1, 0(a1++)
         /* w1 <= eta - w1 */
@@ -1736,7 +1788,9 @@ _inner_polyeta_pack:
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
     ret
-#else
+
+.global polyeta_pack_eta_4
+polyeta_pack_eta_4:
     /* Compute ETA - coeff */
     /* Setup WDRs */
     li t1, 1
@@ -1744,28 +1798,28 @@ _inner_polyeta_pack:
     li t3, 3
 
     /* Load precomputed, vectorized eta */
-    la t0, eta
+    la t0, eta_4
     bn.lid t3, 0(t0)
 
     /* Each WDR can hold 256/4 coefficients. So do this 4x */
-    jal x1, _inner_polyeta_pack
+    jal x1, _inner_polyeta_pack_eta_4
     bn.sid t2, 0(a0++)
-    jal x1, _inner_polyeta_pack
+    jal x1, _inner_polyeta_pack_eta_4
     bn.sid t2, 0(a0++)
-    jal x1, _inner_polyeta_pack
+    jal x1, _inner_polyeta_pack_eta_4
     bn.sid t2, 0(a0++)
-    jal x1, _inner_polyeta_pack
+    jal x1, _inner_polyeta_pack_eta_4
     bn.sid t2, 0(a0++)
     ret
 
 /**
- * _inner_polyeta_pack
+ * _inner_polyeta_pack_eta_4
  *
  * Inner part of packing function to reduce the code size. Could be inlined.
- * Do not call from anywhere but polyeta_pack.
+ * Do not call from anywhere but polyeta_pack_eta_4.
  * Does not adhere to calling convention.
  */
-_inner_polyeta_pack:
+_inner_polyeta_pack_eta_4:
     LOOPI 8, 18
         bn.lid t1, 0(a1++)
         /* w1 <= eta - w1 */
@@ -1775,7 +1829,6 @@ _inner_polyeta_pack:
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         .endr
     ret
-#endif
 /**
  * polyt0_pack
  *
@@ -1941,7 +1994,7 @@ poly_nonzero_encode:
     ret
 
 /**
- * polyw1_pack
+ * polyw1_pack_88 / polyw1_pack_32
  *
  * Bit-pack polynomial w1 with coefficients fitting in 6 bits. Input
  * coefficients are assumed to be standard representatives.
@@ -1954,41 +2007,49 @@ poly_nonzero_encode:
  * @param[out] a0: pointer to output byte array with at least
                    POLYW1_PACKEDBYTES bytes
  * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x14: K (used by polyw1_pack dispatcher only)
  *
  * clobbered registers: a0-a1, t0-t2
  */
 .global polyw1_pack
 polyw1_pack:
+    /* Dispatch on x14 (K): K==4 means GAMMA2=(Q-1)/88, otherwise (Q-1)/32. */
+    li  t0, 4
+    beq x14, t0, polyw1_pack_88
+    jal x0, polyw1_pack_32
+
+.global polyw1_pack_88
+polyw1_pack_88:
 
     /* Setup WDRs */
     li t1, 1
     li t2, 2
     li t4, 4
-#if GAMMA2 == (Q-1)/88
+
     LOOPI 2, 13
-        jal     x1, _inner_polyw1_pack
+        jal     x1, _inner_polyw1_pack_88
         bn.rshi w4, w2, w4 >> 192
 
 
-        jal     x1, _inner_polyw1_pack
+        jal     x1, _inner_polyw1_pack_88
         bn.rshi w4, w2, w4 >> 64
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 192
 
 
-        jal     x1, _inner_polyw1_pack
+        jal     x1, _inner_polyw1_pack_88
         bn.rshi w4, w2, w4 >> 128
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 192
 
 
-        jal     x1, _inner_polyw1_pack
+        jal     x1, _inner_polyw1_pack_88
         bn.rshi w4, w2, w4 >> 192
         bn.sid  t4, 0(a0++)
 
     ret
 
-_inner_polyw1_pack:
+_inner_polyw1_pack_88:
     LOOPI 4, 5
         bn.lid t1, 0(a1++)
         loopi 8, 2
@@ -1998,13 +2059,21 @@ _inner_polyw1_pack:
     bn.rshi w2, bn0, w2 >> 64 /* Shift the 192 bits of data to the bottom of the
                                  WDR */
     ret
-#elif GAMMA2 == (Q-1)/32
+
+.global polyw1_pack_32
+polyw1_pack_32:
+
+    /* Setup WDRs */
+    li t1, 1
+    li t2, 2
+    li t4, 4
+
     LOOPI 4, 2
-        jal     x1, _inner_polyw1_pack
+        jal     x1, _inner_polyw1_pack_32
         bn.sid t2, 0(a0++)
     ret
 
-_inner_polyw1_pack:
+_inner_polyw1_pack_32:
     LOOPI 8, 5
         bn.lid t1, 0(a1++)
         loopi 8, 2
@@ -2012,23 +2081,28 @@ _inner_polyw1_pack:
             bn.rshi w1, bn0, w1 >> 32 /* Shift out used coefficient */
         nop
     ret
-#endif
 /**
- * polyeta_unpack
+ * polyeta_unpack_eta_2 / polyeta_unpack_eta_4
  *
  * Unpack polynomial with coefficients fitting in [-ETA, ETA].
  *
  * Flags: -
  *
  * @param[in]  a1: byte array with bit-packed polynomial
+ * @param[in]  x14: K (used by polyeta_unpack dispatcher only)
  * @param[out] a0: pointer to output polynomial
  *
  * clobbered registers: a0-a1, t0-t2, w1-w2
  */
-
 .global polyeta_unpack
 polyeta_unpack:
-#if ETA == 2
+    /* Dispatch on x14 (K): K==6 means ETA=4, otherwise ETA=2. */
+    li  t0, 6
+    beq x14, t0, polyeta_unpack_eta_4
+    jal x0, polyeta_unpack_eta_2
+
+.global polyeta_unpack_eta_2
+polyeta_unpack_eta_2:
     /* Setup WDR */
     li t1, 1
     li t2, 2
@@ -2037,41 +2111,41 @@ polyeta_unpack:
     li t5, 5
 
     /* Load precomputed, vectorized eta */
-    la t0, eta
+    la t0, eta_2
     bn.lid t4, 0(t0)
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-    la t6, polyeta_unpack_mask
+    la t6, polyeta_unpack_mask_eta_2
     bn.lid t5, 0(t6)
     li t6, 6
 
     /* Start unpacking */
     bn.lid t1, 0(a1++)
-    jal    x1, _inner_polyeta_unpack
+    jal    x1, _inner_polyeta_unpack_eta_2
 
     /* Current state: w1 = |0|0|0|w1.3 */
     bn.lid t6, 0(a1++)      /* Load new WLEN word to w2 */
     bn.or  w1, w1, w6 << 64 /* w1 = |w6.2|w6.1|w6.0|w1.3| */
-    jal    x1, _inner_polyeta_unpack /* 64-bit rest in w0.0 */
+    jal    x1, _inner_polyeta_unpack_eta_2 /* 64-bit rest in w0.0 */
 
     /* Current state: w1 = |0|0|0|w6.2 */
     bn.lid  t3, 0(a1++)       /* Load new WLEN word to w3 */
     bn.rshi w1, w3, w6 >> 128 /* w1 = |w3.1|w3.0|w6.3|w6.2 */
-    jal     x1, _inner_polyeta_unpack
+    jal     x1, _inner_polyeta_unpack_eta_2
 
     /* w1 = |0|w3.3|w3.2|w3.1 */
     bn.rshi w1, bn0, w3 >> 64
-    jal     x1, _inner_polyeta_unpack
+    jal     x1, _inner_polyeta_unpack_eta_2
 
     ret
 
 /**
- * inner_polyeta_unpack
+ * _inner_polyeta_unpack_eta_2
  *
  * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyeta_unpack.
+ * Do not call from anywhere but polyeta_unpack_eta_2.
  * Does not adhere to calling convention.
  */
-_inner_polyeta_unpack:
+_inner_polyeta_unpack_eta_2:
     /* Unpack 64 coefficients in one go */
     LOOPI 8, 19
         /* This could also be done by a loop but it causes 64 cycles per
@@ -2090,7 +2164,9 @@ _inner_polyeta_unpack:
 
         bn.sid t2, 0(a0++)
     ret
-#elif ETA == 4
+
+.global polyeta_unpack_eta_4
+polyeta_unpack_eta_4:
     /* Setup WDR */
     li t1, 1
     li t2, 2
@@ -2099,36 +2175,36 @@ _inner_polyeta_unpack:
     li t5, 5
 
     /* Load precomputed, vectorized eta */
-    la t0, eta
+    la t0, eta_4
     bn.lid t4, 0(t0)
     /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-    la t6, polyeta_unpack_mask
+    la t6, polyeta_unpack_mask_eta_4
     bn.lid t5, 0(t6)
     li t6, 6
 
     /* Start unpacking */
     bn.lid t1, 0(a1++)
-    jal    x1, _inner_polyeta_unpack
+    jal    x1, _inner_polyeta_unpack_eta_4
 
     bn.lid t1, 0(a1++)
-    jal    x1, _inner_polyeta_unpack
+    jal    x1, _inner_polyeta_unpack_eta_4
 
     bn.lid  t1, 0(a1++)
-    jal     x1, _inner_polyeta_unpack
+    jal     x1, _inner_polyeta_unpack_eta_4
 
     bn.lid  t1, 0(a1++)
-    jal     x1, _inner_polyeta_unpack
+    jal     x1, _inner_polyeta_unpack_eta_4
 
     ret
 
 /**
- * inner_polyeta_unpack
+ * _inner_polyeta_unpack_eta_4
  *
  * Inner part of unpacking function to reduce the code size.
- * Do not call from anywhere but polyeta_unpack.
+ * Do not call from anywhere but polyeta_unpack_eta_4.
  * Does not adhere to calling convention.
  */
-_inner_polyeta_unpack:
+_inner_polyeta_unpack_eta_4:
     /* Unpack 64 coefficients in one go */
     LOOPI 8, 19
         /* This could also be done by a loop but it causes 64 cycles per
@@ -2147,7 +2223,6 @@ _inner_polyeta_unpack:
 
         bn.sid t2, 0(a0++)
     ret
-#endif
 
 
 /**
@@ -2166,6 +2241,8 @@ _inner_polyeta_unpack:
  * @param[in]  a2: k, number of nonzero h coefficients so far
  * @param[in]  a3: i, index of this polynomial in h
  * @param[out] a4: return code (1 or 0)
+ * @param[in]  a5: K, number of polynomials in h
+ * @param[in]  t4: OMEGA
  *
  * clobbered registers: a0-a7, t0-t6
  */
@@ -2178,12 +2255,11 @@ poly_decode_h:
         bn.sid t0, 0(t1++)
 
     /* Initialize constants */
-    li t4, OMEGA
     li a7, 1
 
     /* The notation inside the comments goes in line with the reference code */
     /* Load sig[OMEGA + i] to t2 */
-    addi t2, a3, OMEGA /* i + OMEGA */
+    add  t2, a3, t4    /* i + OMEGA */
     add  t6, t2, a1    /* (sig + OMEGA + i) */
     andi a4, t6, 0x3   /* get lower two bits */
     sub  t6, t6, a4    /* set lowest two bits to 0 */
@@ -2202,6 +2278,8 @@ poly_decode_h:
     sub t3, t4, t2
     srli t3, t3, 31
     bne t3, zero, _ret1_decode_h
+
+    addi t3, a5, 0
 
     addi t5, a2, 0 /* j = k */
 
@@ -2266,8 +2344,7 @@ _loop_inner_skip_decode_h:
     addi a3, a3, 1    /* i++ */
 
     /* Check if this is the last polynomial. */
-    li   t5, K
-    bne  a3, t5, _ret0_decode_h
+    bne  a3, t3, _ret0_decode_h
 
     /* Ensure the extra indices are 0. */
 
@@ -2418,7 +2495,7 @@ _inner_polyt0_unpack:
 
 
 /**
- * poly_uniform_gamma_1
+ * poly_uniform_gamma_1_17 / poly_uniform_gamma_1_19
  *
  *  Sample polynomial with uniformly random coefficients in [-(GAMMA1 - 1),
  *  GAMMA1] by unpacking output stream of SHAKE256(seed|nonce).
@@ -2433,12 +2510,19 @@ _inner_polyt0_unpack:
  * @param[in]  a1: byte array with seed of length CRHBYTES
  * @param[in]  a2: nonce
  * @param[in]  a3: pointer to gamma1_vec_const
+ * @param[in]  x14: K (used by poly_uniform_gamma_1 dispatcher only)
  *
  * clobbered registers: a1, t0-t3, w1-w6
  */
 .global poly_uniform_gamma_1
 poly_uniform_gamma_1:
-#if GAMMA1 == (1 << 17)
+    /* Dispatch on x14 (K): K==4 means GAMMA1=2^17, otherwise 2^19. */
+    li  t0, 4
+    beq x14, t0, poly_uniform_gamma_1_17
+    jal x0, poly_uniform_gamma_1_19
+
+.global poly_uniform_gamma_1_17
+poly_uniform_gamma_1_17:
     /* copy output pointer */
     addi t1, a0, 0
 
@@ -2467,12 +2551,12 @@ poly_uniform_gamma_1:
 
     /* Load gamma1 as a vector into w4 */
     li t2, 4
-    la t3, gamma1_vec_const
+    la t3, gamma1_vec_const_17
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients to w5 */
     li t2, 5
-    la t3, polyz_unpack_mask
+    la t3, polyz_unpack_mask_17
     bn.lid t2, 0(t3)
 
     /* Setup WDR */
@@ -2480,67 +2564,67 @@ poly_uniform_gamma_1:
     LOOPI 2, 42
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.mov  w1, w6
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 144
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.rshi w1, bn0, w3 >> 32
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 176
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.rshi w1, bn0, w6 >> 64
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 208
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.rshi w1, bn0, w3 >> 96
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 240
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 128
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.rshi w1, bn0, w3 >> 16
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 160
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.rshi w1, bn0, w6 >> 48
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 192
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.rshi w1, bn0, w3 >> 80
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 224
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
 
         bn.rshi w1, bn0, w6 >> 112
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_17
         nop /* Loop must not end on jump */
 
     /* Finish the SHAKE-256 operation. */
 
     ret
 
-_inner_poly_uniform_gamma_1:
+_inner_poly_uniform_gamma_1_17:
     /* Unpack 8 coefficients in one go */
     loopi 8, 2
         /* Shift one coefficient into the output register, ignoring the
@@ -2556,7 +2640,9 @@ _inner_poly_uniform_gamma_1:
     bn.addvm.8S w2, w0, w2
     bn.sid     t2, 0(t1++)
     ret
-#elif GAMMA1 == (1 << 19)
+
+.global poly_uniform_gamma_1_19
+poly_uniform_gamma_1_19:
     /* copy output pointer */
     addi t1, a0, 0
 
@@ -2585,12 +2671,12 @@ _inner_poly_uniform_gamma_1:
 
     /* Load gamma1 as a vector into w4 */
     li t2, 4
-    la t3, gamma1_vec_const
+    la t3, gamma1_vec_const_19
     bn.lid t2, 0(t3)
 
     /* Load mask for zeroing the upper bits of the unpacked coefficients to w5 */
     li t2, 5
-    la t3, polyz_unpack_mask
+    la t3, polyz_unpack_mask_19
     bn.lid t2, 0(t3)
 
     /* Setup WDR */
@@ -2599,39 +2685,39 @@ _inner_poly_uniform_gamma_1:
     LOOPI 4, 22
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.mov  w1, w6
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_19
 
         bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 160
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_19
 
         bn.rshi w1, bn0, w3 >> 64
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_19
 
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 224
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_19
 
         bn.wsrr w3, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w3, w6 >> 128
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_19
 
         bn.rshi w1, bn0, w3 >> 32
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_19
 
         bn.wsrr w6, 0xA /* KECCAK_DIGEST */
         bn.rshi w1, w6, w3 >> 192
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_19
 
         bn.rshi w1, bn0, w6 >> 96
-        jal     x1, _inner_poly_uniform_gamma_1
+        jal     x1, _inner_poly_uniform_gamma_1_19
         nop /* Must not end on branch */
 
     /* Finish the SHAKE-256 operation. */
 
     ret
 
-_inner_poly_uniform_gamma_1:
+_inner_poly_uniform_gamma_1_19:
     /* Unpack 8 coefficients in one go */
     loopi 8, 2
         /* Shift one coefficient into the output register, ignoring the
@@ -2647,9 +2733,8 @@ _inner_poly_uniform_gamma_1:
     bn.addvm.8S w2, w0, w2
     bn.sid     t2, 0(t1++)
     ret
-#endif
 /**
- * poly_decompose
+ * poly_decompose_88 / poly_decompose_32
  *
  *  For all coefficients c of the input polynomial, compute high and low bits
  *  c0, c1 such c mod Q = c1*ALPHA + c0 with -ALPHA/2 < c0 <= ALPHA/2 except c1
@@ -2661,55 +2746,96 @@ _inner_poly_uniform_gamma_1:
  * @param[out] a0: a0 pointer to output polynomial with coefficients c0
  * @param[out] a1: a1 pointer to output polynomial with coefficients c1
  * @param[in]  a2: *a, pointer to input polynomial
+ * @param[in]  x14: K (used by poly_decompose dispatcher only)
  *
  * clobbered registers: w0-w11, a0-a2, t0-t4
  */
 .global poly_decompose
 poly_decompose:
-    /* WDR constants for decompose */
+    /* Dispatch on x14 (K): K==4 means GAMMA2=(Q-1)/88, otherwise (Q-1)/32. */
+    li  t0, 4
+    beq x14, t0, poly_decompose_88
+    jal x0, poly_decompose_32
+
+.global poly_decompose_88
+poly_decompose_88:
     la t0, decompose_127_const
     li t1, 5
-    /* w5 <= decompose_127_const */
     bn.lid t1, 0(t0)
 
-    la t0, decompose_const
+    la t0, decompose_const_88
     li t1, 6
-    /* w6 <= decompose_const */
     bn.lid t1, 0(t0)
 
     la t0, reduce32_const
     li t1, 7
-    /* w7 <= reduce32_const */
     bn.lid t1, 0(t0)
 
-    la t0, decompose_43_const
+    la t0, decompose_43_const_88
     li t1, 8
-    /* w8 <= decompose_43_const */
     bn.lid t1, 0(t0)
 
-    la t0, gamma2_vec_const
+    la t0, gamma2_vec_const_88
     li t1, 9
-    /* w9 <= gamma2_vec_const */
     bn.lid t1, 0(t0)
 
     la t0, qm1half_const
     li t1, 10
-    /* w10 <= qm1half_const */
     bn.lid t1, 0(t0)
 
     la t0, modulus
     li t1, 11
-    /* w11 <= modulus */
     bn.lid t1, 0(t0)
 
-    /* Setup constants for WDRs */
     li t0, 0
     li t1, 1
     li t2, 2
 
     LOOPI 32, 4
         bn.lid t0, 0(a2++)
-        jal x1, decompose
+        jal x1, decompose_88
+        bn.sid t1, 0(a0++)
+        bn.sid t2, 0(a1++)
+
+    ret
+
+.global poly_decompose_32
+poly_decompose_32:
+    la t0, decompose_127_const
+    li t1, 5
+    bn.lid t1, 0(t0)
+
+    la t0, decompose_const_32
+    li t1, 6
+    bn.lid t1, 0(t0)
+
+    la t0, reduce32_const
+    li t1, 7
+    bn.lid t1, 0(t0)
+
+    la t0, decompose_43_const_32
+    li t1, 8
+    bn.lid t1, 0(t0)
+
+    la t0, gamma2_vec_const_32
+    li t1, 9
+    bn.lid t1, 0(t0)
+
+    la t0, qm1half_const
+    li t1, 10
+    bn.lid t1, 0(t0)
+
+    la t0, modulus
+    li t1, 11
+    bn.lid t1, 0(t0)
+
+    li t0, 0
+    li t1, 1
+    li t2, 2
+
+    LOOPI 32, 4
+        bn.lid t0, 0(a2++)
+        jal x1, decompose_32
         bn.sid t1, 0(a0++)
         bn.sid t2, 0(a1++)
 
@@ -2730,6 +2856,7 @@ poly_decompose:
  *
  * @param[out] a0: pointer to output hint polynomial
  * @param[in]  a1: pointer to low part of input polynomial
+ * @param[in]  a2: GAMMA2
  * @param[in]  w0: 256b representative of nonzero values in high part of polynomial
  *
  * clobbered registers: t0-t2, t5-t6, a0-a2, a4-a7
@@ -2740,7 +2867,7 @@ poly_make_hint:
     li   t4, 1
 
     /* Constants for condition checking */
-    li t6, GAMMA2
+    addi t6, a2, 0
 
     la t0, modulus
     lw a6, 0(t0)
@@ -2787,7 +2914,7 @@ _loop_end_poly_make_hint:
     ret
 
 /**
- * polyz_pack
+ * polyz_pack_17 / polyz_pack_19
  *
  * Pack polynomial z with coefficients fitting in 18 bits.
  *
@@ -2795,6 +2922,7 @@ _loop_end_poly_make_hint:
  *
  * @param[in]  w0: gamma1_vec_const
  * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x14: K (used by polyz_pack dispatcher only)
  * @param[out] a0: pointer to output byte array with at least
  *                 POLYZ_PACKEDBYTES bytes
  *
@@ -2802,8 +2930,14 @@ _loop_end_poly_make_hint:
  */
 .global polyz_pack
 polyz_pack:
-#if GAMMA1 == (1 << 17)
-    la t1, gamma1_vec_const
+    /* Dispatch on x14 (K): K==4 means GAMMA1=2^17, otherwise 2^19. */
+    li  t0, 4
+    beq x14, t0, polyz_pack_17
+    jal x0, polyz_pack_19
+
+.global polyz_pack_17
+polyz_pack_17:
+    la t1, gamma1_vec_const_17
     li t3, 3
     bn.lid t3, 0(t1)
 
@@ -2812,171 +2946,171 @@ polyz_pack:
     li t4, 4
 
     /* Start packing */
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 112
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 80
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 48
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 16
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 128
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 96
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 64
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 32
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 112
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 80
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 48
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 16
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 128
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 96
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 64
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 32
     bn.sid  t4, 0(a0++)
     bn.rshi w4, w2, bn0 >> 144
 
 
-    jal     x1, _inner_polyz_pack
+    jal     x1, _inner_polyz_pack_17
     bn.rshi w4, w2, w4 >> 144
     bn.sid  t4, 0(a0++)
 
     ret
 
-_inner_polyz_pack:
+_inner_polyz_pack_17:
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
     bn.subv.8S w1, w3, w1
@@ -2986,8 +3120,10 @@ _inner_polyz_pack:
     bn.rshi w2, bn0, w2 >> 112 /* Shift the 144 bits of data to the bottom of the
                                  WDR */
     ret
-#elif GAMMA1 == (1 << 19)
-    la t1, gamma1_vec_const
+
+.global polyz_pack_19
+polyz_pack_19:
+    la t1, gamma1_vec_const_19
     li t3, 3
     bn.lid t3, 0(t1)
 
@@ -2995,48 +3131,48 @@ _inner_polyz_pack:
     li t1, 1
     li t4, 4
     LOOPI 4, 25
-        jal     x1, _inner_polyz_pack
+        jal     x1, _inner_polyz_pack_19
         bn.rshi w4, w2, w4 >> 160
 
 
-        jal     x1, _inner_polyz_pack
+        jal     x1, _inner_polyz_pack_19
         bn.rshi w4, w2, w4 >> 96
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 160
 
 
-        jal     x1, _inner_polyz_pack
+        jal     x1, _inner_polyz_pack_19
         bn.rshi w4, w2, w4 >> 160
 
 
-        jal     x1, _inner_polyz_pack
+        jal     x1, _inner_polyz_pack_19
         bn.rshi w4, w2, w4 >> 32
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 160
 
 
-        jal     x1, _inner_polyz_pack
+        jal     x1, _inner_polyz_pack_19
         bn.rshi w4, w2, w4 >> 128
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 160
 
 
-        jal     x1, _inner_polyz_pack
+        jal     x1, _inner_polyz_pack_19
         bn.rshi w4, w2, w4 >> 160
 
 
-        jal     x1, _inner_polyz_pack
+        jal     x1, _inner_polyz_pack_19
         bn.rshi w4, w2, w4 >> 64
         bn.sid  t4, 0(a0++)
         bn.rshi w4, w2, bn0 >> 160
 
 
-        jal     x1, _inner_polyz_pack
+        jal     x1, _inner_polyz_pack_19
         bn.rshi w4, w2, w4 >> 160
         bn.sid  t4, 0(a0++)
 
     ret
-_inner_polyz_pack:
+_inner_polyz_pack_19:
     bn.lid t1, 0(a1++)
     /* w1 <= eta - w1 */
     bn.subv.8S w1, w3, w1
@@ -3046,7 +3182,6 @@ _inner_polyz_pack:
     bn.rshi w2, bn0, w2 >> 96 /* Shift the 96 bits of data to the bottom of the
                                  WDR */
     ret
-#endif
 
 /**
  * poly_encode_h
@@ -3058,6 +3193,7 @@ _inner_polyz_pack:
  * @param[in]  a1: pointer to input polynomial h[i]
  * @param[in]  a2: k, number of nonzero h coefficients so far
  * @param[in]  a3: i, index of this polynomial in h
+ * @param[in]  a4: OMEGA
  * @param[out] a0: pointer to the start of all signature hint bytes
  *
  * clobbered registers: a1-a2, t0-t6
@@ -3089,7 +3225,7 @@ _skip_store_poly_encode_h:
         addi t2, t2, 1
 
         /* Store the number of nonzero coefficients after h[i] at the end. */
-        addi t2, a3, OMEGA /* OMEGA + i */
+        add  t2, a3, a4   /* OMEGA + i */
         add  t2, a0, t2    /* *sig + OMEGA + i */
         andi t3, t2, 0x3   /* preserve lower 2 bits */
         and  t2, t2, t0    /* align */

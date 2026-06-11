@@ -11,91 +11,17 @@
 .text
 
 #define SEEDBYTES 32
-#define CRHBYTES 64
-#define TRBYTES 64
-#define RNDBYTES 32
 #define N 256
 #define Q 8380417
 #define D 13
-#define ROOT_OF_UNITY 1753
 
-#if DILITHIUM_MODE == 2
-#define K 4
-#define L 4
-#define ETA 2
-#define TAU 39
-#define BETA 78
-#define GAMMA1 131072
-#define GAMMA2 95232
-#define OMEGA 80
-#define CTILDEBYTES 32
-
-#define POLYVECK_BYTES 4096
-#define POLYVECL_BYTES 4096
-
-#define CRYPTO_PUBLICKEYBYTES 1312
-#define CRYPTO_SECRETKEYBYTES 2560
-#define CRYPTO_BYTES 2420
-
-#elif DILITHIUM_MODE == 3
-#define K 6
-#define L 5
-#define ETA 4
-#define TAU 49
-#define BETA 196
-#define GAMMA1 524288
-#define GAMMA2 261888
-#define OMEGA 55
-#define CTILDEBYTES 48
-
-#define POLYVECK_BYTES 6144
-#define POLYVECL_BYTES 5120
-
-#define CRYPTO_PUBLICKEYBYTES 1952
-#define CRYPTO_SECRETKEYBYTES 4032
-#define CRYPTO_BYTES 3309
-
-#elif DILITHIUM_MODE == 5
-#define K 8
-#define L 7
-#define ETA 2
-#define TAU 60
-#define BETA 120
-#define GAMMA1 524288
-#define GAMMA2 261888
-#define OMEGA 75
-#define CTILDEBYTES 64
-
+/* Worst-case (ML-DSA-87) polyvec size. */
 #define POLYVECK_BYTES 8192
-#define POLYVECL_BYTES 7168
 
-#define CRYPTO_PUBLICKEYBYTES 2592
-#define CRYPTO_SECRETKEYBYTES 4896
-#define CRYPTO_BYTES 4627
-
-#endif
-
-#define POLYT1_PACKEDBYTES  320
-#define POLYT0_PACKEDBYTES  416
-#define POLYVECH_PACKEDBYTES (OMEGA + K)
-
-#if GAMMA1 == (1 << 17)
-#define POLYZ_PACKEDBYTES   576
-#elif GAMMA1 == (1 << 19)
-#define POLYZ_PACKEDBYTES   640
-#endif
-
-#if GAMMA2 == (Q-1)/88
-#define POLYW1_PACKEDBYTES  192
-#elif GAMMA2 == (Q-1)/32
-#define POLYW1_PACKEDBYTES  128
-#endif
-
-#if ETA == 2
-#define POLYETA_PACKEDBYTES  96
-#elif ETA == 4
-#define POLYETA_PACKEDBYTES 128
-#endif
+/* Offsets into the mldsa_params struct (in mldsa_consts.s). */
+#define MLDSA_PARAM_K_OFFSET 0
+#define MLDSA_PARAM_L_OFFSET 4
+#define MLDSA_PARAM_CRYPTO_PUBLICKEYBYTES_OFFSET 24
 
 /* Register aliases */
 .equ x2, sp
@@ -151,6 +77,7 @@
  * Returns: 0 on success
  *
  * @param[in]  dmem[zeta]: 32 random bytes
+ * @param[in]  dmem[mldsa_params]: active mode parameters
  * @param[out] dmem[pk]: public key
  * @param[out] dmem[sk]: secret key
  *
@@ -158,6 +85,9 @@
  */
 .globl crypto_sign_keypair
 crypto_sign_keypair:
+    la   s11, mldsa_params
+    lw   s10, MLDSA_PARAM_K_OFFSET(s11)
+
     /* Initialize a SHAKE256 operation. */
     li    a1, SEEDBYTES
     addi  a1, a1, 2 /* SEEDBYTES+2 */
@@ -171,12 +101,16 @@ crypto_sign_keypair:
     jal  x1, keccak_send_message
 
     /* Send K, L to KMAC block. */
+    la      t1, poly_wdr2gpr
     li      t0, 1
     csrrw   x0, kmac_partial_write, t0
-    bn.addi w0, w31, K
+    sw      s10, 0(t1)
+    bn.lid  x0, 0(t1)
     bn.wsrw kmac_msg, w0
     csrrw   x0, kmac_partial_write, t0
-    bn.addi w0, w31, L
+    lw      t2, MLDSA_PARAM_L_OFFSET(s11)
+    sw      t2, 0(t1)
+    bn.lid  x0, 0(t1)
     bn.wsrw kmac_msg, w0
 
     /* Squeeze into output buffers. Store rho and the key in sk. */
@@ -207,13 +141,13 @@ crypto_sign_keypair:
     /* Zero the destination buffer. */
     li t0, 31
     addi t1, s2, 0
-    LOOPI K, 3
+    LOOP s10, 3
         LOOPI 32, 1
           bn.sid t0, 0(t1++)
         nop
 
-    /* Load offset for resetting vector pointer. */
-    li s3, POLYVECK_BYTES
+    /* Load offset for resetting vector pointer (K * 1024). */
+    slli s3, s10, 10
 
     /* Initialize the nonce for matrix expansion. This value should be
          byte(i) || byte(j)
@@ -246,12 +180,14 @@ crypto_sign_keypair:
            for i in 0..k-1:
              t[i] += A[i][j] * s1j
     */
-    loopi L, 41
+    lw t0, MLDSA_PARAM_L_OFFSET(s11)
+    LOOP t0, 43
         bn.wsrw   mod, w16 /* MOD = R | Q */
         /* Sample the next polynomial from s1. */
         addi a0, s5, 0
         addi a1, s0, 0
         addi a2, s6, 0
+        addi a4, s10, 0
         jal  x1, poly_uniform_eta
         addi s6, s6, 1
         /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
@@ -265,6 +201,7 @@ crypto_sign_keypair:
         /* Pack the s1 polynomial into the secret key. */
         addi a0, s7, 0
         addi a1, s0, 0
+        addi a4, s10, 0
         jal x1, polyeta_pack
         addi s7, a0, 0
         bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
@@ -272,7 +209,7 @@ crypto_sign_keypair:
         addi a0, s0, 0
         addi a2, s0, 0
         jal  x1, ntt
-        loopi K, 15
+        LOOP s10, 15
             /* Compute A[i][j]. */
             addi a1, s1, 0
             jal  x1, poly_uniform
@@ -305,7 +242,7 @@ crypto_sign_keypair:
     /* Inverse NTT on t=A*s1 */
     la  a0, t_polyvec
 
-    LOOPI K, 2
+    LOOP s10, 2
         jal  x1, intt
         addi a0, a0, 1024 /* Go to next input polynomial */
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
@@ -316,19 +253,21 @@ crypto_sign_keypair:
     la  s3, rhoprime
 
     /* Initialize the nonce for sampling s2. */
-    li s6, L
+    lw s6, MLDSA_PARAM_L_OFFSET(s11)
 
     /* This loop samples s2 and adds it to A*s1 (currently in the t buffer). */
-    LOOPI K, 14
+    LOOP s10, 16
         /* Sample the next polynomial from s2 and store in temp buffer. */
         addi a0, s3, 0
         addi a1, s0, 0
         addi a2, s6, 0
+        addi a4, s10, 0
         jal  x1, poly_uniform_eta
         addi s6, s6, 1
         /* Pack the s2 polynomial into the secret key. */
         addi a0, s7, 0
         addi a1, s0, 0
+        addi a4, s10, 0
         jal  x1, polyeta_pack
         addi s7, a0, 0
         /* t[i] += s2 */
@@ -342,7 +281,7 @@ crypto_sign_keypair:
     /* Reset t pointer for power2round loop. */
     la  s1, t_polyvec
 
-    LOOPI K, 9
+    LOOP s10, 9
         /* Split t polynomial into t0 (tmp buffer) and t1 (t buffer). */
         addi a0, s1, 0
         addi a1, s0, 0
@@ -368,22 +307,20 @@ crypto_sign_keypair:
     la  a1, t_polyvec
 
     /* Pack t1 */
-    LOOPI K, 2
+    LOOP s10, 2
         jal x1, polyt1_pack
         nop
 
     /* Hash pk */
 
     /* Initialize a SHAKE256 operation. */
-    li    a1, CRYPTO_PUBLICKEYBYTES
+    lw    a1, MLDSA_PARAM_CRYPTO_PUBLICKEYBYTES_OFFSET(s11)
     slli  t0, a1, 5
     addi  t0, t0, SHAKE256_CFG
     csrrw x0, kmac_cfg, t0
 
     /* Send the message to the Keccak core. */
-    /* Load pk pointer */
     la     a0, pk
-    /* a1 already contains CRYPTO_PUBLICKEYBYTES */
     jal  x1, keccak_send_message
 
     /* Read the digest (tr) into the secret key.

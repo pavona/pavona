@@ -8,128 +8,62 @@ load("//rules:acc.bzl", "acc_binary", "acc_library")
 
 package(default_visibility = ["//visibility:public"])
 
-NAME_BY_SEC_LEVEL = {
-    2: "mldsa44",
-    3: "mldsa65",
-    5: "mldsa87",
-}
-
 acc_library(
     name = "kmac_send_msg",
-    srcs = [
-        "kmac_send_msg.s",
-    ],
+    srcs = ["kmac_send_msg.s"],
 )
 
 acc_library(
     name = "ntt",
-    srcs = [
-        "ntt.s",
-    ],
+    srcs = ["ntt.s"],
 )
 
 acc_library(
     name = "intt",
-    srcs = [
-        "intt.s",
-    ],
+    srcs = ["intt.s"],
 )
 
 acc_library(
     name = "poly_pointwise",
-    srcs = [
-        "poly_pointwise.s",
-    ],
+    srcs = ["poly_pointwise.s"],
 )
 
 acc_library(
     name = "poly_add",
-    srcs = [
-        "poly_add.s",
-    ],
+    srcs = ["poly_add.s"],
 )
 
 acc_library(
     name = "poly_sub",
-    srcs = [
-        "poly_sub.s",
-    ],
+    srcs = ["poly_sub.s"],
 )
 
-[
-    acc_library(
-        name = name + "_keypair",
-        srcs = [
-            "mldsa_keypair.s",
-        ],
-        copts = [
-            "-DDILITHIUM_MODE=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "keypair",
+    srcs = ["mldsa_keypair.s"],
+)
 
-[
-    acc_library(
-        name = name + "_verify",
-        srcs = [
-            "mldsa_verify.s",
-        ],
-        copts = [
-            "-DDILITHIUM_MODE=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "verify",
+    srcs = ["mldsa_verify.s"],
+)
 
-[
-    acc_library(
-        name = name + "_poly",
-        srcs = [
-            "poly.s",
-        ],
-        copts = [
-            "-DDILITHIUM_MODE=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "poly",
+    srcs = ["poly.s"],
+)
 
-[
-    acc_library(
-        name = name + "_rounding",
-        srcs = [
-            "rounding.s",
-        ],
-        copts = [
-            "-DDILITHIUM_MODE=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "rounding",
+    srcs = ["rounding.s"],
+)
 
-[
-    acc_library(
-        name = name + "_sign",
-        srcs = [
-            "mldsa_sign.s",
-        ],
-        copts = [
-            "-DDILITHIUM_MODE=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "sign",
+    srcs = ["mldsa_sign.s"],
+)
 
-[
-    acc_library(
-        name = name + "_consts",
-        srcs = [
-            "mldsa_consts.s",
-        ],
-        copts = [
-            "-DDILITHIUM_MODE=" + str(sec_level),
-        ],
-    )
-    for sec_level, name in NAME_BY_SEC_LEVEL.items()
-]
+acc_library(
+    name = "consts",
+    srcs = ["mldsa_consts.s"],
+)

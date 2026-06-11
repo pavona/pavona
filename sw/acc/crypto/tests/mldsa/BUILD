@@ -57,15 +57,15 @@ py_binary(
         testgen = ":mldsa_keypair_testgen",
         testgen_args = [params],
         deps = [
+            "//sw/acc/crypto/mldsa:consts",
             "//sw/acc/crypto/mldsa:intt",
+            "//sw/acc/crypto/mldsa:keypair",
             "//sw/acc/crypto/mldsa:kmac_send_msg",
-            "//sw/acc/crypto/mldsa:" + params + "_consts",
-            "//sw/acc/crypto/mldsa:" + params + "_keypair",
-            "//sw/acc/crypto/mldsa:" + params + "_poly",
-            "//sw/acc/crypto/mldsa:" + params + "_rounding",
             "//sw/acc/crypto/mldsa:ntt",
+            "//sw/acc/crypto/mldsa:poly",
             "//sw/acc/crypto/mldsa:poly_add",
             "//sw/acc/crypto/mldsa:poly_pointwise",
+            "//sw/acc/crypto/mldsa:rounding",
         ],
     )
     for i in range(NTESTS)
@@ -99,16 +99,16 @@ py_binary(
         testgen = ":mldsa_sign_testgen",
         testgen_args = [params],
         deps = [
+            "//sw/acc/crypto/mldsa:consts",
             "//sw/acc/crypto/mldsa:intt",
             "//sw/acc/crypto/mldsa:kmac_send_msg",
-            "//sw/acc/crypto/mldsa:" + params + "_consts",
-            "//sw/acc/crypto/mldsa:" + params + "_poly",
-            "//sw/acc/crypto/mldsa:" + params + "_rounding",
-            "//sw/acc/crypto/mldsa:" + params + "_sign",
             "//sw/acc/crypto/mldsa:ntt",
+            "//sw/acc/crypto/mldsa:poly",
             "//sw/acc/crypto/mldsa:poly_add",
             "//sw/acc/crypto/mldsa:poly_pointwise",
             "//sw/acc/crypto/mldsa:poly_sub",
+            "//sw/acc/crypto/mldsa:rounding",
+            "//sw/acc/crypto/mldsa:sign",
         ],
     )
     for i in range(NTESTS)
@@ -141,16 +141,16 @@ py_binary(
         testgen = ":mldsa_verify_testgen",
         testgen_args = [params],
         deps = [
+            "//sw/acc/crypto/mldsa:consts",
             "//sw/acc/crypto/mldsa:intt",
             "//sw/acc/crypto/mldsa:kmac_send_msg",
-            "//sw/acc/crypto/mldsa:" + params + "_consts",
-            "//sw/acc/crypto/mldsa:" + params + "_poly",
-            "//sw/acc/crypto/mldsa:" + params + "_rounding",
-            "//sw/acc/crypto/mldsa:" + params + "_verify",
             "//sw/acc/crypto/mldsa:ntt",
+            "//sw/acc/crypto/mldsa:poly",
             "//sw/acc/crypto/mldsa:poly_add",
             "//sw/acc/crypto/mldsa:poly_pointwise",
             "//sw/acc/crypto/mldsa:poly_sub",
+            "//sw/acc/crypto/mldsa:rounding",
+            "//sw/acc/crypto/mldsa:verify",
         ],
     )
     for i in range(NTESTS)
@@ -169,10 +169,10 @@ py_binary(
         dexp = "poly_make_hint_test.dexp",
         pqc = True,
         deps = [
+            "//sw/acc/crypto/mldsa:consts",
             "//sw/acc/crypto/mldsa:kmac_send_msg",
-            "//sw/acc/crypto/mldsa:" + params + "_consts",
-            "//sw/acc/crypto/mldsa:" + params + "_poly",
-            "//sw/acc/crypto/mldsa:" + params + "_rounding",
+            "//sw/acc/crypto/mldsa:poly",
+            "//sw/acc/crypto/mldsa:rounding",
         ],
     )
     for params in MLDSA_PARAMS
@@ -191,10 +191,10 @@ acc_sim_test(
     dexp = "poly_uniform_test.dexp",
     pqc = True,
     deps = [
+        "//sw/acc/crypto/mldsa:consts",
         "//sw/acc/crypto/mldsa:kmac_send_msg",
-        "//sw/acc/crypto/mldsa:mldsa44_consts",
-        "//sw/acc/crypto/mldsa:mldsa44_poly",
-        "//sw/acc/crypto/mldsa:mldsa44_rounding",
+        "//sw/acc/crypto/mldsa:poly",
+        "//sw/acc/crypto/mldsa:rounding",
     ],
 )
 
@@ -211,9 +211,9 @@ acc_sim_test(
     dexp = "poly_uniform_postprocess_test.dexp",
     pqc = True,
     deps = [
+        "//sw/acc/crypto/mldsa:consts",
         "//sw/acc/crypto/mldsa:kmac_send_msg",
-        "//sw/acc/crypto/mldsa:mldsa44_consts",
-        "//sw/acc/crypto/mldsa:mldsa44_poly",
-        "//sw/acc/crypto/mldsa:mldsa44_rounding",
+        "//sw/acc/crypto/mldsa:poly",
+        "//sw/acc/crypto/mldsa:rounding",
     ],
 )
