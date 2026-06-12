@@ -40,7 +40,7 @@
       "curve": {
         "description": "Curve type",
         "type": "string",
-        "enum": ["p256", "p384"]
+        "enum": ["p256", "p384", "secp256k1"]
       },
       "hash_alg": {
         "description": "Hash algorithm",

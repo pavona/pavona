@@ -20,7 +20,8 @@ extern "C" {
 
 #define ECDH_CURVE(_, value) \
     value(_, P256) \
-    value(_, P384)
+    value(_, P384) \
+    value(_, Secp256k1)
 UJSON_SERDE_ENUM(CryptotestEcdhCurve, cryptotest_ecdh_curve_t, ECDH_CURVE);
 
 #define ECDH_PRIVATE_KEY(field, string) \

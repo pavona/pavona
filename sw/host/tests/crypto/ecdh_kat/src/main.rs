@@ -16,6 +16,8 @@ use cryptotest_commands::ecdh_commands::{
     CryptotestEcdhCoordinate, CryptotestEcdhCurve, CryptotestEcdhDeriveOutput,
     CryptotestEcdhPrivateKey,
 };
+use k256::U256 as Secp256k1U256;
+use k256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveSecp256k1;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
@@ -31,11 +33,15 @@ const ECDH_CMD_MAX_COORDINATE_BYTES_P256: usize = 32;
 const ECDH_CMD_MAX_PRIVATE_KEY_BYTES_P256: usize = 32;
 const ECDH_CMD_MAX_COORDINATE_BYTES_P384: usize = 48;
 const ECDH_CMD_MAX_PRIVATE_KEY_BYTES_P384: usize = 48;
+const ECDH_CMD_MAX_COORDINATE_BYTES_SECP256K1: usize = 32;
+const ECDH_CMD_MAX_PRIVATE_KEY_BYTES_SECP256K1: usize = 32;
 
 // These values were generated randomly for testing purposes.
 // Each value must be less than the value n for its respective curve.
 const RANDOM_MASK_P256: &str = "37c9e5b8e9e24402f2ec25a2eec87c1c531d67e38c18876d70aa50dd925265b1";
 const RANDOM_MASK_P384: &str = "b80fee36252d2c38350ad1c00803e09c90f4c086e4cfeed78f164b20b100d5d45f16b678a40a64295438bbebc3e29b09";
+const RANDOM_MASK_SECP256K1: &str =
+    "ae5f912373ec466474e0123528c99baf625354eade8cce13c4255365853bafcc";
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -163,6 +169,50 @@ fn run_ecdh_testcase(
             d1_bytes.reverse();
             (
                 CryptotestEcdhCurve::P384,
+                d0_bytes.to_vec(),
+                d1_bytes.to_vec(),
+            )
+        }
+        "secp256k1" => {
+            assert!(
+                qx.len() <= ECDH_CMD_MAX_COORDINATE_BYTES_SECP256K1,
+                "ECDH qx value was too long for curve secp256k1 (got: {}, max: {})",
+                qx.len(),
+                ECDH_CMD_MAX_COORDINATE_BYTES_SECP256K1,
+            );
+            assert!(
+                qy.len() <= ECDH_CMD_MAX_COORDINATE_BYTES_SECP256K1,
+                "ECDH qy value was too long for curve secp256k1 (got: {}, max: {})",
+                qy.len(),
+                ECDH_CMD_MAX_COORDINATE_BYTES_SECP256K1,
+            );
+            assert!(
+                d.len() <= ECDH_CMD_MAX_PRIVATE_KEY_BYTES_SECP256K1,
+                "ECDH private key was too long for curve secp256k1 (got: {}, max: {})",
+                d.len(),
+                ECDH_CMD_MAX_PRIVATE_KEY_BYTES_SECP256K1,
+            );
+            // U256 is picky about having the full byte slice, so extend `d` to be the right size
+            d.resize(32, 0u8);
+
+            // Calculate masked private key
+            let d = k256::Scalar::from(
+                ScalarPrimitiveSecp256k1::new(Secp256k1U256::from_le_slice(&d)).unwrap(),
+            );
+            let d0 = k256::Scalar::from(
+                ScalarPrimitiveSecp256k1::new(Secp256k1U256::from_be_hex(RANDOM_MASK_SECP256K1))
+                    .unwrap(),
+            );
+            // Automatically performs subtraction modulo the order (modulus) of secp256k1
+            let d1 = d - d0;
+            // Get big-endian encodings
+            let mut d0_bytes = d0.to_bytes();
+            let mut d1_bytes = d1.to_bytes();
+            // Reverse to get little-endian encodings
+            d0_bytes.reverse();
+            d1_bytes.reverse();
+            (
+                CryptotestEcdhCurve::Secp256k1,
                 d0_bytes.to_vec(),
                 d1_bytes.to_vec(),
             )

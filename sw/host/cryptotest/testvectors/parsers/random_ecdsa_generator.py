@@ -14,6 +14,8 @@ from Crypto.Hash import SHA256, SHA384, SHA512, SHA3_256, SHA3_384, SHA3_512
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 from cryptotest_util import rng
+from secp256k1 import generate_key as generate_secp256k1_key
+from secp256k1 import sign as secp256k1_sign
 
 MESSAGE_LENGTH = 512
 
@@ -24,8 +26,11 @@ def generate_test_vectors(args):
     # Parse tests within the group
     for count in range(args.count):
         # Generate random ECC key pair
-        key_pair = ECC.generate(curve=args.curve, randfunc=random)
-        public = key_pair.pointQ
+        if args.curve == "secp256k1":
+            private_key, public = generate_secp256k1_key(random)
+        else:
+            key_pair = ECC.generate(curve=args.curve, randfunc=random)
+            public = key_pair.pointQ
         msg = random(MESSAGE_LENGTH)
         signature = []
         # Sign digest of message using private key
@@ -43,8 +48,11 @@ def generate_test_vectors(args):
             digest = SHA3_512.new(msg)
         else:
             raise ValueError("Unsupported hash algorithm " + args.hash_alg)
-        signer = DSS.new(key_pair, 'fips-186-3', randfunc=random)
-        signature = signer.sign(digest)
+        if args.curve == "secp256k1":
+            signature = secp256k1_sign(private_key, digest, random)
+        else:
+            signer = DSS.new(key_pair, 'fips-186-3', randfunc=random)
+            signature = signer.sign(digest)
 
         signature = list(signature)
 
@@ -64,7 +72,14 @@ def generate_test_vectors(args):
         r = signature[:int(len(signature) / 2)]
         s = signature[int(len(signature) / 2):]
 
-        d = hex(int(key_pair.d))[2:]
+        if args.curve == "secp256k1":
+            d = hex(private_key)[2:]
+            qx = hex(public[0])[2:]
+            qy = hex(public[1])[2:]
+        else:
+            d = hex(int(key_pair.d))[2:]
+            qx = hex(int(public.x))[2:]
+            qy = hex(int(public.y))[2:]
 
         # Create sign test vector (currently only SHA-2 is supported)
         if args.hash_alg.startswith("sha-"):
@@ -77,8 +92,8 @@ def generate_test_vectors(args):
                 "hash_alg": args.hash_alg,
                 "message": list(msg),
                 # The [2:] removes the '0x' at the beginning of hex strings
-                "qx": hex(int(public.x))[2:],
-                "qy": hex(int(public.y))[2:],
+                "qx": qx,
+                "qy": qy,
                 "d": d,
                 "result": True,
             })
@@ -93,8 +108,8 @@ def generate_test_vectors(args):
             "hash_alg": args.hash_alg,
             "message": list(msg),
             # The [2:] removes the '0x' at the beginning of hex strings
-            "qx": hex(int(public.x))[2:],
-            "qy": hex(int(public.y))[2:],
+            "qx": qx,
+            "qy": qy,
             "r": bytes(r).hex(),
             "s": bytes(s).hex(),
             "result": verify_result,
@@ -111,7 +126,9 @@ def main():
                         help='Write output to this file.')
     parser.add_argument('--schema', type=str, help='Testvector schema file')
     parser.add_argument('--count', type=int, help='Number of test vectors to generate')
-    parser.add_argument('--curve', type=str, help='Elliptic curve [p256, p384]')
+    parser.add_argument('--curve',
+                        type=str,
+                        help='Elliptic curve [p256, p384, secp256k1]')
     parser.add_argument('--hash_alg',
                         type=str,
                         help='Hash algorithm \

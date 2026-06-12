@@ -13,6 +13,12 @@ py_library(
     visibility = ["//visibility:private"],
 )
 
+py_library(
+    name = "secp256k1",
+    srcs = ["secp256k1.py"],
+    visibility = ["//visibility:private"],
+)
+
 py_test(
     name = "cryptotest_util_test",
     srcs = [
@@ -92,6 +98,7 @@ py_binary(
     srcs = ["random_ecdsa_generator.py"],
     deps = [
         ":cryptotest_util",
+        ":secp256k1",
         requirement("jsonschema"),
         requirement("pycryptodome"),
     ],
@@ -148,6 +155,7 @@ py_binary(
     srcs = ["wycheproof_ecdh_parser.py"],
     deps = [
         ":cryptotest_util",
+        ":secp256k1",
         requirement("jsonschema"),
         requirement("pycryptodome"),
     ],

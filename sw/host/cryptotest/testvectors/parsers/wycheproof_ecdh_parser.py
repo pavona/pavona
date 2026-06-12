@@ -10,9 +10,11 @@ import logging
 import sys
 
 from Crypto.PublicKey import ECC
+from secp256k1 import parse_public_key as parse_secp256k1_public_key
 
 # Mapping from the curve names used by Wycheproof to those used by cryptotest
 EC_NAME_MAPPING = {
+    "secp256k1": "secp256k1",
     "secp256r1": "p256",
     "secp384r1": "p384",
 }
@@ -56,20 +58,38 @@ def parse_test_vectors(raw_data):
 
             # Parse ASN encoded public key
             if group["encoding"] == "asn":
-                try:
-                    public_key = ECC.import_key(bytes.fromhex(test["public"]))
-                except ValueError as e:
-                    logging.info(
-                        f"Skipped tcId {test['tcId']}: ValueError when parsing DER sequence: {e}."
-                    )
-                    continue
-                if CURVE_NAME[public_key.curve] != EC_NAME_MAPPING[group["curve"]]:
-                    logging.info(
-                        f"Skipped tcId {test['tcId']}: Curve in DER did not match test vector."
-                    )
-                    continue
-                test_vec["qx"] = list(public_key.pointQ.x.to_bytes())
-                test_vec["qy"] = list(public_key.pointQ.y.to_bytes())
+                if group["curve"] == "secp256k1":
+                    try:
+                        qx, qy = parse_secp256k1_public_key(
+                            bytes.fromhex(test["public"]))
+                    except ValueError as e:
+                        logging.info(
+                            f"Skipped tcId {test['tcId']}: ValueError when parsing "
+                            f"secp256k1 DER sequence: {e}."
+                        )
+                        continue
+                    test_vec["qx"] = list(qx)
+                    test_vec["qy"] = list(qy)
+                else:
+                    try:
+                        public_key = ECC.import_key(
+                            bytes.fromhex(test["public"]))
+                    except ValueError as e:
+                        logging.info(
+                            f"Skipped tcId {test['tcId']}: ValueError when parsing "
+                            f"DER sequence: {e}."
+                        )
+                        continue
+                    if (
+                        CURVE_NAME[public_key.curve]
+                        != EC_NAME_MAPPING[group["curve"]]
+                    ):
+                        logging.info(
+                            f"Skipped tcId {test['tcId']}: Curve in DER did not match test vector."
+                        )
+                        continue
+                    test_vec["qx"] = list(public_key.pointQ.x.to_bytes())
+                    test_vec["qy"] = list(public_key.pointQ.y.to_bytes())
             else:
                 logging.info(
                     f"Skipped tcId {test['tcId']}: unsupported encoding '{group['encoding']}'."

@@ -43,7 +43,8 @@ UJSON_SERDE_ENUM(CryptotestEcdsaHashAlg, cryptotest_ecdsa_hash_alg_t, ECDSA_HASH
 
 #define ECDSA_CURVE(_, value) \
     value(_, P256) \
-    value(_, P384)
+    value(_, P384) \
+    value(_, Secp256k1)
 UJSON_SERDE_ENUM(CryptotestEcdsaCurve, cryptotest_ecdsa_curve_t, ECDSA_CURVE);
 
 #define ECDSA_MESSAGE(field, string) \

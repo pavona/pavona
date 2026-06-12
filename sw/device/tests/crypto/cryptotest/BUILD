@@ -122,6 +122,8 @@ cryptotest(
 ECDSA_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_ecdsa_{}.json".format(config)
     for config in [
+        "secp256k1_sha256",
+        "secp256k1_sha512",
         "p256_sha256",
         "p256_sha512",
         "p256_sha3_256",
@@ -143,6 +145,12 @@ ECDSA_TESTVECTOR_TARGETS = [
         "p256_sha3_256",
         "p256_sha3_384",
         "p256_sha3_512",
+        "secp256k1_sha256",
+        "secp256k1_sha384",
+        "secp256k1_sha512",
+        "secp256k1_sha3_256",
+        "secp256k1_sha3_384",
+        "secp256k1_sha3_512",
         "p384_sha384",
         "p384_sha512",
         "p384_sha3_384",
@@ -166,6 +174,7 @@ cryptotest(
 ECDH_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_ecdh_{}".format(mode)
     for mode in [
+        "secp256k1",
         "p256",
         "p384",
     ]

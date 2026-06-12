@@ -108,6 +108,8 @@ run_binary(
         tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ecdsa_parser",
     )
     for src_name, cryptotest_name in [
+        ("ecdsa_secp256k1_sha256_test.json", "wycheproof_ecdsa_secp256k1_sha256"),
+        ("ecdsa_secp256k1_sha512_test.json", "wycheproof_ecdsa_secp256k1_sha512"),
         ("ecdsa_secp256r1_sha256_test.json", "wycheproof_ecdsa_p256_sha256"),
         ("ecdsa_secp256r1_sha512_test.json", "wycheproof_ecdsa_p256_sha512"),
         ("ecdsa_secp256r1_sha3_256_test.json", "wycheproof_ecdsa_p256_sha3_256"),
@@ -217,6 +219,12 @@ ECDSA_RANDOM_COUNT = 128
         ("random_ecdsa_p384_sha3_256", "p384", "sha3-256"),
         ("random_ecdsa_p384_sha3_384", "p384", "sha3-384"),
         ("random_ecdsa_p384_sha3_512", "p384", "sha3-512"),
+        ("random_ecdsa_secp256k1_sha256", "secp256k1", "sha-256"),
+        ("random_ecdsa_secp256k1_sha384", "secp256k1", "sha-384"),
+        ("random_ecdsa_secp256k1_sha512", "secp256k1", "sha-512"),
+        ("random_ecdsa_secp256k1_sha3_256", "secp256k1", "sha3-256"),
+        ("random_ecdsa_secp256k1_sha3_384", "secp256k1", "sha3-384"),
+        ("random_ecdsa_secp256k1_sha3_512", "secp256k1", "sha3-512"),
     ]
 ]
 
@@ -377,6 +385,7 @@ run_binary(
         tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ecdh_parser",
     )
     for src_name, cryptotest_name in [
+        ("ecdh_secp256k1_test.json", "wycheproof_ecdh_secp256k1"),
         ("ecdh_secp256r1_test.json", "wycheproof_ecdh_p256"),
         ("ecdh_secp384r1_test.json", "wycheproof_ecdh_p384"),
     ]

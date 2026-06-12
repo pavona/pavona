@@ -17,6 +17,7 @@ rust_binary(
         "@crate_index//:arrayvec",
         "@crate_index//:clap",
         "@crate_index//:humantime",
+        "@crate_index//:k256",
         "@crate_index//:log",
         "@crate_index//:num-bigint-dig",
         "@crate_index//:p256",
