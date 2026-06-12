@@ -30,6 +30,18 @@ class aes_base_vseq extends cip_base_vseq #(
   bit                key_rdy       = 0;
   bit                new_key       = 0;
 
+  typedef enum int {
+    AesFiCgControl,
+    AesFiCgCipher,
+    AesFiCgCore
+  } aes_fi_cg_domain_e;
+
+  typedef enum int {
+    AesFiCgNoTrigger,
+    AesFiCgClearRegs,
+    AesFiCgPrngReseed
+  } aes_fi_cg_trigger_e;
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
 
@@ -121,6 +133,57 @@ class aes_base_vseq extends cip_base_vseq #(
     reg_val[3] = 1'b1;
     csr_wr(.ptr(ral.trigger), .value(reg_val));
   endtask // prng_reseed
+
+  virtual task sample_fi_cg_at_state(aes_fi_cg_domain_e domain,
+                                     int state,
+                                     int target,
+                                     aes_fi_cg_trigger_e trigger = AesFiCgNoTrigger,
+                                     int if_num = 0,
+                                     clear_t clear_vector = '0,
+                                     bit walking = 0);
+    bit auto_sampled = 1'b0;
+    string state_name;
+    aes_ctrl_e ctrl_state;
+    aes_cipher_ctrl_e cipher_state;
+
+    ctrl_state = aes_ctrl_e'(state);
+    cipher_state = aes_cipher_ctrl_e'(state);
+    state_name = (domain == AesFiCgCipher) ? cipher_state.name() : ctrl_state.name();
+
+    fork
+      begin
+        case (domain)
+          AesFiCgControl: begin
+            wait(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == ctrl_state);
+            cfg.aes_control_fi_vif[if_num].sample_cg_now(target);
+          end
+          AesFiCgCipher: begin
+            wait(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == cipher_state);
+            cfg.aes_cipher_control_fi_vif[if_num].sample_cg_now(target);
+          end
+          AesFiCgCore: begin
+            wait(cfg.aes_core_fi_vif.aes_ctrl_cs == ctrl_state);
+            cfg.aes_core_fi_vif.sample_cg_now(target);
+          end
+          default: `uvm_fatal(`gfn, $sformatf("Unknown FI CG domain %0d", domain))
+        endcase
+        auto_sampled = 1'b1;
+      end
+    join_none
+
+    case (trigger)
+      AesFiCgNoTrigger: ;
+      AesFiCgClearRegs: clear_regs(clear_vector);
+      AesFiCgPrngReseed: prng_reseed();
+      default: `uvm_fatal(`gfn, $sformatf("Unknown FI CG trigger %0d", trigger))
+    endcase
+
+    `DV_SPINWAIT_EXIT(
+        wait(auto_sampled);,
+        cfg.clk_rst_vif.wait_clks(2_000);,
+        $sformatf("%s did not enter %s within 2000 clks",
+                  walking ? "walk: FSM" : "watcher", state_name))
+  endtask // sample_fi_cg_at_state
 
 
   virtual task set_regwen(bit val);

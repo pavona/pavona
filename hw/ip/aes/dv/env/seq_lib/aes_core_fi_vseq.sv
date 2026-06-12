@@ -86,67 +86,19 @@ class aes_core_fi_vseq extends aes_base_vseq;
                                       aes_pkg::CTRL_CLEAR_CO}) begin
           // The PRNG Update and Clear states are entered for ~1 cycle by clear_regs() during the
           // multi-cycle CSR write. Arm a watcher BEFORE the trigger to sample the CG at entry.
-          bit auto_sampled = 1'b0;
-          fork
-            begin
-              wait(cfg.aes_core_fi_vif.aes_ctrl_cs == await_state);
-              cfg.aes_core_fi_vif.sample_cg_now(target);
-              auto_sampled = 1'b1;
-            end
-          join_none
-          clear_regs('{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
-          `DV_SPINWAIT_EXIT(
-              wait(auto_sampled);,
-              cfg.clk_rst_vif.wait_clks(2_000);,
-              $sformatf("watcher did not fire for state %s within 2000 clks",
-                        await_state.name()))
+          sample_fi_cg_at_state(AesFiCgCore, await_state, target, AesFiCgClearRegs,
+                                 0, '{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
         end else if (await_state == aes_pkg::CTRL_PRNG_RESEED) begin
           // PRNG_RESEED has the same multi-cycle CSR-write race; use the same fork-watcher.
-          bit auto_sampled = 1'b0;
-          fork
-            begin
-              wait(cfg.aes_core_fi_vif.aes_ctrl_cs == await_state);
-              cfg.aes_core_fi_vif.sample_cg_now(target);
-              auto_sampled = 1'b1;
-            end
-          join_none
-          prng_reseed();
-          `DV_SPINWAIT_EXIT(
-              wait(auto_sampled);,
-              cfg.clk_rst_vif.wait_clks(2_000);,
-              $sformatf("watcher did not fire for state %s within 2000 clks",
-                        await_state.name()))
+          sample_fi_cg_at_state(AesFiCgCore, await_state, target, AesFiCgPrngReseed);
         end else if (await_state == aes_pkg::CTRL_LOAD) begin
           // LOAD is entered naturally at the start of each message; same fork-watcher.
-          bit auto_sampled = 1'b0;
-          fork
-            begin
-              wait(cfg.aes_core_fi_vif.aes_ctrl_cs == await_state);
-              cfg.aes_core_fi_vif.sample_cg_now(target);
-              auto_sampled = 1'b1;
-            end
-          join_none
-          `DV_SPINWAIT_EXIT(
-              wait(auto_sampled);,
-              cfg.clk_rst_vif.wait_clks(2_000);,
-              $sformatf("watcher did not fire for state %s within 2000 clks",
-                        await_state.name()))
+          sample_fi_cg_at_state(AesFiCgCore, await_state, target);
         end else if (fi_walking) begin
           // Walking on a natural state (IDLE/FINISH): FSM cycles through during message
           // processing. Same fork-watcher pattern catches entry.
-          bit auto_sampled = 1'b0;
-          fork
-            begin
-              wait(cfg.aes_core_fi_vif.aes_ctrl_cs == await_state);
-              cfg.aes_core_fi_vif.sample_cg_now(target);
-              auto_sampled = 1'b1;
-            end
-          join_none
-          `DV_SPINWAIT_EXIT(
-              wait(auto_sampled);,
-              cfg.clk_rst_vif.wait_clks(2_000);,
-              $sformatf("walk: FSM did not enter %s within 2000 clks",
-                        await_state.name()))
+          sample_fi_cg_at_state(AesFiCgCore, await_state, target, AesFiCgNoTrigger,
+                                 0, '0, 1'b1);
         end else begin
           cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
         end

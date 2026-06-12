@@ -14,6 +14,7 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
   bit  finished_all_msgs = 0;
   bit  wait_for_alert_clear = 0;
   bit  wait_for_alert_and_reset = 0;
+  bit  alert_reset_seen = 0;
 
   localparam bit FORCE   = 0;
   localparam bit RELEASE = 1;
@@ -93,53 +94,18 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
               // polling DV_WAIT(cs == await_state) after the trigger never fires. Arm a watcher
               // BEFORE the trigger so it catches the state entry and samples the CG with the
               // correct (target, state) pair.
-              bit auto_sampled = 1'b0;
-              fork
-                begin
-                  wait(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state);
-                  cfg.aes_cipher_control_fi_vif[if_num].sample_cg_now(target);
-                  auto_sampled = 1'b1;
-                end
-              join_none
-              clear_regs('{dataout: 1'b1, default: 1'b0});
-              `DV_SPINWAIT_EXIT(
-                  wait(auto_sampled);,
-                  cfg.clk_rst_vif.wait_clks(2_000);,
-                  $sformatf("watcher did not fire for state %s within 2000 clks",
-                            await_state.name()))
+              sample_fi_cg_at_state(AesFiCgCipher, await_state, target, AesFiCgClearRegs,
+                                     if_num, '{dataout: 1'b1, default: 1'b0});
             end else if ((await_state == aes_pkg::CIPHER_CTRL_PRNG_RESEED) && `EN_MASKING) begin
               // PRNG_RESEED has the same multi-cycle CSR-write race; use the same fork-watcher.
-              bit auto_sampled = 1'b0;
-              fork
-                begin
-                  wait(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state);
-                  cfg.aes_cipher_control_fi_vif[if_num].sample_cg_now(target);
-                  auto_sampled = 1'b1;
-                end
-              join_none
-              prng_reseed();
-              `DV_SPINWAIT_EXIT(
-                  wait(auto_sampled);,
-                  cfg.clk_rst_vif.wait_clks(2_000);,
-                  $sformatf("watcher did not fire for state %s within 2000 clks",
-                            await_state.name()))
+              sample_fi_cg_at_state(AesFiCgCipher, await_state, target, AesFiCgPrngReseed,
+                                     if_num);
             end else if (fi_walking) begin
               // Walking on a natural state (IDLE/INIT/ROUND/FINISH): no helper write, but the
               // FSM cycles through during message processing. Same fork-watcher pattern catches
               // entry and samples the CG with the right state.
-              bit auto_sampled = 1'b0;
-              fork
-                begin
-                  wait(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state);
-                  cfg.aes_cipher_control_fi_vif[if_num].sample_cg_now(target);
-                  auto_sampled = 1'b1;
-                end
-              join_none
-              `DV_SPINWAIT_EXIT(
-                  wait(auto_sampled);,
-                  cfg.clk_rst_vif.wait_clks(2_000);,
-                  $sformatf("walk: FSM did not enter %s within 2000 clks",
-                            await_state.name()))
+              sample_fi_cg_at_state(AesFiCgCipher, await_state, target, AesFiCgNoTrigger,
+                                     if_num, '0, 1'b1);
             end else begin
               cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
             end
@@ -172,10 +138,15 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
         // and the coverage DB is flushed.
         `DV_SPINWAIT_EXIT(
             cfg.m_alert_agent_cfgs["fatal_fault"].vif.wait_ack_complete();
-            wait(!cfg.clk_rst_vif.rst_n);,
+            wait(!cfg.clk_rst_vif.rst_n);
+            alert_reset_seen = 1;,
             cfg.clk_rst_vif.wait_clks(20_000);,
             $sformatf("alert ack/reset wait bounded (target=%0d may not trigger alert)", target))
         cfg.aes_cipher_control_fi_vif[if_num].force_signal(target, RELEASE, force_value);
+        if (!alert_reset_seen) begin
+          apply_resets_concurrently();
+          dut_init("HARD");
+        end
         `uvm_info(`gfn, $sformatf("Finish"), UVM_MEDIUM)
         disable fork;
       end // fork

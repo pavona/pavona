@@ -548,6 +548,9 @@
       ],
       tags: [// Updates based on writes to other regs.
              // These registers are reset to 0, but the reset also triggers internal operations that clear these registers with pseudo-random data shortly afterwards (See Trigger Register).
+             // Generic CSR tests can otherwise accidentally start AES with arbitrary key/control
+             // state by writing input words. Dedicated AES sequences cover DATA_IN writes.
+             "excl:CsrNonInitTests:CsrExclWrite",
              "excl:CsrHwResetTest:CsrExclCheck"]
       }
     },

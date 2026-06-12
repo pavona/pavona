@@ -22,6 +22,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   bit          ok_to_fwd          = 0;        // 0: item is not ready to forward
   bit          reset_rebuilding   = 0;        // reset message rebuilding task
   bit          exp_clear          = 0;        // if using sideload - we are expecting a clear
+  bit          split_pending      = 0;        // key/IV/data clear split the current message
   keymgr_pkg::hw_key_req_t sideload_key = 0;  // will hold the key from sideload
   uvm_tlm_analysis_fifo #(key_sideload_item)  key_manager_fifo;
   bit [3:0]    datain_rdy         = '0;       // indicate if DATA_IN can be updated
@@ -159,7 +160,14 @@ class aes_scoreboard extends cip_base_scoreboard #(
       // this is seen as the beginning of a new message
       if (!input_item.start_item) begin
         input_item.start_item = 1;
-        if (!exp_clear) input_item.split_item = 1;
+        if (!exp_clear) begin
+          input_item.split_item = 1;
+          split_pending = 1;
+          if (rcv_item_q.size() != 0) begin
+            // The current block may already be queued for its output when the clear arrives.
+            rcv_item_q[0].split_item = 1;
+          end
+        end
         exp_clear = 0;
         `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
       end
@@ -332,6 +340,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
       if (ok_to_fwd) begin
         ok_to_fwd = 0;
         `downcast(input_clone, input_item.clone());
+        input_clone.split_item |= split_pending;
+        split_pending = 0;
         `uvm_info(`gfn, $sformatf("\n\t AES INPUT ITEM RECEIVED - \n %s \n\t split message: %0b",
                                    input_clone.convert2string(), input_clone.split_item),
                                   UVM_MEDIUM)
@@ -673,6 +683,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     cfg.split_cnt = 0;
     // if split is set before reset make sure to cancel
     input_item.split_item = 0;
+    split_pending = 0;
     // reset compare task to start
     reset_rebuilding = 1;
   endfunction

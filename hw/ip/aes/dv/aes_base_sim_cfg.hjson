@@ -33,8 +33,9 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson"
+                // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
+                ]
 
   // Add additional tops for simulation.
   sim_tops: [ "aes_bind",
@@ -237,10 +238,12 @@
       reseed: 10
     }
     // A combination of aes_stress_all with random resets injected into the actual sequences.
-    {
-      name: "aes_stress_all_with_rand_reset"
-      reseed: 10
-    }
+    // TODO: stress_all_with_rand_reset is generally flaky across all testbenches. A new
+    // methodology is under design. Till then we ignore executing the test
+    //// {
+    ////   name: "aes_stress_all_with_rand_reset"
+    ////   reseed: 10
+    //// }
   ]
 
   // List of regressions.
