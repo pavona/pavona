@@ -11,8 +11,8 @@ The ACC itself provides acceleration for operations including:
 * RSA-2048, RSA-3072, and RSA-4096 PKCS v1.5 signatures
 * RSA-2048, RSA-3072, and RSA-4096 PSS signatures
 * RSA-2048, RSA-3072, and RSA-4096 OAEP encryption
-* ECDSA with NIST P-256 and NIST P-384 curves
-* ECDH with NIST P-256 and NIST P-384 curves
+* ECDSA with NIST P-256, NIST P-384, and secp256k1 curves
+* ECDH with NIST P-256, NIST P-384, and secp256k1 curves
 * Ed25519
 * X25519
 * ML-KEM-{512,768,1024}
@@ -69,7 +69,7 @@ In particular, ACC branch instructions are implemented to take the same number o
 To allow fast conditionals, a single-cycle WDR ‘select’ instruction is used.
 See [*From Artifact to Production: Integrating and Refining Lattice Cryptography Acceleration*](https://www.zerorisc.com/blog/from-artifact-to-production-integrating-and-refining-lattice-cryptography-acceleration) for an in-depth example of optimizing ML-KEM rejection sampling using this approach.
 
-Passive side-channel mitigations: Standard mitigations such as first-order masking and blinding have been used extensively throughout e.g. the P-256 and P-384 implementations.
+Passive side-channel mitigations: Standard mitigations such as first-order masking and blinding have been used extensively throughout e.g. the P-256, P-384, and secp256k1 implementations.
 Prior analysis using CocoAlma on SCA traces from FPGA builds has been used to determine the set of cases where shares may interact in the ACC datapath, including motifs which cause transient leakage, and in turn care has been taken to avoid and eliminate these constructions in the code.
 
 Active side-channel mitigations: As noted above, a dual-core lockstep ACC implementation is the primary recommended approach for mitigating active attacks.

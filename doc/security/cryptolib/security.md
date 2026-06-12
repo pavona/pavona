@@ -48,7 +48,7 @@ The following software-based countermeasures are implemented:
 The following software-based countermeasures are implemented:
 - To mitigate fault injection attacks on the execution of ECDSA, a verify-after-sign strategy is used.
   The secret key is additively masked and the modular arithmetic operations modulo the point order to compute s are masked.
-- P256:
+- P256 and secp256k1:
   - Uses a constant-time square and multiply always algorithm processing an additively shared scalar.
   - Scalars (both ephemeral and secret keys) are additionally always blinded using a 64b multiple of the curve order.
   - For ECDH and key generation from a HW-backed seed, scalars are blinded using a 65b random multiple of the point order (as per [Schindler and Wiemers](https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf)).

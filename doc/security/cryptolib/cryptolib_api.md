@@ -34,7 +34,7 @@ For more details, see later sections (links in the "category" column).
 | [**Hash functions**](#hash-functions) | SHA2-{256,384,512}<br>SHA3-{224,256,384,512}<br>SHAKE{128,256} (XOF)<br>cSHAKE{128,256} (XOF) |
 | [**Message authentication**](#message-authentication) | HMAC-SHA256<br>KMAC{128,256} |
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
-| [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
+| [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384,secp256k1}<br>ECDH-{P256,P384,secp256k1}<br>Ed25519<br>X25519 |
 | [**ML-KEM**](#ml-kem) | ML-KEM-{512,768,1024} |
 | [**ML-DSA**](#ml-dsa) | ML-DSA-{44,65,87} |
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
@@ -334,7 +334,7 @@ All ECC operations may be run [asynchronously](#asynchronous-operations) through
 ### Supported Curves
 
 Elliptic curves of the short Weierstrass form, Montgomery form, and twisted Edward form are supported.
-- For short Weierstrass form, NIST P-256 and P-384 are supported.
+- For short Weierstrass form, NIST P-256, NIST P-384, and secp256k1 are supported.
 - For the Montgomery form, only X25519 is supported.
 - For twisted Edwards form only Ed25519 is supported.
 
@@ -354,6 +354,7 @@ Below are security strengths for the curves supported by cryptolib, as well as s
 |--------------|-------------------|-----------------------|-----------------------------------------|
 | P-256        | 128 bits          | ECDSA-P256, ECDH-P256 | [NIST SP800-57][nist-sp800-57], table 2 |
 | P-384        | 192 bits          | ECDSA-P384, ECDH-P384 | [NIST SP800-57][nist-sp800-57], table 2 |
+| secp256k1    | 128 bits          | ECDSA-secp256k1, ECDH-secp256k1 | [SEC2][sec2] |
 | edwards25519 | ~128 bits         | Ed25519               | [FIPS 186-5][fips-186], section 7.1     |
 | curve25519   | ~128 bits         | X25519                | same order as edwards25519              |
 
@@ -377,6 +378,11 @@ For ECDSA, the cryptography library supports keypair generation, signing, and si
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify }}
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_sign_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_verify }}
+
 #### ECDH
 
 For ECDH (elliptic-curve Diffie-Hellman) key exchange, the cryptography library supports keypair generation and shared-key generation.
@@ -387,6 +393,9 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384 }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdh_secp256k1_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdh_secp256k1 }}
 
 #### X25519
 
@@ -418,6 +427,15 @@ Each party should generate a key pair, exchange public keys, and then generate t
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify_async_finalize }}
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_sign_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdsa_secp256k1_verify_async_finalize }}
+
 #### ECDH
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_keygen_async_start }}
@@ -431,6 +449,12 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdh_secp256k1_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdh_secp256k1_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdh_secp256k1_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_secp256k1.h otcrypto_ecdh_secp256k1_async_finalize }}
 
 #### X25519
 
@@ -668,6 +692,7 @@ The table below summarizes the security strength for the supported [cryptographi
 | RSA            | RSA-4096       | \~144                            |                                                       |
 | ECC            | NIST P-256     | 128                              |                                                       |
 | ECC            | NIST P-384     | 192                              |                                                       |
+| ECC            | secp256k1      | 128                              |                                                       |
 | ECC            | X25519/Ed25519 | 128                              |                                                       |
 | ML-KEM         | ML-KEM-512     | 128                              |                                                       |
 | ML-KEM         | ML-KEM-768     | 192                              |                                                       |
