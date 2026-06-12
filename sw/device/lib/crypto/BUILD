@@ -23,6 +23,7 @@ ot_static_library(
         "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:ecc_p256",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:ecc_secp256k1",
         "//sw/device/lib/crypto/impl:ed25519",
         "//sw/device/lib/crypto/impl:hkdf",
         "//sw/device/lib/crypto/impl:hmac",

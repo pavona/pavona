@@ -1,0 +1,48 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+[
+  {
+    symbol: "random_keygen",
+    exclude_symbols: ["secp256k1_invalid_input"],
+    const_str: "Secp256k1Keygen",
+    comment: "secp256k1 key generation",
+  },
+  {
+    symbol: "ecdsa_verify",
+    exclude_symbols: ["secp256k1_invalid_input"],
+    const_str: "Secp256k1Verify",
+    comment: "secp256k1 ECDSA verification",
+  },
+  {
+    symbol: "sideload_keygen",
+    exclude_symbols: ["secp256k1_invalid_input"],
+    const_str: "Secp256k1SideloadKeygen",
+    comment: "secp256k1 key generation with sideloaded seed",
+  },
+  {
+    symbol: "sideload_ecdsa_sign",
+    exclude_symbols: ["secp256k1_invalid_input"],
+    const_str: "Secp256k1SideloadSign",
+    comment: "secp256k1 ECDSA signing with sideloaded key",
+  },
+  {
+    symbol: "shared_key_from_seed",
+    exclude_symbols: ["secp256k1_invalid_input"],
+    const_str: "Secp256k1SideloadEcdh",
+    comment: "secp256k1 ECDH key exchange with sideloaded seed",
+  },
+  {
+    symbol: "ecdsa_sign",
+    exclude_symbols: ["secp256k1_invalid_input"],
+    const_str: "Secp256k1Sign",
+    comment: "secp256k1 ECDSA signing"
+  },
+  {
+    symbol: "shared_key",
+    exclude_symbols: ["secp256k1_invalid_input", "shared_key_from_seed"],
+    const_str: "Secp256k1Ecdh",
+    comment: "secp256k1 ECDH key exchange"
+  },
+]

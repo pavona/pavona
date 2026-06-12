@@ -11,6 +11,7 @@
 #include "drbg.h"
 #include "ecc_p256.h"
 #include "ecc_p384.h"
+#include "ecc_secp256k1.h"
 #include "ed25519.h"
 #include "hkdf.h"
 #include "hmac.h"

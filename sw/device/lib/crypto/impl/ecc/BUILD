@@ -41,6 +41,22 @@ cc_library(
 )
 
 cc_library(
+    name = "secp256k1",
+    srcs = ["secp256k1.c"],
+    hdrs = ["secp256k1.h"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        ":secp256k1_insn_counts",
+        "//sw/acc/crypto:run_secp256k1",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:acc",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
+cc_library(
     name = "ed25519",
     srcs = ["ed25519.c"],
     hdrs = ["ed25519.h"],
@@ -72,6 +88,15 @@ autogen_acc_insn_count_header(
     template = "p384_insn_counts.h.tpl",
     deps = [
         "//sw/acc/crypto:run_p384",
+    ],
+)
+
+autogen_acc_insn_count_header(
+    name = "secp256k1_insn_counts",
+    hjson = "secp256k1_modes.hjson",
+    template = "secp256k1_insn_counts.h.tpl",
+    deps = [
+        "//sw/acc/crypto:run_secp256k1",
     ],
 )
 

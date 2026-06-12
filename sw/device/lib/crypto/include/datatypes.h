@@ -286,10 +286,14 @@ typedef enum otcrypto_ecc_key_mode {
   kOtcryptoEccKeyModeEcdsaP256 = 0x31e,
   // Mode ECDSA/P-384.
   kOtcryptoEccKeyModeEcdsaP384 = 0x695,
+  // Mode ECDSA/secp256k1.
+  kOtcryptoEccKeyModeEcdsaSecp256k1 = 0x05d,
   // Mode ECDH/P-256.
   kOtcryptoEccKeyModeEcdhP256 = 0x5fc,
   // Mode ECDH/P-384.
   kOtcryptoEccKeyModeEcdhP384 = 0x1c7,
+  // Mode ECDH/secp256k1.
+  kOtcryptoEccKeyModeEcdhSecp256k1 = 0x16a,
   // Mode Ed25519.
   kOtcryptoEccKeyModeEd25519 = 0x663,
   // Mode X25519.
@@ -401,12 +405,18 @@ typedef enum otcrypto_key_mode {
   // Key is intended for ECDSA with P-384.
   kOtcryptoKeyModeEcdsaP384 =
       kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsaP384,
+  // Key is intended for ECDSA with secp256k1.
+  kOtcryptoKeyModeEcdsaSecp256k1 =
+      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsaSecp256k1,
   // Key is intended for ECDH with P-256.
   kOtcryptoKeyModeEcdhP256 =
       kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdhP256,
   // Key is intended for ECDH with P-384.
   kOtcryptoKeyModeEcdhP384 =
       kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdhP384,
+  // Key is intended for ECDH with secp256k1.
+  kOtcryptoKeyModeEcdhSecp256k1 =
+      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdhSecp256k1,
   // Key is intended for Ed25519 mode.
   kOtcryptoKeyModeEd25519 =
       kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEd25519,
