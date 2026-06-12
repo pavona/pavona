@@ -68,6 +68,11 @@ runs:
           fi
           wget "${POOL_URL}/libtinfo5_6.3-2ubuntu0.1_${ARCH}.deb"
           sudo apt install "./libtinfo5_6.3-2ubuntu0.1_${ARCH}.deb"
+          # TODO: Remove once the prebuilt LLVM toolchain no longer links libxml2.so.2.
+          LIBDIR="/usr/lib/$(uname -m)-linux-gnu"
+          if [ -e "${LIBDIR}/libxml2.so.16" ] && [ ! -e "${LIBDIR}/libxml2.so.2" ]; then
+            sudo ln -s libxml2.so.16 "${LIBDIR}/libxml2.so.2"
+          fi
         else
           # Install Extra Packages for Enterprise Linux first
           sudo yum install -y epel-release
