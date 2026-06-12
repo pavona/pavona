@@ -59,8 +59,15 @@ runs:
           sudo apt update --fix-missing
           grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
           sudo apt install wget
-          wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
-          sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
+          # TODO: Remove once the prebuilt RISC-V toolchain no longer needs libtinfo5.
+          ARCH="$(dpkg --print-architecture)"
+          if [ "$ARCH" = "amd64" ]; then
+            POOL_URL=http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses
+          else
+            POOL_URL=http://ports.ubuntu.com/ubuntu-ports/pool/universe/n/ncurses
+          fi
+          wget "${POOL_URL}/libtinfo5_6.3-2ubuntu0.1_${ARCH}.deb"
+          sudo apt install "./libtinfo5_6.3-2ubuntu0.1_${ARCH}.deb"
         else
           # Install Extra Packages for Enterprise Linux first
           sudo yum install -y epel-release
