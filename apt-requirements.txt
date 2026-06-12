@@ -24,6 +24,7 @@ help2man
 lcov
 libelf1
 libelf-dev
+libfl-dev
 libftdi1-2
 libftdi1-dev
 libpcsclite-dev
