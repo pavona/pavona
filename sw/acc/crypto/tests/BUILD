@@ -565,6 +565,265 @@ acc_sim_test(
 )
 
 acc_sim_test(
+    name = "secp256k1_mul_modp_test",
+    srcs = [
+        "secp256k1_mul_modp_test.s",
+    ],
+    exp = "secp256k1_mul_modp_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_mod_mul_n_test",
+    srcs = [
+        "secp256k1_mod_mul_n_test.s",
+    ],
+    exp = "secp256k1_mod_mul_n_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_proj_add_test",
+    srcs = [
+        "secp256k1_proj_add_test.s",
+    ],
+    exp = "secp256k1_proj_add_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_consttime_test(
+    name = "secp256k1_proj_add_consttime",
+    subroutine = "proj_add",
+    deps = [
+        "//sw/acc/crypto:run_secp256k1",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_proj_double_test",
+    srcs = [
+        "secp256k1_proj_double_test.s",
+    ],
+    exp = "secp256k1_proj_double_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_isoncurve_test",
+    srcs = [
+        "secp256k1_isoncurve_test.s",
+    ],
+    exp = "secp256k1_isoncurve_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_consttime_test(
+    name = "secp256k1_isoncurve_consttime",
+    subroutine = "secp256k1_isoncurve",
+    deps = [
+        "//sw/acc/crypto:run_secp256k1",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_isoncurve_proj_test",
+    srcs = [
+        "secp256k1_isoncurve_proj_test.s",
+    ],
+    exp = "secp256k1_isoncurve_proj_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:secp256k1_isoncurve_proj",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_base_mult_test",
+    srcs = [
+        "secp256k1_base_mult_test.s",
+    ],
+    exp = "secp256k1_base_mult_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_consttime_test(
+    name = "secp256k1_base_mult_consttime",
+    subroutine = "secp256k1_base_mult",
+    deps = [
+        "//sw/acc/crypto:run_secp256k1",
+    ],
+)
+
+acc_consttime_test(
+    name = "secp256k1_key_from_seed_consttime",
+    subroutine = "secp256k1_key_from_seed",
+    deps = [
+        "//sw/acc/crypto:run_secp256k1",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_ecdsa_sign_test",
+    srcs = [
+        "secp256k1_ecdsa_sign_test.s",
+    ],
+    exp = "secp256k1_ecdsa_sign_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:secp256k1_sign",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_ecdsa_verify_test",
+    srcs = [
+        "secp256k1_ecdsa_verify_test.s",
+    ],
+    exp = "secp256k1_ecdsa_verify_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:secp256k1_verify",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_ecdh_shared_key_test",
+    srcs = [
+        "secp256k1_ecdh_shared_key_test.s",
+    ],
+    exp = "secp256k1_ecdh_shared_key_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:secp256k1_isoncurve_proj",
+        "//sw/acc/crypto:secp256k1_shared_key",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_consttime_test(
+    name = "secp256k1_shared_key_consttime",
+    subroutine = "secp256k1_shared_key",
+    deps = [
+        "//sw/acc/crypto:run_secp256k1",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_scalar_mult_test",
+    srcs = [
+        "secp256k1_scalar_mult_test.s",
+    ],
+    exp = "secp256k1_scalar_mult_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_key_from_seed_test",
+    srcs = [
+        "secp256k1_key_from_seed_test.s",
+    ],
+    exp = "secp256k1_key_from_seed_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_scalar_remask_test",
+    srcs = [
+        "secp256k1_scalar_remask_test.s",
+    ],
+    exp = "secp256k1_scalar_remask_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_arithmetic_to_boolean_test",
+    srcs = [
+        "secp256k1_arithmetic_to_boolean_test.s",
+    ],
+    exp = "secp256k1_arithmetic_to_boolean_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:secp256k1_isoncurve_proj",
+        "//sw/acc/crypto:secp256k1_shared_key",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
+    name = "secp256k1_arithmetic_to_boolean_mod_test",
+    srcs = [
+        "secp256k1_arithmetic_to_boolean_mod_test.s",
+    ],
+    exp = "secp256k1_arithmetic_to_boolean_mod_test.exp",
+    deps = [
+        "//sw/acc/crypto:secp256k1_base",
+        "//sw/acc/crypto:secp256k1_isoncurve",
+        "//sw/acc/crypto:secp256k1_isoncurve_proj",
+        "//sw/acc/crypto:secp256k1_shared_key",
+        "//sw/acc/crypto:trigger_fault_if_fg0_z",
+        "//sw/acc/crypto:trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_sim_test(
     name = "p256_arithmetic_to_boolean_test",
     srcs = [
         "p256_arithmetic_to_boolean_test.s",
@@ -606,6 +865,19 @@ acc_sim_test_suite(
         "p256_check_public_key_y_too_large.hjson",
         "p256_isoncurve_valid.hjson",
         "p256_keygen_valid.hjson",
+    ],
+)
+
+acc_sim_test_suite(
+    name = "secp256k1_test",
+    binary = "//sw/acc/crypto:run_secp256k1",
+    tests = [
+        "secp256k1_check_public_key_not_on_curve.hjson",
+        "secp256k1_check_public_key_valid.hjson",
+        "secp256k1_check_public_key_x_too_large.hjson",
+        "secp256k1_check_public_key_y_too_large.hjson",
+        "secp256k1_isoncurve_valid.hjson",
+        "secp256k1_keygen_valid.hjson",
     ],
 )
 

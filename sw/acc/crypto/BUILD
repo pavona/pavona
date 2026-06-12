@@ -167,6 +167,65 @@ acc_binary(
 )
 
 acc_library(
+    name = "secp256k1_shared_key",
+    srcs = [
+        "secp256k1_shared_key.s",
+    ],
+)
+
+acc_library(
+    name = "secp256k1_base",
+    srcs = [
+        "secp256k1_base.s",
+    ],
+)
+
+acc_library(
+    name = "secp256k1_isoncurve",
+    srcs = [
+        "secp256k1_isoncurve.s",
+    ],
+)
+
+acc_library(
+    name = "secp256k1_isoncurve_proj",
+    srcs = [
+        "secp256k1_isoncurve_proj.s",
+    ],
+)
+
+acc_library(
+    name = "secp256k1_sign",
+    srcs = [
+        "secp256k1_sign.s",
+    ],
+)
+
+acc_library(
+    name = "secp256k1_verify",
+    srcs = [
+        "secp256k1_verify.s",
+    ],
+)
+
+acc_binary(
+    name = "run_secp256k1",
+    srcs = [
+        "run_secp256k1.s",
+    ],
+    deps = [
+        ":secp256k1_base",
+        ":secp256k1_isoncurve",
+        ":secp256k1_isoncurve_proj",
+        ":secp256k1_shared_key",
+        ":secp256k1_sign",
+        ":secp256k1_verify",
+        ":trigger_fault_if_fg0_z",
+        ":trigger_fault_if_not_fg0_z",
+    ],
+)
+
+acc_library(
     name = "p384_base",
     srcs = [
         "p384_base.s",

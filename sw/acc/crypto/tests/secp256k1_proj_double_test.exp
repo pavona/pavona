@@ -1,0 +1,9 @@
+# Expected values:
+# w0..w2: projective result of 2*G,
+# w8..w10: result of doubling the point at infinity.
+w0 = 0xf40af3b6c6fdf9aa5402b9fdc39ac4b67827eb373c92077452348e044f109fc8
+w1 = 0x56915849f52cc8f76f5fd7e4bf60db4a43bf633e1b1383f85fe89164bfadcbdb
+w2 = 0xf8783c53dfb2a307b568a6ad931fc97023dc71cdc3eac498b0c6ba5554759a29
+w8 = 0x0
+w9 = 0x1
+w10 = 0x0

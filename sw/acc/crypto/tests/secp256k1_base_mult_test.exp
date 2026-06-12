@@ -1,0 +1,5 @@
+# Expected values (x- and y-coordinates of result):
+# w0 is affine x-coordinate of resulting point,
+# w1 is affine y-coordinate of resulting point.
+w0 = 0xb269fedf269e6899bc142dd5355f88f909169c30345daff9713d9401a13f5722
+w1 = 0xb2510a4cb1c3739f3391480f6ce4df34133110d652771631ffc11bc4a04f5d8f

@@ -1,0 +1,40 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  /**
+   * @param[out] dmem[d0]: First share of secret key.
+   * @param[out] dmem[d1]: Second share of secret key.
+   * @param[out]  dmem[x]: Public key x-coordinate.
+   * @param[out]  dmem[y]: Public key y-coordinate.
+   *
+   * Note: like for the `ok` values, the expected output dmem values below are
+   * written with the bytes of each 32-bit word swapped (dump comparison
+   * convention).
+   */
+
+  "input": {
+    "dmem": {
+      "mode": "0x000001f8"  # MODE_KEYGEN
+    }
+  }
+  "output": {
+    "dmem": {
+      # Verified that (x, y) == (d0 + d1) * G
+      "x": "0x915398ea8a28042ed8c6d7bcecb4c1733b2e7adf5fe66ec21f443dbca3f09d61"
+      "y": "0x018db33d448cfb0f589cf40624344e21e116cf0cd59cc7f7c3143425ae3b3c8b"
+
+      "d0":
+        '''
+          0x000000000000000000000000000000000000000000000000402471bc95de7bd1
+          981bd5ca3c71b2ee9ebf678bfaf301178e4dd0c25b2a8dcf890a2469e1e4dab4
+        '''
+
+      "d1":
+        '''
+          0x0000000000000000000000000000000000000000000000009d52ac9b72e98881
+          29ff7b160429747e1ef21f96cd0dbcd12d797be576d48d504d9ce98a2b510e87
+        '''
+    }
+  }
+}
