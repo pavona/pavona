@@ -6,10 +6,7 @@
 # for OpenTitan.
 
 # Global configuration options.
-ARG VERILATOR_VERSION=4.210
 ARG VERIBLE_VERSION=v0.0-3622-g07b310a3
-# The RISCV toolchain version should match the release tag used in GitHub.
-ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
 # This should match the version in bazelish.sh.
 ARG BAZELISK_VERSION=v1.24.1
 # This should match the version of the lowRISC RISC-V toolchain.
@@ -17,11 +14,15 @@ ARG CLANG_VERSION=16
 
 # Main container image.
 FROM ubuntu:22.04 AS pavona
-ARG VERILATOR_VERSION
+ARG TARGETARCH
 ARG VERIBLE_VERSION
-ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG BAZELISK_VERSION
 ARG CLANG_VERSION
+
+RUN case "${TARGETARCH}" in \
+        amd64 | arm64) ;; \
+        *) echo "Unsupported Docker target architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac
 
 LABEL description="Experimental Pavona development container."
 
@@ -109,14 +110,13 @@ RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add \
         ${cmd} ; \
     )
 
-# Install verilator prebuild binary
-RUN mkdir -p /tools/verilator \
-    && curl -sSfL https://storage.googleapis.com/verilator-builds/verilator-v${VERILATOR_VERSION}.tar.gz | tar -C /tools/verilator -xvzf -
-ENV PATH="/tools/verilator/v${VERILATOR_VERSION}/bin:${PATH}"
-
 # Install Verible
-RUN curl -f -Ls -o verible.tar.gz \
-        https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz \
+RUN case "${TARGETARCH}" in \
+        amd64) VERIBLE_ARCH=x86_64 ;; \
+        arm64) VERIBLE_ARCH=arm64 ;; \
+    esac; \
+    curl -f -Ls -o verible.tar.gz \
+        "https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-${VERIBLE_ARCH}.tar.gz" \
     && mkdir -p /tools/verible \
     && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
 ENV PATH="/tools/verible/bin:${PATH}"
@@ -158,16 +158,12 @@ RUN python3 -m pip install --user -U pip "setuptools<66.0.0" \
         --no-warn-script-location \
     && rm -f /tmp/python-requirements.txt
 
-# Get the RISC-V device toolchain
-COPY --chown=dev:dev util/get-toolchain.py /tmp/get-toolchain.py
-RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_TAR_VERSION} \
-    && rm -f /tmp/get-toolchain.py
-
 USER root:root
 
 # Install bazel using bazelisk.
 RUN BAZELISK_PATH="/usr/local/bin/bazelisk"; \
-    BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-amd64"; \
+    BAZELISK_ARCH="${TARGETARCH}"; \
+    BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${BAZELISK_ARCH}"; \
     curl -L -o ${BAZELISK_PATH} ${BAZELISK_URL} && \
     chmod +x ${BAZELISK_PATH} && \
     ln -s ${BAZELISK_PATH} /usr/local/bin/bazel
