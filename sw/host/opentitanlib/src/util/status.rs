@@ -51,9 +51,9 @@ fn status_create_safe(code: StatusCode, mod_id: u32, file: String, arg: i32) -> 
     // Note: file is dropped here so the C-string pointer is valid accross the function call.
 }
 
-// Convert an array of i8 to a string. This function will stop at first 0 (or at the
+// Convert an array of c_char to a string. This function will stop at first 0 (or at the
 // end of the array if it contains no zero).
-fn c_string_to_string(array: &[i8]) -> String {
+fn c_string_to_string(array: &[std::os::raw::c_char]) -> String {
     let array = array
         .iter()
         .map(|c| *c as u8)
@@ -81,7 +81,7 @@ impl Status {
         let mut code_str: *const std::os::raw::c_char = std::ptr::null();
         let mut arg = 0i32;
         let mut mod_id: [std::os::raw::c_char; 3] = [0; 3];
-        let mod_id_ptr = &mut mod_id as *mut i8;
+        let mod_id_ptr = &mut mod_id as *mut std::os::raw::c_char;
         // SAFETY: status_extract expects:
         // - a non-null pointer to string pointer that will be updated to point
         //   to the english name of the error code,
