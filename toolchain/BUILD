@@ -45,7 +45,7 @@ config_setting(
 
 toolchain(
     name = "cc_toolchain_opentitan",
-    exec_compatible_with = ["@platforms//cpu:x86_64"],
+    exec_compatible_with = ["@platforms//os:linux"],
     target_compatible_with = [
         "@platforms//cpu:riscv32",
         "@platforms//os:none",
