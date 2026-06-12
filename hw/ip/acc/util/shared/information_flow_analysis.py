@@ -431,9 +431,15 @@ def _get_iflow(program: ACCProgram, graph: ControlGraph, start_pc: int,
         # Set the next edges to the instruction after the jump returns
         edges = [ControlLoc(section.end + 4)]
     elif last_insn.mnemonic in ['bne', 'beq']:
+        # If the branch is a cycle start, the section was split just before it
+        # and the single edge points at the branch itself; the branch is
+        # resolved when its own section is processed, so don't resolve it here.
+        branch_is_own_section = (len(edges) == 1 and
+                                 not edges[0].is_special() and
+                                 edges[0].pc == section.end)
         grs1 = get_op_val_str(last_insn, last_op_vals, 'grs1')
         grs2 = get_op_val_str(last_insn, last_op_vals, 'grs2')
-        if grs1 in constants and grs2 in constants:
+        if not branch_is_own_section and grs1 in constants and grs2 in constants:
             # if both arguments are known constants, we can remove the other branch
             ops_equal = constants.get(grs1) == constants.get(grs2)
             if last_insn.mnemonic == 'beq':
