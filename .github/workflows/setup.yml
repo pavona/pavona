@@ -1,0 +1,98 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Setup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+  pull_request:
+    paths:
+      - .github/workflows/setup.yml
+      - .github/actions/prepare-env/**
+      - util/container/**
+      - apt-requirements.txt
+      - python-requirements.txt
+      - pyproject.toml
+      - MODULE.bazel
+      - MODULE.bazel.lock
+      - .bazelrc
+      - bazelisk.sh
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native_verilator_smoketest:
+    name: Native Verilator smoketest (${{ matrix.runner }})
+    if: ${{ !github.event.repository.private }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - ubuntu-26.04
+          - ubuntu-22.04-arm
+          - ubuntu-24.04-arm
+          - ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Remove preinstalled Bazel
+        run: |
+          for tool in bazel bazelisk; do
+            path="$(command -v "$tool" || true)"
+            if [ -n "$path" ]; then
+              sudo rm "$path"
+            fi
+          done
+      - name: Build device software
+        run: ./bazelisk.sh build //sw/device/examples/hello_world:hello_world_sim_dv
+      - name: Run UART smoketest on Verilator
+        run: |
+          ./bazelisk.sh test \
+            --build_tests_only=true \
+            --test_timeout=2400,2400,4000,-1 \
+            --test_output=errors \
+            --//hw:make_options=-j,"$(nproc)" \
+            //sw/device/tests:uart_smoketest_sim_verilator
+      - name: Run ACC ISS test
+        run: make -C hw/ip/acc/dv/accsim test
+
+  docker_verilator_smoketest:
+    name: Docker Verilator smoketest (${{ matrix.runner }})
+    if: ${{ !github.event.repository.private }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build container
+        run: docker build -t pavona -f util/container/Dockerfile .
+      - name: Run UART smoketest on Verilator and ACC ISS test
+        run: |
+          docker run \
+            -v "$PWD":/home/dev/src \
+            --env DEV_UID="$(id -u)" --env DEV_GID="$(id -g)" \
+            pavona:latest \
+            "cd src && ./bazelisk.sh build //sw/device/examples/hello_world:hello_world_sim_dv \
+            && ./bazelisk.sh test \
+              --build_tests_only=true \
+              --test_timeout=2400,2400,4000,-1 \
+              --test_output=errors \
+              --//hw:make_options=-j,\$(nproc) \
+              //sw/device/tests:uart_smoketest_sim_verilator \
+            && make -C hw/ip/acc/dv/accsim test"
