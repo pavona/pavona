@@ -184,6 +184,8 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymSECP256K1EcdhOut, cryptolib_sca_asym_secp256k
 
 #define CRYPTOLIBSCAASYM_SECP256K1_SIGN_IN(field, string) \
     field(scalar, uint8_t, SECP256K1_CMD_BYTES) \
+    field(pubx, uint8_t, SECP256K1_CMD_BYTES) \
+    field(puby, uint8_t, SECP256K1_CMD_BYTES) \
     field(message, uint8_t, SECP256K1_CMD_BYTES) \
     field(cfg, size_t) \
     field(trigger, size_t)

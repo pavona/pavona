@@ -10,11 +10,13 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
+#include "sw/device/lib/crypto/impl/ecc/secp256k1.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/ecc_secp256k1.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
@@ -882,6 +884,224 @@ status_t cryptolib_fi_p256_verify_impl(
   uj_output->cfg = 0;
 
   return OK_STATUS();
+}
+
+status_t cryptolib_fi_secp256k1_ecdh_impl(
+    cryptolib_fi_asym_secp256k1_ecdh_in_t uj_input,
+    cryptolib_fi_asym_secp256k1_ecdh_out_t *uj_output) {
+  // Construct the private key object.
+  uint32_t private_keyblob[kSecp256k1MaskedScalarShareWords * 2];
+  memset(private_keyblob, 0, sizeof(private_keyblob));
+  memcpy(private_keyblob, uj_input.private_key, SECP256K1_CMD_BYTES);
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeEcdhSecp256k1,
+              .key_length = kSecp256k1ScalarBytes,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+      .checksum = 0,
+  };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  // Construct the public key object.
+  uint32_t public_key_buf[kSecp256k1CoordWords * 2];
+  memset(public_key_buf, 0, sizeof(public_key_buf));
+  memcpy(public_key_buf, uj_input.public_x, SECP256K1_CMD_BYTES);
+  memcpy(public_key_buf + kSecp256k1CoordWords, uj_input.public_y,
+         SECP256K1_CMD_BYTES);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdhSecp256k1,
+      .key_length = sizeof(public_key_buf),
+      .key = public_key_buf,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  // Create a destination for the shared secret.
+  uint32_t shared_secretblob[kSecp256k1CoordWords * 2];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = kSecp256k1CoordBytes,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+          },
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+  };
+
+  pentest_set_trigger_high();
+  otcrypto_status_t status_out =
+      otcrypto_ecdh_secp256k1(&private_key, &public_key, &shared_secret);
+  pentest_set_trigger_low();
+
+  uint32_t ss[kSecp256k1CoordWords] = {0};
+  if (status_out.value == kOtcryptoStatusValueOk) {
+    uint32_t share0[kSecp256k1CoordWords];
+    uint32_t share1[kSecp256k1CoordWords];
+    TRY(otcrypto_export_blinded_key(
+        &shared_secret,
+        (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
+        (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+    for (size_t i = 0; i < kSecp256k1CoordWords; i++) {
+      ss[i] = share0[i] ^ share1[i];
+    }
+  }
+
+  // Return data back to host.
+  uj_output->cfg = 0;
+  memset(uj_output->shared_key, 0, SECP256K1_CMD_BYTES);
+  memcpy(uj_output->shared_key, ss, SECP256K1_CMD_BYTES);
+
+  return status_out;
+}
+
+status_t cryptolib_fi_secp256k1_sign_impl(
+    cryptolib_fi_asym_secp256k1_sign_in_t uj_input,
+    cryptolib_fi_asym_secp256k1_sign_out_t *uj_output) {
+  static const otcrypto_key_config_t kSecp256k1PrivateKeyConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaSecp256k1,
+      .key_length = kSecp256k1ScalarBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+  };
+
+  // Create the private key.
+  secp256k1_masked_scalar_t private_key_masked;
+  otcrypto_blinded_key_t private_key = {
+      .config = kSecp256k1PrivateKeyConfig,
+      .keyblob_length = sizeof(private_key_masked),
+      .keyblob = (uint32_t *)&private_key_masked,
+  };
+  memset(private_key_masked.share0, 0, kSecp256k1MaskedScalarShareBytes);
+  memcpy(private_key_masked.share0, uj_input.scalar, kSecp256k1ScalarBytes);
+  memset(private_key_masked.share1, 0, kSecp256k1MaskedScalarShareBytes);
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  // Create a public-key buffer for optional keygen output.
+  secp256k1_point_t pub_secp256k1;
+  memset(&pub_secp256k1, 0, sizeof(pub_secp256k1));
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaSecp256k1,
+      .key_length = sizeof(secp256k1_point_t),
+      .key = (uint32_t *)&pub_secp256k1,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  // Create a key pair if requested.
+  // This will overwrite the private key above and populate the public key.
+  if (uj_input.cfg == 1) {
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_high();
+    }
+    TRY(otcrypto_ecdsa_secp256k1_keygen(&private_key, &public_key));
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_low();
+    }
+  }
+
+  // Set up the message buffer.
+  uint32_t message_buf[kSecp256k1ScalarWords];
+  memset(message_buf, 0, sizeof(message_buf));
+  memcpy(message_buf, uj_input.message, SECP256K1_CMD_BYTES);
+
+  const otcrypto_hash_digest_t message_digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = kSecp256k1ScalarWords,
+      .data = (uint32_t *)message_buf,
+  };
+
+  // Set up the signature buffer.
+  uint32_t sig[kSecp256k1ScalarWords * 2] = {0};
+  otcrypto_word32_buf_t signature_mut = {
+      .data = sig,
+      .len = ARRAYSIZE(sig),
+  };
+
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_high();
+  }
+  otcrypto_status_t status_out = otcrypto_ecdsa_secp256k1_sign(
+      &private_key, message_digest, signature_mut);
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_low();
+  }
+
+  // Return data back to host.
+  uj_output->cfg = 0;
+  memset(uj_output->r, 0, SECP256K1_CMD_BYTES);
+  memset(uj_output->s, 0, SECP256K1_CMD_BYTES);
+  secp256k1_ecdsa_signature_t *signature_secp256k1 =
+      (secp256k1_ecdsa_signature_t *)signature_mut.data;
+  memcpy(uj_output->r, signature_secp256k1->r, kSecp256k1ScalarBytes);
+  memcpy(uj_output->s, signature_secp256k1->s, kSecp256k1ScalarBytes);
+  memcpy(uj_output->pubx, pub_secp256k1.x, SECP256K1_CMD_BYTES);
+  memcpy(uj_output->puby, pub_secp256k1.y, SECP256K1_CMD_BYTES);
+
+  return status_out;
+}
+
+status_t cryptolib_fi_secp256k1_verify_impl(
+    cryptolib_fi_asym_secp256k1_verify_in_t uj_input,
+    cryptolib_fi_asym_secp256k1_verify_out_t *uj_output) {
+  // Set up the message buffer.
+  uint32_t message_buf[kSecp256k1ScalarWords];
+  memset(message_buf, 0, sizeof(message_buf));
+  memcpy(message_buf, uj_input.message, SECP256K1_CMD_BYTES);
+
+  const otcrypto_hash_digest_t message_digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = kSecp256k1ScalarWords,
+      .data = (uint32_t *)message_buf,
+  };
+
+  // Setup the public key buffer.
+  secp256k1_point_t pub_secp256k1;
+  memcpy(pub_secp256k1.x, uj_input.pubx, SECP256K1_CMD_BYTES);
+  memcpy(pub_secp256k1.y, uj_input.puby, SECP256K1_CMD_BYTES);
+
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaSecp256k1,
+      .key_length = sizeof(secp256k1_point_t),
+      .key = (uint32_t *)&pub_secp256k1,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  // Setup the signature buffer.
+  secp256k1_ecdsa_signature_t signature_secp256k1;
+  memcpy(signature_secp256k1.r, uj_input.r, SECP256K1_CMD_BYTES);
+  memcpy(signature_secp256k1.s, uj_input.s, SECP256K1_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t signature = {
+      .len = kSecp256k1ScalarWords * 2,
+      .data = (uint32_t *)&signature_secp256k1,
+  };
+
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+
+  pentest_set_trigger_high();
+  otcrypto_status_t status_out = otcrypto_ecdsa_secp256k1_verify(
+      &public_key, message_digest, signature, &verification_result);
+  pentest_set_trigger_low();
+
+  // Return data back to host.
+  uj_output->result = true;
+  if (verification_result != kHardenedBoolTrue) {
+    uj_output->result = false;
+  }
+  uj_output->cfg = 0;
+
+  return status_out;
 }
 
 status_t cryptolib_fi_p384_ecdh_impl(

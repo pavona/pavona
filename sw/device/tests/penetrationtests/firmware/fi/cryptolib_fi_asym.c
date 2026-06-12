@@ -310,6 +310,8 @@ status_t handle_cryptolib_fi_asym_secp256k1_ecdh(ujson_t *uj) {
 
   cryptolib_fi_asym_secp256k1_ecdh_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_secp256k1_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_secp256k1_ecdh_out_t, uj,
           &uj_output);
@@ -327,6 +329,8 @@ status_t handle_cryptolib_fi_asym_secp256k1_sign(ujson_t *uj) {
 
   cryptolib_fi_asym_secp256k1_sign_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_secp256k1_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_secp256k1_sign_out_t, uj,
           &uj_output);
@@ -344,7 +348,8 @@ status_t handle_cryptolib_fi_asym_secp256k1_verify(ujson_t *uj) {
 
   cryptolib_fi_asym_secp256k1_verify_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
-  uj_output.result = true;
+  uj_output.status =
+      (size_t)cryptolib_fi_secp256k1_verify_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_secp256k1_verify_out_t, uj,
           &uj_output);

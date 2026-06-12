@@ -80,6 +80,11 @@ enum {
   kPentestP384Bytes = 384 / 8,
   kPentestP384Words = kPentestP384Bytes / sizeof(uint32_t),
   /**
+   * secp256k1 parameters.
+   */
+  kPentestSecp256k1Bytes = 256 / 8,
+  kPentestSecp256k1Words = kPentestSecp256k1Bytes / sizeof(uint32_t),
+  /**
    * Bytes in one share of a masked P-256 private key.
    */
   kPentestP256MaskedPrivateKeyBytes = 40,
@@ -97,6 +102,15 @@ enum {
    */
   kPentestP384MaskedPrivateKeyWords =
       kPentestP384MaskedPrivateKeyBytes / sizeof(uint32_t),
+  /**
+   * Bytes in one share of a masked secp256k1 private key.
+   */
+  kPentestSecp256k1MaskedPrivateKeyBytes = 40,
+  /**
+   * Words in one share of a masked secp256k1 private key.
+   */
+  kPentestSecp256k1MaskedPrivateKeyWords =
+      kPentestSecp256k1MaskedPrivateKeyBytes / sizeof(uint32_t),
 };
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_LIB_CRYPTOLIB_ASYM_H_
