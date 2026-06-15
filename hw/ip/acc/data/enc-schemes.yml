@@ -361,11 +361,10 @@ bnav:
     - wrd
   fields:
     wrs1: 24-20
-    shift_arith: 15
     type: 16
     fixed:
-      bits: 31,19-17
-      value: bxxxx
+      bits: 31,19-17,15
+      value: bxxxxx
 
 # Unusual scheme used for bn.rshi (the immediate bleeds into the usual funct3
 # field)

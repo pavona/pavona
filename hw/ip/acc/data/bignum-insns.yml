@@ -17,11 +17,11 @@
   synopsis: Add
   operands: &bn-add-operands
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs1
-      doc: Name of the first source WDR
+      doc: First source WDR
     - name: wrs2
-      doc: Name of the second source WDR
+      doc: Second source WDR
     - &bn-shift-type-operand
       name: shift_type
       abbrev: st
@@ -88,9 +88,9 @@
   synopsis: Add Immediate
   operands:
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs
-      doc: Name of the source WDR
+      doc: Source WDR
     - name: imm
       type: uimm
       doc: Immediate value
@@ -118,7 +118,7 @@
   synopsis: Pseudo-Modulo Add
   operands:
     - name: wrd
-      doc: Updated WDR.
+      doc: Destination WDR
       type: wrb
     - name: wrs1
       doc: First source WDR
@@ -138,19 +138,6 @@
     The intermediate result is small enough if both inputs are less than `MOD`.
 
     Flags are not used or saved.
-
-    If `<vec>` is set to 1:
-    Add two WDR registers interpreted as vectors, modulo the MOD WSR.
-
-    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with signed
-    elements of size 32 bit or 16 bit (depending on `type`). The elements are
-    individually summed. If the individual result is larger than MOD, MOD is
-    subtracted from it. Each result element is truncated to 32 or 16 bits
-    (depending on `type`) and stored in `<wrd>`.
-
-    This operation correctly implements addition modulo MOD, providing that the
-    intermediate result is less than `2 * MOD`. The intermediate result is small
-    enough if both inputs are less than `MOD`.
   syntax: |
     <wrd>, <wrs1>, <wrs2>
   errs: []
@@ -174,12 +161,12 @@
   operands:
     - name: type
       abbrev: t
-      type: enum(.8S,.16H,m.8S,m.16H)
+      type: enum(.8s,.16h,m.8s,m.16h)
       doc: |
-        Select the data type of the registers. `.8S` interprets the WDRs as 8
-        32-bit registers, `.16H` as 16 16-bit registers. m for reduction
+        Select the data type of the elements. `.8s` interprets a WDR as 8
+        32-bit elements, `.16h` as 16 16-bit elements. `m` enables reduction.
     - name: wrd
-      doc: Updated WDR.
+      doc: Destination WDR
       type: wrb
     - name: wrs1
       doc: First source WDR
@@ -189,29 +176,20 @@
       type: wrs
   glued-ops: true
   doc: |
-    Add two WDR values, modulo the MOD WSR.
+    Add two WDR registers interpreted as vectors.
 
-    The values in `<wrs1>` and `<wrs2>` are summed to get an intermediate result (of width `WLEN + 1`).
-    If this result is greater than MOD then MOD is subtracted from it.
-    The result is then truncated to 256 bits and stored in `<wrd>`.
+    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with elements
+    of size 32 bit or 16 bit (depending on `type`). The elements are individually
+    summed and each result element is truncated to 32 or 16 bits (depending on
+    `type`) and stored in `<wrd>`.
 
-    This operation correctly implements addition modulo MOD, providing that the intermediate result is less than `2 * MOD`.
-    The intermediate result is small enough if both inputs are less than `MOD`.
+    If a reduction variant (`m.8s` / `m.16h`) is selected, each element is
+    additionally reduced modulo the MOD WSR. If an individual sum is larger than
+    MOD, MOD is subtracted from it before it is stored. This correctly
+    implements addition modulo MOD, providing that the intermediate result is
+    less than `2 * MOD` (guaranteed if both inputs are less than MOD).
 
     Flags are not used or saved.
-
-    If `<vec>` is set to 1:
-    Add two WDR registers interpreted as vectors, modulo the MOD WSR.
-
-    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with signed
-    elements of size 32 bit or 16 bit (depending on `type`). The elements are
-    individually summed. If the individual result is larger than MOD, MOD is
-    subtracted from it. Each result element is truncated to 32 or 16 bits
-    (depending on `type`) and stored in `<wrd>`.
-
-    This operation correctly implements addition modulo MOD, providing that the
-    intermediate result is less than `2 * MOD`. The intermediate result is small
-    enough if both inputs are less than `MOD`.
   syntax: |
     [<type>] <wrd>, <wrs1>, <wrs2>
   errs: []
@@ -235,7 +213,7 @@
   pqc: true
   operands:
     - name: wrd
-      doc: Updated WDR.
+      doc: Destination WDR
       type: wrb
     - name: wrs1
       doc: First source WDR
@@ -245,16 +223,27 @@
       type: wrs
     - name: type
       abbrev: t
-      type: enum(1.16H,1.8S,1.4D,1.2Q,2.16H,2.8S,2.4D,2.2Q)
+      type: enum(1.16h,1.8s,1.4d,1.2q,2.16h,2.8s,2.4d,2.2q)
       doc: |
-        Select the data type of the registers. `.8S` interprets the WDRs as 8
-        32-bit registers, `.16H` as 16 16-bit registers.
+        Selects the transpose variant and element width. The leading `1`/`2`
+        chooses trn1 (even-indexed elements) or trn2 (odd-indexed elements). The
+        suffix gives the element width: `.16h` interprets a WDR as 16 16-bit
+        elements, `.8s` as 8 32-bit elements, `.4d` as 4 64-bit elements, and
+        `.2q` as 2 128-bit elements.
   glued-ops: true
   doc: |
-    Write the elements of one vector into a specified lane of a set of other
-    vectors. The number of other vectors depends on the number of elements in
-    the source vector. Vector <wrs> is the source, while <wrd+i> i in [0,7] are
-    the destination registers.
+    Transposes (interleaves) the elements of two source vectors, in the style of
+    the Arm NEON `TRN1`/`TRN2` instructions. Elements are taken alternately from
+    `<wrs1>` and `<wrs2>` and packed into `<wrd>`.
+
+    The leading `1`/`2` of `<type>` selects which elements are read:
+
+    - `1` (trn1) reads the even-indexed elements, giving
+      `<wrd>` = `<wrs1>`[0], `<wrs2>`[0], `<wrs1>`[2], `<wrs2>`[2], ...
+    - `2` (trn2) reads the odd-indexed elements, giving
+      `<wrd>` = `<wrs1>`[1], `<wrs2>`[1], `<wrs1>`[3], `<wrs2>`[3], ...
+
+    The number and width of the elements are selected by the `<type>` suffix.
 
     Flags are not used or saved.
   syntax: |
@@ -351,7 +340,7 @@
     - *mulqacc-zero-acc
     - &mulqacc-wrd
       name: wrd
-      doc: Destination WDR.
+      doc: Destination WDR
     - *mulqacc-wrs1
     - *mulqacc-wrs1-qwsel
     - *mulqacc-wrs2
@@ -391,7 +380,7 @@
   operands:
     - *mulqacc-zero-acc
     - name: wrd
-      doc: Updated WDR.
+      doc: Destination WDR
       type: wrb
     - name: wrd_hwsel
       abbrev: dh
@@ -470,28 +459,37 @@
   operands: &bn-shv-operands
     - name: type
       abbrev: t
-      type: enum(.8S,.16H)
+      type: enum(.8s,.16h)
       doc: |
-        Select the data type of the registers. `.8S` interprets the WDRs as 8
-        32-bit registers, `.16H` as 16 16-bit registers.
+        Select the data type of the elements. `.8s` interprets a WDR as 8
+        32-bit elements, `.16h` as 16 16-bit elements.
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs1
-      doc: Name of the source WDR
-    - *bn-shift-type-operand
+      doc: Source WDR
+    - name: shift_type
+      abbrev: st
+      type: enum(<<, >>)
+      doc: |
+        The direction of the shift applied to each element of `<wrs1>`.
     - name: shift_bits
       type: uimm5<<0
-      doc: Name of the second source WDR
-    - name: shift_arith
-      type: option(a)
-      doc: Arithmetic shifting instead of logical
+      doc: Number of bits by which to shift each element of `<wrs1>`.
   glued-ops: true
   syntax: &bn-shv-syntax |
-    <type> <wrd>, <wrs1> [<shift_arith> ]<shift_type> <shift_bits>
+    <type> <wrd>, <wrs1> <shift_type> <shift_bits>
   doc: |
-    Performs a bitwise shift operation.
-    Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
-    The content of the second source register can be shifted by an immediate before it is consumed by the operation.
+    Performs a vectorized logical shift.
+
+    The value in `<wrs1>` is interpreted as a vector with elements of size 32 bit
+    or 16 bit (depending on `type`). Each element is individually shifted by
+    `<shift_bits>` bits in the direction given by `<shift_type>` (`<<` shifts
+    left, `>>` shifts right). The shift is logical: vacated bit positions are
+    filled with zeros, and bits shifted out of an element are discarded rather
+    than crossing into neighbouring elements. Each shifted element is stored in
+    the corresponding element of `<wrd>`.
+
+    Flags are not used or saved.
   errs: []
   iflow: &bn-shv-iflow
     - to: [wrd]
@@ -501,7 +499,6 @@
     mapping:
       shift_type: shift_type
       shift_bits: shift_bits
-      shift_arith: shift_arith
       wrs1: wrs1
       funct3: b011
       type: type
@@ -511,11 +508,11 @@
   synopsis: Subtraction
   operands: &bn-sub-operands
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs1
-      doc: Name of the first source WDR
+      doc: First source WDR
     - name: wrs2
-      doc: Name of the second source WDR
+      doc: Second source WDR
     - *bn-shift-type-operand
     - *bn-shift-bits-operand
     - *bn-flag-group-operand
@@ -551,6 +548,7 @@
   doc: |
     Subtracts the second WDR value and the Carry from the first one, writes the result to the destination WDR, and updates the flags.
     The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
+  errs: []
   iflow:
     - test:
         - wrs1 == wrs2
@@ -575,9 +573,9 @@
   synopsis: Subtract Immediate
   operands:
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs
-      doc: Name of the source WDR
+      doc: Source WDR
     - name: imm
       type: uimm
       doc: Immediate value
@@ -604,7 +602,7 @@
   synopsis: Pseudo-modulo subtraction
   operands:
     - name: wrd
-      doc: Updated WDR.
+      doc: Destination WDR
       type: wrb
     - name: wrs1
       doc: First source WDR
@@ -620,23 +618,10 @@
     If it is negative, `MOD` is added to it.
     The 2's-complement result is then truncated to 256 bits and stored in `wrd`.
 
-    This operation correctly implements subtraction modulo `MOD`, providing that the intermediate result at least `-MOD` and at most `MOD - 1`.
+    This operation correctly implements subtraction modulo `MOD`, providing that the intermediate result is at least `-MOD` and at most `MOD - 1`.
     This is guaranteed if both inputs are less than `MOD`.
 
     Flags are not used or saved.
-
-    If `<vec>` is set to 1:
-    Subtract two WDR registers interpreted as vectors, modulo the MOD WSR.
-
-    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with signed
-    elements of size 32 bit or 16 bit (depending on `type`). The elements from
-    `<wrs1>` are individually subtracted from the ones in `<wrs2>`. If the
-    individual result is smaller than 0, MOD is added to it. Each result element
-    is truncated to 32 or 16 bits (depending on `type`) and stored in `<wrd>`.
-
-    This operation correctly implements addition modulo MOD, providing that the
-    intermediate result is less than `2 * MOD`. The intermediate result is small
-    enough if both inputs are less than `MOD`.
   syntax: |
     <wrd>, <wrs1>, <wrs2>
   errs: []
@@ -660,12 +645,12 @@
   operands:
     - name: type
       abbrev: t
-      type: enum(.8S,.16H,m.8S,m.16H)
+      type: enum(.8s,.16h,m.8s,m.16h)
       doc: |
-        Select the data type of the registers. `.8S` interprets the WDRs as 8
-        32-bit registers, `.16H` as 16 16-bit registers. m for reduction
+        Select the data type of the elements. `.8s` interprets a WDR as 8
+        32-bit elements, `.16h` as 16 16-bit elements. `m` enables reduction.
     - name: wrd
-      doc: Updated WDR.
+      doc: Destination WDR
       type: wrb
     - name: wrs1
       doc: First source WDR
@@ -675,29 +660,20 @@
       type: wrs
   glued-ops: true
   doc: |
-    Sub two WDR values, modulo the MOD WSR.
+    Subtract two WDR registers interpreted as vectors.
 
-    The values in `<wrs1>` and `<wrs2>` are summed to get an intermediate result (of width `WLEN + 1`).
-    If this result is greater than MOD then MOD is subtracted from it.
-    The result is then truncated to 256 bits and stored in `<wrd>`.
+    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with elements
+    of size 32 bit or 16 bit (depending on `type`). The elements from `<wrs2>`
+    are individually subtracted from the ones in `<wrs1>` and each result element
+    is truncated to 32 or 16 bits (depending on `type`) and stored in `<wrd>`.
 
-    This operation correctly implements addition modulo MOD, providing that the intermediate result is less than `2 * MOD`.
-    The intermediate result is small enough if both inputs are less than `MOD`.
+    If a reduction variant (`m.8s` / `m.16h`) is selected, each element is
+    additionally reduced modulo the MOD WSR. If an individual result is smaller
+    than 0, MOD is added to it before it is stored. This correctly implements
+    subtraction modulo MOD, providing that the intermediate result is at least
+    `-MOD` and at most `MOD - 1` (guaranteed if both inputs are less than MOD).
 
     Flags are not used or saved.
-    TODO update
-    If `<vec>` is set to 1:
-    Add two WDR registers interpreted as vectors, modulo the MOD WSR.
-
-    The values in `<wrs1>` and `<wrs2>` are interpreted as vectors with signed
-    elements of size 32 bit or 16 bit (depending on `type`). The elements are
-    individually summed. If the individual result is larger than MOD, MOD is
-    subtracted from it. Each result element is truncated to 32 or 16 bits
-    (depending on `type`) and stored in `<wrd>`.
-
-    This operation correctly implements addition modulo MOD, providing that the
-    intermediate result is less than `2 * MOD`. The intermediate result is small
-    enough if both inputs are less than `MOD`.
   syntax: |
     [<type>] <wrd>, <wrs1>, <wrs2>
   errs: []
@@ -719,11 +695,11 @@
   synopsis: Bitwise AND
   operands: &bn-and-operands
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs1
-      doc: Name of the first source WDR
+      doc: First source WDR
     - name: wrs2
-      doc: Name of the second source WDR
+      doc: Second source WDR
     - *bn-shift-type-operand
     - *bn-shift-bits-operand
     - *bn-flag-group-operand
@@ -775,9 +751,9 @@
   synopsis: Bitwise NOT
   operands:
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs
-      doc: Name of the source WDR
+      doc: Source WDR
     - *bn-shift-type-operand
     - *bn-shift-bits-operand
     - *bn-flag-group-operand
@@ -835,11 +811,11 @@
   synopsis: Concatenate and right shift immediate
   operands:
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs1
-      doc: Name of the first source WDR
+      doc: First source WDR
     - name: wrs2
-      doc: Name of the second source WDR
+      doc: Second source WDR
     - name: imm
       type: uimm
       doc: |
@@ -863,11 +839,11 @@
   synopsis: Flag Select
   operands:
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: wrs1
-      doc: Name of the first source WDR
+      doc: First source WDR
     - name: wrs2
-      doc: Name of the second source WDR
+      doc: Second source WDR
     - *bn-flag-group-operand
     - name: flag
       type: enum(C, M, L, Z)
@@ -914,9 +890,9 @@
   synopsis: Compare
   operands: &bn-cmp-operands
     - name: wrs1
-      doc: Name of the first source WDR
+      doc: First source WDR
     - name: wrs2
-      doc: Name of the second source WDR
+      doc: Second source WDR
     - *bn-shift-type-operand
     - *bn-shift-bits-operand
     - *bn-flag-group-operand
@@ -1118,7 +1094,7 @@
   synopsis: Load Word
   operands:
     - name: wrd
-      doc: Name of the destination WDR
+      doc: Destination WDR
     - name: grs
       doc: |
         Name of the GPR containing the memory byte address.
@@ -1140,7 +1116,7 @@
     Load a WLEN-bit little-endian value from data memory.
 
     The load address is `offset` plus the value in the GPR `grs`.
-    The loaded value is stored into the WDR `wrd'.
+    The loaded value is stored into the WDR `wrd`.
 
     After the operation, the value in the GPR `grs` can be optionally incremented:
 
@@ -1181,7 +1157,7 @@
         Name of the GPR containing the memory byte address.
         The value contained in the referenced GPR must be WLEN-aligned.
     - name: wrs
-      doc: Name of the source WDR.
+      doc: Source WDR
     - name: offset
       abbrev: "off"
       doc: |
@@ -1339,10 +1315,9 @@
 
 - mnemonic: bn.wsrw
   synopsis: Write WSR from register
-  operands: [wsr, wrs]
   operands:
     - name: wsr
-      doc: The WSR to read
+      doc: The WSR to write
     - name: wrs
       doc: Source WDR
   doc: |
@@ -1380,29 +1355,46 @@
     - *mulqacc-wrs2
     - *mulqacc-wrd
     - name: type
-      type: enum(.16H.even, .8S.even, .16H.odd, .8S.odd,
-                 .16H.even.acc, .8S.even.acc, .16H.odd.acc, .8S.odd.acc,
-                 .16H.even.acc.z, .8S.even.acc.z, .16H.odd.acc.z, .8S.odd.acc.z,
+      type: enum(.16h.even, .8s.even, .16h.odd, .8s.odd,
+                 .16h.even.acc, .8s.even.acc, .16h.odd.acc, .8s.odd.acc,
+                 .16h.even.acc.z, .8s.even.acc.z, .16h.odd.acc.z, .8s.odd.acc.z,
                  "", "", "", "",
-                 .16H.lo,
-                 .8S.even.lo, "", .8S.odd.lo,
-                 .16H.acc.lo,
-                 .8S.even.acc.lo, "", .8S.odd.acc.lo,
-                 .16H.acc.z.lo,
-                 .8S.even.acc.z.lo, "", .8S.odd.acc.z.lo,
+                 .16h.lo,
+                 .8s.even.lo, "", .8s.odd.lo,
+                 .16h.acc.lo,
+                 .8s.even.acc.lo, "", .8s.odd.acc.lo,
+                 .16h.acc.z.lo,
+                 .8s.even.acc.z.lo, "", .8s.odd.acc.z.lo,
                  "", "", "", "",
-                 .16H.hi,
-                 .8S.even.hi, "", .8S.odd.hi,
-                 .16H.acc.hi,
-                 .8S.even.acc.hi, "", .8S.odd.acc.hi,
-                 .16H.acc.z.hi,
-                 .8S.even.acc.z.hi, "", .8S.odd.acc.z.hi,
+                 .16h.hi,
+                 .8s.even.hi, "", .8s.odd.hi,
+                 .16h.acc.hi,
+                 .8s.even.acc.hi, "", .8s.odd.acc.hi,
+                 .16h.acc.z.hi,
+                 .8s.even.acc.z.hi, "", .8s.odd.acc.z.hi,
                  "", "", "", "", "", "", "", "",
                  "", "", "", "", "", "", "", "",
                  "", "", "", ""
                  )
   glued-ops: true
   doc: |
+    Multiplies corresponding elements of the two source vectors `<wrs1>` and
+    `<wrs2>`. Depending on the `<type>` suffix, the products are written to
+    `<wrd>` and/or accumulated into the ACC/ACCH registers.
+
+    The `<type>` suffix is built from the following parts:
+
+    - `.16h` / `.8s`: element width. `.16h` interprets a WDR as 16 16-bit
+      elements, `.8s` as 8 32-bit elements.
+    - `.even` / `.odd`: multiply the even-indexed or the odd-indexed elements.
+    - `.acc`: accumulate the products into the ACC/ACCH registers. If omitted,
+      no accumulation is performed.
+    - `.z`: clear the ACC/ACCH registers before accumulating (only meaningful
+      together with `.acc`).
+    - `.lo` / `.hi`: return only the low or high part of each full product. If
+      omitted, the full product is returned.
+
+    Flags are not used or saved.
   syntax: |
     <type> <wrd>, <wrs1>, <wrs2>
   errs: []
@@ -1475,40 +1467,60 @@
       type: type
 
 - mnemonic: bn.mulv.l
-  synopsis: Vectorized Multiply and Accumulate
+  synopsis: Vectorized Multiply and Accumulate (by lane)
   pqc: true
   operands:
     - *mulqacc-wrs1
     - *mulqacc-wrd
     - name: lane_reg
       type: enum(sw0, sw1)
-      doc: sw0 = w16, sw1 = 17
+      doc: sw0 = w16, sw1 = w17
     - name: lane_index
       type: uimm4
+      doc: Index of the element within `<lane_reg>` to multiply by.
     - name: type
-      type: enum(.16H.even, .8S.even, .16H.odd, .8S.odd,
-                 .16H.even.acc, .8S.even.acc, .16H.odd.acc, .8S.odd.acc,
-                 .16H.even.acc.z, .8S.even.acc.z, .16H.odd.acc.z, .8S.odd.acc.z,
+      type: enum(.16h.even, .8s.even, .16h.odd, .8s.odd,
+                 .16h.even.acc, .8s.even.acc, .16h.odd.acc, .8s.odd.acc,
+                 .16h.even.acc.z, .8s.even.acc.z, .16h.odd.acc.z, .8s.odd.acc.z,
                  "", "", "", "",
-                 .16H.lo,
-                 .8S.even.lo, "", .8S.odd.lo,
-                 .16H.acc.lo,
-                 .8S.even.acc.lo, "", .8S.odd.acc.lo,
-                 .16H.acc.z.lo,
-                 .8S.even.acc.z.lo, "", .8S.odd.acc.z.lo,
+                 .16h.lo,
+                 .8s.even.lo, "", .8s.odd.lo,
+                 .16h.acc.lo,
+                 .8s.even.acc.lo, "", .8s.odd.acc.lo,
+                 .16h.acc.z.lo,
+                 .8s.even.acc.z.lo, "", .8s.odd.acc.z.lo,
                  "", "", "", "",
-                 .16H.hi,
-                 .8S.even.hi, "", .8S.odd.hi,
-                 .16H.acc.hi,
-                 .8S.even.acc.hi, "", .8S.odd.acc.hi,
-                 .16H.acc.z.hi,
-                 .8S.even.acc.z.hi, "", .8S.odd.acc.z.hi,
+                 .16h.hi,
+                 .8s.even.hi, "", .8s.odd.hi,
+                 .16h.acc.hi,
+                 .8s.even.acc.hi, "", .8s.odd.acc.hi,
+                 .16h.acc.z.hi,
+                 .8s.even.acc.z.hi, "", .8s.odd.acc.z.hi,
                  "", "", "", "", "", "", "", "",
                  "", "", "", "", "", "", "", "",
                  "", "", "", ""
                  )
   glued-ops: true
   doc: |
+    Multiplies each element of the source vector `<wrs1>` by a single element
+    broadcast from a lane register. The multiplier is selected by
+    `<lane_reg>.<lane_index>`, where `<lane_reg>` chooses the lane register
+    (`sw0` = w16, `sw1` = w17) and `<lane_index>` selects the element within it,
+    so that `<wrd>`[i] = `<wrs1>`[i] * `<lane_reg>`[`<lane_index>`] for all i.
+
+    The `<type>` suffix is built from the following parts:
+
+    - `.16h` / `.8s`: element width. `.16h` interprets a WDR as 16 16-bit
+      elements, `.8s` as 8 32-bit elements.
+    - `.even` / `.odd`: multiply the even-indexed or the odd-indexed elements.
+    - `.acc`: accumulate the products into the ACC/ACCH registers. If omitted,
+      no accumulation is performed.
+    - `.z`: clear the ACC/ACCH registers before accumulating (only meaningful
+      together with `.acc`).
+    - `.lo` / `.hi`: return only the low or high part of each full product. If
+      omitted, the full product is returned.
+
+    Flags are not used or saved.
   syntax: |
     <type> <wrd>, <wrs1>, <lane_reg>.<lane_index>
   errs: []

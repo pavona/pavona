@@ -1453,7 +1453,7 @@ class BNRSHI(ACCInsn):
 
 
 class BNSHV(ACCInsn):
-    insn = insn_for_mnemonic('bn.shv', 6)
+    insn = insn_for_mnemonic('bn.shv', 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
@@ -1462,7 +1462,6 @@ class BNSHV(ACCInsn):
         self.type = op_vals['type']
         self.shift_type = op_vals['shift_type']
         self.shift_bits = op_vals['shift_bits']
-        self.shift_arith = op_vals['shift_arith']
 
     def execute(self, state: ACCState) -> None:
         if not state.EN_PQC:
