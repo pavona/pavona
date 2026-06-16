@@ -1374,16 +1374,6 @@ def main():
         "--top-only",
         action="store_true",
         help="If defined, the tool generates top RTL only")  # yapf:disable
-    parser.add_argument("--check-cm",
-                        action="store_true",
-                        help='''
-        Check countermeasures.
-
-        Check countermeasures of all modules in the top config. All
-        countermeasures declared in the module's hjson file should
-        be implemented in the RTL, and the RTL should only
-        contain countermeasures declared there.
-        ''')
     parser.add_argument(
         "--xbar-only",
         action="store_true",
@@ -1409,11 +1399,6 @@ def main():
           generic register definitions when building the RAL model. This
           argument is only relevant in conjunction with the `--top_ral` switch.
         """)
-    # Miscellaneous: only return the list of blocks and exit.
-    parser.add_argument("--get_blocks",
-                        default=False,
-                        action="store_true",
-                        help="Only return the list of blocks and exit.")
 
     args = parser.parse_args()
 
@@ -1432,8 +1417,7 @@ def main():
         raise SystemExit(sys.exc_info()[1])
 
     # Don't print warnings when querying the list of blocks.
-    log_level = (log.ERROR if args.get_blocks or args.check_cm else
-                 log.DEBUG if args.verbose else None)
+    log_level = (log.DEBUG if args.verbose else None)
 
     log.basicConfig(format="%(filename)s:%(lineno)d: %(levelname)s: %(message)s",
                     level=log_level)
@@ -1584,10 +1568,6 @@ def main():
 
     generate_full_ipgens(args, completecfg, name_to_block, alias_cfgs,
                          cfg_path, out_path)
-
-    if args.get_blocks:
-        print("\n".join(name_to_block.keys()))
-        sys.exit(0)
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:
@@ -1912,20 +1892,6 @@ waive --rule=line-length --location="{rnd_cnst_sv_file}"
 
         # generate documentation for toplevel
         gen_top_docs(completecfg, c_helper, out_path)
-
-    # Check countermeasures for all blocks.
-    if args.check_cm:
-        # Change verbosity to log.INFO to see an okay confirmation message:
-        # the log level is set to log.ERROR upon start to avoid the chatter
-        # of the regular topgen elaboration.
-        log_level = log.DEBUG if args.verbose else log.INFO
-        log.basicConfig(format="%(levelname)s: %(message)s",
-                        level=log_level,
-                        force=True)
-
-        okay = _check_countermeasures(completecfg, name_to_block,
-                                      name_to_hjson)
-        sys.exit(0 if okay else 1)
 
 
 if __name__ == "__main__":

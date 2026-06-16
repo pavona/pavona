@@ -129,9 +129,9 @@ $ util/topgen.py --help
 usage: topgen [-h] --topcfg TOPCFG --seedcfg SEEDCFG [--outdir OUTDIR]
               [--hjson-path HJSON_PATH] [--verbose]
               [--version-stamp VERSION_STAMP] [--no-top] [--no-xbar]
-              [--no-plic] [--no-rust] [--top-only] [--check-cm] [--xbar-only]
-              [--plic-only] [--alert-handler-only] [--rust-only]
-              [--alias-files ALIAS_FILES [ALIAS_FILES ...]] [--get_blocks]
+              [--no-plic] [--no-rust] [--top-only] [--xbar-only] [--plic-only]
+              [--alert-handler-only] [--rust-only]
+              [--alias-files ALIAS_FILES [ALIAS_FILES ...]]
 
 options:
   -h, --help            show this help message and exit
@@ -158,11 +158,6 @@ options:
                         controller RTLs.
   --no-rust             If defined, topgen doesn't generate Rust code.
   --top-only            If defined, the tool generates top RTL only
-  --check-cm            Check countermeasures. Check countermeasures of all
-                        modules in the top config. All countermeasures
-                        declared in the module's hjson file should be
-                        implemented in the RTL, and the RTL should only
-                        contain countermeasures declared there.
   --xbar-only           If defined, the tool generates crossbar RTLs only
   --plic-only           If defined, the tool generates RV_PLIC RTL and Hjson
                         only
@@ -174,7 +169,6 @@ options:
                         to override the generic register definitions when
                         building the RAL model. This argument is only relevant
                         in conjunction with the `--top_ral` switch.
-  --get_blocks          Only return the list of blocks and exit.
 ```
 <!-- END CMDGEN -->
 
