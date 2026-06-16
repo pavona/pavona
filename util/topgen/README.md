@@ -130,10 +130,8 @@ usage: topgen [-h] --topcfg TOPCFG --seedcfg SEEDCFG [--outdir OUTDIR]
               [--hjson-path HJSON_PATH] [--verbose]
               [--version-stamp VERSION_STAMP] [--no-top] [--no-xbar]
               [--no-plic] [--no-rust] [--top-only] [--check-cm] [--xbar-only]
-              [--plic-only] [--alert-handler-only] [--rust-only] [--top_ral]
-              [--alias-files ALIAS_FILES [ALIAS_FILES ...]]
-              [--dv-base-names DV_BASE_NAMES [DV_BASE_NAMES ...]]
-              [--get_blocks]
+              [--plic-only] [--alert-handler-only] [--rust-only]
+              [--alias-files ALIAS_FILES [ALIAS_FILES ...]] [--get_blocks]
 
 options:
   -h, --help            show this help message and exit
@@ -171,15 +169,11 @@ options:
   --alert-handler-only  If defined, the tool generates alert handler hjson
                         only
   --rust-only           If defined, the tool generates top Rust code only
-  --top_ral, -r         If set, the tool generates top level RAL model for DV
   --alias-files ALIAS_FILES [ALIAS_FILES ...]
                         If defined, topgen uses supplied alias hjson file(s)
                         to override the generic register definitions when
                         building the RAL model. This argument is only relevant
                         in conjunction with the `--top_ral` switch.
-  --dv-base-names DV_BASE_NAMES [DV_BASE_NAMES ...]
-                        Names or prefix for the DV register classes from which
-                        the register models are derived.
   --get_blocks          Only return the list of blocks and exit.
 ```
 <!-- END CMDGEN -->

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 r"""Top Module Generator
@@ -8,13 +9,11 @@ import argparse
 from dataclasses import dataclass
 import logging as log
 import os
-import shutil
 import sys
-import tempfile
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Callable, Dict, List, NamedTuple, Optional
 
 import hjson
 import tlgen
@@ -29,7 +28,7 @@ from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from raclgen.lib import DEFAULT_RACL_CONFIG
-from reggen import access, gen_rtl, gen_sec_cm_testplan, params, reg_block, window
+from reggen import access, gen_rtl, gen_sec_cm_testplan, window
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 from topgen import get_hjsonobj_xbars
@@ -39,7 +38,6 @@ from topgen import merge_top, validate_top
 from topgen.secure_prng import SecurePrngFactory
 from topgen.c_test import TopGenCTest
 from topgen.clocks import Clocks
-from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
 from topgen.lib import find_module, find_modules, load_cfg, write_file_secure, get_ipgen_params
 from topgen.merge import (
@@ -51,7 +49,6 @@ from topgen.merge import (
     commit_alert_connections)
 from topgen.resets import Resets
 from topgen.rust import TopGenRust
-from topgen.top import Top
 from topgen.typing import IpBlocksT
 from topgen.validate import validate_seed_cfg
 
@@ -831,136 +828,6 @@ def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str,
         generate_regfile_from_path(hjson_path, genrtl_dir)
 
 
-def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
-                     dv_base_names: List[str], out_path: str) -> None:
-    # construct top ral block
-    regwidth = int(top["datawidth"])
-    assert regwidth % 8 == 0
-    addrsep = regwidth // 8
-
-    # Generate a map from instance name to the block that it instantiates,
-    # together with a map of interface addresses.
-    inst_to_block: Dict[str, str] = {}
-    if_addrs: Dict[Tuple[str, Optional[str]], int] = {}
-    attrs: Dict[str, str] = {}
-
-    for module in top["module"]:
-        inst_name = module["name"]
-        block_name = module["type"]
-        block = name_to_block[block_name]
-        if "attr" in module:
-            attrs[inst_name] = module["attr"]
-
-        inst_to_block[inst_name] = block_name
-        for if_name in block.reg_blocks.keys():
-            if_addr = {
-                asid: int(addr, 0)
-                for (asid, addr) in module["base_addrs"][if_name].items()
-            }
-            if_addrs[(inst_name, if_name)] = if_addr
-
-    # Top-level may override the mem setting. Store the new type to
-    # name_to_block. If no other instance uses the original type, delete it
-    original_types = set()
-    for module in top["module"]:
-        if "memory" in module.keys() and len(module["memory"]) > 0:
-            mod_name = module["name"]
-            newtype = "{}_{}".format(module["type"], mod_name)
-            assert newtype not in name_to_block
-
-            # Take a copy of the block-level description of the thing that is
-            # being instantiated as mod_name (so that we can configure it).
-            block = deepcopy(name_to_block[module["type"]])
-
-            # Update name_to_block and inst_to_block so that they point at the
-            # new, more specific, information about the block.
-            name_to_block[newtype] = block
-            inst_to_block[mod_name] = newtype
-
-            original_types.add(module["type"])
-
-            # The instantiation might have requested a specific configuration
-            # for some of the memories of the block. Apply that here.
-            for mem_name, item in module["memory"].items():
-                block_mem = block.memories.get(mem_name)
-                if block_mem is None:
-                    raise ValueError(f"The definition of {block.name} "
-                                     f"(instantiated as {mod_name}) doesn't "
-                                     f"declare a memory called {mem_name}.")
-
-                # We only support memories with at most a single window (if
-                # there are several, we don't know which one to customise)
-                if len(block_mem.windows) > 1:
-                    raise ValueError(f"The block {block.name} declares "
-                                     f"multiple windows for its {mem_name} "
-                                     f"memory, so topgen can't configure that "
-                                     "memory.")
-
-                # This is the new window to use
-                win = create_mem(mem_name, item, addrsep, regwidth)
-
-                # If the block doesn't define a window for this memory, we can
-                # just make one. If it *does* define a window we can overwrite
-                # it, but want to make sure we won't mess things up.
-                if not block_mem.windows:
-                    block_mem.windows = [win]
-                else:
-                    blk_win = block_mem.windows[0]
-
-                    # Check we end up with the same number of "items" in the
-                    # window (the window size divided by addrsep)
-                    if win.items != blk_win.items:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} doesn't match number "
-                                         f"of items for {mem_name}. Instance: "
-                                         f"{win.items}; blk: {blk_win.items}")
-
-                    # Check the byte_write setting matches
-                    if win.byte_write != blk_win.byte_write:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} requests the memory "
-                                         f"{mem_name} with byte_write="
-                                         f"{win.byte_write}, but the block "
-                                         f"declares it {blk_win.byte_write}.")
-
-                    # Check the data_intg_passthru setting matches
-                    if win.data_intg_passthru != blk_win.data_intg_passthru:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} requests the memory "
-                                         f"{mem_name} with data_intg_passthru="
-                                         f"{win.data_intg_passthru}, but the "
-                                         f"block declares it as "
-                                         f"{blk_win.data_intg_passthru}.")
-
-                    # If we get here, the two definitions matched. Use the new
-                    # one.
-                    block_mem.windows[0] = win
-
-                # At the moment the RAL template does not know about memories
-                # but it knows about windows in memory blocks. Therefoe we
-                # create an empty register block for RAL.
-                if_name = mem_name
-                block.reg_blocks[if_name] = reg_block.RegBlock(regwidth, params.ReggenParams(),
-                                                               windows = block_mem.windows)
-
-                if_addr = {
-                    asid: int(addr, 0)
-                    for (asid, addr) in module["base_addrs"][if_name].items()
-                }
-                if_addrs[(mod_name, if_name)] = if_addr
-
-    for t in original_types:
-        if t not in inst_to_block.values():
-            del name_to_block[t]
-
-    addr_spaces = {addr_space["name"] for addr_space in top["addr_spaces"]}
-    chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block,
-               if_addrs, [], attrs)
-
-    # generate the top ral model with template
-    return gen_dv(chip, dv_base_names, str(out_path))
-
-
 def create_mem(name: str, item: dict[str, object], addrsep: int, regwidth: int) -> window.Window:
     byte_write = item.get("byte_write", "false").lower() == "true"
     data_intg_passthru = item.get("data_intg_passthru", "false").lower() == "true"
@@ -1533,13 +1400,6 @@ def main():
         "--rust-only",
         action="store_true",
         help="If defined, the tool generates top Rust code only")
-    # Generator options: generate dv ral model
-    parser.add_argument(
-        "--top_ral",
-        "-r",
-        default=False,
-        action="store_true",
-        help="If set, the tool generates top level RAL model for DV")
     parser.add_argument("--alias-files",
                         nargs="+",
                         type=Path,
@@ -1549,11 +1409,6 @@ def main():
           generic register definitions when building the RAL model. This
           argument is only relevant in conjunction with the `--top_ral` switch.
         """)
-    parser.add_argument(
-        "--dv-base-names",
-        nargs="+",
-        help="Names or prefix for the DV register classes from which "
-        "the register models are derived.")
     # Miscellaneous: only return the list of blocks and exit.
     parser.add_argument("--get_blocks",
                         default=False,
@@ -1563,8 +1418,6 @@ def main():
     args = parser.parse_args()
 
     # check combinations
-    if args.top_ral:
-        args.no_top = True
 
     if (args.no_top or args.no_xbar or
             args.no_plic) and (args.top_only or args.xbar_only or
@@ -1661,10 +1514,7 @@ def main():
     # file). Since we don't have a better way at the moment, we dump all output
     # into a temporary directory, and delete it after the fact, retaining only
     # the toplevel configuration.
-    if args.top_ral:
-        out_path_gen = Path(tempfile.mkdtemp())
-    else:
-        out_path_gen = out_path
+    out_path_gen = out_path
 
     alias_cfgs: Dict[str, ConfigT] = {}
     if args.alias_files:
@@ -1721,16 +1571,6 @@ def main():
 
     topname = topcfg["name"]
     top_name = f"top_{topname}"
-
-    # Create the chip-level RAL only
-    if args.top_ral:
-        # See above: we only need `completecfg` and `name_to_block`, not all
-        # the other files (e.g. RTL files) generated through topgen.
-        shutil.rmtree(out_path_gen, ignore_errors=True)
-
-        exit_code = generate_top_ral(topname, completecfg, name_to_block,
-                                     args.dv_base_names, out_path)
-        sys.exit(exit_code)
 
     # Generate top only modules
     # These modules are not ipgen, but are not in hw/ip
