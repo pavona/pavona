@@ -38,10 +38,6 @@ def gen_verify_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
     # Sign the message.
     sig = mldsa.sign(sk, msg, ctx=ctx)
 
-    # Accomodate alignment hack for ML-DSA-65.
-    if mldsa == ML_DSA_65:
-        sig = bytes([0] * 16) + sig
-
     # External mu: tr = SHAKE256(pk); the kernel verifies against this mu.
     tr = hashlib.shake_256(pk).digest(64)
     mu = hashlib.shake_256(tr + bytes([0, ctxlen]) + ctx + msg).digest(64)

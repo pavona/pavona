@@ -203,20 +203,9 @@ main:
 
 .balign 32
 .globl sig
-#if DILITHIUM_MODE == 3
-/* In case of Dilithium3, CTILDEBYTES is 48, not divisible by 32.
-   To make the packing easier, we dis-align the start of the signature buffer
-   because we will simply need to write C to the beginning, which is much easier
-   than dealing with the disalignment later on in the signature. */
-  .zero 16
 sig:
   .zero CRYPTO_BYTES
-  .zero 3
-#else
-sig:
-  .zero CRYPTO_BYTES
-  .zero 12
-#endif
+  .zero 32
 
 .bss
 

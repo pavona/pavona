@@ -300,17 +300,13 @@ _rej_crypto_sign_signature_internal:
     la  s1, w1_repvec
     la  s4, tmp_poly
 
-    /* Get the pointer to the signature (used as tmp buffer for packed w1). */
-    la  s2, dptr_sig
-    lw  s2, 0(s2) /* Get *sig */
-    addi s3, s2, 0 /* Save *sig. */
-    /* For ML-DSA-65 (K=6, CTILDEBYTES=48) use an offset of 16 for alignment. */
+    /* Save the signature pointer (ctilde destination). */
+    la  s3, dptr_sig
+    lw  s3, 0(s3)
+    /* Pack w1 into c_poly: 32-byte aligned and free until poly_challenge. */
+    la  s2, c_poly
     la   t0, mldsa_params
     lw   t3, MLDSA_PARAM_K_OFFSET(t0)
-    li   t2, 6
-    bne  t3, t2, _sign_skip_ctilde_align
-    addi s2, s2, 16
-_sign_skip_ctilde_align:
 
     /* This loop:
          - decomposes each polynomial w[i] into w0[i] and w1[i]
@@ -487,14 +483,20 @@ _rejsmpl_loop:
 
         bne a2, x0, _rej_crypto_sign_signature_internal
 
-        /* Pack z[i] into the signature. */
-        addi a0, s9, 0
+        /* Pack z[i] in place, then GPR-copy into the unaligned sig slot. */
+        addi a0, s2, 0
         addi a1, s2, 0
         la t2, mldsa_params
         lw a4, MLDSA_PARAM_K_OFFSET(t2)
         jal x1, polyz_pack
-        /* Update the pointer to the end of the packed part. */
-        addi s9, a0, 0
+        sub  t0, a0, s2   /* POLYZ_PACKEDBYTES */
+        srli t0, t0, 2
+        addi a1, s2, 0
+        LOOP t0, 4
+            lw   t1, 0(a1)
+            sw   t1, 0(s9)
+            addi a1, a1, 4
+            addi s9, s9, 4
     addi s4, s4, 1
     la t0, mldsa_params
     lw t1, MLDSA_PARAM_L_OFFSET(t0)

@@ -52,6 +52,7 @@
 #define MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET 16
 #define MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET 20
 #define MLDSA_PARAM_CRYPTO_PUBLICKEYBYTES_OFFSET 24
+#define MLDSA_PARAM_CRYPTO_BYTES_OFFSET 44
 
 /* Entry point. */
 .globl main
@@ -152,13 +153,11 @@ main:
   sw    x5, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x4)
   li    x5, CRYPTO_PUBLICKEYBYTES
   sw    x5, MLDSA_PARAM_CRYPTO_PUBLICKEYBYTES_OFFSET(x4)
+  li    x5, CRYPTO_BYTES
+  sw    x5, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x4)
 
   /* Load parameters */
   la    x10, sig
-#if DILITHIUM_MODE == 3
-  /* ML-DSA-65 alignment hack. */
-  addi  x10, x10, 16
-#endif
 
   jal x1, crypto_sign_verify_internal
 

@@ -29,6 +29,7 @@
 #define MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET 16
 #define MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET 20
 #define MLDSA_PARAM_CRYPTO_PUBLICKEYBYTES_OFFSET 24
+#define MLDSA_PARAM_CRYPTO_BYTES_OFFSET 44
 
 /* Register aliases */
 .equ x2, sp
@@ -142,17 +143,32 @@ _ctilde_unpack_65:
         addi t1, t1, 4
 _ctilde_unpack_done:
 
-    /* Unpack z */
-    addi a1, t0, 0
+    /* z is not 32-byte aligned for ML-DSA-65: GPR-copy it into w1_polyvec and
+       unpack from there. z_bytes = CRYPTO_BYTES - CTILDEBYTES - OMEGA - K. */
+    lw   t1, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(s11)
+    lw   t2, MLDSA_PARAM_K_OFFSET(s11)
+    slli t3, t2, 3   /* CTILDEBYTES = K*8 */
+    sub  t1, t1, t3
+    lw   t3, MLDSA_PARAM_OMEGA_OFFSET(s11)
+    sub  t1, t1, t3
+    sub  t1, t1, t2  /* z_bytes (multiple of 4) */
+    srli t1, t1, 2
+    addi s9, t0, 0   /* walk the sig z-region; ends at the hint */
+    la   a0, w1_polyvec
+    LOOP t1, 4
+        lw   t2, 0(s9)
+        sw   t2, 0(a0)
+        addi s9, s9, 4
+        addi a0, a0, 4
+
+    /* s9 now points at the hint region. Unpack z from the aligned copy. */
+    la   a1, w1_polyvec
     la   a0, z_polyvec
     lw   a4, MLDSA_PARAM_K_OFFSET(s11)
     lw   t0, MLDSA_PARAM_L_OFFSET(s11)
     LOOP t0, 2
         jal x1, polyz_unpack
         nop
-
-    /* Copy sig pointer for unpacking h later. */
-    addi s9, a1, 0
 
     /* reduce32(z) for central representation */
     la a0, z_polyvec
