@@ -574,7 +574,7 @@ _rejsmpl_loop:
      */
     la t0, mldsa_params
     lw t1, MLDSA_PARAM_K_OFFSET(t0)
-    LOOP t1, 84
+    LOOP t1, 85
         /* If there was a failure, skip to the end of the
            loop body (because of architectural loop rules, we have to complete
            all iterations). */
@@ -697,6 +697,8 @@ _rejsmpl_loop:
         /* Update the continuation register. */
         or  s8, s8, t0
 
+        /* Skip encode in case of rejection. */
+        bne  s8, x0, _mldsa_sign_hint_loop_end
         /* Encode h[i] into the signature. */
         addi a0, s9, 0
         addi a1, s10, 0
