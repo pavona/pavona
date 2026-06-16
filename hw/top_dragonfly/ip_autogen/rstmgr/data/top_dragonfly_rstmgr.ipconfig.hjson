@@ -343,9 +343,9 @@
     rst_ni: lc_io
     export_rsts: {}
     with_alert_dump: true
-    with_cpu_dump: true
     topname: dragonfly
     uniquified_modules: {}
+    with_cpu_dump: true
     module_instance_name: rstmgr
   }
 }
