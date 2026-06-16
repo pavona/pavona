@@ -62,6 +62,8 @@ runs:
           wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
           sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
         else
+          # Install Extra Packages for Enterprise Linux first
+          sudo yum install -y epel-release
           # Install groupinstall groups
           grep '^["]' yum-requirements.txt | xargs sudo yum groupinstall -y
           # Install individual packages
