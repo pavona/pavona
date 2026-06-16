@@ -183,10 +183,6 @@ main:
 
   /* Load parameters */
   la x10, sig
-  la x11, msglen
-  lw x11, 0(x11)
-  la x12, ctxlen
-  lw x12, 0(x12)
 
   jal x1, crypto_sign_signature_internal
 
@@ -228,11 +224,6 @@ sig:
 .globl dptr_sig
 dptr_sig:
   .zero 4
-
-.balign 32
-.globl mu
-mu:
-  .zero 64
 
 .balign 32
 .globl rhoprime

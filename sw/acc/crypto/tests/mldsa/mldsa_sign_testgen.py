@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import hashlib
 import random
 from typing import TextIO
 from dilithium_py.ml_dsa import ML_DSA_44, ML_DSA_65, ML_DSA_87
@@ -38,20 +39,15 @@ def gen_sign_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO)
     rnd = bytes([0] * 32)
     sig = mldsa.sign(sk, msg, ctx=ctx, deterministic=True)
 
-    # Ensure ctx and message end up 32-byte aligned
-    if ctxlen <= 4:
-        ctx += bytes([0] * (5 - ctxlen))
-    if msglen <= 4:
-        msg += bytes([0] * (5 - msglen))
+    # External mu: tr = sk[64:128]; the kernel signs from this mu.
+    tr = sk[64:128]
+    mu = hashlib.shake_256(tr + bytes([0, ctxlen]) + ctx + msg).digest(64)
 
     # Write input values.
     data = {
-        'ctxlen': int.to_bytes(ctxlen, length=4, byteorder='little'),
-        'msglen': int.to_bytes(msglen, length=4, byteorder='little'),
-        'ctx': ctx,
-        'msg': msg,
         'sk': sk,
         'rnd': rnd,
+        'mu': mu,
     }
     write_test_data(data, data_file)
 

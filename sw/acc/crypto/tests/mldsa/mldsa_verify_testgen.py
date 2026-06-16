@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import hashlib
 import random
 from typing import TextIO
 from dilithium_py.ml_dsa import ML_DSA_44, ML_DSA_65, ML_DSA_87
@@ -41,20 +42,15 @@ def gen_verify_test(mldsa, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
     if mldsa == ML_DSA_65:
         sig = bytes([0] * 16) + sig
 
-    # Ensure ctx and message end up 32-byte aligned
-    if ctxlen <= 4:
-        ctx += bytes([0] * (5 - ctxlen))
-    if msglen <= 4:
-        msg += bytes([0] * (5 - msglen))
+    # External mu: tr = SHAKE256(pk); the kernel verifies against this mu.
+    tr = hashlib.shake_256(pk).digest(64)
+    mu = hashlib.shake_256(tr + bytes([0, ctxlen]) + ctx + msg).digest(64)
 
     # Write input values.
     data = {
-        'ctxlen': int.to_bytes(ctxlen, length=4, byteorder='little'),
-        'msglen': int.to_bytes(msglen, length=4, byteorder='little'),
-        'ctx': ctx,
-        'msg': msg,
         'sig': sig,
         'pk': pk,
+        'mu': mu,
     }
     write_test_data(data, data_file)
 

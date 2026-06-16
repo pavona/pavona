@@ -106,10 +106,6 @@ crypto_sign_verify_internal:
     la  t0, dptr_sig
     sw  a0, 0(t0)
 
-    /* Save message and context lengths. */
-    addi s0, a1, 0
-    addi s1, a2, 0
-
     /* Unpack sig */
 
     /* Unpack ctilde. CTILDEBYTES depends on K (= K*8 bytes). */
@@ -177,68 +173,7 @@ _ctilde_unpack_done:
         or  s2, s2, a2
     bne s2, x0, _fail_crypto_sign_verify_internal /* Raise error */
 
-    /* Compute H(rho, t1) */
-    /* Load pointer to pk */
-    la  a0, pk
-
-    /* Initialize a SHAKE256 operation. */
-    lw   a1, MLDSA_PARAM_CRYPTO_PUBLICKEYBYTES_OFFSET(s11) /* CRYPTO_PUBLICKEYBYTES */
-    slli  t0, a1, 5
-    addi  t0, t0, SHAKE256_CFG
-    csrrw x0, KECCAK_CFG_REG, t0
-
-    /* Send the public key to the Keccak core. */
-    jal x1, keccak_send_message
-
-    /* Read tr (64B) and store in dmem[mu]. */
-    la      a0, mu
-    bn.wsrr w0, kmac_digest
-    bn.sid  x0, 0(a0++)
-    bn.wsrr w0, kmac_digest
-    bn.sid  x0, 0(a0)
-
-    /* Compute the total length of tr + [0,ctxlen] + ctx + msg. */
-    li   t1, TRBYTES
-    addi t1, t1, 2
-    add  t1, t1, s1 /* Add len(ctx) */
-    add  t1, t1, s0 /* Add len(msg) */
-
-    /* Initialize a SHAKE256 operation. */
-    slli  t0, t1, 5
-    addi  t0, t0, SHAKE256_CFG
-    csrrw x0, KECCAK_CFG_REG, t0
-
-    /* Send TR to the Keccak core. */
-    li  a1, TRBYTES
-    la  a0, mu
-    jal x1, keccak_send_message
-
-    /* Copy 0 || ctxlen to a 32B-aligned buffer temporarily. */
-    la   a0, mu
-    addi t1, s1, 0
-    slli t1, t1, 8
-    sw   t1, 0(a0)
-
-    /* Send 0 || ctxlen to the Keccak core (2B). */
-    li  a1, 2
-    jal x1, keccak_send_message
-
-    /* Send ctx to the Keccak core. */
-    addi a1, s1, 0 /* a1 <= ctxlen */
-    la   a0, ctx /* a0 <= *ctx */
-    jal  x1, keccak_send_message
-
-    /* Send message to the Keccak core. */
-    addi a1, s0, 0 /* a1 <= msglen */
-    la   a0, msg /* a0 <= *msg */
-    jal  x1, keccak_send_message
-
-    /* Write 64B of SHAKE output to dmem[mu]. */
-    la      a0, mu
-    bn.wsrr w0, kmac_digest
-    bn.sid  x0, 0(a0++)
-    bn.wsrr w0, kmac_digest
-    bn.sid  x0, 0(a0)
+    /* External mu: dmem[mu] is supplied by the caller. */
 
     la  a0, c_poly
     la  a1, ctilde

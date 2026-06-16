@@ -113,61 +113,7 @@ crypto_sign_signature_internal:
     la  t0, dptr_sig
     sw  a0, 0(t0)
 
-    /* Save length parameters to registers. */
-    addi s0, a1, 0
-    addi s1, a2, 0
-
-    /* CRH(tr, msg) */
-
-    /* Compute the total length of tr + [0,ctxlen] + ctx + msg. */
-    li   t1, TRBYTES
-    addi t1, t1, 2
-    add  t1, t1, s1 /* Add len(ctx) */
-    add  t1, t1, s0 /* Add msglen */
-
-    /* Initialize a SHAKE256 operation. */
-    slli  t0, t1, 5
-    addi  t0, t0, SHAKE256_CFG
-    csrrw x0, KECCAK_CFG_REG, t0
-
-    /* Send tr component of secret key (sk[64:128]) to the Keccak core. */
-    li   a1, TRBYTES
-    la   a0, sk
-    addi a0, a0, 64
-    jal  x1, keccak_send_message
-
-    /* Write zeroes to the tmp buffer (necessary so reads don't fail after a
-       partial write). */
-    la      a0, tmp_poly
-    li      t1, 31
-    bn.sid  t1, 0(a0)
-
-    /* Copy 0 || ctxlen to a 32B-aligned buffer temporarily. */
-    slli t1, s1, 8
-    sw   t1, 0(a0)
-
-    /* Send 0 || ctxlen to the Keccak core (2B). */
-    li  a1, 2
-    jal x1, keccak_send_message
-
-    /* Send ctx to the Keccak core. */
-    addi a1, s1, 0 /* a1 <= ctxlen */
-    la   a0, ctx /* a0 <= *ctx */
-    jal  x1, keccak_send_message
-
-    /* Send message to the Keccak core. */
-    addi a1, s0, 0 /* a1 <= msglen */
-    la   a0, msg /* a0 <= *msg */
-    jal  x1, keccak_send_message
-
-    /* Write 64B of SHAKE output to dmem[mu]. */
-    la  a0, mu
-    bn.wsrr w0, kmac_digest
-    bn.sid  x0, 0(a0++)
-    bn.wsrr w0, kmac_digest
-    bn.sid  x0, 0(a0)
-
-    /* Finish the SHAKE-256 operation. */
+    /* External mu: dmem[mu] is supplied by the caller. */
 
     /* Initialize a SHAKE256 operation. */
     addi  a1, x0, SEEDBYTES
