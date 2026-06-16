@@ -340,7 +340,10 @@
     }
     {
       name: sw_test_mode_test_rom
-      sw_images: ["//sw/device/lib/testing/test_rom:test_rom:0"]
+      sw_images: [
+          "//sw/device/lib/testing/test_rom:test_rom:0",
+          "//sw/device/lib/testing/test_second_rom:test_second_rom:7",
+      ]
       en_run_modes: ["sw_test_mode_common"]
     }
     {
@@ -614,8 +617,8 @@
     //   uvm_test_seq: chip_sw_base_vseq
     //   sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:6:new_rules"]
     //   en_run_modes: ["sw_test_mode_test_rom"],
-      // Use the image as basis, but clear provisioning state of the SECRET2 and SECRET3
-      // partitions so that the test can make front-door accesses to those partitions.
+    //   // Use the image as basis, but clear provisioning state of the SECRET2 and SECRET3
+    //   // partitions so that the test can make front-door accesses to those partitions.
     //   run_opts: ["+use_otp_image=OtpTypeLcStTestUnlocked0", "+otp_clear_secret2=1",
     //              "+otp_clear_secret3=1"]
     // }
@@ -1324,6 +1327,7 @@
     //   run_timeout_mins: 180
     // }
     // End of TODO(Pavona #44)
+    // This test relies on sysrst_ctrl, which is not instantiated in dragonfly.
     // {
     //   name: chip_sw_pwrmgr_b2b_sleep_reset_req
     //   uvm_test_seq: chip_sw_repeat_reset_wkup_vseq

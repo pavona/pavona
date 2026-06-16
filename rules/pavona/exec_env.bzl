@@ -151,6 +151,11 @@ def exec_env_common_attrs(**kwargs):
             allow_files = True,
             doc = "ROM_EXT image to use in this environment",
         ),
+        "second_rom": attr.label(
+            default = kwargs.get("second_rom"),
+            allow_files = True,
+            doc = "ROM1 image to use in this environment",
+        ),
         "slot_spec": attr.string_dict(
             default = kwargs.get("slot_spec", {}),
             doc = "Firmware slot addresses to use in this environment",

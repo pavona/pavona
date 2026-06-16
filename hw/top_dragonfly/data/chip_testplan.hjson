@@ -1032,6 +1032,8 @@
       stage: V2
       tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
     }
+    // This test is not suitable for dragonfly because it uses sysrst_ctrl
+    // and dragonfly doesn't instantiate it.
     // {
     //   name: chip_sw_pwrmgr_b2b_sleep_reset_req
     //   desc: '''Verify that the pwrmgr sequences sleep_req and reset req coming in almost at the same

@@ -118,4 +118,5 @@ sim_dv(
     base = ":sim_dv_base",
     exec_env = "sim_dv",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
+    second_rom = "//sw/device/lib/testing/test_second_rom:test_second_rom",
 )
