@@ -654,7 +654,7 @@ class Transformer:
         # (body_label, mnemonic, bodysize_expr) that the matching endloop pops.
         # loop_id makes the body labels unique.
         self.loop_id = 0
-        self.loop_stack = []  # type: List[Tuple[str, str, Optional[str]]]
+        self.loop_stack = []  # type: List[Tuple[int, str, Optional[str]]]
 
         # Strings that should be spat out verbatim
         self.acc = []   # type: List[str]
@@ -809,7 +809,8 @@ class Transformer:
                    op_to_expr: Dict[str, Optional[str]]) -> None:
         '''Emit a body-start label after a loop/loopi and record the frame.'''
         self.loop_id += 1
-        label = '.L__acc_loopbody_{}_{}'.format(self.in_idx, self.loop_id)
+        # Numeric local label: redefinable, so it works inside .rept/.macro.
+        label = (self.in_idx + 1) * 1000000 + self.loop_id
         self.out_handle.write(f'{label}:\n')
         self.loop_stack.append((label, insn.mnemonic, op_to_expr.get('bodysize')))
 
@@ -820,7 +821,7 @@ class Transformer:
                                .format(self.in_path, self.line_number))
         label, mnem, bodysize = self.loop_stack.pop()
         self.out_handle.write(
-            f'.if (. - {label}) != (({bodysize}) * 4)\n'
+            f'.if (. - {label}b) != (({bodysize}) * 4)\n'
             f'.error "{mnem}: loop body size does not match declared '
             f'bodysize ({bodysize})"\n'
             '.endif\n')
