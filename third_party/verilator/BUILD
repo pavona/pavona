@@ -38,3 +38,9 @@ filegroup(
     output_group = "verilator",
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "verilator_install",
+    srcs = [":build_verilator"],
+    visibility = ["//visibility:public"],
+)

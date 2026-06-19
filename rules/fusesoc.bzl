@@ -95,7 +95,7 @@ def _fusesoc_build_impl(ctx):
             ctx.executable._ar,
             ctx.executable._cc,
             ctx.executable._cxx,
-        ]) if ctx.attr.target != "synth" else [],
+        ] + ctx.files._verilator_install) if ctx.attr.target != "synth" else [],
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
@@ -165,6 +165,12 @@ fusesoc_build = rule(
             executable = True,
             default = "//third_party/verilator",
             doc = "Verilator binary target",
+            cfg = "exec",
+        ),
+        "_verilator_install": attr.label(
+            allow_files = True,
+            default = "//third_party/verilator:verilator_install",
+            doc = "Full Verilator installation staged alongside the wrapper.",
             cfg = "exec",
         ),
         "_ar": attr.label(
