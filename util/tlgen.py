@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """TileLink Uncached Lightweight crossbar generator."""
@@ -14,14 +15,18 @@ import hjson
 import tlgen
 
 
+REPO_TOP = Path(__file__).parents[1].resolve()
+
+
 def main():
     """Run tlgen as a script."""
     parser = argparse.ArgumentParser(prog="tlgen")
-    parser.add_argument('--topcfg',
+    parser.add_argument('--tl-xbar-cfg',
                         '-t',
                         metavar='file',
+                        required=True,
                         type=argparse.FileType('r'),
-                        help="`top_cfg.hjson` file.")
+                        help="Crossbar configuration Hjson file.")
     parser.add_argument('--doc',
                         '-d',
                         action='store_true',
@@ -36,6 +41,11 @@ def main():
                         help='''
         Additional path to generated rtl/ or dv/ folders: outdir/ip_path/rtl
         Only needed when there are multiple xbar in outdir''')
+    parser.add_argument('--libname',
+                        '-l',
+                        type=str,
+                        default="ip",
+                        help="Library name for xbar. Default is 'ip'.")
     parser.add_argument('--verbose', '-v', action='store_true', help='Verbose')
 
     args = parser.parse_args()
@@ -50,11 +60,6 @@ def main():
         sys.stdout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
         return
 
-    # Check if topcfg defined
-    if not args.topcfg:
-        log.error("--topcfg option is mandatory to generate codes.")
-        sys.exit(1)
-
     # Check if outdir exists. If not, show error and exit
     if not (args.outdir and Path(args.outdir).is_dir()):
         log.error("'--outdir' should point to writable directory")
@@ -63,7 +68,7 @@ def main():
     # Load contents of top_cfg
     # Skip this part and use internal structure at this time
     try:
-        obj = hjson.load(args.topcfg, use_decimal=True)
+        obj = hjson.load(args.tl_xbar_cfg, use_decimal=True)
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 
@@ -80,7 +85,8 @@ def main():
         log.error("Elaboration failed." + repr(xbar))
 
     # Generate
-    results = tlgen.generate(xbar)
+    outdir = Path(args.outdir).resolve().relative_to(REPO_TOP) / args.ip_path
+    results = tlgen.generate(xbar, str(outdir), args.libname)
 
     dv_path = Path(args.outdir) / args.ip_path / 'dv/autogen'
     dv_path.mkdir(parents=True, exist_ok=True)
@@ -92,7 +98,7 @@ def main():
             fout.write(filecontent)
 
     # generate TB
-    tlgen.generate_tb(xbar, dv_path)
+    tlgen.generate_tb(xbar, dv_path, args.libname)
 
 
 if __name__ == "__main__":

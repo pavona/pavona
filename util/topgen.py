@@ -222,48 +222,6 @@ def configure_xbars(top: ConfigT) -> None:
         obj["inter_signal_list"] = inter_signal_list
 
 
-def generate_xbars(top: ConfigT, out_path: Path) -> None:
-    """Re-run validate and elaborate to generate the Xbar objects."""
-    top_name = "top_" + top["name"]
-    gencmd = (f"// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson "
-              f"-o hw/{top_name}/\n\n")
-
-    for obj in top["xbar"]:
-        objname = obj["name"]
-        log.info(f"generating xbar {objname}")
-        xbar_path = out_path / "ip" / f"xbar_{objname}" / "data" / "autogen"
-        xbar_path.mkdir(parents=True, exist_ok=True)
-        xbar = tlgen.validate(obj)
-        xbar.ip_path = "/".join(["hw", top_name, "ip", "{dut}"])
-
-        # Generate output of crossbar with complete fields
-        xbar_hjson_path = xbar_path / f"xbar_{xbar.name}.gen.hjson"
-        xbar_hjson_path.write_text(genhdr + gencmd +
-                                   hjson.dumps(obj, for_json=True) + '\n')
-
-        if not tlgen.elaborate(xbar):
-            log.error("Elaboration failed." + repr(xbar))
-
-        try:
-            results = tlgen.generate(xbar, top_name)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-
-        ip_path = out_path / "ip" / f"xbar_{objname}"
-
-        for filename, filecontent in results:
-            filepath = ip_path / filename
-            filepath.parent.mkdir(parents=True, exist_ok=True)
-            with filepath.open(mode="w", encoding="UTF-8") as fout:
-                fout.write(filecontent)
-
-        dv_path = out_path / "ip" / f"xbar_{objname}" / "dv" / "autogen"
-        dv_path.mkdir(parents=True, exist_ok=True)
-
-        # generate testbench for xbar
-        tlgen.generate_tb(xbar, dv_path, top_name)
-
-
 def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
                    out_path: Path) -> None:
     topname = top["name"]
@@ -732,17 +690,15 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     generate_modules("clkmgr", single_instance=True, get_params=get_clkmgr_params)
     generate_modules("flash_ctrl", single_instance=True, get_params=get_flash_ctrl_params)
     if not args.no_plic and \
-       not args.alert_handler_only and \
-       not args.xbar_only:
+       not args.alert_handler_only:
         generate_modules("rv_plic", single_instance=False, get_params=get_rv_plic_params)
     if args.plic_only:
         sys.exit()
 
     # Generate Alert Handler if there is an instance
-    if not args.xbar_only:
-        generate_modules("alert_handler",
-                         single_instance=False,
-                         get_params=get_alert_handler_params)
+    generate_modules("alert_handler",
+                     single_instance=False,
+                     get_params=get_alert_handler_params)
     if args.alert_handler_only:
         sys.exit()
 
@@ -886,10 +842,6 @@ def main():
         action="store_true",
         help="If defined, topgen doesn't generate top_{name} RTLs.")
     parser.add_argument(
-        "--no-xbar",
-        action="store_true",
-        help="If defined, topgen doesn't generate crossbar RTLs.")
-    parser.add_argument(
         "--no-plic",
         action="store_true",
         help="If defined, topgen doesn't generate the interrupt controller RTLs."
@@ -903,10 +855,6 @@ def main():
         "--top-only",
         action="store_true",
         help="If defined, the tool generates top RTL only")  # yapf:disable
-    parser.add_argument(
-        "--xbar-only",
-        action="store_true",
-        help="If defined, the tool generates crossbar RTLs only")
     parser.add_argument(
         "--plic-only",
         action="store_true",
@@ -932,10 +880,8 @@ def main():
     args = parser.parse_args()
 
     # check combinations
-
-    if (args.no_top or args.no_xbar or
-            args.no_plic) and (args.top_only or args.xbar_only or
-                               args.plic_only or args.alert_handler_only):
+    if (args.no_top or args.no_plic) and (args.top_only
+                                          or args.plic_only or args.alert_handler_only):
         log.error(
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
@@ -1096,10 +1042,6 @@ def main():
 
     generate_full_ipgens(args, completecfg, name_to_block, alias_cfgs,
                          cfg_path, out_path)
-
-    # Generate xbars
-    if not args.no_xbar or args.xbar_only:
-        generate_xbars(completecfg, out_path)
 
     # Generate Rust toplevel definitions
     if not args.no_rust:

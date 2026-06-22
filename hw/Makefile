@@ -72,12 +72,23 @@ ips_reg        = $(addsuffix _reg, $(local_ips))
 tops_gen = $(addsuffix _gen,$(TOPS))
 blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
 top_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*.hjson
+top_complete_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/autogen/$*.gen.hjson
 top_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*_seed.$(SEED_MODE).hjson
+top_complete_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/autogen/$*.secrets.$(SEED_MODE).gen.hjson
 top_chip_hjson = $(PRJ_DIR)/hw/$(TOPS)/$(dir_hjson)/$(TOPS).hjson
 
 top: $(tops_gen)
 $(tops_gen): %_gen:
 	${PRJ_DIR}/util/topgen.py -t $(top_hjson) -s $(top_seed_hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
+	(for xbar in xbar_main xbar_peri xbar_mbx xbar_dbg; do \
+	   ${PRJ_DIR}/util/gen_top_ipconfigs.py --ips $$xbar --xbars -s $(top_complete_seed_hjson) --outdir ${PRJ_DIR}/hw/$*/ip/"$$xbar"/data/autogen -t $(top_complete_hjson); \
+	   outfile=${PRJ_DIR}/hw/$*/ip/"$$xbar"/data/autogen/"$$xbar".gen.hjson; \
+	   if [ -f $$outfile ]; then \
+	     ${PRJ_DIR}/util/tlgen.py --libname $* -t "$$outfile" -o ${PRJ_DIR}/hw/$*/ip/"$$xbar"; \
+	   else \
+	     rm -rf ${PRJ_DIR}/hw/$*/ip/"$$xbar"; \
+	   fi \
+     done)
 
 # This runs cmdgen on all md files of the repo using xargs for parallelism
 cmdgen: top
