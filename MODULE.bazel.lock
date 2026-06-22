@@ -607,7 +607,7 @@
     },
     "//third_party/mlkem_native:extensions.bzl%mlkem_native": {
       "general": {
-        "bzlTransitiveDigest": "1FgWniSaEy5O+MPU+zqJGa85PNlQw5BBtb8X6eXYYxw=",
+        "bzlTransitiveDigest": "pJZ7cksmmU0acXS7UEUWnuncG4ItXOS6p+tdQ+n5dhw=",
         "usagesDigest": "wrmyTg8v0YnST2GEFD1/vEGe+hfW4yrjxgMt8EEb7ho=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -617,10 +617,10 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "build_file": "@@//third_party/mlkem_native:BUILD.mlkem_native.bazel",
-              "sha256": "79bf96b6d2d9a9d38d6aea420fc056b744898235d05e23ca0b7ce90edc922362",
-              "strip_prefix": "mlkem-native-1.1.0",
+              "sha256": "fb1eeb64974ea13cdbec8d1e6ae7e69316dc959926c5660437dabf8462c965bf",
+              "strip_prefix": "mlkem-native-1.2.0",
               "urls": [
-                "https://github.com/pq-code-package/mlkem-native/archive/v1.1.0.tar.gz"
+                "https://github.com/pq-code-package/mlkem-native/archive/v1.2.0.tar.gz"
               ]
             }
           }

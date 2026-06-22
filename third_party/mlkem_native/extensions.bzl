@@ -13,9 +13,9 @@ def _mlkem_native_repos():
     http_archive(
         name = "mlkem_native",
         build_file = Label("//third_party/mlkem_native:BUILD.mlkem_native.bazel"),
-        sha256 = "79bf96b6d2d9a9d38d6aea420fc056b744898235d05e23ca0b7ce90edc922362",
-        strip_prefix = "mlkem-native-1.1.0",
+        sha256 = "fb1eeb64974ea13cdbec8d1e6ae7e69316dc959926c5660437dabf8462c965bf",
+        strip_prefix = "mlkem-native-1.2.0",
         urls = [
-            "https://github.com/pq-code-package/mlkem-native/archive/v1.1.0.tar.gz",
+            "https://github.com/pq-code-package/mlkem-native/archive/v1.2.0.tar.gz",
         ],
     )
