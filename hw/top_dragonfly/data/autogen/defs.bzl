@@ -4,8 +4,7 @@
 #
 # ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------#
 # PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-# util/topgen.py -t hw/top_dragonfly/data/top_dragonfly.hjson
-#                -o hw/top_dragonfly/
+# util/gen_top_sw.py -t hw/top_dragonfly/data/autogen/top_dragonfly.gen.hjson
 
 load("//hw/top_dragonfly/ip_autogen/ac_range_check:defs.bzl", "AC_RANGE_CHECK")
 load("//hw/ip/acc:defs.bzl", "ACC")

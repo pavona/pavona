@@ -17,7 +17,6 @@ from typing import Callable, Dict, List, NamedTuple, Optional
 
 import hjson
 import tlgen
-import version_file
 from basegen.typing import ConfigT, ParamsT
 from design.lib.LcStEnc import LcStEnc
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
@@ -35,7 +34,6 @@ from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, validate_top
 from topgen.secure_prng import SecurePrngFactory
-from topgen.c_test import TopGenCTest
 from topgen.lib import find_modules, load_cfg, write_file_secure
 from topgen.merge import (
     amend_alert, amend_interrupt, amend_pinmux_io, amend_racl,
@@ -44,7 +42,6 @@ from topgen.merge import (
     commit_outgoing_interrupt_modules, connect_clocks,
     create_alert_lpgs, elaborate_instance, extract_clocks,
     commit_alert_connections)
-from topgen.rust import TopGenRust
 from topgen.typing import IpBlocksT
 from topgen.validate import validate_seed_cfg
 from topgen.params import (get_alert_handler_params, get_pinmux_params, get_pwrmgr_params,
@@ -321,48 +318,6 @@ def create_mem(name: str, item: dict[str, object], addrsep: int, regwidth: int) 
                          size_in_bytes=size_in_bytes,
                          offset=int(item.get("base_addr", "0"), 0),
                          swaccess=swaccess)
-
-
-def generate_rust(topname, completecfg, name_to_block, out_path, version_stamp,
-                  src_tree_top, topgen_template_path) -> None:
-    # Template render helper
-    def render_template(template_path: str, rendered_path: Path, **other_info):
-        template_contents = generate_top(completecfg, name_to_block,
-                                         str(template_path), **other_info)
-
-        rendered_path.parent.mkdir(exist_ok=True, parents=True)
-        with rendered_path.open(mode="w", encoding="UTF-8") as fout:
-            fout.write(template_contents)
-
-    # Create Rust output directory
-    rsformat_dir = out_path / "sw/autogen/chip/"
-    rsformat_dir.mkdir(parents=True, exist_ok=True)
-
-    # Generating Rust device description for external sw usage
-    render_template(topgen_template_path / 'toplevel_mod.rs.tpl',
-                    rsformat_dir / 'mod.rs')
-
-    for addr_space in completecfg['addr_spaces']:
-        addr_space_suffix = lib.get_addr_space_suffix(addr_space)
-
-        # The Rust file needs some complex information, so we initialize this
-        # object to store it.
-        rs_helper = TopGenRust(completecfg, name_to_block, version_stamp)
-
-        # Generate Rust device-side files
-        rsformat_dir = out_path / "sw/autogen/chip/"
-        render_template(topgen_template_path / 'toplevel.rs.tpl',
-                        rsformat_dir / f"top_{topname}{addr_space_suffix}.rs",
-                        addr_space=addr_space['name'],
-                        helper=rs_helper)
-
-        # Generate Rust host-side files
-        rsformat_dir = src_tree_top / 'sw/host/ot_hal/src/top/autogen'
-        rsformat_dir.mkdir(parents=True, exist_ok=True)
-        render_template(topgen_template_path / 'host_toplevel.rs.tpl',
-                        rsformat_dir / f"{topname}{addr_space_suffix}.rs",
-                        addr_space=addr_space['name'],
-                        helper=rs_helper)
 
 
 def _amend_block_reset_connections(module: ConfigT,
@@ -826,10 +781,6 @@ def main():
         action="store_true",
         help="If defined, topgen doesn't generate the interrupt controller RTLs."
     )
-    parser.add_argument("--no-rust",
-                        action="store_true",
-                        help="If defined, topgen doesn't generate Rust code.")
-
     # Generator options: 'only' series. cannot combined with 'no' series
     parser.add_argument(
         "--plic-only",
@@ -839,10 +790,6 @@ def main():
         "--alert-handler-only",
         action="store_true",
         help="If defined, the tool generates alert handler hjson only")
-    parser.add_argument(
-        "--rust-only",
-        action="store_true",
-        help="If defined, the tool generates top Rust code only")
     parser.add_argument("--alias-files",
                         nargs="+",
                         type=Path,
@@ -857,11 +804,6 @@ def main():
 
     # check combinations
     if args.no_plic and (args.plic_only or args.alert_handler_only):
-        log.error(
-            "'no' series options cannot be used with 'only' series options")
-        raise SystemExit(sys.exc_info()[1])
-
-    if args.no_rust and args.rust_only:
         log.error(
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
@@ -924,9 +866,6 @@ def main():
                     Path(args.topcfg).parent / irq_mappings_path)
                 for irq_group, irqs in irq_mapping.items():
                     topcfg['incoming_interrupt'][irq_group] = irqs
-
-    # Extract version stamp from file
-    version_stamp = version_file.VersionInformation(args.version_stamp)
 
     # The generation of ipgen modules needs to be carefully orchestrated to
     # avoid performing multiple passes when creating the complete top
@@ -1007,13 +946,6 @@ def main():
 
     # Re-set the seed because generate_full_ipgens uses the same RNG again from the beginning
     SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
-
-    # Generate Rust toplevel definitions
-    if not args.no_rust:
-        generate_rust(topname, completecfg, name_to_block, out_path.resolve(),
-                      version_stamp, SRCTREE_TOP, TOPGEN_TEMPLATE_PATH)
-        if args.rust_only:
-            sys.exit(0)
 
     def render_template(template_path: str, rendered_path: Path,
                         secure: bool = False, **other_info):
@@ -1156,136 +1088,6 @@ waive --rule=line-length --location="{rnd_cnst_sv_file}"
                         virtual_package="lowrisc:virtual_constants:lc_ctrl_token_pkg",
                         dependencies=["lowrisc:ip:lc_ctrl_state_pkg"],
                         files=[lc_st_enc_file])
-
-    # The C / SV file needs some complex information, so we initialize this
-    # object to store it.
-    c_helper = TopGenCTest(completecfg, name_to_block)
-
-    # Since SW does not use FuseSoC and instead expects those files always
-    # to be in hw/top_{topname}/sw/autogen, we currently create these files
-    # twice:
-    # - Once under out_path/sw/autogen
-    # - Once under hw/top_{topname}/sw/autogen
-    root_paths = [out_path.resolve(), SRCTREE_TOP]
-    out_paths = [
-        out_path.resolve(), (SRCTREE_TOP / "hw" / top_name).resolve()
-    ]
-
-    # C Header + C File + Clang-format file
-    gencmd_c = warnhdr + GENCMD.format(top_name=top_name)
-    gencmd_bzl = gencmd_c.replace("//", "#")
-
-    for addr_space in topcfg['addr_spaces']:
-        addr_space_suffix = lib.get_addr_space_suffix(addr_space)
-
-        # "toplevel_pkg.sv.tpl" -> "rtl/autogen/{top_name}{addr_space_suffix}_pkg.sv"
-        render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
-                        out_path / "rtl" / "autogen" /
-                        f"{top_name}{addr_space_suffix}_pkg.sv",
-                        helper=c_helper,
-                        addr_space=addr_space,
-                        gencmd=gencmd_sv)
-
-        for idx, path in enumerate(out_paths):
-
-            # "clang-format" -> "sw/autogen/.clang-format"
-            cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
-            cformat_dir = path / "sw" / "autogen"
-            cformat_dir.mkdir(parents=True, exist_ok=True)
-            cformat_path = cformat_dir / ".clang-format"
-            cformat_path.write_text(cformat_tplpath.read_text())
-
-            # Save the header macro prefix into `c_helper`
-            rel_header_dir = cformat_dir.relative_to(root_paths[idx])
-            c_helper.header_macro_prefix = (
-                "OPENTITAN_" +
-                str(rel_header_dir).replace("/", "_").upper())
-
-            # "toplevel.h.tpl" -> "sw/autogen/{top_name}.h"
-            cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}.h"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
-                            cheader_path,
-                            addr_space=addr_space['name'],
-                            helper=c_helper,
-                            gencmd=gencmd_c)
-
-            # Save the relative header path into `c_helper`
-            rel_header_path = cheader_path.relative_to(root_paths[idx])
-            c_helper.header_path = str(rel_header_path)
-
-            # "toplevel.c.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}.c"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
-                            cformat_dir /
-                            f"{top_name}{addr_space_suffix}.c",
-                            helper=c_helper,
-                            addr_space=addr_space['name'],
-                            gencmd=gencmd_c)
-
-            # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}_memory.h"
-            memory_cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}_memory.h"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
-                            memory_cheader_path,
-                            addr_space=addr_space['name'],
-                            helper=c_helper,
-                            gencmd=gencmd_c)
-
-    for idx, path in enumerate(out_paths):
-        cformat_dir = path / "sw" / "autogen"
-        c_helper.header_macro_prefix = (
-            "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
-
-        # "toplevel_BUILD.h.tpl" -> "sw/autogen/BUILD"
-        memory_cheader_path = cformat_dir / "BUILD"
-        render_template(TOPGEN_TEMPLATE_PATH / "toplevel_BUILD.tpl",
-                        memory_cheader_path,
-                        helper=c_helper,
-                        gencmd=gencmd_bzl)
-
-        # "data_BUILD.h.tpl" -> "data/autogen/BUILD"
-        render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
-                        path / "data" / "autogen" / "BUILD",
-                        gencmd=gencmd_bzl)
-
-        # "data_defs.bzl.tpl" -> "data/autogen/defs.bzl"
-        render_template(TOPGEN_TEMPLATE_PATH / "data_defs.bzl.tpl",
-                        path / "data" / "autogen" / "defs.bzl",
-                        gencmd=gencmd_bzl)
-
-        # "toplevel_memory.ld.tpl" ->
-        #   "sw/autogen/{top_name}{addr_space_suffix}_memory.ld"
-        render_template(
-            TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
-            cformat_dir / f"{top_name}_memory.ld",
-            addr_space='hart',  # TODO: Don't hard-code
-            helper=c_helper,
-            gencmd=gencmd_c)
-
-        # Auto-generate tests in "sw/device/tests/autogen" area.
-        outfile = cformat_dir / "tests" / "BUILD"
-        render_template(
-            TOPGEN_TEMPLATE_PATH / "BUILD.tpl",
-            outfile,
-            helper=c_helper,
-            addr_space='hart',  # TODO: Don't hard-code
-            gencmd=gencmd_bzl)
-
-        outfile = cformat_dir / "tests" / "plic_all_irqs_test.c"
-        render_template(
-            TOPGEN_TEMPLATE_PATH / "plic_all_irqs_test.c.tpl",
-            outfile,
-            helper=c_helper,
-            addr_space='hart',  # TODO: Don't hard-code
-            gencmd=gencmd_c)
-
-        # Render alert tests only if there is really an alert handler
-        if lib.find_module(completecfg['module'], 'alert_handler'):
-            outfile = cformat_dir / "tests" / "alert_test.c"
-            render_template(
-                TOPGEN_TEMPLATE_PATH / "alert_test.c.tpl",
-                outfile,
-                helper=c_helper,
-                addr_space='hart',  # TODO: Don't hard-code
-                gencmd=gencmd_c)
 
     # generate chip level xbar and alert_handler TB
     tb_files = [

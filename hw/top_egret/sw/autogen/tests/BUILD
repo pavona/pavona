@@ -4,8 +4,7 @@
 #
 # ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------#
 # PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-# util/topgen.py -t hw/top_egret/data/top_egret.hjson
-#                -o hw/top_egret/
+# util/gen_top_sw.py -t hw/top_egret/data/autogen/top_egret.gen.hjson
 
 load(
     "//rules/pavona:defs.bzl",

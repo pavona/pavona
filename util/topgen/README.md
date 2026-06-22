@@ -128,8 +128,8 @@ It is possible to restrict what the tool should generate.
 $ util/topgen.py --help
 usage: topgen [-h] --topcfg TOPCFG --seedcfg SEEDCFG [--outdir OUTDIR]
               [--hjson-path HJSON_PATH] [--verbose]
-              [--version-stamp VERSION_STAMP] [--no-plic] [--no-rust]
-              [--plic-only] [--alert-handler-only] [--rust-only]
+              [--version-stamp VERSION_STAMP] [--no-plic] [--plic-only]
+              [--alert-handler-only]
               [--alias-files ALIAS_FILES [ALIAS_FILES ...]]
 
 options:
@@ -153,12 +153,10 @@ options:
                         stamp file.
   --no-plic             If defined, topgen doesn't generate the interrupt
                         controller RTLs.
-  --no-rust             If defined, topgen doesn't generate Rust code.
   --plic-only           If defined, the tool generates RV_PLIC RTL and Hjson
                         only
   --alert-handler-only  If defined, the tool generates alert handler hjson
                         only
-  --rust-only           If defined, the tool generates top Rust code only
   --alias-files ALIAS_FILES [ALIAS_FILES ...]
                         If defined, topgen uses supplied alias hjson file(s)
                         to override the generic register definitions when

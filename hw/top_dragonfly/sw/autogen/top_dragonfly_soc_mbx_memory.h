@@ -4,8 +4,7 @@
 //
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-// util/topgen.py -t hw/top_dragonfly/data/top_dragonfly.hjson
-//                -o hw/top_dragonfly/
+// util/gen_top_sw.py -t hw/top_dragonfly/data/autogen/top_dragonfly.gen.hjson
 
 #ifndef OPENTITAN_HW_TOP_DRAGONFLY_SW_AUTOGEN_TOP_DRAGONFLY_SOC_MBX_MEMORY_H_
 #define OPENTITAN_HW_TOP_DRAGONFLY_SW_AUTOGEN_TOP_DRAGONFLY_SOC_MBX_MEMORY_H_
