@@ -36,7 +36,6 @@ from topgen import lib as lib
 from topgen import merge_top, validate_top
 from topgen.secure_prng import SecurePrngFactory
 from topgen.c_test import TopGenCTest
-from topgen.gen_top_docs import gen_top_docs
 from topgen.lib import find_modules, load_cfg, write_file_secure
 from topgen.merge import (
     amend_alert, amend_interrupt, amend_pinmux_io, amend_racl,
@@ -1323,9 +1322,6 @@ waive --rule=line-length --location="{rnd_cnst_sv_file}"
 
     with rendered_path.open(mode="w", encoding="UTF-8") as fout:
         fout.write(template_contents)
-
-    # generate documentation for toplevel
-    gen_top_docs(completecfg, c_helper, out_path)
 
 
 if __name__ == "__main__":
