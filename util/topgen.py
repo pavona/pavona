@@ -1040,9 +1040,6 @@ def main():
     # Re-set the seed because generate_full_ipgens uses the same RNG again from the beginning
     SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
 
-    generate_full_ipgens(args, completecfg, name_to_block, alias_cfgs,
-                         cfg_path, out_path)
-
     # Generate Rust toplevel definitions
     if not args.no_rust:
         generate_rust(topname, completecfg, name_to_block, out_path.resolve(),

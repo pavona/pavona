@@ -38,7 +38,7 @@ def get_clkmgr_params(top: ConfigT) -> ParamsT:
                 "src_name": sig.src.name,
                 "endpoint_ip": sig.endpoints[0][0]
             }
-            for nm, sig in mp.items() if isinstance(sig, ClockSignal)
+            for nm, sig in mp.items() if isinstance(sig, ClockSignal) and len(sig.endpoints) > 0
         }
         for ty, mp in typed_clocks._asdict().items() if isinstance(mp, dict)
     })
