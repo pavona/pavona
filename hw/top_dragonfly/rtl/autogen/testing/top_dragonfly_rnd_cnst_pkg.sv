@@ -5,11 +5,11 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_dragonfly/data/top_dragonfly.hjson
-//                -o hw/top_dragonfly/
+// util/gen_top_sv.py --completecfg hw/top_dragonfly/data/autogen/top_dragonfly.gen.hjson
+//                    --seedcfg hw/top_dragonfly/data/autogen/top_dragonfly.secrets.testing.gen.hjson
 //
 // File is generated based on the following seed configuration:
-//   hw/top_dragonfly/data/top_dragonfly_seed.testing.hjson
+//   hw/top_dragonfly/data/autogen/top_dragonfly.secrets.testing.gen.hjson
 
 
 package top_dragonfly_rnd_cnst_pkg;

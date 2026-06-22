@@ -8,7 +8,6 @@ r"""Top Module Generator
 import argparse
 from dataclasses import dataclass
 import logging as log
-import os
 import sys
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
@@ -18,14 +17,12 @@ from typing import Callable, Dict, List, NamedTuple, Optional
 import hjson
 import tlgen
 from basegen.typing import ConfigT, ParamsT
-from design.lib.LcStEnc import LcStEnc
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
 from ipgen.clkmgr_gen import get_clkmgr_params
 from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
-from raclgen.lib import DEFAULT_RACL_CONFIG
 from reggen import access, gen_rtl, gen_sec_cm_testplan, window
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
@@ -901,7 +898,6 @@ def main():
                 raise ValueError(f"Multiple alias targets for {alias_target}")
             alias_cfgs[alias_target] = alias_cfg
 
-    topname = topcfg["name"]
     cfg_copy = deepcopy(topcfg)
     cfg_last_dump = None
     for pass_idx in range(maximum_passes):
@@ -940,190 +936,6 @@ def main():
 
     # Dump the complete top config
     dump_completecfg(completecfg, out_path)
-
-    topname = topcfg["name"]
-    top_name = f"top_{topname}"
-
-    # Re-set the seed because generate_full_ipgens uses the same RNG again from the beginning
-    SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
-
-    def render_template(template_path: str, rendered_path: Path,
-                        secure: bool = False, **other_info):
-        """Render template to file, optionally with secure permissions for sensitive files"""
-        template_contents = generate_top(completecfg, name_to_block,
-                                         str(template_path), **other_info)
-
-        if secure:
-            # Use the write_file_secure for writting file with restricted file permissions
-            write_file_secure(rendered_path, template_contents)
-        else:
-            rendered_path.parent.mkdir(exist_ok=True, parents=True)
-            rendered_path.write_text(template_contents, encoding="UTF-8")
-
-    # Header for SV files
-    gencmd_sv = warnhdr + "//\n" + GENCMD.format(top_name=top_name) + "\n"
-
-    # Top and chiplevel templates are top-specific
-    top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
-
-    # SystemVerilog Top:
-    # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
-    render_template(top_template_path / "toplevel.sv.tpl",
-                    out_path / "rtl" / "autogen" / f"{top_name}.sv",
-                    gencmd=gencmd_sv)
-
-    # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
-    for target in completecfg["targets"]:
-        target_name = target["name"]
-        render_template(top_template_path / "chiplevel.sv.tpl",
-                        out_path /
-                        f"rtl/autogen/chip_{topname}_{target_name}.sv",
-                        gencmd=gencmd_sv,
-                        target=target)
-
-    # compile-time random netlist constants
-    gencmd_rnd_cnst_sv = gencmd_sv + f"""//
-// File is generated based on the following seed configuration:
-//   {os.path.relpath(args.seedcfg, SRCTREE_TOP)}
-"""
-    topgen_seed = completecfg["seed"]["topgen_seed"]
-    seed_mode = topgen_seed.seed_mode
-    rnd_cnst_path = f"rtl/autogen/{seed_mode}"
-    rnd_cnst_file = f"{top_name}_rnd_cnst_pkg"
-    rnd_cnst_sv_file = f"{rnd_cnst_file}.sv"
-    rnd_cnst_vbl_file = f"{rnd_cnst_file}.vbl"
-
-    # Determine the dependencies for the random netlist constant package. This construction
-    # depends on which modules are present in the top configuration and which require random
-    # netlist constants.
-    rnd_cnst_deps = []
-    RND_CNST_DEPENDENCIES = {
-        # ipgen-based modules (using template_type)
-        "flash_ctrl": [f"lowrisc:{topname}_ip:flash_ctrl"],
-        "otp_ctrl": [
-            f"lowrisc:{topname}_ip:otp_ctrl_top_specific_pkg",
-            "lowrisc:ip:otp_ctrl_pkg"
-        ],
-        "alert_handler": [f"lowrisc:{topname}_ip:alert_handler_pkg"],
-        "rv_core_ibex": ["lowrisc:ibex:ibex_pkg"],
-
-        # Direct IP modules (using type)
-        "lc_ctrl": ["lowrisc:ip:lc_ctrl_pkg"],
-        "sram_ctrl": ["lowrisc:ip:sram_ctrl_pkg"],
-        "aes": ["lowrisc:ip:aes"],
-        "kmac": ["lowrisc:ip:kmac_pkg"],
-        "acc": ["lowrisc:ip:acc_pkg"],
-        "keymgr": ["lowrisc:ip:keymgr_pkg"],
-        "csrng": ["lowrisc:ip:csrng_pkg"],
-    }
-
-    for m in completecfg["module"]:
-        template_type = m.get("template_type", "")
-        if template_type and template_type in RND_CNST_DEPENDENCIES:
-            deps = RND_CNST_DEPENDENCIES[template_type]
-            rnd_cnst_deps.extend(deps)
-            continue
-
-        module_type = m["type"]
-        if module_type in RND_CNST_DEPENDENCIES:
-            deps = RND_CNST_DEPENDENCIES[module_type]
-            rnd_cnst_deps.extend(deps)
-
-    # Ensure the dependencies are unique and sorted
-    rnd_cnst_deps = sorted(list(set(rnd_cnst_deps)))
-
-    render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
-                    out_path / rnd_cnst_path / rnd_cnst_sv_file,
-                    secure=True, gencmd=gencmd_rnd_cnst_sv)
-
-    # Create verible waiver file for the random constant package for long lines.
-    rnd_cnst_vbl_file_path = out_path / rnd_cnst_path / f"{rnd_cnst_file}.vbl"
-    with rnd_cnst_vbl_file_path.open(mode="w", encoding="UTF-8") as fout:
-        fout.write((lichdr + gencmd_rnd_cnst_sv).replace("//", "#") + f"""
-# These lines are too long due to templating
-waive --rule=line-length --location="{rnd_cnst_sv_file}"
-""")
-    render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
-                    out_path / rnd_cnst_path / f"top_{topname}_{seed_mode}_rnd_cnst_pkg.core",
-                    package=f"lowrisc:{topname}_constants:{seed_mode}_rnd_cnst_pkg:0.1",
-                    description="Random netlist constant package",
-                    virtual_package="lowrisc:virtual_constants:rnd_cnst_pkg",
-                    dependencies=rnd_cnst_deps,
-                    files=[rnd_cnst_sv_file],
-                    files_veriblelint_waiver=rnd_cnst_vbl_file)
-
-    racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
-    render_template(TOPGEN_TEMPLATE_PATH / 'top_racl_pkg.sv.tpl',
-                    out_path / 'rtl' / 'autogen' / 'top_racl_pkg.sv',
-                    gencmd=gencmd_sv,
-                    topcfg=completecfg,
-                    racl_config=racl_config)
-    render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
-                    out_path / 'rtl' / 'autogen' /
-                    f'top_{topname}_racl_pkg.sv',
-                    gencmd=gencmd_sv,
-                    topcfg=completecfg,
-                    racl_config=racl_config)
-
-    if lib.find_module(topcfg["module"], "lc_ctrl"):
-        lc_state_def_file = load_cfg(IP_RAW_PATH / "lc_ctrl" / "data" / "lc_ctrl_state.hjson")
-        lc_seed = topcfg["seed"]["lc_ctrl_seed"]
-        lc_st_enc = LcStEnc(lc_state_def_file, lc_seed.value)
-        lc_st_enc_path = f"rtl/autogen/{lc_seed.seed_mode}"
-        lc_st_enc_file = "lc_ctrl_token_pkg.sv"
-        render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
-                        IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv",
-                        lc_st_enc=lc_st_enc)
-        render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_token_pkg.sv.tpl",
-                        out_path / lc_st_enc_path / lc_st_enc_file,
-                        secure=True, lc_st_enc=lc_st_enc)
-        render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
-                        out_path / lc_st_enc_path /
-                        f"top_{topname}_{lc_seed.seed_mode}_lc_ctrl_token_pkg.core",
-                        package=(
-                            f"lowrisc:{topname}_constants:"
-                            f"{lc_seed.seed_mode}_lc_ctrl_token_pkg:0.1"
-                        ),
-                        description="LC Controller Token Package",
-                        virtual_package="lowrisc:virtual_constants:lc_ctrl_token_pkg",
-                        dependencies=["lowrisc:ip:lc_ctrl_state_pkg"],
-                        files=[lc_st_enc_file])
-
-    # generate chip level xbar and alert_handler TB
-    tb_files = [
-        "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
-        "xbar_tgl_excl.cfg", "rstmgr_tgl_excl.cfg"
-    ]
-    if completecfg["alert"]:
-        tb_files += ["tb__alert_handler_connect.sv"]
-
-    for fname in tb_files:
-        tpl_fname = "%s.tpl" % (fname)
-        xbar_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
-        template_contents = generate_top(completecfg,
-                                         name_to_block,
-                                         str(xbar_chip_data_path),
-                                         gencmd=gencmd_sv)
-
-        rendered_dir = out_path / "dv/autogen"
-        rendered_dir.mkdir(parents=True, exist_ok=True)
-        rendered_path = rendered_dir / fname
-
-        with rendered_path.open(mode="w", encoding="UTF-8") as fout:
-            fout.write(template_contents)
-
-    # generate parameters for chip-level environment package
-    tpl_fname = "chip_env_pkg__params.sv.tpl"
-    alert_handler_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
-    template_contents = generate_top(completecfg, name_to_block,
-                                     str(alert_handler_chip_data_path))
-
-    rendered_dir = out_path / "dv/env/autogen"
-    rendered_dir.mkdir(parents=True, exist_ok=True)
-    rendered_path = rendered_dir / "chip_env_pkg__params.sv"
-
-    with rendered_path.open(mode="w", encoding="UTF-8") as fout:
-        fout.write(template_contents)
 
 
 if __name__ == "__main__":

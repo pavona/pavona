@@ -5,8 +5,8 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_scafi_deprecated/data/top_scafi_deprecated.hjson
-//                -o hw/top_scafi_deprecated/
+// util/gen_top_sv.py --completecfg hw/top_scafi_deprecated/data/autogen/top_scafi_deprecated.gen.hjson
+//                    --seedcfg hw/top_scafi_deprecated/data/autogen/top_scafi_deprecated.secrets.testing.gen.hjson
 
 
 module chip_scafi_deprecated_cw305 #(

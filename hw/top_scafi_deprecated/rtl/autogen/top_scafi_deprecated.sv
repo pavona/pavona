@@ -5,8 +5,8 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_scafi_deprecated/data/top_scafi_deprecated.hjson
-//                -o hw/top_scafi_deprecated/
+// util/gen_top_sv.py --completecfg hw/top_scafi_deprecated/data/autogen/top_scafi_deprecated.gen.hjson
+//                    --seedcfg hw/top_scafi_deprecated/data/autogen/top_scafi_deprecated.secrets.testing.gen.hjson
 
 module top_scafi_deprecated #(
   // Manually defined parameters
@@ -1086,14 +1086,14 @@ module top_scafi_deprecated #(
   flash_ctrl #(
     .AlertAsyncOn(AsyncOnOutgoingAlertScafi_deprecated[18:14]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .SecScrambleEn(SecFlashCtrlScrambleEn),
+    .ProgFifoDepth(FlashCtrlProgFifoDepth),
+    .RdFifoDepth(FlashCtrlRdFifoDepth),
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
     .RndCnstDataKey(RndCnstFlashCtrlDataKey),
     .RndCnstAllSeeds(RndCnstFlashCtrlAllSeeds),
     .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm),
-    .SecScrambleEn(SecFlashCtrlScrambleEn),
-    .ProgFifoDepth(FlashCtrlProgFifoDepth),
-    .RdFifoDepth(FlashCtrlRdFifoDepth)
+    .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm)
   ) u_flash_ctrl (
 
       // Interrupt
@@ -1241,17 +1241,17 @@ module top_scafi_deprecated #(
   sram_ctrl #(
     .AlertAsyncOn(AsyncOnOutgoingAlertScafi_deprecated[22:22]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
-    .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
-    .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
     .MemSizeRam(131072),
     .InstSize(SramCtrlMainInstSize),
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMainOutstanding),
-    .EccCorrection(SramCtrlMainEccCorrection)
+    .EccCorrection(SramCtrlMainEccCorrection),
+    .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm)
   ) u_sram_ctrl_main (
       // External alert group "scafi_deprecated" [22]: fatal_error
       .alert_tx_o  ( outgoing_alert_scafi_deprecated_tx_o[22:22] ),
@@ -1285,10 +1285,10 @@ module top_scafi_deprecated #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .FlopToKmac(RomCtrlFlopToKmac),
-    .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling),
-    .MemSizeRom(32768)
+    .MemSizeRom(32768),
+    .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
+    .RndCnstScrKey(RndCnstRomCtrlScrKey)
   ) u_rom_ctrl (
       // External alert group "scafi_deprecated" [23]: fatal
       .alert_tx_o  ( outgoing_alert_scafi_deprecated_tx_o[23:23] ),
@@ -1312,10 +1312,6 @@ module top_scafi_deprecated #(
   rv_core_ibex #(
     .AlertAsyncOn(AsyncOnOutgoingAlertScafi_deprecated[27:24]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
-    .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
-    .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
     .NEscalationSeverities(4),
     .WidthPingCounter(16),
     .PMPEnable(RvCoreIbexPMPEnable),
@@ -1349,7 +1345,11 @@ module top_scafi_deprecated #(
     .TlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits),
     .CsrMvendorId(RvCoreIbexCsrMvendorId),
     .CsrMimpId(RvCoreIbexCsrMimpId),
-    .InstructionPipeline(RvCoreIbexInstructionPipeline)
+    .InstructionPipeline(RvCoreIbexInstructionPipeline),
+    .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
+    .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
+    .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault)
   ) u_rv_core_ibex (
       // External alert group "scafi_deprecated" [24]: fatal_sw_err
       // External alert group "scafi_deprecated" [25]: recov_sw_err

@@ -94,6 +94,7 @@ $(tops_gen): %_gen:
 	     rm -rf ${PRJ_DIR}/hw/$*/ip/"$$xbar"; \
 	   fi \
      done)
+	${PRJ_DIR}/util/gen_top_sv.py -t $(top_complete_hjson) -s $(top_complete_seed_hjson)
 	${PRJ_DIR}/util/gen_top_docs.py -t $(top_complete_hjson)
 	${PRJ_DIR}/util/gen_top_sw.py -t $(top_complete_hjson)
 

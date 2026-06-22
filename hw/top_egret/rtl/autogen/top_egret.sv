@@ -5,8 +5,8 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_egret/data/top_egret.hjson
-//                -o hw/top_egret/
+// util/gen_top_sv.py --completecfg hw/top_egret/data/autogen/top_egret.gen.hjson
+//                    --seedcfg hw/top_egret/data/autogen/top_egret.secrets.testing.gen.hjson
 
 module top_egret #(
   // Manually defined parameters
@@ -1605,19 +1605,19 @@ module top_egret #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .SecVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
     .UseDmiInterface(LcCtrlUseDmiInterface),
-    .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
-    .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcCtrlLcKeymgrDivTestUnlocked),
-    .RndCnstLcKeymgrDivDev(RndCnstLcCtrlLcKeymgrDivDev),
-    .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
-    .RndCnstLcKeymgrDivRma(RndCnstLcCtrlLcKeymgrDivRma),
-    .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens),
     .SiliconCreatorId(LcCtrlSiliconCreatorId),
     .ProductId(LcCtrlProductId),
     .RevisionId(LcCtrlRevisionId),
     .IdcodeValue(LcCtrlIdcodeValue),
     .NumRmaAckSigs(LcCtrlNumRmaAckSigs),
     .EscNumSeverities(AlertHandlerEscNumSeverities),
-    .EscPingCountWidth(AlertHandlerEscPingCountWidth)
+    .EscPingCountWidth(AlertHandlerEscPingCountWidth),
+    .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
+    .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcCtrlLcKeymgrDivTestUnlocked),
+    .RndCnstLcKeymgrDivDev(RndCnstLcCtrlLcKeymgrDivDev),
+    .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
+    .RndCnstLcKeymgrDivRma(RndCnstLcCtrlLcKeymgrDivRma),
+    .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens)
   ) u_lc_ctrl (
       // alert_handler[16]: fatal_prog_error
       // alert_handler[17]: fatal_state_error
@@ -1682,10 +1682,10 @@ module top_egret #(
   );
   alert_handler #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm),
     .EscNumSeverities(AlertHandlerEscNumSeverities),
-    .EscPingCountWidth(AlertHandlerEscPingCountWidth)
+    .EscPingCountWidth(AlertHandlerEscPingCountWidth),
+    .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm)
   ) u_alert_handler (
 
       // Interrupt
@@ -2234,17 +2234,17 @@ module top_egret #(
   sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[34:34]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
-    .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
-    .RndCnstLfsrSeed(RndCnstSramCtrlRetAonLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstSramCtrlRetAonLfsrPerm),
     .MemSizeRam(4096),
     .InstSize(SramCtrlRetAonInstSize),
     .NumRamInst(SramCtrlRetAonNumRamInst),
     .InstrExec(SramCtrlRetAonInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
     .Outstanding(SramCtrlRetAonOutstanding),
-    .EccCorrection(SramCtrlRetAonEccCorrection)
+    .EccCorrection(SramCtrlRetAonEccCorrection),
+    .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlRetAonLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlRetAonLfsrPerm)
   ) u_sram_ctrl_ret_aon (
       // alert_handler[34]: fatal_error
       .alert_tx_o  ( alert_tx[34:34] ),
@@ -2276,14 +2276,14 @@ module top_egret #(
   flash_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39:35]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .SecScrambleEn(SecFlashCtrlScrambleEn),
+    .ProgFifoDepth(FlashCtrlProgFifoDepth),
+    .RdFifoDepth(FlashCtrlRdFifoDepth),
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
     .RndCnstDataKey(RndCnstFlashCtrlDataKey),
     .RndCnstAllSeeds(RndCnstFlashCtrlAllSeeds),
     .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm),
-    .SecScrambleEn(SecFlashCtrlScrambleEn),
-    .ProgFifoDepth(FlashCtrlProgFifoDepth),
-    .RdFifoDepth(FlashCtrlRdFifoDepth)
+    .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm)
   ) u_flash_ctrl (
 
       // Interrupt
@@ -2446,12 +2446,12 @@ module top_egret #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .Stub(AccStub),
     .RegFile(AccRegFile),
-    .RndCnstUrndPrngSeed(RndCnstAccUrndPrngSeed),
     .SecMuteUrnd(SecAccMuteUrnd),
     .SecSkipUrndReseedAtStart(SecAccSkipUrndReseedAtStart),
+    .AccPQCEn(AccAccPQCEn),
+    .RndCnstUrndPrngSeed(RndCnstAccUrndPrngSeed),
     .RndCnstAccKey(RndCnstAccAccKey),
-    .RndCnstAccNonce(RndCnstAccAccNonce),
-    .AccPQCEn(AccAccPQCEn)
+    .RndCnstAccNonce(RndCnstAccAccNonce)
   ) u_acc (
 
       // Interrupt
@@ -2647,9 +2647,9 @@ module top_egret #(
   csrng #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[52:51]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .SBoxImpl(CsrngSBoxImpl),
     .RndCnstCsKeymgrDivNonProduction(RndCnstCsrngCsKeymgrDivNonProduction),
-    .RndCnstCsKeymgrDivProduction(RndCnstCsrngCsKeymgrDivProduction),
-    .SBoxImpl(CsrngSBoxImpl)
+    .RndCnstCsKeymgrDivProduction(RndCnstCsrngCsKeymgrDivProduction)
   ) u_csrng (
 
       // Interrupt
@@ -2779,17 +2779,17 @@ module top_egret #(
   sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[59:59]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
-    .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
-    .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
     .MemSizeRam(131072),
     .InstSize(SramCtrlMainInstSize),
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMainOutstanding),
-    .EccCorrection(SramCtrlMainEccCorrection)
+    .EccCorrection(SramCtrlMainEccCorrection),
+    .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm)
   ) u_sram_ctrl_main (
       // alert_handler[59]: fatal_error
       .alert_tx_o  ( alert_tx[59:59] ),
@@ -2823,10 +2823,10 @@ module top_egret #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .FlopToKmac(RomCtrlFlopToKmac),
-    .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling),
-    .MemSizeRom(32768)
+    .MemSizeRom(32768),
+    .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
+    .RndCnstScrKey(RndCnstRomCtrlScrKey)
   ) u_rom_ctrl (
       // alert_handler[60]: fatal
       .alert_tx_o  ( alert_tx[60:60] ),
@@ -2850,10 +2850,6 @@ module top_egret #(
   rv_core_ibex #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64:61]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
-    .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
-    .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
     .NEscalationSeverities(AlertHandlerEscNumSeverities),
     .WidthPingCounter(AlertHandlerEscPingCountWidth),
     .PMPEnable(RvCoreIbexPMPEnable),
@@ -2887,7 +2883,11 @@ module top_egret #(
     .TlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits),
     .CsrMvendorId(RvCoreIbexCsrMvendorId),
     .CsrMimpId(RvCoreIbexCsrMimpId),
-    .InstructionPipeline(RvCoreIbexInstructionPipeline)
+    .InstructionPipeline(RvCoreIbexInstructionPipeline),
+    .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
+    .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
+    .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault)
   ) u_rv_core_ibex (
       // alert_handler[61]: fatal_sw_err
       // alert_handler[62]: recov_sw_err

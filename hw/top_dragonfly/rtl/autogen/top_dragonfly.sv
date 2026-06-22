@@ -5,8 +5,8 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_dragonfly/data/top_dragonfly.hjson
-//                -o hw/top_dragonfly/
+// util/gen_top_sv.py --completecfg hw/top_dragonfly/data/autogen/top_dragonfly.gen.hjson
+//                    --seedcfg hw/top_dragonfly/data/autogen/top_dragonfly.secrets.testing.gen.hjson
 
 `include "prim_assert.sv"
 
@@ -1259,19 +1259,19 @@ module top_dragonfly #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .SecVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
     .UseDmiInterface(LcCtrlUseDmiInterface),
-    .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
-    .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcCtrlLcKeymgrDivTestUnlocked),
-    .RndCnstLcKeymgrDivDev(RndCnstLcCtrlLcKeymgrDivDev),
-    .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
-    .RndCnstLcKeymgrDivRma(RndCnstLcCtrlLcKeymgrDivRma),
-    .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens),
     .SiliconCreatorId(LcCtrlSiliconCreatorId),
     .ProductId(LcCtrlProductId),
     .RevisionId(LcCtrlRevisionId),
     .IdcodeValue(LcCtrlIdcodeValue),
     .NumRmaAckSigs(LcCtrlNumRmaAckSigs),
     .EscNumSeverities(AlertHandlerEscNumSeverities),
-    .EscPingCountWidth(AlertHandlerEscPingCountWidth)
+    .EscPingCountWidth(AlertHandlerEscPingCountWidth),
+    .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
+    .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcCtrlLcKeymgrDivTestUnlocked),
+    .RndCnstLcKeymgrDivDev(RndCnstLcCtrlLcKeymgrDivDev),
+    .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
+    .RndCnstLcKeymgrDivRma(RndCnstLcCtrlLcKeymgrDivRma),
+    .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens)
   ) u_lc_ctrl (
       // alert_handler[10]: fatal_prog_error
       // alert_handler[11]: fatal_state_error
@@ -1336,10 +1336,10 @@ module top_dragonfly #(
   );
   alert_handler #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm),
     .EscNumSeverities(AlertHandlerEscNumSeverities),
-    .EscPingCountWidth(AlertHandlerEscPingCountWidth)
+    .EscPingCountWidth(AlertHandlerEscPingCountWidth),
+    .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm)
   ) u_alert_handler (
 
       // Interrupt
@@ -1648,17 +1648,17 @@ module top_dragonfly #(
   sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22:22]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
-    .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
-    .RndCnstLfsrSeed(RndCnstSramCtrlRetAonLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstSramCtrlRetAonLfsrPerm),
     .MemSizeRam(4096),
     .InstSize(SramCtrlRetAonInstSize),
     .NumRamInst(SramCtrlRetAonNumRamInst),
     .InstrExec(SramCtrlRetAonInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
     .Outstanding(SramCtrlRetAonOutstanding),
-    .EccCorrection(SramCtrlRetAonEccCorrection)
+    .EccCorrection(SramCtrlRetAonEccCorrection),
+    .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlRetAonLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlRetAonLfsrPerm)
   ) u_sram_ctrl_ret_aon (
       // alert_handler[22]: fatal_error
       .alert_tx_o  ( alert_tx[22:22] ),
@@ -1761,12 +1761,12 @@ module top_dragonfly #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .Stub(AccStub),
     .RegFile(AccRegFile),
-    .RndCnstUrndPrngSeed(RndCnstAccUrndPrngSeed),
     .SecMuteUrnd(SecAccMuteUrnd),
     .SecSkipUrndReseedAtStart(SecAccSkipUrndReseedAtStart),
+    .AccPQCEn(AccAccPQCEn),
+    .RndCnstUrndPrngSeed(RndCnstAccUrndPrngSeed),
     .RndCnstAccKey(RndCnstAccAccKey),
-    .RndCnstAccNonce(RndCnstAccAccNonce),
-    .AccPQCEn(AccAccPQCEn)
+    .RndCnstAccNonce(RndCnstAccAccNonce)
   ) u_acc (
 
       // Interrupt
@@ -1956,9 +1956,9 @@ module top_dragonfly #(
   csrng #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[35:34]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .SBoxImpl(CsrngSBoxImpl),
     .RndCnstCsKeymgrDivNonProduction(RndCnstCsrngCsKeymgrDivNonProduction),
-    .RndCnstCsKeymgrDivProduction(RndCnstCsrngCsKeymgrDivProduction),
-    .SBoxImpl(CsrngSBoxImpl)
+    .RndCnstCsKeymgrDivProduction(RndCnstCsrngCsKeymgrDivProduction)
   ) u_csrng (
 
       // Interrupt
@@ -2088,17 +2088,17 @@ module top_dragonfly #(
   sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[42:42]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
-    .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
-    .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
     .MemSizeRam(65536),
     .InstSize(SramCtrlMainInstSize),
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMainOutstanding),
-    .EccCorrection(SramCtrlMainEccCorrection)
+    .EccCorrection(SramCtrlMainEccCorrection),
+    .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm)
   ) u_sram_ctrl_main (
       // alert_handler[42]: fatal_error
       .alert_tx_o  ( alert_tx[42:42] ),
@@ -2130,17 +2130,17 @@ module top_dragonfly #(
   sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[43:43]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstSramKey(RndCnstSramCtrlMboxSramKey),
-    .RndCnstSramNonce(RndCnstSramCtrlMboxSramNonce),
-    .RndCnstLfsrSeed(RndCnstSramCtrlMboxLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstSramCtrlMboxLfsrPerm),
     .MemSizeRam(4096),
     .InstSize(SramCtrlMboxInstSize),
     .NumRamInst(SramCtrlMboxNumRamInst),
     .InstrExec(SramCtrlMboxInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMboxNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMboxOutstanding),
-    .EccCorrection(SramCtrlMboxEccCorrection)
+    .EccCorrection(SramCtrlMboxEccCorrection),
+    .RndCnstSramKey(RndCnstSramCtrlMboxSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlMboxSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlMboxLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlMboxLfsrPerm)
   ) u_sram_ctrl_mbox (
       // alert_handler[43]: fatal_error
       .alert_tx_o  ( alert_tx[43:43] ),
@@ -2174,10 +2174,10 @@ module top_dragonfly #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrl0BootRomInitFile),
     .FlopToKmac(RomCtrl0FlopToKmac),
-    .RndCnstScrNonce(RndCnstRomCtrl0ScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrl0ScrKey),
     .SecDisableScrambling(SecRomCtrl0DisableScrambling),
-    .MemSizeRom(32768)
+    .MemSizeRom(32768),
+    .RndCnstScrNonce(RndCnstRomCtrl0ScrNonce),
+    .RndCnstScrKey(RndCnstRomCtrl0ScrKey)
   ) u_rom_ctrl0 (
       // alert_handler[44]: fatal
       .alert_tx_o  ( alert_tx[44:44] ),
@@ -2203,10 +2203,10 @@ module top_dragonfly #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrl1BootRomInitFile),
     .FlopToKmac(RomCtrl1FlopToKmac),
-    .RndCnstScrNonce(RndCnstRomCtrl1ScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrl1ScrKey),
     .SecDisableScrambling(SecRomCtrl1DisableScrambling),
-    .MemSizeRom(65536)
+    .MemSizeRom(65536),
+    .RndCnstScrNonce(RndCnstRomCtrl1ScrNonce),
+    .RndCnstScrKey(RndCnstRomCtrl1ScrKey)
   ) u_rom_ctrl1 (
       // alert_handler[45]: fatal
       .alert_tx_o  ( alert_tx[45:45] ),
@@ -2725,10 +2725,6 @@ module top_dragonfly #(
   rv_core_ibex #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[76:73]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
-    .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
-    .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
     .NEscalationSeverities(AlertHandlerEscNumSeverities),
     .WidthPingCounter(AlertHandlerEscPingCountWidth),
     .PMPEnable(RvCoreIbexPMPEnable),
@@ -2762,7 +2758,11 @@ module top_dragonfly #(
     .TlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits),
     .CsrMvendorId(RvCoreIbexCsrMvendorId),
     .CsrMimpId(RvCoreIbexCsrMimpId),
-    .InstructionPipeline(RvCoreIbexInstructionPipeline)
+    .InstructionPipeline(RvCoreIbexInstructionPipeline),
+    .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
+    .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
+    .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault)
   ) u_rv_core_ibex (
       // alert_handler[73]: fatal_sw_err
       // alert_handler[74]: recov_sw_err
