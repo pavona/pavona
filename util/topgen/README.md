@@ -128,9 +128,9 @@ It is possible to restrict what the tool should generate.
 $ util/topgen.py --help
 usage: topgen [-h] --topcfg TOPCFG --seedcfg SEEDCFG [--outdir OUTDIR]
               [--hjson-path HJSON_PATH] [--verbose]
-              [--version-stamp VERSION_STAMP] [--no-top] [--no-plic]
-              [--no-rust] [--top-only] [--plic-only] [--alert-handler-only]
-              [--rust-only] [--alias-files ALIAS_FILES [ALIAS_FILES ...]]
+              [--version-stamp VERSION_STAMP] [--no-plic] [--no-rust]
+              [--plic-only] [--alert-handler-only] [--rust-only]
+              [--alias-files ALIAS_FILES [ALIAS_FILES ...]]
 
 options:
   -h, --help            show this help message and exit
@@ -151,11 +151,9 @@ options:
   --version-stamp VERSION_STAMP
                         If version stamping, the location of workspace version
                         stamp file.
-  --no-top              If defined, topgen doesn't generate top_{name} RTLs.
   --no-plic             If defined, topgen doesn't generate the interrupt
                         controller RTLs.
   --no-rust             If defined, topgen doesn't generate Rust code.
-  --top-only            If defined, the tool generates top RTL only
   --plic-only           If defined, the tool generates RV_PLIC RTL and Hjson
                         only
   --alert-handler-only  If defined, the tool generates alert handler hjson

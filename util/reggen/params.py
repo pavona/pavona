@@ -81,12 +81,12 @@ class Parameter(BaseParam):
 
     def __init__(self, name: str, desc: Optional[str], param_type: str,
                  unpacked_dimensions: Optional[str], default: str, local: bool,
-                 expose: bool):
+                 expose: bool, name_top: Optional[str] = None):
         super().__init__(name, desc, param_type, unpacked_dimensions)
         self.default = default
         self.local = local
         self.expose = expose
-        self.name_top = None
+        self.name_top = name_top
 
     def as_dict(self) -> Dict[str, object]:
         rd = super().as_dict()

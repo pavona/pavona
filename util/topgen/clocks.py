@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -97,7 +98,7 @@ class ClockSignal:
 
 class Group:
 
-    def __init__(self, raw: Dict[str, object], what: str):
+    def __init__(self, raw: Dict[str, object], what: str, clk_srcs: dict | None = None):
         self.name = str(raw['name'])
         self.src = str(raw['src'])
         self.sw_cg = _check_choices(str(raw['sw_cg']), 'sw_cg for ' + what,
@@ -114,6 +115,9 @@ class Group:
                              f'unique set.')
 
         self.clocks = {}  # type: Dict[str, ClockSignal]
+        if clk_srcs is not None:
+            for clk, src_name in raw.get('clocks', dict()).items():
+                self.add_clock(clk, clk_srcs[src_name])
 
     def add_clock(self, clk_name: str, src: SourceClock) -> ClockSignal:
         # Duplicates are ok, so long as they have the same source.
@@ -263,7 +267,7 @@ class Clocks:
         assert isinstance(raw['groups'], list)
         for idx, raw_grp in enumerate(raw['groups']):
             assert isinstance(raw_grp, dict)
-            grp = Group(raw_grp, f'clocks.groups[{idx}]')
+            grp = Group(raw_grp, f'clocks.groups[{idx}]', self.all_srcs)
             self.groups[grp.name] = grp
 
     def _asdict(self) -> Dict[str, object]:

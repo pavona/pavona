@@ -506,7 +506,9 @@ module top_scafi_deprecated #(
     prim_mubi_pkg::mubi4_t unused_cg_en_10;
     assign unused_cg_en_10 = clkmgr_aon_cg_en.usb_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_11;
-    assign unused_cg_en_11 = clkmgr_aon_cg_en.io_div2_peri;
+    assign unused_cg_en_11 = clkmgr_aon_cg_en.proc_main;
+    prim_mubi_pkg::mubi4_t unused_cg_en_12;
+    assign unused_cg_en_12 = clkmgr_aon_cg_en.io_div2_peri;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;

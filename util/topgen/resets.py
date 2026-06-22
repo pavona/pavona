@@ -32,8 +32,8 @@ class ResetItem:
             self.shadow_lpg_path = f"{hier['lpg']}{self.name}_shadowed"
 
         # to be constructed later
-        self.domains = []
-        self.shadowed = False
+        self.domains = raw.get("domains", [])
+        self.shadowed = raw.get("shadowed", False)
 
         self.parent = raw.get('parent', "")
 

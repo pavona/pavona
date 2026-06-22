@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """This contains a class which is used to help generate top level SW tests.
@@ -84,10 +85,10 @@ class TopGenCTest(TopGenC):
         self.alert_handler = find_module(self.top['module'], 'alert_handler')
         self.rv_plics = find_modules(self.top['module'], 'rv_plic')
 
-        self.default_plic = self.top.get("default_plic", None)
+        self.default_plic = self.top.get('default_plic', None)
         self.irq_peripherals = {}
         for plic in self.rv_plics:
-            self.irq_peripherals[plic["name"]] = {
+            self.irq_peripherals[plic['name']] = {
                 x['name']: self._get_irq_peripherals(plic, x['name'])
                 for x in top_info['addr_spaces']
             }
@@ -111,14 +112,14 @@ class TopGenCTest(TopGenC):
         # There may be multiple PLICs, for example, in one address space.
         # Or devices with core # interfaces in address spaces that are different
         # from the CPU's and PLIC's.
-        rv_plic_addr_spaces = rv_plic['base_addrs'][None]
+        rv_plic_addr_spaces = rv_plic['base_addrs'].get(None) or rv_plic['base_addrs'].get('null')
         if addr_space not in rv_plic_addr_spaces:
             return irq_peripherals
 
         # A lot of code counts on this being named "Plic" and not "RvPlic"
-        suffix = rv_plic["name"]
-        if suffix.startswith("rv_plic"):
-            suffix = rv_plic["name"][3:]
+        suffix = rv_plic['name']
+        if suffix.startswith('rv_plic'):
+            suffix = rv_plic['name'][3:]
         unsnaked_name = Name.from_snake_case(suffix)
 
         device_regions = self.all_device_regions()
@@ -128,15 +129,15 @@ class TopGenCTest(TopGenC):
         direct_device_regions = device_regions[addr_space]
         for entry in self.top['module']:
             inst_name = entry['name']
-            if inst_name not in self.top["interrupt_module"]:
+            if inst_name not in self.top['interrupt_module']:
                 continue
 
-            module_plic = entry.get("plic", self.default_plic)
-            if rv_plic["name"] != module_plic:
+            module_plic = entry.get('plic', self.default_plic)
+            if rv_plic['name'] != module_plic:
                 continue
 
             name = entry['type']
-            plic_name = (self._top_name + unsnaked_name + Name(["peripheral"]) +
+            plic_name = (self._top_name + unsnaked_name + Name(['peripheral']) +
                          Name.from_snake_case(inst_name))
             plic_name = plic_name.as_c_enum()
 
@@ -176,20 +177,20 @@ class TopGenCTest(TopGenC):
                         "one entry keyed with 'None' or 'core'.")
                     sys.exit(1)
 
-            plic_name = (self._top_name + unsnaked_name + Name(["peripheral"]) +
+            plic_name = (self._top_name + unsnaked_name + Name(['peripheral']) +
                          Name.from_snake_case(inst_name))
             plic_name = plic_name.as_c_enum()
 
-            start_irq = self.device_irqs[rv_plic["name"]][inst_name][0]
-            end_irq = self.device_irqs[rv_plic["name"]][inst_name][-1]
-            plic_start_irq = (self._top_name + unsnaked_name + Name(["irq", "id"]) +
+            start_irq = self.device_irqs[rv_plic['name']][inst_name][0]
+            end_irq = self.device_irqs[rv_plic['name']][inst_name][-1]
+            plic_start_irq = (self._top_name + unsnaked_name + Name(['irq', 'id']) +
                               Name.from_snake_case(start_irq))
             plic_start_irq = plic_start_irq.as_c_enum()
 
             # Get DIF compliant, instance-agnostic IRQ names.
-            start_irq = start_irq.replace(inst_name, f"dif_{name}_irq", 1)
+            start_irq = start_irq.replace(inst_name, f'dif_{name}_irq', 1)
             start_irq = Name.from_snake_case(start_irq).as_c_enum()
-            end_irq = end_irq.replace(inst_name, f"dif_{name}_irq", 1)
+            end_irq = end_irq.replace(inst_name, f'dif_{name}_irq', 1)
             end_irq = Name.from_snake_case(end_irq).as_c_enum()
 
             # Create two sets of masks:
@@ -198,14 +199,14 @@ class TopGenCTest(TopGenC):
             n = 0
             status_type_mask = 0
             status_default_mask = 0
-            for irq in self.top["interrupt"]:
-                if irq["module_name"] == inst_name:
-                    if irq["intr_type"] == IntrType.Status:
-                        setbit = (((1 << irq["width"]) - 1) << n)
+            for irq in self.top['interrupt']:
+                if irq['module_name'] == inst_name:
+                    if str(irq['intr_type']) == str(IntrType.Status):
+                        setbit = (((1 << irq['width']) - 1) << n)
                         status_type_mask |= setbit
-                        if irq["default_val"] is True:
+                        if irq['default_val'] is True:
                             status_default_mask |= setbit
-                    n += irq["width"]
+                    n += irq['width']
 
             irq_peripheral = IrqTestPeripheral(name, inst_name, base_addr_name,
                                                plic_name, start_irq, end_irq,
@@ -227,12 +228,13 @@ class TopGenCTest(TopGenC):
         """
         alert_peripherals = []
         # TODO: Model alert domains with explicit connectivity
-        alert_handler_addr_spaces = alert_handler['base_addrs'][None]
+        alert_handler_addr_spaces = (alert_handler['base_addrs'].get(None)
+                                     or alert_handler['base_addrs'].get('null'))
         if addr_space not in alert_handler_addr_spaces:
             return alert_peripherals
         all_device_regions = self.all_device_regions()
         all_direct_regions = all_device_regions[addr_space]
-        alerting_modules = self.top["alert_module"]
+        alerting_modules = self.top['alert_module']
 
         for entry in self.top['module']:
             inst_name = entry['name']
@@ -248,7 +250,7 @@ class TopGenCTest(TopGenC):
             # Prioritized list of interface names to try.
             # TODO: This is an implicit assignment of alerts to reg interfaces
             # that is fraught with pitfalls.
-            if_list = ["core", "regs", "cfg", None]
+            if_list = ['core', 'regs', 'cfg', None]
             if inst_name in all_direct_regions:
                 regions = all_direct_regions[inst_name]
                 # TODO: This may not work with bus bridges present.
@@ -272,8 +274,8 @@ class TopGenCTest(TopGenC):
                     if region is not None:
                         break
             if region is None:
-                log.error(f"Could not find supported reg interface for alerts "
-                          f"coming from module {name}")
+                log.error('Could not find supported reg interface for alerts '
+                          f'coming from module {name}')
                 sys.exit(1)
             base_addr_name = region.base_addr_name().as_c_define()
 
@@ -284,13 +286,13 @@ class TopGenCTest(TopGenC):
             dif_alert_name = self.device_alerts[inst_name][0]
             num_alerts = len(self.device_alerts[inst_name])
 
-            top_alert_name = (self._top_name + Name(["Alert", "Id"]) +
+            top_alert_name = (self._top_name + Name(['Alert', 'Id']) +
                               Name.from_snake_case(dif_alert_name))
             top_alert_name = top_alert_name.as_c_enum()
 
             # Get DIF compliant, instance-agnostic alert names.
             dif_alert_name = dif_alert_name.replace(inst_name,
-                                                    f"dif_{name}_alert", 1)
+                                                    f'dif_{name}_alert', 1)
             dif_alert_name = Name.from_snake_case(dif_alert_name).as_c_enum()
 
             alert_peripheral = AlertTestPeripheral(name, inst_name,

@@ -739,7 +739,11 @@ def get_base_and_size(name_to_block: IpBlocksT, inst: ConfigT,
                 'default' if ifname is None else repr(ifname),
                 inst['name'], block.name))
 
-    base_addrs = deepcopy(inst['base_addrs'][ifname])
+    if ifname is None:
+        base_addrs = deepcopy(inst['base_addrs'].get(ifname) or inst["base_addrs"].get("null"))
+    else:
+        base_addrs = deepcopy(inst['base_addrs'][ifname])
+    assert base_addrs is not None
 
     for (asid, base_addr) in base_addrs.items():
         if isinstance(base_addr, str):
@@ -916,9 +920,8 @@ def get_device_ranges(devices, device_name):
     return ranges
 
 
-def get_addr_space_suffix(addr_space: str) -> str:
-    # TODO: Don't special-case the "hart" address space.
-    if addr_space['name'] == "hart":
+def get_addr_space_suffix(addr_space: str, default: str = "hart") -> str:
+    if addr_space['name'] == default:
         return ""
     return "_" + addr_space['name']
 

@@ -300,21 +300,6 @@ def generate_regfile_from_path(hjson_path: Path,
         sys.exit(1)
 
 
-def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str,
-                      alt_hjson_path: str) -> None:
-    """Generate the regfile for top_only IPs."""
-    log.info("Generating top only modules")
-
-    for ip in top_only_dict:
-        ip_out_path = out_path / "ip" / ip
-        hjson_path = ip_out_path / "data" / f"{ip}.hjson"
-        genrtl_dir = ip_out_path / "rtl"
-        genrtl_dir.mkdir(parents=True, exist_ok=True)
-        log.info(f"Generating registers for top module {ip}, hjson: "
-                 f"{hjson_path}, output: {genrtl_dir}")
-        generate_regfile_from_path(hjson_path, genrtl_dir)
-
-
 def create_mem(name: str, item: dict[str, object], addrsep: int, regwidth: int) -> window.Window:
     byte_write = item.get("byte_write", "false").lower() == "true"
     data_intg_passthru = item.get("data_intg_passthru", "false").lower() == "true"
@@ -838,10 +823,6 @@ def main():
 
     # Generator options: 'no' series. Cannot combine with 'only' series.
     parser.add_argument(
-        "--no-top",
-        action="store_true",
-        help="If defined, topgen doesn't generate top_{name} RTLs.")
-    parser.add_argument(
         "--no-plic",
         action="store_true",
         help="If defined, topgen doesn't generate the interrupt controller RTLs."
@@ -851,10 +832,6 @@ def main():
                         help="If defined, topgen doesn't generate Rust code.")
 
     # Generator options: 'only' series. cannot combined with 'no' series
-    parser.add_argument(
-        "--top-only",
-        action="store_true",
-        help="If defined, the tool generates top RTL only")  # yapf:disable
     parser.add_argument(
         "--plic-only",
         action="store_true",
@@ -880,8 +857,7 @@ def main():
     args = parser.parse_args()
 
     # check combinations
-    if (args.no_top or args.no_plic) and (args.top_only
-                                          or args.plic_only or args.alert_handler_only):
+    if args.no_plic and (args.plic_only or args.alert_handler_only):
         log.error(
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
@@ -1030,13 +1006,6 @@ def main():
     topname = topcfg["name"]
     top_name = f"top_{topname}"
 
-    # Generate top only modules
-    # These modules are not ipgen, but are not in hw/ip
-    top_only_ips = {
-        m["type"]
-        for m in completecfg["module"] if lib.is_top_reggen(m)
-    }
-    generate_top_only(top_only_ips, out_path, top_name, args.hjson_path)
     # Re-set the seed because generate_full_ipgens uses the same RNG again from the beginning
     SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
 
@@ -1047,318 +1016,316 @@ def main():
         if args.rust_only:
             sys.exit(0)
 
-    if not args.no_top or args.top_only:
+    def render_template(template_path: str, rendered_path: Path,
+                        secure: bool = False, **other_info):
+        """Render template to file, optionally with secure permissions for sensitive files"""
+        template_contents = generate_top(completecfg, name_to_block,
+                                         str(template_path), **other_info)
 
-        def render_template(template_path: str, rendered_path: Path,
-                            secure: bool = False, **other_info):
-            """Render template to file, optionally with secure permissions for sensitive files"""
-            template_contents = generate_top(completecfg, name_to_block,
-                                             str(template_path), **other_info)
+        if secure:
+            # Use the write_file_secure for writting file with restricted file permissions
+            write_file_secure(rendered_path, template_contents)
+        else:
+            rendered_path.parent.mkdir(exist_ok=True, parents=True)
+            rendered_path.write_text(template_contents, encoding="UTF-8")
 
-            if secure:
-                # Use the write_file_secure for writting file with restricted file permissions
-                write_file_secure(rendered_path, template_contents)
-            else:
-                rendered_path.parent.mkdir(exist_ok=True, parents=True)
-                rendered_path.write_text(template_contents, encoding="UTF-8")
+    # Header for SV files
+    gencmd_sv = warnhdr + "//\n" + GENCMD.format(top_name=top_name) + "\n"
 
-        # Header for SV files
-        gencmd_sv = warnhdr + "//\n" + GENCMD.format(top_name=top_name) + "\n"
+    # Top and chiplevel templates are top-specific
+    top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
 
-        # Top and chiplevel templates are top-specific
-        top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
+    # SystemVerilog Top:
+    # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
+    render_template(top_template_path / "toplevel.sv.tpl",
+                    out_path / "rtl" / "autogen" / f"{top_name}.sv",
+                    gencmd=gencmd_sv)
 
-        # SystemVerilog Top:
-        # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
-        render_template(top_template_path / "toplevel.sv.tpl",
-                        out_path / "rtl" / "autogen" / f"{top_name}.sv",
-                        gencmd=gencmd_sv)
+    # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
+    for target in completecfg["targets"]:
+        target_name = target["name"]
+        render_template(top_template_path / "chiplevel.sv.tpl",
+                        out_path /
+                        f"rtl/autogen/chip_{topname}_{target_name}.sv",
+                        gencmd=gencmd_sv,
+                        target=target)
 
-        # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
-        for target in completecfg["targets"]:
-            target_name = target["name"]
-            render_template(top_template_path / "chiplevel.sv.tpl",
-                            out_path /
-                            f"rtl/autogen/chip_{topname}_{target_name}.sv",
-                            gencmd=gencmd_sv,
-                            target=target)
-
-        # compile-time random netlist constants
-        gencmd_rnd_cnst_sv = gencmd_sv + f"""//
+    # compile-time random netlist constants
+    gencmd_rnd_cnst_sv = gencmd_sv + f"""//
 // File is generated based on the following seed configuration:
 //   {os.path.relpath(args.seedcfg, SRCTREE_TOP)}
 """
-        topgen_seed = completecfg["seed"]["topgen_seed"]
-        seed_mode = topgen_seed.seed_mode
-        rnd_cnst_path = f"rtl/autogen/{seed_mode}"
-        rnd_cnst_file = f"{top_name}_rnd_cnst_pkg"
-        rnd_cnst_sv_file = f"{rnd_cnst_file}.sv"
-        rnd_cnst_vbl_file = f"{rnd_cnst_file}.vbl"
+    topgen_seed = completecfg["seed"]["topgen_seed"]
+    seed_mode = topgen_seed.seed_mode
+    rnd_cnst_path = f"rtl/autogen/{seed_mode}"
+    rnd_cnst_file = f"{top_name}_rnd_cnst_pkg"
+    rnd_cnst_sv_file = f"{rnd_cnst_file}.sv"
+    rnd_cnst_vbl_file = f"{rnd_cnst_file}.vbl"
 
-        # Determine the dependencies for the random netlist constant package. This construction
-        # depends on which modules are present in the top configuration and which require random
-        # netlist constants.
-        rnd_cnst_deps = []
-        RND_CNST_DEPENDENCIES = {
-            # ipgen-based modules (using template_type)
-            "flash_ctrl": [f"lowrisc:{topname}_ip:flash_ctrl"],
-            "otp_ctrl": [
-                f"lowrisc:{topname}_ip:otp_ctrl_top_specific_pkg",
-                "lowrisc:ip:otp_ctrl_pkg"
-            ],
-            "alert_handler": [f"lowrisc:{topname}_ip:alert_handler_pkg"],
-            "rv_core_ibex": ["lowrisc:ibex:ibex_pkg"],
+    # Determine the dependencies for the random netlist constant package. This construction
+    # depends on which modules are present in the top configuration and which require random
+    # netlist constants.
+    rnd_cnst_deps = []
+    RND_CNST_DEPENDENCIES = {
+        # ipgen-based modules (using template_type)
+        "flash_ctrl": [f"lowrisc:{topname}_ip:flash_ctrl"],
+        "otp_ctrl": [
+            f"lowrisc:{topname}_ip:otp_ctrl_top_specific_pkg",
+            "lowrisc:ip:otp_ctrl_pkg"
+        ],
+        "alert_handler": [f"lowrisc:{topname}_ip:alert_handler_pkg"],
+        "rv_core_ibex": ["lowrisc:ibex:ibex_pkg"],
 
-            # Direct IP modules (using type)
-            "lc_ctrl": ["lowrisc:ip:lc_ctrl_pkg"],
-            "sram_ctrl": ["lowrisc:ip:sram_ctrl_pkg"],
-            "aes": ["lowrisc:ip:aes"],
-            "kmac": ["lowrisc:ip:kmac_pkg"],
-            "acc": ["lowrisc:ip:acc_pkg"],
-            "keymgr": ["lowrisc:ip:keymgr_pkg"],
-            "csrng": ["lowrisc:ip:csrng_pkg"],
-        }
+        # Direct IP modules (using type)
+        "lc_ctrl": ["lowrisc:ip:lc_ctrl_pkg"],
+        "sram_ctrl": ["lowrisc:ip:sram_ctrl_pkg"],
+        "aes": ["lowrisc:ip:aes"],
+        "kmac": ["lowrisc:ip:kmac_pkg"],
+        "acc": ["lowrisc:ip:acc_pkg"],
+        "keymgr": ["lowrisc:ip:keymgr_pkg"],
+        "csrng": ["lowrisc:ip:csrng_pkg"],
+    }
 
-        for m in completecfg["module"]:
-            template_type = m.get("template_type", "")
-            if template_type and template_type in RND_CNST_DEPENDENCIES:
-                deps = RND_CNST_DEPENDENCIES[template_type]
-                rnd_cnst_deps.extend(deps)
-                continue
+    for m in completecfg["module"]:
+        template_type = m.get("template_type", "")
+        if template_type and template_type in RND_CNST_DEPENDENCIES:
+            deps = RND_CNST_DEPENDENCIES[template_type]
+            rnd_cnst_deps.extend(deps)
+            continue
 
-            module_type = m["type"]
-            if module_type in RND_CNST_DEPENDENCIES:
-                deps = RND_CNST_DEPENDENCIES[module_type]
-                rnd_cnst_deps.extend(deps)
+        module_type = m["type"]
+        if module_type in RND_CNST_DEPENDENCIES:
+            deps = RND_CNST_DEPENDENCIES[module_type]
+            rnd_cnst_deps.extend(deps)
 
-        # Ensure the dependencies are unique and sorted
-        rnd_cnst_deps = sorted(list(set(rnd_cnst_deps)))
+    # Ensure the dependencies are unique and sorted
+    rnd_cnst_deps = sorted(list(set(rnd_cnst_deps)))
 
-        render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
-                        out_path / rnd_cnst_path / rnd_cnst_sv_file,
-                        secure=True, gencmd=gencmd_rnd_cnst_sv)
+    render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
+                    out_path / rnd_cnst_path / rnd_cnst_sv_file,
+                    secure=True, gencmd=gencmd_rnd_cnst_sv)
 
-        # Create verible waiver file for the random constant package for long lines.
-        rnd_cnst_vbl_file_path = out_path / rnd_cnst_path / f"{rnd_cnst_file}.vbl"
-        with rnd_cnst_vbl_file_path.open(mode="w", encoding="UTF-8") as fout:
-            fout.write((lichdr + gencmd_rnd_cnst_sv).replace("//", "#") + f"""
+    # Create verible waiver file for the random constant package for long lines.
+    rnd_cnst_vbl_file_path = out_path / rnd_cnst_path / f"{rnd_cnst_file}.vbl"
+    with rnd_cnst_vbl_file_path.open(mode="w", encoding="UTF-8") as fout:
+        fout.write((lichdr + gencmd_rnd_cnst_sv).replace("//", "#") + f"""
 # These lines are too long due to templating
 waive --rule=line-length --location="{rnd_cnst_sv_file}"
 """)
+    render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
+                    out_path / rnd_cnst_path / f"top_{topname}_{seed_mode}_rnd_cnst_pkg.core",
+                    package=f"lowrisc:{topname}_constants:{seed_mode}_rnd_cnst_pkg:0.1",
+                    description="Random netlist constant package",
+                    virtual_package="lowrisc:virtual_constants:rnd_cnst_pkg",
+                    dependencies=rnd_cnst_deps,
+                    files=[rnd_cnst_sv_file],
+                    files_veriblelint_waiver=rnd_cnst_vbl_file)
+
+    racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
+    render_template(TOPGEN_TEMPLATE_PATH / 'top_racl_pkg.sv.tpl',
+                    out_path / 'rtl' / 'autogen' / 'top_racl_pkg.sv',
+                    gencmd=gencmd_sv,
+                    topcfg=completecfg,
+                    racl_config=racl_config)
+    render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
+                    out_path / 'rtl' / 'autogen' /
+                    f'top_{topname}_racl_pkg.sv',
+                    gencmd=gencmd_sv,
+                    topcfg=completecfg,
+                    racl_config=racl_config)
+
+    if lib.find_module(topcfg["module"], "lc_ctrl"):
+        lc_state_def_file = load_cfg(IP_RAW_PATH / "lc_ctrl" / "data" / "lc_ctrl_state.hjson")
+        lc_seed = topcfg["seed"]["lc_ctrl_seed"]
+        lc_st_enc = LcStEnc(lc_state_def_file, lc_seed.value)
+        lc_st_enc_path = f"rtl/autogen/{lc_seed.seed_mode}"
+        lc_st_enc_file = "lc_ctrl_token_pkg.sv"
+        render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
+                        IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv",
+                        lc_st_enc=lc_st_enc)
+        render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_token_pkg.sv.tpl",
+                        out_path / lc_st_enc_path / lc_st_enc_file,
+                        secure=True, lc_st_enc=lc_st_enc)
         render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
-                        out_path / rnd_cnst_path / f"top_{topname}_{seed_mode}_rnd_cnst_pkg.core",
-                        package=f"lowrisc:{topname}_constants:{seed_mode}_rnd_cnst_pkg:0.1",
-                        description="Random netlist constant package",
-                        virtual_package="lowrisc:virtual_constants:rnd_cnst_pkg",
-                        dependencies=rnd_cnst_deps,
-                        files=[rnd_cnst_sv_file],
-                        files_veriblelint_waiver=rnd_cnst_vbl_file)
+                        out_path / lc_st_enc_path /
+                        f"top_{topname}_{lc_seed.seed_mode}_lc_ctrl_token_pkg.core",
+                        package=(
+                            f"lowrisc:{topname}_constants:"
+                            f"{lc_seed.seed_mode}_lc_ctrl_token_pkg:0.1"
+                        ),
+                        description="LC Controller Token Package",
+                        virtual_package="lowrisc:virtual_constants:lc_ctrl_token_pkg",
+                        dependencies=["lowrisc:ip:lc_ctrl_state_pkg"],
+                        files=[lc_st_enc_file])
 
-        racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
-        render_template(TOPGEN_TEMPLATE_PATH / 'top_racl_pkg.sv.tpl',
-                        out_path / 'rtl' / 'autogen' / 'top_racl_pkg.sv',
-                        gencmd=gencmd_sv,
-                        topcfg=completecfg,
-                        racl_config=racl_config)
-        render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
-                        out_path / 'rtl' / 'autogen' /
-                        f'top_{topname}_racl_pkg.sv',
-                        gencmd=gencmd_sv,
-                        topcfg=completecfg,
-                        racl_config=racl_config)
+    # The C / SV file needs some complex information, so we initialize this
+    # object to store it.
+    c_helper = TopGenCTest(completecfg, name_to_block)
 
-        if lib.find_module(topcfg["module"], "lc_ctrl"):
-            lc_state_def_file = load_cfg(IP_RAW_PATH / "lc_ctrl" / "data" / "lc_ctrl_state.hjson")
-            lc_seed = topcfg["seed"]["lc_ctrl_seed"]
-            lc_st_enc = LcStEnc(lc_state_def_file, lc_seed.value)
-            lc_st_enc_path = f"rtl/autogen/{lc_seed.seed_mode}"
-            lc_st_enc_file = "lc_ctrl_token_pkg.sv"
-            render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
-                            IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv",
-                            lc_st_enc=lc_st_enc)
-            render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_token_pkg.sv.tpl",
-                            out_path / lc_st_enc_path / lc_st_enc_file,
-                            secure=True, lc_st_enc=lc_st_enc)
-            render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
-                            out_path / lc_st_enc_path /
-                            f"top_{topname}_{lc_seed.seed_mode}_lc_ctrl_token_pkg.core",
-                            package=(
-                                f"lowrisc:{topname}_constants:"
-                                f"{lc_seed.seed_mode}_lc_ctrl_token_pkg:0.1"
-                            ),
-                            description="LC Controller Token Package",
-                            virtual_package="lowrisc:virtual_constants:lc_ctrl_token_pkg",
-                            dependencies=["lowrisc:ip:lc_ctrl_state_pkg"],
-                            files=[lc_st_enc_file])
+    # Since SW does not use FuseSoC and instead expects those files always
+    # to be in hw/top_{topname}/sw/autogen, we currently create these files
+    # twice:
+    # - Once under out_path/sw/autogen
+    # - Once under hw/top_{topname}/sw/autogen
+    root_paths = [out_path.resolve(), SRCTREE_TOP]
+    out_paths = [
+        out_path.resolve(), (SRCTREE_TOP / "hw" / top_name).resolve()
+    ]
 
-        # The C / SV file needs some complex information, so we initialize this
-        # object to store it.
-        c_helper = TopGenCTest(completecfg, name_to_block)
+    # C Header + C File + Clang-format file
+    gencmd_c = warnhdr + GENCMD.format(top_name=top_name)
+    gencmd_bzl = gencmd_c.replace("//", "#")
 
-        # Since SW does not use FuseSoC and instead expects those files always
-        # to be in hw/top_{topname}/sw/autogen, we currently create these files
-        # twice:
-        # - Once under out_path/sw/autogen
-        # - Once under hw/top_{topname}/sw/autogen
-        root_paths = [out_path.resolve(), SRCTREE_TOP]
-        out_paths = [
-            out_path.resolve(), (SRCTREE_TOP / "hw" / top_name).resolve()
-        ]
+    for addr_space in topcfg['addr_spaces']:
+        addr_space_suffix = lib.get_addr_space_suffix(addr_space)
 
-        # C Header + C File + Clang-format file
-        gencmd_c = warnhdr + GENCMD.format(top_name=top_name)
-        gencmd_bzl = gencmd_c.replace("//", "#")
-
-        for addr_space in topcfg['addr_spaces']:
-            addr_space_suffix = lib.get_addr_space_suffix(addr_space)
-
-            # "toplevel_pkg.sv.tpl" -> "rtl/autogen/{top_name}{addr_space_suffix}_pkg.sv"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
-                            out_path / "rtl" / "autogen" /
-                            f"{top_name}{addr_space_suffix}_pkg.sv",
-                            helper=c_helper,
-                            addr_space=addr_space,
-                            gencmd=gencmd_sv)
-
-            for idx, path in enumerate(out_paths):
-
-                # "clang-format" -> "sw/autogen/.clang-format"
-                cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
-                cformat_dir = path / "sw" / "autogen"
-                cformat_dir.mkdir(parents=True, exist_ok=True)
-                cformat_path = cformat_dir / ".clang-format"
-                cformat_path.write_text(cformat_tplpath.read_text())
-
-                # Save the header macro prefix into `c_helper`
-                rel_header_dir = cformat_dir.relative_to(root_paths[idx])
-                c_helper.header_macro_prefix = (
-                    "OPENTITAN_" +
-                    str(rel_header_dir).replace("/", "_").upper())
-
-                # "toplevel.h.tpl" -> "sw/autogen/{top_name}.h"
-                cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}.h"
-                render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
-                                cheader_path,
-                                addr_space=addr_space['name'],
-                                helper=c_helper,
-                                gencmd=gencmd_c)
-
-                # Save the relative header path into `c_helper`
-                rel_header_path = cheader_path.relative_to(root_paths[idx])
-                c_helper.header_path = str(rel_header_path)
-
-                # "toplevel.c.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}.c"
-                render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
-                                cformat_dir /
-                                f"{top_name}{addr_space_suffix}.c",
-                                helper=c_helper,
-                                addr_space=addr_space['name'],
-                                gencmd=gencmd_c)
-
-                # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}_memory.h"
-                memory_cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}_memory.h"
-                render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
-                                memory_cheader_path,
-                                addr_space=addr_space['name'],
-                                helper=c_helper,
-                                gencmd=gencmd_c)
+        # "toplevel_pkg.sv.tpl" -> "rtl/autogen/{top_name}{addr_space_suffix}_pkg.sv"
+        render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
+                        out_path / "rtl" / "autogen" /
+                        f"{top_name}{addr_space_suffix}_pkg.sv",
+                        helper=c_helper,
+                        addr_space=addr_space,
+                        gencmd=gencmd_sv)
 
         for idx, path in enumerate(out_paths):
+
+            # "clang-format" -> "sw/autogen/.clang-format"
+            cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
             cformat_dir = path / "sw" / "autogen"
+            cformat_dir.mkdir(parents=True, exist_ok=True)
+            cformat_path = cformat_dir / ".clang-format"
+            cformat_path.write_text(cformat_tplpath.read_text())
+
+            # Save the header macro prefix into `c_helper`
+            rel_header_dir = cformat_dir.relative_to(root_paths[idx])
             c_helper.header_macro_prefix = (
-                "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
+                "OPENTITAN_" +
+                str(rel_header_dir).replace("/", "_").upper())
 
-            # "toplevel_BUILD.h.tpl" -> "sw/autogen/BUILD"
-            memory_cheader_path = cformat_dir / "BUILD"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_BUILD.tpl",
-                            memory_cheader_path,
+            # "toplevel.h.tpl" -> "sw/autogen/{top_name}.h"
+            cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}.h"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
+                            cheader_path,
+                            addr_space=addr_space['name'],
                             helper=c_helper,
-                            gencmd=gencmd_bzl)
+                            gencmd=gencmd_c)
 
-            # "data_BUILD.h.tpl" -> "data/autogen/BUILD"
-            render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
-                            path / "data" / "autogen" / "BUILD",
-                            gencmd=gencmd_bzl)
+            # Save the relative header path into `c_helper`
+            rel_header_path = cheader_path.relative_to(root_paths[idx])
+            c_helper.header_path = str(rel_header_path)
 
-            # "data_defs.bzl.tpl" -> "data/autogen/defs.bzl"
-            render_template(TOPGEN_TEMPLATE_PATH / "data_defs.bzl.tpl",
-                            path / "data" / "autogen" / "defs.bzl",
-                            gencmd=gencmd_bzl)
+            # "toplevel.c.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}.c"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
+                            cformat_dir /
+                            f"{top_name}{addr_space_suffix}.c",
+                            helper=c_helper,
+                            addr_space=addr_space['name'],
+                            gencmd=gencmd_c)
 
-            # "toplevel_memory.ld.tpl" ->
-            #   "sw/autogen/{top_name}{addr_space_suffix}_memory.ld"
+            # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}_memory.h"
+            memory_cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}_memory.h"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
+                            memory_cheader_path,
+                            addr_space=addr_space['name'],
+                            helper=c_helper,
+                            gencmd=gencmd_c)
+
+    for idx, path in enumerate(out_paths):
+        cformat_dir = path / "sw" / "autogen"
+        c_helper.header_macro_prefix = (
+            "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
+
+        # "toplevel_BUILD.h.tpl" -> "sw/autogen/BUILD"
+        memory_cheader_path = cformat_dir / "BUILD"
+        render_template(TOPGEN_TEMPLATE_PATH / "toplevel_BUILD.tpl",
+                        memory_cheader_path,
+                        helper=c_helper,
+                        gencmd=gencmd_bzl)
+
+        # "data_BUILD.h.tpl" -> "data/autogen/BUILD"
+        render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
+                        path / "data" / "autogen" / "BUILD",
+                        gencmd=gencmd_bzl)
+
+        # "data_defs.bzl.tpl" -> "data/autogen/defs.bzl"
+        render_template(TOPGEN_TEMPLATE_PATH / "data_defs.bzl.tpl",
+                        path / "data" / "autogen" / "defs.bzl",
+                        gencmd=gencmd_bzl)
+
+        # "toplevel_memory.ld.tpl" ->
+        #   "sw/autogen/{top_name}{addr_space_suffix}_memory.ld"
+        render_template(
+            TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
+            cformat_dir / f"{top_name}_memory.ld",
+            addr_space='hart',  # TODO: Don't hard-code
+            helper=c_helper,
+            gencmd=gencmd_c)
+
+        # Auto-generate tests in "sw/device/tests/autogen" area.
+        outfile = cformat_dir / "tests" / "BUILD"
+        render_template(
+            TOPGEN_TEMPLATE_PATH / "BUILD.tpl",
+            outfile,
+            helper=c_helper,
+            addr_space='hart',  # TODO: Don't hard-code
+            gencmd=gencmd_bzl)
+
+        outfile = cformat_dir / "tests" / "plic_all_irqs_test.c"
+        render_template(
+            TOPGEN_TEMPLATE_PATH / "plic_all_irqs_test.c.tpl",
+            outfile,
+            helper=c_helper,
+            addr_space='hart',  # TODO: Don't hard-code
+            gencmd=gencmd_c)
+
+        # Render alert tests only if there is really an alert handler
+        if lib.find_module(completecfg['module'], 'alert_handler'):
+            outfile = cformat_dir / "tests" / "alert_test.c"
             render_template(
-                TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
-                cformat_dir / f"{top_name}_memory.ld",
-                addr_space='hart',  # TODO: Don't hard-code
-                helper=c_helper,
-                gencmd=gencmd_c)
-
-            # Auto-generate tests in "sw/device/tests/autogen" area.
-            outfile = cformat_dir / "tests" / "BUILD"
-            render_template(
-                TOPGEN_TEMPLATE_PATH / "BUILD.tpl",
+                TOPGEN_TEMPLATE_PATH / "alert_test.c.tpl",
                 outfile,
                 helper=c_helper,
                 addr_space='hart',  # TODO: Don't hard-code
-                gencmd=gencmd_bzl)
-
-            outfile = cformat_dir / "tests" / "plic_all_irqs_test.c"
-            render_template(
-                TOPGEN_TEMPLATE_PATH / "plic_all_irqs_test.c.tpl",
-                outfile,
-                helper=c_helper,
-                addr_space='hart',  # TODO: Don't hard-code
                 gencmd=gencmd_c)
 
-            # Render alert tests only if there is really an alert handler
-            if lib.find_module(completecfg['module'], 'alert_handler'):
-                outfile = cformat_dir / "tests" / "alert_test.c"
-                render_template(
-                    TOPGEN_TEMPLATE_PATH / "alert_test.c.tpl",
-                    outfile,
-                    helper=c_helper,
-                    addr_space='hart',  # TODO: Don't hard-code
-                    gencmd=gencmd_c)
+    # generate chip level xbar and alert_handler TB
+    tb_files = [
+        "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
+        "xbar_tgl_excl.cfg", "rstmgr_tgl_excl.cfg"
+    ]
+    if completecfg["alert"]:
+        tb_files += ["tb__alert_handler_connect.sv"]
 
-        # generate chip level xbar and alert_handler TB
-        tb_files = [
-            "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
-            "xbar_tgl_excl.cfg", "rstmgr_tgl_excl.cfg"
-        ]
-        if completecfg["alert"]:
-            tb_files += ["tb__alert_handler_connect.sv"]
+    for fname in tb_files:
+        tpl_fname = "%s.tpl" % (fname)
+        xbar_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
+        template_contents = generate_top(completecfg,
+                                         name_to_block,
+                                         str(xbar_chip_data_path),
+                                         gencmd=gencmd_sv)
 
-        for fname in tb_files:
-            tpl_fname = "%s.tpl" % (fname)
-            xbar_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
-            template_contents = generate_top(completecfg,
-                                             name_to_block,
-                                             str(xbar_chip_data_path),
-                                             gencmd=gencmd_sv)
-
-            rendered_dir = out_path / "dv/autogen"
-            rendered_dir.mkdir(parents=True, exist_ok=True)
-            rendered_path = rendered_dir / fname
-
-            with rendered_path.open(mode="w", encoding="UTF-8") as fout:
-                fout.write(template_contents)
-
-        # generate parameters for chip-level environment package
-        tpl_fname = "chip_env_pkg__params.sv.tpl"
-        alert_handler_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
-        template_contents = generate_top(completecfg, name_to_block,
-                                         str(alert_handler_chip_data_path))
-
-        rendered_dir = out_path / "dv/env/autogen"
+        rendered_dir = out_path / "dv/autogen"
         rendered_dir.mkdir(parents=True, exist_ok=True)
-        rendered_path = rendered_dir / "chip_env_pkg__params.sv"
+        rendered_path = rendered_dir / fname
 
         with rendered_path.open(mode="w", encoding="UTF-8") as fout:
             fout.write(template_contents)
 
-        # generate documentation for toplevel
-        gen_top_docs(completecfg, c_helper, out_path)
+    # generate parameters for chip-level environment package
+    tpl_fname = "chip_env_pkg__params.sv.tpl"
+    alert_handler_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
+    template_contents = generate_top(completecfg, name_to_block,
+                                     str(alert_handler_chip_data_path))
+
+    rendered_dir = out_path / "dv/env/autogen"
+    rendered_dir.mkdir(parents=True, exist_ok=True)
+    rendered_path = rendered_dir / "chip_env_pkg__params.sv"
+
+    with rendered_path.open(mode="w", encoding="UTF-8") as fout:
+        fout.write(template_contents)
+
+    # generate documentation for toplevel
+    gen_top_docs(completecfg, c_helper, out_path)
 
 
 if __name__ == "__main__":

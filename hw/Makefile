@@ -70,6 +70,7 @@ ips_reg        = $(addsuffix _reg, $(local_ips))
 
 # Per-top targets (all phonies)
 tops_gen = $(addsuffix _gen,$(TOPS))
+tops_reg = $(addsuffix _reg,$(TOPS))
 blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
 top_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*.hjson
 top_complete_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/autogen/$*.gen.hjson
@@ -77,7 +78,7 @@ top_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*_seed.$(SEED_MODE).hjson
 top_complete_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/autogen/$*.secrets.$(SEED_MODE).gen.hjson
 top_chip_hjson = $(PRJ_DIR)/hw/$(TOPS)/$(dir_hjson)/$(TOPS).hjson
 
-top: $(tops_gen)
+top: $(tops_gen) $(tops_reg)
 $(tops_gen): %_gen:
 	${PRJ_DIR}/util/topgen.py -t $(top_hjson) -s $(top_seed_hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
 	(for ipgen in $$(${PRJ_DIR}/util/top_cm_and_blocks.py -t $(top_complete_hjson) --filter ipgen get_blocks); do \
@@ -103,6 +104,11 @@ regs:
 $(ips_reg): %_reg:
 	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
 	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
+$(tops_reg): %_reg:
+	(for toponly_ip in $$(${PRJ_DIR}/util/top_cm_and_blocks.py -t $(top_complete_hjson) --filter top-only get_blocks); do \
+	   ${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/$*/ip/"$$toponly_ip"/data/"$$toponly_ip".hjson; \
+	   ${PRJ_DIR}/util/regtool.py --sec-cm-testplan ${PRJ_DIR}/hw/$*/ip/"$$toponly_ip"/data/"$$toponly_ip".hjson; \
+	 done)
 
 top_and_cmdgen: cmdgen
 
