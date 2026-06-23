@@ -12,6 +12,9 @@
   // The name of the chip this XBAR configuration is made for.
   top_chip: top_scafi_deprecated
 
+  // The name of the top that contains this XBAR
+  variant: scafi_deprecated
+
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/tlul/data/tlul_testplan.hjson"
 

@@ -12,6 +12,9 @@
   // The name of the chip this XBAR configuration is made for.
   top_chip: top_dragonfly
 
+  // The name of the top that contains this XBAR
+  variant: dragonfly
+
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/tlul/data/tlul_testplan.hjson"
 

@@ -12,6 +12,9 @@
   // The name of the chip this XBAR configuration is made for.
   top_chip: ${library_name}
 
+  // The name of the top that contains this XBAR
+  variant: ${library_name.replace("top_", "")}
+
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/tlul/data/tlul_testplan.hjson"
 
