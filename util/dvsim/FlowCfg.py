@@ -377,7 +377,17 @@ class FlowCfg():
             sys.exit(1)
 
         # Filter configurations
-        self.cfgs = [c for c in self.cfgs if c.name in self.select_cfgs]
+        filtered_cfgs = []
+        for c in self.cfgs:
+            for s in self.select_cfgs:
+                if s == c.name:
+                    filtered_cfgs.append(c)
+                    break
+                if c.name in s and s == f"{c.name}_{c.variant}":
+                    filtered_cfgs.append(c)
+                    break
+
+        self.cfgs = filtered_cfgs
 
     def _create_deploy_objects(self):
         '''Create deploy objects from items that were passed on for being run.

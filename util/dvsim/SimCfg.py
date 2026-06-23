@@ -171,9 +171,7 @@ class SimCfg(FlowCfg):
 
         # Stuff below only pertains to individual cfg (not primary cfg)
         # or individual selected cfgs (if select_cfgs is configured via command line)
-        # TODO: find a better way to support select_cfgs
-        if not self.is_primary_cfg and (not self.select_cfgs or
-                                        self.name in self.select_cfgs):
+        if not self.is_primary_cfg and self._is_selected_cfg():
             # If self.tool is None at this point, there was no --tool argument on
             # the command line, and there is no default tool set in the config
             # file. That's ok if this is a primary config (where the
@@ -243,6 +241,18 @@ class SimCfg(FlowCfg):
         assert self.scratch_path
         log.info("Purging scratch path %s", self.scratch_path)
         rm_path(self.scratch_path)
+
+    def _is_selected_cfg(self):
+        '''Returns whether this cfg is selected via --select-cfgs'''
+        if not self.select_cfgs:
+            # This is still needed as not using the --select-cfgs option should
+            # still create the object for the regression
+            return True
+        if self.name in self.select_cfgs:
+            return True
+        if self.variant and f"{self.name}_{self.variant}" in self.select_cfgs:
+            return True
+        return False
 
     def _create_objects(self):
         # Create build and run modes objects
