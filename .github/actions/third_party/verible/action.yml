@@ -38,7 +38,7 @@ runs:
           cd reviewdog
           git checkout df70ed74df59de7ebfd9276afabd62ea2de4d7dd # v0.21.0
     - name: Install go (for reviewdog)
-      uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      uses: actions/setup-go@v6
       with:
         go-version-file: ./reviewdog/go.mod
     - name: Build reviewdog

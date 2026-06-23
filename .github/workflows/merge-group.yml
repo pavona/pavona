@@ -20,7 +20,7 @@ jobs:
     runs-on:
       group: pavona-basic
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
@@ -70,7 +70,7 @@ jobs:
       - chip_egret_cw310
       - chip_egret_cw340
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Download partial build-bin

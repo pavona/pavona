@@ -46,7 +46,7 @@ jobs:
       group: ${{ inputs.runner }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     # TODO: Filter DV jobs based on changed paths (`if-changed`).

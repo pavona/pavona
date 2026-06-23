@@ -28,7 +28,7 @@ jobs:
     runs-on:
       group: pavona-basic
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Required so we can lint commit messages.
       - name: Prepare environment
@@ -81,7 +81,7 @@ jobs:
       group: pavona-basic
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -141,7 +141,7 @@ jobs:
       group: pavona-basic
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Check Python licenses
@@ -194,7 +194,7 @@ jobs:
       verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
       verible_version: v0.0-3430-g060bde0f
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare Verible config
         run: |
           echo "Concatenating Verible waivers"
@@ -225,7 +225,7 @@ jobs:
           INPUT_SUGGEST_FIXES: 'false'
         run: ./.github/actions/third_party/verible/entrypoint.sh
       - name: Upload Verible linter log
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: verible-linter
           path: 'verible-verilog-lint.log'
@@ -237,7 +237,7 @@ jobs:
       group: pavona-basic
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -262,7 +262,7 @@ jobs:
       group: pavona-basic
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -281,7 +281,7 @@ jobs:
     needs: quick_lint
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Run fast Verilator tests
@@ -335,7 +335,7 @@ jobs:
     timeout-minutes: 120
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Required for bitstream cache to work.
       - name: Prepare environment
@@ -363,7 +363,7 @@ jobs:
     timeout-minutes: 120
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Required for bitstream cache to work.
       - name: Prepare environment
@@ -390,7 +390,7 @@ jobs:
       group: pavona-basic
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Prepare environment

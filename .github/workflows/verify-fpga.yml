@@ -29,9 +29,9 @@ jobs:
     runs-on:
       group: pavona-basic
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Download target pattern files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: execute_*-targets
           path: verify_fpga_jobs
@@ -71,7 +71,7 @@ jobs:
             false
           fi
       - name: Upload complete target list
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.test_group }}-fpga_targets
           path: all_fpga.txt
