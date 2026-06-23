@@ -99,6 +99,9 @@ runs:
         # Clone the internal dashboard, matching the CI branch if it exists there.
         # For PRs use the source branch; otherwise the branch/tag that triggered the run.
         CURRENT_BRANCH="${{ github.head_ref || github.ref_name }}"
+        # The dashboard repo cannot have '/' in branch names, so they are
+        # replaced with '-' there (e.g. 'ci/dvsim' -> 'ci-dvsim').
+        CURRENT_BRANCH="${CURRENT_BRANCH//\//-}"
         DASHBOARD_REPO="git@github.com:pavona/internal-dashboard.git"
         echo "CI branch: '$CURRENT_BRANCH'"
 
