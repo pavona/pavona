@@ -44,6 +44,8 @@ fn check_device_status(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;

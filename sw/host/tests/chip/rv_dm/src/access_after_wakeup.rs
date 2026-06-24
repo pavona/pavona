@@ -52,6 +52,8 @@ fn test_access_after_wakeup(
     // Write to progbuf0 and and confirm readback.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?
@@ -118,6 +120,8 @@ fn test_access_after_wakeup(
 
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?

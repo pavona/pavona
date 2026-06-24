@@ -39,6 +39,8 @@ fn asm_watchdog_bite(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
@@ -85,6 +87,8 @@ fn asm_watchdog_bite(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     std::thread::sleep(opts.breakpoint_timeout);
     let jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

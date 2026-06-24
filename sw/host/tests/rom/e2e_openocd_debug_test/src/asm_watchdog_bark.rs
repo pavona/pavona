@@ -37,6 +37,8 @@ fn asm_watchdog_bark(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

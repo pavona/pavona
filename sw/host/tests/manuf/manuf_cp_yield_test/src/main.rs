@@ -45,6 +45,8 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)
@@ -80,6 +82,8 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .context("failed to apply LC TAP strapping")?;
     jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)

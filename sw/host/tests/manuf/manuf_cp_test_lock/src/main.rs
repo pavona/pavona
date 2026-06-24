@@ -109,6 +109,8 @@ fn test_lock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
 
     jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;
@@ -145,6 +147,8 @@ fn test_unlock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> 
 
     jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;
@@ -180,6 +184,8 @@ fn reset_to_tap<'t>(
 
     let jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(tap)

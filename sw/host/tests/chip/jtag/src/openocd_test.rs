@@ -52,6 +52,8 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
@@ -176,6 +178,8 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;

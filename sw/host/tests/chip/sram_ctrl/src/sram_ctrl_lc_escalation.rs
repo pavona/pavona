@@ -87,6 +87,8 @@ fn lc_escalation(
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
@@ -118,6 +120,8 @@ fn lc_escalation(
     transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

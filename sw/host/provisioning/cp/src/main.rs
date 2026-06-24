@@ -75,7 +75,7 @@ fn main() -> Result<()> {
     // Only run CP provisioning if requested in any of the TestUnlocked states, except the last
     // state (TestUnlocked7), as this state requires special handling of the wafer authentication
     // secret, which is not yet implemented.
-    let lc_state = read_lc_state(&transport, &opts.init.jtag_params)?;
+    let lc_state = read_lc_state(&transport, &opts.init.bootstrap.options.jtag_params)?;
     log::info!("CP starting LC state: {:?}", lc_state.lc_state_to_str());
     match lc_state {
         DifLcCtrlState::TestUnlocked0
@@ -87,7 +87,7 @@ fn main() -> Result<()> {
         | DifLcCtrlState::TestUnlocked6 => {
             run_sram_cp_provision(
                 &transport,
-                &opts.init.jtag_params,
+                &opts.init.bootstrap.options.jtag_params,
                 &opts.sram_program,
                 &provisioning_data,
                 &spi_console_device,
@@ -97,7 +97,7 @@ fn main() -> Result<()> {
             // Only perform lock if we are in TEST_UNLOCKED0, otherwise we are running from a later
             // stage and want to run FT stage directly after.
             if lc_state == DifLcCtrlState::TestUnlocked0 {
-                reset_and_lock(&transport, &opts.init.jtag_params)?;
+                reset_and_lock(&transport, &opts.init.bootstrap.options.jtag_params)?;
             } else {
                 log::info!("Skipping resetting and locking the device.");
             }

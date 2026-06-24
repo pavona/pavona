@@ -23,7 +23,13 @@ fn test_control_status(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset(UartRx::Clear)?;
 
-    let mut openocd = opts.init.jtag_params.create(transport)?.into_raw()?;
+    let mut openocd = opts
+        .init
+        .bootstrap
+        .options
+        .jtag_params
+        .create(transport)?
+        .into_raw()?;
 
     // Configure OpenOCD to expect RISC-V tap and initialize JTAG.
     assert_eq!(

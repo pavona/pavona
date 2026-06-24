@@ -134,6 +134,8 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
 
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)

@@ -32,6 +32,8 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;
@@ -56,6 +58,8 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;

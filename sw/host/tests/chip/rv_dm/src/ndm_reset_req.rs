@@ -39,6 +39,8 @@ fn test_ndm_reset_req(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Connect via JTAG and trigger a NDM reset
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         // .connect(JtagTap::RiscvTap)?;

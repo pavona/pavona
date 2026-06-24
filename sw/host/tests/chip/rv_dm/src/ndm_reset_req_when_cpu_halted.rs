@@ -46,6 +46,8 @@ fn test_ndm_reset_req_when_halted(opts: &Opts, transport: &TransportWrapper) -> 
     // Debug module will be activated by OpenOCD.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

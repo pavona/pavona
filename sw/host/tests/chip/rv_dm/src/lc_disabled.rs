@@ -30,6 +30,8 @@ fn access_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let jtag_result = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap);

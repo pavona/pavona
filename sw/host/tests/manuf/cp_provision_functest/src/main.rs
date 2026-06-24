@@ -64,14 +64,14 @@ fn cp_provision(
     };
     run_sram_cp_provision(
         transport,
-        &opts.init.jtag_params,
+        &opts.init.bootstrap.options.jtag_params,
         &provisioning_sram_program,
         provisioning_data,
         spi_console,
         response,
         opts.timeout,
     )?;
-    reset_and_lock(transport, &opts.init.jtag_params)?;
+    reset_and_lock(transport, &opts.init.bootstrap.options.jtag_params)?;
     Ok(())
 }
 
@@ -85,6 +85,8 @@ fn test_unlock(
     transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;
@@ -106,6 +108,8 @@ fn test_unlock(
 
     jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;
@@ -140,6 +144,8 @@ fn prep_flash_for_cp_init(
     // Connect to the RISCV TAP via JTAG.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
@@ -190,6 +196,8 @@ fn check_cp_provisioning(
     // Connect to the RISCV TAP via JTAG.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
@@ -235,7 +243,7 @@ fn main() -> Result<()> {
     )?;
 
     // Transition from RAW to TEST_UNLOCKED0.
-    unlock_raw(&transport, &opts.init.jtag_params)?;
+    unlock_raw(&transport, &opts.init.bootstrap.options.jtag_params)?;
 
     // Generate random test wafer data.
     let test_data = ManufCpTestData {

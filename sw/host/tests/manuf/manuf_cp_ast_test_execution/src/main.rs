@@ -51,6 +51,8 @@ fn connect_riscv_jtag<'t>(
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

@@ -37,6 +37,8 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;
@@ -69,6 +71,8 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap);
@@ -97,13 +101,21 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // If RV-DM is disabled, strapping DFT tap will result in LC TAP being selected.
     if !rv_dm_enabled {
         opts.init
+            .bootstrap
+            .options
             .jtag_params
             .create(transport)?
             .connect(JtagTap::LcTap)?
             .disconnect()?;
     } else {
         // For DFT test we need to do raw OpenOCD command.
-        let mut openocd = opts.init.jtag_params.create(transport)?.into_raw()?;
+        let mut openocd = opts
+            .init
+            .bootstrap
+            .options
+            .jtag_params
+            .create(transport)?
+            .into_raw()?;
         // Perform JTAG initialisation and capture the result.
         let init_result = openocd.execute("capture \"jtag init\"")?;
 
@@ -135,7 +147,13 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     // Now check that there's no JTAG TAP present.
-    let mut openocd = opts.init.jtag_params.create(transport)?.into_raw()?;
+    let mut openocd = opts
+        .init
+        .bootstrap
+        .options
+        .jtag_params
+        .create(transport)?
+        .into_raw()?;
     // Perform JTAG initialisation and capture the result.
     let init_result = openocd.execute("capture \"jtag init\"")?;
     assert!(init_result.contains("JTAG scan chain interrogation failed"));

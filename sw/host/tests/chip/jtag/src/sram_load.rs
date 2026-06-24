@@ -37,6 +37,8 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

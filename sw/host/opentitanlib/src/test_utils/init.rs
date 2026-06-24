@@ -17,8 +17,6 @@ use super::bootstrap::Bootstrap;
 use super::load_bitstream::LoadBitstream;
 use crate::app::TransportWrapper;
 use crate::backend;
-use crate::io::jtag::JtagParams;
-// use opentitanlib::io::uart::UartParams;
 
 #[derive(Debug, Args)]
 pub struct InitializeTest {
@@ -32,18 +30,11 @@ pub struct InitializeTest {
     #[command(flatten)]
     pub backend_opts: backend::BackendOpts,
 
-    // TODO: Bootstrap::options already has a uart_params (and a spi_params).
-    // This probably needs some refactoring.
-    //#[command(flatten)]
-    //pub uart_params: UartParams,
     #[command(flatten)]
     pub load_bitstream: LoadBitstream,
 
     #[command(flatten)]
     pub bootstrap: Bootstrap,
-
-    #[command(flatten)]
-    pub jtag_params: JtagParams,
 }
 
 impl InitializeTest {

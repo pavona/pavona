@@ -45,6 +45,8 @@ fn program_readback(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
     // Connect to the RISCV TAP via JTAG.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)
@@ -78,6 +80,8 @@ fn lock_partition(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<(
     // Connect to the RISCV TAP via JTAG.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)

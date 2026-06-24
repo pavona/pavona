@@ -74,6 +74,8 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let jtag = &mut *opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

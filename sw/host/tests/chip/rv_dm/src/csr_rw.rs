@@ -73,6 +73,8 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let jtag = &mut *opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

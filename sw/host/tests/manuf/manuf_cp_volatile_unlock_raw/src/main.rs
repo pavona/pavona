@@ -41,6 +41,8 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
     // Connect to the LC TAP via JTAG.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)
@@ -55,7 +57,7 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
         Some(token_words),
         /*use_external_clk=*/ true,
         JtagTap::LcTap,
-        &opts.init.jtag_params,
+        &opts.init.bootstrap.options.jtag_params,
         expect_raw_unlock_supported,
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
@@ -90,6 +92,8 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
     // Connect to the LC TAP via JTAG.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)
@@ -104,7 +108,7 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
         Some(token_words),
         /*use_external_clk=*/ true,
         JtagTap::RiscvTap,
-        &opts.init.jtag_params,
+        &opts.init.bootstrap.options.jtag_params,
         /*expect RAW unlock to succeed*/ true,
     )
     .context("failed to transition to TEST_UNLOCKED0")?;

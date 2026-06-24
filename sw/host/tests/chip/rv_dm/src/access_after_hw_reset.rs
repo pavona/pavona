@@ -47,6 +47,8 @@ fn test_access_after_hw_reset(
     // Check debugger is available.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
@@ -62,6 +64,8 @@ fn test_access_after_hw_reset(
     // Check debugger is available.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;

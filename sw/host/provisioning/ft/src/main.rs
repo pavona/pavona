@@ -204,7 +204,8 @@ fn main() -> Result<()> {
     };
 
     // Only run test unlock operation if we are in a locked LC state.
-    response.lc_state.initial = read_lc_state(&transport, &opts.init.jtag_params)?;
+    response.lc_state.initial =
+        read_lc_state(&transport, &opts.init.bootstrap.options.jtag_params)?;
     match response.lc_state.initial {
         DifLcCtrlState::TestLocked0
         | DifLcCtrlState::TestLocked1
@@ -214,7 +215,11 @@ fn main() -> Result<()> {
         | DifLcCtrlState::TestLocked5
         | DifLcCtrlState::TestLocked6 => {
             let t0 = Instant::now();
-            test_unlock(&transport, &opts.init.jtag_params, &_test_unlock_token)?;
+            test_unlock(
+                &transport,
+                &opts.init.bootstrap.options.jtag_params,
+                &_test_unlock_token,
+            )?;
             response.stats.log_elapsed_time("test-unlock", t0);
         }
         _ => {
@@ -224,7 +229,8 @@ fn main() -> Result<()> {
 
     // Only run the SRAM individualize program in a test unlocked state. If we have transitioned to
     // a mission state already, then we can skip this step.
-    response.lc_state.unlocked = read_lc_state(&transport, &opts.init.jtag_params)?;
+    response.lc_state.unlocked =
+        read_lc_state(&transport, &opts.init.bootstrap.options.jtag_params)?;
     match response.lc_state.unlocked {
         DifLcCtrlState::TestUnlocked0 => {
             bail!("FT stage cannot be run from test unlocked 0. Run CP stage first.");
@@ -241,7 +247,7 @@ fn main() -> Result<()> {
             let t0 = Instant::now();
             run_sram_ft_individualize(
                 &transport,
-                &opts.init.jtag_params,
+                &opts.init.bootstrap.options.jtag_params,
                 &opts.sram_program,
                 &ft_individualize_data_in,
                 &spi_console,
@@ -254,7 +260,7 @@ fn main() -> Result<()> {
             let t0 = Instant::now();
             test_exit(
                 &transport,
-                &opts.init.jtag_params,
+                &opts.init.bootstrap.options.jtag_params,
                 &_test_exit_token,
                 opts.provisioning_data.target_mission_mode_lc_state,
             )?;
@@ -295,7 +301,7 @@ fn main() -> Result<()> {
     log::info!("Provisioning Done");
 
     // Extract final device ID.
-    let mut final_device_id = read_device_id(&transport, &opts.init.jtag_params)?;
+    let mut final_device_id = read_device_id(&transport, &opts.init.bootstrap.options.jtag_params)?;
 
     // Convert final device ID to a big-endian string.
     final_device_id.reverse();

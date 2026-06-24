@@ -34,6 +34,8 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     // Connect to the LC TAP via JTAG.
     let mut jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)
@@ -57,6 +59,8 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
 
     jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;

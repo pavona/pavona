@@ -63,7 +63,7 @@ fn send_rma_unlock_token(opts: &Opts, transport: &TransportWrapper) -> Result<()
         opts.timeout,
     )?;
     // Check the LC state is Dev or Prod.
-    let current_lc_state = read_lc_state(transport, &opts.init.jtag_params)?;
+    let current_lc_state = read_lc_state(transport, &opts.init.bootstrap.options.jtag_params)?;
     let valid_lc_states = HashSet::from([DifLcCtrlState::Dev, DifLcCtrlState::Prod]);
     assert!(
         valid_lc_states.contains(&current_lc_state),
@@ -75,6 +75,8 @@ fn send_rma_unlock_token(opts: &Opts, transport: &TransportWrapper) -> Result<()
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     let jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::LcTap)?;
@@ -91,7 +93,7 @@ fn send_rma_unlock_token(opts: &Opts, transport: &TransportWrapper) -> Result<()
 
     // Check the LC state is RMA.
     assert_eq!(
-        read_lc_state(transport, &opts.init.jtag_params)?,
+        read_lc_state(transport, &opts.init.bootstrap.options.jtag_params)?,
         DifLcCtrlState::Rma,
         "Did not transition to RMA.",
     );

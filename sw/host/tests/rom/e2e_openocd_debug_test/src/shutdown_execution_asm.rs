@@ -39,6 +39,8 @@ fn shutdown_execution_asm(opts: &Opts, transport: &TransportWrapper) -> Result<(
 
     let jtag = opts
         .init
+        .bootstrap
+        .options
         .jtag_params
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
