@@ -16,20 +16,14 @@ if [ $# != 1 ]; then
     echo >&2 "Usage: check-countermeasures.sh <toplevel-name>"
     exit 1
 fi
-hjson_file="hw/top_$1/data/top_$1.hjson"
+hjson_file="hw/top_$1/data/autogen/top_$1.gen.hjson"
 if [ ! -f ${hjson_file} ]; then
     echo >&2 "Missing hjson file for $1: expected file ${hjson_file} not found."
     echo >&2 "  For example, use \"egret\" for top_egret.hjson."
     exit 1
 fi
-hjson_seed_file="hw/top_$1/data/top_$1_seed.testing.hjson"
-if [ ! -f ${hjson_seed_file} ]; then
-    echo >&2 "Missing hjson file for $1: expected file ${hjson_seed_file} not found."
-    echo >&2 "  For example, use \"egret\" for top_egret_seed.testing.hjson."
-    exit 1
-fi
 
-./util/topgen.py -t ${hjson_file} -s ${hjson_seed_file} --check-cm || {
+./util/top_cm_and_blocks.py -t ${hjson_file} check_cm || {
     echo "::error::Countermeasure check failed."
     cleanup
     exit 1
