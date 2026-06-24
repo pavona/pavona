@@ -139,7 +139,7 @@ runs:
       name: Authenticate to Google Cloud
       # This uses secrets, so it does not work on pull requests from forks.
       if: github.event_name != 'pull_request'
-      uses: google-github-actions/auth@71fee32a0bb7e97b4d33d548e7d957010649d8fa # v2.1.3
+      uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
       with:
         workload_identity_provider: projects/877782468570/locations/global/workloadIdentityPools/github-actions-pool/providers/${{ github.event.repository.name }}
         service_account: ${{ github.event.repository.name }}-gh-actions-sa@pavona-caches-430f6d3b.iam.gserviceaccount.com
@@ -159,7 +159,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
 
-    - uses: google-github-actions/setup-gcloud@v2
+    - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       if: github.event_name != 'pull_request'
 
     - name: Configure ~/.bazelrc

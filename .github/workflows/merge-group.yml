@@ -21,7 +21,7 @@ jobs:
       group: pavona-basic
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+      - uses: actions/configure-pages@v6
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Build documentation
