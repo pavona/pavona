@@ -106,10 +106,17 @@ Only one pass will be required when the order in which ipgen peripherals are gen
 
 #### Generating other Artifacts
 
-There are a large number of artifacts that are generated from the complete top config using topgen, including:
-* The templates of ipgen peripherals, expanded into directories specific to each top, for example [`hw/top_dragonfly/ip_autogen/clkmgr`](../../hw/top_dragonfly/ip_autogen/clkmgr/).
-* The crossbars, also expanded from templates into top-specific directories, for example `hw/top_egret/ip/xbar_*/*/autogen`.
-* Part of the Bazel files necessary to register the top with build system; see [Creating a new top](../../hw/top/doc/create_top.md) for details.
+From the complete top configuration Hjson (sometimes along with a top secrets configuration), other tools can generate other top-relevant assets.
+
+Tools that use the complete top config include:
+- `util/gen_top_ral.py`: generates the top level's RAL model
+- `util/top_cm_and_blocks.py`: depending on subcommand used, either checks countermeasures of a top's IPs or lists which blocks are present within a top level
+  - This script's list of blocks can be fed to regtool to generate the IP block registers
+- `util/gen_top_ipconfigs.py`: creates IP configuration Hjson files that can be used to generate templated IPs or crossbars from top level information
+  - ipgen and tlgen can use the output of this script to generate IP templates and TL-UL crossbars (respectively)
+- `util/gen_top_docs.py`: generates top level's pinmux and target documentation
+- `util/gen_top_sw.py`: generates the software (C, Rust, Bazel) files for a top level
+- `util/gen_top_sv.py`: generates the SystemVerilog files associated with a top level design
 
 ## Usage
 
@@ -209,6 +216,7 @@ default_alert_handler | optional | string | Modules not defining alert_handler h
 default_plic | optional | string | Modules not defining plic have interrupts sent here
 
 Module Hjsons (referred to by the "complete config" Hjson topgen creates) has the following keys (some being optional):
+
 Key | Kind | Type | Description of Value
 --- | ---- | ---- | --------------------
 name | required | string | name of the instance
