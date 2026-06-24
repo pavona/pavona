@@ -7,7 +7,7 @@
   human_name:         "SoC Debug Access Control Module",
   one_line_desc:      "Control module to enable or disable debug access",
   one_paragraph_desc: '''
-  Module that controls the Debug / DFT access feature for an SoC for which OpenTitan serves as an integrated HW RoT.
+  Module that controls the Debug / DFT access feature for an SoC for which Pavona serves as an integrated HW RoT.
   A debug policy bus driven from this module governs the unlock policy. Output from the debug policy bus is decoded by various debug / DFT logic blocks in an SoC to determine if the debug / DFT access feature is allowed or not.
   The access policy is derived by the RoT with a challenge-response based debug authentication exchange session with a remote policy enforcer.
   '''
@@ -29,6 +29,7 @@
   ]
 
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
+
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "device", name: "jtag" }
@@ -45,9 +46,102 @@
     }
   ]
 
-  /////////////////////
-  // Countermeasures //
-  /////////////////////
+  features: [
+    // Debug policy generation
+    {
+      name: "SOC_DBG_CTRL.POLICY.SW_PROGRAMMABLE"
+      desc: '''
+            The firmware can program the broadcast debug category through the `DEBUG_POLICY_CATEGORY_SHADOWED`
+            CSR. Its written value reaches the output bus only during the `SocDbgStProd` lifecycle state,
+            when not in RMA state and with the CPU running.
+            '''
+    }
+    {
+      name: "SOC_DBG_CTRL.POLICY.LC_RMA_OVERRIDE"
+      desc: '''
+            During the `SocDbgStProd` state, the RMA state (if strictly true) will override the
+            software-assigned category and set the policy to Category 4.
+            '''
+    }
+    {
+      name: "SOC_DBG_CTRL.POLICY.LC_BLANK_OVERRIDE"
+      desc: '''
+            For the `SocDbgStBlank` state, the policy will be 'locked' unless:
+            - DFT is enabled by the lifecycle controller
+            - Hardware debug is enabled by the lifecycle controller
+            In which case, it will broadcast a Category 4 policy, with no software override.
+            '''
+    }
+    {
+      name: "SOC_DBG_CTRL.POLICY.LC_PREPROD_OVERRIDE"
+      desc: '''
+            For the `SocDbgStPreProd` lifecycle controller state, the broadcast policy
+            is always set to Category 4, with no software override.
+            '''
+    }
+    {
+      name: "SOC_DBG_CTRL.POLICY.RELOCK_REUNLOCK"
+      desc: '''
+            Firmware may set `DEBUG_POLICY_RELOCKED` to indicate that the debugger has
+            relocked the part. This `relocked` field is broadcast in the policy bus alongside
+            `category` and `valid`. This capability is only allowed for the `SocDbgStProd` state,
+            when not in RMA and with the CPU running.
+            '''
+    }
+    // Tracing of CSRs
+    {
+      name: "SOC_DBG_CTRL.TRACE.CORE_POLICY_READBACK"
+      desc: '''
+            The live broadcast debug policy (`category`, `valid`, `relocked`) is continuously
+            reflected to RoT firmware through the read-only `TRACE_DEBUG_POLICY_CATEGORY` and
+            `TRACE_DEBUG_POLICY_VALID_RELOCKED` CSRs on the core TL-UL interface.
+            '''
+    }
+    {
+      name: "SOC_DBG_CTRL.TRACE.JTAG_POLICY_READBACK"
+      desc: '''
+            The live broadcast debug policy (`category`, `valid`, `relocked`) is reflected to the
+            external debugger through the read-only `JTAG_TRACE_DEBUG_POLICY_CATEGORY` and
+            `JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED` CSRs on the JTAG TL-UL interface.
+            '''
+    }
+    {
+      name: "SOC_DBG_CTRL.TRACE.JTAG_BOOT_STATUS_GATED_BY_DFT"
+      desc: '''
+            The `JTAG_BOOT_STATUS` and `JTAG_TRACE_SOC_DBG_STATE` CSRs will only reflect the
+            hardware state when `lc_dft_en` is strictly true. Otherwise, all the fields will
+            read as zero.
+            '''
+    }
+    {
+      name: "SOC_DBG_CTRL.TRACE.AUTH_PROGRESS_MIRRORING"
+      desc: '''
+            The Root-of-Trust firmware reports the state of the debug authorization exchange in the
+            core-side `STATUS` CSR. This same CSR is mirrored through the `JTAG_STATUS` CSR, which
+            is surfaced so the external debugger can read the authorization progress.
+            '''
+    }
+    // Ibex halting
+    { name: "SOC_DBG_CTRL.HALT.FSM",
+      desc: '''
+            A sparse-encoded FSM sequences the early-boot halt decision based on:
+            - Whether the current lifecycle state is RMA
+            - Whether DFT debug is enabled by LC as a result of Volatile Raw Unlock
+            - Whether the external `halt_cpu_boot_i` pin is asserted
+            - Whether the JTAG command to stop the boot flow is asserted
+
+            The FSM has a single terminal state such that once the halt is released,
+            Ibex cannot be re-halted without reset.
+            '''
+    }
+    { name: "SOC_DBG_CTRL.HALT.PRODUCTION_PASSTHROUGH",
+      desc: '''
+            In lifecycle states that are not RMA, the halt FSM bypasses the halt path,
+            releasing Ibex unconditionally. The halt mechanism is therefore unreachable on production
+            parts: neither the `halt_cpu_boot` pin nor JTAG_CONTROL can wedge boot.
+            '''
+    }
+  ]
 
   countermeasures: [
     { name: "BUS.INTEGRITY",
@@ -91,7 +185,6 @@
       package: "lc_ctrl_pkg"
       desc:    "Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system."
     },
-
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_dft_en"
