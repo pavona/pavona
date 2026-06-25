@@ -70,7 +70,8 @@ module chip_${top["name"]}_${target["name"]} #(
   parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
-  parameter OtpMacroMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
+  parameter OtpMacroMemInitFile = "otp_img_fpga_${target["name"]}.vmem",
+  parameter bit AccPQCEn = 0
 %   endif
 ) (
 % else:
@@ -1149,6 +1150,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .AccRegFile(acc_pkg::RegFileFPGA),
     .SecAccMuteUrnd(1'b0),
     .SecAccSkipUrndReseedAtStart(1'b0),
+    .AccAccPQCEn(AccPQCEn),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),

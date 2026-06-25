@@ -62,6 +62,11 @@ parameters:
     description: OTP initialization file in vmem hex format
     default: ""
     paramtype: vlogparam
+  AccPQCEn:
+    datatype: int
+    description: Enable the PQC vector ISA extension in the ACC
+    default: 0
+    paramtype: vlogparam
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
@@ -85,6 +90,7 @@ targets:
     parameters:
       - BootRomInitFile
       - OtpMacroMemInitFile
+      - AccPQCEn
       - AST_BYPASS_CLK=true
     tools:
       vivado:

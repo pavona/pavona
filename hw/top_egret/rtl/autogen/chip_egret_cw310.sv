@@ -15,7 +15,8 @@ module chip_egret_cw310 #(
   parameter BootRomInitFile = "test_rom_fpga_cw310.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
-  parameter OtpMacroMemInitFile = "otp_img_fpga_cw310.vmem"
+  parameter OtpMacroMemInitFile = "otp_img_fpga_cw310.vmem",
+  parameter bit AccPQCEn = 0
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
@@ -1067,6 +1068,7 @@ module chip_egret_cw310 #(
     .AccRegFile(acc_pkg::RegFileFPGA),
     .SecAccMuteUrnd(1'b0),
     .SecAccSkipUrndReseedAtStart(1'b0),
+    .AccAccPQCEn(AccPQCEn),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
