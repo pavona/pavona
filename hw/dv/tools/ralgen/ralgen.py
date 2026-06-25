@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 r"""FuseSoc generator for UVM RAL package created with either regtool or
 topgen tools.
 """
-import os
 import shlex
 import subprocess
 import sys
@@ -41,7 +41,6 @@ def main():
     ip_hjson = gapi['parameters'].get('ip_hjson')
     top_hjson = gapi['parameters'].get('top_hjson')
     dv_base_names = gapi['parameters'].get('dv_base_names')
-    hjson_path = gapi['parameters'].get('hjson_path')
 
     if not name or (bool(ip_hjson) == bool(top_hjson)):
         print("Error: ralgen requires the \"name\" and exactly one of "
@@ -52,20 +51,16 @@ def main():
     if ip_hjson:
         ral_spec = root_dir / ip_hjson
         cmd = util_path / "regtool.py"
-        args = [cmd, "-s", "-t", os.getcwd(), ral_spec]
+        args = [cmd, "-s", "-t", Path.cwd(), ral_spec]
         if alias_hjson:
             args += ["--alias", root_dir / alias_hjson]
     else:
-        ral_spec = root_dir / top_hjson
-        # Extract top_name from ral spec path and create _seed.testing.hjson
-        ral_path = Path(ral_spec)
-        top_name = ral_path.stem
-        seed_path = ral_path.with_name(f"{top_name}_seed.testing.hjson")
+        original_spec = root_dir / top_hjson
+        top_name = Path(original_spec).stem
+        ral_spec = original_spec.parent / "autogen" / f"{top_name}.gen.hjson"
 
-        cmd = util_path / "topgen.py"
-        args = [cmd, "-r", "-o", os.getcwd(), "-t", ral_spec, "-s", seed_path]
-        if hjson_path:
-            args += ["--hjson-path", root_dir / hjson_path]
+        cmd = util_path / "gen_top_ral.py"
+        args = [cmd, "-o", Path.cwd(), "-t", ral_spec]
         if alias_hjson:
             args += ["--alias-files"]
             for alias in alias_hjson:
