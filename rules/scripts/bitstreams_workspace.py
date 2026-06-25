@@ -48,6 +48,10 @@ KNOWN_DESIGNS = {
         "bitstream": "@//hw/bitstream/vivado:fpga_cw340_test_rom",
         "mmi": "@//hw/bitstream/vivado:cw340_mmi",
     },
+    "chip_egret_cw340_pqc": {
+        "bitstream": "@//hw/bitstream/vivado:fpga_cw340_pqc_test_rom",
+        "mmi": "@//hw/bitstream/vivado:cw340_pqc_mmi",
+    },
 }
 
 parser = argparse.ArgumentParser(

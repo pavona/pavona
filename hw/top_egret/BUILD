@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -269,6 +270,24 @@ fpga_cw340(
     base_bitstream = "//hw/bitstream/cw340:bitstream",
     exec_env = "fpga_cw340_test_rom",
     mmi = "//hw/bitstream/cw340:mmi",
+    otp = "//hw/top_egret/data/otp:img_rma",
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
+    test_cmd = """
+        --exec="transport init"
+        --exec="fpga load-bitstream {bitstream}"
+        --exec="bootstrap --clear-uart=true {firmware}"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
+)
+
+fpga_cw340(
+    name = "fpga_cw340_pqc_test_rom",
+    testonly = True,
+    base = ":fpga_cw340",
+    base_bitstream = "//hw/bitstream/cw340_pqc:bitstream",
+    exec_env = "fpga_cw340_pqc_test_rom",
+    mmi = "//hw/bitstream/cw340_pqc:mmi",
     otp = "//hw/top_egret/data/otp:img_rma",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
     test_cmd = """

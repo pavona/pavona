@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -149,5 +150,27 @@ pkg_tar(
     mode = "0444",
     package_dir = "build-bin/hw/top_egret/chip_egret_cw340",
     strip_prefix = "/hw/bitstream/chip_egret_cw340_cached_fragment",
+    tags = ["manual"],
+)
+
+bitstream_fragment_from_manifest(
+    name = "chip_egret_cw340_pqc_cached_fragment",
+    testonly = True,
+    srcs = [
+        "@bitstreams//:chip_egret_cw340_pqc_bitstream",
+        "@bitstreams//:chip_egret_cw340_pqc_mmi",
+    ],
+    design = "chip_egret_cw340_pqc",
+    manifest = "@bitstreams//:manifest",
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "chip_egret_cw340_pqc_cached_archive",
+    testonly = True,
+    srcs = [":chip_egret_cw340_pqc_cached_fragment"],
+    mode = "0444",
+    package_dir = "build-bin/hw/top_egret/chip_egret_cw340_pqc",
+    strip_prefix = "/hw/bitstream/chip_egret_cw340_pqc_cached_fragment",
     tags = ["manual"],
 )

@@ -165,6 +165,16 @@ alias(
     name = "chip_egret_cw340_mmi",
     actual = "@//hw/bitstream/vivado:cw340_mmi",
 )
+
+alias(
+    name = "chip_egret_cw340_pqc_bitstream",
+    actual = "@//hw/bitstream/vivado:fpga_cw340_pqc_test_rom",
+)
+
+alias(
+    name = "chip_egret_cw340_pqc_mmi",
+    actual = "@//hw/bitstream/vivado:cw340_pqc_mmi",
+)
 ''')
 
 

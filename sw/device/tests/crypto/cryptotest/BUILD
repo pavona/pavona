@@ -90,6 +90,9 @@ MLKEM_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "mlkem_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = MLKEM_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/mlkem_kat:harness",
