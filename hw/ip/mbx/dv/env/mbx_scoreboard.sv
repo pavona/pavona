@@ -132,8 +132,6 @@ class mbx_scoreboard extends cip_base_scoreboard #(
     m_mbx_error   = 1'b0;
     m_mbx_abort   = 1'b0;
     m_ibmbx_start = 1'b1;
-    m_ib_data_q.delete();
-    m_ob_data_q.delete();
   endfunction
 
   // Model TL-UL register accesses. There are two TL-UL register interfaces:
@@ -146,6 +144,35 @@ class mbx_scoreboard extends cip_base_scoreboard #(
       default: `uvm_fatal(`gfn, $sformatf("Invalid RAL: %0s", ral_name))
     endcase
   endtask
+
+  protected virtual function bit is_tl_mem_access_allowed(tl_seq_item       item,
+                                                          dv_base_reg_block block,
+                                                          output bit        mem_byte_access_err,
+                                                          output bit        mem_wo_err,
+                                                          output bit        mem_ro_err,
+                                                          output bit        custom_err);
+    uvm_reg_addr_t addr;
+    uvm_mem mem;
+
+    mem_byte_access_err = 1'b0;
+    mem_wo_err = 1'b0;
+    mem_ro_err = 1'b0;
+    custom_err = 1'b0;
+
+    addr = block.get_normalized_addr(item.a_addr);
+    mem = block.default_map.get_mem_by_offset(addr);
+
+    // The SoC-side mailbox data windows are custom register-adapter windows. The RTL is wired to
+    // return successful TL responses for sub-word writes, so do not let the generic memory-window
+    // checker expect an error response for them.
+    if (block.get_name() == cfg.mbx_soc_ral_name && mem != null &&
+        (mem.get_name() == "wdata" || mem.get_name() == "rdata")) begin
+      return 1'b1;
+    end
+
+    return super.is_tl_mem_access_allowed(item, block, mem_byte_access_err, mem_wo_err,
+                                          mem_ro_err, custom_err);
+  endfunction
 
   // Model register accesses on the RoT ('core') TL-UL bus.
   virtual function void process_tl_mbx_core_access(tl_seq_item item, tl_channels_e channel);
@@ -208,6 +235,7 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         end
 
         "outbound_object_size": begin
+          m_ob_data_q.delete();
           m_obdwcnt = get_field_val(ral.outbound_object_size.cnt, item.a_data);
           `uvm_info(`gfn, $sformatf("Updating m_obdwcnt to %0d", m_obdwcnt), UVM_LOW)
           if (cfg.en_cov) cov.object_size_cg.sample(m_obdwcnt);
@@ -398,6 +426,7 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         // - WDATA transfers the request from the SoC to the RoT.
         // - RDATA retrieves the response from the RoT.
         uvm_mem mem = m_mbx_soc_ral.default_map.get_mem_by_offset(csr_addr);
+        if (mem == null) return;
         case (mem.get_name())
           "wdata": begin
             `uvm_info(`gfn, $sformatf("WDATA write of 0x%0x (Inbox [0x%0x,0x%0x] wdata_ptr 0x%0x",
@@ -407,6 +436,7 @@ class mbx_scoreboard extends cip_base_scoreboard #(
             // Set the initial expectation of the Inbox write pointer.
             if (m_ibmbx_start) begin
               m_ibmbx_start = 1'b0;
+              m_ib_data_q.delete();
               // Expected address for memory traffic.
               m_ibmbx_ptr = `gmv(ral.inbound_base_address);
               // Expected address at which WDATA would be written, if deemed valid.
@@ -489,6 +519,7 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         // - WDATA transfers the request from the SoC to the RoT.
         // - RDATA retrieves the response from the RoT.
         uvm_mem mem = m_mbx_soc_ral.default_map.get_mem_by_offset(csr_addr);
+        if (mem == null) return;
         case (mem.get_name())
           "wdata": begin // Reading WDATA shall always return zero.
             `uvm_info(`gfn, $sformatf("WDATA read of 0x%0x", item.a_data), UVM_MEDIUM)

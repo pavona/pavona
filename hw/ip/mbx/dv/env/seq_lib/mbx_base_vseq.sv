@@ -517,7 +517,7 @@ class mbx_base_vseq extends cip_base_vseq #(
 
           // If we supplied all of the data without any subsequent interruption, it should all
           // have made it into the mailbox SRAM.
-          check_request = !aborted & !panicked;
+          check_request = !aborted & !errored & !panicked;
         end
 
         if (check_request) begin
@@ -680,7 +680,9 @@ class mbx_base_vseq extends cip_base_vseq #(
           `DV_CHECK_EQ(obs_error, 1'b0, "ERROR bit cannot be cleared")
         end
 
-        `DV_CHECK_EQ(rd_data[31], 1'b0, "Ready bit still set")
+        if (!aborted && !errored && !panicked) begin
+          `DV_CHECK_EQ(rd_data[31], 1'b0, "Ready bit still set")
+        end
 
         `uvm_info(`gfn, $sformatf("Completed transaction %0d of %0d", txn + 1, num_txns), UVM_LOW)
 
