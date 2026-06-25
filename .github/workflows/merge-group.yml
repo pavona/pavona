@@ -62,6 +62,14 @@ jobs:
       top_name: egret
       design_suffix: cw340
 
+  chip_egret_cw340_pqc:
+    name: Egret for CW340 (PQC)
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: egret
+      design_suffix: cw340_pqc
+
   cache_bitstreams:
     name: Cache bitstreams to GCP
     runs-on:
@@ -69,6 +77,7 @@ jobs:
     needs:
       - chip_egret_cw310
       - chip_egret_cw340
+      - chip_egret_cw340_pqc
     steps:
       - uses: actions/checkout@v7
       - name: Prepare environment
@@ -76,7 +85,7 @@ jobs:
       - name: Download partial build-bin
         uses: ./.github/actions/download-partial-build-bin
         with:
-          job-patterns: chip_egret_{cw310_hyperdebug,cw340}
+          job-patterns: chip_egret_{cw310_hyperdebug,cw340,cw340_pqc}
       - name: Create bitstream cache archive
         run: |
           shopt -s globstar # Allow use of **

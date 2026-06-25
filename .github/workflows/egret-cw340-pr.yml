@@ -91,6 +91,22 @@ jobs:
       interface: cw340
       tag_filters: "manuf,-cw310"
 
+  execute_pqc_fpga_tests_cw340:
+    name: CW340 PQCEn=1 Tests
+    uses: ./.github/workflows/fpga.yml
+    if: ${{ github.event_name != 'merge_group' }}
+    secrets: inherit
+    with:
+      name: CW340 PQCEn=1 Tests
+      job_name: execute_pqc_fpga_tests_cw340
+      bitstream: chip_egret_cw340_pqc
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_pqc_test_rom
+      timeout_filters: 'short,moderate,long,eternal'
+      timeout: 120
+      extra_bazel_flags: --define=acc_has_pqc=true
+
   verify_fpga_jobs:
     name: Verify FPGA jobs
     uses: ./.github/workflows/verify-fpga.yml
@@ -104,4 +120,5 @@ jobs:
       - execute_sival_fpga_tests_cw340
       - execute_sival_rom_ext_fpga_tests_cw340
       - execute_manuf_fpga_tests_cw340
+      - execute_pqc_fpga_tests_cw340
     if: success() || failure()

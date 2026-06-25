@@ -96,6 +96,21 @@ jobs:
       timeout_filters: 'long,eternal'
       timeout: 300
 
+  execute_long_pqc_fpga_tests_cw340:
+    name: CW340 PQCEn=1 Long Tests
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      name: CW340 PQCEn=1 Long Tests
+      job_name: execute_long_pqc_fpga_tests_cw340
+      bitstream: chip_egret_cw340_pqc
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_pqc_test_rom
+      timeout_filters: 'long,eternal'
+      timeout: 300
+      extra_bazel_flags: --define=acc_has_pqc=true
+
   verify_fpga_jobs:
     name: Verify FPGA jobs
     uses: ./.github/workflows/verify-fpga.yml
@@ -110,4 +125,5 @@ jobs:
       - execute_long_sival_fpga_tests_cw340
       - execute_long_sival_rom_ext_fpga_tests_cw340
       - execute_long_manuf_fpga_tests_cw340
+      - execute_long_pqc_fpga_tests_cw340
     if: success() || failure()

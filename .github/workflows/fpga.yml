@@ -53,6 +53,10 @@ on:
         default: true
         type: boolean
         description: Skip tests that previously passed and were cached by Bazel
+      extra_bazel_flags:
+        default: ""
+        type: string
+        description: Additional flags to pass to the Bazel test invocation.
 
 jobs:
   fpga:
@@ -101,7 +105,7 @@ jobs:
 
           # Run FPGA tests
           if [[ -s target_pattern_file.txt ]]; then
-            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt "$cache_test_results" || {
+            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt "$cache_test_results" ${{ inputs.extra_bazel_flags }} || {
               res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
             }
           else
