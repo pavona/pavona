@@ -60,15 +60,15 @@ otcrypto_status_t otcrypto_mldsa44_keygen(
                                       /*fips_check=*/kHardenedBoolTrue));
   HARDENED_TRY(entropy_csrng_uninstantiate());
 
-  otcrypto_const_byte_buf_t seed_buf = {.data = (unsigned char *)seed,
-                                        .len = sizeof(seed)};
+  otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
+                                                .len = sizeof(seed)};
   return otcrypto_mldsa44_keypair_derand(seed_buf, public_key, secret_key,
                                          work);
 }
 
 otcrypto_status_t otcrypto_mldsa44_keypair_derand(
-    otcrypto_const_byte_buf_t seed, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key,
+    otcrypto_const_aligned_byte_buf_t seed,
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMldsa44WorkBufferKeypairWords]) {
   if (seed.len != kOtcryptoMldsa44SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -98,8 +98,9 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa44WorkBufferKeypairWords,
                          .offset_words = 0};
-  int result = mldsa44_keypair_internal((uint8_t *)public_key->key,
-                                        (uint8_t *)sk_share0, seed.data, &ctx);
+  int result =
+      mldsa44_keypair_internal((uint8_t *)public_key->key, (uint8_t *)sk_share0,
+                               (const uint8_t *)seed.data, &ctx);
   if (result != 0) {
     memset(sk_share0, 0, kOtcryptoMldsa44SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
@@ -114,7 +115,7 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
 otcrypto_status_t otcrypto_mldsa44_sign(
     const otcrypto_blinded_key_t *secret_key, otcrypto_const_byte_buf_t message,
     otcrypto_const_byte_buf_t context, otcrypto_mldsa_sign_mode_t sign_mode,
-    otcrypto_byte_buf_t signature,
+    otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa44WorkBufferSignWords]) {
   HARDENED_TRY(entropy_complex_check());
 
@@ -125,8 +126,7 @@ otcrypto_status_t otcrypto_mldsa44_sign(
                                       /*fips_check=*/kHardenedBoolTrue));
   HARDENED_TRY(entropy_csrng_uninstantiate());
 
-  otcrypto_const_byte_buf_t rnd_buf = {.data = (unsigned char *)rnd,
-                                       .len = sizeof(rnd)};
+  otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
   return otcrypto_mldsa44_sign_derand(secret_key, message, context, sign_mode,
                                       rnd_buf, signature, work);
 }
@@ -134,7 +134,8 @@ otcrypto_status_t otcrypto_mldsa44_sign(
 otcrypto_status_t otcrypto_mldsa44_sign_derand(
     const otcrypto_blinded_key_t *secret_key, otcrypto_const_byte_buf_t message,
     otcrypto_const_byte_buf_t context, otcrypto_mldsa_sign_mode_t sign_mode,
-    otcrypto_const_byte_buf_t rnd, otcrypto_byte_buf_t signature,
+    otcrypto_const_aligned_byte_buf_t rnd,
+    otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa44WorkBufferSignWords]) {
   if (secret_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -180,8 +181,9 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
 
   size_t signature_len;
   int result = mldsa44_signature_internal(
-      signature.data, &signature_len, message.data, message.len, pre,
-      2 + context.len, rnd.data, (const uint8_t *)sk_share0, 0, &ctx);
+      (uint8_t *)signature.data, &signature_len, message.data, message.len, pre,
+      2 + context.len, (const uint8_t *)rnd.data, (const uint8_t *)sk_share0, 0,
+      &ctx);
 
   if (result != 0) {
     return OTCRYPTO_FATAL_ERR;
@@ -193,7 +195,8 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
 otcrypto_status_t otcrypto_mldsa44_verify(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t message, otcrypto_const_byte_buf_t context,
-    otcrypto_mldsa_sign_mode_t sign_mode, otcrypto_const_byte_buf_t signature,
+    otcrypto_mldsa_sign_mode_t sign_mode,
+    otcrypto_const_aligned_byte_buf_t signature,
     hardened_bool_t *verification_result,
     uint32_t work[kOtcryptoMldsa44WorkBufferVerifyWords]) {
   if (public_key == NULL || verification_result == NULL) {
@@ -218,9 +221,9 @@ otcrypto_status_t otcrypto_mldsa44_verify(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa44WorkBufferVerifyWords,
                          .offset_words = 0};
-  int result = mldsa44_verify(signature.data, signature.len, message.data,
-                              message.len, context.data, context.len,
-                              (const uint8_t *)public_key->key, &ctx);
+  int result = mldsa44_verify(
+      (const uint8_t *)signature.data, signature.len, message.data, message.len,
+      context.data, context.len, (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
 
@@ -241,15 +244,15 @@ otcrypto_status_t otcrypto_mldsa65_keygen(
                                       /*fips_check=*/kHardenedBoolTrue));
   HARDENED_TRY(entropy_csrng_uninstantiate());
 
-  otcrypto_const_byte_buf_t seed_buf = {.data = (unsigned char *)seed,
-                                        .len = sizeof(seed)};
+  otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
+                                                .len = sizeof(seed)};
   return otcrypto_mldsa65_keypair_derand(seed_buf, public_key, secret_key,
                                          work);
 }
 
 otcrypto_status_t otcrypto_mldsa65_keypair_derand(
-    otcrypto_const_byte_buf_t seed, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key,
+    otcrypto_const_aligned_byte_buf_t seed,
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMldsa65WorkBufferKeypairWords]) {
   if (seed.len != kOtcryptoMldsa65SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -279,8 +282,9 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa65WorkBufferKeypairWords,
                          .offset_words = 0};
-  int result = mldsa65_keypair_internal((uint8_t *)public_key->key,
-                                        (uint8_t *)sk_share0, seed.data, &ctx);
+  int result =
+      mldsa65_keypair_internal((uint8_t *)public_key->key, (uint8_t *)sk_share0,
+                               (const uint8_t *)seed.data, &ctx);
   if (result != 0) {
     memset(sk_share0, 0, kOtcryptoMldsa65SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
@@ -295,7 +299,7 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
 otcrypto_status_t otcrypto_mldsa65_sign(
     const otcrypto_blinded_key_t *secret_key, otcrypto_const_byte_buf_t message,
     otcrypto_const_byte_buf_t context, otcrypto_mldsa_sign_mode_t sign_mode,
-    otcrypto_byte_buf_t signature,
+    otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa65WorkBufferSignWords]) {
   HARDENED_TRY(entropy_complex_check());
 
@@ -306,8 +310,7 @@ otcrypto_status_t otcrypto_mldsa65_sign(
                                       /*fips_check=*/kHardenedBoolTrue));
   HARDENED_TRY(entropy_csrng_uninstantiate());
 
-  otcrypto_const_byte_buf_t rnd_buf = {.data = (unsigned char *)rnd,
-                                       .len = sizeof(rnd)};
+  otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
   return otcrypto_mldsa65_sign_derand(secret_key, message, context, sign_mode,
                                       rnd_buf, signature, work);
 }
@@ -315,7 +318,8 @@ otcrypto_status_t otcrypto_mldsa65_sign(
 otcrypto_status_t otcrypto_mldsa65_sign_derand(
     const otcrypto_blinded_key_t *secret_key, otcrypto_const_byte_buf_t message,
     otcrypto_const_byte_buf_t context, otcrypto_mldsa_sign_mode_t sign_mode,
-    otcrypto_const_byte_buf_t rnd, otcrypto_byte_buf_t signature,
+    otcrypto_const_aligned_byte_buf_t rnd,
+    otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa65WorkBufferSignWords]) {
   if (secret_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -361,8 +365,9 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
 
   size_t signature_len;
   int result = mldsa65_signature_internal(
-      signature.data, &signature_len, message.data, message.len, pre,
-      2 + context.len, rnd.data, (const uint8_t *)sk_share0, 0, &ctx);
+      (uint8_t *)signature.data, &signature_len, message.data, message.len, pre,
+      2 + context.len, (const uint8_t *)rnd.data, (const uint8_t *)sk_share0, 0,
+      &ctx);
 
   if (result != 0) {
     return OTCRYPTO_FATAL_ERR;
@@ -374,7 +379,8 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
 otcrypto_status_t otcrypto_mldsa65_verify(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t message, otcrypto_const_byte_buf_t context,
-    otcrypto_mldsa_sign_mode_t sign_mode, otcrypto_const_byte_buf_t signature,
+    otcrypto_mldsa_sign_mode_t sign_mode,
+    otcrypto_const_aligned_byte_buf_t signature,
     hardened_bool_t *verification_result,
     uint32_t work[kOtcryptoMldsa65WorkBufferVerifyWords]) {
   if (public_key == NULL || verification_result == NULL) {
@@ -399,9 +405,9 @@ otcrypto_status_t otcrypto_mldsa65_verify(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa65WorkBufferVerifyWords,
                          .offset_words = 0};
-  int result = mldsa65_verify(signature.data, signature.len, message.data,
-                              message.len, context.data, context.len,
-                              (const uint8_t *)public_key->key, &ctx);
+  int result = mldsa65_verify(
+      (const uint8_t *)signature.data, signature.len, message.data, message.len,
+      context.data, context.len, (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
 
@@ -422,15 +428,15 @@ otcrypto_status_t otcrypto_mldsa87_keygen(
                                       /*fips_check=*/kHardenedBoolTrue));
   HARDENED_TRY(entropy_csrng_uninstantiate());
 
-  otcrypto_const_byte_buf_t seed_buf = {.data = (unsigned char *)seed,
-                                        .len = sizeof(seed)};
+  otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
+                                                .len = sizeof(seed)};
   return otcrypto_mldsa87_keypair_derand(seed_buf, public_key, secret_key,
                                          work);
 }
 
 otcrypto_status_t otcrypto_mldsa87_keypair_derand(
-    otcrypto_const_byte_buf_t seed, otcrypto_unblinded_key_t *public_key,
-    otcrypto_blinded_key_t *secret_key,
+    otcrypto_const_aligned_byte_buf_t seed,
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMldsa87WorkBufferKeypairWords]) {
   if (seed.len != kOtcryptoMldsa87SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -460,8 +466,9 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa87WorkBufferKeypairWords,
                          .offset_words = 0};
-  int result = mldsa87_keypair_internal((uint8_t *)public_key->key,
-                                        (uint8_t *)sk_share0, seed.data, &ctx);
+  int result =
+      mldsa87_keypair_internal((uint8_t *)public_key->key, (uint8_t *)sk_share0,
+                               (const uint8_t *)seed.data, &ctx);
   if (result != 0) {
     memset(sk_share0, 0, kOtcryptoMldsa87SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
@@ -476,7 +483,7 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
 otcrypto_status_t otcrypto_mldsa87_sign(
     const otcrypto_blinded_key_t *secret_key, otcrypto_const_byte_buf_t message,
     otcrypto_const_byte_buf_t context, otcrypto_mldsa_sign_mode_t sign_mode,
-    otcrypto_byte_buf_t signature,
+    otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa87WorkBufferSignWords]) {
   HARDENED_TRY(entropy_complex_check());
 
@@ -487,8 +494,7 @@ otcrypto_status_t otcrypto_mldsa87_sign(
                                       /*fips_check=*/kHardenedBoolTrue));
   HARDENED_TRY(entropy_csrng_uninstantiate());
 
-  otcrypto_const_byte_buf_t rnd_buf = {.data = (unsigned char *)rnd,
-                                       .len = sizeof(rnd)};
+  otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
   return otcrypto_mldsa87_sign_derand(secret_key, message, context, sign_mode,
                                       rnd_buf, signature, work);
 }
@@ -496,7 +502,8 @@ otcrypto_status_t otcrypto_mldsa87_sign(
 otcrypto_status_t otcrypto_mldsa87_sign_derand(
     const otcrypto_blinded_key_t *secret_key, otcrypto_const_byte_buf_t message,
     otcrypto_const_byte_buf_t context, otcrypto_mldsa_sign_mode_t sign_mode,
-    otcrypto_const_byte_buf_t rnd, otcrypto_byte_buf_t signature,
+    otcrypto_const_aligned_byte_buf_t rnd,
+    otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa87WorkBufferSignWords]) {
   if (secret_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -542,8 +549,9 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
 
   size_t signature_len;
   int result = mldsa87_signature_internal(
-      signature.data, &signature_len, message.data, message.len, pre,
-      2 + context.len, rnd.data, (const uint8_t *)sk_share0, 0, &ctx);
+      (uint8_t *)signature.data, &signature_len, message.data, message.len, pre,
+      2 + context.len, (const uint8_t *)rnd.data, (const uint8_t *)sk_share0, 0,
+      &ctx);
 
   if (result != 0) {
     return OTCRYPTO_FATAL_ERR;
@@ -555,7 +563,8 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
 otcrypto_status_t otcrypto_mldsa87_verify(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t message, otcrypto_const_byte_buf_t context,
-    otcrypto_mldsa_sign_mode_t sign_mode, otcrypto_const_byte_buf_t signature,
+    otcrypto_mldsa_sign_mode_t sign_mode,
+    otcrypto_const_aligned_byte_buf_t signature,
     hardened_bool_t *verification_result,
     uint32_t work[kOtcryptoMldsa87WorkBufferVerifyWords]) {
   if (public_key == NULL || verification_result == NULL) {
@@ -580,9 +589,9 @@ otcrypto_status_t otcrypto_mldsa87_verify(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa87WorkBufferVerifyWords,
                          .offset_words = 0};
-  int result = mldsa87_verify(signature.data, signature.len, message.data,
-                              message.len, context.data, context.len,
-                              (const uint8_t *)public_key->key, &ctx);
+  int result = mldsa87_verify(
+      (const uint8_t *)signature.data, signature.len, message.data, message.len,
+      context.data, context.len, (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
 

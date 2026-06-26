@@ -21,7 +21,8 @@ typedef struct mldsa_test_scratch {
   uint32_t sk[MLDSA_MAX_SK_BLOB_WORDS];
   uint32_t pk[((kOtcryptoMldsa87PublicKeyBytes + sizeof(uint32_t) - 1) /
                sizeof(uint32_t))];
-  uint8_t sig[MLDSA_CMD_MAX_SIG_BYTES];
+  uint32_t
+      sig[(MLDSA_CMD_MAX_SIG_BYTES + sizeof(uint32_t) - 1) / sizeof(uint32_t)];
   union {
     cryptotest_mldsa_keygen_data_t keygen;
     cryptotest_mldsa_keygen_sign_data_t keygen_sign;

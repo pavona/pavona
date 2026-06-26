@@ -176,6 +176,35 @@ typedef struct otcrypto_const_word32_buf {
 } otcrypto_const_word32_buf_t;
 
 /**
+ * Word-aligned byte buffer: `len` is in bytes, but `data` is `uint32_t *` so
+ * the buffer can be passed to word-oriented hardware without a copy.
+ */
+typedef struct otcrypto_aligned_byte_buf {
+  /**
+   * Pointer to the data.
+   */
+  uint32_t *data;
+  /**
+   * Length of the data in bytes.
+   */
+  size_t len;
+} otcrypto_aligned_byte_buf_t;
+
+/**
+ * Constant version of `otcrypto_aligned_byte_buf_t`.
+ */
+typedef struct otcrypto_const_aligned_byte_buf {
+  /**
+   * Pointer to the data.
+   */
+  const uint32_t *const data;
+  /**
+   * Length of the data in bytes.
+   */
+  const size_t len;
+} otcrypto_const_aligned_byte_buf_t;
+
+/**
  * Enum to denote the key type of the handled key.
  *
  * Values are hardened.

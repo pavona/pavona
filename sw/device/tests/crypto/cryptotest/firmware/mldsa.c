@@ -85,7 +85,11 @@ static status_t handle_mldsa_keygen(ujson_t *uj, mldsa_test_scratch_t *s) {
   };
   sk.checksum = integrity_blinded_checksum(&sk);
 
-  otcrypto_const_byte_buf_t seed = {.data = d->seed, .len = d->seed_len};
+  uint32_t seed_words[(MLDSA_CMD_MAX_SEED_BYTES + sizeof(uint32_t) - 1) /
+                      sizeof(uint32_t)];
+  memcpy(seed_words, d->seed, d->seed_len);
+  otcrypto_const_aligned_byte_buf_t seed = {.data = seed_words,
+                                            .len = d->seed_len};
   status_t keygen_status;
   switch (d->parameter_set) {
     case 44:
@@ -175,7 +179,11 @@ static status_t handle_mldsa_keygen_sign(ujson_t *uj, mldsa_test_scratch_t *s) {
   };
   sk.checksum = integrity_blinded_checksum(&sk);
 
-  otcrypto_const_byte_buf_t seed = {.data = d->seed, .len = d->seed_len};
+  uint32_t seed_words[(MLDSA_CMD_MAX_SEED_BYTES + sizeof(uint32_t) - 1) /
+                      sizeof(uint32_t)];
+  memcpy(seed_words, d->seed, d->seed_len);
+  otcrypto_const_aligned_byte_buf_t seed = {.data = seed_words,
+                                            .len = d->seed_len};
   status_t keygen_status;
   switch (d->parameter_set) {
     case 44:
@@ -201,10 +209,14 @@ static status_t handle_mldsa_keygen_sign(ujson_t *uj, mldsa_test_scratch_t *s) {
                                        .len = d->message_len};
   otcrypto_const_byte_buf_t context = {.data = d->context,
                                        .len = d->context_len};
-  otcrypto_const_byte_buf_t rnd = {.data = d->rnd, .len = d->rnd_len};
+  uint32_t rnd_words[(MLDSA_CMD_MAX_RND_BYTES + sizeof(uint32_t) - 1) /
+                     sizeof(uint32_t)];
+  memcpy(rnd_words, d->rnd, d->rnd_len);
+  otcrypto_const_aligned_byte_buf_t rnd = {.data = rnd_words,
+                                           .len = d->rnd_len};
 
   memset(s->sig, 0, sig_bytes);
-  otcrypto_byte_buf_t signature = {.data = s->sig, .len = sig_bytes};
+  otcrypto_aligned_byte_buf_t signature = {.data = s->sig, .len = sig_bytes};
 
   status_t sign_status;
   switch (d->parameter_set) {
@@ -297,10 +309,14 @@ static status_t handle_mldsa_siggen(ujson_t *uj, mldsa_test_scratch_t *s) {
                                        .len = d->message_len};
   otcrypto_const_byte_buf_t context = {.data = d->context,
                                        .len = d->context_len};
-  otcrypto_const_byte_buf_t rnd = {.data = d->rnd, .len = d->rnd_len};
+  uint32_t rnd_words[(MLDSA_CMD_MAX_RND_BYTES + sizeof(uint32_t) - 1) /
+                     sizeof(uint32_t)];
+  memcpy(rnd_words, d->rnd, d->rnd_len);
+  otcrypto_const_aligned_byte_buf_t rnd = {.data = rnd_words,
+                                           .len = d->rnd_len};
 
   memset(s->sig, 0, sig_bytes);
-  otcrypto_byte_buf_t signature = {.data = s->sig, .len = sig_bytes};
+  otcrypto_aligned_byte_buf_t signature = {.data = s->sig, .len = sig_bytes};
 
   status_t sign_status;
   switch (d->parameter_set) {
@@ -328,7 +344,7 @@ static status_t handle_mldsa_siggen(ujson_t *uj, mldsa_test_scratch_t *s) {
 
   cryptotest_mldsa_output_t out;
   memset(&out, 0, sizeof(out));
-  TRY(hash_output(s->sig, sig_bytes, &out));
+  TRY(hash_output((uint8_t *)s->sig, sig_bytes, &out));
   out.success = true;
   RESP_OK(ujson_serialize_cryptotest_mldsa_output_t, uj, &out);
   return OK_STATUS();
@@ -366,8 +382,9 @@ static status_t handle_mldsa_sigver(ujson_t *uj, mldsa_test_scratch_t *s) {
                                        .len = d->message_len};
   otcrypto_const_byte_buf_t context = {.data = d->context,
                                        .len = d->context_len};
-  otcrypto_const_byte_buf_t signature = {.data = d->signature,
-                                         .len = d->signature_len};
+  memcpy(s->sig, d->signature, d->signature_len);
+  otcrypto_const_aligned_byte_buf_t signature = {.data = s->sig,
+                                                 .len = d->signature_len};
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
   status_t verify_status;

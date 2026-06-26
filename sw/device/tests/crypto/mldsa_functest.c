@@ -65,15 +65,13 @@ OTTF_DEFINE_TEST_CONFIG();
 #define TEST_CTX "test_context_123"
 #define TEST_CTX_LEN (sizeof(TEST_CTX) - 1)
 
-static const uint8_t kKeypairSeed[32] = {
-    0x93, 0x4d, 0x60, 0xb3, 0x56, 0x24, 0xd7, 0x40, 0xb3, 0x0a, 0x7f,
-    0x22, 0x7a, 0xf2, 0xae, 0x7c, 0x67, 0x8e, 0x4e, 0x04, 0xe1, 0x3c,
-    0x5f, 0x50, 0x9e, 0xad, 0xe2, 0xb7, 0x9a, 0xea, 0x77, 0xe2};
+static const uint32_t kKeypairSeed[8] = {0xb3604d93, 0x40d72456, 0x227f0ab3,
+                                         0x7caef27a, 0x044e8e67, 0x505f3ce1,
+                                         0xb7e2ad9e, 0xe277ea9a};
 
-static const uint8_t kSignRnd[32] = {
-    0x3e, 0x2a, 0x2e, 0xa6, 0xc9, 0xc4, 0x76, 0xfc, 0x49, 0x37, 0xb0,
-    0x13, 0xc9, 0x93, 0xa7, 0x93, 0xd6, 0xc0, 0xab, 0x99, 0x60, 0x69,
-    0x5b, 0xa8, 0x38, 0xf6, 0x49, 0xda, 0x53, 0x9c, 0xa3, 0xd0};
+static const uint32_t kSignRnd[8] = {0xa62e2a3e, 0xfc76c4c9, 0x13b03749,
+                                     0x93a793c9, 0x99abc0d6, 0xa85b6960,
+                                     0xda49f638, 0xd0a39c53};
 
 // Static work buffer for all ML-DSA operations
 // Use the maximum size across all ML-DSA-87 operations
@@ -162,8 +160,8 @@ static void test_mldsa44_derand(void) {
       .checksum = 0,
   };
 
-  otcrypto_const_byte_buf_t seed = {.data = kKeypairSeed,
-                                    .len = sizeof(kKeypairSeed)};
+  otcrypto_const_aligned_byte_buf_t seed = {.data = kKeypairSeed,
+                                            .len = sizeof(kKeypairSeed)};
 
   LOG_INFO("Generating keypair...");
   uint64_t t0 = profile_start();
@@ -177,9 +175,10 @@ static void test_mldsa44_derand(void) {
 
   otcrypto_const_byte_buf_t ctx = {.data = (const uint8_t *)mldsa_test_ctx_buf,
                                    .len = TEST_CTX_LEN};
-  otcrypto_const_byte_buf_t rnd = {.data = kSignRnd, .len = sizeof(kSignRnd)};
-  otcrypto_byte_buf_t sig_buf = {.data = (uint8_t *)mldsa_signature,
-                                 .len = sizeof(mldsa_signature)};
+  otcrypto_const_aligned_byte_buf_t rnd = {.data = kSignRnd,
+                                           .len = sizeof(kSignRnd)};
+  otcrypto_aligned_byte_buf_t sig_buf = {.data = mldsa_signature,
+                                         .len = sizeof(mldsa_signature)};
 
 #ifdef MLDSA_BENCHMARK_MODE
   // Benchmark 2-iteration message first
@@ -223,8 +222,8 @@ static void test_mldsa44_derand(void) {
 
   LOG_INFO("Verifying...");
   hardened_bool_t verification_result;
-  otcrypto_const_byte_buf_t sig_const = {.data = (uint8_t *)mldsa_signature,
-                                         .len = kOtcryptoMldsa44SignatureBytes};
+  otcrypto_const_aligned_byte_buf_t sig_const = {
+      .data = mldsa_signature, .len = kOtcryptoMldsa44SignatureBytes};
   t0 = profile_start();
   CHECK_STATUS_OK(otcrypto_mldsa44_verify(
       &public_key, msg, ctx, kOtcryptoMldsaSignModeMldsa, sig_const,
@@ -261,8 +260,8 @@ static void test_mldsa65_derand(void) {
       .checksum = 0,
   };
 
-  otcrypto_const_byte_buf_t seed = {.data = kKeypairSeed,
-                                    .len = sizeof(kKeypairSeed)};
+  otcrypto_const_aligned_byte_buf_t seed = {.data = kKeypairSeed,
+                                            .len = sizeof(kKeypairSeed)};
 
   LOG_INFO("Generating keypair...");
   uint64_t t0 = profile_start();
@@ -276,9 +275,10 @@ static void test_mldsa65_derand(void) {
 
   otcrypto_const_byte_buf_t ctx = {.data = (const uint8_t *)mldsa_test_ctx_buf,
                                    .len = TEST_CTX_LEN};
-  otcrypto_const_byte_buf_t rnd = {.data = kSignRnd, .len = sizeof(kSignRnd)};
-  otcrypto_byte_buf_t sig_buf = {.data = (uint8_t *)mldsa_signature,
-                                 .len = sizeof(mldsa_signature)};
+  otcrypto_const_aligned_byte_buf_t rnd = {.data = kSignRnd,
+                                           .len = sizeof(kSignRnd)};
+  otcrypto_aligned_byte_buf_t sig_buf = {.data = mldsa_signature,
+                                         .len = sizeof(mldsa_signature)};
 
 #ifdef MLDSA_BENCHMARK_MODE
   // Benchmark 2-iteration message first
@@ -322,8 +322,8 @@ static void test_mldsa65_derand(void) {
 
   LOG_INFO("Verifying...");
   hardened_bool_t verification_result;
-  otcrypto_const_byte_buf_t sig_const = {.data = (uint8_t *)mldsa_signature,
-                                         .len = kOtcryptoMldsa65SignatureBytes};
+  otcrypto_const_aligned_byte_buf_t sig_const = {
+      .data = mldsa_signature, .len = kOtcryptoMldsa65SignatureBytes};
   t0 = profile_start();
   CHECK_STATUS_OK(otcrypto_mldsa65_verify(
       &public_key, msg, ctx, kOtcryptoMldsaSignModeMldsa, sig_const,
@@ -360,8 +360,8 @@ static void test_mldsa87_derand(void) {
       .checksum = 0,
   };
 
-  otcrypto_const_byte_buf_t seed = {.data = kKeypairSeed,
-                                    .len = sizeof(kKeypairSeed)};
+  otcrypto_const_aligned_byte_buf_t seed = {.data = kKeypairSeed,
+                                            .len = sizeof(kKeypairSeed)};
 
   LOG_INFO("Generating keypair...");
   uint64_t t0 = profile_start();
@@ -375,9 +375,10 @@ static void test_mldsa87_derand(void) {
 
   otcrypto_const_byte_buf_t ctx = {.data = (const uint8_t *)mldsa_test_ctx_buf,
                                    .len = TEST_CTX_LEN};
-  otcrypto_const_byte_buf_t rnd = {.data = kSignRnd, .len = sizeof(kSignRnd)};
-  otcrypto_byte_buf_t sig_buf = {.data = (uint8_t *)mldsa_signature,
-                                 .len = sizeof(mldsa_signature)};
+  otcrypto_const_aligned_byte_buf_t rnd = {.data = kSignRnd,
+                                           .len = sizeof(kSignRnd)};
+  otcrypto_aligned_byte_buf_t sig_buf = {.data = mldsa_signature,
+                                         .len = sizeof(mldsa_signature)};
 
 #ifdef MLDSA_BENCHMARK_MODE
   // Benchmark 2-iteration message first
@@ -421,8 +422,8 @@ static void test_mldsa87_derand(void) {
 
   LOG_INFO("Verifying...");
   hardened_bool_t verification_result;
-  otcrypto_const_byte_buf_t sig_const = {.data = (uint8_t *)mldsa_signature,
-                                         .len = kOtcryptoMldsa87SignatureBytes};
+  otcrypto_const_aligned_byte_buf_t sig_const = {
+      .data = mldsa_signature, .len = kOtcryptoMldsa87SignatureBytes};
   t0 = profile_start();
   CHECK_STATUS_OK(otcrypto_mldsa87_verify(
       &public_key, msg, ctx, kOtcryptoMldsaSignModeMldsa, sig_const,
