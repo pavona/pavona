@@ -73,6 +73,10 @@ static const uint32_t kSignRnd[8] = {0xa62e2a3e, 0xfc76c4c9, 0x13b03749,
                                      0x93a793c9, 0x99abc0d6, 0xa85b6960,
                                      0xda49f638, 0xd0a39c53};
 
+#ifdef ACC_HAS_PQC
+// The ACC backend uses no work buffer.
+static uint32_t mldsa_work_buffer[1];
+#else
 // Static work buffer for all ML-DSA operations
 // Use the maximum size across all ML-DSA-87 operations
 #define MLDSA_MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -81,6 +85,7 @@ static const uint32_t kSignRnd[8] = {0xa62e2a3e, 0xfc76c4c9, 0x13b03749,
                       kOtcryptoMldsa87WorkBufferSignWords),   \
             kOtcryptoMldsa87WorkBufferVerifyWords)
 static uint32_t mldsa_work_buffer[MLDSA_MAX_WORK_BUFFER_WORDS];
+#endif
 
 // Static buffers for all ML-DSA test operations (sized for ML-DSA-87)
 static uint32_t mldsa_public_key_data[(kOtcryptoMldsa87PublicKeyBytes +

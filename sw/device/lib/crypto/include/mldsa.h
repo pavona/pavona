@@ -40,7 +40,20 @@ enum {
   kOtcryptoMldsa87SignatureBytes = 4627,
   kOtcryptoMldsa87SeedBytes = 32,
 
-  // Work buffer sizes in 32-bit words
+// Work buffer sizes in 32-bit words (the ACC backend uses none).
+#ifdef ACC_HAS_PQC
+  kOtcryptoMldsa44WorkBufferKeypairWords = 0,
+  kOtcryptoMldsa44WorkBufferSignWords = 0,
+  kOtcryptoMldsa44WorkBufferVerifyWords = 0,
+
+  kOtcryptoMldsa65WorkBufferKeypairWords = 0,
+  kOtcryptoMldsa65WorkBufferSignWords = 0,
+  kOtcryptoMldsa65WorkBufferVerifyWords = 0,
+
+  kOtcryptoMldsa87WorkBufferKeypairWords = 0,
+  kOtcryptoMldsa87WorkBufferSignWords = 0,
+  kOtcryptoMldsa87WorkBufferVerifyWords = 0,
+#else
   kOtcryptoMldsa44WorkBufferKeypairWords = 11584 / sizeof(uint32_t),
   kOtcryptoMldsa44WorkBufferSignWords = 13120 / sizeof(uint32_t),
   kOtcryptoMldsa44WorkBufferVerifyWords = 9120 / sizeof(uint32_t),
@@ -52,6 +65,7 @@ enum {
   kOtcryptoMldsa87WorkBufferKeypairWords = 18752 / sizeof(uint32_t),
   kOtcryptoMldsa87WorkBufferSignWords = 21344 / sizeof(uint32_t),
   kOtcryptoMldsa87WorkBufferVerifyWords = 12512 / sizeof(uint32_t),
+#endif
 };
 
 /**

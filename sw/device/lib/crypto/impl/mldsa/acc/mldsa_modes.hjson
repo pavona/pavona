@@ -1,0 +1,51 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+[
+  {
+    symbol: "_mldsa_keygen_44",
+    const_str: "Mldsa44Keygen",
+    comment: "ML-DSA-44 key generation",
+  },
+  {
+    symbol: "_mldsa_keygen_65",
+    const_str: "Mldsa65Keygen",
+    comment: "ML-DSA-65 key generation",
+  },
+  {
+    symbol: "_mldsa_keygen_87",
+    const_str: "Mldsa87Keygen",
+    comment: "ML-DSA-87 key generation",
+  },
+  {
+    symbol: "_mldsa_sign_44",
+    const_str: "Mldsa44Sign",
+    comment: "ML-DSA-44 signing",
+  },
+  {
+    symbol: "_mldsa_sign_65",
+    const_str: "Mldsa65Sign",
+    comment: "ML-DSA-65 signing",
+  },
+  {
+    symbol: "_mldsa_sign_87",
+    const_str: "Mldsa87Sign",
+    comment: "ML-DSA-87 signing",
+  },
+  {
+    symbol: "_mldsa_verify_44",
+    const_str: "Mldsa44Verify",
+    comment: "ML-DSA-44 verification",
+  },
+  {
+    symbol: "_mldsa_verify_65",
+    const_str: "Mldsa65Verify",
+    comment: "ML-DSA-65 verification",
+  },
+  {
+    symbol: "_mldsa_verify_87",
+    const_str: "Mldsa87Verify",
+    comment: "ML-DSA-87 verification",
+  },
+]

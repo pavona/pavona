@@ -3,8 +3,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_FIPS202_GLUE_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_FIPS202_GLUE_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_FIPS202_GLUE_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_FIPS202_GLUE_H_
 #include <stdint.h>
 
 #include "mldsa/src/common.h"
@@ -166,4 +166,4 @@ static MLD_INLINE void mld_sha3_512(uint8_t *output, const uint8_t *input,
   otcrypto_sha3_512(d, &md);
 }
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_FIPS202_GLUE_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_FIPS202_GLUE_H_

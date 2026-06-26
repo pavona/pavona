@@ -3,8 +3,8 @@
 //  Licensed under the Apache License, Version 2.0, see LICENSE for details.
 //  SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_CONFIG_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_CONFIG_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_MLDSA_NATIVE_CONFIG_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_MLDSA_NATIVE_CONFIG_H_
 
 /******************************************************************************
  * Name:        MLD_CONFIG_MULTILEVEL_BUILD
@@ -148,7 +148,7 @@
  *
  *****************************************************************************/
 #if !defined(__ASSEMBLER__)
-#include "sw/device/lib/crypto/impl/mldsa/mldsa_native_alloc.h"
+#include "sw/device/lib/crypto/impl/mldsa/mldsa-native/mldsa_native_alloc.h"
 
 #define MLD_CONFIG_CONTEXT_PARAMETER_TYPE mld_alloc_ctx_t *
 
@@ -213,4 +213,4 @@
  *****************************************************************************/
 #define MLD_CONFIG_REDUCE_RAM
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_CONFIG_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_MLDSA_MLDSA_NATIVE_MLDSA_NATIVE_CONFIG_H_

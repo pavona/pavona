@@ -383,14 +383,20 @@ cc_library(
     hdrs = [
         "//sw/device/lib/crypto/include:mldsa.h",
     ],
+    defines = select({
+        "//sw/device/lib/crypto/drivers:acc_has_pqc": ["ACC_HAS_PQC"],
+        "//conditions:default": [],
+    }),
     target_compatible_with = [PAVONA_CPU],
     deps = [
         ":integrity",
         ":keyblob",
         ":status",
-        "//sw/device/lib/crypto/impl/mldsa:mldsa_native",
         "//sw/device/lib/crypto/include:datatypes",
-    ],
+    ] + select({
+        "//sw/device/lib/crypto/drivers:acc_has_pqc": ["//sw/device/lib/crypto/impl/mldsa/acc:mldsa_acc"],
+        "//conditions:default": ["//sw/device/lib/crypto/impl/mldsa/mldsa-native:mldsa_native"],
+    }),
 )
 
 cc_library(

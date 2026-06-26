@@ -1173,6 +1173,7 @@ pavona_test(
     verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1198,6 +1199,7 @@ pavona_test(
     ),
     deps = [
         "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",

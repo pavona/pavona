@@ -11,13 +11,18 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/mldsa/mldsa_native_monobuild.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#ifdef ACC_HAS_PQC
+#include "sw/device/lib/crypto/impl/mldsa/acc/mldsa_acc.h"
+#else
+#include "sw/device/lib/crypto/impl/mldsa/mldsa-native/mldsa_native_monobuild.h"
+#endif
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('m', 'l', 'd')
 
 // Static assertions to verify buffer sizes match mldsa-native
+#ifndef ACC_HAS_PQC
 _Static_assert(kOtcryptoMldsa44WorkBufferKeypairWords * sizeof(uint32_t) ==
                    MLD_TOTAL_ALLOC_44_KEYPAIR,
                "ML-DSA-44 keypair work buffer size mismatch");
@@ -47,6 +52,7 @@ _Static_assert(kOtcryptoMldsa87WorkBufferSignWords * sizeof(uint32_t) ==
 _Static_assert(kOtcryptoMldsa87WorkBufferVerifyWords * sizeof(uint32_t) ==
                    MLD_TOTAL_ALLOC_87_VERIFY,
                "ML-DSA-87 verify work buffer size mismatch");
+#endif
 
 otcrypto_status_t otcrypto_mldsa44_keygen(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
@@ -95,6 +101,10 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
   memset(sk_share1, 0, kOtcryptoMldsa44SecretKeyBytes);
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_44_keygen(seed.data, public_key->key, sk_share0));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa44WorkBufferKeypairWords,
                          .offset_words = 0};
@@ -105,6 +115,7 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
     memset(sk_share0, 0, kOtcryptoMldsa44SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
   }
+#endif
 
   public_key->checksum = integrity_unblinded_checksum(public_key);
   secret_key->checksum = integrity_blinded_checksum(secret_key);
@@ -167,6 +178,12 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
   uint32_t *sk_share1;
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_44_sign(sk_share0, message.data, message.len,
+                                 context.data, context.len, rnd.data,
+                                 signature.data));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa44WorkBufferSignWords,
                          .offset_words = 0};
@@ -188,6 +205,7 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
   if (result != 0) {
     return OTCRYPTO_FATAL_ERR;
   }
+#endif
 
   return OTCRYPTO_OK;
 }
@@ -208,6 +226,9 @@ otcrypto_status_t otcrypto_mldsa44_verify(
   if (public_key->key_length != kOtcryptoMldsa44PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
+  if (signature.len != kOtcryptoMldsa44SignatureBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (sign_mode != kOtcryptoMldsaSignModeMldsa) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -218,6 +239,12 @@ otcrypto_status_t otcrypto_mldsa44_verify(
     return OTCRYPTO_BAD_ARGS;
   }
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_44_verify(public_key->key, message.data, message.len,
+                                   context.data, context.len, signature.data,
+                                   verification_result));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa44WorkBufferVerifyWords,
                          .offset_words = 0};
@@ -226,6 +253,7 @@ otcrypto_status_t otcrypto_mldsa44_verify(
       context.data, context.len, (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+#endif
 
   return OTCRYPTO_OK;
 }
@@ -279,6 +307,10 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
   memset(sk_share1, 0, kOtcryptoMldsa65SecretKeyBytes);
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_65_keygen(seed.data, public_key->key, sk_share0));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa65WorkBufferKeypairWords,
                          .offset_words = 0};
@@ -289,6 +321,7 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
     memset(sk_share0, 0, kOtcryptoMldsa65SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
   }
+#endif
 
   public_key->checksum = integrity_unblinded_checksum(public_key);
   secret_key->checksum = integrity_blinded_checksum(secret_key);
@@ -351,6 +384,12 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
   uint32_t *sk_share1;
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_65_sign(sk_share0, message.data, message.len,
+                                 context.data, context.len, rnd.data,
+                                 signature.data));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa65WorkBufferSignWords,
                          .offset_words = 0};
@@ -372,6 +411,7 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
   if (result != 0) {
     return OTCRYPTO_FATAL_ERR;
   }
+#endif
 
   return OTCRYPTO_OK;
 }
@@ -392,6 +432,9 @@ otcrypto_status_t otcrypto_mldsa65_verify(
   if (public_key->key_length != kOtcryptoMldsa65PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
+  if (signature.len != kOtcryptoMldsa65SignatureBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (sign_mode != kOtcryptoMldsaSignModeMldsa) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -402,6 +445,12 @@ otcrypto_status_t otcrypto_mldsa65_verify(
     return OTCRYPTO_BAD_ARGS;
   }
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_65_verify(public_key->key, message.data, message.len,
+                                   context.data, context.len, signature.data,
+                                   verification_result));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa65WorkBufferVerifyWords,
                          .offset_words = 0};
@@ -410,6 +459,7 @@ otcrypto_status_t otcrypto_mldsa65_verify(
       context.data, context.len, (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+#endif
 
   return OTCRYPTO_OK;
 }
@@ -463,6 +513,10 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
   memset(sk_share1, 0, kOtcryptoMldsa87SecretKeyBytes);
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_87_keygen(seed.data, public_key->key, sk_share0));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa87WorkBufferKeypairWords,
                          .offset_words = 0};
@@ -473,6 +527,7 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
     memset(sk_share0, 0, kOtcryptoMldsa87SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
   }
+#endif
 
   public_key->checksum = integrity_unblinded_checksum(public_key);
   secret_key->checksum = integrity_blinded_checksum(secret_key);
@@ -535,6 +590,12 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
   uint32_t *sk_share1;
   HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_87_sign(sk_share0, message.data, message.len,
+                                 context.data, context.len, rnd.data,
+                                 signature.data));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa87WorkBufferSignWords,
                          .offset_words = 0};
@@ -556,6 +617,7 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
   if (result != 0) {
     return OTCRYPTO_FATAL_ERR;
   }
+#endif
 
   return OTCRYPTO_OK;
 }
@@ -576,6 +638,9 @@ otcrypto_status_t otcrypto_mldsa87_verify(
   if (public_key->key_length != kOtcryptoMldsa87PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
+  if (signature.len != kOtcryptoMldsa87SignatureBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (sign_mode != kOtcryptoMldsaSignModeMldsa) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -586,6 +651,12 @@ otcrypto_status_t otcrypto_mldsa87_verify(
     return OTCRYPTO_BAD_ARGS;
   }
 
+#ifdef ACC_HAS_PQC
+  (void)work;
+  HARDENED_TRY(mldsa_acc_87_verify(public_key->key, message.data, message.len,
+                                   context.data, context.len, signature.data,
+                                   verification_result));
+#else
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa87WorkBufferVerifyWords,
                          .offset_words = 0};
@@ -594,6 +665,7 @@ otcrypto_status_t otcrypto_mldsa87_verify(
       context.data, context.len, (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+#endif
 
   return OTCRYPTO_OK;
 }
