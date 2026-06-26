@@ -1829,6 +1829,8 @@ module top_dragonfly #(
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[1]),
+      .output_valid_o(),
+      .input_ready_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .edn_o(edn0_edn_req[4]),
       .edn_i(edn0_edn_rsp[4]),
