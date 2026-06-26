@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,7 +31,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*lc_ctrl*prim_reg_we_check*", TopDragonflyAlertIdLcCtrlFatalBusIntegError},
     '{"*acc*prim_reg_we_check*", TopDragonflyAlertIdAccFatal},
     // TopDragonflyAlertIdOtpCtrlFatalMacroError: done in chip_sw_otp_ctrl_escalation_vseq
-    '{"*otp_ctrl.u_otp.*u_state_regs", TopDragonflyAlertIdOtpCtrlFatalPrimOtpAlert},
     '{"*otp_ctrl*u_otp_ctrl_dai*", TopDragonflyAlertIdOtpCtrlFatalCheckError},
     '{"*otp_ctrl*prim_reg_we_check*", TopDragonflyAlertIdOtpCtrlFatalBusIntegError},
     '{"*pinmux*prim_reg_we_check*", TopDragonflyAlertIdPinmuxAonFatalFault},

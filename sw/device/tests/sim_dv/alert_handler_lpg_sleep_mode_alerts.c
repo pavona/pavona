@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,7 +29,13 @@
 
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/pwrmgr_regs.h"
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top_egret/sw/autogen/top_egret.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
+#else
+#error Unsupported top
+#endif
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -228,10 +235,17 @@ static uint16_t alert_handler_num_fired_loc_alerts(void) {
 static void enter_low_power(bool deep_sleep) {
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
+#if defined(OPENTITAN_IS_EGRET)
   cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
                 kDifPwrmgrDomainOptionUsbClockInLowPower |
                 kDifPwrmgrDomainOptionUsbClockInActivePower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower)) |
+        (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
+#else
+#error Unsupported top
+#endif
 
   // Set the wake_up trigger as AON timer module.
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
@@ -252,11 +266,23 @@ void cleanup_wakeup_src(void) {
 }
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
+#if defined(OPENTITAN_IS_EGRET)
                                   .hart_id = kTopEgretPlicTargetIbex0};
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+                                  .hart_id = kTopDragonflyPlicTargetIbex0};
+#else
+#error Unsupported top
+#endif
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
+#if defined(OPENTITAN_IS_EGRET)
     .plic_pwrmgr_start_irq_id = kTopEgretPlicIrqIdPwrmgrAonWakeup,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+    .plic_pwrmgr_start_irq_id = kTopDragonflyPlicIrqIdPwrmgrAonWakeup,
+#else
+#error Unsupported top
+#endif
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
@@ -274,14 +300,21 @@ void init_test_components(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
+  LOG_INFO("Init Peripherals!");
   init_peripherals();
 
-  ret_sram_testutils_init();
-
   // Enable all the AON interrupts used in this test.
+#if defined(OPENTITAN_IS_EGRET)
   rv_plic_testutils_irq_range_enable(&plic, kTopEgretPlicTargetIbex0,
                                      kTopEgretPlicIrqIdPwrmgrAonWakeup,
                                      kTopEgretPlicIrqIdPwrmgrAonWakeup);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  rv_plic_testutils_irq_range_enable(&plic, kTopDragonflyPlicTargetIbex0,
+                                     kTopDragonflyPlicIrqIdPwrmgrAonWakeup,
+                                     kTopDragonflyPlicIrqIdPwrmgrAonWakeup);
+#else
+#error Unsupported top
+#endif
 
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
@@ -402,13 +435,27 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
  */
 void ottf_external_isr(uint32_t *exc_info) {
   dif_pwrmgr_irq_t irq_id;
+
+#if defined(OPENTITAN_IS_EGRET)
   top_egret_plic_peripheral_t peripheral;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  top_dragonfly_plic_peripheral_t peripheral;
+#else
+#error Unsupported top
+#endif
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that both the peripheral and the irq id is correct
+#if defined(OPENTITAN_IS_EGRET)
   CHECK(peripheral == kTopEgretPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  CHECK(peripheral == kTopDragonflyPlicPeripheralPwrmgrAon,
+        "IRQ peripheral: %d is incorrect", peripheral);
+#else
+#error Unsupported top
+#endif
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }
 
@@ -417,6 +464,8 @@ bool test_main(void) {
   dif_rstmgr_reset_info_bitfield_t rst_info;
   rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
+
+  ret_sram_testutils_init();
 
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
             rst_info == kDifRstmgrResetInfoEscalation,

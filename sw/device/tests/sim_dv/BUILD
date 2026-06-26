@@ -678,10 +678,13 @@ pavona_test(
     name = "alert_handler_lpg_sleep_mode_alerts_test",
     srcs = ["alert_handler_lpg_sleep_mode_alerts.c"],
     # The test requires to drive fatal alerts which is possible only in DV sim.
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+    },
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -699,7 +702,13 @@ pavona_test(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": ["//hw/top_egret/sw/autogen:top_egret"],
+            "dragonfly": ["//hw/top_dragonfly/sw/autogen:top_dragonfly"],
+        },
+        [],
+    ),
 )
 
 pavona_test(
