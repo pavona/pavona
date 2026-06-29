@@ -58,3 +58,4 @@ jobs:
       timeout-minutes: 2880 # 48 hours
       dashboard-private: "git@github.com:pavona/internal-dashboard.git"
       dashboard-public: "git@github.com:pavona/public-dashboard.git"
+      concurrent-jobs: 25
