@@ -6,9 +6,6 @@ class rv_timer_max_vseq extends rv_timer_random_vseq;
   `uvm_object_utils(rv_timer_max_vseq)
   `uvm_object_new
 
-  // Number of units for the counter to increment before producing an interrupt
-  rand int unsigned gap_from_max;
-
   // Prescaler force to max.
   constraint prescale_c {
     foreach (prescale[i]) {
@@ -25,10 +22,8 @@ class rv_timer_max_vseq extends rv_timer_random_vseq;
 
   // Timer expiry needs to occur within reasonable amount of time (up to 5 cycles).
   constraint timer_exp_c {
-    solve gap_from_max before timer_val;
-    gap_from_max < 5;
     foreach (en_harts[i]) {
-      timer_val[i] == (2**MTIME_WIDTH-1) - gap_from_max;
+      timer_val[i] == (2**MTIME_WIDTH-1);
       foreach (en_timers[j]) {
         // Set to max
         compare_val[i][j] == (2**MTIME_WIDTH-1);
