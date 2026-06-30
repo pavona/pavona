@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-// All the memory used by these utilities should be placed within the the
+// All the memory used by these utilities should be placed within the
 // owner portion of retention SRAM, as defined in retention_sram.h.
 
 /**
