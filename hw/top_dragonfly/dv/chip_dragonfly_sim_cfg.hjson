@@ -416,6 +416,8 @@
   // Run this a few times and take the worst case runtime, then  increase this
   // value by 20% and use the relationship that 5 minutes of runtime is roughly
   // 4 milliseconds of timeout.
+  //
+  // Dragonfly does not support a deep sleep mode.
   tests: [
     {
       // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
@@ -845,14 +847,6 @@
       run_timeout_mins: 120
     }
     {
-      name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
-      uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
-      sw_images: ["//sw/device/tests:pwrmgr_deep_sleep_all_reset_reqs_test:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=50_000_000"]
-      run_timeout_mins: 120
-    }
-    {
       name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
       uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
       sw_images: ["//sw/device/tests:pwrmgr_normal_sleep_all_reset_reqs_test:1"]
@@ -863,13 +857,6 @@
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
       uvm_test_seq: chip_sw_main_power_glitch_vseq
       sw_images: ["//sw/device/tests/sim_dv:pwrmgr_sleep_power_glitch_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+bypass_alert_ready_to_end_check=1"]
-    }
-    {
-      name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
-      uvm_test_seq: chip_sw_deep_power_glitch_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_power_glitch_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
     }
@@ -1053,20 +1040,6 @@
       // processing alerts accurately from both ends.
       run_opts: ["+en_scb=0", "+sw_test_timeout_ns=24000000"]
     }
-    // TODO(Pavona #43): Needs Dragonfly execution environment
-    // {
-    //   name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
-    //   uvm_test_seq: chip_sw_base_vseq
-    //   sw_images: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test:6:new_rules"]
-    //   en_run_modes: ["sw_test_mode_test_rom"]
-      // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
-      // cross-domain alert senders and receivers, the monitor from the chip level did not support
-      // processing alerts accurately from both ends.
-      // This test takes long due to the compile time configured reverse timeout. See test plan for
-      // more details.
-    //   run_opts: ["+en_scb=0", "+sw_test_timeout_ns=300_000_000"]
-    //   run_timeout_mins: 240
-    // }
     {
       name: chip_sw_alert_handler_lpg_sleep_mode_alerts
       uvm_test_seq: chip_sw_all_escalation_resets_vseq
@@ -1442,13 +1415,6 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
-      uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_all_wake_ups:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=18_000_000"]
-    }
-    {
       name: chip_sw_pwrmgr_random_sleep_all_wake_ups
       uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
       sw_images: ["//sw/device/tests/sim_dv:pwrmgr_random_sleep_all_wake_ups:1"]
@@ -1718,7 +1684,6 @@
               "chip_sw_aes_idle",
               // TODO: uncomment when these run with Xcelium.
               // "chip_sw_pwrmgr_main_power_glitch_reset",
-              // "chip_sw_pwrmgr_deep_sleep_power_glitch_reset",
               // "chip_sw_pwrmgr_sleep_power_glitch_reset",
               "chip_sw_csrng_kat_test",
               "rom_e2e_smoke"

@@ -795,17 +795,6 @@
               "chip_sw_csrng_edn_concurrency_reduced_freq"]
     }
     {
-      name: chip_sw_clkmgr_deep_sleep_frequency
-      desc: '''Verify the frequency measurement through deep sleep.
-
-            Enable clock cycle counts. Put the chip in deep sleep. Upon wakeup reset the
-            clock measurements should be off, but the recoverable fault status should not
-            be cleared.
-            '''
-      stage: V2
-      tests: ["chip_sw_ast_clk_outputs"]
-    }
-    {
       name: chip_sw_clkmgr_sleep_frequency
       desc: '''Verify the frequency measurement through shallow sleep.
 
@@ -899,31 +888,6 @@
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
     }
     {
-      name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
-      desc: '''Verify that the chip can go into deep sleep state and be woken up by ALL wake up
-            sources.
-
-            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
-            working correctly as expected. X-ref'ed with all individual IP tests. Similar to
-            chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
-            '''
-      stage: V2
-      tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
-    }
-    {
-      name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
-      desc: '''Verify that the chip can go into deep sleep state and be reset up by ALL reset req
-            sources.
-
-            This verifies ALL reset sources.
-            - 7 resets are generated randomly with deep sleeps
-            - POR (HW PAD) reset, SW POR, wdog timer reset, esc rst, SW req
-            - esc reset is followed by normal mode because it does not work with sleep mode
-            '''
-      stage: V2
-      tests: ["chip_sw_pwrmgr_deep_sleep_all_reset_reqs"]
-    }
-    {
       name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
       desc: '''Verify that the chip can go into normal sleep state and be reset up by ALL reset req
             sources.
@@ -991,23 +955,6 @@
             '''
       stage: V2
       tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
-    }
-    {
-      name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
-      desc: '''Verify the effect of a glitch in main power rail in deep sleep.
-
-            The vcmain_supp_i AST input is forced to drop right after putting the chip in deep
-            sleep. This triggers a MainPwr reset request, which is checked by reading retention
-            SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when the test
-            restarts.
-
-            Note: the glitch has to be sent in a very narrow window:
-            - If sent too early the chip won't have started to process deep sleep.
-            - If too late the hardware won't monitor main power okay so the glitch will have no
-              effect, and the test will timeout.
-            '''
-      stage: V2
-      tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
     }
     {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
@@ -1320,60 +1267,6 @@
       stage: V2
       tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
    }
-   {
-      name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
-      desc: '''Verify escalation reverse ping timer disabled in sleep mode.
-
-            Check that escalation receivers located inside always-on blocks do not auto-escalate
-            due to the reverse ping feature while the system is in deep sleep.
-
-            ## Reverse ping timeout calculation
-
-            The reverse ping timeout calculation is done using the following formula available in
-            `prim_esc_receiver`:
-
-            ```
-            4  * N_ESC_SEV * (2 * 2 * 2^PING_CNT_DW)
-            ```
-
-            `pwrmgr` is the only block consuming the `N_ESC_SEV` and `PING_CNT_DW` compile time
-            parameters:
-
-            ```
-            alert_handler_reg_pkg::N_ESC_SEV = 4
-            alert_handler_reg_pkg::PING_CNT_DW = 16
-            ```
-
-            The alert escalation responder inside `pwrmgr` is connected to the `io` clock,
-            yielding a target 24MHz frequency. The result expected timeout based on the above
-            parameters is thus:
-
-            ```
-            reverse_ping_timeout = 0.175s = (4 * 4 ( 2 * 2 * 2^16)) / 24e6
-            ```
-
-            ## Procedure
-
-            - On POR reset:
-              - Enable all alerts assigning them to ClassA.
-              - Enable all local alerts and assign to ClassB.
-              - Set escalation configuration to trigger before test wake up time.
-              - Set ping timeout to a time less than wake up time.
-              - Lock alert configuration and enable ping mechanism.
-              - Wait for polling counters to cycle through by busy polling on Ibex for
-                `reverse_ping_timeout >> 2` usec.
-              - Configure AON to wake up device at a later time, making sure it is greater than the
-                `reverse_ping_timeout` calculated in the previous section.
-              - Enter deep sleep.
-            - On wake up from sleep:
-              - Ensure reset status is low power exit. A `kDifRstmgrResetInfoEscalation` signals
-                that there was a local escalation and should result in test failure.
-              - Disable AON timer.
-              - Check there are no flagged local alerts.
-            '''
-      stage: V2
-      tests: ["chip_sw_alert_handler_reverse_ping_in_deep_sleep"]
-    }
 
     // LC_CTRL (pre-verified IP) integration tests:
     {
