@@ -1,8 +1,15 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import List
+import hjson
+from pathlib import Path
+import re
+
+
+REPO_TOP = Path(__file__).parents[2].resolve()
 
 
 class Name:
@@ -91,3 +98,82 @@ class Name:
 
     def remove_part(self, part_to_remove: str) -> "Name":
         return Name([p for p in self._parts if p != part_to_remove])
+
+
+##################
+# HJSON HANDLING #
+##################
+
+def cast_hjson_values(hjson_inp: dict | list | str | bool | int | float | None) -> object:
+    """Cast values from an Hjson file into their Python equivalents.
+
+    According to the Pavona style guide, any type of value may be put into
+    quotes for clarity in an Hjson file, but this will cause the Python hjson
+    library to cast all those values as strings. Instead, they should be
+    correctly typed.
+    """
+    if type(hjson_inp) in (bool, int, float) or hjson_inp is None:
+        return hjson_inp
+
+    # casting single value
+    if isinstance(hjson_inp, str):
+        # none
+        if hjson_inp == "null":
+            return None
+
+        # bool
+        if hjson_inp.lower() == "true":
+            return True
+        elif hjson_inp.lower() == "false":
+            return False
+
+        # float
+        if "." in hjson_inp:
+            try:
+                return float(hjson_inp)
+            except ValueError:
+                pass
+
+        # int (can be hex or binary)
+        digits = re.sub(r"[,_'\s]", "", hjson_inp)
+        if digits.isalnum():
+            non_decimal = re.match(r"^\d*?(?P<base_prefix>[xb])(?P<digits>[0-9a-fA-F]+)$", digits)
+            try:
+                if not non_decimal:
+                    base = 10
+                else:
+                    base_prefix, digits = non_decimal.groups()
+                    match base_prefix:
+                        case "x":
+                            base = 16
+                        case "b":
+                            base = 2
+                        case "_":
+                            raise ValueError("unknown base prefix specified")
+                return int(digits, base=base)
+            except ValueError:
+                pass
+
+        # str
+        return hjson_inp
+
+    # casting set of values (must recurse/cast each value individually too)
+    if isinstance(hjson_inp, list):
+        return [cast_hjson_values(item) for item in hjson_inp]
+    if isinstance(hjson_inp, dict):
+        return {cast_hjson_values(k): cast_hjson_values(v) for k, v in hjson_inp.items()}
+
+    raise TypeError(f"Item of unknown type {type(hjson_inp)} found in HJSON.")
+
+
+def import_hjson(file: Path | str, no_casting: bool = False) -> dict:
+    """Import an Hjson file into an OrderedDict.
+
+    Optionally, do not try to re-cast values from the Hjson (from
+    strings to other types).
+    """
+    file = Path(file).resolve()
+    raw_hjson = hjson.loads(file.read_text())
+    if no_casting:
+        return raw_hjson
+    return cast_hjson_values(raw_hjson)
