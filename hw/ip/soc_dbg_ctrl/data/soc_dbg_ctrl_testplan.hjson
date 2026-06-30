@@ -3,37 +3,57 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "soc_dbg_ctrl"
-  // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "soc_dbg_ctrl_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the soc_dbg_ctrl.
+            This test exercises the main policy datapath, the core-to-JTAG status mirror,
+            and the early-boot halt FSM end-to-end through both the core and JTAG register
+            interfaces.
 
-            **Stimulus**:
-            - TBD
+            Stimulus:
+            - Assert:
+              - `soc_dbg_state_i = SocDbgStProd`
+              - `lc_cpu_en = On`
+              - `boot_status.lc_done = 1'b1`
+            - Repeat the following steps a random number of times (5 to 20):
+              - Write a random `dbg_category_e` value to `DEBUG_POLICY_CATEGORY_SHADOWED`
+                over the core interface, then set `DEBUG_POLICY_VALID_SHADOWED` to true after a
+                random delay.
+              - Read the four JTAG trace registers in interleaved order with random inter-acess delays.
+              - Write a random `MuBi4` value to `DEBUG_POLICY_RELOCKED` and read the `relocked` field
+                over both interfaces.
+              - Write random 5-bit patterns to the core-side `STATUS` and read `JTAG_STATUS`.
+            - After the loop, randomly de-assert `halt_cpu_boot_i` or assert it and release via the
+              `JTAG_CONTROL.boot_continue` field after a random delay.
 
-            **Checks**:
-            - TBD
+            Checks:
+            - Each pair of core/JTAG trace readbacks must be identical to each other and match
+              the most recent write that should be honored by policy decode.
+            - `JTAG_STATUS` matches most recent `STATUS` write.
+            - `continue_cpu_boot_o.done` transition from False to True at the expected halt scenario.
+            - No alerts are raised.
             '''
       stage: V1
       tests: ["soc_dbg_ctrl_smoke"]
     }
-    {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      stage: V1
-      tests: []
-    }
+    // TODO: Include additional tests beyond V1
   ]
 
   covergroups: [
     {
-      name: soc_dbg_ctrl_feature_cg
-      desc: '''Describe the functionality covered by this covergroup.'''
+      name: soc_dbg_policy_cg
+      desc: '''
+            Covers every cell of the policy decode case statement and the associated
+            write-gating behavior. This would include `soc_dbg_state_i`, the broadcasted
+            `{category, valid, relocked}` output, the `dbg_category_e`, and all the
+            corresponding valid crosses between them.
+            '''
     }
+    // TODO: Include additional covergroups
   ]
 }
