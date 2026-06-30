@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,7 +29,13 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/alert_handler_regs.h"
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top_egret/sw/autogen/top_egret.h"
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
+#else
+#error Unsupported top
+#endif
 
 /*
  * Checks the result of getting an otp programming error, as when attempting
@@ -63,7 +70,11 @@ static dif_alert_handler_t alert_handler;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_rstmgr_t rstmgr;
 
+#if defined(OPENTITAN_IS_EGRET)
 static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static const uint32_t kPlicTarget = kTopDragonflyPlicTargetIbex0;
+#endif
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
 
@@ -130,7 +141,11 @@ static void lc_ctrl_fault_checker(bool enable, const char *ip_inst) {
   uint32_t mask = bitfield_field32_write(0, relevant_field, UINT32_MAX);
   uint32_t relevant_status = status & mask;
   uint32_t fatal_prog_error =
+#if defined(OPENTITAN_IS_EGRET)
       bitfield_bit32_write(0, kTopEgretAlertIdLcCtrlFatalProgError, true);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+      bitfield_bit32_write(0, kTopDragonflyAlertIdLcCtrlFatalProgError, true);
+#endif
   uint32_t expected_status = enable ? fatal_prog_error : 0;
   CHECK(relevant_status == expected_status,
         "For %s got codes 0x%x, expected 0x%x", ip_inst, relevant_status,
@@ -155,6 +170,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
+#if defined(OPENTITAN_IS_EGRET)
   top_egret_plic_peripheral_t peripheral = (top_egret_plic_peripheral_t)
       top_egret_plic_interrupt_for_peripheral[irq_id];
 
@@ -166,6 +182,20 @@ void ottf_external_isr(uint32_t *exc_info) {
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
   } else if (peripheral == kTopEgretPlicPeripheralAlertHandler) {
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  top_dragonfly_plic_peripheral_t peripheral = (top_dragonfly_plic_peripheral_t)
+      top_dragonfly_plic_interrupt_for_peripheral[irq_id];
+
+  if (peripheral == kTopDragonflyPlicPeripheralAonTimerAon) {
+    uint32_t irq =
+        (irq_id - (dif_rv_plic_irq_id_t)
+                      kTopDragonflyPlicIrqIdAonTimerAonWkupTimerExpired);
+
+    // We should not get aon timer interrupts since escalation suppresses them.
+    CHECK(false, "Unexpected aon timer interrupt %d", irq);
+  } else if (peripheral == kTopDragonflyPlicPeripheralAlertHandler) {
+#endif
+
     // Don't acknowledge the interrupt to alert_handler so it escalates.
     CHECK(fault_checker.function);
     CHECK(fault_checker.ip_inst);
@@ -176,8 +206,13 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   // Disable these interrupts from alert_handler so they don't keep happening
   // until NMI.
+#if defined(OPENTITAN_IS_EGRET)
   uint32_t irq =
       (irq_id - (dif_rv_plic_irq_id_t)kTopEgretPlicIrqIdAlertHandlerClassa);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  uint32_t irq =
+      (irq_id - (dif_rv_plic_irq_id_t)kTopDragonflyPlicIrqIdAlertHandlerClassa);
+#endif
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
                                                  kDifToggleDisabled));
 
@@ -229,6 +264,7 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
 
   // Check this gets the expected alert.
   bool is_cause = false;
+#if defined(OPENTITAN_IS_EGRET)
   CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
       &alert_handler, kTopEgretAlertIdLcCtrlFatalProgError, &is_cause));
   CHECK(is_cause);
@@ -236,6 +272,15 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
   // Acknowledge the cause, which doesn't affect escalation.
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
       &alert_handler, kTopEgretAlertIdLcCtrlFatalProgError));
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopDragonflyAlertIdLcCtrlFatalProgError, &is_cause));
+  CHECK(is_cause);
+
+  // Acknowledge the cause, which doesn't affect escalation.
+  CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+      &alert_handler, kTopDragonflyAlertIdLcCtrlFatalProgError));
+#endif
   LOG_INFO("NMI handler exiting");
 }
 
@@ -260,14 +305,22 @@ void check_alert_dump(void) {
   alert_handler_testutils_info_dump(&actual_info);
   // Check alert cause.
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+#if defined(OPENTITAN_IS_EGRET)
     if (i == kTopEgretAlertIdLcCtrlFatalProgError) {
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+    if (i == kTopDragonflyAlertIdLcCtrlFatalProgError) {
+#endif
       CHECK(actual_info.alert_cause[i], "Expected alert cause %d to be set", i);
     } else {
       // It is possible some alerts can trigger others; for example, some
       // lc_ctrl faults lead to otp_ctrl faults.
       if (actual_info.alert_cause[i]) {
         LOG_INFO("Unexpected alert cause %d, may be triggered by %d", i,
+#if defined(OPENTITAN_IS_EGRET)
                  kTopEgretAlertIdLcCtrlFatalProgError);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+                 kTopDragonflyAlertIdLcCtrlFatalProgError);
+#endif
       }
     }
   }
@@ -279,19 +332,10 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   // Initialize core and peripherals.
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
-
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kDtLcCtrl, &lc_ctrl));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
@@ -317,10 +361,17 @@ bool test_main(void) {
     LOG_INFO("Configuring alert handlers");
     // Configure the alert handler, LC controller fault checker and start
     // executing the test. Set the alert we care about to class A.
+#if defined(OPENTITAN_IS_EGRET)
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, kTopEgretAlertIdLcCtrlFatalProgError,
         kDifAlertHandlerClassA, /*enabled=*/kDifToggleEnabled,
         /*locked=*/kDifToggleEnabled));
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+    CHECK_DIF_OK(dif_alert_handler_configure_alert(
+        &alert_handler, kTopDragonflyAlertIdLcCtrlFatalProgError,
+        kDifAlertHandlerClassA, /*enabled=*/kDifToggleEnabled,
+        /*locked=*/kDifToggleEnabled));
+#endif
 
     // Configure class A alerts.
     CHECK_DIF_OK(dif_alert_handler_configure_class(
@@ -389,11 +440,21 @@ bool test_main(void) {
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);
 
+#if defined(OPENTITAN_IS_EGRET)
     CHECK(interrupt_count == 0,
           "Regular ISR should not run for "
           "kTopEgretAlertIdLcCtrlFatalProgError");
+
     CHECK(nmi_count == 0,
           "NMI should not run for kTopEgretAlertIdLcCtrlFatalProgError");
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+    CHECK(interrupt_count == 0,
+          "Regular ISR should not run for "
+          "kTopDragonflyAlertIdLcCtrlFatalProgError");
+
+    CHECK(nmi_count == 0,
+          "NMI should not run for kTopDragonflyAlertIdLcCtrlFatalProgError");
+#endif
 
     // Get the retention sram maintained reset counter.
     uint32_t reset_count;
@@ -407,8 +468,13 @@ bool test_main(void) {
 
     // Check that the alert handler cause is cleared after reset.
     bool is_cause = true;
+#if defined(OPENTITAN_IS_EGRET)
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, kTopEgretAlertIdLcCtrlFatalProgError, &is_cause));
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, kTopDragonflyAlertIdLcCtrlFatalProgError, &is_cause));
+#endif
     CHECK(!is_cause);
 
     // Check that the fault register is cleared after reset.
