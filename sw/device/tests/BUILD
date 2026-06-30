@@ -1052,6 +1052,7 @@ pavona_test(
     name = "clkmgr_reset_frequency_test",
     srcs = ["clkmgr_reset_frequency_test.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_CW340_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1063,19 +1064,26 @@ pavona_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt:clkmgr",
+        "//hw/top/dt:rstmgr",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:sensor_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:sensor_ctrl",
+                "//sw/device/lib/testing:sensor_ctrl_testutils",
+            ],
+        },
+        [],
+    ),
 )
 
 pavona_test(
