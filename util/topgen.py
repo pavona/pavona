@@ -625,18 +625,12 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
 
     generate_modules("clkmgr", single_instance=True, get_params=get_clkmgr_params)
     generate_modules("flash_ctrl", single_instance=True, get_params=get_flash_ctrl_params)
-    if not args.no_plic and \
-       not args.alert_handler_only:
-        generate_modules("rv_plic", single_instance=False, get_params=get_rv_plic_params)
-    if args.plic_only:
-        sys.exit()
+    generate_modules("rv_plic", single_instance=False, get_params=get_rv_plic_params)
 
     # Generate Alert Handler if there is an instance
     generate_modules("alert_handler",
                      single_instance=False,
                      get_params=get_alert_handler_params)
-    if args.alert_handler_only:
-        sys.exit()
 
     # Generate outgoing alerts
     generate_outgoing_alerts(topcfg, out_path)
@@ -772,21 +766,6 @@ def main():
         help=
         'If version stamping, the location of workspace version stamp file.')
 
-    # Generator options: 'no' series. Cannot combine with 'only' series.
-    parser.add_argument(
-        "--no-plic",
-        action="store_true",
-        help="If defined, topgen doesn't generate the interrupt controller RTLs."
-    )
-    # Generator options: 'only' series. cannot combined with 'no' series
-    parser.add_argument(
-        "--plic-only",
-        action="store_true",
-        help="If defined, the tool generates RV_PLIC RTL and Hjson only")
-    parser.add_argument(
-        "--alert-handler-only",
-        action="store_true",
-        help="If defined, the tool generates alert handler hjson only")
     parser.add_argument("--alias-files",
                         nargs="+",
                         type=Path,
@@ -798,12 +777,6 @@ def main():
         """)
 
     args = parser.parse_args()
-
-    # check combinations
-    if args.no_plic and (args.plic_only or args.alert_handler_only):
-        log.error(
-            "'no' series options cannot be used with 'only' series options")
-        raise SystemExit(sys.exc_info()[1])
 
     # Don't print warnings when querying the list of blocks.
     log_level = (log.DEBUG if args.verbose else None)
