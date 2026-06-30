@@ -64,6 +64,7 @@ Signal                   | Direction        | Type                      | Descri
 The LFSR ping timer needs to be periodically reseeded.
 Therefore, the alert handler is connected to the entropy distribution network via the `edn_i/o` signals.
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ALERT.OBSERVE -->
 <%text>#### Alert Channels</%text>
 
 For each alert, there is a pair of input and two pairs of output signals.
@@ -71,13 +72,16 @@ These signals are connected to a differential sender module within the source, a
 Both of these modules are described in more detail in the following section.
 These signal pairs carry differentially encoded messages that enable two types of signaling: a native alert and a ping/response test of the alert mechanism.
 The latter is to ensure that all alert senders are always active and have not been the target of an attack.
+<!-- END-FEATURE: ALERT_HANDLER.ALERT.OBSERVE -->
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ALERT.ESCALATE -->
 <%text>#### Escalation Channels</%text>
 
 For each escalation action in the system, there is a pair of input and a pair of output signals, encapsulated in the `esc_rx_t` and `esc_tx_t` types.
 These signals are connected to a differential sender module within the alert handler, and a differential receiver module within the module that performs a particular escalation action (for example the reset manager or life cycle controllers).
 The signal pairs carry differentially encoded messages that enable two types of signaling: a native escalation and a ping/response test of the escalation mechanism.
 The latter is to ensure that all escalation receivers are always active and have not been the target of an attack.
+<!-- END-FEATURE: ALERT_HANDLER.ALERT.ESCALATE -->
 
 <%text>#### Low-power Indication Signals</%text>
 
@@ -85,6 +89,7 @@ The `lpg_cg_en_i` and `lpg_rst_en_i` are two arrays with multibit indication sig
 These indication signals convey whether a specific group of alert senders are either clock gated or in reset.
 As explained in [more detail below](#low-power-management-of-alert-channels), this information is used to temporarily halt the ping timer mechanism on channels that are in a low-power state in order to prevent false positives.
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.CRASH_DUMP -->
 <%text>#### Crashdump Output</%text>
 
 The `crashdump_o` struct outputs a snapshot of CSRs and alert handler state bits that can be read by hardware debugging circuitry:
@@ -108,6 +113,7 @@ Note that the crashdump state is continuously output via `crashdump_o` until the
 After that, the `crashdump_o` is held constant until all classes that have escalated are cleared.
 This is done so that it is possible to capture the true alert cause before spurious alert events start to pop up due to escalation countermeasures with excessive side effects (like life cycle scrapping for example).
 If classes that have escalated are not configured as clearable, then it is not possible to re-arm the crashdump latching mechanism at runtime and the alert handler has to be reset.
+<!-- END-FEATURE: ALERT_HANDLER.CRASH_DUMP -->
 
 <%text>## Design Details</%text>
 
@@ -340,6 +346,7 @@ All of the `integ_fail` signals are OR'ed together to create one alert for class
 The ping responses are fed to the LFSR timer, which determines whether a ping has correctly completed within the timeout window or not.
 
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ALERT.INTERRUPT -->
 <%text>### Alert Classification and Interrupts</%text>
 
 Each of the incoming and local alert signals can be classified generically to one of four classes, or disabled for no classification at all.
@@ -358,8 +365,11 @@ This feature is explained in more detail in the next subsection about escalation
 
 Note that an interrupt always fires once an alert has been registered in the corresponding class.
 Interrupts are not dependent on escalation mechanisms like alert accumulation or timeout as described in the next subsection.
+<!-- END-FEATURE: ALERT_HANDLER.ALERT.INTERRUPT -->
 
-
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ALERT.ESCALATE -->
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ESCALATION.COUNT -->
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ESCALATION.TIMEOUT -->
 <%text>### Escalation Mechanisms</%text>
 
 There are two mechanisms per class that can trigger the corresponding escalation
@@ -391,8 +401,10 @@ protocol:
 
 Technically, the interrupt timeout feature (2. above) is implemented using the same counter used to time the escalation phases.
 This is possible since escalation phases or interrupt timeout periods are non-overlapping (escalation always takes precedence should it be triggered).
+<!-- END-FEATURE: ALERT_HANDLER.ESCALATION.TIMEOUT -->
+<!-- END-FEATURE: ALERT_HANDLER.ESCALATION.COUNT -->
 
-
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ESCALATION.PHASES -->
 <%text>### Programmable Escalation Protocol</%text>
 
 There are four output escalation signals, 0, 1, 2, and 3.
@@ -501,6 +513,7 @@ The next wave shows a case where an interrupt remains unhandled and hence the in
 It should be noted here that the differential escalation signaling protocol distinguishes 'true' escalation conditions from mere pings by encoding them as pulses that are N + 1 cycles long.
 This is reflected in the two wave diagrams above.
 Refer to the subsequent section on escalation signaling for more details.
+<!-- END-FEATURE: ALERT_HANDLER.ESCALATION.PHASES -->
 
 <%text>### Escalation Signaling</%text>
 
@@ -586,7 +599,7 @@ Some signal integrity failure cases are illustrated in the wave diagram below:
 }
 ```
 
-
+<!-- BEGIN-FEATURE: ALERT_HANDLER.PING_TIMER -->
 <%text>### Ping Testing of the Escalation Signals</%text>
 
 
@@ -650,6 +663,7 @@ This ensures that we are seeing the same clock frequency, and the mechanism is p
 
 3. the maximum cycle count between subsequent pings on the same escalation line is bounded, even though the wait counts are randomized.
 This allows us to compute a safe and fixed timeout threshold based on design constants.
+<!-- END-FEATURE: ALERT_HANDLER.ALERT.ESCALATE -->
 
 
 <%text>### Low-power Management of Alert Channels</%text>
@@ -658,6 +672,8 @@ Due to the various clock and reset domains in a system, the alert handler ping m
 This is needed to ensure that no false alarms are produced by the ping mechanism when an alert channel (sender / receiver pair) does not respond due to the sender being either in reset or clock gated.
 
 Since the FSMs associated with an alert channel may end up in an inconsistent state when the sender is reset or gated while an asynchronous event handshake is in progress, this logic also needs to be able to re-initialize affected alert channels whenever the channels comes back from reset / clock gated state.
+<!-- END-FEATURE: ALERT_HANDLER.PING_TIMER -->
+
 
 <%text>#### Assumptions</%text>
 
@@ -728,12 +744,14 @@ Since the sender FSMs fall back into the `Idle` state once the signal integrity 
 
 <%text>#### Implementation Aspects</%text>
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.PING_TIMER -->
 <%text>##### Ping Mechanism Bypass</%text>
 
 Note that the ping bypass mechanism is to be implemented in a way that pings are only ack'ed immediately if 1) the FSM is in the `InitReq` state, and 2) the `init_trig` signal is still asserted.
 
 This allows to subject the initialization process of each alert channel to the ping mechanism for channels that are recovering from a reset or clock gated cycle on the sender side.
 I.e., alert channels that get stuck during the initialization process can be detected by the ping mechanism since ping requests are not immediately ack'ed anymore once `init_trig` is deasserted.
+<!-- END-FEATURE: ALERT_HANDLER.PING_TIMER -->
 
 <%text>##### FSM Encoding</%text>
 

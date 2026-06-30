@@ -15,6 +15,7 @@ In order to enable the RACL ports, the parameter `EnableRacl` should be set to 1
 
 ![AON Timer Block Diagram](../doc/aon_timer_block_diagram.svg)
 
+<!-- BEGIN-FEATURE: AON_TIMER.WAKEUP.WAKEUP_CONFIG -->
 ## Design Details
 
 The always-on timer will run on a ~200KHz clock.
@@ -32,3 +33,4 @@ Bits[63:32] in registers [`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKU
 Bits[31:0] in registers [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) and [`WKUP_THOLD_HI`](registers.md#wkup_thold_lo).
 It is not possible to do a single atomic read or write of the 64-bit values.
 The programmer's guide suggests some ways to access the wakeup count and threshold to avoid issues from race conditions caused by this.
+<!-- END-FEATURE: AON_TIMER.WAKEUP.WAKEUP_CONFIG -->

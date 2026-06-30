@@ -6,6 +6,7 @@
 
 ## Design Details
 
+<!-- BEGIN-FEATURE: ACC.ISA -->
 ### Configurations
 
 The ACC processor core supports two configurations: a classical mode supporting algorithms such as ECDSA, ECDH, RSA, alongside a post-quantum enabled mode that supports the classical operations in addition to ML-KEM and ML-DSA across all parameter sets.
@@ -82,6 +83,9 @@ It does not speculate and will only prefetch where the next instruction address 
 This results in a stall cycle for all conditional branches and jumps as the result is neither predicted nor known ahead of time.
 Instruction bits held in the prefetch buffer are unscrambled but use the integrity protection described in [Data Integrity Protection](#data-integrity-protection).
 
+<!-- END-FEATURE: ACC.ISA -->
+
+<!-- BEGIN-FEATURE: ACC.RANDOM -->
 ### Random Numbers
 
 ACC is connected to the [Entropy Distribution Network (EDN)](../../edn/README.md) which can provide random numbers via the `RND` and `URND` CSRs and WSRs.
@@ -115,6 +119,7 @@ The PRNG state is advanced every cycle when ACC is running.
 The PRNG has a long cycle length but has a fixed point: the sequence of numbers will get stuck if the state ever happens to become zero.
 This will never happen in normal operation.
 If a fault causes the state to become zero, ACC raises a `BAD_INTERNAL_STATE` fatal error.
+<!-- END-FEATURE: ACC.RANDOM -->
 
 ### Operational States
 
@@ -359,6 +364,7 @@ This works analogously, but is in the same clock domain as `clk_otp_i`.
 
 TODO: Specify interactions between `idle_o`, `idle_otp_o` and the clock manager fully.
 
+<!-- BEGIN-FEATURE: ACC.MEM_SCRAMBLE -->
 ### Data Integrity Protection
 
 ACC stores and operates on data (state) in its dedicated memories, register files, and internal registers.
@@ -393,6 +399,7 @@ The scrambling mechanism is described in detail in the [section "Scrambling Prim
 
 When ACC comes out of reset, its memories have default scrambling keys.
 The host processor can request new keys for each memory by issuing a [secure wipe of DMEM](#data-memory-dmem-secure-wipe) and a [secure wipe of IMEM](#instruction-memory-imem-secure-wipe).
+<!-- END-FEATURE: ACC.MEM_SCRAMBLE -->
 
 #### Actions on Integrity Errors
 
@@ -488,6 +495,7 @@ To use this functionality, the host processor should set [`LOAD_CHECKSUM`](regis
 Next, it should write the program to be loaded to ACC's IMEM and DMEM over the bus.
 Finally, it should read back the value of [`LOAD_CHECKSUM`](registers.md#load_checksum) and compare it with an expected value.
 
+<!-- BEGIN-FEATURE: ACC.SECUREWIPE -->
 ### Secure Wipe
 
 Applications running on ACC may store sensitive data in the internal registers or the memory.
@@ -555,6 +563,7 @@ In order to prevent mismatches between ISS and RTL, software needs to initialize
 Loop and call stack pointers are reset.
 
 Host software cannot explicitly trigger an internal secure wipe; it is performed automatically after reset and at the end of an `EXECUTE` operation.
+<!-- END-FEATURE: ACC.SECUREWIPE -->
 
 ### KMAC Application Interface
 
