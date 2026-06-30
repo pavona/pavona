@@ -60,6 +60,40 @@ modulus_over_2:
   .word 0x06810681
   .word 0x06810681
 
+/* ((Q + 1) / 2) * (2^16) % 3329. */
+.globl modulus_over_2_m2_16
+modulus_over_2_m2_16:
+  .word 0x0af70af7
+  .word 0x0af70af7
+  .word 0x0af70af7
+  .word 0x0af70af7
+  .word 0x0af70af7
+  .word 0x0af70af7
+  .word 0x0af70af7
+  .word 0x0af70af7
+
+.globl modulus_times_19
+modulus_times_19:
+  .word 0xf713f713
+  .word 0xf713f713
+  .word 0xf713f713
+  .word 0xf713f713
+  .word 0xf713f713
+  .word 0xf713f713
+  .word 0xf713f713
+  .word 0xf713f713
+
+.globl mont
+mont:
+  .word 0x08ed08ed
+  .word 0x08ed08ed
+  .word 0x08ed08ed
+  .word 0x08ed08ed
+  .word 0x08ed08ed
+  .word 0x08ed08ed
+  .word 0x08ed08ed
+  .word 0x08ed08ed
+
 .globl const_0x0fff
 const_0x0fff:
   .word 0x0fff0fff
@@ -103,6 +137,39 @@ const_tomont:
   .word 0x05490549
   .word 0x05490549
   .word 0x05490549
+
+.globl const_m_dv
+const_m_dv:
+  .word 0x13afb768
+  .word 0x13afb768
+  .word 0x13afb768
+  .word 0x13afb768
+  .word 0x13afb768
+  .word 0x13afb768
+  .word 0x13afb768
+  .word 0x13afb768
+
+.globl const_m_du
+const_m_du:
+  .word 0x680bb055
+  .word 0x0013afb7
+  .word 0x680bb055
+  .word 0x0013afb7
+  .word 0x680bb055
+  .word 0x0013afb7
+  .word 0x680bb055
+  .word 0x0013afb7
+
+.globl const_1664
+const_1664:
+  .word 0x00000680
+  .word 0x00000000
+  .word 0x00000680
+  .word 0x00000000
+  .word 0x00000680
+  .word 0x00000000
+  .word 0x00000680
+  .word 0x00000000
 
 .globl cbd2_const
 cbd2_const:

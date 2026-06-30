@@ -9,6 +9,25 @@ load("//rules:acc.bzl", "acc_binary", "acc_library")
 package(default_visibility = ["//visibility:public"])
 
 acc_library(
+    name = "gadgets",
+    srcs = [
+        "gadgets.s",
+    ],
+)
+
+# gadgets.s with poly_rej_samp reading its randomness from DMEM instead of
+# URND, so poly_rej_samp can be tested deterministically.
+acc_library(
+    name = "gadgets_rej_sample_test",
+    srcs = [
+        "gadgets.s",
+    ],
+    copts = [
+        "-DMLKEM_REJ_SAMPLE_TEST",
+    ],
+)
+
+acc_library(
     name = "ntt",
     srcs = [
         "ntt.s",

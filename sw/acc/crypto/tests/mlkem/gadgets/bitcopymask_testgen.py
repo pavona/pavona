@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+import argparse
+import random
+from typing import TextIO, Optional
+
+from shared.testgen import write_test_data, write_test_exp, write_test_dexp
+
+N = 256
+NSHARES = 2
+
+
+def gen_bitcopymask_test(
+        seed: Optional[int],
+        data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
+    # Generate random operands.
+    if seed is not None:
+        random.seed(seed)
+
+    nshares = NSHARES
+
+    r = 0
+    x_bytes = bytes()
+    for _ in range(nshares):
+        bit = random.getrandbits(1)
+        r ^= bit
+        x_bytes += int.to_bytes(bit, byteorder="little", length=32)
+
+    # Generate expected result.
+    r *= 3329
+    r_bytes = bytes()
+    for i in range(12):
+        ri = (r >> i) & 1
+        r_bytes += int.to_bytes(ri, byteorder="little", length=32)
+
+    rb_bytes = int.to_bytes(0, byteorder="little", length=32 * 12 * nshares)
+
+    # Write input values.
+    inputs = {'xb': x_bytes, 'rb': rb_bytes}
+    write_test_data(inputs, data_file)
+
+    # Write expected register values (none).
+    write_test_exp({}, exp_file)
+
+    # Write expected dmem values.
+    write_test_dexp({'r': r_bytes}, dexp_file)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--seed',
+                        type=int,
+                        required=False,
+                        help=('Seed value for pseudorandomness.'))
+    parser.add_argument('data',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for input DMEM values.'))
+    parser.add_argument('exp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected register values.'))
+    parser.add_argument('dexp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected DMEM values.'))
+    args = parser.parse_args()
+
+    gen_bitcopymask_test(
+        args.seed, args.data, args.exp, args.dexp)
