@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // One chip level interface to rule them all, and in the IOs, bind them...
@@ -844,6 +845,37 @@ interface chip_if;
     return path;
   endfunction
 
+  task static create_illegal_lc_request_for_otp();
+    forever begin
+      if (signal_probe_otp_ctrl_lc_program_req(SignalProbeSample)) begin
+        lc_ctrl_state_pkg::lc_state_e state;
+        `uvm_info("create_illegal_lc_request_for_otp", "Got program request", UVM_MEDIUM)
+        state = lc_ctrl_state_pkg::lc_state_e'(0);
+        `uvm_info("create_illegal_lc_request_for_otp", "Error injected", UVM_MEDIUM)
+        signal_probe_otp_ctrl_lc_program_state(SignalProbeForce, state);
+        break;
+      end
+      @(negedge `OTP_CTRL_HIER.clk_i);
+    end
+  endtask
+
+  // A custom signal probe function for LC program request to OTP.
+  // See dv_macros.svh for a signal probe function description, but they only deal with
+  // vectors: it would be nice to extend them to deal with arbitrary types, or at least
+  // support enums.
+  function static void signal_probe_otp_ctrl_lc_program_state (
+      dv_utils_pkg::signal_probe_e kind, lc_ctrl_state_pkg::lc_state_e state);
+`ifndef GATE_LEVEL
+    case (kind)
+      dv_utils_pkg::SignalProbeSample: ;
+      dv_utils_pkg::SignalProbeForce: force `OTP_CTRL_HIER.lc_otp_program_i.state = state;
+      dv_utils_pkg::SignalProbeRelease: release `OTP_CTRL_HIER.lc_otp_program_i.state;
+      default:
+        `uvm_fatal("signal_probe_otp_ctrl_lc_program_state", $sformatf("Bad value: %0d", kind))
+    endcase
+`endif
+  endfunction
+
   // Disable SVAs in certain hierarchies specific to tests.
   bit chip_padctrl_attributes_test_sva_disable;
   bit chip_sw_sleep_pin_mio_dio_val_sva_disable;
@@ -858,6 +890,15 @@ interface chip_if;
   // Signal probe function for LC program error signal in OTP ctrl.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_ctrl_lc_err_o,
       `OTP_CTRL_HIER.u_otp_ctrl_lci.lc_err_o, 1)
+
+  // Signal probe function for LC program request to OTP ctrl.
+`ifdef GATE_LEVEL
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_ctrl_lc_program_req,
+      `OTP_CTRL_HIER.lc_otp_program_i_req, 1)
+`else
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_ctrl_lc_program_req,
+      `OTP_CTRL_HIER.lc_otp_program_i.req, 1)
+`endif
 
   // Signal probe function for wait cycle mask in alert handler.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_alert_handler_ping_timer_wait_cyc_mask_i,

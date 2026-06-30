@@ -732,9 +732,12 @@ pavona_test(
 pavona_test(
     name = "lc_ctrl_program_error",
     srcs = ["lc_ctrl_program_error.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+    },
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -756,7 +759,13 @@ pavona_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": ["//hw/top_egret/sw/autogen:top_egret"],
+            "dragonfly": ["//hw/top_dragonfly/sw/autogen:top_dragonfly"],
+        },
+        [],
+    ),
 )
 
 pavona_test(
