@@ -494,6 +494,10 @@ def _get_iflow(program: ACCProgram, graph: ControlGraph, start_pc: int,
                 edges = [e for e in edges if e.pc == dest]
             else:
                 edges = [e for e in edges if e.pc != dest]
+            # Edge case: a constant-time select arm ending in `beq x0, x0,
+            # <next>` makes the taken target equal the fall-through, producing
+            # two edges to the same PC; dedupe them.
+            edges = list({e.pc: e for e in edges}.values())
             assert len(edges) == 1
 
             # update used_constants to reflect that we read the branch constants
@@ -614,6 +618,9 @@ def _get_iflow(program: ACCProgram, graph: ControlGraph, start_pc: int,
 
     # Unify adjacent nodes in control dependencies.
     control_deps = simplify_control_deps(control_deps)
+
+    # The used-constants cache key must hold only registers known at start_pc.
+    used_constants = set(n for n in used_constants if n in start_constants)
 
     # Update the cache and return
     used_constants = _filter_constants(used_constants, start_constants)
