@@ -18,21 +18,30 @@ class delay_seq extends dv_base_seq #(
     .CFG_T       (clk_rst_agent_cfg),
     .SEQUENCER_T (delay_sequencer)
   );
-  `uvm_object_utils(delay_seq)
 
+  rand int         delay_time_steps;
+
+  constraint delay_steps_c {
+    delay_time_steps inside {[100:500]};
+  }
+  `uvm_object_utils(delay_seq)
   `uvm_object_new
 
   virtual task body();
     clk_rst_item  item;
+    clk_rst_item  rsp;
 
     `uvm_info (get_name(), "Starting delay_sequence::body()", UVM_LOW)
 
-    item           = clk_rst_item::type_id::create("delay_seq:item");
-    item.item_type = clk_rst_item::DELAY;
-    `DV_CHECK_RANDOMIZE_FATAL(item)
+    item                  = clk_rst_item::type_id::create("item");
+    item.item_type        = clk_rst_item::DELAY;
+    item.delay_time_steps = delay_time_steps;
 
     start_item(item);
-    finish_item(item);
+    finish_item(item); // Returns when driver has called item_done() as the delay count has started
+    get_response(rsp); // returns after driver calls put_response() when delay count has ended
+
+    `uvm_info (get_name(), "Completed - body()", UVM_LOW)
   endtask
 
 endclass

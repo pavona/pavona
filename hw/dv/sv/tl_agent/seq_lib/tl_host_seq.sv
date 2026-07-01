@@ -31,9 +31,11 @@ class tl_host_seq #(type REQ_T = tl_seq_item) extends tl_host_base_seq #(REQ_T);
   }
 
   virtual task body();
+    `uvm_info(`gfn, "Starting tl_host_seq::body().....", UVM_HIGH)
     set_response_queue_depth(-1);
     fork
       begin : wait_response_thread
+        `uvm_info(`gfn, "wait_response_thread......", UVM_HIGH)
         for (int i = 0; i < req_cnt; i++) begin
           REQ req;
           bit found_req;
@@ -55,9 +57,10 @@ class tl_host_seq #(type REQ_T = tl_seq_item) extends tl_host_base_seq #(REQ_T);
                                        i, rsp.convert2string()))
           end
         end // for
+        `uvm_info(`gfn, "....Completed wait_response_thread", UVM_HIGH)
       end : wait_response_thread
       begin : request_thread
-        `uvm_info(`gfn, $sformatf("Start sending %0d host requests", req_cnt), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Start sending %0d host requests......", req_cnt), UVM_HIGH)
         for (int i = 0; i < req_cnt; i++) begin
           req = REQ::type_id::create("req");
           pre_start_item(req);
@@ -70,9 +73,10 @@ class tl_host_seq #(type REQ_T = tl_seq_item) extends tl_host_base_seq #(REQ_T);
           `uvm_info(`gfn, $sformatf("Sent req[%0d] : %0s",
                                      i, req.convert2string()), UVM_HIGH)
         end
+        `uvm_info(`gfn, $sformatf("......Finished sending %0d host requests", req_cnt), UVM_HIGH)
       end : request_thread
     join
-    `uvm_info(`gfn, $sformatf("Finished sending %0d host requests", req_cnt), UVM_HIGH)
+    `uvm_info(`gfn, "....Completed tl_host_seq::body()", UVM_HIGH)
   endtask
 
   // Invoked after creating the req and before invoking start_item(req). Suitable for inserting
