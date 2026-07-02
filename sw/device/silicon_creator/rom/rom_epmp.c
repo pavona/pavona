@@ -45,40 +45,11 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   const epmp_region_t mmio = {
       .start = TOP_EGRET_MMIO_BASE_ADDR,
       .end = TOP_EGRET_MMIO_BASE_ADDR + TOP_EGRET_MMIO_SIZE_BYTES};
-  const epmp_region_t debug_rom = {
-      .start = TOP_EGRET_RV_DM_MEM_BASE_ADDR,
-      .end = TOP_EGRET_RV_DM_MEM_BASE_ADDR + TOP_EGRET_RV_DM_MEM_SIZE_BYTES};
   const epmp_region_t stack_guard = {.start = (uintptr_t)_stack_start,
                                      .end = (uintptr_t)_stack_start + 4};
   const epmp_region_t ram = {.start = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
                              .end = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
                                     TOP_EGRET_SRAM_CTRL_MAIN_RAM_SIZE_BYTES};
-
-  epmp_perm_t debug_rom_access = kEpmpPermLockedNoAccess;
-  switch (launder32(lc_state)) {
-    case kLcStateTest:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTest);
-      debug_rom_access = kEpmpPermLockedReadWriteExecute;
-      break;
-    case kLcStateDev:
-      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      debug_rom_access = kEpmpPermLockedReadWriteExecute;
-      break;
-    case kLcStateProd:
-      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      debug_rom_access = kEpmpPermLockedNoAccess;
-      break;
-    case kLcStateProdEnd:
-      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      debug_rom_access = kEpmpPermLockedNoAccess;
-      break;
-    case kLcStateRma:
-      HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      debug_rom_access = kEpmpPermLockedReadWriteExecute;
-      break;
-    default:
-      HARDENED_TRAP();
-  }
 
   // Initialize in-memory copy of ePMP register state.
   //
@@ -90,7 +61,6 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   epmp_state_configure_napot(2, rom, kEpmpPermLockedReadOnly);
   epmp_state_configure_napot(5, eflash, kEpmpPermLockedReadOnly);
   epmp_state_configure_tor(11, mmio, kEpmpPermLockedReadWrite);
-  epmp_state_configure_napot(13, debug_rom, debug_rom_access);
   epmp_state_configure_na4(14, stack_guard, kEpmpPermLockedNoAccess);
   epmp_state_configure_napot(15, ram, kEpmpPermLockedReadWrite);
   epmp_state.mseccfg = EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB;
@@ -139,48 +109,4 @@ void rom_epmp_unlock_rom_ext_r(epmp_region_t region) {
   CSR_CLEAR_BITS(CSR_REG_PMPCFG1, 0xff << 16);
   CSR_SET_BITS(CSR_REG_PMPCFG1,
                ((kEpmpModeNapot | kEpmpPermLockedReadOnly) << 16));
-}
-
-void rom_epmp_config_debug_rom(lifecycle_state_t lc_state) {
-  const uint32_t pmpaddr = (TOP_EGRET_RV_DM_MEM_BASE_ADDR >> 2) |
-                           ((TOP_EGRET_RV_DM_MEM_SIZE_BYTES - 1) >> 3);
-  // Update the hardware configuration (CSRs).
-  //
-  // Entry is hardcoded as 13. Make sure to modify hardcoded values if changing
-  // kEntry.
-  //
-  // The `pmp13cfg` configuration is the second field in `pmpcfg3`.
-  //
-  //            32          24          16           8           0
-  //             +------------+------------+------------+------------+
-  // `pmpcfg3` = | `pmp15cfg` | `pmp14cfg` | `pmp13cfg` | `pmp12cfg` |
-  //             +------------+------------+------------+------------+
-  CSR_WRITE(CSR_REG_PMPADDR13, pmpaddr);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG3, 0xff00);
-  uint32_t pmpcfg = 0;
-  switch (launder32(lc_state)) {
-    case kLcStateTest:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTest);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 8;
-      break;
-    case kLcStateDev:
-      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 8;
-      break;
-    case kLcStateProd:
-      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedNoAccess) << 8;
-      break;
-    case kLcStateProdEnd:
-      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedNoAccess) << 8;
-      break;
-    case kLcStateRma:
-      HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 8;
-      break;
-    default:
-      HARDENED_TRAP();
-  }
-  CSR_SET_BITS(CSR_REG_PMPCFG3, pmpcfg);
 }

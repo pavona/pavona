@@ -171,6 +171,14 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
             range: _
         }
     ));
+    assert!(matches!(
+        epmp.entry[13],
+        EpmpEntry {
+            cfg: _,
+            kind: EpmpRegionKind::Off,
+            range: _
+        }
+    ));
 
     // Epmp entries for ROM: .text, all of ROM, peripheral address space.
     assert!(matches!(
@@ -233,46 +241,6 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
             range: EpmpAddressRange(0x2000_0000, 0x2010_0000)
         }
     ));
-    // Debug: only enabled for Test, Dev and RMA states:
-    match lc_state {
-        DifLcCtrlState::TestUnlocked0
-        | DifLcCtrlState::TestUnlocked1
-        | DifLcCtrlState::TestUnlocked2
-        | DifLcCtrlState::TestUnlocked3
-        | DifLcCtrlState::TestUnlocked4
-        | DifLcCtrlState::TestUnlocked5
-        | DifLcCtrlState::TestUnlocked6
-        | DifLcCtrlState::TestUnlocked7
-        | DifLcCtrlState::Dev
-        | DifLcCtrlState::Rma => {
-            log::info!(
-                "Checking that the debug memory region is enabled in state {:#x}",
-                lc_state
-            );
-            assert!(matches!(
-                epmp.entry[13],
-                EpmpEntry {
-                    cfg: EPMP_CFG_LRWX,
-                    kind: EpmpRegionKind::Napot,
-                    range: EpmpAddressRange(0x10000, 0x11000)
-                }
-            ));
-        }
-        _ => {
-            log::info!(
-                "Checking that the debug memory region is disabled in state {:#x}",
-                lc_state
-            );
-            assert!(matches!(
-                epmp.entry[13],
-                EpmpEntry {
-                    cfg: EPMP_CFG_LOCKED_NONE,
-                    kind: EpmpRegionKind::Napot,
-                    range: EpmpAddressRange(0x10000, 0x11000)
-                }
-            ));
-        }
-    }
     Ok(())
 }
 
