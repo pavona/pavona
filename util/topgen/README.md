@@ -347,6 +347,17 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/pads"></a>**`pads`** *(array, required)*: List of pads.
   - <a id="properties/pads/items"></a>**Items**: Refer to *[urn:topgen:pad](#n%3Atopgen%3Apad)*.
 
+### Special Signal
+
+*Special signal for pinmux*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: DIO name.
+- <a id="properties/pad"></a>**`pad`** *(string, required)*: Pad name.
+- <a id="properties/desc"></a>**`desc`** *(string)*: Description of signal connection.
+- <a id="properties/idx"></a>**`idx`** *(integer)*: the index of the signal; added property.
+
 ### Straps
 
 *Configuration for straps*
@@ -375,6 +386,7 @@ Tops must also come with a seed configuration Hjson.
 #### Properties
 
 - <a id="properties/special_signals"></a>**`special_signals`** *(array, required)*: List of special signals and the pad they are mapped to.
+  - <a id="properties/special_signals/items"></a>**Items**: Refer to *[urn:topgen:special_signal](#n%3Atopgen%3Aspecial_signal)*.
 
 ### Target Pinout
 

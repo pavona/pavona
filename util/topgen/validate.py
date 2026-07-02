@@ -41,17 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-special_sig_required = {
-    'name': ['s', 'DIO name'],
-    'pad': ['s', 'Pad name'],
-}
-special_sig_optional = {
-    'desc': ['s', 'Description of signal connection'],
-}
-special_sig_added = {
-    'idx': ['d', 'the index of the signal'],
-}
-
 eflash_required = {
     'type': ['s', 'string indicating type of memory'],
     'banks': ['d', 'number of flash banks'],
@@ -643,9 +632,6 @@ def check_implementation_targets(top: ConfigT, prefix: str) -> int:
         # Check special pad signals
         known_entry_names = {}
         for entry in target['pinmux']['special_signals']:
-            error += check_keys(entry, special_sig_required,
-                                special_sig_optional, special_sig_added,
-                                prefix + ' Special signal')
 
             # check name uniqueness
             if entry['name'] in known_entry_names:
