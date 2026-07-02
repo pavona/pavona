@@ -48,6 +48,9 @@
     },
     memory: {
       type: "object",
+      patternProperties: {
+        ".*": { $ref: "urn:topgen:memory" }
+      },
       description: "optional dict with memory region attributes",
     },
     otp_map: {
