@@ -125,6 +125,7 @@
     }
     wakeups: {
       type: "array",
+      items: { $ref: "urn:topgen:wakeup" },
       description: "list of wakeup requests each holding name, width, and module; added property"
     }
     unmanaged_resets: {

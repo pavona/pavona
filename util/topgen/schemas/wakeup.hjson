@@ -1,0 +1,16 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:wakeup",
+  title: "Wakeup",
+  description: "Wakeup request description",
+  type: "object",
+  required: ["name", "width", "module"]
+  properties: {
+    name: {type: "string", description: "the wakeup name"},
+    width: {type: "number", description: "the width of the signal"},
+    module: {type: "string", description: "the module sourcing the wakeup"},
+  }
+}
