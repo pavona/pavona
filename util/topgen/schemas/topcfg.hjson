@@ -46,7 +46,7 @@
       description: "list of resets",
     }
     reset_requests: {
-      type: "object",
+      $ref: "urn:topgen:reset_requests",
       description: "define reset requests grouped by type"
     }
 
