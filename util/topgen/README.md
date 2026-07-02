@@ -347,6 +347,17 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/pads"></a>**`pads`** *(array, required)*: List of pads.
   - <a id="properties/pads/items"></a>**Items**: Refer to *[urn:topgen:pad](#n%3Atopgen%3Apad)*.
 
+### Straps
+
+*Configuration for straps*
+
+#### Properties
+
+- <a id="properties/tap0"></a>**`tap0`** *(string, required)*: Name of tap0 pad.
+- <a id="properties/tap1"></a>**`tap1`** *(string, required)*: Name of tap1 pad.
+- <a id="properties/dft0"></a>**`dft0`** *(string, required)*: Name of dft0 pad.
+- <a id="properties/dft1"></a>**`dft1`** *(string, required)*: Name of dft1 pad.
+
 ### Target
 
 *Hardware target for a top level design, such as an FPGA or ASIC*

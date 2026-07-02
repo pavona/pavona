@@ -41,24 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-straps_required = {
-    'tap0': ['s', 'Name of tap0 pad'],
-    'tap1': ['s', 'Name of tap1 pad'],
-    'dft0': ['s', 'Name of dft0 pad'],
-    'dft1': ['s', 'Name of dft1 pad'],
-}
-straps_optional = {}
-straps_added = {}
-
-straps_required = {
-    'tap0': ['s', 'Name of tap0 pad'],
-    'tap1': ['s', 'Name of tap1 pad'],
-    'dft0': ['s', 'Name of dft0 pad'],
-    'dft1': ['s', 'Name of dft1 pad'],
-}
-straps_optional = {}
-straps_added = {}
-
 special_sig_required = {
     'name': ['s', 'DIO name'],
     'pad': ['s', 'Pad name'],
