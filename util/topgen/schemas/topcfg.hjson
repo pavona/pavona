@@ -147,6 +147,7 @@
     }
     interrupt: {
       type: "array",
+      items: { $ref: "urn:topgen:interrupt" }
       description: "interrupts; added property"
     }
     outgoing_interrupt: {

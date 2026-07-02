@@ -1,0 +1,23 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:interrupt",
+  title: "Interrupt",
+  description: "Interrupt signal description",
+  type: "object",
+  required: ["name", "width", "module_name", "intr_type", "default_val", "incoming", "outgoing"]
+  properties: {
+    name: { type: "string", description: "the name of the interrupt" },
+    width: { type: "number", description: "the number of interrupts in this signal, typically 1" },
+    type: { type: "string", description: "should contain 'interrupt'" },
+    module_name: { type: "string", description: "The module name of the source" },
+    desc: { type: "string", description: "the description of the interrupt" },
+    intr_type: { type: ["string", "integer"], description: "The IntrType, either Event or Status" },
+    default_val: { type: "boolean" },
+    incoming: { type: "boolean" },
+    plic: { type: "string", description: "controller for this interrupt" },
+    outgoing: { type: "boolean", description: "whether interrupt leaves toplevel" },
+  }
+}
