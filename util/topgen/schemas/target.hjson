@@ -1,0 +1,16 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:target",
+  title: "Target",
+  description: "Hardware target for a top level design, such as an FPGA or ASIC",
+  type: "object",
+  required: ["name", "pinout", "pinmux"]
+  properties: {
+    name: { type: "string", description: "Name of target" },
+    pinout: { type: "object", description: "Target-specific pinout configuration" },
+    pinmux: { type: "object", description: "Target-specific pinmux configuration" }
+  }
+}
