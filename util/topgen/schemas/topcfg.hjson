@@ -92,7 +92,7 @@
       description: "pinout configuration"
     }
     pinmux: {
-      type: "object",
+      $ref: "urn:topgen:pinmux",
       description: "pinmux configuration"
     }
     targets: {
