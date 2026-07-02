@@ -41,22 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-interrupt_required = {
-    'name': ['s', 'the name of the interrupt'],
-    'width': ['d', 'the number of interrupts in this signal, typically 1'],
-    'module_name': ['s', 'The module name of the source'],
-    'intr_type': ['s', 'The IntrType, either Event or Status'],
-    'default_val': ['s', 'a string interpreted as boolean'],
-    'incoming': ['s', 'a string interpreted as boolean'],
-    'outgoing': ['s', 'boolean (as string) whether interrupt leaves toplevel'],
-}
-interrupt_optional = {
-    'desc': ['s', 'the description of the interrupt'],
-    'type': ['s', 'should contain "interrupt"'],
-    'plic': ['s', 'controller for this interrupt'],
-}
-interrupt_added = {}
-
 param_required = {
     'name': ['s', 'the parameter name'],
     'desc': ['s', 'the parameter description'],
@@ -300,16 +284,6 @@ def check_outgoing_interrupts(top: ConfigT, prefix: str) -> int:
         return 0
     error = 0
     # TODO
-    return error
-
-
-def check_interrupts(top: ConfigT, prefix: str) -> int:
-    if 'interrupt' not in top:
-        return 0
-    error = 0
-    for interrupt in top['interrupt']:
-        error += check_keys(interrupt, interrupt_required, interrupt_optional,
-                            interrupt_added, prefix + ' Interrupt')
     return error
 
 
@@ -882,7 +856,6 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     error += check_incoming_alerts(top, component)
     error += check_outgoing_alerts(top, component)
     error += check_outgoing_interrupts(top, component)
-    error += check_interrupts(top, component)
     error += check_incoming_interrupts(top, component)
 
     return top, error
