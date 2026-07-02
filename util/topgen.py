@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, NamedTuple, Optional
 
 import hjson
+from basegen.lib import import_hjson
 import tlgen
 from basegen.typing import ConfigT, ParamsT
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
@@ -566,7 +567,7 @@ def _process_top(
 
     log.info("Detected crossbars: " + ", ".join(k for k in xbar_objs.keys()))
 
-    topcfg, error = validate_top(topcfg, name_to_block, xbar_objs)
+    topcfg, error = validate_top(topcfg, name_to_block, xbar_objs, import_hjson(args.topcfg))
     if error != 0:
         raise SystemExit("Error occured while validating top.hjson")
 
