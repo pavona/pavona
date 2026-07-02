@@ -1,0 +1,25 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:pinmux_signal",
+  title: "Pinmux Signal",
+  description: "Signal configurations for pinmux",
+  type: "object",
+  required: ["instance", "connection"]
+  properties: {
+    instance: { type: "string", description: "Module instance name" },
+    port: { type: "string", description: "Port name of module" },
+    connection: {
+      enum: ["direct", "manual", "muxed"],
+      description: "Specification of connection type, can be direct, manual or muxed"
+    },
+    pad: { type: "string", description: "Pad name for direct connections" },
+    desc: { type: "string", description: "Signal description" },
+    attr: {
+      type: "string",
+      description: "Pad type for generating the correct attribute CSR"
+    }
+  }
+}

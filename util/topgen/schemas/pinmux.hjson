@@ -9,7 +9,11 @@
   type: "object",
   required: ["enable_usb_wakeup", "enable_strap_sampling"]
   properties: {
-    signals: { type: "array", description: "List of Dedicated IOs." },
+    signals: {
+      type: "array",
+      items: { $ref: "urn:topgen:pinmux_signal" },
+      description: "List of Dedicated IOs."
+    },
     wkup_cnt_width: { type: "integer", description: "Number of bits in wakeup detector counters" },
     num_wkup_detect: { type: "integer", description: "Number of wakeup detectors" },
     enable_usb_wakeup: { type: "boolean", description: "Enable USB wakeup in pinmux" },
