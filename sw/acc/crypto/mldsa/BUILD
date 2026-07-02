@@ -9,6 +9,22 @@ load("//rules:acc.bzl", "acc_binary", "acc_library")
 package(default_visibility = ["//visibility:public"])
 
 acc_library(
+    name = "gadgets",
+    srcs = ["gadgets.s"],
+)
+
+acc_library(
+    name = "gadgets_test",
+    srcs = ["gadgets.s"],
+    copts = ["-DMLDSA_REJ_SAMPLE_TEST"],
+)
+
+acc_library(
+    name = "scratch",
+    srcs = ["scratch.s"],
+)
+
+acc_library(
     name = "kmac_send_msg",
     srcs = ["kmac_send_msg.s"],
 )
