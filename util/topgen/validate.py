@@ -41,26 +41,6 @@ import jsonschema.exceptions
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-memory_required = {
-    'label': ['s', 'region label for the linker script'],
-    'swaccess': ['s', 'access attributes for the memory region (ro, rw)'],
-    'exec': ['pb', 'executable region indication for the linker script'],
-    'byte_write':
-    ['pb', 'indicate whether the memory supports byte write accesses'],
-}
-
-memory_optional = {
-    'size': [
-        'd', 'memory region size in bytes for the linker script, '
-        'xbar and RTL parameterisations'
-    ],
-    'config': ['d', 'Extra configuration for a particular memory'],
-    'data_intg_passthru':
-    ['pb', 'Integrity bits are passed through directly from the memory']
-}
-
-memory_added = {}
-
 reset_connection_required = {
     'name': ['s', 'name of the connecting reset'],
     'domain': ['s', 'connected domain'],
@@ -883,9 +863,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
 
         if 'base_addrs' in m and 'memory' in m:
             for intf, value in m['memory'].items():
-                error += check_keys(value, memory_required, memory_optional,
-                                    memory_added,
-                                    prefix + " " + modname + " " + intf)
 
                 # if size is not declared, there must be extra config to
                 # determine it
@@ -905,7 +882,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
                     mem_type = value['config'].get('type', "")
 
                     if mem_type == "flash":
-                        validate_schema(value['config'], 'urn:topgen:eflash')
                         flash = Flash(value['config'], m['base_addrs'][intf])
                         value['size'] = flash.size
                         value['config'] = flash

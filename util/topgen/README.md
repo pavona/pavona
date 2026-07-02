@@ -240,6 +240,7 @@ The top configuration partially specifies its list of modules.
 address of the peripheral (if the IP has only a single TL-UL interface).
 - <a id="properties/base_addrs"></a>**`base_addrs`** *(object)*: hex start addresses of the peripheral (if the IP has multiple TL-UL interfaces).
 - <a id="properties/memory"></a>**`memory`** *(object)*: optional dict with memory region attributes.
+  - <a id="properties/memory/patternProperties/.%2A"></a>**`.*`**: Refer to *[urn:topgen:memory](#n%3Atopgen%3Amemory)*.
 - <a id="properties/otp_map"></a>**`otp_map`** *(object)*: OTP Map information for OTP Ctrl.
 - <a id="properties/otp_mmap"></a>**`otp_mmap`** *(object)*: Full OTP memory map configuration with secret parameters; added property.
 - <a id="properties/ipgen_params"></a>**`ipgen_params`** *(object)*: Optional ipgen parameters for that instance.
@@ -288,6 +289,22 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/integrity_width"></a>**`integrity_width`** *(number, required)*: number of integrity bits per data word.
 - <a id="properties/info_types"></a>**`info_types`** *(number, required)*: number of different info page types.
 - <a id="properties/infos_per_bank"></a>**`infos_per_bank`** *(array, required)*: number of pages per info type, the size of the list must match 'info_types'.
+
+### Memory
+
+*Module memory mapping*
+
+#### Properties
+
+- <a id="properties/label"></a>**`label`** *(string, required)*: region label for the linker script.
+- <a id="properties/swaccess"></a>**`swaccess`**: access attributes for the memory region (ro, rw). Must be one of: `["ro", "rw"]`.
+- <a id="properties/data_intg_passthru"></a>**`data_intg_passthru`** *(boolean)*: Integrity bits are passed through directly from the memory.
+- <a id="properties/exec"></a>**`exec`** *(boolean, required)*: executable region indication for the linker script.
+- <a id="properties/byte_write"></a>**`byte_write`** *(boolean, required)*: indicate whether the memory supports byte write accesses.
+- <a id="properties/size"></a>**`size`** *(number)*: memory region size in bytes for the linker script, xbar and RTL parameterisations.
+- <a id="properties/config"></a>**`config`**: Extra configuration for a particular memory.
+  - **Any of**
+    - <a id="properties/config/anyOf/0"></a>: Refer to *[urn:topgen:eflash](#n%3Atopgen%3Aeflash)*.
 
 ### Pad
 

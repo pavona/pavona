@@ -1,0 +1,41 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:memory",
+  title: "Memory",
+  description: "Module memory mapping",
+  type: "object",
+  required: ["label", "swaccess", "exec", "byte_write"]
+  properties: {
+    label: {
+      type: "string",
+      description: "region label for the linker script"
+    },
+    swaccess: {
+      enum: ["ro", "rw"],
+      description: "access attributes for the memory region (ro, rw)"
+    },
+    data_intg_passthru: {
+      type: "boolean",
+      description: "Integrity bits are passed through directly from the memory"
+    }
+    exec: {
+      type: "boolean",
+      description: "executable region indication for the linker script"
+    },
+    byte_write: {
+      type: "boolean",
+      description: "indicate whether the memory supports byte write accesses"
+    },
+    size: {
+      type: "number",
+      description: "memory region size in bytes for the linker script, xbar and RTL parameterisations"
+    },
+    config: {
+      anyOf: [{ $ref: "urn:topgen:eflash" }],
+      description: "Extra configuration for a particular memory"
+    },
+  }
+}
