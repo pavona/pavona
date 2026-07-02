@@ -1,0 +1,163 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:topcfg",
+  title: "Top Configuration",
+  description: "Configuration options for creating a top with ACE",
+  type: "object",
+  required: ["name", "type", "clocks", "resets", "addr_spaces", "module",
+             "xbar", "pinout", "targets", "pinmux", "unmanaged_clocks"]
+  properties: {
+    // basic information
+    name: {
+      type: "string",
+      description: "Top name"
+    }
+    type: {
+      enum: ["top"],
+      description: "type of hjson. Shall be 'top' always"
+    }
+    datawidth: {
+      type: "integer",
+      description: "default data width"
+    }
+    racl_config: {
+      type: "string",
+      description: "Path to a RACL configuration HJSON file"
+    }
+
+    // power, clocking, and resets
+    power: {
+      type: "object",
+      description: "power domains supported by the design"
+    }
+    unmanaged_clocks: {
+      type: "array",
+      description: "list of unmanaged external clocks",
+    }
+    clocks: {
+      type: "object",
+      description: "group of clock properties"
+    }
+    resets: {
+      type: "object",
+      description: "list of resets",
+    }
+    reset_requests: {
+      type: "object",
+      description: "define reset requests grouped by type"
+    }
+
+    // interrupts and alerts
+    num_cores: {
+      type: "integer",
+      description: "number of computing units"
+    }
+    default_plic: {
+      type: "string",
+      description: "Modules not defining plic have interrupts sent here"
+    }
+    default_alert_handler: {
+      type: "string",
+      description: "Modules not defining alert_handler have alerts sent here"
+    }
+    addr_spaces: {
+      type: "array",
+      description: "list of address spaces",
+    }
+
+    // info for modules (IP blocks) within top and their connections
+    module: {
+      type: "array",
+      description: "list of modules to instantiate",
+    }
+    port: {
+      type: "array",
+      description: "assign special attributes to specific ports"
+    }
+    inter_module: {
+      type: "object",
+      description: "define the signal connections between the modules"
+    }
+    xbar: {
+      type: "array",
+      description: "list of the xbars used in the top",
+    }
+
+    // hardware implementation details
+    pinout: {
+      type: "object",
+      description: "pinout configuration"
+    }
+    pinmux: {
+      type: "object",
+      description: "pinmux configuration"
+    }
+    targets: {
+      type: "array",
+      description: "target configurations"
+    }
+
+    // ADDED FIELDS (only found in a complete top configuration)
+    incoming_alert: {
+      type: "object",
+      description: "Parsed incoming alerts; added property"
+    }
+    incoming_interrupt: {
+      type: "object",
+      description: "Parsed incoming interrupts; added property"
+    }
+    exported_clks: {
+      type: "object",
+      description: "clock signal routing rules; added property"
+    }
+    racl: {
+      type: "object",
+      description: "the expansion of the racl_config file; added property"
+    }
+    wakeups: {
+      type: "array",
+      description: "list of wakeup requests each holding name, width, and module; added property"
+    }
+    unmanaged_resets: {
+      type: "array",
+      description: "List of unmanaged external resets; added property"
+    }
+    exported_rsts: {
+      type: "object",
+      description: "external resets grouped by each module's `clock_reset_export` field; added property"
+    }
+    alert: {
+      type: "array",
+      description: "alerts; added property"
+    }
+    outgoing_alert: {
+      type: "object",
+      description: "the outgoing alert groups; added property"
+    }
+    interrupt: {
+      type: "array",
+      description: "interrupts; added property"
+    }
+    outgoing_interrupt: {
+      type: "object",
+      description: "the outgoing interrupt groups; added property"
+    }
+    alert_module: {
+      type: "array",
+      description: "list of the modules that connects to alert_handler; added property"
+    }
+    alert_connections: { type: "object" }
+    interrupt_module: {
+      type: "array",
+      description: "list of the modules that connects to rv_plic; added property"
+    }
+    outgoing_alert_module: { type: "object", description: "added property" }
+    outgoing_interrupt_module: { type: "object", description: "added property" }
+    alert_lpgs: { type: "array", description: "added property" }
+    outgoing_alert_lpgs: { type: "object", description: "added property" }
+    inter_signal: { type: "object", description: "added property" }
+  }
+}

@@ -13,6 +13,8 @@ from reggen.validate import check_keys
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
 from topgen.lib import find_module, find_modules
+from basegen.validate import validate_schema
+import jsonschema.exceptions
 
 # For the reference
 # val_types = {
@@ -38,56 +40,6 @@ from topgen.lib import find_module, find_modules
 #     'pl': ["python list", "Native Python type list (generated)"],
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
-
-# Required/optional field in top hjson
-top_required = {
-    'name': ['s', 'Top name'],
-    'type': ['s', 'type of hjson. Shall be "top" always'],
-    'clocks': ['g', 'group of clock properties'],
-    'resets': ['l', 'list of resets'],
-    'addr_spaces': ['g', 'list of address spaces'],
-    'module': ['l', 'list of modules to instantiate'],
-    'xbar': ['l', 'List of the xbar used in the top'],
-    'pinout': ['g', 'Pinout configuration'],
-    'targets': ['l', ' Target configurations'],
-    'pinmux': ['g', 'pinmux configuration'],
-    'unmanaged_clocks': ['l', 'List of unmanaged external clocks']
-}
-
-top_optional = {
-    'alerts': ['g', 'alert handler configuration'],
-    'alert_module':
-    ['l', 'list of the modules that connects to alert_handler'],
-    'datawidth': ['pi', "default data width"],
-    'exported_clks': ['g', 'clock signal routing rules'],
-    'host': ['g', 'list of host-only components in the system'],
-    'inter_module': ['g', 'define the signal connections between the modules'],
-    'interrupts': ['g', 'interrupt controller configuration'],
-    'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
-    'num_cores': ['pi', "number of computing units"],
-    'outgoing_alert': ['g', 'the outgoing alert groups'],
-    'outgoing_interrupt': ['g', 'the outgoing interrupt groups'],
-    'power': ['g', 'power domains supported by the design'],
-    'port': ['g', 'assign special attributes to specific ports'],
-    'racl_config': ['s', 'Path to a RACL configuration HJSON file'],
-    'reset_requests': ['g', 'define reset requests grouped by type'],
-    'seed': ['g', "Seed information for topgen and subsequent flows"],
-    'unmanaged_resets': ['l', 'List of unmanaged external resets'],
-    'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here'],
-    'default_plic': ['s', 'Modules not defining plic have interrupts sent here']
-}
-
-top_added = {
-    'alert': ['l', 'alerts'],
-    'exported_rsts': ['g', 'external resets grouped by each module\'s `clock_reset_export` field'],
-    'incoming_alert': ['g', 'Parsed incoming alerts'],
-    'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
-    'interrupt': ['l', 'interrupts'],
-    'racl': ['g', 'the expansion of the racl_config file'],
-    'wakeups':
-    ['l', 'list of wakeup requests each holding name, width, and module'],
-    'cfg_path': ['s', 'Path to the folder of the toplevel HJSON file'],
-}
 
 # Required/optional field in top seeds hjson
 top_seed_required = {
@@ -1272,11 +1224,13 @@ def validate_seed_cfg(top: ConfigT, seed_cfg: ConfigT):
 
 
 def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
-                 xbar_name_to_block: IpBlocksT) -> int:
+                 xbar_name_to_block: IpBlocksT, raw_top_data: dict) -> int:
     # return as it is for now
-    error = check_keys(top, top_required, top_optional, top_added, "top")
-
-    if error != 0:
+    error = 0
+    try:
+        validate_schema(raw_top_data, "urn:topgen:topcfg")
+    except jsonschema.exceptions.ValidationError:
+        error += 1
         log.error("Top HJSON has top level errors. Aborting")
         return top, error
 
