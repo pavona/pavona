@@ -10,14 +10,16 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
+
+#ifdef HAS_FLASH_CTRL
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+
+#include "hw/top/flash_ctrl_regs.h"
 
 static_assert(kBootDataValidEntry ==
                   ((uint64_t)kFlashCtrlErasedWord << 32 | kFlashCtrlErasedWord),
@@ -37,6 +39,8 @@ static_assert(offsetof(boot_data_t, is_valid) %
                       FLASH_CTRL_PARAM_BYTES_PER_WORD ==
                   0,
               "`is_valid` must be flash word aligned.");
+static_assert(kFlashCtrlErasedWord == UINT32_MAX,
+              "kFlashCtrlErasedWord must be UINT32_MAX");
 
 enum {
   /**
@@ -44,6 +48,7 @@ enum {
    */
   kPageCount = 2,
 };
+
 /**
  * Boot data flash info pages.
  */
@@ -51,6 +56,7 @@ static const flash_ctrl_info_page_t *kPages[kPageCount] = {
     &kFlashCtrlInfoPageBootData0,
     &kFlashCtrlInfoPageBootData1,
 };
+#endif
 
 /**
  * Computes the SHA-256 digest of a boot data entry.
@@ -75,6 +81,7 @@ static void boot_data_digest_compute(const void *boot_data,
               digest);
 }
 
+#ifdef HAS_FLASH_CTRL
 /**
  * Checks whether a boot data entry is empty.
  *
@@ -83,11 +90,9 @@ static void boot_data_digest_compute(const void *boot_data,
  */
 OT_WARN_UNUSED_RESULT
 static hardened_bool_t boot_data_is_empty(const void *boot_data) {
-  static_assert(kFlashCtrlErasedWord == UINT32_MAX,
-                "kFlashCtrlErasedWord must be UINT32_MAX");
   size_t i = 0, r = kBootDataNumWords - 1;
   hardened_bool_t is_empty = kHardenedBoolTrue;
-  uint32_t res = kFlashCtrlErasedWord;
+  uint32_t res = UINT32_MAX;
   for (; launder32(i) < kBootDataNumWords && launder32(r) < kBootDataNumWords;
        ++i, --r) {
     res &= read_32(boot_data);
@@ -96,8 +101,8 @@ static hardened_bool_t boot_data_is_empty(const void *boot_data) {
   }
   HARDENED_CHECK_EQ(i, kBootDataNumWords);
   HARDENED_CHECK_EQ(r, SIZE_MAX);
-  if (launder32(res) == kFlashCtrlErasedWord) {
-    HARDENED_CHECK_EQ(res, kFlashCtrlErasedWord);
+  if (launder32(res) == UINT32_MAX) {
+    HARDENED_CHECK_EQ(res, UINT32_MAX);
     return is_empty;
   }
   return kHardenedBoolFalse;
@@ -491,6 +496,7 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
 
   return kErrorOk;
 }
+#endif
 
 /**
  * Returns the default boot data.
@@ -507,8 +513,12 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
                                          boot_data_t *boot_data) {
+#ifdef DISCRETE_OTP_MAP
   uint32_t allowed_in_prod = otp_read32(
       OTP_CTRL_PARAM_CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN_OFFSET);
+#else
+  uint32_t allowed_in_prod = kHardenedBoolFalse;
+#endif
   rom_error_t res = lc_state ^ launder32(kErrorBootDataNotFound);
   barrier32(res);
   switch (launder32(lc_state)) {
@@ -551,18 +561,24 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
   boot_data->identifier = kBootDataIdentifier;
   boot_data->version = kBootDataVersion2;
   boot_data->counter = kBootDataDefaultCounterVal;
+#ifdef DISCRETE_OTP_MAP
   boot_data->min_security_version_rom_ext =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT_OFFSET);
   boot_data->min_security_version_bl0 =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_BL0_OFFSET);
+#else
+  boot_data->min_security_version_rom_ext = 0;
+  boot_data->min_security_version_bl0 = 0;
+#endif
   boot_data->primary_bl0_slot = kBootSlotA;
-  // We cannot use a constant digest since some fields are read from the OTP
-  // and we check the digest of the cached boot data entry in rom.c
+  // We cannot use a constant digest since some fields are read from the OTP and
+  // we check the digest of the cached boot data entry in pre_boot_check.c
   boot_data_digest_compute(boot_data, &boot_data->digest);
 
   return res;
 }
 
+#ifdef HAS_FLASH_CTRL
 /**
  * Populates fields not present in older versions of `boot_data_t`.
  *
@@ -591,8 +607,10 @@ static rom_error_t boot_data_as_v2(boot_data_t *boot_data) {
       OT_UNREACHABLE();
   }
 }
+#endif
 
 rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
+#ifdef HAS_FLASH_CTRL
   active_page_info_t active_page;
   HARDENED_RETURN_IF_ERROR(boot_data_active_page_find(&active_page, boot_data));
   switch (launder32(active_page.has_valid_entry)) {
@@ -606,9 +624,13 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
       HARDENED_TRAP();
       OT_UNREACHABLE();
   }
+#else
+  return boot_data_default_get(lc_state, boot_data);
+#endif
 }
 
 rom_error_t boot_data_write(const boot_data_t *boot_data) {
+#ifdef HAS_FLASH_CTRL
   boot_data_t new_entry = *boot_data;
   new_entry.is_valid = kBootDataValidEntry;
   new_entry.identifier = kBootDataIdentifier;
@@ -647,6 +669,9 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
   }
 
   return kErrorOk;
+#else
+  return kErrorBootDataWriteUnsupported;
+#endif
 }
 
 /**

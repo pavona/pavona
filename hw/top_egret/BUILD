@@ -118,7 +118,7 @@ fpga_cw310(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_cw310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-    rom = "//sw/device/silicon_creator/rom:mask_rom",
+    rom = "//sw/device/silicon_creator/rom:rom",
 )
 
 sim_qemu(
@@ -142,7 +142,7 @@ sim_qemu(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "sim_qemu_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-    rom = "//sw/device/silicon_creator/rom:mask_rom",
+    rom = "//sw/device/silicon_creator/rom:rom",
 )
 
 fpga_cw310(
@@ -165,7 +165,7 @@ fpga_cw310(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
     },
-    rom = "//sw/device/silicon_creator/rom:mask_rom",
+    rom = "//sw/device/silicon_creator/rom:rom",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
 )
 
@@ -309,7 +309,7 @@ fpga_cw340(
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     mmi = "//hw/bitstream/cw340:mmi",
     otp = "//hw/top_egret/data/otp:img_rma",
-    rom = "//sw/device/silicon_creator/rom:mask_rom",
+    rom = "//sw/device/silicon_creator/rom:rom",
     test_cmd = """
         --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
@@ -521,7 +521,7 @@ sim_verilator(
     base = ":sim_verilator",
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-    rom = "//sw/device/silicon_creator/rom:mask_rom_sim_verilator",
+    rom = "//sw/device/silicon_creator/rom:rom_sim_verilator",
 )
 
 ###########################################################################

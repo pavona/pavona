@@ -144,6 +144,7 @@ EGRET_CW340_TEST_ENVS = {
 DRAGONFLY_TEST_ENVS = {
     "//hw/top_dragonfly:sim_dv": None,
     "//hw/top_dragonfly:sim_verilator": None,
+    "//hw/top_dragonfly:sim_verilator_rom_with_fake_keys": None,
 }
 
 # Messages we expect for possible test outcomes.
@@ -393,6 +394,7 @@ def pavona_test(
         "timeout": ("timeout", None),
         "test_harness": ("test_harness", None),
         "binaries": ("binaries", {}),
+        "second_rom": ("second_rom", None),
         "rom": ("rom", None),
         "rom_ext": ("rom_ext", None),
         "otp": ("otp", None),

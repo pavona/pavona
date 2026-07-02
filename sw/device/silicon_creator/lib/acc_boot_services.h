@@ -19,10 +19,6 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #elif defined(HAS_KEYMGR_DPE)
 #include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
-
-#define sc_keymgr_key_type_t sc_keymgr_dpe_key_type_t
-#define sc_keymgr_diversification_t sc_keymgr_dpe_diversification_t
-#define sc_keymgr_ecc_key_t sc_keymgr_dpe_ecc_key_t
 #endif
 
 #ifdef __cplusplus

@@ -370,6 +370,7 @@ typedef struct spi_device_cmd {
 OT_WARN_UNUSED_RESULT
 rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd, bool blocking);
 
+#ifdef HAS_FLASH_CTRL
 /**
  * Clears the SPI flash status register.
  *
@@ -383,6 +384,7 @@ void spi_device_flash_status_clear(void);
  */
 OT_WARN_UNUSED_RESULT
 uint32_t spi_device_flash_status_get(void);
+#endif
 
 /**
  * Enables the SPI mailbox at the given SPI address.

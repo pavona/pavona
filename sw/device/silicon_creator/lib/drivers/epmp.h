@@ -109,6 +109,44 @@ void epmp_set_tor(uint8_t entry, epmp_region_t region, epmp_perm_t perm);
  */
 void epmp_clear_rlb(void);
 
+/**
+ * Updates the ePMP permissions to revoke access rights to the previous boot
+ * stage, overwriting its slots with the configuration for the current boot
+ * stage, in preparation for the next `epmp_prepare_boot_stage`, which will
+ * overwrite the slots previously used by the current boot stage (as set by the
+ * previous boot stage calling `epmp_prepare_boot_stage`).
+ *
+ * @param tor_region_rx The TOR region covering the executable portion of the
+ * current boot stage.
+ * @param napot_region_rx The NAPOT region covering the entire current boot
+ * stage. If NULL, the ePMP slot reserved for this is cleared instead.
+ */
+void epmp_advance_boot_stage(void);
+
+/**
+ * Prepares ePMP to execute the next boot stage by configuring the slots
+ * previously vacated by the current boot stage in `epmp_advance_boot_stage` to
+ * permit access to the next boot stage.
+ *
+ * @param tor_region_rx The TOR region covering the executable portion of the
+ * current boot stage.
+ * @param napot_region_rx The NAPOT region covering the entire current boot
+ * stage.
+ */
+void epmp_prepare_boot_stage(epmp_region_t tor_region_rx,
+                             epmp_region_t napot_region_r);
+
+/**
+ * Prepares ePMP to execute the next boot stage by configuring the slots
+ * previously vacated by the current boot stage in `epmp_advance_boot_stage` to
+ * permit access to the next boot stage. Unlike `epmp_prepare_boot_stage`, this
+ * function only accepts a read-execute TOR region, and the slot used for the
+ * read-only NAPOT region is cleared instead.
+ *
+ * @param tor_region_rx The TOR region covering the current boot stage.
+ */
+void epmp_prepare_boot_stage_rx(epmp_region_t tor_region_rx);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

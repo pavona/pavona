@@ -47,28 +47,6 @@ extern "C" {
  */
 void rom_epmp_state_init(lifecycle_state_t lc_state);
 
-/**
- * Unlocks the provided ROM_EXT image region with read-execute permissions.
- *
- * The provided ePMP state is also updated to reflect the changes made to the
- * hardware configuration.
- *
- * @param region Region for executable sections in ROM_EXT image.
- */
-void rom_epmp_unlock_rom_ext_rx(epmp_region_t region);
-
-/**
- * Unlocks the provided ROM_EXT image region with read-only permissions.
- *
- * The provided ePMP state is also updated to reflect the changes made to the
- * hardware configuration.
- * The image size must be power of 2 as this function uses NAPOT
- * (Naturally-Aligned-Power-Of-Two) addressing mode.
- *
- * @param region Region in the ROM_EXT image to receive read-only permission.
- */
-void rom_epmp_unlock_rom_ext_r(epmp_region_t region);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

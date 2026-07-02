@@ -336,7 +336,8 @@ pavona_test(
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom:mask_rom",
+        rom = "//sw/device/silicon_creator/rom",
+        second_rom = "//sw/device/silicon_creator/second_rom",
     ),
     deps = [
         "//sw/device/lib/dif:spi_device",

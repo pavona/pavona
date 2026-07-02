@@ -37,4 +37,7 @@ void rom_interrupt_handler(void) {
 // keep distinct symbols to make writing tests easier.  In the ROM,
 // alias all interrupt handler symbols to the single handler.
 OT_ALIAS("rom_interrupt_handler")
+noreturn void rom_exception_handler(void);
+
+OT_ALIAS("rom_interrupt_handler")
 noreturn void rom_nmi_handler(void);

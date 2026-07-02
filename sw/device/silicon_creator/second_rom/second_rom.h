@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BASE_ROM_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BASE_ROM_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_SECOND_ROM_SECOND_ROM_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_SECOND_ROM_SECOND_ROM_H_
 
 #include <stdnoreturn.h>
 
@@ -27,29 +27,29 @@ extern "C" {
 #define ROM_VECTOR_FUNCTION __attribute__((section(".crt")))
 
 /**
- * The first assembly procedure executed by the base ROM (defined in
- * `base_rom.S`).
+ * The first assembly procedure executed by the ROM (defined in
+ * `rom.S`).
  *
  * This procedure does not obey the standard RISC-V calling convention, so it
  * must not be called from other C code.
  */
 ROM_VECTOR_FUNCTION
-noreturn void _rom_start_boot(void);
+noreturn void _second_rom_start_boot(void);
 
 /**
- * The first C function executed by the base ROM (defined in `base_rom.c`)
+ * The first C function executed by the ROM (defined in `rom.c`)
  */
-noreturn void base_rom_main(void);
+noreturn void second_rom_main(void);
 
 /**
  * ROM hardware exception handler.
  */
 ROM_VECTOR_FUNCTION
 ROM_INTERRUPT_HANDLER_ABI
-noreturn void rom_interrupt_handler(void);
+noreturn void second_rom_interrupt_handler(void);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BASE_ROM_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_SECOND_ROM_SECOND_ROM_H_

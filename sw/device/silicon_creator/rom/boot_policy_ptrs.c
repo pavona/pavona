@@ -4,5 +4,4 @@
 
 #include "sw/device/silicon_creator/rom/boot_policy_ptrs.h"
 
-extern const manifest_t *boot_policy_manifest_a_get(void);
-extern const manifest_t *boot_policy_manifest_b_get(void);
+extern const manifest_t *boot_policy_manifest_get(slot_t);

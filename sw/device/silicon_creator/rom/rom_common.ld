@@ -1,9 +1,10 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
+/* Copyright zeroRISC Inc. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for an OpenTitan ROM.
+ * Common linker script for the Pavona ROM.
  *
  * Portions of this file are Ibex-specific.
  */
@@ -15,21 +16,11 @@ OUTPUT_ARCH(riscv)
  */
 __DYNAMIC = 0;
 
-INCLUDE hw/top_egret/sw/autogen/top_egret_memory.ld
-
-/**
- * The boot address, which indicates the location of the initial interrupt
- * vector.
- */
-_rom_boot_address = ORIGIN(rom);
-
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)),
-  "Error: rom ext flash is bigger than slot.");
 
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
@@ -77,6 +68,16 @@ SECTIONS {
   } > rom
 
   /**
+   * Helper functions used to get HWIP block register addresses in a
+   * top-independent manner. This are required to be placed into Ibex's initial
+   * ePMP region for the ROM, because they are called before the ROM performs
+   * its own ePMP initialization.
+   */
+  .dt : ALIGN(4) {
+    KEEP(*(.dt))
+  } > rom
+
+  /**
    * C runtime (CRT) section, containing program initialization code.
    *
    * This is a separate section to `.text` so that the jumps inside `.vectors`
@@ -88,7 +89,7 @@ SECTIONS {
     KEEP(*(.crt))
     /* .crt must fit in the ePMP RX region at reset. */
     ASSERT(
-        SIZEOF(.vectors) + SIZEOF(.crt) <= _epmp_reset_rx_size,
+        SIZEOF(.vectors) + SIZEOF(.dt) + SIZEOF(.crt) <= _epmp_reset_rx_size,
         "Error: .crt overflows reset ePMP region");
   } > rom
 
@@ -152,7 +153,7 @@ SECTIONS {
   INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
 
   /**
-   * OpenTitan ROM does not have a mutable `.data` section.
+   * Pavona ROM does not have a mutable `.data` section.
    */
   .data (NOLOAD) : {
     *(.sdata)

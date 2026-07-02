@@ -157,12 +157,14 @@ enum module_ {
   X(kErrorBootstrapInvalidState,      ERROR_(3, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapNotRequested,      ERROR_(4, kModuleBootstrap, kInternal)), \
   X(kErrorBootstrapDisabledRomExt,    ERROR_(5, kModuleBootstrap, kInternal)), \
+  X(kErrorBootstrapNotSupported,      ERROR_(6, kModuleBootstrap, kUnimplemented)), \
   \
   X(kErrorLogBadFormatSpecifier,      ERROR_(1, kModuleLog, kInternal)), \
   \
   X(kErrorBootDataNotFound,           ERROR_(1, kModuleBootData, kInternal)), \
   X(kErrorBootDataWriteCheck,         ERROR_(2, kModuleBootData, kInternal)), \
   X(kErrorBootDataInvalid,            ERROR_(3, kModuleBootData, kInternal)), \
+  X(kErrorBootDataWriteUnsupported,   ERROR_(4, kModuleBootData, kUnimplemented)), \
   \
   X(kErrorSpiDevicePayloadOverflow,   ERROR_(1, kModuleSpiDevice, kInternal)), \
   \

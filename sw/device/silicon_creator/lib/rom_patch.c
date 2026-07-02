@@ -13,12 +13,12 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
 
 #define ROM_PATCH_BITFIELD(m, i) ((bitfield_field32_t){.mask = m, .index = i})
 static const bitfield_field32_t kRomPatchLockValid = ROM_PATCH_BITFIELD(0xf, 0);
@@ -35,7 +35,6 @@ static const bitfield_field32_t kRomPatchMatchLocked =
     ROM_PATCH_BITFIELD(0x1, 31);
 
 enum {
-  kOtpBase = TOP_DRAGONFLY_OTP_CTRL_CORE_BASE_ADDR,
   kSwConfig = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET,
 };
 
@@ -274,6 +273,35 @@ OT_WARN_UNUSED_RESULT rom_error_t rom_patch_apply(
 
   // Remap and enable each patches
   HARDENED_RETURN_IF_ERROR(rom_patch_remap(patch));
+
+  // Determine the lower and upper bound of the patch execution region.
+  uint32_t min_remap_addr = 0xFFFFFFFF, max_remap_addr = 0;
+  for (uint32_t i = 0; i < RV_CORE_IBEX_PARAM_NUM_REGIONS; i++) {
+    rom_patch_match_regs_t *match = &patch->table[i];
+    size_t enabled = rom_patch_region_enabled(match);
+    if (!enabled) {
+      HARDENED_CHECK_EQ(enabled, 0);
+      continue;
+    }
+    HARDENED_CHECK_NE(enabled, 0);
+    uint32_t r_base = rom_patch_region_r_base(match);
+    uint32_t r_end = r_base + rom_patch_region_size_bytes(match);
+    if (r_base < min_remap_addr) {
+      HARDENED_CHECK_LT(r_base, min_remap_addr);
+      min_remap_addr = r_base;
+    } else {
+      HARDENED_CHECK_GE(r_base, min_remap_addr);
+    }
+    if (r_end > max_remap_addr) {
+      HARDENED_CHECK_GT(r_end, max_remap_addr);
+      max_remap_addr = r_end;
+    } else {
+      HARDENED_CHECK_LE(r_end, max_remap_addr);
+    }
+  }
+  // Configure ePMP to enable execution of the the patch region.
+  epmp_region_t patch_region = {.start = min_remap_addr, .end = max_remap_addr};
+  epmp_set_tor(6, patch_region, kEpmpPermLockedReadExecute);
 
   return kErrorOk;
 }

@@ -20,12 +20,6 @@
 
 #ifdef HAS_KEYMGR_DPE
 #include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
-
-#define sc_keymgr_key_type_t sc_keymgr_dpe_key_type_t
-#define sc_keymgr_diversification_t sc_keymgr_dpe_diversification_t
-#define sc_keymgr_ecc_key_t sc_keymgr_dpe_ecc_key_t
-#define sc_keymgr_generate_key_acc sc_keymgr_dpe_generate_key_acc
-#define sc_keymgr_state_check sc_keymgr_dpe_state_check
 #else
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #endif

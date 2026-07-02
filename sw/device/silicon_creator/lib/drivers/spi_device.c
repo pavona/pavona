@@ -12,8 +12,11 @@
 #include "sw/device/silicon_creator/lib/drivers/spi_device_bfpt.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/spi_device_regs.h"
+
+#ifdef HAS_FLASH_CTRL
+#include "hw/top/flash_ctrl_regs.h"
+#endif
 
 static const dt_spi_device_t kSpiDeviceDt = kDtSpiDevice;
 
@@ -39,7 +42,11 @@ enum {
    * Flash data partition size in bits.
    */
   kFlashBitCount =
+#ifdef HAS_FLASH_CTRL
       FLASH_CTRL_PARAM_REG_NUM_BANKS * FLASH_CTRL_PARAM_BYTES_PER_BANK * 8,
+#else
+      0,
+#endif
   /**
    * 32-bit SFDP signature that indicates the presence of a SFDP table
    * (JESD216F 6.2.1).
@@ -661,6 +668,7 @@ rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd, bool blocking) {
   return kErrorOk;
 }
 
+#ifdef HAS_FLASH_CTRL
 void spi_device_flash_status_clear(void) {
   abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_FLASH_STATUS_REG_OFFSET,
                    0);
@@ -670,6 +678,7 @@ uint32_t spi_device_flash_status_get(void) {
   return abs_mmio_read32(spi_device_reg_base() +
                          SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
 }
+#endif
 
 uint32_t spi_device_control(void) {
   return abs_mmio_read32(spi_device_reg_base() + SPI_DEVICE_CFG_REG_OFFSET);

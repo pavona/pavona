@@ -6,15 +6,18 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
-#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/rom/boot_policy_ptrs.h"
 
+#ifdef HAS_FLASH_CTRL
+#include "sw/device/silicon_creator/lib/boot_data.h"
+#endif
+
 boot_policy_manifests_t boot_policy_manifests_get(void) {
-  const manifest_t *slot_a = boot_policy_manifest_a_get();
-  const manifest_t *slot_b = boot_policy_manifest_b_get();
+  const manifest_t *slot_a = boot_policy_manifest_get(kSlotA);
+  const manifest_t *slot_b = boot_policy_manifest_get(kSlotB);
   // Choose the ROM_EXT with the greater security version.
   // - If equal, choose the ROM_EXT with the greater major version.
   // - If equal, choose the ROM_EXT with the greater minor version,
@@ -41,8 +44,7 @@ a_first:
   return (boot_policy_manifests_t){{slot_a, slot_b}};
 }
 
-rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
-                                       const boot_data_t *boot_data) {
+static rom_error_t check_manifest(const manifest_t *manifest) {
   if (manifest->identifier != CHIP_ROM_EXT_IDENTIFIER) {
     return kErrorBootPolicyBadIdentifier;
   }
@@ -51,7 +53,14 @@ rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
     return kErrorBootPolicyBadLength;
   }
   RETURN_IF_ERROR(manifest_check(manifest));
+  return kErrorOk;
+}
 
+rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
+                                       const boot_data_t *boot_data) {
+  RETURN_IF_ERROR(check_manifest(manifest));
+  // The boot_data structure on designs with onboard flash contain a minimum
+  // security version for ROM_EXT.
   if (launder32(manifest->security_version) >=
       boot_data->min_security_version_rom_ext) {
     HARDENED_CHECK_GE(manifest->security_version,
