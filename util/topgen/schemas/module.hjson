@@ -22,6 +22,9 @@
     clock_group: { type: "string", description: "clock group" },
     reset_connections: {
       type: "object",
+      patternProperty: {
+        ".*": { $ref: "urn:topgen:reset_connection" }
+      }
       description: "dict with reset sources"
     }
     clock_connections: { type: "object", description: "generated clock connections; added property" },
