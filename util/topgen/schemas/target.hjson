@@ -11,6 +11,9 @@
   properties: {
     name: { type: "string", description: "Name of target" },
     pinout: { type: "object", description: "Target-specific pinout configuration" },
-    pinmux: { type: "object", description: "Target-specific pinmux configuration" }
+    pinmux: {
+      $ref: "urn:topgen:target_pinmux",
+      description: "Target-specific pinmux configuration"
+    }
   }
 }
