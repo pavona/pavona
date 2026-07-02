@@ -77,21 +77,32 @@ class soc_dbg_ctrl_base_config_parameters extends dv_config_parameters;
   endfunction : new
 endclass : soc_dbg_ctrl_base_config_parameters
 
-
-// Reset-safe base virtual sequence. Every soc_dbg_ctrl vseq derives from this so all
-// tests get random-reset injection by default.
-class soc_dbg_ctrl_base_vseq extends cip_rand_rst_safe_base_vseq #(
+// TODO:
+// Base virtual sequence. Extends the legacy cip_base_vseq so that run_common_vseq_wrapper
+// dispatches to cip_base_vseq. The reset-safe parent class and framework method
+// overrides below are commented out for a future migration back to the reset-safe
+// framework once it's stable.
+// class soc_dbg_ctrl_base_vseq extends cip_rand_rst_safe_base_vseq #(
+//     .RAL_T               (soc_dbg_ctrl_core_reg_block),
+//     .CFG_T               (soc_dbg_ctrl_env_cfg),
+//     .COV_T               (soc_dbg_ctrl_env_cov),
+//     .VIRTUAL_SEQUENCER_T (soc_dbg_ctrl_virtual_sequencer),
+//     .TEST_PARAMS_T       (soc_dbg_ctrl_base_test_seq_parameters),
+//     .CONFIG_PARAMS_T     (soc_dbg_ctrl_base_config_parameters)
+//   );
+class soc_dbg_ctrl_base_vseq extends cip_base_vseq #(
     .RAL_T               (soc_dbg_ctrl_core_reg_block),
     .CFG_T               (soc_dbg_ctrl_env_cfg),
     .COV_T               (soc_dbg_ctrl_env_cov),
-    .VIRTUAL_SEQUENCER_T (soc_dbg_ctrl_virtual_sequencer),
-    .TEST_PARAMS_T       (soc_dbg_ctrl_base_test_seq_parameters),
-    .CONFIG_PARAMS_T     (soc_dbg_ctrl_base_config_parameters)
+    .VIRTUAL_SEQUENCER_T (soc_dbg_ctrl_virtual_sequencer)
   );
   `uvm_object_utils(soc_dbg_ctrl_base_vseq)
 
   soc_dbg_ctrl_jtag_reg_block jtag_ral;
 
+  // TODO:
+  // Bias reset injection to arrive mid-transaction. Consumed by
+  // cip_base_vseq::run_seq_with_rand_reset_vseq.
   constraint rand_reset_delay_c {
     rand_reset_delay dist {
       [10  : 50]  :/ 6,
@@ -102,19 +113,39 @@ class soc_dbg_ctrl_base_vseq extends cip_rand_rst_safe_base_vseq #(
 
   // Standard SV/UVM methods
   extern function new(string name="");
+  extern function void set_handles();
+  extern virtual task dut_init(string reset_kind = "HARD");
 
-  // Overrides required by the reset-safe framework
   extern virtual task          pre_start();
   extern virtual task          reset_trigger_thread();
-  extern virtual function void handle_reset_assertion();
-  extern virtual task          dut_init();
-  extern virtual task          main_thread();
+  // TODO:
+  // Reset-safe framework overrides kept commented for future migration.
+  // extern virtual function void handle_reset_assertion();
+  // extern virtual task          main_thread();
 endclass : soc_dbg_ctrl_base_vseq
 
 
 function soc_dbg_ctrl_base_vseq::new(string name="");
   super.new(name);
 endfunction : new
+
+function void soc_dbg_ctrl_base_vseq::set_handles();
+  super.set_handles();
+  `downcast(jtag_ral, cfg.ral_models[cfg.jtag_ral_name]);
+endfunction : set_handles
+
+task soc_dbg_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
+  // Drive DUT external inputs to safe defaults before super.dut_init() applies reset.
+  cfg.misc_vif.set_soc_dbg_state_blank();
+  cfg.misc_vif.set_lc_dft_en_off();
+  cfg.misc_vif.set_lc_hw_debug_en_off();
+  cfg.misc_vif.set_lc_raw_test_rma_off();
+  cfg.misc_vif.set_lc_cpu_en_off();
+  cfg.misc_vif.set_lc_rma_state_off();
+  cfg.misc_vif.init_boot_status();
+  cfg.misc_vif.enable_halt_cpu_boot();
+  super.dut_init(reset_kind);
+endtask : dut_init
 
 task soc_dbg_ctrl_base_vseq::pre_start();
   super.pre_start();
@@ -134,22 +165,11 @@ task soc_dbg_ctrl_base_vseq::reset_trigger_thread();
   rst_seq.start(p_sequencer.clk_rst_sequencer_h);
 endtask : reset_trigger_thread
 
-function void soc_dbg_ctrl_base_vseq::handle_reset_assertion();
-  super.handle_reset_assertion();
-endfunction : handle_reset_assertion
-
-task soc_dbg_ctrl_base_vseq::dut_init();
-  // Initialize some of the DUT inputs
-  cfg.misc_vif.set_soc_dbg_state_blank();
-  cfg.misc_vif.set_lc_dft_en_off();
-  cfg.misc_vif.set_lc_hw_debug_en_off();
-  cfg.misc_vif.set_lc_raw_test_rma_off();
-  cfg.misc_vif.set_lc_cpu_en_off();
-  cfg.misc_vif.set_lc_rma_state_off();
-  cfg.misc_vif.init_boot_status();
-  cfg.misc_vif.enable_halt_cpu_boot();
-endtask : dut_init
-
-task soc_dbg_ctrl_base_vseq::main_thread();
-  `uvm_fatal(`gfn, "Derived sequence must implement main_thread()")
-endtask : main_thread
+// TODO: To be included once cip_rand_rst_safe_base_vseq is stable
+// function void soc_dbg_ctrl_base_vseq::handle_reset_assertion();
+//   super.handle_reset_assertion();
+// endfunction : handle_reset_assertion
+//
+// task soc_dbg_ctrl_base_vseq::main_thread();
+//   `uvm_fatal(`gfn, "Derived sequence must implement main_thread()")
+// endtask : main_thread
