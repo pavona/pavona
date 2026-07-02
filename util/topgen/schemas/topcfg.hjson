@@ -98,6 +98,9 @@
     }
     targets: {
       type: "array",
+      items: {
+        $ref: "urn:topgen:target"
+      }
       description: "target configurations"
     }
 
