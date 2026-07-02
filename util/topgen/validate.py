@@ -41,20 +41,12 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-pinmux_sig_required = {
-    'instance': ['s', 'Module instance name'],
-    'connection': [
-        's', 'Specification of connection type, can be direct, manual or '
-        'muxed'
-    ],
-}
 pinmux_sig_optional = {
     'port': ['s', 'Port name of module'],
     'pad': ['s', 'Pad name for direct connections'],
     'desc': ['s', 'Signal description'],
     'attr': ['s', 'Pad type for generating the correct attribute CSR']
 }
-pinmux_sig_added = {}
 
 pinmux_io_required = {
     'name': ['s', 'the name of the io'],
@@ -646,9 +638,6 @@ def check_pinmux(top: ConfigT, prefix: str) -> int:
     # Note: the actual signal crosscheck is deferred until the merge stage,
     # since we have no idea at this point which IOs comportable IPs expose.
     for sig in top['pinmux']['signals']:
-        error += check_keys(sig, pinmux_sig_required, pinmux_sig_optional,
-                            pinmux_sig_added, prefix + ' Pinmux signal')
-
         if sig['connection'] not in ['direct', 'manual', 'muxed']:
             log.warning(f'Invalid connection type {sig["connection"]}')
             error += 1
