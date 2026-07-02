@@ -863,19 +863,20 @@ pavona_test(
 pavona_test(
     name = "otp_ctrl_lc_signals_test",
     srcs = ["otp_ctrl_lc_signals_test.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_dragonfly:sim_dv": None,
+    },
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -885,7 +886,22 @@ pavona_test(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//hw/top_egret/sw/autogen:top_egret",
+                "//sw/device/lib/dif:flash_ctrl",
+                "//sw/device/lib/dif:keymgr",
+                "//sw/device/lib/testing:keymgr_testutils",
+            ],
+            "dragonfly": [
+                "//hw/top_dragonfly/sw/autogen:top_dragonfly",
+                "//sw/device/lib/dif:keymgr_dpe",
+                "//sw/device/lib/testing:keymgr_dpe_testutils",
+            ],
+        },
+        [],
+    ),
 )
 
 pavona_test(
