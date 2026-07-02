@@ -41,15 +41,6 @@ import jsonschema.exceptions
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-pinmux_io_count_required = {
-    'inouts': ['d', 'the count of inout ios of the io type'],
-    'inputs': ['d', 'the count of inout ios of the io type'],
-    'outputs': ['d', 'the count of inout ios of the io type'],
-    'pads': ['d', 'the count of pads of the io type'],
-}
-pinmux_io_count_optional = {}
-pinmux_io_count_added = {}
-
 pinout_required = {
     'banks': ['l', 'List of IO power banks'],
     'pads': ['l', 'List of pads']
@@ -704,11 +695,6 @@ def check_pinmux(top: ConfigT, prefix: str) -> int:
         if k not in ['dedicated', 'muxed']:
             log.error(f'{prefix} Pinmux io counts unexpected key {k}')
             error += 1
-        for count in counts:
-            error += check_keys(count, pinmux_io_count_required,
-                                pinmux_io_count_optional,
-                                pinmux_io_count_added,
-                                f'{prefix} Pinmux io {k} counts')
     return error
 
 

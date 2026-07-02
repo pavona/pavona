@@ -27,6 +27,9 @@
     },
     io_counts: {
       type: "object",
+      patternProperties: {
+        ".*": { $ref: "urn:topgen:pinmux_io_count" }
+      }
       description: "count of ios grouped by dedicated or muxed; added property"
     }
   }

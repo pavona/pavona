@@ -1,0 +1,17 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:pinmux_io_count",
+  title: "Pinmux I/O Count",
+  description: "Number of pinmux I/Os of each type",
+  type: "object",
+  required: ["inouts", "inputs", "outputs", "pads"]
+  properties: {
+    inouts: { type: "number", description: "the count of inout ios of the io type" },
+    inputs: { type: "number", description: "the count of input ios of the io type" },
+    outputs: { type: "number", description: "the count of output ios of the io type" },
+    pads: { type: "number", description: "the count of pads of the io type" },
+  }
+}
