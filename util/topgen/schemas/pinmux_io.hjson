@@ -1,0 +1,31 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:pinmux_io",
+  title: "Pinmux I/O",
+  description: "Top level I/O listing for pinmux",
+  type: "object",
+  required: ["name", "width", "connection", "type"]
+  properties: {
+    name: {type: "string", description: "the name of the io"},
+    width: {type: "number", description: "the bit width of the io"},
+    type: {
+      enum: ["input", "output", "inout"],
+      description: "input, output, or inout"
+    },
+    idx: { type: "number" },
+    pad: { type: "string", description: "Pad name for direct connections" },
+    attr: {
+      type: "string",
+      description: "Pad type for generating the correct attribute CSR"
+    }
+    connection: {
+      enum: ["direct", "manual", "muxed"],
+      description: "Specification of connection type, can be direct, manual or muxed"
+    },
+    desc: { type: "string", description: "Signal description" },
+    glob_idx: { type: "number" },
+  }
+}
