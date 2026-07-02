@@ -1,0 +1,25 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:reset_requests",
+  title: "Reset Requests",
+  description: "Top level listing of reset requests",
+  type: "object",
+  additionalProperties: false
+  properties: {
+    int: {
+      type: "array",
+      description: "internal request list, for example, escalation reset and power glitches"
+    },
+    debug: {
+        type: "array",
+        description: "debug request list, since a different set of resets becomes active"
+    },
+    peripheral: {
+        type: "array",
+        description: "peripheral request list, where the reset requests are explicit in the top config"
+    }
+  }
+}
