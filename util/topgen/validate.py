@@ -41,14 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-target_pinout_required = {
-    'remove_ports': ['l', 'List of port names to remove from the port list'],
-    'remove_pads': ['l', 'List of pad names to remove and stub out'],
-    'add_pads': ['l', 'List of manual pads to add'],
-}
-target_pinout_optional = {}
-target_pinout_added = {}
-
 straps_required = {
     'tap0': ['s', 'Name of tap0 pad'],
     'tap1': ['s', 'Name of tap1 pad'],
@@ -665,10 +657,6 @@ def check_implementation_targets(top: ConfigT, prefix: str) -> int:
             log.warning('Target name {} is not unique'.format(target['name']))
             error += 1
         known_names[target['name']] = 1
-
-        error += check_keys(target['pinout'], target_pinout_required,
-                            target_pinout_optional, target_pinout_added,
-                            prefix + ' Target pinout')
 
         # Check special pad signals
         known_entry_names = {}

@@ -10,7 +10,10 @@
   required: ["name", "pinout", "pinmux"]
   properties: {
     name: { type: "string", description: "Name of target" },
-    pinout: { type: "object", description: "Target-specific pinout configuration" },
+    pinout: {
+      $ref: "urn:topgen:target_pinout",
+      description: "Target-specific pinout configuration"
+    },
     pinmux: {
       $ref: "urn:topgen:target_pinmux",
       description: "Target-specific pinmux configuration"
