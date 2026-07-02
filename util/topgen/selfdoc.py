@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from topgen.validate import (top_seed_required, top_seed_optional,
-                             module_required, module_optional)
+from topgen.validate import (module_required, module_optional)
 from reggen.gen_selfdoc import doc_tbl_head, doc_tbl_line
 from basegen.validate import BUILTIN_SCHEMAS_REGISTRY
 import jsonschema2md
@@ -46,10 +45,9 @@ def document(outfile):
     make_usage_table(outfile, required=module_required, optional=module_optional)
     outfile.write("\n")
 
-    outfile.write("""\nTops must also come with a seed configuration Hjson.
-Seed configs must include the following keys:\n""")
-    make_usage_table(outfile, required=top_seed_required,
-                     optional=top_seed_optional)
+    outfile.write("""\nTops must also come with a seed configuration Hjson.\n""")
+    document_schema(outfile, "urn:topgen:seedcfg")
+    outfile.write("\n")
 
     for schemafile in sorted((Path(__file__).parent / "schemas").iterdir()):
         schema_name = schemafile.stem  # assume schema name matches file name

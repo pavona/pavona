@@ -41,17 +41,6 @@ import jsonschema.exceptions
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-# Required/optional field in top seeds hjson
-top_seed_required = {
-    'name': ['s', 'Top name'],
-    'topgen_seed': ['d', "Seed for topgen generated random netlist constants"],
-}
-
-top_seed_optional = {
-    'otp_img_seed': ['d', "Seed for OTP image generation"],
-    'lc_ctrl_seed': ['d', "Seed for lc_ctrl generated random netlist constants"],
-}
-
 pinmux_required = {
     'enable_usb_wakeup': ['pb', 'Enable USB wakeup in pinmux'],
     'enable_strap_sampling':
@@ -1213,14 +1202,16 @@ def validate_seed_cfg(top: ConfigT, seed_cfg: ConfigT):
     # Validate seed information is here. First determine the required keys depending on the
     # top configuration
     if find_module(top["module"], "otp_ctrl"):
-        top_seed_required["otp_img_seed"] = top_seed_optional["otp_img_seed"]
+        assert "otp_img_seed" in seed_cfg, "presence of otp_ctrl requires OTP image seed"
     if find_module(top["module"], "lc_ctrl"):
-        top_seed_required["lc_ctrl_seed"] = top_seed_optional["lc_ctrl_seed"]
+        assert "lc_ctrl_seed" in seed_cfg, "presence of lc_ctrl requires LC controller seed"
 
-    error = check_keys(seed_cfg, top_seed_required, top_seed_optional, [], "seed")
-    if error:
+    try:
+        validate_schema(seed_cfg, "urn:topgen:seedcfg")
+    except jsonschema.exceptions.ValidationError:
         log.error("Seed HJSON has errors. Aborting")
-    return error
+        return 1
+    return 0
 
 
 def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
