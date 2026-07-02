@@ -41,24 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-reset_requests_required = {}
-reset_requests_optional = {
-    'int': [
-        's', 'internal request list, for example, escalation reset and '
-        'power glitches'
-    ],
-    'debug': [
-        's',
-        'debug request list, since a different set of resets becomes active'
-    ],
-    'peripheral': [
-        's',
-        'peripheral request list, where the reset requests are explicit in '
-        'the top config'
-    ],
-}
-reset_requests_added = {}
-
 reset_request_required = {
     'name': ['s', 'the reset request name'],
     'desc': ['s', 'the reset request description'],
@@ -627,17 +609,8 @@ def check_clocks_resets(top: ConfigT, ip_name_to_block: IpBlocksT,
 
 def check_reset_requests(top: ConfigT, component: str) -> int:
     error = 0
-    for key, resets in top.get('reset_requests', {}).items():
-        all_keys = [
-            k for d in [
-                reset_requests_required, reset_requests_optional,
-                reset_requests_added
-            ] for k in d.keys()
-        ]
-        if key not in all_keys:
-            log.error(f'unknown key {key} in {component} Reset requests')
-            error += 1
-        for reset_req in resets:
+    for reset_list in top.get('reset_requests', {}).values():
+        for reset_req in reset_list:
             error += check_keys(reset_req, reset_request_required,
                                 reset_request_optional, reset_request_added,
                                 f'{component} Reset request')
