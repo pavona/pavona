@@ -6,8 +6,9 @@
 
 ## Design Details
 
+<!-- BEGIN-FEATURE: UART.PARITY -->
 ### Serial interface (both directions)
-
+  
 The TX/RX serial lines are high when idle. Data starts with a START bit (high
 idle state deasserts, **1**-->**0**) followed by 8 data bits. The least
 significant bit is sent first. If the parity feature is turned on then an odd or
@@ -42,7 +43,9 @@ completes one byte of data transfer.
   }
 }
 ```
+<!-- END-FEATURE: UART.PARITY -->
 
+<!-- BEGIN-FEATURE: UART.SYSTEM_LOOPBACK -->
 ### Transmission
 
 A write to [`WDATA`](registers.md#wdata) enqueues a data byte into the 32 byte deep write FIFO, which
@@ -50,13 +53,16 @@ triggers the transmit module to start UART TX serial data transfer. The TX
 module dequeues the byte from the FIFO and shifts it bit by bit out to the UART
 TX pin on positive edges of the baud clock.
 
+The transmitter can be configured into system_loopback mode, in which theoutgoing bits are registered as having been received on the RX side. 
+
 If TX is not enabled, written DATA into FIFO will be stacked up and sent out
 when TX is enabled.
 
 When the FIFO becomes empty as part of transmission, a TX FIFO done interrupt will be raised when the final byte has finished transmitting.
 This is separate from the TX FIFO water mark interrupt.
+<!-- END-FEATURE: UART.SYSTEM_LOOPBACK -->
 
-
+<!-- BEGIN-FEATURE: UART.LINE_LOOPBACK -->
 ### Reception
 
 The RX module oversamples the RX input pin at 16x the requested
@@ -69,6 +75,8 @@ incoming serial bits into a character buffer. If the STOP bit is
 detected as high and the optional parity bit is correct the data byte
 is pushed into a 32 byte deep RX FIFO. The data can be read out by
 reading [`RDATA`](registers.md#rdata) register.
+
+The reciever can be configured into line_loopback mode, in which the incoming bits are sent along the TX side. 
 
 This behavior of the receiver can be used to compute the approximate
 baud clock frequency error that can be tolerated between the
@@ -109,7 +117,9 @@ In practice, the transmitter and receiver will both differ from the
 ideal baud rate. Since the worst case difference for reception is 5%,
 the uart can be expected to work if both sides are within +/- 2.5% of
 the ideal baud rate.
+<!-- END-FEATURE: UART.LINE_LOOPBACK -->
 
+<!-- BEGIN-FEATURE: UART.BAUD_RATE_CONTROL -->
 ### Setting the baud rate
 
 The baud rate is set by writing to the [`CTRL.NCO`](registers.md#ctrl) register field. This should be
@@ -158,13 +168,14 @@ care is needed for 9600 baud and below if the system clock is over
 250MHz, with 4800 baud and below if the system clock is over 125MHz,
 2400 baud and below if the system clock is over 62MHz, and 1200 baud
 and below if the system clock is over 31MHz.
-
+<!-- END-FEATURE: UART.BAUD_RATE_CONTROL -->
 
 ### Interrupts
 
 UART module has a few interrupts including general data flow interrupts
 and unexpected event interrupts.
 
+<!-- BEGIN-FEATURE: UART.FIFO_INTERRUPTS -->
 #### tx_watermark / tx_empty / rx_watermark
 If the TX FIFO level becomes smaller than the TX water mark level (configurable via [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl--txilvl)), the `tx_watermark` interrupt is raised to inform SW.
 If the TX FIFO is empty, the `tx_empty` interrupt is raised to inform SW.
@@ -173,15 +184,19 @@ If the RX FIFO level becomes greater than or equal to RX water mark level (confi
 Note that the watermark interrupts and the empty interrupt are level-based status interrupts.
 They will stay asserted for as long as the FIFO levels are in violation of the configured level and cannot be cleared by writing to the status register.
 This also means that `tx_watermark` and `tx_empty` start off in an asserted state (reset high).
+<!-- END-FEATURE: UART.FIFO_INTERRUPTS -->
 
 #### tx_done
 If TX FIFO becomes empty as part of transmit, the interrupt `tx_done` is asserted once the final byte has been transmitted.
 The transmitted contents may be garbage at this point as old FIFO contents will likely be transmitted.
 
+<!-- BEGIN-FEATURE: UART.FIFO_INTERRUPTS -->
 #### rx_overflow
 If RX FIFO receives an additional write request when its FIFO is full,
 the interrupt `rx_overflow` is asserted and the character is dropped.
+<!-- END-FEATURE: UART.FIFO_INTERRUPTS -->
 
+<!-- BEGIN-FEATURE: UART.LINE_BREAK -->
 #### rx_break_err
 The `rx_break_err` interrupt is triggered if a break condition has
 been detected. A break condition is defined as the RX pin being
@@ -205,6 +220,7 @@ an interrupt that has been cleared but the line break is still going
 on. If [`STATUS.BREAK`](registers.md#status) is clear but [`INTR_STATE.BREAK`](registers.md#intr_state) is set then
 there has been a line break for which software has not cleared the
 interrupt but the line is now back to normal.
+<!-- END-FEATURE: UART.LINE_BREAK -->
 
 #### rx_frame_err
 The `rx_frame_err` interrupt is triggered if the RX module receives the `START`
@@ -269,7 +285,9 @@ character from the RX FIFO and right after it there is a baud clock tick and the
 start of a new RX transaction from the host, the timeout time is reduced by 1
 and half baud clock periods.
 
+<!-- BEGIN-FEATURE: UART.PARITY -->
 #### rx_parity_err
 The `rx_parity_err` interrupt is triggered if parity is enabled and
 the RX parity bit does not match the expected polarity as programmed
 in [`CTRL.PARITY_ODD`](registers.md#ctrl--parity_odd).
+<!-- END-FEATURE: UART.PARITY -->

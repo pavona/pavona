@@ -11,6 +11,7 @@ the top level netlist.
 
 <%text>## Design Details</%text>
 
+<!-- BEGIN-FEATURE: GPIO.OUT.MASK -->
 <%text>### GPIO Output logic</%text>
 
 ![GPIO Output Diagram](../doc/gpio_output.svg)
@@ -47,6 +48,7 @@ values, then switch to masked access for both `DATA_OUT` and `DATA_OE`.
 For GPIO outputs that are not used (either not wired to a pin output or
 not selected for pin multiplexing), the output values are disconnected
 and have no effect on the GPIO input, regardless of output enable values.
+<!-- END-FEATURE: GPIO.OUT.MASK -->
 
 <%text>### GPIO Input</%text>
 
@@ -81,7 +83,8 @@ The `strap_en_i` signal transition from low to high is expected only once after 
 Sampling occurs exclusively at this time, and any subsequent changes to the GPIO input configuration will not be captured.
 This mechanism samples all 32 bits of the GPIO input data, regardless of the GPIO output enable status, providing a reliable snapshot of the input values for firmware access.
 
-
+<!-- BEGIN-FEATURE: GPIO.IN.INTR_CTRL -->
+<!-- BEGIN-FEATURE: GPIO.IN.FILTER -->
 <%text>### Interrupts</%text>
 
 The GPIO module provides 32 interrupt signals to the main processor.
@@ -108,6 +111,8 @@ assistance to indicate which edge caused the output interrupt.
 **Note #3:** All interrupts to the processor are level interrupts as per the Comportability Specification guidelines.
 The GPIO module, if configured, converts an edge detection into a level interrupt to the processor core.
 % if num_inp_period_counters > 0:
+<!-- END-FEATURE: GPIO.IN.INTR_CTRL -->
+<!-- END-FEATURE: GPIO.IN.FILTER -->
 
 <%text>### Input Period Counters</%text>
 

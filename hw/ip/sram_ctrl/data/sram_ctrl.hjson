@@ -164,6 +164,12 @@
         Configuration can be locked, using a REGWEN CSR.
       '''
     },
+    { name: "SRAM_CTRL.READBACK",
+      desc: '''
+        Software can read back SRAM contents after writes for verification.
+        A configuration register can be set to lock this feature.
+      '''
+    },
   ]
 
   /////////////////////////////

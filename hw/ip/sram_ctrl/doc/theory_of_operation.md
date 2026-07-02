@@ -1,5 +1,9 @@
 # Theory of Operation
 
+<!-- BEGIN-FEATURE: SRAM_CTRL.INTEGRITY -->
+<!-- BEGIN-FEATURE: SRAM_CTRL.SCRAMBLED -->
+<!-- BEGIN-FEATURE: SRAM_CTRL.MEMSET -->
+<!-- BEGIN-FEATURE: SRAM_CTRL.SUBWORD_ACCESS -->
 ## Block Diagram
 
 ![SRAM Controller Block Diagram](../doc/sram_ctrl_blockdiag.svg)
@@ -8,7 +12,7 @@ As shown in the block diagram above, the SRAM controller contains a TL-UL adapte
 
 The SRAM controller supports the system-wide end-to-end bus integrity scheme and thus stores the data integrity bits alongside each data word in the memory.
 This means that both the 32 data bits and the 7 integrity bits are passed through the scrambling device.
-
+BEGIN
 Sub-word write operations therefore perform a read-modify-write operation in order to ensure consistency of the integrity bits.
 Hence, the throughput of sub-word write operations is three times lower than for full-word write operations.
 Note however that the throughput of read operations is the same for full- and sub-word read operations.
@@ -22,6 +26,11 @@ Similarly to the scrambling key, it is the task of SW to request memory initiali
 Note that TL-UL accesses to the memory that occur while a key request or hardware initialization is pending will be blocked until the request has completed.
 
 The individual mechanisms are explained in more detail in the subsections below.
+<!-- END-FEATURE: SRAM_CTRL.INTEGRITY -->
+<!-- END-FEATURE: SRAM_CTRL.SCRAMBLED -->
+<!-- END-FEATURE: SRAM_CTRL.MEMSET -->
+<!-- END-FEATURE: SRAM_CTRL.SUBWORD_ACCESS -->
+
 
 ## Scrambling Primitive
 
@@ -29,6 +38,7 @@ As explained in [`prim_ram_1p_scr`](../../prim/doc/prim_ram_1p_scr.md) the scram
 
 In order to break the linear address space, the CTR mode is augmented with an S&P network to non-linearly remap the SRAM address as shown in the block diagram above. The S&P network employed is similar to the one employed in PRESENT and is explained in more detail [here](../../prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network).
 
+<!-- BEGIN-FEATURE: SRAM_CTRL.LOCK_ON_ERROR -->
 ### Integrity Error Handling
 
 When an integrity error is encountered, the `sram_ctrl` will latch the integrity error and send out a `fatal_bus_integ_error` until the next reset (the generation of the integrity error is determined by system integration).
@@ -37,7 +47,10 @@ In addition, the latched error condition is fed into the `prim_ram_1p_scr` primi
 *  Disallow any transaction (read or write) on the actual memory macro.
 
 This behavior, combined with other top level defenses, forms a multi-layered defense when integrity errors are seen in the system.
+<!-- END-FEATURE: SRAM_CTRL.LOCK_ON_ERROR -->
 
+<!-- BEGIN-FEATURE: SRAM_CTRL.SCRAMBLED -->
+<!-- BEGIN-FEATURE: SRAM_CTRL.MEMSET -->
 ### LFSR Initialization Feature
 
 Since the scrambling device uses a block cipher in CTR mode, it is undesirable from a security perspective to initialize the memory with all zeros.
@@ -53,7 +66,11 @@ If SW triggers the scrambling key update and LFSR initialization at the same tim
 
 There is no limit on how often the initialization feature can be called, and hence it can also be used as a cheap SRAM wiping mechanism at runtime.
 Note however that the PRNG sequence does not have strong security guarantees, since it is produced using an LFSR.
+<!-- END-FEATURE: SRAM_CTRL.SCRAMBLED -->
+<!-- END-FEATURE: SRAM_CTRL.MEMSET -->
 
+<!-- BEGIN-FEATURE: SRAM_CTRL.FETCH_ALLOW -->
+<!-- BEGIN-FEATURE: SRAM_CTRL.REGWEN -->
 ### Code Execution from SRAM
 
 The SRAM controller contains an access control mechanism for filtering instruction fetches from the processor.
@@ -76,6 +93,11 @@ If the feature is turned off via the `InstrExec` parameter, the execute from SRA
 
 As an example, the `top_egret` design only enables this feature on the main SRAM, and permanently disables it on the retention SRAM.
 
+In addition, the SRAM controller contains a REGWEN CSR as a one-way lock register that controls whether configuration CSRs can be modified.
+<!-- END-FEATURE: SRAM_CTRL.FETCH_ALLOW -->
+<!-- END-FEATURE: SRAM_CTRL.REGWEN -->
+
+<!-- BEGIN-FEATURE: SRAM_CTRL.SUBWORD_ACCESS -->
 ### Read and Write Sequencing
 
 For timing reasons, the scrambling primitive instantiates a register halfway in the PRINCE block cipher.
@@ -99,6 +121,7 @@ Read accesses however always take 1 cycle, no matter whether the access is a ful
 
 Note that this has been implemented in this way to not overly complicate the design, and since it is assumed that sub-word write operations happen relatively infrequently.
 For full write throughput, a more elaborate write buffering scheme would be required.
+<!-- END-FEATURE: SRAM_CTRL.SUBWORD_ACCESS -->
 
 ### ECC Error Handling and Correction
 
