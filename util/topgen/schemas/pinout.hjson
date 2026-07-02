@@ -1,0 +1,15 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:pinout",
+  title: "Pinout",
+  description: "Top level pinout",
+  type: "object",
+  required: ["banks", "pads"]
+  properties: {
+    banks: { type: "array", description: "List of IO power banks" },
+    pads: { type: "array", description: "List of pads" },
+  }
+}

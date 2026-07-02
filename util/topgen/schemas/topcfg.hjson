@@ -89,7 +89,7 @@
 
     // hardware implementation details
     pinout: {
-      type: "object",
+      $ref: "urn:topgen:pinout",
       description: "pinout configuration"
     }
     pinmux: {
