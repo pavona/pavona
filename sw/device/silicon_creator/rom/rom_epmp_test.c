@@ -358,9 +358,6 @@ void rom_main(void) {
   // Initialize sec_mmio.
   sec_mmio_init();
 
-  // Configure debug ROM ePMP entry.
-  rom_epmp_config_debug_rom(kLcStateProd);
-
   // Initialize pinmux configuration so we can use the UART.
   dif_pinmux_t pinmux;
   OT_DISCARD(dif_pinmux_init(

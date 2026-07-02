@@ -68,13 +68,6 @@ void rom_epmp_unlock_rom_ext_rx(epmp_region_t region);
  * @param region Region in the ROM_EXT image to receive read-only permission.
  */
 void rom_epmp_unlock_rom_ext_r(epmp_region_t region);
-/**
- * Configure the ePMP entry to manage access to Debug ROM based on life cycle
- * state.
- *
- * @param lc_state The current lifecycle state to check for debug enable.
- */
-void rom_epmp_config_debug_rom(lifecycle_state_t lc_state);
 
 #ifdef __cplusplus
 }  // extern "C"
