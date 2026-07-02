@@ -190,7 +190,7 @@ options:
 - <a id="properties/unmanaged_clocks"></a>**`unmanaged_clocks`** *(array, required)*: list of unmanaged external clocks.
 - <a id="properties/clocks"></a>**`clocks`** *(object, required)*: group of clock properties.
 - <a id="properties/resets"></a>**`resets`** *(object, required)*: list of resets.
-- <a id="properties/reset_requests"></a>**`reset_requests`** *(object)*: define reset requests grouped by type.
+- <a id="properties/reset_requests"></a>**`reset_requests`**: define reset requests grouped by type. Refer to *[urn:topgen:reset_requests](#n%3Atopgen%3Areset_requests)*.
 - <a id="properties/num_cores"></a>**`num_cores`** *(integer)*: number of computing units.
 - <a id="properties/default_plic"></a>**`default_plic`** *(string)*: Modules not defining plic have interrupts sent here.
 - <a id="properties/default_alert_handler"></a>**`default_alert_handler`** *(string)*: Modules not defining alert_handler have alerts sent here.
@@ -401,6 +401,16 @@ Tops must also come with a seed configuration Hjson.
 
 - <a id="properties/name"></a>**`name`** *(string, required)*: name of the connecting reset.
 - <a id="properties/domain"></a>**`domain`** *(string, required)*: connected domain.
+
+### Reset Requests
+
+*Top level listing of reset requests*
+
+#### Properties
+
+- <a id="properties/int"></a>**`int`** *(array)*: internal request list, for example, escalation reset and power glitches.
+- <a id="properties/debug"></a>**`debug`** *(array)*: debug request list, since a different set of resets becomes active.
+- <a id="properties/peripheral"></a>**`peripheral`** *(array)*: peripheral request list, where the reset requests are explicit in the top config.
 
 ### Special Signal
 
