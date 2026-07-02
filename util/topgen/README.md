@@ -266,6 +266,22 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/otp_img_seed"></a>**`otp_img_seed`** *(integer)*: Seed for OTP image generation.
 - <a id="properties/lc_ctrl_seed"></a>**`lc_ctrl_seed`** *(integer)*: Seed for lc_ctrl generated random netlist constants.
 
+### Eflash
+
+*Flash memory configuration*
+
+#### Properties
+
+- <a id="properties/type"></a>**`type`** *(string, required)*: string indicating type of memory.
+- <a id="properties/banks"></a>**`banks`** *(integer, required)*: number of flash banks.
+- <a id="properties/pages_per_bank"></a>**`pages_per_bank`** *(integer, required)*: number of data pages per flash bank.
+- <a id="properties/program_resolution"></a>**`program_resolution`** *(integer, required)*: maximum number of flash words allowed to program at a time.
+- <a id="properties/words_per_page"></a>**`words_per_page`** *(integer, required)*: number of words per page.
+- <a id="properties/data_width"></a>**`data_width`** *(integer, required)*: number of bits per data word.
+- <a id="properties/integrity_width"></a>**`integrity_width`** *(integer, required)*: number of integrity bits per data word.
+- <a id="properties/info_types"></a>**`info_types`** *(integer, required)*: number of different info page types.
+- <a id="properties/infos_per_bank"></a>**`infos_per_bank`** *(array, required)*: number of pages per info type, the size of the list must match 'info_types'.
+
 ### Pad
 
 *I/O pad configuration*
