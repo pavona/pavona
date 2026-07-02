@@ -41,21 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-pinmux_required = {
-    'enable_usb_wakeup': ['pb', 'Enable USB wakeup in pinmux'],
-    'enable_strap_sampling':
-    ['pb', 'Enable hardware strap sampling of pinmux']
-}
-pinmux_optional = {
-    'num_wkup_detect': ['d', 'Number of wakeup detectors'],
-    'wkup_cnt_width': ['d', 'Number of bits in wakeup detector counters'],
-    'signals': ['l', 'List of Dedicated IOs.'],
-}
-pinmux_added = {
-    'ios': ['l', 'Full list of IO'],
-    'io_counts': ['g', 'count of ios grouped by dedicated or muxed'],
-}
-
 pinmux_sig_required = {
     'instance': ['s', 'Module instance name'],
     'connection': [
@@ -647,8 +632,7 @@ def check_pinout(top: ConfigT, prefix: str) -> int:
 
 
 def check_pinmux(top: ConfigT, prefix: str) -> int:
-    error = check_keys(top['pinmux'], pinmux_required, pinmux_optional,
-                       pinmux_added, prefix + ' Pinmux')
+    error = 0
 
     # This is used for the direct connection accounting below,
     # where we tick off already connected direct pads.

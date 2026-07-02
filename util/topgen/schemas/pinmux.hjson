@@ -1,0 +1,28 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:pinmux",
+  title: "Pinmux",
+  description: "Top level pin multiplexing configuration",
+  type: "object",
+  required: ["enable_usb_wakeup", "enable_strap_sampling"]
+  properties: {
+    signals: { type: "array", description: "List of Dedicated IOs." },
+    wkup_cnt_width: { type: "integer", description: "Number of bits in wakeup detector counters" },
+    num_wkup_detect: { type: "integer", description: "Number of wakeup detectors" },
+    enable_usb_wakeup: { type: "boolean", description: "Enable USB wakeup in pinmux" },
+    enable_strap_sampling: { type: "boolean", description: "Enable hardware strap sampling of pinmux" },
+
+    // ADDED KEYS (in complete config)
+    ios: {
+      type: "array",
+      description: "Full list of IO; added property"
+    },
+    io_counts: {
+      type: "object",
+      description: "count of ios grouped by dedicated or muxed; added property"
+    }
+  }
+}
