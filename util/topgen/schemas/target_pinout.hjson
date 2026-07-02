@@ -1,0 +1,16 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:target_pinout",
+  title: "Target Pinout",
+  description: "Top level target's pinout configuration",
+  type: "object",
+  required: ["remove_ports", "remove_pads", "add_pads"]
+  properties: {
+    remove_ports: { type: "array", description: "List of port names to remove from the port list" },
+    remove_pads: { type: "array", description: "List of pad names to remove and stub out" },
+    add_pads: { type: "array", description: "List of manual pads to add" }
+  }
+}
