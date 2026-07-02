@@ -280,6 +280,7 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/ios"></a>**`ios`** *(array)*: Full list of IO; added property.
   - <a id="properties/ios/items"></a>**Items**: Refer to *[urn:topgen:pinmux_io](#n%3Atopgen%3Apinmux_io)*.
 - <a id="properties/io_counts"></a>**`io_counts`** *(object)*: count of ios grouped by dedicated or muxed; added property.
+  - <a id="properties/io_counts/patternProperties/.%2A"></a>**`.*`**: Refer to *[urn:topgen:pinmux_io_count](#n%3Atopgen%3Apinmux_io_count)*.
 
 ### Pinmux I/O
 
@@ -296,6 +297,17 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: `["direct", "manual", "muxed"]`.
 - <a id="properties/desc"></a>**`desc`** *(string)*: Signal description.
 - <a id="properties/glob_idx"></a>**`glob_idx`** *(integer)*: TODO.
+
+### Pinmux I/O Count
+
+*Number of pinmux I/Os of each type*
+
+#### Properties
+
+- <a id="properties/inouts"></a>**`inouts`** *(integer, required)*: the count of inout ios of the io type.
+- <a id="properties/inputs"></a>**`inputs`** *(integer, required)*: the count of input ios of the io type.
+- <a id="properties/outputs"></a>**`outputs`** *(integer, required)*: the count of output ios of the io type.
+- <a id="properties/pads"></a>**`pads`** *(integer, required)*: the count of pads of the io type.
 
 ### Pinmux Signal
 
