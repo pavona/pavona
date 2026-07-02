@@ -41,14 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-wakeup_required = {
-    'name': ['s', 'the wakeup name'],
-    'width': ['d', 'the width of the signal'],
-    'module': ['s', 'the module sourcing the wakeup'],
-}
-wakeup_optional = {}
-wakeup_added = {}
-
 alert_required = {
     'name': ['s', 'name of the alert signal'],
     'width': ['d', 'the number of alerts in this signal, typically 1'],
@@ -601,14 +593,6 @@ def check_exported_resets(top: ConfigT, component: str) -> int:
     return error
 
 
-def check_wakeups(top: ConfigT, component: str) -> int:
-    error = 0
-    for wakeup in top.get('wakeups', []):
-        error += check_keys(wakeup, wakeup_required, wakeup_optional,
-                            wakeup_added, f'{component} Wakeups')
-    return error
-
-
 # Checks the following
 # - For each defined reset connection in top*.hjson, there exists a defined
 #   port at the destination and defined reset net
@@ -901,7 +885,6 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     check_power_domains(top)
 
     error += check_exported_resets(top, component)
-    error += check_wakeups(top, component)
 
     # Clock / Reset check
     error += check_clocks_resets(top, ip_name_to_block, xbar_name_to_block)
