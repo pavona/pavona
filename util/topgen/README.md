@@ -303,7 +303,7 @@ Tops must also come with a seed configuration Hjson.
 #### Properties
 
 - <a id="properties/label"></a>**`label`** *(string, required)*: region label for the linker script.
-- <a id="properties/swaccess"></a>**`swaccess`**: access attributes for the memory region (ro, rw). Must be one of: `["ro", "rw"]`.
+- <a id="properties/swaccess"></a>**`swaccess`** *(string, required)*: access attributes for the memory region (ro, rw). Must be one of: `["ro", "rw"]`.
 - <a id="properties/data_intg_passthru"></a>**`data_intg_passthru`** *(boolean)*: Integrity bits are passed through directly from the memory.
 - <a id="properties/exec"></a>**`exec`** *(boolean, required)*: executable region indication for the linker script.
 - <a id="properties/byte_write"></a>**`byte_write`** *(boolean, required)*: indicate whether the memory supports byte write accesses.
@@ -392,6 +392,15 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/banks"></a>**`banks`** *(array, required)*: List of IO power banks.
 - <a id="properties/pads"></a>**`pads`** *(array, required)*: List of pads.
   - <a id="properties/pads/items"></a>**Items**: Refer to *[urn:topgen:pad](#n%3Atopgen%3Apad)*.
+
+### Reset Connection
+
+*Module reset connection*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the connecting reset.
+- <a id="properties/domain"></a>**`domain`** *(string, required)*: connected domain.
 
 ### Special Signal
 
