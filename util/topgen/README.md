@@ -394,6 +394,15 @@ This field must be specified if `config` is not specified.
 - <a id="properties/pads"></a>**`pads`** *(array, required)*: List of pads.
   - <a id="properties/pads/items"></a>**Items**: Refer to *[urn:topgen:pad](#n%3Atopgen%3Apad)*.
 
+### Reset Connection
+
+*Module reset connection*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the connecting reset.
+- <a id="properties/domain"></a>**`domain`** *(string, required)*: connected domain.
+
 ### Special Signal
 
 *Special signal for pinmux*
