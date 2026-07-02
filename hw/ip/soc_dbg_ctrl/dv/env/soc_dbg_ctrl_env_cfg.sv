@@ -8,7 +8,6 @@ class soc_dbg_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(soc_dbg_ctrl_core_r
   // External interfaces
   misc_vif_t misc_vif;
 
-  // Reset-safe infrastructure agent configs
   rand clk_rst_agent_cfg clk_rst_agt_cfg;
 
   string jtag_ral_name = "soc_dbg_ctrl_jtag_reg_block";

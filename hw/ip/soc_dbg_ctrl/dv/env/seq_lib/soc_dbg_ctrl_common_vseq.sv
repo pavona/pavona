@@ -34,9 +34,15 @@ endclass : soc_dbg_ctrl_common_config_parameters
 class soc_dbg_ctrl_common_vseq extends soc_dbg_ctrl_base_vseq;
   `uvm_object_utils(soc_dbg_ctrl_common_vseq)
 
+  constraint num_trans_c {
+    num_trans == 1;
+  }
+
   // Standard SV/UVM methods
   extern function new(string name="");
-  extern virtual task main_thread();
+  extern task body();
+  // TODO:
+  // extern virtual task main_thread();   // rst-safe method, for future migration
 endclass : soc_dbg_ctrl_common_vseq
 
 
@@ -48,6 +54,11 @@ function soc_dbg_ctrl_common_vseq::new(string name="");
       soc_dbg_ctrl_common_config_parameters::get_type());
 endfunction : new
 
-task soc_dbg_ctrl_common_vseq::main_thread();
-  run_common_vseq_wrapper(test_params.num_trans);
-endtask : main_thread
+task soc_dbg_ctrl_common_vseq::body();
+  run_common_vseq_wrapper(num_trans);
+endtask : body
+
+// TODO: To be implemented in future rst-safe migration
+// task soc_dbg_ctrl_common_vseq::main_thread();
+//   run_common_vseq_wrapper(test_params.num_trans);
+// endtask : main_thread

@@ -30,7 +30,9 @@ class soc_dbg_ctrl_smoke_vseq extends soc_dbg_ctrl_base_vseq;
 
   // Standard SV/UVM methods
   extern function new(string name="");
-  extern virtual task main_thread();
+  extern task body();
+  // TODO:
+  // extern virtual task main_thread();   // rst-safe method, for future migration
 endclass : soc_dbg_ctrl_smoke_vseq
 
 
@@ -42,6 +44,11 @@ function soc_dbg_ctrl_smoke_vseq::new(string name="");
       soc_dbg_ctrl_smoke_config_parameters::get_type());
 endfunction : new
 
-task soc_dbg_ctrl_smoke_vseq::main_thread();
+task soc_dbg_ctrl_smoke_vseq::body();
   `uvm_error(`gfn, "FIXME")
-endtask : main_thread
+endtask : body
+
+// TODO: To be implemented in future rst-safe migration
+// task soc_dbg_ctrl_smoke_vseq::main_thread();
+//   `uvm_error(`gfn, "FIXME")
+// endtask : main_thread
