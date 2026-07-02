@@ -41,15 +41,6 @@ import jsonschema.exceptions
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-pinout_required = {
-    'banks': ['l', 'List of IO power banks'],
-    'pads': ['l', 'List of pads']
-}
-pinout_optional = {}
-pinout_added = {
-    'idx': ['d', 'the index of the pin'],
-}
-
 pad_required = {
     'name': ['l', 'Pad name'],
     'type': ['s', 'Pad type'],
@@ -576,8 +567,7 @@ def check_incoming_interrupts(top: ConfigT, prefix: str) -> int:
 
 
 def check_pinout(top: ConfigT, prefix: str) -> int:
-    error = check_keys(top['pinout'], pinout_required, pinout_optional,
-                       pinout_added, prefix + ' Pinout')
+    error = 0
 
     known_names = {}
     for pad in top['pinout']['pads']:
