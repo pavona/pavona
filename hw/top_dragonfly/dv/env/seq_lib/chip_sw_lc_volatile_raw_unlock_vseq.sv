@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,8 +12,12 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
   // image.
   bit rom_prod_mode = 1'b0;
 
+  // Indicates whether we expect the volatile RAW unlock feature to be enabled in HW or not.
+  bit exp_volatile_raw_unlock_en = 1'b0;
+
   virtual task pre_start();
     void'($value$plusargs("rom_prod_mode=%0d", rom_prod_mode));
+    void'($value$plusargs("exp_volatile_raw_unlock_en=%0d", exp_volatile_raw_unlock_en));
     super.pre_start();
   endtask
 
@@ -34,33 +39,44 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
 
     // Since super.body only does backdoor operation,
     // add wait for clock task before the test uses jtag polling task.
+    `uvm_info(`gfn, "Waiting for ROM check and LC ready ...", UVM_LOW)
     wait_rom_check_done();
     wait_lc_ready(1);
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
-    // VOLATILE_RAW_UNLOCK does not require a reset after completion.
-    // Applying a reset will move the device back to RAW state in this case.
-    jtag_lc_state_volatile_raw_unlock(JtagTapRvDm);
-    reset_jtag_tap();
+    // If we're expecting the feature to be enabled, the device should boot.
+    if (exp_volatile_raw_unlock_en) begin
+      `uvm_info(`gfn, "Expecting volatile raw unlock enabled.", UVM_LOW)
+      `uvm_info(`gfn, "Waiting for device to boot..", UVM_LOW)
+      // VOLATILE_RAW_UNLOCK does not require a reset after completion.
+      // Applying a reset will move the device back to RAW state in this case.
+      jtag_lc_state_volatile_raw_unlock(JtagTapRvDm);
+      reset_jtag_tap();
 
-    if (rom_prod_mode) begin
-      // The production ROM is not instrumented to report `sw_test_status`, so
-      // we wait for the PC to advance before continuing with the test. The
-      // PC was taken from the ROM disassembly.
-      `DV_WAIT(cfg.chip_vif.probed_cpu_pc.pc_wb >= 8194)
+      if (rom_prod_mode) begin
+        // The production ROM is not instrumented to report `sw_test_status`, so
+        // we wait for the PC to advance before continuing with the test. The
+        // PC was taken from the ROM disassembly.
+        `DV_WAIT(cfg.chip_vif.probed_cpu_pc.pc_wb >= 8194)
+      end else begin
+        // In RAW state the ROM should halt as RomExecEn is not set yet.
+        `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
+      end
+
+      // Wait for `rom_ctrl` to complete the ROM check. This will give the dut
+      // enough time to configure the TAP interface before any JTAG agents send
+      // any commands.
+      wait_rom_check_done();
+
+      // Second VOLATILE_RAW_UNLOCK does not change the TAP interface to rv_dm
+      // so that we can check the completion status through that interface.
+      // After this, the rest of the test should proceed.
+      jtag_lc_state_volatile_raw_unlock(JtagTapLc);
     end else begin
-      // In RAW state the ROM should halt as RomExecEn is not set yet.
-      `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
+      `uvm_info(`gfn, "Expecting volatile raw unlock disabled.", UVM_LOW)
+      // We expect this to fail in this case.
+      jtag_lc_state_volatile_raw_unlock(JtagTapLc);
+      `uvm_info(`gfn, "Transition failed as expected.", UVM_LOW)
     end
-
-    // Wait for `rom_ctrl` to complete the ROM check. This will give the dut
-    // enough time to configure the TAP interface before any JTAG agents send
-    // any commands.
-    wait_rom_check_done();
-
-    // Second VOLATILE_RAW_UNLOCK does not change the TAP interface to rv_dm
-    // so that we can check the completion status through that interface.
-    // After this, the rest of the test should proceed.
-    jtag_lc_state_volatile_raw_unlock(JtagTapLc);
-
   endtask
 endclass
