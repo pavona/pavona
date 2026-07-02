@@ -216,6 +216,7 @@ options:
   - <a id="properties/alert/items"></a>**Items**: Refer to *[urn:topgen:alert](#n%3Atopgen%3Aalert)*.
 - <a id="properties/outgoing_alert"></a>**`outgoing_alert`** *(object)*: the outgoing alert groups; added property.
 - <a id="properties/interrupt"></a>**`interrupt`** *(array)*: interrupts; added property.
+  - <a id="properties/interrupt/items"></a>**Items**: Refer to *[urn:topgen:interrupt](#n%3Atopgen%3Ainterrupt)*.
 - <a id="properties/outgoing_interrupt"></a>**`outgoing_interrupt`** *(object)*: the outgoing interrupt groups; added property.
 - <a id="properties/alert_module"></a>**`alert_module`** *(array)*: list of the modules that connects to alert_handler; added property.
 - <a id="properties/alert_connections"></a>**`alert_connections`** *(object)*
@@ -313,6 +314,23 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/integrity_width"></a>**`integrity_width`** *(integer, required)*: number of integrity bits per data word.
 - <a id="properties/info_types"></a>**`info_types`** *(integer, required)*: number of different info page types.
 - <a id="properties/infos_per_bank"></a>**`infos_per_bank`** *(array, required)*: number of pages per info type, the size of the list must match 'info_types'.
+
+### Interrupt
+
+*Interrupt signal description*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the name of the interrupt.
+- <a id="properties/width"></a>**`width`** *(integer, required)*: the number of interrupts in this signal, typically 1.
+- <a id="properties/type"></a>**`type`** *(string)*: should contain 'interrupt'.
+- <a id="properties/module_name"></a>**`module_name`** *(string, required)*: The module name of the source.
+- <a id="properties/desc"></a>**`desc`** *(string)*: the description of the interrupt.
+- <a id="properties/intr_type"></a>**`intr_type`** *(['string', 'integer'], required)*: The IntrType, either Event or Status.
+- <a id="properties/default_val"></a>**`default_val`** *(boolean, required)*
+- <a id="properties/incoming"></a>**`incoming`** *(boolean, required)*
+- <a id="properties/plic"></a>**`plic`** *(string)*: controller for this interrupt.
+- <a id="properties/outgoing"></a>**`outgoing`** *(boolean, required)*: whether interrupt leaves toplevel.
 
 ### Memory
 
