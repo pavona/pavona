@@ -1,0 +1,22 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:alert",
+  title: "Alert",
+  description: "Alert description",
+  type: "object",
+  required: ["name", "width", "async", "module_name", "handler"]
+  properties: {
+    name: { type: "string", description: "name of the alert signal" },
+    width: { type: "number", description: "the number of alerts in this signal, typically 1" },
+    type: { type: "string", description: "should contain 'alert'" },
+    async: { type: "string", description: "string interpreted as boolean" },
+    handler: { type: "string", description: "alert handler managing this alert" },
+    module_name: { type: "string", description: "The module name of the source" },
+    desc: { type: "string", description: "the description of the alert" },
+    lpg_name: { type: "string", description: "the low power group of the alert" },
+    lpg_idx: { type: "number", description: "the index in the lpg group" },
+  }
+}

@@ -207,6 +207,7 @@ options:
 - <a id="properties/unmanaged_resets"></a>**`unmanaged_resets`** *(array)*: List of unmanaged external resets; added property.
 - <a id="properties/exported_rsts"></a>**`exported_rsts`** *(object)*: external resets grouped by each module's `clock_reset_export` field; added property.
 - <a id="properties/alert"></a>**`alert`** *(array)*: alerts; added property.
+  - <a id="properties/alert/items"></a>**Items**: Refer to *[urn:topgen:alert](#n%3Atopgen%3Aalert)*.
 - <a id="properties/outgoing_alert"></a>**`outgoing_alert`** *(object)*: the outgoing alert groups; added property.
 - <a id="properties/interrupt"></a>**`interrupt`** *(array)*: interrupts; added property.
 - <a id="properties/outgoing_interrupt"></a>**`outgoing_interrupt`** *(object)*: the outgoing interrupt groups; added property.
@@ -275,6 +276,22 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/topgen_seed"></a>**`topgen_seed`** *(integer, required)*: seed for topgen generated random netlist constants.
 - <a id="properties/otp_img_seed"></a>**`otp_img_seed`** *(integer)*: Seed for OTP image generation.
 - <a id="properties/lc_ctrl_seed"></a>**`lc_ctrl_seed`** *(integer)*: Seed for lc_ctrl generated random netlist constants.
+### Alert
+
+*Alert description*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the alert signal.
+- <a id="properties/width"></a>**`width`** *(number, required)*: the number of alerts in this signal, typically 1.
+- <a id="properties/type"></a>**`type`** *(string)*: should contain 'alert'.
+- <a id="properties/async"></a>**`async`** *(string, required)*: string interpreted as boolean.
+- <a id="properties/handler"></a>**`handler`** *(string, required)*: alert handler managing this alert.
+- <a id="properties/module_name"></a>**`module_name`** *(string, required)*: The module name of the source.
+- <a id="properties/desc"></a>**`desc`** *(string)*: the description of the alert.
+- <a id="properties/lpg_name"></a>**`lpg_name`** *(string)*: the low power group of the alert.
+- <a id="properties/lpg_idx"></a>**`lpg_idx`** *(number)*: the index in the lpg group.
+
 ### Eflash
 
 *Flash memory configuration*

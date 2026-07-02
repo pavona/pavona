@@ -138,6 +138,7 @@
     }
     alert: {
       type: "array",
+      items: { $ref: "urn:topgen:alert" }
       description: "alerts; added property"
     }
     outgoing_alert: {
