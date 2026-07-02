@@ -1,0 +1,17 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:special_signal",
+  title: "Special Signal",
+  description: "Special signal for pinmux",
+  type: "object",
+  required: ["name", "pad"]
+  properties: {
+    name: {type: "string", description: "DIO name"},
+    pad: {type: "string", description: "Pad name"},
+    desc: {type: "string", description: "Description of signal connection"},
+    idx: {type: "number", description: "the index of the signal; added property"},
+  }
+}

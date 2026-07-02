@@ -11,6 +11,9 @@
   properties: {
     special_signals: {
       type: "array",
+      items: {
+        $ref: "urn:topgen:special_signal"
+      },
       description: "List of special signals and the pad they are mapped to."
     }
   }
