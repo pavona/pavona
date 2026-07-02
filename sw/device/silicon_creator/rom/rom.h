@@ -22,8 +22,8 @@ static OT_WARN_UNUSED_RESULT rom_error_t
 rom_state_bootstrap_check(void *arg, uint32_t *next_state);
 static OT_WARN_UNUSED_RESULT rom_error_t
 rom_state_bootstrap(void *arg, uint32_t *next_state);
-static OT_WARN_UNUSED_RESULT rom_error_t
-rom_state_boot_rom_ext(void *arg, uint32_t *next_state);
+static OT_WARN_UNUSED_RESULT rom_error_t rom_state_boot(void *arg,
+                                                        uint32_t *next_state);
 
 /**
  * The first C function executed by the ROM (defined in `rom.c`)

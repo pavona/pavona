@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top_egret/sw/autogen/top_egret_memory.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -20,11 +19,28 @@
 #include "hw/top/pwrmgr_regs.h"
 #include "hw/top/rstmgr_regs.h"
 #include "hw/top/rv_core_ibex_regs.h"
-#include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top/sram_ctrl_regs.h"
+
+#ifdef HAS_SENSOR_CTRL
+#include "hw/top/sensor_ctrl_regs.h"
+#endif
 
 // This macro defines convenience labels for tests that use a debugger.
 #define LABEL_FOR_TEST(kName_) .local kName_ ; kName_: ;
+
+// Define top-specific address constants.
+//
+// Using `dt` is unsuitable here for this purpose because it would require
+// explicit `call` instructions prior to setting up the stack.
+#if defined(OPENTITAN_IS_EGRET)
+#include "hw/top_egret/sw/autogen/top_egret_memory.h"
+
+#define TOPLEVEL_CONST(x) TOP_EGRET_##x
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly_memory.h"
+
+#define TOPLEVEL_CONST(x) TOP_DRAGONFLY_##x
+#endif
 
 .equ UNIMP, 0xc0001073
 // We will configure the watchdog timers to reset the chip in the event that the
@@ -92,9 +108,13 @@ _rom_interrupt_vector_asm:
   .global _rom_interrupt_vector_c
   .type _rom_interrupt_vector_c, @function
 _rom_interrupt_vector_c:
+#ifdef HAS_FLASH_CTRL
   // Entry 0: exception handler.
   j flash_exception_handler
-
+#else
+  // Entry 0: interrupt handler.
+  j rom_exception_handler
+#endif
   // Entries 1-30: interrupt handlers.
   .rept 30
   j rom_interrupt_handler
@@ -148,8 +168,9 @@ _rom_start_boot:
   .option pop
 
 LABEL_FOR_TEST(kRomStartBootMaybeHalt)
+#ifdef DISCRETE_OTP_MAP
   // Check if we should halt here.
-  li   a0, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_ROM_EXEC_EN_OFFSET(a0)
   bnez t0, .L_exec_en
@@ -157,17 +178,18 @@ LABEL_FOR_TEST(kRomStartBootHalted)
 .L_halt_loop:
   wfi
   j .L_halt_loop
+#endif
 
 LABEL_FOR_TEST(kRomStartBootExecEn)
 .L_exec_en:
   // Enable NMIs from the watchdog timer.
-  li t0, TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR
+  li t0, TOPLEVEL_CONST(RV_CORE_IBEX_CFG_BASE_ADDR)
   li t1, (1 << RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT)
   sw t1, RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET(t0)
 
   // Configure the power manager to enable resets.
   // Note: this enables all types of reset request for simplicity.
-  li t0, TOP_EGRET_PWRMGR_AON_BASE_ADDR
+  li t0, TOPLEVEL_CONST(PWRMGR_AON_BASE_ADDR)
   li t1, -1
   sw t1, PWRMGR_RESET_EN_REG_OFFSET(t0)
 
@@ -177,13 +199,13 @@ LABEL_FOR_TEST(kRomStartBootExecEn)
 
   // In case of waking from low power, with AON IP state intact,
   // skip watchdog configuration.
-  li a0, TOP_EGRET_RSTMGR_AON_BASE_ADDR
+  li a0, TOPLEVEL_CONST(RSTMGR_AON_BASE_ADDR)
   lw t0, RSTMGR_RESET_INFO_REG_OFFSET(a0)
   li t1, (1 << RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT)
   beq t0, t1, .L_skip_watchdog_init
 
   // Configure the watchdog's bark and bite thresholds.
-  li t0, TOP_EGRET_AON_TIMER_AON_BASE_ADDR
+  li t0, TOPLEVEL_CONST(AON_TIMER_AON_BASE_ADDR)
   li t1, WDOG_BARK_THOLD
   sw t1, AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET(t0)
   li t1, WDOG_BITE_THOLD
@@ -196,11 +218,11 @@ LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
 .L_skip_watchdog_init:
 
   // Configure rstmgr alert and cpu info collection.
-  li   a0, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RSTMGR_INFO_EN_OFFSET(a0)
   li   t1, HARDENED_BYTE_BOOL_TRUE
-  li   a0, TOP_EGRET_RSTMGR_AON_BASE_ADDR
+  li   a0, TOPLEVEL_CONST(RSTMGR_AON_BASE_ADDR)
   // Enable alert info collection if enabled in OTP.
   andi t2, t0, 0xff
   bne  t2, t1, .L_skip_rstmgr_alert_info_en
@@ -221,17 +243,21 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, 0x00000888
   csrc mie, t0
 
-  // Check if AST initialization should be skipped.
-  li   a0, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  // Check if AST initialization should be skipped. The discrete OTP map
+  // contains a chicken bit for this; in the integrated OTP map, AST
+  // initialization unconditionally runs.
+#ifdef DISCRETE_OTP_MAP
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
   bne  t0, t1, .L_ast_init_end
+#endif
 
   // Copy the AST configuration from OTP.
-  li   a0, (TOP_EGRET_AST_BASE_ADDR)
-  li   a1, (TOP_EGRET_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
-  li   a2, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(AST_BASE_ADDR))
+  li   a1, (TOPLEVEL_CONST(AST_BASE_ADDR) + AST_REGAL_REG_OFFSET + 4)
+  li   a2, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
@@ -239,12 +265,12 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Enable jittery clock if not strictly disabled in OTP.
   // Use hardcoded MULTIBIT_ASM_BOOL4_TRUE as the enable word to reduce all
   // other possible OTP values to true.
-  li   a0, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_FALSE
   beq  t0, t1, .L_ast_init_end
-  li   a0, TOP_EGRET_CLKMGR_AON_BASE_ADDR
+  li   a0, TOPLEVEL_CONST(CLKMGR_AON_BASE_ADDR)
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
   sw   t1, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
@@ -253,13 +279,18 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // CREATOR_SW_CFG_RMA_SPIN_CYCLES to let the transition start and continue
   // looping while lc_ctrl is not ready. Reset if the CPU is still executing at
   // the end.
-  li   a0, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  //
+  // Integrated designs do not have straps, so the check to perform the busy
+  // loop is unconditionally disabled, and we skip straight to
+  // `.L_rma_spin_skip`.
+#ifdef DISCRETE_OTP_MAP
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a0)
   li   t6, HARDENED_BOOL_TRUE
   bne  t0, t6, .L_rma_spin_skip
 
-  li   a1, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a1, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a1)
   beq  t1, t6, .L_rma_spin_check_straps
@@ -278,7 +309,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // |------------------+----------------+----------------+------------------|
   // | Configuration:   | Input          | Input          | Input            |
   // |                  | Pull-down      | Pull-down      | Pull-up          |
-  li   a0, (TOP_EGRET_PINMUX_AON_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(PINMUX_AON_BASE_ADDR) + \
             PINMUX_MIO_PAD_ATTR_0_REG_OFFSET)
   li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT) | \
            (1 << PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT)
@@ -286,7 +317,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT)
   sw   t0, (SW_STRAP_1_PAD * 4)(a0)
   sw   t0, (SW_STRAP_2_PAD * 4)(a0)
-  li   a0, (TOP_EGRET_PINMUX_AON_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(PINMUX_AON_BASE_ADDR) + \
             PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET)
   li   t0, SW_STRAP_0_INSEL
   sw   t0, (SW_STRAP_0_PERIPH * 4)(a0)
@@ -305,7 +336,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   bltu t1, t0, .L_rma_strap_pu_spin_cycles_loop
 
   // Read the strap GPIOs and check their value.
-  li   a0, TOP_EGRET_GPIO_BASE_ADDR
+  li   a0, TOPLEVEL_CONST(GPIO_BASE_ADDR)
   lw   t0, GPIO_DATA_IN_REG_OFFSET(a0)
   li   t5, SW_STRAP_MASK
   and  t0, t0, t5
@@ -315,7 +346,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
 
   // Double-check the GPIO strap value.
   li   t6, HARDENED_BOOL_TRUE
-  li   a1, TOP_EGRET_GPIO_BASE_ADDR
+  li   a1, TOPLEVEL_CONST(GPIO_BASE_ADDR)
   lw   t1, GPIO_DATA_IN_REG_OFFSET(a1)
   and  t1, t1, t5
   xor  t1, t1, t4
@@ -330,16 +361,16 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // loop, disable the watchdog.
 .L_rma_spin_init:
   csrw mcycle, zero
-  li   a0, TOP_EGRET_AON_TIMER_AON_BASE_ADDR
+  li   a0, TOPLEVEL_CONST(AON_TIMER_AON_BASE_ADDR)
   sw   zero, AON_TIMER_WDOG_CTRL_REG_OFFSET(a0)
 .L_rma_spin_cycles_loop:
-  li   a0, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_CYCLES_OFFSET(a0)
   csrr t1, mcycle
   bltu t1, t0, .L_rma_spin_cycles_loop
 .L_rma_spin_lc_ctrl_loop:
-  li   a0, TOP_EGRET_LC_CTRL_REGS_BASE_ADDR
+  li   a0, TOPLEVEL_CONST(LC_CTRL_REGS_BASE_ADDR)
   lw   t0, LC_CTRL_STATUS_REG_OFFSET(a0)
   andi t0, t0, (1 << LC_CTRL_STATUS_READY_BIT)
   beqz t0, .L_rma_spin_lc_ctrl_loop
@@ -347,6 +378,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   unimp
   unimp
   unimp
+#endif
 
 .L_rma_spin_skip:
   // Label to jump to after the spin cycles
@@ -354,24 +386,24 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Skip the `entropy_src` health checks configuration if the
   // `RNG_HEALTH_CONFIG_DIGEST` is not programmed. The default digest value is
   // 0 given that it is stored in a software OTP partition.
-  li   a0, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST_OFFSET(a0)
   beqz t0, .L_entropy_enable
 
   // Copy the entropy source health checks configuration thresholds from OTP.
-  li   a0, (TOP_EGRET_ENTROPY_SRC_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(ENTROPY_SRC_BASE_ADDR) + \
             ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET)
-  li   a1, (TOP_EGRET_ENTROPY_SRC_BASE_ADDR + \
+  li   a1, (TOPLEVEL_CONST(ENTROPY_SRC_BASE_ADDR) + \
             ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET + 4)
-  li   a2, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a2, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET)
   call crt_section_copy
 
   // Configure the entropy source health alert threshold.
-  li a0, TOP_EGRET_ENTROPY_SRC_BASE_ADDR
-  li a1, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li a0, TOPLEVEL_CONST(ENTROPY_SRC_BASE_ADDR)
+  li a1, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET(a1)
   sw t1, ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET(a0)
@@ -379,7 +411,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
 .L_entropy_enable:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
-  li a0, TOP_EGRET_ENTROPY_SRC_BASE_ADDR
+  li a0, TOPLEVEL_CONST(ENTROPY_SRC_BASE_ADDR)
 
   // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to kMultiBitBool4False
   // to prevent the release of FIPS entropy until all the thresholds are set
@@ -394,14 +426,14 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
   sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
 
-  li a0, TOP_EGRET_CSRNG_BASE_ADDR
+  li a0, TOPLEVEL_CONST(CSRNG_BASE_ADDR)
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_READ_INT_STATE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << CSRNG_CTRL_FIPS_FORCE_ENABLE_OFFSET)
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
 
-  li a0, TOP_EGRET_EDN0_BASE_ADDR
+  li a0, TOPLEVEL_CONST(EDN0_BASE_ADDR)
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_EDN_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
@@ -412,23 +444,22 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Memory accesses will stall until initialization is complete.
   // Set `SRAM_KEY_RENEW_AND_INIT_EN` OTP item to `HARDENED_BOOL_FALSE` to disable and
   // any other value to enable.
-  li   a0, (TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+#ifdef DISCRETE_OTP_MAP
   lw   t2, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET(a0)
+#endif
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_FALSE
   beq t0, t1, .L_sram_key_renew_skip
-  li a0, TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  li a0, TOPLEVEL_CONST(SRAM_CTRL_MAIN_REGS_BASE_ADDR)
   li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 .L_sram_key_renew_skip:
-  // Depending on OTP, enable the SRAM readback feature.
+#ifdef DISCRETE_OTP_MAP
+  // In discrete designs, depending on OTP, enable the SRAM readback feature.
   sw   t2, SRAM_CTRL_READBACK_REG_OFFSET(a0)
-
-  /**
-   * Clean Device State Part 1 (Please refer to `boot.md` section "Cleaning Device
-   * State").
-   */
+#endif
 
   // Zero all writable registers except for `gp` (`x3`) since it's already initialized.
   li x1,  0x0

@@ -18,63 +18,63 @@ extern "C" {
 /**
  * Key Manager states.
  */
-typedef enum sc_keymgr_dpe_state {
+typedef enum sc_keymgr_state {
   /**
    * Key manager control is still in reset. Please wait for initialization
    * complete before issuing operations.
    */
-  kScKeymgrDpeStateReset,
+  kScKeymgrStateReset,
   /**
    * Key manager control has finished latching OTP root key and will now accept
    * software commands.
    */
-  kScKeymgrDpeStateAvailable,
+  kScKeymgrStateAvailable,
   /**
    * Key manager currently disabled. Please reset the key manager. Sideload keys
    * are still valid.
    */
-  kScKeymgrDpeStateDisabled,
+  kScKeymgrStateDisabled,
   /**
    * Key manager currently invalid. Please reset the key manager. Sideload keys
    * are no longer valid.
    */
-  kScKeymgrDpeStateInvalid,
+  kScKeymgrStateInvalid,
   /**
    * This is not a state - it is the total number of states.
    */
-  kScKeymgrDpeStateNumStates,
-} sc_keymgr_dpe_state_t;
+  kScKeymgrStateNumStates,
+} sc_keymgr_state_t;
 
 enum {
   /**
    * Number of 32-bit words for the salt.
    */
-  kScKeymgrDpeSaltNumWords = 8,
+  kScKeymgrSaltNumWords = 8,
 };
 
 /**
  * Data used to differentiate a generated keymgr key.
  */
-typedef struct sc_keymgr_dpe_diversification {
+typedef struct sc_keymgr_diversification {
   /**
    * Salt value to use for key generation.
    */
-  uint32_t salt[kScKeymgrDpeSaltNumWords];
+  uint32_t salt[kScKeymgrSaltNumWords];
   /**
    * Version for key generation (anti-rollback protection).
    */
   uint32_t version;
-} sc_keymgr_dpe_diversification_t;
+} sc_keymgr_diversification_t;
 
 /**
  * Destination for key generation.
  */
-typedef enum sc_keymgr_dpe_dest {
+typedef enum sc_keymgr_dest {
   kScKeymgrDestNone = 0,
   kScKeymgrDestAes = 1,
   kScKeymgrDestKmac = 2,
   kScKeymgrDestAcc = 3,
-} sc_keymgr_dpe_dest_t;
+} sc_keymgr_dest_t;
 
 /**
  * The following constants represent the expected number of sec_mmio register
@@ -88,9 +88,9 @@ typedef enum sc_keymgr_dpe_dest {
  * ```
  */
 enum {
-  kScKeymgrDpeSecMmioEntropyReseedIntervalSet = 1,
-  kScKeymgrDpeSecMmioSwBindingSet = 17,
-  kScKeymgrDpeSecMmioMaxVerSet = 2,
+  kScKeymgrSecMmioEntropyReseedIntervalSet = 1,
+  kScKeymgrSecMmioSwBindingSet = 9,
+  kScKeymgrSecMmioMaxVerSet = 2,
 };
 
 /**
@@ -104,7 +104,7 @@ enum {
  *
  * @param binding_value Software binding value.
  */
-void sc_keymgr_dpe_sw_binding_set(const keymgr_binding_value_t *binding_value);
+void sc_keymgr_sw_binding_set(const keymgr_binding_value_t *binding_value);
 
 /**
  * Blocks until the software binding registers are unlocked.
@@ -114,31 +114,15 @@ void sc_keymgr_dpe_sw_binding_set(const keymgr_binding_value_t *binding_value);
  * cached value of `SW_BINDING_REGWEN` register in the `sec_mmio` expectations
  * table.
  */
-void sc_keymgr_dpe_sw_binding_unlock_wait(void);
+void sc_keymgr_sw_binding_unlock_wait(void);
 
 /**
- * Sets the Silicon Creator max key version.
- *
- * @param max_key_ver Maximum key version associated with the Silicon Creator
- * key manager stage.
- */
-void sc_keymgr_dpe_creator_max_ver_set(uint32_t max_key_ver);
-
-/**
- * Sets the Silicon Owner Intermediate max key version.
- *
- * @param max_key_ver Maximum key version associated with the Silicon Owner
- * Intermediate key manager stage.
- */
-void sc_keymgr_dpe_owner_int_max_ver_set(uint32_t max_key_ver);
-
-/**
- * Sets the Silicon Owner max key version.
+ * Sets the max key version.
  *
  * @param max_key_ver Maximum key version associated with the Silicon Owner
  * key manager stage.
  */
-void sc_keymgr_dpe_owner_max_ver_set(uint32_t max_key_ver);
+void sc_keymgr_max_ver_set(uint32_t max_key_ver);
 
 /**
  * Sets the entropy reseed interval of the key manager.
@@ -147,25 +131,24 @@ void sc_keymgr_dpe_owner_max_ver_set(uint32_t max_key_ver);
  * entropy is reseeded.
  * @return The result of the operation.
  */
-void sc_keymgr_dpe_entropy_reseed_interval_set(
-    uint16_t entropy_reseed_interval);
+void sc_keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval);
 
 /**
  * Advances the state of the key manager.
  *
- * The `sc_keymgr_dpe_state_check()` function must be called before this
+ * The `sc_keymgr_state_check()` function must be called before this
  * function to ensure the key manager is in the expected state and ready to
  * receive op commands.
  *
- * The caller is responsible for calling the `sc_keymgr_dpe_state_check()` at a
+ * The caller is responsible for calling the `sc_keymgr_state_check()` at a
  * later time to ensure the advance transition completed without errors.
  *
- * Note: It is recommended to call `sc_keymgr_dpe_sw_binding_unlock_wait()`
+ * Note: It is recommended to call `sc_keymgr_sw_binding_unlock_wait()`
  * before the secure mmio `sec_mmio_check_values()` function to make sure the
  * value of the `SW_BINDING_REGWEN` register is updated in the secure mmio
  * expectations table.
  */
-void sc_keymgr_dpe_advance_state(void);
+void sc_keymgr_advance_state(void);
 
 /**
  * Checks the state of the key manager.
@@ -175,20 +158,20 @@ void sc_keymgr_dpe_advance_state(void);
  * is idle or success; otherwise returns `kErrorKeymgrInternal`.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_dpe_state_check(sc_keymgr_dpe_state_t expected_state);
+rom_error_t sc_keymgr_state_check(sc_keymgr_state_t expected_state);
 
 /**
  * Keymgr output-generate key types (attestation or sealing).
  */
-typedef enum sc_keymgr_dpe_key_type {
-  kScKeymgrDpeKeyTypeAttestation = 0,
-  kScKeymgrDpeKeyTypeSealing = 1,
-} sc_keymgr_dpe_key_type_t;
+typedef enum sc_keymgr_key_type {
+  kScKeymgrKeyTypeAttestation = 0,
+  kScKeymgrKeyTypeSealing = 1,
+} sc_keymgr_key_type_t;
 
 /**
  * Keymgr ECC key generation descriptor.
  */
-typedef struct sc_keymgr_dpe_ecc_key {
+typedef struct sc_keymgr_ecc_key {
   /**
    * Keymgr key type, either: attestation or sealing.
    *
@@ -196,7 +179,7 @@ typedef struct sc_keymgr_dpe_ecc_key {
    * Owner firmware is updated, while Sealing keys remain stable as long as a
    * device remains under the same ownership and hardware lifecycle state.
    */
-  sc_keymgr_dpe_key_type_t type;
+  sc_keymgr_key_type_t type;
   /**
    * Index into the kFlashCtrlInfoPageAttestationKeySeeds flash info page that
    * holds a seed for generating the ECC key pair.
@@ -207,12 +190,12 @@ typedef struct sc_keymgr_dpe_ecc_key {
    * "output-generate" function to generate another ECC keygen seed that will be
    * sideloaded to ACC.
    */
-  const sc_keymgr_dpe_diversification_t *keymgr_diversifier;
+  const sc_keymgr_diversification_t *keymgr_diversifier;
   /**
    * Pointer to the keymgr diversifier that is used when actuating the keymgr's
    */
-  sc_keymgr_dpe_state_t required_keymgr_state;
-} sc_keymgr_dpe_ecc_key_t;
+  sc_keymgr_state_t required_keymgr_state;
+} sc_keymgr_ecc_key_t;
 
 /**
  * Generate a key manager key and sideload to the requested block.
@@ -228,9 +211,9 @@ typedef struct sc_keymgr_dpe_ecc_key {
  */
 
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_dpe_generate_key(
-    sc_keymgr_dpe_dest_t destination, sc_keymgr_dpe_key_type_t key_type,
-    sc_keymgr_dpe_diversification_t diversification);
+rom_error_t sc_keymgr_generate_key(sc_keymgr_dest_t destination,
+                                   sc_keymgr_key_type_t key_type,
+                                   sc_keymgr_diversification_t diversification);
 
 /**
  * Clear the requested sideloaded key slot.
@@ -242,7 +225,7 @@ rom_error_t sc_keymgr_dpe_generate_key(
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_dpe_sideload_clear(sc_keymgr_dpe_dest_t destination);
+rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination);
 
 /**
  * Generate a key manager key and sideload to the ACC block.
@@ -256,11 +239,10 @@ rom_error_t sc_keymgr_dpe_sideload_clear(sc_keymgr_dpe_dest_t destination);
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-inline rom_error_t sc_keymgr_dpe_generate_key_acc(
-    sc_keymgr_dpe_key_type_t key_type,
-    sc_keymgr_dpe_diversification_t diversification) {
-  return sc_keymgr_dpe_generate_key(kScKeymgrDestAcc, key_type,
-                                    diversification);
+inline rom_error_t sc_keymgr_generate_key_acc(
+    sc_keymgr_key_type_t key_type,
+    sc_keymgr_diversification_t diversification) {
+  return sc_keymgr_generate_key(kScKeymgrDestAcc, key_type, diversification);
 }
 
 /**
@@ -272,50 +254,26 @@ inline rom_error_t sc_keymgr_dpe_generate_key_acc(
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-inline rom_error_t sc_keymgr_dpe_sideload_clear_acc(void) {
-  return sc_keymgr_dpe_sideload_clear(kScKeymgrDestAcc);
+inline rom_error_t sc_keymgr_sideload_clear_acc(void) {
+  return sc_keymgr_sideload_clear(kScKeymgrDestAcc);
 }
 
 /**
- * Sets the binding registers and advances the keymgr to the
- * `OwnerIntermediateKey` (CDI_0) key stage.
- *
- * Preconditions: keymgr has been initialized and cranked to the
- * `CreatorRootKey` stage.
+ * Sets the binding registers and advances the keymgr.
  *
  * @param attest_binding The attestation binding value to use.
- * @param sealing_binding The sealing binding value to use.
- * @param max_key_version Maximum key version associated with the Silicon Owner
- *                        Intermediate key manager stage.
+ * @param max_key_version Maximum key version associated with the target
+ *                        stage.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_dpe_owner_int_advance(
-    keymgr_binding_value_t *attest_binding,
-    keymgr_binding_value_t *sealing_binding, uint32_t max_key_version);
-
-/**
- * Sets the binding registers and advances the keymgr to the `OwnerKey` (CDI_1)
- * key stage.
- *
- * Preconditions: keymgr has been initialized and cranked to the
- * `OwnerIntermediateKey` stage.
- *
- * @param attest_binding The attestation binding value to use.
- * @param sealing_binding The sealing binding value to use.
- * @param max_key_version Maximum key version associated with the Silicon Owner
- *                        key manager stage.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_dpe_owner_advance(keymgr_binding_value_t *attest_binding,
-                                        keymgr_binding_value_t *sealing_binding,
-                                        uint32_t max_key_version);
+rom_error_t sc_keymgr_advance(keymgr_binding_value_t *attest_binding,
+                              uint32_t max_key_version);
 
 /**
  * Disable the keymgr controller.
  */
-void sc_keymgr_dpe_disable(void);
+void sc_keymgr_disable(void);
 
 #ifdef __cplusplus
 }

@@ -49,7 +49,7 @@ typedef struct sigverify_otp_keys {
   hmac_digest_t integrity_measurement;
 } sigverify_otp_keys_t;
 
-#elif INTEGRATED_OTP_MMAP
+#elif defined(INTEGRATED_OTP_MMAP)
 /*
  * In the integrated OTP memory map, the OTP stores a single key whose algorithm
  * is untagged. The key contains an additional key_role field after the key_type

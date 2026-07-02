@@ -10,11 +10,13 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/stack_utilization.h"
+
+#ifdef HAS_FLASH_CTRL
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
 #include "hw/top/flash_ctrl_regs.h"
 
@@ -27,6 +29,7 @@ enum {
 };
 
 static_assert(FLASH_CTRL_PARAM_REG_NUM_BANKS == 2, "Flash must have 2 banks");
+#endif
 
 /**
  * Bootstrap states.
@@ -73,6 +76,7 @@ typedef enum bootstrap_state {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_sector_erase(uint32_t addr) {
+#ifdef HAS_FLASH_CTRL
   static_assert(FLASH_CTRL_PARAM_BYTES_PER_PAGE == 2048,
                 "Page size must be 2 KiB");
   enum {
@@ -103,6 +107,9 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 
   HARDENED_RETURN_IF_ERROR(err_0);
   return err_1;
+#else
+  return kErrorBootstrapNotSupported;
+#endif
 }
 
 /**
@@ -123,6 +130,7 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
                                           uint8_t *data) {
+#ifdef HAS_FLASH_CTRL
   static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_WORD) == 1,
                 "Bytes per flash word must be a power of two.");
   enum {
@@ -192,6 +200,9 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
 
   HARDENED_RETURN_IF_ERROR(err_0);
   return err_1;
+#else
+  return kErrorBootstrapNotSupported;
+#endif
 }
 
 /**
@@ -206,6 +217,7 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
+#ifdef HAS_FLASH_CTRL
   HARDENED_CHECK_EQ(*state, kBootstrapStateErase);
 
   spi_device_cmd_t cmd;
@@ -233,6 +245,9 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
   }
 
   return error;
+#else
+  return kErrorBootstrapNotSupported;
+#endif
 }
 
 /**
@@ -245,6 +260,7 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
+#ifdef HAS_FLASH_CTRL
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
   const rom_error_t err = bootstrap_erase_verify();
@@ -254,6 +270,9 @@ static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
 
   *state = kBootstrapStateProgram;
   return err;
+#else
+  return kErrorBootstrapNotSupported;
+#endif
 }
 
 /**
@@ -267,20 +286,23 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
   static_assert(alignof(spi_device_cmd_t) >= sizeof(uint32_t) &&
                     offsetof(spi_device_cmd_t, payload) >= sizeof(uint32_t),
                 "Payload must be word aligned.");
+
+  spi_device_cmd_t cmd;
+  RETURN_IF_ERROR(spi_device_cmd_get(&cmd, /*blocking=*/true));
+
+  HARDENED_CHECK_EQ(*state, kBootstrapStateProgram);
+#ifdef HAS_FLASH_CTRL
   static_assert(
       sizeof((spi_device_cmd_t){0}.payload) % FLASH_CTRL_PARAM_BYTES_PER_WORD ==
           0,
       "Payload size must be a multiple of flash word size.");
 
-  HARDENED_CHECK_EQ(*state, kBootstrapStateProgram);
-
-  spi_device_cmd_t cmd;
-  RETURN_IF_ERROR(spi_device_cmd_get(&cmd, /*blocking=*/true));
   // Erase and program require WREN, ignore if WEL is not set.
   if (cmd.opcode != kSpiDeviceOpcodeReset &&
       !bitfield_bit32_read(spi_device_flash_status_get(), kSpiDeviceWelBit)) {
     return kErrorOk;
   }
+#endif
 
   rom_error_t error = kErrorUnknown;
   switch (cmd.opcode) {
@@ -314,8 +336,12 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
   }
   HARDENED_RETURN_IF_ERROR(error);
 
+#ifdef HAS_FLASH_CTRL
   spi_device_flash_status_clear();
   return error;
+#else
+  return kErrorBootstrapNotSupported;
+#endif
 }
 
 rom_error_t enter_bootstrap(void) {

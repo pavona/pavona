@@ -100,8 +100,8 @@ sim_verilator(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "sim_verilator_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-    rom = "//sw/device/silicon_creator/rom:base_rom",
-    second_rom = "//sw/device/silicon_creator/rom:second_rom",
+    rom = "//sw/device/silicon_creator/rom",
+    second_rom = "//sw/device/silicon_creator/second_rom",
 )
 
 ###########################################################################
