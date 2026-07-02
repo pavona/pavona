@@ -278,7 +278,24 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/enable_usb_wakeup"></a>**`enable_usb_wakeup`** *(boolean, required)*: Enable USB wakeup in pinmux.
 - <a id="properties/enable_strap_sampling"></a>**`enable_strap_sampling`** *(boolean, required)*: Enable hardware strap sampling of pinmux.
 - <a id="properties/ios"></a>**`ios`** *(array)*: Full list of IO; added property.
+  - <a id="properties/ios/items"></a>**Items**: Refer to *[urn:topgen:pinmux_io](#n%3Atopgen%3Apinmux_io)*.
 - <a id="properties/io_counts"></a>**`io_counts`** *(object)*: count of ios grouped by dedicated or muxed; added property.
+
+### Pinmux I/O
+
+*Top level I/O listing for pinmux*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the name of the io.
+- <a id="properties/width"></a>**`width`** *(integer, required)*: the bit width of the io.
+- <a id="properties/type"></a>**`type`** *(string, required)*: input, output, or inout. Must be one of: `["input", "output", "inout"]`.
+- <a id="properties/idx"></a>**`idx`** *(integer)*: TODO.
+- <a id="properties/pad"></a>**`pad`** *(string)*: Pad name for direct connections.
+- <a id="properties/attr"></a>**`attr`** *(string)*: Pad type for generating the correct attribute CSR.
+- <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: `["direct", "manual", "muxed"]`.
+- <a id="properties/desc"></a>**`desc`** *(string)*: Signal description.
+- <a id="properties/glob_idx"></a>**`glob_idx`** *(integer)*: TODO.
 
 ### Pinmux Signal
 

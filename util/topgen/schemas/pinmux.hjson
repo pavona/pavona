@@ -22,6 +22,7 @@
     // ADDED KEYS (in complete config)
     ios: {
       type: "array",
+      items: { $ref: "urn:topgen:pinmux_io" },
       description: "Full list of IO; added property"
     },
     io_counts: {

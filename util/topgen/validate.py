@@ -41,26 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-pinmux_sig_optional = {
-    'port': ['s', 'Port name of module'],
-    'pad': ['s', 'Pad name for direct connections'],
-    'desc': ['s', 'Signal description'],
-    'attr': ['s', 'Pad type for generating the correct attribute CSR']
-}
-
-pinmux_io_required = {
-    'name': ['s', 'the name of the io'],
-    'width': ['d', 'the bit width of the io'],
-    'connection':
-    ['s', 'Specification of connection type, can be direct, manual or muxed'],
-    'type': ['s', 'input, output, or inout TODO'],
-}
-pinmux_io_optional = {
-    'glob_idx': ['d', 'TODO'],
-    'idx': ['d', 'TODO'],
-}.update(pinmux_sig_optional)
-pinmux_io_added = {}
-
 pinmux_io_count_required = {
     'inouts': ['d', 'the count of inout ios of the io type'],
     'inputs': ['d', 'the count of inout ios of the io type'],
@@ -722,11 +702,6 @@ def check_pinmux(top: ConfigT, prefix: str) -> int:
         if val == 1:
             log.warning('Direct pad {} has not been connected'.format(key))
             error += 1
-
-    # Check added ios
-    for io in top.get('ios', []):
-        error += check_keys(io, pinmux_io_required, pinmux_io_optional,
-                            pinmux_io_added, f'{prefix} Pinmux ios')
 
     # Check added io_counts
     for k, counts in top.get('io_counts', {}).items():
