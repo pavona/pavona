@@ -100,7 +100,7 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool, verbose: bool
         if res.returncode != 0:
             sys.exit(
                 f"{rel_path}:L{match_start_linum}: `{cmd}` "
-                "had a non-zero return code of {res.returncode}."
+                f"had a non-zero return code of {res.returncode}."
             )
 
         pos = match_end.end(0)
