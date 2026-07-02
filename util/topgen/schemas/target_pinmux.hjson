@@ -1,0 +1,17 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:target_pinmux",
+  title: "Target Pinmux",
+  description: "Top level target's pinmux configuration",
+  type: "object",
+  required: ["special_signals"]
+  properties: {
+    special_signals: {
+      type: "array",
+      description: "List of special signals and the pad they are mapped to."
+    }
+  }
+}

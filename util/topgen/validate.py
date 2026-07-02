@@ -41,13 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-target_pinmux_required = {
-    'special_signals':
-    ['l', 'List of special signals and the pad they are mapped to.'],
-}
-target_pinmux_optional = {}
-target_pinmux_added = {}
-
 target_pinout_required = {
     'remove_ports': ['l', 'List of port names to remove from the port list'],
     'remove_pads': ['l', 'List of pad names to remove and stub out'],
@@ -672,10 +665,6 @@ def check_implementation_targets(top: ConfigT, prefix: str) -> int:
             log.warning('Target name {} is not unique'.format(target['name']))
             error += 1
         known_names[target['name']] = 1
-
-        error += check_keys(target['pinmux'], target_pinmux_required,
-                            target_pinmux_optional, target_pinmux_added,
-                            prefix + ' Target pinmux')
 
         error += check_keys(target['pinout'], target_pinout_required,
                             target_pinout_optional, target_pinout_added,
