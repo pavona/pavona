@@ -14,7 +14,7 @@ from reggen.validate import check_keys
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
 from topgen.lib import find_module, find_modules
-from basegen.validate import create_validator
+from basegen.validate import create_validator, validate_schema
 
 # For the reference
 # val_types = {
@@ -40,25 +40,6 @@ from basegen.validate import create_validator
 #     'pl': ["python list", "Native Python type list (generated)"],
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
-
-eflash_required = {
-    'type': ['s', 'string indicating type of memory'],
-    'banks': ['d', 'number of flash banks'],
-    'data_width': ['d', 'number of bits per data word'],
-    'info_types': ['d', 'number of different info page types'],
-    'infos_per_bank': ['l',
-                       "number of pages per info type, the size of the "
-                       "list must match 'info_types'"],
-    'integrity_width': ['d', 'number of integrity bits per data word'],
-    'pages_per_bank': ['d', 'number of data pages per flash bank'],
-    'program_resolution':
-    ['d', 'maximum number of flash words allowed to program at a time'],
-    'words_per_page': ['d', 'number of words per page'],
-}
-
-eflash_optional = {}
-
-eflash_added = {}
 
 module_required = {
     'name': ['s', 'name of the instance'],
@@ -1004,8 +985,7 @@ def check_modules(top: ConfigT, prefix: str) -> int:
                     mem_type = value['config'].get('type', "")
 
                     if mem_type == "flash":
-                        check_keys(value['config'], eflash_required,
-                                   eflash_optional, eflash_added, "Eflash")
+                        validate_schema(value['config'], 'urn:topgen:eflash')
                         flash = Flash(value['config'], m['base_addrs'][intf])
                         value['size'] = flash.size
                         value['config'] = flash
