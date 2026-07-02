@@ -16,6 +16,7 @@ package soc_dbg_ctrl_env_pkg;
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
   import prim_mubi_pkg::*;
+  import pwrmgr_pkg::*;
   import soc_dbg_ctrl_pkg::*;
   import soc_dbg_ctrl_core_ral_pkg::*;
   import soc_dbg_ctrl_jtag_ral_pkg::*;
