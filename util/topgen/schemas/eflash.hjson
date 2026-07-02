@@ -1,0 +1,65 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:eflash",
+  title: "Eflash",
+  description: "Flash memory configuration",
+  type: "object",
+  required: [
+    "type",
+    "banks",
+    "data_width",
+    "info_types",
+    "infos_per_bank",
+    "integrity_width",
+    "pages_per_bank",
+    "program_resolution",
+    "words_per_page"
+  ]
+  properties: {
+    type: {
+      type: "string",
+      description: "string indicating type of memory"
+    },
+
+    // banks
+    banks: {
+      type: "number",
+      description: "number of flash banks"
+    },
+    pages_per_bank: {
+      type: "number",
+      description: "number of data pages per flash bank"
+    },
+
+    // words
+    program_resolution: {
+      type: "number",
+      description: "maximum number of flash words allowed to program at a time"
+    },
+    words_per_page: {
+      type: "number",
+      description: "number of words per page"
+    },
+    data_width: {
+      type: "number",
+      description: "number of bits per data word"
+    },
+    integrity_width: {
+      type: "number",
+      description: "number of integrity bits per data word"
+    },
+
+    // pages
+    info_types: {
+      type: "number",
+      description: "number of different info page types"
+    },
+    infos_per_bank: {
+      type: "array",
+      description: "number of pages per info type, the size of the list must match 'info_types'"
+    },
+  }
+}
