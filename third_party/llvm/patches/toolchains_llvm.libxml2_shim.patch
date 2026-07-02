@@ -1,0 +1,31 @@
+Add a libxml2.so.2 shim for distros shipping libxml2 >= 2.14
+
+diff --git a/toolchain/internal/repo.bzl b/toolchain/internal/repo.bzl
+--- a/toolchain/internal/repo.bzl
++++ b/toolchain/internal/repo.bzl
+@@ -13,6 +13,7 @@
+ # limitations under the License.
+ load(
+     "//toolchain/internal:common.bzl",
++    _arch = "arch",
+     _attr_dict = "attr_dict",
+     _os = "os",
+     _supported_os_arch_keys = "supported_os_arch_keys",
+@@ -460,6 +461,17 @@
+     # do want to make changes, then we should do it through a patch file, and
+     # document it for users of toolchain_roots attribute.
+ 
++    # The prebuilt lld and lldb link libxml2.so.2, which distros shipping
++    # libxml2 >= 2.14 (soname libxml2.so.16) no longer provide. If the host
++    # has libxml2.so.16, add a shim to lib/, which the prebuilt binaries
++    # resolve through their $ORIGIN/../lib RUNPATH. The watch re-runs this
++    # rule whenever the host libxml2.so.16 appears, disappears, or changes.
++    if os == "linux":
++        libxml2 = rctx.path("/usr/lib/{}-linux-gnu/libxml2.so.16".format(_arch(rctx)))
++        rctx.watch(libxml2)
++        if libxml2.exists:
++            rctx.symlink(libxml2, "lib/libxml2.so.2")
++
+     if hasattr(rctx, "repo_metadata"):
+         if updated_attrs == _attr_dict(rctx.attr):
+             return rctx.repo_metadata(reproducible = True)

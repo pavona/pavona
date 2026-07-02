@@ -32,6 +32,7 @@ libssl-dev
 libtool
 libudev-dev
 libusb-1.0-0
+libxml2-dev
 libzstd-dev
 lrzsz
 lsb-release

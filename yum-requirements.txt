@@ -34,6 +34,7 @@ python3-setuptools
 python3-wheel
 time
 tree
+libxml2
 libxslt
 zlib-devel
 xz-libs
