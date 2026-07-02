@@ -41,21 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-alert_required = {
-    'name': ['s', 'name of the alert signal'],
-    'width': ['d', 'the number of alerts in this signal, typically 1'],
-    'async': ['s', 'string interpreted as boolean'],
-    'module_name': ['s', 'The module name of the source'],
-    'handler': ['s', 'alert handler managing this alert'],
-}
-alert_optional = {
-    'desc': ['s', 'the description of the alert'],
-    'lpg_name': ['s', 'the low power group of the alert'],
-    'lpg_idx': ['d', 'the index in the lpg group'],
-    'type': ['s', 'should contain "alert"'],
-}
-alert_added = {}
-
 interrupt_required = {
     'name': ['s', 'the name of the interrupt'],
     'width': ['d', 'the number of interrupts in this signal, typically 1'],
@@ -272,11 +257,6 @@ def check_alerts(top: ConfigT, ip_name_to_block: IpBlocksT, prefix: str) -> int:
     if "alert" not in top:
         return 0
     errors = 0
-
-    # Check alert keys
-    for alert in top["alert"]:
-        errors += check_keys(alert, alert_required, alert_optional,
-                             alert_added, prefix + " Alert")
 
     # Check alert_connections for all IPs
     alert_handlers = find_modules(top["module"], "alert_handler",
