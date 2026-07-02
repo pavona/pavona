@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,8 +9,6 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
-
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define EPMP_SET(cfg_reg, addr_reg, mask, cfg, addr) \
   CSR_CLEAR_BITS(CSR_REG_PMPCFG##cfg_reg, mask);     \
@@ -114,4 +113,67 @@ void epmp_clear_rlb(void) {
   const uint32_t kMask = EPMP_MSECCFG_RLB;
   epmp_state.mseccfg &= ~kMask;
   CSR_CLEAR_BITS(CSR_REG_MSECCFG, kMask);
+}
+
+/* Helpers for managing ePMP across boot stages. */
+
+/**
+ * Updates the ePMP permissions to revoke access rights to the previous boot
+ * stage, overwriting its slots with the configuration for the current boot
+ * stage, in preparation for the next `epmp_prepare_boot_stage`, which will
+ * overwrite the slots previously used by the current boot stage (as set by the
+ * previous boot stage calling `epmp_prepare_boot_stage`).
+ */
+void epmp_advance_boot_stage(void) {
+  // Shift the slots for the current boot stage (slots 3-5) into slots 0-2,
+  // revoking access to the previous boot stage.
+  uint32_t rx_lo, rx_hi, r;
+  CSR_READ(CSR_REG_PMPADDR3, &rx_lo);
+  CSR_READ(CSR_REG_PMPADDR4, &rx_hi);
+  CSR_READ(CSR_REG_PMPADDR5, &r);
+  uint32_t r_pmpcfg;
+  if (r == 0) {
+    HARDENED_CHECK_EQ(r, 0);
+    r_pmpcfg = kEpmpModeOff;
+  } else {
+    HARDENED_CHECK_NE(r, 0);
+    r_pmpcfg = kEpmpModeNapot | kEpmpPermLockedReadOnly;
+  }
+  epmp_set(0, kEpmpModeOff, rx_lo);
+  epmp_set(1, kEpmpModeTor | kEpmpPermLockedReadExecute, rx_hi);
+  epmp_set(2, r_pmpcfg, r);
+  epmp_set(3, kEpmpModeOff, 0);
+  epmp_set(4, kEpmpModeOff, 0);
+  epmp_set(5, kEpmpModeOff, 0);
+}
+
+/**
+ * Prepares ePMP to execute the next boot stage by configuring the slots
+ * previously vacated by the current boot stage in `epmp_advance_boot_stage` to
+ * permit access to the next boot stage.
+ *
+ * @param tor_region_rx The TOR region covering the executable portion of the
+ * current boot stage.
+ * @param napot_region_rx The NAPOT region covering the entire current boot
+ * stage.
+ */
+inline void epmp_prepare_boot_stage(epmp_region_t tor_region_rx,
+                                    epmp_region_t napot_region_r) {
+  // Configure the next boot stage in slots 3-5.
+  epmp_set_tor(3, tor_region_rx, kEpmpPermLockedReadExecute);
+  epmp_set_napot(5, napot_region_r, kEpmpPermLockedReadOnly);
+}
+
+/**
+ * Prepares ePMP to execute the next boot stage by configuring the slots
+ * previously vacated by the current boot stage in `epmp_advance_boot_stage` to
+ * permit access to the next boot stage. Unlike `epmp_prepare_boot_stage`, this
+ * function only accepts a read-execute TOR region, and the slot used for the
+ * read-only NAPOT region is cleared instead.
+ *
+ * @param tor_region_rx The TOR region covering the current boot stage.
+ */
+inline void epmp_prepare_boot_stage_rx(epmp_region_t tor_region_rx) {
+  // Configure the next boot stage in slots 3-4.
+  epmp_set_tor(3, tor_region_rx, kEpmpPermLockedReadExecute);
 }

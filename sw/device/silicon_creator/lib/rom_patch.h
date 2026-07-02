@@ -60,7 +60,9 @@ typedef struct rom_patch {
 
 OT_ASSERT_MEMBER_OFFSET(rom_patch_t, header, 0);
 OT_ASSERT_MEMBER_OFFSET(rom_patch_t, table, 4);
-OT_ASSERT_MEMBER_OFFSET(rom_patch_t, patch, 260);
+OT_ASSERT_MEMBER_OFFSET(rom_patch_t, patch,
+                        4 + sizeof(rom_patch_match_regs_t) *
+                                RV_CORE_IBEX_PARAM_NUM_REGIONS);
 
 /**
  * A ROM patch information.

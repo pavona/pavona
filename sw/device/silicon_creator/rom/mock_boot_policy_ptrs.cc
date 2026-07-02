@@ -6,12 +6,12 @@
 
 namespace rom_test {
 extern "C" {
-const manifest_t *boot_policy_manifest_a_get() {
-  return MockBootPolicyPtrs::Instance().ManifestA();
-}
-
-const manifest_t *boot_policy_manifest_b_get() {
-  return MockBootPolicyPtrs::Instance().ManifestB();
+const manifest_t *boot_policy_manifest_get(slot_t slot) {
+  if (slot == kSlotA) {
+    return MockBootPolicyPtrs::Instance().ManifestA();
+  } else {
+    return MockBootPolicyPtrs::Instance().ManifestB();
+  }
 }
 }  // extern "C"
 }  // namespace rom_test

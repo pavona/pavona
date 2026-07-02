@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/pavona:util.bzl", "flatten")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_select_top")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//rules:autogen.bzl",
@@ -207,4 +208,16 @@ cc_library(
         )
         for ip in ALL_IP_NAMES
     ]),
+)
+
+alias(
+    name = "top_memory_ld",
+    actual = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/sw/autogen:top_egret_memory",
+            "dragonfly": "//hw/top_dragonfly/sw/autogen:top_dragonfly_memory",
+            "scafi_deprecated": "//hw/top_scafi_deprecated/sw/autogen:top_scafi_deprecated_memory",
+        },
+        "//hw/top_egret/sw/autogen:top_egret_memory",
+    ),
 )

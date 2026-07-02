@@ -74,10 +74,10 @@ otp_json_rot_keys(
             otp_partition(
                 name = "ROT_OWNER_AUTH_SLOT0",
                 items = {
-                    # //sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256
-                    "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_TYPE": otp_hex(CONST.SIGVERIFY.KEY_TYPE.TEST),
+                    # //sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256
+                    "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_TYPE": otp_hex(CONST.SIGVERIFY.KEY_TYPE.PROD),
                     "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_ROLE": otp_hex(CONST.SIGVERIFY.KEY_ROLE.FIRMWARE_SIGNING),
-                    "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY": "0xdeb1e092bb56aeb4a5d7eb1df773fc51012abb223c413ac2444da9ded8e17e502e66e6cb6937e2375bcb453d845024cfe9e0f4807bfccca80bba6de3ee07109a",
+                    "ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY": "0x7e571d04866f12e00a5b3c2e734ebd05611a0325ef6d90140e3cd2091ddda9bd8277988ce6557b33923499d90eeeff0028a525c10fa3a5a438daf96b9bf2dafd",
                 },
             ),
         ],
