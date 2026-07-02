@@ -1,0 +1,32 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:seedcfg",
+  title: "Seed Configuration",
+  description: "Configuration options for random seeds",
+  type: "object",
+  required: ["name", "topgen_seed"]
+  properties: {
+    // main info
+    name: {
+      type: "string",
+      description: "name of top for seeding"
+    },
+    topgen_seed: {
+      type: "integer",
+      description: "seed for topgen generated random netlist constants"
+    },
+
+    // optional seeds for OTP and life cycle
+    otp_img_seed: {
+      type: "integer",
+      description: "Seed for OTP image generation"
+    },
+    lc_ctrl_seed: {
+      type: "integer",
+      description: "Seed for lc_ctrl generated random netlist constants"
+    }
+  }
+}

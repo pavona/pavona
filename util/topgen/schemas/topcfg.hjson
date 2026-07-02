@@ -17,6 +17,7 @@
     }
     type: {
       enum: ["top"],
+      type: "string",
       description: "type of hjson. Shall be 'top' always"
     }
     datawidth: {
