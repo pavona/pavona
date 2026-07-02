@@ -1,0 +1,21 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // NOTE: this schema is currently not used within
+  // the topcfg or seedcfg schemas
+
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:straps",
+  title: "Straps",
+  description: "Configuration for straps",
+  type: "object",
+  required: ["tap0", "tap1", "dft0", "dft1"]
+  properties: {
+    tap0: {type: "string", description: "Name of tap0 pad"},
+    tap1: {type: "string", description: "Name of tap1 pad"},
+    dft0: {type: "string", description: "Name of dft0 pad"},
+    dft1: {type: "string", description: "Name of dft1 pad"},
+  }
+}
