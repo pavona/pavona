@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -113,25 +114,28 @@ task soc_dbg_ctrl_smoke_vseq::body();
     csr_rd(.ptr(jtag_ral.jtag_status),                            .value(rd_val));
   end
 
-  // The scoreboard continuously checks continue_cpu_boot against its halt-FSM model, so the
-  // sequence only needs to drive the release stimulus. Before this point the FSM is parked in
-  // Wait4DftEn (done == False); the paths below drive it to HaltDone (done == True).
-  if (jtag_release_path) begin
-    `uvm_info(`gfn, "Halt release via JTAG_CONTROL.boot_continue", UVM_MEDIUM)
-    misc_seq.lc_dft_en = On;
-    misc_seq.start(p_sequencer.misc_sequencer_h);
-    wait_delay(release_delay);
-    csr_wr(.ptr(jtag_ral.jtag_control), .value(32'h1));
-  end else begin
-    `uvm_info(`gfn, "Halt release via halt_cpu_boot_i de-assertion", UVM_MEDIUM)
-    misc_seq.halt_cpu_boot = 1'b0;
-    misc_seq.start(p_sequencer.misc_sequencer_h);
-    wait_delay(release_delay);
-    misc_seq.lc_dft_en = On;
-    misc_seq.start(p_sequencer.misc_sequencer_h);
-  end
+  // The scoreboard checks continue_cpu_boot against its halt-FSM model continuously, so the
+  // sequence only drives the release stimulus. The FSM release is one-shot (only a HARD reset
+  // re-parks it), so skip it when run as a stress_all sub-sequence without reset.
+  // TODO: revisit this do_apply_reset gating once the reset-safe methodology migration lands.
+  if (do_apply_reset) begin
+    if (jtag_release_path) begin
+      `uvm_info(`gfn, "Halt release via JTAG_CONTROL.boot_continue", UVM_MEDIUM)
+      misc_seq.lc_dft_en = On;
+      misc_seq.start(p_sequencer.misc_sequencer_h);
+      wait_delay(release_delay);
+      csr_wr(.ptr(jtag_ral.jtag_control), .value(32'h1));
+    end else begin
+      `uvm_info(`gfn, "Halt release via halt_cpu_boot_i de-assertion", UVM_MEDIUM)
+      misc_seq.halt_cpu_boot = 1'b0;
+      misc_seq.start(p_sequencer.misc_sequencer_h);
+      wait_delay(release_delay);
+      misc_seq.lc_dft_en = On;
+      misc_seq.start(p_sequencer.misc_sequencer_h);
+    end
 
-  wait_delay(20);
+    wait_delay(20);
+  end
 endtask : body
 
 // TODO: To be implemented in future rst-safe migration
