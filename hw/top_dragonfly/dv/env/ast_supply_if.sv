@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,6 +16,10 @@ interface ast_supply_if (
   input logic core_sleeping_trigger,
   input logic low_power_trigger
 );
+
+  timeunit 1ps;
+  timeprecision 1ps;
+
   import uvm_pkg::*;
 
   // The amount of time to hold the glitch. Should be enough to span more than one aon_clk cycles
@@ -61,10 +66,17 @@ interface ast_supply_if (
 `endif
   endtask
 
+  task static release_vcmain_pok();
+`ifndef GATE_LEVEL
+    `uvm_info("ast_supply_if", $sformatf("Releasing vcmain_pok_h_o"), UVM_MEDIUM)
+    release u_ast.u_rglts_pdm_3p3v.vcmain_pok_h_o;
+`endif
+  endtask
+
 `define GLITCH_VCMAIN_POK                 \
     force_vcmain_pok(1'b0);               \
-    repeat (GlitchCycles) @(posedge clk); \
-    force_vcmain_pok(1'b1)
+    #1ps; \
+    release_vcmain_pok();
 
   // Create glitch in vcmain_pok_h_o some cycles after core_sleeping trigger transitions high.
   // This is useful for non-deep sleep-related triggers.

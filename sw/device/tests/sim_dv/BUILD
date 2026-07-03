@@ -422,7 +422,10 @@ pavona_test(
 pavona_test(
     name = "pwrmgr_sleep_power_glitch_test",
     srcs = ["pwrmgr_sleep_power_glitch_test.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+    },
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pwrmgr",
@@ -480,9 +483,11 @@ pavona_test(
 pavona_test(
     name = "pwrmgr_random_sleep_power_glitch_reset_test",
     srcs = ["pwrmgr_random_sleep_power_glitch_reset_test.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+    },
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -501,11 +506,18 @@ pavona_test(
         "//sw/device/lib/testing:nv_counter_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": ["//hw/top_egret/sw/autogen:top_egret"],
+            "dragonfly": ["//hw/top_dragonfly/sw/autogen:top_dragonfly"],
+        },
+        [],
+    ),
 )
 
 pavona_test(
