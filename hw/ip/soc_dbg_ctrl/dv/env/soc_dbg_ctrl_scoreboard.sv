@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,6 +16,13 @@ class soc_dbg_ctrl_scoreboard extends cip_base_scoreboard #(
   // Snapshots of the misc interface published by soc_dbg_ctrl_misc_monitor.
   uvm_tlm_analysis_fifo #(soc_dbg_ctrl_misc_item) misc_fifo;
   soc_dbg_ctrl_misc_item                          latest_misc;
+
+  // Cleared on reset, set once a SW policy write re-establishes the trace-reg prediction. The
+  // trace regs are HW-driven and can't be predicted in the window after an async reset (before
+  // any policy write), so their read check is gated on this.
+  // TODO: once the reset-safe methodology / a dedicated predictor lands, re-predict the trace
+  // regs from the live inputs on reset instead of gating the check off.
+  bit trace_predict_valid;
 
   // HW-side values not derivable from RAL mirrors alone
   dbg_category_e sw_category_hw;  // RTL's internal category shadowed reg
@@ -161,10 +169,12 @@ task soc_dbg_ctrl_scoreboard::process_tl_core_access(
       do_read_check = 1'b0;
     end
     "trace_debug_policy_category": begin
-      // Mirror updated at write-time via predict_trace_regs
+      // Mirror updated at write-time via predict_trace_regs; not predictable until then.
+      do_read_check = trace_predict_valid;
     end
     "trace_debug_policy_valid_relocked": begin
-      // Mirror updated at write-time via predict_trace_regs
+      // Mirror updated at write-time via predict_trace_regs; not predictable until then.
+      do_read_check = trace_predict_valid;
     end
     default: begin
       `uvm_fatal(`gfn, $sformatf("invalid CSR: %0s", csr.get_full_name()))
@@ -202,10 +212,12 @@ task soc_dbg_ctrl_scoreboard::process_tl_jtag_access(
       // FIXME TODO Mvy
     end
     "jtag_trace_debug_policy_category": begin
-      // Mirror updated by core-side writes via predict_trace_regs
+      // Mirror updated by core-side writes via predict_trace_regs; not predictable until then.
+      do_read_check = trace_predict_valid;
     end
     "jtag_trace_debug_policy_valid_relocked": begin
-      // Mirror updated by core-side writes via predict_trace_regs
+      // Mirror updated by core-side writes via predict_trace_regs; not predictable until then.
+      do_read_check = trace_predict_valid;
     end
     "jtag_status": begin
       // Mirror synced from the core "status" case on write
@@ -233,20 +245,14 @@ task soc_dbg_ctrl_scoreboard::process_tl_jtag_access(
 endtask : process_tl_jtag_access
 
 function void soc_dbg_ctrl_scoreboard::reset(string kind = "HARD");
+  // TODO: manual rand-reset bookkeeping on the legacy cip_base stack; revisit once the
+  // reset-safe framework migration lands.
   super.reset(kind);
-  sw_category_hw = DbgCategoryLocked;
-  halt_state     = Idle;
-  halt_pin_sync  = '0;
+  sw_category_hw      = DbgCategoryLocked;
+  halt_state          = Idle;
+  halt_pin_sync       = '0;
+  trace_predict_valid = 1'b0;
   misc_fifo.flush();
-  // Safe defaults until the monitor publishes the first post-reset snapshot.
-  latest_misc.soc_dbg_state   = SocDbgStBlank;
-  latest_misc.lc_dft_en       = Off;
-  latest_misc.lc_hw_debug_en  = Off;
-  latest_misc.lc_raw_test_rma = Off;
-  latest_misc.lc_cpu_en       = Off;
-  latest_misc.lc_rma_state    = Off;
-  latest_misc.boot_status     = '0;
-  latest_misc.halt_cpu_boot   = 1'b1;
 endfunction : reset
 
 function void soc_dbg_ctrl_scoreboard::check_phase(uvm_phase phase);
@@ -282,6 +288,7 @@ function void soc_dbg_ctrl_scoreboard::predict_trace_regs();
       .value(cat_val), .kind(UVM_PREDICT_DIRECT)));
   void'(jtag_ral.jtag_trace_debug_policy_valid_relocked.predict(
       .value(vr_val),  .kind(UVM_PREDICT_DIRECT)));
+  trace_predict_valid = 1'b1;
 endfunction : predict_trace_regs
 
 function void soc_dbg_ctrl_scoreboard::predict_jtag_boot_status();

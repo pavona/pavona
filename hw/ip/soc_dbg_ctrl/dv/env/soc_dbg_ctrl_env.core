@@ -1,5 +1,6 @@
 CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:soc_dbg_ctrl_env:0.1"
@@ -30,6 +31,7 @@ filesets:
       - seq_lib/soc_dbg_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/soc_dbg_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/soc_dbg_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/soc_dbg_ctrl_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
