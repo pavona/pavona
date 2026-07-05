@@ -22,6 +22,14 @@ class pattgen_perf_vseq extends pattgen_base_vseq;
       ch_cfg.prediv dist {0 :/ 1, 1024 :/ 1};
       ch_cfg.len    dist {0 :/ 1,   63 :/ 1};
       ch_cfg.reps   dist {0 :/ 1, 1023 :/ 1};
+      // 2 * (prediv + 1) * (len + 1) * (reps + 1) = duration (in clock cycles) of a pattern
+      // The timeout for pattgen tests is set to 600ms; we set these parameters to never
+      // exceed the timeout for the duration of a pattern.
+      // Assuming the minimum clock for simulation (check dv_macros.svh) of
+      // 5Mhz, we get:
+      //  max duration = (2 * 500,000 cycles) / 5MHz = 200ms
+      // Which will be below the timeout
+      (ch_cfg.prediv + 1) * (ch_cfg.len + 1) * (ch_cfg.reps + 1) <= 32'd500_000; // 200ms
       // dependent constraints
       solve ch_cfg.len before ch_cfg.data;
       ch_cfg.data inside {[0 : (1 << (ch_cfg.len + 1)) - 1]};

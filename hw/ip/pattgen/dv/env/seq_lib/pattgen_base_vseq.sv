@@ -115,6 +115,9 @@ class pattgen_base_vseq extends cip_base_vseq #(
 
   // Wait until neither channel is enabled and both have triggered the done interrupt.
   extern protected task wait_host_for_idle();
+
+  // Pause CSR polling to open a quiet bus window when a reset is pending.
+  extern task wait_if_stop_transaction_generators();
 endclass
 
 task pattgen_base_vseq::pre_start();
@@ -137,6 +140,7 @@ task pattgen_base_vseq::body();
          num_pattern_gen < num_trans ||   // not get  all pattern done interrupts
          channel_start) begin             // at least one channel is running
     wait(cfg.clk_rst_vif.rst_n); // wait until reset is de-asserted
+    wait_if_stop_transaction_generators();
     fork
       // all channels are completely independent (program, start w/ or wo/ sync, and stop)
       setup_pattgen_channel(0);
@@ -340,7 +344,6 @@ task pattgen_base_vseq::stop_pattgen_channels();
       end
       default: `uvm_fatal(`gfn, $sformatf("unknown value for channel_stop: 0x%0h", channel_stop))
     endcase
-    cfg.m_pattgen_agent_cfg.channel_done = 2'b00;
   end
 endtask
 
@@ -474,4 +477,10 @@ task pattgen_base_vseq::wait_host_for_idle();
   csr_spinwait(.ptr(ral.ctrl.enable_ch1),     .exp_data(1'b0));
   csr_spinwait(.ptr(ral.intr_state.done_ch0), .exp_data(1'b0));
   csr_spinwait(.ptr(ral.intr_state.done_ch1), .exp_data(1'b0));
+endtask
+
+task pattgen_base_vseq::wait_if_stop_transaction_generators();
+  if (cfg.stop_transaction_generators()) begin
+    cfg.clk_rst_vif.wait_clks(CyclesWithNoAccessesThreshold * 2);
+  end
 endtask
