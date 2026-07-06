@@ -9,6 +9,7 @@ import sys
 import hjson
 from mako.template import Template
 
+from shared.control_flow import program_control_graph
 from shared.decode import decode_elf
 from shared.instruction_count_range import program_insn_count_range
 '''
@@ -58,12 +59,17 @@ def main() -> int:
     # Decode the program.
     program = decode_elf(args.elf)
 
+    # Build the whole-program control-flow graph once; it is the same for every
+    # mode and is expensive to construct.
+    program_graph = program_control_graph(program)
+
     # Compute instruction count range.
     insn_counts = []
     for mode in modes:
         exclude_symbols = mode.get("exclude_symbols", [])
         min_count, max_count = program_insn_count_range(
-            program, mode.get("symbol"), exclude_labels=exclude_symbols)
+            program, mode.get("symbol"), exclude_labels=exclude_symbols,
+            program_graph=program_graph)
         insn_counts.append((mode, min_count, max_count))
 
     # Write out the resulting filled header template.
