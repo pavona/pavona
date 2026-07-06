@@ -35,7 +35,6 @@ cc_library(
     hdrs = ["imm_section.h"],
     target_compatible_with = [PAVONA_CPU],
     deps = [
-        ":imm_section_epmp",
         ":imm_section_version_def",
         "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
@@ -49,6 +48,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/base:static_dice",
         "//sw/device/silicon_creator/lib/cert:dice_chain",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
@@ -79,25 +79,6 @@ cc_library(
         ":imm_section_version",
     ],
     alwayslink = True,
-)
-
-cc_library(
-    name = "imm_section_epmp",
-    srcs = ["imm_section_epmp.c"],
-    hdrs = ["imm_section_epmp.h"],
-    copts = [
-        "-Wno-enum-enum-conversion",
-    ],
-    deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib/drivers:epmp",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-    ],
 )
 
 ld_library(

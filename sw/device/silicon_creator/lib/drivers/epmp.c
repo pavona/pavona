@@ -142,9 +142,11 @@ void epmp_advance_boot_stage(void) {
   epmp_set(0, kEpmpModeOff, rx_lo);
   epmp_set(1, kEpmpModeTor | kEpmpPermLockedReadExecute, rx_hi);
   epmp_set(2, r_pmpcfg, r);
-  epmp_set(3, kEpmpModeOff, 0);
-  epmp_set(4, kEpmpModeOff, 0);
-  epmp_set(5, kEpmpModeOff, 0);
+  // Slot 4 is cleared before slot 3 to avoid a transient state when the TOR
+  // region for the text is still active but its base address is set to 0.
+  epmp_clear(4);
+  epmp_clear(3);
+  epmp_clear(5);
 }
 
 /**
@@ -176,4 +178,19 @@ inline void epmp_prepare_boot_stage(epmp_region_t tor_region_rx,
 inline void epmp_prepare_boot_stage_rx(epmp_region_t tor_region_rx) {
   // Configure the next boot stage in slots 3-4.
   epmp_set_tor(3, tor_region_rx, kEpmpPermLockedReadExecute);
+  // Clear the slot for the read-only NAPOT region in slot 5.
+  epmp_clear(5);
+}
+
+/**
+ * Duplicates the active read-only NAPOT region in slot 2 to the prepared region
+ * (slot 5).
+ *
+ * This is useful for reusing the same read-only region in consecutive boot
+ * stages without having to encode its address range each time.
+ */
+inline void epmp_reprepare_boot_stage_r(void) {
+  uint32_t addr;
+  CSR_READ(CSR_REG_PMPADDR2, &addr);
+  epmp_set(5, kEpmpPermLockedReadOnly, addr);
 }

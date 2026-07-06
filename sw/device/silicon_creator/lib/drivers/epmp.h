@@ -147,6 +147,15 @@ void epmp_prepare_boot_stage(epmp_region_t tor_region_rx,
  */
 void epmp_prepare_boot_stage_rx(epmp_region_t tor_region_rx);
 
+/**
+ * Duplicates the active read-only NAPOT region in slot 2 to the prepared region
+ * (slot 5).
+ *
+ * This is useful for reusing the same read-only region in consecutive boot
+ * stages without having to encode its address range each time.
+ */
+void epmp_reprepare_boot_stage_r(void);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
