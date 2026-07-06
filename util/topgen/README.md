@@ -255,6 +255,7 @@ address of the peripheral (if the IP has only a single TL-UL interface).
 - <a id="properties/ipgen_params"></a>**`ipgen_params`** *(object)*: Optional ipgen parameters for that instance.
 - <a id="properties/param_decl"></a>**`param_decl`** *(object)*: optional dict that allows to override instantiation parameters.
 - <a id="properties/param_list"></a>**`param_list`** *(array)*: list of parameters; added property.
+  - <a id="properties/param_list/items"></a>**Items**: Refer to *[urn:topgen:parameter](#n%3Atopgen%3Aparameter)*.
 - <a id="properties/inter_signal_list"></a>**`inter_signal_list`** *(array)*: generated signal information; added property.
 - <a id="properties/generate_dif"></a>**`generate_dif`** *(boolean)*: optional bool to indicate if a DIF should be generated for that module.
 - <a id="properties/racl_group"></a>**`racl_group`** *(string)*: Only valid for racl_ctrl IPs. Defines the RACL group this control IP is associated to.
@@ -327,8 +328,8 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/module_name"></a>**`module_name`** *(string, required)*: The module name of the source.
 - <a id="properties/desc"></a>**`desc`** *(string)*: the description of the interrupt.
 - <a id="properties/intr_type"></a>**`intr_type`** *(['string', 'integer'], required)*: The IntrType, either Event or Status.
-- <a id="properties/default_val"></a>**`default_val`** *(boolean, required)*
-- <a id="properties/incoming"></a>**`incoming`** *(boolean, required)*
+- <a id="properties/default_val"></a>**`default_val`** *(boolean, required)*: TODO.
+- <a id="properties/incoming"></a>**`incoming`** *(boolean, required)*: TODO.
 - <a id="properties/plic"></a>**`plic`** *(string)*: controller for this interrupt.
 - <a id="properties/outgoing"></a>**`outgoing`** *(boolean, required)*: whether interrupt leaves toplevel.
 
@@ -361,6 +362,24 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/desc"></a>**`desc`** *(string)*: Pad description.
 - <a id="properties/port_type"></a>**`port_type`** *(string)*: Special port type other than `inout wire`.
 - <a id="properties/idx"></a>**`idx`** *(integer)*: the index of the pad; added property.
+
+### Parameter
+
+*Parameter configuration passed down from top level to module*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the parameter name.
+- <a id="properties/desc"></a>**`desc`** *(string, required)*: the parameter description.
+- <a id="properties/type"></a>**`type`** *(string, required)*: the data type of the parameter.
+- <a id="properties/unpacked_dimensions"></a>**`unpacked_dimensions`** *(string)*: the unpacked dimensions for arrays.
+- <a id="properties/randtype"></a>**`randtype`** *(string)*: whether it is for 'data' or 'perm'issions.
+- <a id="properties/randcount"></a>**`randcount`** *(integer)*
+- <a id="properties/default"></a>**`default`**: the default value of the parameter.
+- <a id="properties/local"></a>**`local`** *(boolean)*: whether it is a localparam.
+- <a id="properties/expose"></a>**`expose`** *(boolean)*: seems redundant TODO.
+- <a id="properties/name_top"></a>**`name_top`** *(string)*: the name in the top-level.
+- <a id="properties/randwidth"></a>**`randwidth`** *(integer)*: the number of bits.
 
 ### Pinmux
 
