@@ -71,7 +71,11 @@
       type: "object",
       description: "optional dict that allows to override instantiation parameters"
     },
-    param_list: { type: "array", description: "list of parameters; added property" },
+    param_list: {
+      type: "array",
+      items: { $ref: "urn:topgen:parameter" },
+      description: "list of parameters; added property"
+    },
     inter_signal_list: { type: "array", description: "generated signal information; added property" },
     generate_dif: {
       type: "boolean",
