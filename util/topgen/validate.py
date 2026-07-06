@@ -41,23 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-param_required = {
-    'name': ['s', 'the parameter name'],
-    'desc': ['s', 'the parameter description'],
-    'type': ['s', 'the data type of the parameter'],
-    'default': ['s', 'the default value of the parameter'],
-}
-param_optional = {
-    'expose': ['s', 'seems redundant TODO'],
-    'local': ['s', 'whether it is a localparam, interpreted as boolean'],
-    'name_top': ['s', 'the name in the top-level'],
-    'randcount': ['d', 'TODO'],
-    'randtype': ['s', 'whether it is for "data" or "perm"issions'],
-    'randwidth': ['d', 'the number of bits'],
-    'unpacked_dimensions': ['s', 'the unpacked dimensions for arrays'],
-}
-param_added = {}
-
 inter_sig_required = {
     'name': ['s', 'the name of the signal'],
     'struct': ['s', 'the data type of the signal'],
@@ -780,12 +763,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
                 error += check_keys(sig, inter_sig_required,
                                     inter_sig_optional, inter_sig_added,
                                     f"{modname} Inter signal {sig_name}")
-        if 'param_list' in m:
-            for param in m['param_list']:
-                param_name = param.get('name', 'no name')
-                error += check_keys(param, param_required, param_optional,
-                                    param_added,
-                                    f"{modname} Parameter {param_name}")
     return error
 
 
