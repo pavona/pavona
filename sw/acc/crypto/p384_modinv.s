@@ -50,6 +50,7 @@
  * clobbered flag groups: FG0
  */
  .globl mod_inv_p384
+.type mod_inv_p384, @function
 mod_inv_p384:
 
   /* subtract 2 from modulus for Fermat's little theorem
@@ -79,14 +80,14 @@ mod_inv_p384:
     /* skip multiplication if C flag not set */
     csrrs     x2, 0x7c0, x0
     andi      x2, x2, 1
-    beq       x2, x0, nomul
+    beq       x2, x0, _nomul
 
     /* multiply: [w17,w16] <= [w17, w16]*[w30,w29] mod [w13, w12] */
     bn.mov    w10, w29
     bn.mov    w11, w30
     jal       x1, p384_mulmod_n
 
-    nomul:
+    _nomul:
     nop
 
   ret

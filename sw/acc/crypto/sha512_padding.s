@@ -41,6 +41,7 @@
  * clobbered flag groups: FG0
  */
 .globl sha512_pad_message
+.type sha512_pad_message, @function
 sha512_pad_message:
   /* Align the address and compute the offset.
        x20 <= dptr_pad % 4
@@ -137,6 +138,7 @@ sha512_pad_message:
  * clobbered registers: x2, x3, x23
  * clobbered flag groups: FG0
  */
+.type bswap32, @function
 bswap32:
   /* x2 <= w[0] << 24 */
   andi    x2, x23, 255

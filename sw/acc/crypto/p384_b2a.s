@@ -47,6 +47,7 @@
  * clobbered registers: w1 to w4, w20 to w23
  * clobbered flag groups: FG0
  */
+.type p384_boolean_to_arithmetic, @function
 p384_boolean_to_arithmetic:
   /* Fetch 385 bits of randomness from URND.
        [w2, w1] <= gamma */

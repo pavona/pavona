@@ -26,6 +26,7 @@
  * clobbered flag groups: FG0
  */
 .globl X25519
+.type X25519, @function
 X25519:
   /* Prepare all-zero register. */
   bn.xor   w31, w31, w31
@@ -110,6 +111,7 @@ X25519:
  * clobbered registers: w2 to w7, w10 to w18, w20 to w24
  * clobbered flag groups: FG0
  */
+.type scalar_mult, @function
 scalar_mult:
 
   /* Load the constant a24:
@@ -273,6 +275,7 @@ scalar_mult:
  * clobbered registers: w2 to w5, w10 to w13, w17, w18, w20 to w23
  * clobbered flag groups: FG0
  */
+.type ladderstep, @function
 ladderstep:
   /* First, compute the new x_2 and z_2:
        A = x_2 + z_2

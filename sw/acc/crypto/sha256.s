@@ -26,6 +26,7 @@
  * clobbered registers: x2, x3, x10 to x12, x21 to x23, w20 to w30
  * clobbered flag groups: FG0
  */
+.type sha256, @function
 sha256:
   /* Init all-zero register. */
   bn.xor   w31, w31, w31
@@ -96,6 +97,7 @@ sha256:
  * clobbered registers: w23 to w27
  * clobbered flag groups: FG0
  */
+.type bswap32_w23, @function
 bswap32_w23:
   /* Isolate each byte of each 32-bit word.
        w24 <= byte 0 of each word = a
@@ -183,6 +185,7 @@ bswap32_w23:
  * clobbered registers: x11, x12, w21 to w28, w30
  * clobbered flag groups: FG0
  */
+.type sha256_process_block, @function
 sha256_process_block:
   /* Copy the message into the first 512 bits of the message schedule.
        dmem[sha256_W..sha256_W+64] <= w22 || w21 */

@@ -60,6 +60,7 @@
 
 .section .text.start
 .globl start
+.type start, @function
 start:
   /* Read the mode and tail-call the requested operation. */
   la    x2, mode
@@ -123,6 +124,7 @@ start:
  * clobbered registers: x10, w10
  * clobbered flag groups: none
  */
+.type copy_share, @function
 copy_share:
   /* Randomize the content of w10 to prevent leakage. */
   bn.wsrr  w10, URND
@@ -154,6 +156,7 @@ copy_share:
  * clobbered registers: x2, x3, x9 to x13, x18 to x23, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
+.type keypair_random, @function
 keypair_random:
   /* Generate secret key d in shares.
        dmem[d0] <= d0
@@ -184,6 +187,7 @@ keypair_random:
  * @param[in] dmem[y]: Public key y-coordinate.
  * @param[out] dmem[ok]: success/failure of basic checks (32 bits)
  */
+.type public_key_check, @function
 public_key_check:
   /* Validate the public key (ends the program on failure). */
   jal      x1, p384_check_public_key
@@ -205,6 +209,7 @@ public_key_check:
  * @param[out]   dmem[r]: r component of signature
  * @param[out]   dmem[s]: s component of signature
  */
+.type ecdsa_sign, @function
 ecdsa_sign:
   /* Generate a fresh random scalar for signing.
        dmem[k0] <= first share of k
@@ -226,6 +231,7 @@ ecdsa_sign:
  * @param[out]   dmem[r]: r component of signature
  * @param[out]   dmem[s]: s component of signature
  */
+.type ecdsa_sign_sideloaded, @function
 ecdsa_sign_sideloaded:
   /* Load keymgr seeds from WSRs.
        w20,w21 <= seed0
@@ -259,6 +265,7 @@ ecdsa_sign_sideloaded:
  * @param[in]    dmem[y]: y-coordinate of public key
  * @param[out] dmem[x_r]: x1 coordinate to be compared to rs
  */
+.type ecdsa_verify, @function
 ecdsa_verify:
   /* Validate the public key (ends the program on failure). */
   jal      x1, p384_check_public_key
@@ -289,6 +296,7 @@ ecdsa_verify:
  * clobbered registers: x2, x3, x9 to x13, x17 to x21, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
+.type shared_key, @function
 shared_key:
   /* Validate the public key (ends the program on failure). */
   jal      x1, p384_check_public_key
@@ -354,6 +362,7 @@ shared_key:
  * clobbered registers: x2, x3, x9 to x13, x18 to x23, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
+.type keypair_from_seed, @function
 keypair_from_seed:
   /* Load keymgr seeds from WSRs.
        w20,w21 <= seed0
@@ -394,6 +403,7 @@ keypair_from_seed:
  * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
+.type shared_key_from_seed, @function
 shared_key_from_seed:
   /* Load keymgr seeds from WSRs.
        w20,w21 <= seed0

@@ -25,6 +25,7 @@
  * clobbered registers: x2 to x8, x20 to x25, w20 to w25
  * clobbered flag groups: FG0
  */
+.type lcm, @function
 lcm:
   /* Initialize wide-register pointers. */
   li       x20, 20

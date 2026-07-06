@@ -4,6 +4,7 @@
 
 .section .text.start
 .globl start
+.type start, @function
 start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
@@ -35,6 +36,7 @@ start:
 /**
  * RSA encryption
  */
+.type rsa_encrypt, @function
 rsa_encrypt:
   /* Compute Montgomery constants. */
   jal      x1, modload
@@ -52,6 +54,7 @@ rsa_encrypt:
 /**
  * RSA decryption
  */
+.type rsa_decrypt, @function
 rsa_decrypt:
   /* Compute Montgomery constants. */
   jal      x1, modload
@@ -72,6 +75,7 @@ rsa_decrypt:
  *
  * clobbered registers: x3, w0
  */
+.type zero_work_buf, @function
 zero_work_buf:
   la     x3, work_buf
   bn.xor w0, w0, w0
@@ -85,6 +89,7 @@ zero_work_buf:
  *
  * clobbered registers: x2, x3, x4, w0
  */
+.type cp_work_buf, @function
 cp_work_buf:
   la    x2, n_limbs
   lw    x30, 0(x2)

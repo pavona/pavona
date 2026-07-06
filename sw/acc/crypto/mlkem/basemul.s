@@ -28,6 +28,7 @@
  */
 
 .globl basemul
+.type basemul, @function
 basemul:
   /* Set up wide registers for inputs*/
   li x4, 0
@@ -251,6 +252,7 @@ basemul:
  */
 
 .globl basemul_acc
+.type basemul_acc, @function
 basemul_acc:
   /* Set up wide registers for inputs*/
   li x4, 0

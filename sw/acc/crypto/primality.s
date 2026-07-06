@@ -45,6 +45,7 @@
  *                      w2, w3, w4..w[4+(n-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
+.type miller_rabin, @function
 miller_rabin:
   /* Initialize w21 (can be any nonzero value with a high Hamming distance from
      the sensitive "w is prime" value). */
@@ -107,6 +108,7 @@ miller_rabin:
  *                      w2, w3, w4..w[4+(n-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
+.type miller_rabin_round, @function
 miller_rabin_round:
   /* Generate a new random number to test. We take input from RND but xor with
      URND as an extra protection (since it is fast and can only strengthen the
@@ -230,6 +232,7 @@ miller_rabin_round:
  *                      w2, w3, w4..w[4+(n-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
+.type test_witness, @function
 test_witness:
   /* Initialize constants for montgomery multiplication. */
   li         x8, 4
@@ -399,6 +402,7 @@ test_witness:
  * clobbered registers: x2, x3, w23, w25
  * clobbered flag groups: FG0, FG1
  */
+.type reduce_modw, @function
 reduce_modw:
   /* Clear flags in group 1. */
   bn.sub    w31, w31, w31, FG1
@@ -450,6 +454,7 @@ reduce_modw:
  * clobbered registers: x2, x3, w23, w25, w26
  * clobbered flag groups: FG0
  */
+.type is_mont1, @function
 is_mont1:
   /* Clear flags and initialize return value.
        w26 <= 2^256 - 1
@@ -508,6 +513,7 @@ is_mont1:
  * clobbered registers: x2, x3, w23, w25, w26
  * clobbered flag groups: FG0
  */
+.type is_mont_minus1, @function
 is_mont_minus1:
   /* Clear flags. */
   bn.sub   w31, w31, w31

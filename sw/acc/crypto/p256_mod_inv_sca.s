@@ -11,6 +11,7 @@
 
 .section .text.start
 
+.type main, @function
 main:
   /* Initialize all-zero register. */
   bn.xor    w31, w31, w31

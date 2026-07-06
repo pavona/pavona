@@ -79,6 +79,7 @@
  * clobbered flag groups: FG0
  */
 .globl sha512
+.type sha512, @function
 sha512:
 
   /* w31 = 0 */

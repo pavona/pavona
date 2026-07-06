@@ -108,6 +108,7 @@
  *
  */
 .global crypto_sign_signature_internal
+.type crypto_sign_signature_internal, @function
 crypto_sign_signature_internal:
     /* Store pointer parameters. */
     la  t0, dptr_sig

@@ -30,6 +30,7 @@
  * clobbered flag groups: FG0
  */
 .globl sc_init
+.type sc_init, @function
 sc_init:
   /* Load modulus L into the MOD register. */
   li      x2, 14
@@ -126,6 +127,7 @@ sc_init:
  * clobbered flag groups: FG0
  */
 .globl sc_reduce
+.type sc_reduce, @function
 sc_reduce:
   /* First, compute q3 = (x * mu) >> 512.
 
@@ -257,6 +259,7 @@ sc_reduce:
  * clobbered flag groups: FG0
  */
 .globl sc_mul
+.type sc_mul, @function
 sc_mul:
   /* Compute the raw 512-bit product.
      [w17:w16] <= a * b */

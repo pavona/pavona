@@ -56,6 +56,8 @@ jobs:
         run: ruff check
       - name: Validate testplans with schema
         run: ./ci/scripts/validate_testplans.sh
+      - name: ACC assembly lint
+        run: ./ci/scripts/check-acc-asm.py
       - name: C/C++ formatting
         run: ./bazelisk.sh test //quality:clang_format_check
       - name: Rust formatting

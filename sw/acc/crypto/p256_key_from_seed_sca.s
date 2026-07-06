@@ -12,6 +12,7 @@
 
 .section .text.start
 
+.type start, @function
 start:
   /* Read mode, then tail-call either p256_gen_secret_key or p256_gen_keypair */
   la    x2, mode
@@ -26,6 +27,7 @@ start:
   /* Invalid mode; fail. */
   unimp
 
+.type p256_gen_secret_key, @function
 p256_gen_secret_key:
   /* First, generate the masked secret key d and write to DMEM.
        dmem[d0] <= d0
@@ -34,6 +36,7 @@ p256_gen_secret_key:
 
   ecall
 
+.type p256_gen_keypair, @function
 p256_gen_keypair:
   /* First, generate the masked secret key d and write to DMEM.
        dmem[d0] <= d0
@@ -47,6 +50,7 @@ p256_gen_keypair:
 
   ecall
 
+.type run_gen_secret_key, @function
 run_gen_secret_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31

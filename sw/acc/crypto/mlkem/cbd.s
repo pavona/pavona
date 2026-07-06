@@ -27,6 +27,7 @@
  */
 
 .globl cbd2
+.type cbd2, @function
 cbd2:
     /* Set up wide registers for input and intermediate states */
     li x4, 0
@@ -83,6 +84,7 @@ cbd2:
  */
 
 .globl cbd3
+.type cbd3, @function
 cbd3:
     /* Set up wide registers for input and intermediate states */
     li x4, 0

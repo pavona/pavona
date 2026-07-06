@@ -45,6 +45,7 @@
  * clobbered flag groups: FG0
  */
  .globl store_proj_randomize
+.type store_proj_randomize, @function
 store_proj_randomize:
 
   /* get a 384-bit random number from URND
@@ -163,6 +164,7 @@ store_proj_randomize:
  * clobbered flag groups: FG0, FG1
  */
  .globl scalar_mult_int_p384
+.type scalar_mult_int_p384, @function
 scalar_mult_int_p384:
 
   /* set regfile pointers to in/out regs of mulmod routine. Set here to avoid

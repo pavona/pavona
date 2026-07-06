@@ -10,6 +10,7 @@
 
 .section .text.start
 .globl start
+.type start, @function
 start:
   /* Read mode, then tail-call either p384_ecdsa_sign or p384_ecdsa_verify */
   la    x2, mode
@@ -25,10 +26,12 @@ start:
   unimp
 
 .text
+.type p384_ecdsa_sign, @function
 p384_ecdsa_sign:
   jal      x1, p384_sign
   ecall
 
+.type p384_ecdsa_verify, @function
 p384_ecdsa_verify:
   /*jal      x1, p384_verify*/
   ecall

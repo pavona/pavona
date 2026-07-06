@@ -61,6 +61,7 @@
 
 .section .text.start
 .globl start
+.type start, @function
 start:
   /* Read the mode and tail-call the requested operation. */
   la    x2, mode
@@ -124,6 +125,7 @@ start:
  * clobbered registers: x10, w10
  * clobbered flag groups: none
  */
+.type copy_share, @function
 copy_share:
   /* Randomize the content of w10 to prevent leakage. */
   bn.wsrr  w10, URND
@@ -145,6 +147,7 @@ copy_share:
  * @param[out]  dmem[x]: Public key x-coordinate.
  * @param[out]  dmem[y]: Public key y-coordinate.
  */
+.type random_keygen, @function
 random_keygen:
   /* Generate secret key d in shares.
        dmem[d0] <= d0
@@ -175,6 +178,7 @@ random_keygen:
  * @param[in] dmem[y]: Public key y-coordinate.
  * @param[out] dmem[ok]: success/failure of basic checks (32 bits)
  */
+.type public_key_check, @function
 public_key_check:
   /* Validate the public key (ends the program on failure). */
   jal      x1, p256_check_public_key
@@ -195,6 +199,7 @@ public_key_check:
  * @param[in]  dmem[d0]:  first share of private key d (320 bits)
  * @param[in]  dmem[d1]:  second share of private key d (320 bits)
  */
+.type ecdsa_sign, @function
 ecdsa_sign:
   /* Generate a fresh random scalar for signing.
        dmem[k0] <= first share of k
@@ -226,6 +231,7 @@ ecdsa_sign:
  * @param[out] dmem[ok]:  success/failure of basic checks (32 bits)
  * @param[out] dmem[x_r]: dmem buffer for reduced affine x_r-coordinate (x_1)
  */
+.type ecdsa_verify, @function
 ecdsa_verify:
   /* Validate the public key (ends the program on failure). */
   jal      x1, p256_check_public_key
@@ -257,6 +263,7 @@ ecdsa_verify:
  * @param[out]  dmem[x]: x0, first share of shared key.
  * @param[out]  dmem[y]: x1, second share of shared key.
  */
+.type shared_key, @function
 shared_key:
   /* Validate the public key (ends the program on failure). */
   jal      x1, p256_check_public_key
@@ -281,6 +288,7 @@ shared_key:
  * @param[out]  dmem[x]: Public key x-coordinate.
  * @param[out]  dmem[y]: Public key y-coordinate.
  */
+.type sideload_keygen, @function
 sideload_keygen:
   /* Generate secret key d in shares.
        dmem[d0] <= d0
@@ -301,6 +309,7 @@ sideload_keygen:
  * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
  * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
  */
+.type sideload_ecdsa_sign, @function
 sideload_ecdsa_sign:
   /* Generate secret key d in shares.
        dmem[d0] <= d0
@@ -330,6 +339,7 @@ sideload_ecdsa_sign:
  * @param[out]  dmem[x]: x0, first share of shared key.
  * @param[out]  dmem[y]: x1, second share of shared key.
  */
+.type shared_key_from_seed, @function
 shared_key_from_seed:
   /* Generate secret key d in shares.
        dmem[d0] <= d0
@@ -345,6 +355,7 @@ shared_key_from_seed:
  * @param[out] dmem[d0]: First share of secret key.
  * @param[out] dmem[d0]: Second share of secret key.
  */
+.type secret_key_from_seed, @function
 secret_key_from_seed:
   /* Load keymgr seeds from WSRs.
        w20,w21 <= seed0

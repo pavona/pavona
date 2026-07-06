@@ -41,6 +41,7 @@
  */
 
 .globl poly_frommsg
+.type poly_frommsg, @function
 poly_frommsg:
   /* Set up wide registers for input and output */
   li x4, 0
@@ -83,6 +84,7 @@ poly_frommsg:
  */
 
 .globl poly_tomsg
+.type poly_tomsg, @function
 poly_tomsg:
   /* Set up registers for input and output */
   li x4, 0
@@ -135,6 +137,7 @@ poly_tomsg:
  */
 
 .globl poly_getnoise_eta_init
+.type poly_getnoise_eta_init, @function
 poly_getnoise_eta_init:
   /* Initialize a SHAKE256 operation. */
   addi  x5, x0, 33
@@ -176,6 +179,7 @@ poly_getnoise_eta_init:
  */
 
 .globl poly_getnoise_eta_1
+.type poly_getnoise_eta_1, @function
 poly_getnoise_eta_1:
   /* eta1 = 3 for ML-KEM-512 (K=2), eta1 = eta2 = 2 for ML-KEM-768/1024
    * (K=3,4). Dispatch on x14 to the matching CBD sampler. */
@@ -199,6 +203,7 @@ poly_getnoise_eta_1:
  * clobbered registers: x4 to x6, x10 to x11, x17, x19 to x21, w0 to w9, w11, w20 to w21
  * clobbered flag groups: FG0
  */
+.type poly_getnoise_cbd3, @function
 poly_getnoise_cbd3:
   addi x10, x6, 0
 
@@ -237,7 +242,9 @@ poly_getnoise_cbd3:
  */
 
 .globl poly_getnoise_eta_2
+.type poly_getnoise_eta_2, @function
 poly_getnoise_eta_2:
+.type poly_getnoise_cbd2, @function
 poly_getnoise_cbd2:
   addi x10, x6, 0
 
@@ -268,6 +275,7 @@ poly_getnoise_cbd2:
  * clobbered flag groups: none
  */
 .globl poly_add
+.type poly_add, @function
 poly_add:
   li x4, 1
 
@@ -295,6 +303,7 @@ poly_add:
  * clobbered flag groups: none
  */
 .globl poly_sub
+.type poly_sub, @function
 poly_sub:
   li x4, 1
 
@@ -323,6 +332,7 @@ poly_sub:
  * clobbered flag groups: none
  */
 .globl poly_tomont
+.type poly_tomont, @function
 poly_tomont:
   /* Load const_tomont */
   li     x4, 0

@@ -27,6 +27,7 @@
  * clobbered flag groups: None
  */
 .globl keccak_send_message
+.type keccak_send_message, @function
 keccak_send_message:
   /* Compute the number of full 256-bit message chunks.
   t0 <= x11 >> 5 = floor(len / 32) */

@@ -26,6 +26,7 @@
  * clobbered registers: x5-x7, x10-x12, w0-w15, w17-w19, w24-w30
  */
 .globl ntt
+.type ntt, @function
 ntt:
     /* Load twiddle factors. */
     la   x11, twiddles_fwd

@@ -37,6 +37,7 @@
  * clobbered flag groups: FG0
  */
  .globl p384_isoncurve_proj_check
+.type p384_isoncurve_proj_check, @function
 p384_isoncurve_proj_check:
 
   jal       x1, p384_isoncurve_proj
@@ -94,6 +95,7 @@ p384_isoncurve_proj_check:
  * clobbered flag groups: FG0
  */
  .globl p384_isoncurve_proj
+.type p384_isoncurve_proj, @function
 p384_isoncurve_proj:
 
   /* load domain parameter b from dmem

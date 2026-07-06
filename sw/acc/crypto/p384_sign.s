@@ -42,6 +42,7 @@
  * clobbered flag groups: FG0
  */
 .globl p384_sign
+.type p384_sign, @function
 p384_sign:
   /* init all-zero reg */
   bn.xor    w31, w31, w31

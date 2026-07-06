@@ -84,6 +84,7 @@
  * clobbered registers: a0-a6, t0-t5, s1, w0-w30
  */
 .globl crypto_sign_keypair
+.type crypto_sign_keypair, @function
 crypto_sign_keypair:
     la   s11, mldsa_params
     lw   s10, MLDSA_PARAM_K_OFFSET(s11)

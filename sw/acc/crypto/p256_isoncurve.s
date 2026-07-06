@@ -44,6 +44,7 @@
  * clobbered registers: x2, x3, x19, x20, w0, w18 to w29
  * clobbered flag groups: FG0
  */
+.type p256_isoncurve, @function
 p256_isoncurve:
   /* Set up for coordinate arithmetic.
        MOD <= p
@@ -116,6 +117,7 @@ p256_isoncurve:
  * clobbered registers: x2, x3, x19, x20, w0, w2, w18 to w29
  * clobbered flag groups: FG0
  */
+.type p256_check_public_key, @function
 p256_check_public_key:
   /* Init all-zero register. */
   bn.xor   w31, w31, w31
@@ -194,6 +196,7 @@ p256_check_public_key:
  *
  * @param[out] dmem[ok] Set to HARDENED_BOOL_FALSE.
  */
+.type p256_invalid_input, @function
 p256_invalid_input:
   /* Set the `ok` code to false. */
   la       x2, ok

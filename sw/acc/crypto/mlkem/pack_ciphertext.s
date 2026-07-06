@@ -30,6 +30,7 @@
  * clobbered registers: x0-x30, w0-w31
  */
 
+.type poly_compress_dv4, @function
 poly_compress_dv4:
   /* Multiply the constant 80635 with 2**4 so that later we shift to the right
    * 32 bits instead of 28 bits. This means we can return the high parts of
@@ -74,6 +75,7 @@ poly_compress_dv4:
  * clobbered registers: x0-x30, w0-w31
  */
 
+.type poly_compress_dv5, @function
 poly_compress_dv5:
   bn.shv.8S w3, w2 >> 17 /* w3 = (0x340)^8 */
   bn.shv.8S w3, w3 << 1 /* w3 = (0x680)^8 */
@@ -213,6 +215,7 @@ poly_compress_dv5:
  * clobbered registers:
  */
 
+.type poly_compress_16, @function
 poly_compress_16:
   bn.trn1.16H          w1, w0, w31 /* Put even coeffs to 32-bit slots */
   bn.shv.8S            w1, w1 << 5 /* << 5 */
@@ -245,6 +248,7 @@ poly_compress_16:
  *
  * clobbered registers: x0-x30, w0-w31
  */
+.type polyvec_compress_du10, @function
 polyvec_compress_du10:
   bn.shv.8S w3, w2 >> 16 /* w2 = (0x681)^8 */
   bn.mov    w16, w5 /* w16 = (1290167) */
@@ -366,6 +370,7 @@ polyvec_compress_du10:
  *
  * clobbered registers: x0-x30, w0-w31
  */
+.type polyvec_compress_du11, @function
 polyvec_compress_du11:
   bn.shv.8S w3, w2 >> 17 /* w3 = (0x340)^8 */
   bn.shv.8S w3, w3 << 1 /* w3 = (0x680)^8 */
@@ -597,6 +602,7 @@ polyvec_compress_du11:
  * clobbered registers:
  */
 
+.type polyvec_compress_16_du10, @function
 polyvec_compress_16_du10:
   bn.trn1.16H          w1, w0, w31 /* Put even coeffs to 32-bit slots */
   bn.shv.8S            w1, w1 << 10 /* << 10 */
@@ -626,6 +632,7 @@ polyvec_compress_16_du10:
  * clobbered registers:
  */
 
+.type polyvec_compress_16_du11, @function
 polyvec_compress_16_du11:
   bn.trn1.16H          w1, w0, w31 /* Put even coeffs to 32-bit slots */
   bn.shv.8S            w1, w1 << 11 /* << 11 */
@@ -665,6 +672,7 @@ polyvec_compress_16_du11:
  */
 
 .globl pack_ciphertext
+.type pack_ciphertext, @function
 pack_ciphertext:
   /* Set up registers for input and output */
   li x4, 4
@@ -711,6 +719,7 @@ _pack_ciphertext_k4:
  * clobbered registers: x0-x30, w0-w31
  */
 
+.type poly_decompress_dv4, @function
 poly_decompress_dv4:
   bn.shv.16H w2, w2 >> 8 /* 0xf */
   LOOPI 4, 11
@@ -745,6 +754,7 @@ poly_decompress_dv4:
  * clobbered registers: x0-x30, w0-w31
  */
 
+.type poly_decompress_dv5, @function
 poly_decompress_dv5:
   /* Before, we used bn.mulv.l.8S.{even,odd}.lo to compute 16 16x16-bit
    * multiplications, because we need the full 32-bit results to shift them by
@@ -867,6 +877,7 @@ poly_decompress_dv5:
  *
  * clobbered registers:
  */
+.type poly_decompress_16, @function
 poly_decompress_16:
   bn.shv.16H           w1, w1 << 11 /* << 11 */
   bn.wsrw              0x3, w3 /* Write w3 to ACC */
@@ -895,6 +906,7 @@ poly_decompress_16:
  * clobbered registers: x0-x30, w0-w31
  */
 
+.type polyvec_decompress_du10, @function
 polyvec_decompress_du10:
   /* Before, we used bn.mulv.l.8S.{even,odd}.lo to compute 16 16x16-bit
    * multiplications, because we need the full 32-bit results to shift them by
@@ -1016,6 +1028,7 @@ polyvec_decompress_du10:
  * clobbered registers: x0-x30, w0-w31
  */
 
+.type polyvec_decompress_du11, @function
 polyvec_decompress_du11:
   LOOPI 4, 149
     /* First WDR: 176 bits */
@@ -1212,6 +1225,7 @@ polyvec_decompress_du11:
  *
  * clobbered registers:
  */
+.type polyvec_decompress_16_du10, @function
 polyvec_decompress_16_du10:
   bn.shv.16H           w1, w1 << 6 /* *(2**6) */
   bn.wsrw              0x3, w3 /* Write w3 to ACC */
@@ -1231,6 +1245,7 @@ polyvec_decompress_16_du10:
  *
  * clobbered registers:
  */
+.type polyvec_decompress_16_du11, @function
 polyvec_decompress_16_du11:
   bn.shv.16H           w1, w1 << 5 /* *(2**5) */
   bn.wsrw              0x3, w3 /* Write w3 to ACC */
@@ -1259,6 +1274,7 @@ polyvec_decompress_16_du11:
  */
 
 .globl unpack_ciphertext
+.type unpack_ciphertext, @function
 unpack_ciphertext:
   /* Set up registers for input and output */
   li x4, 1

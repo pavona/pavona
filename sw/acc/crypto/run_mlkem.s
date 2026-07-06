@@ -40,6 +40,7 @@
 
 .section .text.start
 .globl start
+.type start, @function
 start:
   /* All-zero register. */
   bn.xor  w31, w31, w31

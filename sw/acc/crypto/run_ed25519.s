@@ -48,6 +48,7 @@
 
 .section .text.start
 .globl start
+.type start, @function
 start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
@@ -91,6 +92,7 @@ start:
  * @param[out] dmem[ed25519_sig_R]: R component of signature (256 bits)
  * @param[out] dmem[ed25519_sig_S]: S component of signature (256 bits)
  */
+.type ed25519_sign_hash_top, @function
 ed25519_sign_hash_top:
   jal x1, ed25519_sign_prehashed
   ecall
@@ -100,6 +102,7 @@ ed25519_sign_hash_top:
  *
  * See documentation for ed25519_sign_pure_init in ed25519.s for details.
  */
+.type ed25519_sign_pure_init_top, @function
 ed25519_sign_pure_init_top:
   jal x1, ed25519_sign_pure_init
   ecall
@@ -109,6 +112,7 @@ ed25519_sign_pure_init_top:
  *
  * See documentation for ed25519_sign_pure_update in ed25519.s for details.
  */
+.type ed25519_sign_pure_update_top, @function
 ed25519_sign_pure_update_top:
   jal x1, ed25519_sign_pure_update
   ecall
@@ -118,6 +122,7 @@ ed25519_sign_pure_update_top:
  *
  * See documentation for ed25519_sign_pure_mid in ed25519.s for details.
  */
+.type ed25519_sign_pure_mid_top, @function
 ed25519_sign_pure_mid_top:
   jal x1, ed25519_sign_pure_mid
   ecall
@@ -127,6 +132,7 @@ ed25519_sign_pure_mid_top:
  *
  * See documentation for ed25519_sign_pure_final in ed25519.s for details.
  */
+.type ed25519_sign_pure_final_top, @function
 ed25519_sign_pure_final_top:
   jal x1, ed25519_sign_pure_final
   ecall
@@ -144,6 +150,7 @@ ed25519_sign_pure_final_top:
  * @param[in]  dmem[ed25519_public_key]: encoded public key A_, 256 bits
  * @param[out] dmem[ed25519_verify_result]: SUCCESS or FAILURE
  */
+.type ed25519_verify_top, @function
 ed25519_verify_top:
   jal x1, ed25519_verify_var
   ecall

@@ -20,6 +20,7 @@
  * clobbered flag groups: none
  */
 .globl trigger_fault_if_fg0_z
+.type trigger_fault_if_fg0_z, @function
 trigger_fault_if_fg0_z:
   /* Read the FG0.Z flag (position 3).
        x2 <= FG0.Z << 3 */

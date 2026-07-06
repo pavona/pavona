@@ -31,6 +31,7 @@
  * clobbered registers: w1-w4, w30
  */
 .global decompose_88
+.type decompose_88, @function
 decompose_88:
     /* "a", "a{0,1}" refer to the variable names from the reference code */
 
@@ -62,6 +63,7 @@ decompose_88:
     ret
 
 .global decompose_32
+.type decompose_32, @function
 decompose_32:
     /* "a", "a{0,1}" refer to the variable names from the reference code */
 

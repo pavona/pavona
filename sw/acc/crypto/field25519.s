@@ -25,6 +25,7 @@
  * clobbered flag groups: FG0
  */
 .globl fe_init
+.type fe_init, @function
 fe_init:
   /* Load modulus p into the MOD register. */
   li      x2, 19
@@ -59,6 +60,7 @@ fe_init:
  * clobbered flag groups: FG0
  */
 .globl fe_mul
+.type fe_mul, @function
 fe_mul:
   /* Partial products for multiply-reduce:
 
@@ -171,6 +173,7 @@ fe_mul:
  * clobbered flag groups: FG0
  */
 .globl fe_square
+.type fe_square, @function
 fe_square:
   /* Partial products for square:
 
@@ -299,6 +302,7 @@ fe_square:
  * clobbered flag groups: FG0
  */
 .globl fe_inv
+.type fe_inv, @function
 fe_inv:
   /* w22 <= w16^2 = a^2 */
   bn.mov  w22, w16

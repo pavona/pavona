@@ -35,6 +35,7 @@
  * clobbered flag groups: none
  */
 .global sha3_init
+.type sha3_init, @function
 sha3_init:
   addi x5, x10, 0
   addi x6, x0, 31
@@ -72,6 +73,7 @@ sha3_init:
  * clobbered flag groups: FG0
  */
 .global sha3_update
+.type sha3_update, @function
 sha3_update:
   /* Load pt as j */
   lw x5, 200(x10)
@@ -153,6 +155,7 @@ _sha3_update_skip_loop:
  * clobbered flag groups: FG0
  */
 .global sha3_final
+.type sha3_final, @function
 sha3_final:
   /* Load constant for address alignment */
   li   x12, 0xFFFFFFFC
@@ -211,6 +214,7 @@ sha3_final:
  * clobbered flag groups: FG0
  */
 .global shake_xof
+.type shake_xof, @function
 shake_xof:
   /* Load constant for address alignment */
   li   x12, 0xFFFFFFFC
@@ -262,6 +266,7 @@ shake_xof:
  * clobbered flag groups: FG0
  */
 .global shake_out
+.type shake_out, @function
 shake_out:
   /* Load pt as j */
   lw   x5, 200(x10)
@@ -341,6 +346,7 @@ _shake_out_skip_loop:
  */
 
 .global keccakf
+.type keccakf, @function
 keccakf:
   /* Copy context pointer */
   add     x5, x0, x10

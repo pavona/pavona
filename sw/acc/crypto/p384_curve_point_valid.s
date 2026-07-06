@@ -14,6 +14,7 @@
  */
 
 .section .text.start
+.type start, @function
 start:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
@@ -25,6 +26,7 @@ start:
   unimp
   unimp
 
+.type validate_point, @function
 validate_point:
   /* Call curve point validation function */
   jal       x1, p384_curve_point_valid

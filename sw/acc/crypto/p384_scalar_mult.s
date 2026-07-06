@@ -42,6 +42,7 @@
  * clobbered flag groups: FG0
  */
 .globl p384_scalar_mult
+.type p384_scalar_mult, @function
 p384_scalar_mult:
 
   /* Init all-zero register. */

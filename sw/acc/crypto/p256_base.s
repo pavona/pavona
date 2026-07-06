@@ -77,6 +77,7 @@
  * clobbered registers: w19, w20, w21, w22, w23, w24, w25
  * clobbered flag groups: FG0
  */
+.type p256_reduce, @function
 p256_reduce:
   /* Compute q1' = q1[255:0] = x >> 255
      w21 = q1' = [w20, w19] >> 255 */
@@ -222,6 +223,7 @@ p256_reduce:
  * clobbered registers: w19, w20, w21, w22, w23, w24, w25
  * clobbered flag groups: FG0
  */
+.type mod_mul_256x256, @function
 mod_mul_256x256:
   /* Compute the integer product of the operands x = a * b
      x = [w20, w19] = a * b = w24 * w25
@@ -283,6 +285,7 @@ mod_mul_256x256:
  * clobbered registers: w19, w20, w21, w22, w23, w24, w25
  * clobbered flag groups: FG0
  */
+.type mod_mul_320x128, @function
 mod_mul_320x128:
   /* Compute the integer product of the operands x = a * b
      x = [w20, w19] = a * b = w24 * w25
@@ -344,6 +347,7 @@ mod_mul_320x128:
  * clobbered registers: w19, w20, w21, w22, w23, w24, w25
  * clobbered flag groups: FG0
  */
+.type mul_modp, @function
 mul_modp:
   /* First, compute the high partial products (coefficient 2^192 or higher).
        w19,w20.U <= 2^192*(a0b3 + a1b2 + a2b1 + a3b0)
@@ -505,6 +509,7 @@ mul_modp:
  * clobbered registers: w28, w29
  * clobbered flag groups: FG0
  */
+.type setup_modp, @function
 setup_modp:
   /* Load the modulus p from DMEM and store it in MOD.
      MOD <= w29 <= p = dmem[p256_p] */
@@ -567,6 +572,7 @@ setup_modp:
  * clobbered registers: w11 to w25
  * clobbered flag groups: FG0
  */
+.type proj_add, @function
 proj_add:
   /* mapping of parameters to symbols of [2] (Algorithm 4):
      X1 = x_p; Y1 = y_p; Z1 = z_p; X2 = x_q; Y2 = y_q; Z2 = z_q
@@ -783,6 +789,7 @@ proj_add:
  * clobbered registers: w10 to w19, w24, w25
  * clobbered flag groups: FG0
  */
+.type proj_to_affine, @function
 proj_to_affine:
 
   /* Fully reduce z. */
@@ -948,6 +955,7 @@ proj_to_affine:
  * clobbered registers: w1, w2, w3, w19, w24, w25
  * clobbered flag groups: FG0
  */
+.type mod_inv, @function
 mod_inv:
 
   /* subtract 2 from modulus for Fermat's little theorem
@@ -975,7 +983,7 @@ mod_inv:
     bn.sel    w1, w1, w3, C
     csrrs     x2, FG0, x0
     andi      x2, x2, 1
-    beq       x2, x0, nomul
+    beq       x2, x0, _nomul
 
     /* multiply: w1 = w19 = w24*w25 = w3*w0  mod m */
     bn.mov    w24, w3
@@ -983,7 +991,7 @@ mod_inv:
     jal       x1, mod_mul_256x256
     bn.mov    w1, w19
 
-    nomul:
+    _nomul:
     nop
 
   ret
@@ -1021,6 +1029,7 @@ mod_inv:
  * clobbered registers: w14 to w16, w19 to w26
  * clobbered flag groups: FG0
  */
+.type fetch_proj_randomize, @function
 fetch_proj_randomize:
 
   /* get random number from URND */
@@ -1099,6 +1108,7 @@ fetch_proj_randomize:
  * clobbered registers: w14 to w25
  * clobbered flag groups: FG0
  */
+.type proj_double, @function
 proj_double:
   /* w14 <= 3 * (w8 - w10) * (w8 + w10) = 3 * (X1 - Z1) * (X1 + Z1) = w */
   bn.subm   w24, w8, w10
@@ -1218,6 +1228,7 @@ proj_double:
  * clobbered registers: x2, x3, x10, w0 to w30
  * clobbered flag groups: FG0
  */
+.type scalar_mult_int, @function
 scalar_mult_int:
   /* Set up for coordinate arithmetic.
        MOD <= p
@@ -1465,6 +1476,7 @@ scalar_mult_int:
  * clobbered registers: x2, x3, x16, x17, x19, x20, x21, x22, w0 to w29
  * clobbered flag groups: FG0
  */
+.type p256_base_mult, @function
 p256_base_mult:
 
   /* init all-zero register */
@@ -1560,6 +1572,7 @@ p256_base_mult:
  * clobbered registers: x2, x3, x20, w12 to w29
  * clobbered flag groups: FG0
  */
+.type p256_random_scalar, @function
 p256_random_scalar:
   /* Load the curve order n.
      w29 <= dmem[p256_n] = n */
@@ -1576,7 +1589,7 @@ p256_random_scalar:
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
 
-  random_scalar_retry:
+  _random_scalar_retry:
   /* Obtain 768 bits of randomness from RND. */
   bn.wsrr   w15, RND
   bn.wsrr   w16, RND
@@ -1631,7 +1644,7 @@ p256_random_scalar:
   andi      x2, x2, 8
 
   /* Retry if x2 != 0. */
-  bne       x2, x0, random_scalar_retry
+  bne       x2, x0, _random_scalar_retry
 
   /* If we get here, then (seed0 + seed1) mod n is nonzero mod n; return. */
 
@@ -1648,6 +1661,7 @@ p256_random_scalar:
  * clobbered registers: x2, x3, x20, w20, w21, w29
  * clobbered flag groups: FG0
  */
+.type p256_generate_random_key, @function
 p256_generate_random_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
@@ -1686,6 +1700,7 @@ p256_generate_random_key:
  * clobbered registers: x2, x3, x20, w20, w21, w29
  * clobbered flag groups: FG0
  */
+.type p256_generate_k, @function
 p256_generate_k:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
@@ -1761,6 +1776,7 @@ p256_generate_k:
  * clobbered registers: w1 to w5, w20 to w23
  * clobbered flag groups: FG0
  */
+.type boolean_to_arithmetic, @function
 boolean_to_arithmetic:
   /* Mask out excess bits from seed shares.
        [w21, w20] <= s0 mod 2^320
@@ -1875,6 +1891,7 @@ boolean_to_arithmetic:
  * clobbered registers: x2, x3, w1 to w4, w20 to w29
  * clobbered flag groups: FG0
  */
+.type p256_key_from_seed, @function
 p256_key_from_seed:
   /* Convert from a boolean to an arithmetic mask using Goubin's algorithm.
        [w21, w20] <= ((seed0 ^ seed1) - seed1) mod 2^321 = x0 */
@@ -1992,6 +2009,7 @@ p256_key_from_seed:
  * clobbered registers: x3-x4, x10-x11, w1-w11, w31
  * clobbered flag groups: none
  */
+.type p256_scalar_remask, @function
 p256_scalar_remask:
   /* Initialize all-zero register. */
   bn.xor    w31, w31, w31

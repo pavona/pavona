@@ -29,6 +29,7 @@
  * Clobbered flag groups: FG0
  */
 .globl mul384
+.type mul384, @function
 mul384:
   bn.mulqacc.z          w10.0, w16.0,   0
   bn.mulqacc            w10.0, w16.1,  64
@@ -89,6 +90,7 @@ mul384:
  * Clobbered registers: w18 to w20
  * Clobbered flag groups: FG0
  */
+.type mul448x128, @function
 mul448x128:
   bn.mulqacc.z          w10.0, w16.0, 0
   bn.mulqacc            w10.0, w16.1, 64
@@ -143,6 +145,7 @@ mul448x128:
  * Clobbered flag groups: FG0
  */
 .globl p384_reduce_p
+.type p384_reduce_p, @function
 p384_reduce_p:
   /* Solinas reduction step. Based on the observation that:
      (x + 2^384 * y) mod (2^384 - K) = (x + K * y) mod (2^384 - K).
@@ -268,6 +271,7 @@ p384_reduce_p:
  * Clobbered flag groups: FG0
  */
 .globl p384_reduce_n
+.type p384_reduce_n, @function
 p384_reduce_n:
   /* Extract the high 128 bits from the middle term and the low 128 bits from
      the high term:
@@ -401,6 +405,7 @@ p384_reduce_n:
  * Clobbered flag groups: FG0
  */
 .globl p384_mulmod_p
+.type p384_mulmod_p, @function
 p384_mulmod_p:
   /* Compute the raw 768-bit product:
        ab = [w20:w18] <= a * b */
@@ -434,6 +439,7 @@ p384_mulmod_p:
  * Clobbered flag groups: FG0
  */
 .globl p384_mulmod_n
+.type p384_mulmod_n, @function
 p384_mulmod_n:
   /* Compute the raw 768-bit product:
        ab = [w20:w18] <= a * b */
@@ -467,6 +473,7 @@ p384_mulmod_n:
  * Clobbered flag groups: FG0
  */
 .globl p384_mulmod448x128_n
+.type p384_mulmod448x128_n, @function
 p384_mulmod448x128_n:
   /* Compute the raw 768-bit product:
        ab = [w20:w18] <= a * b */
@@ -518,6 +525,7 @@ p384_mulmod448x128_n:
  * clobbered flag groups: FG0
  */
 .globl proj_add_p384
+.type proj_add_p384, @function
 proj_add_p384:
   /* mapping of parameters to symbols of [2] (Algorithm 4):
      X1 = x_p; Y1 = y_p; Z1 = z_p; X2 = x_q; Y2 = y_q; Z2 = z_q
@@ -918,6 +926,7 @@ proj_add_p384:
  * clobbered flag groups: FG0
  */
 .globl proj_double_p384
+.type proj_double_p384, @function
 proj_double_p384:
   /* 1: [w1, w0] = t0 <= X1-Z1 */
   bn.sub    w16, w25, w29
@@ -1126,6 +1135,7 @@ proj_double_p384:
  * clobbered flag groups: FG0
  */
  .globl proj_to_affine_p384
+.type proj_to_affine_p384, @function
 proj_to_affine_p384:
 
   /* Exp: 0b10 = 2*0b1
@@ -1359,6 +1369,7 @@ proj_to_affine_p384:
  * clobbered flag groups: none
  */
 .globl p384_scalar_remask
+.type p384_scalar_remask, @function
 p384_scalar_remask:
   /* Initialize all-zero register. */
   bn.xor    w31, w31, w31

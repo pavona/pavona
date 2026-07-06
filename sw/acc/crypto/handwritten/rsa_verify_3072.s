@@ -23,6 +23,7 @@
  * clobbered registers: w26, w27
  * clobbered flag groups: none
  */
+.type mul256_w30xw25, @function
 mul256_w30xw25:
   bn.mulqacc.z          w30.0, w25.0,  0
   bn.mulqacc            w30.1, w25.0, 64
@@ -58,6 +59,7 @@ mul256_w30xw25:
  * clobbered registers: w26, w27
  * clobbered flag groups: none
  */
+.type mul256_w30xw2, @function
 mul256_w30xw2:
   bn.mulqacc.z          w30.0, w2.0,  0
   bn.mulqacc            w30.1, w2.0, 64
@@ -113,6 +115,7 @@ mul256_w30xw2:
  *                      w24, w25, w26, w27, w28, w29, w30, w4 to w15
  * clobbered Flag Groups: FG0, FG1
  */
+.type mont_loop, @function
 mont_loop:
   /* save pointer to modulus */
   addi      x22, x16, 0
@@ -231,7 +234,7 @@ mont_loop:
   /* No subtracion if carry bit of addition of carry words not set. */
   csrrs     x2, FG1, x0
   andi      x2, x2, 1
-  beq       x2, x0, mont_loop_no_sub
+  beq       x2, x0, _mont_loop_no_sub
 
   /* limb-wise subtraction */
   li        x12, 30
@@ -245,7 +248,7 @@ mont_loop:
     bn.movr   x8++, x13
 
 
-  mont_loop_no_sub:
+  _mont_loop_no_sub:
 
   /* restore pointers */
   li        x8, 4
@@ -280,6 +283,7 @@ mont_loop:
  * clobbered Flag Groups: FG0, FG1
  */
 .globl montmul
+.type montmul, @function
 montmul:
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0' */
   bn.lid    x9, 0(x17)
@@ -340,6 +344,7 @@ montmul:
  * clobbered Flag Groups: FG0, FG1
  */
  .globl modexp_var_3072_f4
+.type modexp_var_3072_f4, @function
 modexp_var_3072_f4:
   /* Prepare all-zero reg. */
   bn.xor    w31, w31, w31
@@ -394,10 +399,10 @@ modexp_var_3072_f4:
             alert. */
   andi      x2, x2, 1
   li        x8, 4
-  bne       x2, x0, f4_no_sub
+  bne       x2, x0, _f4_no_sub
   li        x8, 16
 
-  f4_no_sub:
+  _f4_no_sub:
 
   /* Store result in output buffer. */
   addi      x21, x24, 0

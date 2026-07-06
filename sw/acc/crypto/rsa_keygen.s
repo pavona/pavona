@@ -54,6 +54,7 @@
  *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
+.type rsa_keygen, @function
 rsa_keygen:
   /* Compute (<# of limbs> - 1), a helpful constant for later computations.
        x31 <= x30 - 1 */
@@ -190,6 +191,7 @@ rsa_keygen:
  * clobbered registers: x2 to x8, x10 to x14, x20 to x25, w20 to w25, w27
  * clobbered flag groups: FG0, FG1
  */
+.type rsa_check_key, @function
 rsa_check_key:
   /* Compute (<# of limbs> - 1), a helpful constant for later computations.
        x31 <= x30 - 1 */
@@ -260,6 +262,7 @@ rsa_check_key:
  * clobbered registers: x2 to x5, x8, x10 to x12, x21 to x23, w20 to w25, w27
  * clobbered flag groups: FG0
  */
+.type check_crt_component, @function
 check_crt_component:
   /* Multiply e * d_p, storing result in tmp_scratchpad. */
   addi     x10, x13, 0
@@ -321,6 +324,7 @@ check_crt_component:
  * clobbered registers: x2 to x8, x10 to x12, x21 to x23, w20 to w25, w27
  * clobbered flag groups: FG0
  */
+.type check_crt_coeff, @function
 check_crt_coeff:
   /* Multiply q * i_q, storing result in tmp_scratchpad. */
   la       x10, rsa_q
@@ -385,6 +389,7 @@ check_crt_coeff:
  * clobbered registers: x2 to x8, x10 to x12, x22 to x25, w20 to w25, w27
  * clobbered flag groups: FG0, FG1
  */
+.type recover_d_from_crt, @function
 recover_d_from_crt:
   /* Multiply d_p * d_q, storing result in rsa_n */
   la       x10, rsa_d_p
@@ -553,6 +558,7 @@ recover_d_from_crt:
  * clobbered registers: x2, x10, w20 to w23
  * clobbered flag groups: FG0
  */
+.type check_recovered_d, @function
 check_recovered_d:
   /* Get a pointer to the second half of d.
        x3 <= rsa_d + plen*32 */
@@ -599,6 +605,7 @@ check_recovered_d:
  * clobbered registers: x10, x11, w20
  * clobbered flag groups: none
  */
+.type prepare_pm1qm1, @function
 prepare_pm1qm1:
   /* Subtract 1 from p (no carry from lowest limb since p is odd).
        dmem[rsa_pm1..rsa_pm1+(plen*32)] <= p - 1 */
@@ -653,6 +660,7 @@ prepare_pm1qm1:
  * clobbered registers: x2 to x8, x10 to x15, x20 to x26, x31, w20 to w28
  * clobbered flag groups: FG0, FG1
  */
+.type derive_d, @function
 derive_d:
   /* Prepare p - 1 and q - 1 */
   jal      x1, prepare_pm1qm1
@@ -702,6 +710,7 @@ derive_d:
  * clobbered registers: x2 to x5, x8, x11 to x13, x23 to x25, w20, w23 to w27
  * clobbered flag groups: FG0
  */
+.type derive_crt_component, @function
 derive_crt_component:
   /* Copy (cofactor - 1) to the start of the scratchpad to zero-extend it. */
   la       x12, tmp_scratchpad
@@ -751,6 +760,7 @@ derive_crt_component:
  * clobbered registers: x2, x3, w20, w23
  * clobbered flag groups: FG0, FG1
  */
+.type check_d, @function
 check_d:
   /* Get a pointer to the second half of d.
        x3 <= rsa_d + plen*32 */
@@ -813,6 +823,7 @@ check_d:
  * clobbered registers: x2 to x8, x10 to x15, x20 to x26, x31, w3, w20 to w28
  * clobbered flag groups: FG0, FG1
  */
+.type rsa_key_from_cofactor, @function
 rsa_key_from_cofactor:
   /* Initialize wide-register pointers.
        x20 <= 20
@@ -994,6 +1005,7 @@ rsa_key_from_cofactor:
  * clobbered registers: MOD, x2 to x4, x31, w20 to w28
  * clobbered flag groups: FG0, FG1
  */
+.type modinv_f4, @function
 modinv_f4:
   /* Zero the intermediate buffers.
        dmem[dptr_A..dptr_A+(nlen*32)] <= 0
@@ -1361,6 +1373,7 @@ modinv_f4:
  * clobbered registers: x2, x3, x4, w20, w21
  * clobbered flag groups: FG0
  */
+.type bignum_rshift1_if_not_fg1L, @function
 bignum_rshift1_if_not_fg1L:
   /* Calculate number of loop iterations for bignum shifts.
        x2 <= n - 1 */
@@ -1413,6 +1426,7 @@ bignum_rshift1_if_not_fg1L:
  *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
+.type generate_p, @function
 generate_p:
   /* Compute nlen, the bit-length of the RSA modulus based on the number of
      limbs for p.
@@ -1484,6 +1498,7 @@ _generate_p_counter_nonzero:
  *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
+.type generate_q, @function
 generate_q:
   /* Compute nlen, the bit-length of the RSA modulus based on the number of
      limbs for q.
@@ -1570,6 +1585,7 @@ _generate_q_counter_nonzero:
  *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
+.type check_p, @function
 check_p:
   /* Set the output to the "check passed" value (all 1s) by default.
        w24 <= 2^256 - 1 */
@@ -1708,6 +1724,7 @@ _check_prime_fail:
  *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
+.type check_q, @function
 check_q:
   /* Clear flags for both groups. */
   bn.sub   w31, w31, w31, FG0
@@ -1777,6 +1794,7 @@ check_q:
  * clobbered registers: x2, x3, w20, w21
  * clobbered flag groups: FG0
  */
+.type generate_prime_candidate, @function
 generate_prime_candidate:
   /* Generate random 256-bit limbs.
        dmem[x16..x16+(plen*32)] <= RND(n*32) ^ URND(n*32)  */
@@ -1844,6 +1862,7 @@ generate_prime_candidate:
  * clobbered registers: x2, w22, w23
  * clobbered flag groups: FG0
  */
+.type fold_bignum, @function
 fold_bignum:
   /* Initialize constants for loop. */
   li      x22, 22
@@ -1931,6 +1950,7 @@ fold_bignum:
  * clobbered registers: x2, x3, w22, w23, w25
  * clobbered flag groups: FG0
  */
+.type fold_bignum_pow2_32_equiv_4, @function
 fold_bignum_pow2_32_equiv_4:
   /* Initialize constants for loop. */
   li      x3, 32
@@ -2062,6 +2082,7 @@ fold_bignum_pow2_32_equiv_4:
  * clobbered registers: x2, w22, w23
  * clobbered flag groups: FG0
  */
+.type relprime_f4, @function
 relprime_f4:
   /* Load F4 into the modulus register for later.
        MOD <= 2^16 + 1 */
@@ -2137,6 +2158,7 @@ relprime_f4:
  * clobbered registers: x2, w22, w23, w24, w25, w26
  * clobbered flag groups: FG0
  */
+.type relprime_small_primes, @function
 relprime_small_primes:
   /* Generate a 256-bit mask.
        w24 <= 2^256 - 1 */
@@ -2266,6 +2288,7 @@ __relprime_small_primes_fail:
  * clobbered registers: x2, w22, w25, w26
  * clobbered flag groups: FG0
  */
+.type is_zero_mod_small_prime, @function
 is_zero_mod_small_prime:
   /* Copy input. */
   bn.mov  w25, w23

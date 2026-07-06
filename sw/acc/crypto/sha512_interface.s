@@ -28,6 +28,7 @@
  * clobbered registers: x2, x3, x20, w20
  * clobbered flag groups: FG0
  */
+.type sha512_init, @function
 sha512_init:
   /* Copy the initial state into the working buffer.
        dmem[state..state+256] <= dmem[init_state..init_state+256] */
@@ -89,6 +90,7 @@ sha512_init:
  *                      w0 to w7, w10, w11, w15 to w29
  * clobbered flag groups: FG0
  */
+.type sha512_update, @function
 sha512_update:
   /* Load the least significant 32 bits of the current message byte-length.
        x14 <= dmem[len][31:0] */
@@ -184,6 +186,7 @@ sha512_update:
  *                      w0 to w7, w10, w15 to w30
  * clobbered flag groups: FG0
  */
+.type sha512_final, @function
 sha512_final:
   /* Load the least significant 32 bits of the current message byte-length.
        x14 <= dmem[len][31:0] */
@@ -271,6 +274,7 @@ sha512_final:
  * clobbered registers: x2, x10, x11, x13, x16, x17, x19 to x21, w20, w21
  * clobbered flag groups: FG0
  */
+.type copy, @function
 copy:
   /* Continue only if the length of new data is nonzero; otherwise return. */
   bne      x0, x13, _copy_len_nonzero
@@ -382,6 +386,7 @@ copy:
  * clobbered registers: w20 to w28
  * clobbered flag groups: FG0
  */
+.type reverse_bytes, @function
 reverse_bytes:
   /* Select the 64-bit chunks of the word.
        w20 <= w28[ 63:  0]
@@ -421,6 +426,7 @@ reverse_bytes:
  * clobbered registers: x2, x3, x12, x28, w20 to w29
  * clobbered flag groups: FG0
  */
+.type sha512_format_blocks, @function
 sha512_format_blocks:
   /* Load constants.
        x28 <= 28
@@ -454,6 +460,7 @@ sha512_format_blocks:
  * clobbered registers: w20 to w28
  * clobbered flag groups: FG0
  */
+.type bswap64, @function
 bswap64:
   /* Isolate each byte of each 64-bit word.
        w20 <= byte 0 of each word = a

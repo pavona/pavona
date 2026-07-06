@@ -86,6 +86,7 @@
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 .globl indcpa_dec
+.type indcpa_dec, @function
 indcpa_dec:
   /* Stack layout (worst-case K=4). V and SKPV follow B contiguously:
    *   STACK_DEC_B + K*512    : poly v
@@ -190,6 +191,7 @@ indcpa_dec:
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 .globl crypto_kem_dec
+.type crypto_kem_dec, @function
 crypto_kem_dec:
   #define STACK_KEM_DEC_KEYA_ADDR -8
   #define STACK_KEM_DEC_H_ADDR   -12

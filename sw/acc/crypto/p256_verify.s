@@ -55,6 +55,7 @@
  * clobbered registers: x2, x3, x11, x12, x13, x14, x17 to x24, w0 to w25
  * clobbered flag groups: FG0
  */
+.type p256_verify, @function
 p256_verify:
 
   /* init all-zero register */
@@ -186,11 +187,11 @@ p256_verify:
     bn.mov    w10, w13
     jal       x1, proj_add
 
-    /* if either  u_1[i] == 0 or u_2[i] == 0 jump to 'no_both' */
+    /* if either  u_1[i] == 0 or u_2[i] == 0 jump to '_no_both' */
     bn.add    w2, w2, w2
     csrrs     x2, FG0, x0
     andi      x2, x2, 1
-    beq       x2, x0, no_both
+    beq       x2, x0, _no_both
 
     /* hardening: this block should only be reachable if x2=1, so this should
        have no effect */
@@ -202,21 +203,21 @@ p256_verify:
     bn.mov    w9, w4
     bn.mov    w10, w5
     jal       x1, proj_add
-    jal       x0, no_q
+    jal       x0, _no_q
     unimp
     unimp
 
     /* either u1[i] or u2[i] is set, but not both */
-    no_both:
+    _no_both:
     /* hardening: this block should only be reachable if x2=0, so this should
        have no effect */
     srl       x11, x11, x2
 
-    /* if u2[i] is not set jump to 'no_g' */
+    /* if u2[i] is not set jump to '_no_g' */
     bn.add    w6, w0, w0
     csrrs     x2, FG0, x0
     andi      x2, x2, 1
-    beq       x2, x0, no_g
+    beq       x2, x0, _no_g
 
     /* hardening: this block should only be reachable if x2=1, so this should
        have no effect */
@@ -228,12 +229,12 @@ p256_verify:
     bn.addi   w10, w31, 1
     jal       x1, proj_add
 
-    no_g:
-    /* if u1[i] is not set jump to 'no_q' */
+    _no_g:
+    /* if u1[i] is not set jump to '_no_q' */
     bn.add    w6, w1, w1
     csrrs     x2, FG0, x0
     andi      x2, x2, 1
-    beq       x2, x0, no_q
+    beq       x2, x0, _no_q
 
     /* hardening: this block should only be reachable if x2=1, so this should
        have no effect */
@@ -248,7 +249,7 @@ p256_verify:
     bn.addi   w10, w31, 1
     jal       x1, proj_add
 
-    no_q:
+    _no_q:
     /* left shift w0 and w1 to decrease index */
     bn.add    w0, w0, w0
     bn.add    w1, w1, w1
@@ -317,6 +318,7 @@ p256_verify:
  * clobbered registers: x2, w2, w3, w4, w7
  * clobbered flag groups: FG0
  */
+.type mod_inv_var, @function
 mod_inv_var:
   /* Check if the input is zero. */
   bn.cmp    w0, w31
@@ -337,12 +339,12 @@ mod_inv_var:
   /* w5 = v = w0 */
   bn.mov    w5, w0
 
-  ebgcd_loop:
+  _ebgcd_loop:
   /* test if u is odd */
   bn.or     w4, w4, w4
   csrrs     x2, FG0, x0
   andi      x2, x2, 4
-  bne       x2, x0, ebgcd_u_odd
+  bne       x2, x0, _ebgcd_u_odd
 
   /* u is even: */
   /* w4 = u <= u/2 = w4 >> 1 */
@@ -352,26 +354,26 @@ mod_inv_var:
   bn.or     w2, w2, w2
   csrrs     x2, FG0, x0
   andi      x2, x2, 4
-  bne       x2, x0, ebgcd_r_odd
+  bne       x2, x0, _ebgcd_r_odd
 
   /* r is even: */
   /* w2 = r <= r/2 = w2 >> 1 */
   bn.rshi   w2, w31, w2 >> 1
-  jal       x0, ebgcd_loop
+  jal       x0, _ebgcd_loop
 
-  ebgcd_r_odd:
+  _ebgcd_r_odd:
   /* w2 = r <= (r + m)/2 = (w2 + w7) >> 1 */
   bn.add    w2, w7, w2
   bn.addc   w6, w31, w31
   bn.rshi   w2, w6, w2 >> 1
-  jal       x0, ebgcd_loop
+  jal       x0, _ebgcd_loop
 
-  ebgcd_u_odd:
+  _ebgcd_u_odd:
   /* test if v is odd */
   bn.or     w5, w5, w5
   csrrs     x2, FG0, x0
   andi      x2, x2, 4
-  bne       x2, x0, ebgcd_uv_odd
+  bne       x2, x0, _ebgcd_uv_odd
 
   /* v is even: */
   /* w5 = v <= v/2 = w5 >> 1 */
@@ -381,26 +383,26 @@ mod_inv_var:
   bn.or     w3, w3, w3
   csrrs     x2, FG0, x0
   andi      x2, x2, 4
-  bne       x2, x0, ebgcd_s_odd
+  bne       x2, x0, _ebgcd_s_odd
 
   /* s is even: */
   /* w3 = s <= s/2 = w3 >> 1 */
   bn.rshi   w3, w31, w3 >> 1
-  jal       x0, ebgcd_loop
+  jal       x0, _ebgcd_loop
 
-  ebgcd_s_odd:
+  _ebgcd_s_odd:
   /* w3 = s <= (s + m)/2 = (w3 + w7) >> 1 */
   bn.add    w3, w7, w3
   bn.addc   w6, w31, w31
   bn.rshi   w3, w6, w3 >> 1
-  jal       x0, ebgcd_loop
+  jal       x0, _ebgcd_loop
 
-  ebgcd_uv_odd:
+  _ebgcd_uv_odd:
   /* test if v >= u */
   bn.cmp    w5, w4
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
-  beq       x2, x0, ebgcd_v_gte_u
+  beq       x2, x0, _ebgcd_v_gte_u
 
   /* u > v: */
   /* w2 = r <= r - s = w2 - w3; if (r < 0): r <= r + m */
@@ -408,9 +410,9 @@ mod_inv_var:
 
   /* w4 = u <= u - v = w4 - w5 */
   bn.sub    w4, w4, w5
-  jal       x0, ebgcd_loop
+  jal       x0, _ebgcd_loop
 
-  ebgcd_v_gte_u:
+  _ebgcd_v_gte_u:
   /* w3 = s <= s - r = w3 - w2; if (s < 0) s <= s + m */
   bn.subm   w3, w3, w2
 
@@ -420,7 +422,7 @@ mod_inv_var:
   /* if v > 0 go back to start of loop */
   csrrs     x2, FG0, x0
   andi      x2, x2, 8
-  beq       x2, x0, ebgcd_loop
+  beq       x2, x0, _ebgcd_loop
 
   /* v <= 0: */
   /* if (r > m): w1 = a = r - m = w2 - MOD else: w1 = a = r = w2 */

@@ -3,6 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .section .text.start
+.type main, @function
 main:
   /* Set the state pointer. */
   la      x2, state

@@ -3,6 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .section .text.start
+.type main, @function
 main:
   /* Load the number of message chunks.
        x30 <= dmem[num_msg_chunks] */

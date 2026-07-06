@@ -137,6 +137,7 @@
  * clobbered registers: x2 to x6, x31, w20 to w26
  * clobbered flag groups: FG0, FG1
  */
+.type modinv, @function
 modinv:
   /* Zero the intermediate buffers.
        dmem[dptr_A..dptr_A+(plen*32)] <= 0
@@ -659,6 +660,7 @@ _modinv_u_ok:
  * clobbered registers: x2, x3, x4, w20, w21
  * clobbered flag groups: FG0
  */
+.type bignum_rshift1_if_not_fg1L, @function
 bignum_rshift1_if_not_fg1L:
   /* Calculate number of loop iterations for bignum shifts.
        x2 <= n - 1 */

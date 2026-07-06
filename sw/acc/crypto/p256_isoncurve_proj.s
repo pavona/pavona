@@ -35,6 +35,7 @@
  * clobbered registers: x2, x3, x19, x20, w0, w18 to w29
  * clobbered flag groups: FG0
  */
+.type p256_isoncurve_proj, @function
 p256_isoncurve_proj:
   /* Set up for coordinate arithmetic.
        MOD <= p

@@ -44,6 +44,7 @@
  * clobbered registers: w0, w1, w29
  * clobbered flag groups: FG0
  */
+.type m0inv, @function
 m0inv:
   /* w0 keeps track of loop iterations in one-hot encoding, i.e.
      w0 = 2^i in the loop body below and initialized here with w0 = 1
@@ -113,6 +114,7 @@ m0inv:
  *                      w2, w3, w4 to w(4+N-1), w24, w29, w30
  * clobbered Flag Groups: FG0, FG1
  */
+.type double_and_reduce, @function
 double_and_reduce:
   /* Clear carry flags. */
   bn.sub    w31, w31, w31
@@ -196,6 +198,7 @@ double_and_reduce:
 *                      w0, w2, w3, w4, w5 to w20 depending on N
 * clobbered flag groups: FG0, FG1
 */
+.type compute_rr, @function
 compute_rr:
   /* Prepare all-zero register and clear FG0.C. */
   bn.sub    w31, w31, w31
@@ -271,6 +274,7 @@ compute_rr:
  * clobbered registers: w26, w27
  * clobbered flag groups: none
  */
+.type mul256_w30xw25, @function
 mul256_w30xw25:
   bn.mulqacc.z          w30.0, w25.0,  0
   bn.mulqacc            w30.1, w25.0, 64
@@ -306,6 +310,7 @@ mul256_w30xw25:
  * clobbered registers: w26, w27
  * clobbered flag groups: none
  */
+.type mul256_w30xw2, @function
 mul256_w30xw2:
   bn.mulqacc.z          w30.0, w2.0,  0
   bn.mulqacc            w30.1, w2.0, 64
@@ -352,6 +357,7 @@ mul256_w30xw2:
  * clobbered registers: x8, x12, x13, x16, w24, w29, w30, w[x8] to w[x8+N-1]
  * clobbered Flag Groups: FG0
  */
+.type cond_sub_to_reg, @function
 cond_sub_to_reg:
 
   /* load pointers to temp regs */
@@ -413,6 +419,7 @@ cond_sub_to_reg:
  *                      w24, w25, w26, w27, w28, w29, w30, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
+.type mont_loop, @function
 mont_loop:
   /* save pointer to modulus */
   addi      x22, x16, 0
@@ -574,6 +581,7 @@ mont_loop:
  *                      w2, w3, w4 to w[4+N-1], w24 to w30
  * clobbered Flag Groups: FG0, FG1
  */
+.type montmul, @function
 montmul:
   /* set pointers to allow static analysis constant propagation */
   /* TODO (#137): find a way to elide this while allowing instruction count
@@ -633,6 +641,7 @@ montmul:
  * @param[out] [dmem[dptr_m0d+31]:dmem[dptr_m0d]] computed m0'
  * @param[out] [dmem[dptr_RR+N*32-1]:dmem[dptr_RR]] computed RR
  */
+.type modload, @function
 modload:
   /* load lowest limb of modulus to w28 */
   li       x8, 28

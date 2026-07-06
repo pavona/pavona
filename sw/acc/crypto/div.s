@@ -28,6 +28,7 @@
  * clobbered registers: x2, x3, w23, w24
  * clobbered flag groups: none
  */
+.type bignum_rshift1, @function
 bignum_rshift1:
    /* Get a pointer to the end of the input.
         x3 <= x3 + x30 << 5 = dptr_a + n*32 */
@@ -78,6 +79,7 @@ bignum_rshift1:
  * clobbered registers: x3, w23, w24
  * clobbered flag groups: none
  */
+.type bignum_lshift256, @function
 bignum_lshift256:
   /* Loop invariants for iteration i:
        x3 = dptr_a + i*32
@@ -145,6 +147,7 @@ bignum_lshift256:
  * clobbered registers: x2 to x5, w23 to w25
  * clobbered flag groups: FG0
  */
+.type cond_sub_shifted, @function
 cond_sub_shifted:
   /* x3 <= x8 << 5 = i*32 */
   slli     x3, x8, 5
@@ -274,6 +277,7 @@ cond_sub_shifted:
  * clobbered registers: x2 to x5, x8, x23 to x25, w23 to w27
  * clobbered flag groups: FG0
  */
+.type div, @function
 div:
   /* Initialize quotient to zero.
        dmem[dptr_q..dptr_q+n*32] = 0  */
@@ -402,6 +406,7 @@ div:
  * clobbered registers: x2 to x5, x8, w23 to w25, w27
  * clobbered flag groups: FG0
  */
+.type mod, @function
 mod:
   /* Initialize loop counter.
        x8 <= x30 = n */

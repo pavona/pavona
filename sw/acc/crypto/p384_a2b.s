@@ -42,6 +42,7 @@
  * clobbered registers: w1 to w6, w10 to w12, w20, w21, w23 to w28
  * clobbered flag groups: FG0
  */
+.type p384_arithmetic_to_boolean_mod, @function
 p384_arithmetic_to_boolean_mod:
   /* First step: calculate A2B from reduced values. */
 
@@ -143,6 +144,7 @@ p384_arithmetic_to_boolean_mod:
  * clobbered registers: w1 to w6, w11, w12, and w18 to w21
  * clobbered flag groups: FG0
  */
+.type p384_arithmetic_to_boolean, @function
 p384_arithmetic_to_boolean:
   /* Fetch 385 bits of randomness.
      [w2,w1] = gamma    <= URND */

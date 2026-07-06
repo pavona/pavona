@@ -26,6 +26,7 @@
  * clobbered registers: x5-x7, x10-x12, w0-w15, w17-w21, w24-w30
  */
 .global intt
+.type intt, @function
 intt:
 
     /* Load twiddle factors. */

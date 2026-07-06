@@ -28,6 +28,7 @@
  */
 
 .globl ntt
+.type ntt, @function
 ntt:
   /* Set up wide registers for input and intermediate states */
   li x4, 0

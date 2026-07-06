@@ -58,6 +58,7 @@
 .globl MODE_RSA_4096_MODEXP_F4
 
 .section .text.start
+.type start, @function
 start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
@@ -98,6 +99,7 @@ start:
   unimp
   unimp
 
+.type rsa_2048_modexp, @function
 rsa_2048_modexp:
   /* Set the number of limbs for the modulus (2048 / 256 = 8). */
   li      x30, 8
@@ -105,6 +107,7 @@ rsa_2048_modexp:
   /* Tail-call modexp. */
   jal     x0, do_modexp
 
+.type rsa_2048_modexp_crt, @function
 rsa_2048_modexp_crt:
   /* Set the number of limbs for the modulus (2048 / 256 = 8). */
   li      x30, 8
@@ -112,6 +115,7 @@ rsa_2048_modexp_crt:
   /* Tail-call modexp_crt. */
   jal     x0, do_modexp_crt
 
+.type rsa_2048_modexp_f4, @function
 rsa_2048_modexp_f4:
   /* Set the number of limbs for the modulus (2048 / 256 = 8). */
   li      x30, 8
@@ -119,6 +123,7 @@ rsa_2048_modexp_f4:
   /* Tail-call modexp_f4. */
   jal     x0, do_modexp_f4
 
+.type rsa_3072_modexp, @function
 rsa_3072_modexp:
   /* Set the number of limbs for the modulus (3072 / 256 = 12). */
   li      x30, 12
@@ -126,6 +131,7 @@ rsa_3072_modexp:
   /* Tail-call modexp. */
   jal     x0, do_modexp
 
+.type rsa_3072_modexp_crt, @function
 rsa_3072_modexp_crt:
   /* Set the number of limbs for the modulus (3072 / 256 = 12). */
   li      x30, 12
@@ -133,6 +139,7 @@ rsa_3072_modexp_crt:
   /* Tail-call modexp_crt. */
   jal     x0, do_modexp_crt
 
+.type rsa_3072_modexp_f4, @function
 rsa_3072_modexp_f4:
   /* Set the number of limbs for the modulus (3072 / 256 = 12). */
   li      x30, 12
@@ -140,6 +147,7 @@ rsa_3072_modexp_f4:
   /* Tail-call modexp_f4. */
   jal     x0, do_modexp_f4
 
+.type rsa_4096_modexp, @function
 rsa_4096_modexp:
   /* Set the number of limbs for the modulus (4096 / 256 = 16). */
   li      x30, 16
@@ -147,6 +155,7 @@ rsa_4096_modexp:
   /* Tail-call modexp. */
   jal     x0, do_modexp
 
+.type rsa_4096_modexp_crt, @function
 rsa_4096_modexp_crt:
   /* Set the number of limbs for the modulus (4096 / 256 = 16). */
   li      x30, 16
@@ -154,6 +163,7 @@ rsa_4096_modexp_crt:
   /* Tail-call modexp_crt. */
   jal     x0, do_modexp_crt
 
+.type rsa_4096_modexp_f4, @function
 rsa_4096_modexp_f4:
   /* Set the number of limbs for the modulus (4096 / 256 = 16). */
   li      x30, 16
@@ -173,6 +183,7 @@ rsa_4096_modexp_f4:
  * @param[in]  dmem[inout]: a, base for exponentiation
  * @param[out] dmem[inout]: result, a^d mod n
  */
+.type do_modexp, @function
 do_modexp:
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
@@ -213,6 +224,7 @@ do_modexp:
  * @param[in]  dmem[inout]: a, base for exponentiation
  * @param[out] dmem[inout]: result, a^d mod n
  */
+.type do_modexp_crt, @function
 do_modexp_crt:
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x17, m0d
@@ -255,6 +267,7 @@ do_modexp_crt:
  * @param[in]  dmem[inout]: a, base for exponentiation
  * @param[out] dmem[inout]: result, a^65537 mod n
  */
+.type do_modexp_f4, @function
 do_modexp_f4:
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n

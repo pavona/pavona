@@ -78,6 +78,7 @@
  * clobbered flag groups: FG0
  */
 .globl sha512_compact
+.type sha512_compact, @function
 sha512_compact:
 
   /* w31 = 0 */

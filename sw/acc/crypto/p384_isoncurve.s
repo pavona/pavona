@@ -52,6 +52,7 @@
  * clobbered flag groups: FG0
  */
  .globl p384_isoncurve
+.type p384_isoncurve, @function
 p384_isoncurve:
 
   /* setup all-zero reg */
@@ -154,6 +155,7 @@ p384_isoncurve:
  * clobbered flag groups: FG0
  */
  .globl p384_isoncurve_check
+.type p384_isoncurve_check, @function
 p384_isoncurve_check:
   /* Fill gpp registers with pointers to variables */
   la        x22, rhs
@@ -210,6 +212,7 @@ p384_isoncurve_check:
  * clobbered flag groups: FG0
  */
  .globl p384_check_public_key
+.type p384_check_public_key, @function
 p384_check_public_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
@@ -308,6 +311,7 @@ p384_check_public_key:
  * clobbered registers: x2
  * clobbered flag groups: none
  */
+.type trigger_input_error_if_fg0_not_z, @function
 trigger_input_error_if_fg0_not_z:
   /* Fail if FG0.Z is false. */
   csrrs     x2, FG0, x0
@@ -333,6 +337,7 @@ trigger_input_error_if_fg0_not_z:
  * @param[out] dmem[ok] Set to HARDENED_BOOL_FALSE.
  */
 .global p384_invalid_input
+.type p384_invalid_input, @function
 p384_invalid_input:
   /* Set the `ok` code to false. */
   la       x2, ok

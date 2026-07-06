@@ -28,6 +28,7 @@
  *                      w2 to w3
  */
 .globl poly_sub
+.type poly_sub, @function
 poly_sub:
     /* Set up constants for input/state */
     li x4, 1

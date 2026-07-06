@@ -27,6 +27,7 @@
  * clobbered registers: x4-x6, w2-w4
  */
 .globl poly_pointwise
+.type poly_pointwise, @function
 poly_pointwise:
     /* Set up constants for input/state */
     li x4, 1
@@ -65,6 +66,7 @@ poly_pointwise:
  * clobbered registers: x4-x6, w2-w4
  */
 .globl poly_pointwise_acc
+.type poly_pointwise_acc, @function
 poly_pointwise_acc:
     /* Set up constants for input/state */
     li x4, 1

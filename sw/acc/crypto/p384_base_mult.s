@@ -36,6 +36,7 @@
  * clobbered flag groups: FG0
  */
 .globl p384_base_mult_checked
+.type p384_base_mult_checked, @function
 p384_base_mult_checked:
   jal       x1, p384_base_mult
 
@@ -72,6 +73,7 @@ p384_base_mult_checked:
  * clobbered flag groups: FG0
  */
 .globl p384_base_mult
+.type p384_base_mult, @function
 p384_base_mult:
 
   /* set dmem pointer to x-coordinate of base point*/

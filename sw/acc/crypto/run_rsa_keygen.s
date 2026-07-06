@@ -49,6 +49,7 @@
 .globl MODE_CHECK_RSA_4096
 
 .section .text.start
+.type start, @function
 start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
@@ -89,6 +90,7 @@ start:
   unimp
   unimp
 
+.type rsa_keygen_2048, @function
 rsa_keygen_2048:
   /* Set the number of limbs for the primes (2048 / 2 / 256). */
   li      x30, 4
@@ -97,6 +99,7 @@ rsa_keygen_2048:
   jal     x1, rsa_keygen
   ecall
 
+.type rsa_keygen_3072, @function
 rsa_keygen_3072:
   /* Set the number of limbs for the primes (3072 / 2 / 256). */
   li      x30, 6
@@ -105,6 +108,7 @@ rsa_keygen_3072:
   jal     x1, rsa_keygen
   ecall
 
+.type rsa_keygen_4096, @function
 rsa_keygen_4096:
   /* Set the number of limbs for the primes (4096 / 2 / 256). */
   li      x30, 8
@@ -113,6 +117,7 @@ rsa_keygen_4096:
   jal     x1, rsa_keygen
   ecall
 
+.type rsa_key_from_cofactor_2048, @function
 rsa_key_from_cofactor_2048:
   /* Set the number of limbs for the primes (2048 / 2 / 256). */
   li      x30, 4
@@ -121,6 +126,7 @@ rsa_key_from_cofactor_2048:
   jal     x1, rsa_key_from_cofactor
   ecall
 
+.type rsa_key_from_cofactor_3072, @function
 rsa_key_from_cofactor_3072:
   /* Set the number of limbs for the primes (3072 / 2 / 256). */
   li      x30, 6
@@ -129,6 +135,7 @@ rsa_key_from_cofactor_3072:
   jal     x1, rsa_key_from_cofactor
   ecall
 
+.type rsa_key_from_cofactor_4096, @function
 rsa_key_from_cofactor_4096:
   /* Set the number of limbs for the primes (4096 / 2 / 256). */
   li      x30, 8
@@ -137,6 +144,7 @@ rsa_key_from_cofactor_4096:
   jal     x1, rsa_key_from_cofactor
   ecall
 
+.type rsa_check_key_2048, @function
 rsa_check_key_2048:
   /* Set the number of limbs for the primes (2048 / 2 / 256). */
   li      x30, 4
@@ -146,6 +154,7 @@ rsa_check_key_2048:
   jal     x1, rsa_check_key
   ecall
 
+.type rsa_check_key_3072, @function
 rsa_check_key_3072:
   /* Set the number of limbs for the primes (3072 / 2 / 256). */
   li      x30, 6
@@ -155,6 +164,7 @@ rsa_check_key_3072:
   jal     x1, rsa_check_key
   ecall
 
+.type rsa_check_key_4096, @function
 rsa_check_key_4096:
   /* Set the number of limbs for the primes (4096 / 2 / 256). */
   li      x30, 8

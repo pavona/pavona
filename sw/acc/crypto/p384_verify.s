@@ -45,6 +45,7 @@
  * clobbered registers: x2, x12, w6 to w11
  * clobbered flag groups: FG0
  */
+.type store_aff_proj, @function
 store_aff_proj:
 
   /* load point */
@@ -85,6 +86,7 @@ store_aff_proj:
  * clobbered registers: x2, x12
  * clobbered flag groups: none
  */
+.type store_proj, @function
 store_proj:
   li        x2, 25
   loopi 6, 2
@@ -123,6 +125,7 @@ store_proj:
  * clobbered flag groups: FG0
  */
 .globl p384_verify
+.type p384_verify, @function
 p384_verify:
 
   /* init all-zero reg */
@@ -369,30 +372,30 @@ p384_verify:
     jal       x1, proj_double_p384
 
     /* no addition if x5 = u1[i] | u2[i] == 0 */
-    beq       x5, x0, ver_end_loop
+    beq       x5, x0, _ver_end_loop
 
     /* check if u1[i] is set */
-    bne       x3, x0, u1_set
+    bne       x3, x0, _u1_set
 
     /* only u2[i] is set: do C <= C + Q */
     addi      x27, x18, 0
-    jal       x0, ver_do_add
+    jal       x0, _ver_do_add
 
-    u1_set:
+    _u1_set:
     /* check if u2[i] is set as well, if so do C <= C + (G + Q) */
     addi      x27, x19, 0
-    bne       x4, x0, ver_do_add
+    bne       x4, x0, _ver_do_add
 
     /* only u1[i] is set: do C <= C + G */
     add       x27, x17, 0
-    jal       x0, ver_do_add
+    jal       x0, _ver_do_add
 
-    ver_do_add:
+    _ver_do_add:
     /* Add selected point.
          [w30:w25] <= [w30:w25] + dmem[x27] */
     jal       x1, proj_add_p384
 
-    ver_end_loop:
+    _ver_end_loop:
     /* increment counter */
     addi     x15, x15, 1
 

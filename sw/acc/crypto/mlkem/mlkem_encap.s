@@ -85,6 +85,7 @@
  * clobbered flag groups: FG0
  */
 .globl crypto_kem_enc
+.type crypto_kem_enc, @function
 crypto_kem_enc:
 
   /*** hash_h(pk) ***/

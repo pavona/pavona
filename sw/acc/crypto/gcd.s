@@ -24,6 +24,7 @@
  * clobbered registers: x3, x4, x5, w23, w24
  * clobbered flag groups: FG0
  */
+.type gcd_cond_sub, @function
 gcd_cond_sub:
   /* Clear flags. */
   bn.add    w31, w31, w31
@@ -63,6 +64,7 @@ gcd_cond_sub:
  * clobbered registers: x3, x4, x22, x23, x24, w23, w24
  * clobbered flag groups: FG0
  */
+.type gcd_cond_rshift1, @function
 gcd_cond_rshift1:
   /* x22 <= x30 - 1 = n - 1 */
   addi      x22, x0, 1
@@ -127,6 +129,7 @@ gcd_cond_rshift1:
  * clobbered registers: x3, x22, w20, w23, w24, w25
  * clobbered flag groups: FG0
  */
+.type gcd_cond_lshift1, @function
 gcd_cond_lshift1:
   /* Check if counter is zero.
        FG0.Z <= ctr != 0 */
@@ -200,6 +203,7 @@ gcd_cond_lshift1:
  * clobbered flag groups: FG0, FG1
  */
 .globl gcd
+.type gcd, @function
 gcd:
   /* Initialize the shift to 0.
        w20 <= 0 = shift */

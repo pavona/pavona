@@ -29,6 +29,7 @@
  */
 
 .globl intt
+.type intt, @function
 intt:
   /* Empty w18 */
   bn.xor w18, w18, w18

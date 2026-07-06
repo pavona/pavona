@@ -37,6 +37,7 @@
  * clobbered registers: x2, x3, x16, x17, x21, x22, w0 to w25
  * clobbered flag groups: FG0
  */
+.type p256_shared_key, @function
 p256_shared_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
@@ -188,6 +189,7 @@ p256_shared_key:
  * clobbered registers: w1 to w6, w11, w12, w18, w20 to w27, and w29
  * clobbered flag groups: FG0
  */
+.type arithmetic_to_boolean_mod, @function
 arithmetic_to_boolean_mod:
   /* First step: calculate A2B from reduced values. */
 
@@ -313,6 +315,7 @@ arithmetic_to_boolean_mod:
  * clobbered registers: w1 - w6, w11, w12, and w18 - w21
  * clobbered flag groups: FG0
  */
+.type arithmetic_to_boolean, @function
 arithmetic_to_boolean:
   /* Initialize inputs: in case of randomness in upper part of inputs
      truncate to 257 bits. Also, fetch 257 bits of randomness.

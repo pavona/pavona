@@ -63,6 +63,7 @@
 .equ MODE_ATTESTATION_KEY_SAVE, 0x64d
 
 .section .text.start
+.type start, @function
 start:
   /* Read the mode and tail-call the requested operation. */
   la    x2, mode
@@ -81,7 +82,7 @@ start:
   beq   x2, x3, attestation_key_save
 
   /* Invalid mode; fail. */
-start_failed:
+_start_failed:
   unimp
   unimp
   unimp
@@ -106,6 +107,7 @@ start_failed:
  * @param[out] dmem[ok]:  success/failure of basic checks (32 bits)
  * @param[out] dmem[x_r]: dmem buffer for reduced affine x_r-coordinate (x_1)
  */
+.type sigverify, @function
 sigverify:
   /* Validate the public key (ends the program on failure). */
   jal      x1, p256_check_public_key
@@ -127,6 +129,7 @@ sigverify:
  * @param[out]  dmem[x]: Public key x-coordinate.
  * @param[out]  dmem[y]: Public key y-coordinate.
  */
+.type attestation_keygen, @function
 attestation_keygen:
   /* Initialize all-zero register. */
   bn.xor   w31, w31, w31
@@ -185,6 +188,7 @@ attestation_keygen:
  * @param[out]   dmem[r]: Buffer for r component of signature (256 bits)
  * @param[out]   dmem[s]: Buffer for s component of signature (256 bits)
  */
+.type attestation_endorse, @function
 attestation_endorse:
   /* Generate a fresh random scalar for signing.
        dmem[k0] <= first share of k
@@ -218,6 +222,7 @@ attestation_endorse:
  * @param[out]  dmem[d0]: First share of private key (320 bits).
  * @param[out]  dmem[d1]: Second share of private key (320 bits).
  */
+.type attestation_key_save, @function
 attestation_key_save:
   /* Initialize all-zero register. */
   bn.xor   w31, w31, w31
@@ -262,6 +267,7 @@ attestation_key_save:
  * clobbered registers: x2, x3, x20, w1 to w4, w10, w11, w20 to w29
  * clobbered flag groups: FG0
  */
+.type attestation_secret_key_from_seed, @function
 attestation_secret_key_from_seed:
   /* Load keymgr seeds from WSRs.
        w20,w21 <= seed0

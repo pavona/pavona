@@ -20,6 +20,7 @@
 
 .section .text.start
 
+.type main, @function
 main:
   /* w7 <= KEY_S0_L */
   bn.wsrr w7, 4

@@ -67,6 +67,7 @@
  * clobbered registers: x2, x3, x16 to x23, w0 to w29
  * clobbered flag groups: FG0
  */
+.type p256_sign, @function
 p256_sign:
 
   /* init all-zero register */

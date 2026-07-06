@@ -51,6 +51,7 @@
  * clobbered registers: x2, x3, w4 to w11, w14, w16 to w28
  * clobbered flag groups: FG0
  */
+.type p384_random_scalar, @function
 p384_random_scalar:
   /* Load the curve order n.
      [w13,w12] <= dmem[p384_n] = n */
@@ -59,7 +60,7 @@ p384_random_scalar:
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
-  random_scalar_retry:
+  _random_scalar_retry:
   /* Obtain 1024 bits of randomness from RND. */
   bn.wsrr   w6, RND
   bn.wsrr   w7, RND
@@ -164,7 +165,7 @@ p384_random_scalar:
   or        x2, x2, x3
 
   /* Retry if x2 != 0. */
-  bne       x2, x0, random_scalar_retry
+  bne       x2, x0, _random_scalar_retry
 
   /* If we get here, then (seed0 + seed1) mod n is nonzero mod n; return. */
 
@@ -182,6 +183,7 @@ p384_random_scalar:
  * clobbered flag groups: FG0
  */
 .globl p384_generate_random_key
+.type p384_generate_random_key, @function
 p384_generate_random_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
@@ -222,6 +224,7 @@ p384_generate_random_key:
  * clobbered flag groups: FG0
  */
 .globl p384_generate_k
+.type p384_generate_k, @function
 p384_generate_k:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31

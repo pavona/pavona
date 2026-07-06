@@ -91,6 +91,7 @@
  * clobbered flag groups: FG0
  */
 .globl indcpa_enc
+.type indcpa_enc, @function
 indcpa_enc:
   /* Store parameters to save registers or memory. */
   addi t2, a1, 0

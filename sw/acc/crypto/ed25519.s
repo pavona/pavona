@@ -75,6 +75,7 @@
  * clobbered flag groups: FG0
  */
 .globl ed25519_verify_var
+.type ed25519_verify_var, @function
 ed25519_verify_var:
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
@@ -110,7 +111,7 @@ ed25519_verify_var:
 
   /* Fail if S >= L. */
   li       x3, 1
-  bne      x2, x3, verify_fail
+  bne      x2, x3, _verify_fail
 
   /* Compute (8 * S) mod L.
        w1 <= (2 * (2 * (2 * w1) mod L) mod L) mod L = (8 * S) mod L */
@@ -144,7 +145,7 @@ ed25519_verify_var:
 
   /* If R was not a valid point (x20 != SUCCESS), fail. */
   li      x21, 0xf77fe650
-  bne     x20, x21, verify_fail
+  bne     x20, x21, _verify_fail
 
   /* Save R (in affine coordinates) for later.
        [w5:w4] <= [w11:w10] = R */
@@ -163,7 +164,7 @@ ed25519_verify_var:
   jal      x1, affine_decode_var
 
   /* If A was not a valid point (x20 != SUCCESS), fail. */
-  bne      x20, x21, verify_fail
+  bne      x20, x21, _verify_fail
 
   /* Convert A to extended coordinates.
       [w9:w6] <= extended(A) = (A.X, A.Y, A.Z, A.T) */
@@ -229,7 +230,7 @@ ed25519_verify_var:
 
   ret
 
-  verify_fail:
+  _verify_fail:
   /* Write the FAILURE magic value.
        dmem[ed25519_verify_result] <= x23 = FAILURE */
   li       x22, 0xeda2bfaf
@@ -270,6 +271,7 @@ ed25519_verify_var:
  * clobbered flag groups: FG0
  */
 .globl ed25519_sign_prehashed
+.type ed25519_sign_prehashed, @function
 ed25519_sign_prehashed:
   /* Initialize all-zero register. */
   bn.xor   w31, w31, w31
@@ -350,6 +352,7 @@ ed25519_sign_prehashed:
  * clobbered flag groups: FG0
  */
 .globl ed25519_sign_pure_init
+.type ed25519_sign_pure_init, @function
 ed25519_sign_pure_init:
   bn.xor   w31, w31, w31
   jal      x1, sha512_init
@@ -381,6 +384,7 @@ ed25519_sign_pure_init:
  * clobbered flag groups: FG0
  */
 .globl ed25519_sign_pure_update
+.type ed25519_sign_pure_update, @function
 ed25519_sign_pure_update:
   bn.xor   w31, w31, w31
   la       x18, ed25519_message_len
@@ -410,6 +414,7 @@ ed25519_sign_pure_update:
  * clobbered flag groups: FG0
  */
 .globl ed25519_sign_pure_mid
+.type ed25519_sign_pure_mid, @function
 ed25519_sign_pure_mid:
   bn.xor   w31, w31, w31
 
@@ -450,6 +455,7 @@ ed25519_sign_pure_mid:
  * clobbered flag groups: FG0
  */
 .globl ed25519_sign_pure_final
+.type ed25519_sign_pure_final, @function
 ed25519_sign_pure_final:
   bn.xor   w31, w31, w31
 
@@ -701,6 +707,7 @@ _ed25519_sign_compute_s:
  * clobbered registers: w16, w17
  * clobbered flag groups: FG0
  */
+.type sc_clamp, @function
 sc_clamp:
   /* w16 <= w16 >> 3 = h[255:3] */
   bn.rshi  w16, w31, w16 >> 3
@@ -755,6 +762,7 @@ sc_clamp:
  * clobbered registers: w6 to w9, w18, w20 to w23
  * clobbered flag groups: FG0
  */
+.type affine_to_ext, @function
 affine_to_ext:
   /* w8 <= 1 = Z */
   bn.addi  w8, w31, 1
@@ -801,6 +809,7 @@ affine_to_ext:
  * clobbered registers: w10, w11, w14 to w18, w20 to w23
  * clobbered flag groups: FG0
  */
+.type ext_to_affine, @function
 ext_to_affine:
   /* w22 <= (Z^-1) mod p */
   bn.mov  w16, w12
@@ -850,6 +859,7 @@ ext_to_affine:
  * clobbered flag groups: FG0
  */
 .globl affine_encode
+.type affine_encode, @function
 affine_encode:
   /* w10 <= lsb(x) << 255 */
   bn.rshi  w10, w10, w31 >> 1
@@ -895,6 +905,7 @@ affine_encode:
  * clobbered flag groups: FG0
  */
 .globl affine_decode_var
+.type affine_decode_var, @function
 affine_decode_var:
   /* Extract lsb(x) from the encoded point.
        w24 <= w11 >> 255 = lsb(x) */
@@ -912,7 +923,7 @@ affine_decode_var:
   bn.cmp   w11, w14
   li       x3, 8
   csrrs    x2, FG0, x0
-  beq      x2, x3, decode_y_ok
+  beq      x2, x3, _decode_y_ok
 
   /* If we get here, then y >= p; reject the point. */
   li       x20, 0xeda2bfaf
@@ -920,7 +931,7 @@ affine_decode_var:
   bn.mov   w11, w31
   ret
 
-  decode_y_ok:
+  _decode_y_ok:
 
   /* Solve the curve equation to get a candidate root. From RFC 8032,
      section 5.1.3, step 2:
@@ -1055,7 +1066,7 @@ affine_decode_var:
   and      x2, x2, x3
 
   /* Go to step 3, case 1 if we are in case 1. */
-  beq      x2, x3, decode_step3_case1
+  beq      x2, x3, _decode_step3_case1
 
   /* Check for case 2: (r^2 * v) mod p == (- u) mod p */
 
@@ -1069,7 +1080,7 @@ affine_decode_var:
   and      x2, x2, x3
 
   /* Go to step 3, case 2 if we are in case 2. */
-  beq      x2, x3, decode_step3_case2
+  beq      x2, x3, _decode_step3_case2
 
   /* If we get here, then r^2 was not equal to either (u/v) or - (u/v), so we
      are in case 3, (u/v) is nonsquare mod p, and point decoding fails. */
@@ -1078,7 +1089,7 @@ affine_decode_var:
   bn.mov   w11, w31
   ret
 
-  decode_step3_case2:
+  _decode_step3_case2:
   /* Multiply r by sqrt(-1) = 2^((p-1)/4). */
 
   /* w23 <= dmem[ed25519_sqrt_m1] = sqrt(-1) mod p */
@@ -1093,7 +1104,7 @@ affine_decode_var:
 
   /* From here, r^2 = x^2 and we can proceed with the same steps as case 1. */
 
-  decode_step3_case1:
+  _decode_step3_case1:
   /* Once we're here, we know that r^2 = x^2, and therefore r is either x or
      -x. Following RFC 8032, section 5.1.3, step 4, we set the resulting
      point's x coordinate to r if lsb(x) from the encoded point matches lsb(r),
@@ -1127,7 +1138,7 @@ affine_decode_var:
   bn.xor   w14, w10, w24
   csrrs    x2, FG0, x0
   andi     x2, x2, 4
-  beq      x2, x0, decode_success
+  beq      x2, x0, _decode_success
 
   /* Exit with FAILURE. */
   li       x20, 0xeda2bfaf
@@ -1135,7 +1146,7 @@ affine_decode_var:
   bn.mov   w11, w31
   ret
 
-  decode_success:
+  _decode_success:
   /* TODO: add an extra check that the curve equation is satisfied to protect
      against glitching? */
 
@@ -1185,6 +1196,7 @@ affine_decode_var:
  * clobbered flag groups: FG0
  */
 .globl ext_scmul
+.type ext_scmul, @function
 ext_scmul:
   /* Initialize the intermediate result P to the origin point.
        [w13:w10] <= (0, 1, 1, 0) */
@@ -1291,6 +1303,7 @@ ext_scmul:
  * clobbered flag groups: FG0
  */
 .globl ext_scmul_var
+.type ext_scmul_var, @function
 ext_scmul_var:
   /* Initialize the intermediate result P to the origin point.
        [w13:w10] <= (0, 1, 1, 0) */
@@ -1388,6 +1401,7 @@ ext_scmul_var:
  * clobbered flag groups: FG0
  */
 .globl ext_double
+.type ext_double, @function
 ext_double:
   /* w24 = (X1^2) = A */
   bn.mov    w22, w10
@@ -1491,6 +1505,7 @@ ext_double:
  * clobbered flag groups: FG0
  */
 .globl ext_add
+.type ext_add, @function
 ext_add:
   /* Compute A = (Y1 - X1) * (Y2 - X2). */
 
@@ -1617,6 +1632,7 @@ ext_add:
  * clobbered registers: w14 to w17
  * clobbered flag groups: FG0
  */
+.type ext_equal_var, @function
 ext_equal_var:
   /* x22 <= FAILURE */
   li       x22, 0xeda2bfaf
@@ -1653,7 +1669,7 @@ ext_equal_var:
 
   /* Fail if the FG0.Z flag was unset. */
   li       x3, 8
-  bne      x2, x3, ext_equal_var_fail
+  bne      x2, x3, _ext_equal_var_fail
 
   /* Compute (Y1 * Z2). */
 
@@ -1685,7 +1701,7 @@ ext_equal_var:
 
   /* Fail if the FG0.Z flag was unset. */
   li       x3, 8
-  bne      x2, x3, ext_equal_var_fail
+  bne      x2, x3, _ext_equal_var_fail
 
   /* If we got here, both checks passed; write the SUCCESS value to DMEM.
 
@@ -1701,7 +1717,7 @@ ext_equal_var:
 
   ret
 
-  ext_equal_var_fail:
+  _ext_equal_var_fail:
   /* Write the FAILURE magic value.
        dmem[ed25519_verify_result] <= x22 = FAILURE */
   la       x4, ed25519_verify_result
@@ -1733,6 +1749,7 @@ ext_equal_var:
  * clobbered registers: w14, w15, w17, w18, w20 to w23
  * clobbered flag groups: FG0
  */
+.type fe_pow_2252m3, @function
 fe_pow_2252m3:
   /* w22 <= w16^2 = a^2 */
   bn.mov  w22, w16

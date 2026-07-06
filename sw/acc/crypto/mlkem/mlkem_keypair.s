@@ -84,6 +84,7 @@
  * clobbered registers: a0-a4, t0-t5, w8, w16
  */
 
+.type indcpa_keypair, @function
 indcpa_keypair:
   /* Stack address mapping. Worst-case (K=4) sizes throughout. */
   #define STACK_PK_ADDR        -32
@@ -290,6 +291,7 @@ indcpa_keypair:
  */
 
 .globl crypto_kem_keypair
+.type crypto_kem_keypair, @function
 crypto_kem_keypair:
   /* Set frame pointer */
   addi fp, sp, 0

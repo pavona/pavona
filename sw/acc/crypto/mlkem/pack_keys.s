@@ -27,6 +27,7 @@
  * clobbered registers: x4-x9, w0-w5, w31
  */
 
+.type poly_tobytes, @function
 poly_tobytes:
   LOOPI 4, 37
     /* Load inputs */
@@ -102,6 +103,7 @@ poly_tobytes:
  */
 
 .globl pack_pk
+.type pack_pk, @function
 pack_pk:
   /* Set up wide registers for input and output */
   li x4, 0
@@ -144,6 +146,7 @@ pack_pk:
  */
 
 .globl pack_sk
+.type pack_sk, @function
 pack_sk:
   /* Set up wide registers for input and output */
   li x4, 0
@@ -179,6 +182,7 @@ pack_sk:
  * clobbered registers: x4-x8, w0-w4, w31
  */
 
+.type poly_frombytes, @function
 poly_frombytes:
   LOOPI 4, 35
     /* Load inputs */
@@ -249,6 +253,7 @@ poly_frombytes:
  */
 
 .globl unpack_pk
+.type unpack_pk, @function
 unpack_pk:
   /* Set up wide registers for input and output */
   li x4, 0
@@ -292,6 +297,7 @@ unpack_pk:
  */
 
 .globl unpack_sk
+.type unpack_sk, @function
 unpack_sk:
   /* Set up wide registers for input and output */
   li x4, 0

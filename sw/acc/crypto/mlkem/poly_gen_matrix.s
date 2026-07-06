@@ -70,6 +70,7 @@
  */
 
 .globl poly_gen_matrix_init
+.type poly_gen_matrix_init, @function
 poly_gen_matrix_init:
   /* Initialize a SHAKE128 operation. */
   addi  t0, zero, 34
@@ -107,6 +108,7 @@ poly_gen_matrix_init:
  */
 
 .globl poly_gen_matrix
+.type poly_gen_matrix, @function
 poly_gen_matrix:
   /* t0 = 508, a1 + 508 is the last valid address */
   addi t0, a1, 512

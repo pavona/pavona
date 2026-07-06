@@ -32,6 +32,7 @@
  * clobbered registers: x8, x21, w0, w2
  * clobbered Flag Groups: FG1
  */
+.type sel_sqr_or_sqrmul, @function
 sel_sqr_or_sqrmul:
   /* iterate over all limbs */
   loop      x30, 8
@@ -92,6 +93,7 @@ sel_sqr_or_sqrmul:
  *                      w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
+.type modexp, @function
 modexp:
   /* prepare pointers to temp regs */
   li         x8, 4
@@ -226,6 +228,7 @@ modexp:
  *                      w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
+.type modexp_crt, @function
 modexp_crt:
   /* temporarially halve the limb count to copy a cofactor
        x30 <= N >> 1 = N / 2 */
@@ -606,6 +609,7 @@ modexp_crt:
  *                      w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
+.type modexp_65537, @function
 modexp_65537:
   /* prepare pointers to temp regs */
   li         x8, 4
@@ -737,6 +741,7 @@ modexp_65537:
  * clobbered registers: x8, x16, x21, w2, w3
  * clobbered Flag Groups: FG0
  */
+.type cond_sub_to_dmem, @function
 cond_sub_to_dmem:
   /* iterate over all limbs for conditional limb-wise subtraction */
   loop      x30, 5
@@ -787,6 +792,7 @@ cond_sub_to_dmem:
  *                      w2, w3, w4 to w[4+N-1], w24 to w30
  * clobbered Flag Groups: FG0, FG1
  */
+.type montmul_mul1, @function
 montmul_mul1:
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0' */
   bn.lid    x9, 0(x17)

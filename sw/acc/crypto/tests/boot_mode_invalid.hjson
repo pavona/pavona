@@ -9,7 +9,7 @@
   }
   "output": {
     "regs": {
-      "STOP_PC": "start_failed"
+      "STOP_PC": "_start_failed"
       "ERR_BITS": "0x00000008"  # unimp trap
     }
   }

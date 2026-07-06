@@ -39,6 +39,7 @@
  * clobbered registers: x2 to x8, x20 to x23, w20 to w23
  * clobbered flag groups: FG0
  */
+.type bignum_mul, @function
 bignum_mul:
   /* Zeroize output buffer.
        dmem[dptr_c..dptr_c+(n*2*32)] <= 0 */
@@ -158,6 +159,7 @@ bignum_mul:
  * clobbered registers: x2, x3, x20, x21, x22, x23, w20, w21, w22, w23
  * clobbered flag groups: FG0
  */
+.type bignum_mul256, @function
 bignum_mul256:
   /* Zeroize first word of output buffer.
        dmem[dptr_c] <= 0 */
@@ -212,6 +214,7 @@ bignum_mul256:
  * clobbered registers: w22, w23
  * clobbered flag groups: None
  */
+.type mul256_w20xw21, @function
 mul256_w20xw21:
   bn.mulqacc.z          w20.0, w21.0,  0
   bn.mulqacc            w20.1, w21.0, 64

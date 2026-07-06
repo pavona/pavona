@@ -100,6 +100,7 @@
  *
  */
 .globl crypto_sign_verify_internal
+.type crypto_sign_verify_internal, @function
 crypto_sign_verify_internal:
     la   s11, mldsa_params
 

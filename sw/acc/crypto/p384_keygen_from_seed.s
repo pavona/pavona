@@ -58,6 +58,7 @@
  * clobbered flag groups: FG0
  */
 .globl p384_key_from_seed
+.type p384_key_from_seed, @function
 p384_key_from_seed:
   /* Convert from a boolean to an arithmetic mask using Goubin's algorithm.
        [w21, w20] <= ((seed0 ^ seed1) - seed1) mod 2^385 = x0 */
