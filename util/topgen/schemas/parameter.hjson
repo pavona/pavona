@@ -1,0 +1,24 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:parameter",
+  title: "Parameter",
+  description: "Parameter configuration passed down from top level to module",
+  type: "object",
+  required: ["name", "desc", "type", "default"]
+  properties: {
+    name: { type: "string", description: "the parameter name" },
+    desc: { type: "string", description: "the parameter description" },
+    type: { type: "string", description: "the data type of the parameter" },
+    unpacked_dimensions: { type: "string", description: "the unpacked dimensions for arrays" },
+    randtype: { type: "string", description: "whether it is for 'data' or 'perm'issions" },
+    randcount: { type: "number" },
+    default: { description: "the default value of the parameter" },
+    local: { type: "boolean", description: "whether it is a localparam" },
+    expose: { type: "boolean", description: "seems redundant TODO" },
+    name_top: { type: "string", description: "the name in the top-level" },
+    randwidth: { type: "number", description: "the number of bits" },
+  }
+}
