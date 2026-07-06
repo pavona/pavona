@@ -177,7 +177,7 @@ interface pwrmgr_if (
   endfunction
 
   // This could be in a hypothetical rom_ctrl driver.
-  function automatic void update_rom_ctrl(rom_ctrl_pkg::pwrmgr_data_t ctrl, bit unsigned index);
+  function automatic void update_rom_ctrl(rom_ctrl_pkg::pwrmgr_data_t ctrl, int unsigned index);
     `DV_CHECK(index < NumRomInputs, , , "pwrmgr_if")
     rom_ctrl_i[index] = ctrl;
   endfunction
