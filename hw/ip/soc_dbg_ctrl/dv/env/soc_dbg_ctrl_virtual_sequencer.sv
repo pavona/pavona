@@ -9,6 +9,7 @@ class soc_dbg_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   `uvm_component_utils(soc_dbg_ctrl_virtual_sequencer)
 
   delay_sequencer delay_sequencer_h;
+  soc_dbg_ctrl_misc_sequencer misc_sequencer_h;
 
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent);

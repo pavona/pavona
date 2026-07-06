@@ -12,9 +12,14 @@ class soc_dbg_ctrl_scoreboard extends cip_base_scoreboard #(
   // JTAG RAL handle (downcast from cfg.ral_models[] in connect_phase)
   soc_dbg_ctrl_jtag_reg_block jtag_ral;
 
+  // Snapshots of the misc interface published by soc_dbg_ctrl_misc_monitor.
+  uvm_tlm_analysis_fifo #(soc_dbg_ctrl_misc_item) misc_fifo;
+  soc_dbg_ctrl_misc_item                          latest_misc;
+
   // HW-side values not derivable from RAL mirrors alone
   dbg_category_e sw_category_hw;  // RTL's internal category shadowed reg
-  halt_state_e   halt_state;      // halt FSM shadow, advanced one state per clock
+  halt_state_e   halt_state;      // halt FSM shadow, advanced one state per misc snapshot
+  logic [1:0]    halt_pin_sync;   // models the RTL 2-flop sync on halt_cpu_boot
 
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent);
@@ -39,7 +44,9 @@ class soc_dbg_ctrl_scoreboard extends cip_base_scoreboard #(
   extern function void predict_jtag_trace_soc_dbg_state();
   extern function soc_dbg_policy_t compute_expected_policy();
   extern function uvm_reg_data_t   compute_expected_jtag_boot_status();
-  extern task advance_halt_fsm();
+  extern task          process_misc_fifo();
+  extern function void advance_halt_fsm();
+  extern function void check_continue_cpu_boot();
 endclass : soc_dbg_ctrl_scoreboard
 
 
@@ -51,6 +58,8 @@ function void soc_dbg_ctrl_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
   // TODO: remove once support alert checking
   do_alert_check = 0;
+  misc_fifo   = new("misc_fifo", this);
+  latest_misc = soc_dbg_ctrl_misc_item::type_id::create("latest_misc");
 endfunction : build_phase
 
 function void soc_dbg_ctrl_scoreboard::connect_phase(uvm_phase phase);
@@ -60,20 +69,19 @@ endfunction : connect_phase
 
 task soc_dbg_ctrl_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
-  wait(cfg.under_reset);
-  forever begin
-    wait(!cfg.under_reset);
-    fork begin : isolation_fork
-      fork
-        advance_halt_fsm();
-        begin : reset_thread
-          wait(cfg.under_reset);
-        end
-      join_any
-      disable fork;
-    end join
-  end
+  process_misc_fifo();
 endtask : run_phase
+
+// Advance the halt-FSM shadow and check continue_cpu_boot on every misc snapshot. This is
+// driven by the monitor's per-clock transactions rather than a free-running clocked task.
+task soc_dbg_ctrl_scoreboard::process_misc_fifo();
+  forever begin
+    misc_fifo.get(latest_misc);
+    if (cfg.under_reset) continue;
+    check_continue_cpu_boot();
+    advance_halt_fsm();
+  end
+endtask : process_misc_fifo
 
 task soc_dbg_ctrl_scoreboard::process_tl_access(tl_seq_item item,
                                                 tl_channels_e channel,
@@ -228,6 +236,17 @@ function void soc_dbg_ctrl_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
   sw_category_hw = DbgCategoryLocked;
   halt_state     = Idle;
+  halt_pin_sync  = '0;
+  misc_fifo.flush();
+  // Safe defaults until the monitor publishes the first post-reset snapshot.
+  latest_misc.soc_dbg_state   = SocDbgStBlank;
+  latest_misc.lc_dft_en       = Off;
+  latest_misc.lc_hw_debug_en  = Off;
+  latest_misc.lc_raw_test_rma = Off;
+  latest_misc.lc_cpu_en       = Off;
+  latest_misc.lc_rma_state    = Off;
+  latest_misc.boot_status     = '0;
+  latest_misc.halt_cpu_boot   = 1'b1;
 endfunction : reset
 
 function void soc_dbg_ctrl_scoreboard::check_phase(uvm_phase phase);
@@ -251,7 +270,7 @@ function void soc_dbg_ctrl_scoreboard::predict_trace_regs();
   uvm_reg_data_t   vr_val  = {exp.relocked, exp.valid};
 
   if (cfg.en_cov) begin
-    cov.sample_soc_dbg_policy_cg(cfg.misc_vif.soc_dbg_state,
+    cov.sample_soc_dbg_policy_cg(latest_misc.soc_dbg_state,
                                  exp.valid, exp.category, exp.relocked);
   end
 
@@ -271,20 +290,20 @@ function void soc_dbg_ctrl_scoreboard::predict_jtag_boot_status();
 endfunction : predict_jtag_boot_status
 
 function void soc_dbg_ctrl_scoreboard::predict_jtag_trace_soc_dbg_state();
-  uvm_reg_data_t val = lc_tx_test_true_strict(cfg.misc_vif.lc_dft_en) ?
-                          cfg.misc_vif.soc_dbg_state : '0;
+  uvm_reg_data_t val = lc_tx_test_true_strict(latest_misc.lc_dft_en) ?
+                          latest_misc.soc_dbg_state : '0;
   void'(jtag_ral.jtag_trace_soc_dbg_state.predict(.value(val), .kind(UVM_PREDICT_DIRECT)));
 endfunction : predict_jtag_trace_soc_dbg_state
 
 // Mirrors the RTL decode switch
 function soc_dbg_policy_t soc_dbg_ctrl_scoreboard::compute_expected_policy();
   soc_dbg_policy_t exp;
-  soc_dbg_state_t  dbg_state = cfg.misc_vif.soc_dbg_state;
-  lc_tx_t          dft_en    = cfg.misc_vif.lc_dft_en;
-  lc_tx_t          hw_dbg_en = cfg.misc_vif.lc_hw_debug_en;
-  lc_tx_t          rma       = cfg.misc_vif.lc_rma_state;
-  lc_tx_t          cpu_en    = cfg.misc_vif.lc_cpu_en;
-  logic            lc_done   = cfg.misc_vif.boot_status.lc_done;
+  soc_dbg_state_t  dbg_state = latest_misc.soc_dbg_state;
+  lc_tx_t          dft_en    = latest_misc.lc_dft_en;
+  lc_tx_t          hw_dbg_en = latest_misc.lc_hw_debug_en;
+  lc_tx_t          rma       = latest_misc.lc_rma_state;
+  lc_tx_t          cpu_en    = latest_misc.lc_cpu_en;
+  logic            lc_done   = latest_misc.boot_status.lc_done;
   mubi4_t          sw_reloc  = mubi4_t'(ral.debug_policy_relocked.get_mirrored_value());
 
   case (dbg_state)
@@ -326,8 +345,8 @@ endfunction : compute_expected_policy
 
 // Mirrors the RTL trace assembly gated by lc_dft_en
 function uvm_reg_data_t soc_dbg_ctrl_scoreboard::compute_expected_jtag_boot_status();
-  pwr_boot_status_t boot   = cfg.misc_vif.boot_status;
-  lc_tx_t           dft_en = cfg.misc_vif.lc_dft_en;
+  pwr_boot_status_t boot   = latest_misc.boot_status;
+  lc_tx_t           dft_en = latest_misc.lc_dft_en;
   logic [2:0]       gl_done;
   logic [2:0]       gl_good;
   uvm_reg_data_t    v      = '0;
@@ -353,48 +372,53 @@ function uvm_reg_data_t soc_dbg_ctrl_scoreboard::compute_expected_jtag_boot_stat
   return v;
 endfunction : compute_expected_jtag_boot_status
 
-// Mirrors the RTL halt FSM
-task soc_dbg_ctrl_scoreboard::advance_halt_fsm();
-  logic   lc_done;
-  lc_tx_t raw_test_rma;
-  lc_tx_t dft_en;
-  logic   halt_pin;
-  logic   jtag_ctrl_bc;
+// Mirrors the RTL halt FSM. Called once per misc snapshot (i.e. per clock) so halt_state
+// tracks the DUT's registered halt_state_q. halt_cpu_boot is passed through a 2-flop sync
+// model to match the RTL prim_flop_2sync on that pin.
+function void soc_dbg_ctrl_scoreboard::advance_halt_fsm();
+  logic   lc_done         = latest_misc.boot_status.lc_done;
+  lc_tx_t raw_test_rma    = latest_misc.lc_raw_test_rma;
+  lc_tx_t dft_en          = latest_misc.lc_dft_en;
+  logic   halt_pin_synced = halt_pin_sync[1];
+  logic   jtag_ctrl_bc    = jtag_ral.jtag_control.boot_continue.get_mirrored_value();
 
-  forever begin
-    @(posedge cfg.clk_rst_vif.clk);
-    lc_done      = cfg.misc_vif.boot_status.lc_done;
-    raw_test_rma = cfg.misc_vif.lc_raw_test_rma;
-    dft_en       = cfg.misc_vif.lc_dft_en;
-    halt_pin     = cfg.misc_vif.halt_cpu_boot;
-    jtag_ctrl_bc = jtag_ral.jtag_control.boot_continue.get_mirrored_value();
+  case (halt_state)
+    Idle: begin
+      if (lc_done) begin
+        halt_state = CheckLifecycleState;
+      end
+    end
+    CheckLifecycleState: begin
+      halt_state = lc_tx_test_true_strict(raw_test_rma) ? Wait4DftEn : HaltDone;
+    end
+    Wait4DftEn: begin
+      if (lc_tx_test_true_strict(dft_en)) begin
+        halt_state = CheckHaltPin;
+      end
+    end
+    CheckHaltPin: begin
+      halt_state = halt_pin_synced ? CheckJtagGo : HaltDone;
+    end
+    CheckJtagGo: begin
+      if (jtag_ctrl_bc) begin
+        halt_state = HaltDone;
+      end
+    end
+    HaltDone: begin
+    end
+    default: begin
+    end
+  endcase
 
-    case (halt_state)
-      Idle: begin
-        if (lc_done) begin
-          halt_state = CheckLifecycleState;
-        end
-      end
-      CheckLifecycleState: begin
-        halt_state = lc_tx_test_true_strict(raw_test_rma) ? Wait4DftEn : HaltDone;
-      end
-      Wait4DftEn: begin
-        if (lc_tx_test_true_strict(dft_en)) begin
-          halt_state = CheckHaltPin;
-        end
-      end
-      CheckHaltPin: begin
-        halt_state = halt_pin ? CheckJtagGo : HaltDone;
-      end
-      CheckJtagGo: begin
-        if (jtag_ctrl_bc) begin
-          halt_state = HaltDone;
-        end
-      end
-      HaltDone: begin
-      end
-      default: begin
-      end
-    endcase
-  end
-endtask : advance_halt_fsm
+  // Advance the 2-flop halt_cpu_boot sync model (runs every clock, like the RTL flops).
+  halt_pin_sync = {halt_pin_sync[0], latest_misc.halt_cpu_boot};
+endfunction : advance_halt_fsm
+
+// continue_cpu_boot.done tracks (halt_state == HaltDone); .good is permanently MuBi4True.
+function void soc_dbg_ctrl_scoreboard::check_continue_cpu_boot();
+  mubi4_t exp_done = (halt_state == HaltDone) ? MuBi4True : MuBi4False;
+  `DV_CHECK_EQ(latest_misc.continue_cpu_boot.done, exp_done,
+               "continue_cpu_boot.done mismatch")
+  `DV_CHECK_EQ(latest_misc.continue_cpu_boot.good, MuBi4True,
+               "continue_cpu_boot.good should always be MuBi4True")
+endfunction : check_continue_cpu_boot
