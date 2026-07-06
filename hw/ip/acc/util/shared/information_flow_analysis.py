@@ -70,7 +70,32 @@ class IFlowCache(Cache[int, ConstantContext, IFlowResult]):
     index and the values of the constants used in the call match a new call,
     the cached result is returned.
     '''
-    pass
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._index: Dict[int, Dict[Tuple[str, ...], Dict[Tuple[int, ...],
+                                                          IFlowResult]]] = {}
+
+    def add(self, index: int,
+            entry: CacheEntry[ConstantContext, IFlowResult]) -> None:
+        if self.lookup(index, entry.key) is not None:
+            return
+        names = tuple(sorted(entry.key.values.keys()))
+        values = tuple(entry.key.values[n] for n in names)
+        self._index.setdefault(index, {}).setdefault(names,
+                                                     {})[values] = entry.value
+
+    def lookup(self, index: int, key: ConstantContext) -> Optional[IFlowResult]:
+        groups = self._index.get(index)
+        if groups is None:
+            return None
+        known = key.values
+        for names, by_values in groups.items():
+            if all(n in known for n in names):
+                hit = by_values.get(tuple(known[n] for n in names))
+                if hit is not None:
+                    return hit
+        return None
 
 
 # The information flow of a subroutine is represented as a tuple whose entries
