@@ -449,8 +449,10 @@ def _label_cycles(program: ACCProgram, graph: ControlGraph, start_pc: int,
     already-traversed part of the control flow with a Cycle instance.
     '''
     sec, edges = graph.get_entry(start_pc)
-    for pc in sec:
-        visited_pcs.add(pc)
+    # Record only PCs newly added here so removal on return leaves any shared
+    # with an ancestor section in place.
+    added = [pc for pc in sec if pc not in visited_pcs]
+    visited_pcs.update(added)
 
     # Augment the set of edges to continue past non-tailcall function calls
     explore_edges = edges.copy()
@@ -473,7 +475,10 @@ def _label_cycles(program: ACCProgram, graph: ControlGraph, start_pc: int,
             # Replace with Cycle instance and do not traverse
             edges[i] = Cycle(edge.pc)
         else:
-            _label_cycles(program, graph, edge.pc, visited_pcs.copy())
+            _label_cycles(program, graph, edge.pc, visited_pcs)
+
+    for pc in added:
+        visited_pcs.discard(pc)
 
 
 def _fix_cycles(program: ACCProgram, graph: ControlGraph) -> None:
