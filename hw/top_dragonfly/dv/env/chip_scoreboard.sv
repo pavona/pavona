@@ -75,6 +75,23 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
 
+  local function bit is_rv_dm_debug_mem_addr(bit [AddrWidth-1:0] addr);
+    return addr inside {[top_dragonfly_pkg::TOP_DRAGONFLY_RV_DM_MEM_BASE_ADDR :
+                         top_dragonfly_pkg::TOP_DRAGONFLY_RV_DM_MEM_BASE_ADDR +
+                         top_dragonfly_pkg::TOP_DRAGONFLY_RV_DM_MEM_SIZE_BYTES - 1]};
+  endfunction
+
+  local function bit is_rv_dm_debug_mem_fetch(tl_seq_item item, string ral_name);
+    cip_tl_seq_item cip_item;
+
+    `downcast(cip_item, item)
+    return ral_name == "chip_reg_block" &&
+           item.a_opcode == tlul_pkg::Get &&
+           cip_item.get_instr_type() == prim_mubi_pkg::MuBi4True &&
+           item.is_a_chan_intg_ok(.throw_error(0)) &&
+           is_rv_dm_debug_mem_addr(item.a_addr);
+  endfunction
+
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     uvm_mem mem = cfg.ral_models[ral_name].default_map.get_mem_by_offset(addr);
@@ -86,6 +103,14 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
       if (channel == DataChannel) `DV_CHECK_EQ(item.d_error, 1)
       return 1;
     end
+    // RV_DM block DV allows CSR fetches from the debug memory. At chip level the scoreboard sees
+    // chip_reg_block, not the rv_dm_mem sub-block, so handle this aperture before the base
+    // scoreboard classifies fetches from memory-mapped CSRs as TL errors.
+    if (is_rv_dm_debug_mem_fetch(item, ral_name)) begin
+      if (channel == DataChannel) `DV_CHECK_EQ(item.d_error, 0)
+      return 1;
+    end
+
     return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
