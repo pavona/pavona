@@ -17,9 +17,11 @@ class soc_dbg_ctrl_env extends cip_base_env #(
   );
   `uvm_component_utils(soc_dbg_ctrl_env)
 
+  soc_dbg_ctrl_misc_agent misc_agt;
+  delay_agent             delay_agt;
+
   // TODO: Reset-safe agents kept commented for future migration
   // clk_rst_agent clk_rst_agt;
-  // delay_agent   delay_agt;
 
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent);
@@ -45,14 +47,26 @@ function void soc_dbg_ctrl_env::build_phase(uvm_phase phase);
   // uvm_config_db#(clk_rst_agent_cfg)::set(this, "delay_agt*", "cfg", cfg.clk_rst_agt_cfg);
 
   // Retrieve the soc_dbg_ctrl_misc_io_if virtual interface
-  if (!uvm_config_db#(misc_vif_t)::get(this, "", "misc_vif", cfg.misc_vif)) begin
+  if (!uvm_config_db#(misc_vif_t)::get(this, "", "misc_vif", cfg.misc_agt_cfg.vif)) begin
     `uvm_fatal(`gfn, "Failed to get misc_vif from uvm_config_db")
   end
+
+  uvm_config_db#(soc_dbg_ctrl_misc_agent_cfg)::set(this, "misc_agt*", "cfg", cfg.misc_agt_cfg);
+  misc_agt = soc_dbg_ctrl_misc_agent::type_id::create("misc_agt", this);
+
+  // Delay agent: provides reset-abortable delays for sequences. Uses the env's default reset
+  // domain (created by dv_base_env::build_phase), so no reset-safe env plumbing is required.
+  cfg.clk_rst_agt_cfg.en_cov       = cfg.en_cov;
+  cfg.clk_rst_agt_cfg.reset_domain = cfg.reset_domain;
+  uvm_config_db#(clk_rst_agent_cfg)::set(this, "delay_agt*", "cfg", cfg.clk_rst_agt_cfg);
+  delay_agt = delay_agent::type_id::create("delay_agt", this);
 endfunction : build_phase
 
 function void soc_dbg_ctrl_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
+  virtual_sequencer.misc_sequencer_h  = misc_agt.sequencer;
+  virtual_sequencer.delay_sequencer_h = delay_agt.sequencer;
+  misc_agt.monitor.analysis_port.connect(scoreboard.misc_fifo.analysis_export);
   // TODO: Reset-safe wire-up kept commented for future migration.
   // virtual_sequencer.clk_rst_sequencer_h = clk_rst_agt.sequencer;
-  // virtual_sequencer.delay_sequencer_h   = delay_agt.sequencer;
 endfunction : connect_phase
