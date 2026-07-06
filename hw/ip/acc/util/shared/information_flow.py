@@ -168,6 +168,17 @@ class DmemInformationFlowNode(InformationFlowNode):
         return result
 
 
+def _copy_flow(
+    flow: Dict[InformationFlowNode, Set[InformationFlowNode]]
+) -> Dict[InformationFlowNode, Set[InformationFlowNode]]:
+    '''Copies a flow dictionary, sharing the nodes it refers to.
+
+    Nodes are immutable value objects, so only the dictionary and the source
+    sets need to be fresh.
+    '''
+    return {sink: set(sources) for sink, sources in flow.items()}
+
+
 class InformationFlowGraph:
     '''Represents an information flow graph.
 
@@ -338,7 +349,7 @@ class InformationFlowGraph:
             # Updating a nonexistent graph with another graph should return the
             # other graph; since we need to modify self, we change this graph's
             # flow to match other's.
-            self.flow = deepcopy(other.flow)
+            self.flow = _copy_flow(other.flow)
             self.exists = other.exists
             return
 
@@ -360,9 +371,9 @@ class InformationFlowGraph:
                 rem2 = sink2.subtract(sink1)
                 inter = sink1.intersection(sink2)
                 for node in rem1:
-                    self.flow[node] = deepcopy(sources1)
+                    self.flow[node] = set(sources1)
                 for node in rem2:
-                    self.flow[node] = deepcopy(sources2)
+                    self.flow[node] = set(sources2)
                 if inter is not None:
                     self.flow[inter] = sources1 | sources2
 
@@ -451,8 +462,7 @@ class InformationFlowGraph:
 
     def __deepcopy__(self,
                      memo: Optional[Dict[int, Any]]) -> 'InformationFlowGraph':
-        flow = deepcopy(self.flow, memo)
-        return InformationFlowGraph(flow, self.exists)
+        return InformationFlowGraph(_copy_flow(self.flow), self.exists)
 
     def loop(self, max_iterations: int = 1000) -> 'InformationFlowGraph':
         '''Returns graph representing all possible repetitions of seq() of this
