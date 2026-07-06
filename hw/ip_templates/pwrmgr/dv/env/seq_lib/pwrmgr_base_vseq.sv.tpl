@@ -180,6 +180,10 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, "Stopping responders", UVM_MEDIUM)
       disable slow_responder;
       disable fast_responder;
+      // Disable clkmgr handshake assertions: their *_status inputs are no longer driven.
+% for clk in src_clks:
+      $assertoff(0, "tb.dut.clkmgr_pwrmgr_${clk}_sva_if");
+% endfor
     end
   endtask
 
