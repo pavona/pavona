@@ -209,7 +209,9 @@ def _get_addr_symbol_map(elf_file: ELFFile) -> Dict[int, str]:
         return {}
 
     return {sym.entry.st_value: sym.name
-            for sym in section.iter_symbols() if sym.entry['st_shndx'] == 1}
+            for sym in section.iter_symbols()
+            if sym.entry['st_shndx'] == 1 and
+            sym.entry['st_info']['type'] == 'STT_FUNC'}
 
 
 class ExecutionStatAnalyzer:
@@ -233,14 +235,21 @@ class ExecutionStatAnalyzer:
         else:
             # |func_addr| is the largest possible |sym_addr| which is at most
             # |address|.
-            func_addr = 0
+            func_addr = -1
             for sym_addr in self._addr_symbol_map.keys():
                 if sym_addr <= address and sym_addr > func_addr:
                     func_addr = sym_addr
-            func_name = self._addr_symbol_map[func_addr]
-            if name_only:
-                return func_name
-            symbol_name = func_name + f"+{address - func_addr:#x}"
+            if func_addr >= 0:
+                func_name = self._addr_symbol_map[func_addr]
+                if name_only:
+                    return func_name
+                symbol_name = func_name + f"+{address - func_addr:#x}"
+            else:
+                # No function symbol precedes this address (e.g. code not
+                # annotated with .type); group it under a single label.
+                if name_only:
+                    return "<no function>"
+                symbol_name = "<no function>"
 
         file_line = None
         if self._elf_file.has_dwarf_info():
@@ -372,7 +381,8 @@ class ExecutionStatAnalyzer:
             has_one_callsite = False
             func = self._describe_imem_addr(rev_callee_func)
             callee = func
-            callee_func_only = re.findall(r'\(([^]]*)\)', callee)[0]
+            callee_matches = re.findall(r'\(([^]]*)\)', callee)
+            callee_func_only = callee_matches[0] if callee_matches else callee
             if callee_func_only not in self.func_calls:
                 self.func_calls[callee_func_only] = defaultdict(lambda: 0, {})
             out += f"Function {func}\n"
