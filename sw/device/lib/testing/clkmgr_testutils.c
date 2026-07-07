@@ -136,6 +136,20 @@ dif_result_t initialize_expected_counts(const dif_clkmgr_t *clkmgr) {
     // number is in uint64_t.
     uint32_t clk_count = cast_safely(
         udiv64_slow(clk_freq_hz, aon_clk_freq_hz, /*rem_out=*/NULL));
+    // If the clock count is below 100, run for multiple reference clocks
+    // until the clock count is over 100. Notice this matches how the
+    // clock measurement RTL is configured.
+    if (clk_count < 100) {
+      uint32_t original_clk_count = clk_count;
+      for (int i = 1;; i++) {
+        clk_count <<= 1;
+        if (clk_count > 100) {
+          LOG_INFO("The original clock count was %d, and became %d, shift %d",
+                   original_clk_count, clk_count, i);
+          break;
+        }
+      }
+    }
     uint32_t variability =
         get_count_variability(clk_count, kVariabilityPercentage);
     LOG_INFO("Variability for %s(%d) %d is %d",
@@ -227,6 +241,26 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
         clkmgr, (dif_clkmgr_measure_clock_t)clk,
         count_info->count - count_info->variability,
         count_info->count + count_info->variability));
+  }
+  return OK_STATUS();
+}
+
+status_t clkmgr_testutils_enable_clock_counts_with_failing_thresholds(
+    const dif_clkmgr_t *clkmgr) {
+  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+      clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
+      /*low_speed=*/true));
+  dt_clkmgr_t clkmgr_dt;
+  CHECK_DIF_OK(dif_clkmgr_get_dt(clkmgr, &clkmgr_dt));
+
+  for (size_t clk = 0; clk < dt_clkmgr_measurable_clock_count(clkmgr_dt);
+       ++clk) {
+    uint32_t min_threshold;
+    uint32_t max_threshold;
+    CHECK_DIF_OK(dif_clkmgr_measure_counts_get_thresholds(
+        clkmgr, clk, &min_threshold, &max_threshold));
+    CHECK_STATUS_OK(clkmgr_testutils_enable_clock_count(
+        clkmgr, clk, min_threshold / 2, max_threshold / 2));
   }
   return OK_STATUS();
 }
