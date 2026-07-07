@@ -3218,7 +3218,7 @@
     }
     {
       test: chip_plic_all_irqs_0
-      name: chip
+      name: chip_dragonfly
       reseed: 7
       seeds:
       [
@@ -3226,11 +3226,10 @@
         "56880840908037427231278826835167288413482163733165528103389910662838407352804"
         "5523280247444549869966637070672829622812279136268175840227680099763991544680"
       ]
-      variant: dragonfly
     }
     {
       test: chip_plic_all_irqs_10
-      name: chip
+      name: chip_dragonfly
       reseed: 7
       seeds:
       [
@@ -3238,72 +3237,65 @@
         "1444104444662508129159267714664809113970366249400434168467176172118868552780"
         "87091082484262647115705130684899240057427221261494172520072016507506441614743"
       ]
-      variant: dragonfly
     }
     {
       test: chip_prim_tl_access
-      name: chip
+      name: chip_dragonfly
       reseed: 4
       seeds:
       [
         "99688646310683954883332059916838209652340825641753685944852302935214782770320"
       ]
-      variant: dragonfly
     }
     {
       test: chip_rv_dm_lc_disabled
-      name: chip
+      name: chip_dragonfly
       reseed: 5
       seeds:
       [
         "23242619912378389732635595813220310279633624708815021153363794134605032315746"
         "15258852583341377539922617795469229110789976027081694089192136170065214533828"
       ]
-      variant: dragonfly
     }
     {
       test: chip_rv_dm_ndm_reset_req
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "104199077464844197744601479927582180656540161757784125423808852657199165263538"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_acc_smoketest
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "112038410911122978262675716680227723082122205886399512962217971924645377871810"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_aes_idle
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "50027078597451721598018086021126860069855427172353725677942932373918899160936"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_aes_masking_off
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "58153871789959043352711531508988741425939386127963544522963021423830198624246"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_alert_handler_ping_timeout
-      name: chip
+      name: chip_dragonfly
       reseed: 7
       seeds:
       [
@@ -3311,152 +3303,137 @@
         "62424697937475175669091126202616965578040104717821564113005925608637795391183"
         "29886579126029581646155778764287934292247014873067978158006521576761792131298"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_aon_timer_sleep_wdog_sleep_pause
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "94873296011151639356454478683832570899221026568349938306009102412812187507357"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_aon_timer_smoketest
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "11220330453718725283395774367981677638558805944187058565792490741812916934671"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_aon_timer_wdog_lc_escalate
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "7428660468725701045764416271205208968822541016737974428940050470906683324242"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_clkmgr_jitter
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "112127466306084517963332815953668293785495344604537651598355751795493359821640"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_csrng_edn_concurrency
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "79662847863249728731878630240132769562426036020106839584073049666654623924813"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_dma_inline_hashing
-      name: chip
+      name: chip_dragonfly
       reseed: 4
       seeds:
       [
         "24943428708444087403819235740375551265040060337558808218306471694233628350330"
         "3965649581940239391599075511180766515702948769097464609503570448671003075050"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_entropy_src_csrng
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "47085598398174645188137003923192538789040902385253078360989151821180592321344"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_entropy_src_smoketest
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "29056171991609119007533651287605510577625230107104504393054444827247399932620"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_gpio
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "18907397555045150102696055236501449765424753653808424250658140688201478017789"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_hmac_enc
-      name: chip
+      name: chip_dragonfly
       reseed: 4
       seeds:
       [
         "105009945503174284081494792709034913459136712913584305565277392304033813385836"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_kmac_entropy
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "53274443525951943509968905607235758338425155801462557871379401728222979402741"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_lc_ctrl_rand_to_scrap
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "106196509131721043487400174552761946399904911932227894259440765580336812057902"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_lc_ctrl_raw_to_scrap
-      name: chip
+      name: chip_dragonfly
       reseed: 4
       seeds:
       [
         "52862558677650283452309949461720804286848694078341203224767023529454727485076"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_lc_ctrl_test_locked0_to_scrap
-      name: chip
+      name: chip_dragonfly
       reseed: 4
       seeds:
       [
         "26263295566629196480302453244273603392536554763257199893448225764998281470423"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_mbx_smoketest
-      name: chip
+      name: chip_dragonfly
       reseed: 7
       seeds:
       [
@@ -3464,104 +3441,94 @@
         "37504098544832218647955923419217494195234621659118938755200518635330030421207"
         "3613585774666510505798283334531443537984128333244608534942509206117697100087"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_otp_ctrl_smoketest
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "108306081193131466242104054080184399865860946641450211238062528814483086242337"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_plic_sw_irq
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "3936770205033527626024454285035397156107045646263357098757718360596845313591"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_pwrmgr_full_aon_reset
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "11630010578812832077732891497455307547281270179947227667591201360911981358913"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_rom_ctrl_integrity_check
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "98682442193046574791744309152426406693246687048864037231177172416928959433172"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_rv_core_ibex_address_translation
-      name: chip
+      name: chip_dragonfly
       reseed: 4
       seeds:
       [
         "107516569572277430172783115525753417165966026051730178049044856488525975650713"
         "41111803028869672474732459917674808252111638864171253009389301024333897674306"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_rv_core_ibex_lockstep_glitch
-      name: chip
+      name: chip_dragonfly
       reseed: 5
       seeds:
       [
         "83503299078550105340942538070636161926644697458335543823270928589539310446533"
         "90686285398380854431468180727420288675719252869358523582113367778629289227288"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_spi_device_pass_through
-      name: chip
+      name: chip_dragonfly
       reseed: 5
       seeds:
       [
         "92621762513365217284288424537924094134485803108677571685060081269281181945116"
         "13849946667227820929782484026261983651112886095491286412455960892562694307402"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_sram_ctrl_scrambled_access
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "97478619754224866993422616079527408428639684361299974254669378279566764534382"
       ]
-      variant: dragonfly
     }
     {
       test: chip_sw_uart_smoketest
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "49034697836176098235618968025667160210978282909745384183877775834385835526373"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_access_same_device_slow_rsp
-      name: chip
+      name: chip_dragonfly
       reseed: 5
       seeds:
       [
@@ -3569,53 +3536,48 @@
         "88817351852093742128770787063723761330491998932171763184782023842040805369537"
         "21684090588865730555429345215976044110303250191372553314194203046171998842721"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_error_random
-      name: chip
+      name: chip_dragonfly
       reseed: 5
       seeds:
       [
         "19510134855046372985084608455186059851553572504542861413978543498562621203564"
         "110513531377006777017549201597148875878228622919062351770986251453071990275956"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_random_large_delays
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "109254088615270482863892859009171448397120026878468215957465629878608808789875"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_random_slow_rsp
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "61811221499626503825889177855385621629909863749783612254880250558543014034673"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_random_zero_delays
-      name: chip
+      name: chip_dragonfly
       reseed: 4
       seeds:
       [
         "61005378572031677300645409957869060838351374615384404898884624648115373949597"
         "91637674450689000342659216816840169518060782560897774186947809693891699275817"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_stress_all
-      name: chip
+      name: chip_dragonfly
       reseed: 5
       seeds:
       [
@@ -3623,11 +3585,10 @@
         "77702590957157054028482072671704355700361550066898029039615390694111449434660"
         "28016852246234269753954207926486522747106102871171156063108242698240410629464"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_stress_all_with_error
-      name: chip
+      name: chip_dragonfly
       reseed: 15
       seeds:
       [
@@ -3641,11 +3602,10 @@
         "7169182039117939986588096392266818531012139975263977085308865106550435259684"
         "62087042204535687434247154953398875567799851512898618264105415005679543502788"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_stress_all_with_rand_reset
-      name: chip
+      name: chip_dragonfly
       reseed: 24
       seeds:
       [
@@ -3671,11 +3631,10 @@
         "76857337590506147194087676410999008264273169888461415327610769753280818375722"
         "74166221100091741907613903700876348956405547839656163482402696363382553434380"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_stress_all_with_reset_error
-      name: chip
+      name: chip_dragonfly
       reseed: 25
       seeds:
       [
@@ -3697,21 +3656,19 @@
         "44931617888601871806177404712783924803492872733917404447741404905404729069680"
         "14177071277104116690213380810908927069127494999599094414359411857180414910251"
       ]
-      variant: dragonfly
     }
     {
       test: xbar_unmapped_addr
-      name: chip
+      name: chip_dragonfly
       reseed: 3
       seeds:
       [
         "114380004465869396034761219397716052019005532615681468988402035467531730134159"
       ]
-      variant: dragonfly
     }
     {
       test: chip_jtag_csr_rw
-      name: chip
+      name: chip_egret
       reseed: 7
       seeds:
       [
@@ -3719,22 +3676,20 @@
         "68577747421561245075181190887969268157396979356523321530473229794000011162119"
         "74067976554994237778540414002394541703278835771749580643970866308139430264810"
       ]
-      variant: egret
     }
     {
       test: chip_padctrl_attributes
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "29817875460454272080834353825871442238640860851973292654555788811946304396591"
         "94900218012706146749822066010996490432443734803267170283157561134198557048755"
       ]
-      variant: egret
     }
     {
       test: chip_plic_all_irqs_0
-      name: chip
+      name: chip_egret
       reseed: 6
       seeds:
       [
@@ -3742,11 +3697,10 @@
         "26576804077656597262783335798518573001440419827348488814871219661988229194258"
         "25954640835419578359097796655288584634183789965321723233856093340534688148361"
       ]
-      variant: egret
     }
     {
       test: chip_plic_all_irqs_10
-      name: chip
+      name: chip_egret
       reseed: 7
       seeds:
       [
@@ -3754,11 +3708,10 @@
         "4574572335131853650392263460294436495428561452014757944574848617617265388213"
         "70565443215920912535478073332511324022648422957636604982764717307404147373197"
       ]
-      variant: egret
     }
     {
       test: chip_plic_all_irqs_20
-      name: chip
+      name: chip_egret
       reseed: 7
       seeds:
       [
@@ -3766,72 +3719,65 @@
         "2530678466113802030955077802898678353301493203528456268354801975533472771245"
         "100180677488025048089108568859246585820376187715708816087952743803713079196702"
       ]
-      variant: egret
     }
     {
       test: chip_rv_dm_ndm_reset_req
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "62096492111730183062676775591780491797400450340359225205338469268413060871464"
       ]
-      variant: egret
     }
     {
       test: chip_sival_flash_info_access
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "72943732492975921102757645275422936332282210056953797948511922800695782709578"
       ]
-      variant: egret
     }
     {
       test: chip_sw_acc_ecdsa_op_irq_jitter_en_reduced_freq
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "53896710467962061714063307606073899526707891392981772914230974827853458214330"
       ]
-      variant: egret
     }
     {
       test: chip_sw_aes_idle
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "114533316352898811516305169818338377875096425891328561305518502200407771529962"
       ]
-      variant: egret
     }
     {
       test: chip_sw_alert_handler_entropy
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "48990712784327568969775667979323440301990433185586157745439655519974658506501"
         "82942699032797833610724543018841397384699662140875044476930902079238665976624"
       ]
-      variant: egret
     }
     {
       test: chip_sw_alert_handler_ping_timeout
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "95202639562019400870609939780515349861902544585213950336787307464053106211295"
       ]
-      variant: egret
     }
     {
       test: chip_sw_all_escalation_resets
-      name: chip
+      name: chip_egret
       reseed: 73
       seeds:
       [
@@ -3891,124 +3837,112 @@
         "44352026146064723214553518919430786100095544952139192426671205348300590320987"
         "110674039324959802642441437942471995563248852766806739920512830725895329598538"
       ]
-      variant: egret
     }
     {
       test: chip_sw_clkmgr_external_clk_src_for_lc
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "63767179657510423981712075261617047880323265586392744235823617017478691228912"
         "110496062705784747423250974400941520468174672411980436776639447060735081123086"
       ]
-      variant: egret
     }
     {
       test: chip_sw_clkmgr_external_clk_src_for_sw_fast_dev
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "25121430361547556443235926829186063468662228363816281338793771315530492177296"
       ]
-      variant: egret
     }
     {
       test: chip_sw_clkmgr_reset_frequency
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "100607862957149018347310755854299095130357829606252763178855688386247435297949"
       ]
-      variant: egret
     }
     {
       test: chip_sw_csrng_edn_concurrency_reduced_freq
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "3858710356635773957250672001589323628721849109640649352866849799742455487937"
       ]
-      variant: egret
     }
     {
       test: chip_sw_csrng_lc_hw_debug_en_test
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "2185650256149495741241447089192019181173425677303642631741857589811719527981"
       ]
-      variant: egret
     }
     {
       test: chip_sw_data_integrity_escalation
-      name: chip
+      name: chip_egret
       reseed: 5
       seeds:
       [
         "84138313016129426800998932941557131631674685962620330016742862520771371464009"
         "89771381633379718907263287629652518320583370074348468529934614701454739773386"
       ]
-      variant: egret
     }
     {
       test: chip_sw_edn_boot_mode
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "40942545209904492068481074710847888939524323845387017809344058858496319430290"
       ]
-      variant: egret
     }
     {
       test: chip_sw_edn_entropy_reqs
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "14651808296269867627170562577095884313927405853639572609868697947550139707458"
       ]
-      variant: egret
     }
     {
       test: chip_sw_edn_kat
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "68114170452370480442216894087170832208749340868174321711366180156143003337349"
       ]
-      variant: egret
     }
     {
       test: chip_sw_entropy_src_csrng
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "55301495869135881834614977178953292772309323716965156368128445372968890815395"
       ]
-      variant: egret
     }
     {
       test: chip_sw_flash_ctrl_ops_jitter_en
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "804110207333729720523303622709966430875660508218398926668093269009958028015"
         "93136159391031880889854054479184120754221051118077412054729110785847643196182"
       ]
-      variant: egret
     }
     {
       test: chip_sw_flash_init
-      name: chip
+      name: chip_egret
       reseed: 7
       seeds:
       [
@@ -4016,22 +3950,20 @@
         "84560265529109863586763940611168766810325501175295663306015907723057876711911"
         "44494217591526204210699659737812536813536260612343581541093661600409220937837"
       ]
-      variant: egret
     }
     {
       test: chip_sw_flash_init_reduced_freq
-      name: chip
+      name: chip_egret
       reseed: 5
       seeds:
       [
         "96933066503606069442192389967774193355217467954395018096186378504282042694660"
         "88780617130354627846437068602258622441369987241614770988584904578532826523724"
       ]
-      variant: egret
     }
     {
       test: chip_sw_flash_rma_unlocked
-      name: chip
+      name: chip_egret
       reseed: 7
       seeds:
       [
@@ -4039,11 +3971,10 @@
         "32528250512674471344986284882873147844912112615520919972968293097375405879807"
         "63884490439311168418891298620067209900125524651207143414997151595340504087488"
       ]
-      variant: egret
     }
     {
       test: chip_sw_gpio
-      name: chip
+      name: chip_egret
       reseed: 6
       seeds:
       [
@@ -4051,141 +3982,127 @@
         "4599905112911089241197993664675847589208291137231287836198571868623235708463"
         "3551289132187901091175771509691435321258296854693551216767863531905986278605"
       ]
-      variant: egret
     }
     {
       test: chip_sw_hmac_enc_jitter_en
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "114715408834568591979615622978987164037382324704858681292752634572262563196698"
       ]
-      variant: egret
     }
     {
       test: chip_sw_i2c_device_tx_rx
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "38394935455273985648339640483130489583207638462465080595807981187118090013400"
       ]
-      variant: egret
     }
     {
       test: chip_sw_i2c_host_tx_rx
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "42259821674158513054831167601117561956997734999887880508192578481699092561486"
       ]
-      variant: egret
     }
     {
       test: chip_sw_i2c_host_tx_rx_idx1
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "11652806418483202305145386168880238418281353321532502092617928077509103684727"
       ]
-      variant: egret
     }
     {
       test: chip_sw_i2c_host_tx_rx_idx2
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "90804938233118822673475114505922460250330669759355209164253164948774940630430"
       ]
-      variant: egret
     }
     {
       test: chip_sw_keymgr_key_derivation_jitter_en
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "5379466101319707017606840757299288674212110345408743748987173855041503145695"
       ]
-      variant: egret
     }
     {
       test: chip_sw_keymgr_sideload_acc
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "31904581755181298809528171726794847280768080038531873218381255133663101649901"
       ]
-      variant: egret
     }
     {
       test: chip_sw_keymgr_sideload_aes
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "95094588528659918104424760806826124762160427384279531056831977679283527453727"
       ]
-      variant: egret
     }
     {
       test: chip_sw_lc_ctrl_program_error
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "20431048532602742801628553938823067604073042268815549203193690824054395361291"
       ]
-      variant: egret
     }
     {
       test: chip_sw_lc_ctrl_rand_to_scrap
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "24470264608768758279276536685381537702742216289268412959191595533505664276289"
       ]
-      variant: egret
     }
     {
       test: chip_sw_lc_ctrl_transition
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "45401072757031582457877609818343663927458202750481272595633825357251608329342"
       ]
-      variant: egret
     }
     {
       test: chip_sw_lc_walkthrough_prodend
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "12467539872983384014941439420713780009473581227252152001759469071379090689316"
       ]
-      variant: egret
     }
     {
       test: chip_sw_otp_ctrl_descrambling
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "62942629715348609959114973622254400254769097593327184023899843378776409474950"
       ]
-      variant: egret
     }
     {
       test: chip_sw_otp_ctrl_vendor_test_csr_access
-      name: chip
+      name: chip_egret
       reseed: 7
       seeds:
       [
@@ -4193,358 +4110,323 @@
         "22841564140050577171554370423992807166585481352322964649168262997256447705354"
         "46411244259472041902247573606256255451106193151933788642896013173009574118208"
       ]
-      variant: egret
     }
     {
       test: chip_sw_pattgen_ios
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "55251178730162494312265538989149951860297237952173873693995381502318012584176"
       ]
-      variant: egret
     }
     {
       test: chip_sw_plic_sw_irq
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "12465777175525047660565139418455290252142825424060701347947734544278941067555"
       ]
-      variant: egret
     }
     {
       test: chip_sw_power_virus
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "41579071042632610112385248320557909983384751345997601270804701920087396147222"
       ]
-      variant: egret
     }
     {
       test: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "84256120303815430851112479185341166231627068471896275907672484826183566176822"
       ]
-      variant: egret
     }
     {
       test: chip_sw_pwrmgr_full_aon_reset
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "96297356704899378775545741908812788769102794940117012685160885105548428513310"
       ]
-      variant: egret
     }
     {
       test: chip_sw_pwrmgr_lowpower_cancel
-      name: chip
+      name: chip_egret
       reseed: 5
       seeds:
       [
         "71191632437058814446611899409466880151071999832903357560699070646645348207633"
         "10002667297180464756171877153989600531965786379794315027368250763447870178859"
       ]
-      variant: egret
     }
     {
       test: chip_sw_pwrmgr_random_sleep_all_wake_ups
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "94229204298707980137760438127351277205198322097560017785421685006888604844141"
       ]
-      variant: egret
     }
     {
       test: chip_sw_pwrmgr_sensor_ctrl_deep_sleep_wake_up
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "103292250233162090837350801129108413274621360162167518335687287448881713855154"
       ]
-      variant: egret
     }
     {
       test: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "30082768705256877264239075257761182907327105105921246597699028366518617958082"
       ]
-      variant: egret
     }
     {
       test: chip_sw_pwrmgr_sysrst_ctrl_reset
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "113068726970289773967141575081117341336303943677647755547927372478224379496669"
       ]
-      variant: egret
     }
     {
       test: chip_sw_rstmgr_alert_info
-      name: chip
+      name: chip_egret
       reseed: 5
       seeds:
       [
         "6218402346557642447754889119662202581354823571553382301626598055945552604139"
         "77556991200280542328537471785850924528299451900656088314041410919710629267212"
       ]
-      variant: egret
     }
     {
       test: chip_sw_rstmgr_rst_cnsty_escalation
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "67214410991309674606356462286309698225699158896032677736624227752404141199670"
       ]
-      variant: egret
     }
     {
       test: chip_sw_rv_core_ibex_address_translation
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "20443591934106899328429787773083443812295460242837478000449236806695784300118"
       ]
-      variant: egret
     }
     {
       test: chip_sw_rv_core_ibex_lockstep_glitch
-      name: chip
+      name: chip_egret
       reseed: 5
       seeds:
       [
         "77781971161011832983952207830816792798412438786216802527166053384622653674581"
         "82095385193385156703575704787132851329310175812822726029477991094212010573574"
       ]
-      variant: egret
     }
     {
       test: chip_sw_rv_core_ibex_nmi_irq
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "36265182763532224467261607053606056713607959318788648900586589623793190842886"
       ]
-      variant: egret
     }
     {
       test: chip_sw_rv_dm_access_after_escalation_reset
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "19194871697760215197838912494749306656851539655033441427215315426039849804764"
       ]
-      variant: egret
     }
     {
       test: chip_sw_sensor_ctrl_alert
-      name: chip
+      name: chip_egret
       reseed: 5
       seeds:
       [
         "32477626814204624941691705660580336759711466053368010874954268031373542927216"
         "106946887408043117153842328520553323986075726385037232914274581861761646002421"
       ]
-      variant: egret
     }
     {
       test: chip_sw_sleep_pin_mio_dio_val
-      name: chip
+      name: chip_egret
       reseed: 5
       seeds:
       [
         "12588949494756957653428112533718659454945948669026105814142104699695586718864"
         "57376667568946067724301004795777302210392346599862928958014032169259529819353"
       ]
-      variant: egret
     }
     {
       test: chip_sw_sleep_pin_retention
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "44525318183128627115713990162865049735444004277657550436131045580501611698218"
       ]
-      variant: egret
     }
     {
       test: chip_sw_sleep_pin_wake
-      name: chip
+      name: chip_egret
       reseed: 5
       seeds:
       [
         "110729772570329778901009092489900306157885065440917855533324212681295212297119"
         "23821514688010743111403303659951425060384600704114843416112005695357287989404"
       ]
-      variant: egret
     }
     {
       test: chip_sw_spi_device_pinmux_sleep_retention
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "57258150875862297798978522387809854329287098148890587341816790301729348207991"
       ]
-      variant: egret
     }
     {
       test: chip_sw_spi_host_tx_rx
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "13491531650401601819196939895407217414333673597858091669656877041704054496"
       ]
-      variant: egret
     }
     {
       test: chip_sw_sram_ctrl_scrambled_access_jitter_en
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "77056941295512155100440762812175141352675866158006499999964636159685925652173"
       ]
-      variant: egret
     }
     {
       test: chip_sw_sysrst_ctrl_reset
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "113816025042244858939350860361448034139202248429654558768197794138803945214671"
       ]
-      variant: egret
     }
     {
       test: chip_sw_uart_tx_rx_alt_clk_freq_low_speed
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "57518956709494697279778667580507772569432239872003293382262026995077498622603"
         "26388455864233407204399581748382040987954513739165849795742595291518882742208"
       ]
-      variant: egret
     }
     {
       test: chip_sw_uart_tx_rx_bootstrap
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "27812755584069406791911597719724525070374891743286994559581243766466067061221"
       ]
-      variant: egret
     }
     {
       test: chip_sw_uart_tx_rx_idx2
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "94690969020295565121313696342299966646786261202716657337258390495460136264565"
       ]
-      variant: egret
     }
     {
       test: chip_sw_usbdev_aon_pullup
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "48085502669443092488928267193402851253710635071172064043310497441026294646401"
       ]
-      variant: egret
     }
     {
       test: chip_sw_usbdev_pincfg
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "12048996467984287515535266704940591078463108596758525313119782452858104816124"
       ]
-      variant: egret
     }
     {
       test: chip_tap_straps_dev
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "99031951915828099573398290607777322540363463394069241623661773972826387231545"
       ]
-      variant: egret
     }
     {
       test: chip_tap_straps_testunlock0
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "97095836519183948730188578904447140906548627130370421658540974330980186657109"
       ]
-      variant: egret
     }
     {
       test: rom_e2e_asm_init_prod_end
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "63365706859841006340792972017880585099311883352378987328155502936752366685056"
       ]
-      variant: egret
     }
     {
       test: rom_e2e_shutdown_exception_c
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "63155599977470503804286907355891133241642922336115507883886700255155058913255"
       ]
-      variant: egret
     }
     {
       test: rom_e2e_shutdown_output
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "51771999563732190898827535852865350142523730051993788285841718075478593469417"
       ]
-      variant: egret
     }
     {
       test: xbar_access_same_device
-      name: chip
+      name: chip_egret
       reseed: 9
       seeds:
       [
@@ -4556,11 +4438,10 @@
         "104205561927754491408197781643521294197924087779690086994362957039458091033814"
         "64450193181670861421067180138557171091646969135801945852026893230793157113764"
       ]
-      variant: egret
     }
     {
       test: xbar_access_same_device_slow_rsp
-      name: chip
+      name: chip_egret
       reseed: 13
       seeds:
       [
@@ -4576,52 +4457,47 @@
         "73769276840154173335509515319689271254826423092034985657306189316963002744714"
         "16370731132008493427455223886611484796688342784889046023251303693176259270683"
       ]
-      variant: egret
     }
     {
       test: xbar_error_and_unmapped_addr
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "106823040319372501823767537719481144164466963440584542077927603948452184375563"
       ]
-      variant: egret
     }
     {
       test: xbar_random_large_delays
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "74996714156917152713463603673518476234843206868107729572669023333262985564024"
       ]
-      variant: egret
     }
     {
       test: xbar_random_slow_rsp
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "45926339710645306857038674387151048753698613805679564048556012601272514556519"
       ]
-      variant: egret
     }
     {
       test: xbar_same_source
-      name: chip
+      name: chip_egret
       reseed: 4
       seeds:
       [
         "63803689875377288280440493345103559930987390072143558277514916766588377230969"
         "84799391469350928484877932041312085284618553925020536793576506900957867740374"
       ]
-      variant: egret
     }
     {
       test: xbar_stress_all
-      name: chip
+      name: chip_egret
       reseed: 15
       seeds:
       [
@@ -4639,11 +4515,10 @@
         "33038786912208321163687678207913129375132822435442949119517282833845235287606"
         "98442677884558437019779945619922524803798201028451449655366536982998913051922"
       ]
-      variant: egret
     }
     {
       test: xbar_stress_all_with_error
-      name: chip
+      name: chip_egret
       reseed: 6
       seeds:
       [
@@ -4651,11 +4526,10 @@
         "19634069170439444031185339332052234029729119712128073917059507228286639401284"
         "39528454010922750161235982221867264363486836607701640162782977303646468417213"
       ]
-      variant: egret
     }
     {
       test: xbar_stress_all_with_rand_reset
-      name: chip
+      name: chip_egret
       reseed: 20
       seeds:
       [
@@ -4678,11 +4552,10 @@
         "39585994274129241663482184797961139288437738057518608262935493927239349585016"
         "78678871703325480384559040270895287549727662362134913153964839152847881572531"
       ]
-      variant: egret
     }
     {
       test: xbar_stress_all_with_reset_error
-      name: chip
+      name: chip_egret
       reseed: 8
       seeds:
       [
@@ -4692,17 +4565,15 @@
         "54676880896909057216701851775686985356350783201025100616352472940459313829952"
         "51960885306098773483583420628931464313439224929514824216293813751016829259536"
       ]
-      variant: egret
     }
     {
       test: xbar_unmapped_addr
-      name: chip
+      name: chip_egret
       reseed: 3
       seeds:
       [
         "107198455250513695580694612262762006779249746647625599304048058606264134137075"
       ]
-      variant: egret
     }
     {
       test: clkmgr_alert_test
@@ -8392,17 +8263,17 @@
     }
     {
       test: lc_ctrl_alert_test
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "74611834500921653568542070796843322436815218706862376437117885802148566906527"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_claim_transition_if
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 6
       seeds:
       [
@@ -8410,102 +8281,102 @@
         "31190482902861079713094070334499146601315991621448245844647582573005495550151"
         "34109201544367449584726797344990955467639917020607226712079849644331647180516"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_errors
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "112530141969574147743117273515662486203236843223504170086384159025216461089561"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_access
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "91205520529854802080169278308611005754091608280450582118179160163656362240190"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_csr_mem_rw_with_rand_reset
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "112158725497796930710062484622309628369836135919788653064141040757225962250596"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_errors
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "12109468336554810002748635035255206657448125250256815562089765598474559621011"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_same_csr_outstanding
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "25828899106519729033780986752158205394983652610014217925776895884843351610509"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_state_failure
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "67318891034383417496754655242840579099713475284002996494998144691420949675362"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_sec_cm
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "59294419235180513717948822043490348716666352056234844894153372061094152447995"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_sec_mubi
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "85558189789981223135110513156688849090453760335095065698258159141232745154849"
         "67830689854931844947586036643056377957709689979634671717781113693422140362752"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_sec_token_mux
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "25310445294028348168140817183346998597990295766846538179962474747917918854066"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_security_escalation
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 5
       seeds:
       [
@@ -8513,31 +8384,31 @@
         "42709828160851970153908510565289304528979838316583278293662214170317214827785"
         "30692966405397520242651421685177019698192135457230018865263637252545499362875"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_smoke
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "78315294393348476241894280987329478553385228891569685310916805172717706436479"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_state_failure
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "41013021441836820384884762369265681060290581301882811764942516284506486270547"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_stress_all
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 7
       seeds:
       [
@@ -8547,11 +8418,11 @@
         "14884382009730851435345115478757901104446519240709721671467902065688786648726"
         "10642903788351677331767107391576396418663495478291758201334359938674185789300"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_stress_all_with_rand_reset
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 7
       seeds:
       [
@@ -8560,21 +8431,21 @@
         "82558418580837531227839413855134448625787657275844380395878705601519799268582"
         "81530387114561551922954810948563388426802199515767977418567994647310180996192"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_tl_errors
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "37819252051951462334083694602101850790122614482756772691423359777396867287364"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_tl_intg_err
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 17
       seeds:
       [
@@ -8589,31 +8460,31 @@
         "98661161720201337183553434618573946606751103660081412243725617718508186750467"
         "64599699501911720072743064499090021851891087110976655285958278723879884605743"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_volatile_unlock_smoke
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "43543871545440232065885934256905360955688691490771332216347204207349940387381"
       ]
-      variant: disabled
+      variant: dmi_volatile_unlock_disabled
     }
     {
       test: lc_ctrl_alert_test
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "64962082310885164109967247499894173767175832699309733211821753283643185933124"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_claim_transition_if
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 7
       seeds:
       [
@@ -8622,112 +8493,112 @@
         "63036381964299082059990279877989868640251907650615480660638644879249884549947"
         "61860516365282284589257237350124391453333891144685735012609594229555385480456"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_csr_mem_rw_with_rand_reset
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "82503114959189315817408966224895758488902848767155009697752489677962916983031"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_errors
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "114012787019722080574217540219513756876872024196477570994567275486799275742955"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_jtag_access
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "67488128749029548344548797310760000732898827318808410997740953203529350928647"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_jtag_csr_mem_rw_with_rand_reset
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "70380416886657344806058183311330038387407740208378230308373079849688389589218"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_jtag_state_failure
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "13610852742448388020276442221053547440253704562234449711928777523083581530066"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_regwen_during_op
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "115158481370737936273386372784817237004100101731788005359209869698366080885551"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_same_csr_outstanding
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "52375405087264681713068179716354489731958571743263767482643982159055343715313"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_sec_cm
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "81015608161398662186521312705766010168769114161539476801567256595871735208850"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_sec_mubi
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "60562916157869987422693011747179983066742065340178288606520665546362897306200"
         "23847604291656736704013482008512271362935989297869522040231492849112139278669"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_sec_token_mux
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "92206508441295512179492232427576843314202349072434847303604248621940630997041"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_security_escalation
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 5
       seeds:
       [
@@ -8735,11 +8606,11 @@
         "46730784389593745603862820198744309138340228706666155274595626840041674254953"
         "55505326128505935251180035976246103229402239611966129894980517751699431213647"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_stress_all
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 8
       seeds:
       [
@@ -8749,11 +8620,11 @@
         "27824345170025670241053602095747096198682328740570063293021175068662799585128"
         "38525072642340928753184533121924997511842653499038586305190709249014261324469"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_stress_all_with_rand_reset
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 6
       seeds:
       [
@@ -8761,21 +8632,21 @@
         "55366713963478957155103545962401663573645784159616933931164948943809070784407"
         "110564382172077385693840361582043286320892733460145044043499320610381402543932"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_tl_errors
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "113623498777791387681412027817931925890272779593361713509932017761969812746647"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_tl_intg_err
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 16
       seeds:
       [
@@ -8790,31 +8661,31 @@
         "100005178927076251701351983838479548571743753177996874994131870859593108517261"
         "31150106595581312524000446008055594966343531331062061495752206613036170443472"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_volatile_unlock_smoke
-      name: lc_ctrl_dmi_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "99658617491364306840805951516744926955616160256396136785479033580323777877194"
       ]
-      variant: enabled
+      variant: dmi_volatile_unlock_enabled
     }
     {
       test: lc_ctrl_alert_test
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "65942443110863088145374328462963058968657077980631725328938234539452649579340"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_claim_transition_if
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 10
       seeds:
       [
@@ -8825,134 +8696,134 @@
         "15733359967639156804698839497969079400846925287627238847293312903911205082297"
         "88044970603404978580238483908272557659121540579518708880814592709068688453807"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_errors
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "21048065179607522719243737097686905614026779978506689634225862309604395123259"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_access
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "27411534987360036057018151084638300027529761205634987517805491120694207259020"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_csr_mem_rw_with_rand_reset
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "106158518762557664876057285470767034754881622051959456540672033472470669421747"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_same_csr_outstanding
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "77698640322402556635272581126981329449730559363315772859973266137427199686030"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_jtag_state_failure
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "13597896270874095042277031022361716217396167147123492859926387007853896232683"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_regwen_during_op
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "77473285737613462791284457659880467548828916484525808218990129374602915188207"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_sec_cm
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "97843017911999101540497993824000877973494253209177651418826988114959923690766"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_sec_mubi
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "94322878330679196413365024339815834241892741732756511606284180859251325083195"
         "83019221757487342881945385101001332001594566413196098822869816857373452953871"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_sec_token_mux
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "35286427202898727909542875761390921477544780658409636647691995811477076062094"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_security_escalation
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "42087446221360544708150462570718279080556861026025760739008907579567962479724"
         "106412011805207096539346414502494696020794876945516659264043974435633551629036"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_smoke
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "86013405916536435271687793462552773529660612910264402543374458080131799256050"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_state_failure
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "73152159592363970643044035700977439059022248382554581117683488059573979799224"
         "103228900943105992542851101644289388172678901112487412966146102282128123715975"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_stress_all
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 6
       seeds:
       [
@@ -8961,32 +8832,32 @@
         "77437098183951385817553756587118387959911541115282410391917493208877729554387"
         "72896575771951052076874366516456657524488092556784735326051702079814514529258"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_stress_all_with_rand_reset
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 5
       seeds:
       [
         "34001719915443213487281332768817560261456073071704195204752926969051610967057"
         "46036183574235480671823068056781946001907122378566518327214934281007844053945"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_tl_errors
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "57674382871277078745431408105691438992318272326859892410931057372473815881630"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_tl_intg_err
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 19
       seeds:
       [
@@ -9003,31 +8874,31 @@
         "13087285930953690246701752600266122273576199967329645379736561049812249281106"
         "6975743409962171648557032387330295279796041246035667140272360947054640316544"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_volatile_unlock_smoke
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "82588094445315750830123094327839327321608802277328025523166519493824872439120"
       ]
-      variant: disabled
+      variant: volatile_unlock_disabled
     }
     {
       test: lc_ctrl_alert_test
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "106950892193213800448878179568163511461286159533228621771931751949624426630348"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_claim_transition_if
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 7
       seeds:
       [
@@ -9036,135 +8907,135 @@
         "31613935670469679136846605889517607650701189239978968795974859025662820252284"
         "24120305229610570959682688550619281499732469430818277870966682808818853020336"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_csr_rw
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "19377919626570489800538145578623160902502203881545255142495595743676005867810"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_errors
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "6977711073675538544130109731052495130492060396539220071269554017066016419743"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_jtag_access
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "65571281340805691181102872145032246236966090250189751935460556207101487277665"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_jtag_csr_mem_rw_with_rand_reset
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "14268208021340744590678255836397818886698578166950386822518924695939061413851"
         "111381047912780844249943650810699761041137269047678316458606251505934437008161"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_jtag_errors
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "41665474308541614258818156021859072837767941846515950326459018716864185004900"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_jtag_state_failure
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "86176904705412880714594753131974736009113835130370989343045034405472349319953"
         "68795236900684709715997521230703196459401169862152043861871192983019066983099"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_prog_failure
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "24042686998550852906645096346055164968255251129923808532270670545363693052599"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_sec_cm
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "67938024826632236869215220101636764194974524434108471165496590082249146579323"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_sec_mubi
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "102349215062804693775361585001456482789953794283983551597998282451494367958267"
         "23941554910267410842622207997197531959530579447971896449105587831887692039742"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_sec_token_mux
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "26380202867799107008128420506522836902843050796867384132196893552372450501447"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_security_escalation
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "101901503500703015115760950253679226783104331128382781041233320227852279662802"
         "6421143196378075735156734717347289202509894529901708985237278178206081144528"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_smoke
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "24374583947187862294450760941333182281495979380723801599631150673923439899358"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_stress_all
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 6
       seeds:
       [
@@ -9173,11 +9044,11 @@
         "65483765594156202263258998324709000012564486562308084319244564924404485191093"
         "68622377587816036732811027878851224084626421976040157783658556815292141635366"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_stress_all_with_rand_reset
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 8
       seeds:
       [
@@ -9187,22 +9058,22 @@
         "44115818503287441155200831745811948692921930756784630292063272955856421801360"
         "114467709452961814469535978218573535820761805043495888028551791476810790308991"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_tl_errors
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 4
       seeds:
       [
         "10024013088746186372334380315277753132088523106347154466762618032301097984142"
         "30861671433272905265031913979948910538057095741153536451741868104106066103283"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_tl_intg_err
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 18
       seeds:
       [
@@ -9218,17 +9089,17 @@
         "87122807869136861585165135374871046922159710194250429329063841976589642007936"
         "12633818318936056652667981313494311226886745010391477250276095242938251573483"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: lc_ctrl_volatile_unlock_smoke
-      name: lc_ctrl_volatile_unlock
+      name: lc_ctrl
       reseed: 3
       seeds:
       [
         "57004787465156010222170335968929035588078523978771333878379063300020207633369"
       ]
-      variant: enabled
+      variant: volatile_unlock_enabled
     }
     {
       test: mbx_alert_test
@@ -10194,49 +10065,45 @@
     }
     {
       test: prim_async_alert
-      name: prim
+      name: prim_alert
       reseed: 4
       seeds:
       [
         "51152011727558148426633204821342355172837721849683221359534404407978814887329"
         "33767185618789375615651228761487121905193056175019243247121858496238009817945"
       ]
-      variant: alert
     }
     {
       test: prim_async_fatal_alert
-      name: prim
+      name: prim_alert
       reseed: 3
       seeds:
       [
         "25663065915239662281957532431978485749899061870439830809447095042092269351214"
       ]
-      variant: alert
     }
     {
       test: prim_async_fatal_alert_with_3_cycles_skew
-      name: prim
+      name: prim_alert
       reseed: 3
       seeds:
       [
         "60688739201370491703240089972952677726384759486233390341865997557256022717916"
       ]
-      variant: alert
     }
     {
       test: prim_sync_alert
-      name: prim
+      name: prim_alert
       reseed: 4
       seeds:
       [
         "5944965345704715778685080756213163581471135469164364217504805188064277363983"
         "97938254511763036146694646470798950795670548482554772377439071139724865999501"
       ]
-      variant: alert
     }
     {
       test: prim_esc_test
-      name: prim
+      name: prim_esc
       reseed: 7
       seeds:
       [
@@ -10245,57 +10112,51 @@
         "55720677369749434043628595028433312329973339994987657899237247654196612099748"
         "102815333493812936265233295242448052413529754643770258548006478978417689805521"
       ]
-      variant: esc
     }
     {
       test: prim_lfsr_fib_test
-      name: prim
+      name: prim_lfsr
       reseed: 3
       seeds:
       [
         "22420542204429941765292677478658063855698768940503767221217660342782222545394"
       ]
-      variant: lfsr
     }
     {
       test: prim_lfsr_gal_smoke
-      name: prim
+      name: prim_lfsr
       reseed: 3
       seeds:
       [
         "61837230844455037346553198958859334872331510610123046999794645388630528347383"
       ]
-      variant: lfsr
     }
     {
       test: prim_lfsr_gal_test
-      name: prim
+      name: prim_lfsr
       reseed: 3
       seeds:
       [
         "11871954707269735937440617662767345452614809960579220893908268722399128951785"
       ]
-      variant: lfsr
     }
     {
       test: prim_present_test
-      name: prim
+      name: prim_present
       reseed: 3
       seeds:
       [
         "75567106566979145201763209066206024130878697065210617882044446822932528665712"
       ]
-      variant: present
     }
     {
       test: prim_prince_test
-      name: prim
+      name: prim_prince
       reseed: 3
       seeds:
       [
         "99056750291854031912082599991022228091440146271893718621894952017927145446139"
       ]
-      variant: prince
     }
     {
       test: pwm_alert_test
@@ -10718,7 +10579,7 @@
       [
         "112042402189419484276613787501462403995894869059612961229437557345728293164917"
       ]
-      variant: 32kB
+      variant: 32kb
     }
     {
       test: rom_ctrl_corrupt_sig_fatal_chk
@@ -10729,7 +10590,7 @@
         "54405365062946481638386725810190424885127114923084991881521110807236668665649"
         "9083103568355879066391432080150509598167477455309488642830278979958821031058"
       ]
-      variant: 32kB
+      variant: 32kb
     }
     {
       test: rom_ctrl_csr_rw
@@ -10739,7 +10600,7 @@
       [
         "78510524103827813538986220448827239231473939089728613965409444420619744527458"
       ]
-      variant: 32kB
+      variant: 32kb
     }
     {
       test: rom_ctrl_passthru_mem_tl_intg_err
@@ -10749,7 +10610,7 @@
       [
         "33735709672603360396652554480228631477248682066289897855698296713196294659543"
       ]
-      variant: 32kB
+      variant: 32kb
     }
     {
       test: rom_ctrl_sec_cm
@@ -10759,7 +10620,7 @@
       [
         "78324744338706051506676818852676723368716662139815514075905862875231959079910"
       ]
-      variant: 32kB
+      variant: 32kb
     }
     {
       test: rom_ctrl_stress_all
@@ -10771,7 +10632,7 @@
         "98987302996148990462801986324540185488114073189953975609925736031168864751825"
         "22617560256293067220093499127234511034939853442796115642248743264381431310426"
       ]
-      variant: 32kB
+      variant: 32kb
     }
     {
       test: rom_ctrl_stress_all_with_rand_reset
@@ -10782,7 +10643,7 @@
         "14467925811868208255587985285335701261222982376562634176199712246879864000506"
         "33452831708719119784267524291893841862703476776680295183802571349176560716752"
       ]
-      variant: 32kB
+      variant: 32kb
     }
     {
       test: rom_ctrl_tl_intg_err
@@ -10794,7 +10655,7 @@
         "43333152894854994746173699813356520195619106231613230284593381655863325183671"
         "94312787527809591759233636323586257591519785682228303087649169896391824764772"
       ]
-      variant: 32kB
+      variant: 32kb
     }
     {
       test: rom_ctrl_alert_test
@@ -10804,7 +10665,7 @@
       [
         "48210350171842674421183224481807481078286638513005552003333090044033755153980"
       ]
-      variant: 64kB
+      variant: 64kb
     }
     {
       test: rom_ctrl_corrupt_sig_fatal_chk
@@ -10814,7 +10675,7 @@
       [
         "55888044921868840121682258446066027455979396056770830950745590567690596412569"
       ]
-      variant: 64kB
+      variant: 64kb
     }
     {
       test: rom_ctrl_passthru_mem_tl_intg_err
@@ -10826,7 +10687,7 @@
         "65793569096244604618910407766612386294005683598082666195035331073102143858228"
         "115784282395536252854429889250178432560924788154081794583799013601716125287236"
       ]
-      variant: 64kB
+      variant: 64kb
     }
     {
       test: rom_ctrl_sec_cm
@@ -10836,7 +10697,7 @@
       [
         "126742674133649072010645427068393442675973354965394092063302738199166007238"
       ]
-      variant: 64kB
+      variant: 64kb
     }
     {
       test: rom_ctrl_stress_all
@@ -10847,7 +10708,7 @@
         "51350621932687911005024871558463571020895601192131676298907101613015297499298"
         "22137485630927163694160038561547575643288125699606765783676692996051211033536"
       ]
-      variant: 64kB
+      variant: 64kb
     }
     {
       test: rom_ctrl_stress_all_with_rand_reset
@@ -10859,7 +10720,7 @@
         "102150511815436875480972849988822931280084030896829988409427895240876371943551"
         "51234434718995643381654000068567981180465305114923226122104964137907003769424"
       ]
-      variant: 64kB
+      variant: 64kb
     }
     {
       test: rom_ctrl_tl_intg_err
@@ -10872,7 +10733,7 @@
         "106076753804120504583582090399039529708790352329593481346672003969644089195121"
         "60032477003489334196866396032953954858648932062407995843981693483502862589744"
       ]
-      variant: 64kB
+      variant: 64kb
     }
     {
       test: rstmgr_cnsty_chk_test
@@ -11168,109 +11029,109 @@
     }
     {
       test: rv_dm_abstractcmd_status
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "30998013039625023352673851814509756952241238266447766132192300263404109337010"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_alert_test
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "34734206710471844551800104331922375970363586401204078615984585793646744822888"
         "47595941021262840825284739514137619957992337354120010114138492360924622049485"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_buffered_enable
-      name: rv_dm_use
+      name: rv_dm
       reseed: 5
       seeds:
       [
         "99265610336366337440118881547169490466905965193166404014628278698149623529568"
         "55934494664492463019780141352292216779824331140344359072728218021703277648428"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_cmderr_busy
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "49198896046564400274697278559965130084130007637144817057020903318567239540321"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_cmderr_exception
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "55953181925711371375775457279603482370859530176399135001121980421666672212780"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_cmderr_halt_resume
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "73607945000790958020946438904189353271543179534794336635510188586981840846187"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_csr_hw_reset
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "77900972251083335141988085145865041481920227650971181012593668717238988631603"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_csr_rw
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "31580603671066817554311322584922393521318880099491484136968818218474812224541"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_dataaddr_rw_access
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "69447088832323942025540456280487670860834395910126142616616693193366115382218"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_debug_disabled
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "106782977054250776179080928100545209165076913087573854036971356796438376392519"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_halt_resume_whereto
-      name: rv_dm_use
+      name: rv_dm
       reseed: 7
       seeds:
       [
@@ -11279,175 +11140,175 @@
         "66726605751623915289851679119525529806237765032971554518876094877966480549362"
         "110365488716690827915938347655720926402147984446387166087194677637543183729880"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_hartsel_warl
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "84321928373934008985766662982726390641900041471450480361949424613036832302100"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_jtag_dmi_csr_bit_bash
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "43040714873064208343373550733305916268414329032752057032464733946563824693989"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_jtag_dmi_csr_hw_reset
-      name: rv_dm_use
+      name: rv_dm
       reseed: 5
       seeds:
       [
         "107829191726847065934290403152341247713403011656488431648277069904290910561573"
         "32616159108282582526805056466560073303804804239217370820066959268488306317291"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_jtag_dmi_csr_rw
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "102303394799689783835674898722189099618139654029200217832695590193267319900523"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_jtag_dtm_csr_hw_reset
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "9423004096228972003905361281051610969265549634776331674286294503758918390013"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_jtag_dtm_hard_reset
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "42403746659051070864723640599859694530819295914337298991393083390521724047426"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_mem_partial_access
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "53022095128630537645057022631559463913705981995201382914357364987436717002463"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_mem_tl_access_halted
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "45008194506599930145882700742251089017563948022244277263730203628073197375014"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_ndmreset_req
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "49007249800347381399691574236527599611680720819362801149336337002340597481787"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_progbuf_read_write_execute
-      name: rv_dm_use
+      name: rv_dm
       reseed: 5
       seeds:
       [
         "79805003716367695213090729516193234440696390412782520110449425288458814306088"
         "24690164119363028051984227383295708390456138419086068426193137540239161595474"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_rom_read_access
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "111304121563732242105554005011287899366827871653436374934390379691762773978700"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_same_csr_outstanding
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "77398324018834041045992005343871344424821939815293072454925309242219686457280"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_sba_debug_disabled
-      name: rv_dm_use
+      name: rv_dm
       reseed: 5
       seeds:
       [
         "85493048652826004370422972268784005533220902889091325741315322732282902212102"
         "54661313106675309172875250425617800016656992493564250997898630163113215060913"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_sec_cm
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "55925526498505464850016914443447013047667352777449855297076437057854319665208"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_smoke
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "17542368193097750385789039876813016202430123497741353169560607349874122747374"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_sparse_lc_gate_fsm
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "91107358467298020374227036642709835406633087570703612951567249682667356035954"
         "63199408172546707394602055192780231353165425806526296149400092670305670325111"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_stress_all
-      name: rv_dm_use
+      name: rv_dm
       reseed: 7
       seeds:
       [
@@ -11455,21 +11316,21 @@
         "12405033407301129127191265811278394191848503867077417799221435323556109282034"
         "33488657860043603879338115127565069973788093502102731097918030833949712327686"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_tap_fsm
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "103397613913620933762756131040546303384824297549893119017176305973205092843657"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_tap_fsm_rand_reset
-      name: rv_dm_use
+      name: rv_dm
       reseed: 8
       seeds:
       [
@@ -11478,22 +11339,22 @@
         "61697356857096533606776937435660511243805649329226526734488776624596826187964"
         "95586000235086966733982941963055448281856998466153204155540757050086088020526"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_tl_errors
-      name: rv_dm_use
+      name: rv_dm
       reseed: 4
       seeds:
       [
         "113214668618024244795932984159368937375081945338985951787627054324040287320267"
         "17089541996162943973975524040294386870249894058641814985630583880168697828992"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_tl_intg_err
-      name: rv_dm_use
+      name: rv_dm
       reseed: 11
       seeds:
       [
@@ -11505,21 +11366,21 @@
         "105567763596935846082719006964732096496198886802323957354930700080364347422184"
         "76696703791553244491236486039248413202839745760833713892774894956950671199238"
       ]
-      variant: dmi_interface
+      variant: use_dmi_interface
     }
     {
       test: rv_dm_alert_test
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "98705959760356266701363548982086575934584609594365501728928185645155258317851"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_buffered_enable
-      name: rv_dm_use
+      name: rv_dm
       reseed: 5
       seeds:
       [
@@ -11527,61 +11388,61 @@
         "14564166404928697246599550967451464095953176944257778534882981595201312239170"
         "36857988283815693281526664417236712391851204259439125070825065265991180581855"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_cmderr_exception
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "72407424506903263341251886827378167444773498473597323316705858880654126327248"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_cmderr_halt_resume
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "89399981547366287619315213534182603631103340342394513971210116208233709202070"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_csr_rw
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "75052302850302473563353165635945199113466151727912269892051112049122364172984"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_dmi_failed_op
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "34670242108243096710251181736810194601704409972631866565545414699843257379004"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_jtag_dmi_csr_bit_bash
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "37039369330317719617379090735269325917738889323653774516802412542200596280975"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_jtag_dmi_csr_hw_reset
-      name: rv_dm_use
+      name: rv_dm
       reseed: 7
       seeds:
       [
@@ -11589,84 +11450,84 @@
         "88583636206866585529932248304419948843089453593986785442942845940332527349725"
         "85127555258410195213131391190156633146034328448358420281919819453393703950774"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_jtag_dtm_csr_bit_bash
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "86562787375292551069268135244760846256265531816843736616234622155246284412998"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_ndmreset_req
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "80683591287606683213856713447984022838912308438608799007995591303530904287978"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_rom_read_access
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "35411602718082252132284232885258246122924165541145076751870026828950954322738"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_same_csr_outstanding
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "30460081644430918780271198836371435612906219994085438776733072176326369991309"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_sba_debug_disabled
-      name: rv_dm_use
+      name: rv_dm
       reseed: 5
       seeds:
       [
         "35823787699692167426433198138756262860834839427339211659316960868337162475639"
         "48323804217376250023296501800269409906003733747309970826687276876995601571175"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_sec_cm
-      name: rv_dm_use
+      name: rv_dm
       reseed: 5
       seeds:
       [
         "96400971414855209035779310778466222743889876185923923380391143385831596181020"
         "101921517182386083500993252216754245976141755837491420452961210875584421102632"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_sparse_lc_gate_fsm
-      name: rv_dm_use
+      name: rv_dm
       reseed: 5
       seeds:
       [
         "57654356605760456918028584536587435023433575707788941038658008189800582721429"
         "7822047233774726147080908488707149829140390011170613906415307577542951017718"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_stress_all
-      name: rv_dm_use
+      name: rv_dm
       reseed: 14
       seeds:
       [
@@ -11682,11 +11543,11 @@
         "72160340154215016891713092564309426638226509935605234203214579118025224490729"
         "108399052840438533076157187834207958685335800900646134003389668625881364375593"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_stress_all_with_rand_reset
-      name: rv_dm_use
+      name: rv_dm
       reseed: 9
       seeds:
       [
@@ -11696,21 +11557,21 @@
         "33741741948709375769635824656999359281915225428195075228539004187230452517450"
         "107214896123846840662120989939272107353966096029941681515439394403988247604737"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_tap_fsm
-      name: rv_dm_use
+      name: rv_dm
       reseed: 3
       seeds:
       [
         "105779645595342976629939126402698532544427069715225198584414072684968094927104"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_tap_fsm_rand_reset
-      name: rv_dm_use
+      name: rv_dm
       reseed: 8
       seeds:
       [
@@ -11719,11 +11580,11 @@
         "15180201291320048003457848936522343897563562470007898283191142799747886676466"
         "55287775915195575267867131496361541034033637716935476424297672466707444278646"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_dm_tl_intg_err
-      name: rv_dm_use
+      name: rv_dm
       reseed: 11
       seeds:
       [
@@ -11734,71 +11595,65 @@
         "1015173832610521996699472547874637618527705401842472932667569437875381534533"
         "72621850068451742844036544371850501778638012561274622929848005643861222794101"
       ]
-      variant: jtag_interface
+      variant: use_jtag_interface
     }
     {
       test: rv_timer_alert_test
-      name: rv
+      name: rv_timer
       reseed: 3
       seeds:
       [
         "79148703967220878743128862674938331461960224393396715039133317289220269980093"
       ]
-      variant: timer
     }
     {
       test: rv_timer_cfg_update_on_fly
-      name: rv
+      name: rv_timer
       reseed: 3
       seeds:
       [
         "93782267671509344267759154492011097019915605245276426643035547487703917697100"
       ]
-      variant: timer
     }
     {
       test: rv_timer_max
-      name: rv
+      name: rv_timer
       reseed: 4
       seeds:
       [
         "67545218251222048439859623132801558873069652649922879455080583726162100388414"
       ]
-      variant: timer
     }
     {
       test: rv_timer_min
-      name: rv
+      name: rv_timer
       reseed: 4
       seeds:
       [
         "79167788720737065014953885740169315960572299017565414752116358341236077284770"
       ]
-      variant: timer
     }
     {
       test: rv_timer_same_csr_outstanding
-      name: rv
+      name: rv_timer
       reseed: 3
       seeds:
       [
         "92188415411777346679358727225829882835962817234192647276327111731687089664370"
       ]
-      variant: timer
     }
     {
       test: rv_timer_sec_cm
-      name: rv
+      name: rv_timer
       reseed: 3
       seeds:
       [
         "2733012984313390469546150305703663262969568794752309960038767996058141165388"
       ]
-      variant: timer
     }
     {
       test: rv_timer_stress_all_with_rand_reset
-      name: rv
+      name: rv_timer
       reseed: 5
       seeds:
       [
@@ -11806,17 +11661,15 @@
         "73492354247139624150113938432166610205675115171495683808029463616444208388339"
         "3180365213362946997952158452284190408116093648038279559116259580578419699932"
       ]
-      variant: timer
     }
     {
       test: rv_timer_tl_intg_err
-      name: rv
+      name: rv_timer
       reseed: 3
       seeds:
       [
         "26486309132393602564567342986447369364154014420855800960914302781794677474172"
       ]
-      variant: timer
     }
     {
       test: soc_dbg_ctrl_alert_test
@@ -12312,90 +12165,82 @@
     }
     {
       test: spi_host_alert_test
-      name: spi
+      name: spi_host
       reseed: 3
       seeds:
       [
         "79769183430264514535010731997740128964734420947506178530407079791570168919805"
       ]
-      variant: host
     }
     {
       test: spi_host_csr_mem_rw_with_rand_reset
-      name: spi
+      name: spi_host
       reseed: 4
       seeds:
       [
         "112605537427983435989083726230775054862165270464401583710402770492879144868162"
         "53850817577532877090246437513383878891227103222620800551244031918451850959265"
       ]
-      variant: host
     }
     {
       test: spi_host_error_cmd
-      name: spi
+      name: spi_host
       reseed: 3
       seeds:
       [
         "12783065307789419969544053227214449127620196245843118724842759421203431441104"
       ]
-      variant: host
     }
     {
       test: spi_host_intr_test
-      name: spi
+      name: spi_host
       reseed: 4
       seeds:
       [
         "18322321021201747670154380716413214882855367722143050737710207821029338979230"
         "4658242608066432367270557291352742978860557187342737372229454752118231529951"
       ]
-      variant: host
     }
     {
       test: spi_host_overflow_underflow
-      name: spi
+      name: spi_host
       reseed: 3
       seeds:
       [
         "63505729231773396134522138200494204918343630313148647952477050197436032314679"
       ]
-      variant: host
     }
     {
       test: spi_host_passthrough_mode
-      name: spi
+      name: spi_host
       reseed: 4
       seeds:
       [
         "110659643894203536092000098010411685761223665488085985505773737868593934385251"
       ]
-      variant: host
     }
     {
       test: spi_host_performance
-      name: spi
+      name: spi_host
       reseed: 4
       seeds:
       [
         "85291552180193119620998751255549536625986285678334471949334737908456929730815"
         "16001201724149442426180317358240950550419787999934189624530120224981084444604"
       ]
-      variant: host
     }
     {
       test: spi_host_sec_cm
-      name: spi
+      name: spi_host
       reseed: 3
       seeds:
       [
         "12734949646293073431898137496360321072866460297449589081721220399185938875245"
       ]
-      variant: host
     }
     {
       test: spi_host_smoke
-      name: spi
+      name: spi_host
       reseed: 8
       seeds:
       [
@@ -12405,11 +12250,10 @@
         "57157070454235552822142952193205117729853005335968797498321763586148140128002"
         "19289302927448468511203834893150327593380822158626480643856402299710240588416"
       ]
-      variant: host
     }
     {
       test: spi_host_speed
-      name: spi
+      name: spi_host
       reseed: 8
       seeds:
       [
@@ -12420,22 +12264,20 @@
         "30048568684924671775049506608828368864650808156080720241429759135593864577746"
         "90080043040400635820654293247859489978414762055524334483036038984230999592594"
       ]
-      variant: host
     }
     {
       test: spi_host_spien
-      name: spi
+      name: spi_host
       reseed: 5
       seeds:
       [
         "9178409349452745588235130823050420063652773656710929480542084139622695500446"
         "89284827223807009220491497729068967141397255203237323617155046263505188960234"
       ]
-      variant: host
     }
     {
       test: spi_host_status_stall
-      name: spi
+      name: spi_host
       reseed: 13
       seeds:
       [
@@ -12451,11 +12293,10 @@
         "21786173516697212471421103811542447853874500515603522537693411456483151158805"
         "41241757329064255953737844132084581476124371962472750744118562715288454524930"
       ]
-      variant: host
     }
     {
       test: spi_host_stress_all
-      name: spi
+      name: spi_host
       reseed: 15
       seeds:
       [
@@ -12472,11 +12313,10 @@
         "13898132211313058517047970242370622103998588885575166065368655391607220688910"
         "27033780609802677658157714466651959412888384606116852453236398009849871205224"
       ]
-      variant: host
     }
     {
       test: spi_host_sw_reset
-      name: spi
+      name: spi_host
       reseed: 8
       seeds:
       [
@@ -12487,22 +12327,20 @@
         "70237936309991568385817851293925367449279034730599428616248861804733070076857"
         "106835924295115994287028617730184510846163356309275390799308000561591805908375"
       ]
-      variant: host
     }
     {
       test: spi_host_tl_errors
-      name: spi
+      name: spi_host
       reseed: 4
       seeds:
       [
         "9857226832572876091691492870009199394840575908225133348697748441871728317226"
         "79942322242604465308945642371348268735128632747954019526244428777066084348956"
       ]
-      variant: host
     }
     {
       test: spi_host_tl_intg_err
-      name: spi
+      name: spi_host
       reseed: 6
       seeds:
       [
@@ -12511,11 +12349,10 @@
         "76125042274855841576110973362840882476747260037746315723781306786839481907228"
         "95573001485952454815621998799470569032854684019266566083095213909993806719405"
       ]
-      variant: host
     }
     {
       test: spi_host_upper_range_clkdiv
-      name: spi
+      name: spi_host
       reseed: 7
       seeds:
       [
@@ -12523,7 +12360,6 @@
         "103282011120621639643655521327051872209813561417582168505907591069442295369647"
         "85763696971575478059590272561438700647249372509807734741956898456264901869238"
       ]
-      variant: host
     }
     {
       test: sram_ctrl_access_during_key_req
@@ -12533,7 +12369,7 @@
       [
         "81704418966593980290237081102586621525843169394088001472944293815801128571183"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_alert_test
@@ -12543,7 +12379,7 @@
       [
         "91415003391985661733479132597613619854599420661295626301324574400349861057318"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_lc_escalation
@@ -12553,7 +12389,7 @@
       [
         "111678060448651944784789398152197470886492850968483927171660141711973840995811"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_mem_walk
@@ -12564,7 +12400,7 @@
         "114167932969578675865679974702704425881838784840084679666851038661018315489947"
         "95184523880415527294122381108440519550913078933267280021444328252902518814064"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_mubi_enc_err
@@ -12574,7 +12410,7 @@
       [
         "111688890666906117561992548877590918469526246351643622592284432838914141304423"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_partial_access_b2b
@@ -12584,7 +12420,7 @@
       [
         "24067368398596361969830987649018850956962290767619132514541963972853930342388"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_passthru_mem_tl_intg_err
@@ -12594,7 +12430,7 @@
       [
         "87891875649311188656999007466568994633669489749909945529855268978265802792287"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_ram_cfg
@@ -12604,7 +12440,7 @@
       [
         "14814063019737958887480085838602640152526983375313020027381790282339213530333"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_readback_err
@@ -12614,7 +12450,7 @@
       [
         "78459662596704389592478176630804804183832449802354681331424641673173414387555"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_regwen
@@ -12624,7 +12460,7 @@
       [
         "78740137259566258264646387528820372446381801904580510111830893288558935021867"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_stress_all
@@ -12635,7 +12471,7 @@
         "56193463885212712764203919165440181579105009761503969951171533272953633377646"
         "57312685880936182562350357012460472952530815423340302994359607026901928512696"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_stress_all_with_rand_reset
@@ -12646,7 +12482,7 @@
         "10201307747237921931794982853683574391562082307373479798089810643145086408898"
         "24972296365337780913401017153641958608337804258245268777202687756844765252028"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_tl_intg_err
@@ -12660,7 +12496,7 @@
         "19047287353094825783204561300272103100558796740133847428227298466104750061563"
         "81659149109370671678398764286949075574456723725330335836305899089732339078266"
       ]
-      variant: exec_64kB
+      variant: exec_64kb
     }
     {
       test: sram_ctrl_access_during_key_req

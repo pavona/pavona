@@ -89,6 +89,13 @@ def _make_child_cfg(path, args, initial_values, seed_index=None, default_reseed=
     return cls(path, hjson_data, args, None)
 
 
+def unit_identity(name, variant):
+    '''Case-normalized (name, variant) identity for matching a cfg against a
+    grading report entry. Lowercased because the report is built from the
+    lowercased results JSON, whereas reseed_source reads the cfg's raw fields.'''
+    return name.lower(), variant.lower() if variant else None
+
+
 def reseed_source(graded_reseeds: dict, seed_index: dict, default_reseed: int):
     '''Source resets for each test that has a reseed if the flag --reseed-source was passed.
     '''
@@ -98,12 +105,12 @@ def reseed_source(graded_reseeds: dict, seed_index: dict, default_reseed: int):
     count_reseeds(graded_reseeds)
 
     hit = False
-    variant = graded_reseeds.get("variant")
+    cfg_id = unit_identity(graded_reseeds["name"], graded_reseeds.get("variant"))
     for hjson_test in graded_reseeds.get("tests", []):
         resolved_name = hjson_test["name"].replace("{name}", graded_reseeds["name"])
 
         for candidate in [hjson_test["name"], resolved_name]:
-            key = (candidate, graded_reseeds["name"], variant)
+            key = (candidate, *cfg_id)
             if key in seed_index:
                 hit = True
                 entry = seed_index[key]
@@ -158,7 +165,7 @@ def make_cfg(path, args, proj_root):
         # Collect test seeds in a lookup dictionary
         for seed_test in seed_data.get("tests", []):
             variant = seed_test.get("variant")
-            key = (seed_test["test"], seed_test["name"], variant)
+            key = (seed_test["test"], *unit_identity(seed_test["name"], variant))
             seed_index[key] = seed_test
 
         default_reseed = seed_data.get("reseed", 1)

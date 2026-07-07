@@ -27,6 +27,7 @@ Usage:
 from __future__ import annotations
 import argparse
 import csv
+import json
 import math
 import shutil
 import subprocess
@@ -210,53 +211,21 @@ def compute_targetcount(graded: int, unique: int, A: float, basecount: int) -> i
     return int(math.ceil(multiplier * graded + basecount))
 
 
-def find_variants(test_list: list[dict]) -> list[dict]:
-    """
-    Detects and extracts variants from test_list entries.
+def read_block_identity(sim_dir: Path, unit: str) -> tuple[str, str | None]:
+    '''Return the (name, variant) dvsim recorded for this unit.
 
-    Rules:
-    1. Explicit "_top_" → always split
-    2. Otherwise → split only if prefix (stem) appears multiple times
-    """
-    # Get top_level variants first
-    for entry in test_list:
-        name = entry["name"]
-        if "_top_" in name:
-            base, variant = name.split("_top_", 1)
-            entry["name"] = base
-            entry["variant"] = variant
-
-    # Count repetitions of stems
-    units = {test_dict["name"] for test_dict in test_list}
-    prefix_counts = Counter()
-    for unit in units:
-        parts = unit.split("_")
-        for i in range(1, len(parts)):
-            prefix = "_".join(parts[:i])
-            prefix_counts[prefix] += 1
-
-    # Only consider stems that have been repeated
-    valid_stems = {p for p, count in prefix_counts.items() if count > 1}
-    for entry in test_list:
-        if "variant" in entry:
-            continue
-
-        unit = entry["name"]
-        parts = unit.split("_")
-
-        # Get the longest stem and treat it as the name
-        best_stem = None
-        for i in range(1, len(parts)):
-            prefix = "_".join(parts[:i])
-            if prefix in valid_stems:
-                best_stem = prefix
-
-        if best_stem:
-            variant = unit[len(best_stem) + 1:]
-            entry["name"] = best_stem
-            entry["variant"] = variant
-
-    return test_list
+    Read from block_name/block_variant in <unit>-sim-<tool>/reports/latest/
+    report.json, the cfg's declared identity. Falls back to (unit, None).
+    '''
+    report_json = sim_dir / "reports" / "latest" / "report.json"
+    try:
+        data = json.loads(report_json.read_text())
+    except (OSError, ValueError):
+        log.warning("No results JSON for %s (%s); emitting without variant. "
+                    "Reseed matching may fail for variant cfgs.",
+                    unit, report_json)
+        return unit, None
+    return data.get("block_name") or unit, data.get("block_variant") or None
 
 
 def run_urg_phase(args) -> None:
@@ -311,6 +280,7 @@ def aggregate_units(args) -> tuple[list, list, list, list]:
     hjson_entries = []
 
     for unit, cov_merge in discover_units(args.root):
+        block_name, variant = read_block_identity(cov_merge.parent, unit)
         if args.force:
             grade_dir = cov_merge / "grade_report"
         else:
@@ -345,9 +315,11 @@ def aggregate_units(args) -> tuple[list, list, list, list]:
             g = graded[test]
             u = unique.get(test, 0)
             t = compute_targetcount(g, u, args.A, args.basecount)
-            entry = {"test": test, "name": unit, "reseed": t}
+            entry = {"test": test, "name": block_name, "reseed": t}
             if graded_seeds.get(test):
                 entry["seeds"] = list(dict.fromkeys(graded_seeds[test]))
+            if variant:
+                entry["variant"] = variant
             hjson_entries.append(entry)
             rows.append({
                 "unit": unit, "test": test,
@@ -408,7 +380,6 @@ def write_hjson_output(args, hjson_entries: list) -> None:
     """
     Phase 3b: apply variant detection and write the combined reseed hjson.
     """
-    hjson_entries = find_variants(hjson_entries)
     cfg = {"reseed": 1, "tests": hjson_entries}
     hjson_path = args.output.with_suffix(".hjson")
 
