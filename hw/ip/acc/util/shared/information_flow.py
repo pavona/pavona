@@ -797,12 +797,23 @@ class InsnIndirectWDRNode(InsnInformationFlowNode):
         return self.op.op_type.op_val_to_str(op_vals[self.op.name], None)
 
     def required_constants(self, op_vals: Dict[str, int], coarse_dmem: bool) -> Set[str]:
+        # In coarse mode (instruction-count analysis) the specific WDR touched
+        # by an indirect reference does not affect control flow, so do not
+        # require the index register to be a compile-time constant.
+        if coarse_dmem:
+            return set()
         return {self._get_gpr_name(op_vals)}
 
     def evaluate(self, op_vals: Dict[str, int],
                  constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         gpr = self._get_gpr_name(op_vals)
+        if coarse_dmem and gpr not in constant_regs:
+            # The index is not statically known (e.g. a loop-carried WDR index
+            # in a variable-count loop). Fall back to a single conservative node
+            # standing in for the referenced WDR; the exact WDR is irrelevant to
+            # instruction counting.
+            return [InformationFlowNode('wref-{}'.format(gpr))]
         return [_eval_indirect_wdr(gpr, constant_regs)]
 
 
