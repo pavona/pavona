@@ -92,6 +92,22 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
     bool low_speed);
 
 /**
+ * Enables all clock measurements with thresholds that cause failures.
+ *
+ * Configure the counters to trigger an error by setting them correctly
+ * and then halving each of the thresholds. Triggering errors can also be
+ * done by configuring the clock thresholds for external clock without
+ * configuring the external clock to be active; however, that is not
+ * possible for tops without support for external clocks, like dragonfly.
+
+ * @param clkmgr A clkmgr DIF handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t clkmgr_testutils_enable_clock_counts_with_failing_thresholds(
+    const dif_clkmgr_t *clkmgr);
+
+/**
  * Checks that there are no clock measurement errors.
  *
  * @param clkmgr A clkmgr DIF handle.
