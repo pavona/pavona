@@ -39,29 +39,6 @@ enum {
   kMeasurementsPerRound = 100,
 };
 
-// Configure the counters to trigger an error by setting them correctly
-// and then halving each of the thresholds. Triggering errors can also be
-// done by configuring the clock thresholds for external clock without
-// configuring the external clock to be active; however, that is not
-// possible for tops without support for external clocks, like dragonfly.
-void configure_clock_thresholds_for_failures(const dif_clkmgr_t *clkmgr) {
-  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
-      clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
-      /*low_speed=*/true));
-  dt_clkmgr_t clkmgr_dt;
-  CHECK_DIF_OK(dif_clkmgr_get_dt(clkmgr, &clkmgr_dt));
-
-  for (size_t clk = 0; clk < dt_clkmgr_measurable_clock_count(clkmgr_dt);
-       ++clk) {
-    uint32_t min_threshold;
-    uint32_t max_threshold;
-    CHECK_DIF_OK(dif_clkmgr_measure_counts_get_thresholds(
-        clkmgr, clk, &min_threshold, &max_threshold));
-    CHECK_STATUS_OK(clkmgr_testutils_enable_clock_count(
-        clkmgr, clk, min_threshold / 2, max_threshold / 2));
-  }
-}
-
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
   dif_rstmgr_t rstmgr;
@@ -92,7 +69,8 @@ bool test_main(void) {
           rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoPor))) {
     LOG_INFO("POR reset");
 
-    configure_clock_thresholds_for_failures(&clkmgr);
+    CHECK_STATUS_OK(
+        clkmgr_testutils_enable_clock_counts_with_failing_thresholds(&clkmgr));
     busy_spin_micros(delay_micros);
 
     // Check we get errors, but let the counters keep going.
