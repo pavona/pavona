@@ -2,26 +2,31 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/clkmgr.h"
+#include "hw/top/dt/pwrmgr.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
+#ifdef HAS_SENSOR_CTRL
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
+#endif
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
+#ifdef HAS_SENSOR_CTRL
 #include "sw/device/lib/testing/sensor_ctrl_testutils.h"
+#endif
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
- * This test measure clock counts with clkmgr frequency measurements, performing
+ * This test measures clock counts with clkmgr frequency measurements and
  * 100 measurements per round. Measurement errors (fast or slow clocks) are
  * recorded as recoverable error in clkmgr.
  *
@@ -42,8 +47,10 @@ static const dt_aon_timer_t kAonTimerDt = 0;
 static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
 static const dt_clkmgr_t kClkmgrDt = 0;
 static_assert(kDtClkmgrCount == 1, "this test expects a clkmgr");
+#ifdef HAS_SENSOR_CTRL
 static const dt_sensor_ctrl_t kSensorCtrlDt = 0;
 static_assert(kDtSensorCtrlCount >= 1, "this test expects a sensor_ctrl");
+#endif
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount == 1, "this test expects a rv_plic");
 
@@ -69,7 +76,6 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
 }
 
 bool test_main(void) {
-  dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
 
   uint32_t delay_micros = 0;
@@ -81,7 +87,10 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   CHECK_DIF_OK(dif_clkmgr_init_from_dt(kClkmgrDt, &clkmgr));
+#ifdef SENSOR_CTRL
+  dif_sensor_ctrl_t sensor_ctrl;
   CHECK_DIF_OK(dif_sensor_ctrl_init_from_dt(kSensorCtrlDt, &sensor_ctrl));
+#endif
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
   CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
@@ -91,15 +100,18 @@ bool test_main(void) {
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
       kDtAonTimerWakeupWkupReq, &wakeup_sources));
 
+#ifdef SENSOR_CTRL
   LOG_INFO("TEST: wait for ast init");
   IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
   LOG_INFO("TEST: done ast init");
+#endif
 
   CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true);
 
   CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
       /*low_speed=*/false));
+  LOG_INFO("Waiting for first clock measurements");
   busy_spin_micros(delay_micros);
 
   // check results
@@ -111,6 +123,7 @@ bool test_main(void) {
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
       /*low_speed=*/false));
 
+  LOG_INFO("Waiting for second clock measurements");
   busy_spin_micros(delay_micros);
 
   // Set wakeup timer to 100 us to have enough down time, and also wait before
@@ -129,11 +142,19 @@ bool test_main(void) {
 
   // Put chip in normal sleep, and keep Core clock running. All io and usb
   // clocks are stopped, but we expect the stoppage won't trigger errors.
+  dif_pwrmgr_domain_config_t domain_config =
+      kDifPwrmgrDomainOptionCoreClockInLowPower |
+      kDifPwrmgrDomainOptionMainPowerInLowPower;
+#ifdef OPENTITAN_IS_EGRET
+  domain_config |= kDifPwrmgrDomainOptionUsbClockInActivePower;
+#elif OPENTITAN_IS_DRAGONFLY
+  // dragonfly has no  USB clock
+#else
+#error Unsupported top
+#endif
+
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, /*wakeups=*/wakeup_sources,
-      /*domain_config=*/kDifPwrmgrDomainOptionCoreClockInLowPower |
-          kDifPwrmgrDomainOptionUsbClockInActivePower |
-          kDifPwrmgrDomainOptionMainPowerInLowPower));
+      &pwrmgr, /*wakeups=*/wakeup_sources, domain_config));
 
   LOG_INFO("TEST: Issue WFI to enter sleep");
   wait_for_interrupt();

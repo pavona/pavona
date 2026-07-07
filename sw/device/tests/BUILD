@@ -1090,6 +1090,7 @@ pavona_test(
     name = "clkmgr_sleep_frequency_test",
     srcs = ["clkmgr_sleep_frequency_test.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_CW340_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1101,11 +1102,11 @@ pavona_test(
     # TODO(#13611): Splice ast_init in FPGA/Verilator.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt:clkmgr",
+        "//hw/top/dt:pwrmgr",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
@@ -1113,10 +1114,17 @@ pavona_test(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing:sensor_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:sensor_ctrl",
+                "//sw/device/lib/testing:sensor_ctrl_testutils",
+            ],
+        },
+        [],
+    ),
 )
 
 pavona_test(
@@ -5852,6 +5860,7 @@ pavona_test(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -5868,16 +5877,22 @@ pavona_test(
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:sensor_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:sensor_ctrl",
+                "//sw/device/lib/testing:sensor_ctrl_testutils",
+            ],
+        },
+        [],
+    ),
 )
 
 otp_json(
