@@ -7,15 +7,19 @@ Generates the documentation for the register tool
 
 """
 from reggen.access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
-from reggen import (validate, ip_block, enum_entry, field, register,
+from reggen import (validate, enum_entry, field, register,
                     multi_register, window)
 
 from typing import Any, Optional, TextIO
+from basegen.validate import document_schema
+import jsonschema2md
 
 
 def genout(outfile: TextIO, msg: str) -> None:
     outfile.write(msg)
 
+
+schema_parser = jsonschema2md.Parser(header_level=2)
 
 doc_intro = """
 
@@ -229,14 +233,8 @@ def document(outfile: TextIO) -> None:
     for key, hw_value in HWACCESS_PERMITTED.items():
         doc_tbl_line(outfile, key, None, hw_value[0])
 
-    genout(
-        outfile, "\n\nThe top level of the JSON is a group containing "
-        "the following keys:\n")
-    doc_tbl_head(outfile, True)
-    for k, v in ip_block.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
-    for k, v in ip_block.OPTIONAL_FIELDS.items():
-        doc_tbl_line(outfile, k, 'o', v)
+    genout(outfile, "\n\n")
+    document_schema(outfile, "urn:reggen:ip_block", schema_parser)
     genout(outfile, top_example)
 
     genout(

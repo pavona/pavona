@@ -93,50 +93,57 @@ hwo | Write Only
 none | No Access Needed
 
 
-The top level of the JSON is a group containing the following keys:
+### IP Block
 
-Key | Kind | Type | Description of Value
---- | ---- | ---- | --------------------
-name | required | string | name of the component
-cip_id | required | int | unique comportable IP identifier
-clocking | required | list | clocking for the device
-bus_interfaces | required | list | bus interfaces for the device
-human_name | optional | string | human-readable name of the component
-one_line_desc | optional | string | one-line description of the component
-one_paragraph_desc | optional | string | one-paragraph description of the component
-revisions | optional | list | list with revision records
-design_spec | optional | string | path to the design specification, relative to repo root
-dv_doc | optional | string | path to the DV document, relative to repo root
-hw_checklist | optional | string | path to the hw_checklist, relative to repo root
-sw_checklist | optional | string | path to the sw_checklist, relative to repo root
-design_stage | optional | string | design stage of module
-dif_stage | optional | string | DIF stage of module
-verification_stage | optional | string | verification stage of module
-notes | optional | string | random notes
-version | optional | string | module version
-life_stage | optional | string | life stage of module
-commit_id | optional | string | commit ID of last stage sign-off
-alert_list | optional | name list+ | list of peripheral alerts
-available_inout_list | optional | name list+ | list of available peripheral inouts
-available_input_list | optional | name list+ | list of available peripheral inputs
-available_output_list | optional | name list+ | list of available peripheral outputs
-expose_reg_if | optional | python Bool | if set, expose reg interface in reg2hw signal
-interrupt_list | optional | name list+ | list of peripheral interrupts
-inter_signal_list | optional | list | list of inter-module signals
-no_auto_alert_regs | optional | string | Set to true to suppress automatic generation of alert test registers. Defaults to true if no alert_list is present. Otherwise this defaults to false.
-no_auto_intr_regs | optional | string | Set to true to suppress automatic generation of interrupt registers. Defaults to true if no interrupt_list is present. Otherwise this defaults to false.
-param_list | optional | parameter list | list of parameters of the IP
-registers | optional | list | list of register definition groups and offset control groups
-regwidth | optional | int | width of registers in bits (default 32)
-reset_request_list | optional | list | list of signals requesting reset
-scan | optional | python Bool | Indicates the module have `scanmode_i`
-scan_reset | optional | python Bool | Indicates the module have `scan_rst_ni`
-scan_en | optional | python Bool | Indicates the module has `scan_en_i`
-SPDX-License-Identifier | optional | string | License identifier (if using pure json) Only use this if unable to put this information in a comment at the top of the file.
-wakeup_list | optional | name list+ | list of peripheral wakeups
-countermeasures | optional | name list | list of countermeasures in this block
-features | optional | name list | list of functional features in this block
-memory | optional | list | list of memory definitions
+*Description for standalone IP block*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the component.
+- <a id="properties/human_name"></a>**`human_name`** *(string)*: human-readable name of the component.
+- <a id="properties/one_line_desc"></a>**`one_line_desc`** *(string)*: one-line description of the component.
+- <a id="properties/one_paragraph_desc"></a>**`one_paragraph_desc`** *(string)*: one-paragraph description of the component.
+- <a id="properties/cip_id"></a>**`cip_id`** *(number, required)*: unique comportable IP identifier.
+- <a id="properties/design_spec"></a>**`design_spec`** *(string)*: path to the design specification, relative to repo root.
+- <a id="properties/dv_doc"></a>**`dv_doc`** *(string)*: path to the DV document, relative to repo root.
+- <a id="properties/hw_checklist"></a>**`hw_checklist`** *(string)*: path to the hw_checklist, relative to repo root.
+- <a id="properties/sw_checklist"></a>**`sw_checklist`** *(string)*: path to the sw_checklist, relative to repo root.
+- <a id="properties/revisions"></a>**`revisions`** *(array)*: list with revision records.
+- <a id="properties/version"></a>**`version`** *(string)*: module version.
+- <a id="properties/life_stage"></a>**`life_stage`** *(string)*: life stage of module.
+- <a id="properties/design_stage"></a>**`design_stage`** *(string)*: design stage of module.
+- <a id="properties/verification_stage"></a>**`verification_stage`** *(string)*: verification stage of module.
+- <a id="properties/dif_stage"></a>**`dif_stage`** *(string)*: DIF stage of module.
+- <a id="properties/commit_id"></a>**`commit_id`** *(string)*: commit ID of last stage sign-off.
+- <a id="properties/notes"></a>**`notes`** *(string)*: random notes.
+- <a id="properties/clocking"></a>**`clocking`** *(array, required)*: clocking for the device.
+- <a id="properties/bus_interfaces"></a>**`bus_interfaces`** *(array, required)*: bus interfaces for the device.
+- <a id="properties/scan"></a>**`scan`** *(boolean)*: Indicates the module have `scanmode_i`.
+- <a id="properties/scan_reset"></a>**`scan_reset`** *(boolean)*: Indicates the module have `scan_rst_ni`.
+- <a id="properties/scan_en"></a>**`scan_en`** *(boolean)*: Indicates the module has `scan_en_i`.
+- <a id="properties/available_inout_list"></a>**`available_inout_list`** *(array)*: list of available peripheral inouts.
+- <a id="properties/available_input_list"></a>**`available_input_list`** *(array)*: list of available peripheral inputs.
+- <a id="properties/available_output_list"></a>**`available_output_list`** *(array)*: list of available peripheral outputs.
+- <a id="properties/inter_signal_list"></a>**`inter_signal_list`** *(array)*: list of inter-module signals.
+- <a id="properties/param_list"></a>**`param_list`** *(array)*: list of parameters of the IP.
+- <a id="properties/interrupt_list"></a>**`interrupt_list`** *(array)*: list of peripheral interrupts.
+- <a id="properties/alert_list"></a>**`alert_list`** *(array)*: list of peripheral alerts.
+- <a id="properties/wakeup_list"></a>**`wakeup_list`** *(array)*: list of peripheral wakeups.
+- <a id="properties/reset_request_list"></a>**`reset_request_list`** *(array)*: list of signals requesting reset.
+- <a id="properties/regwidth"></a>**`regwidth`** *(number)*: width of registers in bits (default 32). Default: `32`.
+- <a id="properties/registers"></a>**`registers`** *(['array', 'object'])*: list of register definition groups and offset control groups.
+- <a id="properties/memory"></a>**`memory`** *(object)*: list of memory definitions.
+- <a id="properties/features"></a>**`features`** *(array)*: list of functional features in this block.
+- <a id="properties/countermeasures"></a>**`countermeasures`** *(array)*: list of countermeasures in this block.
+- <a id="properties/no_auto_intr_regs"></a>**`no_auto_intr_regs`** *(boolean)*: Set to true to suppress automatic generation of interrupt registers.
+Defaults to true if no interrupt_list is present.
+Otherwise this defaults to false.
+- <a id="properties/no_auto_alert_regs"></a>**`no_auto_alert_regs`** *(boolean)*: Set to true to suppress automatic generation of alert test registers.
+Defaults to true if no alert_list is present.
+Otherwise this defaults to false.
+- <a id="properties/expose_reg_if"></a>**`expose_reg_if`** *(boolean)*: if set, expose reg interface in reg2hw signal.
+- <a id="properties/SPDX-License-Identifier"></a>**`SPDX-License-Identifier`** *(string)*: License identifier (if using pure json)
+Only use this if unable to put this information in a comment at the top of the file.
 
 The basic structure of a register definition file is thus:
 
