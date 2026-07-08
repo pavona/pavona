@@ -6,7 +6,7 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/rst_safe_stress_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "rv_timer_sec_cm_testplan.hjson"]
   testpoints: [
@@ -20,15 +20,17 @@
             - Check Interrupt state register and Interrupt signal (scoreboard logic)'''
       stage: V1
       tests: ["rv_timer_rst_safe_smoke"]
+      features: ["RV_TIMER.DISABLE", "RV_TIMER.CONFIG", "RV_TIMER.ENABLE", "RV_TIMER.COUNTER",
+                 "RV_TIMER.COMPARE", "RV_TIMER.RISCV_CSRS_INTEGRATION", "RV_TIMER.INTERRUPT"]
     }
     {
       name: random_reset
-      desc: '''Exercise random reset during RV Timer stimulus.
-            - Allow reset during timer configuration or active timer operation
-            - Check that scoreboard, RAL, and block state return to reset values
-            - Restart functional stimulus after reset deassertion'''
+      desc: '''This test is to exercise on the fly reset(timer is active)
+            - Assert reset randomly in the middle of random test steps
+            - Scoreboard check for all register go back to reset value'''
       stage: V2
       tests: ["rv_timer_rst_safe_smoke_with_rand_reset"]
+      features: []
     }
     {
       name: disabled
@@ -39,6 +41,7 @@
             - Scoreboard check for no activity and no interrupt whatever is setting'''
       stage: V2
       tests: ["rv_timer_rst_safe_disabled"]
+      features: ["RV_TIMER.DISABLE"]
     }
     {
       name: cfg_update_on_fly
@@ -49,6 +52,8 @@
             - Check for interrupt as per new config set'''
       stage: V2
       tests: ["rv_timer_rst_safe_cfg_update_on_fly"]
+      features: ["RV_TIMER.DISABLE", "RV_TIMER.CONFIG", "RV_TIMER.RISCV_CSRS_INTEGRATION", "RV_TIMER.ENABLE",
+                 "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT", "RV_TIMER.COUNTER"]
     }
     {
       name: no_interrupt_test
@@ -60,26 +65,41 @@
             - Check for no interrupt set'''
       stage: V2
       tests: ["rv_timer_rst_safe_cfg_update_on_fly"]
+      features: ["RV_TIMER.DISABLE", "RV_TIMER.CONFIG", "RV_TIMER.RISCV_CSRS_INTEGRATION", "RV_TIMER.ENABLE",
+                 "RV_TIMER.INTERRUPT", "RV_TIMER.COMPARE", "RV_TIMER.COUNTER"]
     }
     {
       name: min_value
       desc: '''This test configures the prescaler and mtime to 0.
-            The step is randomised between 0 and 1 to allow the counter to increase sometimes.
-            The register timecmp is randomised to be set up to 5, so some seeds trigger an interrupt directly on configuration if timecmp=0.
+            The step is randomized between 0 and 1 to allow the counter to increase sometimes.
+            The register timecmp is randomized to be set up to 5, so some seeds trigger an interrupt directly on configuration if timecmp=0.
             While others force mtime to increase.
             This test helps close functional coverage by hitting the minimum values for step, prescaler, mtime and mtimecmp'''
       stage: V3
       tests: ["rv_timer_rst_safe_min"]
+      features: ["RV_TIMER.CONFIG", "RV_TIMER.ENABLE", "RV_TIMER.RISCV_CSRS_INTEGRATION",
+                 "RV_TIMER.COMPARE", "RV_TIMER.COUNTER", "RV_TIMER.INTERRUPT"]
     }
     {
       name: max_value
       desc: '''This test configures the prescaler, step and mtimecm to the maximum value.
-            The counter is randomised to be up to 5 units lower than the timecmp.
+            The counter is randomized to be up to 5 units lower than the timecmp.
             By doing this, some seeds trigger an interrupt directly on configuration if timecmp=mtime.
             While others force mtime to increase.
             This test helps close functional coverage by hitting the maximum values for step, prescaler, mtime and mtimecmp'''
       stage: V3
       tests: ["rv_timer_rst_safe_max"]
+      features: ["RV_TIMER.CONFIG", "RV_TIMER.ENABLE", "RV_TIMER.RISCV_CSRS_INTEGRATION",
+                 "RV_TIMER.COMPARE", "RV_TIMER.COUNTER", "RV_TIMER.INTERRUPT"]
+    }
+    {
+      name: stress
+      desc: '''Do combinations of multiple of above scenarios to get multiple interrupts
+            asserted at the same time. Scoreboard should be robust enough to deal with all
+            scenarios.'''
+      stage: V2
+      features: []
+      tests: ["rv_timer_stress_all"]
     }
   ]
 }
