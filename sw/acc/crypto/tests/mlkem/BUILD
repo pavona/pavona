@@ -12,6 +12,17 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//rules:acc.bzl", "acc_binary", "acc_consttime_test", "acc_library", "acc_sim_test")
 
+acc_sim_test(
+    name = "mlkem_check_pk_test",
+    srcs = ["mlkem_check_pk_test.s"],
+    exp = "mlkem_check_pk_test.exp",
+    pqc = True,
+    deps = [
+        "//sw/acc/crypto/mlkem:consts",
+        "//sw/acc/crypto/mlkem:pack_keys",
+    ],
+)
+
 package(default_visibility = ["//visibility:public"])
 
 MODE_FOR_PARAMS = {
@@ -184,6 +195,16 @@ UNPROTECTED_DECAP_DEPS = [
     "//sw/acc/crypto/mlkem:poly_gen_matrix",
     "//sw/acc/crypto/mlkem:unpack_ciphertext",
 ]
+
+acc_sim_test(
+    name = "mlkem_check_sk_test",
+    srcs = ["mlkem_check_sk_test.s"],
+    exp = "mlkem_check_sk_test.exp",
+    pqc = True,
+    deps = UNPROTECTED_DECAP_DEPS + [
+        "//sw/acc/crypto/mlkem:dmem_unprotected",
+    ],
+)
 
 # Decap runs run_mlkem (unprotected) or a thin wrapper that recombines the ss
 # shares (masked); false_decap feeds a tampered ciphertext.

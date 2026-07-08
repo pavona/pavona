@@ -22,8 +22,14 @@
 
 /* Config to start a SHAKE-256 operation. */
 #define SHAKE256_CFG 0xA
+/* Config to start a SHA3_256 operation. */
+#define SHA3_256_CFG 0x8
 /* Config to start a SHA3_512 operation. */
 #define SHA3_512_CFG 0x10
+
+/* Hardened boolean values. Should match the values in `hardened_asm.h`. */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
 
 /**
  * Decapsulation for the CCA-secure ML-KEM key encapsulation mechanism.
@@ -110,6 +116,33 @@ _continue:
   /* The security level k. */
   la   x5, k
   sw   x13, 0(x5)
+
+  /*** FIPS 203 Sec. 7.3 hash check ***/
+  add  x8, x11, x0 /* Stash sk/dk pointer (check_sk clobbers x10 and x11). */
+  la   x5, dptr_pk
+  lw   x10, 0(x5)  /* x10 = ek pointer. */
+  la   x5, dptr_h
+  lw   x6, 0(x5)
+  sub  x11, x6, x10 /* x11 = ek length = h_ptr - ek_ptr. */
+  jal  x1, check_sk
+  addi x5, x0, HARDENED_BOOL_TRUE
+  beq  x10, x5, _kem_dec_sk_ok
+_kem_dec_sk_fail:
+  la   x5, key_ok
+  addi x6, x0, HARDENED_BOOL_FALSE
+  sw   x6, 0(x5)
+
+  /* End the program. */
+  ecall
+_kem_dec_sk_ok:
+  la   x5, key_ok
+  addi x6, x0, HARDENED_BOOL_TRUE
+  sw   x6, 0(x5)
+
+  /* check_sk clobbered x10 and x11. */
+  la   x5, dptr_ct
+  lw   x10, 0(x5)
+  add  x11, x8, x0
 
 #ifdef HARDENED
   /* Refresh z's Boolean shares; clobbers x10/x11, so stash/reload sk/ct. */
@@ -334,3 +367,52 @@ _end:
   bn.sid  x4, 32(x6)
   ret
 #endif
+
+/*
+ * Name:        check_sk
+ *
+ * Description: FIPS 203 Section 7.3 hash check on the ML-KEM decapsulation
+ *              key. Recomputes H(ek) = SHA3-256(ek) over the encapsulation
+ *              key and compares it against the stored 32-byte hash, which
+ *              immediately follows ek in the decapsulation key.
+ *
+ * @param[in]  x10 (a0): dmem pointer to the encapsulation key (ek)
+ * @param[in]  x11 (a1): length of ek in bytes
+ * @param[in]  w31: all-zero
+ * @param[out] x10 (a0): HARDENED_BOOL_TRUE if the recomputed hash matches the
+ *                       stored hash, HARDENED_BOOL_FALSE otherwise
+ *
+ * clobbered registers: x5 to x6, x10 to x11, w0, w8
+ * clobbered flag groups: FG0
+ */
+.globl check_sk
+.type check_sk, @function
+check_sk:
+  /* H(ek) immediately follows ek. */
+  add   x6, x10, x11
+
+  /* w8 = SHA3-256(ek), sent inline 32 bytes at a time. */
+  slli  x5, x11, 5
+  addi  x5, x5, SHA3_256_CFG
+  csrrw x0, kmac_cfg, x5
+
+  srli  x11, x11, 5
+  loop  x11, 2
+    bn.lid  x0, 0(x10++)
+    bn.wsrw kmac_msg, w0
+  endloop
+  bn.wsrr w8, kmac_digest
+
+  /* Compare against the stored hash. */
+  addi    x5, x0, 0
+  bn.lid  x5, 0(x6)
+  bn.cmp  w8, w0
+  csrrs   x5, fg0, x0
+
+  addi    x10, x0, HARDENED_BOOL_FALSE
+  andi    x5, x5, 8
+  bne     x5, x0, _check_sk_valid
+  ret
+_check_sk_valid:
+  addi    x10, x0, HARDENED_BOOL_TRUE
+  ret
