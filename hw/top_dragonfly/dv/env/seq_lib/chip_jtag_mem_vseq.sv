@@ -31,17 +31,20 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
   endtask
 
   virtual task body();
+    string sba_ral_name = "chip_reg_block";
     uvm_mem mems[$];
     jtag_riscv_dm_activation_seq jtag_dm_activation_seq =
         jtag_riscv_dm_activation_seq::type_id::create("jtag_dm_activation_seq");
+
+    `DV_CHECK_FATAL(cfg.use_jtag_dmi)
+    `DV_CHECK_NE_FATAL(cfg.debugger, null)
+    `DV_CHECK_FATAL(cfg.ral_models.exists(sba_ral_name))
 
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 1;
     jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
 
-    foreach (cfg.ral_models[i]) begin
-      cfg.ral_models[i].get_memories(mems);
-    end
+    cfg.ral_models[sba_ral_name].get_memories(mems);
 
     foreach (mems[i]) begin
       if (mems[i].get_name() inside {"ram", "imem", "dmem"} ||
@@ -54,8 +57,58 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
     test_mems.shuffle();
 
     for (int i = 0;i < test_mems.size(); ++i) begin
-      test_mem_rw(.mem(test_mems[i]), .max_access(128));
+      test_mem_rw_via_sba(.mem(test_mems[i]), .max_access(128));
     end
   endtask : body
+
+  virtual task test_mem_rw_via_sba(uvm_mem mem, int max_access = 2048);
+    int unsigned expected_data[int unsigned];
+    int offmax = mem.get_size() - 1;
+    int sizemax = offmax / 4;
+
+    `DV_CHECK_STREQ_FATAL(mem.get_access(), "RW",
+                          $sformatf("JTAG SBA memory write test selected non-RW memory %0s",
+                                    mem.get_full_name()))
+
+    `uvm_info(`gfn, $sformatf("Mem writes to %s %0d times via JTAG SBA",
+                              mem.get_full_name(), max_access), UVM_MEDIUM)
+
+    for (int i = 0; i < max_access; ++i) begin
+      int unsigned offset = $urandom_range(sizemax, 0);
+      int unsigned wdata = $urandom();
+      logic [BUS_AW-1:0] addr = mem.get_address(offset);
+      byte status;
+
+      expected_data[offset] = wdata;
+      `uvm_info(`gfn, $sformatf("Writing 0x%x to offset 0x%x addr 0x%x in %s",
+                                wdata, offset, addr, mem.get_name()), UVM_MEDIUM)
+
+      cfg.debugger.mem_write(.addr(addr), .value_q({BUS_DW'(wdata)}), .status(status),
+                             .route(MemAccessViaSba));
+      `DV_CHECK_EQ(status, 0, $sformatf("trying to write mem %0s at addr 0x%0h",
+                                        mem.get_full_name(), addr))
+    end
+
+    `uvm_info(`gfn, $sformatf("Writes to %s are complete, read back start...",
+                              mem.get_full_name()), UVM_MEDIUM)
+
+    foreach (expected_data[offset]) begin
+      logic [BUS_AW-1:0] addr = mem.get_address(offset);
+      logic [BUS_DW-1:0] value_q[$];
+      int unsigned exp_data = expected_data[offset];
+      byte status;
+
+      cfg.debugger.mem_read(.addr(addr), .value_q(value_q), .status(status),
+                            .route(MemAccessViaSba));
+      `DV_CHECK_EQ(status, 0, $sformatf("trying to read mem %0s at addr 0x%0h",
+                                        mem.get_full_name(), addr))
+      `DV_CHECK_EQ(value_q.size(), 1)
+      `DV_CHECK_EQ(value_q[0], BUS_DW'(exp_data), $sformatf(
+                   "read back check for offset 0x%x addr 0x%x failed, got 0x%x, expected 0x%x",
+                   offset, addr, value_q[0], exp_data))
+    end
+    `uvm_info(`gfn, $sformatf("read check from %s is complete", mem.get_full_name()),
+              UVM_MEDIUM)
+  endtask
 
 endclass
