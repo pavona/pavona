@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/pinmux.h"
+#include "hw/top/dt/sram_ctrl.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
@@ -19,18 +22,6 @@
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
 #include "hw/top/uart_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
-enum {
-  /**
-   * Base address of the pinmux registers.
-   */
-  kPinmuxBase = TOP_EGRET_PINMUX_AON_BASE_ADDR,
-  /**
-   * Base address of the UART registers.
-   */
-  kUartBase = TOP_EGRET_UART0_BASE_ADDR,
-};
 
 /**
  * Set up peripherals for printing.
@@ -54,7 +45,8 @@ static void setup_stdout(void) {
  * Trigger an instruction access fault.
  */
 static void fault(void) {
-  ((void (*)(void))TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR)();
+  ((void (*)(void))dt_sram_ctrl_memory_base(kDtSramCtrlMain,
+                                            kDtSramCtrlMemoryRam))();
 }
 
 /**
@@ -91,18 +83,20 @@ static uint32_t pad_attr_mask_get(void) {
                               true);
 
   // Save the original attributes for pad 0.
+  uint32_t pinmux_regs =
+      dt_pinmux_reg_block(kDtPinmuxAon, kDtPinmuxRegBlockCore);
   uint32_t attr0_orig =
-      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET);
+      abs_mmio_read32(pinmux_regs + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET);
 
   // Check that the mask is correct by writing UINT32_MAX to the attribute
   // register for pad 0, and then reading back.
-  abs_mmio_write32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET, UINT32_MAX);
+  abs_mmio_write32(pinmux_regs + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET, UINT32_MAX);
   uint32_t attr0_legal =
-      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET);
+      abs_mmio_read32(pinmux_regs + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET);
   CHECK_EQ(attr0_legal, mask, "Pad attribute mask check");
 
   // Restore the original register value.
-  abs_mmio_write32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET, attr0_orig);
+  abs_mmio_write32(pinmux_regs + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET, attr0_orig);
 
   return mask;
 }
@@ -123,6 +117,8 @@ static uint32_t pad_attr_mask_get(void) {
  *     * IOC4 -> UART TX (output)
  */
 static void pinmux_init_test(void) {
+  uint32_t pinmux_regs =
+      dt_pinmux_reg_block(kDtPinmuxAon, kDtPinmuxRegBlockCore);
   uint32_t bootstrap_dis =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET);
   if (bootstrap_dis != kHardenedBoolTrue) {
@@ -130,12 +126,12 @@ static void pinmux_init_test(void) {
 
     // GPIO 22 (input 22) -> IOC0 (MIO pad 22)
     uint32_t insel_gpio22 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_22_REG_OFFSET);
+        abs_mmio_read32(pinmux_regs + PINMUX_MIO_PERIPH_INSEL_22_REG_OFFSET);
     CHECK_EQ(insel_gpio22, kTopEgretPinmuxInselIoc0, "GPIO 22 input selector");
 
     // Pad 22 attributes: pull-down selected and enabled (if legal).
     uint32_t attr22 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_22_REG_OFFSET);
+        abs_mmio_read32(pinmux_regs + PINMUX_MIO_PAD_ATTR_22_REG_OFFSET);
     CHECK_EQ(
         bitfield_bit32_read(attr22, PINMUX_MIO_PAD_ATTR_22_PULL_EN_22_BIT),
         bitfield_bit32_read(attr_mask, PINMUX_MIO_PAD_ATTR_22_PULL_EN_22_BIT),
@@ -146,12 +142,12 @@ static void pinmux_init_test(void) {
 
     // GPIO 23 (input 23) -> IOC1 (MIO pad 23)
     uint32_t insel_gpio23 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_23_REG_OFFSET);
+        abs_mmio_read32(pinmux_regs + PINMUX_MIO_PERIPH_INSEL_23_REG_OFFSET);
     CHECK_EQ(insel_gpio23, kTopEgretPinmuxInselIoc1, "GPIO 23 input selector");
 
     // Pad 23 attributes: pull-down selected and enabled (if legal).
     uint32_t attr23 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_23_REG_OFFSET);
+        abs_mmio_read32(pinmux_regs + PINMUX_MIO_PAD_ATTR_23_REG_OFFSET);
     CHECK_EQ(
         bitfield_bit32_read(attr23, PINMUX_MIO_PAD_ATTR_23_PULL_EN_23_BIT),
         bitfield_bit32_read(attr_mask, PINMUX_MIO_PAD_ATTR_23_PULL_EN_23_BIT),
@@ -162,12 +158,12 @@ static void pinmux_init_test(void) {
 
     // GPIO 24 (input 24) -> IOC2 (MIO pad 24)
     uint32_t insel_gpio24 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_24_REG_OFFSET);
+        abs_mmio_read32(pinmux_regs + PINMUX_MIO_PERIPH_INSEL_24_REG_OFFSET);
     CHECK_EQ(insel_gpio24, kTopEgretPinmuxInselIoc2, "GPIO 24 input selector");
 
     // Pad 24 attributes: pull-down selected and enabled (if legal).
     uint32_t attr24 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_24_REG_OFFSET);
+        abs_mmio_read32(pinmux_regs + PINMUX_MIO_PAD_ATTR_24_REG_OFFSET);
     CHECK_EQ(
         bitfield_bit32_read(attr24, PINMUX_MIO_PAD_ATTR_24_PULL_EN_24_BIT),
         bitfield_bit32_read(attr_mask, PINMUX_MIO_PAD_ATTR_24_PULL_EN_24_BIT),
@@ -179,12 +175,12 @@ static void pinmux_init_test(void) {
 
   // UART RX (input 42) -> IOC3 (MIO pad 25)
   uint32_t insel_uartrx =
-      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_42_REG_OFFSET);
+      abs_mmio_read32(pinmux_regs + PINMUX_MIO_PERIPH_INSEL_42_REG_OFFSET);
   CHECK_EQ(insel_uartrx, kTopEgretPinmuxInselIoc3, "UART Rx input selector");
 
   // IOC4 (MIO pad 26) -> UART TX (output 42)
   uint32_t outsel_ioc4 =
-      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_OUTSEL_26_REG_OFFSET);
+      abs_mmio_read32(pinmux_regs + PINMUX_MIO_OUTSEL_26_REG_OFFSET);
   CHECK_EQ(outsel_ioc4, kTopEgretPinmuxOutselUart0Tx,
            "UART Tx output selector");
 }
@@ -203,8 +199,9 @@ static void pinmux_init_test(void) {
  * - All FIFOs have been cleared (both Rx and Tx are empty)
  */
 static void uart_init_test(void) {
+  uint32_t uart0_regs = dt_uart_reg_block(kDtUart0, kDtUartRegBlockCore);
   // Check the control register values.
-  uint32_t ctrl = abs_mmio_read32(kUartBase + UART_CTRL_REG_OFFSET);
+  uint32_t ctrl = abs_mmio_read32(uart0_regs + UART_CTRL_REG_OFFSET);
   CHECK_EQ(bitfield_bit32_read(ctrl, UART_CTRL_TX_BIT), true,
            "UART.CTRL.TX_BIT");
   CHECK_EQ(bitfield_bit32_read(ctrl, UART_CTRL_RX_BIT), false,
@@ -220,11 +217,11 @@ static void uart_init_test(void) {
 
   // Check that all interrupts are disabled.
   uint32_t intr_enable =
-      abs_mmio_read32(kUartBase + UART_INTR_ENABLE_REG_OFFSET);
+      abs_mmio_read32(uart0_regs + UART_INTR_ENABLE_REG_OFFSET);
   CHECK_EQ(intr_enable, 0x0, "UART.INTR_ENABLE");
 
   // Check that both FIFOs are idle and empty.
-  uint32_t status = abs_mmio_read32(kUartBase + UART_STATUS_REG_OFFSET);
+  uint32_t status = abs_mmio_read32(uart0_regs + UART_STATUS_REG_OFFSET);
   CHECK_EQ(bitfield_bit32_read(status, UART_STATUS_TXIDLE_BIT), true,
            "UART.STATUS.TXIDLE_BIT");
   CHECK_EQ(bitfield_bit32_read(status, UART_STATUS_RXIDLE_BIT), true,

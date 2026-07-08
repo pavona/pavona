@@ -144,7 +144,8 @@ pavona_test(
     name = "example_test",
     srcs = ["example_test.c"],
     dv = dv_params(
-        rom = "@//sw/device/silicon_creator/rom:mask_rom",
+        rom = "@//sw/device/silicon_creator/rom",
+        second_rom = "@//sw/device/silicon_creator/second_rom",
     ),
     ecdsa_key = ecdsa_key_for_lc_state(
         ECDSA_ONLY_KEY_STRUCTS,
@@ -154,6 +155,7 @@ pavona_test(
         "@//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         "@//hw/top_egret:fpga_cw310_test_rom": None,
         "@//hw/top_egret:sim_dv": None,
+        "@//hw/top_dragonfly:sim_dv": None,
     },
     # We need to specify the manifest because the simulation environments do not
     # specify one by default.
@@ -185,7 +187,8 @@ pavona_test(
     name = "statically_hooked_opensource_test",
     srcs = ["@//sw/device/tests:example_test_from_flash.c"],
     dv = dv_params(
-        rom = "@//sw/device/silicon_creator/rom:mask_rom",
+        rom = "@//sw/device/silicon_creator/rom",
+        second_rom = "@//sw/device/silicon_creator/second_rom",
     ),
     ecdsa_key = ecdsa_key_for_lc_state(
         ECDSA_ONLY_KEY_STRUCTS,
@@ -195,6 +198,7 @@ pavona_test(
         "@//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         "@//hw/top_egret:fpga_cw310_test_rom": None,
         "@//hw/top_egret:sim_dv": None,
+        "@//hw/top_dragonfly:sim_dv": None,
     },
     # We need to specify the manifest because the simulation environments do not
     # specify one by default.

@@ -632,9 +632,11 @@ pavona_test(
             "//hw/top:flash_ctrl_c_regs",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         ],
-        [
-            "//hw/top:soc_proxy_c_regs",
-        ],
+        [],
+    ) + pavona_if_ip(
+        "soc_proxy",
+        ["//hw/top:soc_proxy_c_regs"],
+        [],
     ),
 )
 
