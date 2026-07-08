@@ -112,6 +112,13 @@ class Scheduler:
         # per-target.
         self.item_to_status = {}
 
+        # Wall-clock footprint of the run. 'target_runtime' maps each target to
+        # the elapsed time (hh:mm:ss, cumulative from start) at which it
+        # completed, in completion order. 'total_runtime' is the elapsed time
+        # for the whole run. Both are populated by run().
+        self.target_runtime = {}
+        self.total_runtime = ""
+
         # Create the launcher instance for all items.
         for item in self.items:
             item.create_launcher()
@@ -182,6 +189,9 @@ class Scheduler:
 
         # Cleanup the status printer.
         self.status_printer.exit()
+
+        # Record the total wall-clock time for the whole run.
+        self.total_runtime = timer.hms()
 
         # We got to the end without anything exploding. Return the results.
         return self.item_to_status
@@ -537,6 +547,10 @@ class Scheduler:
                 continue
 
             perc = done_cnt / self._total[target] * 100
+
+            # Record the elapsed time when a target first reaches completion.
+            if perc == 100 and target not in self.target_runtime:
+                self.target_runtime[target] = hms
 
             running = ", ".join(
                 [f"{item.full_name}" for item in self._running[target]],

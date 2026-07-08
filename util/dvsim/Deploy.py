@@ -81,6 +81,9 @@ class Deploy():
 
         # Job's wall clock time (a.k.a CPU time, or runtime).
         self.job_runtime = JobTime()
+        # Job's wall-clock time from dispatch to completion, as measured by
+        # dvsim (includes infra/setup/IO overhead the tool runtime omits).
+        self.job_wall_time = JobTime()
 
     def _define_attrs(self):
         """Defines the attributes this instance needs to have.
@@ -304,6 +307,7 @@ class Deploy():
 
         `log_text` is the job's log file contents as a list of lines.
         """
+        self.job_wall_time.set(self.launcher.job_runtime_secs, "s")
         try:
             time, unit = get_job_runtime(log_text, self.sim_cfg.tool)
             self.job_runtime.set(time, unit)

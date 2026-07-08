@@ -116,6 +116,13 @@ class FlowCfg():
         self.results_summary_md = ""
         self.build_only = args.build_only
 
+        # Wall-clock footprint of the deploy run, populated by deploy_objects().
+        # 'target_runtime' maps each target (build, run, cov_*) to the elapsed
+        # time (hh:mm:ss, cumulative from start) at which it completed;
+        # 'total_runtime' is the elapsed time for the whole run.
+        self.target_runtime = {}
+        self.total_runtime = ""
+
         # Merge in the values from the loaded hjson file. If subclasses want to
         # add other default parameters that depend on the parameters above,
         # they can override _merge_hjson and add their parameters at the start
@@ -422,7 +429,12 @@ class FlowCfg():
             log.error("Nothing to run!")
             sys.exit(1)
 
-        return Scheduler(deploy, get_launcher_cls(), self.interactive).run()
+        scheduler = Scheduler(deploy, get_launcher_cls(), self.interactive)
+        results = scheduler.run()
+        # Stash the run's wall-clock footprint so it can be shown in the report.
+        self.target_runtime = scheduler.target_runtime
+        self.total_runtime = scheduler.total_runtime
+        return results
 
     def _gen_results(self, results):
         '''
@@ -443,6 +455,8 @@ class FlowCfg():
 
         '''
         for item in self.cfgs:
+            item.target_runtime = self.target_runtime
+            item.total_runtime = self.total_runtime
             json_str = (item._gen_json_results(results)
                         if hasattr(item, '_gen_json_results')
                         else None)

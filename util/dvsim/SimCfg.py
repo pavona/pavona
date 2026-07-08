@@ -930,6 +930,20 @@ class SimCfg(FlowCfg):
                 else:
                     self.results_summary["Overall Coverage"] = "--"
 
+        # Append the wall-clock footprint of the whole run, if measured.
+        if self.target_runtime or self.total_runtime:
+            wall_clock_header = ["Target", "Elapsed"]
+            wall_clock_table = [[target, hms]
+                                for target, hms in self.target_runtime.items()]
+            if self.total_runtime:
+                wall_clock_table.append(["**Total**", self.total_runtime])
+            results_str += "\n## Simulation Wall Clock Time\n"
+            results_str += tabulate(wall_clock_table,
+                                    headers=wall_clock_header,
+                                    tablefmt="pipe",
+                                    colalign=('center', 'center'))
+            results_str += "\n"
+
         if results.buckets:
             self.errors_seen = True
             results_str += "\n".join(create_bucket_report(results.buckets))

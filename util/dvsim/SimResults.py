@@ -101,6 +101,7 @@ class SimResults:
         if row is None:
             row = Result(item.name,
                          job_runtime=item.job_runtime,
+                         job_wall_time=item.job_wall_time,
                          simulated_time=item.simulated_time)
             self.table.append(row)
             self._name_to_row[item.name] = row
@@ -110,6 +111,9 @@ class SimResults:
             if item.job_runtime > row.job_runtime:
                 row.job_runtime = item.job_runtime
                 row.simulated_time = item.simulated_time
+            # Record the max wall-clock time of all reseeds, independently.
+            if item.job_wall_time > row.job_wall_time:
+                row.job_wall_time = item.job_wall_time
 
         if status == 'P':
             row.passing += 1

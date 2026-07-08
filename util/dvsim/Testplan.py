@@ -24,11 +24,13 @@ class Result:
                  passing=0,
                  total=0,
                  job_runtime=None,
+                 job_wall_time=None,
                  simulated_time=None):
         self.name = name
         self.passing = passing
         self.total = total
         self.job_runtime = job_runtime
+        self.job_wall_time = job_wall_time
         self.simulated_time = simulated_time
         self.mapped = False
 
@@ -634,10 +636,10 @@ class Testplan:
 
         assert self.test_results_mapped, "Have you invoked map_test_results()?"
         header = [
-            "Stage", "Name", "Tests", "Max Job Runtime", "Simulated Time",
-            "Passing", "Total", "Pass Rate"
+            "Stage", "Name", "Tests", "Max Job Runtime", "Max Wall Clock",
+            "Simulated Time", "Passing", "Total", "Pass Rate"
         ]
-        colalign = ('center', ) * 2 + ('left', ) + ('center', ) * 5
+        colalign = ('center', ) * 2 + ('left', ) + ('center', ) * 6
         table = []
         for tp in self.testpoints:
             stage = "" if tp.stage == "N.A." else tp.stage
@@ -649,12 +651,14 @@ class Testplan:
 
                 job_runtime = "" if tr.job_runtime is None else str(
                     tr.job_runtime)
+                job_wall_time = "" if tr.job_wall_time is None else str(
+                    tr.job_wall_time)
                 simulated_time = "" if tr.simulated_time is None else str(
                     tr.simulated_time)
 
                 table.append([
-                    stage, tp_name, tr.name, job_runtime, simulated_time,
-                    tr.passing, tr.total, pass_rate
+                    stage, tp_name, tr.name, job_runtime, job_wall_time,
+                    simulated_time, tr.passing, tr.total, pass_rate
                 ])
                 stage = ""
                 tp_name = ""
