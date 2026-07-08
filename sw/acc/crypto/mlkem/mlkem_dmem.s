@@ -54,6 +54,16 @@ stack_end:
 mode:
   .zero 4
 
+/* FIPS 203 Sec. 7.2/7.3 key-validation result for encapsulation/
+ * decapsulation (HARDENED_BOOL_TRUE if the key passed check_pk/check_sk,
+ * HARDENED_BOOL_FALSE otherwise). Zero (neither hardened-bool value) by
+ * default, so a skipped write is treated as failure. Meaningless for
+ * keygen. */
+.globl key_ok
+.balign 4
+key_ok:
+  .zero 4
+
 /* Decapsulation key / secret key (worst-case ML-KEM-1024: 3168 bytes
  * plain, 4736 bytes masked). Keygen output / decap input. */
 .globl dk

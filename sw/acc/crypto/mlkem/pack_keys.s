@@ -10,6 +10,10 @@
 
 .text
 
+/* Hardened boolean values. Should match the values in `hardened_asm.h`. */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
 /**
  * Serialization of a polynomial into KYBER_POLYBYTES = 384 bytes.
  *
@@ -156,4 +160,57 @@ poly_frombytes:
     bn.and w1, w1, w2
     bn.sid x4, 0(x11++)
   endloop
+  ret
+
+/*
+ * Name:        check_pk
+ *
+ * Description: FIPS 203 Section 7.2 modulus check. Checks whether every
+ *              coefficient of the unpacked public-key polynomial vector is
+ *              less than q. The input is a polyvec of K*16 words of sixteen
+ *              16-bit lanes each.
+ *
+ * @param[in]  x12: dmem pointer to the unpacked polyvec pk
+ * @param[in]  x14: KYBER_K
+ * @param[in]  w31: all-zero
+ * @param[out] x10 (a0): HARDENED_BOOL_TRUE if all coefficients are < q,
+ *                       HARDENED_BOOL_FALSE otherwise
+ *
+ * clobbered registers: x5 to x7, x10, x12, x28, w0 to w2, w4
+ * clobbered flag groups: FG0
+ */
+.globl check_pk
+.type check_pk, @function
+check_pk:
+  /* Load q into all 16 lanes. */
+  la      x5, modulus_bn
+  bn.lid  x0, 0(x5)
+
+  /* Load a vectorized 1 for comparison. */
+  bn.addi w4, w31, 1
+  bn.or   w4, w4, w4 << 16
+  bn.or   w4, w4, w4 << 32
+  bn.or   w4, w4, w4 << 64
+  bn.or   w4, w4, w4 << 128
+
+  /* Initialize success flag (0 = failure, 8 = success). */
+  li      x7, 8
+
+  li      x6, 1
+  slli    x5, x14, 4
+  loop    x5, 6
+    bn.lid      x6, 0(x12++)
+    bn.subv.16h w2, w1, w0    /* coeff - q per lane */
+    bn.shv.16h  w2, w2 >> 15  /* 1 iff coeff < q */
+    bn.cmp      w2, w4        /* set FG0.Z iff every lane < q */
+    csrrs       x28, fg0, x0
+    and         x7, x7, x28
+  endloop
+
+  addi    x10, x0, HARDENED_BOOL_FALSE
+  andi    x7, x7, 8
+  bne     x7, x0, _check_pk_valid
+  ret
+_check_pk_valid:
+  addi    x10, x0, HARDENED_BOOL_TRUE
   ret

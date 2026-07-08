@@ -36,7 +36,7 @@
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x13, x18 to x19, x21 to x24, x26 to x28,
+ * clobbered registers: x4 to x14, x18 to x19, x21 to x24, x26 to x28,
  *                      w0 to w15, w17 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  */

@@ -5,46 +5,55 @@
 [
   {
     symbol: "_mlkem_keygen_512",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem512Keygen",
     comment: "ML-KEM-512 key generation",
   },
   {
     symbol: "_mlkem_keygen_768",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem768Keygen",
     comment: "ML-KEM-768 key generation",
   },
   {
     symbol: "_mlkem_keygen_1024",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem1024Keygen",
     comment: "ML-KEM-1024 key generation",
   },
   {
     symbol: "_mlkem_encap_512",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem512Encap",
     comment: "ML-KEM-512 encapsulation",
   },
   {
     symbol: "_mlkem_encap_768",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem768Encap",
     comment: "ML-KEM-768 encapsulation",
   },
   {
     symbol: "_mlkem_encap_1024",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem1024Encap",
     comment: "ML-KEM-1024 encapsulation",
   },
   {
     symbol: "_mlkem_decap_512",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem512Decap",
     comment: "ML-KEM-512 decapsulation",
   },
   {
     symbol: "_mlkem_decap_768",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem768Decap",
     comment: "ML-KEM-768 decapsulation",
   },
   {
     symbol: "_mlkem_decap_1024",
+    exclude_symbols: ["_pk_check_fail", "_kem_dec_sk_fail"],
     const_str: "Mlkem1024Decap",
     comment: "ML-KEM-1024 decapsulation",
   },
