@@ -21,6 +21,7 @@ load(
     "otp_partition",
 )
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
+load("//hw/top:defs.bzl", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -50,7 +51,13 @@ otp_json(
 [
     otp_image(
         name = "otp_img_watchdog_enable_{}".format(lc_state),
-        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_" + lc_state,
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_" + lc_state,
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS + [":otp_json_watchdog_enable"],
     )
     for lc_state, _ in get_lc_items()
@@ -108,8 +115,22 @@ WATCHDOG_TEST_CASES = {
     for lc_state, lc_state_val in get_lc_items()
 ]
 
+[
+    alias(
+        name = "otp_wdog_disable_img_" + lc_state,
+        actual = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:img_" + lc_state,
+                "dragonfly": "//hw/top_dragonfly/data/otp:img_" + lc_state,
+            },
+            None,
+        ),
+    )
+    for lc_state, _ in get_lc_items()
+]
+
 WATCHDOG_OTP = {
-    "disable": "//hw/top_egret/data/otp:img_{}",
+    "disable": ":otp_wdog_disable_img_{}",
     "enable": ":otp_img_watchdog_enable_{}",
 }
 
@@ -142,7 +163,8 @@ WATCHDOG_OTP = {
                 ): "firmware",
             },
             otp = WATCHDOG_OTP[watchdog_config].format(lc_state),
-            rom = "//sw/device/silicon_creator/rom:mask_rom",
+            rom = "//sw/device/silicon_creator/rom",
+            second_rom = "//sw/device/silicon_creator/second_rom",
             # Test cases that enable the watchdog time out in verilator, cause
             # unknown.
             tags = ["broken"] if WATCHDOG_TEST_CASES[watchdog_config][lc_state] == "enabled" else [],
