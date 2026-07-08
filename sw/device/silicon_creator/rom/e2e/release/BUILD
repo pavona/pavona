@@ -30,13 +30,15 @@ otp_image(
 #    name = "rom_e2e_self_hash_test",
 #    srcs = ["rom_e2e_self_hash_test.c"],
 #    dv = dv_params(
-#        rom = "//sw/device/silicon_creator/rom:mask_rom",
+#        rom = "//sw/device/silicon_creator/rom",
+#        second_rom = "//sw/device/silicon_creator/second_rom",
 #    ),
 #    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
 #    exec_env = {
 #        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
 #        "//hw/top_egret:sim_dv": None,
 #        "//hw/top_egret:silicon_creator": None,  # This is added to support GLS and bringup environments.
+#        "//hw/top_dragonfly:sim_dv": None,
 #    },
 #    fpga = fpga_params(
 #        otp = ":otp_img_sigverify_spx_prod",
