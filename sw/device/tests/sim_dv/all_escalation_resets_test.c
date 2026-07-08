@@ -104,7 +104,9 @@
 
 #include "hw/top/alert_handler_regs.h"  // Generated
 
-OTTF_DEFINE_TEST_CONFIG();
+// Configure OTTF to skip configuring alerts, since that can get in the way
+// of the alert configuration needed for this test.
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 // This location will be update from SV to contain the expected alert.
 static volatile const uint8_t kExpectedAlertNumber = 0;
@@ -693,10 +695,12 @@ void ottf_external_isr(uint32_t *exc_info) {
                            fault_checker.type);
   }
 
-  // Disable these interrupts from alert_handler so they don't keep happening
-  // until NMI.
+  // Check this is an expected interrupt from alert handler, and disable it
+  // so it won't keep happening until NMI.
   dt_alert_handler_irq_t irq =
       dt_alert_handler_irq_from_plic_id(kAlertHandlerDt, irq_id);
+  CHECK((uint32_t)irq == (uint32_t)alert_class_to_use,
+        "Unexpected irq, got %d, expected %d", irq, alert_class_to_use);
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
                                                  kDifToggleDisabled));
 
