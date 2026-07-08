@@ -1,0 +1,92 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:ip_block",
+  title: "IP Block",
+  description: "Description for standalone IP block",
+  type: "object",
+  required: ["name", "cip_id", "clocking", "bus_interfaces"]
+  properties: {
+    // basic information
+    name: { type: "string", description: "name of the component" },
+    human_name: { type: "string", description: "human-readable name of the component" },
+    one_line_desc: { type: "string", description: "one-line description of the component" },
+    one_paragraph_desc: { type: "string", description: "one-paragraph description of the component" },
+
+    // comportability and development stage metadata
+    cip_id: { type: "number", description: "unique comportable IP identifier" },
+    design_spec: { type: "string", description: "path to the design specification, relative to repo root" },
+    dv_doc: { type: "string", description: "path to the DV document, relative to repo root" },
+    hw_checklist: { type: "string", description: "path to the hw_checklist, relative to repo root" },
+    sw_checklist: { type: "string", description: "path to the sw_checklist, relative to repo root" },
+    revisions: { type: "array", description: "list with revision records" },  // note: revision list may be deprecated in the future.
+    version: { type: "string", description: "module version" },
+    life_stage: { type: "string", description: "life stage of module" },
+    design_stage: { type: "string", description: "design stage of module" },
+    verification_stage: { type: "string", description: "verification stage of module" },
+    dif_stage: { type: "string", description: "DIF stage of module" },
+    commit_id: { type: "string", description: "commit ID of last stage sign-off" },
+    notes: { type: "string", description: "random notes" },
+
+    // clocking and bus interfaces
+    clocking: { type: "array", description: "clocking for the device" },
+    bus_interfaces: { type: "array", description: "bus interfaces for the device" },
+
+    // scan mode
+    scan: { type: "boolean", description: "Indicates the module have `scanmode_i`" },
+    scan_reset: { type: "boolean", description: "Indicates the module have `scan_rst_ni`" },
+    scan_en: { type: "boolean", description: "Indicates the module has `scan_en_i`" },
+
+    // direct connections
+    available_inout_list: { type: "array", description: "list of available peripheral inouts" },
+    available_input_list: { type: "array", description: "list of available peripheral inputs" },
+    available_output_list: { type: "array", description: "list of available peripheral outputs" },
+    inter_signal_list: { type: "array", description: "list of inter-module signals" },
+
+    // parameters
+    param_list: { type: "array", description: "list of parameters of the IP" },
+
+    // alerts and interrupts
+    interrupt_list: { type: "array", description: "list of peripheral interrupts" },
+    alert_list: { type: "array", description: "list of peripheral alerts" },
+    wakeup_list: { type: "array", description: "list of peripheral wakeups" },
+    reset_request_list: { type: "array", description: "list of signals requesting reset" },
+
+    // registers and memory
+    regwidth: { type: "number", description: "width of registers in bits (default 32)", default: 32 },
+    registers: { type: ["array", "object"], description: "list of register definition groups and offset control groups" },
+    memory: { type: "object", description: "list of memory definitions" }
+
+    // features and countermeasures
+    features: { type: "array", description: "list of functional features in this block" },
+    countermeasures: { type: "array", description: "list of countermeasures in this block" },
+
+    // register flags
+    no_auto_intr_regs: {
+      type: "boolean",
+      description: '''Set to true to suppress automatic generation of interrupt registers.
+                   Defaults to true if no interrupt_list is present.
+                   Otherwise this defaults to false.
+                   '''
+    },
+    no_auto_alert_regs: {
+      type: "boolean",
+      description: '''
+                   Set to true to suppress automatic generation of alert test registers.
+                   Defaults to true if no alert_list is present.
+                   Otherwise this defaults to false.
+                   '''
+    },
+    expose_reg_if: { type: "boolean", description: "if set, expose reg interface in reg2hw signal" },
+
+    // only for pure JSON
+    SPDX-License-Identifier: {
+      type: "string",
+      description: '''License identifier (if using pure json)
+                   Only use this if unable to put this information in a comment at the top of the file.
+                   '''
+    },
+  }
+}
