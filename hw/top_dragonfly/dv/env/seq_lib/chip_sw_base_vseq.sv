@@ -53,9 +53,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
         // For a software reset request we need in practice to check the `light_reset_req` signal
         // on every AON clock cycle because as soon as pwrmgr_aon detects the internal reset request
         // it acknowledges to the rstmgr_aon, which deasserts the software reset request.
+        //
+        // The wait_clks call below causes a cycle to be unchecked, so the previous value is also
+        // used in the check.
+        logic light_reset_req_delayed;
+        light_reset_req_delayed = cfg.chip_vif.signal_probe_pwrmgr_light_reset_req(
+            .kind(dv_utils_pkg::SignalProbeSample));
         cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
         if (cfg.chip_vif.signal_probe_pwrmgr_light_reset_req(
-              .kind(dv_utils_pkg::SignalProbeSample))) begin
+              .kind(dv_utils_pkg::SignalProbeSample)) || light_reset_req_delayed) begin
           apply_soc_reset_ack();
         end
       end else begin
