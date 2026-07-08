@@ -88,9 +88,6 @@ def parse_encaps(group, param_set):
     test_vectors = []
     for test in group["tests"]:
         result = test["result"] == "valid"
-        # TODO: the ACC path does not implement key validation yet.
-        if not result:
-            continue
         c = bytes.fromhex(test.get("c", ""))
         K = bytes.fromhex(test.get("K", ""))
         tv = {
@@ -115,9 +112,6 @@ def parse_decaps(group, param_set):
     test_vectors = []
     for test in group["tests"]:
         result = test["result"] == "valid"
-        # TODO: the ACC path does not implement key validation yet.
-        if not result:
-            continue
         test_vectors.append({
             "vendor": "wycheproof",
             "test_case_id": test["tcId"],
