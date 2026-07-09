@@ -79,7 +79,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   bit compare_internal_key_slot;
   bit check_key_slot_erased;
   bit post_disable_compare_key_slots;
-  // The DUT XORs the OTP root key into an entropy-randomised slot value during
+  // The DUT XORs the OTP root key into an entropy-randomized slot value during
   // SlotDestRandomize+SlotLoadRoot, so the SCB cannot reproduce slot.key from inputs.
   // Set in latch_otp_key, consumed at op_status WIP->Done where we snapshot the DUT
   // slot value into current_internal_key[].key.

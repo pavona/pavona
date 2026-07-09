@@ -16,10 +16,10 @@ class keymgr_dpe_random_vseq extends keymgr_dpe_base_vseq;
   `uvm_object_utils(keymgr_dpe_random_vseq)
   `uvm_object_new
 
-  rand int unsigned num_iterations;
+  rand int unsigned num_iters;
 
-  constraint num_iterations_c {
-    num_iterations inside {[20:40]};
+  constraint num_iters_c {
+    num_iters inside {[20:40]};
   }
 
   // Override base: weighted to favor good ops (so chains progress) while still hitting
@@ -79,8 +79,8 @@ class keymgr_dpe_random_vseq extends keymgr_dpe_base_vseq;
   endtask : write_random_sw_content
 
   task body();
-    `uvm_info(`gfn, $sformatf("keymgr_dpe_random_vseq start, num_iterations=%0d",
-                              num_iterations), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("keymgr_dpe_random_vseq start, num_iters=%0d",
+                              num_iters), UVM_LOW)
 
     // Initial OTP latch into slot 0. Must succeed, so force a permissive policy and
     // src==dst for this single advance regardless of the class-level constraints.
@@ -96,7 +96,7 @@ class keymgr_dpe_random_vseq extends keymgr_dpe_base_vseq;
     // gen-op type and key destination, then issues a weighted-random op. Disable is
     // excluded: once the DUT is disabled, further ops are no-ops, which would make
     // the rest of the iteration count uninteresting.
-    repeat (num_iterations) begin
+    repeat (num_iters) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(policy)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_key_version_err)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(src_slot)
