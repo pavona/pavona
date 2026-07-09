@@ -266,7 +266,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     endcase
   endfunction
 
-  local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
+  function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
     case (clk)
       ClkMesrIo: begin
         if (enable) $asserton(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
@@ -280,6 +280,22 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     endcase
   endfunction
 
+  // Restarting a stopped measured clock flushes the ref->clk pulse-sync (u_sync_ref) backlog,
+  // producing back-to-back dst pulses that trip DstPulseCheck_A
+  function void control_dst_pulse_assert(clk_mesr_e clk, bit enable);
+    case (clk)
+      ClkMesrIo: begin
+        if (enable) $asserton(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.DstPulseCheck_A");
+        else $assertoff(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.DstPulseCheck_A");
+      end
+      ClkMesrMain: begin
+        if (enable) $asserton(0, "tb.dut.u_main_meas.u_meas.u_sync_ref.DstPulseCheck_A");
+        else $assertoff(0, "tb.dut.u_main_meas.u_meas.u_sync_ref.DstPulseCheck_A");
+      end
+      default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
+    endcase
+  endfunction
+
   // This turns off/on some clocks being measured to trigger a measurement timeout.
   // A side-effect is that some RTL assertions will fire, so they are correspondingly controlled.
   task disturb_measured_clock(clk_mesr_e clk, bit enable);
@@ -287,16 +303,28 @@ class clkmgr_base_vseq extends cip_base_vseq #(
       ClkMesrIo: begin
         `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "io"),
                   UVM_MEDIUM)
-        if (enable) cfg.io_clk_rst_vif.start_clk();
-        else cfg.io_clk_rst_vif.stop_clk();
-        control_sync_pulse_assert(.clk(ClkMesrIo), .enable(enable));
+        if (enable) begin
+          cfg.io_clk_rst_vif.start_clk();
+        end else begin
+          cfg.io_clk_rst_vif.stop_clk();
+          // Stopping the clock stalls the pulse-sync and triggers both checks; mask
+          // them here and let the caller re-arm after the backlog drains
+          control_sync_pulse_assert(.clk(ClkMesrIo), .enable(1'b0));
+          control_dst_pulse_assert(.clk(ClkMesrIo), .enable(1'b0));
+        end
       end
       ClkMesrMain: begin
         `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "main"),
                   UVM_MEDIUM)
-        if (enable) cfg.main_clk_rst_vif.start_clk();
-        else cfg.main_clk_rst_vif.stop_clk();
-        control_sync_pulse_assert(.clk(ClkMesrMain), .enable(enable));
+        if (enable) begin
+          cfg.main_clk_rst_vif.start_clk();
+        end else begin
+          cfg.main_clk_rst_vif.stop_clk();
+          // Stopping the clock stalls the pulse-sync and triggers both checks; mask
+          // them here and let the caller re-arm after the backlog drains
+          control_sync_pulse_assert(.clk(ClkMesrMain), .enable(1'b0));
+          control_dst_pulse_assert(.clk(ClkMesrMain), .enable(1'b0));
+        end
       end
       default: `uvm_fatal(`gfn, $sformatf("Unexpected clk '%0d'", clk))
     endcase
