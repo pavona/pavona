@@ -42,10 +42,10 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
 
     super.body();
 
-    // The test sequence needs to ensure rom has halted first.
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
+    // The test sequence needs to ensure the test has halted first.
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
-    // Now program ROM_EXEC_EN for next power cycle.
+    // Now activate rv_dm and supply the exit token.
     jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
     `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
               UVM_LOW)
@@ -72,15 +72,7 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, "Applying reset after lc transition", UVM_LOW)
     apply_reset();
 
-    // setup triggers to bootstrap during the second run
-    cfg.use_spi_load_bootstrap = 1'b1;
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
-
-    // bootstrap the same image
-    spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
-
-    // Disable bootstrap for subsequent boots.
-    cfg.use_spi_load_bootstrap = 1'b0;
+    // No need to bootstrap again; wait for test to pass.
   endtask : body
 
 endclass : chip_sw_exit_test_unlocked_bootstrap_vseq

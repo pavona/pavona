@@ -820,13 +820,17 @@ pavona_test(
 pavona_test(
     name = "exit_test_unlocked_bootstrap",
     srcs = ["exit_test_unlocked_bootstrap.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_dragonfly:sim_dv": None,
+    },
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
