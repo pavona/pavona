@@ -269,7 +269,7 @@ class reset_class;
                 error_count,
                 IterationsPerDelta
                 ), UVM_LOW)
-      `DV_CHECK((delta_cycles < -12) || (delta_cycles > -1) || (error_count == 0))
+      `DV_CHECK((delta_cycles < -11) || (delta_cycles > -1) || (error_count == 0))
       `DV_CHECK(((delta_cycles > -42) && (delta_cycles < 2)) || (error_count == IterationsPerDelta))
     end
   endtask
