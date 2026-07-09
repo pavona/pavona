@@ -98,6 +98,27 @@ interface clkmgr_if (
     jitter_enable_csr = prim_mubi_pkg::mubi4_t'(`CLKMGR_HIER.reg2hw.jitter_enable.q);
   end
 
+  // Per-measured-clock observation state for the frequency_timeout vseq. Pulses
+  // (valid_o, meas_err_o) are sampled into monotonic counts so a wait can't miss
+  // them
+  //   meas_running            : ref_en (measurement running in the AON domain).
+  //   meas_valid_count        : completed measurements (valid_o).
+  //   meas_oor_seen           : sticky; a completed measurement was out of range (slow/fast).
+  //   recov_measure_err_count : measure-error deliveries into recov_err_code (meas_err_o).
+  //   recov_timeout_err       : latched recov_err_code timeout bits; packed so a wait can require
+  //                             all expected bits at once (a group root times out several clocks).
+  logic meas_running[ClkMesrSize];
+  int   meas_valid_count[ClkMesrSize];
+  logic meas_oor_seen[ClkMesrSize];
+  int   recov_measure_err_count[ClkMesrSize];
+  logic [ClkMesrSize-1:0] recov_timeout_err;
+
+  // Clear the sticky out-of-range observer before a timeout restart, so it reflects only that
+  // restart's drained measurement
+  function automatic void clear_meas_oor(clk_mesr_e clk);
+    meas_oor_seen[clk] = 1'b0;
+  endfunction
+
   freq_measurement_t io_freq_measurement;
   logic io_timeout_err;
   always @(posedge `CLKMGR_HIER.u_io_meas.u_meas.clk_i) begin
@@ -105,11 +126,28 @@ interface clkmgr_if (
       io_freq_measurement = '{valid: `CLKMGR_HIER.u_io_meas.u_meas.valid_o,
                               slow: `CLKMGR_HIER.u_io_meas.u_meas.slow_o,
                               fast: `CLKMGR_HIER.u_io_meas.u_meas.fast_o};
+      meas_valid_count[ClkMesrIo] = meas_valid_count[ClkMesrIo] + 1;
+      if (`CLKMGR_HIER.u_io_meas.u_meas.slow_o ||
+          `CLKMGR_HIER.u_io_meas.u_meas.fast_o) begin
+        meas_oor_seen[ClkMesrIo] = 1'b1;
+      end
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrIo as %p", io_freq_measurement), UVM_HIGH)
     end
   end
   always_comb io_timeout_err = `CLKMGR_HIER.u_io_meas.timeout_err_o;
+  // Measurement enable as seen in the AON domain (high while a measurement runs).
+  always_comb meas_running[ClkMesrIo] = `CLKMGR_HIER.u_io_meas.u_meas.ref_en;
+  // meas_err_o is a pulse on the meas_chk local (clk_i) domain; count it so a wait can detect a
+  // drained measurement's error landing in recov_err_code.
+  always @(posedge `CLKMGR_HIER.u_io_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_io_meas.meas_err_o) begin
+      recov_measure_err_count[ClkMesrIo] =
+          recov_measure_err_count[ClkMesrIo] + 1;
+    end
+  end
+  always_comb recov_timeout_err[ClkMesrIo] =
+      `CLKMGR_HIER.u_reg.u_recov_err_code_io_timeout_err.qs;
 
   freq_measurement_t io_div4_freq_measurement;
   logic io_div4_timeout_err;
@@ -118,11 +156,28 @@ interface clkmgr_if (
       io_div4_freq_measurement = '{valid: `CLKMGR_HIER.u_io_div4_meas.u_meas.valid_o,
                                    slow: `CLKMGR_HIER.u_io_div4_meas.u_meas.slow_o,
                                    fast: `CLKMGR_HIER.u_io_div4_meas.u_meas.fast_o};
+      meas_valid_count[ClkMesrIoDiv4] = meas_valid_count[ClkMesrIoDiv4] + 1;
+      if (`CLKMGR_HIER.u_io_div4_meas.u_meas.slow_o ||
+          `CLKMGR_HIER.u_io_div4_meas.u_meas.fast_o) begin
+        meas_oor_seen[ClkMesrIoDiv4] = 1'b1;
+      end
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrIoDiv4 as %p", io_div4_freq_measurement), UVM_HIGH)
     end
   end
   always_comb io_div4_timeout_err = `CLKMGR_HIER.u_io_div4_meas.timeout_err_o;
+  // Measurement enable as seen in the AON domain (high while a measurement runs).
+  always_comb meas_running[ClkMesrIoDiv4] = `CLKMGR_HIER.u_io_div4_meas.u_meas.ref_en;
+  // meas_err_o is a pulse on the meas_chk local (clk_i) domain; count it so a wait can detect a
+  // drained measurement's error landing in recov_err_code.
+  always @(posedge `CLKMGR_HIER.u_io_div4_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_io_div4_meas.meas_err_o) begin
+      recov_measure_err_count[ClkMesrIoDiv4] =
+          recov_measure_err_count[ClkMesrIoDiv4] + 1;
+    end
+  end
+  always_comb recov_timeout_err[ClkMesrIoDiv4] =
+      `CLKMGR_HIER.u_reg.u_recov_err_code_io_div4_timeout_err.qs;
 
   freq_measurement_t main_freq_measurement;
   logic main_timeout_err;
@@ -131,11 +186,28 @@ interface clkmgr_if (
       main_freq_measurement = '{valid: `CLKMGR_HIER.u_main_meas.u_meas.valid_o,
                                 slow: `CLKMGR_HIER.u_main_meas.u_meas.slow_o,
                                 fast: `CLKMGR_HIER.u_main_meas.u_meas.fast_o};
+      meas_valid_count[ClkMesrMain] = meas_valid_count[ClkMesrMain] + 1;
+      if (`CLKMGR_HIER.u_main_meas.u_meas.slow_o ||
+          `CLKMGR_HIER.u_main_meas.u_meas.fast_o) begin
+        meas_oor_seen[ClkMesrMain] = 1'b1;
+      end
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrMain as %p", main_freq_measurement), UVM_HIGH)
     end
   end
   always_comb main_timeout_err = `CLKMGR_HIER.u_main_meas.timeout_err_o;
+  // Measurement enable as seen in the AON domain (high while a measurement runs).
+  always_comb meas_running[ClkMesrMain] = `CLKMGR_HIER.u_main_meas.u_meas.ref_en;
+  // meas_err_o is a pulse on the meas_chk local (clk_i) domain; count it so a wait can detect a
+  // drained measurement's error landing in recov_err_code.
+  always @(posedge `CLKMGR_HIER.u_main_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_main_meas.meas_err_o) begin
+      recov_measure_err_count[ClkMesrMain] =
+          recov_measure_err_count[ClkMesrMain] + 1;
+    end
+  end
+  always_comb recov_timeout_err[ClkMesrMain] =
+      `CLKMGR_HIER.u_reg.u_recov_err_code_main_timeout_err.qs;
 
   freq_measurement_t usb_freq_measurement;
   logic usb_timeout_err;
@@ -144,11 +216,28 @@ interface clkmgr_if (
       usb_freq_measurement = '{valid: `CLKMGR_HIER.u_usb_meas.u_meas.valid_o,
                                slow: `CLKMGR_HIER.u_usb_meas.u_meas.slow_o,
                                fast: `CLKMGR_HIER.u_usb_meas.u_meas.fast_o};
+      meas_valid_count[ClkMesrUsb] = meas_valid_count[ClkMesrUsb] + 1;
+      if (`CLKMGR_HIER.u_usb_meas.u_meas.slow_o ||
+          `CLKMGR_HIER.u_usb_meas.u_meas.fast_o) begin
+        meas_oor_seen[ClkMesrUsb] = 1'b1;
+      end
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrUsb as %p", usb_freq_measurement), UVM_HIGH)
     end
   end
   always_comb usb_timeout_err = `CLKMGR_HIER.u_usb_meas.timeout_err_o;
+  // Measurement enable as seen in the AON domain (high while a measurement runs).
+  always_comb meas_running[ClkMesrUsb] = `CLKMGR_HIER.u_usb_meas.u_meas.ref_en;
+  // meas_err_o is a pulse on the meas_chk local (clk_i) domain; count it so a wait can detect a
+  // drained measurement's error landing in recov_err_code.
+  always @(posedge `CLKMGR_HIER.u_usb_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_usb_meas.meas_err_o) begin
+      recov_measure_err_count[ClkMesrUsb] =
+          recov_measure_err_count[ClkMesrUsb] + 1;
+    end
+  end
+  always_comb recov_timeout_err[ClkMesrUsb] =
+      `CLKMGR_HIER.u_reg.u_recov_err_code_usb_timeout_err.qs;
 
 
   function automatic void update_idle(mubi_hintables_t value);
@@ -215,6 +304,7 @@ interface clkmgr_if (
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off,
                       prim_mubi_pkg::mubi4_t calib_rdy = prim_mubi_pkg::MuBi4True);
     `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)
+    foreach (meas_oor_seen[i]) meas_oor_seen[i] = 1'b0; // initalize out of range as not seen
     update_calib_rdy(calib_rdy);
     update_idle(idle);
     update_lc_clk_byp_req(lc_clk_byp_req);

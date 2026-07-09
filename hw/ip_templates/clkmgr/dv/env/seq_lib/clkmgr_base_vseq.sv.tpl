@@ -268,12 +268,26 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
     endcase
   endfunction
 
-  local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
+  function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
     case (clk)
 % for src in rg_srcs:
       ClkMesr${Name.to_camel_case(src)}: begin
         if (enable) $asserton(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
         else $assertoff(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+      end
+% endfor
+      default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
+    endcase
+  endfunction
+
+  // Restarting a stopped measured clock flushes the ref->clk pulse-sync (u_sync_ref) backlog,
+  // producing back-to-back dst pulses that trip DstPulseCheck_A
+  function void control_dst_pulse_assert(clk_mesr_e clk, bit enable);
+    case (clk)
+% for src in rg_srcs:
+      ClkMesr${Name.to_camel_case(src)}: begin
+        if (enable) $asserton(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.DstPulseCheck_A");
+        else $assertoff(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.DstPulseCheck_A");
       end
 % endfor
       default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
@@ -294,9 +308,15 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
       ClkMesr${Name.to_camel_case(src)}: begin
         `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "${root_name}"),
                   UVM_MEDIUM)
-        if (enable) cfg.${root_name}_clk_rst_vif.start_clk();
-        else cfg.${root_name}_clk_rst_vif.stop_clk();
-        control_sync_pulse_assert(.clk(ClkMesr${Name.to_camel_case(src)}), .enable(enable));
+        if (enable) begin
+          cfg.${root_name}_clk_rst_vif.start_clk();
+        end else begin
+          cfg.${root_name}_clk_rst_vif.stop_clk();
+          // Stopping the clock stalls the pulse-sync and triggers both checks; mask
+          // them here and let the caller re-arm after the backlog drains
+          control_sync_pulse_assert(.clk(ClkMesr${Name.to_camel_case(src)}), .enable(1'b0));
+          control_dst_pulse_assert(.clk(ClkMesr${Name.to_camel_case(src)}), .enable(1'b0));
+        end
       end
 % endfor
       default: `uvm_fatal(`gfn, $sformatf("Unexpected clk '%0d'", clk))
