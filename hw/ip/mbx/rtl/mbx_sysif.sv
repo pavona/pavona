@@ -119,7 +119,9 @@ module mbx_sysif
   // - there is an error
   // - there is an asynchronous message
   // request
-  assign doe_intr_o = DoeIrqSupport & reg2hw.soc_status.doe_intr_status.q;
+  assign doe_intr_o = DoeIrqSupport &
+                      doe_intr_en_o &
+                      reg2hw.soc_status.doe_intr_status.q;
 
   // Respond to writes of '1' to the abort and go bits
   assign sysif_control_abort_set_o  = reg2hw.soc_control.abort.qe & reg2hw.soc_control.abort.q;
