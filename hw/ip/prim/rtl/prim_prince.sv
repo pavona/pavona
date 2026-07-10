@@ -159,7 +159,7 @@ module prim_prince #(
     end
   end else begin : gen_middle_d32
     always_comb begin : p_middle_d32
-      data_state_middle_d = prim_cipher_pkg::sbox4_32bit(data_state_middle[NumRoundsHalf],
+      data_state_middle_d = prim_cipher_pkg::sbox4_32bit(data_state_lo[NumRoundsHalf],
           prim_cipher_pkg::PRINCE_SBOX4);
       data_state_middle = prim_cipher_pkg::prince_mult_prime_32bit(data_state_middle_q);
       data_state_middle = prim_cipher_pkg::sbox4_32bit(data_state_middle,
