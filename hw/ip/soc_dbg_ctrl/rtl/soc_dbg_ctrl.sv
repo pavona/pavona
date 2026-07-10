@@ -215,7 +215,8 @@ module soc_dbg_ctrl
           soc_dbg_policy_d.relocked = prim_mubi_pkg::MuBi4False;
         end else if (lc_tx_test_true_strict(lc_cpu_en_i)) begin
           soc_dbg_policy_d.category = dbg_category_e'(core_hw2reg.debug_policy_category_shadowed.d);
-          soc_dbg_policy_d.valid    = prim_mubi_pkg::MuBi4True;
+          soc_dbg_policy_d.valid    =
+            prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_valid_shadowed.q);
           soc_dbg_policy_d.relocked = prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_relocked.q);
         end else begin
           soc_dbg_policy_d.category = DbgCategoryLocked;
