@@ -543,7 +543,7 @@ module pwrmgr
   end
 
   assign hw2reg.escalate_reset_status.de = 1'b1;
-  assign hw2reg.escalate_reset_status.d = peri_reqs_masked.rstreqs[NumRstReqs];
+  assign hw2reg.escalate_reset_status.d = peri_reqs_masked.rstreqs[ResetEscIdx];
 
 
   ////////////////////////////
