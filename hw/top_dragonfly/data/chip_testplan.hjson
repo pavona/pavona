@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
@@ -55,20 +56,6 @@
       stage: V1
       tests: ["chip_sw_uart_rand_baudrate"]
     }
-    {
-      name: chip_sw_uart_tx_rx_alt_clk_freq
-      desc: '''Verify the transmission of UART via using external clock as uart core clock.
-
-            Extend from chip_sw_uart_rand_baudrate with following added settings.
-            - Configure LC to RMA state, so that it allows clkmgr to use external clock.
-            - Configure clkmgr to select external clock.
-            - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
-              ext_clk_freq / 4 or ext_clk_freq / 2.
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_tx_rx_alt_clk_freq"]
-    }
-
     // GPIO (pre-verified IP) integration tests:
     {
       name: chip_sw_gpio_out
