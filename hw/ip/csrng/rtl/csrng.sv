@@ -125,7 +125,7 @@ module csrng
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
       .SkewCycles(AlertSkewCycles),
-      .IsFatal(i)
+      .IsFatal(AlertIsFatal[i])
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,

@@ -26,6 +26,14 @@ package rv_core_ibex_reg_pkg;
     AlertRecovHwErrIdx = 3
   } rv_core_ibex_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b0, // recov_hw_err
+    1'b1, // fatal_hw_err
+    1'b0, // recov_sw_err
+    1'b1 // fatal_sw_err
+  };
+
   //////////////////////////////////////////////
   // Typedefs for registers for cfg interface //
   //////////////////////////////////////////////
