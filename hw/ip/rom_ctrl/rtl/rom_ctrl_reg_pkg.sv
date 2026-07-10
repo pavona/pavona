@@ -20,6 +20,11 @@ package rom_ctrl_reg_pkg;
     AlertFatalIdx = 0
   } rom_ctrl_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b1 // fatal
+  };
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////

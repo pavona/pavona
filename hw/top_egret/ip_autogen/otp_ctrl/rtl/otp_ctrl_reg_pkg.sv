@@ -288,6 +288,15 @@ package otp_ctrl_reg_pkg;
     AlertRecovPrimOtpAlertIdx = 4
   } otp_ctrl_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b0, // recov_prim_otp_alert
+    1'b1, // fatal_prim_otp_alert
+    1'b1, // fatal_bus_integ_error
+    1'b1, // fatal_check_error
+    1'b1 // fatal_macro_error
+  };
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

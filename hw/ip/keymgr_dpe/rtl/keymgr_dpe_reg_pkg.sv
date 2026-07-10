@@ -26,6 +26,12 @@ package keymgr_dpe_reg_pkg;
     AlertFatalFaultErrIdx = 1
   } keymgr_dpe_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b1, // fatal_fault_err
+    1'b0 // recov_operation_err
+  };
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

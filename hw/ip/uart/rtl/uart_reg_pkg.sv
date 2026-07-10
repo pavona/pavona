@@ -22,6 +22,11 @@ package uart_reg_pkg;
     AlertFatalFaultIdx = 0
   } uart_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b1 // fatal_fault
+  };
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

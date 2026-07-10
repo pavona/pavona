@@ -2057,7 +2057,6 @@ module ascon_reg_top (
 
   logic [46:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ASCON_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == ASCON_KEY_SHARE0_0_OFFSET);
     addr_hit[ 2] = (reg_addr == ASCON_KEY_SHARE0_1_OFFSET);
@@ -2304,7 +2303,6 @@ module ascon_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
     reg_we_check[1] = key_share0_0_we;
     reg_we_check[2] = key_share0_1_we;

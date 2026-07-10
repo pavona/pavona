@@ -35,6 +35,13 @@ package lc_ctrl_reg_pkg;
     AlertFatalBusIntegErrorIdx = 2
   } lc_ctrl_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b1, // fatal_bus_integ_error
+    1'b1, // fatal_state_error
+    1'b1 // fatal_prog_error
+  };
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////

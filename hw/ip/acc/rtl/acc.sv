@@ -1033,27 +1033,27 @@ module acc
   // Alerts ====================================================================
 
   logic [NumAlerts-1:0] alert_test;
-  assign alert_test[AlertFatal] = reg2hw.alert_test.fatal.q & reg2hw.alert_test.fatal.qe;
-  assign alert_test[AlertRecov] = reg2hw.alert_test.recov.q & reg2hw.alert_test.recov.qe;
+  assign alert_test[AlertFatalIdx] = reg2hw.alert_test.fatal.q & reg2hw.alert_test.fatal.qe;
+  assign alert_test[AlertRecovIdx] = reg2hw.alert_test.recov.q & reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = |{err_bits.kmac_fatal_error,
-                                err_bits.fatal_software,
-                                err_bits.lifecycle_escalation,
-                                err_bits.illegal_bus_access,
-                                err_bits.bad_internal_state,
-                                err_bits.bus_intg_violation,
-                                err_bits.reg_intg_violation,
-                                err_bits.dmem_intg_violation,
-                                err_bits.imem_intg_violation};
+  assign alerts[AlertFatalIdx] = |{err_bits.kmac_fatal_error,
+                                   err_bits.fatal_software,
+                                   err_bits.lifecycle_escalation,
+                                   err_bits.illegal_bus_access,
+                                   err_bits.bad_internal_state,
+                                   err_bits.bus_intg_violation,
+                                   err_bits.reg_intg_violation,
+                                   err_bits.dmem_intg_violation,
+                                   err_bits.imem_intg_violation};
 
-  assign alerts[AlertRecov] = (core_recoverable_err | recoverable_err_q) & done_core;
+  assign alerts[AlertRecovIdx] = (core_recoverable_err | recoverable_err_q) & done_core;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
       .SkewCycles(AlertSkewCycles),
-      .IsFatal(i == AlertFatal)
+      .IsFatal(AlertIsFatal[i])
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni       (rst_n),
@@ -1264,7 +1264,7 @@ module acc
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       LoopStackCntAlertCheck_A,
       u_acc_core.u_acc_controller.u_acc_loop_controller.g_loop_counters[i].u_loop_count,
-      alert_tx_o[AlertFatal]
+      alert_tx_o[AlertFatalIdx]
     )
   end
 
@@ -1454,46 +1454,46 @@ module acc
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AccStartStopFsmCheck_A,
-    u_acc_core.u_acc_start_stop_control.u_state_regs, alert_tx_o[AlertFatal])
+    u_acc_core.u_acc_start_stop_control.u_state_regs, alert_tx_o[AlertFatalIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AccControllerFsmCheck_A,
-    u_acc_core.u_acc_controller.u_state_regs, alert_tx_o[AlertFatal])
+    u_acc_core.u_acc_controller.u_state_regs, alert_tx_o[AlertFatalIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AccScrambleCtrlFsmCheck_A,
-    u_acc_scramble_ctrl.u_state_regs, alert_tx_o[AlertFatal])
+    u_acc_scramble_ctrl.u_state_regs, alert_tx_o[AlertFatalIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(AccCallStackWrPtrAlertCheck_A,
-    u_acc_core.u_acc_rf_base.u_call_stack.u_stack_wr_ptr, alert_tx_o[AlertFatal])
+    u_acc_core.u_acc_rf_base.u_call_stack.u_stack_wr_ptr, alert_tx_o[AlertFatalIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(AccLoopInfoStackWrPtrAlertCheck_A,
     u_acc_core.u_acc_controller.u_acc_loop_controller.loop_info_stack.u_stack_wr_ptr,
-    alert_tx_o[AlertFatal])
+    alert_tx_o[AlertFatalIdx])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
-      u_reg, alert_tx_o[AlertFatal])
+      u_reg, alert_tx_o[AlertFatalIdx])
   // other onehot checks
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RfBaseOnehotCheck_A,
       u_acc_core.u_acc_rf_base.gen_rf_base_ff.u_acc_rf_base_inner.u_prim_onehot_check,
-      alert_tx_o[AlertFatal])
+      alert_tx_o[AlertFatalIdx])
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RfBignumOnehotCheck_A,
       u_acc_core.u_acc_rf_bignum.gen_rf_bignum_ff.u_acc_rf_bignum_inner.u_prim_onehot_check,
-      alert_tx_o[AlertFatal])
+      alert_tx_o[AlertFatalIdx])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemRspFifo,
                                                u_tlul_adapter_sram_dmem.u_rspfifo,
-                                               alert_tx_o[AlertFatal])
+                                               alert_tx_o[AlertFatalIdx])
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemSramReqFifo,
                                                u_tlul_adapter_sram_dmem.u_sramreqfifo,
-                                               alert_tx_o[AlertFatal])
+                                               alert_tx_o[AlertFatalIdx])
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemReqFifo,
                                                u_tlul_adapter_sram_dmem.u_reqfifo,
-                                               alert_tx_o[AlertFatal])
+                                               alert_tx_o[AlertFatalIdx])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemRspFifo,
                                                u_tlul_adapter_sram_imem.u_rspfifo,
-                                               alert_tx_o[AlertFatal])
+                                               alert_tx_o[AlertFatalIdx])
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemSramReqFifo,
                                                u_tlul_adapter_sram_imem.u_sramreqfifo,
-                                               alert_tx_o[AlertFatal])
+                                               alert_tx_o[AlertFatalIdx])
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemReqFifo,
                                                u_tlul_adapter_sram_imem.u_reqfifo,
-                                               alert_tx_o[AlertFatal])
+                                               alert_tx_o[AlertFatalIdx])
 endmodule

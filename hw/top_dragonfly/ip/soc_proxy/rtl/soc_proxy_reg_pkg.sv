@@ -20,6 +20,11 @@ package soc_proxy_reg_pkg;
     AlertFatalAlertIntgIdx = 0
   } soc_proxy_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b1 // fatal_alert_intg
+  };
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

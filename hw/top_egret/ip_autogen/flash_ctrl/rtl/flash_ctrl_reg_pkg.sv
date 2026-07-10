@@ -41,6 +41,15 @@ package flash_ctrl_reg_pkg;
     AlertRecovPrimFlashAlertIdx = 4
   } flash_ctrl_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b0, // recov_prim_flash_alert
+    1'b1, // fatal_prim_flash_alert
+    1'b1, // fatal_err
+    1'b1, // fatal_std_err
+    1'b0 // recov_err
+  };
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

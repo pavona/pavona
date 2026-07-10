@@ -93,9 +93,9 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn    ( AlertAsyncOn[i]         ),
-      .SkewCycles ( AlertSkewCycles         ),
-      .IsFatal    ( i == AlertFatalFaultIdx )
+      .AsyncOn    ( AlertAsyncOn[i] ),
+      .SkewCycles ( AlertSkewCycles ),
+      .IsFatal    ( AlertIsFatal[i] )
     ) u_prim_alert_sender (
       .clk_i         ( clk_i         ),
       .rst_ni        ( rst_ni        ),

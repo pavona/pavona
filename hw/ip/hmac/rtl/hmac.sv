@@ -773,7 +773,6 @@ module hmac
     reg2hw.alert_test.qe
   };
 
-  localparam logic [NumAlerts-1:0] AlertIsFatal = {1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
@@ -783,7 +782,7 @@ module hmac
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
+      .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),

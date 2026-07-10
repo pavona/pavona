@@ -20,6 +20,11 @@ package sram_ctrl_reg_pkg;
     AlertFatalErrorIdx = 0
   } sram_ctrl_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b1 // fatal_error
+  };
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////
