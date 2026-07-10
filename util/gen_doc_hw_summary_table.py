@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Copyright zeroRISC Inc.
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """Collect the one-line summaries of all hardware blocks and output them as
