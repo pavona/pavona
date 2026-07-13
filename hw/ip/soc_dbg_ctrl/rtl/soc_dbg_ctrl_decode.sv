@@ -92,15 +92,15 @@ module soc_dbg_ctrl_decode #(
     .q_o    ( {relocked_q}  )
   );
 
-  logic relocked_decoded;
-  assign relocked_decoded = prim_mubi_pkg::mubi4_test_true_strict(relocked_q);
+  logic relock_released;
+  assign relock_released = prim_mubi_pkg::mubi4_test_false_strict(relocked_q);
 
   // Output the decoded logic
-  assign relocked_o = relocked_decoded;
+  assign relocked_o = !relock_released;
   assign cat4_dbg_o = debug_category_q == soc_dbg_ctrl_pkg::DbgCategory4;
   assign cat3_dbg_o = (cat4_dbg_o || debug_category_q == soc_dbg_ctrl_pkg::DbgCategory3) &&
-                      !relocked_decoded;
+                      relock_released;
   assign cat2_dbg_o = (cat4_dbg_o || cat3_dbg_o ||
                       debug_category_q == soc_dbg_ctrl_pkg::DbgCategory2) &&
-                      !relocked_decoded;
+                      relock_released;
 endmodule
