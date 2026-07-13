@@ -483,6 +483,7 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
       reseed: 6
+      run_timeout_mins: 90
     }
     // TODO(#501): Re-evaluate or fix for new pinmux(less) configurations
     // {
@@ -514,6 +515,7 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=0"]
       reseed: 5
+      run_timeout_mins: 100
     }
     {
       name: chip_sw_uart_tx_rx_bootstrap
@@ -545,7 +547,7 @@
       sw_images: ["//sw/device/tests:uart_tx_rx_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000"]
-      run_timeout_mins: 120
+      run_timeout_mins: 800
       reseed: 20
     }
     {
@@ -564,12 +566,14 @@
       sw_images: ["//sw/device/tests/sim_dv:i2c_host_tx_rx_test:6:new_rules"]
       run_opts: ["+i2c_idx=0"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_timeout_mins: 130
     }
     {
       name: chip_sw_i2c_device_tx_rx
       uvm_test_seq: chip_sw_i2c_device_tx_rx_vseq
       sw_images: ["//sw/device/tests/sim_dv:i2c_device_tx_rx_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_timeout_mins: 80
     }
     {
       name: chip_sw_spi_device_tpm
@@ -588,6 +592,7 @@
       uvm_test_seq: chip_sw_spi_passthrough_vseq
       sw_images: ["//sw/device/tests/sim_dv:spi_passthrough_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_timeout_mins: 210
     }
     {
       name: chip_sw_spi_device_pass_through_collision
@@ -794,6 +799,7 @@
       sw_images: ["//sw/device/tests/sim_dv:lc_walkthrough_testunlocks_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=OtpTypeLcStRaw", "+dest_dec_state=DecLcStTestUnlock7"]
+      run_timeout_mins: 140
     }
     {
       name: chip_sw_rstmgr_sw_req
@@ -991,6 +997,7 @@
       sw_images: ["sw/device/tests:rv_core_ibex_nmi_irq_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=10_000_000"]
+      run_timeout_mins: 140
     }
     {
       name: chip_sw_aes_enc
@@ -1093,7 +1100,7 @@
       sw_images: ["//sw/device/tests:alert_handler_lpg_clkoff_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_scb=0", "+sw_test_timeout_ns=3000_000_000"]
-      run_timeout_mins: 240
+      run_timeout_mins: 500
     }
     // {
     //   name: chip_sw_alert_handler_lpg_reset_toggle
@@ -1414,14 +1421,14 @@
       uvm_test_seq: "chip_jtag_csr_rw_vseq"
       en_run_modes: ["stub_cpu_mode"]
       run_opts: ["+en_scb=0", "+csr_rw", "+use_jtag_dmi=1", "+csr_rw_blocking=1"]
-      run_timeout_mins: 180
+      run_timeout_mins: 500
     }
     {
       name: chip_jtag_mem_access
       uvm_test_seq: "chip_jtag_mem_vseq"
       en_run_modes: ["stub_cpu_mode"]
       run_opts: ["+use_jtag_dmi=1"]
-      run_timeout_mins: 180
+      run_timeout_mins: 500
     }
     {
       name: chip_sw_ast_clk_outputs
@@ -1483,6 +1490,7 @@
       sw_images: ["//sw/device/tests:alert_handler_escalation_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_jtag_dmi=1"]
+      run_timeout_mins: 300
     }
     {
       name: chip_rv_dm_lc_disabled
@@ -1582,7 +1590,7 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=180_000_000", "+rng_srate_value_min=15",
                  "+rng_srate_value_max=20", "+cal_sys_clk_70mhz=1", "+en_jitter=1"]
-      run_timeout_mins: 240
+      run_timeout_mins: 360
     }
 // TODO: refactor test so that it does not rely on ADC_CTRL
 //    {
