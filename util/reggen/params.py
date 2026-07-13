@@ -6,26 +6,9 @@ import re
 from collections.abc import MutableMapping
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
-from reggen.lib import check_keys, check_str, check_int, check_bool, check_list
-
-REQUIRED_FIELDS = {
-    'name': ['s', "name of the item"],
-}
-
-OPTIONAL_FIELDS = {
-    'desc': ['s', "description of the item"],
-    'type': ['s', "item type. int by default"],
-    'default': ['s', "item default value"],
-    'local': ['pb', "to be localparam"],
-    'expose': ['pb', "to be exposed to top"],
-    'randcount':
-    ['s', "number of bits to randomize in the parameter. 0 by default."],
-    'randtype': ['s', "type of randomization to perform. none by default"],
-    'unpacked_dimensions': [
-        's', "unpacked dimensions of parameter e.g. [16] for a single "
-        "unpacked dimension of size 16. none by default"
-    ],
-}
+from reggen.lib import check_str, check_int, check_bool, check_list
+from basegen.validate import validate_schema
+from basegen.lib import cast_hjson_values
 
 
 class BaseParam:
@@ -126,19 +109,20 @@ class MemSizeParameter(BaseParam):
 
 
 def _parse_parameter(where: str, raw: object) -> BaseParam:
-    rd = check_keys(raw, where, list(REQUIRED_FIELDS.keys()),
-                    list(OPTIONAL_FIELDS.keys()))
+    if not isinstance(raw, dict):
+        raise TypeError('must parse parameter from dict: param at ' + where)
+    validate_schema(cast_hjson_values(raw), 'urn:reggen:parameter')
 
     # TODO: Check if PascalCase or ALL_CAPS
-    name = check_str(rd['name'], 'name field of ' + where)
+    name = check_str(raw['name'], 'name field of ' + where)
 
-    r_desc = rd.get('desc')
+    r_desc = raw.get('desc')
     if r_desc is None:
         desc = None
     else:
         desc = check_str(r_desc, 'desc field of ' + where)
 
-    r_unpacked_dimensions = rd.get('unpacked_dimensions')
+    r_unpacked_dimensions = raw.get('unpacked_dimensions')
     if r_unpacked_dimensions is None:
         unpacked_dimensions = None
     else:
@@ -148,10 +132,10 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
 
     # TODO: We should probably check that any register called RndCnstFoo has
     #       randtype and randcount.
-    if name.lower().startswith('rndcnst') and 'randtype' in rd:
+    if name.lower().startswith('rndcnst') and 'randtype' in raw:
         # This is a random netlist constant and should be parsed as a
         # RandParameter.
-        randtype = check_str(rd.get('randtype', 'none'),
+        randtype = check_str(raw.get('randtype', 'none'),
                              'randtype field of ' + where)
         if randtype not in ["perm", "data", "extdata"]:
             raise ValueError(
@@ -159,7 +143,7 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                 'is a random netlist constant, which means it must specify a '
                 f'randtype of "perm" or "data", rather than {randtype!r}.')
 
-        r_randcount = rd.get('randcount')
+        r_randcount = raw.get('randcount')
         if r_randcount is None:
             raise ValueError(
                 f'At {where}, the random netlist constant {name} has no '
@@ -170,21 +154,21 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                 f'At {where}, the random netlist constant {name} has a '
                 f'randcount of {randcount}, which is not positive.')
 
-        r_type = rd.get('type')
+        r_type = raw.get('type')
         if r_type is None:
             raise ValueError(
                 f'At {where}, parameter {name} has no type field (which is '
                 'required for random netlist constants).')
         param_type = check_str(r_type, 'type field of ' + where)
 
-        local = check_bool(rd.get('local', 'false'), 'local field of ' + where)
+        local = check_bool(raw.get('local', 'false'), 'local field of ' + where)
         if local:
             raise ValueError(
                 f'At {where}, the parameter {name} specifies local = true, '
                 'meaning that it is a localparam. This is incompatible with '
                 'being a random netlist constant (how would it be set?)')
 
-        r_default = rd.get('default')
+        r_default = raw.get('default')
         if r_default is not None:
             raise ValueError(
                 f'At {where}, the parameter {name} specifies a value for '
@@ -192,7 +176,7 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                 'random netlist constant: the value will be set by the '
                 'random generator.')
 
-        expose = check_bool(rd.get('expose', 'false'),
+        expose = check_bool(raw.get('expose', 'false'),
                             'expose field of ' + where)
         if expose:
             raise ValueError(
@@ -205,32 +189,32 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
     # This doesn't have a name like a random netlist constant. Check that it
     # doesn't define randcount or randtype.
     for fld in ['randcount', 'randtype']:
-        if fld in rd:
+        if fld in raw:
             raise ValueError("At {where}, the parameter {name} specifies "
                              "{fld} but the name doesn't look like a random "
                              "netlist constant. To use {fld}, prefix the name "
                              "with RndCnst.")
 
     if name.lower().startswith('memsize'):
-        r_type = rd.get('type')
+        r_type = raw.get('type')
         if r_type is None:
             raise ValueError(
                 f'At {where}, parameter {name} has no type field (which is '
                 'required for memory size parameters).')
         param_type = check_str(r_type, 'type field of ' + where)
 
-        if rd.get('type') != "int":
+        if raw.get('type') != "int":
             raise ValueError(f'At {where}, memory size parameter {name} must '
                              'be of type integer.')
 
-        local = check_bool(rd.get('local', 'false'), 'local field of ' + where)
+        local = check_bool(raw.get('local', 'false'), 'local field of ' + where)
         if local:
             raise ValueError(
                 f'At {where}, the parameter {name} specifies local = true, '
                 'meaning that it is a localparam. This is incompatible with '
                 'being a memory size parameter.')
 
-        expose = check_bool(rd.get('expose', 'false'),
+        expose = check_bool(raw.get('expose', 'false'),
                             'expose field of ' + where)
         if expose:
             raise ValueError(
@@ -240,16 +224,16 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
 
         return MemSizeParameter(name, desc, param_type)
 
-    r_type = rd.get('type')
+    r_type = raw.get('type')
     if r_type is None:
         param_type = 'int'
     else:
         param_type = check_str(r_type, 'type field of ' + where)
 
-    local = check_bool(rd.get('local', 'true'), 'local field of ' + where)
-    expose = check_bool(rd.get('expose', 'false'), 'expose field of ' + where)
+    local = check_bool(raw.get('local', 'true'), 'local field of ' + where)
+    expose = check_bool(raw.get('expose', 'false'), 'expose field of ' + where)
 
-    r_default = rd.get('default')
+    r_default = raw.get('default')
     if r_default is None:
         raise ValueError(f'At {where}, the {name} param has no default field.')
     else:
