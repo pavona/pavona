@@ -378,7 +378,7 @@ function void ac_range_check_predictor::update_log(tl_seq_item item, int index, 
 
   if (`gmv(log_config_csr.log_enable)) begin
     if (`gmv(log_status_csr.deny_cnt) == 0 && !overflow_flag &&
-        `gmv(range_attr_csr.log_denied_access || no_match) == MuBi4True) begin
+        (`gmv(range_attr_csr.log_denied_access) == MuBi4True || no_match)) begin
       deny_cnt = deny_cnt + 8'd1;
       `uvm_info(`gfn, $sformatf({"First deny log information:\n",
               " - deny_range_index: %0d\n",
