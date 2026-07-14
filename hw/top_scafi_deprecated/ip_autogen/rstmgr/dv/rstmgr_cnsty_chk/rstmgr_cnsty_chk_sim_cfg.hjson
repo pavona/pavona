@@ -37,6 +37,14 @@
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
 
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
+    }
+  ]
+
   // List of test specifications.
   tests: [
     {
