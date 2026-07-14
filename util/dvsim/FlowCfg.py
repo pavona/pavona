@@ -581,6 +581,12 @@ class FlowCfg():
 
             if mode == "private":
                 self._publish_native_artifacts(item, repo_dir, test)
+                latest_json = os.path.join(item.scratch_path, 'reports', 'latest', 'report.json')
+                if os.path.exists(latest_json):
+                    shutil.copy2(latest_json, os.path.join(dest_dir, 'report.json'))
+                else:
+                    log.warning("No report.json found for %s at %s, skipping.",
+                                item.name, latest_json)
             else:
                 self._strip_native_cov_link(Path(os.path.join(dest_dir, 'report.html')))
             log.info("Copied report for %s", item.name)
