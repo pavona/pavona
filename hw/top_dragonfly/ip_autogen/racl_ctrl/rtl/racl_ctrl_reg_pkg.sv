@@ -78,10 +78,30 @@ package racl_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic [4:0]  q;
+      logic        qe;
+    } ctn_uid;
+    struct packed {
+      logic [3:0]  q;
+      logic        qe;
+    } role;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } read_access;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } overflow;
+    struct packed {
       logic        q;
       logic        qe;
     } valid;
   } racl_ctrl_reg2hw_error_log_reg_t;
+
+  typedef struct packed {
+    logic [29:0] q;
+  } racl_ctrl_reg2hw_error_log_address_reg_t;
 
   typedef struct packed {
     logic        d;
@@ -91,48 +111,43 @@ package racl_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [4:0]  d;
-      logic        de;
     } ctn_uid;
     struct packed {
       logic [3:0]  d;
-      logic        de;
     } role;
     struct packed {
       logic        d;
-      logic        de;
     } read_access;
     struct packed {
       logic        d;
-      logic        de;
     } overflow;
     struct packed {
       logic        d;
-      logic        de;
     } valid;
   } racl_ctrl_hw2reg_error_log_reg_t;
 
   typedef struct packed {
     logic [29:0] d;
-    logic        de;
   } racl_ctrl_hw2reg_error_log_address_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    racl_ctrl_reg2hw_policy_all_rd_wr_shadowed_reg_t policy_all_rd_wr_shadowed; // [105:74]
-    racl_ctrl_reg2hw_policy_rot_private_shadowed_reg_t policy_rot_private_shadowed; // [73:42]
-    racl_ctrl_reg2hw_policy_soc_rot_shadowed_reg_t policy_soc_rot_shadowed; // [41:10]
-    racl_ctrl_reg2hw_intr_state_reg_t intr_state; // [9:9]
-    racl_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [8:8]
-    racl_ctrl_reg2hw_intr_test_reg_t intr_test; // [7:6]
-    racl_ctrl_reg2hw_alert_test_reg_t alert_test; // [5:2]
-    racl_ctrl_reg2hw_error_log_reg_t error_log; // [1:0]
+    racl_ctrl_reg2hw_policy_all_rd_wr_shadowed_reg_t policy_all_rd_wr_shadowed; // [150:119]
+    racl_ctrl_reg2hw_policy_rot_private_shadowed_reg_t policy_rot_private_shadowed; // [118:87]
+    racl_ctrl_reg2hw_policy_soc_rot_shadowed_reg_t policy_soc_rot_shadowed; // [86:55]
+    racl_ctrl_reg2hw_intr_state_reg_t intr_state; // [54:54]
+    racl_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [53:53]
+    racl_ctrl_reg2hw_intr_test_reg_t intr_test; // [52:51]
+    racl_ctrl_reg2hw_alert_test_reg_t alert_test; // [50:47]
+    racl_ctrl_reg2hw_error_log_reg_t error_log; // [46:30]
+    racl_ctrl_reg2hw_error_log_address_reg_t error_log_address; // [29:0]
   } racl_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    racl_ctrl_hw2reg_intr_state_reg_t intr_state; // [49:48]
-    racl_ctrl_hw2reg_error_log_reg_t error_log; // [47:31]
-    racl_ctrl_hw2reg_error_log_address_reg_t error_log_address; // [30:0]
+    racl_ctrl_hw2reg_intr_state_reg_t intr_state; // [43:42]
+    racl_ctrl_hw2reg_error_log_reg_t error_log; // [41:30]
+    racl_ctrl_hw2reg_error_log_address_reg_t error_log_address; // [29:0]
   } racl_ctrl_hw2reg_t;
 
   // Register offsets
@@ -149,6 +164,14 @@ package racl_ctrl_reg_pkg;
   // Reset values for hwext registers and their fields
   parameter logic [0:0] RACL_CTRL_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [1:0] RACL_CTRL_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [11:0] RACL_CTRL_ERROR_LOG_RESVAL = 12'h 0;
+  parameter logic [0:0] RACL_CTRL_ERROR_LOG_VALID_RESVAL = 1'h 0;
+  parameter logic [0:0] RACL_CTRL_ERROR_LOG_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] RACL_CTRL_ERROR_LOG_READ_ACCESS_RESVAL = 1'h 0;
+  parameter logic [3:0] RACL_CTRL_ERROR_LOG_ROLE_RESVAL = 4'h 0;
+  parameter logic [4:0] RACL_CTRL_ERROR_LOG_CTN_UID_RESVAL = 5'h 0;
+  parameter logic [29:0] RACL_CTRL_ERROR_LOG_ADDRESS_RESVAL = 30'h 0;
+  parameter logic [29:0] RACL_CTRL_ERROR_LOG_ADDRESS_ADDRESS_RESVAL = 30'h 0;
 
   // Register index
   typedef enum int {
