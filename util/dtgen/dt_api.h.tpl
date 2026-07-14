@@ -223,6 +223,13 @@ typedef ${top_name.as_snake_case()}_pinmux_mio_out_t dt_pinmux_mio_out_t;
 typedef ${top_name.as_snake_case()}_direct_pads_t dt_pinmux_direct_pad_t;
 typedef ${top_name.as_snake_case()}_muxed_pads_t  dt_pinmux_muxed_pad_t;
 
+
+/** The last valid insel value. */
+static const dt_pinmux_insel_t kDtPinmuxInselLast = k${top_name.as_camel_case()}PinmuxInselLast;
+
+/** The last valid outsel value. */
+static const dt_pinmux_outsel_t kDtPinmuxOutselLast = k${top_name.as_camel_case()}PinmuxOutselLast;
+
 /** Tie constantly to zero. */
 static const dt_pinmux_outsel_t kDtPinmuxOutselConstantZero = k${top_name.as_camel_case()}PinmuxOutselConstantZero;
 
