@@ -11,7 +11,7 @@ from typing import List
 
 from JobTime import JobTime
 from LauncherFactory import get_launcher
-from sim_utils import (get_cov_summary_table, get_job_runtime,
+from sim_utils import (get_cov_summary_table, get_job_mem, get_job_runtime,
                        get_simulated_time)
 from tabulate import tabulate
 from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
@@ -84,6 +84,10 @@ class Deploy():
         # Job's wall-clock time from dispatch to completion, as measured by
         # dvsim (includes infra/setup/IO overhead the tool runtime omits).
         self.job_wall_time = JobTime()
+        # Job's tool-reported memory footprint in MB (None if the tool/log
+        # does not report it). For VCS this is the design's
+        # "data structure size", not the process's peak resident memory.
+        self.job_mem = None
 
     def _define_attrs(self):
         """Defines the attributes this instance needs to have.
@@ -315,6 +319,14 @@ class Deploy():
             log.warning(f"{self.full_name}: {e} Using dvsim-maintained "
                         "job_runtime instead.")
             self.job_runtime.set(self.launcher.job_runtime_secs, "s")
+
+        # Extract the tool-reported memory footprint if available.
+        try:
+            mem, mem_unit = get_job_mem(log_text, self.sim_cfg.tool)
+            self.job_mem = mem * {"K": 1 / 1024, "M": 1, "G": 1024}[mem_unit]
+        except (RuntimeError, NotImplementedError) as e:
+            log.log(VERBOSE, f"{self.full_name}: {e}")
+            self.job_mem = None
 
     def create_launcher(self):
         """Creates the launcher instance.

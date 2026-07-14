@@ -768,11 +768,35 @@ class SimCfg(FlowCfg):
                     'failing_tests': fts,
                 })
 
+        # Per-seed telemetry, grouped by test name. Unlike 'results' (which is
+        # aggregated and mapped to the testplan), this is the raw record: one
+        # entry per seed. It is emitted to report.json only and is deliberately
+        # not added to the Markdown/HTML report (see _gen_results).
+        def _jobtime_val(jt, unit):
+            """JobTime -> float in `unit`, or None when unset (0)."""
+            val = jt.with_unit(unit).get()[0]
+            return val if val else None
+
+        tests_by_name = OrderedDict()
+        for r in self.runs:
+            start = getattr(r.launcher, "start_time", None)
+            tests_by_name.setdefault(r.name, []).append({
+                'seed': str(r.seed),
+                'status': run_results.get(r, "K"),
+                'start': start.isoformat() if start else None,
+                'wall_time_s': _jobtime_val(r.job_wall_time, 's'),
+                'cpu_time_s': _jobtime_val(r.job_runtime, 's'),
+                'simulated_time_us': _jobtime_val(r.simulated_time, 'us'),
+                'data_structure_size_mb': r.job_mem,
+            })
+        results['tests'] = [{'name': name, 'seeds': seeds}
+                            for name, seeds in tests_by_name.items()]
+
         # Store the `results` dictionary in this object.
         self.results_dict = results
 
         # Return the `results` dictionary as json string.
-        return json.dumps(self.results_dict)
+        return json.dumps(self.results_dict, indent=2)
 
     def _gen_results(self, run_results):
         '''

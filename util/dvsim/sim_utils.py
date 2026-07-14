@@ -124,6 +124,26 @@ def get_job_runtime(log_text: List, tool: str) -> Tuple[float, str]:
                                   "extraction.")
 
 
+def get_job_mem(log_text: List, tool: str) -> Tuple[float, str]:
+    """Returns the job's peak memory usage along with its units.
+
+    EDA tools report the memory footprint of the job in the log file. This
+    method invokes the tool specific method which parses the log text and
+    returns the memory as a floating point value followed by its units (a
+    single-letter magnitude prefix, e.g. 'K', 'M', 'G') as a tuple.
+
+    `log_text` is the job's log file contents as a list of lines.
+    `tool` is the EDA tool used to run the job.
+    Returns the memory, units as a tuple.
+    Raises NotImplementedError exception if the EDA tool is not supported.
+    """
+    if tool == 'vcs':
+        return vcs_job_mem(log_text)
+    else:
+        raise NotImplementedError(f"{tool} is unsupported for job memory "
+                                  "extraction.")
+
+
 def vcs_job_runtime(log_text: List) -> Tuple[float, str]:
     """Returns the VCS job runtime (wall clock time) along with its units.
 
@@ -141,6 +161,24 @@ def vcs_job_runtime(log_text: List) -> Tuple[float, str]:
         if m:
             return float(m.group(1)), m.group(2)[0]
     raise RuntimeError("Job runtime not found in the log.")
+
+
+def vcs_job_mem(log_text: List) -> Tuple[float, str]:
+    """Returns the VCS job's data structure size (memory) with its units.
+
+    This is VCS's reported footprint of the design's data structures, not the
+    process's peak resident memory. Search pattern example:
+    CPU Time:      0.610 seconds;       Data structure size:   1.6Mb
+
+    Returns the memory value and its single-letter magnitude prefix as a tuple.
+    Raises RuntimeError exception if the search pattern is not found.
+    """
+    pattern = r"Data structure size:\s*(\d+\.?\d*)\s*([KMG])b"
+    for line in reversed(log_text):
+        m = re.search(pattern, line)
+        if m:
+            return float(m.group(1)), m.group(2)
+    raise RuntimeError("Job memory not found in the log.")
 
 
 def xcelium_job_runtime(log_text: List) -> Tuple[float, str]:
