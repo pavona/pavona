@@ -33,7 +33,6 @@
              // Unit tests for UVCs.
              "{proj_root}/hw/dv/sv/tl_agent/dv/tl_agent_sim_cfg.hjson",
              // IPs.
-             "{proj_root}/hw/ip/adc_ctrl/dv/adc_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/aes/dv/aes_masked_sim_cfg.hjson",
              "{proj_root}/hw/ip/aes/dv/aes_unmasked_sim_cfg.hjson",
              "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
@@ -45,7 +44,6 @@
              "{proj_root}/hw/ip/entropy_src/dv/entropy_src_rng4bits_sim_cfg.hjson",
              "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
              "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
-             "{proj_root}/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson",
              "{proj_root}/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson",
              "{proj_root}/hw/ip/kmac/dv/kmac_masked_sim_cfg.hjson",
              "{proj_root}/hw/ip/kmac/dv/kmac_unmasked_sim_cfg.hjson",
@@ -54,7 +52,6 @@
              "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_volatile_unlock_disabled_sim_cfg.hjson",
              "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_volatile_unlock_enabled_sim_cfg.hjson",
              "{proj_root}/hw/ip/mbx/dv/mbx_sim_cfg.hjson",
-             "{proj_root}/hw/ip/pattgen/dv/pattgen_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_32kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_64kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_dm/dv/rv_dm_use_dmi_interface_sim_cfg.hjson",
@@ -67,9 +64,7 @@
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_exec_64kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sysrst_ctrl/dv/sysrst_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
-             "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
              "{proj_root}/hw/ip/acc/dv/uvm/acc_pqc_sim_cfg.hjson",
              "{proj_root}/hw/ip/acc/dv/uvm/acc_standard_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_alert/prim_alert_sim_cfg.hjson",

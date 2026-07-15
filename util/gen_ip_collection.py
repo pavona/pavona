@@ -10,6 +10,7 @@ Usage:
 """
 import argparse
 import glob
+import hjson
 import os
 from pathlib import Path
 
@@ -96,6 +97,36 @@ def collect_sim_dv(tops):
             top_cfgs[top].append(cfg)
 
     return ip_cfgs, top_cfgs
+
+
+def top_module_types(top):
+    """Return the set of IP `type`s instantiated in a top, read from its
+    definition hjson (hw/{top}/data/{top}.hjson `module` list)."""
+    topdef = f"hw/{top}/data/{top}.hjson"
+    with open(topdef) as f:
+        data = hjson.load(f)
+    return {m["type"] for m in data.get("module", []) if "type" in m}
+
+
+def filter_ip_cfgs_for_top(ip_cfgs, module_types):
+    """Restrict shared IP cfgs to those a top actually instantiates.
+
+    UVCs (hw/dv/sv/...) and prims (hw/ip/prim/...) are generic infrastructure
+    that is nested across every top, so they are always kept. A regular
+    hw/ip/{ip}/... block is kept only if {ip} is in the top's module types.
+    """
+    kept = []
+    for cfg in ip_cfgs:
+        parts = Path(cfg).parts
+        if cfg.startswith("hw/dv/sv/"):
+            kept.append(cfg)
+        elif len(parts) >= 3 and parts[1] == "ip":
+            ip = parts[2]
+            if ip == "prim" or ip in module_types:
+                kept.append(cfg)
+        else:
+            kept.append(cfg)
+    return kept
 
 
 def format_use_cfgs(cfgs, indent=13):
@@ -212,11 +243,13 @@ def run_sim_dv(tops, dry_run, flow):
     for top, cfgs in top_cfgs.items():
         print(f"  Found {len(cfgs)} cfgs for {top}")
 
-    # Per-top hjson files
+    # Per-top hjson files: restrict the shared IP cfgs to blocks the top
+    # actually instantiates (per its definition hjson).
     for top in tops:
         out_path = f"hw/{top}/dv/{top}_sim_cfgs.hjson"
         copyright_header = get_copyright_header(out_path, flow, top_cfgs)
-        content = generate_hjson(ip_cfgs, top_cfgs, [top], copyright_header, True)
+        top_ip_cfgs = filter_ip_cfgs_for_top(ip_cfgs, top_module_types(top))
+        content = generate_hjson(top_ip_cfgs, top_cfgs, [top], copyright_header, True)
         write_file(out_path, content, dry_run)
 
     # Global hjson file
