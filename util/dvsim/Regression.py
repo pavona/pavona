@@ -18,6 +18,10 @@ class Regression(Mode):
     # Maintain a list of tests str
     item_names = []
 
+    # Scalars that override the matching test attribute when set on a
+    # regression (see merge_regression_opts).
+    test_overrides = ("reseed", "run_timeout_mins", "run_timeout_multiplier")
+
     def __init__(self, regdict):
         self.name = ""
 
@@ -32,6 +36,8 @@ class Regression(Mode):
         self.test_names = []
 
         self.reseed = None
+        self.run_timeout_mins = None
+        self.run_timeout_multiplier = None
         self.excl_tests = []  # TODO: add support for this
         self.en_sim_modes = []
         self.en_run_modes = []
@@ -172,6 +178,8 @@ class Regression(Mode):
             test.post_run_cmds.extend(self.post_run_cmds)
             test.run_opts.extend(self.run_opts)
 
-            # Override reseed if available.
-            if self.reseed is not None:
-                test.reseed = self.reseed
+            # Scalar knobs set on the regression override the test's value.
+            for attr in Regression.test_overrides:
+                regr_val = getattr(self, attr)
+                if regr_val is not None:
+                    setattr(test, attr, regr_val)
