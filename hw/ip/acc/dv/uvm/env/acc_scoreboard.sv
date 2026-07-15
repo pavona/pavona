@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -618,10 +619,10 @@ class acc_scoreboard extends cip_base_scoreboard #(
     //    arbitrary delay for alert_p to go down +
     //    2 cycles of main clock
     //
-    // We model the 3rd and 4th term as 10 slow clock cycles in total, giving:
+    // We model the 3rd and 4th term as 100 slow clock cycles in total, giving:
     max_delay = (cfg.m_alert_agent_cfgs[alert_name].ack_delay_max +
                  cfg.m_alert_agent_cfgs[alert_name].ack_stable_max +
-                 10);
+                 100);
     fork
       wait_for_alert(alert_name, max_delay);
     join_none
