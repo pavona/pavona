@@ -20,8 +20,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-    files: []
-      # - lint/tlul_jtag_dtm.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
