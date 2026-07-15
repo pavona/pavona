@@ -353,6 +353,14 @@ def parse_args():
                              'not used, dvsim will process all configs listed '
                              'in a primary config.'))
 
+    whatg.add_argument("--cfg-groups",
+                       nargs="*",
+                       metavar="GROUP",
+                       help=('The .hjson file is a primary config. Only run '
+                             'the configs in the named cfg_groups and apply '
+                             'each group\'s overrides. Independent of -i, '
+                             'which still selects the tests/regressions.'))
+
     disg = parser.add_argument_group('Dispatch options')
 
     disg.add_argument("--job-prefix",

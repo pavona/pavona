@@ -389,9 +389,21 @@ class SimCfg(FlowCfg):
                                self.run_opts, self.sw_images,
                                self.sw_build_opts)
 
+        # Validate cfg_group override keys against the allowlist.
+        for attr in self.group_overrides:
+            if attr not in Regression.test_overrides:
+                log.error("cfg_groups override %r is not one of %s.",
+                          attr, list(Regression.test_overrides))
+                sys.exit(1)
+
         # Process reseed override and create the build_list
         build_list_names = []
         for test in self.run_list:
+            # Apply cfg_group overrides (above regression/test, below flags).
+            for attr in Regression.test_overrides:
+                if attr in self.group_overrides:
+                    setattr(test, attr, self.group_overrides[attr])
+
             # Override reseed if available.
             if self.reseed_ovrd is not None:
                 test.reseed = self.reseed_ovrd

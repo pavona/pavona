@@ -47,6 +47,11 @@ class FlowCfg():
         self.items = list(dict.fromkeys(args.items))
         self.list_items = args.list
         self.select_cfgs = args.select_cfgs
+        self.cfg_group_sel = args.cfg_groups
+        self.cfg_groups = None
+        # Scalar overrides captured from the selected cfg_groups entry, stamped
+        # onto each selected child cfg (see prune_selected_cfgs).
+        self.group_overrides = {}
         self.flow_cfg_file = flow_cfg_file
         self.args = args
         self.scratch_root = args.scratch_root
@@ -371,8 +376,36 @@ class FlowCfg():
         # This should run after self.cfgs has been set
         assert self.cfgs
 
-        # If the user didn't pass --select-cfgs, we don't do anything.
-        if self.select_cfgs is None:
+        select = self.select_cfgs
+
+        # --cfg-groups selects the named groups' cfgs and captures their scalar
+        # overrides. This is separate from -i, which selects tests/regressions.
+        # Each entry is a dict with a 'cfgs' list plus optional overrides.
+        if select is None and self.cfg_group_sel:
+            if not self.is_primary_cfg:
+                log.error("--cfg-groups was passed, but {!r} is not a primary "
+                          "config.".format(self.flow_cfg_file))
+                sys.exit(1)
+            grouped = []
+            for name in self.cfg_group_sel:
+                entry = (self.cfg_groups or {}).get(name)
+                if entry is None:
+                    log.error("Requested cfg_group %r is not defined in %r.",
+                              name, self.flow_cfg_file)
+                    sys.exit(1)
+                if not isinstance(entry, dict):
+                    log.error("cfg_groups entry %r must be a dict with a "
+                              "'cfgs' list.", name)
+                    sys.exit(1)
+                grouped += entry.get("cfgs", [])
+                for key, value in entry.items():
+                    if key != "cfgs":
+                        self.group_overrides[key] = value
+            if grouped:
+                select = list(dict.fromkeys(grouped))
+
+        # If nothing selected either way, we don't do anything.
+        if select is None:
             return
 
         # If the user passed --select-cfgs, but this isn't a primary config
@@ -386,7 +419,7 @@ class FlowCfg():
         # Filter configurations
         filtered_cfgs = []
         for c in self.cfgs:
-            for s in self.select_cfgs:
+            for s in select:
                 if s == c.name:
                     filtered_cfgs.append(c)
                     break
@@ -395,6 +428,10 @@ class FlowCfg():
                     break
 
         self.cfgs = filtered_cfgs
+
+        # Make the group overrides visible to each selected child cfg.
+        for c in self.cfgs:
+            c.group_overrides = self.group_overrides
 
     def _create_deploy_objects(self):
         '''Create deploy objects from items that were passed on for being run.
