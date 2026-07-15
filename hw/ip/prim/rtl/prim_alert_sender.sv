@@ -306,7 +306,7 @@ module prim_alert_sender
       alert_rx_i.ping_p == alert_rx_i.ping_n [*2];
     endsequence
     sequence AckSigInt_S;
-      alert_rx_i.ack_p == alert_rx_i.ack_n [*2];
+      alert_rx_i.ping_p == alert_rx_i.ping_n [*2];
     endsequence
 
   `ifndef FPV_ALERT_NO_SIGINT_ERR
@@ -340,7 +340,7 @@ module prim_alert_sender
       alert_rx_i.ping_p == alert_rx_i.ping_n;
     endsequence
     sequence AckSigInt_S;
-      alert_rx_i.ack_p == alert_rx_i.ack_n;
+      alert_rx_i.ping_p == alert_rx_i.ping_n;
     endsequence
 
   `ifndef FPV_ALERT_NO_SIGINT_ERR
