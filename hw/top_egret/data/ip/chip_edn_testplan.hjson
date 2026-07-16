@@ -62,9 +62,9 @@
             - Consume entropy through rv_core_ibex.RND_DATA and verify, using rv_core_ibex.RND_STATUS, that the received bits are FIPS compliant.
             '''
       features: [
-        EDN.MODE.BOOT,
-        EDN.MODE.AUTO,
-        EDN.TRACK_SEED_COMPLIANCE
+        "EDN.MODE.BOOT",
+        "EDN.MODE.AUTO",
+        "EDN.TRACK_SEED_COMPLIANCE"
       ]
       stage: V3
       si_stage: SV3
@@ -92,7 +92,7 @@
               - The MAX_NUM_REQS_BETWEEN_RESEEDS register.
             '''
       features: [
-        EDN.MODE.AUTO
+        "EDN.MODE.AUTO"
       ]
       stage: V3
       si_stage: SV3
@@ -118,7 +118,7 @@
             - Verify that the entropy consuming endpoint can finish its operations and does not hang.
             '''
       features: [
-        EDN.MODE.SW
+        "EDN.MODE.SW"
       ]
       stage: V3
       si_stage: SV3
@@ -159,8 +159,8 @@
             - Verify that EDN0 triggers a recoverable alert and sets the RECOV_ALERT_STS.EDN_BUS_CMP_ALERT bit as more entropy is consumed via rv_core_ibex.RND_DATA and CSRNG continues to provide the same entropy bits to EDN0.
             '''
       features: [
-        EDN.MODE.AUTO,
-        EDN.BUS_CMP_ALERT
+        "EDN.MODE.AUTO",
+        "EDN.BUS_CMP_ALERT"
       ]
       stage: V3
       si_stage: SV3

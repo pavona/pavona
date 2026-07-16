@@ -1,3 +1,6 @@
+<!-- BEGIN-FEATURE: CSRNG.INTERFACE.SOFTWARE -->
+<!-- BEGIN-FEATURE: CSRNG.INTERFACE.HARDWARE0 -->
+<!-- BEGIN-FEATURE: CSRNG.INTERFACE.HARDWARE1 -->
 # Theory of Operation
 
 The CSRNG block has been constructed to follow the NIST recommendation for a DRBG mechanism based on block ciphers.
@@ -9,7 +12,7 @@ The application interface, which is described in more detail later, is provided 
 Once setup, the application interface user can request for entropy bits to be generated, as well as other functions.
 The application interface supports up to 15 hardware interfaces, and one software interface.
 
-A walk through of how CSRNG generates entropy bits begins with the application interface.
+The following describes how CSRNG generates entropy bits from the application interface:
 An `instantiate` command is issued from one of the application interfaces.
 This request moves into the `cmd_stage` block.
 Here the request is arbitrated between all of the `cmd_stage` blocks.
@@ -31,7 +34,9 @@ This block will hold the instance state for each application interface.
 The specific state information held in the instance is documented below.
 If the command was a `generate` command, the `genbits` data word will be returned to the requesting `cmd_stage` block.
 Finally, an `ack` response and status will be returned to the application interface once the command has been completely processed.
-
+<!-- END-FEATURE: CSRNG.INTERFACE.SOFTWARE -->
+<!-- END-FEATURE: CSRNG.INTERFACE.HARDWARE0 -->
+<!-- END-FEATURE: CSRNG.INTERFACE.HARDWARE1 -->
 
 ## Block Diagram
 
@@ -50,8 +55,9 @@ This provides some interleaving of commands since a generate command can be prog
 When sending an unsupported or illegal command, `CMD_STAGE_INVALID_ACMD_ALERT` will be triggered.
 Furthermore, CSRNG will respond with the appropriate error status response on the relevant interface.
 
+<!-- BEGIN-FEATURE: CSRNG.READ_INT_STATE -->
 #### Working State Values
-The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance.
+The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance. For debug and validation purposes, CSRNG provides read access to this internal working state. 
 It holds the following values:
 
 <table>
@@ -98,16 +104,19 @@ It holds the following values:
     </td>
   </tr>
 </table>
+<!-- END-FEATURE: CSRNG.READ_INT_STATE -->
 
 #### AES Cipher
 The `block_encrypt` block is where the `aes_cipher_core` block is located.
 This is the same block used in the AES design.
 Parameters are selected such that this is the unmasked version.
 
+<!-- BEGIN-FEATURE: CSRNG.INTERFACE.SOFTWARE -->
 #### Software Support
 The software application interface uses a set of TL-UL registers to send commands and receive generated bits.
 Since the registers are 32-bit words wide, some sequencing will need to be done by firmware to make this interface work properly.
 
+<!-- BEGIN-FEATURE: CSRNG.INTERFACE.HARDWARE0 -->
 ### Application Interface
 
 This section describes the application interface, which is required for performing any operations using a CSRNG instance (i.e. instantiation, reseeding, RNG generation, or uninstantiation).
@@ -129,6 +138,7 @@ For more details on how the application interface works, see the Theory of Opera
 In general, users of the application interface are either firmware or some hardware module entity.
 For hardware, a module can either directly control the application interface, or it can connect to an EDN module.
 Attaching to an EDN module allows for a simpler interface connection to a more layout-friendly distributed-chip network.
+<!-- END-FEATURE: CSRNG.INTERFACE.HARDWARE0 -->
 
 #### General Command Format
 
@@ -194,6 +204,9 @@ Below is a description of the fields of this header:
   </tr>
 </table>
 
+<!-- BEGIN-FEATURE: CSRNG.MODE.DETERMINISTIC -->
+<!-- BEGIN-FEATURE: CSRNG.MODE.NONDETERMINISTIC -->
+<!-- BEGIN-FEATURE: CSRNG.LIFECYCLE.DEBUGENABLE -->
 #### Command Description
 The command field of the application command header is described in detail in the table below.
 The actions performed by each command, as well as which flags are supported, are described in this table.
@@ -212,10 +225,10 @@ The actions performed by each command, as well as which flags are supported, are
     <td>Instantiate</td>
     <td>0x1</td>
     <td> Initializes an instance in CSRNG.
-         When seeding, the following table describes how the seed is determined based on <tt>flag0</tt> and the <tt>clen</tt> field.
+         When debug in enabled, CSRNG allows for seed diversification using either a production or non-production seed constant. The selected constant is determined by a debug enable signal controlled by the life cycle controller and is only enabled in test mode (so production devices can only use the production seed constant). When seeding, the following table describes how the seed is determined based on <tt>flag0</tt> and the <tt>clen</tt> field.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
         <b>WARNING:</b> Though <tt>flag0</tt> may be useful for generating fully-deterministic bit sequences, the use of this flag will render the instance non-FIPS compliant until it is re-instantiated.
-         When the <tt>Instantiate</tt> command is completed, the active bit in the CSRNG working state will be set.
+         When the <tt>Instantiate</tt> command is completed, the active bit in the CSRNG working state will be set. 
         <table>
           <thead>
             <tr><th>flag0</th><th>clen</th><th>Description</th></tr>
@@ -280,6 +293,9 @@ The actions performed by each command, as well as which flags are supported, are
     </td>
   </tr>
 </table>
+<!-- END-FEATURE: CSRNG.MODE.DETERMINISTIC -->
+<!-- END-FEATURE: CSRNG.MODE.NONDETERMINISTIC -->
+<!-- END-FEATURE: CSRNG.LIFECYCLE.DEBUGENABLE -->
 
 #### Command Response
 
@@ -292,6 +308,8 @@ A number of exception cases to be considered are enumerated in NIST SP 800-90A, 
 * Attempts to generate data when an instance has exceeded its maximum seed life.
 In such cases, a 32-bit exception message will be propagated to firmware via the `hw_exc_sts` register, and a `cs_hw_inst_exc` interrupt will be raised.
 
+<!-- BEGIN-FEATURE: CSRNG.MODE.DETERMINISTIC -->
+<!-- BEGIN-FEATURE: CSRNG.MODE.NONDETERMINISTIC -->
 #### Generated Bits (`genbits`) Interface
 
 In addition to the command response signals there is a bus for returning the generated bits.
@@ -305,6 +323,8 @@ This initial seed is tested to ensure some minimum quality for obfuscation use- 
   If the seed has been derived by firmware in a FIPS/CC complaint way, the DRBG instance can still be FIPS/CC compliant.
   To this end, CSRNG allows forcing the FIPS flag using the [`CTRL.FIPS_FORCE_ENABLE`](registers.md#ctrl) field and the [`FIPS_FORCE`](registers.md#fips_force) register.
   This feature may also be useful for known-answer testing through entropy consumers accepting FIPS/CC compliant entropy only.
+<!-- END-FEATURE: CSRNG.MODE.DETERMINISTIC -->
+<!-- END-FEATURE: CSRNG.MODE.NONDETERMINISTIC -->
 
 #### Handshaking signals
 
@@ -399,6 +419,7 @@ For details on how to accelerate this process, refer to [Uninstantiating CSRNG t
  {},
 ]}
 ```
+<!-- END-FEATURE: CSRNG.INTERFACE.SOFTWARE -->
 
 
 ##### Entropy Source Hardware Interface

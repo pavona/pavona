@@ -5,6 +5,7 @@ Each block connected to a peripheral port is referred to as an endpoint.
 
 To enable the EDN block, set the `EDN_ENABLE` field in the [`CTRL`](registers.md#ctrl) register..
 
+<!-- BEGIN-FEATURE: EDN.MODE.SW -->
 ## Interaction with CSRNG Application Interface Ports
 
 The CSRNG application interface implements the "function envelopes" recommended by [NIST SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf) for random number generation, and these function envelopes establish certain requirements for the order of operations.
@@ -25,6 +26,7 @@ CSRNG command format details can be found in [CSRNG](../../csrng/README.md).
 
 There are two broad modes for state machine control: auto request mode and boot-time request mode.
 
+<!-- BEGIN-FEATURE: EDN.MODE.BOOT -->
 ### Boot-time Request Mode
 
 Random values are needed by peripherals almost immediately after reset, so to simplify interactions with the boot ROM, boot-time request mode is the default mode.
@@ -51,6 +53,7 @@ There is a limit to how much entropy can be requested in the boot-time request m
 It is the responsibility of firmware to switch to the software port operation.
 If the BOOT_GEN_CMD command ends while an endpoint is requesting, EDN will never ack and the endpoint bus will hang.
 
+<!-- BEGIN-FEATURE: EDN.TRACK_SEED_COMPLIANCE -->
 #### Note on Security Considerations when Using Boot-time Request Mode
 
 Boot-time request mode is not intended for normal operation, as it tolerates the potential use of preliminary seeds for the attached CSRNG instance.
@@ -60,6 +63,7 @@ As detailed in the [`entropy_src` documentation](../../entropy_src/README.md), o
 All following seeds from the `entropy_src` are passed through the full FIPS-approved health checks.
 Therefore at most one EDN can receive a pre-FIPS seed after reset.
 Since boot-time request mode EDN streams may be FIPS non-compliant, firmware must at some point disable boot-time request mode and reinitialize the EDN for either firmware-driven operation or auto request mode.
+<!-- END-FEATURE: EDN.TRACK_SEED_COMPLIANCE -->
 
 #### Multiple EDNs in Boot-time Request Mode
 
@@ -75,7 +79,9 @@ For [Top Egret](../../../top_egret/README.md), the first random values distribut
 The `entropy_src` only creates one pre-FIPS seed, so any other EDNs must wait for their seeds to pass the full FIPS-recommended health checks.
 This means that for [Top Egret](../../../top_egret/README.md), each subsequent EDN must wait an additional 5ms before it can start distributing data.
 For instance, if there are three boot-time request mode EDN's in the system, the first will start distributing data 2ms after reset, the second will start distributing data 7ms after reset, and the third will start distributing data 12ms after reset.
+<!-- END-FEATURE: EDN.MODE.BOOT -->
 
+<!-- BEGIN-FEATURE: EDN.MODE.AUTO -->
 ### Auto Request Mode
 
 Before enabling auto request mode, firmware must configure the EDN's `generate` and `reseed` commands.
@@ -99,6 +105,8 @@ These circumstances are (a) when the EDN is disabled, (b) when the `SWPortMode` 
 
 It should be noted that when in auto request mode, no status will be updated that is used for the software port operation once the `instantiate` command has completed.
 If some hang condition were to occur when in this mode, the main state machine debug register should be read to determine if a hang condition is present.
+<!-- END-FEATURE: EDN.MODE.AUTO -->
+<!-- END-FEATURE: EDN.MODE.SW -->
 
 ### Note on State Machine Shutdown Delays
 
@@ -113,6 +121,7 @@ Once an application interface port has received an `instantiate` command, that a
 Therefore from a security perspective, an attack to that particular CSRNG instance is an attack on all the endpoints that share the same EDN.
 Meanwhile, seeds and other state variables specific to a particular CSRNG instance are not shared between endpoints on *separate* EDN instances, or with any hardware devices with direct connections to dedicated CSRNG application interface ports.
 
+<!-- BEGIN-FEATURE: EDN.TRACK_SEED_COMPLIANCE -->
 ## Interactions with Peripheral Devices
 
 Peripheral ports distribute data to the endpoints using four signals: `req`, `ack`, `bus`, and `fips`.
@@ -125,6 +134,14 @@ This persistence will allow an asynchronous endpoint to capture the correct data
 
 The `fips` signal is used to identify whether the values received on the `bus` have been prepared with complete adherence to the recommendations in NIST SP 800-90.
 If the `fips` signal is deasserted, it means the associated CSRNG instance has been instantiated with a pre-FIPS seed.
+<!-- END-FEATURE: EDN.TRACK_SEED_COMPLIANCE -->
+
+<!-- BEGIN-FEATURE: EDN.BUS_CMP_ALERT -->
+### Entropy Bus Comparison
+
+To help detect unexpected failures in the entropy distribution path, the EDN compares entropy bits subsequently received from CSRNG.
+If two successive values are identical, a recoverable alert is raised and the [`RECOV_ALERT_STS.EDN_BUS_CMP_ALERT`](registers.md#RECOV_ALERT_STS) status bit is set. 
+<!-- END-FEATURE: EDN.BUS_CMP_ALERT -->
 
 ## Block Diagram
 
@@ -146,6 +163,7 @@ The recommended write sequence for the entire entropy system is one configuratio
 
 See the [CSRNG IP](../../csrng/README.md) waveform section for the CSRNG application interface commands.
 
+<!-- BEGIN-FEATURE: EDN.TRACK_SEED_COMPLIANCE -->
 ##### Peripheral Hardware Interface - Req/Ack
 The following waveform shows an example of how the peripheral hardware interface works.
 This example shows the case where the boot-time mode in the ENTROPY_SRC block is enabled.
@@ -162,3 +180,4 @@ This example also shows the case where the next request will change the prior da
  {},
 ]}
 ```
+<!-- END-FEATURE: EDN.TRACK_SEED_COMPLIANCE -->
