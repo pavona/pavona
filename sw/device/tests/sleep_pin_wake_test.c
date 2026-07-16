@@ -8,17 +8,15 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
 #include "hw/top_egret/sw/autogen/top_egret.h"
-// Below includes are generated during compile time.
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
 
 /* We need control flow for the ujson messages exchanged
@@ -31,15 +29,11 @@ static const dt_pinmux_t kPinmuxDt = 0;
 static_assert(kDtPinmuxCount == 1, "this library expects exactly one pinmux");
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount == 1, "this library expects exactly one rv_plic");
-static const dt_flash_ctrl_t kFlashCtrlDt = 0;
-static_assert(kDtFlashCtrlCount >= 1,
-              "this library expects at least one flash_ctrl");
 
 // PLIC structures
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
-static dif_flash_ctrl_state_t flash_ctrl_state;
 
 enum {
   kPlicTarget = 0,
@@ -90,8 +84,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
-  CHECK_DIF_OK(
-      dif_flash_ctrl_init_state_from_dt(&flash_ctrl_state, kFlashCtrlDt));
 
   // Wakeup source for pinmux.
   dif_pwrmgr_request_sources_t wakeup_sources;
@@ -100,15 +92,7 @@ bool test_main(void) {
       kDtPinmuxWakeupPinWkupReq, &wakeup_sources));
 
   if (kDeviceType == kDeviceSimDV) {
-    // Enable access to flash for storing info across resets.
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                   /*rd_en*/ true,
-                                                   /*prog_en*/ true,
-                                                   /*erase_en*/ true,
-                                                   /*scramble_en*/ false,
-                                                   /*ecc_en*/ false,
-                                                   /*he_en*/ false));
+    ret_sram_testutils_init();
   }
 
   // Randomly pick one of the wakeup detectors
@@ -123,10 +107,8 @@ bool test_main(void) {
     wakeup_detector_selected =
         rand_testutils_gen32_range(0, PINMUX_PARAM_N_WKUP_DETECT - 1);
     if (kDeviceType == kDeviceSimDV) {
-      CHECK_STATUS_OK(flash_ctrl_testutils_write(
-          &flash_ctrl_state,
-          (uint32_t)(&wakeup_detector_idx) - TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR,
-          0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
+      CHECK_STATUS_OK(
+          ret_sram_testutils_scratch_write(0, 1, &wakeup_detector_selected));
     }
     LOG_INFO("detector %d is selected", wakeup_detector_selected);
 #if defined(OPENTITAN_IS_EGRET)
@@ -228,9 +210,10 @@ bool test_main(void) {
     LOG_INFO("Test in post-sleep pin wakeup phase");
     uint32_t wakeup_cause;
     CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
-    // Get the wakeup dectector index from stored variable.
+    // Get the wakeup detector index from stored variable.
     if (kDeviceType == kDeviceSimDV) {
-      wakeup_detector_selected = wakeup_detector_idx;
+      CHECK_STATUS_OK(
+          ret_sram_testutils_scratch_read(0, 1, &wakeup_detector_selected));
     } else {
       OTTF_WAIT_FOR(sival_wakeup_detector_idx != -1, 1000000);
       wakeup_detector_selected = (uint32_t)sival_wakeup_detector_idx;
