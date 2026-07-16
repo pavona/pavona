@@ -129,6 +129,7 @@ bool test_main(void) {
           0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
     }
     LOG_INFO("detector %d is selected", wakeup_detector_selected);
+#if defined(OPENTITAN_IS_EGRET)
     // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
     // disabled for this test. Remove this later.
     dif_pinmux_pad_attr_t out_attr;
@@ -136,6 +137,7 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEgretMuxedPadsIoc3,
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
+#endif
 
     // This print is placed here on purpose.
     // sv sequence is waiting for this print log followed by
