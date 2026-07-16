@@ -3785,6 +3785,7 @@ pavona_test(
     name = "sleep_pin_wake_test",
     srcs = ["sleep_pin_wake_test.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
@@ -3803,7 +3804,7 @@ pavona_test(
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_wake",
     ),
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
