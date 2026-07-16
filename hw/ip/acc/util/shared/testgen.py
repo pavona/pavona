@@ -2,10 +2,30 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 from typing import Dict, TextIO
 
 _GPR_NAMES = [f'x{i}' for i in range(32)]
 _WDR_NAMES = [f'w{i}' for i in range(32)]
+
+
+def write_testcase(tc_file: TextIO, inputs: Dict, outputs: Dict) -> None:
+    '''Write an accsim testcase (JSON) that runs a prebuilt app: each input is
+    preloaded into DMEM and each output checked against it. A value is DMEM
+    bytes or an ELF symbol name. Inputs load little-endian; outputs are read
+    back per-word big-endian (dmem_dump), so output bytes are word-swapped.'''
+    def value(v, output):
+        if isinstance(v, str):
+            return v
+        if output:
+            v = b''.join(v[i:i + 4][::-1] for i in range(0, len(v), 4))
+        return '0x' + v[::-1].hex()
+    testcase = {
+        'input': {'dmem': {k: value(v, False) for k, v in inputs.items()}},
+        'output': {'dmem': {k: value(v, True) for k, v in outputs.items()}},
+    }
+    json.dump(testcase, tc_file, indent=2)
+    tc_file.write('\n')
 
 
 def write_test_data(inputs: Dict[str, bytes], data_file: TextIO) -> None:

@@ -490,26 +490,52 @@ acc_binary(
     ],
 )
 
+MLKEM_COMMON_DEPS = [
+    "//sw/acc/crypto/mlkem:basemul",
+    "//sw/acc/crypto/mlkem:cbd",
+    "//sw/acc/crypto/mlkem:intt",
+    "//sw/acc/crypto/mlkem:kmac_send_msg",
+    "//sw/acc/crypto/mlkem:consts",
+    "//sw/acc/crypto/mlkem:mlkem_encap",
+    "//sw/acc/crypto/mlkem:mlkem_indcpa_enc",
+    "//sw/acc/crypto/mlkem:ntt",
+    "//sw/acc/crypto/mlkem:pack_ciphertext",
+    "//sw/acc/crypto/mlkem:pack_keys",
+    "//sw/acc/crypto/mlkem:poly",
+    "//sw/acc/crypto/mlkem:poly_gen_matrix",
+    "//sw/acc/crypto/mlkem:unpack_ciphertext",
+]
+
 acc_binary(
     name = "run_mlkem",
     srcs = [
         "run_mlkem.s",
     ],
-    deps = [
-        "//sw/acc/crypto/mlkem:basemul",
-        "//sw/acc/crypto/mlkem:cbd",
-        "//sw/acc/crypto/mlkem:consts",
-        "//sw/acc/crypto/mlkem:decap",
-        "//sw/acc/crypto/mlkem:encap",
-        "//sw/acc/crypto/mlkem:indcpa_enc",
-        "//sw/acc/crypto/mlkem:intt",
-        "//sw/acc/crypto/mlkem:keypair",
-        "//sw/acc/crypto/mlkem:kmac_send_msg",
-        "//sw/acc/crypto/mlkem:ntt",
-        "//sw/acc/crypto/mlkem:pack_ciphertext",
-        "//sw/acc/crypto/mlkem:pack_keys",
-        "//sw/acc/crypto/mlkem:poly",
-        "//sw/acc/crypto/mlkem:poly_gen_matrix",
+    deps = MLKEM_COMMON_DEPS + [
+        "//sw/acc/crypto/mlkem:dmem_unprotected",
+        "//sw/acc/crypto/mlkem:mlkem_decap_unprotected",
+        "//sw/acc/crypto/mlkem:mlkem_indcpa_dec_unprotected",
+        "//sw/acc/crypto/mlkem:mlkem_indcpa_enc_cmp_unprotected",
+        "//sw/acc/crypto/mlkem:mlkem_indcpa_keypair_unprotected",
+        "//sw/acc/crypto/mlkem:mlkem_keypair_unprotected",
+    ],
+)
+
+acc_binary(
+    name = "run_mlkem_hardened",
+    srcs = [
+        "run_mlkem.s",
+    ],
+    copts = ["-DHARDENED"],
+    deps = MLKEM_COMMON_DEPS + [
+        "//sw/acc/crypto/mlkem:dmem_hardened",
+        "//sw/acc/crypto/mlkem:gadgets",
+        "//sw/acc/crypto/mlkem:mlkem_decap_hardened",
+        "//sw/acc/crypto/mlkem:mlkem_indcpa_dec_hardened",
+        "//sw/acc/crypto/mlkem:mlkem_indcpa_enc_cmp_hardened",
+        "//sw/acc/crypto/mlkem:mlkem_indcpa_keypair_hardened",
+        "//sw/acc/crypto/mlkem:mlkem_keypair_hardened",
+        "//sw/acc/crypto/mlkem:whitening",
     ],
 )
 

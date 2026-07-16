@@ -9,7 +9,7 @@ import random
 from typing import TextIO
 from kyber_py.ml_kem import ML_KEM_512, ML_KEM_768, ML_KEM_1024
 
-from shared.testgen import write_test_data, write_test_exp, write_test_dexp
+from shared.testgen import write_testcase
 
 INSTANCE_FOR_PARAMS = {
     'mlkem512': ML_KEM_512,
@@ -18,7 +18,7 @@ INSTANCE_FOR_PARAMS = {
 }
 
 
-def gen_encaps_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
+def gen_encaps_test(mlkem, mode_symbol: str, tc_file: TextIO):
     # Generate a random key pair.
     ek, _ = mlkem.keygen()
 
@@ -26,14 +26,11 @@ def gen_encaps_test(mlkem, data_file: TextIO, exp_file: TextIO, dexp_file: TextI
     coins = random.randbytes(32)
     ss, ct = mlkem._encaps_internal(ek, coins)
 
-    # Write input values.
-    write_test_data({'coins': coins, 'ek': ek}, data_file)
-
-    # Write expected register values (none).
-    write_test_exp({}, exp_file)
-
-    # Write expected dmem values.
-    write_test_dexp({'ct': ct, 'ss': ss}, dexp_file)
+    # Run the run_mlkem app binary: preload mode + inputs (encap operates on
+    # public data), check the (deterministic) ciphertext and shared secret.
+    write_testcase(tc_file,
+                   inputs={'mode': mode_symbol, 'coins': coins, 'ek': ek},
+                   outputs={'ct': ct, 'ss': ss})
 
 
 if __name__ == '__main__':
@@ -46,18 +43,10 @@ if __name__ == '__main__':
                         type=str,
                         help=('Parameters to use. Options: '
                               f'{", ".join(INSTANCE_FOR_PARAMS.keys())}'))
-    parser.add_argument('data',
+    parser.add_argument('testcase',
                         metavar='FILE',
                         type=argparse.FileType('w'),
-                        help=('Output file for input DMEM values.'))
-    parser.add_argument('exp',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help=('Output file for expected register values.'))
-    parser.add_argument('dexp',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help=('Output file for expected DMEM values.'))
+                        help=('Output file for the accsim testcase (hjson).'))
     args = parser.parse_args()
 
     if args.seed is not None:
@@ -66,5 +55,7 @@ if __name__ == '__main__':
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
     mlkem = INSTANCE_FOR_PARAMS[args.params]
-    with args.data, args.exp, args.dexp:
-        gen_encaps_test(mlkem, args.data, args.exp, args.dexp)
+    # run_mlkem dispatches on this mode symbol (e.g. mlkem512 -> MODE_ENCAP_512).
+    mode_symbol = 'MODE_ENCAP_' + args.params.removeprefix('mlkem')
+    with args.testcase:
+        gen_encaps_test(mlkem, mode_symbol, args.testcase)

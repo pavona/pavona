@@ -7,7 +7,27 @@
  *
  * This binary has 9 modes: {keygen, encap, decap} x {ML-KEM-512, ML-KEM-768,
  * ML-KEM-1024}. The mode is read from `dmem[mode]`.
+ *
+ * Unprotected I/O formats follow FIPS 203.
+ * In the HARDENED build:
+ *  - keygen `coins` holds two boolean shares each of d and z
+ *    (d0 || d1 || z0 || z1, 128 bytes),
+ *  - `dk` is the masked decapsulation key: per secret polynomial two
+ *    packed 12-bit arithmetic shares (2 x 384 bytes), followed by ek,
+ *    H(ek), and the two boolean shares of z (64 bytes),
+ *  - decap `ss` holds two 32-byte boolean shares of the shared secret.
+ *  - encap only operates on public data; it uses the same unprotected
+ *    code path in both builds.
  */
+
+#ifdef HARDENED
+  #define NSHARES 2
+#else
+  #define NSHARES 1
+#endif
+
+/* Buffers are sized for the worst case (ML-KEM-1024). */
+#define KYBER_K_MAX 4
 
 /**
  * Mode magic values, generated with
@@ -16,7 +36,6 @@
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
- *
  */
 .equ MODE_KEYGEN_512,  0x07d
 .equ MODE_KEYGEN_768,  0x1ab
@@ -54,9 +73,6 @@ start:
   bn.or   w2, w2, w3 << 32
   bn.wsrw 0x0, w2
 
-  /* Stack pointer. */
-  la      x2, stack_end
-
   /* Read mode and dispatch. */
   la      x5, mode
   lw      x5, 0(x5)
@@ -88,14 +104,17 @@ start:
   unimp
 
 _mlkem_keygen_512:
-  addi    x14, x0, 2
+  addi    x13, x0, 2
   beq     x0, x0, _mlkem_keygen_common
 _mlkem_keygen_768:
-  addi    x14, x0, 3
+  addi    x13, x0, 3
   beq     x0, x0, _mlkem_keygen_common
 _mlkem_keygen_1024:
-  addi    x14, x0, 4
+  addi    x13, x0, 4
 _mlkem_keygen_common:
+  /* Stack pointer. */
+  la      x2, stack_end
+  /* KYBER_K in x13 (a3). */
   la      x10, coins
   la      x11, ek
   la      x12, dk
@@ -111,67 +130,33 @@ _mlkem_encap_768:
 _mlkem_encap_1024:
   addi    x14, x0, 4
 _mlkem_encap_common:
-  la      x11, ct
-  la      x12, ss
-  la      x13, ek
+  /* Stack pointer. */
+  la      x2, stack_end
+  /* KYBER_K in x14 (a4). */
+  la      x10, coins
+  la      x11, ek
+  la      x12, ct
+  la      x13, ss
   jal     x1, crypto_kem_enc
   ecall
 
 _mlkem_decap_512:
-  addi    x14, x0, 2
+  addi    x13, x0, 2
   beq     x0, x0, _mlkem_decap_common
 _mlkem_decap_768:
-  addi    x14, x0, 3
+  addi    x13, x0, 3
   beq     x0, x0, _mlkem_decap_common
 _mlkem_decap_1024:
-  addi    x14, x0, 4
+  addi    x13, x0, 4
 _mlkem_decap_common:
+  /* Stack pointer. */
+  la      x2, stack_end
+  /* KYBER_K in x13 (a3). */
   la      x10, ct
   la      x11, dk
   la      x12, ss
   jal     x1, crypto_kem_dec
   ecall
 
-.bss
-
-.globl stack
-.balign 32
-stack:
-  .zero 6144
-stack_end:
-
-/* Operation mode (one of MODE_*). */
-.globl mode
-.balign 4
-mode:
-  .zero 4
-
-/* Input random coins (64 bytes for keygen, 32 for encap). */
-.globl coins
-.balign 32
-coins:
-  .zero 64
-
-/* Decapsulation key / secret key (worst-case ML-KEM-1024 = 3168 bytes). */
-.globl dk
-.balign 32
-dk:
-  .zero 3168
-
-/* Encapsulation key / public key (worst-case ML-KEM-1024 = 1568 bytes). */
-.globl ek
-.balign 32
-ek:
-  .zero 1568
-
-/* Ciphertext (worst-case ML-KEM-1024 = 1568 bytes). */
-.globl ct
-.balign 32
-ct:
-  .zero 1568
-
-/* Shared secret (32 bytes). */
-.globl ss
-.balign 32
-ss:
-  .zero 32
+/* The .bss DMEM layout lives in mlkem/mlkem_dmem.s (the shared single
+ * source of truth), linked in via the :dmem / :dmem_hardened dependency. */

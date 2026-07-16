@@ -8,6 +8,11 @@ load("//rules:acc.bzl", "acc_binary", "acc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+VARIANTS = {
+    "unprotected": [],
+    "hardened": ["-DHARDENED"],
+}
+
 acc_library(
     name = "gadgets",
     srcs = [
@@ -57,52 +62,134 @@ acc_library(
 
 acc_library(
     name = "poly",
-    srcs = ["poly.s"],
+    srcs = [
+        "poly.s",
+    ],
 )
 
 acc_library(
     name = "poly_gen_matrix",
-    srcs = ["poly_gen_matrix.s"],
+    srcs = [
+        "poly_gen_matrix.s",
+    ],
 )
 
 acc_library(
     name = "pack_ciphertext",
-    srcs = ["pack_ciphertext.s"],
+    srcs = [
+        "pack_ciphertext.s",
+    ],
 )
 
 acc_library(
     name = "pack_keys",
-    srcs = ["pack_keys.s"],
+    srcs = [
+        "pack_keys.s",
+    ],
 )
 
 acc_library(
-    name = "indcpa_enc",
-    srcs = ["mlkem_indcpa_enc.s"],
+    name = "mlkem_indcpa_enc",
+    srcs = [
+        "mlkem_indcpa_enc.s",
+    ],
 )
 
 acc_library(
-    name = "keypair",
-    srcs = ["mlkem_keypair.s"],
-)
-
-acc_library(
-    name = "encap",
-    srcs = ["mlkem_encap.s"],
-)
-
-acc_library(
-    name = "decap",
-    srcs = ["mlkem_decap.s"],
+    name = "mlkem_encap",
+    srcs = [
+        "mlkem_encap.s",
+    ],
 )
 
 acc_library(
     name = "consts",
-    srcs = ["mlkem_consts.s"],
+    srcs = [
+        "mlkem_consts.s",
+    ],
 )
+
+[
+    acc_library(
+        name = "dmem_" + variant,
+        srcs = ["mlkem_dmem.s"],
+        copts = variant_copts,
+    )
+    for variant, variant_copts in VARIANTS.items()
+]
 
 acc_library(
     name = "kmac_send_msg",
     srcs = [
         "kmac_send_msg.s",
+    ],
+)
+
+[
+    acc_library(
+        name = "mlkem_decap_" + variant,
+        srcs = [
+            "mlkem_decap.s",
+        ],
+        copts = variant_copts,
+    )
+    for variant, variant_copts in VARIANTS.items()
+]
+
+[
+    acc_library(
+        name = "mlkem_indcpa_dec_" + variant,
+        srcs = [
+            "mlkem_indcpa_dec.s",
+        ],
+        copts = variant_copts,
+    )
+    for variant, variant_copts in VARIANTS.items()
+]
+
+[
+    acc_library(
+        name = "mlkem_indcpa_enc_cmp_" + variant,
+        srcs = [
+            "mlkem_indcpa_enc_cmp.s",
+        ],
+        copts = variant_copts,
+    )
+    for variant, variant_copts in VARIANTS.items()
+]
+
+acc_library(
+    name = "unpack_ciphertext",
+    srcs = [
+        "unpack_ciphertext.s",
+    ],
+)
+
+[
+    acc_library(
+        name = "mlkem_keypair_" + variant,
+        srcs = [
+            "mlkem_keypair.s",
+        ],
+        copts = variant_copts,
+    )
+    for variant, variant_copts in VARIANTS.items()
+]
+
+[
+    acc_library(
+        name = "mlkem_indcpa_keypair_" + variant,
+        srcs = [
+            "mlkem_indcpa_keypair.s",
+        ],
+        copts = variant_copts,
+    )
+    for variant, variant_copts in VARIANTS.items()
+]
+
+acc_library(
+    name = "whitening",
+    srcs = [
+        "whitening.s",
     ],
 )

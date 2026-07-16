@@ -36,22 +36,14 @@ keccak_send_message:
   /* Write all full 256-bit sections of the test message. */
   beq  t0, zero, _no_full_wdr
 
-#ifdef RTL_ISS_TEST
-  loop t0, 5
-#else
   loop t0, 2
-#endif
       /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
          x10 <= x10 + 32 */
       bn.lid  x0, 0(x10++)
       /* Write to the KECCAK_MSG wide special register (index 9).
          KECCAK_MSG <= w0 */
       bn.wsrw 0x9, w0
-#ifdef RTL_ISS_TEST
-      LOOPI 100, 1
-        NOP
-      NOP
-#endif
+  endloop
 
 _no_full_wdr:
   /* Compute the remaining message length.

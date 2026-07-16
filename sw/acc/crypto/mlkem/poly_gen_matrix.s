@@ -9,27 +9,23 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .text
+
 /* Register aliases */
-.equ x0, zero
 .equ x2, sp
 .equ x3, fp
-
 .equ x5, t0
 .equ x6, t1
 .equ x7, t2
-
 .equ x8, s0
 .equ x9, s1
-
 .equ x10, a0
 .equ x11, a1
-
 .equ x12, a2
 .equ x13, a3
+.equ x14, a4
 .equ x15, a5
 .equ x16, a6
 .equ x17, a7
-
 .equ x18, s2
 .equ x19, s3
 .equ x20, s4
@@ -40,19 +36,14 @@
 .equ x25, s9
 .equ x26, s10
 .equ x27, s11
+.equ x28, t3
+.equ x29, t4
+.equ x30, t5
+.equ x31, t6
 
-.equ w31, bn0
 
-/* Index of the Keccak command special register. */
-#define KECCAK_CFG_REG 0x7d9
 /* Config to start a SHAKE-128 operation. */
 #define SHAKE128_CFG 0x2
-/* Config to start a SHAKE-256 operation. */
-#define SHAKE256_CFG 0xA
-/* Config to start a SHA3_256 operation. */
-#define SHA3_256_CFG 0x8
-/* Config to start a SHA3_512 operation. */
-#define SHA3_512_CFG 0x10
 
 /*
  * Name:        poly_gen_matrix_init
@@ -63,7 +54,7 @@
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
  * @param[in]  a0: pointer to seed (KYBER_SYMBYTES = 32)
- * @param[in]  w30: i||j (2 bytes)
+ * @param[in]  a1: pointer to i||j (2 bytes)
  *
  * clobbered registers: x5, w0
  * clobbered flag groups: none
@@ -73,37 +64,35 @@
 .type poly_gen_matrix_init, @function
 poly_gen_matrix_init:
   /* Initialize a SHAKE128 operation. */
-  addi  t0, zero, 34
+  addi  t0, x0, 34
   slli  t0, t0, 5
   addi  t0, t0, SHAKE128_CFG
-  csrrw zero, KECCAK_CFG_REG, t0
+  csrrw x0, kmac_cfg, t0
 
   /* Send the message to the Keccak core. */
-  bn.lid x0, 0(a0)             /* a0 still contains the input buffer */
-  bn.wsrw 0x9, w0              /* Write to KECCAK_MSG_REG */
+  bn.lid  x0, 0(a0)
+  bn.wsrw kmac_msg, w0
   li      t0, 2
-  csrrw   zero, kmac_partial_write, t0
-  bn.wsrw 0x9, w30             /* Write to KECCAK_MSG_REG */
-
+  csrrw   x0, kmac_partial_write, t0
+  bn.lid  x0, 0(a1)
+  bn.wsrw kmac_msg, w0
   ret
 
 /*
  * Name:        poly_gen_matrix
  *
  * Description: Run rejection sampling on uniform random bytes to generate
- *              uniform random integers mod q
- *
- * Arguments:   - int16_t *r: pointer to output buffer
- *              - unsigned int len: requested number of 16-bit integers (uniform mod q)
- *              - const uint8_t *buf: pointer to input buffer (assumed to be uniformly random bytes)
- *              - unsigned int buflen: length of input buffer in bytes
+ *              256 uniform random integers mod q; this function assumes
+ *              `poly_gen_matrix_init` has been called first with the
+ *              appropriate seed and indices
  *
  * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
  *
- * @param[in]  a0: pointer to seed (KYBER_SYMBYTES = 32)
  * @param[out] a1: dmem pointer to polynomial
+ * @param[in]  kmac_digest: SHAKE-128 squeeze set up by poly_gen_matrix_init
+ * @param[in]  w31: all-zero register
  *
- * clobbered registers: x5 to x7, x11, x16, x18, x20 to x21, x31, w8, w10 to w14, w17, w31
+ * clobbered registers: x5 to x7, x11, x14, x16, x18, x20 to x21, w8, w10 to w14, w17, w31
  * clobbered flag groups: FG0
  */
 
@@ -113,36 +102,33 @@ poly_gen_matrix:
   /* t0 = 508, a1 + 508 is the last valid address */
   addi t0, a1, 512
 
-  /* Compare for flag bits */
-  li a6, 3
+  #define accumulator w0
+  #define coeff_mask w1
+  #define cand w2
+  #define mod w3
+  #define wtmp w4
+  #define accumulator_new w5
+  #define shake_reg w6
+  #define accumulator_count t1
 
-  /* For masking coeff with 0xFFF */
-  bn.xor bn0, bn0, bn0
-  #define coeff_mask w10
-  bn.addi coeff_mask, bn0, 1
-  bn.rshi coeff_mask, coeff_mask, bn0 >> 244
+  /* Geenrate constant 0x0fff. */
+  bn.addi coeff_mask, w31, 1
+  bn.rshi coeff_mask, coeff_mask, w31 >> 244
   bn.subi coeff_mask, coeff_mask, 1
 
-  #define cand w11
-
-  #define mod w12
-  li      s2, 12
+  /* Load modulus. */
+  li      x4, 3
   la      t1, modulus_bn
-  bn.lid  s2, 0(t1)
-  bn.rshi mod, bn0, mod >> 240 /* Only keep mod in lowest word */
+  bn.lid  x4, 0(t1)
+  bn.rshi mod, w31, mod >> 240 /* Only keep mod in lowest word */
 
-  #define accumulator w13
-  li s4, 13
-  #define accumulator_count s5
-  li s5, 16  /* Counts number of remaining accumulator slots */
+  /* Counts number of remaining accumulator slots */
+  li accumulator_count, 16
 
-  #define wtmp w14
-  #define accumulator_new w17
   /* Loop until 256 coefficients have been written to the output */
 _rej_sample_loop:
   /* First squeeze */
-  .equ w8, shake_reg
-  bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
+  bn.wsrr shake_reg, kmac_digest
 
   /* With one SHAKE squeeze, we get 32 bytes of data. From this, we can try to
     build 20 coefficients with 3 bytes each two (3 bytes --> 2 coeffs) and are left with 2 bytes
@@ -160,35 +146,35 @@ _rej_sample_loop:
   beq        a1, t0, _end_rej_sample_loop /* Check if we have finished in the previous loop */
 
   /* 2 bytes of first squeeze + 1 byte of second squeeze */
-  bn.rshi    cand, shake_reg, bn0 >> 16     /* Move remaining 2 bytes to the top of cand */
-  bn.wsrr    shake_reg, 0xA                 /* Squeeze KECCAK_DIGEST */
+  bn.rshi    cand, shake_reg, w31 >> 16     /* Move remaining 2 bytes to the top of cand */
+  bn.wsrr    shake_reg, kmac_digest                 /* Squeeze KECCAK_DIGEST */
   bn.rshi    cand, shake_reg, cand >> 240   /* Get one more byte from new shake data*/
-  bn.rshi    shake_reg, bn0, shake_reg >> 8 /* Shift out used byte in shake_reg */
+  bn.rshi    shake_reg, w31, shake_reg >> 8 /* Shift out used byte in shake_reg */
 
   /* mask candidate */
   bn.and     wtmp, coeff_mask, cand
   bn.cmp     wtmp, mod
-  csrrs      x31, 0x7C0, zero       /* Read flags */
-  andi       x31, x31, 1             /* Mask carry flag to detect underflow */
+  csrrs      t3, fg0, x0       /* Read flags */
+  andi       t3, t3, 1             /* Mask carry flag to detect underflow */
   bn.rshi    accumulator_new, wtmp, accumulator >> 16
   bn.sel     accumulator, accumulator_new, accumulator, FG0.C
-  sub        accumulator_count, accumulator_count, x31 /* Move to next slot iff not rejected */
-  bne        accumulator_count, zero, _skip_store2a
-  bn.sid     s4, 0(a1++)           /* Store to memory */
+  sub        accumulator_count, accumulator_count, t3 /* Move to next slot iff not rejected */
+  bne        accumulator_count, x0, _skip_store2a
+  bn.sid     x0, 0(a1++)           /* Store to memory */
   li         accumulator_count, 16 /* Set all slots to available */
   /* if we have written the last coefficient, exit */
   beq        a1, t0, _end_rej_sample_loop
 _skip_store2a:
-  bn.rshi    cand, bn0, cand >> 12
+  bn.rshi    cand, w31, cand >> 12
   bn.and     cand, coeff_mask, cand
   bn.cmp     cand, mod
-  csrrs      x31, 0x7C0, zero      /* Read flags */
-  andi       x31, x31, 1            /* Mask carry flag to detect underflow */
+  csrrs      t3, fg0, x0      /* Read flags */
+  andi       t3, t3, 1            /* Mask carry flag to detect underflow */
   bn.rshi    accumulator_new, cand, accumulator >> 16
   bn.sel     accumulator, accumulator_new, accumulator, FG0.C
-  sub        accumulator_count, accumulator_count, x31 /* Move to next slot iff not rejected */
-  bne        accumulator_count, zero, _skip_store2
-  bn.sid     s4, 0(a1++)           /* Store to memory */
+  sub        accumulator_count, accumulator_count, t3 /* Move to next slot iff not rejected */
+  bne        accumulator_count, x0, _skip_store2
+  bn.sid     x0, 0(a1++)           /* Store to memory */
   li         accumulator_count, 16 /* Set all slots to available */
 
   /* if we have written the last coefficient, exit */
@@ -198,36 +184,36 @@ _skip_store2:
   beq        a1, t0, _end_rej_sample_loop /* Check if we have finished in the previous loop */
 
   /* 1 byte of second squeeze + 2 bytes of third squeeze */
-  bn.rshi    cand, shake_reg, bn0 >> 8       /* move remaining 1 byte to the top of cand */
-  bn.wsrr    shake_reg, 0xA                  /* Squeeze KECCAK_DIGEST */
+  bn.rshi    cand, shake_reg, w31 >> 8       /* move remaining 1 byte to the top of cand */
+  bn.wsrr    shake_reg, kmac_digest                  /* Squeeze KECCAK_DIGEST */
   bn.rshi    cand, shake_reg, cand >> 248    /* Get one 2 more bytes from new shake data */
-  bn.rshi    shake_reg, bn0, shake_reg >> 16 /* Shift out used 2 bytes */
+  bn.rshi    shake_reg, w31, shake_reg >> 16 /* Shift out used 2 bytes */
 
   /* mask candidate */
   bn.and     wtmp, coeff_mask, cand
   bn.cmp     wtmp, mod
-  csrrs      x31, 0x7C0, zero       /* Read flags */
-  andi       x31, x31, 1             /* Mask carry flag to detect underflow */
+  csrrs      t3, fg0, x0       /* Read flags */
+  andi       t3, t3, 1             /* Mask carry flag to detect underflow */
   bn.rshi    accumulator_new, wtmp, accumulator >> 16
   bn.sel     accumulator, accumulator_new, accumulator, FG0.C
-  sub        accumulator_count, accumulator_count, x31 /* Move to next slot iff not rejected */
-  bne        accumulator_count, zero, _skip_store4a
-  bn.sid     s4, 0(a1++)           /* Store to memory */
+  sub        accumulator_count, accumulator_count, t3 /* Move to next slot iff not rejected */
+  bne        accumulator_count, x0, _skip_store4a
+  bn.sid     x0, 0(a1++)           /* Store to memory */
   li         accumulator_count, 16 /* Set all slots to available */
 
   /* if we have written the last coefficient, exit */
   beq        a1, t0, _end_rej_sample_loop
 _skip_store4a:
-  bn.rshi    cand, bn0, cand >> 12
+  bn.rshi    cand, w31, cand >> 12
   bn.and     cand, coeff_mask, cand
   bn.cmp     cand, mod
-  csrrs      x31, 0x7C0, zero       /* Read flags */
-  andi       x31, x31, 1             /* Mask carry flag to detect underflow */
+  csrrs      t3, fg0, x0       /* Read flags */
+  andi       t3, t3, 1             /* Mask carry flag to detect underflow */
   bn.rshi    accumulator_new, cand, accumulator >> 16
   bn.sel     accumulator, accumulator_new, accumulator, FG0.C
-  sub        accumulator_count, accumulator_count, x31 /* Move to next slot iff not rejected */
-  bne        accumulator_count, zero, _skip_store4
-  bn.sid     s4, 0(a1++)           /* Store to memory */
+  sub        accumulator_count, accumulator_count, t3 /* Move to next slot iff not rejected */
+  bne        accumulator_count, x0, _skip_store4
+  bn.sid     x0, 0(a1++)           /* Store to memory */
   li         accumulator_count, 16 /* Set all slots to available */
   /* if we have written the last coefficient, exit */
   beq        a1, t0, _end_rej_sample_loop
@@ -236,7 +222,7 @@ _skip_store4:
   beq        a1, t0, _end_rej_sample_loop /* Check if we have finished in the previous loop */
 
   /* No remainder! Start all over again. */
-  jal        x0, _rej_sample_loop
+  beq        x0, x0, _rej_sample_loop
 _end_rej_sample_loop:
 
   ret
@@ -247,7 +233,7 @@ _poly_uniform_inner_loop:
   sub        t2, a1, t0  /* Get -(number of bytes remaining to write out) */
   addi       t2, t2, 64  /* Add 64 bytes = 2 wide words >= 20 coeffs */
   sra        t2, t2, 31  /* Fill register with resulting sign bit */
-  bne        t2, zero, _fast_inner_loop  /* _fast_inner_loop skips checks of t0 */
+  bne        t2, x0, _fast_inner_loop  /* _fast_inner_loop skips checks of t0 */
 
   loopi 20, 12
     beq        a1, t0, _skip_store1
@@ -255,19 +241,20 @@ _poly_uniform_inner_loop:
     /* Get the candidate coefficient */
     bn.and     cand, coeff_mask, shake_reg
     bn.cmp     cand, mod
-    csrrs      x31, 0x7C0, zero /* Read flags */
+    csrrs      t3, fg0, x0 /* Read flags */
 
     /* Add it to the accumulator if not rejected */
-    andi x31, x31, 1 /* Mask carry flag to detect underflow */
+    andi       t3, t3, 1 /* Mask carry flag to detect underflow */
     bn.rshi    accumulator_new, cand, accumulator >> 16
     bn.sel     accumulator, accumulator_new, accumulator, FG0.C
-    sub        accumulator_count, accumulator_count, x31 /* Move to next slot iff not rejected */
-    bne        accumulator_count, zero, _skip_store1    /* Accumulator not full yet */
-    bn.sid     s4, 0(a1++)                              /* Store to memory */
+    sub        accumulator_count, accumulator_count, t3 /* Move to next slot iff not rejected */
+    bne        accumulator_count, x0, _skip_store1    /* Accumulator not full yet */
+    bn.sid     x0, 0(a1++)                              /* Store to memory */
     li         accumulator_count, 16                    /* Set all slots to available */
 _skip_store1:
     /* Shift out the 12 bits we have read for the next potential coefficient */
-    bn.rshi    shake_reg, bn0, shake_reg >> 12
+    bn.rshi    shake_reg, w31, shake_reg >> 12
+  endloop
 
   ret
 
@@ -281,19 +268,20 @@ _fast_inner_loop:
     /* Get the candidate coefficient */
     bn.and     cand, coeff_mask, shake_reg
     bn.cmp     cand, mod
-    csrrs      x31, 0x7C0, zero /* Read flags */
+    csrrs      t3, fg0, x0 /* Read flags */
 
     /* Add it to the accumulator if not rejected */
-    andi       x31, x31, 1 /* Mask carry flag to detect underflow */
+    andi       t3, t3, 1 /* Mask carry flag to detect underflow */
     bn.rshi    accumulator_new, cand, accumulator >> 16
     bn.sel     accumulator, accumulator_new, accumulator, FG0.C
-    sub        accumulator_count, accumulator_count, x31 /* Move to next slot iff not rejected */
+    sub        accumulator_count, accumulator_count, t3 /* Move to next slot iff not rejected */
     /* Shift out the 12 bits we have read for the next potential coefficient */
-    bn.rshi    shake_reg, bn0, shake_reg >> 12
+    bn.rshi    shake_reg, w31, shake_reg >> 12
+  endloop
 
   /* Possibly flush accumulator if we filled it (~3% of time) */
-  bne        accumulator_count, zero, _handle_rest
-  bn.sid     s4, 0(a1++)           /* Store to memory */
+  bne        accumulator_count, x0, _handle_rest
+  bn.sid     x0, 0(a1++)           /* Store to memory */
   li         accumulator_count, 16 /* Set all slots to available */
 
 _handle_rest:
@@ -301,18 +289,19 @@ _handle_rest:
     /* Get the candidate coefficient */
     bn.and     cand, coeff_mask, shake_reg
     bn.cmp     cand, mod
-    csrrs      x31, 0x7C0, zero /* Read flags */
+    csrrs      t3, fg0, x0 /* Read flags */
 
     /* Add it to the accumulator if not rejected */
-    andi x31, x31, 1 /* Mask carry flag to detect underflow */
+    andi       t3, t3, 1 /* Mask carry flag to detect underflow */
     bn.rshi    accumulator_new, cand, accumulator >> 16
     bn.sel     accumulator, accumulator_new, accumulator, FG0.C
-    sub        accumulator_count, accumulator_count, x31   /* Move to next slot iff not rejected */
-    bne        accumulator_count, zero, _skip_store1_fast /* Accumulator not full yet */
-    bn.sid     s4, 0(a1++)                                /* Store to memory */
+    sub        accumulator_count, accumulator_count, t3   /* Move to next slot iff not rejected */
+    bne        accumulator_count, x0, _skip_store1_fast /* Accumulator not full yet */
+    bn.sid     x0, 0(a1++)                                /* Store to memory */
     li         accumulator_count, 16                      /* Set all slots to available */
 _skip_store1_fast:
     /* Shift out the 12 bits we have read for the next potential coefficient */
-    bn.rshi    shake_reg, bn0, shake_reg >> 12
+    bn.rshi    shake_reg, w31, shake_reg >> 12
+  endloop
 
   ret
