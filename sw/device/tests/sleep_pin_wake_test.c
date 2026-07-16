@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/clkmgr.h"
+#include "hw/top/dt/pwrmgr.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -16,7 +18,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
 #include "hw/top/pinmux_regs.h"
 
 /* We need control flow for the ujson messages exchanged
@@ -120,7 +121,6 @@ bool test_main(void) {
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
 #endif
-
     // This print is placed here on purpose.
     // sv sequence is waiting for this print log followed by
     // Pad Section. So do not put any other print between
@@ -161,7 +161,7 @@ bool test_main(void) {
     } else {
       // MIO: 0, 1 are tie-0, tie-1
       if (kDeviceType == kDeviceSimDV) {
-        pad_sel = rand_testutils_gen32_range(2, kTopEgretPinmuxInselLast);
+        pad_sel = rand_testutils_gen32_range(2, kDtPinmuxInselLast);
       } else {
         OTTF_WAIT_FOR(sival_mio_pad != -1, 1000000);
         pad_sel = (uint32_t)sival_mio_pad + 2;  // skip 0, 1 (see above)
@@ -174,8 +174,8 @@ bool test_main(void) {
       // TODO: Check if the PAD is locked (kDifPinmuxLockTargetOutsel), then
       // skip if locked.
       // Turn off Pinmux output selection
-      CHECK_DIF_OK(dif_pinmux_output_select(
-          &pinmux, pad_sel - 2, kTopEgretPinmuxOutselConstantHighZ));
+      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, pad_sel - 2,
+                                            kDtPinmuxOutselConstantHighZ));
     }
 
     wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;
