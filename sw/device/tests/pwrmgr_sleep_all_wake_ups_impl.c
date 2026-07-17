@@ -37,7 +37,9 @@
 #endif
 
 static const uint32_t kPinmuxWkupDetector5 = 5;
+#ifdef HAS_SYSRST_CTRL
 static const uint32_t kSensorCtrlEventIdx = 0;
+#endif
 
 enum {
   kPlicTarget = 0,
@@ -45,8 +47,10 @@ enum {
 
 static const dt_pwrmgr_t kPwrmgrDt = 0;
 static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+#ifdef HAS_SYSRST_CTRL
 static const dt_pinmux_t kPinmuxDt = 0;
 static_assert(kDtPinmuxCount == 1, "this library expects exactly one pinmux");
+#endif
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount == 1, "this library expects exactly one rv_plic");
 
@@ -421,7 +425,9 @@ void init_units(void) {
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 }
 
-size_t get_wakeup_count(void) { return dt_pwrmgr_wakeup_src_count(kPwrmgrDt); }
+// This is safer than using DT because one of dragonfly's wakeup sources
+// (from soc_proxy) is tied to ground in the chip.
+size_t get_wakeup_count(void) { return ARRAYSIZE(kTestWakeupSources); }
 
 bool execute_test(size_t wakeup_unit, bool deep_sleep) {
   dt_pwrmgr_wakeup_src_t wakeup;

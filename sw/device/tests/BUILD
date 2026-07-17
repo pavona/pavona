@@ -3610,8 +3610,9 @@ pavona_test(
     ],
 )
 
-# List of IPs supported by the pwrmgr_sleep_all_wake_ups_impl
-# library. Some of these can be top-specific.
+# List of IPs supported by the pwrmgr_sleep_all_wake_ups_impl library.
+# They are conditionally processed based on pavona_if_ip since they can
+# be top-specific.
 PWRMGR_SUPPORTED_IPS = [
     "aon_timer",
     "adc_ctrl",
@@ -3668,6 +3669,7 @@ pavona_test(
     name = "pwrmgr_normal_sleep_all_wake_ups",
     srcs = ["pwrmgr_normal_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -3742,6 +3744,7 @@ pavona_test(
     name = "pwrmgr_random_sleep_all_wake_ups",
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
