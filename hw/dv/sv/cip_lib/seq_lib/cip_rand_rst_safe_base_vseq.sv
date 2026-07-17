@@ -780,7 +780,6 @@ class cip_rand_rst_safe_base_vseq #(
     // checking the status.
     if (csr_access_abort_pct > 0) csr_utils_pkg::default_csr_check = UVM_NO_CHECK;
     else                          csr_utils_pkg::default_csr_check = UVM_CHECK;
-    // super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset, models, ral_name);
     run_csr_vseq_base(csr_test_type, num_test_csrs, do_rand_wr_and_reset, models, ral_name);
   endtask
 
@@ -1141,36 +1140,33 @@ class cip_rand_rst_safe_base_vseq #(
 
   extern virtual task run_csr_vseq_wrapper(int num_times = 1, dv_base_reg_block models[$] = {});
   extern virtual task run_csr_vseq_base(
-                      string csr_test_type, int num_test_csrs = 0, bit do_rand_wr_and_reset = 1,
-                      dv_base_reg_block models[$] = {}, string ral_name = "");
+      string csr_test_type, int num_test_csrs = 0, bit do_rand_wr_and_reset = 1,
+      dv_base_reg_block models[$] = {}, string ral_name = "");
 
 endclass
 
-
 task cip_rand_rst_safe_base_vseq::run_csr_vseq_wrapper(
-                                           int num_times = 1, dv_base_reg_block models[$] = {});
-  string        csr_test_type;
+                                             int num_times = 1, dv_base_reg_block models[$] = {});
+  string csr_test_type;
 
   // Env needs to have a ral instance.
   if (models.size() == 0) begin
     `DV_CHECK_GE_FATAL(cfg.ral_models.size(), 1)
   end
 
-  // Get csr_test_type from plusarg
+  // Get csr_test_type from plusarg.
   void'($value$plusargs("csr_%0s", csr_test_type));
 
-  // run the csr seq
   for (int i = 1; i <= num_times; i++) begin
     `uvm_info(`gfn, $sformatf("Running csr %0s vseq iteration %0d/%0d.",
                               csr_test_type, i, num_times), UVM_LOW)
-     run_csr_vseq(.csr_test_type(csr_test_type), .models(models));
+    run_csr_vseq(.csr_test_type(csr_test_type), .models(models));
   end
 endtask : run_csr_vseq_wrapper
 
-
 task cip_rand_rst_safe_base_vseq::run_csr_vseq_base(string csr_test_type,
-                                                    int    num_test_csrs = 0,
-                                                    bit    do_rand_wr_and_reset = 1,
+                                                    int num_test_csrs = 0,
+                                                    bit do_rand_wr_and_reset = 1,
                                                     dv_base_reg_block models[$] = {},
                                                     string ral_name = "");
   csr_base_seq m_csr_seq;
@@ -1211,25 +1207,20 @@ task cip_rand_rst_safe_base_vseq::run_csr_vseq_base(string csr_test_type,
   m_csr_seq.num_test_csrs = num_test_csrs;
   m_csr_seq.start(null);
 
-  // if hw_reset test, then write all CSRs with random values
+  // For the hw_reset test, write all CSRs with random values before reset checking.
   if (csr_test_type == "hw_reset" && do_rand_wr_and_reset) begin
-    string        reset_type = "HARD";
     csr_write_seq m_csr_write_seq;
 
-    // Writing random values to CSRs might trigger assertion errors. So we disable in the entire
-    // DUT hierarchy. See DV_ASSERT_CTRL macro defined in hw/dv/sv/dv_utils/dv_macros.svh for more
-    // details.
+    // Writing random values to CSRs might trigger assertion errors.
     `DV_ASSERT_CTRL_REQ("dut_assert_en", 1'b0)
 
-    // run write-only sequence to randomize the csr values
     m_csr_write_seq = csr_write_seq::type_id::create("m_csr_write_seq");
     m_csr_write_seq.models = models;
     m_csr_write_seq.external_checker = cfg.en_scb;
-    // m_csr_write_seq.en_rand_backdoor_write = 1'b1;
     m_csr_write_seq.en_rand_backdoor_write = 1'b0;
     m_csr_write_seq.start(null);
   end
 endtask : run_csr_vseq_base
 
-// TODO: Macro removed due to verible failure
-//`undef loop_ral_models_to_create_threads
+// TODO: Macro removed due to verible failure.
+// `undef loop_ral_models_to_create_threads

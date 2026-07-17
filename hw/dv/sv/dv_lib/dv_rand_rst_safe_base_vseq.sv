@@ -175,11 +175,13 @@ task dv_rand_rst_safe_base_vseq::body();
           // asserted.
           wait (in_reset == 1);
         end
+        `uvm_info(`gfn, "Exiting forked_reset_thread", UVM_LOW)
       end
       begin : forked_main_thread
         // Capture Process handle for the spawned process
         main_thread_id = process::self();
         main_thread ();
+        `uvm_info(`gfn, "Exiting forked_main_thread()", UVM_LOW)
       end
     join_none
 

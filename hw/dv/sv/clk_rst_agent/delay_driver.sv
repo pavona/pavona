@@ -39,16 +39,15 @@ class delay_driver extends dv_rst_safe_base_driver #(.ITEM_T(clk_rst_item),
 
       fork
         begin
-          automatic clk_rst_item  lcl_item = item;
-          automatic clk_rst_item  rsp_item;
+          automatic clk_rst_item lcl_item = item;
+          automatic clk_rst_item rsp_item;
 
           `uvm_info (get_name(), "Starting....", UVM_HIGH)
 
-          // At this point we are guranteed
-          cfg.reset_domain.clk_rst_vif.wait_clks(item.delay_time_steps);
+          cfg.reset_domain.clk_rst_vif.wait_clks(lcl_item.delay_time_steps);
 
-          // At this point the delay is completed. Indicate back to parent that triggered the
-          // delay sequence  so that it is unblocked.
+          // At this point the delay is completed. Indicate back to the parent that triggered the
+          // delay sequence so that it is unblocked.
           rsp_item = clk_rst_item::type_id::create("rsp_item");
           rsp_item.copy(lcl_item);
           rsp_item.set_id_info(lcl_item);

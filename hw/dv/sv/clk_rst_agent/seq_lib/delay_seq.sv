@@ -18,12 +18,12 @@ class delay_seq extends dv_base_seq #(
     .CFG_T       (clk_rst_agent_cfg),
     .SEQUENCER_T (delay_sequencer)
   );
-
-  rand int         delay_time_steps;
+  rand int delay_time_steps;
 
   constraint delay_steps_c {
     delay_time_steps inside {[100:500]};
   }
+
   `uvm_object_utils(delay_seq)
   `uvm_object_new
 
@@ -38,8 +38,8 @@ class delay_seq extends dv_base_seq #(
     item.delay_time_steps = delay_time_steps;
 
     start_item(item);
-    finish_item(item); // Returns when driver has called item_done() as the delay count has started
-    get_response(rsp); // returns after driver calls put_response() when delay count has ended
+    finish_item(item); // Returns when driver has called item_done() as the delay count has started.
+    get_response(rsp); // Returns when driver calls put_response() after the delay count has ended.
 
     `uvm_info (get_name(), "Completed - body()", UVM_LOW)
   endtask
