@@ -11,6 +11,7 @@ filesets:
     files:
       - rv_timer_test_pkg.sv
       - rv_timer_base_test.sv: {is_include_file: true}
+      - rv_timer_rst_safe_base_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

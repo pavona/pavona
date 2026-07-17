@@ -9,6 +9,7 @@ package rv_timer_env_pkg;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
   import tl_agent_pkg::*;
+  import clk_rst_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import rv_timer_ral_pkg::*;
@@ -39,15 +40,21 @@ package rv_timer_env_pkg;
 
   typedef class rv_timer_env_cfg;
   typedef class rv_timer_env_cov;
+  typedef class rv_timer_rst_safe_virtual_sequencer;
+  typedef class rv_timer_rst_safe_scoreboard;
   typedef cip_base_virtual_sequencer #(rv_timer_env_cfg,
                                        rv_timer_env_cov) rv_timer_virtual_sequencer;
 
   // functions
 
   // package sources
+  `include "rv_timer_rst_safe_tl_agent_cfg.sv"
   `include "rv_timer_env_cfg.sv"
   `include "rv_timer_env_cov.sv"
+  `include "rv_timer_rst_safe_virtual_sequencer.sv"
   `include "rv_timer_scoreboard.sv"
+  `include "rv_timer_rst_safe_scoreboard.sv"
   `include "rv_timer_env.sv"
+  `include "rv_timer_rst_safe_env.sv"
   `include "rv_timer_vseq_list.sv"
 endpackage
