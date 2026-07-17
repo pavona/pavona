@@ -32,7 +32,9 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                // rv_timer is using reset-safe stress wrappers while the TB migration is in
+                // progress. These entries map stress tests onto rv_timer_rst_safe_base_test.
+                "{proj_root}/hw/dv/tools/dvsim/tests/rst_safe_stress_tests.hjson"]
 
   // Add additional tops for simulation.
   sim_tops: ["rv_timer_bind", "sec_cm_prim_onehot_check_bind"]
@@ -90,6 +92,30 @@
     {
       name: rv_timer_random_reset
       uvm_test_seq: rv_timer_random_reset_vseq
+    }
+
+    {
+      name: rv_timer_rst_safe_smoke
+      uvm_test: rv_timer_rst_safe_base_test
+      uvm_test_seq: rv_timer_rst_safe_smoke_vseq
+      reseed: 10
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
+
+    {
+      name: rv_timer_rst_safe_smoke_with_rand_reset
+      uvm_test: rv_timer_rst_safe_base_test
+      uvm_test_seq: rv_timer_rst_safe_smoke_with_rand_reset_vseq
+      reseed: 10
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
+
+    {
+      name: rv_timer_rst_safe_disabled
+      uvm_test: rv_timer_rst_safe_base_test
+      uvm_test_seq: rv_timer_rst_safe_disabled_vseq
+      reseed: 10
+      run_opts: ["+test_timeout_ns=10000000000"]
     }
   ]
 

@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "rv_timer_base_vseq.sv"
+`include "rv_timer_rand_rst_safe_base_vseq.sv"
+
 `include "rv_timer_random_vseq.sv"
 `include "rv_timer_min_vseq.sv"
 `include "rv_timer_max_vseq.sv"
@@ -10,4 +12,12 @@
 `include "rv_timer_disabled_vseq.sv"
 `include "rv_timer_cfg_update_on_fly_vseq.sv"
 `include "rv_timer_common_vseq.sv"
-`include "rv_timer_stress_all_vseq.sv"
+
+// Reset-safe sequences are included after the legacy sequence list so factory-created reset-safe
+// wrappers can refer to their child sequence classes by name.
+`include "rv_timer_rst_safe_smoke_vseq.sv"
+`include "rv_timer_rst_safe_smoke_with_rand_reset_vseq.sv"
+`include "rv_timer_rst_safe_disabled_vseq.sv"
+`include "rv_timer_rst_safe_common_vseq.sv"
+`include "rv_timer_rst_safe_stress_all_vseq.sv"
+`include "rv_timer_rst_safe_stress_all_with_rand_reset_vseq.sv"
