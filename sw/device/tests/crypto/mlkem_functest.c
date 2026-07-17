@@ -18,12 +18,20 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+// The hardened ACC backend requires PassivePhysical secret keys; the
+// unprotected and native backends require PassiveRemote.
+#ifdef ACC_MLKEM_HARDENED
+#define MLKEM_SECRET_KEY_SECURITY_LEVEL kOtcryptoKeySecurityLevelPassivePhysical
+#else
+#define MLKEM_SECRET_KEY_SECURITY_LEVEL kOtcryptoKeySecurityLevelPassiveRemote
+#endif
+
 static const otcrypto_key_config_t kMlkem512SecretKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeMlkem512,
     .key_length = kOtcryptoMlkem512SecretKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+    .security_level = MLKEM_SECRET_KEY_SECURITY_LEVEL,
 };
 
 static const otcrypto_key_config_t kMlkem512SharedSecretConfig = {
@@ -39,7 +47,7 @@ static const otcrypto_key_config_t kMlkem768SecretKeyConfig = {
     .key_mode = kOtcryptoKeyModeMlkem768,
     .key_length = kOtcryptoMlkem768SecretKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+    .security_level = MLKEM_SECRET_KEY_SECURITY_LEVEL,
 };
 
 static const otcrypto_key_config_t kMlkem768SharedSecretConfig = {
@@ -55,7 +63,7 @@ static const otcrypto_key_config_t kMlkem1024SecretKeyConfig = {
     .key_mode = kOtcryptoKeyModeMlkem1024,
     .key_length = kOtcryptoMlkem1024SecretKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+    .security_level = MLKEM_SECRET_KEY_SECURITY_LEVEL,
 };
 
 static const otcrypto_key_config_t kMlkem1024SharedSecretConfig = {
@@ -67,7 +75,7 @@ static const otcrypto_key_config_t kMlkem1024SharedSecretConfig = {
 };
 
 #ifdef ACC_HAS_PQC
-// The ACC backend uses no work buffer.
+// The ACC backends use no work buffer.
 static uint32_t mlkem_work_buffer[1];
 #else
 // Static work buffer for all ML-KEM operations
@@ -90,10 +98,38 @@ static uint32_t
                   sizeof(uint32_t)) *
                  2];
 
+// Compare a decapsulated shared-secret keyblob against the encapsulated one
+// (and, if non-NULL, an expected value). The hardened backend returns the
+// shared secret as two shares, so combine them first.
+static void mlkem_check_shared_secret(uint32_t *decap_blob,
+                                      const uint32_t *encap_blob,
+                                      size_t blob_words,
+                                      const uint8_t *expected,
+                                      size_t ss_bytes) {
+#ifdef ACC_MLKEM_HARDENED
+  size_t half = blob_words / 2;
+  for (size_t i = 0; i < half; i++) {
+    decap_blob[i] ^= decap_blob[half + i];
+  }
+  CHECK_ARRAYS_EQ((unsigned char *)decap_blob, (unsigned char *)encap_blob,
+                  ss_bytes);
+#else
+  CHECK_ARRAYS_EQ(decap_blob, encap_blob, blob_words);
+#endif
+  if (expected != NULL) {
+    CHECK_ARRAYS_EQ((unsigned char *)decap_blob, expected, ss_bytes);
+  }
+}
+
 static void test_mlkem512_derand(void) {
   uint64_t t0;
 
+#ifdef ACC_MLKEM_HARDENED
+  // Coins are masked, so buffer is twice as long.
+  uint32_t coins[2 * kOtcryptoMlkem512KeygenSeedWords] = {0};
+#else
   uint32_t coins[kOtcryptoMlkem512KeygenSeedWords] = {0};
+#endif
   uint32_t coinsE[kOtcryptoMlkem512SharedSecretWords] = {1};
 
   const uint8_t expected_key[] = {
@@ -109,8 +145,8 @@ static void test_mlkem512_derand(void) {
       .key = pk_buf_data,
   };
   pk_buf.checksum = integrity_unblinded_checksum(&pk_buf);
-  size_t sk_blob_words =
-      ceil_div(kOtcryptoMlkem512SecretKeyBytes, sizeof(uint32_t)) * 2;
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(kMlkem512SecretKeyConfig, &sk_blob_words));
   memset(sk_blob_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t sk_buf = {
       .config = kMlkem512SecretKeyConfig,
@@ -159,15 +195,19 @@ static void test_mlkem512_derand(void) {
                                                 &key_a_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem512_decapsulate");
 
-  CHECK_ARRAYS_EQ(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob));
-  CHECK_ARRAYS_EQ((unsigned char *)key_a_blob, expected_key,
-                  kOtcryptoMlkem512SharedSecretBytes);
+  mlkem_check_shared_secret(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob),
+                            expected_key, kOtcryptoMlkem512SharedSecretBytes);
 }
 
 static void test_mlkem768_derand(void) {
   uint64_t t0;
 
+#ifdef ACC_MLKEM_HARDENED
+  // Coins are masked, so buffer is twice as long.
+  uint32_t coins[2 * kOtcryptoMlkem768KeygenSeedWords] = {0};
+#else
   uint32_t coins[kOtcryptoMlkem768KeygenSeedWords] = {0};
+#endif
   uint32_t coinsE[kOtcryptoMlkem768SharedSecretWords] = {1};
 
   const uint8_t expected_key[] = {
@@ -183,8 +223,8 @@ static void test_mlkem768_derand(void) {
       .key = pk_buf_data,
   };
   pk_buf.checksum = integrity_unblinded_checksum(&pk_buf);
-  size_t sk_blob_words =
-      ceil_div(kOtcryptoMlkem768SecretKeyBytes, sizeof(uint32_t)) * 2;
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(kMlkem768SecretKeyConfig, &sk_blob_words));
   memset(sk_blob_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t sk_buf = {
       .config = kMlkem768SecretKeyConfig,
@@ -233,15 +273,19 @@ static void test_mlkem768_derand(void) {
                                                 &key_a_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem768_decapsulate");
 
-  CHECK_ARRAYS_EQ(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob));
-  CHECK_ARRAYS_EQ((unsigned char *)key_a_blob, expected_key,
-                  kOtcryptoMlkem768SharedSecretBytes);
+  mlkem_check_shared_secret(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob),
+                            expected_key, kOtcryptoMlkem768SharedSecretBytes);
 }
 
 static void test_mlkem1024_derand(void) {
   uint64_t t0;
 
+#ifdef ACC_MLKEM_HARDENED
+  // Coins are masked, so buffer is twice as long.
+  uint32_t coins[2 * kOtcryptoMlkem1024KeygenSeedWords] = {0};
+#else
   uint32_t coins[kOtcryptoMlkem1024KeygenSeedWords] = {0};
+#endif
   uint32_t coinsE[kOtcryptoMlkem1024SharedSecretWords] = {1};
 
   const uint8_t expected_key[] = {
@@ -257,8 +301,8 @@ static void test_mlkem1024_derand(void) {
       .key = pk_buf_data,
   };
   pk_buf.checksum = integrity_unblinded_checksum(&pk_buf);
-  size_t sk_blob_words =
-      ceil_div(kOtcryptoMlkem1024SecretKeyBytes, sizeof(uint32_t)) * 2;
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(kMlkem1024SecretKeyConfig, &sk_blob_words));
   memset(sk_blob_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t sk_buf = {
       .config = kMlkem1024SecretKeyConfig,
@@ -307,9 +351,8 @@ static void test_mlkem1024_derand(void) {
       &sk_buf, ct_const_buf, &key_a_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem1024_decapsulate");
 
-  CHECK_ARRAYS_EQ(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob));
-  CHECK_ARRAYS_EQ((unsigned char *)key_a_blob, expected_key,
-                  kOtcryptoMlkem1024SharedSecretBytes);
+  mlkem_check_shared_secret(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob),
+                            expected_key, kOtcryptoMlkem1024SharedSecretBytes);
 }
 
 static void test_mlkem512_randomized(void) {
@@ -321,8 +364,8 @@ static void test_mlkem512_randomized(void) {
       .key = pk_buf_data,
   };
   pk_buf.checksum = integrity_unblinded_checksum(&pk_buf);
-  size_t sk_blob_words =
-      ceil_div(kOtcryptoMlkem512SecretKeyBytes, sizeof(uint32_t)) * 2;
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(kMlkem512SecretKeyConfig, &sk_blob_words));
   memset(sk_blob_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t sk_buf = {
       .config = kMlkem512SecretKeyConfig,
@@ -369,7 +412,8 @@ static void test_mlkem512_randomized(void) {
                                                 &key_a_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem512_decapsulate");
 
-  CHECK_ARRAYS_EQ(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob));
+  mlkem_check_shared_secret(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob), NULL,
+                            kOtcryptoMlkem512SharedSecretBytes);
 }
 
 static void test_mlkem768_randomized(void) {
@@ -381,8 +425,8 @@ static void test_mlkem768_randomized(void) {
       .key = pk_buf_data,
   };
   pk_buf.checksum = integrity_unblinded_checksum(&pk_buf);
-  size_t sk_blob_words =
-      ceil_div(kOtcryptoMlkem768SecretKeyBytes, sizeof(uint32_t)) * 2;
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(kMlkem768SecretKeyConfig, &sk_blob_words));
   memset(sk_blob_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t sk_buf = {
       .config = kMlkem768SecretKeyConfig,
@@ -429,7 +473,8 @@ static void test_mlkem768_randomized(void) {
                                                 &key_a_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem768_decapsulate");
 
-  CHECK_ARRAYS_EQ(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob));
+  mlkem_check_shared_secret(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob), NULL,
+                            kOtcryptoMlkem768SharedSecretBytes);
 }
 
 static void test_mlkem1024_randomized(void) {
@@ -441,8 +486,8 @@ static void test_mlkem1024_randomized(void) {
       .key = pk_buf_data,
   };
   pk_buf.checksum = integrity_unblinded_checksum(&pk_buf);
-  size_t sk_blob_words =
-      ceil_div(kOtcryptoMlkem1024SecretKeyBytes, sizeof(uint32_t)) * 2;
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(kMlkem1024SecretKeyConfig, &sk_blob_words));
   memset(sk_blob_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t sk_buf = {
       .config = kMlkem1024SecretKeyConfig,
@@ -489,7 +534,8 @@ static void test_mlkem1024_randomized(void) {
       &sk_buf, ct_const_buf, &key_a_buf, mlkem_work_buffer));
   profile_end_and_print(t0, "otcrypto_mlkem1024_decapsulate");
 
-  CHECK_ARRAYS_EQ(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob));
+  mlkem_check_shared_secret(key_a_blob, key_b_blob, ARRAYSIZE(key_a_blob), NULL,
+                            kOtcryptoMlkem1024SharedSecretBytes);
 }
 
 bool test_main(void) {

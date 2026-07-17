@@ -33,6 +33,15 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "acc_pqc_hardened",
+    # Specialization of acc_has_pqc so PQC select()s resolve when both are set.
+    define_values = {
+        "acc_has_pqc": "true",
+        "acc_pqc_hardened": "true",
+    },
+)
+
 cc_library(
     name = "aes",
     srcs = ["aes.c"],
@@ -282,6 +291,7 @@ cc_library(
     hdrs = ["acc.h"],
     local_defines = select({
         ":acc_has_pqc": ["ACC_HAS_PQC"],
+        ":acc_pqc_hardened": ["ACC_HAS_PQC"],
         "//conditions:default": [],
     }),
     deps = [

@@ -31,6 +31,11 @@ enum {
   kMlkem1024SecretKeyBytes = 3168,
   kMlkem1024CiphertextBytes = 1568,
 
+  /* Masked dk size, 1152 * K + 128 bytes. */
+  kMlkem512MaskedSecretKeyBytes = 1152 * 2 + 128,
+  kMlkem768MaskedSecretKeyBytes = 1152 * 3 + 128,
+  kMlkem1024MaskedSecretKeyBytes = 1152 * 4 + 128,
+
   // Buffer sizes in 32-bit words (ACC dmem is word-addressed).
   kMlkemSharedSecretWords = kMlkemSharedSecretBytes / sizeof(uint32_t),
   kMlkemKeygenSeedWords = kMlkemKeygenSeedBytes / sizeof(uint32_t),
@@ -47,6 +52,13 @@ enum {
   kMlkem1024PublicKeyWords = kMlkem1024PublicKeyBytes / sizeof(uint32_t),
   kMlkem1024SecretKeyWords = kMlkem1024SecretKeyBytes / sizeof(uint32_t),
   kMlkem1024CiphertextWords = kMlkem1024CiphertextBytes / sizeof(uint32_t),
+
+  kMlkem512MaskedSecretKeyWords =
+      kMlkem512MaskedSecretKeyBytes / sizeof(uint32_t),
+  kMlkem768MaskedSecretKeyWords =
+      kMlkem768MaskedSecretKeyBytes / sizeof(uint32_t),
+  kMlkem1024MaskedSecretKeyWords =
+      kMlkem1024MaskedSecretKeyBytes / sizeof(uint32_t),
 };
 
 /**
@@ -100,6 +112,54 @@ OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_1024_decap(const uint32_t ct[kMlkem1024CiphertextWords],
                               const uint32_t sk[kMlkem1024SecretKeyWords],
                               uint32_t ss[kMlkemSharedSecretWords]);
+
+/**
+ * Masked ML-KEM primitives (run_mlkem_hardened app). The masked dk
+ * (kMlkem*MaskedSecretKeyBytes) is passed straight to/from the ACC; the
+ * decapsulated shared secret is returned as two Boolean shares.
+ */
+
+OT_WARN_UNUSED_RESULT
+status_t mlkem_acc_512_keygen_hardened(
+    const uint32_t coins_share0[kMlkemKeygenSeedWords],
+    const uint32_t coins_share1[kMlkemKeygenSeedWords],
+    uint32_t pk[kMlkem512PublicKeyWords],
+    uint32_t sk[kMlkem512MaskedSecretKeyWords]);
+
+OT_WARN_UNUSED_RESULT
+status_t mlkem_acc_768_keygen_hardened(
+    const uint32_t coins_share0[kMlkemKeygenSeedWords],
+    const uint32_t coins_share1[kMlkemKeygenSeedWords],
+    uint32_t pk[kMlkem768PublicKeyWords],
+    uint32_t sk[kMlkem768MaskedSecretKeyWords]);
+
+OT_WARN_UNUSED_RESULT
+status_t mlkem_acc_1024_keygen_hardened(
+    const uint32_t coins_share0[kMlkemKeygenSeedWords],
+    const uint32_t coins_share1[kMlkemKeygenSeedWords],
+    uint32_t pk[kMlkem1024PublicKeyWords],
+    uint32_t sk[kMlkem1024MaskedSecretKeyWords]);
+
+OT_WARN_UNUSED_RESULT
+status_t mlkem_acc_512_decap_hardened(
+    const uint32_t ct[kMlkem512CiphertextWords],
+    const uint32_t sk[kMlkem512MaskedSecretKeyWords],
+    uint32_t ss_share0[kMlkemSharedSecretWords],
+    uint32_t ss_share1[kMlkemSharedSecretWords]);
+
+OT_WARN_UNUSED_RESULT
+status_t mlkem_acc_768_decap_hardened(
+    const uint32_t ct[kMlkem768CiphertextWords],
+    const uint32_t sk[kMlkem768MaskedSecretKeyWords],
+    uint32_t ss_share0[kMlkemSharedSecretWords],
+    uint32_t ss_share1[kMlkemSharedSecretWords]);
+
+OT_WARN_UNUSED_RESULT
+status_t mlkem_acc_1024_decap_hardened(
+    const uint32_t ct[kMlkem1024CiphertextWords],
+    const uint32_t sk[kMlkem1024MaskedSecretKeyWords],
+    uint32_t ss_share0[kMlkemSharedSecretWords],
+    uint32_t ss_share1[kMlkemSharedSecretWords]);
 
 #ifdef __cplusplus
 }  // extern "C"

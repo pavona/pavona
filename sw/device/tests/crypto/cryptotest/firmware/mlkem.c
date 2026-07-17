@@ -4,9 +4,11 @@
 
 #include "mlkem.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/sha3.h"
@@ -15,6 +17,14 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 #define MODULE_ID MAKE_MODULE_ID('m', 'c', 'k')
+
+// The hardened ACC backend requires PassivePhysical secret keys; the
+// unprotected and native backends require PassiveRemote.
+#ifdef ACC_MLKEM_HARDENED
+#define MLKEM_SECRET_KEY_SECURITY_LEVEL kOtcryptoKeySecurityLevelPassivePhysical
+#else
+#define MLKEM_SECRET_KEY_SECURITY_LEVEL kOtcryptoKeySecurityLevelPassiveRemote
+#endif
 
 static status_t hash_output(const uint8_t *data, size_t len,
                             cryptotest_mlkem_output_t *out) {
@@ -34,6 +44,18 @@ static status_t send_fail(ujson_t *uj) {
   RESP_OK(ujson_serialize_cryptotest_mlkem_output_t, uj, &out);
   return OK_STATUS();
 }
+
+#ifdef ACC_MLKEM_HARDENED
+static status_t generate_seed_mask(uint32_t *seed_mask, size_t seed_words) {
+  TRY(entropy_complex_check());
+  TRY(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
+  TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed_mask, seed_words,
+                             /*fips_check=*/kHardenedBoolTrue));
+  TRY(entropy_csrng_uninstantiate());
+  return OK_STATUS();
+}
+#endif
 
 // Output hash: SHA3-256(ek || K).
 static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
@@ -78,9 +100,10 @@ static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
       .key_mode = key_mode,
       .key_length = sk_bytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+      .security_level = MLKEM_SECRET_KEY_SECURITY_LEVEL,
   };
-  size_t sk_blob_words = ceil_div(sk_bytes, sizeof(uint32_t)) * 2;
+  size_t sk_blob_words;
+  TRY(keyblob_num_words(sk_config, &sk_blob_words));
   memset(s->sk, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t sk = {
       .config = sk_config,
@@ -94,10 +117,30 @@ static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
   if (d.seed_len % sizeof(uint32_t) != 0 || d.c_len % sizeof(uint32_t) != 0) {
     return send_fail(uj);
   }
+  size_t seed_len_words = d.seed_len / sizeof(uint32_t);
+
+#ifdef ACC_MLKEM_HARDENED
+  // Seed is masked, so buffer is twice as long.
+  uint32_t seed_words[2 * MLKEM_CMD_MAX_SEED_BYTES / sizeof(uint32_t)];
+  uint32_t *seed_share0 = seed_words;
+  uint32_t *seed_share1 = &seed_words[seed_len_words];
+  memcpy(seed_share0, d.seed, d.seed_len);
+
+  // Skip masking an empty seed; a zero-length CSRNG request would hang.
+  if (seed_len_words > 0) {
+    TRY(generate_seed_mask(seed_share1, seed_len_words));
+    for (size_t i = 0; i < seed_len_words; i++) {
+      seed_share0[i] ^= seed_share1[i];
+    }
+  }
+  otcrypto_const_word32_buf_t seed = {.data = seed_words,
+                                      .len = 2 * seed_len_words};
+#else
   uint32_t seed_words[MLKEM_CMD_MAX_SEED_BYTES / sizeof(uint32_t)];
   memcpy(seed_words, d.seed, d.seed_len);
   otcrypto_const_word32_buf_t seed = {.data = seed_words,
-                                      .len = d.seed_len / sizeof(uint32_t)};
+                                      .len = seed_len_words};
+#endif
   status_t keygen_status;
   switch (d.parameter_set) {
     case 512:
@@ -176,6 +219,35 @@ static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
   return OK_STATUS();
 }
 
+#ifdef ACC_MLKEM_HARDENED
+// Rebuild the plaintext dk from the ACC masked keyblob (component-major): per
+// poly the two arithmetic shares sum mod q; ek||H(ek) is public; z = z0 ^ z1.
+static status_t mlkem_unmask_sk(const otcrypto_blinded_key_t *sk, size_t k,
+                                uint8_t *dk) {
+  const uint8_t *kb = (const uint8_t *)sk->keyblob;
+  for (size_t p = 0; p < k; p++) {
+    const uint8_t *s0 = kb + 768 * p;
+    const uint8_t *s1 = kb + 768 * p + 384;
+    for (size_t i = 0; i < 384; i += 3) {
+      uint32_t a0 = s0[i] | ((uint32_t)(s0[i + 1] & 0x0f) << 8);
+      uint32_t a1 = (s0[i + 1] >> 4) | ((uint32_t)s0[i + 2] << 4);
+      uint32_t b0 = s1[i] | ((uint32_t)(s1[i + 1] & 0x0f) << 8);
+      uint32_t b1 = (s1[i + 1] >> 4) | ((uint32_t)s1[i + 2] << 4);
+      uint32_t c0 = (a0 + b0) % 3329;
+      uint32_t c1 = (a1 + b1) % 3329;
+      dk[384 * p + i] = (uint8_t)c0;
+      dk[384 * p + i + 1] = (uint8_t)((c0 >> 8) | (c1 << 4));
+      dk[384 * p + i + 2] = (uint8_t)(c1 >> 4);
+    }
+  }
+  memcpy(dk + 384 * k, kb + 768 * k, 384 * k + 64);
+  for (size_t i = 0; i < 32; i++) {
+    dk[768 * k + 64 + i] = kb[1152 * k + 64 + i] ^ kb[1152 * k + 96 + i];
+  }
+  return OK_STATUS();
+}
+#endif
+
 // Output hash: SHA3-256(ek || dk).
 static status_t handle_mlkem_keygen(ujson_t *uj, mlkem_test_scratch_t *s) {
   cryptotest_mlkem_keygen_data_t d;
@@ -215,9 +287,10 @@ static status_t handle_mlkem_keygen(ujson_t *uj, mlkem_test_scratch_t *s) {
       .key_mode = key_mode,
       .key_length = sk_bytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+      .security_level = MLKEM_SECRET_KEY_SECURITY_LEVEL,
   };
-  size_t sk_blob_words = ceil_div(sk_bytes, sizeof(uint32_t)) * 2;
+  size_t sk_blob_words;
+  TRY(keyblob_num_words(sk_config, &sk_blob_words));
   memset(s->sk, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t sk = {
       .config = sk_config,
@@ -231,10 +304,30 @@ static status_t handle_mlkem_keygen(ujson_t *uj, mlkem_test_scratch_t *s) {
   if (d.seed_len % sizeof(uint32_t) != 0) {
     return send_fail(uj);
   }
+  size_t seed_len_words = d.seed_len / sizeof(uint32_t);
+
+#ifdef ACC_MLKEM_HARDENED
+  // Seed is masked, so buffer is twice as long.
+  uint32_t seed_words[2 * MLKEM_CMD_MAX_SEED_BYTES / sizeof(uint32_t)];
+  uint32_t *seed_share0 = seed_words;
+  uint32_t *seed_share1 = &seed_words[seed_len_words];
+  memcpy(seed_share0, d.seed, d.seed_len);
+
+  // Skip masking an empty seed; a zero-length CSRNG request would hang.
+  if (seed_len_words > 0) {
+    TRY(generate_seed_mask(seed_share1, seed_len_words));
+    for (size_t i = 0; i < seed_len_words; i++) {
+      seed_share0[i] ^= seed_share1[i];
+    }
+  }
+  otcrypto_const_word32_buf_t seed = {.data = seed_words,
+                                      .len = 2 * seed_len_words};
+#else
   uint32_t seed_words[MLKEM_CMD_MAX_SEED_BYTES / sizeof(uint32_t)];
   memcpy(seed_words, d.seed, d.seed_len);
   otcrypto_const_word32_buf_t seed = {.data = seed_words,
-                                      .len = d.seed_len / sizeof(uint32_t)};
+                                      .len = seed_len_words};
+#endif
   status_t keygen_status;
   switch (d.parameter_set) {
     case 512:
@@ -256,12 +349,16 @@ static status_t handle_mlkem_keygen(ujson_t *uj, mlkem_test_scratch_t *s) {
     return send_fail(uj);
   }
 
-  // Unmask sk and build pk||sk hash in work.tmp.
-  size_t sk_words_count = keyblob_share_num_words(sk_config);
+  // Rebuild the standard dk and build pk||sk hash in work.tmp.
   uint8_t *hash_buf = s->work.tmp;
   memcpy(hash_buf, s->pk, pk_bytes);
-  TRY(keyblob_key_unmask(&sk, sk_words_count,
-                         (uint32_t *)(hash_buf + pk_bytes)));
+#ifdef ACC_MLKEM_HARDENED
+  size_t k = (sk_bytes - 96) / 768;
+  TRY(mlkem_unmask_sk(&sk, k, hash_buf + pk_bytes));
+#else
+  // Unprotected: the keyblob is the plain dk.
+  memcpy(hash_buf + pk_bytes, sk.keyblob, sk_bytes);
+#endif
 
   cryptotest_mlkem_output_t out;
   memset(&out, 0, sizeof(out));
@@ -404,19 +501,28 @@ static status_t handle_mlkem_decaps(ujson_t *uj, mlkem_test_scratch_t *s) {
       .key_mode = key_mode,
       .key_length = d.dk_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+      .security_level = MLKEM_SECRET_KEY_SECURITY_LEVEL,
   };
-  size_t dk_words_len = ceil_div(d.dk_len, sizeof(uint32_t));
-  size_t sk_blob_words_needed = dk_words_len * 2;
-  uint32_t *dk_raw = s->work.dk_scratch;
-  uint32_t *dk_zeros = s->work.dk_scratch + dk_words_len;
-  memset(dk_raw, 0, dk_words_len * sizeof(uint32_t));
-  memcpy(dk_raw, d.dk, d.dk_len);
-  memset(dk_zeros, 0, dk_words_len * sizeof(uint32_t));
-  TRY(keyblob_from_shares(dk_raw, dk_zeros, sk_config, s->sk));
+  size_t sk_blob_words;
+  TRY(keyblob_num_words(sk_config, &sk_blob_words));
+  uint8_t *kb = (uint8_t *)s->sk;
+  memset(kb, 0, sk_blob_words * sizeof(uint32_t));
+#ifdef ACC_MLKEM_HARDENED
+  // Format the plaintext dk as the ACC masked dk with a zero second share:
+  // per poly s0 = plain, s1 = 0 (interleaved); ek||H(ek) public; z0 = z, z1 =
+  // 0.
+  size_t k = (d.dk_len - 96) / 768;
+  for (size_t p = 0; p < k; p++) {
+    memcpy(kb + 768 * p, d.dk + 384 * p, 384);
+  }
+  memcpy(kb + 768 * k, d.dk + 384 * k, 384 * k + 64);
+  memcpy(kb + 1152 * k + 64, d.dk + 768 * k + 64, 32);
+#else
+  memcpy(kb, d.dk, d.dk_len);
+#endif
   otcrypto_blinded_key_t sk = {
       .config = sk_config,
-      .keyblob_length = sk_blob_words_needed * sizeof(uint32_t),
+      .keyblob_length = sk_blob_words * sizeof(uint32_t),
       .keyblob = s->sk,
   };
   sk.checksum = integrity_blinded_checksum(&sk);

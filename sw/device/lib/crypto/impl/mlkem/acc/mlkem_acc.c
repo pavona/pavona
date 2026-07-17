@@ -9,16 +9,68 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#ifdef ACC_MLKEM_HARDENED
+#include "sw/device/lib/crypto/impl/mlkem/acc/mlkem_insn_counts_hardened.h"
+#else
 #include "sw/device/lib/crypto/impl/mlkem/acc/mlkem_insn_counts.h"
+#endif
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('m', 'a', 'c')
 
-// Declare the ACC app.
+// Declare the ACC app and its input/output offsets. The hardened build runs
+// run_mlkem_hardened instead of run_mlkem; both binaries share the same mode
+// encoding and dmem variable names, so the rest of this file is agnostic.
+#ifdef ACC_MLKEM_HARDENED
+ACC_DECLARE_APP_SYMBOLS(run_mlkem_hardened);
+static const acc_app_t kAccAppMlkem = ACC_APP_T_INIT(run_mlkem_hardened);
+
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, mode);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, coins);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, dk);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, ek);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, ct);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, ss);
+
+static const acc_addr_t kAccVarMode = ACC_ADDR_T_INIT(run_mlkem_hardened, mode);
+static const acc_addr_t kAccVarCoins =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, coins);
+static const acc_addr_t kAccVarDk = ACC_ADDR_T_INIT(run_mlkem_hardened, dk);
+static const acc_addr_t kAccVarEk = ACC_ADDR_T_INIT(run_mlkem_hardened, ek);
+static const acc_addr_t kAccVarCt = ACC_ADDR_T_INIT(run_mlkem_hardened, ct);
+static const acc_addr_t kAccVarSs = ACC_ADDR_T_INIT(run_mlkem_hardened, ss);
+
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_KEYGEN_512);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_KEYGEN_768);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_KEYGEN_1024);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_ENCAP_512);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_ENCAP_768);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_ENCAP_1024);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_DECAP_512);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_DECAP_768);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, MODE_DECAP_1024);
+static const uint32_t kAccMlkemModeKeygen512 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_KEYGEN_512);
+static const uint32_t kAccMlkemModeKeygen768 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_KEYGEN_768);
+static const uint32_t kAccMlkemModeKeygen1024 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_KEYGEN_1024);
+static const uint32_t kAccMlkemModeEncap512 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_ENCAP_512);
+static const uint32_t kAccMlkemModeEncap768 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_ENCAP_768);
+static const uint32_t kAccMlkemModeEncap1024 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_ENCAP_1024);
+static const uint32_t kAccMlkemModeDecap512 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_DECAP_512);
+static const uint32_t kAccMlkemModeDecap768 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_DECAP_768);
+static const uint32_t kAccMlkemModeDecap1024 =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, MODE_DECAP_1024);
+#else
 ACC_DECLARE_APP_SYMBOLS(run_mlkem);
 static const acc_app_t kAccAppMlkem = ACC_APP_T_INIT(run_mlkem);
 
-// Declare offsets for input and output buffers.
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, mode);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, coins);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, dk);
@@ -33,7 +85,6 @@ static const acc_addr_t kAccVarEk = ACC_ADDR_T_INIT(run_mlkem, ek);
 static const acc_addr_t kAccVarCt = ACC_ADDR_T_INIT(run_mlkem, ct);
 static const acc_addr_t kAccVarSs = ACC_ADDR_T_INIT(run_mlkem, ss);
 
-// Declare mode constants.
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, MODE_KEYGEN_512);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, MODE_KEYGEN_768);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, MODE_KEYGEN_1024);
@@ -61,15 +112,78 @@ static const uint32_t kAccMlkemModeDecap768 =
     ACC_ADDR_T_INIT(run_mlkem, MODE_DECAP_768);
 static const uint32_t kAccMlkemModeDecap1024 =
     ACC_ADDR_T_INIT(run_mlkem, MODE_DECAP_1024);
+#endif  // ACC_MLKEM_HARDENED
 
 enum {
   kAccMlkemModeWords = 1,
 };
 
+#ifdef ACC_MLKEM_HARDENED
+
+enum {
+  kMlkemSeedShareBytes = 32,
+  kMlkemSeedShareWords = kMlkemSeedShareBytes / sizeof(uint32_t),
+  kMlkemSsShareWords = kMlkemSharedSecretBytes / sizeof(uint32_t),
+};
+
+OT_WARN_UNUSED_RESULT
+static status_t mlkem_keygen_hardened(uint32_t mode, uint32_t min_insn_count,
+                                      uint32_t max_insn_count,
+                                      const uint32_t *coins_share0,
+                                      const uint32_t *coins_share1,
+                                      uint32_t *pk, size_t pk_words,
+                                      uint32_t *sk, size_t sk_words) {
+  // Extract the shares of d and z from the shares of coins.
+  const uint32_t *d0 = coins_share0;
+  const uint32_t *z0 = &coins_share0[kMlkemSeedShareWords];
+  const uint32_t *d1 = coins_share1;
+  const uint32_t *z1 = &coins_share1[kMlkemSeedShareWords];
+
+  HARDENED_TRY(acc_load_app(kAccAppMlkem));
+  HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
+  HARDENED_TRY(acc_dmem_write(kMlkemSeedShareWords, d0, kAccVarCoins));
+  HARDENED_TRY(acc_dmem_write(kMlkemSeedShareWords, d1,
+                              kAccVarCoins + kMlkemSeedShareBytes));
+  HARDENED_TRY(acc_dmem_write(kMlkemSeedShareWords, z0,
+                              kAccVarCoins + 2 * kMlkemSeedShareBytes));
+  HARDENED_TRY(acc_dmem_write(kMlkemSeedShareWords, z1,
+                              kAccVarCoins + 3 * kMlkemSeedShareBytes));
+  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
+  ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
+  ACC_WIPE_IF_ERROR(acc_dmem_read(pk_words, kAccVarEk, pk));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(sk_words, kAccVarDk, sk));
+  return acc_dmem_sec_wipe();
+}
+
+OT_WARN_UNUSED_RESULT
+static status_t mlkem_decap_hardened(uint32_t mode, uint32_t min_insn_count,
+                                     uint32_t max_insn_count,
+                                     const uint32_t *ct, size_t ct_words,
+                                     const uint32_t *sk, size_t sk_words,
+                                     uint32_t *ss_share0, uint32_t *ss_share1) {
+  HARDENED_TRY(acc_load_app(kAccAppMlkem));
+  HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
+  HARDENED_TRY(acc_dmem_write(ct_words, ct, kAccVarCt));
+  HARDENED_TRY(acc_dmem_write(sk_words, sk, kAccVarDk));
+  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
+
+  ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
+  uint32_t ss_shares[2 * kMlkemSsShareWords];
+  ACC_WIPE_IF_ERROR(acc_dmem_read(ARRAYSIZE(ss_shares), kAccVarSs, ss_shares));
+  HARDENED_TRY(acc_dmem_sec_wipe());
+  memcpy(ss_share0, ss_shares, kMlkemSharedSecretBytes);
+  memcpy(ss_share1, &ss_shares[kMlkemSsShareWords], kMlkemSharedSecretBytes);
+  hardened_memshred(ss_shares, ARRAYSIZE(ss_shares));
+  return OTCRYPTO_OK;
+}
+
+#else  // !ACC_MLKEM_HARDENED
+
 OT_WARN_UNUSED_RESULT
 static status_t mlkem_keygen(uint32_t mode, uint32_t min_insn_count,
-                             uint32_t max_insn_count,
-                             const uint32_t coins[kMlkemKeygenSeedWords],
+                             uint32_t max_insn_count, const uint32_t *coins,
                              uint32_t *pk, size_t pk_words, uint32_t *sk,
                              size_t sk_words) {
   HARDENED_TRY(acc_load_app(kAccAppMlkem));
@@ -80,25 +194,6 @@ static status_t mlkem_keygen(uint32_t mode, uint32_t min_insn_count,
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(acc_dmem_read(pk_words, kAccVarEk, pk));
   ACC_WIPE_IF_ERROR(acc_dmem_read(sk_words, kAccVarDk, sk));
-  return acc_dmem_sec_wipe();
-}
-
-OT_WARN_UNUSED_RESULT
-static status_t mlkem_encap(uint32_t mode, uint32_t min_insn_count,
-                            uint32_t max_insn_count,
-                            const uint32_t coins[kMlkemEncapSeedWords],
-                            const uint32_t *pk, size_t pk_words, uint32_t *ct,
-                            size_t ct_words,
-                            uint32_t ss[kMlkemSharedSecretWords]) {
-  HARDENED_TRY(acc_load_app(kAccAppMlkem));
-  HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
-  HARDENED_TRY(acc_dmem_write(kMlkemEncapSeedWords, coins, kAccVarCoins));
-  HARDENED_TRY(acc_dmem_write(pk_words, pk, kAccVarEk));
-  HARDENED_TRY(acc_execute());
-  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
-  ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
-  ACC_WIPE_IF_ERROR(acc_dmem_read(ct_words, kAccVarCt, ct));
-  ACC_WIPE_IF_ERROR(acc_dmem_read(kMlkemSharedSecretWords, kAccVarSs, ss));
   return acc_dmem_sec_wipe();
 }
 
@@ -114,11 +209,36 @@ static status_t mlkem_decap(uint32_t mode, uint32_t min_insn_count,
   HARDENED_TRY(acc_dmem_write(sk_words, sk, kAccVarDk));
   HARDENED_TRY(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
+
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(acc_dmem_read(kMlkemSharedSecretWords, kAccVarSs, ss));
   return acc_dmem_sec_wipe();
 }
 
+#endif  // ACC_MLKEM_HARDENED
+
+// Encapsulation has no masked variant (it operates only on public data) and is
+// compiled in both builds, using whichever run_mlkem binary is linked.
+OT_WARN_UNUSED_RESULT
+static status_t mlkem_encap(uint32_t mode, uint32_t min_insn_count,
+                            uint32_t max_insn_count, const uint32_t *coins,
+                            const uint32_t *pk, size_t pk_words, uint32_t *ct,
+                            size_t ct_words,
+                            uint32_t ss[kMlkemSharedSecretWords]) {
+  HARDENED_TRY(acc_load_app(kAccAppMlkem));
+  HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
+  HARDENED_TRY(acc_dmem_write(kMlkemEncapSeedWords, coins, kAccVarCoins));
+  HARDENED_TRY(acc_dmem_write(pk_words, pk, kAccVarEk));
+  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
+
+  ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
+  ACC_WIPE_IF_ERROR(acc_dmem_read(ct_words, kAccVarCt, ct));
+  ACC_WIPE_IF_ERROR(acc_dmem_read(kMlkemSharedSecretWords, kAccVarSs, ss));
+  return acc_dmem_sec_wipe();
+}
+
+#ifndef ACC_MLKEM_HARDENED
 status_t mlkem_acc_512_keygen(const uint32_t coins[kMlkemKeygenSeedWords],
                               uint32_t pk[kMlkem512PublicKeyWords],
                               uint32_t sk[kMlkem512SecretKeyWords]) {
@@ -145,6 +265,7 @@ status_t mlkem_acc_1024_keygen(const uint32_t coins[kMlkemKeygenSeedWords],
                       kMlkem1024KeygenMaxInstructionCount, coins, pk,
                       kMlkem1024PublicKeyWords, sk, kMlkem1024SecretKeyWords);
 }
+#endif  // !ACC_MLKEM_HARDENED
 
 status_t mlkem_acc_512_encap(const uint32_t coins[kMlkemEncapSeedWords],
                              const uint32_t pk[kMlkem512PublicKeyWords],
@@ -174,6 +295,7 @@ status_t mlkem_acc_1024_encap(const uint32_t coins[kMlkemEncapSeedWords],
                      ss);
 }
 
+#ifndef ACC_MLKEM_HARDENED
 status_t mlkem_acc_512_decap(const uint32_t ct[kMlkem512CiphertextWords],
                              const uint32_t sk[kMlkem512SecretKeyWords],
                              uint32_t ss[kMlkemSharedSecretWords]) {
@@ -198,3 +320,72 @@ status_t mlkem_acc_1024_decap(const uint32_t ct[kMlkem1024CiphertextWords],
                      kMlkem1024CiphertextWords, sk, kMlkem1024SecretKeyWords,
                      ss);
 }
+#endif  // !ACC_MLKEM_HARDENED
+
+#ifdef ACC_MLKEM_HARDENED
+status_t mlkem_acc_512_keygen_hardened(
+    const uint32_t coins_share0[kMlkemKeygenSeedWords],
+    const uint32_t coins_share1[kMlkemKeygenSeedWords],
+    uint32_t pk[kMlkem512PublicKeyWords],
+    uint32_t sk[kMlkem512MaskedSecretKeyWords]) {
+  return mlkem_keygen_hardened(
+      kAccMlkemModeKeygen512, kMlkem512KeygenMinInstructionCount,
+      kMlkem512KeygenMaxInstructionCount, coins_share0, coins_share1, pk,
+      kMlkem512PublicKeyWords, sk, kMlkem512MaskedSecretKeyWords);
+}
+
+status_t mlkem_acc_768_keygen_hardened(
+    const uint32_t coins_share0[kMlkemKeygenSeedWords],
+    const uint32_t coins_share1[kMlkemKeygenSeedWords],
+    uint32_t pk[kMlkem768PublicKeyWords],
+    uint32_t sk[kMlkem768MaskedSecretKeyWords]) {
+  return mlkem_keygen_hardened(
+      kAccMlkemModeKeygen768, kMlkem768KeygenMinInstructionCount,
+      kMlkem768KeygenMaxInstructionCount, coins_share0, coins_share1, pk,
+      kMlkem768PublicKeyWords, sk, kMlkem768MaskedSecretKeyWords);
+}
+
+status_t mlkem_acc_1024_keygen_hardened(
+    const uint32_t coins_share0[kMlkemKeygenSeedWords],
+    const uint32_t coins_share1[kMlkemKeygenSeedWords],
+    uint32_t pk[kMlkem1024PublicKeyWords],
+    uint32_t sk[kMlkem1024MaskedSecretKeyWords]) {
+  return mlkem_keygen_hardened(
+      kAccMlkemModeKeygen1024, kMlkem1024KeygenMinInstructionCount,
+      kMlkem1024KeygenMaxInstructionCount, coins_share0, coins_share1, pk,
+      kMlkem1024PublicKeyWords, sk, kMlkem1024MaskedSecretKeyWords);
+}
+
+status_t mlkem_acc_512_decap_hardened(
+    const uint32_t ct[kMlkem512CiphertextWords],
+    const uint32_t sk[kMlkem512MaskedSecretKeyWords],
+    uint32_t ss_share0[kMlkemSharedSecretWords],
+    uint32_t ss_share1[kMlkemSharedSecretWords]) {
+  return mlkem_decap_hardened(
+      kAccMlkemModeDecap512, kMlkem512DecapMinInstructionCount,
+      kMlkem512DecapMaxInstructionCount, ct, kMlkem512CiphertextWords, sk,
+      kMlkem512MaskedSecretKeyWords, ss_share0, ss_share1);
+}
+
+status_t mlkem_acc_768_decap_hardened(
+    const uint32_t ct[kMlkem768CiphertextWords],
+    const uint32_t sk[kMlkem768MaskedSecretKeyWords],
+    uint32_t ss_share0[kMlkemSharedSecretWords],
+    uint32_t ss_share1[kMlkemSharedSecretWords]) {
+  return mlkem_decap_hardened(
+      kAccMlkemModeDecap768, kMlkem768DecapMinInstructionCount,
+      kMlkem768DecapMaxInstructionCount, ct, kMlkem768CiphertextWords, sk,
+      kMlkem768MaskedSecretKeyWords, ss_share0, ss_share1);
+}
+
+status_t mlkem_acc_1024_decap_hardened(
+    const uint32_t ct[kMlkem1024CiphertextWords],
+    const uint32_t sk[kMlkem1024MaskedSecretKeyWords],
+    uint32_t ss_share0[kMlkemSharedSecretWords],
+    uint32_t ss_share1[kMlkemSharedSecretWords]) {
+  return mlkem_decap_hardened(
+      kAccMlkemModeDecap1024, kMlkem1024DecapMinInstructionCount,
+      kMlkem1024DecapMaxInstructionCount, ct, kMlkem1024CiphertextWords, sk,
+      kMlkem1024MaskedSecretKeyWords, ss_share0, ss_share1);
+}
+#endif  // ACC_MLKEM_HARDENED

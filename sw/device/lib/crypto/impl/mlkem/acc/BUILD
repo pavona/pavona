@@ -24,11 +24,38 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "mlkem_acc_hardened",
+    srcs = ["mlkem_acc.c"],
+    hdrs = ["mlkem_acc.h"],
+    local_defines = ["ACC_MLKEM_HARDENED"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        ":mlkem_insn_counts_hardened",
+        "//sw/acc/crypto:run_mlkem_hardened",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:acc",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
 autogen_acc_insn_count_header(
     name = "mlkem_insn_counts",
     hjson = "mlkem_modes.hjson",
     template = "mlkem_insn_counts.h.tpl",
     deps = [
         "//sw/acc/crypto:run_mlkem",
+    ],
+)
+
+autogen_acc_insn_count_header(
+    name = "mlkem_insn_counts_hardened",
+    hjson = "mlkem_modes.hjson",
+    template = "mlkem_insn_counts_hardened.h.tpl",
+    deps = [
+        "//sw/acc/crypto:run_mlkem_hardened",
     ],
 )

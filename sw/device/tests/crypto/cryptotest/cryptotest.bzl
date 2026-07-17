@@ -52,7 +52,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
-def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, extra_exec_envs = {}):
+def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, extra_exec_envs = {}, firmware_deps = FIRMWARE_DEPS):
     """A macro for defining a CryptoTest test case.
 
     Args:
@@ -62,6 +62,7 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, e
         test_harness: the test harness to use.
         slow_test: indicate if the test should be run in the nightly CI.
         extra_exec_envs: additional exec_env entries merged into the defaults.
+        firmware_deps: firmware dependencies (defaults to FIRMWARE_DEPS).
     """
     tags = ["slow_test"] if slow_test else []
     exec_env = dict(CRYPTOTEST_EXEC_ENVS)
@@ -97,5 +98,5 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, e
             """ + test_args,
             test_harness = test_harness,
         ),
-        deps = FIRMWARE_DEPS,
+        deps = firmware_deps,
     )

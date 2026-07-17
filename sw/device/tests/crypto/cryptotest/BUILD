@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":cryptotest.bzl", "cryptotest")
+load(":cryptotest.bzl", "FIRMWARE_DEPS", "cryptotest")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -93,6 +93,24 @@ cryptotest(
     extra_exec_envs = {
         "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
     },
+    slow_test = True,
+    test_args = MLKEM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/mlkem_kat:harness",
+    test_vectors = MLKEM_TESTVECTOR_TARGETS,
+)
+
+# Same as mlkem_kat but with the hardened ACC ML-KEM backend baked into the
+# firmware, so the PQC CW340 job runs both variants without a second build.
+cryptotest(
+    name = "mlkem_kat_hardened",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    firmware_deps = [
+        d
+        for d in FIRMWARE_DEPS
+        if d != "//sw/device/tests/crypto/cryptotest/firmware:mlkem"
+    ] + ["//sw/device/tests/crypto/cryptotest/firmware:mlkem_hardened"],
     slow_test = True,
     test_args = MLKEM_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/mlkem_kat:harness",

@@ -369,9 +369,26 @@ cc_library(
 )
 
 cc_library(
+    name = "mlkem_acc_hardened_backend",
+    srcs = ["mlkem.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mlkem.h"],
+    defines = [
+        "ACC_HAS_PQC",
+        "ACC_MLKEM_HARDENED",
+    ],
+    target_compatible_with = [PAVONA_CPU],
+    deps = _MLKEM_COMMON_DEPS + [
+        "//sw/device/lib/crypto/impl/mlkem/acc:mlkem_acc_hardened",
+    ],
+)
+
+cc_library(
     name = "mlkem",
     target_compatible_with = [PAVONA_CPU],
     deps = select({
+        "//sw/device/lib/crypto/drivers:acc_pqc_hardened": [
+            ":mlkem_acc_hardened_backend",
+        ],
         "//sw/device/lib/crypto/drivers:acc_has_pqc": [":mlkem_acc_backend"],
         "//conditions:default": [":mlkem_native_backend"],
     }),

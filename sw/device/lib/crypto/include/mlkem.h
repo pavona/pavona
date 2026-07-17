@@ -8,6 +8,25 @@
 
 #include "datatypes.h"
 
+/**
+ * ML-KEM decapsulation-key blob format (K = 2, 3, 4 for ML-KEM-512/768/1024).
+ *
+ * The unprotected ACC implementation and the software implementation store
+ * the decapsulation key in the plain FIPS203 format:
+ *
+ *   keyblob = s_hat (384*K) || ek (384*K + 32) || H(ek) (32) || z (32)
+ *
+ * The hardened ACC implementation splits the secret part into shares:
+ *
+ *   keyblob = s_hat shares (2*384*K) || ek (384*K + 32) || H(ek) (32)
+ *          || z0 (32) || z1 (32)
+ *          = 1152*K + 128 bytes
+ *
+ * s_hat is the NTT-domain secret vector (hardened: two arithmetic shares mod q
+ * per polynomial, interleaved); z is the implicit-rejection secret (hardened:
+ * Boolean shares, z0 ^ z1 == z); ek and H(ek) are public, i.e., un-masked.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -62,16 +81,15 @@ enum {
   kOtcryptoMlkem1024CiphertextWords =
       kOtcryptoMlkem1024CiphertextBytes / sizeof(uint32_t),
 
-// Work buffer sizes in 32-bit words (the ACC backend uses none).
+// Work buffer sizes in 32-bit words. The ACC backends stage in DMEM and need
+// no caller work buffer; only the software backend does.
 #ifdef ACC_HAS_PQC
   kOtcryptoMlkem512WorkBufferKeypairWords = 0,
   kOtcryptoMlkem512WorkBufferEncapsWords = 0,
   kOtcryptoMlkem512WorkBufferDecapsWords = 0,
-
   kOtcryptoMlkem768WorkBufferKeypairWords = 0,
   kOtcryptoMlkem768WorkBufferEncapsWords = 0,
   kOtcryptoMlkem768WorkBufferDecapsWords = 0,
-
   kOtcryptoMlkem1024WorkBufferKeypairWords = 0,
   kOtcryptoMlkem1024WorkBufferEncapsWords = 0,
   kOtcryptoMlkem1024WorkBufferDecapsWords = 0,
@@ -118,7 +136,17 @@ otcrypto_status_t otcrypto_mlkem512_keygen(
  * blob for the private key should have a length of 2x
  * ceil(kOtCryptoMlkem512SecretKeybytes / sizeof(uint32_t)) = 816 words.
  *
- * @param randomness seed for keygen, len `kOtcryptoMlkem512KeygenSeedWords`.
+ * If an unhardened backend is used (either the Ibex-only implementation
+ * or the unhardened ACC implementation), then `randomness` must
+ * have a length of `kOtcryptoMlkem512KeygenSeedWords`. If a hardened
+ * implementation is used instead, `randomness` must be of length
+ * `2 * kOtcryptoMlkem512KeygenSeedWords` with the first and last
+ * `kOtcryptoMlkem512KeygenSeedWords` words representing binary shares of the
+ * key generation seed.
+ *
+ * @param randomness seed for keygen, len `kOtcryptoMlkem512KeygenSeedWords` if
+ *        using an unhardened implementation, otherwise len
+ *        `2 * kOtcryptoMlkem512KeygenSeedWords`.
  * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem512WorkBufferKeypairWords` words).
@@ -224,7 +252,17 @@ otcrypto_status_t otcrypto_mlkem768_keygen(
  * blob for the private key should have a length of 2x
  * ceil(kOtCryptoMlkem768SecretKeybytes / sizeof(uint32_t)) = 1200 words.
  *
- * @param randomness seed for keygen, len `kOtcryptoMlkem768KeygenSeedWords`.
+ * If an unhardened backend is used (either the Ibex-only implementation
+ * or the unhardened ACC implementation), then `randomness` must
+ * have a length of `kOtcryptoMlkem768KeygenSeedWords`. If a hardened
+ * implementation is used instead, `randomness` must be of length
+ * `2 * kOtcryptoMlkem768KeygenSeedWords` with the first and last
+ * `kOtcryptoMlkem768KeygenSeedWords` words representing binary shares of the
+ * key generation seed.
+ *
+ * @param randomness seed for keygen, len `kOtcryptoMlkem768KeygenSeedWords` if
+ *        using an unhardened implementation, otherwise len
+ *        `2 * kOtcryptoMlkem768KeygenSeedWords`.
  * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem768WorkBufferKeypairWords` words).
@@ -330,7 +368,17 @@ otcrypto_status_t otcrypto_mlkem1024_keygen(
  * blob for the private key should have a length of 2x
  * ceil(kOtCryptoMlkem1024SecretKeybytes / sizeof(uint32_t)) = 1584 words.
  *
- * @param randomness seed for keygen, len `kOtcryptoMlkem1024KeygenSeedWords`.
+ * If an unhardened backend is used (either the Ibex-only implementation
+ * or the unhardened ACC implementation), then `randomness` must
+ * have a length of `kOtcryptoMlkem1024KeygenSeedWords`. If a hardened
+ * implementation is used instead, `randomness` must be of length
+ * `2 * kOtcryptoMlkem1024KeygenSeedWords` with the first and last
+ * `kOtcryptoMlkem1024KeygenSeedWords` words representing binary shares of the
+ * key generation seed.
+ *
+ * @param randomness seed for keygen, len `kOtcryptoMlkem1024KeygenSeedWords` if
+ *        using an unhardened implementation, otherwise len
+ *        `2 * kOtcryptoMlkem1024KeygenSeedWords`.
  * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
  * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferKeypairWords` words).

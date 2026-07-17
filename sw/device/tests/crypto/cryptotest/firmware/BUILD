@@ -239,12 +239,35 @@ cc_library(
     srcs = ["mlkem.c"],
     hdrs = ["mlkem.h"],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:mlkem",
+        "//sw/device/lib/crypto/impl:sha3",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:mlkem_commands",
+    ],
+)
+
+# Same as :mlkem but with the hardened ACC backend baked in (no --define), so a
+# hardened cryptotest can run in the same job as the unprotected one.
+cc_library(
+    name = "mlkem_hardened",
+    srcs = ["mlkem.c"],
+    hdrs = ["mlkem.h"],
+    deps = [
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl:mlkem",
+        "//sw/device/lib/crypto/impl:mlkem_acc_hardened_backend",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",

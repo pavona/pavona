@@ -5,6 +5,7 @@
 
 #include "sw/device/lib/crypto/include/mlkem.h"
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -59,9 +60,16 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem512WorkBufferKeypairWords]) {
+#if defined(ACC_MLKEM_HARDENED)
+  // Randomness is masked, so buffer must be twice as long.
+  if (randomness.len != 2 * kOtcryptoMlkem512KeygenSeedWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (randomness.len != kOtcryptoMlkem512KeygenSeedWords) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (public_key->key_length != kOtcryptoMlkem512PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -71,35 +79,48 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem512) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level !=
-      kOtcryptoKeySecurityLevelPassiveRemote) {
-    // Reject high-security keys; the underlying implementation is not masked
-    // against power side channels.
-    return OTCRYPTO_BAD_ARGS;
-  }
   if (secret_key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
-  // Write the unmasked secret key into the first share of the keyblob.
-  uint32_t *sk_share0;
-  uint32_t *sk_share1;
-  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
-  memset(sk_share1, 0, kOtcryptoMlkem512SecretKeyBytes);
+  HARDENED_TRY(check_keyblob_length(secret_key));
 
-#ifdef ACC_HAS_PQC
+#if defined(ACC_MLKEM_HARDENED)
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassivePhysical);
+#else
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassiveRemote) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassiveRemote);
+#endif
+
+#if defined(ACC_HAS_PQC) && defined(ACC_MLKEM_HARDENED)
   (void)work;
-  HARDENED_TRY(
-      mlkem_acc_512_keygen(randomness.data, public_key->key, sk_share0));
+  const uint32_t *rand_share0 = randomness.data;
+  const uint32_t *rand_share1 =
+      &randomness.data[kOtcryptoMlkem512KeygenSeedWords];
+  HARDENED_TRY(mlkem_acc_512_keygen_hardened(
+      rand_share0, rand_share1, public_key->key, secret_key->keyblob));
+#elif defined(ACC_HAS_PQC)
+  (void)work;
+  HARDENED_TRY(mlkem_acc_512_keygen(randomness.data, public_key->key,
+                                    secret_key->keyblob));
 #else
   mlk_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMlkem512WorkBufferKeypairWords,
                          .offset_words = 0};
   int result = mlkem512_keypair_derand((unsigned char *)public_key->key,
-                                       (unsigned char *)sk_share0,
+                                       (unsigned char *)secret_key->keyblob,
                                        (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
-    memset(sk_share0, 0, kOtcryptoMlkem512SecretKeyBytes);
+    memset(secret_key->keyblob, 0, kOtcryptoMlkem512SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
   }
 #endif
@@ -180,7 +201,12 @@ otcrypto_status_t otcrypto_mlkem512_keygen(
     uint32_t work[kOtcryptoMlkem512WorkBufferKeypairWords]) {
   HARDENED_TRY(entropy_complex_check());
 
+#if defined(ACC_MLKEM_HARDENED)
+  // Randomness is masked, so buffer must be twice as long.
+  uint32_t randomness[2 * kOtcryptoMlkem512KeygenSeedWords];
+#else
   uint32_t randomness[kOtcryptoMlkem512KeygenSeedWords];
+#endif
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
@@ -225,12 +251,6 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem512) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level !=
-      kOtcryptoKeySecurityLevelPassiveRemote) {
-    // Reject high-security keys; the underlying implementation is not masked
-    // against power side channels.
-    return OTCRYPTO_BAD_ARGS;
-  }
   if (secret_key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
@@ -244,20 +264,19 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
+#ifndef ACC_MLKEM_HARDENED
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (integrity_blinded_key_check(secret_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Secret keys are stored unmasked in share0 (share1 is zero).
-  uint32_t *sk_share0;
-  uint32_t *sk_share1;
-  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
+  HARDENED_TRY(check_keyblob_length(secret_key));
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -265,16 +284,37 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, kOtcryptoMlkem512SharedSecretBytes);
 
-#ifdef ACC_HAS_PQC
+#if defined(ACC_MLKEM_HARDENED)
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassivePhysical);
+#else
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassiveRemote) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassiveRemote);
+#endif
+
+#if defined(ACC_HAS_PQC) && defined(ACC_MLKEM_HARDENED)
   (void)work;
-  HARDENED_TRY(mlkem_acc_512_decap(ciphertext.data, sk_share0, ss_share0));
+  HARDENED_TRY(mlkem_acc_512_decap_hardened(
+      ciphertext.data, secret_key->keyblob, ss_share0, ss_share1));
+#elif defined(ACC_HAS_PQC)
+  (void)work;
+  HARDENED_TRY(
+      mlkem_acc_512_decap(ciphertext.data, secret_key->keyblob, ss_share0));
 #else
   mlk_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMlkem512WorkBufferDecapsWords,
                          .offset_words = 0};
   int result =
       mlkem512_dec((unsigned char *)ss_share0, (const uint8_t *)ciphertext.data,
-                   (unsigned char *)sk_share0, &ctx);
+                   (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem512SharedSecretBytes);
     return OTCRYPTO_FATAL_ERR;
@@ -292,9 +332,16 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem768WorkBufferKeypairWords]) {
+#if defined(ACC_MLKEM_HARDENED)
+  // Randomness is masked, so buffer must be twice as long.
+  if (randomness.len != 2 * kOtcryptoMlkem768KeygenSeedWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (randomness.len != kOtcryptoMlkem768KeygenSeedWords) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (public_key->key_length != kOtcryptoMlkem768PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -304,35 +351,48 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem768) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level !=
-      kOtcryptoKeySecurityLevelPassiveRemote) {
-    // Reject high-security keys; the underlying implementation is not masked
-    // against power side channels.
-    return OTCRYPTO_BAD_ARGS;
-  }
   if (secret_key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
-  // Write the unmasked secret key into the first share of the keyblob.
-  uint32_t *sk_share0;
-  uint32_t *sk_share1;
-  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
-  memset(sk_share1, 0, kOtcryptoMlkem768SecretKeyBytes);
+  HARDENED_TRY(check_keyblob_length(secret_key));
 
-#ifdef ACC_HAS_PQC
+#if defined(ACC_MLKEM_HARDENED)
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassivePhysical);
+#else
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassiveRemote) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassiveRemote);
+#endif
+
+#if defined(ACC_HAS_PQC) && defined(ACC_MLKEM_HARDENED)
   (void)work;
-  HARDENED_TRY(
-      mlkem_acc_768_keygen(randomness.data, public_key->key, sk_share0));
+  const uint32_t *rand_share0 = randomness.data;
+  const uint32_t *rand_share1 =
+      &randomness.data[kOtcryptoMlkem768KeygenSeedWords];
+  HARDENED_TRY(mlkem_acc_768_keygen_hardened(
+      rand_share0, rand_share1, public_key->key, secret_key->keyblob));
+#elif defined(ACC_HAS_PQC)
+  (void)work;
+  HARDENED_TRY(mlkem_acc_768_keygen(randomness.data, public_key->key,
+                                    secret_key->keyblob));
 #else
   mlk_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMlkem768WorkBufferKeypairWords,
                          .offset_words = 0};
   int result = mlkem768_keypair_derand((unsigned char *)public_key->key,
-                                       (unsigned char *)sk_share0,
+                                       (unsigned char *)secret_key->keyblob,
                                        (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
-    memset(sk_share0, 0, kOtcryptoMlkem768SecretKeyBytes);
+    memset(secret_key->keyblob, 0, kOtcryptoMlkem768SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
   }
 #endif
@@ -413,7 +473,12 @@ otcrypto_status_t otcrypto_mlkem768_keygen(
     uint32_t work[kOtcryptoMlkem768WorkBufferKeypairWords]) {
   HARDENED_TRY(entropy_complex_check());
 
+#if defined(ACC_MLKEM_HARDENED)
+  // Randomness is masked, so buffer must be twice as long.
+  uint32_t randomness[2 * kOtcryptoMlkem768KeygenSeedWords];
+#else
   uint32_t randomness[kOtcryptoMlkem768KeygenSeedWords];
+#endif
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
@@ -458,12 +523,6 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem768) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level !=
-      kOtcryptoKeySecurityLevelPassiveRemote) {
-    // Reject high-security keys; the underlying implementation is not masked
-    // against power side channels.
-    return OTCRYPTO_BAD_ARGS;
-  }
   if (secret_key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
@@ -477,20 +536,19 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
+#ifndef ACC_MLKEM_HARDENED
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (integrity_blinded_key_check(secret_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Secret keys are stored unmasked in share0 (share1 is zero).
-  uint32_t *sk_share0;
-  uint32_t *sk_share1;
-  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
+  HARDENED_TRY(check_keyblob_length(secret_key));
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -498,16 +556,37 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, kOtcryptoMlkem768SharedSecretBytes);
 
-#ifdef ACC_HAS_PQC
+#if defined(ACC_MLKEM_HARDENED)
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassivePhysical);
+#else
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassiveRemote) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassiveRemote);
+#endif
+
+#if defined(ACC_HAS_PQC) && defined(ACC_MLKEM_HARDENED)
   (void)work;
-  HARDENED_TRY(mlkem_acc_768_decap(ciphertext.data, sk_share0, ss_share0));
+  HARDENED_TRY(mlkem_acc_768_decap_hardened(
+      ciphertext.data, secret_key->keyblob, ss_share0, ss_share1));
+#elif defined(ACC_HAS_PQC)
+  (void)work;
+  HARDENED_TRY(
+      mlkem_acc_768_decap(ciphertext.data, secret_key->keyblob, ss_share0));
 #else
   mlk_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMlkem768WorkBufferDecapsWords,
                          .offset_words = 0};
   int result =
       mlkem768_dec((unsigned char *)ss_share0, (const uint8_t *)ciphertext.data,
-                   (unsigned char *)sk_share0, &ctx);
+                   (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem768SharedSecretBytes);
     return OTCRYPTO_FATAL_ERR;
@@ -525,9 +604,16 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem1024WorkBufferKeypairWords]) {
+#if defined(ACC_MLKEM_HARDENED)
+  // Randomness is masked, so buffer must be twice as long.
+  if (randomness.len != 2 * kOtcryptoMlkem1024KeygenSeedWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (randomness.len != kOtcryptoMlkem1024KeygenSeedWords) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (public_key->key_length != kOtcryptoMlkem1024PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -537,35 +623,48 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem1024) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level !=
-      kOtcryptoKeySecurityLevelPassiveRemote) {
-    // Reject high-security keys; the underlying implementation is not masked
-    // against power side channels.
-    return OTCRYPTO_BAD_ARGS;
-  }
   if (secret_key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
-  // Write the unmasked secret key into the first share of the keyblob.
-  uint32_t *sk_share0;
-  uint32_t *sk_share1;
-  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
-  memset(sk_share1, 0, kOtcryptoMlkem1024SecretKeyBytes);
+  HARDENED_TRY(check_keyblob_length(secret_key));
 
-#ifdef ACC_HAS_PQC
+#if defined(ACC_MLKEM_HARDENED)
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassivePhysical);
+#else
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassiveRemote) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassiveRemote);
+#endif
+
+#if defined(ACC_HAS_PQC) && defined(ACC_MLKEM_HARDENED)
   (void)work;
-  HARDENED_TRY(
-      mlkem_acc_1024_keygen(randomness.data, public_key->key, sk_share0));
+  const uint32_t *rand_share0 = randomness.data;
+  const uint32_t *rand_share1 =
+      &randomness.data[kOtcryptoMlkem1024KeygenSeedWords];
+  HARDENED_TRY(mlkem_acc_1024_keygen_hardened(
+      rand_share0, rand_share1, public_key->key, secret_key->keyblob));
+#elif defined(ACC_HAS_PQC)
+  (void)work;
+  HARDENED_TRY(mlkem_acc_1024_keygen(randomness.data, public_key->key,
+                                     secret_key->keyblob));
 #else
   mlk_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMlkem1024WorkBufferKeypairWords,
                          .offset_words = 0};
   int result = mlkem1024_keypair_derand((unsigned char *)public_key->key,
-                                        (unsigned char *)sk_share0,
+                                        (unsigned char *)secret_key->keyblob,
                                         (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
-    memset(sk_share0, 0, kOtcryptoMlkem1024SecretKeyBytes);
+    memset(secret_key->keyblob, 0, kOtcryptoMlkem1024SecretKeyBytes);
     return OTCRYPTO_FATAL_ERR;
   }
 #endif
@@ -646,7 +745,12 @@ otcrypto_status_t otcrypto_mlkem1024_keygen(
     uint32_t work[kOtcryptoMlkem1024WorkBufferKeypairWords]) {
   HARDENED_TRY(entropy_complex_check());
 
+#if defined(ACC_MLKEM_HARDENED)
+  // Randomness is masked, so buffer must be twice as long.
+  uint32_t randomness[2 * kOtcryptoMlkem1024KeygenSeedWords];
+#else
   uint32_t randomness[kOtcryptoMlkem1024KeygenSeedWords];
+#endif
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
@@ -691,12 +795,6 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMlkem1024) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (secret_key->config.security_level !=
-      kOtcryptoKeySecurityLevelPassiveRemote) {
-    // Reject high-security keys; the underlying implementation is not masked
-    // against power side channels.
-    return OTCRYPTO_BAD_ARGS;
-  }
   if (secret_key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
@@ -710,20 +808,19 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
+#ifndef ACC_MLKEM_HARDENED
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
     // against power side channels.
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (integrity_blinded_key_check(secret_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Secret keys are stored unmasked in share0 (share1 is zero).
-  uint32_t *sk_share0;
-  uint32_t *sk_share1;
-  HARDENED_TRY(keyblob_to_shares(secret_key, &sk_share0, &sk_share1));
+  HARDENED_TRY(check_keyblob_length(secret_key));
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -731,16 +828,37 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &ss_share0, &ss_share1));
   memset(ss_share1, 0, kOtcryptoMlkem1024SharedSecretBytes);
 
-#ifdef ACC_HAS_PQC
+#if defined(ACC_MLKEM_HARDENED)
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassivePhysical);
+#else
+  if (launder32(secret_key->config.security_level) !=
+      kOtcryptoKeySecurityLevelPassiveRemote) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(secret_key->config.security_level,
+                    kOtcryptoKeySecurityLevelPassiveRemote);
+#endif
+
+#if defined(ACC_HAS_PQC) && defined(ACC_MLKEM_HARDENED)
   (void)work;
-  HARDENED_TRY(mlkem_acc_1024_decap(ciphertext.data, sk_share0, ss_share0));
+  HARDENED_TRY(mlkem_acc_1024_decap_hardened(
+      ciphertext.data, secret_key->keyblob, ss_share0, ss_share1));
+#elif defined(ACC_HAS_PQC)
+  (void)work;
+  HARDENED_TRY(
+      mlkem_acc_1024_decap(ciphertext.data, secret_key->keyblob, ss_share0));
 #else
   mlk_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMlkem1024WorkBufferDecapsWords,
                          .offset_words = 0};
   int result = mlkem1024_dec((unsigned char *)ss_share0,
                              (const uint8_t *)ciphertext.data,
-                             (unsigned char *)sk_share0, &ctx);
+                             (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem1024SharedSecretBytes);
     return OTCRYPTO_FATAL_ERR;

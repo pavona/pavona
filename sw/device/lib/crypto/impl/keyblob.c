@@ -55,12 +55,50 @@ size_t keyblob_share_num_words(const otcrypto_key_config_t config) {
   return ceil_div(len_bytes, sizeof(uint32_t));
 }
 
+// Masked PQC secret-key blob sizes: the ACC key layout (see mlkem.h/mldsa.h).
+enum {
+  kMlkem512MaskedKeyblobBytes = 1152 * 2 + 128,
+  kMlkem768MaskedKeyblobBytes = 1152 * 3 + 128,
+  kMlkem1024MaskedKeyblobBytes = 1152 * 4 + 128,
+};
+
 status_t keyblob_num_words(const otcrypto_key_config_t config,
                            size_t *num_words) {
   if (launder32(config.hw_backed) == kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_NE(config.hw_backed, kHardenedBoolTrue);
+  // See mlkem.h for the secret-key blob layout.
+  if (launder32(config.key_mode >> 16) == kOtcryptoKeyTypeMlkem) {
+    if (launder32(config.security_level) ==
+        kOtcryptoKeySecurityLevelPassivePhysical) {
+      HARDENED_CHECK_EQ(config.security_level,
+                        kOtcryptoKeySecurityLevelPassivePhysical);
+      size_t masked_bytes;
+      switch (launder32(config.key_mode)) {
+        case kOtcryptoKeyModeMlkem512:
+          HARDENED_CHECK_EQ(config.key_mode, kOtcryptoKeyModeMlkem512);
+          masked_bytes = kMlkem512MaskedKeyblobBytes;
+          break;
+        case kOtcryptoKeyModeMlkem768:
+          HARDENED_CHECK_EQ(config.key_mode, kOtcryptoKeyModeMlkem768);
+          masked_bytes = kMlkem768MaskedKeyblobBytes;
+          break;
+        case kOtcryptoKeyModeMlkem1024:
+          HARDENED_CHECK_EQ(config.key_mode, kOtcryptoKeyModeMlkem1024);
+          masked_bytes = kMlkem1024MaskedKeyblobBytes;
+          break;
+        default:
+          return OTCRYPTO_BAD_ARGS;
+      }
+      *num_words = ceil_div(masked_bytes, sizeof(uint32_t));
+    } else {
+      HARDENED_CHECK_EQ(config.security_level,
+                        kOtcryptoKeySecurityLevelPassiveRemote);
+      *num_words = ceil_div(config.key_length, sizeof(uint32_t));
+    }
+    return OTCRYPTO_OK;
+  }
   *num_words = 2 * keyblob_share_num_words(config);
   return OTCRYPTO_OK;
 }
