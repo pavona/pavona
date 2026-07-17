@@ -304,7 +304,7 @@ interface chip_if;
   // Functional (dedicated) interface: Pin wake up signal.
   // TODO: For these tests, use chip_pins_if instead, so that any pin can be configured to wakeup.
   pins_if #(.Width(1), .PullStrength("Weak")) pinmux_wkup_if(
-    .pins(dios[top_dragonfly_pkg::DioPadGpio0])
+    .pins(mios[top_dragonfly_pkg::MioPadMio7])
   );
 
   // Functional (dedicated) interface: UARTs.

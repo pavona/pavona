@@ -165,12 +165,16 @@ static void adc_ctrl_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
  */
 static void pinmux_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   INIT_DIF_DT(pinmux, src, pinmux)
-#ifdef OPENTITAN_IS_EGRET
   // Make sure the pin has a pulldown before we enable it for wakeup.
   // FPGA doesn't implement pullup/down, so just use that attribute for SimDV.
+#ifdef OPENTITAN_IS_EGRET
   dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
                                       ? kTopEgretPinmuxInselIob7
                                       : kTopEgretPinmuxInselIoc0;
+#elif OPENTITAN_IS_DRAGONFLY
+  dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
+                                      ? kTopDragonflyPinmuxInselMio7
+                                      : kTopDragonflyPinmuxInselMio8;
 #else
 #error Unsupported top, please provide a pin configuration
 #endif
