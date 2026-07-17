@@ -261,7 +261,7 @@ jobs:
     name: Run ACC crypto tests
     needs: quick_lint
     runs-on:
-      group: pavona-basic
+      group: pavona-large
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
@@ -271,10 +271,10 @@ jobs:
         uses: ./.github/actions/prepare-env
       - name: Execute tests
         run: |
-          # Limit local number of test jobs to 4 to prevent memory contention
+          # Limit local number of test jobs to 8 to prevent memory contention
           # from timing out tests.
           ./bazelisk.sh test --test_output=errors --test_tag_filters=-nightly \
-            --local_test_jobs=4 --test_timeout=3600 //sw/acc/crypto/...
+            --local_test_jobs=8 --test_timeout=3600 //sw/acc/crypto/...
 
   verilator_egret:
     name: Egret Verilator Tests
