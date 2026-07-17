@@ -66,10 +66,10 @@ function void dv_rst_safe_base_agent::connect_phase(uvm_phase phase);
   if (cfg.is_active && cfg.has_driver) begin
     driver.seq_item_port.connect(sequencer.seq_item_export);
   end
-  if (cfg.has_req_fifo) begin
+  if (cfg.is_active && cfg.has_req_fifo) begin
     monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
   end
-  if (cfg.has_rsp_fifo) begin
+  if (cfg.is_active && cfg.has_rsp_fifo) begin
     monitor.rsp_analysis_port.connect(sequencer.rsp_analysis_fifo.analysis_export);
   end
 endfunction
