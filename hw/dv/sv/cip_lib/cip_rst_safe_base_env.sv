@@ -5,7 +5,7 @@
 
 class cip_rst_safe_base_env #(type CFG_T               = cip_base_env_cfg,
                               type VIRTUAL_SEQUENCER_T = cip_base_virtual_sequencer,
-                              type SCOREBOARD_T        = cip_base_scoreboard,
+                              type SCOREBOARD_T        = cip_rst_safe_scoreboard,
                               type COV_T               = cip_base_env_cov)
                              extends dv_base_env #(CFG_T, VIRTUAL_SEQUENCER_T, SCOREBOARD_T, COV_T);
 

@@ -27,6 +27,7 @@ filesets:
       - cip_base_env_cov.sv: {is_include_file: true}
       - cip_base_virtual_sequencer.sv: {is_include_file: true}
       - cip_base_scoreboard.sv: {is_include_file: true}
+      - cip_rst_safe_scoreboard.sv: {is_include_file: true}
       - cip_base_env.sv: {is_include_file: true}
       - cip_rst_safe_base_env.sv: {is_include_file: true}
       - seq_lib/cip_seq_list.sv: {is_include_file: true}

@@ -46,6 +46,7 @@ package dv_lib_pkg;
   `include "dv_base_env_cov.sv"
   `include "dv_base_virtual_sequencer.sv"
   `include "dv_base_scoreboard.sv"
+  `include "dv_rst_safe_scoreboard.sv"
   `include "dv_base_env.sv"
 
   // base test vseq
