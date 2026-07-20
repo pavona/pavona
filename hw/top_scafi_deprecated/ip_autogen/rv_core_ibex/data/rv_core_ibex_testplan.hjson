@@ -16,6 +16,7 @@
               - All instruction results are compared against spike simulation'''
       stage: V1
       tests: ["riscv_arithmetic_basic_test"]
+      features: ["RV_CORE_IBEX.CPU.ISA", "RV_CORE_IBEX.CPU.MEMORY"]
     }
     {
       name: riscv_rand_instr_test
@@ -31,6 +32,7 @@
               - corner cases for each instruction (overflow, underflow, div by zero etc.)'''
       stage: V1
       tests: ["riscv_rand_instr_test"]
+      features: ["RV_CORE_IBEX.CPU.ISA", "RV_CORE_IBEX.CPU.MEMORY"]
     }
     {
       name: riscv_machine_mode_rand_test
@@ -39,6 +41,7 @@
               - boot into Machine Mode'''
       stage: V1
       tests: ["riscv_machine_mode_rand_test"]
+      features: ["RV_CORE_IBEX.CPU.ISA"]
     }
     {
       name: riscv_rand_jump_test
@@ -47,6 +50,7 @@
               - Generates a large number of subprograms and frequently jumps between them'''
       stage: V1
       tests: ["riscv_rand_jump_test"]
+      features: ["RV_CORE_IBEX.CPU.ICACHE"]
     }
     {
       name: riscv_jump_stress_test
@@ -55,6 +59,7 @@
               - Generates sequences of many back-to-back jump instructions'''
       stage: V1
       tests: ["riscv_jump_stress_test"]
+      features: ["RV_CORE_IBEX.CPU.ICACHE"]
     }
     {
       name: riscv_loop_test
@@ -62,6 +67,7 @@
             Generate directed sequences of loops to test branch operations'''
       stage: V1
       tests: ["riscv_loop_test"]
+      features: []
     }
     {
       name: riscv_mmu_stress_test
@@ -74,6 +80,7 @@
               - load/store with hazard conditions'''
       stage: V1
       tests: ["riscv_mmu_stress_test"]
+      features: ["RV_CORE_IBEX.CPU.MEMORY"]
     }
     {
       name: riscv_unaligned_load_store_test
@@ -82,6 +89,7 @@
             Expect the core finishes the load/store properly with no exception raised'''
       stage: V1
       tests: ["riscv_unaligned_load_store_test"]
+      features: ["RV_CORE_IBEX.CPU.MEMORY"]
     }
     {
       name: riscv_mem_error_test
@@ -93,6 +101,7 @@
               - mstatus, mcause, mepc'''
       stage: V1
       tests: ["riscv_mem_error_test"]
+      features: ["RV_CORE_IBEX.CPU.MEMORY"]
     }
     {
       name: riscv_illegal_instr_test
@@ -107,6 +116,7 @@
             Verify the core can resume execution after returning from trap handling'''
       stage: V1
       tests: ["riscv_illegal_instr_test"]
+      features: []
     }
     {
       name: riscv_hint_instr_test
@@ -115,6 +125,7 @@
             Verify the core execute it as NOP and no exception is raised'''
       stage: V1
       tests: ["riscv_hint_instr_test"]
+      features: []
     }
     {
       name: riscv_ebreak_test
@@ -122,6 +133,7 @@
             Generate random instructions including ebreak, expect core to raise ebreak exception'''
       stage: V1
       tests: ["riscv_ebreak_test"]
+      features: []
     }
     {
       name: riscv_debug_basic_test
@@ -133,6 +145,7 @@
               - ensure normal execution finishes successfully'''
       stage: V1
       tests: ["riscv_debug_basic_test"]
+      features: []
     }
     {
       name: riscv_debug_stress_test
@@ -143,6 +156,7 @@
               - will use this jointly with full instruction checking with spike'''
       stage: V1
       tests: ["riscv_debug_stress_test"]
+      features: []
     }
     {
       name: riscv_debug_branch_jump_test
@@ -153,6 +167,7 @@
                 jump between'''
       stage: V1
       tests: ["riscv_debug_branch_jump_test"]
+      features: []
     }
     {
       name: riscv_debug_interrupt_test
@@ -164,6 +179,7 @@
                 ignored'''
       stage: V2
       tests: ["riscv_debug_interrupt_test"]
+      features: ["RV_CORE_IBEX.CPU.INTERRUPTS"]
     }
     {
       name: riscv_debug_illegal_instr_test
@@ -173,6 +189,7 @@
             - verify that execution of debug rom ends'''
       stage: V2
       tests: ["riscv_debug_illegal_instr_test"]
+      features: []
     }
     {
       name: riscv_debug_wfi_test
@@ -183,6 +200,7 @@
               - debug rom consists of random generation instructions'''
       stage: V1
       tests: ["riscv_debug_wfi_test"]
+      features: []
     }
     {
       name: riscv_dret_test
@@ -191,6 +209,7 @@
               - verify that ibex treats them as illegal instructions'''
       stage: V1
       tests: ["riscv_dret_test"]
+      features: []
     }
     {
       name: riscv_debug_ebreak_test
@@ -200,6 +219,7 @@
             - in debug mode, insert ebreak instruction, verify that ibex re-enter debug mode'''
       stage: V1
       tests: ["riscv_debug_ebreak_test"]
+      features: []
     }
     {
       name: riscv_debug_ebreakmu_test
@@ -210,6 +230,7 @@
             - verify that ebreak instructions (in either mode) now enter debug mode'''
       stage: V1
       tests: ["riscv_debug_ebreakmu_test"]
+      features: []
     }
     {
       name: riscv_debug_single_step_test
@@ -220,6 +241,7 @@
                 debug mode'''
       stage: V1
       tests: ["riscv_debug_single_step_test"]
+      features: []
     }
     {
       name: riscv_debug_csr_entry_test
@@ -228,6 +250,7 @@
             core should jump to debug mode and return without any issues'''
       stage: V1
       tests: ["riscv_debug_csr_entry_test"]
+      features: []
     }
     {
       name: riscv_irq_in_debug_mode_test
@@ -236,6 +259,7 @@
             verify that these interrupts are all completely ignored'''
       stage: V1
       tests: ["riscv_irq_in_debug_mode_test"]
+      features: ["RV_CORE_IBEX.CPU.INTERRUPTS"]
     }
     {
       name: riscv_single_interrupt_test
@@ -244,6 +268,7 @@
             should jump to proper handler'''
       stage: V1
       tests: ["riscv_single_interrupt_test"]
+      features: ["RV_CORE_IBEX.CPU.INTERRUPTS"]
     }
     {
       name: riscv_multiple_interrupt_test
@@ -252,6 +277,7 @@
             core should jump to handler of highest priority interrupt'''
       stage: V1
       tests: ["riscv_multiple_interrupt_test"]
+      features: ["RV_CORE_IBEX.CPU.INTERRUPTS"]
     }
     {
       name: riscv_interrupt_wfi_test
@@ -259,6 +285,7 @@
             Randomly assert interrupt lines while the core is sleeping due to a WFI instruction'''
       stage: V1
       tests: ["riscv_interrupt_wfi_test"]
+      features: ["RV_CORE_IBEX.CPU.INTERRUPTS"]
     }
     {
       name: riscv_interrupt_csr_test
@@ -267,6 +294,7 @@
             core should jump to proper handler'''
       stage: V1
       tests: ["riscv_interrupt_csr_test"]
+      features: ["RV_CORE_IBEX.CPU.INTERRUPTS"]
     }
     {
       name: riscv_interrupt_nested_test
@@ -279,6 +307,7 @@
               save/restore state in case of nested interrupt'''
       stage: V2
       tests: ["riscv_interrupt_nested_test"]
+      features: ["RV_CORE_IBEX.CPU.INTERRUPTS"]
     }
     {
       name: riscv_csr_test
@@ -288,6 +317,7 @@
             Verify WARL field can be upated properly'''
       stage: V1
       tests: ["riscv_csr_test"]
+      features: []
     }
     {
       name: riscv_reset_test
@@ -297,6 +327,7 @@
             Ensure to flush all testbench state to prevent contamination after reset.'''
       stage: V1
       tests: ["riscv_reset_test"]
+      features: []
     }
     {
       name: riscv_perf_counter_test
@@ -304,6 +335,7 @@
             Run random instruction test, and dump performance counters for checking'''
       stage: V1
       tests: ["riscv_perf_counter_test"]
+      features: ["RV_CORE_IBEX.CPU.ISA"]
     }
     {
       name: riscv_rv32im_instr_test
@@ -312,6 +344,7 @@
             instructions (no compressed instructions).'''
       stage: V1
       tests: ["riscv_rv32im_instr_test"]
+      features: ["RV_CORE_IBEX.CPU.ISA"]
     }
     {
       name: riscv_user_mode_rand_test
@@ -322,6 +355,7 @@
               - no external debug/irq stimulus, exceptions, security aspects are checked here'''
       stage: V2
       tests: ["riscv_user_mode_rand_test"]
+      features: ["RV_CORE_IBEX.CPU.ISA"]
     }
     {
       name: riscv_umode_tw_test
@@ -331,6 +365,7 @@
             illegal instruction exception handler.'''
       stage: V2
       tests: ["riscv_umode_tw_test"]
+      features: []
     }
     {
       name: riscv_invalid_csr_test
@@ -339,6 +374,7 @@
             expect to throw an illegal instruction exception for each of these accesses.'''
       stage: V2
       tests: ["riscv_invalid_csr_test"]
+      features: []
     }
     // TODO: Need to add testplan entries for PMP and nested trap tests
   ]

@@ -28,6 +28,7 @@
             '''
       stage: V1
       tests: ["acc_smoke"]
+      features: ["ACC.ISA", "ACC.RANDOM", "ACC.KEYMGR"]
     }
     {
       name: single_binary
@@ -46,6 +47,7 @@
             '''
       stage: V1
       tests: ["acc_single"]
+      features: ["ACC.ISA", "ACC.RANDOM", "ACC.KEYMGR"]
     }
 
     {
@@ -62,6 +64,7 @@
             '''
       stage: V2
       tests: ["acc_reset"]
+      features: []
     }
 
     {
@@ -78,6 +81,7 @@
        '''
       stage: V2
       tests: ["acc_multi_err"]
+      features: ["ACC.ISA"]
     }
 
     {
@@ -87,6 +91,7 @@
             '''
       stage: V2S
       tests: ["acc_imem_err", "acc_dmem_err"]
+      features: []
     }
     {
       name: internal_integrity
@@ -98,6 +103,7 @@
               "acc_controller_ispr_rdata_err",
               "acc_mac_bignum_acc_err",
               "acc_urnd_err"]
+      features: []              
     }
     {
       name: kmac_error
@@ -107,6 +113,7 @@
       stage: V2S
       tests: ["acc_kmac_err"]
       tags: ["acc_kmac_intf"]
+      features: []
     }
     {
       name: back_to_back
@@ -120,6 +127,7 @@
             '''
       stage: V2
       tests: ["acc_multi"]
+      features: ["ACC.RANDOM"]
     }
     {
       name: stress_all
@@ -128,6 +136,7 @@
             '''
       stage: V2
       tests: ["acc_stress_all"]
+      features: []
     }
     {
       name: lc_escalation
@@ -136,6 +145,7 @@
             '''
       stage: V2
       tests: ["acc_escalate"]
+      features: []
     }
     {
       name: zero_state_err_urnd
@@ -145,6 +155,7 @@
             '''
       stage: V2
       tests: ["acc_zero_state_err_urnd"]
+      features: []
     }
     {
       name: illegal_bus_access
@@ -154,6 +165,7 @@
             '''
       stage: V2S
       tests: ["acc_illegal_mem_acc"]
+      features: []
     }
     {
       name: sw_errs_fatal_chk
@@ -163,6 +175,7 @@
             '''
       stage: V2
       tests: ["acc_sw_errs_fatal_chk"]
+      features: []
     }
     {
       name: acc_mem_gnt_acc_err
@@ -173,6 +186,7 @@
             '''
       stage: V2S
       tests: ["acc_mem_gnt_acc_err"]
+      features: []
     }
     {
       name: acc_non_sec_partial_wipe
@@ -189,6 +203,7 @@
       '''
       stage: V2S
       tests: ["acc_partial_wipe"]
+      features: ["ACC.SECUREWIPE"]
     }
   ]
 }

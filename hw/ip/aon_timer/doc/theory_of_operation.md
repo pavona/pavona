@@ -1,3 +1,4 @@
+<!-- BEGIN-FEATURE: AON_TIMER.WAKEUP.INTERRUPT -->
 # Theory of Operation
 
 AON Timer interacts with the CPU core, the power manager, and reset manager to generate interrupts as well as wakeup and reset events.
@@ -10,12 +11,14 @@ The output signals `wkup_req_o` and `aon_timer_rst_req_o` are driven on the AON 
 Note the signal `nmi_wdog_timer_bark_o` is a copy of `intr_wdog_timer_bark_o`.
 Furthermore, the block also has RACL ports `racl_policies_i` and `racl_error_o` which are not depicted in the diagram below.
 In order to enable the RACL ports, the parameter `EnableRacl` should be set to 1.
+<!-- END-FEATURE: AON_TIMER.WAKEUP.INTERRUPT -->
 
 ### Block diagram
 
 ![AON Timer Block Diagram](../doc/aon_timer_block_diagram.svg)
 
 <!-- BEGIN-FEATURE: AON_TIMER.WAKEUP.WAKEUP_CONFIG -->
+<!-- BEGIN-FEATURE: AON_TIMER.WAKEUP.WAKEUP_REQUEST -->
 ## Design Details
 
 The always-on timer will run on a ~200KHz clock.
@@ -34,3 +37,4 @@ Bits[31:0] in registers [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) and [`WKUP
 It is not possible to do a single atomic read or write of the 64-bit values.
 The programmer's guide suggests some ways to access the wakeup count and threshold to avoid issues from race conditions caused by this.
 <!-- END-FEATURE: AON_TIMER.WAKEUP.WAKEUP_CONFIG -->
+<!-- END-FEATURE: AON_TIMER.WAKEUP.WAKEUP_REQUEST -->

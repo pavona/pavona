@@ -21,6 +21,7 @@
               - sequentially send one Rx byte, then immediately read from register and check it'''
       stage: V1
       tests: ["uart_smoke"]
+      features: []
     }
     {
       name: base_random_seq
@@ -32,12 +33,14 @@
                 and the other is to read csr rdata when fifo isn't empty'''
       stage: V2
       tests: ["uart_tx_rx"]
+      features: []
     }
     {
       name: parity
       desc: '''Send / receive bytes with parity and odd parity enabled randomly.'''
       stage: V2
       tests: ["uart_smoke", "uart_tx_rx"]
+      features: ["UART.PARITY"]
     }
     {
       name: parity_error
@@ -47,6 +50,7 @@
               raised'''
       stage: V2
       tests: ["uart_rx_parity_err", "uart_intr"]
+      features: ["UART.PARITY", "UART.FIFO_INTERRUPTS"]
     }
     {
       name: watermark
@@ -60,12 +64,14 @@
               The tx/rx watermark interrupt is sticky'''
       stage: V2
       tests: ["uart_tx_rx", "uart_intr"]
+      features: ["UART.FIFO_INTERRUPTS"]
     }
     {
       name: fifo_full
       desc: '''Send over 32 bytes of data but stop when fifo is full'''
       stage: V2
       tests: ["uart_fifo_full"]
+      features: []
     }
     {
       name: fifo_overflow
@@ -76,6 +82,7 @@
               constraint to be able to send data over fifo size'''
       stage: V2
       tests: ["uart_fifo_overflow"]
+      features: ["UART.FIFO_INTERRUPTS"]
     }
     {
       name: fifo_reset
@@ -86,6 +93,7 @@
               is at any level, including full or overflow'''
       stage: V2
       tests: ["uart_fifo_reset"]
+      features: []
     }
     {
       name: rx_frame_err
@@ -94,6 +102,7 @@
             - Ensure the interrupt gets asserted'''
       stage: V2
       tests: ["uart_intr"]
+      features: ["UART.FIFO_INTERRUPTS"]
     }
     {
       name: rx_break_err
@@ -104,6 +113,7 @@
             - Ensure that the break_err interrupt is asserted'''
       stage: V2
       tests: ["uart_intr"]
+      features: ["UART.FIFO_INTERRUPTS"]
     }
     {
       name: rx_timeout
@@ -117,12 +127,14 @@
               fires'''
       stage: V2
       tests: ["uart_intr"]
+      features: ["UART.FIFO_INTERRUPTS"]
     }
     {
       name: perf
       desc: '''Run fifo_full_vseq with very small delays'''
       stage: V2
       tests: ["uart_perf"]
+      features: []
     }
     {
       name: sys_loopback
@@ -132,6 +144,7 @@
               uart.WDATA'''
       stage: V2
       tests: ["uart_loopback"]
+      features: ["UART.LINE_LOOPBACK"]
     }
     {
       name: line_loopback
@@ -141,6 +154,7 @@
                uart_rx and uart_tx during line loopback'''
       stage: V2
       tests: ["uart_loopback"]
+      features: ["UART.LINE_LOOPBACK"]
     }
     {
       name: rx_noise_filter
@@ -153,6 +167,7 @@
               transaction'''
       stage: V2
       tests: ["uart_noise_filter"]
+      features: []
     }
     {
       name: rx_start_bit_filter
@@ -162,6 +177,7 @@
             - Ensure the start bit will be dropped'''
       stage: V2
       tests: ["uart_rx_start_bit_filter"]
+      features: []
     }
     {
       name: tx_overide
@@ -169,6 +185,7 @@
             directly.'''
       stage: V2
       tests: ["uart_tx_ovrd"]
+      features: []
     }
     {
       name: rx_oversample
@@ -178,6 +195,7 @@
             - Read RX oversampled value and ensure it's same as driven value'''
       stage: V2
       tests: ["uart_rx_oversample"]
+      features: []
     }
     {
       name: long_b2b_transfer
@@ -187,6 +205,7 @@
             - Uart monitor checks the clock offset between sender and receiver is never over 1/4 of the period'''
       stage: V2
       tests: ["uart_long_xfer_wo_dly"]
+      features: []
     }
     {
       name: stress_all
@@ -196,6 +215,7 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["uart_stress_all"]
+      features: []
     }
   ]
 

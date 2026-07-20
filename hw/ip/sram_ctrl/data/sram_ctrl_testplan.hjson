@@ -28,6 +28,7 @@
             '''
       stage: V1
       tests: ["{name}_smoke"]
+      features: ["SRAM_CTRL.SCRAMBLED"]
     }
     {
       name: multiple_keys
@@ -46,6 +47,7 @@
             '''
       stage: V2
       tests: ["{name}_multiple_keys"]
+      features: []
     }
     {
       name: stress_pipeline
@@ -56,6 +58,7 @@
             '''
       stage: V2
       tests: ["{name}_stress_pipeline"]
+      features: []
     }
     {
       name: bijection
@@ -77,6 +80,7 @@
             '''
       stage: V2
       tests: ["{name}_bijection"]
+      features: []
     }
     {
       name: access_during_key_req
@@ -87,6 +91,7 @@
             '''
       stage: V2
       tests: ["{name}_access_during_key_req"]
+      features: []
     }
     {
       name: lc_escalation
@@ -102,6 +107,7 @@
             '''
       stage: V2
       tests: ["{name}_lc_escalation"]
+      features: []
     }
     {
       name: executable
@@ -120,6 +126,7 @@
             '''
       stage: V2
       tests: ["{name}_executable"]
+      features: ["SRAM_CTRL.FETCH_ALLOW"]
     }
     {
       name: partial_access
@@ -131,6 +138,7 @@
             '''
       stage: V2
       tests: ["{name}_partial_access", "{name}_partial_access_b2b"]
+      features: []
     }
     {
       name: max_throughput
@@ -145,6 +153,7 @@
       stage: V2
       tests: ["{name}_max_throughput", "{name}_throughput_w_partial_write",
               "{name}_throughput_w_readback"]
+      features: ["SRAM_CTRL.READBACK"]
     }
     {
       name: regwen
@@ -164,6 +173,7 @@
             '''
       stage: V2
       tests: ["{name}_regwen"]
+      features: ["SRAM_CTRL.REGWEN"]
     }
     {
       name: ram_cfg
@@ -172,6 +182,7 @@
                Randomly set `dut.cfg_i` and check its value is propagated to `prim_mem_1p`.'''
       stage: V2
       tests: ["{name}_ram_cfg"]
+      features: []
     }
     {
       name: stress_all
@@ -181,6 +192,7 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["{name}_stress_all"]
+      features: []
     }
   ]
 

@@ -27,6 +27,7 @@
               "gpio_smoke_no_pullup_pulldown",
               "gpio_smoke_en_cdc_prim",
               "gpio_smoke_no_pullup_pulldown_en_cdc_prim"]
+      features: []
     }
     {
       name: direct_and_masked_out
@@ -39,6 +40,7 @@
       stage: V2
       tests: ["gpio_random_dout_din",
               "gpio_random_dout_din_no_pullup_pulldown"]
+      features: ["GPIO.OUT.MASK"]
     }
     {
       name: out_in_regs_read_write
@@ -51,6 +53,7 @@
             - Read any one of `\*OUT\*`, `\*OE\*` or `DATA_IN` registers'''
       stage: V2
       tests: ["gpio_dout_din_regs_random_rw"]
+      features: []
     }
     {
       name: gpio_interrupt_programming
@@ -64,6 +67,7 @@
               `INTR_STATE`'''
       stage: V2
       tests: ["gpio_intr_rand_pgm"]
+      features: ["GPIO.IN.INTR_CTRL"]
     }
     {
       name: random_interrupt_trigger
@@ -81,6 +85,7 @@
                  writing to `INTR_STATE` register'''
       stage: V2
       tests: ["gpio_rand_intr_trigger"]
+      features: ["GPIO.IN.INTR_CTRL"]
     }
     {
       name: interrupt_and_noise_filter
@@ -96,6 +101,7 @@
                - multiple registers reads, each for either `DATA_IN` or `INTR_STATE`'''
       stage: V2
       tests: ["gpio_intr_with_filter_rand_intr_event"]
+      features: ["GPIO.IN.INTR_CTRL", "GPIO.IN.FILTER"]
     }
     {
       name: noise_filter_stress
@@ -109,6 +115,7 @@
                and each pin is driven independently of others'''
       stage: V2
       tests: ["gpio_filter_stress"]
+      features: ["GPIO.IN.FILTER"]
     }
     {
       name: regs_long_reads_and_writes
@@ -120,6 +127,7 @@
             - Perform multiple random reads on randomly selected GPIO registers'''
       stage: V2
       tests: ["gpio_random_long_reg_writes_reg_reads"]
+      features: []
     }
     {
       name: full_random
@@ -137,6 +145,7 @@
             - Apply hard reset'''
       stage: V2
       tests: ["gpio_full_random"]
+      features: ["GPIO.IN.INTR_CTRL", "GPIO.OUT.MASK"]
     }
     {
       name: stress_all
@@ -144,6 +153,7 @@
             random, intr_test and other gpio test that disabled scoreboard'''
       stage: V2
       tests: ["gpio_stress_all"]
+      features: []
     }
     {
       name: straps_data
@@ -160,6 +170,7 @@
       '''
       stage: V3
       tests: ["gpio_rand_straps"]
+      features: []
     }
   ]
 }

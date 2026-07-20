@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
 {
   name: "clkmgr"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
@@ -12,6 +13,7 @@
                      "clkmgr_sec_cm_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson"]
   testpoints: [
+\    
     {
       name: smoke
       desc: '''
@@ -44,6 +46,7 @@
             '''
       stage: V1
       tests: ["clkmgr_smoke"]
+      features: ["CLKMGR.JITTER.REGWEN", "CLKMGR.JITTER.ENABLE", "CLKMGR.ENABLE.IO_DIV4", "CLKMGR.ENABLE.IO_DIV2", "CLKMGR.ENABLE.IO", "CLKMGR.ENABLE.USB", "CLKMGR.HINT.ACC", "CLKMGR.HINT.AES", "CLKMGR.HINT.HMAC", "CLKMGR.HINT.KMAC"]
     }
     {
       name: peri_enables
@@ -67,6 +70,7 @@
             '''
       stage: V2
       tests: ["clkmgr_peri"]
+      features: ["CLKMGR.ENABLE.IO_DIV4", "CLKMGR.ENABLE.IO_DIV2", "CLKMGR.ENABLE.IO", "CLKMGR.ENABLE.USB"]
     }
     {
       name: trans_enables
@@ -91,6 +95,7 @@
             '''
       stage: V2
       tests: ["clkmgr_trans"]
+      features: ["CLKMGR.HINT.ACC", "CLKMGR.HINT.AES", "CLKMGR.HINT.HMAC", "CLKMGR.HINT.KMAC"]
     }
     {
       name: extclk
@@ -143,6 +148,7 @@
             '''
       stage: V2
       tests: ["clkmgr_extclk"]
+      features: ["CLKMGR.LC_EXTCLK.SPEED", "CLKMGR.SW_EXTCLK.REGWEN", "CLKMGR.SW_EXTCLK.HIGH_SPEED", "CLKMGR.SW_EXTCLK.LOW_SPEED"]
     }
     {
       name: clk_status
@@ -161,6 +167,7 @@
             '''
       stage: V2
       tests: ["clkmgr_clk_status"]
+      features: []
     }
     {
       name: jitter
@@ -180,6 +187,7 @@
             '''
       stage: V2
       tests: ["clkmgr_smoke"]
+      features: ["CLKMGR.JITTER.REGWEN", "CLKMGR.JITTER.ENABLE"]
     }
     {
       name: frequency
@@ -209,6 +217,7 @@
             '''
       stage: V2
       tests: ["clkmgr_frequency"]
+      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.MEAS_CTRL.RECOV_ERR", "CLKMGR.MEAS_CTRL.IO", "CLKMGR.MEAS_CTRL.IO_DIV2", "CLKMGR.MEAS_CTRL.IO_DIV4", "CLKMGR.MEAS_CTRL.MAIN", "CLKMGR.MEAS_CTRL.USB"]
     }
     {
       name: frequency_timeout
@@ -228,6 +237,7 @@
             '''
       stage: V2
       tests: ["clkmgr_frequency_timeout"]
+      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.MEAS_CTRL.RECOV_ERR", "CLKMGR.MEAS_CTRL.IO", "CLKMGR.MEAS_CTRL.IO_DIV2", "CLKMGR.MEAS_CTRL.IO_DIV4", "CLKMGR.MEAS_CTRL.MAIN", "CLKMGR.MEAS_CTRL.USB"]
     }
     {
       name: frequency_overflow
@@ -246,6 +256,7 @@
             '''
       stage: V2
       tests: ["clkmgr_frequency"]
+      features: []
     }
     {
       name: regwen
@@ -264,6 +275,7 @@
             '''
       stage: V3
       tests: ["clkmgr_regwen"]
+      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.SW_EXTCLK.REGWEN"]
     }
     {
       name: stress_all
@@ -279,6 +291,7 @@
             '''
       stage: V2
       tests: ["clkmgr_stress_all"]
+      features: []
     }
   ]
 

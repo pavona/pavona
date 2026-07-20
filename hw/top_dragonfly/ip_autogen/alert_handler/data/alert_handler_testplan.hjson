@@ -26,6 +26,7 @@
             '''
       stage: V1
       tests: ["alert_handler_smoke"]
+      features: ["ALERT_HANDLER.ALERT.OBSERVE", "ALERT_HANDLER.ALERT.INTERRUPT", "ALERT_HANDLER.ALERT.ESCALATE", "ALERT_HANDLER.PING_TIMER", "ALERT_HANDLER.ESCALATION.PHASES", "ALERT_HANDLER.CRASH_DUMP"]
     }
     {
       name: esc_accum
@@ -35,6 +36,7 @@
             '''
       stage: V2
       tests: ["alert_handler_esc_alert_accum"]
+      features: ["ALERT_HANDLER.ALERT.ESCALATE", "ALERT_HANDLER.ESCALATION.COUNT"]
     }
     {
       name: esc_timeout
@@ -44,6 +46,7 @@
            '''
       stage: V2
       tests: ["alert_handler_esc_intr_timeout"]
+      features: ["ALERT_HANDLER.ALERT.INTERRUPT", "ALERT_HANDLER.ALERT.ESCALATE", "ALERT_HANDLER.ESCALATION.TIMEOUT"]
     }
     {
       name: entropy
@@ -53,6 +56,7 @@
             '''
       stage: V2
       tests: ["alert_handler_entropy"]
+      features: ["ALERT_HANDLER.PING_TIMER"]
     }
     {
       name: sig_int_fail
@@ -63,6 +67,7 @@
             '''
       stage: V2
       tests: ["alert_handler_sig_int_fail"]
+      features: ["ALERT_HANDLER.ALERT.ESCALATE"]
     }
     {
       name: clk_skew
@@ -72,18 +77,21 @@
             '''
       stage: V2
       tests: ["alert_handler_smoke"]
+      features: []
     }
     {
       name: random_alerts
       desc: "Input random alerts and randomly write phase cycles."
       stage: V2
       tests: ["alert_handler_random_alerts"]
+      features: ["ALERT_HANDLER.ALERT.OBSERVE", "ALERT_HANDLER.ESCALATION.PHASES"]
     }
     {
       name: random_classes
       desc: "Based on random_alerts test, this test will also randomly enable interrupt classes."
       stage: V2
       tests: ["alert_handler_random_classes"]
+      features: ["ALERT_HANDLER.ALERT.INTERRUPT"]
     }
     {
       name: ping_timeout
@@ -98,6 +106,7 @@
             '''
       stage: V2
       tests: ["alert_handler_ping_timeout"]
+      features: ["ALERT_HANDLER.ALERT.INTERRUPT", "ALERT_HANDLER.ALERT.ESCALATE", "ALERT_HANDLER.PING_TIMER", "ALERT_HANDLER.ESCALATION.COUNT"]
     }
     {
       name: lpg
@@ -117,6 +126,7 @@
             '''
       stage: V2
       tests: ["alert_handler_lpg", "alert_handler_lpg_stub_clk"]
+      features: ["ALERT_HANDLER.PING_TIMER"]
     }
     {
       name: stress_all
@@ -127,6 +137,7 @@
             '''
       stage: V2
       tests: ["alert_handler_stress_all"]
+      features: []
     }
     {
       name: alert_handler_entropy_stress_test
@@ -142,6 +153,7 @@
             '''
       stage: V2
       tests: ["alert_handler_entropy_stress"]
+      features: ["ALERT_HANDLER.PING_TIMER"]
     }
 
     {
@@ -157,6 +169,7 @@
             '''
       stage: V2
       tests: ["alert_handler_alert_accum_saturation"]
+      features: ["ALERT_HANDLER.ALERT.INTERRUPT"]
     }
  ]
 
