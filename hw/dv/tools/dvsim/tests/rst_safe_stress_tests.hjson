@@ -1,0 +1,28 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  // Reset-safe stress tests use the reset-safe base test and reset-safe stress wrapper sequences.
+  // The wrapper sequence owns reset orchestration and executes child sequences from main_thread().
+  tests: [
+    {
+      name: "{name}_rst_safe_stress_all"
+      uvm_test: "{name}_rst_safe_base_test"
+      uvm_test_seq: "{name}_rst_safe_stress_all_vseq"
+      // Keep the timeout aligned with the legacy common stress settings.
+      // 10s
+      run_opts: ["+test_timeout_ns=10000000000"]
+      run_timeout_mins: 180
+    }
+    {
+      name: "{name}_rst_safe_stress_all_with_rand_reset"
+      uvm_test: "{name}_rst_safe_base_test"
+      uvm_test_seq: "{name}_rst_safe_stress_all_with_rand_reset_vseq"
+      // The sequence class enables reset testing and randomizes reset trigger timing.
+      // 10s
+      run_opts: ["+test_timeout_ns=10000000000"]
+      run_timeout_mins: 180
+    }
+  ]
+}

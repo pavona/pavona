@@ -129,6 +129,7 @@ package cip_base_pkg;
   `include "cip_base_env_cov.sv"
   `include "cip_base_virtual_sequencer.sv"
   `include "cip_base_scoreboard.sv"
+  `include "cip_rst_safe_scoreboard.sv"
   `include "cip_base_env.sv"
   `include "cip_rst_safe_base_env.sv"
 
