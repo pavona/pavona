@@ -38,6 +38,7 @@ class Regression(Mode):
         self.reseed = None
         self.run_timeout_mins = None
         self.run_timeout_multiplier = None
+        self.reseed_multiplier = None
         self.excl_tests = []  # TODO: add support for this
         self.en_sim_modes = []
         self.en_run_modes = []
@@ -183,3 +184,9 @@ class Regression(Mode):
                 regr_val = getattr(self, attr)
                 if regr_val is not None:
                     setattr(test, attr, regr_val)
+
+        # A regression-level reseed multiplier scales each test's reseed.
+        if self.reseed_multiplier is not None:
+            for test in self.tests:
+                scaled = round(test.reseed * self.reseed_multiplier)
+                test.reseed = max(1, scaled)
