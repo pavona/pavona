@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,7 +17,9 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
+#if defined(OPENTITAN_IS_EGRET)
 #include "hw/top_egret/sw/autogen/top_egret.h"
+#endif
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -46,6 +49,8 @@ const static dif_spi_device_tpm_config_t kTpmConfig = {
 
 static volatile bool header_interrupt_received = false;
 
+#if defined(OPENTITAN_IS_EGRET)
+
 static void en_plic_irqs(dif_rv_plic_t *plic) {
   // Enable functional interrupts as well as error interrupts to make sure
   // everything is behaving as expected.
@@ -71,6 +76,37 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
   irq_external_ctrl(true);
 }
 
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+
+static void en_plic_irqs(dif_rv_plic_t *plic) {
+  // Enable functional interrupts as well as error interrupts to make sure
+  // everything is behaving as expected.
+  const top_dragonfly_plic_irq_id_t kIrqs[] = {
+      kTopDragonflyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
+      kTopDragonflyPlicIrqIdSpiDeviceUploadPayloadNotEmpty,
+      kTopDragonflyPlicIrqIdSpiDeviceUploadPayloadOverflow,
+      kTopDragonflyPlicIrqIdSpiDeviceReadbufWatermark,
+      kTopDragonflyPlicIrqIdSpiDeviceReadbufFlip,
+      kTopDragonflyPlicIrqIdSpiDeviceTpmHeaderNotEmpty};
+
+  for (uint32_t i = 0; i < ARRAYSIZE(kIrqs); ++i) {
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+        plic, kIrqs[i], kTopDragonflyPlicTargetIbex0, kDifToggleEnabled));
+
+    // Assign a default priority
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_set_priority(plic, kIrqs[i], kDifRvPlicMaxPriority));
+  }
+
+  // Enable the external IRQ at Ibex.
+  irq_global_ctrl(true);
+  irq_external_ctrl(true);
+}
+
+#else
+#error "Unrecognized Top Configuration"
+#endif
+
 static void en_spi_device_irqs(dif_spi_device_t *spi_device) {
   const dif_spi_device_irq_t kIrqs[] = {kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
                                         kDifSpiDeviceIrqUploadPayloadNotEmpty,
@@ -84,6 +120,7 @@ static void en_spi_device_irqs(dif_spi_device_t *spi_device) {
                                                 kDifToggleEnabled));
   }
 }
+#if defined(OPENTITAN_IS_EGRET)
 
 void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
@@ -117,6 +154,43 @@ void ottf_external_isr(uint32_t *exc_info) {
   }
 }
 
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+void ottf_external_isr(uint32_t *exc_info) {
+  plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
+                             .hart_id = kTopDragonflyPlicTargetIbex0};
+
+  // We should only be receiving the tpm header interrupt during this test, but
+  // the tpm rdfifo cmd end intr_state will go high for read FIFO commands.
+  spi_device_isr_ctx_t spi_device_ctx = {
+      .spi_device = &spi_device.dev,
+      .plic_spi_device_start_irq_id =
+          kTopDragonflyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
+      .expected_irq = kDifSpiDeviceIrqTpmHeaderNotEmpty,
+      .is_only_irq = false};
+
+  top_dragonfly_plic_peripheral_t peripheral;
+  dif_spi_device_irq_t spi_device_irq;
+  isr_testutils_spi_device_isr(plic_ctx, spi_device_ctx, false, &peripheral,
+                               &spi_device_irq);
+
+  switch (spi_device_irq) {
+    case kDifSpiDeviceIrqTpmHeaderNotEmpty:
+      header_interrupt_received = true;
+      // Disable interrupt until work is handled.
+      CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
+          &spi_device.dev, kDifSpiDeviceIrqTpmHeaderNotEmpty,
+          kDifToggleDisabled));
+      break;
+    default:
+      LOG_ERROR("Unexpected interrupt: %d", spi_device_irq);
+      break;
+  }
+}
+
+#else
+#error "Unrecognized Top Configuration"
+#endif
+
 static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {
   // Clear interrupt state and re-enable interrupt.
   header_interrupt_received = false;
@@ -127,15 +201,13 @@ static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
 
-  CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_EGRET_SPI_DEVICE_BASE_ADDR), &spi_device));
+  CHECK_DIF_OK(dif_spi_device_init_handle_from_dt(kDtSpiDevice, &spi_device));
 
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR), &plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 
+#if defined(OPENTITAN_IS_EGRET)
   // Set IoA7 for tpm csb.
   // Longer term this needs to migrate to a top specific, platform specific
   // setting.
@@ -155,6 +227,8 @@ bool test_main(void) {
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
   }
+
+#endif
 
   // Configure fast slew rate and strong drive strength for SPI device pads.
   CHECK_STATUS_OK(spi_device_testutils_configure_pad_attrs(&pinmux));

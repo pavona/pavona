@@ -4226,6 +4226,7 @@ pavona_test(
     srcs = ["spi_device_tpm_tx_rx_test.c"],
     exec_env = dicts.add(
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:sim_dv": None,
             "//hw/top_egret:sim_verilator": None,
