@@ -13,6 +13,10 @@ py_library(
         "__init__.py",
         "lib.py",
         "typing.py",
+        "validate.py",
     ],
     imports = [".."],
+    deps = [
+        requirement("jsonschema"),
+    ],
 )

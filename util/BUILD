@@ -124,6 +124,7 @@ py_binary(
         "//util/topgen",
         requirement("mako"),
         requirement("hjson"),
+        requirement("jsonschema"),
     ],
 )
 
