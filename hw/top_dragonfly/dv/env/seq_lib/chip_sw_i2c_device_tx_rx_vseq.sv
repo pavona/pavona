@@ -57,10 +57,8 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     bit[7:0] i2c_idx_arr[1];
 
     bit[7:0] i2c_device_address_0_arr[1]  = {i2c_device_address_0};
-    bit[7:0] i2c_device_address_1_arr[1] = {i2c_device_address_1};
     // if an address bit is 1, the corresponding mask bit must also be 1
     bit[7:0] i2c_device_mask_0_arr[1] = {i2c_device_address_0 | i2c_device_mask_0};
-    bit[7:0] i2c_device_mask_1_arr[1] = {i2c_device_address_1 | i2c_device_mask_1};
     bit[7:0] byte_count_arr[1] = {byte_count};
 
     void'($value$plusargs("i2c_idx=%0d", i2c_idx));
@@ -78,8 +76,6 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     sw_symbol_backdoor_overwrite("kI2cIdx", i2c_idx_arr);
     sw_symbol_backdoor_overwrite("kI2cDeviceAddress0", i2c_device_address_0_arr);
     sw_symbol_backdoor_overwrite("kI2cDeviceMask0", i2c_device_mask_0_arr);
-    sw_symbol_backdoor_overwrite("kI2cDeviceAddress1", i2c_device_address_1_arr);
-    sw_symbol_backdoor_overwrite("kI2cDeviceMask1", i2c_device_mask_1_arr);
     sw_symbol_backdoor_overwrite("kI2cByteCount", byte_count_arr);
   endtask
 

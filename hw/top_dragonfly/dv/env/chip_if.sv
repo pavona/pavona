@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // One chip level interface to rule them all, and in the IOs, bind them...
@@ -44,6 +45,7 @@ interface chip_if;
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
 `define CSRNG_HIER          `TOP_HIER.u_csrng
+`define ENTROPY_SRC_HIER    `TOP_HIER.u_entropy_src
 `define EDN_HIER(i)         `TOP_HIER.u_edn``i
 `define GPIO_HIER           `TOP_HIER.u_gpio
 `define HMAC_HIER           `TOP_HIER.u_hmac
@@ -817,6 +819,7 @@ interface chip_if;
       PeripheralCsrng:          path = {path, ".", `DV_STRINGIFY(`CSRNG_HIER)};
       PeripheralEdn0:           path = {path, ".", `DV_STRINGIFY(`EDN_HIER(0))};
       PeripheralEdn1:           path = {path, ".", `DV_STRINGIFY(`EDN_HIER(1))};
+      PeripheralEntropySrc:     path = {path, ".", `DV_STRINGIFY(`ENTROPY_SRC_HIER)};
       PeripheralGpio:           path = {path, ".", `DV_STRINGIFY(`GPIO_HIER)};
       PeripheralHmac:           path = {path, ".", `DV_STRINGIFY(`HMAC_HIER)};
       PeripheralI2c0:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(0))};
@@ -920,25 +923,25 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_device_cio_csb_i,
       spi_device_cio_csb_i, 1)
 
-  // Signal probe function for `state_q` of CSRNG main FSM
-  wire [csrng_pkg::MainSmStateWidth-1:0] csrng_main_state;
+  // Signal probe function for `acmd_q` of CSRNG core
+  wire [2:0] csrng_acmd_q;
 `ifdef GATE_LEVEL
-  assign csrng_main_state = 0;
+  assign csrng_acmd_q = `CSRNG_HIER.u_csrng_core.acmd_q[2:0];
 `else
-  assign csrng_main_state = `CSRNG_HIER.u_csrng_core.u_csrng_main_sm.state_q;
+  assign csrng_acmd_q = `CSRNG_HIER.u_csrng_core.acmd_q;
 `endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_csrng_main_fsm_state,
-      csrng_main_state, csrng_pkg::MainSmStateWidth)
-  // Signal probe function for `aes_ctrl_cs` of AES_CTRL_FSM
-  wire [5:0] aes_ctrl_fsm_state;
-  assign aes_ctrl_fsm_state =
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_csrng_acmd_q,
+      csrng_acmd_q, 3)
+  // Signal probe function for `rnd_ctr` of AES_CIPHER_CTRL
+  wire [3:0] aes_ctrl_rnd_ctr;
+  assign aes_ctrl_rnd_ctr =
 `ifdef GATE_LEVEL
-                             0;
+      `AES_HIER.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.mr_rnd_ctr[3:0];
 `else
-      `AES_CONTROL_HIER.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.aes_ctrl_cs;
+      `AES_HIER.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.rnd_ctr;
 `endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_aes_ctrl_fsm_state,
-      aes_ctrl_fsm_state, 6)
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_aes_ctrl_rnd_ctr,
+      aes_ctrl_rnd_ctr, 4)
 
   // Signal probe function for `st_q` of HMAC
   wire [2:0] hmac_fsm_state;
@@ -984,6 +987,18 @@ interface chip_if;
 `endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_1_fsm_state,
       edn_1_fsm_state, 9)
+
+
+  // Signal probe function for `state_q` of ENTROPY_SOURCE_MAIN_SM
+  wire [8:0] entropy_src_fsm_state;
+`ifdef GATE_LEVEL
+  assign entropy_src_fsm_state = 0;
+`else
+  assign entropy_src_fsm_state = `ENTROPY_SRC_HIER.u_entropy_src_core.u_entropy_src_main_sm.state_q;
+`endif
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
+      entropy_src_fsm_state, 9)
+
 
   // Signal probe function for `soc_gpi_async_o` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_gpi_async,
