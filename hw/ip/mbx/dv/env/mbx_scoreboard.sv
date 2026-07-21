@@ -150,28 +150,29 @@ class mbx_scoreboard extends cip_base_scoreboard #(
                                                           output bit        mem_byte_access_err,
                                                           output bit        mem_wo_err,
                                                           output bit        mem_ro_err,
-                                                          output bit        custom_err);
+                                                          output bit        write_alignment_err);
     uvm_reg_addr_t addr;
     uvm_mem mem;
 
     mem_byte_access_err = 1'b0;
     mem_wo_err = 1'b0;
     mem_ro_err = 1'b0;
-    custom_err = 1'b0;
+    write_alignment_err = 1'b0;
 
     addr = block.get_normalized_addr(item.a_addr);
     mem = block.default_map.get_mem_by_offset(addr);
 
-    // The SoC-side mailbox data windows are custom register-adapter windows. The RTL is wired to
-    // return successful TL responses for sub-word writes, so do not let the generic memory-window
-    // checker expect an error response for them.
+    // The adapter accepts word-aligned writes (applying the byte enables) but returns
+    // d_error for any write whose address is not word-aligned. Model that here.
     if (block.get_name() == cfg.mbx_soc_ral_name && mem != null &&
         (mem.get_name() == "wdata" || mem.get_name() == "rdata")) begin
-      return 1'b1;
+      bit is_write = item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
+      write_alignment_err = is_write && (|item.a_addr[1:0]);
+      return !write_alignment_err;
     end
 
     return super.is_tl_mem_access_allowed(item, block, mem_byte_access_err, mem_wo_err,
-                                          mem_ro_err, custom_err);
+                                          mem_ro_err, write_alignment_err);
   endfunction
 
   // Model register accesses on the RoT ('core') TL-UL bus.
