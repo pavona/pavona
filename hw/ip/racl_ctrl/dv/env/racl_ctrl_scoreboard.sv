@@ -17,6 +17,11 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   extern task run_phase(uvm_phase phase);
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
 
+  // INTR_STATE.racl_error tracks the asynchronously-driven ERROR_LOG.VALID, so the generic
+  // mirror-vs-read-data check can't model it; it's validated in process_tl_d_channel instead. Defer
+  // all other registers to the base implementation.
+  extern function void do_read_check(dv_base_reg dv_reg, tl_seq_item item);
+
   // An event that triggers a process inside the watch_interrupt task to tell it that the expected
   // value of the interrupt might have changed. This should be connected to a callback for
   // post_predict on the IE field of the INTR_ENABLE register and similarly for the RACL_ERROR field
@@ -196,6 +201,11 @@ task racl_ctrl_scoreboard::process_tl_access(tl_seq_item item,
     default: `uvm_fatal(`gfn, $sformatf("Invalid channel: %0h", channel))
   endcase
 endtask
+
+function void racl_ctrl_scoreboard::do_read_check(dv_base_reg dv_reg, tl_seq_item item);
+  if (dv_reg.get_name() == "intr_state") return;
+  super.do_read_check(dv_reg, item);
+endfunction
 
 function void racl_ctrl_scoreboard::process_tl_a_channel(tl_seq_item item, string ral_name);
   uvm_reg_addr_t    csr_addr;
