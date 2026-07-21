@@ -309,14 +309,18 @@ task ${module_instance_name}_scoreboard::process_tl_access(tl_seq_item item,
     "log_config": begin
       // log_config is hwext with mixed field types - check reads but handle log_clear specially
       // Detect write to log_config with log_clear bit set and clear log status
-      if (tl_phase == AChanWrite &&
-          item.a_data[ral.log_config.log_clear.get_lsb_pos()] == 1'b1) begin
-        `uvm_info(`gfn, $sformatf({"Clear performed to log_status and log_address ",
-                                   "(detected in scoreboard)"}), UVM_MEDIUM)
-        void'(ral.log_status.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
-        void'(ral.log_address.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
-        predict.deny_cnt = 0;
-        predict.overflow_flag = 0;
+      if (tl_phase == AChanWrite) begin
+        if (item.a_data[ral.log_config.log_clear.get_lsb_pos()] == 1'b1) begin
+          `uvm_info(`gfn, $sformatf({"Clear performed to log_status and log_address ",
+                                     "(detected in scoreboard)"}), UVM_MEDIUM)
+          void'(ral.log_status.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+          void'(ral.log_address.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+          predict.deny_cnt = 0;
+          predict.overflow_flag = 0;
+        end
+        void'(ral.intr_state.deny_cnt_reached.predict(
+            .value(predict.deny_cnt > `gmv(ral.log_config.deny_cnt_threshold)),
+            .kind(UVM_PREDICT_DIRECT)));
       end
     end
     "log_status": begin
