@@ -17,6 +17,9 @@ filegroup(
 py_library(
     name = "topgen",
     srcs = glob(["*.py"]),
+    data = [
+        "//util/topgen/schemas",
+    ],
     imports = [".."],
     deps = [
         "//util:version_file",
