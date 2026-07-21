@@ -423,10 +423,9 @@ function void ${module_instance_name}_predictor::update_log(tl_seq_item item, in
           (.value(deny_cnt), .kind(UVM_PREDICT_DIRECT)));
     end
 
-    if (deny_cnt > `gmv(log_config_csr.deny_cnt_threshold)) begin
-      void'(env_cfg.ral.intr_state.deny_cnt_reached.predict
-          (.value(1), .kind(UVM_PREDICT_DIRECT)));
-    end
+    void'(env_cfg.ral.intr_state.deny_cnt_reached.predict
+         (.value(deny_cnt > `gmv(log_config_csr.deny_cnt_threshold)),
+          .kind(UVM_PREDICT_DIRECT)));
   end
 
   if (env_cfg.en_cov) begin
