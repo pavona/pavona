@@ -246,6 +246,12 @@ function ac_range_check_rand_rst_safe_base_vseq::new(string name="");
   //
   // <TEST_PARAMS_T>::type_id::set_type_override(<OVERRIDE_TEST_PARAMS_T>::get_type());
   // <CONFIG_PARAMS_T>::type_id::set_type_override(<OVERRIDE_CONFIG_PARAMS_T>::get_type());
+
+  // The only interrupt (deny_cnt_reached) is a Status interrupt and it's
+  // read-only in intr_state, so it cannot be cleared by a CSR write. Thus,
+  // clear_all_interrupts() has nothing to clear; it will generate a read that
+  // will result in countless outstanding accesses.
+  do_clear_all_interrupts = 0;
 endfunction : new
 
 
