@@ -204,20 +204,16 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
     end
   endtask : wait_for_cnsty_idle
 
-  // This waits until the alert_rx differential pairs are complementary, indicating the
-  // end of their initialization phase. This is necessary so the fault injection doesn't
-  // happen during initialization, which would end up delaying the outgoing alert.
+  // This waits until the alert agent has finished its initialization handshake,
+  // so fault injection doesn't happen during initialization.
+  //
+  // Sampling the alert_rx differential pairs directly is not sufficient: they
+  // are transiently complementary between init phases, so a pin-level check can
+  // return mid-init. cfg.alert_init_done is set only after init truly completes.
   task wait_for_alert_sender_ready();
     `uvm_info(`gfn, "Waiting for alert sender ready", UVM_MEDIUM)
-    forever @cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb begin
-      if (cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb.alert_rx.ping_p !=
-          cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb.alert_rx.ping_n &&
-          cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb.alert_rx.ack_p !=
-          cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb.alert_rx.ack_n) begin
-        `uvm_info(`gfn, "Alert sender is ready", UVM_MEDIUM)
-        return;
-      end
-    end
+    `DV_WAIT(cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].alert_init_done == 1)
+    `uvm_info(`gfn, "Alert sender is ready", UVM_MEDIUM)
   endtask : wait_for_alert_sender_ready
 
   task check_alert_and_cpu_info_after_reset(alert_crashdump_t alert_dump, cpu_crash_dump_t cpu_dump,
