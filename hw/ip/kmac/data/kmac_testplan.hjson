@@ -45,6 +45,7 @@
             '''
       stage: V1
       tests: ["{name}_smoke"]
+      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
     }
     {
       name: long_msg_and_output
@@ -63,6 +64,7 @@
             '''
       stage: V2
       tests: ["{name}_long_msg_and_output"]
+      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
     }
     {
       name: burst_write
@@ -72,6 +74,7 @@
             '''
       stage: V2
       tests: ["{name}_burst_write"]
+      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
     }
     {
       name: test_vectors
@@ -84,6 +87,7 @@
               "{name}_test_vectors_sha3_384", "{name}_test_vectors_sha3_512",
               "{name}_test_vectors_shake_128", "{name}_test_vectors_shake_256",
               "{name}_test_vectors_kmac", "{name}_test_vectors_kmac_xof"]
+      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC"]
     }
     {
       name: sideload
@@ -95,6 +99,7 @@
             '''
       stage: V2
       tests: ["{name}_sideload"]
+      features: ["KMAC.KEY.SIDELOAD"]
     }
     {
       name: app
@@ -110,6 +115,7 @@
             '''
       stage: V2
       tests: ["{name}_app"]
+      features: []
     }
     {
       name: app_with_partial_data
@@ -122,6 +128,7 @@
             '''
       stage: V2
       tests: ["{name}_app_with_partial_data"]
+      features: []
    }
    {
       name: entropy_refresh
@@ -145,6 +152,7 @@
             '''
       stage: V2
       tests: ["{name}_entropy_refresh"]
+      features: ["KMAC.ENTROPY_MODES"]
    }
    {
       name: error
@@ -164,6 +172,7 @@
             '''
       stage: V2
       tests: ["{name}_error"]
+      features: []
     }
     {
       name: key_error
@@ -183,6 +192,7 @@
             '''
       stage: V2
       tests: ["{name}_key_error"]
+      features: []
     }
     {
       name: sideload_invalid
@@ -201,6 +211,7 @@
             '''
       stage: V2
       tests: ["{name}_sideload_invalid"]
+      features: ["KMAC.KEY.SIDELOAD"]
     }
     {
       name: edn_timeout_error
@@ -216,6 +227,7 @@
             '''
       stage: V2
       tests: ["{name}_edn_timeout_error"]
+      features: []
     }
     {
       name: entropy_mode_error
@@ -230,6 +242,7 @@
             '''
       stage: V2
       tests: ["{name}_entropy_mode_error"]
+      features: ["KMAC.ENTROPY_MODES"]
    }
     {
       name: entropy_ready_error
@@ -247,6 +260,7 @@
             '''
       stage: V2
       tests: ["{name}_entropy_ready_error"]
+      features: []
    }
    {
       name: lc_escalation
@@ -261,6 +275,7 @@
             '''
       stage: V2
       tests: ["{name}_lc_escalation"]
+      features: []
     }
     {
       name: stress_all
@@ -270,6 +285,7 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["kmac_stress_all"]
+      features: []
     }
     {
       name: throughput
@@ -279,6 +295,7 @@
             '''
       stage: V3
       tests: ["{name}_throughput"]
+      features: []
     }
   ]
 

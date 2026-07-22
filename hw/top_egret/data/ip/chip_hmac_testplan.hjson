@@ -103,7 +103,7 @@
             - Verify multiple input message sizes as defined in NIST test vectors.
             - Use endianness configuration used in the crypto library.
             '''
-      features: ["HMAC.MODE.SHA2"]
+      features: ["HMAC.MODE.SHA2", "HMAC.DIGEST_SIZE.SHA2-256", "HMAC.DIGEST_SIZE.SHA2-384", "HMAC.DIGEST_SIZE.SHA2-512"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]

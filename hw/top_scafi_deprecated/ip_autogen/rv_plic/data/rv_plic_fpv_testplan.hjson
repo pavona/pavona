@@ -12,6 +12,7 @@
             (`intr_src_i) should be set to 1.'''
       stage: V2
       tests: ["rv_plic_assert"]
+      features: []
     }
     {
       name: LevelTriggeredIpWithClaim_A
@@ -19,18 +20,21 @@
             signal is not set, then at the next clock cycle `ip` will be triggered.'''
       stage: V2
       tests: ["rv_plic_assert"]
+      features: []
     }
     {
       name: IpStableAfterTriggered_A
       desc: "Once `ip` is set, it stays stable until is being claimed."
       stage: V2
       tests: ["rv_plic_assert"]
+      features: []
     }
     {
       name: IpClearAfterClaim_A
       desc: "Once `ip` is set and being claimed, its value is cleared to 0."
       stage: V2
       tests: ["rv_plic_assert"]
+      features: []
     }
     {
       name: IpStableAfterClaimed_A
@@ -38,6 +42,7 @@
             again.'''
       stage: V2
       tests: ["rv_plic_assert"]
+      features: []
     }
     {
       name: TriggerIrqForwardCheck_A
@@ -47,6 +52,7 @@
             and the `irq_id_o` will reflect the input ID.'''
       stage: V2
       tests: ["rv_plic_assert"]
+      features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
     }
     {
       name: TriggerIrqBackwardCheck_A
@@ -55,6 +61,7 @@
             threshold and have the highest priority.'''
       stage: V2
       tests: ["rv_plic_assert"]
+      features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
 
     }
     {
@@ -68,6 +75,7 @@
                  priority is smaller than the threshold'''
       stage: V2
       tests: ["rv_plic_assert"]
+      features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
     }
   ]
 }

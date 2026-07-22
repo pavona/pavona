@@ -275,6 +275,7 @@
       features: [
         "KMAC.ENDIANNESS.MESSAGE",
         "KMAC.ENDIANNESS.DIGEST",
+        "KMAC.ENTROPY_MODES"
       ]
       stage: V3
       si_stage: SV3

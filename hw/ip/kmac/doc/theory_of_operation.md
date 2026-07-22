@@ -1,5 +1,8 @@
 # Theory of Operation
 
+<!-- BEGIN-FEATURE: KMAC.MODE.SHA3 -->
+<!-- BEGIN-FEATURE: KMAC.MODE.SHAKE -->
+<!-- BEGIN-FEATURE: KMAC.MODE.CSHAKE -->
 ## Block Diagram
 
 ![](../doc/kmac-block-diagram.svg)
@@ -33,9 +36,13 @@ Both the internal state width and the masking of the Keccak core are configurabl
 By default, 1600 bits of internal state are used and stored in two shares (1st order masking).
 The masked Keccak core takes 4 clock cycles per round if sufficient entropy is available.
 If desired, the masking can be disabled and the internal state width can be reduced to 25, 50, or 100 bits at compile time.
+<!-- END-FEATURE: KMAC.MODE.SHA3 -->
+<!-- END-FEATURE: KMAC.MODE.SHAKE -->
+<!-- END-FEATURE: KMAC.MODE.CSHAKE -->
 
 ## Design Details
 
+<!-- BEGIN-FEATURE: KMAC.MODE.KMAC -->
 ### Keccak Round
 
 A Keccak round implements the Keccak_f function described in the SHA3 specification.
@@ -71,6 +78,7 @@ Processing a Keccak_f (1600 bit state) takes a total of 96 cycles (24 rounds X 4
 If the masking compile time option is enabled, Keccak round logic requires an additional 3200 flip flops to store the intermediate half state inside the 800 DOM multipliers.
 In addition to that Keccak round logic needs two sets of the same Theta, Rho, and Pi functions.
 As a result, the masked Keccak round logic takes more than twice as much as area than the unmasked version of it.
+<!-- END-FEATURE: KMAC.MODE.KMAC -->
 
 ### Padding for Keccak
 
@@ -112,6 +120,7 @@ If the output length is greater than the Keccak block rate in SHAKE and cSHAKE m
 The software completes the operation by issuing Done command after reading the digest.
 The padding logic clears internal variables and goes back to Idle state.
 
+<!-- BEGIN-FEATURE: KMAC.MODE.KMAC -->
 ### Padding for KMAC
 
 ![](../doc/kmac-padding.svg)
@@ -125,6 +134,7 @@ The first six bytes of [`PREFIX`](registers.md#prefix) represents the value of `
 The KMAC padding logic prepends a block containing the encoded secret key to the output message.
 The KMAC first sends the block of secret key then accepts the incoming message bitstream.
 At the end of the message, the software writes `right_encode(output_length)` to MSG_FIFO prior to issue Process command.
+<!-- END-FEATURE: KMAC.MODE.KMAC -->
 
 ### Message FIFO
 
@@ -198,6 +208,7 @@ While in an idle state or in the sponge absorbing stage, the value is zero.
 This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software.
 In addition to that, the KMAC/SHA3 blocks the software access to the Keccak state when it processes the request from KeyMgr for Key Derivation Function (KDF).
 
+<!-- BEGIN-FEATURE: KMAC.KEY.SIDELOAD -->
 ### Application Interface
 
 ![](../doc/application-interface.svg)
@@ -256,6 +267,7 @@ After the encoded output length is pushed to the KMAC core, the interface logic 
 After hashing operation is completed, KMAC does not raise a `kmac_done` interrupt; rather it triggers the `done` status in the App response channel.
 The result digest always comes in two shares.
 If the `EnMasking` parameter is not set, the second share is always zero.
+<!-- END-FEATURE: KMAC.KEY.SIDELOAD -->
 
 #### ACC Interface Connection
 
@@ -274,6 +286,7 @@ The FIFO should only be read from when an AppIntf response is active for an ACC 
 FIFO writes are controlled by the state machine and should occur when the FIFO is ready with an available digest.
 The Keccak state should not change while digest words from the current permutation are still being packed/squeezed into the FIFO.
 
+<!-- BEGIN-FEATURE: KMAC.ENTROPY_MODES -->
 ### Entropy Generator
 
 This section explains the entropy generator inside the KMAC HWIP.
@@ -289,6 +302,7 @@ The module periodically refreshes the PRNG seed with fresh entropy from EDN.
 Software can explicitly request a complete reseed of the PRNG state from EDN through [`CMD.entropy_req`](registers.md#cmd).
 
 [edn]: ../../edn/README.md
+<!-- END-FEATURE: KMAC.ENTROPY_MODES -->
 
 ### Error Report
 

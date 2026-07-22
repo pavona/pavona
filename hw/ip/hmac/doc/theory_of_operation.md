@@ -27,6 +27,8 @@ SHA-2 384 is a truncated version of SHA-2 512 where the last 128 bits of the fin
 
 ## Design Details
 
+<!-- BEGIN-FEATURE: HMAC.ENDIANNESS.MESSAGE -->
+<!-- BEGIN-FEATURE: HMAC.ENDIANNESS.DIGEST -->
 ### SHA-2 message feed and pad
 
 A message is fed via a memory-mapped message FIFO.
@@ -75,7 +77,14 @@ Lastly, it returns the message length which is 64-bit `0x00000000_00000000`.
 If incomplete words are written, the packet logic appends `0x80` in the proper byte
 location, such as `0xXX800000` for the message length % 4B == 1 case.
 This similarly occurs for SHA-2 384/512 but with a 128-bit message length and block size of 1024 bits.
+<!-- END-FEATURE: HMAC.ENDIANNESS.MESSAGE -->
+<!-- END-FEATURE: HMAC.ENDIANNESS.DIGEST -->
 
+<!-- BEGIN-FEATURE: HMAC.MODE.SHA2 -->
+<!-- BEGIN-FEATURE: HMAC.MODE.HMAC -->
+<!-- BEGIN-FEATURE: HMAC.DIGEST_SIZE.SHA2-256 -->
+<!-- BEGIN-FEATURE: HMAC.DIGEST_SIZE.SHA2-384 -->
+<!-- BEGIN-FEATURE: HMAC.DIGEST_SIZE.SHA2-512 -->
 ### SHA-2 computation
 
 For SHA-2 256, the SHA-2 engine receives 16 32-bit words from the message FIFO or the HMAC core, which get padded into 16 64-bit words for the SHA-2 engine (upper 32 bits of each data word are all-zero padded), and then begin 64 rounds of the hash computation which is also called *compression* after direct loading of the block.
@@ -94,6 +103,11 @@ The digest, again, is used as initial hash values for the next block compression
 During the compression rounds, it doesn't fetch data from the message FIFO.
 The software can push up to 16 (or 32 for SHA-2 384/512) entries to the FIFO for the next hash computation.
 
+<!-- BEGIN-FEATURE: HMAC.KEY_LENGTH.KEY_128 -->
+<!-- BEGIN-FEATURE: HMAC.KEY_LENGTH.KEY_256 -->
+<!-- BEGIN-FEATURE: HMAC.KEY_LENGTH.KEY_384 -->
+<!-- BEGIN-FEATURE: HMAC.KEY_LENGTH.KEY_512 -->
+<!-- BEGIN-FEATURE: HMAC.KEY_LENGTH.KEY_1024 -->
 ### HMAC computation
 
 ![Two steps of HMAC](../doc/hmac_dataflow.svg)
@@ -127,6 +141,11 @@ For example, for an 80-bit key, HMAC should be configured with an 128-bit key le
 It is also up to the software to shrink the key to the supported key length (up to 512-bit for SHA-2 256 and up to 1024-bit for SHA-2 384/512) using a hash function when setting up the HMAC.
 For example, common key sizes may be 2048-bit or 4096-bit.
 Software is expected to hash these into the supported key length and write the hashed result as the configured key to the HMAC IP.
+<!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_128 -->
+<!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_256 -->
+<!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_384 -->
+<!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_512 -->
+<!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_1024 -->
 
 ### Performance in SHA-2 mode and HMAC mode
 
@@ -148,6 +167,11 @@ This throughput could be enhanced in a future version by feeding the message int
 If HMAC mode is turned on, it introduces extra latency due to the second round of computing the final hash of the outer key and the result of the first round using the inner key.
 This adds an extra 240 cycles (80 for the inner key, 80 for the outer key, and 80 for the result of the first round) to complete a HMAC SHA-2 256 digest of a message.
 For instance, if an empty message is given then it takes 360 cycles (80 for msg itself and 240 for the extra) to get the HMAC authentication token.
+<!-- END-FEATURE: HMAC.MODE.SHA2 -->
+<!-- END-FEATURE: HMAC.MODE.HMAC -->
+<!-- END-FEATURE: HMAC.DIGEST_SIZE.SHA2-256 -->
+<!-- END-FEATURE: HMAC.DIGEST_SIZE.SHA2-384 -->
+<!-- END-FEATURE: HMAC.DIGEST_SIZE.SHA2-512 -->
 
 ### MSG_FIFO
 

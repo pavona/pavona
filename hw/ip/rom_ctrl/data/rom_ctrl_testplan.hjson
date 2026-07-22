@@ -36,6 +36,7 @@
             '''
       stage: V1
       tests: ["rom_ctrl_smoke"]
+      features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
     }
     {
       name: corrupt_sig_fatal_chk
@@ -47,6 +48,7 @@
             '''
       stage: V2S
       tests: ["rom_ctrl_corrupt_sig_fatal_chk"]
+      features: []
     }
     {
       name: max_throughput_chk
@@ -59,6 +61,7 @@
             '''
       stage: V2
       tests: ["rom_ctrl_max_throughput_chk"]
+      features: []
     }
     {
       name: stress_all
@@ -67,6 +70,7 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["rom_ctrl_stress_all"]
+      features: []
     }
     {
       name: kmac_err_chk
@@ -75,6 +79,7 @@
             - Check that ROM controller goes into invalid state'''
       stage: V2
       tests: ["rom_ctrl_kmac_err_chk"]
+      features: ["ROM_CTRL.DIGESTS"]
     }
 
   ]

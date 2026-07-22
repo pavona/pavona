@@ -19,6 +19,7 @@ sources. ID 0 is reserved and represents no interrupt. The bit 0 of
 `intr_src_i[i]` bit has an ID of `i`. This ID is used when targets "claim" the
 interrupt and to "complete" the interrupt event.
 
+<!-- BEGIN-FEATURE: RV_PLIC.PRIORITY -->
 ### Priority and Threshold
 
 Interrupt sources have configurable priority values. The maximum value of the
@@ -33,6 +34,7 @@ priority value.
 `MAX_PRIO` parameter is most area contributing option in RV_PLIC. If `MAX_PRIO`
 is big, then finding the highest priority in Process module may consume a lot of
 logic gates.
+<!-- END-FEATURE: RV_PLIC.PRIORITY -->
 
 ### Interrupt Gateways
 
@@ -58,6 +60,7 @@ remain set until the interrupt is completed. The SW handler should be conscious
 of this and check the interrupt still requires handling in the handler if this
 behavior is possible.
 
+<!-- BEGIN-FEATURE: RV_PLIC.ENABLE -->
 ### Interrupt Enables
 
 Each target has a set of Interrupt Enable ([`IE0`](../data/rv_plic.hjson#ie0) for target 0) registers. Each
@@ -65,6 +68,7 @@ bit in the [`IE0`](../data/rv_plic.hjson#ie0) registers controls the correspondi
 interrupt source is disabled for a target, then interrupt events from that
 source won't trigger an interrupt at the target. RV_PLIC doesn't have a global
 interrupt disable feature.
+<!-- END-FEATURE: RV_PLIC.ENABLE -->
 
 ### Interrupt Claims
 

@@ -13,6 +13,7 @@ It runs exactly once, and releases the green multiplexer when it is done.
 
 ![ROM Controller Block Diagram](../doc/rom_ctrl_blockdiag.svg)
 
+<!-- BEGIN-FEATURE: ROM_CTRL.SCRAMBLED -->
 ## ROM access when chip is in operation
 
 Once the chip has booted, ROM accesses are requested over the system TL-UL bus.
@@ -49,7 +50,10 @@ The unscrambled ROM data for (logical) address 12 is denoted `d12`.
 
 The `prim_prince` primitive and the two substitution-permutation networks are all parameterised by "keys".
 For `rom_ctrl`, these keys are global randomized netlist constants: they are assumed to be difficult to recover, but aren't considered secret data.
+<!-- END-FEATURE: ROM_CTRL.SCRAMBLED -->
 
+<!-- BEGIN-FEATURE: ROM_CTRL.DIGESTS -->
+<!-- BEGIN-FEATURE: ROM_CTRL.EXP_DIGESTS -->
 ## The startup ROM check
 
 The ROM checker runs immediately after reset.
@@ -109,6 +113,8 @@ On future messages, it should raise an alert, defeating an attacker that tries t
 `CreatorRootKey` forms the first key in the chain described in [Identities and Root Keys](../../../../doc/security/specs/identities_and_root_keys/README.md).
 An attacker who modifies the ROM will perturb `CreatorRootKey` (to avoid doing so would require a preimage attack on the ROM checksum calculation or the `KM_DERIVE` function).
 The result is that, while the chip will function, it will have the "wrong" root key and the chain of trust used for attestation will be broken.
+<!-- END-FEATURE: ROM_CTRL.DIGESTS -->
+<!-- END-FEATURE: ROM_CTRL.EXP_DIGESTS -->
 
 ## Fault-injection hardening
 
