@@ -515,6 +515,36 @@ sim_verilator(
     """,
 )
 
+# Same as sim_verilator, but against the PQC-enabled model (//hw:verilator_pqc).
+sim_verilator(
+    name = "sim_verilator_pqc",
+    testonly = True,
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface=verilator",
+        "--verilator-bin=$(rootpath //hw:verilator_pqc)",
+        "--verilator-rom={rom}",
+        "--verilator-otp={otp}",
+        "--verilator-flash={firmware}",
+    ],
+    base = ":sim_verilator_base",
+    data = [
+        "//hw:fusesoc_ignore",
+        "//hw:verilator_pqc",
+    ],
+    exec_env = "sim_verilator_pqc",
+    param = {
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
+    test_cmd = """
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
+)
+
 sim_verilator(
     name = "sim_verilator_rom_with_fake_keys",
     testonly = True,

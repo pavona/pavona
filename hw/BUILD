@@ -151,6 +151,47 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+# Verilated model with the ACC PQC vector ISA enabled (AccPQCEn=1).
+fusesoc_build(
+    name = "verilator_real_pqc",
+    srcs = [
+        ":dpi_files",
+        ":dv_common_files",
+        ":rtl_files",
+        ":verilator_files",
+    ],
+    cores = [
+        ":cores",
+    ],
+    data = ["//hw/ip/acc:rtl_files"],
+    flags = ["--AccPQCEn=1"],
+    make_options = ":make_options",
+    output_groups = pavona_select_top_attr("top_verilator_binary"),
+    systems = pavona_select_top_attr("top_verilator_core"),
+    tags = [
+        "manual",
+        "verilator",
+    ],
+    target = "sim",
+    verilator_options = ":verilator_options",
+)
+
+filegroup(
+    name = "verilator_bin_pqc",
+    srcs = [":verilator_real_pqc"],
+    output_group = "binary",
+)
+
+alias(
+    name = "verilator_pqc",
+    actual = select({
+        ":disable_verilator_build": ":verilator_stub",
+        "//conditions:default": ":verilator_bin_pqc",
+    }),
+    tags = ["verilator"],
+    visibility = ["//visibility:public"],
+)
+
 genrule(
     name = "fusesoc_ignore",
     outs = ["FUSESOC_IGNORE"],

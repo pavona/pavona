@@ -286,11 +286,33 @@ jobs:
         uses: ./.github/actions/prepare-env
       - name: Run fast Verilator tests
         run: ./ci/scripts/run-verilator-tests.sh
+      - name: Run slow Verilator tests
+        run: ./ci/scripts/run-verilator-tests.sh --slow
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
         with:
           artifact-name: verilator_egret-test-results
+
+  verilator_egret_pqc:
+    name: Egret Verilator PQC Tests
+    runs-on:
+      group: pavona-large
+    needs: quick_lint
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Run fast Verilator tests
+        run: ./ci/scripts/run-verilator-tests.sh --pqc
+      - name: Run slow Verilator tests
+        run: ./ci/scripts/run-verilator-tests.sh --pqc --slow
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: verilator_egret_pqc-test-results
 
   chip_egret_cw310:
     name: Egret for CW310

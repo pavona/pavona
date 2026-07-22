@@ -34,7 +34,7 @@ module gpiodpi
                                      input logic [N_GPIO-1:0] gpio_en_d2p,
                                      input logic [N_GPIO-1:0] gpio_pull_en,
                                      input logic [N_GPIO-1:0] gpio_pull_sel,
-                                     output bit req_exit);
+                                     inout bit req_exit);
 
    bit req_exit;
    chandle ctx;

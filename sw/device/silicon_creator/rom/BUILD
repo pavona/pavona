@@ -313,6 +313,7 @@ pavona_test(
     # Verilator or CW310 params).
     exec_env = {
         "//hw/top_egret:sim_verilator": None,
+        "//hw/top_egret:sim_verilator_pqc": None,
     },
     kind = "rom",
     linker_script = ":linker_script",

@@ -21,6 +21,11 @@ filesets:
       - rtl/chip_egret_verilator.sv: { file_type: systemVerilogSource }
 
 parameters:
+  AccPQCEn:
+    datatype: int
+    description: Enable the PQC vector ISA extension in the ACC
+    default: 0
+    paramtype: vlogparam
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
@@ -30,6 +35,7 @@ targets:
     filesets:
       - files_sim_verilator
     parameters:
+      - AccPQCEn
       - AST_BYPASS_CLK=true
     toplevel: chip_egret_verilator
     tools:

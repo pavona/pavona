@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module chip_egret_verilator (
+module chip_egret_verilator #(
+  parameter bit AccPQCEn = 0
+) (
   // Clock and Reset
   input clk_i,
   input rst_ni,
@@ -497,7 +499,8 @@ module chip_egret_verilator (
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
-    .SramCtrlRetAonInstrExec(0)
+    .SramCtrlRetAonInstrExec(0),
+    .AccAccPQCEn(AccPQCEn)
   ) top_egret (
     // update por / reset connections, this is not quite right here
     .por_n_i                      (por_n                ),

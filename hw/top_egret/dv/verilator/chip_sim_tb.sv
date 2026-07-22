@@ -3,7 +3,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module chip_sim_tb (
+module chip_sim_tb #(
+  parameter bit AccPQCEn = 0
+) (
   // Clock and Reset
   input clk_i,
   input rst_ni
@@ -27,7 +29,9 @@ module chip_sim_tb (
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
 
-  chip_egret_verilator u_dut (
+  chip_egret_verilator #(
+    .AccPQCEn(AccPQCEn)
+  ) u_dut (
     .clk_i,
     .rst_ni,
 

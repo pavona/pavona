@@ -123,6 +123,7 @@ EGRET_TEST_ENVS = {
     "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
     "//hw/top_egret:sim_dv": None,
     "//hw/top_egret:sim_verilator": None,
+    "//hw/top_egret:sim_verilator_pqc": None,
     "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
 }
 
