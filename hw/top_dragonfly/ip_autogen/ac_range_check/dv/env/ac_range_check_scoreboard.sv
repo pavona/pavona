@@ -390,6 +390,28 @@ function void ac_range_check_scoreboard::reset(string kind = "HARD");
   act_filt_a_chan_cnt   = 0;
   a_chan_matching_cnt   = 0;
   d_chan_matching_cnt   = 0;
+
+  // Reset the decoded range-config model to the register reset values. Without this
+  // it retains the pre-reset range configuration; and a range left at its reset value
+  // is never re-written, so the stale entry would persist.
+  foreach (dut_cfg.range_attr[i]) begin
+    dut_cfg.range_base[i]  = ral.range_base[i].get_reset(kind);
+    dut_cfg.range_limit[i] = ral.range_limit[i].get_reset(kind);
+    dut_cfg.range_attr[i].log_denied_access =
+      mubi4_logic_test_true_strict(ral.range_attr[i].log_denied_access.get_reset(kind));
+    dut_cfg.range_attr[i].execute_access =
+      mubi4_logic_test_true_strict(ral.range_attr[i].execute_access.get_reset(kind));
+    dut_cfg.range_attr[i].write_access =
+      mubi4_logic_test_true_strict(ral.range_attr[i].write_access.get_reset(kind));
+    dut_cfg.range_attr[i].read_access =
+      mubi4_logic_test_true_strict(ral.range_attr[i].read_access.get_reset(kind));
+    dut_cfg.range_attr[i].enable =
+      mubi4_logic_test_true_strict(ral.range_attr[i].enable.get_reset(kind));
+    dut_cfg.range_racl_policy[i].read_perm =
+      ral.range_racl_policy_shadowed[i].read_perm.get_reset(kind);
+    dut_cfg.range_racl_policy[i].write_perm =
+      ral.range_racl_policy_shadowed[i].write_perm.get_reset(kind);
+  end
 endfunction : reset
 
 function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
