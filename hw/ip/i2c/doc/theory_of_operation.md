@@ -4,6 +4,8 @@
 
 ![](../doc/i2c_block_diagram.svg)
 
+<!-- BEGIN-FEATURE: I2C.MODE.HOST -->
+<!-- BEGIN-FEATURE: I2C.MODE.TARGET -->
 ## Functional Description
 
 I2C IP is a controller-target combo that can function as an I2C controller and/or an I2C target.
@@ -20,6 +22,8 @@ The RTL parameter `InputDelayCycles` must be set to the maximum number of cycles
 `InputDelayCycles` can exclude the rise time that would be captured by [`TIMING1.T_R`](registers.md#timing1).
 The reference point for `InputDelayCycles` is the clock edge after the launch clock edge.
 In other words, a value of 0 means that the IP's 2-flop synchronizer would sample the IP's own outputs within one clock cycle (if the external pad driver could switch instantaneously).
+<!-- END-FEATURE: I2C.MODE.HOST -->
+<!-- END-FEATURE: I2C.MODE.TARGET -->
 
 ### Bus Monitor
 
@@ -37,6 +41,7 @@ The bus can also become free after the [`HOST_TIMEOUT_CTRL`](registers.md#host_t
 At initial attachment in a multi-controller environment, typically the controller needs to wait until it determines the bus is free, and the initial state should be assumed to be busy.
 To make this happen, [`HOST_TIMEOUT_CTRL`](registers.md#host_timeout_ctrl) should be programmed before enabling the bus monitor in [`CTRL`](registers.md#ctrl), and [`CTRL.MULTI_CONTROLLER_MONITOR_EN`](registers.md#ctrl) should be set either before or at the same time as enabling the Controller Module with [`CTRL.ENABLEHOST`](registers.md#ctrl).
 
+<!-- BEGIN-FEATURE: I2C.MODE.HOST -->
 ### Controller Module
 
 The Controller Module implements all mandatory controller features of the I2C protocol for multi-controller configurations, including clock synchronization and bus arbitration.
@@ -84,7 +89,9 @@ The module will not continue processing commands without software intervention.
 
 Note that a full RX FIFO does not stop command processing.
 Ensure the RX FIFO has enough space, else overflows can occur.
+<!-- END-FEATURE: I2C.MODE.HOST -->
 
+<!-- BEGIN-FEATURE: I2C.PROTOCOL.NACK -->
 #### Controller NACK Handling
 
 If the Controller Module transmits a byte and the 9th bit is a `NACK` from the Target/Bus, the `controller_halt` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
@@ -108,6 +115,7 @@ When the FSM first halts due to an unexpected `NACK`, there is still an ongoing 
 The Controller Module stops immediately following the (N)ACK bit's hold time after the SCL falling edge, and SCL remains asserted low.
 If a `NACK` handling timeout occurs or [`CTRL.ENABLEHOST`](registers.md#ctrl) is cleared, then the FSM will halt again after the `STOP` condition is sent.
 The `STOP` condition terminates the transaction, leaving the FSM halted in the "bus idle" state, with SDA and SCL released.
+<!-- END-FEATURE: I2C.PROTOCOL.NACK -->
 
 #### Bus Arbitration
 
@@ -121,6 +129,7 @@ The FMT FIFO will have the entries that remained, but typically, this event will
 In that case, software would clear the FMT FIFO (and possibly the RX FIFO), then load the FMT FIFO with the original commands, starting from the beginning of the transaction.
 All bits in [`CONTROLLER_EVENTS`](registers.md#controller_events) must be cleared for the Controller Module to release from the halted state.
 
+<!-- BEGIN-FEATURE: I2C.MODE.TARGET -->
 ### Target Module
 
 The Target Module implements all mandatory features for targets in multi-controller configurations, as enumerated in the I2C specification.
@@ -130,6 +139,7 @@ Additionally, the Target Module has the necessary mechanisms to support mandator
 Address bytes may be configured to be always `ACK`'d, and the Target ACK Control feature may be used to stretch the clock until software can decide whether to `ACK` the incoming byte.
 The Target Module can also be configured to observe SMBus's maximum cumulative target clock extension time.
 There is no hardware support for calculating or checking the Packet Error Code, however; these values would need to be handled in software.
+<!-- END-FEATURE: I2C.MODE.TARGET -->
 
 #### Target Address Registers
 
@@ -146,6 +156,9 @@ If the user wishes to have the target respond to *all* addresses, then this can 
 
 The assigned address and mask pairs are set in registers [`TARGET_ID.ADDRESS0`](registers.md#target_id), [`TARGET_ID.MASK0`](registers.md#target_id), [`TARGET_ID.ADDRESS1`](registers.md#target_id), and [`TARGET_ID.MASK1`](registers.md#target_id).
 
+<!-- BEGIN-FEATURE: I2C.OPERATION.READ -->
+<!-- BEGIN-FEATURE: I2C.OPERATION.WRITE -->
+<!-- BEGIN-FEATURE: I2C.PROTOCOL.REPEATEDSTART -->
 #### Target Transfers
 
 When the Target Module accepts a transfer, it acquires the transfer address, read/write bit, and `START` signal sent by the controller and inserts them into ACQ FIFO, where they can be accessed by software.
@@ -181,7 +194,11 @@ For `ACK` signals, the value of the MSB is 0; for `NACK` signals, the value is 1
 The following diagram shows consecutive entries inserted into ACQ FIFO during a read operation:
 
 ![](../doc/i2c_acq_fifo_read.svg)
+<!-- END-FEATURE: I2C.OPERATION.READ -->
+<!-- END-FEATURE: I2C.OPERATION.WRITE -->
+<!-- END-FEATURE: I2C.PROTOCOL.REPEATEDSTART -->
 
+<!-- BEGIN-FEATURE: I2C.PROTOCOL.CLOCKSTRETCHING -->
 #### Target Clock Stretching
 As described in the I2C specification, a target device can pause a transaction by holding SCL low.
 There are 3 cases in which this design stretches the clock:
@@ -210,7 +227,9 @@ When a target device receives a start and read command, it may stretch the clock
 - If there is an unhandled event in [`TARGET_EVENTS`](registers.md#target_events).
 
 The `tx_stretch` interrupt is generated to alert software to such a situation.
+<!-- END-FEATURE: I2C.PROTOCOL.CLOCKSTRETCHING -->
 
+<!-- BEGIN-FEATURE: I2C.PROTOCOL.NACK -->
 #### Target NACKs
 
 When the Target Module replies with a `NACK` during the (N)ACK phase, it indicates that it is unable to accept the byte or command.
@@ -234,7 +253,9 @@ The decision to `NACK` the transaction can occur for any of the following reason
 - The controller's SCL low period is detected to be too short for a response
 - Software directed the Target Module to `NACK`
   - Software has some control if `ACK` Control Mode is enabled
+<!-- END-FEATURE: I2C.PROTOCOL.NACK -->
 
+<!-- BEGIN-FEATURE: I2C.MODE.ACKCONTROL -->
 #### Target ACK Control Mode
 
 ACK Control Mode is a feature that allows software to take control of `ACK`/`NACK` decisions during a Write transfer.
@@ -259,7 +280,11 @@ Instead, software can read the [`ACQ_FIFO_NEXT_DATA`](registers.md#acq_fifo_next
 Note that after software indicates its decision, this pending byte will still enter the ACQ FIFO if there is space, accompanied by the metadata reflecting whether it was `ACK`'d or `NACK`'d.
 
 This feature is intended to support protocols that require mid-transfer `NACK` decisions based on the current data transferred (e.g. as in SMBus).
+<!-- END-FEATURE: I2C.MODE.ACKCONTROL -->
 
+<!-- BEGIN-FEATURE: I2C.SPEED.STANDARD -->
+<!-- BEGIN-FEATURE: I2C.SPEED.FAST -->
+<!-- BEGIN-FEATURE: I2C.SPEED.FASTPLUS -->
 ### Timing Control Registers
 
 For Standard-mode, Fast-mode and Fast-mode Plus, the timing requirements for each transaction are detailed in Table 10 of the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
@@ -311,6 +336,9 @@ As there is an output flop, a 2-flop synchronizer, a rise time, and a pad input 
 
 Similarly, the high count must be long enough to cover the a round-trip time to sense outputs for various conditions (e.g. lost arbitration, target clock stretching, etc.).
 `THIGH` must be at least 4 cycles + `InputDelayCycles`.
+<!-- END-FEATURE: I2C.SPEED.STANDARD -->
+<!-- END-FEATURE: I2C.SPEED.FAST -->
+<!-- END-FEATURE: I2C.SPEED.FASTPLUS -->
 
 ### Timeout Controls
 
@@ -569,6 +597,7 @@ This arrangement is necessary for FPGA builds.
 The IP does not currently implement the specification's required 50 ns glitch filter.
 For full spec compliance, the glitch filter must be added to the system design.
 
+<!-- BEGIN-FEATURE: I2C.OVERRIDE -->
 ### Override Mode for Direct Pin Access
 
 The I2C hardware interface consists of two external pins, SCL and SDA, whose behavior is described in the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
@@ -580,6 +609,7 @@ To enter override mode, the register field [`OVRD.TXOVRDEN`](registers.md#ovrd) 
 In this state the output drivers `scl_tx_o` and `sda_tx_o` are controlled directly by the register fields [`OVRD.SCLVAL`](registers.md#ovrd) and [`OVRD.SDAVAL`](registers.md#ovrd).
 When [`OVRD.SCLVAL`](registers.md#ovrd) and [`OVRD.SDAVAL`](registers.md#ovrd) are set high, the virtual open drain configuration will leave the output resistively pulled high, and controllable by remote targets.
 In this state, with SCL or SDA asserted high, the register fields [`VAL.SCL_RX`](registers.md#val) and [`VAL.SDA_RX`](registers.md#val) can be used to receive inputs (including remote acknowledgments) from target devices.
+<!-- END-FEATURE: I2C.OVERRIDE -->
 
 ### FSM control of SCL and SDA
 

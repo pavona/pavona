@@ -1,5 +1,9 @@
 # Theory of Operation
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX -->
 ## Block Diagram
 
 ![Block Diagram](../doc/block_diagram.svg)
@@ -23,9 +27,14 @@ It may additionally let hardware set the BUSY bit in the Status register when th
 
 In Passthrough mode, the logic filters the incoming transaction if the transaction is not permitted.
 The software may configure the logic to change a portion of the address or first 4 bytes of the payload.
+<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX -->
 
 ## SPI Flash and Passthrough Modes
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.HW.CMDINFOS -->
 ### Command Information List
 
 The software may configure the map from the received opcode to the command process module by programming *cmd_info* list.
@@ -51,7 +60,11 @@ See [Output Enable Control](#output-enable-control) section for more.
 
 The *upload* and *busy* fields are used in the SPI Flash/ Passthrough modes.
 See [Command Upload](#command-upload) section for details.
+<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH -->
+<!-- END-FEATURE: SPI_DEVICE.HW.CMDINFOS -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN -->
 ### Command Parser
 
 ![Command Parser block](../doc/cmdparse.svg)
@@ -64,7 +77,10 @@ As explained in the [previous section](#command-information-list), the command p
 Other than the first 11 slots and last two slots (which are not visible to software), the *cmdparse* checks the *upload* field and activates the upload module if the field is set.
 
 The software can configure whether a submodule should process the command while in the passthrough mode by setting the [`INTERCEPT_EN`](registers.md#intercept_en) CSR.
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.HW.CSB_STATUS -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.WRITE_ENABLE_DISABLE -->
 ### Status Control
 
 If the received command is one of the three read status commands, the STATUS control module takes over the SPI interface after the opcode.
@@ -106,7 +122,11 @@ This activity is sufficient to unblock passthrough for the next command.
 
 If the host sends the Write Status commands, the commands are not processed in this module.
 Software must configure the remaining command information entries to upload the Write Status commands to the FIFOs.
+<!-- END-FEATURE: SPI_DEVICE.HW.CSB_STATUS -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.WRITE_ENABLE_DISABLE -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.JEDEC_ID -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.JEDEC_CC -->
 ### JEDEC ID Control
 
 JEDEC module returns JEDEC Device ID and Manufacturer ID following the Continuation Code (CC).
@@ -116,6 +136,8 @@ The *cc* field in [`JEDEC_CC`](registers.md#jedec_cc) defines the return value, 
 
 The actual JEDEC ID consists of one byte manufacturer ID and two bytes device ID.
 The hardware sends the manufacturer ID first, then `[7:0]` of the device ID then `[15:8]` byte.
+<!-- END-FEATURE: SPI_DEVICE.JEDEC_ID -->
+<!-- END-FEATURE: SPI_DEVICE.JEDEC_CC -->
 
 ### Serial Flash Discoverable Parameters (SFDP) Control
 
@@ -127,6 +149,7 @@ The software should prepare proper SFDP contents before the host system issues S
 Hardware fetches from the DPSRAM in 4B and returns the data to the SPI line.
 Hardware repeats the operation until `CSb` is de-asserted.
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
 ### Read Command Processor
 
 The read command block has multiple sub-blocks to process normal Read, Fast Read, Fast Read Dual / Quad from the internal DPSRAM.
@@ -138,7 +161,9 @@ The double buffering scheme aids the software to prepare the next chunk of data.
 The software copies a portion of data (1kB) from the internal flash memory into the SPI device DPSRAM.
 From the host system, the emulated SPI Device is seen more than 2kB storage device with the double buffering scheme.
 The assumption is that the host system reads mostly sequentially.
+<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX -->
 #### Address Handling
 
 For read commands such as Normal Read, Fast Read {Single/ Dual/ Quad} Output commands, the address comes through `ID0` only.
@@ -149,13 +174,16 @@ When the module receives `addr[0]`, at the positive edge of `SCK`, the module mo
 
 If the received address falls into mailbox address range and mailbox feature is enabled, the module turns on the mailbox selection bit.
 Then all out-going requests to the DPSRAM are forwarded to the mailbox section, not the read buffer section.
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.DUMMY_CYCLE -->
 #### Dummy Cycle
 
 The software may configure the dummy cycle field for each individual read commands.
 The default dummy cycle for those commands are 7 (0-based).
 The value is the number of cycles.
 For example, if software programs the dummy cycle for Fast Read Quad to `3h`, the module waits 4 cycles then returns data.
+<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.DUMMY_CYCLE -->
 
 #### Pipelined Reads
 
@@ -181,6 +209,8 @@ For example, reads addressed to the mailbox will appear with the same number of 
 
 See the ['CMD_INFO'](registers.md#cmd_info) descriptions for the specific programming values.
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
+<!-- BEGIN-FEATURE:  SPI_DEVICE.HW.LAST_READ_ADDR -->
 #### Buffer Management
 
 ![Read Buffer Management](../doc/buffer-management.svg)
@@ -206,7 +236,10 @@ If the received read address crosses the software configured watermark address, 
 Software may configure the watermark CSR low enough so that the software has enough time to copy over the data.
 
 If a new read command crosses the current buffer boundary, the software flips the internal buffer index bit and clears the cross event for the hardware to detect the address cross event again.
+<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
+<!-- END-FEATURE:  SPI_DEVICE.HW.LAST_READ_ADDR -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.HW.3B4B_ADDRESSING -->
 ### 4B Address Management (EN4B/ EX4B)
 
 The software may configure the HW to receive EN4B and EX4B commands and change the read command address size between 3 bytes and 4 bytes.
@@ -232,7 +265,9 @@ A software request will set the [`ADDR_MODE.pending`](registers.md#addr_mode) bi
 The software will see the intended mode in [`ADDR_MODE.addr_4b_en`](registers.md#addr_mode) until hardware completes the request.
 However, software may overwrite the requested value, so long as the SPI host is held inactive.
 The request does not complete until the SPI host completes the opcode phase of the transaction, and it will take effect for that same transaction's address phase (if any).
+<!-- END-FEATURE: SPI_DEVICE.HW.3B4B_ADDRESSING -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.HW.COMMAND_UPLOAD -->
 ### Command Upload
 
 If the received command meets following conditions, the hardware stores the command into the command/address FIFOs and the payload buffer:
@@ -259,13 +294,16 @@ It is expected that the `payload_depth` is maximum payload size, 256B if `payloa
 In this scenario, the software should read from `payload_start_idx` to the end of the payload buffer then do a second read from the beginning of the buffer to the remained bytes.
 
 If the error case above happens, the IP reports the event through the `payload_overflow` interrupt.
+<!-- END-FEATURE: SPI_DEVICE.HW.COMMAND_UPLOAD -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH -->
 ### Passthrough
 
 The passthrough module controls the data between a host system and the attached downstream SPI flash device.
 It snoops the SPI transactions and intervenes if the transaction is not permitted.
 The module also manipulates the data if needed.
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER -->
 #### Command Filtering
 
 Filtering the incoming command is the key role of the Passthrough module.
@@ -300,14 +338,18 @@ For example, if bit 5 of [`CMD_FILTER_0`](registers.md#cmd_filter_0) is set, the
 The software does not know whether a SPI transaction is filtered or not.
 If the software wants to check, it needs to set the _upload_ field with the opcode in the command information list.
 Then, the hardware uploads the command into the command/address FIFOs and the payload buffer.
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.ADDRESS_MANIPULATION -->
 #### Address Manipulation
 
 The software may configure the passthrough logic to swap certain address bits to desired values by configuring [`ADDR_SWAP_MASK`](registers.md#addr_swap_mask) and [`ADDR_SWAP_DATA`](registers.md#addr_swap_data) CSRs.
 The address translation takes in effect only when the received command is in the command information list and *addr_swap_en* field in the entry is set.
 
 For instance, the passthrough logic sets bit 20 of the address to 1 if [`ADDR_SWAP_MASK`](registers.md#addr_swap_mask) is `0x0010_0000` and [`ADDR_SWAP_DATA`](registers.md#addr_swap_data) is `0x0010_0000`.
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.ADDRESS_MANIPULATION -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.STATUS_MANIPULATION -->
 #### Write Status Data Manipulation
 
 The passthrough logic also provides a way to change the first 4 bytes of the payload to the downstream SPI flash device on-the-fly as same as the address.
@@ -323,7 +365,9 @@ For example, bit `[7:0]` is processed then `[15:8]`, `[23:16]`, and `[31:24]` at
 The CSRs affect the commands that have *payload_swap_en* as 1 in their command list entries.
 Software may use additional command information slots for the passthrough (index 11 to 23).
 The software must configure *payload_dir* to **PayloadIn** and *payload_en* to `4'b 0001` in order for the payload translation feature to work correctly.
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.STATUS_MANIPULATION -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.OUTPUT_ENABLE_CONTROL -->
 #### Output Enable Control
 
 Passthrough module controls the output enable signals on both host and downstream sides.
@@ -333,7 +377,10 @@ Software configures the address size, payload lanes, dummy size in **CMD_INFO** 
 
 If passthrough logic does not find valid command information entry based on the received opcode, it assumes the command is **PayloadIn** Single IO command.
 Software is recommended to set the filter bit for Passthrough to not deliver the unmatched command to the downstream flash device.
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.OUTPUT_ENABLE_CONTROL -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN -->
 #### Internally processed Commands
 
 As described in [SPI Device Modes](../README.md#spi-device-modes-and-active-submodules), the SPI device may return the data from the IP even if the passthrough mode is set.
@@ -344,7 +391,14 @@ Software may selectively enable/disable commands.
 For example, hardware returns only Read Status data internally if [`INTERCEPT_EN`](registers.md#intercept_en) is `{status: 1'b 1, default: 1'b 0}`.
 
 Other than Read command accessing mailbox space, it is recommended to filter the intercepted commands.
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH -->
+<!-- END-FEATURE: SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.TPM -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.TPM.RETURN-BY-HW_REGS -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.TPM.AUTO_WAIT -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.TPM.READ_FIFO_MODE -->
 ## TPM over SPI
 
 ![TPM over SPI block diagram](../doc/tpm-blockdiagram.svg)
@@ -371,6 +425,9 @@ Then the module pops data from the read FIFO and sends the data over SPI.
 
 The TPM submodule accepts the payload for the TPM write command without the `WAIT` state if the write and command FIFOs are empty.
 In other case, the TPM submodule sends `WAIT` until the write and command FIFOs become available (empty).
+<!-- END-FEATURE: SPI_DEVICE.MODE.TPM -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.TPM.AUTO_WAIT -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.TPM.READ_FIFO_MODE -->
 
 ### Configuring Return-by-HW registers
 
@@ -387,6 +444,7 @@ Other registers in the table should be processed by software.
 Note that firmware is in the loop to process write commands to these registers.
 Consequently, the TPM over SPI submodule cannot meet timing requirements for updated data to be available within one wait state.
 Once firmware writes the CSRs, the submodule can return the data as specified, however.
+<!-- END-FEATURE: SPI_DEVICE.MODE.TPM.RETURN-BY-HW_REGS -->
 
 ## Detecting Reliability Errors
 

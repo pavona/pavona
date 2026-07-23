@@ -26,6 +26,7 @@
             '''
       stage: V1
       tests: ["spi_host_smoke"]
+      features: ["SPIHOST.RATE.STANDARD"]
     }
     {
       name: performance
@@ -42,6 +43,7 @@
             '''
       stage: V2
       tests: ["spi_host_performance"]
+      features: []
     }
     {
       name: error_event_intr
@@ -63,6 +65,7 @@
             '''
       stage: V2
       tests: ["spi_host_overflow_underflow", "spi_host_error_cmd", "spi_host_event"]
+      features: ["SPIHOST.EVENT.WATERMARK", "SPIHOST.EVENT.FULL", "SPIHOST.EVENT.EMPTY"]
     }
     {
       name: clock_rate
@@ -79,6 +82,7 @@
             '''
       stage: V2
       tests: ["spi_host_speed"]
+      features: []
     }
     {
       name: speed
@@ -91,6 +95,7 @@
             '''
       stage: V2
       tests: ["spi_host_speed"]
+      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.RATE.DUAL", "SPIHOST.RATE.QUAD"]
     }
     {
       name: chip_select_timing
@@ -103,6 +108,7 @@
             '''
       stage: V2
       tests: ["spi_host_speed"]
+      features: ["SPIHOST.CONFIG.CLOCKDIV"]
     }
     {
       name: sw_reset
@@ -120,6 +126,7 @@
             '''
       stage: V2
       tests: ["spi_host_sw_reset"]
+      features: []
     }
     {
       name: passthrough_mode
@@ -133,6 +140,7 @@
       '''
       stage: V2
       tests: ["spi_host_passthrough_mode"]
+      features: ["SPIHOST.USECASE.PASSTHROUGH"]
     }
     {
       name: cpol_cpha
@@ -145,6 +153,7 @@
             '''
       stage: V2
       tests: ["spi_host_speed"]
+      features: ["SPIHOST.CONFIG.CPOL"]
     }
     {
       name: full_cycle
@@ -157,6 +166,7 @@
             '''
       stage: V2
       tests: ["spi_host_speed"]
+      features: []
     }
     {
       name: duplex
@@ -169,6 +179,7 @@
             '''
       stage: V2
       tests: ["spi_host_smoke"]
+      features: []
     }
     {
       name: tx_rx_only
@@ -183,6 +194,7 @@
             '''
       stage: V2
       tests: ["spi_host_smoke"]
+      features: []
     }
     {
       name: stress_all
@@ -200,6 +212,7 @@
             '''
       stage: V2
       tests: ["spi_host_stress_all"]
+      features: []
     }
     {
       name: spien
@@ -221,6 +234,7 @@
             '''
       stage: V2
       tests: ["spi_host_spien"]
+      features: []
     }
     {
       name: stall
@@ -237,6 +251,7 @@
             '''
       stage: V2
       tests: ["spi_host_status_stall"]
+      features: []
     }
     {
       name: Idlecsbactive
@@ -250,6 +265,7 @@
             '''
       stage: V2
       tests: ["spi_host_idlecsbactive"]
+      features: []
     }
     {
       name: data_fifo_status
@@ -271,6 +287,7 @@
             '''
       stage: V2
       tests: ["spi_host_overflow_underflow"]
+      features: []
     }
     {
       name: winbond
@@ -286,6 +303,7 @@
             '''
       stage: V3
       tests: []
+      features: []
     }
   ]
   covergroups: [

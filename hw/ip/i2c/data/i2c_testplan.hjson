@@ -34,6 +34,7 @@
             '''
       stage: V1
       tests: ["i2c_host_smoke"]
+      features: ["I2C.MODE.HOST", "I2C.PROTOCOL.REPEATEDSTART", "I2C.PROTOCOL.NACK", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"] 
     }
     {
       name: host_error_intr
@@ -58,6 +59,7 @@
             '''
       stage: V2
       tests: ["i2c_host_error_intr"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_stress_all
@@ -76,6 +78,7 @@
             '''
       stage: V2
       tests: ["i2c_host_stress_all"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_stress_all_with_rand_reset
@@ -113,6 +116,7 @@
             '''
       stage: V2
       tests: ["i2c_host_perf"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_override
@@ -128,6 +132,7 @@
             '''
       stage: V2
       tests: ["i2c_host_override"]
+      features: ["I2C.MODE.HOST", "I2C.OVERRIDE"] 
     }
     {
       name: host_fifo_watermark
@@ -146,6 +151,7 @@
             '''
       stage: V2
       tests: ["i2c_host_fifo_watermark"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_fifo_overflow
@@ -162,6 +168,7 @@
             '''
       stage: V2
       tests: ["i2c_host_fifo_overflow"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_fifo_reset
@@ -178,6 +185,7 @@
             '''
       stage: V2
       tests: ["i2c_host_fifo_reset_fmt", "i2c_host_fifo_reset_rx", "i2c_host_fifo_fmt_empty"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_fifo_full
@@ -194,6 +202,7 @@
             '''
       stage: V2
       tests: ["i2c_host_fifo_full"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_timeout
@@ -213,6 +222,7 @@
             '''
       stage: V2
       tests: ["i2c_host_stretch_timeout"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_rx_oversample
@@ -227,7 +237,8 @@
               - Read rx data oversampled value and ensure it is same as driven value
             '''
       stage: V2
-      tests: [/* TODO(lowrisc/opentitan#21887) "i2c_host_rx_oversample" */]
+      tests: [/* TODO(#21887) "i2c_host_rx_oversample" */]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: i2c_host_mode_toggle
@@ -245,6 +256,7 @@
             '''
       stage: V2
       tests: ["i2c_host_mode_toggle"]
+      features: ["I2C.MODE.HOST", "I2C.PROTOCOL.NACK"] 
     }
 
     //-----------------------------------------------
@@ -271,6 +283,7 @@
             '''
       stage: V1
       tests: ["i2c_target_smoke"]
+      features: ["I2C.MODE.TARGET", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE", "I2C.PROTOCOL.REPEATEDSTART", "I2C.PROTOCOL.NACK"] 
     }
     {
       name: target_error_intr
@@ -287,6 +300,7 @@
             '''
       stage: V3
       tests: ["i2c_target_unexp_stop"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_glitch
@@ -304,6 +318,7 @@
             '''
       stage: V2
       tests: ["i2c_target_glitch"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_stress_all
@@ -321,6 +336,7 @@
             '''
       stage: V2
       tests: ["i2c_target_stress_all"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_stress_all_with_rand_reset
@@ -339,6 +355,7 @@
             '''
       stage: V3
       tests: ["i2c_target_stress_all_with_rand_reset"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_maxperf
@@ -357,6 +374,7 @@
             '''
       stage: V2
       tests: ["i2c_target_perf"]
+      features: ["I2C.MODE.TARGET", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"] 
     }
     {
       name: target_fifo_empty
@@ -373,6 +391,7 @@
             '''
       stage: V2
       tests: ["i2c_target_stress_rd", "i2c_target_intr_smoke"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_fifo_reset
@@ -389,6 +408,7 @@
             '''
       stage: V2
       tests: ["i2c_target_fifo_reset_acq", "i2c_target_fifo_reset_tx"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_fifo_full
@@ -406,6 +426,7 @@
             '''
       stage: V2
       tests: ["i2c_target_stress_wr", "i2c_target_stress_rd", "i2c_target_intr_stress_wr"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_timeout
@@ -423,6 +444,7 @@
             '''
       stage: V2
       tests: ["i2c_target_timeout"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_clock_stretch
@@ -439,6 +461,7 @@
             '''
       stage: V2
       tests: ["i2c_target_stretch"]
+      features: ["I2C.MODE.TARGET", "I2C.PROTOCOL.CLOCKSTRETCHING"] 
     }
     {
       name: target_loopback
@@ -447,6 +470,7 @@
             '''
       stage: V3
       tests: [""]
+      features: ["I2C.MODE.HOST", "I2C.MODE.TARGET"] 
     }
     {
       name: bad_address
@@ -460,6 +484,7 @@
             '''
       stage: V2
       tests: ["i2c_target_bad_addr"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_mode_glitch
@@ -478,6 +503,7 @@
             '''
       stage: V2
       tests: ["i2c_target_hrst"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_fifo_watermark
@@ -501,6 +527,7 @@
             '''
       stage: V2
       tests: ["i2c_target_fifo_watermarks_acq", "i2c_target_fifo_watermarks_tx"]
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: host_mode_config_perf
@@ -522,6 +549,7 @@
             '''
       stage: V2
       tests: ["i2c_host_perf", "i2c_host_perf_precise"]
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: host_mode_clock_stretching
@@ -548,6 +576,7 @@
             '''
       stage: V2
       tests: ["i2c_host_stretch_timeout"]
+      features: ["I2C.MODE.HOST", "I2C.PROTOCOL.CLOCKSTRETCHING"] 
     }
     {
       name: target_mode_tx_stretch_ctrl
@@ -569,6 +598,7 @@
             '''
       stage: V2
       tests: ["i2c_target_tx_stretch_ctrl"]
+      features: ["I2C.MODE.TARGET", "I2C.PROTOCOL.CLOCKSTRETCHING"] 
     }
     {
       name: target_mode_nack_generation
@@ -608,6 +638,7 @@
             '''
       stage: V2
       tests: ["i2c_target_nack_acqfull", "i2c_target_nack_acqfull_addr", "i2c_target_nack_txstretch"]
+      features: ["I2C.MODE.TARGET", "I2C.PROTOCOL.NACK"] 
     }
     {
       name: host_mode_halt_on_nak
@@ -648,6 +679,7 @@
             '''
       stage: V2
       tests: ["i2c_host_may_nack"]
+      features: ["I2C.MODE.HOST", "I2C.PROTOCOL.NACK"] 
     }
     {
       name: target_mode_n_byte_ack_control
@@ -681,6 +713,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.TARGET", "I2C.MODE.ACKCONTROL"] 
     }
     {
       name: target_mode_bus_timeout
@@ -700,6 +733,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: controller_mode_bus_timeout
@@ -722,6 +756,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: controller_mode_bus_idle_delay
@@ -743,6 +778,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: loopback_test
@@ -764,6 +800,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.HOST", "I2C.MODE.TARGET"] 
     }
     {
       name: multi_controller_clock_synchronization
@@ -794,6 +831,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: multi_controller_arbitration_lost_interference
@@ -832,6 +870,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: multi_controller_arbitration_lost
@@ -858,6 +897,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.HOST"] 
     }
     {
       name: target_mode_arbitration_lost_interference
@@ -898,6 +938,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_mode_arbitration_lost
@@ -938,6 +979,7 @@
             '''
       stage: V2
       tests: []
+      features: ["I2C.MODE.TARGET"] 
     }
     {
       name: target_mode_smbus_maxlen
@@ -950,6 +992,7 @@
             '''
       stage: V2
       tests: ["i2c_target_smbus_maxlen"]
+      features: ["I2C.MODE.TARGET"] 
     }
   ]
   covergroups: [

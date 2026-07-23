@@ -20,6 +20,7 @@
             launched in parallel.'''
       stage: V1
       tests: ["spi_device_flash_and_tpm"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.MODE.TPM"]
     }
     {
       name: csb_read
@@ -29,6 +30,7 @@
                - Assign both `CSb` pins with random values and read the `CSb` CSRs to check the values'''
       stage: V2
       tests: ["spi_device_csb_read"]
+      features: ["SPI_DEVICE.HW.CSB_STATUS"]
     }
     {
       name: mem_parity
@@ -38,6 +40,7 @@
                then check it returns `d_error` with all 1s as data.'''
       stage: V2
       tests: ["spi_device_mem_parity"]
+      features: []
     }
     {
       name: mem_cfg
@@ -50,6 +53,7 @@
 
       stage: V2
       tests: ["spi_device_ram_cfg"]
+      features: []
     }
     {
       name: tpm_read
@@ -68,6 +72,7 @@
             - Compare this value with the expected value.'''
       stage: V2
       tests: ["spi_device_tpm_rw"]
+      features: ["SPI_DEVICE.MODE.TPM", "SPI_DEVICE.MODE.TPM.RETURN-BY-HW_REGS", "SPI_DEVICE.MODE.TPM.AUTO_WAIT"]
     }
     {
       name: tpm_write
@@ -83,6 +88,7 @@
             - Otherwise, check WAIT until the write FIFO becomes available (empty).'''
       stage: V2
       tests: ["spi_device_tpm_rw"]
+      features: ["SPI_DEVICE.MODE.TPM", "SPI_DEVICE.MODE.TPM.AUTO_WAIT"]
     }
     {
       name: tpm_hw_reg
@@ -98,6 +104,7 @@
             - Ensure that the data returned is correct for the given address and active locality.'''
       stage: V2
       tests: ["spi_device_tpm_sts_read", "spi_device_tpm_read_hw_reg"]
+      features: ["SPI_DEVICE.MODE.TPM"]
     }
     {
       name: tpm_fully_random_case
@@ -111,6 +118,7 @@
             - Ensure all the data is correct in the scoreboard.'''
       stage: V2
       tests: ["spi_device_tpm_all"]
+      features: ["SPI_DEVICE.MODE.TPM"]
     }
     {
       name: pass_cmd_filtering
@@ -125,6 +133,7 @@
             - Invalid opcode is also filtered'''
       stage: V2
       tests: ["spi_device_pass_cmd_filtering", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER"]
     }
     {
       name: pass_addr_translation
@@ -138,6 +147,7 @@
             - Check address is now passing unchanged.'''
       stage: V2
       tests: ["spi_device_pass_addr_payload_swap", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: pass_payload_translation
@@ -150,6 +160,7 @@
             - Check payload is now passing unchanged.'''
       stage: V2
       tests: ["spi_device_pass_addr_payload_swap", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: cmd_info_slots
@@ -163,6 +174,7 @@
             - Check no propagation of disabled commands.'''
       stage: V2
       tests: ["spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: cmd_read_status
@@ -174,6 +186,7 @@
             - Check proper reception of response.'''
       stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN"]
     }
     {
       name: cmd_read_jedec
@@ -185,6 +198,7 @@
             - Check proper reception of response.'''
       stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS", "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: cmd_read_sfdp
@@ -196,6 +210,7 @@
             - Check proper reception of response.'''
       stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS", "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: cmd_fast_read
@@ -207,6 +222,7 @@
             - Check proper reception of response.'''
       stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: cmd_read_pipeline
@@ -218,6 +234,7 @@
             - Check proper reception of response.'''
       stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.FLASH_EMULATION.DUMMY_CYCLE", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: flash_cmd_upload
@@ -229,6 +246,7 @@
             - Issue next command upload and poll busy status again.'''
       stage: V2
       tests: ["spi_device_upload"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.COMMAND_UPLOAD", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: mailbox_command
@@ -239,6 +257,7 @@
             - Check if command is processed internally.'''
       stage: V2
       tests: ["spi_device_mailbox"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: mailbox_cross_outside_command
@@ -254,6 +273,7 @@
                 - Returns from downstream port if read command is passed through.'''
       stage: V2
       tests: ["spi_device_mailbox"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: mailbox_cross_inside_command
@@ -262,6 +282,7 @@
               mailbox.'''
       stage: V2
       tests: ["spi_device_mailbox"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: cmd_read_buffer
@@ -276,6 +297,7 @@
             - Check correctness of `last_read_addr`, `readbuf_watermark` and `readbuf_flip`.'''
       stage: V2
       tests: ["spi_device_flash_mode", "spi_device_read_buffer_direct"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION","SPI_DEVICE.HW.LAST_READ_ADDR", "SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR"]
     }
     {
       name: cmd_dummy_cycle
@@ -290,6 +312,7 @@
             - Check internal buffer index bit.'''
       stage: V2
       tests: ["spi_device_mailbox", "spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.FLASH_EMULATION.DUMMY_CYCLE", "SPI_DEVICE.HW.CMDINFOS"]
     }
     {
       name: quad_spi
@@ -301,6 +324,7 @@
             - Check data on all four lines.'''
       stage: V2
       tests: ["spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.HW.LANES", "SPI_DEVICE.MODE.PASSTHROUGH"]
     }
     {
       name: dual_spi
@@ -312,6 +336,7 @@
             - Check data on both lines.'''
       stage: V2
       tests: ["spi_device_flash_all"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.MODE.PASSTHROUGH"]
     }
     {
       name: 4b_3b_feature
@@ -324,6 +349,7 @@
             - Check proper address propagation.'''
       stage: V2
       tests: ["spi_device_cfg_cmd"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.3B4B_ADDRESSING", "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS"]
     }
     {
       name: write_enable_disable
@@ -335,6 +361,7 @@
             - Check WREN/WRDI sets/clears flash status correctly.'''
       stage: V2
       tests: ["spi_device_cfg_cmd"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS", "SPI_DEVICE.MODE.FLASH_EMULATION.WRITE_ENABLE_DISABLE"]
     }
     {
       name: TPM_with_flash_or_passthrough_mode
@@ -344,6 +371,7 @@
             - Issue TPM read/write interleaving with flash transactions.'''
       stage: V2
       tests: ["spi_device_flash_and_tpm"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.MODE.TPM", "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS"]
     }
     {
       name: tpm_and_flash_trans_with_min_inactive_time
@@ -354,6 +382,7 @@
             - A TPM transaction and a Flash transaction.'''
       stage: V2
       tests: ["spi_device_flash_and_tpm_min_idle"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.TPM", "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS"]
     }
     {
       name: stress_all
@@ -363,6 +392,7 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["spi_device_stress_all"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.MODE.TPM"]
     }
   ]
   covergroups: [
