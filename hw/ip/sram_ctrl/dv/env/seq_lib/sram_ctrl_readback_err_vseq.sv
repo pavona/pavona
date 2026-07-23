@@ -32,10 +32,13 @@ class sram_ctrl_readback_err_vseq extends sram_ctrl_base_vseq;
     logic [TL_DW-1:0] rdata;
     for (int iteration = 0; iteration < iterations; iteration++) begin
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr, (addr & sram_addr_mask) < max_offset;)
+        // A fault is injected mid-stream, so any access may error unpredictably. Don't check here.
         if (write) begin
-          do_single_write(.addr(addr), .data(iteration + 1), .mask('1), .blocking(0));
+          do_single_write(.addr(addr), .data(iteration + 1), .mask('1), .blocking(0),
+                          .check_err_rsp(0));
         end else begin
-          do_single_read(.addr(addr), .mask('1), .check_rdata(0), .blocking(0), .rdata(rdata));
+          do_single_read(.addr(addr), .mask('1), .check_rdata(0), .blocking(0),
+                         .check_err_rsp(0), .rdata(rdata));
         end
     end
   endtask
@@ -66,6 +69,9 @@ class sram_ctrl_readback_err_vseq extends sram_ctrl_base_vseq;
                   "Injecting fault into %s in memory operation %d and check the %s alert",
                   fi_path, iteration_fi_position, alert_signal),
                   UVM_LOW)
+        // The scrambled read returns data whose integrity no longer matches it.
+        // We don't need to check passthru integrity.
+        cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
         fork
           begin : inject_fault
             `DV_CHECK(uvm_hdl_read(fi_path, value))

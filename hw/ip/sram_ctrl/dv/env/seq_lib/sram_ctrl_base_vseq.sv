@@ -192,11 +192,12 @@ class sram_ctrl_base_vseq #(
 
   // Task to perform a single SRAM read at the specified location
   virtual task do_single_read(input bit [TL_AW-1:0]    addr,
-                              input bit [TL_DBW-1:0]   mask         = get_rand_mask(.write(0)),
-                              input bit                blocking     = $urandom_range(0, 1),
-                              input bit                check_rdata  = 0,
-                              input bit [TL_DW-1:0]    exp_rdata    = '0,
-                              input mubi4_t            instr_type   = MuBi4False,
+                              input bit [TL_DBW-1:0]   mask          = get_rand_mask(.write(0)),
+                              input bit                blocking      = $urandom_range(0, 1),
+                              input bit                check_rdata   = 0,
+                              input bit [TL_DW-1:0]    exp_rdata     = '0,
+                              input mubi4_t            instr_type    = MuBi4False,
+                              input bit                check_err_rsp = 1,
                               output logic [TL_DW-1:0] rdata);
     `uvm_info(`gfn, $sformatf("do_single_read addr 0x%x", addr), UVM_HIGH)
     tl_access(.addr(addr),
@@ -208,6 +209,7 @@ class sram_ctrl_base_vseq #(
               .exp_data(exp_rdata),
               .compare_mask(mask),
               .instr_type(instr_type),
+              .check_err_rsp(check_err_rsp),
               .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]));
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
@@ -215,9 +217,10 @@ class sram_ctrl_base_vseq #(
   // Task to perform a single SRAM write at the specified location
   virtual task do_single_write(bit [TL_AW-1:0]  addr,
                                bit [TL_DW-1:0]  data,
-                               bit [TL_DBW-1:0] mask        = get_rand_mask(.write(1)),
-                               bit              blocking    = $urandom_range(0, 1),
-                               mubi4_t          instr_type  = MuBi4False);
+                               bit [TL_DBW-1:0] mask          = get_rand_mask(.write(1)),
+                               bit              blocking      = $urandom_range(0, 1),
+                               mubi4_t          instr_type    = MuBi4False,
+                               bit              check_err_rsp = 1);
     `uvm_info(`gfn, $sformatf("do_single_write addr 0x%x, data 0x%x", addr, data), UVM_HIGH)
     tl_access(.addr(addr),
               .data(data),
@@ -225,6 +228,7 @@ class sram_ctrl_base_vseq #(
               .write(1'b1),
               .blocking(blocking),
               .instr_type(instr_type),
+              .check_err_rsp(check_err_rsp),
               .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]));
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
