@@ -42,11 +42,22 @@ otp_json(
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_TRUE),
+                # ROM execution is enabled if this item is set to a non-zero
+                # value.
+                "CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0xffffffff),
                 # Value to write to the cpuctrl CSR in `rom_init()`.
                 # See:
                 # https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
                 "CREATOR_SW_CFG_CPUCTRL": otp_hex(0x1),
                 "CREATOR_SW_CFG_JITTER_EN": otp_hex(CONST.MUBI4_FALSE),
+                # Value of the min_security_version_rom_ext field of the
+                # default boot data.
+                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": otp_hex(0x0),
+                # Value of the min_security_version_bl0 field of the default
+                # boot data.
+                "CREATOR_SW_CFG_MIN_SEC_VER_BL0": otp_hex(0x0),
+                # Entropy source health check default values. This needs to be
+                # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
                 # Entropy source health check default values. This needs to be
                 # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
                 "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS": otp_hex(0xffffffff),
@@ -66,12 +77,35 @@ otp_json(
     target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
+# CREATOR_SW_CFG configuration for TEST_UNLOCKED lifecycle device states.
+# Configures OTP values required to enable ROM execution. All other values are
+# configured with the `otp_json_creator_sw_cfg` rule.
+otp_json(
+    name = "otp_json_creator_sw_cfg_test_unlocked",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                # ROM execution is enabled if this item is set to a non-zero
+                # value.
+                "CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0xffffffff),
+            },
+        ),
+    ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
+)
+
 otp_json(
     name = "otp_json_owner_sw_cfg",
     partitions = [
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
+                # Set to 0x739 to use the OTP hash measurement of the software
+                # readable OTP partitions as the key manager attestation binding
+                # value.
+                "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(0x0),
+                # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Set the enables to kAlertEnableNone.
                 # See `alert_enable_t` in
@@ -129,6 +163,8 @@ otp_json(
                     C = "0x0, 0x0, 0x0, 0x0",
                     D = "0x0, 0x0, 0x0, 0x0",
                 ),
+                # Disable SRAM readback for both ret-ram and main sram.
+                "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_FALSE << 4 | CONST.MUBI4_FALSE),
             },
         ),
     ],
@@ -155,8 +191,11 @@ otp_json(
         otp_partition(
             name = "HW_CFG1",
             items = {
-                # Enable code execution from SRAM.
+                # Enable code execution from SRAM in PROD state.
                 "EN_SRAM_IFETCH": True,
+                # Cryptolib and chip-level tests require access to the CSRNG
+                # software interfaces.
+                "EN_CSRNG_SW_APP_READ": True,
             },
             lock = True,
         ),
@@ -194,6 +233,26 @@ otp_json(
 )
 
 otp_json(
+    name = "otp_json_fixed_secret0",
+    partitions = [
+        otp_partition(
+            name = "SECRET0",
+            items = {
+                # These match their cSHAKE-128 (w/ "LC_CTRL" customization string)
+                # preimage counterpart of: 0x1111_1111_1111_1111_1111_1111_1111_1111,
+                # which is hardcoded into the test that use this overlay.
+                # The script that generated this token is:
+                # //sw/host/tests/manuf/manuf_cp_device_info_flash_wr:gen_test_exit_token
+                "TEST_UNLOCK_TOKEN": "0xde0a1f1e0d6a649fd35fadb75ec82674",
+                "TEST_EXIT_TOKEN": "0xde0a1f1e0d6a649fd35fadb75ec82674",
+            },
+            lock = True,
+        ),
+    ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
+)
+
+otp_json(
     name = "otp_json_secret1",
     partitions = [
         otp_partition(
@@ -216,7 +275,6 @@ otp_json(
                 "RMA_TOKEN": "<random>",
                 "CREATOR_ROOT_KEY_SHARE0": "<random>",
                 "CREATOR_ROOT_KEY_SHARE1": "<random>",
-                "CREATOR_SEED": "<random>",
             },
             lock = True,
         ),
@@ -233,7 +291,6 @@ otp_json(
                 "RMA_TOKEN": "<random>",
                 "CREATOR_ROOT_KEY_SHARE0": "<random>",
                 "CREATOR_ROOT_KEY_SHARE1": "<random>",
-                "CREATOR_SEED": "<random>",
             },
             lock = False,
         ),
@@ -418,9 +475,8 @@ otp_image(
         src = ":otp_json_test_unlocked{}".format(i),
         overlays = [
             ":otp_json_secret0",
-            ":otp_json_creator_sw_cfg",
-        ],
-        target_compatible_with = TARGET_COMPATIBLE_WITH,
+            ":otp_json_creator_sw_cfg_test_unlocked",
+        ] + OTP_SIGVERIFY_FAKE_KEYS,
     )
     for i in range(0, 8)
 ]
@@ -431,12 +487,30 @@ otp_image(
         src = ":otp_json_test_locked{}".format(i),
         overlays = [
             ":otp_json_secret0",
-            ":otp_json_creator_sw_cfg",
+            ":otp_json_creator_sw_cfg_test_unlocked",
         ],
         target_compatible_with = TARGET_COMPATIBLE_WITH,
     )
     for i in range(0, 7)
 ]
+
+# Represents a TEST_UNLOCKED1 state OTP image emulating the state of the device
+# after the test tokens have been applied and before running individualization.
+# The following partitions are missing to ensure the image is initialized with
+# values that would be present prior to the final individualization
+# manufacturing stage: SECRET1, SECRET2, HW_CFG0/1.
+# The following partitions are expected to be configured in previous
+# manufacturing stages: SECRET0, CREATOR_SW, OWNER_SW.
+otp_image(
+    name = "img_test_unlocked1_initial",
+    src = ":otp_json_test_unlocked1",
+    overlays = [
+        ":otp_json_secret0",
+        ":otp_json_creator_sw_cfg",
+        ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
+    ] + OTP_SIGVERIFY_FAKE_KEYS,
+)
 
 otp_image(
     name = "img_dev",
@@ -460,6 +534,24 @@ otp_image(
     name = "img_rma",
     src = ":otp_json_rma",
     overlays = STD_OTP_OVERLAYS,
+)
+
+# Create an execution-disabling overlay
+otp_json(
+    name = "otp_json_exec_disabled",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {"CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0x0)},
+        ),
+    ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
+)
+
+otp_image(
+    name = "img_exec_disabled",
+    src = ":otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [":otp_json_exec_disabled"],
 )
 
 filegroup(
@@ -494,6 +586,7 @@ pkg_files(
 )
 
 # Partition used to set a fixed seed value in `otp_image_consts` targets.
+# FIXME: This needs to be removed since seeds are provided through HJSON seed config files now.
 otp_json(
     name = "otp_json_baseline",
 )
