@@ -852,7 +852,7 @@ module top_egret #(
   assign lc_ctrl_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
+      otp_ctrl_otp_broadcast.hw_cfg2_data.manuf_state;
   assign keymgr_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
@@ -1507,6 +1507,7 @@ module top_egret #(
     .RndCnstScrmblKey0(RndCnstOtpCtrlScrmblKey0),
     .RndCnstScrmblKey1(RndCnstOtpCtrlScrmblKey1),
     .RndCnstScrmblKey2(RndCnstOtpCtrlScrmblKey2),
+    .RndCnstScrmblKey3(RndCnstOtpCtrlScrmblKey3),
     .RndCnstDigestConst0(RndCnstOtpCtrlDigestConst0),
     .RndCnstDigestConst1(RndCnstOtpCtrlDigestConst1),
     .RndCnstDigestConst2(RndCnstOtpCtrlDigestConst2),
