@@ -57,9 +57,9 @@ module otp_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [56:0] reg_we_check;
+  logic [90:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(57)
+    .OneHotWidth(91)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -204,13 +204,23 @@ module otp_ctrl_core_reg_top (
   logic partition_status_0_vendor_test_error_qs;
   logic partition_status_0_creator_sw_cfg_error_qs;
   logic partition_status_0_owner_sw_cfg_error_qs;
-  logic partition_status_0_rot_creator_auth_codesign_error_qs;
-  logic partition_status_0_rot_creator_auth_state_error_qs;
+  logic partition_status_0_ownership_slot_state_error_qs;
+  logic partition_status_0_rot_owner_auth_slot0_error_qs;
+  logic partition_status_0_rot_owner_auth_slot1_error_qs;
+  logic partition_status_0_rot_owner_auth_slot2_error_qs;
+  logic partition_status_0_rot_owner_auth_slot3_error_qs;
+  logic partition_status_0_rot_owner_auth_slot0_state_error_qs;
+  logic partition_status_0_rot_owner_auth_slot1_state_error_qs;
+  logic partition_status_0_rot_owner_auth_slot2_state_error_qs;
+  logic partition_status_0_rot_owner_auth_slot3_state_error_qs;
+  logic partition_status_0_scratch_fuses_error_qs;
   logic partition_status_0_hw_cfg0_error_qs;
   logic partition_status_0_hw_cfg1_error_qs;
+  logic partition_status_0_hw_cfg2_error_qs;
   logic partition_status_0_secret0_error_qs;
   logic partition_status_0_secret1_error_qs;
   logic partition_status_0_secret2_error_qs;
+  logic partition_status_0_secret3_error_qs;
   logic partition_status_0_life_cycle_error_qs;
   logic err_code_0_re;
   logic [2:0] err_code_0_qs;
@@ -238,6 +248,26 @@ module otp_ctrl_core_reg_top (
   logic [2:0] err_code_11_qs;
   logic err_code_12_re;
   logic [2:0] err_code_12_qs;
+  logic err_code_13_re;
+  logic [2:0] err_code_13_qs;
+  logic err_code_14_re;
+  logic [2:0] err_code_14_qs;
+  logic err_code_15_re;
+  logic [2:0] err_code_15_qs;
+  logic err_code_16_re;
+  logic [2:0] err_code_16_qs;
+  logic err_code_17_re;
+  logic [2:0] err_code_17_qs;
+  logic err_code_18_re;
+  logic [2:0] err_code_18_qs;
+  logic err_code_19_re;
+  logic [2:0] err_code_19_qs;
+  logic err_code_20_re;
+  logic [2:0] err_code_20_qs;
+  logic err_code_21_re;
+  logic [2:0] err_code_21_qs;
+  logic err_code_22_re;
+  logic [2:0] err_code_22_qs;
   logic direct_access_regwen_re;
   logic direct_access_regwen_we;
   logic direct_access_regwen_qs;
@@ -287,12 +317,36 @@ module otp_ctrl_core_reg_top (
   logic owner_sw_cfg_read_lock_we;
   logic owner_sw_cfg_read_lock_qs;
   logic owner_sw_cfg_read_lock_wd;
-  logic rot_creator_auth_codesign_read_lock_we;
-  logic rot_creator_auth_codesign_read_lock_qs;
-  logic rot_creator_auth_codesign_read_lock_wd;
-  logic rot_creator_auth_state_read_lock_we;
-  logic rot_creator_auth_state_read_lock_qs;
-  logic rot_creator_auth_state_read_lock_wd;
+  logic ownership_slot_state_read_lock_we;
+  logic ownership_slot_state_read_lock_qs;
+  logic ownership_slot_state_read_lock_wd;
+  logic rot_owner_auth_slot0_read_lock_we;
+  logic rot_owner_auth_slot0_read_lock_qs;
+  logic rot_owner_auth_slot0_read_lock_wd;
+  logic rot_owner_auth_slot1_read_lock_we;
+  logic rot_owner_auth_slot1_read_lock_qs;
+  logic rot_owner_auth_slot1_read_lock_wd;
+  logic rot_owner_auth_slot2_read_lock_we;
+  logic rot_owner_auth_slot2_read_lock_qs;
+  logic rot_owner_auth_slot2_read_lock_wd;
+  logic rot_owner_auth_slot3_read_lock_we;
+  logic rot_owner_auth_slot3_read_lock_qs;
+  logic rot_owner_auth_slot3_read_lock_wd;
+  logic rot_owner_auth_slot0_state_read_lock_we;
+  logic rot_owner_auth_slot0_state_read_lock_qs;
+  logic rot_owner_auth_slot0_state_read_lock_wd;
+  logic rot_owner_auth_slot1_state_read_lock_we;
+  logic rot_owner_auth_slot1_state_read_lock_qs;
+  logic rot_owner_auth_slot1_state_read_lock_wd;
+  logic rot_owner_auth_slot2_state_read_lock_we;
+  logic rot_owner_auth_slot2_state_read_lock_qs;
+  logic rot_owner_auth_slot2_state_read_lock_wd;
+  logic rot_owner_auth_slot3_state_read_lock_we;
+  logic rot_owner_auth_slot3_state_read_lock_qs;
+  logic rot_owner_auth_slot3_state_read_lock_wd;
+  logic scratch_fuses_read_lock_we;
+  logic scratch_fuses_read_lock_qs;
+  logic scratch_fuses_read_lock_wd;
   logic vendor_test_digest_0_re;
   logic [31:0] vendor_test_digest_0_qs;
   logic vendor_test_digest_1_re;
@@ -305,14 +359,38 @@ module otp_ctrl_core_reg_top (
   logic [31:0] owner_sw_cfg_digest_0_qs;
   logic owner_sw_cfg_digest_1_re;
   logic [31:0] owner_sw_cfg_digest_1_qs;
-  logic rot_creator_auth_codesign_digest_0_re;
-  logic [31:0] rot_creator_auth_codesign_digest_0_qs;
-  logic rot_creator_auth_codesign_digest_1_re;
-  logic [31:0] rot_creator_auth_codesign_digest_1_qs;
-  logic rot_creator_auth_state_digest_0_re;
-  logic [31:0] rot_creator_auth_state_digest_0_qs;
-  logic rot_creator_auth_state_digest_1_re;
-  logic [31:0] rot_creator_auth_state_digest_1_qs;
+  logic rot_owner_auth_slot0_digest_0_re;
+  logic [31:0] rot_owner_auth_slot0_digest_0_qs;
+  logic rot_owner_auth_slot0_digest_1_re;
+  logic [31:0] rot_owner_auth_slot0_digest_1_qs;
+  logic rot_owner_auth_slot1_digest_0_re;
+  logic [31:0] rot_owner_auth_slot1_digest_0_qs;
+  logic rot_owner_auth_slot1_digest_1_re;
+  logic [31:0] rot_owner_auth_slot1_digest_1_qs;
+  logic rot_owner_auth_slot2_digest_0_re;
+  logic [31:0] rot_owner_auth_slot2_digest_0_qs;
+  logic rot_owner_auth_slot2_digest_1_re;
+  logic [31:0] rot_owner_auth_slot2_digest_1_qs;
+  logic rot_owner_auth_slot3_digest_0_re;
+  logic [31:0] rot_owner_auth_slot3_digest_0_qs;
+  logic rot_owner_auth_slot3_digest_1_re;
+  logic [31:0] rot_owner_auth_slot3_digest_1_qs;
+  logic rot_owner_auth_slot0_state_digest_0_re;
+  logic [31:0] rot_owner_auth_slot0_state_digest_0_qs;
+  logic rot_owner_auth_slot0_state_digest_1_re;
+  logic [31:0] rot_owner_auth_slot0_state_digest_1_qs;
+  logic rot_owner_auth_slot1_state_digest_0_re;
+  logic [31:0] rot_owner_auth_slot1_state_digest_0_qs;
+  logic rot_owner_auth_slot1_state_digest_1_re;
+  logic [31:0] rot_owner_auth_slot1_state_digest_1_qs;
+  logic rot_owner_auth_slot2_state_digest_0_re;
+  logic [31:0] rot_owner_auth_slot2_state_digest_0_qs;
+  logic rot_owner_auth_slot2_state_digest_1_re;
+  logic [31:0] rot_owner_auth_slot2_state_digest_1_qs;
+  logic rot_owner_auth_slot3_state_digest_0_re;
+  logic [31:0] rot_owner_auth_slot3_state_digest_0_qs;
+  logic rot_owner_auth_slot3_state_digest_1_re;
+  logic [31:0] rot_owner_auth_slot3_state_digest_1_qs;
   logic hw_cfg0_digest_0_re;
   logic [31:0] hw_cfg0_digest_0_qs;
   logic hw_cfg0_digest_1_re;
@@ -321,6 +399,10 @@ module otp_ctrl_core_reg_top (
   logic [31:0] hw_cfg1_digest_0_qs;
   logic hw_cfg1_digest_1_re;
   logic [31:0] hw_cfg1_digest_1_qs;
+  logic hw_cfg2_digest_0_re;
+  logic [31:0] hw_cfg2_digest_0_qs;
+  logic hw_cfg2_digest_1_re;
+  logic [31:0] hw_cfg2_digest_1_qs;
   logic secret0_digest_0_re;
   logic [31:0] secret0_digest_0_qs;
   logic secret0_digest_1_re;
@@ -333,6 +415,10 @@ module otp_ctrl_core_reg_top (
   logic [31:0] secret2_digest_0_qs;
   logic secret2_digest_1_re;
   logic [31:0] secret2_digest_1_qs;
+  logic secret3_digest_0_re;
+  logic [31:0] secret3_digest_0_qs;
+  logic secret3_digest_1_re;
+  logic [31:0] secret3_digest_1_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -767,37 +853,157 @@ module otp_ctrl_core_reg_top (
     .qs     (partition_status_0_owner_sw_cfg_error_qs)
   );
 
-  //   F[rot_creator_auth_codesign_error]: 3:3
+  //   F[ownership_slot_state_error]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_partition_status_0_rot_creator_auth_codesign_error (
+  ) u_partition_status_0_ownership_slot_state_error (
     .re     (partition_status_0_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.partition_status_0.rot_creator_auth_codesign_error.d),
+    .d      (hw2reg.partition_status_0.ownership_slot_state_error.d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (partition_status_0_rot_creator_auth_codesign_error_qs)
+    .qs     (partition_status_0_ownership_slot_state_error_qs)
   );
 
-  //   F[rot_creator_auth_state_error]: 4:4
+  //   F[rot_owner_auth_slot0_error]: 4:4
   prim_subreg_ext #(
     .DW    (1)
-  ) u_partition_status_0_rot_creator_auth_state_error (
+  ) u_partition_status_0_rot_owner_auth_slot0_error (
     .re     (partition_status_0_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.partition_status_0.rot_creator_auth_state_error.d),
+    .d      (hw2reg.partition_status_0.rot_owner_auth_slot0_error.d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (partition_status_0_rot_creator_auth_state_error_qs)
+    .qs     (partition_status_0_rot_owner_auth_slot0_error_qs)
   );
 
-  //   F[hw_cfg0_error]: 5:5
+  //   F[rot_owner_auth_slot1_error]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_rot_owner_auth_slot1_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.rot_owner_auth_slot1_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_rot_owner_auth_slot1_error_qs)
+  );
+
+  //   F[rot_owner_auth_slot2_error]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_rot_owner_auth_slot2_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.rot_owner_auth_slot2_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_rot_owner_auth_slot2_error_qs)
+  );
+
+  //   F[rot_owner_auth_slot3_error]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_rot_owner_auth_slot3_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.rot_owner_auth_slot3_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_rot_owner_auth_slot3_error_qs)
+  );
+
+  //   F[rot_owner_auth_slot0_state_error]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_rot_owner_auth_slot0_state_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.rot_owner_auth_slot0_state_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_rot_owner_auth_slot0_state_error_qs)
+  );
+
+  //   F[rot_owner_auth_slot1_state_error]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_rot_owner_auth_slot1_state_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.rot_owner_auth_slot1_state_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_rot_owner_auth_slot1_state_error_qs)
+  );
+
+  //   F[rot_owner_auth_slot2_state_error]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_rot_owner_auth_slot2_state_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.rot_owner_auth_slot2_state_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_rot_owner_auth_slot2_state_error_qs)
+  );
+
+  //   F[rot_owner_auth_slot3_state_error]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_rot_owner_auth_slot3_state_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.rot_owner_auth_slot3_state_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_rot_owner_auth_slot3_state_error_qs)
+  );
+
+  //   F[scratch_fuses_error]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_scratch_fuses_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.scratch_fuses_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_scratch_fuses_error_qs)
+  );
+
+  //   F[hw_cfg0_error]: 13:13
   prim_subreg_ext #(
     .DW    (1)
   ) u_partition_status_0_hw_cfg0_error (
@@ -812,7 +1018,7 @@ module otp_ctrl_core_reg_top (
     .qs     (partition_status_0_hw_cfg0_error_qs)
   );
 
-  //   F[hw_cfg1_error]: 6:6
+  //   F[hw_cfg1_error]: 14:14
   prim_subreg_ext #(
     .DW    (1)
   ) u_partition_status_0_hw_cfg1_error (
@@ -827,7 +1033,22 @@ module otp_ctrl_core_reg_top (
     .qs     (partition_status_0_hw_cfg1_error_qs)
   );
 
-  //   F[secret0_error]: 7:7
+  //   F[hw_cfg2_error]: 15:15
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_hw_cfg2_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.hw_cfg2_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_hw_cfg2_error_qs)
+  );
+
+  //   F[secret0_error]: 16:16
   prim_subreg_ext #(
     .DW    (1)
   ) u_partition_status_0_secret0_error (
@@ -842,7 +1063,7 @@ module otp_ctrl_core_reg_top (
     .qs     (partition_status_0_secret0_error_qs)
   );
 
-  //   F[secret1_error]: 8:8
+  //   F[secret1_error]: 17:17
   prim_subreg_ext #(
     .DW    (1)
   ) u_partition_status_0_secret1_error (
@@ -857,7 +1078,7 @@ module otp_ctrl_core_reg_top (
     .qs     (partition_status_0_secret1_error_qs)
   );
 
-  //   F[secret2_error]: 9:9
+  //   F[secret2_error]: 18:18
   prim_subreg_ext #(
     .DW    (1)
   ) u_partition_status_0_secret2_error (
@@ -872,7 +1093,22 @@ module otp_ctrl_core_reg_top (
     .qs     (partition_status_0_secret2_error_qs)
   );
 
-  //   F[life_cycle_error]: 10:10
+  //   F[secret3_error]: 19:19
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_partition_status_0_secret3_error (
+    .re     (partition_status_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.partition_status_0.secret3_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (partition_status_0_secret3_error_qs)
+  );
+
+  //   F[life_cycle_error]: 20:20
   prim_subreg_ext #(
     .DW    (1)
   ) u_partition_status_0_life_cycle_error (
@@ -1106,6 +1342,176 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .ds     (),
     .qs     (err_code_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg err_code
+  // R[err_code_13]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_13 (
+    .re     (err_code_13_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[13].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg err_code
+  // R[err_code_14]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_14 (
+    .re     (err_code_14_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[14].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg err_code
+  // R[err_code_15]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_15 (
+    .re     (err_code_15_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[15].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg err_code
+  // R[err_code_16]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_16 (
+    .re     (err_code_16_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[16].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg err_code
+  // R[err_code_17]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_17 (
+    .re     (err_code_17_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[17].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg err_code
+  // R[err_code_18]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_18 (
+    .re     (err_code_18_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[18].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg err_code
+  // R[err_code_19]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_19 (
+    .re     (err_code_19_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[19].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg err_code
+  // R[err_code_20]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_20 (
+    .re     (err_code_20_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[20].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg err_code
+  // R[err_code_21]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_21 (
+    .re     (err_code_21_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[21].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg err_code
+  // R[err_code_22]: V(True)
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_err_code_22 (
+    .re     (err_code_22_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.err_code[22].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (err_code_22_qs)
   );
 
 
@@ -1612,23 +2018,23 @@ module otp_ctrl_core_reg_top (
   );
 
 
-  // R[rot_creator_auth_codesign_read_lock]: V(False)
+  // R[ownership_slot_state_read_lock]: V(False)
   // Create REGWEN-gated WE signal
-  logic rot_creator_auth_codesign_read_lock_gated_we;
-  assign rot_creator_auth_codesign_read_lock_gated_we =
-    rot_creator_auth_codesign_read_lock_we & direct_access_regwen_qs;
+  logic ownership_slot_state_read_lock_gated_we;
+  assign ownership_slot_state_read_lock_gated_we =
+    ownership_slot_state_read_lock_we & direct_access_regwen_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_rot_creator_auth_codesign_read_lock (
+  ) u_ownership_slot_state_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rot_creator_auth_codesign_read_lock_gated_we),
-    .wd     (rot_creator_auth_codesign_read_lock_wd),
+    .we     (ownership_slot_state_read_lock_gated_we),
+    .wd     (ownership_slot_state_read_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1636,31 +2042,31 @@ module otp_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rot_creator_auth_codesign_read_lock.q),
+    .q      (reg2hw.ownership_slot_state_read_lock.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (rot_creator_auth_codesign_read_lock_qs)
+    .qs     (ownership_slot_state_read_lock_qs)
   );
 
 
-  // R[rot_creator_auth_state_read_lock]: V(False)
+  // R[rot_owner_auth_slot0_read_lock]: V(False)
   // Create REGWEN-gated WE signal
-  logic rot_creator_auth_state_read_lock_gated_we;
-  assign rot_creator_auth_state_read_lock_gated_we =
-    rot_creator_auth_state_read_lock_we & direct_access_regwen_qs;
+  logic rot_owner_auth_slot0_read_lock_gated_we;
+  assign rot_owner_auth_slot0_read_lock_gated_we =
+    rot_owner_auth_slot0_read_lock_we & direct_access_regwen_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_rot_creator_auth_state_read_lock (
+  ) u_rot_owner_auth_slot0_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (rot_creator_auth_state_read_lock_gated_we),
-    .wd     (rot_creator_auth_state_read_lock_wd),
+    .we     (rot_owner_auth_slot0_read_lock_gated_we),
+    .wd     (rot_owner_auth_slot0_read_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1668,11 +2074,266 @@ module otp_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rot_creator_auth_state_read_lock.q),
+    .q      (reg2hw.rot_owner_auth_slot0_read_lock.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (rot_creator_auth_state_read_lock_qs)
+    .qs     (rot_owner_auth_slot0_read_lock_qs)
+  );
+
+
+  // R[rot_owner_auth_slot1_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic rot_owner_auth_slot1_read_lock_gated_we;
+  assign rot_owner_auth_slot1_read_lock_gated_we =
+    rot_owner_auth_slot1_read_lock_we & direct_access_regwen_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_rot_owner_auth_slot1_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rot_owner_auth_slot1_read_lock_gated_we),
+    .wd     (rot_owner_auth_slot1_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rot_owner_auth_slot1_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rot_owner_auth_slot1_read_lock_qs)
+  );
+
+
+  // R[rot_owner_auth_slot2_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic rot_owner_auth_slot2_read_lock_gated_we;
+  assign rot_owner_auth_slot2_read_lock_gated_we =
+    rot_owner_auth_slot2_read_lock_we & direct_access_regwen_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_rot_owner_auth_slot2_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rot_owner_auth_slot2_read_lock_gated_we),
+    .wd     (rot_owner_auth_slot2_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rot_owner_auth_slot2_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rot_owner_auth_slot2_read_lock_qs)
+  );
+
+
+  // R[rot_owner_auth_slot3_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic rot_owner_auth_slot3_read_lock_gated_we;
+  assign rot_owner_auth_slot3_read_lock_gated_we =
+    rot_owner_auth_slot3_read_lock_we & direct_access_regwen_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_rot_owner_auth_slot3_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rot_owner_auth_slot3_read_lock_gated_we),
+    .wd     (rot_owner_auth_slot3_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rot_owner_auth_slot3_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rot_owner_auth_slot3_read_lock_qs)
+  );
+
+
+  // R[rot_owner_auth_slot0_state_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic rot_owner_auth_slot0_state_read_lock_gated_we;
+  assign rot_owner_auth_slot0_state_read_lock_gated_we =
+    rot_owner_auth_slot0_state_read_lock_we & direct_access_regwen_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_rot_owner_auth_slot0_state_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rot_owner_auth_slot0_state_read_lock_gated_we),
+    .wd     (rot_owner_auth_slot0_state_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rot_owner_auth_slot0_state_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rot_owner_auth_slot0_state_read_lock_qs)
+  );
+
+
+  // R[rot_owner_auth_slot1_state_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic rot_owner_auth_slot1_state_read_lock_gated_we;
+  assign rot_owner_auth_slot1_state_read_lock_gated_we =
+    rot_owner_auth_slot1_state_read_lock_we & direct_access_regwen_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_rot_owner_auth_slot1_state_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rot_owner_auth_slot1_state_read_lock_gated_we),
+    .wd     (rot_owner_auth_slot1_state_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rot_owner_auth_slot1_state_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rot_owner_auth_slot1_state_read_lock_qs)
+  );
+
+
+  // R[rot_owner_auth_slot2_state_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic rot_owner_auth_slot2_state_read_lock_gated_we;
+  assign rot_owner_auth_slot2_state_read_lock_gated_we =
+    rot_owner_auth_slot2_state_read_lock_we & direct_access_regwen_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_rot_owner_auth_slot2_state_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rot_owner_auth_slot2_state_read_lock_gated_we),
+    .wd     (rot_owner_auth_slot2_state_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rot_owner_auth_slot2_state_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rot_owner_auth_slot2_state_read_lock_qs)
+  );
+
+
+  // R[rot_owner_auth_slot3_state_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic rot_owner_auth_slot3_state_read_lock_gated_we;
+  assign rot_owner_auth_slot3_state_read_lock_gated_we =
+    rot_owner_auth_slot3_state_read_lock_we & direct_access_regwen_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_rot_owner_auth_slot3_state_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rot_owner_auth_slot3_state_read_lock_gated_we),
+    .wd     (rot_owner_auth_slot3_state_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rot_owner_auth_slot3_state_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rot_owner_auth_slot3_state_read_lock_qs)
+  );
+
+
+  // R[scratch_fuses_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic scratch_fuses_read_lock_gated_we;
+  assign scratch_fuses_read_lock_gated_we = scratch_fuses_read_lock_we & direct_access_regwen_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_scratch_fuses_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (scratch_fuses_read_lock_gated_we),
+    .wd     (scratch_fuses_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.scratch_fuses_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (scratch_fuses_read_lock_qs)
   );
 
 
@@ -1778,71 +2439,275 @@ module otp_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg rot_creator_auth_codesign_digest
-  // R[rot_creator_auth_codesign_digest_0]: V(True)
+  // Subregister 0 of Multireg rot_owner_auth_slot0_digest
+  // R[rot_owner_auth_slot0_digest_0]: V(True)
   prim_subreg_ext #(
     .DW    (32)
-  ) u_rot_creator_auth_codesign_digest_0 (
-    .re     (rot_creator_auth_codesign_digest_0_re),
+  ) u_rot_owner_auth_slot0_digest_0 (
+    .re     (rot_owner_auth_slot0_digest_0_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.rot_creator_auth_codesign_digest[0].d),
+    .d      (hw2reg.rot_owner_auth_slot0_digest[0].d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (rot_creator_auth_codesign_digest_0_qs)
+    .qs     (rot_owner_auth_slot0_digest_0_qs)
   );
 
 
-  // Subregister 1 of Multireg rot_creator_auth_codesign_digest
-  // R[rot_creator_auth_codesign_digest_1]: V(True)
+  // Subregister 1 of Multireg rot_owner_auth_slot0_digest
+  // R[rot_owner_auth_slot0_digest_1]: V(True)
   prim_subreg_ext #(
     .DW    (32)
-  ) u_rot_creator_auth_codesign_digest_1 (
-    .re     (rot_creator_auth_codesign_digest_1_re),
+  ) u_rot_owner_auth_slot0_digest_1 (
+    .re     (rot_owner_auth_slot0_digest_1_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.rot_creator_auth_codesign_digest[1].d),
+    .d      (hw2reg.rot_owner_auth_slot0_digest[1].d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (rot_creator_auth_codesign_digest_1_qs)
+    .qs     (rot_owner_auth_slot0_digest_1_qs)
   );
 
 
-  // Subregister 0 of Multireg rot_creator_auth_state_digest
-  // R[rot_creator_auth_state_digest_0]: V(True)
+  // Subregister 0 of Multireg rot_owner_auth_slot1_digest
+  // R[rot_owner_auth_slot1_digest_0]: V(True)
   prim_subreg_ext #(
     .DW    (32)
-  ) u_rot_creator_auth_state_digest_0 (
-    .re     (rot_creator_auth_state_digest_0_re),
+  ) u_rot_owner_auth_slot1_digest_0 (
+    .re     (rot_owner_auth_slot1_digest_0_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.rot_creator_auth_state_digest[0].d),
+    .d      (hw2reg.rot_owner_auth_slot1_digest[0].d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (rot_creator_auth_state_digest_0_qs)
+    .qs     (rot_owner_auth_slot1_digest_0_qs)
   );
 
 
-  // Subregister 1 of Multireg rot_creator_auth_state_digest
-  // R[rot_creator_auth_state_digest_1]: V(True)
+  // Subregister 1 of Multireg rot_owner_auth_slot1_digest
+  // R[rot_owner_auth_slot1_digest_1]: V(True)
   prim_subreg_ext #(
     .DW    (32)
-  ) u_rot_creator_auth_state_digest_1 (
-    .re     (rot_creator_auth_state_digest_1_re),
+  ) u_rot_owner_auth_slot1_digest_1 (
+    .re     (rot_owner_auth_slot1_digest_1_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.rot_creator_auth_state_digest[1].d),
+    .d      (hw2reg.rot_owner_auth_slot1_digest[1].d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (rot_creator_auth_state_digest_1_qs)
+    .qs     (rot_owner_auth_slot1_digest_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg rot_owner_auth_slot2_digest
+  // R[rot_owner_auth_slot2_digest_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot2_digest_0 (
+    .re     (rot_owner_auth_slot2_digest_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot2_digest[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot2_digest_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg rot_owner_auth_slot2_digest
+  // R[rot_owner_auth_slot2_digest_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot2_digest_1 (
+    .re     (rot_owner_auth_slot2_digest_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot2_digest[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot2_digest_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg rot_owner_auth_slot3_digest
+  // R[rot_owner_auth_slot3_digest_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot3_digest_0 (
+    .re     (rot_owner_auth_slot3_digest_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot3_digest[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot3_digest_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg rot_owner_auth_slot3_digest
+  // R[rot_owner_auth_slot3_digest_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot3_digest_1 (
+    .re     (rot_owner_auth_slot3_digest_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot3_digest[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot3_digest_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg rot_owner_auth_slot0_state_digest
+  // R[rot_owner_auth_slot0_state_digest_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot0_state_digest_0 (
+    .re     (rot_owner_auth_slot0_state_digest_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot0_state_digest[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot0_state_digest_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg rot_owner_auth_slot0_state_digest
+  // R[rot_owner_auth_slot0_state_digest_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot0_state_digest_1 (
+    .re     (rot_owner_auth_slot0_state_digest_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot0_state_digest[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot0_state_digest_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg rot_owner_auth_slot1_state_digest
+  // R[rot_owner_auth_slot1_state_digest_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot1_state_digest_0 (
+    .re     (rot_owner_auth_slot1_state_digest_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot1_state_digest[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot1_state_digest_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg rot_owner_auth_slot1_state_digest
+  // R[rot_owner_auth_slot1_state_digest_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot1_state_digest_1 (
+    .re     (rot_owner_auth_slot1_state_digest_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot1_state_digest[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot1_state_digest_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg rot_owner_auth_slot2_state_digest
+  // R[rot_owner_auth_slot2_state_digest_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot2_state_digest_0 (
+    .re     (rot_owner_auth_slot2_state_digest_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot2_state_digest[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot2_state_digest_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg rot_owner_auth_slot2_state_digest
+  // R[rot_owner_auth_slot2_state_digest_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot2_state_digest_1 (
+    .re     (rot_owner_auth_slot2_state_digest_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot2_state_digest[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot2_state_digest_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg rot_owner_auth_slot3_state_digest
+  // R[rot_owner_auth_slot3_state_digest_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot3_state_digest_0 (
+    .re     (rot_owner_auth_slot3_state_digest_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot3_state_digest[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot3_state_digest_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg rot_owner_auth_slot3_state_digest
+  // R[rot_owner_auth_slot3_state_digest_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rot_owner_auth_slot3_state_digest_1 (
+    .re     (rot_owner_auth_slot3_state_digest_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rot_owner_auth_slot3_state_digest[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (rot_owner_auth_slot3_state_digest_1_qs)
   );
 
 
@@ -1911,6 +2776,40 @@ module otp_ctrl_core_reg_top (
     .q      (),
     .ds     (),
     .qs     (hw_cfg1_digest_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg hw_cfg2_digest
+  // R[hw_cfg2_digest_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hw_cfg2_digest_0 (
+    .re     (hw_cfg2_digest_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_cfg2_digest[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (hw_cfg2_digest_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg hw_cfg2_digest
+  // R[hw_cfg2_digest_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hw_cfg2_digest_1 (
+    .re     (hw_cfg2_digest_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_cfg2_digest[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (hw_cfg2_digest_1_qs)
   );
 
 
@@ -2016,8 +2915,42 @@ module otp_ctrl_core_reg_top (
   );
 
 
+  // Subregister 0 of Multireg secret3_digest
+  // R[secret3_digest_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_secret3_digest_0 (
+    .re     (secret3_digest_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.secret3_digest[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (secret3_digest_0_qs)
+  );
 
-  logic [56:0] addr_hit;
+
+  // Subregister 1 of Multireg secret3_digest
+  // R[secret3_digest_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_secret3_digest_1 (
+    .re     (secret3_digest_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.secret3_digest[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (secret3_digest_1_qs)
+  );
+
+
+
+  logic [90:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == OTP_CTRL_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == OTP_CTRL_INTR_ENABLE_OFFSET);
@@ -2038,44 +2971,78 @@ module otp_ctrl_core_reg_top (
     addr_hit[16] = (reg_addr == OTP_CTRL_ERR_CODE_10_OFFSET);
     addr_hit[17] = (reg_addr == OTP_CTRL_ERR_CODE_11_OFFSET);
     addr_hit[18] = (reg_addr == OTP_CTRL_ERR_CODE_12_OFFSET);
-    addr_hit[19] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET);
-    addr_hit[20] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET);
-    addr_hit[21] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET);
-    addr_hit[22] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET);
-    addr_hit[23] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET);
-    addr_hit[24] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET);
-    addr_hit[25] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET);
-    addr_hit[26] = (reg_addr == OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET);
-    addr_hit[27] = (reg_addr == OTP_CTRL_CHECK_TRIGGER_OFFSET);
-    addr_hit[28] = (reg_addr == OTP_CTRL_CHECK_REGWEN_OFFSET);
-    addr_hit[29] = (reg_addr == OTP_CTRL_CHECK_TIMEOUT_OFFSET);
-    addr_hit[30] = (reg_addr == OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET);
-    addr_hit[31] = (reg_addr == OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET);
-    addr_hit[32] = (reg_addr == OTP_CTRL_VENDOR_TEST_READ_LOCK_OFFSET);
-    addr_hit[33] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET);
-    addr_hit[34] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET);
-    addr_hit[35] = (reg_addr == OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_OFFSET);
-    addr_hit[36] = (reg_addr == OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_OFFSET);
-    addr_hit[37] = (reg_addr == OTP_CTRL_VENDOR_TEST_DIGEST_0_OFFSET);
-    addr_hit[38] = (reg_addr == OTP_CTRL_VENDOR_TEST_DIGEST_1_OFFSET);
-    addr_hit[39] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET);
-    addr_hit[40] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET);
-    addr_hit[41] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET);
-    addr_hit[42] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET);
-    addr_hit[43] = (reg_addr == OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_OFFSET);
-    addr_hit[44] = (reg_addr == OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_OFFSET);
-    addr_hit[45] = (reg_addr == OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_OFFSET);
-    addr_hit[46] = (reg_addr == OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_OFFSET);
-    addr_hit[47] = (reg_addr == OTP_CTRL_HW_CFG0_DIGEST_0_OFFSET);
-    addr_hit[48] = (reg_addr == OTP_CTRL_HW_CFG0_DIGEST_1_OFFSET);
-    addr_hit[49] = (reg_addr == OTP_CTRL_HW_CFG1_DIGEST_0_OFFSET);
-    addr_hit[50] = (reg_addr == OTP_CTRL_HW_CFG1_DIGEST_1_OFFSET);
-    addr_hit[51] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_0_OFFSET);
-    addr_hit[52] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_1_OFFSET);
-    addr_hit[53] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_0_OFFSET);
-    addr_hit[54] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_1_OFFSET);
-    addr_hit[55] = (reg_addr == OTP_CTRL_SECRET2_DIGEST_0_OFFSET);
-    addr_hit[56] = (reg_addr == OTP_CTRL_SECRET2_DIGEST_1_OFFSET);
+    addr_hit[19] = (reg_addr == OTP_CTRL_ERR_CODE_13_OFFSET);
+    addr_hit[20] = (reg_addr == OTP_CTRL_ERR_CODE_14_OFFSET);
+    addr_hit[21] = (reg_addr == OTP_CTRL_ERR_CODE_15_OFFSET);
+    addr_hit[22] = (reg_addr == OTP_CTRL_ERR_CODE_16_OFFSET);
+    addr_hit[23] = (reg_addr == OTP_CTRL_ERR_CODE_17_OFFSET);
+    addr_hit[24] = (reg_addr == OTP_CTRL_ERR_CODE_18_OFFSET);
+    addr_hit[25] = (reg_addr == OTP_CTRL_ERR_CODE_19_OFFSET);
+    addr_hit[26] = (reg_addr == OTP_CTRL_ERR_CODE_20_OFFSET);
+    addr_hit[27] = (reg_addr == OTP_CTRL_ERR_CODE_21_OFFSET);
+    addr_hit[28] = (reg_addr == OTP_CTRL_ERR_CODE_22_OFFSET);
+    addr_hit[29] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET);
+    addr_hit[30] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET);
+    addr_hit[31] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET);
+    addr_hit[32] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET);
+    addr_hit[33] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET);
+    addr_hit[34] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET);
+    addr_hit[35] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET);
+    addr_hit[36] = (reg_addr == OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET);
+    addr_hit[37] = (reg_addr == OTP_CTRL_CHECK_TRIGGER_OFFSET);
+    addr_hit[38] = (reg_addr == OTP_CTRL_CHECK_REGWEN_OFFSET);
+    addr_hit[39] = (reg_addr == OTP_CTRL_CHECK_TIMEOUT_OFFSET);
+    addr_hit[40] = (reg_addr == OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET);
+    addr_hit[41] = (reg_addr == OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET);
+    addr_hit[42] = (reg_addr == OTP_CTRL_VENDOR_TEST_READ_LOCK_OFFSET);
+    addr_hit[43] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET);
+    addr_hit[44] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET);
+    addr_hit[45] = (reg_addr == OTP_CTRL_OWNERSHIP_SLOT_STATE_READ_LOCK_OFFSET);
+    addr_hit[46] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT0_READ_LOCK_OFFSET);
+    addr_hit[47] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT1_READ_LOCK_OFFSET);
+    addr_hit[48] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT2_READ_LOCK_OFFSET);
+    addr_hit[49] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT3_READ_LOCK_OFFSET);
+    addr_hit[50] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT0_STATE_READ_LOCK_OFFSET);
+    addr_hit[51] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT1_STATE_READ_LOCK_OFFSET);
+    addr_hit[52] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT2_STATE_READ_LOCK_OFFSET);
+    addr_hit[53] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT3_STATE_READ_LOCK_OFFSET);
+    addr_hit[54] = (reg_addr == OTP_CTRL_SCRATCH_FUSES_READ_LOCK_OFFSET);
+    addr_hit[55] = (reg_addr == OTP_CTRL_VENDOR_TEST_DIGEST_0_OFFSET);
+    addr_hit[56] = (reg_addr == OTP_CTRL_VENDOR_TEST_DIGEST_1_OFFSET);
+    addr_hit[57] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET);
+    addr_hit[58] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET);
+    addr_hit[59] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET);
+    addr_hit[60] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET);
+    addr_hit[61] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_0_OFFSET);
+    addr_hit[62] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_1_OFFSET);
+    addr_hit[63] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_0_OFFSET);
+    addr_hit[64] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_1_OFFSET);
+    addr_hit[65] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT2_DIGEST_0_OFFSET);
+    addr_hit[66] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT2_DIGEST_1_OFFSET);
+    addr_hit[67] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT3_DIGEST_0_OFFSET);
+    addr_hit[68] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT3_DIGEST_1_OFFSET);
+    addr_hit[69] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT0_STATE_DIGEST_0_OFFSET);
+    addr_hit[70] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT0_STATE_DIGEST_1_OFFSET);
+    addr_hit[71] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT1_STATE_DIGEST_0_OFFSET);
+    addr_hit[72] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT1_STATE_DIGEST_1_OFFSET);
+    addr_hit[73] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT2_STATE_DIGEST_0_OFFSET);
+    addr_hit[74] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT2_STATE_DIGEST_1_OFFSET);
+    addr_hit[75] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT3_STATE_DIGEST_0_OFFSET);
+    addr_hit[76] = (reg_addr == OTP_CTRL_ROT_OWNER_AUTH_SLOT3_STATE_DIGEST_1_OFFSET);
+    addr_hit[77] = (reg_addr == OTP_CTRL_HW_CFG0_DIGEST_0_OFFSET);
+    addr_hit[78] = (reg_addr == OTP_CTRL_HW_CFG0_DIGEST_1_OFFSET);
+    addr_hit[79] = (reg_addr == OTP_CTRL_HW_CFG1_DIGEST_0_OFFSET);
+    addr_hit[80] = (reg_addr == OTP_CTRL_HW_CFG1_DIGEST_1_OFFSET);
+    addr_hit[81] = (reg_addr == OTP_CTRL_HW_CFG2_DIGEST_0_OFFSET);
+    addr_hit[82] = (reg_addr == OTP_CTRL_HW_CFG2_DIGEST_1_OFFSET);
+    addr_hit[83] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_0_OFFSET);
+    addr_hit[84] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_1_OFFSET);
+    addr_hit[85] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_0_OFFSET);
+    addr_hit[86] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_1_OFFSET);
+    addr_hit[87] = (reg_addr == OTP_CTRL_SECRET2_DIGEST_0_OFFSET);
+    addr_hit[88] = (reg_addr == OTP_CTRL_SECRET2_DIGEST_1_OFFSET);
+    addr_hit[89] = (reg_addr == OTP_CTRL_SECRET3_DIGEST_0_OFFSET);
+    addr_hit[90] = (reg_addr == OTP_CTRL_SECRET3_DIGEST_1_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2139,7 +3106,41 @@ module otp_ctrl_core_reg_top (
                (addr_hit[53] & (|(OTP_CTRL_CORE_PERMIT[53] & ~reg_be))) |
                (addr_hit[54] & (|(OTP_CTRL_CORE_PERMIT[54] & ~reg_be))) |
                (addr_hit[55] & (|(OTP_CTRL_CORE_PERMIT[55] & ~reg_be))) |
-               (addr_hit[56] & (|(OTP_CTRL_CORE_PERMIT[56] & ~reg_be)))));
+               (addr_hit[56] & (|(OTP_CTRL_CORE_PERMIT[56] & ~reg_be))) |
+               (addr_hit[57] & (|(OTP_CTRL_CORE_PERMIT[57] & ~reg_be))) |
+               (addr_hit[58] & (|(OTP_CTRL_CORE_PERMIT[58] & ~reg_be))) |
+               (addr_hit[59] & (|(OTP_CTRL_CORE_PERMIT[59] & ~reg_be))) |
+               (addr_hit[60] & (|(OTP_CTRL_CORE_PERMIT[60] & ~reg_be))) |
+               (addr_hit[61] & (|(OTP_CTRL_CORE_PERMIT[61] & ~reg_be))) |
+               (addr_hit[62] & (|(OTP_CTRL_CORE_PERMIT[62] & ~reg_be))) |
+               (addr_hit[63] & (|(OTP_CTRL_CORE_PERMIT[63] & ~reg_be))) |
+               (addr_hit[64] & (|(OTP_CTRL_CORE_PERMIT[64] & ~reg_be))) |
+               (addr_hit[65] & (|(OTP_CTRL_CORE_PERMIT[65] & ~reg_be))) |
+               (addr_hit[66] & (|(OTP_CTRL_CORE_PERMIT[66] & ~reg_be))) |
+               (addr_hit[67] & (|(OTP_CTRL_CORE_PERMIT[67] & ~reg_be))) |
+               (addr_hit[68] & (|(OTP_CTRL_CORE_PERMIT[68] & ~reg_be))) |
+               (addr_hit[69] & (|(OTP_CTRL_CORE_PERMIT[69] & ~reg_be))) |
+               (addr_hit[70] & (|(OTP_CTRL_CORE_PERMIT[70] & ~reg_be))) |
+               (addr_hit[71] & (|(OTP_CTRL_CORE_PERMIT[71] & ~reg_be))) |
+               (addr_hit[72] & (|(OTP_CTRL_CORE_PERMIT[72] & ~reg_be))) |
+               (addr_hit[73] & (|(OTP_CTRL_CORE_PERMIT[73] & ~reg_be))) |
+               (addr_hit[74] & (|(OTP_CTRL_CORE_PERMIT[74] & ~reg_be))) |
+               (addr_hit[75] & (|(OTP_CTRL_CORE_PERMIT[75] & ~reg_be))) |
+               (addr_hit[76] & (|(OTP_CTRL_CORE_PERMIT[76] & ~reg_be))) |
+               (addr_hit[77] & (|(OTP_CTRL_CORE_PERMIT[77] & ~reg_be))) |
+               (addr_hit[78] & (|(OTP_CTRL_CORE_PERMIT[78] & ~reg_be))) |
+               (addr_hit[79] & (|(OTP_CTRL_CORE_PERMIT[79] & ~reg_be))) |
+               (addr_hit[80] & (|(OTP_CTRL_CORE_PERMIT[80] & ~reg_be))) |
+               (addr_hit[81] & (|(OTP_CTRL_CORE_PERMIT[81] & ~reg_be))) |
+               (addr_hit[82] & (|(OTP_CTRL_CORE_PERMIT[82] & ~reg_be))) |
+               (addr_hit[83] & (|(OTP_CTRL_CORE_PERMIT[83] & ~reg_be))) |
+               (addr_hit[84] & (|(OTP_CTRL_CORE_PERMIT[84] & ~reg_be))) |
+               (addr_hit[85] & (|(OTP_CTRL_CORE_PERMIT[85] & ~reg_be))) |
+               (addr_hit[86] & (|(OTP_CTRL_CORE_PERMIT[86] & ~reg_be))) |
+               (addr_hit[87] & (|(OTP_CTRL_CORE_PERMIT[87] & ~reg_be))) |
+               (addr_hit[88] & (|(OTP_CTRL_CORE_PERMIT[88] & ~reg_be))) |
+               (addr_hit[89] & (|(OTP_CTRL_CORE_PERMIT[89] & ~reg_be))) |
+               (addr_hit[90] & (|(OTP_CTRL_CORE_PERMIT[90] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2184,11 +3185,21 @@ module otp_ctrl_core_reg_top (
   assign err_code_10_re = addr_hit[16] & reg_re & !reg_error;
   assign err_code_11_re = addr_hit[17] & reg_re & !reg_error;
   assign err_code_12_re = addr_hit[18] & reg_re & !reg_error;
-  assign direct_access_regwen_re = addr_hit[19] & reg_re & !reg_error;
-  assign direct_access_regwen_we = addr_hit[19] & reg_we & !reg_error;
+  assign err_code_13_re = addr_hit[19] & reg_re & !reg_error;
+  assign err_code_14_re = addr_hit[20] & reg_re & !reg_error;
+  assign err_code_15_re = addr_hit[21] & reg_re & !reg_error;
+  assign err_code_16_re = addr_hit[22] & reg_re & !reg_error;
+  assign err_code_17_re = addr_hit[23] & reg_re & !reg_error;
+  assign err_code_18_re = addr_hit[24] & reg_re & !reg_error;
+  assign err_code_19_re = addr_hit[25] & reg_re & !reg_error;
+  assign err_code_20_re = addr_hit[26] & reg_re & !reg_error;
+  assign err_code_21_re = addr_hit[27] & reg_re & !reg_error;
+  assign err_code_22_re = addr_hit[28] & reg_re & !reg_error;
+  assign direct_access_regwen_re = addr_hit[29] & reg_re & !reg_error;
+  assign direct_access_regwen_we = addr_hit[29] & reg_we & !reg_error;
 
   assign direct_access_regwen_wd = reg_wdata[0];
-  assign direct_access_cmd_we = addr_hit[20] & reg_we & !reg_error;
+  assign direct_access_cmd_we = addr_hit[30] & reg_we & !reg_error;
 
   assign direct_access_cmd_rd_wd = reg_wdata[0];
 
@@ -2197,72 +3208,112 @@ module otp_ctrl_core_reg_top (
   assign direct_access_cmd_digest_wd = reg_wdata[2];
 
   assign direct_access_cmd_zeroize_wd = reg_wdata[3];
-  assign direct_access_address_we = addr_hit[21] & reg_we & !reg_error;
+  assign direct_access_address_we = addr_hit[31] & reg_we & !reg_error;
 
   assign direct_access_address_wd = reg_wdata[10:0];
-  assign direct_access_wdata_0_we = addr_hit[22] & reg_we & !reg_error;
+  assign direct_access_wdata_0_we = addr_hit[32] & reg_we & !reg_error;
 
   assign direct_access_wdata_0_wd = reg_wdata[31:0];
-  assign direct_access_wdata_1_we = addr_hit[23] & reg_we & !reg_error;
+  assign direct_access_wdata_1_we = addr_hit[33] & reg_we & !reg_error;
 
   assign direct_access_wdata_1_wd = reg_wdata[31:0];
-  assign direct_access_rdata_0_re = addr_hit[24] & reg_re & !reg_error;
-  assign direct_access_rdata_1_re = addr_hit[25] & reg_re & !reg_error;
-  assign check_trigger_regwen_we = addr_hit[26] & reg_we & !reg_error;
+  assign direct_access_rdata_0_re = addr_hit[34] & reg_re & !reg_error;
+  assign direct_access_rdata_1_re = addr_hit[35] & reg_re & !reg_error;
+  assign check_trigger_regwen_we = addr_hit[36] & reg_we & !reg_error;
 
   assign check_trigger_regwen_wd = reg_wdata[0];
-  assign check_trigger_we = addr_hit[27] & reg_we & !reg_error;
+  assign check_trigger_we = addr_hit[37] & reg_we & !reg_error;
 
   assign check_trigger_integrity_wd = reg_wdata[0];
 
   assign check_trigger_consistency_wd = reg_wdata[1];
-  assign check_regwen_we = addr_hit[28] & reg_we & !reg_error;
+  assign check_regwen_we = addr_hit[38] & reg_we & !reg_error;
 
   assign check_regwen_wd = reg_wdata[0];
-  assign check_timeout_we = addr_hit[29] & reg_we & !reg_error;
+  assign check_timeout_we = addr_hit[39] & reg_we & !reg_error;
 
   assign check_timeout_wd = reg_wdata[31:0];
-  assign integrity_check_period_we = addr_hit[30] & reg_we & !reg_error;
+  assign integrity_check_period_we = addr_hit[40] & reg_we & !reg_error;
 
   assign integrity_check_period_wd = reg_wdata[31:0];
-  assign consistency_check_period_we = addr_hit[31] & reg_we & !reg_error;
+  assign consistency_check_period_we = addr_hit[41] & reg_we & !reg_error;
 
   assign consistency_check_period_wd = reg_wdata[31:0];
-  assign vendor_test_read_lock_we = addr_hit[32] & reg_we & !reg_error;
+  assign vendor_test_read_lock_we = addr_hit[42] & reg_we & !reg_error;
 
   assign vendor_test_read_lock_wd = reg_wdata[0];
-  assign creator_sw_cfg_read_lock_we = addr_hit[33] & reg_we & !reg_error;
+  assign creator_sw_cfg_read_lock_we = addr_hit[43] & reg_we & !reg_error;
 
   assign creator_sw_cfg_read_lock_wd = reg_wdata[0];
-  assign owner_sw_cfg_read_lock_we = addr_hit[34] & reg_we & !reg_error;
+  assign owner_sw_cfg_read_lock_we = addr_hit[44] & reg_we & !reg_error;
 
   assign owner_sw_cfg_read_lock_wd = reg_wdata[0];
-  assign rot_creator_auth_codesign_read_lock_we = addr_hit[35] & reg_we & !reg_error;
+  assign ownership_slot_state_read_lock_we = addr_hit[45] & reg_we & !reg_error;
 
-  assign rot_creator_auth_codesign_read_lock_wd = reg_wdata[0];
-  assign rot_creator_auth_state_read_lock_we = addr_hit[36] & reg_we & !reg_error;
+  assign ownership_slot_state_read_lock_wd = reg_wdata[0];
+  assign rot_owner_auth_slot0_read_lock_we = addr_hit[46] & reg_we & !reg_error;
 
-  assign rot_creator_auth_state_read_lock_wd = reg_wdata[0];
-  assign vendor_test_digest_0_re = addr_hit[37] & reg_re & !reg_error;
-  assign vendor_test_digest_1_re = addr_hit[38] & reg_re & !reg_error;
-  assign creator_sw_cfg_digest_0_re = addr_hit[39] & reg_re & !reg_error;
-  assign creator_sw_cfg_digest_1_re = addr_hit[40] & reg_re & !reg_error;
-  assign owner_sw_cfg_digest_0_re = addr_hit[41] & reg_re & !reg_error;
-  assign owner_sw_cfg_digest_1_re = addr_hit[42] & reg_re & !reg_error;
-  assign rot_creator_auth_codesign_digest_0_re = addr_hit[43] & reg_re & !reg_error;
-  assign rot_creator_auth_codesign_digest_1_re = addr_hit[44] & reg_re & !reg_error;
-  assign rot_creator_auth_state_digest_0_re = addr_hit[45] & reg_re & !reg_error;
-  assign rot_creator_auth_state_digest_1_re = addr_hit[46] & reg_re & !reg_error;
-  assign hw_cfg0_digest_0_re = addr_hit[47] & reg_re & !reg_error;
-  assign hw_cfg0_digest_1_re = addr_hit[48] & reg_re & !reg_error;
-  assign hw_cfg1_digest_0_re = addr_hit[49] & reg_re & !reg_error;
-  assign hw_cfg1_digest_1_re = addr_hit[50] & reg_re & !reg_error;
-  assign secret0_digest_0_re = addr_hit[51] & reg_re & !reg_error;
-  assign secret0_digest_1_re = addr_hit[52] & reg_re & !reg_error;
-  assign secret1_digest_0_re = addr_hit[53] & reg_re & !reg_error;
-  assign secret1_digest_1_re = addr_hit[54] & reg_re & !reg_error;
-  assign secret2_digest_0_re = addr_hit[55] & reg_re & !reg_error;
-  assign secret2_digest_1_re = addr_hit[56] & reg_re & !reg_error;
+  assign rot_owner_auth_slot0_read_lock_wd = reg_wdata[0];
+  assign rot_owner_auth_slot1_read_lock_we = addr_hit[47] & reg_we & !reg_error;
+
+  assign rot_owner_auth_slot1_read_lock_wd = reg_wdata[0];
+  assign rot_owner_auth_slot2_read_lock_we = addr_hit[48] & reg_we & !reg_error;
+
+  assign rot_owner_auth_slot2_read_lock_wd = reg_wdata[0];
+  assign rot_owner_auth_slot3_read_lock_we = addr_hit[49] & reg_we & !reg_error;
+
+  assign rot_owner_auth_slot3_read_lock_wd = reg_wdata[0];
+  assign rot_owner_auth_slot0_state_read_lock_we = addr_hit[50] & reg_we & !reg_error;
+
+  assign rot_owner_auth_slot0_state_read_lock_wd = reg_wdata[0];
+  assign rot_owner_auth_slot1_state_read_lock_we = addr_hit[51] & reg_we & !reg_error;
+
+  assign rot_owner_auth_slot1_state_read_lock_wd = reg_wdata[0];
+  assign rot_owner_auth_slot2_state_read_lock_we = addr_hit[52] & reg_we & !reg_error;
+
+  assign rot_owner_auth_slot2_state_read_lock_wd = reg_wdata[0];
+  assign rot_owner_auth_slot3_state_read_lock_we = addr_hit[53] & reg_we & !reg_error;
+
+  assign rot_owner_auth_slot3_state_read_lock_wd = reg_wdata[0];
+  assign scratch_fuses_read_lock_we = addr_hit[54] & reg_we & !reg_error;
+
+  assign scratch_fuses_read_lock_wd = reg_wdata[0];
+  assign vendor_test_digest_0_re = addr_hit[55] & reg_re & !reg_error;
+  assign vendor_test_digest_1_re = addr_hit[56] & reg_re & !reg_error;
+  assign creator_sw_cfg_digest_0_re = addr_hit[57] & reg_re & !reg_error;
+  assign creator_sw_cfg_digest_1_re = addr_hit[58] & reg_re & !reg_error;
+  assign owner_sw_cfg_digest_0_re = addr_hit[59] & reg_re & !reg_error;
+  assign owner_sw_cfg_digest_1_re = addr_hit[60] & reg_re & !reg_error;
+  assign rot_owner_auth_slot0_digest_0_re = addr_hit[61] & reg_re & !reg_error;
+  assign rot_owner_auth_slot0_digest_1_re = addr_hit[62] & reg_re & !reg_error;
+  assign rot_owner_auth_slot1_digest_0_re = addr_hit[63] & reg_re & !reg_error;
+  assign rot_owner_auth_slot1_digest_1_re = addr_hit[64] & reg_re & !reg_error;
+  assign rot_owner_auth_slot2_digest_0_re = addr_hit[65] & reg_re & !reg_error;
+  assign rot_owner_auth_slot2_digest_1_re = addr_hit[66] & reg_re & !reg_error;
+  assign rot_owner_auth_slot3_digest_0_re = addr_hit[67] & reg_re & !reg_error;
+  assign rot_owner_auth_slot3_digest_1_re = addr_hit[68] & reg_re & !reg_error;
+  assign rot_owner_auth_slot0_state_digest_0_re = addr_hit[69] & reg_re & !reg_error;
+  assign rot_owner_auth_slot0_state_digest_1_re = addr_hit[70] & reg_re & !reg_error;
+  assign rot_owner_auth_slot1_state_digest_0_re = addr_hit[71] & reg_re & !reg_error;
+  assign rot_owner_auth_slot1_state_digest_1_re = addr_hit[72] & reg_re & !reg_error;
+  assign rot_owner_auth_slot2_state_digest_0_re = addr_hit[73] & reg_re & !reg_error;
+  assign rot_owner_auth_slot2_state_digest_1_re = addr_hit[74] & reg_re & !reg_error;
+  assign rot_owner_auth_slot3_state_digest_0_re = addr_hit[75] & reg_re & !reg_error;
+  assign rot_owner_auth_slot3_state_digest_1_re = addr_hit[76] & reg_re & !reg_error;
+  assign hw_cfg0_digest_0_re = addr_hit[77] & reg_re & !reg_error;
+  assign hw_cfg0_digest_1_re = addr_hit[78] & reg_re & !reg_error;
+  assign hw_cfg1_digest_0_re = addr_hit[79] & reg_re & !reg_error;
+  assign hw_cfg1_digest_1_re = addr_hit[80] & reg_re & !reg_error;
+  assign hw_cfg2_digest_0_re = addr_hit[81] & reg_re & !reg_error;
+  assign hw_cfg2_digest_1_re = addr_hit[82] & reg_re & !reg_error;
+  assign secret0_digest_0_re = addr_hit[83] & reg_re & !reg_error;
+  assign secret0_digest_1_re = addr_hit[84] & reg_re & !reg_error;
+  assign secret1_digest_0_re = addr_hit[85] & reg_re & !reg_error;
+  assign secret1_digest_1_re = addr_hit[86] & reg_re & !reg_error;
+  assign secret2_digest_0_re = addr_hit[87] & reg_re & !reg_error;
+  assign secret2_digest_1_re = addr_hit[88] & reg_re & !reg_error;
+  assign secret3_digest_0_re = addr_hit[89] & reg_re & !reg_error;
+  assign secret3_digest_1_re = addr_hit[90] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -2285,44 +3336,78 @@ module otp_ctrl_core_reg_top (
     reg_we_check[16] = 1'b0;
     reg_we_check[17] = 1'b0;
     reg_we_check[18] = 1'b0;
-    reg_we_check[19] = direct_access_regwen_we;
-    reg_we_check[20] = direct_access_cmd_gated_we;
-    reg_we_check[21] = direct_access_address_gated_we;
-    reg_we_check[22] = direct_access_wdata_0_gated_we;
-    reg_we_check[23] = direct_access_wdata_1_gated_we;
+    reg_we_check[19] = 1'b0;
+    reg_we_check[20] = 1'b0;
+    reg_we_check[21] = 1'b0;
+    reg_we_check[22] = 1'b0;
+    reg_we_check[23] = 1'b0;
     reg_we_check[24] = 1'b0;
     reg_we_check[25] = 1'b0;
-    reg_we_check[26] = check_trigger_regwen_we;
-    reg_we_check[27] = check_trigger_gated_we;
-    reg_we_check[28] = check_regwen_we;
-    reg_we_check[29] = check_timeout_gated_we;
-    reg_we_check[30] = integrity_check_period_gated_we;
-    reg_we_check[31] = consistency_check_period_gated_we;
-    reg_we_check[32] = vendor_test_read_lock_gated_we;
-    reg_we_check[33] = creator_sw_cfg_read_lock_gated_we;
-    reg_we_check[34] = owner_sw_cfg_read_lock_gated_we;
-    reg_we_check[35] = rot_creator_auth_codesign_read_lock_gated_we;
-    reg_we_check[36] = rot_creator_auth_state_read_lock_gated_we;
-    reg_we_check[37] = 1'b0;
-    reg_we_check[38] = 1'b0;
-    reg_we_check[39] = 1'b0;
-    reg_we_check[40] = 1'b0;
-    reg_we_check[41] = 1'b0;
-    reg_we_check[42] = 1'b0;
-    reg_we_check[43] = 1'b0;
-    reg_we_check[44] = 1'b0;
-    reg_we_check[45] = 1'b0;
-    reg_we_check[46] = 1'b0;
-    reg_we_check[47] = 1'b0;
-    reg_we_check[48] = 1'b0;
-    reg_we_check[49] = 1'b0;
-    reg_we_check[50] = 1'b0;
-    reg_we_check[51] = 1'b0;
-    reg_we_check[52] = 1'b0;
-    reg_we_check[53] = 1'b0;
-    reg_we_check[54] = 1'b0;
+    reg_we_check[26] = 1'b0;
+    reg_we_check[27] = 1'b0;
+    reg_we_check[28] = 1'b0;
+    reg_we_check[29] = direct_access_regwen_we;
+    reg_we_check[30] = direct_access_cmd_gated_we;
+    reg_we_check[31] = direct_access_address_gated_we;
+    reg_we_check[32] = direct_access_wdata_0_gated_we;
+    reg_we_check[33] = direct_access_wdata_1_gated_we;
+    reg_we_check[34] = 1'b0;
+    reg_we_check[35] = 1'b0;
+    reg_we_check[36] = check_trigger_regwen_we;
+    reg_we_check[37] = check_trigger_gated_we;
+    reg_we_check[38] = check_regwen_we;
+    reg_we_check[39] = check_timeout_gated_we;
+    reg_we_check[40] = integrity_check_period_gated_we;
+    reg_we_check[41] = consistency_check_period_gated_we;
+    reg_we_check[42] = vendor_test_read_lock_gated_we;
+    reg_we_check[43] = creator_sw_cfg_read_lock_gated_we;
+    reg_we_check[44] = owner_sw_cfg_read_lock_gated_we;
+    reg_we_check[45] = ownership_slot_state_read_lock_gated_we;
+    reg_we_check[46] = rot_owner_auth_slot0_read_lock_gated_we;
+    reg_we_check[47] = rot_owner_auth_slot1_read_lock_gated_we;
+    reg_we_check[48] = rot_owner_auth_slot2_read_lock_gated_we;
+    reg_we_check[49] = rot_owner_auth_slot3_read_lock_gated_we;
+    reg_we_check[50] = rot_owner_auth_slot0_state_read_lock_gated_we;
+    reg_we_check[51] = rot_owner_auth_slot1_state_read_lock_gated_we;
+    reg_we_check[52] = rot_owner_auth_slot2_state_read_lock_gated_we;
+    reg_we_check[53] = rot_owner_auth_slot3_state_read_lock_gated_we;
+    reg_we_check[54] = scratch_fuses_read_lock_gated_we;
     reg_we_check[55] = 1'b0;
     reg_we_check[56] = 1'b0;
+    reg_we_check[57] = 1'b0;
+    reg_we_check[58] = 1'b0;
+    reg_we_check[59] = 1'b0;
+    reg_we_check[60] = 1'b0;
+    reg_we_check[61] = 1'b0;
+    reg_we_check[62] = 1'b0;
+    reg_we_check[63] = 1'b0;
+    reg_we_check[64] = 1'b0;
+    reg_we_check[65] = 1'b0;
+    reg_we_check[66] = 1'b0;
+    reg_we_check[67] = 1'b0;
+    reg_we_check[68] = 1'b0;
+    reg_we_check[69] = 1'b0;
+    reg_we_check[70] = 1'b0;
+    reg_we_check[71] = 1'b0;
+    reg_we_check[72] = 1'b0;
+    reg_we_check[73] = 1'b0;
+    reg_we_check[74] = 1'b0;
+    reg_we_check[75] = 1'b0;
+    reg_we_check[76] = 1'b0;
+    reg_we_check[77] = 1'b0;
+    reg_we_check[78] = 1'b0;
+    reg_we_check[79] = 1'b0;
+    reg_we_check[80] = 1'b0;
+    reg_we_check[81] = 1'b0;
+    reg_we_check[82] = 1'b0;
+    reg_we_check[83] = 1'b0;
+    reg_we_check[84] = 1'b0;
+    reg_we_check[85] = 1'b0;
+    reg_we_check[86] = 1'b0;
+    reg_we_check[87] = 1'b0;
+    reg_we_check[88] = 1'b0;
+    reg_we_check[89] = 1'b0;
+    reg_we_check[90] = 1'b0;
   end
 
   // Read data return
@@ -2369,14 +3454,24 @@ module otp_ctrl_core_reg_top (
         reg_rdata_next[0] = partition_status_0_vendor_test_error_qs;
         reg_rdata_next[1] = partition_status_0_creator_sw_cfg_error_qs;
         reg_rdata_next[2] = partition_status_0_owner_sw_cfg_error_qs;
-        reg_rdata_next[3] = partition_status_0_rot_creator_auth_codesign_error_qs;
-        reg_rdata_next[4] = partition_status_0_rot_creator_auth_state_error_qs;
-        reg_rdata_next[5] = partition_status_0_hw_cfg0_error_qs;
-        reg_rdata_next[6] = partition_status_0_hw_cfg1_error_qs;
-        reg_rdata_next[7] = partition_status_0_secret0_error_qs;
-        reg_rdata_next[8] = partition_status_0_secret1_error_qs;
-        reg_rdata_next[9] = partition_status_0_secret2_error_qs;
-        reg_rdata_next[10] = partition_status_0_life_cycle_error_qs;
+        reg_rdata_next[3] = partition_status_0_ownership_slot_state_error_qs;
+        reg_rdata_next[4] = partition_status_0_rot_owner_auth_slot0_error_qs;
+        reg_rdata_next[5] = partition_status_0_rot_owner_auth_slot1_error_qs;
+        reg_rdata_next[6] = partition_status_0_rot_owner_auth_slot2_error_qs;
+        reg_rdata_next[7] = partition_status_0_rot_owner_auth_slot3_error_qs;
+        reg_rdata_next[8] = partition_status_0_rot_owner_auth_slot0_state_error_qs;
+        reg_rdata_next[9] = partition_status_0_rot_owner_auth_slot1_state_error_qs;
+        reg_rdata_next[10] = partition_status_0_rot_owner_auth_slot2_state_error_qs;
+        reg_rdata_next[11] = partition_status_0_rot_owner_auth_slot3_state_error_qs;
+        reg_rdata_next[12] = partition_status_0_scratch_fuses_error_qs;
+        reg_rdata_next[13] = partition_status_0_hw_cfg0_error_qs;
+        reg_rdata_next[14] = partition_status_0_hw_cfg1_error_qs;
+        reg_rdata_next[15] = partition_status_0_hw_cfg2_error_qs;
+        reg_rdata_next[16] = partition_status_0_secret0_error_qs;
+        reg_rdata_next[17] = partition_status_0_secret1_error_qs;
+        reg_rdata_next[18] = partition_status_0_secret2_error_qs;
+        reg_rdata_next[19] = partition_status_0_secret3_error_qs;
+        reg_rdata_next[20] = partition_status_0_life_cycle_error_qs;
       end
 
       addr_hit[6]: begin
@@ -2432,159 +3527,295 @@ module otp_ctrl_core_reg_top (
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[0] = direct_access_regwen_qs;
+        reg_rdata_next[2:0] = err_code_13_qs;
       end
 
       addr_hit[20]: begin
+        reg_rdata_next[2:0] = err_code_14_qs;
+      end
+
+      addr_hit[21]: begin
+        reg_rdata_next[2:0] = err_code_15_qs;
+      end
+
+      addr_hit[22]: begin
+        reg_rdata_next[2:0] = err_code_16_qs;
+      end
+
+      addr_hit[23]: begin
+        reg_rdata_next[2:0] = err_code_17_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[2:0] = err_code_18_qs;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[2:0] = err_code_19_qs;
+      end
+
+      addr_hit[26]: begin
+        reg_rdata_next[2:0] = err_code_20_qs;
+      end
+
+      addr_hit[27]: begin
+        reg_rdata_next[2:0] = err_code_21_qs;
+      end
+
+      addr_hit[28]: begin
+        reg_rdata_next[2:0] = err_code_22_qs;
+      end
+
+      addr_hit[29]: begin
+        reg_rdata_next[0] = direct_access_regwen_qs;
+      end
+
+      addr_hit[30]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
       end
 
-      addr_hit[21]: begin
+      addr_hit[31]: begin
         reg_rdata_next[10:0] = direct_access_address_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[32]: begin
         reg_rdata_next[31:0] = direct_access_wdata_0_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[33]: begin
         reg_rdata_next[31:0] = direct_access_wdata_1_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[34]: begin
         reg_rdata_next[31:0] = direct_access_rdata_0_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[35]: begin
         reg_rdata_next[31:0] = direct_access_rdata_1_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[36]: begin
         reg_rdata_next[0] = check_trigger_regwen_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[37]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[28]: begin
+      addr_hit[38]: begin
         reg_rdata_next[0] = check_regwen_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[39]: begin
         reg_rdata_next[31:0] = check_timeout_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[40]: begin
         reg_rdata_next[31:0] = integrity_check_period_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[41]: begin
         reg_rdata_next[31:0] = consistency_check_period_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[42]: begin
         reg_rdata_next[0] = vendor_test_read_lock_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[43]: begin
         reg_rdata_next[0] = creator_sw_cfg_read_lock_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[44]: begin
         reg_rdata_next[0] = owner_sw_cfg_read_lock_qs;
       end
 
-      addr_hit[35]: begin
-        reg_rdata_next[0] = rot_creator_auth_codesign_read_lock_qs;
-      end
-
-      addr_hit[36]: begin
-        reg_rdata_next[0] = rot_creator_auth_state_read_lock_qs;
-      end
-
-      addr_hit[37]: begin
-        reg_rdata_next[31:0] = vendor_test_digest_0_qs;
-      end
-
-      addr_hit[38]: begin
-        reg_rdata_next[31:0] = vendor_test_digest_1_qs;
-      end
-
-      addr_hit[39]: begin
-        reg_rdata_next[31:0] = creator_sw_cfg_digest_0_qs;
-      end
-
-      addr_hit[40]: begin
-        reg_rdata_next[31:0] = creator_sw_cfg_digest_1_qs;
-      end
-
-      addr_hit[41]: begin
-        reg_rdata_next[31:0] = owner_sw_cfg_digest_0_qs;
-      end
-
-      addr_hit[42]: begin
-        reg_rdata_next[31:0] = owner_sw_cfg_digest_1_qs;
-      end
-
-      addr_hit[43]: begin
-        reg_rdata_next[31:0] = rot_creator_auth_codesign_digest_0_qs;
-      end
-
-      addr_hit[44]: begin
-        reg_rdata_next[31:0] = rot_creator_auth_codesign_digest_1_qs;
-      end
-
       addr_hit[45]: begin
-        reg_rdata_next[31:0] = rot_creator_auth_state_digest_0_qs;
+        reg_rdata_next[0] = ownership_slot_state_read_lock_qs;
       end
 
       addr_hit[46]: begin
-        reg_rdata_next[31:0] = rot_creator_auth_state_digest_1_qs;
+        reg_rdata_next[0] = rot_owner_auth_slot0_read_lock_qs;
       end
 
       addr_hit[47]: begin
-        reg_rdata_next[31:0] = hw_cfg0_digest_0_qs;
+        reg_rdata_next[0] = rot_owner_auth_slot1_read_lock_qs;
       end
 
       addr_hit[48]: begin
-        reg_rdata_next[31:0] = hw_cfg0_digest_1_qs;
+        reg_rdata_next[0] = rot_owner_auth_slot2_read_lock_qs;
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[31:0] = hw_cfg1_digest_0_qs;
+        reg_rdata_next[0] = rot_owner_auth_slot3_read_lock_qs;
       end
 
       addr_hit[50]: begin
-        reg_rdata_next[31:0] = hw_cfg1_digest_1_qs;
+        reg_rdata_next[0] = rot_owner_auth_slot0_state_read_lock_qs;
       end
 
       addr_hit[51]: begin
-        reg_rdata_next[31:0] = secret0_digest_0_qs;
+        reg_rdata_next[0] = rot_owner_auth_slot1_state_read_lock_qs;
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[31:0] = secret0_digest_1_qs;
+        reg_rdata_next[0] = rot_owner_auth_slot2_state_read_lock_qs;
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[31:0] = secret1_digest_0_qs;
+        reg_rdata_next[0] = rot_owner_auth_slot3_state_read_lock_qs;
       end
 
       addr_hit[54]: begin
-        reg_rdata_next[31:0] = secret1_digest_1_qs;
+        reg_rdata_next[0] = scratch_fuses_read_lock_qs;
       end
 
       addr_hit[55]: begin
-        reg_rdata_next[31:0] = secret2_digest_0_qs;
+        reg_rdata_next[31:0] = vendor_test_digest_0_qs;
       end
 
       addr_hit[56]: begin
+        reg_rdata_next[31:0] = vendor_test_digest_1_qs;
+      end
+
+      addr_hit[57]: begin
+        reg_rdata_next[31:0] = creator_sw_cfg_digest_0_qs;
+      end
+
+      addr_hit[58]: begin
+        reg_rdata_next[31:0] = creator_sw_cfg_digest_1_qs;
+      end
+
+      addr_hit[59]: begin
+        reg_rdata_next[31:0] = owner_sw_cfg_digest_0_qs;
+      end
+
+      addr_hit[60]: begin
+        reg_rdata_next[31:0] = owner_sw_cfg_digest_1_qs;
+      end
+
+      addr_hit[61]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot0_digest_0_qs;
+      end
+
+      addr_hit[62]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot0_digest_1_qs;
+      end
+
+      addr_hit[63]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot1_digest_0_qs;
+      end
+
+      addr_hit[64]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot1_digest_1_qs;
+      end
+
+      addr_hit[65]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot2_digest_0_qs;
+      end
+
+      addr_hit[66]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot2_digest_1_qs;
+      end
+
+      addr_hit[67]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot3_digest_0_qs;
+      end
+
+      addr_hit[68]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot3_digest_1_qs;
+      end
+
+      addr_hit[69]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot0_state_digest_0_qs;
+      end
+
+      addr_hit[70]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot0_state_digest_1_qs;
+      end
+
+      addr_hit[71]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot1_state_digest_0_qs;
+      end
+
+      addr_hit[72]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot1_state_digest_1_qs;
+      end
+
+      addr_hit[73]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot2_state_digest_0_qs;
+      end
+
+      addr_hit[74]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot2_state_digest_1_qs;
+      end
+
+      addr_hit[75]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot3_state_digest_0_qs;
+      end
+
+      addr_hit[76]: begin
+        reg_rdata_next[31:0] = rot_owner_auth_slot3_state_digest_1_qs;
+      end
+
+      addr_hit[77]: begin
+        reg_rdata_next[31:0] = hw_cfg0_digest_0_qs;
+      end
+
+      addr_hit[78]: begin
+        reg_rdata_next[31:0] = hw_cfg0_digest_1_qs;
+      end
+
+      addr_hit[79]: begin
+        reg_rdata_next[31:0] = hw_cfg1_digest_0_qs;
+      end
+
+      addr_hit[80]: begin
+        reg_rdata_next[31:0] = hw_cfg1_digest_1_qs;
+      end
+
+      addr_hit[81]: begin
+        reg_rdata_next[31:0] = hw_cfg2_digest_0_qs;
+      end
+
+      addr_hit[82]: begin
+        reg_rdata_next[31:0] = hw_cfg2_digest_1_qs;
+      end
+
+      addr_hit[83]: begin
+        reg_rdata_next[31:0] = secret0_digest_0_qs;
+      end
+
+      addr_hit[84]: begin
+        reg_rdata_next[31:0] = secret0_digest_1_qs;
+      end
+
+      addr_hit[85]: begin
+        reg_rdata_next[31:0] = secret1_digest_0_qs;
+      end
+
+      addr_hit[86]: begin
+        reg_rdata_next[31:0] = secret1_digest_1_qs;
+      end
+
+      addr_hit[87]: begin
+        reg_rdata_next[31:0] = secret2_digest_0_qs;
+      end
+
+      addr_hit[88]: begin
         reg_rdata_next[31:0] = secret2_digest_1_qs;
+      end
+
+      addr_hit[89]: begin
+        reg_rdata_next[31:0] = secret3_digest_0_qs;
+      end
+
+      addr_hit[90]: begin
+        reg_rdata_next[31:0] = secret3_digest_1_qs;
       end
 
       default: begin
