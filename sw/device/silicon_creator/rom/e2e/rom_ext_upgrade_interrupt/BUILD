@@ -16,14 +16,6 @@ load(
     "hex",
 )
 load("//rules:manifest.bzl", "manifest")
-load(
-    "//rules:otp.bzl",
-    "STD_OTP_OVERLAYS",
-    "otp_hex",
-    "otp_image",
-    "otp_json",
-    "otp_partition",
-)
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 
 package(default_visibility = ["//visibility:public"])

@@ -35,17 +35,44 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     if (part_idx == OwnerSwCfgIdx) {
       dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
     }
-    if (part_idx == RotCreatorAuthCodesignIdx) {
-      dai_addr inside `PART_ADDR_RANGE(RotCreatorAuthCodesignIdx);
+    if (part_idx == OwnershipSlotStateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(OwnershipSlotStateIdx);
     }
-    if (part_idx == RotCreatorAuthStateIdx) {
-      dai_addr inside `PART_ADDR_RANGE(RotCreatorAuthStateIdx);
+    if (part_idx == RotOwnerAuthSlot0Idx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot0Idx);
+    }
+    if (part_idx == RotOwnerAuthSlot1Idx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot1Idx);
+    }
+    if (part_idx == RotOwnerAuthSlot2Idx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot2Idx);
+    }
+    if (part_idx == RotOwnerAuthSlot3Idx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot3Idx);
+    }
+    if (part_idx == RotOwnerAuthSlot0StateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot0StateIdx);
+    }
+    if (part_idx == RotOwnerAuthSlot1StateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot1StateIdx);
+    }
+    if (part_idx == RotOwnerAuthSlot2StateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot2StateIdx);
+    }
+    if (part_idx == RotOwnerAuthSlot3StateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot3StateIdx);
+    }
+    if (part_idx == ScratchFusesIdx) {
+      dai_addr inside `PART_ADDR_RANGE(ScratchFusesIdx);
     }
     if (part_idx == HwCfg0Idx) {
       dai_addr inside `PART_ADDR_RANGE(HwCfg0Idx);
     }
     if (part_idx == HwCfg1Idx) {
       dai_addr inside `PART_ADDR_RANGE(HwCfg1Idx);
+    }
+    if (part_idx == HwCfg2Idx) {
+      dai_addr inside `PART_ADDR_RANGE(HwCfg2Idx);
     }
     if (part_idx == Secret0Idx) {
       dai_addr inside `PART_ADDR_RANGE(Secret0Idx);
@@ -55,6 +82,9 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     }
     if (part_idx == Secret2Idx) {
       dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
+    }
+    if (part_idx == Secret3Idx) {
+      dai_addr inside `PART_ADDR_RANGE(Secret3Idx);
     }
     if (part_idx == LifeCycleIdx) {
       if (write_unused_addr) {
@@ -72,13 +102,21 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
         VendorTestDigestOffset,
         CreatorSwCfgDigestOffset,
         OwnerSwCfgDigestOffset,
-        RotCreatorAuthCodesignDigestOffset,
-        RotCreatorAuthStateDigestOffset,
+        RotOwnerAuthSlot0DigestOffset,
+        RotOwnerAuthSlot1DigestOffset,
+        RotOwnerAuthSlot2DigestOffset,
+        RotOwnerAuthSlot3DigestOffset,
+        RotOwnerAuthSlot0StateDigestOffset,
+        RotOwnerAuthSlot1StateDigestOffset,
+        RotOwnerAuthSlot2StateDigestOffset,
+        RotOwnerAuthSlot3StateDigestOffset,
         HwCfg0DigestOffset,
         HwCfg1DigestOffset,
+        HwCfg2DigestOffset,
         Secret0DigestOffset,
         Secret1DigestOffset,
-        Secret2DigestOffset
+        Secret2DigestOffset,
+        Secret3DigestOffset
       } :/ 1,
       [VendorTestOffset : '1] :/ 9
     };

@@ -73,8 +73,7 @@ package otp_ctrl_mem_bkdr_util_pkg;
 
   function automatic void otp_write_hw_cfg0_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [DeviceIdSize*8-1:0] device_id,
-      bit [ManufStateSize*8-1:0] manuf_state
+      bit [DeviceIdSize*8-1:0] device_id
   );
     bit [HwCfg0DigestSize*8-1:0] digest;
     bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
@@ -82,12 +81,8 @@ package otp_ctrl_mem_bkdr_util_pkg;
     for (int i = 0; i < DeviceIdSize; i += 4) begin
       mem_bkdr_util_h.write32(i + DeviceIdOffset, device_id[i*8+:32]);
     end
-    for (int i = 0; i < ManufStateSize; i += 4) begin
-      mem_bkdr_util_h.write32(i + ManufStateOffset, manuf_state[i*8+:32]);
-    end
 
     partition_data = {<<32{
-      manuf_state,
       device_id
     }};
     digest = cal_digest(HwCfg0Idx, partition_data);
@@ -116,6 +111,24 @@ package otp_ctrl_mem_bkdr_util_pkg;
     partition_data = {<<32{concat_data}};
     digest = cal_digest(HwCfg1Idx, partition_data);
     mem_bkdr_util_h.write64(HwCfg1DigestOffset, digest);
+  endfunction
+
+  function automatic void otp_write_hw_cfg2_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
+      bit [ManufStateSize*8-1:0] manuf_state
+  );
+    bit [HwCfg2DigestSize*8-1:0] digest;
+    bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
+
+    for (int i = 0; i < ManufStateSize; i += 4) begin
+      mem_bkdr_util_h.write32(i + ManufStateOffset, manuf_state[i*8+:32]);
+    end
+
+    partition_data = {<<32{
+      manuf_state
+    }};
+    digest = cal_digest(HwCfg2Idx, partition_data);
+    mem_bkdr_util_h.write64(HwCfg2DigestOffset, digest);
   endfunction
 
   function automatic void otp_write_secret0_partition(
@@ -193,13 +206,15 @@ package otp_ctrl_mem_bkdr_util_pkg;
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
       bit [RmaTokenSize*8-1:0] rma_token,
       bit [CreatorRootKeyShare0Size*8-1:0] creator_root_key_share0,
-      bit [CreatorRootKeyShare1Size*8-1:0] creator_root_key_share1
+      bit [CreatorRootKeyShare1Size*8-1:0] creator_root_key_share1,
+      bit [CreatorSeedSize*8-1:0] creator_seed
   );
     bit [Secret2DigestSize*8-1:0] digest;
     bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
     bit [RmaTokenSize*8-1:0] scrambled_rma_token;
     bit [CreatorRootKeyShare0Size*8-1:0] scrambled_creator_root_key_share0;
     bit [CreatorRootKeyShare1Size*8-1:0] scrambled_creator_root_key_share1;
+    bit [CreatorSeedSize*8-1:0] scrambled_creator_seed;
 
     for (int i = 0; i < RmaTokenSize; i += 8) begin
       scrambled_rma_token[i*8+:64] = scramble_data(
@@ -219,14 +234,43 @@ package otp_ctrl_mem_bkdr_util_pkg;
       mem_bkdr_util_h.write64(i + CreatorRootKeyShare1Offset,
                               scrambled_creator_root_key_share1[i*8+:64]);
     end
+    for (int i = 0; i < CreatorSeedSize; i += 8) begin
+      scrambled_creator_seed[i*8+:64] = scramble_data(
+          creator_seed[i*8+:64], Secret2Idx);
+      mem_bkdr_util_h.write64(i + CreatorSeedOffset,
+                              scrambled_creator_seed[i*8+:64]);
+    end
 
     partition_data = {<<32{
+      scrambled_creator_seed,
       scrambled_creator_root_key_share1,
       scrambled_creator_root_key_share0,
       scrambled_rma_token
     }};
     digest = cal_digest(Secret2Idx, partition_data);
     mem_bkdr_util_h.write64(Secret2DigestOffset, digest);
+  endfunction
+
+  function automatic void otp_write_secret3_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
+      bit [OwnerSeedSize*8-1:0] owner_seed
+  );
+    bit [Secret3DigestSize*8-1:0] digest;
+    bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
+    bit [OwnerSeedSize*8-1:0] scrambled_owner_seed;
+
+    for (int i = 0; i < OwnerSeedSize; i += 8) begin
+      scrambled_owner_seed[i*8+:64] = scramble_data(
+          owner_seed[i*8+:64], Secret3Idx);
+      mem_bkdr_util_h.write64(i + OwnerSeedOffset,
+                              scrambled_owner_seed[i*8+:64]);
+    end
+
+    partition_data = {<<32{
+      scrambled_owner_seed
+    }};
+    digest = cal_digest(Secret3Idx, partition_data);
+    mem_bkdr_util_h.write64(Secret3DigestOffset, digest);
   endfunction
 
   // Functions that clear the provisioning state of the buffered partitions.
@@ -244,6 +288,14 @@ package otp_ctrl_mem_bkdr_util_pkg;
   );
     for (int i = 0; i < HwCfg1Size; i += 4) begin
       mem_bkdr_util_h.write32(i + HwCfg1Offset, 32'h0);
+    end
+  endfunction
+
+  function automatic void otp_clear_hw_cfg2_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
+  );
+    for (int i = 0; i < HwCfg2Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + HwCfg2Offset, 32'h0);
     end
   endfunction
 
@@ -268,6 +320,14 @@ package otp_ctrl_mem_bkdr_util_pkg;
   );
     for (int i = 0; i < Secret2Size; i += 4) begin
       mem_bkdr_util_h.write32(i + Secret2Offset, 32'h0);
+    end
+  endfunction
+
+  function automatic void otp_clear_secret3_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
+  );
+    for (int i = 0; i < Secret3Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + Secret3Offset, 32'h0);
     end
   endfunction
 

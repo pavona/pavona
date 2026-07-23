@@ -207,17 +207,21 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (!enable) begin
-          $assertoff(0, "tb.dut.gen_partitions[5].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $assertoff(0, "tb.dut.gen_partitions[6].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $assertoff(0, "tb.dut.gen_partitions[7].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $assertoff(0, "tb.dut.gen_partitions[8].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $assertoff(0, "tb.dut.gen_partitions[9].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[13].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[14].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[15].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[16].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[17].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[18].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[19].gen_buffered.u_part_buf.ScrmblDataKnown_A");
         end else begin
-          $asserton(0, "tb.dut.gen_partitions[5].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $asserton(0, "tb.dut.gen_partitions[6].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $asserton(0, "tb.dut.gen_partitions[7].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $asserton(0, "tb.dut.gen_partitions[8].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $asserton(0, "tb.dut.gen_partitions[9].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[13].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[14].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[15].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[16].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[17].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[18].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[19].gen_buffered.u_part_buf.ScrmblDataKnown_A");
        end
       end
       SecCmPrimSparseFsmFlop, SecCmPrimDoubleLfsr, SecCmPrimOnehot: begin
