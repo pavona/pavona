@@ -237,6 +237,15 @@ module prim_alert_tb;
     $asserton(0, prim_alert_tb.i_alert_receiver.AckDiffOk_A);
     $display("[prim_alert_seq] Ack signal integrity error sequence finished!");
 
+    // Each of these directed scenarios expects to start from a clean, idle channel. Sequence 4
+    // requested an alert, which a fatal sender latches and keeps replaying until the next reset, so
+    // without intervention its handshakes would still be running underneath the ping-integrity check
+    // below rather than letting it exercise the ping path on its own. Reset here to bring the sender
+    // and receiver back to idle, then wait for the reset-initialization handshake to complete before
+    // driving new stimulus.
+    main_clk.apply_reset();
+    main_clk.wait_clks(WaitAlertInitDone);
+
     // Sequence 5) `Ping_p/n` integrity check sequence.
     // Disable the assertion at least two clock cycles before sending the ping request, because the
     // `PingDiffOk_A` assertion has ##2 delay.
