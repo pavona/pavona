@@ -169,6 +169,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     if (ral_name == cfg.sram_ral_name && get_sram_predict_tl_err(item, channel)) begin
       return 1;
     end
+    // A fault can make the RAM return a d_error the scoreboard can't predict. While
+    // fault injection is going on, accept the DUT's error response instead; let
+    // the fatal_error alert do the real check during fault injection.
+    if (cfg.is_fi_test && ral_name == cfg.sram_ral_name && channel == DataChannel &&
+        item.d_error) begin
+      return 1;
+    end
     return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
