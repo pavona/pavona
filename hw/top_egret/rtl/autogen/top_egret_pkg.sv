@@ -127,7 +127,7 @@ package top_egret_pkg;
   /**
    * Peripheral size in bytes for core device on otp_ctrl in top egret.
    */
-  parameter int unsigned TOP_EGRET_OTP_CTRL_CORE_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EGRET_OTP_CTRL_CORE_SIZE_BYTES = 32'h2000;
 
   /**
    * Peripheral base address for prim device on otp_macro in top egret.

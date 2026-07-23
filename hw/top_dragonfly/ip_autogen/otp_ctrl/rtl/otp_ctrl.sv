@@ -625,18 +625,18 @@ module otp_ctrl
       part_errors_reduced[RotOwnerAuthSlot0Idx];
     hw2reg.partition_status_0.rot_owner_auth_slot1_error.d =
       part_errors_reduced[RotOwnerAuthSlot1Idx];
-    hw2reg.partition_status_0.plat_integ_auth_slot0_error.d =
-      part_errors_reduced[PlatIntegAuthSlot0Idx];
-    hw2reg.partition_status_0.plat_integ_auth_slot1_error.d =
-      part_errors_reduced[PlatIntegAuthSlot1Idx];
-    hw2reg.partition_status_0.plat_owner_auth_slot0_error.d =
-      part_errors_reduced[PlatOwnerAuthSlot0Idx];
-    hw2reg.partition_status_0.plat_owner_auth_slot1_error.d =
-      part_errors_reduced[PlatOwnerAuthSlot1Idx];
-    hw2reg.partition_status_0.plat_owner_auth_slot2_error.d =
-      part_errors_reduced[PlatOwnerAuthSlot2Idx];
-    hw2reg.partition_status_0.plat_owner_auth_slot3_error.d =
-      part_errors_reduced[PlatOwnerAuthSlot3Idx];
+    hw2reg.partition_status_0.rot_owner_auth_slot2_error.d =
+      part_errors_reduced[RotOwnerAuthSlot2Idx];
+    hw2reg.partition_status_0.rot_owner_auth_slot3_error.d =
+      part_errors_reduced[RotOwnerAuthSlot3Idx];
+    hw2reg.partition_status_0.rot_owner_auth_slot0_state_error.d =
+      part_errors_reduced[RotOwnerAuthSlot0StateIdx];
+    hw2reg.partition_status_0.rot_owner_auth_slot1_state_error.d =
+      part_errors_reduced[RotOwnerAuthSlot1StateIdx];
+    hw2reg.partition_status_0.rot_owner_auth_slot2_state_error.d =
+      part_errors_reduced[RotOwnerAuthSlot2StateIdx];
+    hw2reg.partition_status_0.rot_owner_auth_slot3_state_error.d =
+      part_errors_reduced[RotOwnerAuthSlot3StateIdx];
     hw2reg.partition_status_0.ext_nvm_error.d = part_errors_reduced[ExtNvmIdx];
     hw2reg.partition_status_0.rom_patch_error.d = part_errors_reduced[RomPatchIdx];
     hw2reg.partition_status_0.soc_fuses_cp_error.d = part_errors_reduced[SocFusesCpIdx];

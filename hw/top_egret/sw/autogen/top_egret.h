@@ -243,7 +243,7 @@ extern "C" {
  * address between #TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR and
  * `TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR + TOP_EGRET_OTP_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_EGRET_OTP_CTRL_CORE_SIZE_BYTES 0x1000u
+#define TOP_EGRET_OTP_CTRL_CORE_SIZE_BYTES 0x2000u
 
 /**
  * Peripheral base address for prim device on otp_macro in top egret.

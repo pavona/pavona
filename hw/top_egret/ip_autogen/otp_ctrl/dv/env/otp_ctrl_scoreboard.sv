@@ -124,6 +124,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           otp_a[i] = ((i - Secret2Offset / TL_SIZE) % 2) ?
               data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
         end
+        // secret partitions have been scrambled before writing to OTP.
+        // here calculate the pre-scrambled raw data when clearing internal OTP to all 0s.
+        data = descramble_data(0, Secret3Idx);
+        for (int i = Secret3Offset / TL_SIZE;
+             i <= Secret3DigestOffset / TL_SIZE - 1;
+             i++) begin
+          otp_a[i] = ((i - Secret3Offset / TL_SIZE) % 2) ?
+              data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
+        end
         `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
         cfg.backdoor_clear_mem = 0;
         dai_wr_ip = 0;
@@ -267,6 +276,36 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             // Check otp_keymgr_key_t struct by item is easier to debug.
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.creator_root_key_share1_valid,
                          exp_keymgr_data.creator_root_key_share1_valid)
+            exp_keymgr_data.creator_seed_valid = get_otp_digest_val(Secret2Idx) != 0;
+            if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
+              for (int unsigned chunk =0; chunk < (CreatorSeedSize/4); chunk++) begin
+                // Key manager data is also extracted from the otp in 32bit chunks as it also is
+                // hend in a secret partition and needs to be descrambled before use
+                exp_keymgr_data.creator_seed[(chunk*TL_DW) +: TL_DW] =
+                                        read_from_otp_a((CreatorSeedOffset/4)+ chunk);
+              end
+            end else begin
+              exp_keymgr_data.creator_seed =
+                  top_egret_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[CreatorSeedOffset*8 +: CreatorSeedSize*8];
+            end
+            // Check otp_keymgr_key_t struct by item is easier to debug.
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.creator_seed_valid,
+                         exp_keymgr_data.creator_seed_valid)
+            exp_keymgr_data.owner_seed_valid = get_otp_digest_val(Secret3Idx) != 0;
+            if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
+              for (int unsigned chunk =0; chunk < (OwnerSeedSize/4); chunk++) begin
+                // Key manager data is also extracted from the otp in 32bit chunks as it also is
+                // hend in a secret partition and needs to be descrambled before use
+                exp_keymgr_data.owner_seed[(chunk*TL_DW) +: TL_DW] =
+                                        read_from_otp_a((OwnerSeedOffset/4)+ chunk);
+              end
+            end else begin
+              exp_keymgr_data.owner_seed =
+                  top_egret_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[OwnerSeedOffset*8 +: OwnerSeedSize*8];
+            end
+            // Check otp_keymgr_key_t struct by item is easier to debug.
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.owner_seed_valid,
+                         exp_keymgr_data.owner_seed_valid)
 
             // Check otp_keymgr_key_t struct all together in case there is any missed item.
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
@@ -773,10 +812,36 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             sw_read_lock = `gmv(ral.creator_sw_cfg_read_lock) == 0;
           end else if (part_idx == OwnerSwCfgIdx) begin
             sw_read_lock = `gmv(ral.owner_sw_cfg_read_lock) == 0;
-          end else if (part_idx == RotCreatorAuthCodesignIdx) begin
-            sw_read_lock = `gmv(ral.rot_creator_auth_codesign_read_lock) == 0;
-          end else if (part_idx == RotCreatorAuthStateIdx) begin
-            sw_read_lock = `gmv(ral.rot_creator_auth_state_read_lock) == 0;
+          end else if (part_idx == OwnershipSlotStateIdx) begin
+            sw_read_lock = `gmv(ral.ownership_slot_state_read_lock) == 0;
+          end else if (part_idx == RotCreatorIdentityIdx) begin
+            sw_read_lock = `gmv(ral.rot_creator_identity_read_lock) == 0;
+          end else if (part_idx == RotOwnerAuthSlot0Idx) begin
+            sw_read_lock = `gmv(ral.rot_owner_auth_slot0_read_lock) == 0;
+          end else if (part_idx == RotOwnerAuthSlot1Idx) begin
+            sw_read_lock = `gmv(ral.rot_owner_auth_slot1_read_lock) == 0;
+          end else if (part_idx == RotOwnerAuthSlot2Idx) begin
+            sw_read_lock = `gmv(ral.rot_owner_auth_slot2_read_lock) == 0;
+          end else if (part_idx == RotOwnerAuthSlot3Idx) begin
+            sw_read_lock = `gmv(ral.rot_owner_auth_slot3_read_lock) == 0;
+          end else if (part_idx == RotOwnerAuthSlot0StateIdx) begin
+            sw_read_lock = `gmv(ral.rot_owner_auth_slot0_state_read_lock) == 0;
+          end else if (part_idx == RotOwnerAuthSlot1StateIdx) begin
+            sw_read_lock = `gmv(ral.rot_owner_auth_slot1_state_read_lock) == 0;
+          end else if (part_idx == RotOwnerAuthSlot2StateIdx) begin
+            sw_read_lock = `gmv(ral.rot_owner_auth_slot2_state_read_lock) == 0;
+          end else if (part_idx == RotOwnerAuthSlot3StateIdx) begin
+            sw_read_lock = `gmv(ral.rot_owner_auth_slot3_state_read_lock) == 0;
+          end else if (part_idx == ExtNvmIdx) begin
+            sw_read_lock = `gmv(ral.ext_nvm_read_lock) == 0;
+          end else if (part_idx == RomPatchIdx) begin
+            sw_read_lock = `gmv(ral.rom_patch_read_lock) == 0;
+          end else if (part_idx == SocFusesCpIdx) begin
+            sw_read_lock = `gmv(ral.soc_fuses_cp_read_lock) == 0;
+          end else if (part_idx == SocFusesFtIdx) begin
+            sw_read_lock = `gmv(ral.soc_fuses_ft_read_lock) == 0;
+          end else if (part_idx == ScratchFusesIdx) begin
+            sw_read_lock = `gmv(ral.scratch_fuses_read_lock) == 0;
           end
 
           // LC partition cannot be access via DAI
@@ -1309,23 +1374,249 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                                    otp_partition_e'(access_part_idx));
         end
       end
+      "err_code_13": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(13), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_14": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(14), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_15": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(15), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_16": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(16), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_17": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(17), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_18": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(18), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_19": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(19), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_20": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(20), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_21": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(21), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_22": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(22), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_23": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(23), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_24": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(24), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_25": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(25), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_26": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(26), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
+      "err_code_27": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(part_idx_e'(27), item.d_data,
+                                   otp_partition_e'(access_part_idx));
+        end
+      end
       "vendor_test_digest_0", "vendor_test_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1",
       "owner_sw_cfg_digest_0", "owner_sw_cfg_digest_1",
-      "rot_creator_auth_codesign_digest_0", "rot_creator_auth_codesign_digest_1",
-      "rot_creator_auth_state_digest_0", "rot_creator_auth_state_digest_1",
+      "rot_creator_identity_digest_0", "rot_creator_identity_digest_1",
+      "rot_owner_auth_slot0_digest_0", "rot_owner_auth_slot0_digest_1",
+      "rot_owner_auth_slot1_digest_0", "rot_owner_auth_slot1_digest_1",
+      "rot_owner_auth_slot2_digest_0", "rot_owner_auth_slot2_digest_1",
+      "rot_owner_auth_slot3_digest_0", "rot_owner_auth_slot3_digest_1",
+      "rot_owner_auth_slot0_state_digest_0", "rot_owner_auth_slot0_state_digest_1",
+      "rot_owner_auth_slot1_state_digest_0", "rot_owner_auth_slot1_state_digest_1",
+      "rot_owner_auth_slot2_state_digest_0", "rot_owner_auth_slot2_state_digest_1",
+      "rot_owner_auth_slot3_state_digest_0", "rot_owner_auth_slot3_state_digest_1",
+      "rom_patch_digest_0", "rom_patch_digest_1",
+      "soc_fuses_cp_digest_0", "soc_fuses_cp_digest_1",
+      "soc_fuses_ft_digest_0", "soc_fuses_ft_digest_1",
       "hw_cfg0_digest_0", "hw_cfg0_digest_1",
       "hw_cfg1_digest_0", "hw_cfg1_digest_1",
+      "hw_cfg2_digest_0", "hw_cfg2_digest_1",
       "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1",
-      "secret2_digest_0", "secret2_digest_1": begin
+      "secret2_digest_0", "secret2_digest_1",
+      "secret3_digest_0", "secret3_digest_1": begin
         if (ignore_digest_chk) do_read_check = 0;
+        if ((csr_name == "ownership_slot_state_digest_0" || csr_name == "ownership_slot_state_digest_1")
+            && ignore_digest_zero_chk["OwnershipSlotStateIdx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "OwnershipSlotStateIdx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "rot_creator_identity_digest_0" || csr_name == "rot_creator_identity_digest_1")
+            && ignore_digest_zero_chk["RotCreatorIdentityIdx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "RotCreatorIdentityIdx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "rot_owner_auth_slot0_digest_0" || csr_name == "rot_owner_auth_slot0_digest_1")
+            && ignore_digest_zero_chk["RotOwnerAuthSlot0Idx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "RotOwnerAuthSlot0Idx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "rot_owner_auth_slot1_digest_0" || csr_name == "rot_owner_auth_slot1_digest_1")
+            && ignore_digest_zero_chk["RotOwnerAuthSlot1Idx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "RotOwnerAuthSlot1Idx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "rot_owner_auth_slot2_digest_0" || csr_name == "rot_owner_auth_slot2_digest_1")
+            && ignore_digest_zero_chk["RotOwnerAuthSlot2Idx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "RotOwnerAuthSlot2Idx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "rot_owner_auth_slot3_digest_0" || csr_name == "rot_owner_auth_slot3_digest_1")
+            && ignore_digest_zero_chk["RotOwnerAuthSlot3Idx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "RotOwnerAuthSlot3Idx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "ext_nvm_digest_0" || csr_name == "ext_nvm_digest_1")
+            && ignore_digest_zero_chk["ExtNvmIdx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "ExtNvmIdx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "rom_patch_digest_0" || csr_name == "rom_patch_digest_1")
+            && ignore_digest_zero_chk["RomPatchIdx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "RomPatchIdx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "scratch_fuses_digest_0" || csr_name == "scratch_fuses_digest_1")
+            && ignore_digest_zero_chk["ScratchFusesIdx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "ScratchFusesIdx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "hw_cfg2_digest_0" || csr_name == "hw_cfg2_digest_1")
+            && ignore_digest_zero_chk["HwCfg2Idx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "HwCfg2Idx"), UVM_LOW);
+          do_read_check = 0;
+        end
+        if ((csr_name == "secret3_digest_0" || csr_name == "secret3_digest_1")
+            && ignore_digest_zero_chk["Secret3Idx"]) begin
+          `uvm_info(`gfn, $sformatf("Ignoring Digest for Zeroized Partition: %s",
+                                    "Secret3Idx"), UVM_LOW);
+          do_read_check = 0;
+        end
       end
       "vendor_test_read_lock",
       "creator_sw_cfg_read_lock",
       "owner_sw_cfg_read_lock",
-      "rot_creator_auth_codesign_read_lock",
-      "rot_creator_auth_state_read_lock",
+      "ownership_slot_state_read_lock",
+      "rot_creator_identity_read_lock",
+      "rot_owner_auth_slot0_read_lock",
+      "rot_owner_auth_slot1_read_lock",
+      "rot_owner_auth_slot2_read_lock",
+      "rot_owner_auth_slot3_read_lock",
+      "rot_owner_auth_slot0_state_read_lock",
+      "rot_owner_auth_slot1_state_read_lock",
+      "rot_owner_auth_slot2_state_read_lock",
+      "rot_owner_auth_slot3_state_read_lock",
+      "ext_nvm_read_lock",
+      "rom_patch_read_lock",
+      "soc_fuses_cp_read_lock",
+      "soc_fuses_ft_read_lock",
+      "scratch_fuses_read_lock",
       "direct_access_wdata_0",
       "direct_access_wdata_1",
       "direct_access_address",
@@ -1534,18 +1825,88 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]),
           .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.rot_creator_auth_codesign_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotCreatorAuthCodesignIdx]]),
+    void'(ral.rot_creator_identity_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotCreatorIdentityIdx]]),
           .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.rot_creator_auth_codesign_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotCreatorAuthCodesignIdx] + 1]),
+    void'(ral.rot_creator_identity_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotCreatorIdentityIdx] + 1]),
           .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.rot_creator_auth_state_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotCreatorAuthStateIdx]]),
+    void'(ral.rot_owner_auth_slot0_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot0Idx]]),
           .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.rot_creator_auth_state_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotCreatorAuthStateIdx] + 1]),
+    void'(ral.rot_owner_auth_slot0_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot0Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.rot_owner_auth_slot1_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot1Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.rot_owner_auth_slot1_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot1Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.rot_owner_auth_slot2_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot2Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.rot_owner_auth_slot2_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot2Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.rot_owner_auth_slot3_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot3Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.rot_owner_auth_slot3_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot3Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.rot_owner_auth_slot0_state_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot0StateIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.rot_owner_auth_slot0_state_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot0StateIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.rot_owner_auth_slot1_state_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot1StateIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.rot_owner_auth_slot1_state_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot1StateIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.rot_owner_auth_slot2_state_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot2StateIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.rot_owner_auth_slot2_state_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot2StateIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.rot_owner_auth_slot3_state_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot3StateIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.rot_owner_auth_slot3_state_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RotOwnerAuthSlot3StateIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.rom_patch_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RomPatchIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.rom_patch_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[RomPatchIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.soc_fuses_cp_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[SocFusesCpIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.soc_fuses_cp_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[SocFusesCpIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.soc_fuses_ft_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[SocFusesFtIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.soc_fuses_ft_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[SocFusesFtIdx] + 1]),
           .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.hw_cfg0_digest[0].predict(
@@ -1560,6 +1921,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           .kind(UVM_PREDICT_DIRECT)));
     void'(ral.hw_cfg1_digest[1].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg1Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.hw_cfg2_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg2Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg2_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg2Idx] + 1]),
           .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.secret0_digest[0].predict(
@@ -1581,6 +1949,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           .kind(UVM_PREDICT_DIRECT)));
     void'(ral.secret2_digest[1].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.secret3_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret3Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret3_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret3Idx] + 1]),
           .kind(UVM_PREDICT_DIRECT)));
   endfunction
 
@@ -1624,9 +1999,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     case (part_idx)
       HwCfg0Idx: mem_q = otp_a[HwCfg0Offset / TL_SIZE : HwCfg0DigestOffset / TL_SIZE - 1];
       HwCfg1Idx: mem_q = otp_a[HwCfg1Offset / TL_SIZE : HwCfg1DigestOffset / TL_SIZE - 1];
+      HwCfg2Idx: mem_q = otp_a[HwCfg2Offset / TL_SIZE : HwCfg2DigestOffset / TL_SIZE - 1];
       Secret0Idx: mem_q = otp_a[Secret0Offset / TL_SIZE : Secret0DigestOffset / TL_SIZE - 1];
       Secret1Idx: mem_q = otp_a[Secret1Offset / TL_SIZE : Secret1DigestOffset / TL_SIZE - 1];
       Secret2Idx: mem_q = otp_a[Secret2Offset / TL_SIZE : Secret2DigestOffset / TL_SIZE - 1];
+      Secret3Idx: mem_q = otp_a[Secret3Offset / TL_SIZE : Secret3DigestOffset / TL_SIZE - 1];
       default: begin
         `uvm_fatal(`gfn, $sformatf("Access unexpected partition %0d", part_idx))
       end
@@ -1821,13 +2198,53 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         digest = {`gmv(ral.owner_sw_cfg_digest[1]),
                   `gmv(ral.owner_sw_cfg_digest[0])};
       end
-      RotCreatorAuthCodesignIdx: begin
-        digest = {`gmv(ral.rot_creator_auth_codesign_digest[1]),
-                  `gmv(ral.rot_creator_auth_codesign_digest[0])};
+      RotCreatorIdentityIdx: begin
+        digest = {`gmv(ral.rot_creator_identity_digest[1]),
+                  `gmv(ral.rot_creator_identity_digest[0])};
       end
-      RotCreatorAuthStateIdx: begin
-        digest = {`gmv(ral.rot_creator_auth_state_digest[1]),
-                  `gmv(ral.rot_creator_auth_state_digest[0])};
+      RotOwnerAuthSlot0Idx: begin
+        digest = {`gmv(ral.rot_owner_auth_slot0_digest[1]),
+                  `gmv(ral.rot_owner_auth_slot0_digest[0])};
+      end
+      RotOwnerAuthSlot1Idx: begin
+        digest = {`gmv(ral.rot_owner_auth_slot1_digest[1]),
+                  `gmv(ral.rot_owner_auth_slot1_digest[0])};
+      end
+      RotOwnerAuthSlot2Idx: begin
+        digest = {`gmv(ral.rot_owner_auth_slot2_digest[1]),
+                  `gmv(ral.rot_owner_auth_slot2_digest[0])};
+      end
+      RotOwnerAuthSlot3Idx: begin
+        digest = {`gmv(ral.rot_owner_auth_slot3_digest[1]),
+                  `gmv(ral.rot_owner_auth_slot3_digest[0])};
+      end
+      RotOwnerAuthSlot0StateIdx: begin
+        digest = {`gmv(ral.rot_owner_auth_slot0_state_digest[1]),
+                  `gmv(ral.rot_owner_auth_slot0_state_digest[0])};
+      end
+      RotOwnerAuthSlot1StateIdx: begin
+        digest = {`gmv(ral.rot_owner_auth_slot1_state_digest[1]),
+                  `gmv(ral.rot_owner_auth_slot1_state_digest[0])};
+      end
+      RotOwnerAuthSlot2StateIdx: begin
+        digest = {`gmv(ral.rot_owner_auth_slot2_state_digest[1]),
+                  `gmv(ral.rot_owner_auth_slot2_state_digest[0])};
+      end
+      RotOwnerAuthSlot3StateIdx: begin
+        digest = {`gmv(ral.rot_owner_auth_slot3_state_digest[1]),
+                  `gmv(ral.rot_owner_auth_slot3_state_digest[0])};
+      end
+      RomPatchIdx: begin
+        digest = {`gmv(ral.rom_patch_digest[1]),
+                  `gmv(ral.rom_patch_digest[0])};
+      end
+      SocFusesCpIdx: begin
+        digest = {`gmv(ral.soc_fuses_cp_digest[1]),
+                  `gmv(ral.soc_fuses_cp_digest[0])};
+      end
+      SocFusesFtIdx: begin
+        digest = {`gmv(ral.soc_fuses_ft_digest[1]),
+                  `gmv(ral.soc_fuses_ft_digest[0])};
       end
       HwCfg0Idx: begin
         digest = {`gmv(ral.hw_cfg0_digest[1]),
@@ -1836,6 +2253,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       HwCfg1Idx: begin
         digest = {`gmv(ral.hw_cfg1_digest[1]),
                   `gmv(ral.hw_cfg1_digest[0])};
+      end
+      HwCfg2Idx: begin
+        digest = {`gmv(ral.hw_cfg2_digest[1]),
+                  `gmv(ral.hw_cfg2_digest[0])};
       end
       Secret0Idx: begin
         digest = {`gmv(ral.secret0_digest[1]),
@@ -1848,6 +2269,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       Secret2Idx: begin
         digest = {`gmv(ral.secret2_digest[1]),
                   `gmv(ral.secret2_digest[0])};
+      end
+      Secret3Idx: begin
+        digest = {`gmv(ral.secret3_digest[1]),
+                  `gmv(ral.secret3_digest[0])};
       end
       default: `uvm_fatal(`gfn, $sformatf("Partition %0d does not have digest", part_idx))
     endcase
@@ -1943,36 +2368,263 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           return 0;
         end
       end
-      if (`gmv(ral.rot_creator_auth_codesign_read_lock) == 0 ||
+      if (`gmv(ral.ownership_slot_state_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
         if (addr inside {
-            [block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset :
-             block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset +
-             RotCreatorAuthCodesignSize - 1]}) begin
+            [block.mem_ranges[0].start_addr + OwnershipSlotStateOffset :
+             block.mem_ranges[0].start_addr + OwnershipSlotStateOffset +
+             OwnershipSlotStateSize - 1]}) begin
           predict_err(OtpPartitionErrorIdx,
-                      OtpPartitionRotCreatorAuthCodesignIdx,
+                      OtpPartitionOwnershipSlotStateIdx,
                       OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
-            cov.unbuf_access_lock_cg_wrap[RotCreatorAuthCodesignIdx].sample(.read_lock(1),
-                .write_lock(get_digest_reg_val(RotCreatorAuthCodesignIdx) != 0), .is_write(0));
+            // TODO: we should probably create a different covergroup
+            // for unbuffered partitions without digest.
+            cov.unbuf_access_lock_cg_wrap[OwnershipSlotStateIdx].sample(.read_lock(1),
+                .write_lock(0), .is_write(0));
           end
           return 0;
         end
       end
-      if (`gmv(ral.rot_creator_auth_state_read_lock) == 0 ||
+      if (`gmv(ral.rot_creator_identity_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
         if (addr inside {
-            [block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset :
-             block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset +
-             RotCreatorAuthStateSize - 1]}) begin
+            [block.mem_ranges[0].start_addr + RotCreatorIdentityOffset :
+             block.mem_ranges[0].start_addr + RotCreatorIdentityOffset +
+             RotCreatorIdentitySize - 1]}) begin
           predict_err(OtpPartitionErrorIdx,
-                      OtpPartitionRotCreatorAuthStateIdx,
+                      OtpPartitionRotCreatorIdentityIdx,
                       OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
-            cov.unbuf_access_lock_cg_wrap[RotCreatorAuthStateIdx].sample(.read_lock(1),
-                .write_lock(get_digest_reg_val(RotCreatorAuthStateIdx) != 0), .is_write(0));
+            cov.unbuf_access_lock_cg_wrap[RotCreatorIdentityIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotCreatorIdentityIdx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rot_owner_auth_slot0_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RotOwnerAuthSlot0Offset :
+             block.mem_ranges[0].start_addr + RotOwnerAuthSlot0Offset +
+             RotOwnerAuthSlot0Size - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotOwnerAuthSlot0Idx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RotOwnerAuthSlot0Idx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotOwnerAuthSlot0Idx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rot_owner_auth_slot1_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RotOwnerAuthSlot1Offset :
+             block.mem_ranges[0].start_addr + RotOwnerAuthSlot1Offset +
+             RotOwnerAuthSlot1Size - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotOwnerAuthSlot1Idx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RotOwnerAuthSlot1Idx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotOwnerAuthSlot1Idx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rot_owner_auth_slot2_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RotOwnerAuthSlot2Offset :
+             block.mem_ranges[0].start_addr + RotOwnerAuthSlot2Offset +
+             RotOwnerAuthSlot2Size - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotOwnerAuthSlot2Idx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RotOwnerAuthSlot2Idx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotOwnerAuthSlot2Idx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rot_owner_auth_slot3_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RotOwnerAuthSlot3Offset :
+             block.mem_ranges[0].start_addr + RotOwnerAuthSlot3Offset +
+             RotOwnerAuthSlot3Size - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotOwnerAuthSlot3Idx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RotOwnerAuthSlot3Idx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotOwnerAuthSlot3Idx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rot_owner_auth_slot0_state_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RotOwnerAuthSlot0StateOffset :
+             block.mem_ranges[0].start_addr + RotOwnerAuthSlot0StateOffset +
+             RotOwnerAuthSlot0StateSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotOwnerAuthSlot0StateIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RotOwnerAuthSlot0StateIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotOwnerAuthSlot0StateIdx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rot_owner_auth_slot1_state_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RotOwnerAuthSlot1StateOffset :
+             block.mem_ranges[0].start_addr + RotOwnerAuthSlot1StateOffset +
+             RotOwnerAuthSlot1StateSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotOwnerAuthSlot1StateIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RotOwnerAuthSlot1StateIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotOwnerAuthSlot1StateIdx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rot_owner_auth_slot2_state_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RotOwnerAuthSlot2StateOffset :
+             block.mem_ranges[0].start_addr + RotOwnerAuthSlot2StateOffset +
+             RotOwnerAuthSlot2StateSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotOwnerAuthSlot2StateIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RotOwnerAuthSlot2StateIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotOwnerAuthSlot2StateIdx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rot_owner_auth_slot3_state_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RotOwnerAuthSlot3StateOffset :
+             block.mem_ranges[0].start_addr + RotOwnerAuthSlot3StateOffset +
+             RotOwnerAuthSlot3StateSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotOwnerAuthSlot3StateIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RotOwnerAuthSlot3StateIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RotOwnerAuthSlot3StateIdx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.ext_nvm_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + ExtNvmOffset :
+             block.mem_ranges[0].start_addr + ExtNvmOffset +
+             ExtNvmSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionExtNvmIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            // TODO: we should probably create a different covergroup
+            // for unbuffered partitions without digest.
+            cov.unbuf_access_lock_cg_wrap[ExtNvmIdx].sample(.read_lock(1),
+                .write_lock(0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.rom_patch_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + RomPatchOffset :
+             block.mem_ranges[0].start_addr + RomPatchOffset +
+             RomPatchSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRomPatchIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[RomPatchIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(RomPatchIdx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.soc_fuses_cp_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + SocFusesCpOffset :
+             block.mem_ranges[0].start_addr + SocFusesCpOffset +
+             SocFusesCpSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionSocFusesCpIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[SocFusesCpIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(SocFusesCpIdx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.soc_fuses_ft_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + SocFusesFtOffset :
+             block.mem_ranges[0].start_addr + SocFusesFtOffset +
+             SocFusesFtSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionSocFusesFtIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[SocFusesFtIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(SocFusesFtIdx) != 0), .is_write(0));
+          end
+          return 0;
+        end
+      end
+      if (`gmv(ral.scratch_fuses_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [block.mem_ranges[0].start_addr + ScratchFusesOffset :
+             block.mem_ranges[0].start_addr + ScratchFusesOffset +
+             ScratchFusesSize - 1]}) begin
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionScratchFusesIdx,
+                      OtpAccessError);
+          custom_err = 1;
+          if (cfg.en_cov) begin
+            // TODO: we should probably create a different covergroup
+            // for unbuffered partitions without digest.
+            cov.unbuf_access_lock_cg_wrap[ScratchFusesIdx].sample(.read_lock(1),
+                .write_lock(0), .is_write(0));
           end
           return 0;
         end

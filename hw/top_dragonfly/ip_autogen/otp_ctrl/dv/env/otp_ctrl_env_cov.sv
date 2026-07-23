@@ -69,18 +69,18 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
         ral.rot_owner_auth_slot0_digest[1].get_offset(),
         ral.rot_owner_auth_slot1_digest[0].get_offset(),
         ral.rot_owner_auth_slot1_digest[1].get_offset(),
-        ral.plat_integ_auth_slot0_digest[0].get_offset(),
-        ral.plat_integ_auth_slot0_digest[1].get_offset(),
-        ral.plat_integ_auth_slot1_digest[0].get_offset(),
-        ral.plat_integ_auth_slot1_digest[1].get_offset(),
-        ral.plat_owner_auth_slot0_digest[0].get_offset(),
-        ral.plat_owner_auth_slot0_digest[1].get_offset(),
-        ral.plat_owner_auth_slot1_digest[0].get_offset(),
-        ral.plat_owner_auth_slot1_digest[1].get_offset(),
-        ral.plat_owner_auth_slot2_digest[0].get_offset(),
-        ral.plat_owner_auth_slot2_digest[1].get_offset(),
-        ral.plat_owner_auth_slot3_digest[0].get_offset(),
-        ral.plat_owner_auth_slot3_digest[1].get_offset(),
+        ral.rot_owner_auth_slot2_digest[0].get_offset(),
+        ral.rot_owner_auth_slot2_digest[1].get_offset(),
+        ral.rot_owner_auth_slot3_digest[0].get_offset(),
+        ral.rot_owner_auth_slot3_digest[1].get_offset(),
+        ral.rot_owner_auth_slot0_state_digest[0].get_offset(),
+        ral.rot_owner_auth_slot0_state_digest[1].get_offset(),
+        ral.rot_owner_auth_slot1_state_digest[0].get_offset(),
+        ral.rot_owner_auth_slot1_state_digest[1].get_offset(),
+        ral.rot_owner_auth_slot2_state_digest[0].get_offset(),
+        ral.rot_owner_auth_slot2_state_digest[1].get_offset(),
+        ral.rot_owner_auth_slot3_state_digest[0].get_offset(),
+        ral.rot_owner_auth_slot3_state_digest[1].get_offset(),
         ral.rom_patch_digest[0].get_offset(),
         ral.rom_patch_digest[1].get_offset(),
         ral.soc_fuses_cp_digest[0].get_offset(),
@@ -209,12 +209,12 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     rot_creator_identity_lock: coverpoint parts_locked[4];
     rot_owner_auth_slot0_lock: coverpoint parts_locked[5];
     rot_owner_auth_slot1_lock: coverpoint parts_locked[6];
-    plat_integ_auth_slot0_lock: coverpoint parts_locked[7];
-    plat_integ_auth_slot1_lock: coverpoint parts_locked[8];
-    plat_owner_auth_slot0_lock: coverpoint parts_locked[9];
-    plat_owner_auth_slot1_lock: coverpoint parts_locked[10];
-    plat_owner_auth_slot2_lock: coverpoint parts_locked[11];
-    plat_owner_auth_slot3_lock: coverpoint parts_locked[12];
+    rot_owner_auth_slot2_lock: coverpoint parts_locked[7];
+    rot_owner_auth_slot3_lock: coverpoint parts_locked[8];
+    rot_owner_auth_slot0_state_lock: coverpoint parts_locked[9];
+    rot_owner_auth_slot1_state_lock: coverpoint parts_locked[10];
+    rot_owner_auth_slot2_state_lock: coverpoint parts_locked[11];
+    rot_owner_auth_slot3_state_lock: coverpoint parts_locked[12];
     ext_nvm_lock: coverpoint parts_locked[13];
     rom_patch_lock: coverpoint parts_locked[14];
     soc_fuses_cp_lock: coverpoint parts_locked[15];
@@ -285,12 +285,12 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       bins rot_creator_identity = {RotCreatorIdentityIdx};
       bins rot_owner_auth_slot0 = {RotOwnerAuthSlot0Idx};
       bins rot_owner_auth_slot1 = {RotOwnerAuthSlot1Idx};
-      bins plat_integ_auth_slot0 = {PlatIntegAuthSlot0Idx};
-      bins plat_integ_auth_slot1 = {PlatIntegAuthSlot1Idx};
-      bins plat_owner_auth_slot0 = {PlatOwnerAuthSlot0Idx};
-      bins plat_owner_auth_slot1 = {PlatOwnerAuthSlot1Idx};
-      bins plat_owner_auth_slot2 = {PlatOwnerAuthSlot2Idx};
-      bins plat_owner_auth_slot3 = {PlatOwnerAuthSlot3Idx};
+      bins rot_owner_auth_slot2 = {RotOwnerAuthSlot2Idx};
+      bins rot_owner_auth_slot3 = {RotOwnerAuthSlot3Idx};
+      bins rot_owner_auth_slot0_state = {RotOwnerAuthSlot0StateIdx};
+      bins rot_owner_auth_slot1_state = {RotOwnerAuthSlot1StateIdx};
+      bins rot_owner_auth_slot2_state = {RotOwnerAuthSlot2StateIdx};
+      bins rot_owner_auth_slot3_state = {RotOwnerAuthSlot3StateIdx};
       bins ext_nvm = {ExtNvmIdx};
       bins rom_patch = {RomPatchIdx};
       bins soc_fuses_cp = {SocFusesCpIdx};
@@ -358,6 +358,10 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       ignore_bins part_not_zeroizable =
            binsof (zeroizable) intersect {1}
         && binsof (part_idx) intersect {
+          RotOwnerAuthSlot0StateIdx,
+          RotOwnerAuthSlot1StateIdx,
+          RotOwnerAuthSlot2StateIdx,
+          RotOwnerAuthSlot3StateIdx,
           SocFusesCpIdx,
           SocFusesFtIdx,
           LifeCycleIdx
@@ -370,6 +374,10 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       ignore_bins part_not_zeroizable_no_zero_addr =
            binsof (zeroizable) intersect {0}
         && binsof (part_idx) intersect {
+          RotOwnerAuthSlot0StateIdx,
+          RotOwnerAuthSlot1StateIdx,
+          RotOwnerAuthSlot2StateIdx,
+          RotOwnerAuthSlot3StateIdx,
           SocFusesCpIdx,
           SocFusesFtIdx,
           LifeCycleIdx
@@ -386,12 +394,8 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
           RotCreatorIdentityIdx,
           RotOwnerAuthSlot0Idx,
           RotOwnerAuthSlot1Idx,
-          PlatIntegAuthSlot0Idx,
-          PlatIntegAuthSlot1Idx,
-          PlatOwnerAuthSlot0Idx,
-          PlatOwnerAuthSlot1Idx,
-          PlatOwnerAuthSlot2Idx,
-          PlatOwnerAuthSlot3Idx,
+          RotOwnerAuthSlot2Idx,
+          RotOwnerAuthSlot3Idx,
           ExtNvmIdx,
           RomPatchIdx,
           ScratchFusesIdx,
@@ -412,6 +416,10 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     coverpoint part_idx
     {
       ignore_bins part_not_zeroizable = {
+          RotOwnerAuthSlot0StateIdx,
+          RotOwnerAuthSlot1StateIdx,
+          RotOwnerAuthSlot2StateIdx,
+          RotOwnerAuthSlot3StateIdx,
           SocFusesCpIdx,
           SocFusesFtIdx,
           LifeCycleIdx
@@ -547,22 +555,22 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       RotOwnerAuthSlot1Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      PlatIntegAuthSlot0Idx: begin
+      RotOwnerAuthSlot2Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      PlatIntegAuthSlot1Idx: begin
+      RotOwnerAuthSlot3Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      PlatOwnerAuthSlot0Idx: begin
+      RotOwnerAuthSlot0StateIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      PlatOwnerAuthSlot1Idx: begin
+      RotOwnerAuthSlot1StateIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      PlatOwnerAuthSlot2Idx: begin
+      RotOwnerAuthSlot2StateIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      PlatOwnerAuthSlot3Idx: begin
+      RotOwnerAuthSlot3StateIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
       ExtNvmIdx: begin

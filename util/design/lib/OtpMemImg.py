@@ -301,8 +301,6 @@ class OtpMemImg(OtpMemMap):
         else:
             # Key accounting
             part_check = part.copy()
-            if len(part['items']) == 0:
-                log.warning("Partition does not contain any items.")
 
         # Key accounting
         del part_check['items']

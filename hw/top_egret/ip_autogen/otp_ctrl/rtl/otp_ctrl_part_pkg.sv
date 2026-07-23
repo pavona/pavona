@@ -15,7 +15,7 @@ package otp_ctrl_part_pkg;
   // Scrambling Constants and Types //
   ////////////////////////////////////
 
-  parameter int NumScrmblKeys = 3;
+  parameter int NumScrmblKeys = 4;
   parameter int NumDigestSets = 4;
 
   parameter int ScrmblKeySelWidth = vbits(NumScrmblKeys);
@@ -36,7 +36,8 @@ package otp_ctrl_part_pkg;
   typedef enum logic [ConstSelWidth-1:0] {
     Secret0Key,
     Secret1Key,
-    Secret2Key
+    Secret2Key,
+    Secret3Key
   } key_sel_e;
 
   typedef enum logic [ConstSelWidth-1:0] {
@@ -101,7 +102,7 @@ package otp_ctrl_part_pkg;
     // VENDOR_TEST
     '{
       variant:          Unbuffered,
-      offset:           11'd0,
+      offset:           12'd0,
       size:             64,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -118,8 +119,8 @@ package otp_ctrl_part_pkg;
     // CREATOR_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           11'd64,
-      size:             368,
+      offset:           12'd64,
+      size:             392,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -135,8 +136,8 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           11'd432,
-      size:             712,
+      offset:           12'd456,
+      size:             640,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -149,11 +150,113 @@ package otp_ctrl_part_pkg;
       zeroizable:       1'b0,
       ignore_read_lock_in_rma: 1'b0
     },
-    // ROT_CREATOR_AUTH_CODESIGN
+    // OWNERSHIP_SLOT_STATE
     '{
       variant:          Unbuffered,
-      offset:           11'd1144,
-      size:             472,
+      offset:           12'd1096,
+      size:             8,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b0,
+      write_lock:       1'b0,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_CREATOR_IDENTITY
+    '{
+      variant:          Unbuffered,
+      offset:           12'd1104,
+      size:             800,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT0
+    '{
+      variant:          Unbuffered,
+      offset:           12'd1904,
+      size:             120,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT1
+    '{
+      variant:          Unbuffered,
+      offset:           12'd2024,
+      size:             120,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT2
+    '{
+      variant:          Unbuffered,
+      offset:           12'd2144,
+      size:             120,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT3
+    '{
+      variant:          Unbuffered,
+      offset:           12'd2264,
+      size:             120,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT0_STATE
+    '{
+      variant:          Unbuffered,
+      offset:           12'd2384,
+      size:             24,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -166,11 +269,11 @@ package otp_ctrl_part_pkg;
       zeroizable:       1'b0,
       ignore_read_lock_in_rma: 1'b0
     },
-    // ROT_CREATOR_AUTH_STATE
+    // ROT_OWNER_AUTH_SLOT1_STATE
     '{
       variant:          Unbuffered,
-      offset:           11'd1616,
-      size:             40,
+      offset:           12'd2408,
+      size:             24,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -181,13 +284,132 @@ package otp_ctrl_part_pkg;
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
       zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT2_STATE
+    '{
+      variant:          Unbuffered,
+      offset:           12'd2432,
+      size:             16,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT3_STATE
+    '{
+      variant:          Unbuffered,
+      offset:           12'd2448,
+      size:             16,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // EXT_NVM
+    '{
+      variant:          Unbuffered,
+      offset:           12'd2464,
+      size:             1032,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b0,
+      write_lock:       1'b0,
+      read_lock:        1'b0,
+      integrity:        1'b0,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROM_PATCH
+    '{
+      variant:          Unbuffered,
+      offset:           12'd3496,
+      size:             16,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // SOC_FUSES_CP
+    '{
+      variant:          Unbuffered,
+      offset:           12'd3512,
+      size:             8,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // SOC_FUSES_FT
+    '{
+      variant:          Unbuffered,
+      offset:           12'd3520,
+      size:             8,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // SCRATCH_FUSES
+    '{
+      variant:          Unbuffered,
+      offset:           12'd3528,
+      size:             80,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b0,
+      write_lock:       1'b0,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // HW_CFG0
     '{
       variant:          Buffered,
-      offset:           11'd1656,
-      size:             72,
+      offset:           12'd3608,
+      size:             40,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
@@ -203,7 +425,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG1
     '{
       variant:          Buffered,
-      offset:           11'd1728,
+      offset:           12'd3648,
       size:             16,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -217,10 +439,27 @@ package otp_ctrl_part_pkg;
       zeroizable:       1'b0,
       ignore_read_lock_in_rma: 1'b0
     },
+    // HW_CFG2
+    '{
+      variant:          Buffered,
+      offset:           12'd3664,
+      size:             48,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
     // SECRET0
     '{
       variant:          Buffered,
-      offset:           11'd1744,
+      offset:           12'd3712,
       size:             40,
       key_sel:          Secret0Key,
       secret:           1'b1,
@@ -237,7 +476,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:          Buffered,
-      offset:           11'd1784,
+      offset:           12'd3752,
       size:             88,
       key_sel:          Secret1Key,
       secret:           1'b1,
@@ -254,8 +493,8 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:          Buffered,
-      offset:           11'd1872,
-      size:             88,
+      offset:           12'd3840,
+      size:             120,
       key_sel:          Secret2Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -268,10 +507,27 @@ package otp_ctrl_part_pkg;
       zeroizable:       1'b0,
       ignore_read_lock_in_rma: 1'b1
     },
+    // SECRET3
+    '{
+      variant:          Buffered,
+      offset:           12'd3960,
+      size:             48,
+      key_sel:          Secret3Key,
+      secret:           1'b1,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b1,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b1,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
     // LIFE_CYCLE
     '{
       variant:          LifeCycle,
-      offset:           11'd1960,
+      offset:           12'd4008,
       size:             88,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -291,13 +547,28 @@ package otp_ctrl_part_pkg;
     VendorTestIdx,
     CreatorSwCfgIdx,
     OwnerSwCfgIdx,
-    RotCreatorAuthCodesignIdx,
-    RotCreatorAuthStateIdx,
+    OwnershipSlotStateIdx,
+    RotCreatorIdentityIdx,
+    RotOwnerAuthSlot0Idx,
+    RotOwnerAuthSlot1Idx,
+    RotOwnerAuthSlot2Idx,
+    RotOwnerAuthSlot3Idx,
+    RotOwnerAuthSlot0StateIdx,
+    RotOwnerAuthSlot1StateIdx,
+    RotOwnerAuthSlot2StateIdx,
+    RotOwnerAuthSlot3StateIdx,
+    ExtNvmIdx,
+    RomPatchIdx,
+    SocFusesCpIdx,
+    SocFusesFtIdx,
+    ScratchFusesIdx,
     HwCfg0Idx,
     HwCfg1Idx,
+    HwCfg2Idx,
     Secret0Idx,
     Secret1Idx,
     Secret2Idx,
+    Secret3Idx,
     LifeCycleIdx,
     // These are not "real partitions", but in terms of implementation it is convenient to
     // add these at the end of certain arrays.
@@ -312,7 +583,6 @@ package otp_ctrl_part_pkg;
 
   // Breakout types for easier access of individual items.
   typedef struct packed {
-    logic [255:0] manuf_state;
     logic [255:0] device_id;
   } otp_hw_cfg0_data_t;
   typedef struct packed {
@@ -321,10 +591,14 @@ package otp_ctrl_part_pkg;
     prim_mubi_pkg::mubi8_t en_csrng_sw_app_read;
     prim_mubi_pkg::mubi8_t en_sram_ifetch;
   } otp_hw_cfg1_data_t;
+  typedef struct packed {
+    logic [255:0] manuf_state;
+  } otp_hw_cfg2_data_t;
 
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
+    otp_hw_cfg2_data_t hw_cfg2_data;
     otp_hw_cfg1_data_t hw_cfg1_data;
     otp_hw_cfg0_data_t hw_cfg0_data;
   } otp_broadcast_t;
@@ -342,13 +616,25 @@ package otp_ctrl_part_pkg;
     hw2reg.vendor_test_digest = part_digest[VendorTestIdx];
     hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
     hw2reg.owner_sw_cfg_digest = part_digest[OwnerSwCfgIdx];
-    hw2reg.rot_creator_auth_codesign_digest = part_digest[RotCreatorAuthCodesignIdx];
-    hw2reg.rot_creator_auth_state_digest = part_digest[RotCreatorAuthStateIdx];
+    hw2reg.rot_creator_identity_digest = part_digest[RotCreatorIdentityIdx];
+    hw2reg.rot_owner_auth_slot0_digest = part_digest[RotOwnerAuthSlot0Idx];
+    hw2reg.rot_owner_auth_slot1_digest = part_digest[RotOwnerAuthSlot1Idx];
+    hw2reg.rot_owner_auth_slot2_digest = part_digest[RotOwnerAuthSlot2Idx];
+    hw2reg.rot_owner_auth_slot3_digest = part_digest[RotOwnerAuthSlot3Idx];
+    hw2reg.rot_owner_auth_slot0_state_digest = part_digest[RotOwnerAuthSlot0StateIdx];
+    hw2reg.rot_owner_auth_slot1_state_digest = part_digest[RotOwnerAuthSlot1StateIdx];
+    hw2reg.rot_owner_auth_slot2_state_digest = part_digest[RotOwnerAuthSlot2StateIdx];
+    hw2reg.rot_owner_auth_slot3_state_digest = part_digest[RotOwnerAuthSlot3StateIdx];
+    hw2reg.rom_patch_digest = part_digest[RomPatchIdx];
+    hw2reg.soc_fuses_cp_digest = part_digest[SocFusesCpIdx];
+    hw2reg.soc_fuses_ft_digest = part_digest[SocFusesFtIdx];
     hw2reg.hw_cfg0_digest = part_digest[HwCfg0Idx];
     hw2reg.hw_cfg1_digest = part_digest[HwCfg1Idx];
+    hw2reg.hw_cfg2_digest = part_digest[HwCfg2Idx];
     hw2reg.secret0_digest = part_digest[Secret0Idx];
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
+    hw2reg.secret3_digest = part_digest[Secret3Idx];
     return hw2reg;
   endfunction : named_reg_assign
 
@@ -373,13 +659,65 @@ package otp_ctrl_part_pkg;
     if (!reg2hw.owner_sw_cfg_read_lock) begin
       part_access_pre[OwnerSwCfgIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
-    // ROT_CREATOR_AUTH_CODESIGN
-    if (!reg2hw.rot_creator_auth_codesign_read_lock) begin
-      part_access_pre[RotCreatorAuthCodesignIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    // OWNERSHIP_SLOT_STATE
+    if (!reg2hw.ownership_slot_state_read_lock) begin
+      part_access_pre[OwnershipSlotStateIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
-    // ROT_CREATOR_AUTH_STATE
-    if (!reg2hw.rot_creator_auth_state_read_lock) begin
-      part_access_pre[RotCreatorAuthStateIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    // ROT_CREATOR_IDENTITY
+    if (!reg2hw.rot_creator_identity_read_lock) begin
+      part_access_pre[RotCreatorIdentityIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_OWNER_AUTH_SLOT0
+    if (!reg2hw.rot_owner_auth_slot0_read_lock) begin
+      part_access_pre[RotOwnerAuthSlot0Idx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_OWNER_AUTH_SLOT1
+    if (!reg2hw.rot_owner_auth_slot1_read_lock) begin
+      part_access_pre[RotOwnerAuthSlot1Idx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_OWNER_AUTH_SLOT2
+    if (!reg2hw.rot_owner_auth_slot2_read_lock) begin
+      part_access_pre[RotOwnerAuthSlot2Idx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_OWNER_AUTH_SLOT3
+    if (!reg2hw.rot_owner_auth_slot3_read_lock) begin
+      part_access_pre[RotOwnerAuthSlot3Idx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_OWNER_AUTH_SLOT0_STATE
+    if (!reg2hw.rot_owner_auth_slot0_state_read_lock) begin
+      part_access_pre[RotOwnerAuthSlot0StateIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_OWNER_AUTH_SLOT1_STATE
+    if (!reg2hw.rot_owner_auth_slot1_state_read_lock) begin
+      part_access_pre[RotOwnerAuthSlot1StateIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_OWNER_AUTH_SLOT2_STATE
+    if (!reg2hw.rot_owner_auth_slot2_state_read_lock) begin
+      part_access_pre[RotOwnerAuthSlot2StateIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_OWNER_AUTH_SLOT3_STATE
+    if (!reg2hw.rot_owner_auth_slot3_state_read_lock) begin
+      part_access_pre[RotOwnerAuthSlot3StateIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // EXT_NVM
+    if (!reg2hw.ext_nvm_read_lock) begin
+      part_access_pre[ExtNvmIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROM_PATCH
+    if (!reg2hw.rom_patch_read_lock) begin
+      part_access_pre[RomPatchIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // SOC_FUSES_CP
+    if (!reg2hw.soc_fuses_cp_read_lock) begin
+      part_access_pre[SocFusesCpIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // SOC_FUSES_FT
+    if (!reg2hw.soc_fuses_ft_read_lock) begin
+      part_access_pre[SocFusesFtIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // SCRATCH_FUSES
+    if (!reg2hw.scratch_fuses_read_lock) begin
+      part_access_pre[ScratchFusesIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
     return part_access_pre;
   endfunction : named_part_access_pre
@@ -388,7 +726,7 @@ package otp_ctrl_part_pkg;
   // are of no use for consumers of this data.
   function automatic otp_broadcast_t named_broadcast_assign(
       logic [NumPart-1:0] part_init_done,
-      logic [2047:0][7:0] part_buf_data);
+      logic [4095:0][7:0] part_buf_data);
     otp_broadcast_t otp_broadcast;
     logic valid, unused;
     unused = 1'b0;
@@ -402,12 +740,51 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     unused ^= ^{part_init_done[OwnerSwCfgIdx],
                 part_buf_data[OwnerSwCfgOffset +: OwnerSwCfgSize]};
-    // ROT_CREATOR_AUTH_CODESIGN
-    unused ^= ^{part_init_done[RotCreatorAuthCodesignIdx],
-                part_buf_data[RotCreatorAuthCodesignOffset +: RotCreatorAuthCodesignSize]};
-    // ROT_CREATOR_AUTH_STATE
-    unused ^= ^{part_init_done[RotCreatorAuthStateIdx],
-                part_buf_data[RotCreatorAuthStateOffset +: RotCreatorAuthStateSize]};
+    // OWNERSHIP_SLOT_STATE
+    unused ^= ^{part_init_done[OwnershipSlotStateIdx],
+                part_buf_data[OwnershipSlotStateOffset +: OwnershipSlotStateSize]};
+    // ROT_CREATOR_IDENTITY
+    unused ^= ^{part_init_done[RotCreatorIdentityIdx],
+                part_buf_data[RotCreatorIdentityOffset +: RotCreatorIdentitySize]};
+    // ROT_OWNER_AUTH_SLOT0
+    unused ^= ^{part_init_done[RotOwnerAuthSlot0Idx],
+                part_buf_data[RotOwnerAuthSlot0Offset +: RotOwnerAuthSlot0Size]};
+    // ROT_OWNER_AUTH_SLOT1
+    unused ^= ^{part_init_done[RotOwnerAuthSlot1Idx],
+                part_buf_data[RotOwnerAuthSlot1Offset +: RotOwnerAuthSlot1Size]};
+    // ROT_OWNER_AUTH_SLOT2
+    unused ^= ^{part_init_done[RotOwnerAuthSlot2Idx],
+                part_buf_data[RotOwnerAuthSlot2Offset +: RotOwnerAuthSlot2Size]};
+    // ROT_OWNER_AUTH_SLOT3
+    unused ^= ^{part_init_done[RotOwnerAuthSlot3Idx],
+                part_buf_data[RotOwnerAuthSlot3Offset +: RotOwnerAuthSlot3Size]};
+    // ROT_OWNER_AUTH_SLOT0_STATE
+    unused ^= ^{part_init_done[RotOwnerAuthSlot0StateIdx],
+                part_buf_data[RotOwnerAuthSlot0StateOffset +: RotOwnerAuthSlot0StateSize]};
+    // ROT_OWNER_AUTH_SLOT1_STATE
+    unused ^= ^{part_init_done[RotOwnerAuthSlot1StateIdx],
+                part_buf_data[RotOwnerAuthSlot1StateOffset +: RotOwnerAuthSlot1StateSize]};
+    // ROT_OWNER_AUTH_SLOT2_STATE
+    unused ^= ^{part_init_done[RotOwnerAuthSlot2StateIdx],
+                part_buf_data[RotOwnerAuthSlot2StateOffset +: RotOwnerAuthSlot2StateSize]};
+    // ROT_OWNER_AUTH_SLOT3_STATE
+    unused ^= ^{part_init_done[RotOwnerAuthSlot3StateIdx],
+                part_buf_data[RotOwnerAuthSlot3StateOffset +: RotOwnerAuthSlot3StateSize]};
+    // EXT_NVM
+    unused ^= ^{part_init_done[ExtNvmIdx],
+                part_buf_data[ExtNvmOffset +: ExtNvmSize]};
+    // ROM_PATCH
+    unused ^= ^{part_init_done[RomPatchIdx],
+                part_buf_data[RomPatchOffset +: RomPatchSize]};
+    // SOC_FUSES_CP
+    unused ^= ^{part_init_done[SocFusesCpIdx],
+                part_buf_data[SocFusesCpOffset +: SocFusesCpSize]};
+    // SOC_FUSES_FT
+    unused ^= ^{part_init_done[SocFusesFtIdx],
+                part_buf_data[SocFusesFtOffset +: SocFusesFtSize]};
+    // SCRATCH_FUSES
+    unused ^= ^{part_init_done[ScratchFusesIdx],
+                part_buf_data[ScratchFusesOffset +: ScratchFusesSize]};
     // HW_CFG0
     valid &= part_init_done[HwCfg0Idx];
     otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: (HwCfg0Size - 8)]);
@@ -416,6 +793,10 @@ package otp_ctrl_part_pkg;
     valid &= part_init_done[HwCfg1Idx];
     otp_broadcast.hw_cfg1_data = otp_hw_cfg1_data_t'(part_buf_data[HwCfg1Offset +: (HwCfg1Size - 8)]);
     unused ^= ^part_buf_data[HwCfg1Offset + (HwCfg1Size - 8) +: 8];
+    // HW_CFG2
+    valid &= part_init_done[HwCfg2Idx];
+    otp_broadcast.hw_cfg2_data = otp_hw_cfg2_data_t'(part_buf_data[HwCfg2Offset +: (HwCfg2Size - 16)]);
+    unused ^= ^part_buf_data[HwCfg2Offset + (HwCfg2Size - 16) +: 16];
     // SECRET0
     unused ^= ^{part_init_done[Secret0Idx],
                 part_buf_data[Secret0Offset +: Secret0Size]};
@@ -425,6 +806,9 @@ package otp_ctrl_part_pkg;
     // SECRET2
     unused ^= ^{part_init_done[Secret2Idx],
                 part_buf_data[Secret2Offset +: Secret2Size]};
+    // SECRET3
+    unused ^= ^{part_init_done[Secret3Idx],
+                part_buf_data[Secret3Offset +: Secret3Size]};
     // LIFE_CYCLE
     unused ^= ^{part_init_done[LifeCycleIdx],
                 part_buf_data[LifeCycleOffset +: LifeCycleSize]};
@@ -434,8 +818,8 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_keymgr_key_t named_keymgr_key_assign(
       logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest,
-      logic [2047:0][7:0] part_buf_data,
-      logic [16383:0] part_inv_default,
+      logic [4095:0][7:0] part_buf_data,
+      logic [32767:0] part_inv_default,
       lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en);
     otp_keymgr_key_t otp_keymgr_key;
     logic valid, unused;
@@ -453,18 +837,60 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     unused ^= ^{part_digest[OwnerSwCfgIdx],
                 part_buf_data[OwnerSwCfgOffset +: OwnerSwCfgSize]};
-    // ROT_CREATOR_AUTH_CODESIGN
-    unused ^= ^{part_digest[RotCreatorAuthCodesignIdx],
-                part_buf_data[RotCreatorAuthCodesignOffset +: RotCreatorAuthCodesignSize]};
-    // ROT_CREATOR_AUTH_STATE
-    unused ^= ^{part_digest[RotCreatorAuthStateIdx],
-                part_buf_data[RotCreatorAuthStateOffset +: RotCreatorAuthStateSize]};
+    // OWNERSHIP_SLOT_STATE
+    unused ^= ^{part_digest[OwnershipSlotStateIdx],
+                part_buf_data[OwnershipSlotStateOffset +: OwnershipSlotStateSize]};
+    // ROT_CREATOR_IDENTITY
+    unused ^= ^{part_digest[RotCreatorIdentityIdx],
+                part_buf_data[RotCreatorIdentityOffset +: RotCreatorIdentitySize]};
+    // ROT_OWNER_AUTH_SLOT0
+    unused ^= ^{part_digest[RotOwnerAuthSlot0Idx],
+                part_buf_data[RotOwnerAuthSlot0Offset +: RotOwnerAuthSlot0Size]};
+    // ROT_OWNER_AUTH_SLOT1
+    unused ^= ^{part_digest[RotOwnerAuthSlot1Idx],
+                part_buf_data[RotOwnerAuthSlot1Offset +: RotOwnerAuthSlot1Size]};
+    // ROT_OWNER_AUTH_SLOT2
+    unused ^= ^{part_digest[RotOwnerAuthSlot2Idx],
+                part_buf_data[RotOwnerAuthSlot2Offset +: RotOwnerAuthSlot2Size]};
+    // ROT_OWNER_AUTH_SLOT3
+    unused ^= ^{part_digest[RotOwnerAuthSlot3Idx],
+                part_buf_data[RotOwnerAuthSlot3Offset +: RotOwnerAuthSlot3Size]};
+    // ROT_OWNER_AUTH_SLOT0_STATE
+    unused ^= ^{part_digest[RotOwnerAuthSlot0StateIdx],
+                part_buf_data[RotOwnerAuthSlot0StateOffset +: RotOwnerAuthSlot0StateSize]};
+    // ROT_OWNER_AUTH_SLOT1_STATE
+    unused ^= ^{part_digest[RotOwnerAuthSlot1StateIdx],
+                part_buf_data[RotOwnerAuthSlot1StateOffset +: RotOwnerAuthSlot1StateSize]};
+    // ROT_OWNER_AUTH_SLOT2_STATE
+    unused ^= ^{part_digest[RotOwnerAuthSlot2StateIdx],
+                part_buf_data[RotOwnerAuthSlot2StateOffset +: RotOwnerAuthSlot2StateSize]};
+    // ROT_OWNER_AUTH_SLOT3_STATE
+    unused ^= ^{part_digest[RotOwnerAuthSlot3StateIdx],
+                part_buf_data[RotOwnerAuthSlot3StateOffset +: RotOwnerAuthSlot3StateSize]};
+    // EXT_NVM
+    unused ^= ^{part_digest[ExtNvmIdx],
+                part_buf_data[ExtNvmOffset +: ExtNvmSize]};
+    // ROM_PATCH
+    unused ^= ^{part_digest[RomPatchIdx],
+                part_buf_data[RomPatchOffset +: RomPatchSize]};
+    // SOC_FUSES_CP
+    unused ^= ^{part_digest[SocFusesCpIdx],
+                part_buf_data[SocFusesCpOffset +: SocFusesCpSize]};
+    // SOC_FUSES_FT
+    unused ^= ^{part_digest[SocFusesFtIdx],
+                part_buf_data[SocFusesFtOffset +: SocFusesFtSize]};
+    // SCRATCH_FUSES
+    unused ^= ^{part_digest[ScratchFusesIdx],
+                part_buf_data[ScratchFusesOffset +: ScratchFusesSize]};
     // HW_CFG0
     unused ^= ^{part_digest[HwCfg0Idx],
                 part_buf_data[HwCfg0Offset +: HwCfg0Size]};
     // HW_CFG1
     unused ^= ^{part_digest[HwCfg1Idx],
                 part_buf_data[HwCfg1Offset +: HwCfg1Size]};
+    // HW_CFG2
+    unused ^= ^{part_digest[HwCfg2Idx],
+                part_buf_data[HwCfg2Offset +: HwCfg2Size]};
     // SECRET0
     unused ^= ^{part_digest[Secret0Idx],
                 part_buf_data[Secret0Offset +: Secret0Size]};
@@ -490,9 +916,31 @@ package otp_ctrl_part_pkg;
       otp_keymgr_key.creator_root_key_share1 =
           part_inv_default[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
     end
+    otp_keymgr_key.creator_seed_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.creator_seed =
+          part_buf_data[CreatorSeedOffset +: CreatorSeedSize];
+    end else begin
+      otp_keymgr_key.creator_seed =
+          part_inv_default[CreatorSeedOffset*8 +: CreatorSeedSize*8];
+    end
     // This is not used since we consume the
     // ungated digest values from the part_digest array.
     unused ^= ^part_buf_data[Secret2DigestOffset +: Secret2DigestSize];
+    // SECRET3
+    valid = (part_digest[Secret3Idx] != 0);
+    otp_keymgr_key.owner_seed_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.owner_seed =
+          part_buf_data[OwnerSeedOffset +: OwnerSeedSize];
+    end else begin
+      otp_keymgr_key.owner_seed =
+          part_inv_default[OwnerSeedOffset*8 +: OwnerSeedSize*8];
+    end
+    unused ^= ^part_buf_data[Secret3ZerOffset +: Secret3ZerSize];
+    // This is not used since we consume the
+    // ungated digest values from the part_digest array.
+    unused ^= ^part_buf_data[Secret3DigestOffset +: Secret3DigestSize];
     // LIFE_CYCLE
     unused ^= ^{part_digest[LifeCycleIdx],
                 part_buf_data[LifeCycleOffset +: LifeCycleSize]};
