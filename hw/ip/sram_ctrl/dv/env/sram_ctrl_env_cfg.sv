@@ -52,6 +52,12 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     super.initialize(csr_base_addr);
     tl_intg_alert_fields[ral.status.bus_integ_error] = 1;
 
+    // status and scr_key_rotated are driven by hardware. The CSR tests run with the scoreboard off,
+    // so the RAL mirror can't track those updates and a read races the key handshake. Don't
+    // value-check them here, because the functional tests cover them with the scoreboard on.
+    ral.get_excl_item().add_excl(ral.status.get_full_name(), CsrExclCheck, CsrAllTests);
+    ral.get_excl_item().add_excl(ral.scr_key_rotated.get_full_name(), CsrExclCheck, CsrAllTests);
+
     // Build KDI cfg object and configure
     m_kdi_cfg = push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE))::type_id::create("m_kdi_cfg");
     m_kdi_cfg.agent_type = push_pull_agent_pkg::PullAgent;
