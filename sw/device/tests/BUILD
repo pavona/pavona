@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -3347,25 +3348,41 @@ pavona_test(
     ],
 )
 
+# List of IPs supported by the pwrmgr_sleep_resets_lib library.
+# They are conditionally processed based on pavona_if_ip since they can
+# be top-specific.
+PWRMGR_RESET_IPS = [
+    "flash_ctrl",
+    "sysrst_ctrl",
+]
+
 cc_library(
     name = "pwrmgr_sleep_resets_lib",
     srcs = ["pwrmgr_sleep_resets_lib.c"],
     hdrs = ["pwrmgr_sleep_resets_lib.h"],
+    defines = flatten(
+        [
+            pavona_if_ip(
+                ip,
+                ["HAS_" + ip.upper()],
+                [],
+            )
+            for ip in PWRMGR_RESET_IPS
+        ],
+    ),
     target_compatible_with = [PAVONA_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:rv_timer",
-        "//sw/device/lib/dif:sysrst_ctrl",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
@@ -3375,7 +3392,16 @@ cc_library(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
-    ],
+    ] + flatten(
+        [
+            pavona_if_ip(
+                ip,
+                ["//sw/device/lib/dif:" + ip],
+                [],
+            )
+            for ip in PWRMGR_RESET_IPS
+        ],
+    ),
 )
 
 pavona_test(
@@ -3425,6 +3451,7 @@ pavona_test(
     name = "pwrmgr_random_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         EGRET_TEST_ENVS,
     ),
@@ -3444,16 +3471,14 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests:pwrmgr_sleep_resets_lib",
@@ -3502,6 +3527,7 @@ pavona_test(
     name = "pwrmgr_normal_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_normal_sleep_all_reset_reqs_test.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
@@ -3517,13 +3543,12 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests:pwrmgr_sleep_resets_lib",

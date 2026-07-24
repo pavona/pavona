@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,27 +8,22 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/alert_handler.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/pwrmgr_sleep_resets_lib.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
-
-static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
 
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
@@ -35,14 +31,7 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   init_peripherals();
-
   ret_sram_testutils_init();
-
-  // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(plic, kPlicTarget,
-                                     kTopEgretPlicIrqIdAlertHandlerClassa,
-                                     kTopEgretPlicIrqIdAlertHandlerClassd);
-
   config_alert_handler();
 
   // Check if there was a HW reset caused by expected cases.
@@ -53,15 +42,24 @@ bool test_main(void) {
   enum { kCounterResets = 0 };
   if (rst_info == kDifRstmgrResetInfoPor) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterResets));
+#if defined(OPENTITAN_IS_DRAGONFLY)
+    // Skip cases 0 and 1 since they use sysrst_ctrl which is not part of
+    // dragonfly.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_set(kCounterResets, 2));
+#endif
   }
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
+#if HAS_SYSRST_CTRL
             rst_info == kDifRstmgrResetInfoSysRstCtrl ||
+#endif
             rst_info == kDifRstmgrResetInfoWatchdog ||
             rst_info == kDifRstmgrResetInfoEscalation ||
             rst_info == kDifRstmgrResetInfoLowPowerExit ||
+#if HAS_SYSRST_CTRL
             rst_info == (kDifRstmgrResetInfoSysRstCtrl |
                          kDifRstmgrResetInfoLowPowerExit) ||
+#endif
             rst_info ==
                 (kDifRstmgrResetInfoPor | kDifRstmgrResetInfoLowPowerExit) ||
             rst_info == (kDifRstmgrResetInfoWatchdog |
@@ -85,11 +83,13 @@ bool test_main(void) {
   LOG_INFO("  case %d, %s mode", reset_case, sleep_mode);
 
   switch (reset_case) {
+#if HAS_SYSRST_CTRL
     case 0:
       config_sysrst(kDeviceType == kDeviceSimDV ? kTopEgretPinmuxInselIor13
                                                 : kTopEgretPinmuxInselIoc0);
       prepare_for_sysrst(mode);
       break;
+#endif
     case 1:
       LOG_INFO("Watchdog reset in %s sleep mode", sleep_mode);
       LOG_INFO("Let SV wait timer reset");

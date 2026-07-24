@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +8,9 @@
 
 #include <stdint.h>
 
+#if defined(OPENTITAN_IS_EGRET)
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#endif
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -58,7 +61,9 @@ typedef enum pwrmgr_sleep_resets_lib_modes {
 /**
  * Objects to access the peripherals used in this test via dif API.
  */
+#if defined(OPENTITAN_IS_EGRET)
 extern dif_flash_ctrl_state_t *flash_ctrl;
+#endif
 extern dif_rv_plic_t *plic;
 extern dif_rstmgr_t *rstmgr;
 
@@ -102,12 +107,20 @@ void trigger_escalation(void);
  */
 void prepare_for_wdog(pwrmgr_sleep_resets_lib_modes_t mode);
 
+#if defined(OPENTITAN_IS_EGRET)
 /**
  * Prepare for sysrst reset.
  *
  * Enable sysrst reset, and spin wait or enter either normal or deep sleep .
  */
 void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode);
+#endif
+
+#if defined(OPENTITAN_IS_DRAGONFLY)
+/**
+ * TODO: Add support for soc_proxy reset.
+ */
+#endif
 
 /**
  * External ISR.

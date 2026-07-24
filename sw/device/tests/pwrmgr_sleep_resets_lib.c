@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,13 +15,18 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
+#if defined(OPENTITAN_IS_EGRET)
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#endif
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
+
+#if defined(OPENTITAN_IS_EGRET)
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
+#endif
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
@@ -30,9 +36,7 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
-static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
+static const uint32_t kPlicTarget = 0;
 
 static_assert(
     kWdogBarkMicros < kWdogBiteMicros &&
@@ -41,20 +45,28 @@ static_assert(
         kWdogBiteMicros < (kEscalationPhase0Micros + kEscalationPhase1Micros),
     "The wdog bark and bite should happen during the escalation phase 1");
 
+#if defined(OPENTITAN_IS_EGRET)
 dif_flash_ctrl_state_t *flash_ctrl;
+#endif
 dif_rv_plic_t *plic;
 dif_alert_handler_t *alert_handler;
 dif_aon_timer_t *aon_timer;
 dif_pwrmgr_t *pwrmgr;
+#if defined(OPENTITAN_IS_EGRET)
 dif_sysrst_ctrl_t *sysrst_ctrl_aon;
+#endif
 dif_rstmgr_t *rstmgr;
 
+#if defined(OPENTITAN_IS_EGRET)
 dif_flash_ctrl_state_t flash_ctrl_actual;
+#endif
 dif_rv_plic_t plic_actual;
 dif_alert_handler_t alert_handler_actual;
 dif_aon_timer_t aon_timer_actual;
 dif_pwrmgr_t pwrmgr_actual;
+#if defined(OPENTITAN_IS_EGRET)
 dif_sysrst_ctrl_t sysrst_ctrl_aon_actual;
+#endif
 dif_rstmgr_t rstmgr_actual;
 
 static dif_pwrmgr_request_sources_t aon_timer_wakeup_sources;
@@ -70,12 +82,14 @@ static_assert(kDtAlertHandlerCount == 1,
 static const dt_aon_timer_t kAonTimerDt = 0;
 static_assert(kDtAonTimerCount == 1,
               "this library expects exactly one aon_timer");
+#if defined(OPENTITAN_IS_EGRET)
 static const dt_flash_ctrl_t kFlashCtrlDt = 0;
 static_assert(kDtFlashCtrlCount >= 1,
               "this test expects at least one flash_ctrl");
 static_assert(kDtSysrstCtrlCount >= 1,
               "this test expects at least one sysrst_ctrl");
 static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
+#endif
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount >= 1, "this test expects at least one rv_plic");
 
@@ -84,10 +98,12 @@ void init_peripherals(void) {
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr_actual));
   pwrmgr = &pwrmgr_actual;
 
+#if defined(OPENTITAN_IS_EGRET)
   // Initialize sysrst_ctrl.
   CHECK_DIF_OK(
       dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl_aon_actual));
   sysrst_ctrl_aon = &sysrst_ctrl_aon_actual;
+#endif
 
   // Initialize rstmgr to check the reset reason.
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr_actual));
@@ -97,18 +113,27 @@ void init_peripherals(void) {
   CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer_actual));
   aon_timer = &aon_timer_actual;
 
+#if defined(OPENTITAN_IS_EGRET)
   // Initialize flash_ctrl
   CHECK_DIF_OK(
       dif_flash_ctrl_init_state_from_dt(&flash_ctrl_actual, kFlashCtrlDt));
   flash_ctrl = &flash_ctrl_actual;
+#endif
 
   // Initialize plic.
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic_actual));
   plic = &plic_actual;
 
   rv_plic_testutils_irq_range_enable(
-      plic, kPlicTarget, kTopEgretPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEgretPlicIrqIdAonTimerAonWdogTimerBark);
+      plic, kPlicTarget,
+      dt_aon_timer_irq_to_plic_id(kAonTimerDt, kDtAonTimerIrqWkupTimerExpired),
+      dt_aon_timer_irq_to_plic_id(kAonTimerDt, kDtAonTimerIrqWdogTimerBark));
+  rv_plic_testutils_irq_range_enable(
+      plic, kPlicTarget,
+      dt_alert_handler_irq_to_plic_id(kAlertHandlerDt,
+                                      kDtAlertHandlerIrqClassa),
+      dt_alert_handler_irq_to_plic_id(kAlertHandlerDt,
+                                      kDtAlertHandlerIrqClassd));
 
   // Initialize alert handler.
   CHECK_DIF_OK(
@@ -119,14 +144,17 @@ void init_peripherals(void) {
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
       kDtAonTimerWakeupWkupReq, &aon_timer_wakeup_sources));
+#if defined(OPENTITAN_IS_EGRET)
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       pwrmgr, kDifPwrmgrReqTypeWakeup,
       dt_sysrst_ctrl_instance_id(kSysrstCtrlDt), kDtSysrstCtrlWakeupWkupReq,
       &sysrst_ctrl_wakeup_sources));
+#endif
 }
 
 void config_alert_handler(void) {
-  dif_alert_handler_alert_t alerts[] = {kTopEgretAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[1] = {
+      dt_pwrmgr_alert_to_alert_id(kPwrmgrDt, kDtPwrmgrAlertFatalFault)};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
   uint32_t cycles[4] = {0};
@@ -180,6 +208,7 @@ void config_alert_handler(void) {
       alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
 }
 
+#if defined(OPENTITAN_IS_EGRET)
 void config_sysrst(dif_pinmux_index_t pad_pin) {
   LOG_INFO("sysrst enabled");
 
@@ -220,6 +249,7 @@ void config_sysrst(dif_pinmux_index_t pad_pin) {
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEgretPinmuxPeripheralInSysrstCtrlAonKey0In, pad_pin));
 }
+#endif
 
 void config_wdog(uint64_t bark_micros, uint64_t bite_micros) {
   uint32_t bark_cycles = 0;
@@ -270,9 +300,11 @@ void prepare_for_wdog(pwrmgr_sleep_resets_lib_modes_t mode) {
     // Place device into low power.
     dif_pwrmgr_domain_config_t config =
         deep_sleep ? 0
-                   : kDifPwrmgrDomainOptionUsbClockInLowPower |
-                         kDifPwrmgrDomainOptionCoreClockInLowPower |
+                   : kDifPwrmgrDomainOptionCoreClockInLowPower |
                          kDifPwrmgrDomainOptionIoClockInLowPower |
+#if defined(OPENTITAN_IS_EGRET)
+                         kDifPwrmgrDomainOptionUsbClockInLowPower |
+#endif
                          kDifPwrmgrDomainOptionMainPowerInLowPower;
 
     // Program the pwrmgr to go to deep sleep state (clocks off).
@@ -286,6 +318,7 @@ void prepare_for_wdog(pwrmgr_sleep_resets_lib_modes_t mode) {
   CHECK(false, "Failed to reset!");
 }
 
+#if defined(OPENTITAN_IS_EGRET)
 void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode) {
   if (mode == kPwrmgrSleepResetsLibModesActive) {
     LOG_INFO("Sysrst reset in active mode");
@@ -312,36 +345,30 @@ void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode) {
   // If we arrive here the test must fail.
   CHECK(false, "Failed to reset!");
 }
+#endif
 
 void ottf_external_isr(uint32_t *exc_info) {
-  top_egret_plic_peripheral_t peripheral;
-  dif_rv_plic_irq_id_t irq_id;
-  uint32_t irq = 0;
+  dt_instance_id_t instance_id;
+  dt_plic_irq_id_t irq_id;
   uint32_t alert = 0;
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(plic, kPlicTarget, &irq_id));
 
-  peripheral = (top_egret_plic_peripheral_t)
-      top_egret_plic_interrupt_for_peripheral[irq_id];
-
-  if (peripheral == kTopEgretPlicPeripheralAonTimerAon) {
-    irq =
-        (dif_aon_timer_irq_t)(irq_id -
-                              (dif_rv_plic_irq_id_t)
-                                  kTopEgretPlicIrqIdAonTimerAonWkupTimerExpired);
+  instance_id = dt_plic_id_to_instance_id(irq_id);
+  if (instance_id == dt_aon_timer_instance_id(kAonTimerDt)) {
+    dt_aon_timer_irq_t irq =
+        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, irq_id);
 
     // Stops escalation process.
     CHECK_DIF_OK(dif_alert_handler_escalation_clear(alert_handler,
                                                     kDifAlertHandlerClassA));
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(aon_timer, irq));
 
-    CHECK(irq != kTopEgretPlicIrqIdAonTimerAonWdogTimerBark,
-          "AON Timer Wdog should not bark");
+    CHECK(irq != kDtAonTimerIrqWdogTimerBark, "AON Timer Wdog should not bark");
 
-  } else if (peripheral == kTopEgretPlicPeripheralAlertHandler) {
-    irq = (dif_rv_plic_irq_id_t)(irq_id -
-                                 (dif_rv_plic_irq_id_t)
-                                     kTopEgretPlicIrqIdAlertHandlerClassa);
+  } else if (instance_id == dt_alert_handler_instance_id(kAlertHandlerDt)) {
+    dt_alert_handler_irq_t irq =
+        dt_alert_handler_irq_from_plic_id(kAlertHandlerDt, irq_id);
 
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(alert_handler, alert));
 
