@@ -166,8 +166,14 @@ static status_t provision(ujson_t *uj) {
   TRY(manuf_individualize_device_hw_cfg(
       &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
 #endif
-  TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
-  TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_owner_auth_slot0(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_owner_auth_slot1(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_owner_auth_slot2(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_owner_auth_slot3(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_owner_auth_slot0_state(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_owner_auth_slot1_state(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_owner_auth_slot2_state(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_owner_auth_slot3_state(&otp_ctrl));
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
 

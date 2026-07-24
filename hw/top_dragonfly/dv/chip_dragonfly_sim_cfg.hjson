@@ -1730,16 +1730,13 @@
               "chip_rv_dm_ndm_reset_req",
               "chip_sw_rstmgr_sw_req",
               // "chip_sw_pwrmgr_sleep_disabled",
-              // "base_rom_e2e_smoke",
               "chip_sw_aes_idle",
               // TODO: uncomment when these run with Xcelium.
               // "chip_sw_pwrmgr_main_power_glitch_reset",
               // "chip_sw_pwrmgr_deep_sleep_power_glitch_reset",
               // "chip_sw_pwrmgr_sleep_power_glitch_reset",
               "chip_sw_csrng_kat_test",
-              // TODO(opentitan-integrated/#332): enable this test again once ROM has been
-              // refactored to work without embedded flash.
-              // "rom_e2e_smoke"
+              "rom_e2e_smoke"
               ]
     }
   ]
