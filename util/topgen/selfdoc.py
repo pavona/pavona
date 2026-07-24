@@ -2,10 +2,6 @@
 # Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
-
-from topgen.validate import (module_required, module_optional)
-from reggen.gen_selfdoc import doc_tbl_head, doc_tbl_line
 from basegen.validate import BUILTIN_SCHEMAS_REGISTRY
 import jsonschema2md
 from pathlib import Path
@@ -22,36 +18,20 @@ def document_schema(outfile, schema_uri):
     outfile.write("".join(schema_desc))
 
 
-def make_usage_table(outfile, required=None, optional=None, added=None):
-    doc_tbl_head(outfile, True)
-    if required is not None:
-        for k, v in required.items():
-            doc_tbl_line(outfile, k, "r", v)
-    if optional is not None:
-        for k, v in optional.items():
-            doc_tbl_line(outfile, k, "o", v)
-    if added is not None:
-        for k, v in added.items():
-            doc_tbl_line(outfile, k, "a", v)
-
-
 def document(outfile):
     outfile.write(selfdoc_intro)
 
     document_schema(outfile, "urn:topgen:topcfg")
 
-    outfile.write("\nModule Hjsons (referred to by the \"complete config\" Hjson topgen "
-                  "creates) has the following keys (some being optional):\n")
-    make_usage_table(outfile, required=module_required, optional=module_optional)
-    outfile.write("\n")
+    outfile.write("\nThe top configuration partially specifies its list of modules.\n\n")
+    document_schema(outfile, "urn:topgen:module")
 
-    outfile.write("""\nTops must also come with a seed configuration Hjson.\n""")
+    outfile.write("""\nTops must also come with a seed configuration Hjson.\n\n""")
     document_schema(outfile, "urn:topgen:seedcfg")
-    outfile.write("\n")
 
     for schemafile in sorted((Path(__file__).parent / "schemas").iterdir()):
         schema_name = schemafile.stem  # assume schema name matches file name
-        if schema_name in ("BUILD", "topcfg", "seedcfg"):
+        if schema_name in ("BUILD", "topcfg", "module", "seedcfg"):
             continue
         document_schema(outfile, f"urn:topgen:{schema_name}")
         outfile.write("\n")
