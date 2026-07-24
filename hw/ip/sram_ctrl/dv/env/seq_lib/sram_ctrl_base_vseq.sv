@@ -148,6 +148,15 @@ class sram_ctrl_base_vseq #(
   // process_tl_access, except in cip sequences the will not be called. If the scoreboard
   // is enabled it is more accurate to let it set the in_init and in_key_req flags.
   virtual task req_mem_init(bit wait_done = 1);
+    // Set these flags before the write, not after. The write starts the key/init handshake, which
+    // can finish before csr_wr() returns; if the flags were set afterwards, the tasks that clear
+    // them would have already run and this task would wait forever for a handshake that is already
+    // over. Only arm them when ctrl_regwen lets the write take effect.
+    if (!cfg.en_scb && `gmv(ral.ctrl_regwen)) begin
+      cfg.in_init    = 1'b1;
+      cfg.in_key_req = 1'b1;
+    end
+
     // Use csr_wr rather than csr_update, because we change this reg type to RO in RAL when
     // ctrl_regwen is clear. csr_update won't issue a write to this CSR
     csr_wr(.ptr(ral.ctrl), .value('b11));
@@ -158,12 +167,6 @@ class sram_ctrl_base_vseq #(
       return;
     end
 
-    // The following flags are set in the process_tl_access when the scoreboard is enabled.
-    if (!cfg.en_scb) begin
-      cfg.in_init = 1'b1;
-      `uvm_info(`gfn, "In req_mem_init setting in_key_req = 1", UVM_MEDIUM)
-      cfg.in_key_req = 1'b1;
-    end
     if (wait_done) begin
       `DV_WAIT(cfg.in_init == 1'b0, "Timed out waiting for initialization done")
       cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
