@@ -88,34 +88,32 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ],
 
   features: [
-% for signal in typed_clocks['sw_clks'].values():
-<%
-  src_name = signal['src_name'].upper()
-%>\
-    { name: "CLKMGR.ENABLE.${src_name}",
-      desc: "Gating of ${src_name} peripheral clock."
-    }
-% endfor
-% for sig in typed_clocks['hint_clks'].values():
-<%
-  target_unit = sig['endpoint_ip'].upper()
-%>\
-    { name: "CLKMGR.HINT.${target_unit}",
-      desc: "Gating of ${target_unit} transactional clock."
-    }
-% endfor
-    { name: "CLKMGR.MEAS_CTRL.REGWEN",
-      desc: '''Control modification of all clock frequency and timeout
-            measurements.
+    { name: "CLKMGR.ENABLE.PERIPH_CLK",
+      desc: '''Clock manager supports the gating of clocks from peripheral 
+            devices, such as IO or USB. 
             '''
     }
-% for clk in rg_srcs:
-    { name: "CLKMGR.MEAS_CTRL.${clk.upper()}",
-      desc: "Frequency and timeout measurements of ${clk.upper()} clock."
+    { name: "CLKMGR.HINT.TRANS_CLK",
+      desc: '''Clock manager is able to suggest (hint) that transactional 
+               modules (such as hmac or aes) manipulate their clocks. This
+               suggestion is carried forwards when the module in question 
+               completes any ongoing transactional tasks
+            '''
     }
-% endfor
+    { name: "CLKMGR.MEAS_CTRL.REGWEN",
+      desc: '''All of clock manager's frequency and timeout measurements can be 
+            modified via the `MEASURE_CTRL_REGWEN` control register. 
+            '''
+    }
+    { name: "CLKMGR.MEAS_CTRL.RG_SRC",
+      desc: '''Clock manager supports frequency and timeout measurements 
+            of root-gated clock sources
+            '''
+    }
     { name: "CLKMGR.MEAS_CTRL.RECOV_ERR",
-      desc: "Frequency and timeout measurements can flag recoverable errors."
+      desc: '''Clock manager's frequency and timeout measurements 
+            can flag recoverable errors.
+            '''
     }
 % if ext_clk_bypass:
     { name: "CLKMGR.LC_EXTCLK.SPEED",

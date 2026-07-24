@@ -36,6 +36,7 @@
             '''
       stage: V1
       tests: ["rstmgr_smoke"]
+      features: ["RSTMGR.SW_RST.REQUEST", "RSTMGR.RESET_INFO.CAPTURE", "RSTMGR.ALERT_INFO.CAPTURE", "RSTMGR.CPU_INFO.CAPTURE"]
     }
     {
       name: reset_stretcher
@@ -55,6 +56,7 @@
             '''
       stage: V2
       tests: ["rstmgr_por_stretcher"]
+      features: []
     }
     {
       name: sw_rst
@@ -81,6 +83,7 @@
             '''
       stage: V2
       tests: ["rstmgr_sw_rst"]
+      features: ["RSTMGR.SW_RST.REQUEST"]
     }
     {
       name: sw_rst_reset_race
@@ -99,6 +102,7 @@
             '''
       stage: V2
       tests: ["rstmgr_sw_rst_reset_race"]
+      features: ["RSTMGR.SW_RST.REQUEST", "RSTMGR.RESET_INFO.CAPTURE"]
     }
     {
       name: reset_info
@@ -115,6 +119,7 @@
             '''
       stage: V2
       tests: ["rstmgr_reset"]
+      features: ["RSTMGR.RESET_INFO.CAPTURE", "RSTMGR.RESET_INFO.CLEAR"]
     }
     {
       name: cpu_info
@@ -136,6 +141,7 @@
             '''
       stage: V2
       tests: ["rstmgr_reset"]
+      features: ["RSTMGR.CPU_INFO.CAPTURE", "RSTMGR.CPU_INFO.ENABLE"]
     }
     {
       name: alert_info
@@ -157,6 +163,7 @@
             '''
       stage: V2
       tests: ["rstmgr_reset"]
+      features: ["RSTMGR.ALERT_INFO.CAPTURE", "RSTMGR.ALERT_INFO.ENABLE"]
     }
     {
       name: reset_info_capture
@@ -174,6 +181,7 @@
             '''
       stage: V2
       tests: ["rstmgr_reset"]
+      features: ["RSTMGR.RESET_INFO.CAPTURE"]
     }
     {
       name: stress_all
@@ -186,6 +194,7 @@
             '''
       stage: V2
       tests: ["rstmgr_stress_all"]
+      features: []
     }
   ]
 

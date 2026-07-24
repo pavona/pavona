@@ -17,11 +17,6 @@ rg_srcs = get_rg_srcs(typed_clocks)
                      "clkmgr_sec_cm_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson"]
   testpoints: [
-<%
-  perip_clk_gating_features = ", ".join(f'"CLKMGR.ENABLE.{sig['src_name'].upper()}"' for sig in typed_clocks['sw_clks'].values())
-  trans_clk_gating_features = ", ".join(f'"CLKMGR.HINT.{sig['endpoint_ip'].upper()}"' for sig in typed_clocks['hint_clks'].values())
-  clk_freq_features = ", ".join(f'"CLKMGR.MEAS_CTRL.{clk.upper()}"' for clk in rg_srcs)
-%>\    
     {
       name: smoke
       desc: '''
@@ -54,7 +49,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
             '''
       stage: V1
       tests: ["clkmgr_smoke"]
-      features: ["CLKMGR.JITTER.REGWEN", "CLKMGR.JITTER.ENABLE", ${perip_clk_gating_features + ', ' + trans_clk_gating_features}]
+      features: ["CLKMGR.JITTER.REGWEN", "CLKMGR.JITTER.ENABLE", "CLKMGR.ENABLE.PERIPH_CLK", "CLKMGR.HINT.TRANS_CLK"]
     }
     {
       name: peri_enables
@@ -78,7 +73,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
             '''
       stage: V2
       tests: ["clkmgr_peri"]
-      features: [${perip_clk_gating_features}]
+      features: ["CLKMGR.ENABLE.PERIPH_CLK"]
     }
     {
       name: trans_enables
@@ -103,7 +98,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
             '''
       stage: V2
       tests: ["clkmgr_trans"]
-      features: [${trans_clk_gating_features}]
+      features: ["CLKMGR.HINT.TRANS_CLK"]
     }
   % if ext_clk_bypass:
     {
@@ -227,7 +222,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
             '''
       stage: V2
       tests: ["clkmgr_frequency"]
-      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.MEAS_CTRL.RECOV_ERR", ${clk_freq_features}]
+      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.MEAS_CTRL.RECOV_ERR", "CLKMGR.MEAS_CTRL.RG_SRC"]
     }
     {
       name: frequency_timeout
@@ -247,7 +242,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
             '''
       stage: V2
       tests: ["clkmgr_frequency_timeout"]
-      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.MEAS_CTRL.RECOV_ERR", ${clk_freq_features}]
+      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.MEAS_CTRL.RECOV_ERR", "CLKMGR.MEAS_CTRL.RG_SRC"]
     }
     {
       name: frequency_overflow

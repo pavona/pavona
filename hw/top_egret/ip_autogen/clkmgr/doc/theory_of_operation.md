@@ -1,8 +1,5 @@
-<!-- BEGIN-FEATURE: CLKMGR.ENABLE.USB -->
-<!-- BEGIN-FEATURE: CLKMGR.HINT.ACC -->
-<!-- BEGIN-FEATURE: CLKMGR.HINT.AES -->
-<!-- BEGIN-FEATURE: CLKMGR.HINT.HMAC -->
-<!-- BEGIN-FEATURE: CLKMGR.HINT.KMAC -->
+<!-- BEGIN-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
+<!-- BEGIN-FEATURE: CLKMGR.HINT.TRANS_CLK -->
 # Theory of Operation
 
 Clock management is divided into groups.
@@ -33,11 +30,6 @@ The table shows the group name, the modules that belong to each group, and wheth
 * 1 - Transactional clock group's software control is only a software hint.
 * 2 - Wait-for-interrupt gating is not implemented in this design. These groups are the ones it
   would apply to if it were added, see [wait-for-interrupt gating](#wait-for-interrupt-wfi-gating).
-<!-- END-FEATURE: CLKMGR.ENABLE.USB -->
-<!-- END-FEATURE: CLKMGR.HINT.ACC -->
-<!-- END-FEATURE: CLKMGR.HINT.AES -->
-<!-- END-FEATURE: CLKMGR.HINT.HMAC -->
-<!-- END-FEATURE: CLKMGR.HINT.KMAC -->
 
 ## Power-up Clock Group
 
@@ -46,6 +38,7 @@ Large portions of these modules operate to release clocks and resets for the res
 They are the only group running clocks directly from the source.
 All follow groups are derived after root clock gating.
 See [block diagram](#block-diagram) for more details.
+<!-- END-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
 
 ## Transactional Clock Group
 
@@ -67,6 +60,7 @@ Wait-for-interrupt based control is already a software hint, it can thus be appl
 
 For modules in this group, each module can be individually influenced, and thus each has its own dedicated clock gating logic.
 The added benefit of allowing software control in this group is to save power, as some transactional modules can be both power and area hungry.
+<!-- END-FEATURE: CLKMGR.HINT.TRANS_CLK -->
 
 ## Infrastructure Clock Group
 
@@ -98,7 +92,8 @@ As influencing time can change the perspective of software and potentially revea
 
 Functionally, this group is identical to the security group.
 
-<!-- BEGIN-FEATURE: CLKMGR.ENABLE.IO -->
+<!-- BEGIN-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
+<!-- BEGIN-FEATURE: CLKMGR.ENABLE.TRANS_CLK -->
 ## Peripheral Clock Group
 
 The peripheral clock group is composed of I/O peripherals modules.
@@ -106,7 +101,8 @@ By their nature, I/O peripherals are both transactional and most of the time not
 
 These modules can be both directly and indirectly controlled by software.
 The controls can also be individual to each peripheral.
-<!-- END-FEATURE: CLKMGR.ENABLE.IO -->
+<!-- END-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
+<!-- END-FEATURE: CLKMGR.ENABLE.TRANS_CLK -->
 
 ## Wait-for-Interrupt (wfi) Gating
 
@@ -120,13 +116,12 @@ Of the groups enumerated, only transactional, infrastructural and peripheral gro
 As `wfi` is effectively a processor clock request, there are subtleties related to its use.
 The interaction with each clock group is briefly described below.
 
-### Transactional Clock Group
+### Transactional Clock Group wfi Gating 
 
 While `wfi` gating can be applied to this group, the modules in this category are already expected to be turned off and on by software depending on usage.
 Specifically, these modules are already completely managed by software when not in use, thus may not see significant benefit from `wfi` gating.
 
-<!-- BEGIN-FEATURE: CLKMGR.ENABLE.IO -->
-### Peripheral Clock Group
+### Peripheral Clock Group wfi Gating 
 
 Since peripherals, especially those in device mode, are often operated in an interrupt driven way, the peripheral's core operating clock frequently must stay alive even if the processor is asleep.
 This implies that in order for peripherals to completely support `wfi` clock gating, they must be split between functional clocks and bus clocks.
@@ -135,9 +130,8 @@ The bus clocks represent the software interface and can be turned off based on `
 In this scenario, it is important to ensure the functional clocks are responsible for creating interrupts and not the bus clocks, as the latter may not be available during `wfi`.
 
 This division may only be beneficial for peripherals where register and local fabric size is large relative to the functional component.
-<!-- END-FEATURE: CLKMGR.ENABLE.IO -->
 
-### Infrastructural Clock Group
+### Infrastructural Clock Group wfi Gating 
 
 This clock group matches `wfi` functionality well.
 Most infrastructural components such as fabric, gaskets and memories, have no need to be clocked when the processor is idle.
@@ -197,8 +191,6 @@ This means even if a particular clock is turned on by the clock manager (for exa
 This makes it software's responsibility to ensure low power entry requests (which can only be initiated by software) do not conflict with any ongoing activities controlled by software.
 For example, software should ensure that `aes` / `acc` activities have completed before initializing a low power entry process.
 
-<!-- BEGIN-FEATURE: CLKMGR.ENABLE.IO_DIV4 -->
-<!-- BEGIN-FEATURE: CLKMGR.ENABLE.IO_DIV2 -->
 ### Clock Division
 
 Not all peripherals run at the full IO clock speed, hence the IO clock is divided down by 2x and 4x in normal operation.
@@ -209,8 +201,6 @@ The divided clock is not assumed to be synchronous with its source and is thus t
 Further, the clock dividers are hardwired and have no software control, this is to further ensure there are no simple paths for faulty or malicious software to tamper.
 
 Note that for debug purposes, `ast` can also request a change in the clock division ratio via a dedicated hardware interface (`div_step_down_req_i`).
-<!-- END-FEATURE: CLKMGR.ENABLE.IO_DIV4 -->
-<!-- END-FEATURE: CLKMGR.ENABLE.IO_DIV2 -->
 
 ### Wait-for-Interrupt Support
 
@@ -270,8 +260,6 @@ There is currently no support in hardware to dynamically synchronize a threshold
 <!-- END-FEATURE: CLKMGR.SW_EXTCLK.HIGH_SPEED -->
 <!-- END-FEATURE: CLKMGR.SW_EXTCLK.LOW_SPEED -->
 
-<!-- BEGIN-FEATURE: CLKMGR.ENABLE.IO_DIV4 -->
-<!-- BEGIN-FEATURE: CLKMGR.ENABLE.IO_DIV2 -->
 #### Clock Frequency Summary
 
 The table below summarizes the valid modes and the settings required.
@@ -295,16 +283,9 @@ This table also assumes that high speed external clock is 96MHz, while low speed
 | Software external low speed  | 48MHz                    | 48MHz         | 48MHz           | 24MHz        |
 
 As can be seen from the table, the external clock switch scheme prioritizes the stability of the divided clocks, while allowing the undivided clocks to slow down.
-<!-- END-FEATURE: CLKMGR.ENABLE.IO_DIV4 -->
-<!-- END-FEATURE: CLKMGR.ENABLE.IO_DIV2 -->
-
 
 <!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.REGWEN -->
-<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.IO -->
-<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.IO_DIV2 -->
-<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.IO_DIV4 -->
-<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.MAIN -->
-<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.USB -->
+<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.RG_SRC -->
 <!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.RECOV_ERR -->
 ### Clock Frequency Measurements
 
@@ -340,9 +321,5 @@ Clock time-out is registered when the clock stops toggling and the timeout thres
 
 As these are all software supplied values, the entire measurement control can be locked from further programming through [`MEASURE_CTRL_REGWEN`](registers.md#measure_ctrl_regwen).
 <!-- END-FEATURE: CLKMGR.MEAS_CTRL.REGWEN -->
-<!-- END-FEATURE: CLKMGR.MEAS_CTRL.IO -->
-<!-- END-FEATURE: CLKMGR.MEAS_CTRL.IO_DIV2 -->
-<!-- END-FEATURE: CLKMGR.MEAS_CTRL.IO_DIV4 -->
-<!-- END-FEATURE: CLKMGR.MEAS_CTRL.MAIN -->
-<!-- END-FEATURE: CLKMGR.MEAS_CTRL.USB -->
+<!-- END-FEATURE: CLKMGR.MEAS_CTRL.RG_SRC -->
 <!-- END-FEATURE: CLKMGR.MEAS_CTRL.RECOV_ERR -->

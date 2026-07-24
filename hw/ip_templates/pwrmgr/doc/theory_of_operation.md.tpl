@@ -36,7 +36,10 @@ Note, most of the states are transitional states, and only the following state c
 
 The slow FSM `Low Power` and fast FSM `Active` states specifically are concepts useful when examining [reset handling](#reset-request-handling).
 
-
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.RESET.POR_REQUEST -->
 ${"##"} Slow Clock Domain FSM
 
 The slow clock domain FSM (referred to as the slow FSM from here on) resets to the Reset state.
@@ -56,6 +59,10 @@ Once the fast FSM acknowledges the power-up completion, the slow FSM transitions
 When a power down request is received, the slow FSM turns off AST clocks and power as directed by software configuration.
 This means the clocks and power are not always turned off, but are rather controlled by software configurations in [`CONTROL`](registers.md#control) prior to low power entry .
 Once these steps are complete, the slow FSM transitions to a low power state and awaits a wake request, which can come either as an actual wakeup, or a reset event (for example always on watchdog expiration).
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.RESET.POR_REQUEST -->
 
 ${"####"} Sparse FSM
 
@@ -68,6 +75,8 @@ The slow FSM does not recover from this state until the system is reset by POR.
 Unlike [escalation resets](#escalation-reset-request), the system does not self reset.
 Instead the system goes into a terminal non-responsive state where a user or host must directly intervene by toggling the power or asserting an external reset input.
 
+<!-- BEGIN-FEATURE: PWRMGR.STARTUP.LIFE_CYCLE_INITIALIZATION -->
+<!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.ENTRY -->
 ${"##"} Fast Clock Domain FSM
 
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
@@ -99,6 +108,8 @@ If none of these exception cases are matched for low power entry, the fast FSM t
 
 For reset requests, fall through and aborts are not checked and the system simply resets directly.
 Note in this scenario the slow FSM is not requested to take over.
+<!-- END-FEATURE: PWRMGR.LOW_POWER.ENTRY -->
+<!-- END-FEATURE: PWRMGR.STARTUP.LIFE_CYCLE_INITIALIZATION -->
 
 ${"####"} Sparse FSM
 
@@ -107,7 +118,7 @@ When this occurs, the fast FSM forcibly disables all clocks and holds the system
 
 The fast FSM does not recover from this state until the system is reset by POR.
 
-
+<!-- BEGIN-FEATURE: PWRMGR.RESET.CHECK_ROM_INTEGRITY -->
 ${"###"} ROM Integrity Checks
 
 The power manager coordinates the [start up ROM check](../../../../ip/rom_ctrl/README.md#the-startup-rom-check) with `rom_ctrl`.
@@ -120,7 +131,9 @@ If the device is in life cycle test states (`TEST_UNLOCKED` or `RMA`), the `good
 If the device is not in one of the test states, the `good` signal is used to determine ROM execution.
 If `good` is true, ROM execution is allowed.
 If `good` is false, ROM execution is disallowed.
+<!-- END-FEATURE: PWRMGR.RESET.CHECK_ROM_INTEGRITY -->
 
+<!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.ENTRY -->
 ${"###"} Fall Through Handling
 
 A low power entry fall through occurs when some condition occurs that immediately de-assert the entry conditions right after the software requests it.
@@ -136,7 +149,11 @@ ${"###"} Abort Handling
 
 If the entry conditions are still true, the fast FSM then checks there are no ongoing non-volatile activities from `otp_ctrl`, `lc_ctrl` and `flash_ctrl` (if they re part of the system).
 If any module is active, the fast FSM "aborts" entry handling and returns the system to active state, thus terminating the entry process.
+<!-- END-FEATURE: PWRMGR.LOW_POWER.ENTRY -->
 
+<!-- BEGIN-FEATURE: PWRMGR.RESET.REQUEST -->
+<!-- BEGIN-FEATURE: PWRMGR.RESET.SW_RST_REQUEST -->
+<!-- BEGIN-FEATURE: PWRMGR.RESET.NDM_RESET_REQUEST -->
 ${"##"} Reset Request Handling
 
 There are 4 reset requests in the system
@@ -155,6 +172,8 @@ When a reset request is received during slow FSM `Low Power` state, the system b
 When a reset request is received during fast FSM `Active` state, the fast FSM asserts resets and transitions back to its `Low Power` state.
 The normal power-up process described [above](#fast-clock-domain-fsm) is then followed to release the resets.
 Note in this case, the slow FSM is "not activated" and remains in its `Idle` state.
+<!-- END-FEATURE: PWRMGR.RESET.SW_RST_REQUEST -->
+<!-- END-FEATURE: PWRMGR.RESET.NDM_RESET_REQUEST -->
 
 ${"###"} Power Manager Internal Reset Requests
 
@@ -162,6 +181,7 @@ In additional to external requests, the power manager maintains 2 internal reset
 * Escalation reset request
 * Main power domain unstable reset request
 
+<!-- BEGIN-FEATURE: PWRMGR.RESET.ESCALATION_REQUEST -->
 ${"####"} Escalation Reset Request
 
 Alert escalation resets in general behave similarly to peripheral requested resets.
@@ -173,6 +193,7 @@ As a result, upon alert escalation, the power manager makes a best case effort t
 This may not always be possible if the escalation happens while the FSM is in an invalid state.
 In this scenario, the pwrmgr keeps everything powered off and silenced and requests escalation handling if the system ever wakes up.
 
+<!-- BEGIN-FEATURE: PWRMGR.RESET.ESCALATION_TIMEOUT -->
 ${"####"} Escalation Clock Timeout
 
 Under normal behavior, the power manager can receive escalation requests from the system and handle them [appropriately](#escalation-reset-request).
@@ -183,8 +204,10 @@ This is done by a continuous request / acknowledge interface between the power m
 
 If the request / acknowledge interface does not respond within 128 power manager clock cycles, the escalate domain is assumed to be off.
 When this happens, the power manager creates a local escalation request that behaves identically to the global escalation request.
+<!-- END-FEATURE: PWRMGR.RESET.ESCALATION_REQUEST -->
+<!-- END-FEATURE: PWRMGR.RESET.ESCALATION_TIMEOUT -->
 
-
+<!-- BEGIN-FEATURE: PWRMGR.RESET.MAIN_POWER_GLITCH_RESET -->
 ${"####"} Main Power Unstable Reset Requests
 If the main power ever becomes unstable (the power okay indication is low even though it is powered on), the power manager requests an internal reset.
 This reset behaves similarly to the escalation reset and transitions directly into reset handling.
@@ -192,7 +215,7 @@ This reset behaves similarly to the escalation reset and transitions directly in
 Note that under normal low power conditions, the main power may be turned off.
 As a result of this, the main power unstable checks are valid only during states that power should be on and stable.
 This includes any state where power manager has requested the power to be turned on.
-
+<!-- END-FEATURE: PWRMGR.RESET.MAIN_POWER_GLITCH_RESET -->
 
 ${"###"} Reset Requests Received During Other States
 
@@ -229,8 +252,10 @@ If reset requests arrive slightly ahead of a low power entry request, then power
 - If the low power entry request was wiped out by reset, the system then stays in `Active` state and awaits software instructions.
 
 Ultimately when control is returned to software, it may see two reset reasons and must handle them accordingly.
+<!-- END-FEATURE: PWRMGR.RESET.REQUEST -->
 
-
+<!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.WAKEUP -->
+<!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.WAKE_INFO -->
 ${"##"} Wakeup Recording
 
 Similar to [reset handling](#reset-request-handling), wakeup signals are only observed during slow FSM `Low Power`; however their recording is continuous until explicitly disabled by software.
@@ -241,7 +266,8 @@ Recording needs clocks to be active, and during low power they are usually not.
 For this reason, it is important for wakeups to be level and remain active until software clears them.
 
 The software is also able to enable recording during `Active` state if it chooses to do so.  The recording enables are OR'd together for hardware purposes.
-
+<!-- END-FEATURE: PWRMGR.LOW_POWER.WAKEUP -->
+<!-- END-FEATURE: PWRMGR.LOW_POWER.WAKE_INFO -->
 
 ${"##"} Flash Handling
 For the section below, flash macro refers to the proprietary flash storage supplied by a vendor.
@@ -284,7 +310,7 @@ ${"##"} Supported Low Power Modes
 
 This section details the various low power modes supported.
 
-
+<!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 ${"###"} Deep Sleep or Standby
 
 This is the lowest power mode of the device (outside of full power down or device held in reset).
@@ -294,7 +320,7 @@ During this state:
 *   All non-always-on digital domains are powered off.
 *   I/O power domains may or may not be off.
     *   The state of the IO power domain has no impact on the digital core's power budget, e.g. the IO power being off does not cause the accompanying digital logic in pads or elsewhere to leak more.
-
+<!-- END-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 
 ${"###"} Normal Sleep
 

@@ -19,12 +19,7 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      features: [
-        "CLKMGR.HINT.AES",
-        "CLKMGR.HINT.HMAC",
-        "CLKMGR.HINT.KMAC",
-        "CLKMGR.HINT.ACC",
-      ]
+      features: ["CLKMGR.HINT.TRANS_CLK"]
       tests: [
         "chip_sw_aes_idle",
         "chip_sw_hmac_enc_idle",
@@ -53,12 +48,7 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      features: [
-        "CLKMGR.HINT.AES",
-        "CLKMGR.HINT.HMAC",
-        "CLKMGR.HINT.KMAC",
-        "CLKMGR.HINT.ACC",
-      ]
+      features: ["CLKMGR.HINT.TRANS_CLK"]
       tests: [
         "chip_sw_clkmgr_off_aes_trans",
         "chip_sw_clkmgr_off_hmac_trans",
@@ -87,12 +77,7 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      features: [
-        "CLKMGR.ENABLE.IO",
-        "CLKMGR.ENABLE.IO_DIV2",
-        "CLKMGR.ENABLE.IO_DIV4",
-        "CLKMGR.ENABLE.USB",
-      ]
+      features: ["CLKMGR.ENABLE.PERIPH_CLK"]
       tests: ["chip_sw_clkmgr_off_peri"]
       bazel: ["//sw/device/tests:clkmgr_off_peri_test"]
     }
@@ -111,11 +96,7 @@
       si_stage: SV2
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
-        "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
-        "CLKMGR.MEAS_CTRL.IO_DIV4",
-        "CLKMGR.MEAS_CTRL.MAIN",
-        "CLKMGR.MEAS_CTRL.USB",
+        "CLKMGR.MEAS_CTRL.RG_SRC"
       ]
       lc_states: [
         "TEST_UNLOCKED0",
@@ -236,11 +217,7 @@
         "CLKMGR.JITTER.REGWEN",
         "CLKMGR.JITTER.ENABLE",
         "CLKMGR.MEAS_CTRL.REGWEN",
-        "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
-        "CLKMGR.MEAS_CTRL.IO_DIV4",
-        "CLKMGR.MEAS_CTRL.MAIN",
-        "CLKMGR.MEAS_CTRL.USB",
+        "CLKMGR.MEAS_CTRL.RG_SRC"
       ]
       tests: ["chip_sw_clkmgr_jitter_frequency"]
       bazel: ["//sw/device/tests:clkmgr_jitter_frequency_test"]
@@ -299,12 +276,8 @@
       lc_states: ["PROD"]
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
-        "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
-        "CLKMGR.MEAS_CTRL.IO_DIV4",
-        "CLKMGR.MEAS_CTRL.MAIN",
-        "CLKMGR.MEAS_CTRL.USB",
-        "CLKMGR.MEAS_CTRL.RECOV_ERR",
+        "CLKMGR.MEAS_CTRL.RG_SRC",
+        "CLKMGR.MEAS_CTRL.RECOV_ERR"
       ]
       tests: ["chip_sw_ast_clk_outputs"]
       bazel: ["//sw/device/tests:ast_clk_outs_test"]
@@ -324,12 +297,8 @@
       lc_states: ["PROD"]
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
-        "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
-        "CLKMGR.MEAS_CTRL.IO_DIV4",
-        "CLKMGR.MEAS_CTRL.MAIN",
-        "CLKMGR.MEAS_CTRL.USB",
-        "CLKMGR.MEAS_CTRL.RECOV_ERR",
+        "CLKMGR.MEAS_CTRL.RG_SRC",
+        "CLKMGR.MEAS_CTRL.RECOV_ERR"
       ]
       tests: ["chip_sw_clkmgr_sleep_frequency"]
       bazel: ["//sw/device/tests:clkmgr_sleep_frequency_test"]
@@ -349,12 +318,8 @@
       lc_states: ["PROD"]
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
-        "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
-        "CLKMGR.MEAS_CTRL.IO_DIV4",
-        "CLKMGR.MEAS_CTRL.MAIN",
-        "CLKMGR.MEAS_CTRL.USB",
-        "CLKMGR.MEAS_CTRL.RECOV_ERR",
+        "CLKMGR.MEAS_CTRL.RG_SRC",
+        "CLKMGR.MEAS_CTRL.RECOV_ERR"
       ]
       tests: ["chip_sw_clkmgr_reset_frequency"]
       bazel: ["//sw/device/tests:clkmgr_reset_frequency_test"]

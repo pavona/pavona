@@ -154,14 +154,9 @@
     { name: "RSTMGR.SW_RST.CHIP_RESET",
       desc: "Cause a reset of all but some AON and system debug blocks via CSR."
     }
-% for device in sw_rsts.keys():
-    { name: "RSTMGR.SW_RST.${device.upper()}_REQUEST",
-      desc: "Trigger reset of ${device.upper()} peripheral via CSR."
+    { name: "RSTMGR.SW_RST.REQUEST",
+      desc: "Enable/trigger reset of peripheral via CSR."
     }
-    { name: "RSTMGR.SW_RST.${device.upper()}_ENABLE",
-      desc: "Enable reset of ${device.upper()} peripheral via CSR."
-    }
-% endfor
     { name: "RSTMGR.RESET_INFO.CAPTURE",
       desc: "Capture information about the causes of a reset."
     }

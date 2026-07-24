@@ -144,23 +144,8 @@
     { name: "RSTMGR.SW_RST.CHIP_RESET",
       desc: "Cause a reset of all but some AON and system debug blocks via CSR."
     }
-    { name: "RSTMGR.SW_RST.SPI_DEVICE_REQUEST",
-      desc: "Trigger reset of SPI_DEVICE peripheral via CSR."
-    }
-    { name: "RSTMGR.SW_RST.SPI_DEVICE_ENABLE",
-      desc: "Enable reset of SPI_DEVICE peripheral via CSR."
-    }
-    { name: "RSTMGR.SW_RST.SPI_HOST0_REQUEST",
-      desc: "Trigger reset of SPI_HOST0 peripheral via CSR."
-    }
-    { name: "RSTMGR.SW_RST.SPI_HOST0_ENABLE",
-      desc: "Enable reset of SPI_HOST0 peripheral via CSR."
-    }
-    { name: "RSTMGR.SW_RST.I2C0_REQUEST",
-      desc: "Trigger reset of I2C0 peripheral via CSR."
-    }
-    { name: "RSTMGR.SW_RST.I2C0_ENABLE",
-      desc: "Enable reset of I2C0 peripheral via CSR."
+    { name: "RSTMGR.SW_RST.REQUEST",
+      desc: "Enable/trigger reset of peripheral via CSR."
     }
     { name: "RSTMGR.RESET_INFO.CAPTURE",
       desc: "Capture information about the causes of a reset."

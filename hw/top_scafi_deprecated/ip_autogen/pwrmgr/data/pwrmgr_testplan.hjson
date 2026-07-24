@@ -40,6 +40,7 @@
             '''
       stage: V1
       tests: ["pwrmgr_smoke"]
+      features: ["PWRMGR.LOW_POWER.ENTRY", "PWRMGR.LOW_POWER.WAKEUP", "PWRMGR.LOW_POWER.WAKE_INFO", "PWRMGR.RESET.REQUEST"] 
     }
     {
       name: wakeup
@@ -75,6 +76,7 @@
             '''
       stage: V2
       tests: ["pwrmgr_wakeup"]
+      features: ["PWRMGR.LOW_POWER.WAKEUP", "PWRMGR.LOW_POWER.WAKE_INFO", "PWRMGR.LOW_POWER.ENTRY"] 
     }
     {
       name: control_clks
@@ -97,6 +99,7 @@
             '''
       stage: V2
       tests: ["pwrmgr_wakeup"]
+      features: ["PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER", "PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER", "PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER", "PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"] 
     }
     {
       name: aborted_low_power
@@ -126,6 +129,7 @@
             '''
       stage: V2
       tests: ["pwrmgr_aborted_low_power", "pwrmgr_lowpower_invalid"]
+      features: ["PWRMGR.LOW_POWER.ENTRY", "PWRMGR.LOW_POWER.WAKE_INFO"] 
     }
     {
       name: reset
@@ -155,6 +159,7 @@
             '''
       stage: V2
       tests: ["pwrmgr_reset", "pwrmgr_reset_invalid"]
+      features: ["PWRMGR.RESET.REQUEST", "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET", "PWRMGR.RESET.ESCALATION_REQUEST", "PWRMGR.RESET.SW_RST_REQUEST"] 
     }
     {
       name: main_power_glitch_reset
@@ -175,6 +180,7 @@
             '''
       stage: V2
       tests: ["pwrmgr_reset"]
+      features: ["PWRMGR.RESET.MAIN_POWER_GLITCH_RESET"] 
     }
     {
       name: reset_wakeup_race
@@ -197,6 +203,7 @@
               '''
       stage: V2
       tests: ["pwrmgr_wakeup_reset"]
+      features: ["PWRMGR.LOW_POWER.WAKEUP", "PWRMGR.RESET.REQUEST", "PWRMGR.LOW_POWER.WAKE_INFO"] 
     }
     {
       name: lowpower_wakeup_race
@@ -219,6 +226,7 @@
             '''
       stage: V2
       tests: ["pwrmgr_lowpower_wakeup_race"]
+      features: ["PWRMGR.LOW_POWER.ENTRY", "PWRMGR.LOW_POWER.WAKEUP"] 
     }
     {
       name: disable_rom_integrity_check
@@ -240,6 +248,7 @@
             '''
       stage: V2
       tests: ["pwrmgr_disable_rom_integrity_check"]
+      features: ["PWRMGR.RESET.CHECK_ROM_INTEGRITY"] 
     }
     {
       name: escalation_timeout
@@ -259,6 +268,7 @@
             '''
       stage: V3
       tests: ["pwrmgr_escalation_timeout"]
+      features: ["PWRMGR.RESET.ESCALATION_TIMEOUT"] 
     }
     {
       name: stress_all
@@ -274,6 +284,7 @@
             '''
       stage: V2
       tests: ["pwrmgr_stress_all"]
+      features: [] 
     }
   ]
 

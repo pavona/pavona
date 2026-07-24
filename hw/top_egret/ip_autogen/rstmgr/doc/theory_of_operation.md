@@ -86,6 +86,7 @@ The reset topology also contains additional properties:
     *   In a production system, `TRSTn` only needs to be released for RMA transitions and nothing else.
 .
 
+<!-- BEGIN-FEATURE: RSTMGR.SW_RST.REQUEST -->
 ## Reset Manager
 
 The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
@@ -103,6 +104,7 @@ These requests primarily come from the following sources:
 *  Power manager request for low power entry and exit.
 *  Escalation reset requests such as those from `alert_handler` or `pwrmgr` itself.
 *  Direct software request for reset.
+<!-- END-FEATURE: RSTMGR.SW_RST.REQUEST -->
 
 ### Shadow Resets
 
@@ -134,10 +136,12 @@ The reset manager then checks as follows:
 
 - If all reset conditions are satisfied, wait for the reset release to gracefully complete the cycle.
 
+<!-- BEGIN-FEATURE: RSTMGR.ALERT_HANDLER.RESET_STATUS -->
 ### Reset Indications for Alert Handler
 
 The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the reset manager outputs a 4bit MuBi signal for each reset domain that indicates whether its reset is active.
+<!-- END-FEATURE: RSTMGR.ALERT_HANDLER.RESET_STATUS -->
 
 ## Design Details
 
@@ -235,7 +239,9 @@ Ndm reset request (Other states)  | `rv_dm` non-debug-module reset request in DE
 SW low power entry                | wait-for-interrupt deep sleep entry                           |                | non-aon domains | non-aon domains | non-aon domains
 SW controlled reset request       | `rstmgr` SW_RST_CTRL_N                                        |                |                 |                 | all domains
 
-
+<!-- BEGIN-FEATURE: RSTMGR.SW_RST.CHIP_RESET -->
+<!-- BEGIN-FEATURE: RSTMGR.RESET_INFO.CAPTURE -->
+<!-- BEGIN-FEATURE: RSTMGR.RESET_INFO.CLEAR -->
 ## Reset Information
 
 The reset information register is a reflection of the reset state from the perspective of the system.
@@ -278,7 +284,14 @@ Even though four reset causes are labeled as warm boot, their effects on the sys
 *  When the reset cause is `HW_REQ` or `SW_REQ`, it means everything other than power / clock / reset managers have reset.
 
 This behavioral difference may be important to software, as it implies the configuration of the system may need to be different.
+<!-- END-FEATURE: RSTMGR.SW_RST.CHIP_RESET -->
+<!-- END-FEATURE: RSTMGR.RESET_INFO.CAPTURE -->
+<!-- END-FEATURE: RSTMGR.RESET_INFO.CLEAR -->
 
+<!-- BEGIN-FEATURE: RSTMGR.ALERT_INFO.CAPTURE -->
+<!-- BEGIN-FEATURE: RSTMGR.ALERT_INFO.ENABLE -->
+<!-- BEGIN-FEATURE: RSTMGR.CPU_INFO.CAPTURE -->
+<!-- BEGIN-FEATURE: RSTMGR.CPU_INFO.ENABLE -->
 ## Crash Dump Information
 
 The reset manager manages crash dump information for software debugging across unexpected resets and watchdogs.
@@ -287,6 +300,8 @@ When enabled, the latest alert information and latest CPU information are captur
 When the software resumes after the reset, it is then able to examine the last CPU state or the last set of alert information to understand why the system has reset.
 
 The enable for such debug capture can be locked such that it never captures.
+<!-- END-FEATURE: RSTMGR.CPU_INFO.CAPTURE -->
+<!-- END-FEATURE: RSTMGR.CPU_INFO.ENABLE -->
 
 ### Alert Information
 
@@ -297,7 +312,11 @@ The [`ALERT_INFO_ATTR`](registers.md#alert_info_attr) register indicates how man
 To enable alert crash dump capture, set [`ALERT_INFO_CTRL.EN`](registers.md#alert_info_ctrl) to 1.
 Once the system has reset, check [`ALERT_INFO_ATTR.CNT_AVAIL`](registers.md#alert_info_attr) for how many reads need to be done.
 Set [`ALERT_INFO_CTRL.INDEX`](registers.md#alert_info_ctrl) to the desired segment, and then read the output from [`ALERT_INFO`](registers.md#alert_info).
+<!-- END-FEATURE: RSTMGR.ALERT_INFO.CAPTURE -->
+<!-- END-FEATURE: RSTMGR.ALERT_INFO.ENABLE -->
 
+<!-- BEGIN-FEATURE: RSTMGR.CPU_INFO.CAPTURE -->
+<!-- BEGIN-FEATURE: RSTMGR.CPU_INFO.ENABLE -->
 ### CPU Information
 
 The CPU information register contains the value of the CPU state prior to a triggered reset.
@@ -307,3 +326,5 @@ For more details on the CPU dump details, please see [crash dump](../../rv_core_
 
 The [`CPU_INFO_ATTR`](registers.md#cpu_info_attr) register indicates how many 32-bit data segments must be read.
 Software then simply needs to write in [`CPU_INFO_CTRL.INDEX`](registers.md#cpu_info_ctrl) which segment it wishes and then read out the [`CPU_INFO`](registers.md#cpu_info) register.
+<!-- END-FEATURE: RSTMGR.CPU_INFO.CAPTURE -->
+<!-- END-FEATURE: RSTMGR.CPU_INFO.ENABLE -->
