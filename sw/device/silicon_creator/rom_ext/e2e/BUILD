@@ -61,7 +61,6 @@ otp_json(
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
-                "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN": otp_hex(CONST.HARDENED_TRUE),
                 "OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": otp_hex(200000),
             },
         ),
@@ -69,10 +68,9 @@ otp_json(
 )
 
 otp_image(
-    name = "otp_img_secret2_locked_preserve_reset_prod",
+    name = "otp_img_secret2_locked_prod",
     src = "//hw/top_egret/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_secret2_locked",
-        ":otp_json_reset_reason",
     ],
 )

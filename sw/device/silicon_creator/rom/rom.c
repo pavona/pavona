@@ -66,15 +66,6 @@ uint32_t flash_ecc_exc_handler_en;
 // A check value for the reset reason.
 uint32_t reset_reason_check;
 
-static inline bool rom_console_enabled(void) {
-#ifdef DISCRETE_OTP_MAP
-  return otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BANNER_EN_OFFSET) !=
-         kHardenedBoolFalse;
-#else
-  return true;
-#endif
-}
-
 /**
  * Prints a banner during bootup.
  *
@@ -86,9 +77,6 @@ static inline bool rom_console_enabled(void) {
  * - rr: Revision ID.
  */
 static void rom_banner(void) {
-  if (!rom_console_enabled()) {
-    return;
-  }
   //                         : a n o v a P
   const uint64_t kTitle = 0x3a616e6f766150;
   const uint32_t kNewline = 0x0a0d;
@@ -108,15 +96,7 @@ static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
   sec_mmio_init();
   uint32_t reset_reasons = rstmgr_reason_get();
-#ifdef DISCRETE_OTP_MAP
-  reset_reason_check =
-      reset_reasons ^
-      (otp_read32(
-           OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE_OFFSET) &
-       0xFFFF);
-#else
   reset_reason_check = reset_reasons ^ kHardenedBoolTrue;
-#endif
   if (reset_reasons != (1U << RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT)) {
     // The above compares all bits, rather than just the one indication "low
     // power exit", because if there is any other reset reason, besides
@@ -198,13 +178,9 @@ static rom_error_t rom_init(void) {
     // controls the retram readback enable. In the integrated OTP map, this
     // unconditionally runs.
     uint32_t sram_ret_readback_en;
-#if DISCRETE_OTP_MAP
     sram_ret_readback_en =
         otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET) >>
         4;
-#else
-    sram_ret_readback_en = kMultiBitBool4True;
-#endif
     retention_sram_readback_enable(sram_ret_readback_en);
     retention_sram_get()->creator.last_shutdown_reason = kErrorOk;
   }
@@ -233,40 +209,16 @@ static rom_error_t rom_init(void) {
 
   // Double check the reset reason value against the OTP-defined value.
   reset_reason_check = launder32(reset_reason_check) ^ rstmgr_reason_get();
-  uint32_t check_val;
-#ifdef DISCRETE_OTP_MAP
-  check_val =
-      otp_read32(
-          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE_OFFSET) >>
-      16;
-#else
-  check_val = kHardenedBoolTrue;
-#endif
-  if (launder32(check_val) != kHardenedBoolFalse) {
-    // Double-check the reset reason.
-    if (launder32(check_val) == reset_reason_check) {
-      HARDENED_CHECK_EQ(check_val, reset_reason_check);
-      // Reset reasons equal, do nothing.
-    } else {
-      return kErrorRomResetReasonFault;
-    }
+  // Double-check the reset reason.
+  if (launder32(reset_reason_check) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, reset_reason_check);
+    // Reset reasons equal, do nothing.
   } else {
-    // Configured to not double-check the reset reason.
-    HARDENED_CHECK_EQ(check_val, kHardenedBoolFalse);
+    return kErrorRomResetReasonFault;
   }
 
-  // Clear the register if configured to do so in the discrete OTP map. In
-  // integrated designs, the reset reason is unconditionally cleared.
-  uint32_t preserve_reset_reason;
-#ifdef DISCRETE_OTP_MAP
-  preserve_reset_reason = otp_read32(
-      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN_OFFSET);
-#else
-  preserve_reset_reason = kHardenedBoolFalse;
-#endif
-  if (preserve_reset_reason != kHardenedBoolTrue) {
-    rstmgr_reason_clear(reset_reasons);
-  }
+  // Clear the reset reason register.
+  rstmgr_reason_clear(reset_reasons);
 
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/1);
