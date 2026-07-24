@@ -84,9 +84,6 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                # Number of Ibex cycles to spin: we set this to the highest value
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0xffffffff",
                 # Enable SPX+ signature verification.
                 # TODO: ROM_EXT is not signed with this yet
                 # "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x0),
@@ -124,9 +121,6 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                # Number of Ibex cycles to spin: we set this to the highest value
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0xffffffff",
                 # We set the version to a higher number to check rollback protection
                 "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": "0x1",
                 # Enable SPX+ signature verification.
@@ -162,9 +156,6 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                # Number of Ibex cycles to spin: we set this to the highest value
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0xffffffff",
                 # We set the version to a higher number to check rollback protection
                 "CREATOR_SW_CFG_MIN_SEC_VER_BL0": "0x2",
                 # Enable SPX+ signature verification.
@@ -201,9 +192,6 @@ otp_json_immutable_rom_ext(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                # Number of Ibex cycles to spin: we set this to the highest value
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0xffffffff",
                 # Enable the immutable ROM_EXT
                 "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Set the hash to a bogus value

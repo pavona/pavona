@@ -14,8 +14,10 @@ pavona_test(
         "-Wno-date-time",
     ],
     exec_env = {
+        "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
         "//hw/top_egret:sim_dv": None,
         "//hw/top_egret:sim_verilator": None,
+        "//hw/top_egret:sim_verilator_rom_with_fake_keys": None,
         "//hw/top_dragonfly:sim_dv": None,
         "//hw/top_dragonfly:sim_verilator": None,
         "//hw/top_dragonfly:sim_verilator_rom_with_fake_keys": None,

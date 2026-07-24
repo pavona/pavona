@@ -212,11 +212,6 @@ rom_error_t read_empty_default_in_prod(void) {
   erase_boot_data_pages();
 
   rom_error_t exp_error = kErrorBootDataNotFound;
-  hardened_bool_t allowed_in_prod = otp_read32(
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN_OFFSET);
-  if (allowed_in_prod == kHardenedBoolTrue) {
-    exp_error = kErrorOk;
-  }
 
   boot_data_t boot_data;
   if (boot_data_read(kLcStateProd, &boot_data) == exp_error) {
