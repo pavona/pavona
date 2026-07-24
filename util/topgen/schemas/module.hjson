@@ -1,0 +1,116 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:module",
+  title: "Module",
+  description: "Hardware module within a top level",
+  type: "object",
+  required: ["name", "type", "clock_srcs", "clock_group", "reset_connections"]
+  properties: {
+    // IP block identity
+    name: { type: "string", description: "name of the instance" },
+    type: { type: "string", description: "comportable IP type" },
+    template_type: { type: "string", description: "Base template type of ipgen IPs" },
+
+    // clocking, resets, and power
+    clock_srcs: {
+      type: "object",
+      description: "dict with clock sources"
+    },
+    clock_group: { type: "string", description: "clock group" },
+    reset_connections: {
+      type: "object",
+      description: "dict with reset sources"
+    }
+    clock_connections: { type: "object", description: "generated clock connections; added property" },
+    domain: {
+      type: "array",
+      items: { type: ["string", "number"] },
+      description: "optional list of power domains, defaults to Domain0"
+    },
+    clock_reset_export: {
+      type: "array",
+      description: "optional list with prefixes for exported clocks and resets at the chip level"
+    },
+
+    // memory
+    base_addr: {
+      type: "object",
+      description: '''dict of address space mapped to the corresponding hex start
+                   address of the peripheral (if the IP has only a single TL-UL interface)
+                   '''
+    },
+    base_addrs: {
+      type: "object",
+      description: "hex start addresses of the peripheral (if the IP has multiple TL-UL interfaces)"
+    },
+    memory: {
+      type: "object",
+      description: "optional dict with memory region attributes",
+    },
+    otp_map: {
+      type: "object",
+      description: "OTP Map information for OTP Ctrl"
+    },
+    otp_mmap: {
+      type: "object",
+      description: "Full OTP memory map configuration with secret parameters; added property"
+    }
+
+    // input parameters
+    ipgen_params: { type: "object", description: "Optional ipgen parameters for that instance" },
+    param_decl: {
+      type: "object",
+      description: "optional dict that allows to override instantiation parameters"
+    },
+    param_list: { type: "array", description: "list of parameters; added property" },
+    inter_signal_list: { type: "array", description: "generated signal information; added property" },
+    generate_dif: {
+      type: "boolean",
+      description: "optional bool to indicate if a DIF should be generated for that module"
+    },
+
+    // racl
+    racl_group: {
+      type: "string",
+      description: "Only valid for racl_ctrl IPs. Defines the RACL group this control IP is associated to"
+    },
+    racl_mappings: {
+      type: "object",
+      description: "dict that maps an interface to its associated RACL mapping"
+    },
+    racl_mapping: {
+      type: "string",
+      description: '''A special case of racl_mappings. If specified, this is taken to represent
+                   a dict that associates all interfaces with the given mapping. It is an error
+                   to specify both this and racl_mappings.
+                   '''
+    },
+
+    // IP block type
+    attr: {
+        enum: ["ipgen", "reggen_top", "reggen_only"],
+        description: "optional attribute indicating whether the IP is 'ipgen', 'reggen_top', or 'reggen_only'"
+    },
+
+    // special fields for interrupts and alerts
+    targets: { type: "array", description: "Optional list of targets for this PLIC" },
+    plic: { type: "string", description: "Interrupt controller managing this module's interrupts" },
+    alert_handler: { type: "string", description: "Alert handler managing this module's alerts" },
+    outgoing_alert: {
+      type: "string",
+      description: "optional string to indicate alerts are routed externally to the named group"
+    },
+    outgoing_interrupt: {
+      type: "string",
+      description: "optional string to indicate interrupts are routed externally to the named group"
+    },
+    incoming_alert: {
+      type: "array",
+      description: "optional list of paths to incoming alert configurations for the alert_handler"
+    },
+    incoming_interrupt: { type: "object", description: "Parsed incoming interrupts" }
+  }
+}

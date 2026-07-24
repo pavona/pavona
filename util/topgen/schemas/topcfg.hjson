@@ -71,6 +71,9 @@
     // info for modules (IP blocks) within top and their connections
     module: {
       type: "array",
+      items: {
+        $ref: "urn:topgen:module"
+      }
       description: "list of modules to instantiate",
     }
     port: {

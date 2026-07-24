@@ -41,80 +41,6 @@ import jsonschema.exceptions
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-module_required = {
-    'name': ['s', 'name of the instance'],
-    'type': ['s', 'comportable IP type'],
-    'clock_srcs': ['g', 'dict with clock sources'],
-    'clock_group': ['s', 'clock group'],
-    'reset_connections': ['g', 'dict with reset sources'],
-}
-
-module_optional = {
-    'domain': ['l', 'optional list of power domains, defaults to Domain0'],
-    'clock_reset_export': [
-        'l', 'optional list with prefixes for exported '
-        'clocks and resets at the chip level'
-    ],
-    'attr': [
-        's', 'optional attribute indicating whether the IP is '
-        '"ipgen", "reggen_top", or "reggen_only"'
-    ],
-    'base_addr': [
-        'g', 'dict of address space mapped to the corresponding hex start '
-        'address of the peripheral (if the IP has only a single TL-UL '
-        'interface)'
-    ],
-    'base_addrs': [
-        'g', 'hex start addresses of the peripheral '
-        ' (if the IP has multiple TL-UL interfaces)'
-    ],
-    'memory': ['g', 'optional dict with memory region attributes'],
-    'param_decl':
-    ['g', 'optional dict that allows to override instantiation parameters'],
-    'generate_dif': [
-        'pb',
-        'optional bool to indicate if a DIF should be generated for that '
-        'module'
-    ],
-    'outgoing_alert': [
-        's', 'optional string to indicate alerts are routed externally to '
-        'the named group'
-    ],
-    'outgoing_interrupt': [
-        's', 'optional string to indicate interrupts are routed externally to '
-        'the named group'
-    ],
-    'incoming_alert': [
-        'l', 'optional list of paths to incoming alert configurations for the '
-        'alert_handler'
-    ],
-    'ipgen_params': ['g', 'Optional ipgen parameters for that instance'],
-    'template_type': ['s', 'Base template type of ipgen IPs'],
-    'racl_group': [
-        's', 'Only valid for racl_ctrl IPs. Defines the RACL group this '
-        'control IP is associated to'
-    ],
-    'racl_mappings':
-    ['g', 'dict that maps an interface to its associated RACL mapping'],
-    'racl_mapping': [
-        's', 'A special case of racl_mappings. If specified, this is taken to '
-        'represent a dict that associates all interfaces with the given '
-        'mapping. It is an error to specify both this and racl_mappings.'
-    ],
-    'plic': ['s', 'Interrupt controller managing this module\'s interrupts'],
-    'targets': ['l', 'Optional list of targets for this PLIC'],
-    'alert_handler': ['s', 'Alert handler managing this module\'s alerts'],
-    "otp_map": ["g", "OTP Map information for OTP Ctrl"]
-}
-
-module_added = {
-    'clock_connections': ['g', 'generated clock connections'],
-    'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
-    'inter_signal_list': ['l', 'generated signal information'],
-    'param_list': ['l', 'list of parameters'],
-    "otp_mmap": ["g", "Full OTP memory map configuration with secret parameters"],
-}
-
 memory_required = {
     'label': ['s', 'region label for the linker script'],
     'swaccess': ['s', 'access attributes for the memory region (ro, rw)'],
@@ -947,8 +873,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
     error = 0
     for m in top['module']:
         modname = m.get("name", "unnamed module")
-        error += check_keys(m, module_required, module_optional, module_added,
-                            prefix + " " + modname)
 
         # these fields are mutually exclusive
         if 'base_addr' in m and 'base_addrs' in m:

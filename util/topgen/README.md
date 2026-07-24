@@ -190,6 +190,7 @@ options:
 - <a id="properties/default_alert_handler"></a>**`default_alert_handler`** *(string)*: Modules not defining alert_handler have alerts sent here.
 - <a id="properties/addr_spaces"></a>**`addr_spaces`** *(array, required)*: list of address spaces.
 - <a id="properties/module"></a>**`module`** *(array, required)*: list of modules to instantiate.
+  - <a id="properties/module/items"></a>**Items**: Refer to *[urn:topgen:module](#n%3Atopgen%3Amodule)*.
 - <a id="properties/port"></a>**`port`** *(array)*: assign special attributes to specific ports.
 - <a id="properties/inter_module"></a>**`inter_module`** *(object)*: define the signal connections between the modules.
 - <a id="properties/xbar"></a>**`xbar`** *(array, required)*: list of the xbars used in the top.
@@ -217,38 +218,51 @@ options:
 - <a id="properties/outgoing_alert_lpgs"></a>**`outgoing_alert_lpgs`** *(object)*: added property.
 - <a id="properties/inter_signal"></a>**`inter_signal`** *(object)*: added property.
 
-Module Hjsons (referred to by the "complete config" Hjson topgen creates) has the following keys (some being optional):
+The top configuration partially specifies its list of modules.
 
-Key | Kind | Type | Description of Value
---- | ---- | ---- | --------------------
-name | required | string | name of the instance
-type | required | string | comportable IP type
-clock_srcs | required | group | dict with clock sources
-clock_group | required | string | clock group
-reset_connections | required | group | dict with reset sources
-domain | optional | list | optional list of power domains, defaults to Domain0
-clock_reset_export | optional | list | optional list with prefixes for exported clocks and resets at the chip level
-attr | optional | string | optional attribute indicating whether the IP is "ipgen", "reggen_top", or "reggen_only"
-base_addr | optional | group | dict of address space mapped to the corresponding hex start address of the peripheral (if the IP has only a single TL-UL interface)
-base_addrs | optional | group | hex start addresses of the peripheral  (if the IP has multiple TL-UL interfaces)
-memory | optional | group | optional dict with memory region attributes
-param_decl | optional | group | optional dict that allows to override instantiation parameters
-generate_dif | optional | python Bool | optional bool to indicate if a DIF should be generated for that module
-outgoing_alert | optional | string | optional string to indicate alerts are routed externally to the named group
-outgoing_interrupt | optional | string | optional string to indicate interrupts are routed externally to the named group
-incoming_alert | optional | list | optional list of paths to incoming alert configurations for the alert_handler
-ipgen_params | optional | group | Optional ipgen parameters for that instance
-template_type | optional | string | Base template type of ipgen IPs
-racl_group | optional | string | Only valid for racl_ctrl IPs. Defines the RACL group this control IP is associated to
-racl_mappings | optional | group | dict that maps an interface to its associated RACL mapping
-racl_mapping | optional | string | A special case of racl_mappings. If specified, this is taken to represent a dict that associates all interfaces with the given mapping. It is an error to specify both this and racl_mappings.
-plic | optional | string | Interrupt controller managing this module's interrupts
-targets | optional | list | Optional list of targets for this PLIC
-alert_handler | optional | string | Alert handler managing this module's alerts
-otp_map | optional | group | OTP Map information for OTP Ctrl
+### Module
 
+*Hardware module within a top level*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the instance.
+- <a id="properties/type"></a>**`type`** *(string, required)*: comportable IP type.
+- <a id="properties/template_type"></a>**`template_type`** *(string)*: Base template type of ipgen IPs.
+- <a id="properties/clock_srcs"></a>**`clock_srcs`** *(object, required)*: dict with clock sources.
+- <a id="properties/clock_group"></a>**`clock_group`** *(string, required)*: clock group.
+- <a id="properties/reset_connections"></a>**`reset_connections`** *(object, required)*: dict with reset sources.
+- <a id="properties/clock_connections"></a>**`clock_connections`** *(object)*: generated clock connections; added property.
+- <a id="properties/domain"></a>**`domain`** *(array)*: optional list of power domains, defaults to Domain0.
+  - <a id="properties/domain/items"></a>**Items** *(['string', 'number'])*
+- <a id="properties/clock_reset_export"></a>**`clock_reset_export`** *(array)*: optional list with prefixes for exported clocks and resets at the chip level.
+- <a id="properties/base_addr"></a>**`base_addr`** *(object)*: dict of address space mapped to the corresponding hex start
+address of the peripheral (if the IP has only a single TL-UL interface).
+- <a id="properties/base_addrs"></a>**`base_addrs`** *(object)*: hex start addresses of the peripheral (if the IP has multiple TL-UL interfaces).
+- <a id="properties/memory"></a>**`memory`** *(object)*: optional dict with memory region attributes.
+- <a id="properties/otp_map"></a>**`otp_map`** *(object)*: OTP Map information for OTP Ctrl.
+- <a id="properties/otp_mmap"></a>**`otp_mmap`** *(object)*: Full OTP memory map configuration with secret parameters; added property.
+- <a id="properties/ipgen_params"></a>**`ipgen_params`** *(object)*: Optional ipgen parameters for that instance.
+- <a id="properties/param_decl"></a>**`param_decl`** *(object)*: optional dict that allows to override instantiation parameters.
+- <a id="properties/param_list"></a>**`param_list`** *(array)*: list of parameters; added property.
+- <a id="properties/inter_signal_list"></a>**`inter_signal_list`** *(array)*: generated signal information; added property.
+- <a id="properties/generate_dif"></a>**`generate_dif`** *(boolean)*: optional bool to indicate if a DIF should be generated for that module.
+- <a id="properties/racl_group"></a>**`racl_group`** *(string)*: Only valid for racl_ctrl IPs. Defines the RACL group this control IP is associated to.
+- <a id="properties/racl_mappings"></a>**`racl_mappings`** *(object)*: dict that maps an interface to its associated RACL mapping.
+- <a id="properties/racl_mapping"></a>**`racl_mapping`** *(string)*: A special case of racl_mappings. If specified, this is taken to represent
+a dict that associates all interfaces with the given mapping. It is an error
+to specify both this and racl_mappings.
+- <a id="properties/attr"></a>**`attr`**: optional attribute indicating whether the IP is 'ipgen', 'reggen_top', or 'reggen_only'. Must be one of: `["ipgen", "reggen_top", "reggen_only"]`.
+- <a id="properties/targets"></a>**`targets`** *(array)*: Optional list of targets for this PLIC.
+- <a id="properties/plic"></a>**`plic`** *(string)*: Interrupt controller managing this module's interrupts.
+- <a id="properties/alert_handler"></a>**`alert_handler`** *(string)*: Alert handler managing this module's alerts.
+- <a id="properties/outgoing_alert"></a>**`outgoing_alert`** *(string)*: optional string to indicate alerts are routed externally to the named group.
+- <a id="properties/outgoing_interrupt"></a>**`outgoing_interrupt`** *(string)*: optional string to indicate interrupts are routed externally to the named group.
+- <a id="properties/incoming_alert"></a>**`incoming_alert`** *(array)*: optional list of paths to incoming alert configurations for the alert_handler.
+- <a id="properties/incoming_interrupt"></a>**`incoming_interrupt`** *(object)*: Parsed incoming interrupts.
 
 Tops must also come with a seed configuration Hjson.
+
 ### Seed Configuration
 
 *Configuration options for random seeds*
@@ -259,7 +273,6 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/topgen_seed"></a>**`topgen_seed`** *(integer, required)*: seed for topgen generated random netlist constants.
 - <a id="properties/otp_img_seed"></a>**`otp_img_seed`** *(integer)*: Seed for OTP image generation.
 - <a id="properties/lc_ctrl_seed"></a>**`lc_ctrl_seed`** *(integer)*: Seed for lc_ctrl generated random netlist constants.
-
 ### Eflash
 
 *Flash memory configuration*
