@@ -80,11 +80,13 @@ if __name__ == "__main__":
     make_options += " LDFLAGS='{}'".format(" ".join(ldflags))
 
     # `VERILATOR_BINARY` is passed in as a relative path to the Bazel
-    # `execroot`. Convert this to an absolute path in PATH, if present.
+    # `execroot`. Convert this to an absolute path in PATH, if present, at the
+    # start of PATH to ensure the hermetic Verilator binary is selected over any
+    # locally installed version.
     if "VERILATOR_BINARY" in os.environ:
         verilator_binary = os.environ["VERILATOR_BINARY"]
         verilator_dirname = os.path.dirname(os.path.join(cwd, verilator_binary))
-        path_env += os.pathsep + verilator_dirname
+        path_env = verilator_dirname + os.pathsep + path_env
         # If running verilator, include make options.
         sys.argv = others + ["--make_options=" + make_options]
     os.environ["PATH"] = path_env
