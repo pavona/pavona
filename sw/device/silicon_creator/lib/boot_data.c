@@ -502,8 +502,7 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
  * Returns the default boot data.
  *
  * Default boot data can be used only in TEST_UNLOCKED, DEV, and RMA life cycle
- * states unless explicitly allowed by setting the
- * `CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN` OTP item to
+ * states.
  * `kHardenedBoolTrue`.
  *
  * @param lc_state Life cycle state of the device.
@@ -513,12 +512,6 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
                                          boot_data_t *boot_data) {
-#ifdef DISCRETE_OTP_MAP
-  uint32_t allowed_in_prod = otp_read32(
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN_OFFSET);
-#else
-  uint32_t allowed_in_prod = kHardenedBoolFalse;
-#endif
   rom_error_t res = lc_state ^ launder32(kErrorBootDataNotFound);
   barrier32(res);
   switch (launder32(lc_state)) {
@@ -532,19 +525,18 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
       break;
     case kLcStateProd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      res ^= kLcStateProd;
-      if (launder32(allowed_in_prod) == kHardenedBoolTrue) {
-        HARDENED_CHECK_EQ(allowed_in_prod, kHardenedBoolTrue);
-        res ^= kErrorBootDataNotFound ^ kErrorOk;
-      }
+      // Note: Default boot data is temporarily enabled in PROD/PROD_END to
+      // support designs with no secure nonvolatile storage.
+      //
+      // However, it can be undesirable because it allows rolling back the
+      // minimum security version data if the flash is wiped.  As a result,
+      // this policy is expected to be changed when support for external flash
+      // is added.
+      res ^= kLcStateProd ^ kErrorBootDataNotFound ^ kErrorOk;
       break;
     case kLcStateProdEnd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      res ^= kLcStateProdEnd;
-      if (launder32(allowed_in_prod) == kHardenedBoolTrue) {
-        HARDENED_CHECK_EQ(allowed_in_prod, kHardenedBoolTrue);
-        res ^= kErrorBootDataNotFound ^ kErrorOk;
-      }
+      res ^= kLcStateProdEnd ^ kErrorBootDataNotFound ^ kErrorOk;
       break;
     case kLcStateRma:
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
@@ -561,15 +553,10 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
   boot_data->identifier = kBootDataIdentifier;
   boot_data->version = kBootDataVersion2;
   boot_data->counter = kBootDataDefaultCounterVal;
-#ifdef DISCRETE_OTP_MAP
   boot_data->min_security_version_rom_ext =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT_OFFSET);
   boot_data->min_security_version_bl0 =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_BL0_OFFSET);
-#else
-  boot_data->min_security_version_rom_ext = 0;
-  boot_data->min_security_version_bl0 = 0;
-#endif
   boot_data->primary_bl0_slot = kBootSlotA;
   // We cannot use a constant digest since some fields are read from the OTP and
   // we check the digest of the cached boot data entry in pre_boot_check.c
