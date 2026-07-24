@@ -14,6 +14,9 @@ Values that are programmed into a buffered partition via the programming interfa
 
 The sections below describe the operation of various pieces of the OTP controller and how it supports the described functionality.
 
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK -->
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK -->
+<!-- BEGIN-FEATURE: OTP_CTRL.BACKGROUND_CHECK.CHECK_TIMEOUT -->
 ## Logical Partitions
 
 The OTP is logically separated into partitions that represent different functions.
@@ -40,6 +43,9 @@ Since the OTP is memory-like in nature (it only outputs a certain number of bits
 This is a critical point, since after power-up, these particular OTP contents are stored in flip flops and sourced to the system.
 I.e., buffered partitions are **NOT** directly sourced from the OTP macro itself.
 Thus the security of both volatile (OTP controller) and non-volatile (OTP IP) storage becomes important.
+<!-- END-FEATURE: OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK -->
+<!-- END-FEATURE: OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK -->
+<!-- END-FEATURE: OTP_CTRL.BACKGROUND_CHECK.CHECK_TIMEOUT -->
 
 ### Partition Listing and Description
 
@@ -51,6 +57,7 @@ Generally speaking, the production life cycle of a device is split into 5 stages
 OTP values are usually programmed during "Calibration and Testing", "Provisioning" and "RMA" stages, as explained below.
 A detailed listing of all the items and the corresponding memory map can be found in the [Programmer's Guide](programmers_guide.md).
 
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.CREATOR_SW_CFG -->
 ### Calibration and Test
 
 During this stage, the device is tested for functionality and calibrated to ensure uniformity.
@@ -58,6 +65,7 @@ The calibration can focus on a number of things, but usually is centered around 
 These calibration values are programmed into the CREATOR_SW_CFG partition, as they are non-secret values meant to be read out by software and programmed into respective peripherals.
 
 Early on during this stage, the various tokens are also programmed into the secret partitions and harvested by the silicon creator.
+<!-- END-FEATURE: OTP_CTRL.PARTITION.CREATOR_SW_CFG -->
 
 ### Provisioning
 
@@ -73,6 +81,9 @@ After the device finishes provisioning and goes into production, it must retain 
 
 In order to support this transition, the [life cycle state](../../../../ip/lc_ctrl/README.md) and counters must always be update-able.
 
+<!-- BEGIN-FEATURE: OTP_CTRL.PROGRAM -->
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK -->
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK -->
 ## Locking a Partition
 
 Write access to a partition can be permanently locked when software determines it will no longer make any updates to that partition.
@@ -88,35 +99,45 @@ In partitions where read access is controlled by a READ_LOCK CSR the digest is o
 This gives software an opportunity to confirm that the locking operation has proceeded correctly, and if not, scrap the part immediately.
 
 Calculation of the integrity digest depends on whether the partition requires periodic background verification.
+<!-- END-FEATURE: OTP_CTRL.PROGRAM -->
+<!-- END-FEATURE: OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK -->
+<!-- END-FEATURE: OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK -->
 
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.VENDOR_TEST -->
 ### Vendor Test Partition
 
 The vendor test partition is intended to be used for OTP programming smoke checks during the manufacturing flow.
 The silicon creator may implement these checks inside the proprietary version of the `otp_macro` wrapper.
 This partition behaves like any other SW partition, with the exception that ECC uncorrectable errors will not lead to fatal errors / alerts as they do in all other partitions.
 This is due to the nature of the OTP programming smoke checks, which may leave certain OTP words in a state inconsistent with the ECC polynomial employed upon OTP readout.
+<!-- END-FEATURE: OTP_CTRL.PARTITION.VENDOR_TEST -->
 
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.OWNER_SW_CFG -->
 ### Software Configuration Partitions
 
 The software configuration partitions are used as non-volatile storage for flags, configuration and calibration data.
 As such, the contents of this partition are usually consumed once as part of code execution, or moved to another storage compartment somewhere in the design.
-For example, the clock calibration values and the LDO calibration values are programmed to the analog sensor top (AST) at startup.
+In particular, the OWNER_SW_CFG partitions store owner-controlled configuration values that define attributes for ROM code execution.
+Additionally, the clock calibration values and the LDO calibration values are programmed to the analog sensor top (AST) at startup.
 
 As such, it is not necessary to check periodically at the OTP source.
 Instead, software can simply check as part of secure boot and take other measures when these values are programmed into peripherals.
 
 For this partition it is thus the responsibility of software to calculate the integrity digest and program it into the OTP.
 It is also reasonable to shadow (parts of) this partition in main memory, and there is not an immediate impact from OTP contents to hardware.
+<!-- END-FEATURE: OTP_CTRL.PARTITION.OWNER_SW_CFG -->
 
 ### Hardware Configuration and Secret Partitions
 
-The hardware and secret partitions directly affect downstream hardware.
+The hardware and secret partitions directly affect downstream hardware. 
 The contents must go through periodic integrity checks and therefore the stored digest is calculated by hardware when software provides the intent to lock (as opposed to the software partitions where the digest has to be calculated by software).
 
+<!-- BEGIN-FEATURE: OTP_CTRL.PROGRAM -->
 ### Life Cycle Partition
 
 The life cycle partition cannot be locked and will therefore not contain a stored digest.
 Note however that only the life cycle controller has access to this partition, i.e., the Direct Access Interface (DAI) cannot read nor write from/to the life cycle partition.
+<!-- END-FEATURE: OTP_CTRL.PROGRAM -->
 
 ## Zeroizing a Partition
 
@@ -147,6 +168,9 @@ There are two distinct cases when the OTP controller performs a zeroization dete
   Software should trigger an escalation if repeated zeroizations fall below the `ZeroizationValidBound`.
   The `ZeroizationValidBound` should be chosen such that the probability that a scrambled word is accidentally recognized as zeroized is as small as possible while still accounting for potentially stuck-at-0 bits.
 
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.SECRET0 -->
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.SECRET1 -->
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.SECRET2 -->
 ## Secret vs Non-Secret Partitions
 
 Non-secret OTP partitions hold data that can be public; or data that has no impact on security.
@@ -155,15 +179,21 @@ These values are stored in OTP as plaintext.
 
 Secret partitions contain data that are critical to security, for example FLASH scrambling keys, device root secret and unlock tokens.
 These values are stored scrambled in OTP, and are descrambled upon read.
-The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../../../../ip/prim/doc/prim_present.md).
+The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../../../ip/prim/doc/prim_present.md).
+
 The usage of a block cipher however implies that the secret partitions can only be written in 64bit chunks.
 
 Further, the contents of a particular secret partition are not readable by software once locked (other than the digest which must be always readable); while non-secret partitions are always readable unless read accessibility is explicitly removed by software.
 
 Unfortunately, secret partitions must utilize a global netlist key for the scrambling operation, as there is no other non-volatile storage to store a unique key.
+<!-- END-FEATURE: OTP_CTRL.PARTITION.SECRET0 -->
+<!-- END-FEATURE: OTP_CTRL.PARTITION.SECRET1 -->
+<!-- END-FEATURE: OTP_CTRL.PARTITION.SECRET2 -->
 
 ## Partition Checks
 
+<!-- BEGIN-FEATURE: OTP_CTRL.INIT -->
+<!-- BEGIN-FEATURE: OTP_CTRL.BACKGROUND_CHECK.INTEGRITY_CHECK_PERIOD -->
 ### Integrity
 
 Once the appropriate partitions have been locked, the hardware integrity checker employs two integrity checks to verify the content of the volatile buffer registers:
@@ -175,7 +205,9 @@ The purpose of this check is NOT to check between the storage flops and the OTP,
 This verification is primarily concerned with whether the storage flops have experienced fault attacks.
 This check applies to only the HW_CFG* and SECRET* partitions.
 If a failure is encountered, the OTP controller will send out a `fatal_check_error` alert and reset all of its hardware outputs to their defaults.
+<!-- END-FEATURE: OTP_CTRL.BACKGROUND_CHECK.INTEGRITY_CHECK_PERIOD -->
 
+<!-- BEGIN-FEATURE: OTP_CTRL.BACKGROUND_CHECK.CONSISTENCY_CHECK_PERIOD -->
 ### Storage Consistency
 
 This verification ensures the value stored in the buffer registers remain consistent with those in the OTP.
@@ -188,6 +220,7 @@ If a failure is encountered, the OTP controller will send out a `fatal_check_err
 
 Note that checks applied to life cycle could cause a failure if life cycle is updated, because life cycle is the only partition that may contain live updates.
 The controller hence detects this condition based on the `lc_check_byp_en_i` signal coming from the life cycle controller, and pauses background checks on this partition in order to prevent false positives.
+<!-- END-FEATURE: OTP_CTRL.BACKGROUND_CHECK.CONSISTENCY_CHECK_PERIOD -->
 
 ### Secret Partition Integrity Checks
 
@@ -221,7 +254,7 @@ I.e., values programmed to OTP via the programming interface will not be visible
 At this point, outputs of the partition storage are NOT expected to change unless a periodic check suddenly fails.
 When this failure occurs, all outputs are reverted to their default state, and an alert is immediately triggered to the alert handler.
 For timing purposes, OTP outputs can be treated as semi-static, as this error event should be rare and exceptional.
-
+<!-- END-FEATURE: OTP_CTRL.INIT -->
 
 ## Partition Defaults
 
@@ -250,7 +283,8 @@ Note, the program and read ports can conflict with ongoing background storage ch
 An in-progress operation will always be completed.
 Afterwards, or when two requests arrive at the same time, the priority is life cycle > programming interface > on-demand read accesses via CSR windows > background checks.
 
-
+<!-- BEGIN-FEATURE: OTP_CTRL.PROGRAM -->
+<!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.LIFE_CYCLE -->
 ## Programming the OTP
 
 The OTP controller has two programming paths:
@@ -266,6 +300,8 @@ The commands are issued from the [life cycle controller](../../../../ip/lc_ctrl/
 Similar to the functional interface, the life cycle controller allows only one update per power cycle, and after a requested transition reverts to an inert state until reboot.
 
 For more details on how the software programs the OTP, please refer to the [Programmer's Guide](programmers_guide.md).
+<!-- END-FEATURE: OTP_CTRL.PROGRAM -->
+<!-- END-FEATURE: OTP_CTRL.PARTITION.LIFE_CYCLE -->
 
 ## Zeroizing the OTP
 
@@ -351,6 +387,7 @@ In RTL, we distinguish between buffered and unbuffered partition modules.
 These are parameterized, such that we can assemble the array of OTP partitions with these two modules only.
 The corresponding controller FSMs are explained in more detail below.
 
+<!-- BEGIN-FEATURE: OTP_CTRL.ERROR_HANDLING.FATAL -->
 #### Unbuffered Partition
 
 ![Unbuffered Partition FSM](otp_ctrl_unbuf_part_fsm.svg)
@@ -391,7 +428,9 @@ Note that in case of unrecoverable OTP errors or ECC failures in the buffer regi
 
 External escalation via the `lc_escalate_en` signal will move the partition controller FSM into the terminal error state as well.
 See the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details.
+<!-- END-FEATURE: OTP_CTRL.ERROR_HANDLING.FATAL -->
 
+<!-- BEGIN-FEATURE: OTP_CTRL.ERROR_HANDLING.RECOVERABLE -->
 ### Direct Access Interface Control
 
 ![Direct Access Interface FSM](otp_ctrl_dai_fsm.svg)
@@ -411,6 +450,7 @@ Note that any unrecoverable OTP error will move the DAI into a terminal error st
 Also, the DAI consumes the read and write access information provided by the partition controller, and if a certain read or write access is not permitted, a recoverable error will be flagged in the status / error CSRs.
 
 [Zeroization](#the-zeroization-command) is a separate command and resembles a write with all bits set to one, followed by a read to compute the number of bits set to one in the zeroized item's access granule.
+<!-- END-FEATURE: OTP_CTRL.ERROR_HANDLING.RECOVERABLE -->
 
 ### Life Cycle Interface Control
 
@@ -421,6 +461,7 @@ Once it is in the idle state, life cycle state updates can be initiated via the 
 The LCI controller takes the life cycle state to be programmed and writes all 16bit words to OTP.
 In case of unrecoverable OTP errors, the FSM signals an error to the life cycle controller and moves into a terminal error state.
 
+<!-- BEGIN-FEATURE: OTP_CTRL.KEY_DERIVATION -->
 ### Key Derivation Interface
 
 ![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
@@ -428,6 +469,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
 Once it is in the idle state, key derivation can be requested via the [flash](interfaces.md#interface-to-flash-scrambler) and [sram](interfaces.md#interface-to-sram-and-acc-scramblers) interfaces.
 Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
+<!-- END-FEATURE: OTP_CTRL.KEY_DERIVATION -->
 
 ### Scrambling Datapath
 

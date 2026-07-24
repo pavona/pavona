@@ -31,6 +31,7 @@
             '''
       stage: V1
       tests: ["lc_ctrl_smoke"]
+      features: []
     }
     {
       name: state_post_trans
@@ -43,6 +44,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_state_post_trans"]
+      features: []
     }
     {
       name: regwen_during_op
@@ -56,6 +58,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_regwen_during_op"]
+      features: []
     }
     {
       name: rand_wr_claim_transition_if
@@ -70,6 +73,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_claim_transition_if"]
+      features: []
     }
     {
       name: lc_prog_failure
@@ -83,6 +87,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_prog_failure"]
+      features: []
     }
     {
       name: lc_state_failure
@@ -100,6 +105,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_state_failure"]
+      features: ["LC_CTRL.LOGICAL_SCRAP"]
     }
     {
       name: lc_errors
@@ -120,6 +126,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_errors"]
+      features: ["LC_CTRL.AUTHENTICATED_TRANSITIONS"]
     }
     {
       name: security_escalation
@@ -138,6 +145,7 @@
               "lc_ctrl_jtag_state_failure",
               "lc_ctrl_jtag_prog_failure"
               ]
+      features: []
     }
     {
       name: jtag_access
@@ -162,6 +170,7 @@
               "lc_ctrl_jtag_csr_mem_rw_with_rand_reset",
               "lc_ctrl_jtag_alert_test"
               ]
+      features: ["LC_CTRL.ACCESS.JTAG"]
     }
     {
       name: jtag_priority
@@ -179,6 +188,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_jtag_priority"]
+      features: ["LC_CTRL.ACCESS.JTAG"]
     }
     {
       name: lc_ctrl_volatile_unlock
@@ -205,6 +215,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_volatile_unlock_smoke"]
+      features: ["LC_CTRL.STATE.RAW", "LC_CTRL.STATE.TEST_UNLOCKED"]
     }
     {
       name: stress_all
@@ -215,6 +226,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_stress_all"]
+      features: []
     }
   ]
 

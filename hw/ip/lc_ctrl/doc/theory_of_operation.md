@@ -1,7 +1,45 @@
 # Theory of Operation
 
-The following sections give an overview of the life cycle function.
-It begins with life cycle sensing at power up, progresses through how life cycle transitions are made, and then focuses specifically on how life cycle impacts various functionality of the design.
+The following sections give an overview of the life cycle function. 
+After covering the relevant life cycle states, they proceed to describe life cycle sensing at power up, progresses through how life cycle transitions are made, and then focuses specifically on how life cycle impacts various functionality of the design.
+
+<!-- BEGIN-FEATURE: LC_CTRL.STATE.RAW -->
+<!-- BEGIN-FEATURE: LC_CTRL.STATE.TEST_UNLOCKED -->
+<!-- BEGIN-FEATURE: LC_CTRL.STATE.TEST_LOCKED -->
+<!-- BEGIN-FEATURE: LC_CTRL.STATE.DEV -->
+<!-- BEGIN-FEATURE: LC_CTRL.STATE.PROD -->
+<!-- BEGIN-FEATURE: LC_CTRL.STATE.PROD_END -->
+<!-- BEGIN-FEATURE: LC_CTRL.STATE.RMA -->
+<!-- BEGIN-FEATURE: LC_CTRL.STATE.SCRAP -->
+## Life Cycle State Overview
+The following summarizes the states the life cycle controller can cycle through:
+- RAW: This is the default state of the OTP; no functions other than transition to TEST_UNLOCKED0 are available.
+- TEST_UNLOCKED{N}: Transition from RAW state using OTP write. 
+This state is used for manufacturing and production testing.
+- TEST_LOCKED{N}: TEST_LOCKED{N} states have identical functionality to RAW state and serve as a way for the Silicon Creator to protect devices in transit.
+It is not possible to provision OTP root secrets during this state.
+- PROD: Transition from TEST_UNLOCKED or TEST_LOCKED state via OTP write.
+PROD is a mutually exclusive state to DEV and PROD_END.
+This state is used both for provisioning and mission mode.
+- PROD_END: This state is identical in functionality to PROD, except the device is never allowed to transition to RMA state.
+- DEV: Transition from TEST_UNLOCKED state via OTP write.
+This is a mutually exclusive state to PROD and PROD_END.
+This state is used for developing provisioning and mission mode software.
+- RMA: Transition from TEST_UNLOCKED / PROD / DEV via OTP write.
+It is not possible to reach this state from PROD_END.
+- SCRAP: Transition from any manufacturing state via OTP write.
+During SCRAP state the device is completely dead. 
+- INVALID: Invalid is any combination of OTP values that do not fall in the categories above.
+
+See the [Device Life Cycle Spec](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states) for a more detailed description of each of these states
+<!-- END-FEATURE: LC_CTRL.STATE.RAW -->
+<!-- END-FEATURE: LC_CTRL.STATE.TEST_UNLOCKED -->
+<!-- END-FEATURE: LC_CTRL.STATE.TEST_LOCKED -->
+<!-- END-FEATURE: LC_CTRL.STATE.DEV -->
+<!-- END-FEATURE: LC_CTRL.STATE.PROD -->
+<!-- END-FEATURE: LC_CTRL.STATE.PROD_END -->
+<!-- END-FEATURE: LC_CTRL.STATE.RMA -->
+<!-- END-FEATURE: LC_CTRL.STATE.SCRAP -->
 
 ## Power Up Sequence
 
@@ -31,6 +69,7 @@ The life cycle controller can accept [change requests](#life-cycle-request-inter
 For unconditional transitions, the life cycle controller advances the state by requesting an OTP update to the OTP controller.
 Once the programming is confirmed, the life cycle controller reports a success to the requesting agent and waits for the device to reboot.
 
+<!-- BEGIN-FEATURE: LC_CTRL.AUTHENTICATED_TRANSITIONS -->
 ### Conditional Transitions
 
 For conditional transitions, such as those that require a token (RAW_UNLOCK, TEST_UNLOCK, TEST_EXIT, RMA_UNLOCK), the life cycle controller advances the state via OTP programming only after it is supplied with the valid token.
@@ -45,6 +84,7 @@ RAW_UNLOCK is not exposed in the open source design, rather it is something prov
 It is the only token among those listed that is a global constant and stored in gates.
 
 All others CAN be device unique and are stored in OTP.
+<!-- END-FEATURE: LC_CTRL.AUTHENTICATED_TRANSITIONS -->
 
 ### Transition Counter Limits
 
@@ -74,6 +114,7 @@ The device is then expected to reboot before returning to a functional state.
 Note this happens for either successful or unsuccessful transitions.
 This general policy places a time-bound on how quickly life cycle states can change and also forces the device to behave more predictably.
 
+<!-- BEGIN-FEATURE: LC_CTRL.LOGICAL_SCRAP -->
 ## Security Escalation
 
 The life cycle controller contains two escalation paths that are connected to escalation severities 1 and 2 of the alert handler.
@@ -85,6 +126,7 @@ This causes [all decoded outputs](#life-cycle-decoded-outputs-and-controls) to b
 In addition to that, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action (like moving FSMs into terminal error states or clearing sensitive registers).
 
 Whether to escalate to the life cycle controller or not is a software decision, please see the alert handler for more details.
+<!-- END-FEATURE: LC_CTRL.LOGICAL_SCRAP -->
 
 ## Life Cycle Decoded Outputs and Controls
 
@@ -172,6 +214,7 @@ The CHECK_BYP_EN signal is used to disable the background consistency checks of 
 For example, see [egret's background consistency checks](../../../top_egret/ip_autogen/otp_ctrl/doc/theory_of_operation.md#partition-checks).
 The CHECK_BYP_EN signal is only asserted when a transition command is issued.
 
+<!-- BEGIN-FEATURE: LC_CTRL.ACCESS.EXT_CLK -->
 #### CLK_BYP_REQ
 
 If the life cycle state is in RAW, TEST* or RMA, and if [`TRANSITION_CTRL.EXT_CLOCK_EN`](registers.md#transition_ctrl) is set to one, the CLK_BYP_REQ signal is asserted in order to switch the main system clock to an external clock signal.
@@ -180,7 +223,7 @@ Note that the [`TRANSITION_CTRL.EXT_CLOCK_EN`](registers.md#transition_ctrl) reg
 This function is not available in production life cycle states.
 
 For details on the clock switch, please see top_egret's [clkmgr](../../../top_egret/ip_autogen/clkmgr/doc/theory_of_operation.md#life-cycle-requested-external-clock).
-
+<!-- END-FEATURE: LC_CTRL.ACCESS.EXT_CLK -->
 
 ### Life Cycle Access Control Signals
 
@@ -312,6 +355,7 @@ See also [Device Life Cycle Architecture](../../../../doc/security/specs/device_
 
 ## Design Details
 
+<!-- BEGIN-FEATURE: LC_CTRL.ACCESS.JTAG -->
 ### Block Diagram
 
 Conceptually speaking, the life cycle controller consists of a large  FSM that is further subdivided into logical modules for maintainability, as illustrated below. All blue blocks in the block diagram are purely combinational and do not contain any registers.
@@ -334,6 +378,7 @@ In order to write to the CSRs, a [hardware mutex](#life-cycle-request-interface)
 
 The life cycle controller also contains two escalation receivers that are connected to escalation severity 1 and 2 of the alert handler module.
 The actions that are triggered by these escalation receivers are explained in the [escalation handling section](#escalation-handling) below.
+<!-- END-FEATURE: LC_CTRL.ACCESS.JTAG -->
 
 ### System Integration and TAP Isolation
 
@@ -408,6 +453,7 @@ If all token checks are successful, the next life cycle state vector is computed
 
 Note that an initiated life cycle transition request always ends in `PostTransSt`, no matter whether the transition is successful or not.
 
+<!-- BEGIN-FEATURE: LC_CTRL.LOGICAL_SCRAP -->
 #### Escalation Handling
 
 The life cycle controller contains two escalation channels that are connected to the alert handler.
@@ -419,6 +465,7 @@ Note that this first escalation action does not affect the life cycle state.
 When the second channel `esc_scrap_state` is asserted, the life cycle controller moves the life cycle state into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.
 This transition is not permanent, and will clear upon the next power cycle.
 Note that any scrap state (virtual or encoded in the life cycle state vector) will also cause the `lc_escalate_en` life cycle signal to be asserted.
+<!-- END-FEATURE: LC_CTRL.LOGICAL_SCRAP -->
 
 #### FSM Glitch Countermeasures
 
@@ -426,6 +473,7 @@ The FSM has been designed to have a linear control flow that always moves in the
 A sparse FSM state encoding is employed, where each state is encoded as a 16bit word with a minimum Hamming distance of 5 w.r.t. any other state.
 The FSM state and the life cycle state vector are concurrently monitored, and if an erroneous encoding is detected, the life cycle FSM is immediately moved into the terminal `InvalidSt`, and a `fatal_state_error` alert is asserted.
 
+<!-- BEGIN-FEATURE: LC_CTRL.ACCESS.EXT_CLK -->
 #### Life Cycle Request Interface
 
 Life cycle requests are the explicit requests made to change life cycle states.
@@ -458,6 +506,7 @@ Note that all transition registers (with the exception of the [`STATUS`](registe
 
 When an agent is done with the mutex, it releases the mutex by explicitly writing a 0 to the claim register.
 This resets the mux to select no one and also holds the request interface in reset.
+<!-- END-FEATURE: LC_CTRL.ACCESS.EXT_CLK -->
 
 #### Vendor-specific Test Control Register
 

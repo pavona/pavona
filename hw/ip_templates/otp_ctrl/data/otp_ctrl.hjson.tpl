@@ -601,7 +601,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.KEY_DERIVATION"
-      desc: "OTP controller participate key derivation process by providing scramble key seed to SRAM_CTRL${" and FLASH_CTRL" if enable_flash_key else ""}."
+      desc: "OTP controller participates in the key derivation process by providing scramble key seed to SRAM_CTRL${" and FLASH_CTRL" if enable_flash_key else ""}."
     }
     {
       name: "OTP_CTRL.PROGRAM"
