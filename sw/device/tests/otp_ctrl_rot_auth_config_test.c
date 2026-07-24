@@ -16,9 +16,18 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   dif_otp_ctrl_t otp_ctrl;
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
+  CHECK_STATUS_OK(manuf_individualize_device_rot_owner_auth_slot0(&otp_ctrl));
+  CHECK_STATUS_OK(manuf_individualize_device_rot_owner_auth_slot1(&otp_ctrl));
+  CHECK_STATUS_OK(manuf_individualize_device_rot_owner_auth_slot2(&otp_ctrl));
+  CHECK_STATUS_OK(manuf_individualize_device_rot_owner_auth_slot3(&otp_ctrl));
   CHECK_STATUS_OK(
-      manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
-  CHECK_STATUS_OK(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
+      manuf_individualize_device_rot_owner_auth_slot0_state(&otp_ctrl));
+  CHECK_STATUS_OK(
+      manuf_individualize_device_rot_owner_auth_slot1_state(&otp_ctrl));
+  CHECK_STATUS_OK(
+      manuf_individualize_device_rot_owner_auth_slot2_state(&otp_ctrl));
+  CHECK_STATUS_OK(
+      manuf_individualize_device_rot_owner_auth_slot3_state(&otp_ctrl));
   if (kDeviceType == kDeviceSimDV) {
     test_status_set(kTestStatusPassed);
   }
