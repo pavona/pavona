@@ -10,8 +10,10 @@ from design.mubi import prim_mubi
 from reggen.access import SWAccess, HWAccess
 from reggen.clocking import Clocking, ClockingItem
 from reggen.field import Field
-from reggen.lib import (check_keys, check_str, check_name, check_bool,
+from reggen.lib import (check_str, check_name, check_bool,
                         check_list, check_str_list, check_int)
+from basegen.validate import validate_schema
+from basegen.lib import cast_hjson_values
 from reggen.params import ReggenParams
 from reggen.reg_base import RegBase
 
@@ -216,15 +218,16 @@ class Register(RegBase):
                  clocks: Clocking,
                  is_alias: bool,
                  multireg_idx: Optional[int]) -> 'Register':
-        rd = check_keys(raw, 'register', list(REQUIRED_FIELDS.keys()),
-                        list(OPTIONAL_FIELDS.keys()))
+        if not isinstance(raw, dict):
+            raise TypeError('must instantiate register from dict')
+        validate_schema(cast_hjson_values(raw), 'urn:reggen:register')
 
-        name = check_name(rd['name'], 'name of register')
+        name = check_name(raw['name'], 'name of register')
 
         alias_target = None
-        if rd.get('alias_target') is not None:
+        if raw.get('alias_target') is not None:
             if is_alias:
-                alias_target = check_name(rd['alias_target'],
+                alias_target = check_name(raw['alias_target'],
                                           'name of alias target register')
             else:
                 raise ValueError(
@@ -240,11 +243,11 @@ class Register(RegBase):
         if multireg_idx is not None:
             field_bindings['multireg_idx'] = multireg_idx
 
-        desc = check_str(rd['desc'], f'desc for {name} register')
+        desc = check_str(raw['desc'], f'desc for {name} register')
 
         async_clk: tuple[str, ClockingItem] | None = None
 
-        async_obj = rd.get('async')
+        async_obj = raw.get('async')
         if async_obj is not None:
             async_name = check_str(async_obj,
                                    f'async clock for {name} register')
@@ -258,7 +261,7 @@ class Register(RegBase):
 
         sync_clk: tuple[str, ClockingItem] | None = None
 
-        sync_obj = rd.get('sync')
+        sync_obj = raw.get('sync')
         if sync_obj is not None:
             sync_name = check_str(sync_obj,
                                   f'different sync clock for {name} register')
@@ -270,25 +273,25 @@ class Register(RegBase):
 
             sync_clk = (sync_name, clocks.get_by_clock(sync_name))
 
-        swaccess = SWAccess(f'{name} register', rd.get('swaccess', 'none'))
-        hwaccess = HWAccess(f'{name} register', rd.get('hwaccess', 'hro'))
+        swaccess = SWAccess(f'{name} register', raw.get('swaccess', 'none'))
+        hwaccess = HWAccess(f'{name} register', raw.get('hwaccess', 'hro'))
 
-        hwext = check_bool(rd.get('hwext', False),
+        hwext = check_bool(raw.get('hwext', False),
                            f'hwext flag for {name} register')
 
-        hwqe = check_bool(rd.get('hwqe', False),
+        hwqe = check_bool(raw.get('hwqe', False),
                           f'hwqe flag for {name} register')
 
-        hwre = check_bool(rd.get('hwre', False),
+        hwre = check_bool(raw.get('hwre', False),
                           f'hwre flag for {name} register')
 
-        raw_regwen = rd.get('regwen', '')
+        raw_regwen = raw.get('regwen', '')
         if not raw_regwen:
             regwen = None
         else:
             regwen = check_name(raw_regwen, f'regwen for {name} register')
 
-        raw_resval = rd.get('resval')
+        raw_resval = raw.get('resval')
         if raw_resval is None:
             resval = None
         else:
@@ -297,12 +300,12 @@ class Register(RegBase):
                 raise ValueError(f'resval for {name} register is {resval}, '
                                  f'not an unsigned {reg_width}-bit number.')
 
-        tags = check_str_list(rd.get('tags', []), f'tags for {name} register')
+        tags = check_str_list(raw.get('tags', []), f'tags for {name} register')
 
-        shadowed = check_bool(rd.get('shadowed', False),
+        shadowed = check_bool(raw.get('shadowed', False),
                               f'shadowed flag for {name} register')
 
-        raw_fields = check_list(rd['fields'], f'fields for {name} register')
+        raw_fields = check_list(raw['fields'], f'fields for {name} register')
         if not raw_fields:
             raise ValueError(f'Register {name} has no fields.'.format(name))
 
@@ -334,14 +337,14 @@ class Register(RegBase):
             used_bits |= field.bits.bitmask()
             fields.append(field)
 
-        raw_uea = rd.get('update_err_alert')
+        raw_uea = raw.get('update_err_alert')
         if raw_uea is None:
             update_err_alert = None
         else:
             update_err_alert = check_name(
                 raw_uea, f'update_err_alert for {name} register')
 
-        raw_sea = rd.get('storage_err_alert')
+        raw_sea = raw.get('storage_err_alert')
         if raw_sea is None:
             storage_err_alert = None
         else:
@@ -349,7 +352,7 @@ class Register(RegBase):
                 raw_sea, f'storage_err_alert for {name} register')
 
         writes_ignore_errors = \
-            check_bool(rd.get('writes_ignore_errors', False),
+            check_bool(raw.get('writes_ignore_errors', False),
                        'writes_ignore_errors flag for {} register'
                        .format(name))
 

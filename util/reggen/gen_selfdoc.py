@@ -7,7 +7,7 @@ Generates the documentation for the register tool
 
 """
 from reggen.access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
-from reggen import (validate, enum_entry, field, register,
+from reggen import (validate, enum_entry, field,
                     multi_register, window)
 
 from typing import Any, Optional, TextIO
@@ -237,14 +237,8 @@ def document(outfile: TextIO) -> None:
     document_schema(outfile, "urn:reggen:ip_block", schema_parser)
     genout(outfile, top_example)
 
-    genout(
-        outfile, "\n\nThe list of registers includes register definition "
-        "groups containing the following keys:\n")
-    doc_tbl_head(outfile, True)
-    for k, v in register.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
-    for k, v in register.OPTIONAL_FIELDS.items():
-        doc_tbl_line(outfile, k, 'o', v)
+    genout(outfile, "\n\n")
+    document_schema(outfile, "urn:reggen:register", schema_parser)
     genout(outfile, register_example)
 
     genout(
