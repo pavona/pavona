@@ -76,7 +76,11 @@
       items: { $ref: "urn:topgen:parameter" },
       description: "list of parameters; added property"
     },
-    inter_signal_list: { type: "array", description: "generated signal information; added property" },
+    inter_signal_list: {
+      type: "array",
+      items: { $ref: "urn:topgen:inter_signal" }
+      description: "generated signal information; added property"
+    },
     generate_dif: {
       type: "boolean",
       description: "optional bool to indicate if a DIF should be generated for that module"
