@@ -1,0 +1,89 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:register",
+  title: "Register",
+  description: "Register description",
+  type: "object",
+  required: ["name", "desc", "fields"]
+  properties: {
+    // basic info
+    name: { type: "string", description: "name of the register" },
+    alias_target: { type: "string", description: "name of the register to apply the alias definition to." },
+    desc: {
+        type: "string",
+        description: "description of the register. This field supports the markdown syntax."
+    },
+
+    // register access
+    swaccess: {
+        type: "string",
+        description: "software access permission to use for fields that don't specify swaccess"
+    },
+    hwaccess: {
+        type: "string",
+        description: "hardware access permission to use for fields that don't specify hwaccess"
+    },
+    regwen: {
+        type: "string",
+        description: '''if register is write-protected by another register, that
+                     register name should be given here. empty-string for no register
+                     write protection
+                     '''
+    },
+    writes_ignore_errors: {
+        type: "boolean",
+        description: "This register may update on a TL write that causes an error response."
+    },
+
+    // hardware implementation
+    hwext: {
+        type: "boolean",
+        description: "'true' if the register is stored outside of the register module"
+    },
+    hwqe: {
+        type: "boolean",
+        description: "'true' if hardware uses 'q' enable signal, which is latched signal of software write pulse."
+    },
+    hwre: {
+        type: "boolean",
+        description: "'true' if hardware uses 're' signal, which is latched signal of software read pulse."
+    },
+    resval: { type: "number", description: "reset value of full register (default 0)", default: 0 },
+    async: {
+        type: "string",
+        description: '''indicates the register must cross to a different clock
+                     domain before use. The value shown here should correspond
+                     to one of the module's clocks.
+                     '''
+    },
+    sync: {
+        type: "string",
+        description: '''indicates the register needs to be on another clock/reset domain.
+                     The value shown here should correspond to one of the module's clocks.
+                     '''
+    },
+
+    // register fields
+    fields: { type: "array", description: "list of register field description groups" },
+
+    // register tags (for DV)
+    tags: {
+        type: "array",
+        description: "tags for the register, following the format "tag_name:item1:item2...""
+    },
+
+    // shadow registers
+    shadowed: { type: "boolean", description: "'true' if the register is shadowed" },
+    update_err_alert: {
+        type: "string",
+        description: "alert that will be triggered if this shadowed register has update error"
+    },
+    storage_err_alert: {
+        type: "string",
+        description: "alert that will be triggered if this shadowed register has storage error"
+    },
+  }
+}
