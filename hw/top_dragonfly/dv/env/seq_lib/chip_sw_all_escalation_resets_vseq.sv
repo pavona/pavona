@@ -95,7 +95,11 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     end else begin
       string excluded_ips[$], excluded_ips_append[$];
       int excluded_ip_idxs[$];
+      // This handles plusarg "avoid_inject_fatal_error_for_ips" which accepts a
+      // comma-separated list of ips to be excluded.
       `DV_GET_QUEUE_PLUSARG(excluded_ips, avoid_inject_fatal_error_for_ips)
+      // This handles plusarg "avoid_ferr_ips_append" which accepts a
+      // comma-separated list of ips to be appended to the list of excluded ips.
       `DV_GET_QUEUE_PLUSARG(excluded_ips_append, avoid_ferr_ips_append)
       if (excluded_ips_append.size() > 0) begin
         while(excluded_ips_append.size() > 0)
@@ -141,6 +145,11 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     // Disable scoreboard tl error checks since we will trigger faults which cannot be predicted.
     cfg.en_scb_tl_err_chk = 0;
 
+    // Let CIP know to expect alerts. Notice some alerts trigger alerts in other blocks,
+    // for example OTP_CTRL fatal alerts can cause LC_CTRL to flag alerts, which triggers
+    // escalation and ACC and some other blocks will also flag alerts.
+    expect_fatal_alerts = 1'b1;
+
     // Let SW know the expected alert.
     sw_alert_num = {ip_alert.alert_num};
     sw_symbol_backdoor_overwrite("kExpectedAlertNumber", sw_alert_num);
@@ -155,6 +164,9 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(.path(ip_alert.ip_inst_regex), .is_regex(1));
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for fault injection",
              "Timeout waiting for fault injection request.")
+
+    // Don't cause a second reset, to avoid confusion, and having to inject the fault again.
+    do_apply_reset = 1'b0;
 
     `uvm_info(`gfn, $sformatf(
               "Injecting fault for IP %s, with alert %0d",
