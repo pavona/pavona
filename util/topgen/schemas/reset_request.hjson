@@ -1,0 +1,24 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:reset_request",
+  title: "Reset Request",
+  description: "Reset request item",
+  type: "object",
+  required: ["name", "desc", "module"]
+  properties: {
+    name: { type: "string", description: "the reset request name" },
+    width: { type: "number" },
+    desc: { type: "string", description: "the reset request description" },
+    module: { type: "string", description: "the reset request source" },
+    enabled_after_reset: {
+        type: "boolean",
+        description: '''whether the reset is enabled after a reset (put
+                     differently, whether the reset value of the reset enable
+                     is high)
+                     '''
+    },
+  }
+}
