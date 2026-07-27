@@ -897,7 +897,9 @@ task cip_base_vseq::check_not_fatal_alert(string alert_name, alert_esc_agent_cfg
       begin
         cfg.clk_rst_vif.wait_clks(check_cycles);
       end
-      wait(alert_cfg.vif.alert_tx_final.alert_p && !alert_cfg.vif.alert_tx_final.alert_n);
+      begin
+        wait(alert_cfg.vif.alert_tx_final.alert_p && !alert_cfg.vif.alert_tx_final.alert_n);
+      end
     join_any
     disable fork;
   end join
@@ -925,8 +927,9 @@ task cip_base_vseq::check_no_fatal_alerts();
 
       fork begin : isolation_fork
         foreach(cfg.m_alert_agent_cfgs[alert_name]) begin
+          string local_alert_name = alert_name;
           fork
-            check_not_fatal_alert(alert_name, cfg.m_alert_agent_cfgs[alert_name]);
+            check_not_fatal_alert(local_alert_name, cfg.m_alert_agent_cfgs[local_alert_name]);
           join_none
         end
         wait fork;
