@@ -161,28 +161,35 @@ The basic structure of a register definition file is thus:
 
 
 
-The list of registers includes register definition groups containing the following keys:
+### Register
 
-Key | Kind | Type | Description of Value
---- | ---- | ---- | --------------------
-name | required | string | name of the register
-desc | required | text | description of the register. This field supports the markdown syntax.
-fields | required | list | list of register field description groups
-alias_target | optional | string | name of the register to apply the alias definition to.
-async | optional | string | indicates the register must cross to a different clock domain before use.  The value shown here should correspond to one of the module's clocks.
-sync | optional | string | indicates the register needs to be on another clock/reset domain.The value shown here should correspond to one of the module's clocks.
-swaccess | optional | string | software access permission to use for fields that don't specify swaccess
-hwaccess | optional | string | hardware access permission to use for fields that don't specify hwaccess
-hwext | optional | string | 'true' if the register is stored outside of the register module
-hwqe | optional | string | 'true' if hardware uses 'q' enable signal, which is latched signal of software write pulse.
-hwre | optional | string | 'true' if hardware uses 're' signal, which is latched signal of software read pulse.
-regwen | optional | string | if register is write-protected by another register, that register name should be given here. empty-string for no register write protection
-resval | optional | int | reset value of full register (default 0)
-tags | optional | string | tags for the register, following the format 'tag_name:item1:item2...'
-shadowed | optional | string | 'true' if the register is shadowed
-update_err_alert | optional | string | alert that will be triggered if this shadowed register has update error
-storage_err_alert | optional | string | alert that will be triggered if this shadowed register has storage error
-writes_ignore_errors | optional | bitrange | This register may update on a TL write that causes an error response.
+*Register description*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the register.
+- <a id="properties/alias_target"></a>**`alias_target`** *(string)*: name of the register to apply the alias definition to.
+- <a id="properties/desc"></a>**`desc`** *(string, required)*: description of the register. This field supports the markdown syntax.
+- <a id="properties/swaccess"></a>**`swaccess`** *(string)*: software access permission to use for fields that don't specify swaccess.
+- <a id="properties/hwaccess"></a>**`hwaccess`** *(string)*: hardware access permission to use for fields that don't specify hwaccess.
+- <a id="properties/regwen"></a>**`regwen`** *(string)*: if register is write-protected by another register, that
+register name should be given here. empty-string for no register
+write protection.
+- <a id="properties/writes_ignore_errors"></a>**`writes_ignore_errors`** *(boolean)*: This register may update on a TL write that causes an error response.
+- <a id="properties/hwext"></a>**`hwext`** *(boolean)*: 'true' if the register is stored outside of the register module.
+- <a id="properties/hwqe"></a>**`hwqe`** *(boolean)*: 'true' if hardware uses 'q' enable signal, which is latched signal of software write pulse.
+- <a id="properties/hwre"></a>**`hwre`** *(boolean)*: 'true' if hardware uses 're' signal, which is latched signal of software read pulse.
+- <a id="properties/resval"></a>**`resval`** *(number)*: reset value of full register (default 0). Default: `0`.
+- <a id="properties/async"></a>**`async`** *(string)*: indicates the register must cross to a different clock
+domain before use. The value shown here should correspond
+to one of the module's clocks.
+- <a id="properties/sync"></a>**`sync`** *(string)*: indicates the register needs to be on another clock/reset domain.
+The value shown here should correspond to one of the module's clocks.
+- <a id="properties/fields"></a>**`fields`** *(array, required)*: list of register field description groups.
+- <a id="properties/tags"></a>**`tags`** *(array)*: tags for the register, following the format .
+- <a id="properties/shadowed"></a>**`shadowed`** *(boolean)*: 'true' if the register is shadowed.
+- <a id="properties/update_err_alert"></a>**`update_err_alert`** *(string)*: alert that will be triggered if this shadowed register has update error.
+- <a id="properties/storage_err_alert"></a>**`storage_err_alert`** *(string)*: alert that will be triggered if this shadowed register has storage error.
 
 
 The basic register definition group will follow this pattern:
