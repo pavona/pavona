@@ -257,6 +257,7 @@ address of the peripheral (if the IP has only a single TL-UL interface).
 - <a id="properties/param_list"></a>**`param_list`** *(array)*: list of parameters; added property.
   - <a id="properties/param_list/items"></a>**Items**: Refer to *[urn:topgen:parameter](#n%3Atopgen%3Aparameter)*.
 - <a id="properties/inter_signal_list"></a>**`inter_signal_list`** *(array)*: generated signal information; added property.
+  - <a id="properties/inter_signal_list/items"></a>**Items**: Refer to *[urn:topgen:inter_signal](#n%3Atopgen%3Ainter_signal)*.
 - <a id="properties/generate_dif"></a>**`generate_dif`** *(boolean)*: optional bool to indicate if a DIF should be generated for that module.
 - <a id="properties/racl_group"></a>**`racl_group`** *(string)*: Only valid for racl_ctrl IPs. Defines the RACL group this control IP is associated to.
 - <a id="properties/racl_mappings"></a>**`racl_mappings`** *(object)*: dict that maps an interface to its associated RACL mapping.
@@ -315,6 +316,25 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/integrity_width"></a>**`integrity_width`** *(integer, required)*: number of integrity bits per data word.
 - <a id="properties/info_types"></a>**`info_types`** *(integer, required)*: number of different info page types.
 - <a id="properties/infos_per_bank"></a>**`infos_per_bank`** *(array, required)*: number of pages per info type, the size of the list must match 'info_types'.
+
+### Inter-Module Signal
+
+*Configuration of direct signal between IP blocks*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the name of the signal.
+- <a id="properties/desc"></a>**`desc`** *(string)*: the inter signal description.
+- <a id="properties/struct"></a>**`struct`** *(string, required)*: the data type of the signal.
+- <a id="properties/package"></a>**`package`** *(string)*: the package declaring the struct.
+- <a id="properties/type"></a>**`type`** *(string, required)*: whether the signal is unidirectional or part of a request-response pair.
+- <a id="properties/act"></a>**`act`** *(string, required)*: whether it is a request (req) or a response (rsp).
+- <a id="properties/inst_name"></a>**`inst_name`** *(string)*: the instance this signal connects to.
+- <a id="properties/width"></a>**`width`** *(['integer', 'string'], required)*: the number of items of the signal for arrays.
+- <a id="properties/default"></a>**`default`** *(string)*: TODO.
+- <a id="properties/end_idx"></a>**`end_idx`** *(integer)*: TODO.
+- <a id="properties/top_signame"></a>**`top_signame`** *(string)*: TODO.
+- <a id="properties/index"></a>**`index`** *(integer)*: the index when this is connected to an array.
 
 ### Interrupt
 
