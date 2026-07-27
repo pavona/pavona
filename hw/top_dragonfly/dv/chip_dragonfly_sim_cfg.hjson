@@ -461,7 +461,12 @@
       uvm_test_seq: chip_sw_all_escalation_resets_vseq
       sw_images: ["//sw/device/tests/sim_dv:all_escalation_resets_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+bypass_alert_ready_to_end_check=1"]
+      run_opts: [
+          "+bypass_alert_ready_to_end_check=1",
+          # Exclude retention sram because when it gets a fault all accesses to
+          # it are blocked and the test uses retention sram to track state.
+          "+excluded_ips=sram_ctrl_ret_aon",
+      ]
       reseed: 100
     }
     {
