@@ -1,0 +1,28 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:inter_signal",
+  title: "Inter-Module Signal",
+  description: "Configuration of direct signal between IP blocks",
+  type: "object",
+  required: ["name", "struct", "type", "act", "width"]
+  properties: {
+    name: { type: "string", description: "the name of the signal" },
+    desc: { type: "string", description: "the inter signal description" },
+    struct: { type: "string", description: "the data type of the signal" },
+    package: { type: "string", description: "the package declaring the struct" },
+    type: {
+        type: "string",
+        description: "whether the signal is unidirectional or part of a request-response pair"
+    },
+    act: { type: "string", description: "whether it is a request (req) or a response (rsp)" },
+    inst_name: { type: "string", description: "the instance this signal connects to" },
+    width: { description: "the number of items of the signal for arrays" },     // can be parameterized width
+    default: { type: "string" },
+    end_idx: { type: "number" },
+    top_signame: { type: "string" },
+    index: { type: "number", description: "the index when this is connected to an array" },
+  }
+}

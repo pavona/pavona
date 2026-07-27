@@ -9,59 +9,11 @@ from typing import Dict, List, Union
 
 from basegen.typing import ConfigT
 from reggen.ip_block import IpBlock
-from reggen.validate import check_keys
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
 from topgen.lib import find_module, find_modules
 from basegen.validate import validate_schema
 import jsonschema.exceptions
-
-# For the reference
-# val_types = {
-#     'd': ["int", "integer (binary 0b, octal 0o, decimal, hex 0x)"],
-#     'x': ["xint", "x for undefined otherwise int"],
-#     'b': [
-#         "bitrange", "bit number as decimal integer, \
-#                     or bit-range as decimal integers msb:lsb"
-#     ],
-#     'l': ["list", "comma separated list enclosed in `[]`"],
-#     'ln': ["name list", 'comma separated list enclosed in `[]` of '\
-#            'one or more groups that have just name and dscr keys.'\
-#            ' e.g. `{ name: "name", desc: "description"}`'],
-#     'lnw': ["name list+", 'name list that optionally contains a width'],
-#     'lp': ["parameter list", 'parameter list having default value optionally'],
-#     'g': ["group", "comma separated group of key:value enclosed in `{}`"],
-#     's': ["string", "string, typically short"],
-#     't': ["text", "string, may be multi-line enclosed in `'''` "\
-#           "may use `**bold**`, `*italic*` or `!!Reg` markup"],
-#     'T': ["tuple", "tuple enclosed in ()"],
-#     'pi': ["python int", "Native Python type int (generated)"],
-#     'pb': ["python Bool", "Native Python type Bool (generated)"],
-#     'pl': ["python list", "Native Python type list (generated)"],
-#     'pe': ["python enum", "Native Python type enum (generated)"]
-# }
-
-inter_sig_required = {
-    'name': ['s', 'the name of the signal'],
-    'struct': ['s', 'the data type of the signal'],
-    'type': [
-        's',
-        'whether the signal is unidirectional or part of a request-response '
-        'pair'
-    ],
-    'act': ['s', 'whether it is a request (req) or a response (rsp)'],
-    'width': ['d', 'the number of items of the signal for arrays'],
-}
-inter_sig_optional = {
-    'desc': ['s', 'the inter signal description'],
-    'inst_name': ['s', 'the instance this signal connects to'],
-    'index': ['d', 'the index when this is connected to an array'],
-    'package': ['s', 'the package declaring the struct'],
-    'default': ['s', 'TODO'],
-    'end_idx': ['d', 'TODO'],
-    'top_signame': ['s', 'TODO'],
-}
-inter_sig_added = {}
 
 
 # Supported PAD types.
@@ -753,12 +705,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
                         '{} {} swaccess attribute {} of memory region {} '
                         'is not valid'.format(prefix, modname, attr, intf))
                     error += 1
-        if 'inter_signal_list' in m:
-            for sig in m['inter_signal_list']:
-                sig_name = sig.get('name', 'no name')
-                error += check_keys(sig, inter_sig_required,
-                                    inter_sig_optional, inter_sig_added,
-                                    f"{modname} Inter signal {sig_name}")
     return error
 
 
