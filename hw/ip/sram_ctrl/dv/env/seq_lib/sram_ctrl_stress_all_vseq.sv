@@ -36,6 +36,10 @@ class sram_ctrl_stress_all_vseq extends sram_ctrl_base_vseq;
       uint                seq_idx = $urandom_range(0, vseq_names.size() - 1);
       string              cur_vseq_name = vseq_names[seq_idx];
 
+      // Once a reset is pending the framework is waiting for a quiet gap to fire it. Stop starting
+      // new sub-sequences, whose accesses would race the reset and trip its "no outstanding" check.
+      if (cfg.stop_transaction_generators()) break;
+
       seq = create_seq_by_name(cur_vseq_name);
       `downcast(sram_vseq, seq)
 
