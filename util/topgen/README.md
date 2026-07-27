@@ -402,10 +402,28 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/name"></a>**`name`** *(string, required)*: name of the connecting reset.
 - <a id="properties/domain"></a>**`domain`** *(string, required)*: connected domain.
 
+### Reset Request
+
+*Reset request item*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the reset request name.
+- <a id="properties/width"></a>**`width`** *(integer)*: TODO.
+- <a id="properties/desc"></a>**`desc`** *(string, required)*: the reset request description.
+- <a id="properties/module"></a>**`module`** *(string, required)*: the reset request source.
+- <a id="properties/enabled_after_reset"></a>**`enabled_after_reset`** *(boolean)*: whether the reset is enabled after a reset (put
+differently, whether the reset value of the reset enable
+is high).
+
 ### Reset Requests
 
 *Top level listing of reset requests*
 
+#### Pattern Properties
+
+- <a id="patternProperties"></a>**`.*`**
+  - <a id="patternProperties/items"></a>**Items**: Refer to *[urn:topgen:reset_request](#n%3Atopgen%3Areset_request)*.
 #### Properties
 
 - <a id="properties/int"></a>**`int`** *(array)*: internal request list, for example, escalation reset and power glitches.
