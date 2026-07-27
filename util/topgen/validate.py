@@ -41,20 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-reset_request_required = {
-    'name': ['s', 'the reset request name'],
-    'desc': ['s', 'the reset request description'],
-    'module': ['s', 'the reset request source'],
-}
-reset_request_optional = {
-    'width': ['d', 'TODO'],
-    "enabled_after_reset": [
-        "pb",
-        "whether the reset is enabled after a reset "
-        "(put differently, whether the reset value of the reset enable is high)"],
-}
-reset_request_added = {}
-
 wakeup_required = {
     'name': ['s', 'the wakeup name'],
     'width': ['d', 'the width of the signal'],
@@ -607,16 +593,6 @@ def check_clocks_resets(top: ConfigT, ip_name_to_block: IpBlocksT,
     return error
 
 
-def check_reset_requests(top: ConfigT, component: str) -> int:
-    error = 0
-    for reset_list in top.get('reset_requests', {}).values():
-        for reset_req in reset_list:
-            error += check_keys(reset_req, reset_request_required,
-                                reset_request_optional, reset_request_added,
-                                f'{component} Reset request')
-    return error
-
-
 def check_exported_resets(top: ConfigT, component: str) -> int:
     error = 0
     for key, resets in top.get('exported_rsts', {}).items():
@@ -924,7 +900,6 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     # Power domain check
     check_power_domains(top)
 
-    error += check_reset_requests(top, component)
     error += check_exported_resets(top, component)
     error += check_wakeups(top, component)
 

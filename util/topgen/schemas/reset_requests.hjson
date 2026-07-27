@@ -8,6 +8,11 @@
   description: "Top level listing of reset requests",
   type: "object",
   additionalProperties: false
+  patternProperties: {
+    ".*": {
+      items: { $ref: "urn:topgen:reset_request" }
+    }
+  }
   properties: {
     int: {
       type: "array",
