@@ -135,12 +135,10 @@ class sram_ctrl_base_vseq #(
     req_mem_init();
   endtask
 
-  // Increase the number of cycles to wait for no outstanding accesses, since it is hard
-  // to sequence all invocations of pre_start, and that can trigger ram init which blocks
-  // accesses for a long time. The RAM has 32K words, and it updates one per cycle, so
-  // 75,000 cycles should be okay.
+  // Must be long enough to drain the throughput/smoke sequences' burst of up to 10K non-blocking
+  // accesses (well over 100K cycles). A stuck access never drains, so real hangs are still caught.
   virtual function int wait_cycles_with_no_outstanding_accesses();
-    return 75_000;
+    return 200_000;
   endfunction
 
   // Request a memory init, and  wait for it to complete. This is a problematic task since
