@@ -158,7 +158,14 @@ class uart_tx_rx_vseq extends uart_base_vseq;
     wait(!cfg.under_reset);
     // read interrupt
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr)
-    cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
+    // `dly_to_access_intr` reaches 1M clocks, which is over 160ms at the low end of the randomized
+    // clock range. `body()` only clears `do_interrupt` after its transaction loop is done and
+    // then waits for this thread, so a delay started just beforehand can hold up the `join` in
+    // `body()` well past the test timeout. Bail out of the delay as soon as the flag drops.
+    `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(dly_to_access_intr);,
+                      wait (!do_interrupt);,
+                      "do_interrupt cleared, ending interrupt thread")
+    if (!do_interrupt) return;
     csr_rd(.ptr(ral.intr_state), .value(intr_status));
 
     // clear interrupt, randomly clear the interrupt that is set, and
@@ -168,7 +175,11 @@ class uart_tx_rx_vseq extends uart_base_vseq;
                                            clear_intr[i] -> intr_status[i] == 1;
                                        })
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr)
-    cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
+    // Same reasoning as the delay above.
+    `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(dly_to_access_intr);,
+                      wait (!do_interrupt);,
+                      "do_interrupt cleared, ending interrupt thread")
+    if (!do_interrupt) return;
 
     // for fifo interrupt, parity/frame error, don't clear it at ignored period
     // as it hasn't been checked

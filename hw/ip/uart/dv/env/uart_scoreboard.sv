@@ -444,8 +444,24 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             end
             `DV_CHECK_EQ(item.d_data[i], intr_exp_at_addr_phase[i],
                          $sformatf("Interrupt: %0s", intr.name));
-            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
-                         $sformatf("Interrupt_pin: %0s", intr.name));
+            // TxWatermark, TxEmpty, and RxWatermark are status type
+            // interrupts, so their expected value is recomputed by forked
+            // processes that model the RX/TX timing.
+            // Those processes are independent of this read below, so
+            // intr_exp[i] can change between address phase and data phase
+            // with a fifo model that is not cycle accurate enough to say
+            // which side of that change the pin should be on.
+            //
+            // So we skip the pin check when intr_exp[i] no longer matches the
+            // snapshot taken at the address phase. The check above is
+            // unaffected because it compares against that snapshot. Also,
+            // a pin that is wrongly set still fails on any read where
+            // intr_exp[i] did not change.
+            if (!(intr inside {TxWatermark, TxEmpty, RxWatermark} &&
+                  intr_exp[i] != intr_exp_at_addr_phase[i])) begin
+              `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
+                           $sformatf("Interrupt_pin: %0s", intr.name));
+            end
           end
         end // read & data phase
       end

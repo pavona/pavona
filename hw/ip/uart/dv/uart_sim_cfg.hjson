@@ -95,6 +95,8 @@
     {
       name: uart_noise_filter
       uvm_test_seq: uart_noise_filter_vseq
+      // Raising the timeout due to DV_COMMON_CLK_CONSTRAINT = 5.00MHz being too slow.
+      run_opts: ["+test_timeout_ns=3000000000"]
     }
 
     {
