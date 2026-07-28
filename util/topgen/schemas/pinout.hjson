@@ -10,6 +10,12 @@
   required: ["banks", "pads"]
   properties: {
     banks: { type: "array", description: "List of IO power banks" },
-    pads: { type: "array", description: "List of pads" },
+    pads: {
+      type: "array",
+      items: {
+        $ref: "urn:topgen:pad"
+      },
+      description: "List of pads"
+    },
   }
 }

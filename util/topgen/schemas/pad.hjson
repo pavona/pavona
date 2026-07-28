@@ -1,0 +1,23 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:pad",
+  title: "Pad",
+  description: "I/O pad configuration",
+  type: "object",
+  required: ["name", "type", "bank", "connection"]
+  properties: {
+    name: { type: "string", description: "Pad name" },
+    type: { type: "string", description: "Pad type" },
+    bank: { type: "string", description: "IO power bank for the pad" },
+    connection: {
+      enum: ["direct", "manual", "muxed"],
+      description: "Specification of connection type, can be direct, manual or muxed"
+    },
+    desc: { type: "string", description: "Pad description" },
+    port_type: { type: "string", description: "Special port type other than `inout wire`" }
+    idx: { type: "number", description: "the index of the pad; added property" }
+  }
+}
