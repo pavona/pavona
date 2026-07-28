@@ -6,8 +6,10 @@
 from typing import Dict, List, Optional, Tuple
 
 from reggen.inter_signal import InterSignal
-from reggen.lib import (check_list, check_keys, check_str, check_optional_bool,
+from reggen.lib import (check_list, check_str, check_optional_bool,
                         check_optional_str)
+from basegen.validate import validate_schema
+from basegen.lib import cast_hjson_values
 
 
 class BusInterfaces:
@@ -61,42 +63,30 @@ class BusInterfaces:
 
         for idx, raw_entry in enumerate(check_list(raw, where)):
             entry_what = 'entry {} of {}'.format(idx + 1, where)
-            ed = check_keys(raw_entry, entry_what, ['protocol', 'direction'], [
-                'name', 'async', 'hier_path', 'racl_support',
-                'static_racl_support', 'racl_range_support'
-            ])
+            if not isinstance(raw_entry, dict):
+                raise TypeError('bus interfaces must be instantiated from dict: ' + entry_what)
+            validate_schema(cast_hjson_values(raw_entry), 'urn:reggen:bus_interface')
 
-            protocol = check_str(ed['protocol'],
-                                 'protocol field of ' + entry_what)
-            if protocol != 'tlul':
-                raise ValueError(
-                    f'Unknown protocol {protocol!r} at {entry_what}')
-
-            direction = check_str(ed['direction'],
-                                  'direction field of ' + entry_what)
-            if direction not in ['device', 'host']:
-                raise ValueError(
-                    f'Unknown interface direction {direction!r} at '
-                    f'{entry_what}')
-
-            name = check_optional_str(ed.get('name'),
+            name = check_optional_str(raw_entry.get('name'),
                                       'name field of ' + entry_what)
 
-            async_clk = check_optional_str(ed.get('async'),
+            async_clk = check_optional_str(raw_entry.get('async'),
                                            'async field of ' + entry_what)
 
-            hier_path = check_optional_str(ed.get('hier_path'),
+            hier_path = check_optional_str(raw_entry.get('hier_path'),
                                            'hier_path field of ' + entry_what)
 
             racl_support = check_optional_bool(
-                ed.get('racl_support'), 'racl_support field of ' + entry_what)
+                raw_entry.get('racl_support'), 'racl_support field of ' + entry_what)
             static_racl_support = check_optional_bool(
-                ed.get('static_racl_support'),
+                raw_entry.get('static_racl_support'),
                 'static_racl_support field of ' + entry_what)
             racl_range_support = check_optional_bool(
-                ed.get('racl_range_support'),
+                raw_entry.get('racl_range_support'),
                 'racl_range_support field of ' + entry_what)
 
+            direction = check_str(raw_entry['direction'],
+                                  'direction field of ' + entry_what)
             if direction == 'host':
                 if name is None:
                     if has_unnamed_host:
