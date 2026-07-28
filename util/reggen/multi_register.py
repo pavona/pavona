@@ -4,47 +4,14 @@
 
 from typing import Dict, List, Optional
 
-from reggen import register
 from reggen.clocking import Clocking
 from reggen.field import Field
-from reggen.lib import check_keys, check_str, check_name, check_bool
+from reggen.lib import check_str, check_name, check_bool
+from basegen.validate import validate_schema
+from basegen.lib import REPO_TOP, import_hjson, cast_hjson_values
 from reggen.params import ReggenParams
 from reggen.reg_base import RegBase
 from reggen.register import Register
-
-REQUIRED_FIELDS = {
-    'name': ['s', "base name of the registers"],
-    'desc': ['t', "description of the registers"],
-    'count': [
-        's', "number of instances to generate."
-        " This field can be integer or string matching"
-        " from param_list."
-    ],
-    'cname': [
-        's', "base name for each instance, mostly"
-        " useful for referring to instance in messages."
-    ],
-    'fields': [
-        'l', "list of register field description"
-        " groups. Describes bit positions used for"
-        " base instance."
-    ]
-}
-OPTIONAL_FIELDS = register.OPTIONAL_FIELDS.copy()
-OPTIONAL_FIELDS.update({
-    'regwen_multi': [
-        'pb', "If true, regwen term increments"
-        " along with current multireg count."
-    ],
-    'compact':
-    ['pb', "If true, allow multireg compacting."
-     "If false, do not compact."],
-    'cdc': [
-        's', "indicates the register must cross to a different clock domain "
-        "before use.  The value shown here should correspond to one of the "
-        "module's clocks."
-    ],
-})
 
 
 class EmptyMultiRegException(Exception):
@@ -166,53 +133,53 @@ class MultiRegister(RegBase):
 
         # Check the raw object is a dictionary that has the right keys to
         # describe a MultiRegister.
-        rd = check_keys(raw, 'multireg',
-                        list(REQUIRED_FIELDS.keys()),
-                        list(OPTIONAL_FIELDS.keys()))
+        if not isinstance(raw, dict):
+            raise TypeError('must instantiate multiregister from dict')
+        validate_schema(cast_hjson_values(raw), 'urn:reggen:multiregister')
 
-        name = check_name(rd['name'], 'name of multi-register')
+        name = check_name(raw['name'], 'name of multi-register')
 
-        count_str = check_str(rd['count'], f'count field of multireg {name}')
+        count_str = check_str(raw['count'], f'count field of multireg {name}')
         count = params.expand(count_str, f'count field of multireg {name}')
 
         if count <= 0:
             raise EmptyMultiRegException(name, count)
 
-        # Now that we've checked the schema of rd, we make a "reg" version of
+        # Now that we've checked the schema of raw, we make a "reg" version of
         # it that removes any fields that are allowed by MultiRegister but
         # aren't allowed by Register. We'll pass that to the register factory
         # method.
-        reg_allowed_keys = (set(register.REQUIRED_FIELDS.keys()) |
-                            set(register.OPTIONAL_FIELDS.keys()))
-        reg_rd = {
+        reg_schema = REPO_TOP / "util" / "reggen" / "schemas" / "register.hjson"
+        reg_allowed_keys = import_hjson(reg_schema)["properties"].keys()
+        reg_raw = {
             key: value
-            for key, value in rd.items() if key in reg_allowed_keys
+            for key, value in raw.items() if key in reg_allowed_keys
         }
 
         # Parse the dictionary multiple times, passing in a value for
         # "multireg_idx". Collect up the resulting parsed pseudo-registers into
         # a pregs list.
-        pregs = [Register.from_raw(reg_width, offset, params, reg_rd, clocks,
+        pregs = [Register.from_raw(reg_width, offset, params, reg_raw, clocks,
                                    is_alias, multireg_idx)
                  for multireg_idx in range(count)]
 
         alias_target = None
         if is_alias:
-            if 'alias_target' in rd:
-                alias_target = check_name(rd['alias_target'],
+            if 'alias_target' in raw:
+                alias_target = check_name(raw['alias_target'],
                                           'name of alias target multiregister')
             else:
                 raise ValueError(f'alias multiregister {name} does not define '
                                  f'the alias_target key.')
         else:
-            if 'alias_target' in rd:
-                if rd['alias_target'] is not None:
+            if 'alias_target' in raw:
+                if raw['alias_target'] is not None:
                     raise ValueError(f'Illegal alias_target key in '
                                      f'multiregister {name} (this is not an '
                                      f'alias register block).')
 
-        cname = check_name(rd['cname'], f'cname field of multireg {name}')
-        regwen_multi = check_bool(rd.get('regwen_multi', False),
+        cname = check_name(raw['cname'], f'cname field of multireg {name}')
+        regwen_multi = check_bool(raw.get('regwen_multi', False),
                                   f'regwen_multi field of multireg {name}')
 
         # Check whether every preg has just one field, and compute the maximum
@@ -239,7 +206,7 @@ class MultiRegister(RegBase):
         # in the other direction.
 
         default_compact = single_field_per_preg and not regwen_multi
-        compact = check_bool(rd.get('compact', default_compact),
+        compact = check_bool(raw.get('compact', default_compact),
                              f'compact field of multireg {name}')
 
         if compact and not single_field_per_preg:

@@ -1,0 +1,45 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:multiregister",
+  title: "Multi-Register",
+  description: '''Configuration of multiple registers generated from a base pattern.
+               This schema also inherits the properties of `urn:reggen:register`.
+               ''',
+  type: "object",
+  $ref: "urn:reggen:register"  // inherit properties of register
+  required: ["name", "desc", "count", "cname", "fields"]
+  properties: {
+    name: { type: "string", description: "base name of the registers" },
+    desc: { type: "string", description: "description of the registers" },
+    count: {
+      type: ["number", "string"],
+      description: "number of instances to generate. This field can be integer or string matching from param_list."
+    },
+    cname: {
+      type: "string",
+      description: "base name for each instance, mostly useful for referring to instance in messages."
+    },
+    fields: {
+      type: "array",
+      description: "list of register field description groups. Describes bit positions used for base instance."
+    }
+    regwen_multi: {
+      type: "boolean",
+      description: "If true, regwen term increments along with current multireg count."
+    },
+    compact: {
+      type: "boolean",
+      description: "If true, allow multireg compacting. If false, do not compact."
+    },
+    cdc: {
+      type: "string",
+      description: '''indicates the register must cross to a different clock
+                   domain before use. The value shown here should correspond to
+                   one of the module's clocks.
+                   '''
+    },
+  }
+}
