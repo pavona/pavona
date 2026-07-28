@@ -109,6 +109,7 @@ none | No Access Needed
 - <a id="properties/hw_checklist"></a>**`hw_checklist`** *(string)*: path to the hw_checklist, relative to repo root.
 - <a id="properties/sw_checklist"></a>**`sw_checklist`** *(string)*: path to the sw_checklist, relative to repo root.
 - <a id="properties/revisions"></a>**`revisions`** *(array)*: list with revision records.
+  - <a id="properties/revisions/items"></a>**Items**: Refer to *[urn:reggen:revision](#n%3Areggen%3Arevision)*.
 - <a id="properties/version"></a>**`version`** *(string)*: module version.
 - <a id="properties/life_stage"></a>**`life_stage`** *(string)*: life stage of module.
 - <a id="properties/design_stage"></a>**`design_stage`** *(string)*: design stage of module.

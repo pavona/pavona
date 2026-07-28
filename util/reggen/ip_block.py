@@ -15,7 +15,7 @@ from reggen.countermeasure import CounterMeasure
 from reggen.feature import Feature
 from reggen.inter_signal import InterSignal
 from reggen.interrupt import Interrupt
-from reggen.lib import (check_bool, check_int, check_keys, check_list,
+from reggen.lib import (check_bool, check_int, check_list,
                         check_name)
 from reggen.memory import Memory
 from reggen.params import LocalParam, ReggenParams
@@ -71,20 +71,6 @@ KNOWN_CIP_IDS = {
     42: 'soc_dbg_ctrl',
     43: 'racl_ctrl',
     44: 'otp_macro',
-}
-
-# Note that the revisions list may be deprecated in the future.
-REQUIRED_REVISIONS_FIELDS = {
-    'design_stage': ['s', "design stage of module"],
-    'verification_stage': ['s', "verification stage of module"],
-    'version': ['s', "semantic module version in the format x.y.z[+res#]"],
-    'life_stage': ['s', "life stage of module"],
-}
-
-OPTIONAL_REVISIONS_FIELDS = {
-    'dif_stage': ['s', 'DIF stage of module'],
-    'commit_id': ['s', "commit ID of last stage sign-off"],
-    'notes': ['s', "random notes"],
 }
 
 
@@ -203,10 +189,9 @@ class IpBlock:
         version = Version('0.0.0')
         if 'revisions' in raw:
             for rev in check_list(raw['revisions'], what):
-                rev = check_keys(rev, 'rev item at ' + what,
-                                 list(REQUIRED_REVISIONS_FIELDS.keys()),
-                                 list(OPTIONAL_REVISIONS_FIELDS.keys()))
                 try:
+                    if not isinstance(rev, dict):
+                        raise TypeError('revision must be in form of dict: ' + what)
                     ver = Version(rev['version'])
                 except ValueError as err:
                     raise RuntimeError(str(err) + ' in ' + what)

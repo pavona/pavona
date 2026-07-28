@@ -21,7 +21,11 @@
     dv_doc: { type: "string", description: "path to the DV document, relative to repo root" },
     hw_checklist: { type: "string", description: "path to the hw_checklist, relative to repo root" },
     sw_checklist: { type: "string", description: "path to the sw_checklist, relative to repo root" },
-    revisions: { type: "array", description: "list with revision records" },  // note: revision list may be deprecated in the future.
+    revisions: {                                // note: revision list may be deprecated in the future.
+      type: "array",
+      items: { $ref: "urn:reggen:revision" },
+      description: "list with revision records"
+    },
     version: { type: "string", description: "module version" },
     life_stage: { type: "string", description: "life stage of module" },
     design_stage: { type: "string", description: "design stage of module" },
