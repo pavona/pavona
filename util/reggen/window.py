@@ -5,42 +5,10 @@
 from typing import Dict
 
 from reggen.access import SWAccess
-from reggen.lib import check_keys, check_str, check_bool, check_int
+from reggen.lib import check_str, check_bool, check_int
+from basegen.validate import validate_schema
+from basegen.lib import cast_hjson_values
 from reggen.params import ReggenParams
-
-REQUIRED_FIELDS = {
-    'name': ['s', "name of the window"],
-    'desc': ['t', "description of the window"],
-    'items': ['d', "size in fieldaccess width words of the window"],
-    'swaccess': ['s', "software access permitted"],
-}
-
-# TODO potential for additional optional to give more type info?
-# eg sram-hw-port: "none", "sync", "async"
-OPTIONAL_FIELDS = {
-    'data-intg-passthru': [
-        's', "True if the window has data integrity pass through. "
-        "Defaults to false if not present."
-    ],
-    'byte-write': [
-        's', "True if byte writes are supported. "
-        "Defaults to false if not present."
-    ],
-    'validbits': [
-        'd', "Number of valid data bits within "
-        "regwidth sized word. "
-        "Defaults to regwidth. If "
-        "smaller than the regwidth then in each "
-        "word of the window bits "
-        "[regwidth-1:validbits] are unused and "
-        "bits [validbits-1:0] are valid."
-    ],
-    'unusual': [
-        's', "True if window has unusual parameters "
-        "(set to prevent Unusual: errors)."
-        "Defaults to false if not present."
-    ]
-}
 
 
 class Window:
@@ -71,24 +39,25 @@ class Window:
     @staticmethod
     def from_raw(offset: int, reg_width: int, params: ReggenParams,
                  raw: object) -> 'Window':
-        rd = check_keys(raw, 'window', list(REQUIRED_FIELDS.keys()),
-                        list(OPTIONAL_FIELDS.keys()))
+        if not isinstance(raw, dict):
+            raise TypeError('must instantiate window with dict')
+        validate_schema(cast_hjson_values(raw), 'urn:reggen:window')
 
         wind_desc = f'window at offset {offset:#x}'
-        name = check_str(rd['name'], wind_desc)
+        name = check_str(raw['name'], wind_desc)
         wind_desc = f'{name!r} {wind_desc}'
 
-        desc = check_str(rd['desc'], 'desc field for ' + wind_desc)
+        desc = check_str(raw['desc'], 'desc field for ' + wind_desc)
 
-        unusual = check_bool(rd.get('unusual', False),
+        unusual = check_bool(raw.get('unusual', False),
                              'unusual field for ' + wind_desc)
-        byte_write = check_bool(rd.get('byte-write', False),
+        byte_write = check_bool(raw.get('byte-write', False),
                                 'byte-write field for ' + wind_desc)
         data_intg_passthru = check_bool(
-            rd.get('data-intg-passthru', False),
+            raw.get('data-intg-passthru', False),
             'data-intg-passthru field for ' + wind_desc)
 
-        validbits = check_int(rd.get('validbits', reg_width),
+        validbits = check_int(raw.get('validbits', reg_width),
                               'validbits field for ' + wind_desc)
         if validbits <= 0:
             raise ValueError(
@@ -98,7 +67,7 @@ class Window:
                 f'validbits field for {wind_desc} is {validbits}, which is '
                 f'greater than {reg_width}, the register width.')
 
-        r_items = check_str(rd['items'], 'items field for ' + wind_desc)
+        r_items = check_str(raw['items'], 'items field for ' + wind_desc)
         items = params.expand(r_items, 'items field for ' + wind_desc)
         if items <= 0:
             raise ValueError(f"Items field for {wind_desc} is {items}, "
@@ -129,7 +98,7 @@ class Window:
             offset = (offset | addr_mask) + 1
         offset = offset
 
-        swaccess = SWAccess(wind_desc, rd['swaccess'])
+        swaccess = SWAccess(wind_desc, raw['swaccess'])
         if not (swaccess.value[4] or unusual):
             raise ValueError(
                 f'swaccess field for {wind_desc} is {swaccess.key}, which is '

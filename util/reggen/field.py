@@ -11,7 +11,6 @@ from reggen.access import SWAccess, HWAccess
 from reggen.bits import Bits
 from reggen.enum_entry import EnumEntry
 from reggen.lib import (
-    check_keys,
     check_str,
     check_name,
     check_bool,
@@ -19,57 +18,9 @@ from reggen.lib import (
     check_str_list,
     check_xint,
 )
+from basegen.validate import validate_schema
+from basegen.lib import cast_hjson_values
 from reggen.params import ReggenParams
-
-
-REQUIRED_FIELDS = {"bits": ["b", "bit or bit range (msb:lsb)"]}
-
-OPTIONAL_FIELDS = {
-    "name": ["s", "name of the field"],
-    "desc": [
-        "t",
-        "description of field (required if the field has a name). "
-        "This field supports the markdown syntax.",
-    ],
-    "alias_target": ["s", "name of the field to apply the alias definition to."],
-    "swaccess": [
-        "s",
-        "software access permission, copied from "
-        "register if not provided in field. "
-        "(Tool adds if not provided.)",
-    ],
-    "hwaccess": [
-        "s",
-        "hardware access permission, copied from "
-        "register if not provided in field. "
-        "(Tool adds if not provided.)",
-    ],
-    "hwqe": [
-        "b",
-        "'true' if hardware uses 'q' enable signal, "
-        "which is latched signal of software write pulse. "
-        "Copied from register if not provided in field. "
-        "(Tool adds if not provided.)",
-    ],
-    "resval": [
-        "x",
-        "reset value, comes from register resval "
-        "if not provided in field. Zero if neither "
-        "are provided and the field is readable, "
-        "x if neither are provided and the field "
-        "is wo. Must match if both are provided.",
-    ],
-    "enum": ["l", "list of permitted enumeration groups"],
-    "tags": ["s", "tags for the field, followed by the format 'tag_name:item1:item2...'"],
-    "mubi": ["b", "boolean flag for whether the field is a multi-bit type"],
-    "auto_split": [
-        "b",
-        "boolean flag which determines whether the field "
-        "should be automatically separated into 1-bit sub-fields."
-        "This flag is used as a hint for automatically generated "
-        "software headers with register description.",
-    ],
-}
 
 
 @dataclass
@@ -235,22 +186,24 @@ class Field:
         bindings: dict[str, int],
     ) -> "Field":
         where = f"field {field_idx} of {reg_name} register"
-        rd = check_keys(raw, where, list(REQUIRED_FIELDS.keys()), list(OPTIONAL_FIELDS.keys()))
+        if not isinstance(raw, dict):
+            raise TypeError('must instantiate field with dict: ' + where)
+        validate_schema(cast_hjson_values(raw), "urn:reggen:field")
 
-        raw_name = rd.get("name")
+        raw_name = raw.get("name")
         if raw_name is None:
             name = f"field{field_idx + 1}" if num_fields > 1 else reg_name
         else:
             name = check_name(raw_name, f"name of {where}")
 
         alias_target = None
-        if rd.get("alias_target") is not None:
+        if raw.get("alias_target") is not None:
             if is_alias:
-                alias_target = check_name(rd.get("alias_target"), "name of alias target register")
+                alias_target = check_name(raw.get("alias_target"), "name of alias target register")
             else:
                 raise ValueError(f"Field {name} may not have an alias_target key.")
 
-        raw_desc = rd.get("desc")
+        raw_desc = raw.get("desc")
         if raw_desc is None and raw_name is not None:
             raise ValueError(f"Missing desc field for {where}")
         if raw_desc is None:
@@ -258,37 +211,37 @@ class Field:
         else:
             desc = check_str(raw_desc, f"desc field for {where}")
 
-        tags = check_str_list(rd.get("tags", []), f"tags for {where}")
+        tags = check_str_list(raw.get("tags", []), f"tags for {where}")
 
-        raw_mubi = rd.get("mubi", False)
+        raw_mubi = raw.get("mubi", False)
         is_mubi = check_bool(raw_mubi, f"mubi field for {where}")
-        raw_swaccess = rd.get("swaccess")
+        raw_swaccess = raw.get("swaccess")
         if raw_swaccess is not None:
             swaccess = SWAccess(where, raw_swaccess, is_mubi)
         else:
             swaccess = default_swaccess
             swaccess.is_mubi = is_mubi
 
-        raw_hwaccess = rd.get("hwaccess")
+        raw_hwaccess = raw.get("hwaccess")
         if raw_hwaccess is not None:
             hwaccess = HWAccess(where, raw_hwaccess)
         else:
             hwaccess = default_hwaccess
 
-        raw_hwqe = rd.get("hwqe", default_hwqe)
+        raw_hwqe = raw.get("hwqe", default_hwqe)
         hwqe = check_bool(raw_hwqe, f"hwqe field for {where}")
-        raw_auto_split = rd.get("auto_split", False)
+        raw_auto_split = raw.get("auto_split", False)
         is_auto_split = check_bool(raw_auto_split, f"auto_split field for {where}")
 
         # Currently internal shadow registers do not support hw write type
         if not hwext and shadowed and hwaccess.allows_write():
             raise ValueError("Internal Shadow registers do not currently support hardware write")
 
-        bits = Bits.from_raw(where, reg_width, params, rd["bits"])
+        bits = Bits.from_raw(where, reg_width, params, raw["bits"])
 
         # Make sense of the reset value of the field. First, try to evaluate
         # any 'resval' that has been defined for the field directly.
-        field_resval = Field.resval_from_raw(bits, bindings, rd.get("resval"), is_mubi, where)
+        field_resval = Field.resval_from_raw(bits, bindings, raw.get("resval"), is_mubi, where)
         if isinstance(field_resval, str):
             assert field_resval == "x"
 
@@ -319,7 +272,7 @@ class Field:
                     f"give {resval_from_reg}."
                 )
 
-        raw_enum = rd.get("enum")
+        raw_enum = raw.get("enum")
         if raw_enum is None:
             enum = None
         else:
