@@ -91,7 +91,14 @@ def validate(regs, is_comportable_spec):
         return error
 
     for rev in regs['revisions']:
-        error += check_keys(rev, entry_required, entry_optional, component)
+        if is_comportable_spec:
+            try:
+                validate_schema(rev, "urn:reggen:revision")
+            except jsonschema.exceptions.ValidationError as e:
+                log.error(e)
+                error += 1
+        else:
+            error += check_keys(rev, entry_required, entry_optional, component)
 
     if (error > 0):
         log.error("Component has errors in revision field. Aborting.")
