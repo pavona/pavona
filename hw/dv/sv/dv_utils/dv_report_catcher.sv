@@ -4,7 +4,7 @@
 // Report catcher/demoter
 class dv_report_catcher extends uvm_report_catcher;
 
-  // Stores a new severity indexed by the ID and
+  // Store a new severity indexed by the ID and
   // the regular expression to match the message
   protected uvm_severity m_changed_sev[string][string];
   protected int          m_changed_verb[string][string];

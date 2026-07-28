@@ -19,6 +19,11 @@ class dv_rand_rst_safe_base_vseq #(
   COV_T   cov;
 
   bit   in_reset = 1;
+
+  // When 'reset_ctrl_higher_seq' flag is set the sequence is in pure functional mode.
+  // Reset activation and monitoring threads with in this sequence are suspended since the
+  // higher level sequence that created an instance of this sequence controls reset triggering
+  // and monitoring.
   bit   reset_ctrl_higher_seq = 0;
 
   // Keep the knob available on reset-safe sequences for parity with dv_base_vseq, but default it
