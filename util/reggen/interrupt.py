@@ -6,7 +6,9 @@ from typing import Sequence
 
 from reggen.access import JsonEnum
 from reggen.bits import Bits
-from reggen.lib import check_keys, check_name, check_str, check_int, check_bool, check_list
+from reggen.lib import check_name, check_str, check_int, check_bool, check_list
+from basegen.validate import validate_schema
+from basegen.lib import cast_hjson_values
 from reggen.signal import Signal
 
 
@@ -29,22 +31,23 @@ class Interrupt(Signal):
 
     @staticmethod
     def from_raw(what: str, lsb: int, raw: object) -> 'Interrupt':
-        rd = check_keys(raw, what, ['name', 'desc'],
-                        ['width', 'type', 'auto_split', 'default'])
+        if not isinstance(raw, dict):
+            raise TypeError('interrupt must be instantiated from dict: interrupt of ' + what)
+        validate_schema(cast_hjson_values(raw), 'urn:reggen:interrupt')
 
-        name = check_name(rd['name'], 'name field of ' + what)
-        desc = check_str(rd['desc'], 'desc field of ' + what)
-        width = check_int(rd.get('width', 1), 'width field of ' + what)
-        default_val = check_bool(rd.get('default', False),
+        name = check_name(raw['name'], 'name field of ' + what)
+        desc = check_str(raw['desc'], 'desc field of ' + what)
+        width = check_int(raw.get('width', 1), 'width field of ' + what)
+        default_val = check_bool(raw.get('default', False),
                                  'default field of ' + what)
         if width <= 0:
             raise ValueError('The width field of signal {} ({}) '
                              'has value {}, but should be positive.'.format(
                                  name, what, width))
         bits = Bits(lsb + width - 1, lsb)
-        intr_type_str = check_str(rd.get('type', 'event'),
+        intr_type_str = check_str(raw.get('type', 'event'),
                                   'intr_type field of ' + what)
-        auto_split = check_bool(rd.get('auto_split', False),
+        auto_split = check_bool(raw.get('auto_split', False),
                                 'auto_split of ' + what)
 
         try:

@@ -6,7 +6,8 @@ from typing import Dict, List
 
 from reggen.bits import Bits
 from reggen.signal import Signal
-from reggen.lib import check_keys, check_name, check_str, check_list
+from reggen.lib import check_name, check_str, check_list
+from basegen.validate import validate_schema
 
 
 class Alert(Signal):
@@ -18,10 +19,12 @@ class Alert(Signal):
 
     @staticmethod
     def from_raw(what: str, lsb: int, raw: object) -> 'Alert':
-        rd = check_keys(raw, what, ['name', 'desc'], [])
+        if not isinstance(raw, dict):
+            raise TypeError('must instantiate alert with dict: alert of ' + what)
+        validate_schema(raw, 'urn:reggen:alert')
 
-        name = check_name(rd['name'], 'name field of ' + what)
-        desc = check_str(rd['desc'], 'desc field of ' + what)
+        name = check_name(raw['name'], 'name field of ' + what)
+        desc = check_str(raw['desc'], 'desc field of ' + what)
 
         # Make sense of the alert name, which should be prefixed with recov_ or
         # fatal_.
