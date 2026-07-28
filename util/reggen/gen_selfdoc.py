@@ -7,8 +7,7 @@ Generates the documentation for the register tool
 
 """
 from reggen.access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
-from reggen import (validate, enum_entry, field,
-                    multi_register, window)
+from reggen import (validate, enum_entry, field, window)
 
 from typing import Any, Optional, TextIO
 from basegen.validate import document_schema
@@ -274,10 +273,6 @@ def document(outfile: TextIO) -> None:
         doc_tbl_line(outfile, k, 'o', v)
 
     genout(outfile, multi_intro)
-    doc_tbl_head(outfile, True)
-    for k, v in multi_register.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
-    for k, v in multi_register.OPTIONAL_FIELDS.items():
-        doc_tbl_line(outfile, k, 'o', v)
+    document_schema(outfile, "urn:reggen:multiregister", schema_parser)
 
     genout(outfile, doc_tail)
