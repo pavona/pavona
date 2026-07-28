@@ -73,17 +73,6 @@ KNOWN_CIP_IDS = {
     44: 'otp_macro',
 }
 
-REQUIRED_ALIAS_FIELDS = {
-    'alias_impl': ['s', "identifier for this alias implementation"],
-    'alias_target': ['s', "name of the component to apply the alias file to"],
-    'registers': ['l', "list of alias register definition groups"],
-    'bus_interfaces': ['l', "bus interfaces for the device"],
-}
-
-# TODO: we may want to support for countermeasure and parameter aliases
-# in the future.
-OPTIONAL_ALIAS_FIELDS: dict[str, list[str]] = {}
-
 # Note that the revisions list may be deprecated in the future.
 REQUIRED_REVISIONS_FIELDS = {
     'design_stage': ['s', "design stage of module"],
@@ -388,12 +377,12 @@ class IpBlock:
         interface with the scrubbed alias reg block. This is helpful to create
         the generic CSR structure matching the alias definition automatically.
         '''
-        rd = check_keys(raw, 'block at ' + where,
-                        list(REQUIRED_ALIAS_FIELDS.keys()),
-                        list(OPTIONAL_ALIAS_FIELDS.keys()))
+        if not isinstance(raw, dict):
+            raise TypeError('must instantiate bus interfaces from dict: block at ' + where)
+        validate_schema(raw, 'urn:reggen:alias')
 
         alias_bus_interfaces = (BusInterfaces.from_raw(
-            rd['bus_interfaces'], 'bus_interfaces of block at ' + where))
+            raw['bus_interfaces'], 'bus_interfaces of block at ' + where))
         if ((alias_bus_interfaces.has_unnamed_host or
              alias_bus_interfaces.named_hosts)):
             raise ValueError("Alias registers cannot be defined for host "
@@ -414,10 +403,10 @@ class IpBlock:
                                  where, list(alias_bus_device_names),
                                  self.name))
 
-        self.alias_impl = check_name(rd['alias_impl'],
+        self.alias_impl = check_name(raw['alias_impl'],
                                      'alias_impl of block at ' + where)
 
-        alias_target = check_name(rd['alias_target'],
+        alias_target = check_name(raw['alias_target'],
                                   'alias_target of block at ' + where)
 
         if alias_target != self.name:
@@ -427,7 +416,7 @@ class IpBlock:
 
         init_block = RegBlock(self.regwidth, self.params)
 
-        alias_reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
+        alias_reg_blocks = RegBlock.build_blocks(init_block, raw['registers'],
                                                  self.bus_interfaces,
                                                  self.clocking, True)
 
