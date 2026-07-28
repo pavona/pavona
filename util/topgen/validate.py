@@ -41,23 +41,6 @@ from basegen.validate import create_validator
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
-pad_required = {
-    'name': ['l', 'Pad name'],
-    'type': ['s', 'Pad type'],
-    'bank': ['s', 'IO power bank for the pad'],
-    'connection': [
-        's', 'Specification of connection type, '
-        'can be direct, manual or muxed'
-    ],
-}
-pad_optional = {
-    'desc': ['s', 'Pad description'],
-    'port_type': ['s', 'Special port type other than `inout wire`']
-}
-pad_added = {
-    'idx': ['d', 'the index of the pad'],
-}
-
 target_required = {
     'name': ['s', 'Name of target'],
     'pinout': ['g', 'Target-specific pinout configuration'],
@@ -473,7 +456,6 @@ def check_target(top, name_to_block, tgtobj):
 def check_pad(top: ConfigT, pad: Dict, known_pad_names: Dict,
               valid_connections: List[str], prefix: str) -> int:
     error = 0
-    error += check_keys(pad, pad_required, pad_optional, pad_added, prefix)
 
     # check name uniqueness
     if pad['name'] in known_pad_names:
@@ -575,9 +557,6 @@ def check_pinout(top: ConfigT, prefix: str) -> int:
 
     known_names = {}
     for pad in top['pinout']['pads']:
-        error += check_keys(pad, pad_required, pad_optional, pad_added,
-                            prefix + ' Pinout')
-
         error += check_pad(top, pad, known_names,
                            ['direct', 'manual', 'muxed'], prefix + ' Pad')
 
