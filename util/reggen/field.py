@@ -18,9 +18,12 @@ from reggen.lib import (
     check_str_list,
     check_xint,
 )
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 from basegen.lib import cast_hjson_values
 from reggen.params import ReggenParams
+
+
+FIELD_VALIDATOR = create_validator("urn:reggen:field")
 
 
 @dataclass
@@ -188,7 +191,7 @@ class Field:
         where = f"field {field_idx} of {reg_name} register"
         if not isinstance(raw, dict):
             raise TypeError('must instantiate field with dict: ' + where)
-        validate_schema(cast_hjson_values(raw), "urn:reggen:field")
+        FIELD_VALIDATOR.validate(cast_hjson_values(raw))
 
         raw_name = raw.get("name")
         if raw_name is None:
