@@ -31,6 +31,7 @@ class xbar_base_test extends dv_base_test #(.ENV_T(xbar_env), .CFG_T(xbar_env_cf
     void'($value$plusargs("max_host_valid_len=%d",   cfg.max_host_valid_len));
     void'($value$plusargs("min_device_valid_len=%d", cfg.min_device_valid_len));
     void'($value$plusargs("max_device_valid_len=%d", cfg.max_device_valid_len));
+    void'($value$plusargs("min_host_req_delay=%d",   cfg.min_host_req_delay));
     void'($value$plusargs("max_host_req_delay=%d",   cfg.max_host_req_delay));
     void'($value$plusargs("min_host_rsp_delay=%d",   cfg.min_host_rsp_delay));
     void'($value$plusargs("max_host_rsp_delay=%d",   cfg.max_host_rsp_delay));
