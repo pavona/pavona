@@ -28,7 +28,11 @@ class ac_range_check_smoke_test_seq_parameters extends ac_range_check_base_test_
 
 
   constraint reset_enable_c {
-    reset_testing == ENABLE;
+    reset_testing == DISABLE;
+  }
+
+  constraint reset_loops_c {
+    num_reset_loops == 1;
   }
 
   constraint num_trans_c {
@@ -115,14 +119,18 @@ endclass : ac_range_check_rst_safe_smoke_vseq
 
 function ac_range_check_rst_safe_smoke_vseq::new(string name="");
   super.new(name);
-  ac_range_check_base_test_seq_parameters::type_id::set_type_override(
-                                              ac_range_check_smoke_test_seq_parameters::get_type());
-  ac_range_check_base_config_parameters::type_id::set_type_override(
-                                              ac_range_check_smoke_config_parameters::get_type());
 endfunction : new
 
 
 task ac_range_check_rst_safe_smoke_vseq::body();
+  if (test_params == null) begin
+    test_params =
+        ac_range_check_smoke_test_seq_parameters::type_id::create("test_params");
+  end
+  if (config_params == null) begin
+    config_params =
+        ac_range_check_smoke_config_parameters::type_id::create("config_params");
+  end
   super.body();
 endtask : body
 

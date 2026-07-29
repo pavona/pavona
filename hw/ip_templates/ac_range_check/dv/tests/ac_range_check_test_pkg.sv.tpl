@@ -5,6 +5,8 @@
 package ${module_instance_name}_test_pkg;
   // Dep packages
   import uvm_pkg::*;
+  import dv_utils_pkg::*;
+  import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import ${module_instance_name}_env_pkg::*;
 
