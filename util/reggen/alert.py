@@ -7,7 +7,10 @@ from typing import Dict, List
 from reggen.bits import Bits
 from reggen.signal import Signal
 from reggen.lib import check_name, check_str, check_list
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
+
+
+ALERT_VALIDATOR = create_validator('urn:reggen:alert')
 
 
 class Alert(Signal):
@@ -21,7 +24,7 @@ class Alert(Signal):
     def from_raw(what: str, lsb: int, raw: object) -> 'Alert':
         if not isinstance(raw, dict):
             raise TypeError('must instantiate alert with dict: alert of ' + what)
-        validate_schema(raw, 'urn:reggen:alert')
+        ALERT_VALIDATOR.validate(raw)
 
         name = check_name(raw['name'], 'name field of ' + what)
         desc = check_str(raw['desc'], 'desc field of ' + what)

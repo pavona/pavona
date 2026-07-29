@@ -5,7 +5,10 @@
 from typing import Dict, List
 
 from reggen.lib import check_str, check_list, check_name
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
+
+
+FEATURE_VALIDATOR = create_validator('urn:reggen:feature')
 
 
 class Feature:
@@ -26,7 +29,7 @@ class Feature:
         """
         if not isinstance(raw, dict):
             raise TypeError('features must be instantiated from dict: feature of ' + what)
-        validate_schema(raw, 'urn:reggen:feature')
+        FEATURE_VALIDATOR.validate(raw)
 
         name = check_str(raw['name'], f'name field of {what}')
         desc = check_str(raw['desc'], f'desc field of {what}')
