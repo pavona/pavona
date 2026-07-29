@@ -8,7 +8,7 @@
 // ---------------------------------------------
 class tl_rst_safe_device_driver extends tl_rst_safe_base_driver;
 
-  `uvm_component_utils(tl_device_driver)
+  `uvm_component_utils(tl_rst_safe_device_driver)
   `uvm_component_new
 
   virtual task get_and_drive();

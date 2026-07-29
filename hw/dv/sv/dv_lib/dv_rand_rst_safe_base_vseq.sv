@@ -106,8 +106,12 @@ task dv_rand_rst_safe_base_vseq::body();
   process             main_thread_id ;
 
   `uvm_info (`gfn, "dv_rand_rst_safe_base_vseq::body() - Starting", UVM_LOW)
-  test_params   = TEST_PARAMS_T::type_id::create("test_seq_parameters");
-  config_params = CONFIG_PARAMS_T::type_id::create("config_parameters");
+  if (test_params == null) begin
+    test_params = TEST_PARAMS_T::type_id::create("test_seq_parameters");
+  end
+  if (config_params == null) begin
+    config_params = CONFIG_PARAMS_T::type_id::create("config_parameters");
+  end
 
   `uvm_info (`gfn, $sformatf("body() - test_params type_name:%s",
                                     test_params.get_type_name()), UVM_LOW)
