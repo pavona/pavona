@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class rv_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_timer_reg_block));
+class rv_timer_env_cfg extends cip_rst_safe_base_env_cfg #(.RAL_T(rv_timer_reg_block));
   `uvm_object_utils(rv_timer_env_cfg)
   `uvm_object_new
-
-  rand clk_rst_agent_cfg clk_rst_agt_cfg;
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = rv_timer_env_pkg::LIST_OF_ALERTS;
@@ -19,8 +17,6 @@ class rv_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_timer_reg_block));
 
     // Allow mid-TL-US accesses
     can_reset_with_csr_accesses = 1;
-
-    clk_rst_agt_cfg = clk_rst_agent_cfg::type_id::create("clk_rst_agt_cfg");
   endfunction
 
 endclass

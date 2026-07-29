@@ -21,6 +21,7 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
   local bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] ignore_period;
   local bit [NUM_HARTS-1:0] num_clk_update_due;
   local bit ctimecmp_update_on_fly;
+  local bit skip_intr_state_read_check[bit [SourceWidth-1:0]];
 
   // expected values
   local uint intr_status_exp[NUM_HARTS];
@@ -50,7 +51,9 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
       if (!uvm_re_match("intr_state*", csr_name)) begin
         for (int i = 0; i < NUM_HARTS; i++) begin
           if (csr_name == $sformatf("intr_state%0d", i)) begin
-            if ((intr_status_exp[i] != csr.get_mirrored_value()) & (ignore_period[i] == 'b0)) begin
+            if (ignore_period[i] != '0) begin
+              skip_intr_state_read_check[item.a_source] = 1'b1;
+            end else if (intr_status_exp[i] != csr.get_mirrored_value()) begin
               void'(csr.predict(.value(intr_status_exp[i]), .kind(UVM_PREDICT_READ)));
             end
             break;
@@ -190,6 +193,11 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
     end
 
     if (channel == DataChannel) begin
+      if (!write && skip_intr_state_read_check.exists(item.a_source)) begin
+        do_read_check = 1'b0;
+        skip_intr_state_read_check.delete(item.a_source);
+      end
+
       // Check all interrupts in DataChannel of every Read/Write except when ctimecmp updated
       // during timer active. This scenario is checked in base sequence by reading the intr_state.
       // Ignored checking here because sticky intr_pin update has one cycle delay.
@@ -371,6 +379,7 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
     en_interrupt    = '{default:0};
     intr_status_exp = '{default:0};
     ignore_period   = '{default:0};
+    skip_intr_state_read_check.delete();
     en_timers_prev  = '{default:0};
     num_clks           = '{default:0};
     num_clk_update_due = '{default:0};

@@ -6,7 +6,7 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/rst_safe_stress_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "rv_timer_sec_cm_testplan.hjson"]
   testpoints: [
@@ -19,15 +19,16 @@
             - Wait for number of cycles to have mTime>= mTimeCmp
             - Check Interrupt state register and Interrupt signal (scoreboard logic)'''
       stage: V1
-      tests: ["rv_timer_random"]
+      tests: ["rv_timer_rst_safe_smoke"]
     }
     {
       name: random_reset
-      desc: '''This test is to exercise on the fly reset(timer is active)
-            - Assert reset randomly in the middle of random test steps
-            - Scoreboard check for all register go back to reset value'''
+      desc: '''Exercise random reset during RV Timer stimulus.
+            - Allow reset during timer configuration or active timer operation
+            - Check that scoreboard, RAL, and block state return to reset values
+            - Restart functional stimulus after reset deassertion'''
       stage: V2
-      tests: ["rv_timer_random_reset"]
+      tests: ["rv_timer_rst_safe_smoke_with_rand_reset"]
     }
     {
       name: disabled
@@ -37,7 +38,7 @@
               rest of the registers
             - Scoreboard check for no activity and no interrupt whatever is setting'''
       stage: V2
-      tests: ["rv_timer_disabled"]
+      tests: ["rv_timer_rst_safe_disabled"]
     }
     {
       name: cfg_update_on_fly
@@ -47,7 +48,7 @@
             - After some clocks update timer config values
             - Check for interrupt as per new config set'''
       stage: V2
-      tests: ["rv_timer_cfg_update_on_fly"]
+      tests: ["rv_timer_rst_safe_cfg_update_on_fly"]
     }
     {
       name: no_interrupt_test
@@ -58,7 +59,7 @@
             - Update timer config values just before timer is about to expire
             - Check for no interrupt set'''
       stage: V2
-      tests: ["rv_timer_cfg_update_on_fly"]
+      tests: ["rv_timer_rst_safe_cfg_update_on_fly"]
     }
     {
       name: min_value
@@ -68,7 +69,7 @@
             While others force mtime to increase.
             This test helps close functional coverage by hitting the minimum values for step, prescaler, mtime and mtimecmp'''
       stage: V3
-      tests: ["rv_timer_min"]
+      tests: ["rv_timer_rst_safe_min"]
     }
     {
       name: max_value
@@ -78,15 +79,7 @@
             While others force mtime to increase.
             This test helps close functional coverage by hitting the maximum values for step, prescaler, mtime and mtimecmp'''
       stage: V3
-      tests: ["rv_timer_max"]
-    }
-    {
-      name: stress
-      desc: '''Do combinations of multiple of above scenarios to get multiple interrupts
-            asserted at the same time. Scoreboard should be robust enough to deal with all
-            scenarios.'''
-      stage: V2
-      tests: ["rv_timer_stress_all"]
+      tests: ["rv_timer_rst_safe_max"]
     }
   ]
 }

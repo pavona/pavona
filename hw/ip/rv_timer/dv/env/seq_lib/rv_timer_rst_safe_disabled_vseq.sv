@@ -26,7 +26,6 @@ class rv_timer_rst_safe_disabled_vseq extends rv_timer_rst_safe_smoke_vseq;
 
   extern function new(string name = "");
   extern virtual task main_thread();
-  extern virtual task read_timer_val_reg(input int hart = 0, output uint64 mtime_val);
 endclass : rv_timer_rst_safe_disabled_vseq
 
 function rv_timer_rst_safe_disabled_vseq::new(string name = "");
@@ -110,21 +109,3 @@ task rv_timer_rst_safe_disabled_vseq::main_thread();
 
   `uvm_info(`gfn, "Exiting main_thread()", UVM_LOW)
 endtask : main_thread
-
-task rv_timer_rst_safe_disabled_vseq::read_timer_val_reg(input int hart = 0,
-                                                         output uint64 mtime_val);
-  bit [TL_DW-1:0] data;
-  uvm_reg timer_val_l_rg;
-  uvm_reg timer_val_u_rg;
-
-  `DV_CHECK_LT_FATAL(hart, NUM_HARTS)
-  timer_val_l_rg = ral.get_reg_by_name($sformatf("timer_v_lower%0d", hart));
-  timer_val_u_rg = ral.get_reg_by_name($sformatf("timer_v_upper%0d", hart));
-  `DV_CHECK_NE_FATAL(timer_val_l_rg, null)
-  `DV_CHECK_NE_FATAL(timer_val_u_rg, null)
-
-  csr_rd(.ptr(timer_val_l_rg), .value(data), .blocking(1));
-  mtime_val[31:0] = data;
-  csr_rd(.ptr(timer_val_u_rg), .value(data), .blocking(1));
-  mtime_val[63:32] = data;
-endtask : read_timer_val_reg
