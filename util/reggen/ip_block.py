@@ -23,7 +23,7 @@ from reggen.reg_block import RegBlock
 from reggen.signal import Signal
 from semantic_version import Version
 from basegen.lib import cast_hjson_values
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 
 # Known unique comportable IP names and associated CIP_IDs.
 KNOWN_CIP_IDS = {
@@ -72,6 +72,10 @@ KNOWN_CIP_IDS = {
     43: 'racl_ctrl',
     44: 'otp_macro',
 }
+
+
+IP_BLOCK_VALIDATOR = create_validator('urn:reggen:ip_block')
+ALIAS_VALIDATOR = create_validator('urn:reggen:alias')
 
 
 @dataclass
@@ -134,9 +138,9 @@ class IpBlock:
                  where: str,
                  node: str = '') -> 'IpBlock':
 
-        validate_schema(cast_hjson_values(raw), 'urn:reggen:ip_block')
         if not isinstance(raw, dict):
             raise TypeError('must instantiate IP block from dict: block at ' + where)
+        IP_BLOCK_VALIDATOR.validate(cast_hjson_values(raw))
 
         name = check_name(raw['name'], 'name of block at ' + where)
 
@@ -364,7 +368,7 @@ class IpBlock:
         '''
         if not isinstance(raw, dict):
             raise TypeError('must instantiate bus interfaces from dict: block at ' + where)
-        validate_schema(raw, 'urn:reggen:alias')
+        ALIAS_VALIDATOR.validate(raw)
 
         alias_bus_interfaces = (BusInterfaces.from_raw(
             raw['bus_interfaces'], 'bus_interfaces of block at ' + where))

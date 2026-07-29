@@ -6,8 +6,11 @@ from typing import Dict, Sequence
 
 from reggen.bits import Bits
 from reggen.lib import check_name, check_str, check_int, check_list, check_bool
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 from basegen.lib import cast_hjson_values
+
+
+SIGNAL_VALIDATOR = create_validator('urn:reggen:signal')
 
 
 class Signal:
@@ -22,7 +25,7 @@ class Signal:
     def from_raw(what: str, lsb: int, raw: object) -> 'Signal':
         if not isinstance(raw, dict):
             raise TypeError('signal must be instantiated from dict: signal of ' + what)
-        validate_schema(cast_hjson_values(raw), 'urn:reggen:signal')
+        SIGNAL_VALIDATOR.validate(cast_hjson_values(raw))
 
         name = check_name(raw['name'], 'name field of ' + what)
         desc = check_str(raw['desc'], 'desc field of ' + what)

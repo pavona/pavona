@@ -8,8 +8,11 @@ from typing import Dict, List, Optional, Tuple
 from reggen.inter_signal import InterSignal
 from reggen.lib import (check_list, check_str, check_optional_bool,
                         check_optional_str)
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 from basegen.lib import cast_hjson_values
+
+
+BUS_INTF_VALIDATOR = create_validator('urn:reggen:bus_interface')
 
 
 class BusInterfaces:
@@ -65,7 +68,7 @@ class BusInterfaces:
             entry_what = 'entry {} of {}'.format(idx + 1, where)
             if not isinstance(raw_entry, dict):
                 raise TypeError('bus interfaces must be instantiated from dict: ' + entry_what)
-            validate_schema(cast_hjson_values(raw_entry), 'urn:reggen:bus_interface')
+            BUS_INTF_VALIDATOR.validate(cast_hjson_values(raw_entry))
 
             name = check_optional_str(raw_entry.get('name'),
                                       'name field of ' + entry_what)
