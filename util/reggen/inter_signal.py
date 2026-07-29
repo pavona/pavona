@@ -5,8 +5,11 @@
 from typing import Dict, Optional, Union
 
 from reggen.lib import check_int, check_name, check_optional_str, check_str
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 from reggen.params import ReggenParams, Parameter
+
+
+INTERSIG_VALIDATOR = create_validator('urn:reggen:inter_signal')
 
 
 class InterSignal:
@@ -34,7 +37,7 @@ class InterSignal:
         if not isinstance(raw, dict):
             raise TypeError('intermodule signal must be instantiated from dict: intersignal of '
                             + what)
-        validate_schema(raw, 'urn:reggen:inter_signal')
+        INTERSIG_VALIDATOR.validate(raw)
 
         name = check_name(raw['name'], 'name field of ' + what)
 

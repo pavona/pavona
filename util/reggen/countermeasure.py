@@ -7,7 +7,7 @@ import logging as log
 from typing import Dict, List, Sequence, Tuple
 
 from reggen.lib import check_str, check_list
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 
 # The documentation of assets and cm_types can be found here
 # doc/contributing/hw/comportability/README.md#security-countermeasures
@@ -75,6 +75,9 @@ CM_TYPES = [
 CM_RTL_TAG = 'SEC_CM:'
 
 
+CM_VALIDATOR = create_validator('urn:reggen:countermeasure')
+
+
 class CounterMeasure:
     """Object holding details for one countermeasure within an IP block."""
 
@@ -95,7 +98,7 @@ class CounterMeasure:
         if not isinstance(raw, dict):
             raise TypeError('countermeasures must be instantiated from dict: countermeasure of '
                             + what)
-        validate_schema(raw, 'urn:reggen:countermeasure')
+        CM_VALIDATOR.validate(raw)
 
         name = check_str(raw['name'], f'name field of {what}')
         desc = check_str(raw['desc'], f'desc field of {what}')
