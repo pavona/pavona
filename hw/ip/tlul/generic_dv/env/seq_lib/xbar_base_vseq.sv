@@ -51,6 +51,8 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
 
   // create and configure host/device seq before randomize as host_seq/device_seq are rand
   function void pre_randomize();
+    int plusarg_req_cnt;
+
     host_seq = new[xbar_hosts.size()];
     device_seq = new[xbar_devices.size()];
     foreach (host_seq[i]) begin
@@ -69,6 +71,18 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
       device_seq[i] = tl_device_seq#()::type_id::create(
                       $sformatf("%0s_seq", xbar_devices[i].device_name));
       device_seq[i].d_error_pct = $urandom_range(0, 70);
+    end
+    // Let tests lower the per-host request count to bound the run time. The
+    // device driver drives one response at a time, so hosts that share
+    // a device queue behind each other, and tests with slow response delays
+    // pay hundreds of cycles per response.
+    // Only lower the bounds, never raise them, so each test keeps
+    // a small request count it deliberately picks.
+    if ($value$plusargs("min_req_cnt=%0d", plusarg_req_cnt) && plusarg_req_cnt < min_req_cnt) begin
+      min_req_cnt = plusarg_req_cnt;
+    end
+    if ($value$plusargs("max_req_cnt=%0d", plusarg_req_cnt) && plusarg_req_cnt < max_req_cnt) begin
+      max_req_cnt = plusarg_req_cnt;
     end
   endfunction : pre_randomize
 
