@@ -31,7 +31,7 @@ class clk_rst_monitor extends dv_rst_safe_base_monitor #(
   // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans();
     clk_rst_item item ;
-    bit          rst_n;
+    logic        rst_n;
 
     `uvm_info (get_name(), "Starting collect_trans()", UVM_LOW);
 

@@ -111,9 +111,7 @@ function void  tl_rst_safe_host_driver::reset_interface_and_driver();
   cfg.vif.h2d_int.d_ready <= 1'b0;
 
   // Clear out any pending requests
-  foreach (pending_a_req[i]) begin
-    pending_a_req.delete(i);
-  end
+  pending_a_req.delete();
 endfunction
 
 task tl_rst_safe_host_driver::wait_clk_or_rst();
@@ -140,6 +138,8 @@ task tl_rst_safe_host_driver::send_a_channel_request(tl_seq_item req);
   bit req_done = 1'b0, req_abort = 1'b0;
 
   `uvm_info(`gfn, "Starting send_a_channel_request()", UVM_HIGH)
+
+  wait_clk_or_rst();
 
   // Seq may override the a_source or all valid sources are used but still send req, in which case
   // it is possible that it might not have factored

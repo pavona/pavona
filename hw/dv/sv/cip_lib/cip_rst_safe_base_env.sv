@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class cip_rst_safe_base_env #(type CFG_T               = cip_base_env_cfg,
+class cip_rst_safe_base_env #(type CFG_T               = cip_rst_safe_base_env_cfg,
                               type VIRTUAL_SEQUENCER_T = cip_base_virtual_sequencer,
                               type SCOREBOARD_T        = cip_rst_safe_scoreboard,
                               type COV_T               = cip_base_env_cov)
@@ -15,6 +15,8 @@ class cip_rst_safe_base_env #(type CFG_T               = cip_base_env_cfg,
   tl_reg_adapter #(tl_seq_item)                      m_tl_reg_adapters[string];
   alert_esc_agent                                    m_alert_agent[string];
   push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent[];
+  clk_rst_agent                                      clk_rst_agt;
+  delay_agent                                        delay_agt;
 
   `uvm_component_new
 
@@ -24,6 +26,16 @@ class cip_rst_safe_base_env #(type CFG_T               = cip_base_env_cfg,
     // use cip_tl_seq_item to create tl_seq_item with correct integrity values and obtain integrity
     // related functions
     tl_seq_item::type_id::set_type_override(cip_tl_seq_item::get_type());
+
+    clk_rst_agt = clk_rst_agent::type_id::create("clk_rst_agt", this);
+    cfg.clk_rst_agt_cfg.en_cov       = cfg.en_cov;
+    cfg.clk_rst_agt_cfg.reset_domain = cfg.reset_domain;
+    uvm_config_db#(clk_rst_agent_cfg)::set(this, "clk_rst_agt*", "cfg",
+                                           cfg.clk_rst_agt_cfg);
+
+    delay_agt = delay_agent::type_id::create("delay_agt", this);
+    uvm_config_db#(clk_rst_agent_cfg)::set(this, "delay_agt*", "cfg",
+                                           cfg.clk_rst_agt_cfg);
 
     // Retrieve the virtual interfaces from uvm_config_db.
     if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif) &&
@@ -137,6 +149,11 @@ class cip_rst_safe_base_env #(type CFG_T               = cip_base_env_cfg,
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+
+    clk_rst_agt.monitor.analysis_port.connect(scoreboard.clk_rst_fifo.analysis_export);
+    virtual_sequencer.clk_rst_sequencer_h = clk_rst_agt.sequencer;
+    virtual_sequencer.delay_sequencer_h   = delay_agt.sequencer;
+
     foreach (m_tl_agents[i]) begin
       m_tl_agents[i].monitor.agent_name = i;
       m_tl_agents[i].monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifos[i].analysis_export);
