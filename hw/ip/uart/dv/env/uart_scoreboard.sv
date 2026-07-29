@@ -82,25 +82,38 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 
   virtual task process_uart_tx_fifo();
     uart_item act_item, exp_item;
-    forever begin
-      uart_tx_fifo.get(act_item);
+    fork
+      forever begin
+        uart_tx_fifo.get(act_item);
 
-      `uvm_info(`gfn, $sformatf("received uart tx item:\n%0s", act_item.sprint()), UVM_HIGH)
-      `DV_CHECK_EQ(tx_processing_item_q.size(), 1)
-      exp_item = tx_processing_item_q.pop_front();
-      // move item from fifo to process
-      if (tx_q.size > 0) begin
-        tx_processing_item_q.push_back(tx_q.pop_front());
-        `uvm_info(`gfn, $sformatf("After drop one item, new tx_q size: %0d", tx_q.size), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("received uart tx item:\n%0s", act_item.sprint()), UVM_HIGH)
+        `DV_CHECK_EQ(tx_processing_item_q.size(), 1)
+        exp_item = tx_processing_item_q.pop_front();
+        // move item from fifo to process
+        if (tx_q.size > 0) begin
+          tx_processing_item_q.push_back(tx_q.pop_front());
+          `uvm_info(`gfn, $sformatf("After drop one item, new tx_q size: %0d", tx_q.size), UVM_HIGH)
+        end
+        compare(act_item, exp_item, "TX");
+        // after an item is sent, check to see if size dipped below watermark
+        predict_tx_watermark_intr();
       end
-      compare(act_item, exp_item, "TX");
-      // after an item is sent, check to see if size dipped below watermark
-      predict_tx_watermark_intr();
 
-      if (tx_q.size() == 0 && tx_processing_item_q.size() == 0) begin
-        intr_exp[TxDone] = 1;
+      // DUT raises tx_done as the TX shift register bit count gets to 0 and the byte sent
+      // reaches its stop bit. tx_done fires on the leading edge of this stop
+      // bit's cell, before it gets fully transmitted.
+      //
+      // uart_tx_clk_pulses counts the bit cells left in the byte monitored,
+      // so it reaches 1 at the start of the stop bit. We want to raise the
+      // interrupt then, but only when the TX FIFO is empty, otherwise the
+      // next byte follows on and the DUT keeps transmitting.
+      forever begin
+        @(uart_vif.uart_tx_clk_pulses);
+        if (uart_vif.uart_tx_clk_pulses == 1 && tx_q.size() == 0) begin
+          intr_exp[TxDone] = 1;
+        end
       end
-    end
+    join
   endtask
 
   virtual task process_uart_rx_fifo();
