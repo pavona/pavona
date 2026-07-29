@@ -7,8 +7,11 @@ from typing import Dict, List, Optional
 import re
 
 from reggen.lib import check_list, check_bool, check_optional_name
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 from basegen.lib import cast_hjson_values
+
+
+CLOCKING_ITEM_VALIDATOR = create_validator('urn:reggen:clocking_item')
 
 
 class ClockingItem:
@@ -35,7 +38,7 @@ class ClockingItem:
         what = f'clocking item at {where}'
         if not isinstance(raw, dict):
             raise TypeError('clocking items must be instantiated from dict: ' + what)
-        validate_schema(cast_hjson_values(raw), 'urn:reggen:clocking_item')
+        CLOCKING_ITEM_VALIDATOR.validate(cast_hjson_values(raw))
 
         clock = check_optional_name(raw.get('clock'), 'clock field of ' + what)
         reset = check_optional_name(raw.get('reset'), 'reset field of ' + what)

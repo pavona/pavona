@@ -7,7 +7,7 @@ from typing import Sequence
 from reggen.access import JsonEnum
 from reggen.bits import Bits
 from reggen.lib import check_name, check_str, check_int, check_bool, check_list
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 from basegen.lib import cast_hjson_values
 from reggen.signal import Signal
 
@@ -18,6 +18,9 @@ class IntrType(JsonEnum):
 
 
 _intr_type_map = {'event': IntrType.Event, 'status': IntrType.Status}
+
+
+INTERRUPT_VALIDATOR = create_validator('urn:reggen:interrupt')
 
 
 class Interrupt(Signal):
@@ -33,7 +36,7 @@ class Interrupt(Signal):
     def from_raw(what: str, lsb: int, raw: object) -> 'Interrupt':
         if not isinstance(raw, dict):
             raise TypeError('interrupt must be instantiated from dict: interrupt of ' + what)
-        validate_schema(cast_hjson_values(raw), 'urn:reggen:interrupt')
+        INTERRUPT_VALIDATOR.validate(cast_hjson_values(raw))
 
         name = check_name(raw['name'], 'name field of ' + what)
         desc = check_str(raw['desc'], 'desc field of ' + what)
