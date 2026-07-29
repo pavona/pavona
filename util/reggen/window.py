@@ -6,9 +6,12 @@ from typing import Dict
 
 from reggen.access import SWAccess
 from reggen.lib import check_str, check_bool, check_int
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 from basegen.lib import cast_hjson_values
 from reggen.params import ReggenParams
+
+
+WINDOW_VALIDATOR = create_validator('urn:reggen:window')
 
 
 class Window:
@@ -41,7 +44,7 @@ class Window:
                  raw: object) -> 'Window':
         if not isinstance(raw, dict):
             raise TypeError('must instantiate window with dict')
-        validate_schema(cast_hjson_values(raw), 'urn:reggen:window')
+        WINDOW_VALIDATOR.validate(cast_hjson_values(raw))
 
         wind_desc = f'window at offset {offset:#x}'
         name = check_str(raw['name'], wind_desc)

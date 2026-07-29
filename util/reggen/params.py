@@ -7,8 +7,11 @@ from collections.abc import MutableMapping
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 from reggen.lib import check_str, check_int, check_bool, check_list
-from basegen.validate import validate_schema
+from basegen.validate import create_validator
 from basegen.lib import cast_hjson_values
+
+
+PARAM_VALIDATOR = create_validator('urn:reggen:parameter')
 
 
 class BaseParam:
@@ -111,7 +114,7 @@ class MemSizeParameter(BaseParam):
 def _parse_parameter(where: str, raw: object) -> BaseParam:
     if not isinstance(raw, dict):
         raise TypeError('must parse parameter from dict: param at ' + where)
-    validate_schema(cast_hjson_values(raw), 'urn:reggen:parameter')
+    PARAM_VALIDATOR.validate(cast_hjson_values(raw))
 
     # TODO: Check if PascalCase or ALL_CAPS
     name = check_str(raw['name'], 'name field of ' + where)
