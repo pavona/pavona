@@ -163,6 +163,7 @@ task ac_range_check_predictor::get_tl_filt_d_chan_item(output ac_range_check_scb
     `DV_WAIT_TIMEOUT(100_000_000, `gfn, "Unable to get any item from tl_filt_d_chan_fifo.", 0)
     tl_filt_d_chan_fifo.get(tl_filt.item);
   join_any
+  disable fork;
   exp_unfilt_d_chan_cnt++;
   tl_filt.cnt = exp_unfilt_d_chan_cnt;
   `uvm_info(`gfn, $sformatf("Received tl_filt_d_chan item #%0d:\n%0s",

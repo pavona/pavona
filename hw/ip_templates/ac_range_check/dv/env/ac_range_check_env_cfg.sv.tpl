@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(.RAL_T(${module_instance_name}_reg_block));
+class ${module_instance_name}_env_cfg
+    extends cip_rst_safe_base_env_cfg #(.RAL_T(${module_instance_name}_reg_block));
 
   // Enabling Scoreboard checks downgrading in ${module_instance_name}_scoreboard
   // Addresses issue #27380 that identified in very specific scenarios no valid TLUL transactions
@@ -16,12 +17,9 @@ class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(.RAL_T(${module
   rand tl_agent_cfg tl_unfilt_agt_cfg;
   rand tl_agent_cfg tl_filt_agt_cfg;
 
-  rand clk_rst_agent_cfg clk_rst_agt_cfg;
-
   `uvm_object_utils_begin(${module_instance_name}_env_cfg)
     `uvm_field_object(tl_unfilt_agt_cfg, UVM_DEFAULT)
     `uvm_field_object(tl_filt_agt_cfg, UVM_DEFAULT)
-    `uvm_field_object(clk_rst_agt_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
 
   // Standard SV/UVM methods
@@ -53,8 +51,6 @@ function void ${module_instance_name}_env_cfg::initialize(bit [31:0] csr_base_ad
   // Create tl_filt agent config obj
   tl_filt_agt_cfg = tl_agent_cfg::type_id::create("tl_filt_agt_cfg");
   tl_filt_agt_cfg.if_mode = dv_utils_pkg::Device;
-
-  clk_rst_agt_cfg = clk_rst_agent_cfg::type_id::create("clk_rst_agt_cfg");
 
   // Set num_interrupts
   begin

@@ -115,6 +115,7 @@ package ${module_instance_name}_env_pkg;
   `include "${module_instance_name}_virtual_sequencer.sv"
   `include "${module_instance_name}_predictor.sv"
   `include "${module_instance_name}_scoreboard.sv"
+  `include "${module_instance_name}_rst_safe_scoreboard.sv"
   `include "${module_instance_name}_env.sv"
   `include "${module_instance_name}_rst_safe_env.sv"
   `include "${module_instance_name}_vseq_list.sv"

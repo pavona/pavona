@@ -5,6 +5,8 @@
 package ac_range_check_test_pkg;
   // Dep packages
   import uvm_pkg::*;
+  import dv_utils_pkg::*;
+  import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import ac_range_check_env_pkg::*;
 

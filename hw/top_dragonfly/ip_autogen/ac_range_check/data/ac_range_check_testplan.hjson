@@ -8,7 +8,7 @@
                        "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
+                       "hw/dv/tools/dvsim/testplans/rst_safe_stress_testplan.hjson"]
     testpoints: [
       {
         name: ac_range_check_smoke
@@ -91,15 +91,6 @@
               '''
         stage: V2
         tests: ["ac_range_check_bypass"]
-      }
-      {
-        name: stress_all
-        desc: '''
-              Combine above sequences in one test and then randomly select for running (except CSR
-              tests).
-              '''
-        stage: V2
-        tests: ["ac_range_check_stress_all"]
       }
     ]
     covergroups: [
