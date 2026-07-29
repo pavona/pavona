@@ -17,7 +17,10 @@
 // wrappers can refer to their child sequence classes by name.
 `include "rv_timer_rst_safe_smoke_vseq.sv"
 `include "rv_timer_rst_safe_smoke_with_rand_reset_vseq.sv"
+`include "rv_timer_rst_safe_min_vseq.sv"
+`include "rv_timer_rst_safe_max_vseq.sv"
 `include "rv_timer_rst_safe_disabled_vseq.sv"
+`include "rv_timer_rst_safe_cfg_update_on_fly_vseq.sv"
 `include "rv_timer_rst_safe_common_vseq.sv"
 `include "rv_timer_rst_safe_stress_all_vseq.sv"
 `include "rv_timer_rst_safe_stress_all_with_rand_reset_vseq.sv"

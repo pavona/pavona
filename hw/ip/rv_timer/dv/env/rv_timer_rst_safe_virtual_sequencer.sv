@@ -8,8 +8,6 @@ class rv_timer_rst_safe_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(rv_timer_rst_safe_virtual_sequencer)
 
-  delay_sequencer delay_sequencer_h;
-
   extern function new(string name = "", uvm_component parent = null);
   extern virtual function void handle_reset_assertion();
 endclass : rv_timer_rst_safe_virtual_sequencer

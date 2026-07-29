@@ -43,12 +43,18 @@ class rv_timer_rst_safe_stress_all_with_rand_reset_vseq
   }
 
   extern function new(string name = "");
+  extern virtual task body();
 endclass : rv_timer_rst_safe_stress_all_with_rand_reset_vseq
 
 function rv_timer_rst_safe_stress_all_with_rand_reset_vseq::new(string name = "");
   super.new(name);
-  // Override only test parameters here. The config parameters and main_thread() implementation are
-  // inherited from rv_timer_rst_safe_stress_all_vseq.
-  rv_timer_rst_safe_test_seq_parameters::type_id::set_type_override(
-      rv_timer_rst_safe_stress_all_with_rand_reset_test_seq_parameters::get_type());
 endfunction : new
+
+task rv_timer_rst_safe_stress_all_with_rand_reset_vseq::body();
+  if (test_params == null) begin
+    test_params =
+        rv_timer_rst_safe_stress_all_with_rand_reset_test_seq_parameters::type_id::create(
+            "test_seq_parameters");
+  end
+  super.body();
+endtask : body

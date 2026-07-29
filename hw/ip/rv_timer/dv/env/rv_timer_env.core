@@ -33,7 +33,10 @@ filesets:
       - seq_lib/rv_timer_rand_rst_safe_base_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_rst_safe_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_rst_safe_smoke_with_rand_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_timer_rst_safe_min_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_timer_rst_safe_max_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_rst_safe_disabled_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_timer_rst_safe_cfg_update_on_fly_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_rst_safe_common_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_rst_safe_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_rst_safe_stress_all_with_rand_reset_vseq.sv: {is_include_file: true}
