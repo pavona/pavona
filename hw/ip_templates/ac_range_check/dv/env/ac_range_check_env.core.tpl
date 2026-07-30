@@ -34,6 +34,7 @@ filesets:
       - seq_lib/${module_instance_name}_lock_range_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rand_rst_safe_base_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_cov_base_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rst_safe_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rst_safe_smoke_racl_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rst_safe_smoke_high_threshold_vseq.sv: {is_include_file: true}
@@ -42,6 +43,12 @@ filesets:
       - seq_lib/${module_instance_name}_rst_safe_smoke_with_rand_reset_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rst_safe_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rst_safe_stress_all_with_rand_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_racl_cov_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_attr_cov_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_log_intr_cov_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_lock_cov_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_mubi_cov_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_tl_cov_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

@@ -45,6 +45,7 @@
               '''
         stage: V1
         tests: ["ac_range_check_rst_safe_smoke",
+                "ac_range_check_rst_safe_smoke_high_threshold",
                 "ac_range_check_rst_safe_smoke_with_rand_reset"]
       }
       {
@@ -53,7 +54,8 @@
               TODO
               '''
         stage: V1
-        tests: ["ac_range_check_rst_safe_smoke_racl"]
+        tests: ["ac_range_check_rst_safe_smoke_racl",
+                "ac_range_check_rst_safe_racl_cov"]
       }
       {
         name: ac_range_check_lock_range
@@ -75,7 +77,88 @@
               - After reset, no pre-reset lock or sequence state affects the restarted operation.
               '''
         stage: V2
-        tests: ["ac_range_check_rst_safe_lock_range_with_rand_reset"]
+        tests: ["ac_range_check_rst_safe_lock_range_with_rand_reset",
+                "ac_range_check_rst_safe_lock_cov"]
+      }
+      {
+        name: ac_range_check_attr_permissions
+        desc: '''
+              Test all read, write, and execute permission combinations for every range.
+
+              Stimulus:
+              - Configure deterministic, non-overlapping enabled ranges.
+              - Permit every RACL role.
+              - Apply all eight R/W/X permission combinations to every range.
+              - Issue read, write, and execute requests for each combination.
+
+              Checking:
+              - A request is granted only when its corresponding strict MuBi permission is true.
+              - Granted requests and downstream responses pass through unchanged.
+              - Denied requests return an error and zero read data.
+              '''
+        stage: V2
+        tests: ["ac_range_check_rst_safe_attr_cov"]
+      }
+      {
+        name: ac_range_check_log_intr_boundaries
+        desc: '''
+              Test deny logging and interrupt behavior at low, middle, and high thresholds.
+
+              Stimulus:
+              - Use deterministic logging-enabled and logging-disabled denied ranges.
+              - Exercise thresholds 1-5, 128, and 250-255.
+              - Sample the deny counter at equality and, where possible, one count above.
+              - Clear the log and issue a denial while global logging is disabled.
+
+              Checking:
+              - The deny counter saturates and changes only for a strictly enabled range log field.
+              - The interrupt asserts only when deny_cnt is greater than the programmed threshold.
+              - Log status and address preserve the first logged denial until cleared.
+              '''
+        stage: V2
+        tests: ["ac_range_check_rst_safe_log_intr_cov"]
+      }
+      {
+        name: ac_range_check_mubi_encodings
+        desc: '''
+              Test all raw MuBi4 encodings in range attributes and range write enables.
+
+              Stimulus:
+              - In separate reset epochs, write each of the 16 raw encodings.
+              - Apply each encoding to enable, R/W/X permission, logging, and RANGE_REGWEN fields.
+              - Attempt to modify protected range CSRs after programming RANGE_REGWEN.
+
+              Checking:
+              - ENABLE uses loose decoding: only MuBi4False disables a range.
+              - Permissions and logging use strict decoding: only MuBi4True enables behavior.
+              - Only MuBi4True leaves RANGE_REGWEN writable; all other encodings lock the range.
+              - Raw attribute values and the resulting RANGE_REGWEN state read back as expected.
+              '''
+        stage: V2
+        tests: ["ac_range_check_rst_safe_mubi_cov"]
+      }
+      {
+        name: ac_range_check_tl_datapath
+        desc: '''
+              Test legal outstanding and reset behavior on the unfiltered and filtered TL paths.
+
+              Stimulus:
+              - Hold filtered responses while issuing all 16 legal source IDs to one address.
+              - Drain the burst and issue a request to a different address.
+              - Reset with one accepted request pending.
+              - After reset, return a downstream response with d_error asserted.
+
+              Checking:
+              - Requests and responses remain correctly paired at maximum legal occupancy.
+              - Same-address and different-address outstanding states are observed.
+              - Reset cleanly discards the pending request.
+              - A downstream d_error propagates unchanged to the unfiltered response.
+
+              Malformed upstream TL request bins are intentionally excluded from this testpoint
+              until the shared TL error-stimulus strategy is resolved.
+              '''
+        stage: V2
+        tests: ["ac_range_check_rst_safe_tl_cov"]
       }
       {
         name: ac_range_bypass_enable

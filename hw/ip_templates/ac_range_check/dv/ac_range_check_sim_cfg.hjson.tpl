@@ -99,6 +99,42 @@
       uvm_test_seq: ${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq
       reseed: 20
     }
+    {
+      name: ac_range_check_rst_safe_racl_cov
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_racl_cov_vseq
+      reseed: 1
+    }
+    {
+      name: ac_range_check_rst_safe_attr_cov
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_attr_cov_vseq
+      reseed: 1
+    }
+    {
+      name: ac_range_check_rst_safe_log_intr_cov
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_log_intr_cov_vseq
+      reseed: 1
+    }
+    {
+      name: ac_range_check_rst_safe_lock_cov
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_lock_cov_vseq
+      reseed: 1
+    }
+    {
+      name: ac_range_check_rst_safe_mubi_cov
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_mubi_cov_vseq
+      reseed: 1
+    }
+    {
+      name: ac_range_check_rst_safe_tl_cov
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_tl_cov_vseq
+      reseed: 1
+    }
 
     // TODO: add more tests here
   ]
@@ -121,6 +157,17 @@
               "ac_range_check_rst_safe_smoke_with_rand_reset"
               "ac_range_check_rst_safe_bypass",
               "ac_range_check_rst_safe_lock_range_with_rand_reset"
+             ]
+    }
+    {
+      name: coverage_closure
+      tests: [
+              "ac_range_check_rst_safe_racl_cov",
+              "ac_range_check_rst_safe_attr_cov",
+              "ac_range_check_rst_safe_log_intr_cov",
+              "ac_range_check_rst_safe_lock_cov",
+              "ac_range_check_rst_safe_mubi_cov",
+              "ac_range_check_rst_safe_tl_cov"
              ]
     }
   ]
