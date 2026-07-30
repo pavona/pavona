@@ -103,7 +103,7 @@
               "acc_controller_ispr_rdata_err",
               "acc_mac_bignum_acc_err",
               "acc_urnd_err"]
-      features: []              
+      features: []
     }
     {
       name: kmac_error

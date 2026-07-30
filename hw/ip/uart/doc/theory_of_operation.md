@@ -8,7 +8,7 @@
 
 <!-- BEGIN-FEATURE: UART.PARITY -->
 ### Serial interface (both directions)
-  
+
 The TX/RX serial lines are high when idle. Data starts with a START bit (high
 idle state deasserts, **1**-->**0**) followed by 8 data bits. The least
 significant bit is sent first. If the parity feature is turned on then an odd or
@@ -53,7 +53,7 @@ triggers the transmit module to start UART TX serial data transfer. The TX
 module dequeues the byte from the FIFO and shifts it bit by bit out to the UART
 TX pin on positive edges of the baud clock.
 
-The transmitter can be configured into system_loopback mode, in which theoutgoing bits are registered as having been received on the RX side. 
+The transmitter can be configured into system_loopback mode, in which theoutgoing bits are registered as having been received on the RX side.
 
 If TX is not enabled, written DATA into FIFO will be stacked up and sent out
 when TX is enabled.
@@ -76,7 +76,7 @@ detected as high and the optional parity bit is correct the data byte
 is pushed into a 32 byte deep RX FIFO. The data can be read out by
 reading [`RDATA`](registers.md#rdata) register.
 
-The reciever can be configured into line_loopback mode, in which the incoming bits are sent along the TX side. 
+The reciever can be configured into line_loopback mode, in which the incoming bits are sent along the TX side.
 
 This behavior of the receiver can be used to compute the approximate
 baud clock frequency error that can be tolerated between the

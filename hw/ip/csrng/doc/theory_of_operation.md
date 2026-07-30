@@ -57,7 +57,7 @@ Furthermore, CSRNG will respond with the appropriate error status response on th
 
 <!-- BEGIN-FEATURE: CSRNG.READ_INT_STATE -->
 #### Working State Values
-The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance. For debug and validation purposes, CSRNG provides read access to this internal working state. 
+The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance. For debug and validation purposes, CSRNG provides read access to this internal working state.
 It holds the following values:
 
 <table>
@@ -228,7 +228,7 @@ The actions performed by each command, as well as which flags are supported, are
          When debug in enabled, CSRNG allows for seed diversification using either a production or non-production seed constant. The selected constant is determined by a debug enable signal controlled by the life cycle controller and is only enabled in test mode (so production devices can only use the production seed constant). When seeding, the following table describes how the seed is determined based on <tt>flag0</tt> and the <tt>clen</tt> field.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
         <b>WARNING:</b> Though <tt>flag0</tt> may be useful for generating fully-deterministic bit sequences, the use of this flag will render the instance non-FIPS compliant until it is re-instantiated.
-         When the <tt>Instantiate</tt> command is completed, the active bit in the CSRNG working state will be set. 
+         When the <tt>Instantiate</tt> command is completed, the active bit in the CSRNG working state will be set.
         <table>
           <thead>
             <tr><th>flag0</th><th>clen</th><th>Description</th></tr>

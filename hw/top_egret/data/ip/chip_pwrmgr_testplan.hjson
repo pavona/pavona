@@ -197,7 +197,7 @@
       lc_states: ["PROD"]
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
-        "PWRMGR.RESET.REQUEST", 
+        "PWRMGR.RESET.REQUEST",
         "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
       ]

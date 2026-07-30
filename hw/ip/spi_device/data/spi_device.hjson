@@ -498,14 +498,14 @@
     }
     {
       name: "SPI_DEVICE.JEDEC_CC",
-      desc: '''The JEDEC module can be configued by software to return the proper number of continuation codes (CC) needed for identification for a particular manufacturer. 
+      desc: '''The JEDEC module can be configued by software to return the proper number of continuation codes (CC) needed for identification for a particular manufacturer.
             '''
     }
     {
       name: "SPI_DEVICE.JEDEC_ID",
       desc: '''The JEDEC module can return a device ID (one byte) and manufacturer ID (two bytes).
             '''
-    }            
+    }
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",

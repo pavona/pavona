@@ -1,6 +1,6 @@
 # Theory of Operation
 
-The following sections give an overview of the life cycle function. 
+The following sections give an overview of the life cycle function.
 After covering the relevant life cycle states, they proceed to describe life cycle sensing at power up, progresses through how life cycle transitions are made, and then focuses specifically on how life cycle impacts various functionality of the design.
 
 <!-- BEGIN-FEATURE: LC_CTRL.STATE.RAW -->
@@ -14,7 +14,7 @@ After covering the relevant life cycle states, they proceed to describe life cyc
 ## Life Cycle State Overview
 The following summarizes the states the life cycle controller can cycle through:
 - RAW: This is the default state of the OTP; no functions other than transition to TEST_UNLOCKED0 are available.
-- TEST_UNLOCKED{N}: Transition from RAW state using OTP write. 
+- TEST_UNLOCKED{N}: Transition from RAW state using OTP write.
 This state is used for manufacturing and production testing.
 - TEST_LOCKED{N}: TEST_LOCKED{N} states have identical functionality to RAW state and serve as a way for the Silicon Creator to protect devices in transit.
 It is not possible to provision OTP root secrets during this state.
@@ -28,7 +28,7 @@ This state is used for developing provisioning and mission mode software.
 - RMA: Transition from TEST_UNLOCKED / PROD / DEV via OTP write.
 It is not possible to reach this state from PROD_END.
 - SCRAP: Transition from any manufacturing state via OTP write.
-During SCRAP state the device is completely dead. 
+During SCRAP state the device is completely dead.
 - INVALID: Invalid is any combination of OTP values that do not fall in the categories above.
 
 See the [Device Life Cycle Spec](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states) for a more detailed description of each of these states

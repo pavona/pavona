@@ -140,7 +140,7 @@ If the `fips` signal is deasserted, it means the associated CSRNG instance has b
 ### Entropy Bus Comparison
 
 To help detect unexpected failures in the entropy distribution path, the EDN compares entropy bits subsequently received from CSRNG.
-If two successive values are identical, a recoverable alert is raised and the [`RECOV_ALERT_STS.EDN_BUS_CMP_ALERT`](registers.md#RECOV_ALERT_STS) status bit is set. 
+If two successive values are identical, a recoverable alert is raised and the [`RECOV_ALERT_STS.EDN_BUS_CMP_ALERT`](registers.md#RECOV_ALERT_STS) status bit is set.
 <!-- END-FEATURE: EDN.BUS_CMP_ALERT -->
 
 ## Block Diagram

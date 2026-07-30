@@ -129,7 +129,7 @@ It is also reasonable to shadow (parts of) this partition in main memory, and th
 
 ### Hardware Configuration and Secret Partitions
 
-The hardware and secret partitions directly affect downstream hardware. 
+The hardware and secret partitions directly affect downstream hardware.
 The contents must go through periodic integrity checks and therefore the stored digest is calculated by hardware when software provides the intent to lock (as opposed to the software partitions where the digest has to be calculated by software).
 
 <!-- BEGIN-FEATURE: OTP_CTRL.PROGRAM -->
@@ -179,7 +179,7 @@ These values are stored in OTP as plaintext.
 
 Secret partitions contain data that are critical to security, for example FLASH scrambling keys, device root secret and unlock tokens.
 These values are stored scrambled in OTP, and are descrambled upon read.
-The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../../../ip/prim/doc/prim_present.md).
+The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../../../../ip/prim/doc/prim_present.md).
 
 The usage of a block cipher however implies that the secret partitions can only be written in 64bit chunks.
 
