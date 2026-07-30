@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_smoke_test_seq_parameters extends ac_range_check_base_test_seq_parameters;
+class ${module_instance_name}_smoke_test_seq_parameters
+    extends ${module_instance_name}_base_test_seq_parameters;
 
-  import ac_range_check_reg_pkg::*;
-  `uvm_object_utils(ac_range_check_smoke_test_seq_parameters)
+  import ${module_instance_name}_reg_pkg::*;
+  `uvm_object_utils(${module_instance_name}_smoke_test_seq_parameters)
 
   // The following parameters are inherited that allow controlling of test parameters for
   // ac_range_smoke sequence
@@ -18,7 +19,7 @@ class ac_range_check_smoke_test_seq_parameters extends ac_range_check_base_test_
   //                                        of after release of reset and before main_thread() is
   //                                        invoked
   // do_dut_shutdown = 1                 -- Controls if 'dut_shutdown90' task has to be executed
-  // do_ac_range_check_init = 1;         -- Controls if ac_range_check is initialized inside the
+  // do_${module_instance_name}_init = 1;         -- Controls if ${module_instance_name} is initialized inside the
   //                                        call for 'dut_init()'
 
   // If reset_testing == ENABLE, 'num_reset_loops > 0' -- Put a constraint in the derived sequence
@@ -42,15 +43,15 @@ class ac_range_check_smoke_test_seq_parameters extends ac_range_check_base_test_
   function new(string name="");
     super.new(name);
   endfunction : new
-endclass : ac_range_check_smoke_test_seq_parameters
+endclass : ${module_instance_name}_smoke_test_seq_parameters
 
 
 // Config Parameters
-class ac_range_check_smoke_config_parameters extends ac_range_check_base_config_parameters;
+class ${module_instance_name}_smoke_config_parameters extends ${module_instance_name}_base_config_parameters;
 
-  import ac_range_check_reg_pkg::*;
+  import ${module_instance_name}_reg_pkg::*;
 
-  `uvm_object_utils(ac_range_check_smoke_config_parameters)
+  `uvm_object_utils(${module_instance_name}_smoke_config_parameters)
 
   constraint log_enable_c {
     if (apply_log_enable_c) {
@@ -89,13 +90,13 @@ class ac_range_check_smoke_config_parameters extends ac_range_check_base_config_
   function new(string name="");
     super.new(name);
   endfunction : new
-endclass : ac_range_check_smoke_config_parameters
+endclass : ${module_instance_name}_smoke_config_parameters
 
 
 
-class ac_range_check_rst_safe_smoke_vseq extends ac_range_check_rand_rst_safe_base_vseq;
-  import ac_range_check_reg_pkg::*;
-  `uvm_object_utils(ac_range_check_rst_safe_smoke_vseq)
+class ${module_instance_name}_rst_safe_smoke_vseq extends ${module_instance_name}_rand_rst_safe_base_vseq;
+  import ${module_instance_name}_reg_pkg::*;
+  `uvm_object_utils(${module_instance_name}_rst_safe_smoke_vseq)
 
 
   // Standard SV/UVM methods
@@ -103,9 +104,9 @@ class ac_range_check_rst_safe_smoke_vseq extends ac_range_check_rand_rst_safe_ba
   extern virtual task body();
 
   // Task/Methods added in dv_rand_rst_safe_base_vseq that need implementations in any derived
-  // class. For this implementation of the ac_range_check_smoke sequence only the 'main_thread()'
+  // class. For this implementation of the ${module_instance_name}_smoke sequence only the 'main_thread()'
   // is needed as there is an implementation to handle reset triggering and handling reset assertion
-  // in 'ac_range_check_rand_rst_safe_base_vseq'
+  // in '${module_instance_name}_rand_rst_safe_base_vseq'
   //
   // extern virtual task reset_trigger_thread();
   // extern virtual function void handle_reset_assertion ();
@@ -114,28 +115,28 @@ class ac_range_check_rst_safe_smoke_vseq extends ac_range_check_rand_rst_safe_ba
   // Specific tasks for
   extern task set_logging();
   extern task check_logging();
-endclass : ac_range_check_rst_safe_smoke_vseq
+endclass : ${module_instance_name}_rst_safe_smoke_vseq
 
 
-function ac_range_check_rst_safe_smoke_vseq::new(string name="");
+function ${module_instance_name}_rst_safe_smoke_vseq::new(string name="");
   super.new(name);
 endfunction : new
 
 
-task ac_range_check_rst_safe_smoke_vseq::body();
+task ${module_instance_name}_rst_safe_smoke_vseq::body();
   if (test_params == null) begin
     test_params =
-        ac_range_check_smoke_test_seq_parameters::type_id::create("test_params");
+        ${module_instance_name}_smoke_test_seq_parameters::type_id::create("test_params");
   end
   if (config_params == null) begin
     config_params =
-        ac_range_check_smoke_config_parameters::type_id::create("config_params");
+        ${module_instance_name}_smoke_config_parameters::type_id::create("config_params");
   end
   super.body();
 endtask : body
 
 
-task ac_range_check_rst_safe_smoke_vseq::main_thread();
+task ${module_instance_name}_rst_safe_smoke_vseq::main_thread();
   set_logging();
   for (int i=1; i <= test_params.num_trans; i++) begin
     `uvm_info(`gfn, $sformatf("Starting seq %0d/%0d", i, test_params.num_trans), UVM_LOW)
@@ -146,7 +147,7 @@ task ac_range_check_rst_safe_smoke_vseq::main_thread();
       // 25% of the time, change the config
       1: begin
         `DV_CHECK_RANDOMIZE_FATAL(config_params)
-        ac_range_check_init();
+        ${module_instance_name}_init();
       end
       // 75% of the time, keep the same config
       3: begin
@@ -178,7 +179,7 @@ task ac_range_check_rst_safe_smoke_vseq::main_thread();
 endtask : main_thread
 
 
-task ac_range_check_rst_safe_smoke_vseq::set_logging();
+task ${module_instance_name}_rst_safe_smoke_vseq::set_logging();
     config_params.apply_log_enable_c         = 1;
     config_params.apply_deny_cnt_threshold_c = 1;
     config_params.apply_intr_enable_c        = 1;
@@ -206,7 +207,7 @@ task ac_range_check_rst_safe_smoke_vseq::set_logging();
 endtask : set_logging
 
 
-task ac_range_check_rst_safe_smoke_vseq::check_logging();
+task ${module_instance_name}_rst_safe_smoke_vseq::check_logging();
   uvm_reg_data_t    act_config,
                     act_status,
                     act_address;
