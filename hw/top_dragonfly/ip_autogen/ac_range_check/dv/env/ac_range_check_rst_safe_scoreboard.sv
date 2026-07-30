@@ -358,7 +358,8 @@ task ac_range_check_rst_safe_scoreboard::process_tl_access(tl_seq_item item,
         dut_cfg.range_attr[csr_idx].read_access       =
           mubi4_logic_test_true_strict(`gmv(ral.range_attr[csr_idx].read_access));
         dut_cfg.range_attr[csr_idx].enable            =
-          mubi4_logic_test_true_strict(`gmv(ral.range_attr[csr_idx].enable));
+          prim_mubi_pkg::mubi4_test_true_loose(
+              mubi4_t'(`gmv(ral.range_attr[csr_idx].enable)));
       end
     end
     "range_racl_policy_shadowed": begin
@@ -414,7 +415,8 @@ function void ac_range_check_rst_safe_scoreboard::reset(string kind = "HARD");
     dut_cfg.range_attr[i].read_access =
       mubi4_logic_test_true_strict(ral.range_attr[i].read_access.get_reset(kind));
     dut_cfg.range_attr[i].enable =
-      mubi4_logic_test_true_strict(ral.range_attr[i].enable.get_reset(kind));
+      prim_mubi_pkg::mubi4_test_true_loose(
+          mubi4_t'(ral.range_attr[i].enable.get_reset(kind)));
     dut_cfg.range_racl_policy[i].read_perm =
       ral.range_racl_policy_shadowed[i].read_perm.get_reset(kind);
     dut_cfg.range_racl_policy[i].write_perm =

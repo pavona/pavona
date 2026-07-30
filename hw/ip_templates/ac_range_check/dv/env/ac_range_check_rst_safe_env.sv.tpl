@@ -48,6 +48,18 @@ endfunction : build_phase
 
 function void ${module_instance_name}_rst_safe_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
+
+  // AC Range Check assumes protocol-compliant requests on its unfiltered TL-UL interface. It
+  // enforces range and permission policy, but does not detect malformed opcode, mask, address, or
+  // size combinations. The generic host TL agent creates malformed-request covergroups for every
+  // host interface, so disable only those instances here. Legal TL coverage on this agent and
+  // protocol-error coverage on the CSR agent remain enabled.
+  if (cfg.en_cov) begin
+    foreach (tl_unfilt_agt.cov.m_tl_error_cov_objs[tl_error_name]) begin
+      tl_unfilt_agt.cov.m_tl_error_cov_objs[tl_error_name].bit_toggle_cg.option.weight = 0;
+    end
+  end
+
   if (cfg.en_scb) begin
     tl_unfilt_agt.monitor.a_chan_port.connect(
       scoreboard.predict.tl_unfilt_a_chan_fifo.analysis_export);

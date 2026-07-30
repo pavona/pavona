@@ -38,6 +38,10 @@ function void ac_range_check_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   list_of_alerts = ac_range_check_env_pkg::LIST_OF_ALERTS;
   super.initialize(csr_base_addr);
 
+  // The CSR interface only supports one request at a time. The two datapath
+  // interfaces can accept all 16 TileLink source IDs concurrently.
+  m_tl_agent_cfg.max_outstanding_req = 1;
+
   // Set shadow register error status
   tl_intg_alert_fields[ral.alert_status.reg_intg_err] = 1;
   shadow_update_err_status_fields[ral.alert_status.shadowed_update_err] = 1;
@@ -47,10 +51,12 @@ function void ac_range_check_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   // Create tl_unfilt agent config obj
   tl_unfilt_agt_cfg = tl_agent_cfg::type_id::create("tl_unfilt_agt_cfg");
   tl_unfilt_agt_cfg.if_mode = dv_utils_pkg::Host;
+  tl_unfilt_agt_cfg.max_outstanding_req = 16;
 
   // Create tl_filt agent config obj
   tl_filt_agt_cfg = tl_agent_cfg::type_id::create("tl_filt_agt_cfg");
   tl_filt_agt_cfg.if_mode = dv_utils_pkg::Device;
+  tl_filt_agt_cfg.max_outstanding_req = 16;
 
   // Set num_interrupts
   begin
