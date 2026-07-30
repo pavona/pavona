@@ -857,6 +857,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
 
     if (cfg.is_in_mailbox_region(cur_addr)) end_at_mailbox = 1;
+    predict_last_read_addr(up_item, start_addr);
     if (cfg.en_cov) begin
       if (is_passthru) begin
         bit filtered = (dn_item == null);
@@ -874,6 +875,31 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         cov.flash_mailbox_cg.sample(up_item.opcode);
       end
     end
+  endfunction
+
+  // Models the readbuf_addr update in spi_readcmd.sv, which drives last_read_addr. While a read
+  // command outputs data in flash mode, the RTL updates the register on every beat whose address
+  // is outside the mailbox. A read that starts inside the mailbox therefore still updates it once
+  // its address moves past the mailbox.
+  virtual function void predict_last_read_addr(spi_item item, bit [31:0] start_addr);
+    bit [31:0] last_addr;
+
+    // The RTL only tracks this in flash mode. In passthrough the register is left alone.
+    if (`gmv(ral.control.mode) != FlashMode) return;
+    if (item.payload_q.size == 0) return;
+
+    // The address the RTL reached: one past the last byte the host took when the read pipeline
+    // has already fetched ahead, otherwise the last byte itself.
+    last_addr = start_addr + item.payload_q.size - 1;
+    if (item.read_pipeline_mode > 0 && item.opcode inside {READ_QUAD, READ_QUADIO}) last_addr++;
+
+    // Addresses inside the mailbox are served from the mailbox and leave the register unchanged.
+    if (cfg.is_in_mailbox_region(last_addr)) return;
+
+    `DV_CHECK_EQ_FATAL(ral.last_read_addr.predict(.value(last_addr), .kind(UVM_PREDICT_READ)), 1,
+                       "ral.last_read_addr.predict did not succeed")
+    `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x, read address left the mailbox",
+                              last_addr), UVM_MEDIUM)
   endfunction
 
   virtual function void process_upload_cmd(spi_item item);
