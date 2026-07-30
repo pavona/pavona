@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_smoke_test_seq_parameters extends ac_range_check_base_test_seq_parameters;
+class ac_range_check_smoke_test_seq_parameters
+    extends ac_range_check_base_test_seq_parameters;
 
   import ac_range_check_reg_pkg::*;
   `uvm_object_utils(ac_range_check_smoke_test_seq_parameters)

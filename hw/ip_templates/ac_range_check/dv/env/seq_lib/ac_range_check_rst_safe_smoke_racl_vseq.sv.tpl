@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_smoke_racl_config_parameters
-    extends ac_range_check_smoke_config_parameters;
-  `uvm_object_utils(ac_range_check_smoke_racl_config_parameters)
+class ${module_instance_name}_smoke_racl_config_parameters
+    extends ${module_instance_name}_smoke_config_parameters;
+  `uvm_object_utils(${module_instance_name}_smoke_racl_config_parameters)
 
   constraint range_attr_c {
     foreach (dut_cfg.range_base[i]) {
@@ -28,24 +28,24 @@ class ac_range_check_smoke_racl_config_parameters
   function new(string name = "");
     super.new(name);
   endfunction : new
-endclass : ac_range_check_smoke_racl_config_parameters
+endclass : ${module_instance_name}_smoke_racl_config_parameters
 
-class ac_range_check_rst_safe_smoke_racl_vseq
-    extends ac_range_check_rst_safe_smoke_vseq;
-  `uvm_object_utils(ac_range_check_rst_safe_smoke_racl_vseq)
+class ${module_instance_name}_rst_safe_smoke_racl_vseq
+    extends ${module_instance_name}_rst_safe_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_rst_safe_smoke_racl_vseq)
 
   extern function new(string name = "");
   extern virtual task body();
-endclass : ac_range_check_rst_safe_smoke_racl_vseq
+endclass : ${module_instance_name}_rst_safe_smoke_racl_vseq
 
-function ac_range_check_rst_safe_smoke_racl_vseq::new(string name = "");
+function ${module_instance_name}_rst_safe_smoke_racl_vseq::new(string name = "");
   super.new(name);
 endfunction : new
 
-task ac_range_check_rst_safe_smoke_racl_vseq::body();
+task ${module_instance_name}_rst_safe_smoke_racl_vseq::body();
   if (config_params == null) begin
     config_params =
-        ac_range_check_smoke_racl_config_parameters::type_id::create("config_params");
+        ${module_instance_name}_smoke_racl_config_parameters::type_id::create("config_params");
   end
   super.body();
 endtask : body
