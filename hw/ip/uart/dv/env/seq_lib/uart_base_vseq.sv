@@ -34,8 +34,12 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
 
   constraint baud_rate_c {
     // when the uart frequency is very close to core freq, disable noise filter and glitch,
-    // otherwise, not enough timing margin to predict status correctly in scb
-    if (baud_rate == BaudRate1p5Mbps && p_sequencer.cfg.clk_freq_mhz < 48) {
+    // otherwise, not enough timing margin to predict status correctly in scb. Both delay when the
+    // DUT settles on the start bit, while the agent starts counting bit cells on the first edge it
+    // sees, and the scb only tolerates that difference until the end of the stop bit cell. What
+    // matters is how short a bit cell is in core clocks, so compare the two frequencies rather
+    // than naming one baud rate.
+    if (p_sequencer.cfg.clk_freq_mhz * 1_000_000 < 32 * int'(baud_rate)) {
       en_noise_filter == 0;
       uart_period_glitch_pct == 0;
     }
