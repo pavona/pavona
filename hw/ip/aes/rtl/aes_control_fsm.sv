@@ -706,9 +706,9 @@ module aes_control_fsm
 
   // Collect writes to data input registers. Cleared if:
   // - data is loaded into cipher core,
-  // - clearing data input registers with random data (all data_in_qe_i bits high in next cycle),
+  // - clearing data input registers with random data (data_in_we_o),
   // - clearing the status tracking.
-  assign data_in_new_d = data_in_load || &data_in_qe_i || clear_in_out_status ? '0 :
+  assign data_in_new_d = data_in_load || data_in_we_o || clear_in_out_status ? '0 :
       data_in_new_q | data_in_qe_i;
   assign data_in_new   = &data_in_new_d;
 
@@ -839,6 +839,12 @@ module aes_control_fsm
   ////////////////
   // Assertions //
   ////////////////
+
+  // Assert that the tracking of newly written input data is cleared whenever the input data
+  // registers are overwritten with pseudo-random data.
+  `ASSERT(DataInNewClear,
+          data_in_we_o |=> (data_in_new_q == '0),
+          clk_i, !rst_ni)
 
   // Create a lint error to reduce the risk of accidentally disabling the masking.
   `ASSERT_STATIC_LINT_ERROR(AesControlFsmSecMaskingNonDefault, SecMasking == 1)
