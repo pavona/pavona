@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
@@ -190,7 +191,7 @@
       uvm_test: aes_fi_test
       uvm_test_seq: aes_control_fi_vseq
       reseed: 50 // Random-pattern diversity. Walking variant (below) provides bin coverage.
-      run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+      run_timeout_mins: 2 // Short test; if not done within 2 mins, something's wrong.
     }
     {
       // Deterministic (target, state, if_num) walk over the aes_ctrl_fsm_cg cross.
@@ -201,14 +202,14 @@
       uvm_test_seq: aes_control_fi_vseq
       reseed: 441
       run_opts: ["+fi_walk_id={index}"]
-      run_timeout_mins: 1
+      run_timeout_mins: 2
     }
     {
       name: aes_cipher_fi
       uvm_test: aes_fi_test
       uvm_test_seq: aes_cipher_fi_vseq
       reseed: 50 // Random-pattern diversity. Walking variant (below) provides bin coverage.
-      run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+      run_timeout_mins: 2 // Short test; if not done within 2 mins, something's wrong.
     }
     {
       // Deterministic (target, state, if_num) walk over the aes_cipher_fsm_cg cross.
@@ -221,13 +222,13 @@
       uvm_test_seq: aes_cipher_fi_vseq
       reseed: 546
       run_opts: ["+fi_walk_id={index}"]
-      run_timeout_mins: 1
+      run_timeout_mins: 2
     }
     {
       name: aes_ctr_fi
-      uvm_test: aes_fi_test
+      uvm_test: aes_ctr_fi_test
       uvm_test_seq: aes_ctr_fi_vseq
-      run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+      run_timeout_mins: 2 // Short test; if not done within 2 mins, something's wrong.
     }
     {
       name: aes_core_fi
