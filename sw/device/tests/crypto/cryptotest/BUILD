@@ -143,6 +143,24 @@ cryptotest(
     test_vectors = MLDSA_TESTVECTOR_TARGETS,
 )
 
+# Same as mldsa_kat but with the hardened ACC ML-DSA backend baked into the
+# firmware, so the PQC CW340 job runs both variants without a second build.
+cryptotest(
+    name = "mldsa_kat_hardened",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    firmware_deps = [
+        d
+        for d in FIRMWARE_DEPS
+        if d != "//sw/device/tests/crypto/cryptotest/firmware:mldsa"
+    ] + ["//sw/device/tests/crypto/cryptotest/firmware:mldsa_hardened"],
+    slow_test = True,
+    test_args = MLDSA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/mldsa_kat:harness",
+    test_vectors = MLDSA_TESTVECTOR_TARGETS,
+)
+
 ECDSA_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_ecdsa_{}.json".format(config)
     for config in [

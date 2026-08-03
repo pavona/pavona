@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/mldsa.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
@@ -14,6 +15,14 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 OTTF_DEFINE_TEST_CONFIG();
+
+// The hardened ACC backend requires PassivePhysical keys (masked path); the
+// native and unprotected-ACC backends use PassiveRemote.
+#ifdef ACC_MLDSA_HARDENED
+#define MLDSA_TEST_SECURITY_LEVEL kOtcryptoKeySecurityLevelPassivePhysical
+#else
+#define MLDSA_TEST_SECURITY_LEVEL kOtcryptoKeySecurityLevelPassiveRemote
+#endif
 
 // Benchmarking Approach:
 //
@@ -66,16 +75,26 @@ OTTF_DEFINE_TEST_CONFIG();
 #define TEST_CTX "test_context_123"
 #define TEST_CTX_LEN (sizeof(TEST_CTX) - 1)
 
+#ifdef ACC_MLDSA_HARDENED
+static const uint32_t kKeypairSeed[16] = {
+    // share0 = seed ^ mask
+    0x975f271b, 0xc5742c85, 0x3166809d, 0x7fde813e, 0xa047b645, 0x79c00d31,
+    0xbfcc5706, 0x0e398613,
+    // share1 = mask (fixed non-zero, hex digits of pi)
+    0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822, 0x299f31d0,
+    0x082efa98, 0xec4e6c89};
+#else
 static const uint32_t kKeypairSeed[8] = {0xb3604d93, 0x40d72456, 0x227f0ab3,
                                          0x7caef27a, 0x044e8e67, 0x505f3ce1,
                                          0xb7e2ad9e, 0xe277ea9a};
+#endif
 
 static const uint32_t kSignRnd[8] = {0xa62e2a3e, 0xfc76c4c9, 0x13b03749,
                                      0x93a793c9, 0x99abc0d6, 0xa85b6960,
                                      0xda49f638, 0xd0a39c53};
 
 #ifdef ACC_HAS_PQC
-// The ACC backend uses no work buffer.
+// The ACC backends use no work buffer.
 static uint32_t mldsa_work_buffer[1];
 #else
 // Static work buffer for all ML-DSA operations
@@ -155,13 +174,14 @@ static void test_mldsa44_derand(void) {
       .key_length = kOtcryptoMldsa44SecretKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+      .security_level = MLDSA_TEST_SECURITY_LEVEL,
   };
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(secret_key_config, &sk_blob_words));
+  memset(mldsa_secret_key_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t secret_key = {
       .config = secret_key_config,
-      .keyblob_length =
-          2 * ceil_div(kOtcryptoMldsa44SecretKeyBytes, sizeof(uint32_t)) *
-          sizeof(uint32_t),
+      .keyblob_length = sk_blob_words * sizeof(uint32_t),
       .keyblob = mldsa_secret_key_data,
       .checksum = 0,
   };
@@ -255,13 +275,14 @@ static void test_mldsa65_derand(void) {
       .key_length = kOtcryptoMldsa65SecretKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+      .security_level = MLDSA_TEST_SECURITY_LEVEL,
   };
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(secret_key_config, &sk_blob_words));
+  memset(mldsa_secret_key_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t secret_key = {
       .config = secret_key_config,
-      .keyblob_length =
-          2 * ceil_div(kOtcryptoMldsa65SecretKeyBytes, sizeof(uint32_t)) *
-          sizeof(uint32_t),
+      .keyblob_length = sk_blob_words * sizeof(uint32_t),
       .keyblob = mldsa_secret_key_data,
       .checksum = 0,
   };
@@ -355,13 +376,14 @@ static void test_mldsa87_derand(void) {
       .key_length = kOtcryptoMldsa87SecretKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+      .security_level = MLDSA_TEST_SECURITY_LEVEL,
   };
+  size_t sk_blob_words;
+  CHECK_STATUS_OK(keyblob_num_words(secret_key_config, &sk_blob_words));
+  memset(mldsa_secret_key_data, 0, sk_blob_words * sizeof(uint32_t));
   otcrypto_blinded_key_t secret_key = {
       .config = secret_key_config,
-      .keyblob_length =
-          2 * ceil_div(kOtcryptoMldsa87SecretKeyBytes, sizeof(uint32_t)) *
-          sizeof(uint32_t),
+      .keyblob_length = sk_blob_words * sizeof(uint32_t),
       .keyblob = mldsa_secret_key_data,
       .checksum = 0,
   };

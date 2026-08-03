@@ -223,9 +223,31 @@ cc_library(
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/crypto/impl:sha3",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:mldsa_commands",
+    ],
+)
+
+# Same as :mldsa but with the hardened ACC backend baked in (no --define), so a
+# hardened cryptotest can run in the same job as the unprotected one.
+cc_library(
+    name = "mldsa_hardened",
+    srcs = ["mldsa.c"],
+    hdrs = ["mldsa.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:mldsa_acc_hardened_backend",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",

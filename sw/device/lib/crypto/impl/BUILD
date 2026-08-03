@@ -394,25 +394,59 @@ cc_library(
     }),
 )
 
+_MLDSA_COMMON_DEPS = [
+    "//sw/device/lib/crypto/impl:integrity",
+    "//sw/device/lib/crypto/impl:keyblob",
+    "//sw/device/lib/crypto/impl:sha2",
+    "//sw/device/lib/crypto/impl:sha3",
+    "//sw/device/lib/crypto/impl:status",
+    "//sw/device/lib/crypto/include:datatypes",
+]
+
+cc_library(
+    name = "mldsa_native_backend",
+    srcs = ["mldsa.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mldsa.h"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = _MLDSA_COMMON_DEPS + [
+        "//sw/device/lib/crypto/impl/mldsa/mldsa-native:mldsa_native",
+    ],
+)
+
+cc_library(
+    name = "mldsa_acc_backend",
+    srcs = ["mldsa.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mldsa.h"],
+    defines = ["ACC_HAS_PQC"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = _MLDSA_COMMON_DEPS + [
+        "//sw/device/lib/crypto/impl/mldsa/acc:mldsa_acc",
+    ],
+)
+
+cc_library(
+    name = "mldsa_acc_hardened_backend",
+    srcs = ["mldsa.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mldsa.h"],
+    defines = [
+        "ACC_HAS_PQC",
+        "ACC_MLDSA_HARDENED",
+    ],
+    target_compatible_with = [PAVONA_CPU],
+    deps = _MLDSA_COMMON_DEPS + [
+        "//sw/device/lib/crypto/impl/mldsa/acc:mldsa_acc_hardened",
+    ],
+)
+
 cc_library(
     name = "mldsa",
-    srcs = ["mldsa.c"],
-    hdrs = [
-        "//sw/device/lib/crypto/include:mldsa.h",
-    ],
-    defines = select({
-        "//sw/device/lib/crypto/drivers:acc_has_pqc": ["ACC_HAS_PQC"],
-        "//conditions:default": [],
-    }),
     target_compatible_with = [PAVONA_CPU],
-    deps = [
-        ":integrity",
-        ":keyblob",
-        ":status",
-        "//sw/device/lib/crypto/include:datatypes",
-    ] + select({
-        "//sw/device/lib/crypto/drivers:acc_has_pqc": ["//sw/device/lib/crypto/impl/mldsa/acc:mldsa_acc"],
-        "//conditions:default": ["//sw/device/lib/crypto/impl/mldsa/mldsa-native:mldsa_native"],
+    deps = select({
+        "//sw/device/lib/crypto/drivers:acc_pqc_hardened": [
+            ":mldsa_acc_hardened_backend",
+        ],
+        "//sw/device/lib/crypto/drivers:acc_has_pqc": [":mldsa_acc_backend"],
+        "//conditions:default": [":mldsa_native_backend"],
     }),
 )
 

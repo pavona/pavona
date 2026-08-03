@@ -8,6 +8,34 @@
 
 #include "datatypes.h"
 
+/**
+ * ML-DSA secret-key blob format (ML-DSA-44/65/87; K/L per parameter set).
+ *
+ * The unprotected ACC implementation and the software implementation store the
+ * secret key in the plain FIPS 204 format:
+ *
+ *   keyblob = rho(32) || K(32) || tr(64) || s1(L*pe) || s2(K*pe) || t0(K*416)
+ *
+ * The hardened ACC implementation stores the key masked, in a component-major
+ * layout: the public key material, then the two Boolean shares of each packed
+ * secret polynomial (interleaved), then the two shares of K:
+ *
+ *   keyblob = sk_public(128 + K*416) || s1s2_shares(2*(L+K)*pe) || K_shares(64)
+ *
+ * where:
+ *   sk_public   = rho(32) || 0(32) || tr(64) || t0(K*416): the FIPS 204 public
+ *                 key material (rho, tr, t0), unmasked; the 32-byte K slot is
+ *                 zeroed (K is carried masked in K_shares)
+ *   s1s2_shares = per eta polynomial [share0|share1], each `pe` bytes (Boolean
+ *                 shares of the packed s1/s2, L+K polynomials)
+ *   K_shares    = K_share0(32) || K_share1(32)  (Boolean shares, K0 ^ K1 == K)
+ *
+ * `pe` is POLYETA_PACKEDBYTES (96 for eta=2, 128 for eta=4). The masked blob is
+ * 128 + K*416 + 2*(L+K)*pe + 64 bytes (3392/5504/6400 for ML-DSA-44/65/87), and
+ * is also the ACC's DMEM layout, so keygen and signing DMA it straight to/from
+ * the accelerator without host-side repacking.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -15,13 +43,46 @@ extern "C" {
 /**
  * Signature mode for ML-DSA.
  *
+ * HashML-DSA with SHA2-224, SHA-512/224, or SHA-512/256 is not supported: the
+ * cryptolib does not implement those hash functions (the HMAC/SHA-2 hardware
+ * only supports SHA2-256/384/512 digest sizes).
+ *
  * Values are hardened.
+ *
+ * Encoding generated with:
+ * $ ./util/design/sparse-fsm-encode.py -d 5 -m 11 -n 16 \
+ *     -s 3557426301 --language=c --avoid-zero
+ *
+ * Minimum Hamming distance: 5
+ * Maximum Hamming distance: 14
+ * Minimum Hamming weight: 6
+ * Maximum Hamming weight: 10
  */
 typedef enum otcrypto_mldsa_sign_mode {
   // Signature mode ML-DSA (pure).
-  kOtcryptoMldsaSignModeMldsa = 0x37f,
-  // TODO: Add HashML-DSA mode (mldsa-native supports it, just needs
-  // integration).
+  kOtcryptoMldsaSignModeMldsa = 0x037f,
+  // Signature mode HashML-DSA with SHA2-256.
+  kOtcryptoMldsaSignModeHashMldsaSha2_256 = 0x7413,
+  // Signature mode HashML-DSA with SHA2-384.
+  kOtcryptoMldsaSignModeHashMldsaSha2_384 = 0x47d5,
+  // Signature mode HashML-DSA with SHA2-512.
+  kOtcryptoMldsaSignModeHashMldsaSha2_512 = 0x6ad0,
+  // Signature mode HashML-DSA with SHA3-224.
+  kOtcryptoMldsaSignModeHashMldsaSha3_224 = 0xd752,
+  // Signature mode HashML-DSA with SHA3-256.
+  kOtcryptoMldsaSignModeHashMldsaSha3_256 = 0x2db4,
+  // Signature mode HashML-DSA with SHA3-384.
+  kOtcryptoMldsaSignModeHashMldsaSha3_384 = 0x4863,
+  // Signature mode HashML-DSA with SHA3-512.
+  kOtcryptoMldsaSignModeHashMldsaSha3_512 = 0x51a7,
+  // Signature mode HashML-DSA with SHAKE128.
+  kOtcryptoMldsaSignModeHashMldsaShake128 = 0xfc8b,
+  // Signature mode HashML-DSA with SHAKE256.
+  kOtcryptoMldsaSignModeHashMldsaShake256 = 0xe703,
+  // Signature mode ML-DSA with an externally-precomputed message
+  // representative `mu` (FIPS 204 external-mu variant). `message` must be
+  // exactly 64 bytes and `context` must be empty.
+  kOtcryptoMldsaSignModeExternalMu = 0xa8ac,
 } otcrypto_mldsa_sign_mode_t;
 
 enum {
@@ -40,7 +101,8 @@ enum {
   kOtcryptoMldsa87SignatureBytes = 4627,
   kOtcryptoMldsa87SeedBytes = 32,
 
-// Work buffer sizes in 32-bit words (the ACC backend uses none).
+// Work buffer sizes in 32-bit words. The ACC backends stage inputs and outputs
+// in DMEM and need no caller work buffer; only the software backend does.
 #ifdef ACC_HAS_PQC
   kOtcryptoMldsa44WorkBufferKeypairWords = 0,
   kOtcryptoMldsa44WorkBufferSignWords = 0,
@@ -54,6 +116,7 @@ enum {
   kOtcryptoMldsa87WorkBufferSignWords = 0,
   kOtcryptoMldsa87WorkBufferVerifyWords = 0,
 #else
+  // Work buffer sizes in 32-bit words
   kOtcryptoMldsa44WorkBufferKeypairWords = 11584 / sizeof(uint32_t),
   kOtcryptoMldsa44WorkBufferSignWords = 13120 / sizeof(uint32_t),
   kOtcryptoMldsa44WorkBufferVerifyWords = 9120 / sizeof(uint32_t),
@@ -98,7 +161,16 @@ otcrypto_status_t otcrypto_mldsa44_keygen(
  * blob for the secret key should have a length of 2x
  * ceil(kOtcryptoMldsa44SecretKeyBytes / sizeof(uint32_t)) = 1280 words.
  *
- * @param seed Input seed (`kOtcryptoMldsa44SeedBytes` bytes).
+ * If an unhardened backend is used (either the Ibex-only implementation
+ * or the unhardened ACC implementation), then `seed` must have a length of
+ * `kOtcryptoMldsa44SeedBytes`. If a hardened implementation is used instead,
+ * `seed` must be of length `2 * kOtcryptoMldsa44SeedBytes` with the first and
+ * last `kOtcryptoMldsa44SeedBytes` bytes representing binary shares of the key
+ * generation seed.
+ *
+ * @param seed Input seed (`kOtcryptoMldsa44SeedBytes` bytes if using an
+ *             unhardened implementation, otherwise
+ *             `2 * kOtcryptoMldsa44SeedBytes` bytes).
  * @param[out] public_key Generated public key.
  * @param[out] secret_key Generated secret key.
  * @param work Work buffer (`kOtcryptoMldsa44WorkBufferKeypairWords` words).
@@ -205,7 +277,16 @@ otcrypto_status_t otcrypto_mldsa65_keygen(
  * blob for the secret key should have a length of 2x
  * ceil(kOtcryptoMldsa65SecretKeyBytes / sizeof(uint32_t)) = 2016 words.
  *
- * @param seed Input seed (`kOtcryptoMldsa65SeedBytes` bytes).
+ * If an unhardened backend is used (either the Ibex-only implementation
+ * or the unhardened ACC implementation), then `seed` must have a length of
+ * `kOtcryptoMldsa65SeedBytes`. If a hardened implementation is used instead,
+ * `seed` must be of length `2 * kOtcryptoMldsa65SeedBytes` with the first and
+ * last `kOtcryptoMldsa65SeedBytes` bytes representing binary shares of the key
+ * generation seed.
+ *
+ * @param seed Input seed (`kOtcryptoMldsa65SeedBytes` bytes if using an
+ *             unhardened implementation, otherwise
+ *             `2 * kOtcryptoMldsa65SeedBytes` bytes).
  * @param[out] public_key Generated public key.
  * @param[out] secret_key Generated secret key.
  * @param work Work buffer (`kOtcryptoMldsa65WorkBufferKeypairWords` words).
@@ -312,7 +393,16 @@ otcrypto_status_t otcrypto_mldsa87_keygen(
  * blob for the secret key should have a length of 2x
  * ceil(kOtcryptoMldsa87SecretKeyBytes / sizeof(uint32_t)) = 2448 words.
  *
- * @param seed Input seed (`kOtcryptoMldsa87SeedBytes` bytes).
+ * If an unhardened backend is used (either the Ibex-only implementation
+ * or the unhardened ACC implementation), then `seed` must have a length of
+ * `kOtcryptoMldsa87SeedBytes`. If a hardened implementation is used instead,
+ * `seed` must be of length `2 * kOtcryptoMldsa87SeedBytes` with the first and
+ * last `kOtcryptoMldsa87SeedBytes` bytes representing binary shares of the key
+ * generation seed.
+ *
+ * @param seed Input seed (`kOtcryptoMldsa87SeedBytes` bytes if using an
+ *             unhardened implementation, otherwise
+ *             `2 * kOtcryptoMldsa87SeedBytes` bytes).
  * @param[out] public_key Generated public key.
  * @param[out] secret_key Generated secret key.
  * @param work Work buffer (`kOtcryptoMldsa87WorkBufferKeypairWords` words).

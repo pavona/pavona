@@ -13,7 +13,7 @@ use serde::Deserialize;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::mldsa_commands::{
     CryptotestMldsaKeygenData, CryptotestMldsaKeygenSignData, CryptotestMldsaOutput,
-    CryptotestMldsaSiggenData, CryptotestMldsaSigverData, MldsaSubcommand,
+    CryptotestMldsaSiggenData, CryptotestMldsaSigverData, MldsaSignMode, MldsaSubcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -58,6 +58,25 @@ struct MldsaTestCase {
     #[serde(default)]
     expected_hash: Vec<u8>,
     result: bool,
+    #[serde(default)]
+    sign_mode: String,
+}
+
+fn mldsa_sign_mode(sign_mode: &str) -> MldsaSignMode {
+    match sign_mode {
+        "" | "pure" => MldsaSignMode::Pure,
+        "hash_mldsa_sha2_256" => MldsaSignMode::HashMldsaSha2_256,
+        "hash_mldsa_sha2_384" => MldsaSignMode::HashMldsaSha2_384,
+        "hash_mldsa_sha2_512" => MldsaSignMode::HashMldsaSha2_512,
+        "hash_mldsa_sha3_224" => MldsaSignMode::HashMldsaSha3_224,
+        "hash_mldsa_sha3_256" => MldsaSignMode::HashMldsaSha3_256,
+        "hash_mldsa_sha3_384" => MldsaSignMode::HashMldsaSha3_384,
+        "hash_mldsa_sha3_512" => MldsaSignMode::HashMldsaSha3_512,
+        "hash_mldsa_shake128" => MldsaSignMode::HashMldsaShake128,
+        "hash_mldsa_shake256" => MldsaSignMode::HashMldsaShake256,
+        "external_mu" => MldsaSignMode::ExternalMu,
+        _ => panic!("Unsupported ML-DSA sign_mode: {}", sign_mode),
+    }
 }
 
 // Buffer sizes based on ML-DSA-87 (largest parameter set),
@@ -108,6 +127,7 @@ fn run_mldsa_testcase(
             rnd.try_extend_from_slice(&test_case.rnd)?;
             CryptotestMldsaKeygenSignData {
                 parameter_set: test_case.parameter_set as u32,
+                sign_mode: mldsa_sign_mode(&test_case.sign_mode),
                 seed,
                 seed_len: test_case.seed.len(),
                 message,
@@ -131,6 +151,7 @@ fn run_mldsa_testcase(
             rnd.try_extend_from_slice(&test_case.rnd)?;
             CryptotestMldsaSiggenData {
                 parameter_set: test_case.parameter_set as u32,
+                sign_mode: mldsa_sign_mode(&test_case.sign_mode),
                 sk,
                 sk_len: test_case.sk.len(),
                 message,
@@ -154,6 +175,7 @@ fn run_mldsa_testcase(
             signature.try_extend_from_slice(&test_case.signature)?;
             CryptotestMldsaSigverData {
                 parameter_set: test_case.parameter_set as u32,
+                sign_mode: mldsa_sign_mode(&test_case.sign_mode),
                 pk,
                 pk_len: test_case.pk.len(),
                 message,

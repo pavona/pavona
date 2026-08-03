@@ -31,6 +31,24 @@ extern "C" {
     value(_, MldsaSigver)
 UJSON_SERDE_ENUM(MldsaSubcommand, mldsa_subcommand_t, MLDSA_SUBCOMMAND);
 
+// Signature mode: `Pure` selects plain ML-DSA, the `HashMldsa*` names select
+// HashML-DSA (FIPS 204 Algorithms 4/5), and `ExternalMu` selects the
+// external-mu variant (`message` is then a precomputed 64-byte mu, and
+// `context` must be empty).
+#define MLDSA_SIGN_MODE(_, value) \
+    value(_, Pure) \
+    value(_, HashMldsaSha2_256) \
+    value(_, HashMldsaSha2_384) \
+    value(_, HashMldsaSha2_512) \
+    value(_, HashMldsaSha3_224) \
+    value(_, HashMldsaSha3_256) \
+    value(_, HashMldsaSha3_384) \
+    value(_, HashMldsaSha3_512) \
+    value(_, HashMldsaShake128) \
+    value(_, HashMldsaShake256) \
+    value(_, ExternalMu)
+UJSON_SERDE_ENUM(MldsaSignMode, cryptotest_mldsa_sign_mode_t, MLDSA_SIGN_MODE);
+
 // Keygen: input seed only.
 #define MLDSA_KEYGEN_DATA(field, string) \
     field(parameter_set, uint32_t) \
@@ -41,6 +59,7 @@ UJSON_SERDE_STRUCT(CryptotestMldsaKeygenData, cryptotest_mldsa_keygen_data_t, ML
 // KeygenSign: keygen from seed then sign.
 #define MLDSA_KEYGEN_SIGN_DATA(field, string) \
     field(parameter_set, uint32_t) \
+    field(sign_mode, cryptotest_mldsa_sign_mode_t) \
     field(seed, uint8_t, MLDSA_CMD_MAX_SEED_BYTES) \
     field(seed_len, size_t) \
     field(message, uint8_t, MLDSA_CMD_MAX_MSG_BYTES) \
@@ -54,6 +73,7 @@ UJSON_SERDE_STRUCT(CryptotestMldsaKeygenSignData, cryptotest_mldsa_keygen_sign_d
 // Siggen: input secret key + message + context + randomness.
 #define MLDSA_SIGGEN_DATA(field, string) \
     field(parameter_set, uint32_t) \
+    field(sign_mode, cryptotest_mldsa_sign_mode_t) \
     field(sk, uint8_t, MLDSA_CMD_MAX_SK_BYTES) \
     field(sk_len, size_t) \
     field(message, uint8_t, MLDSA_CMD_MAX_MSG_BYTES) \
@@ -67,6 +87,7 @@ UJSON_SERDE_STRUCT(CryptotestMldsaSiggenData, cryptotest_mldsa_siggen_data_t, ML
 // Sigver: input public key + message + context + signature.
 #define MLDSA_SIGVER_DATA(field, string) \
     field(parameter_set, uint32_t) \
+    field(sign_mode, cryptotest_mldsa_sign_mode_t) \
     field(pk, uint8_t, MLDSA_CMD_MAX_PK_BYTES) \
     field(pk_len, size_t) \
     field(message, uint8_t, MLDSA_CMD_MAX_MSG_BYTES) \

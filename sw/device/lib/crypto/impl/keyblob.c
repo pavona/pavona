@@ -60,6 +60,9 @@ enum {
   kMlkem512MaskedKeyblobBytes = 1152 * 2 + 128,
   kMlkem768MaskedKeyblobBytes = 1152 * 3 + 128,
   kMlkem1024MaskedKeyblobBytes = 1152 * 4 + 128,
+  kMldsa44MaskedKeyblobBytes = 128 + 4 * 416 + 2 * 8 * 96 + 64,
+  kMldsa65MaskedKeyblobBytes = 128 + 6 * 416 + 2 * 11 * 128 + 64,
+  kMldsa87MaskedKeyblobBytes = 128 + 8 * 416 + 2 * 15 * 96 + 64,
 };
 
 status_t keyblob_num_words(const otcrypto_key_config_t config,
@@ -68,8 +71,9 @@ status_t keyblob_num_words(const otcrypto_key_config_t config,
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_NE(config.hw_backed, kHardenedBoolTrue);
-  // See mlkem.h for the secret-key blob layout.
-  if (launder32(config.key_mode >> 16) == kOtcryptoKeyTypeMlkem) {
+  // See mlkem.h / mldsa.h for the secret-key blob layout.
+  if (launder32(config.key_mode >> 16) == kOtcryptoKeyTypeMlkem ||
+      launder32(config.key_mode >> 16) == kOtcryptoKeyTypeMldsa) {
     if (launder32(config.security_level) ==
         kOtcryptoKeySecurityLevelPassivePhysical) {
       HARDENED_CHECK_EQ(config.security_level,
@@ -87,6 +91,18 @@ status_t keyblob_num_words(const otcrypto_key_config_t config,
         case kOtcryptoKeyModeMlkem1024:
           HARDENED_CHECK_EQ(config.key_mode, kOtcryptoKeyModeMlkem1024);
           masked_bytes = kMlkem1024MaskedKeyblobBytes;
+          break;
+        case kOtcryptoKeyModeMldsa44:
+          HARDENED_CHECK_EQ(config.key_mode, kOtcryptoKeyModeMldsa44);
+          masked_bytes = kMldsa44MaskedKeyblobBytes;
+          break;
+        case kOtcryptoKeyModeMldsa65:
+          HARDENED_CHECK_EQ(config.key_mode, kOtcryptoKeyModeMldsa65);
+          masked_bytes = kMldsa65MaskedKeyblobBytes;
+          break;
+        case kOtcryptoKeyModeMldsa87:
+          HARDENED_CHECK_EQ(config.key_mode, kOtcryptoKeyModeMldsa87);
+          masked_bytes = kMldsa87MaskedKeyblobBytes;
           break;
         default:
           return OTCRYPTO_BAD_ARGS;

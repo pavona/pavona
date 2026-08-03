@@ -10,18 +10,43 @@ load("//rules:autogen.bzl", "autogen_acc_insn_count_header")
 cc_library(
     name = "mldsa_acc",
     srcs = ["mldsa_acc.c"],
-    hdrs = ["mldsa_acc.h"],
+    hdrs = [
+        "mldsa_acc.h",
+        "//sw/device/lib/crypto/include:mldsa.h",
+    ],
     target_compatible_with = [PAVONA_CPU],
     deps = [
         ":mldsa_insn_counts",
         "//sw/acc/crypto:run_mldsa",
         "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:acc",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "mldsa_acc_hardened",
+    srcs = ["mldsa_acc.c"],
+    hdrs = [
+        "mldsa_acc.h",
+        "//sw/device/lib/crypto/include:mldsa.h",
+    ],
+    local_defines = ["ACC_MLDSA_HARDENED"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        ":mldsa_insn_counts_hardened",
+        "//sw/acc/crypto:run_mldsa_hardened",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:acc",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
     ],
 )
 
@@ -31,5 +56,14 @@ autogen_acc_insn_count_header(
     template = "mldsa_insn_counts.h.tpl",
     deps = [
         "//sw/acc/crypto:run_mldsa",
+    ],
+)
+
+autogen_acc_insn_count_header(
+    name = "mldsa_insn_counts_hardened",
+    hjson = "mldsa_modes.hjson",
+    template = "mldsa_insn_counts_hardened.h.tpl",
+    deps = [
+        "//sw/acc/crypto:run_mldsa_hardened",
     ],
 )
