@@ -108,6 +108,7 @@ The software can push up to 16 (or 32 for SHA-2 384/512) entries to the FIFO for
 <!-- BEGIN-FEATURE: HMAC.KEY_LENGTH.KEY_384 -->
 <!-- BEGIN-FEATURE: HMAC.KEY_LENGTH.KEY_512 -->
 <!-- BEGIN-FEATURE: HMAC.KEY_LENGTH.KEY_1024 -->
+<!-- BEGIN-FEATURE: HMAC.SECURE_WIPE -->
 ### HMAC computation
 
 ![Two steps of HMAC](../doc/hmac_dataflow.svg)
@@ -141,12 +142,15 @@ For example, for an 80-bit key, HMAC should be configured with an 128-bit key le
 It is also up to the software to shrink the key to the supported key length (up to 512-bit for SHA-2 256 and up to 1024-bit for SHA-2 384/512) using a hash function when setting up the HMAC.
 For example, common key sizes may be 2048-bit or 4096-bit.
 Software is expected to hash these into the supported key length and write the hashed result as the configured key to the HMAC IP.
+Software may also clear the internal secret registers of HMAC following the end of a computation using the [`WIPE_SECRET`](registers.md#wipe_secret) register.
+<!-- END-FEATURE: HMAC.SECURE_WIPE -->
 <!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_128 -->
 <!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_256 -->
 <!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_384 -->
 <!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_512 -->
 <!-- END-FEATURE: HMAC.KEY_LENGTH.KEY_1024 -->
 
+<!-- BEGIN-FEATURE: HMAC.STREAM_MODE -->
 ### Performance in SHA-2 mode and HMAC mode
 
 The SHA-2 256 hash algorithm computes 512 bits of data at a time.
@@ -167,11 +171,13 @@ This throughput could be enhanced in a future version by feeding the message int
 If HMAC mode is turned on, it introduces extra latency due to the second round of computing the final hash of the outer key and the result of the first round using the inner key.
 This adds an extra 240 cycles (80 for the inner key, 80 for the outer key, and 80 for the result of the first round) to complete a HMAC SHA-2 256 digest of a message.
 For instance, if an empty message is given then it takes 360 cycles (80 for msg itself and 240 for the extra) to get the HMAC authentication token.
+For operating in a multiple message stream mode, refer to the [`context`](programmers_guide.md#saving-and-restoring-the-context) section in teh programmers guide.
 <!-- END-FEATURE: HMAC.MODE.SHA2 -->
 <!-- END-FEATURE: HMAC.MODE.HMAC -->
 <!-- END-FEATURE: HMAC.DIGEST_SIZE.SHA2-256 -->
 <!-- END-FEATURE: HMAC.DIGEST_SIZE.SHA2-384 -->
 <!-- END-FEATURE: HMAC.DIGEST_SIZE.SHA2-512 -->
+<!-- END-FEATURE: HMAC.STREAM_MODE -->
 
 ### MSG_FIFO
 

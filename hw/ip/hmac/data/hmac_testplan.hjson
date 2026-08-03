@@ -116,7 +116,7 @@
       stage: V2
       tests: ["hmac_smoke", "hmac_long_msg", "hmac_back_pressure", "hmac_burst_wr",
               "hmac_stress_all", "hmac_datapath_stress"]
-      features: []
+      features: ["HMAC.STREAM_MODE"]
     }
     {
       name: fifo_empty_status_interrupt
