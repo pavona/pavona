@@ -565,6 +565,7 @@ Loop and call stack pointers are reset.
 Host software cannot explicitly trigger an internal secure wipe; it is performed automatically after reset and at the end of an `EXECUTE` operation.
 <!-- END-FEATURE: ACC.SECUREWIPE -->
 
+<!-- BEGIN-FEATURE: ACC.KEYMGR -->
 ### KMAC Application Interface
 
 When the `AccPQCEn` parameter is enabled ACC has an application interface side-load connection to the KMAC IP allowing for accelerated hashing with the SHA3 and SHAKE algorithms.
@@ -597,6 +598,10 @@ For register descriptions refer to the [csr.yml](../data/csr.yml) and [wsr.yml](
     <tr><td><code>CsrKmacPartialWrite</code></td><td>0x7F3</td></tr>
   </tbody>
 </table>
+
+For all other ACC interfaces, refer to the [`interface`](interfaces.md) document.
+
+<!-- END-FEATURE: ACC.KEYMGR -->
 
 ### Vector Instructions
 

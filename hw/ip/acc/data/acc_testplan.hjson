@@ -28,7 +28,7 @@
             '''
       stage: V1
       tests: ["acc_smoke"]
-      features: ["ACC.ISA", "ACC.RANDOM", "ACC.KEYMGR"]
+      features: ["ACC.ISA", "ACC.RANDOM", "ACC.KEYMGR", "ACC.MEM_SCRAMBLE"]
     }
     {
       name: single_binary
@@ -47,7 +47,7 @@
             '''
       stage: V1
       tests: ["acc_single"]
-      features: ["ACC.ISA", "ACC.RANDOM", "ACC.KEYMGR"]
+      features: ["ACC.ISA", "ACC.RANDOM", "ACC.KEYMGR", "ACC.MEM_SCRAMBLE"]
     }
 
     {
@@ -91,7 +91,7 @@
             '''
       stage: V2S
       tests: ["acc_imem_err", "acc_dmem_err"]
-      features: []
+      features: ["ACC.SECUREWIPE", "ACC.MEM_SCRAMBLE"]
     }
     {
       name: internal_integrity
@@ -103,7 +103,7 @@
               "acc_controller_ispr_rdata_err",
               "acc_mac_bignum_acc_err",
               "acc_urnd_err"]
-      features: []
+      features: ["ACC.SECUREWIPE"]
     }
     {
       name: kmac_error
@@ -113,7 +113,7 @@
       stage: V2S
       tests: ["acc_kmac_err"]
       tags: ["acc_kmac_intf"]
-      features: []
+      features: ["ACC.SECUREWIPE"]
     }
     {
       name: back_to_back
@@ -145,7 +145,7 @@
             '''
       stage: V2
       tests: ["acc_escalate"]
-      features: []
+      features: ["ACC.SECUREWIPE"]
     }
     {
       name: zero_state_err_urnd
@@ -155,7 +155,7 @@
             '''
       stage: V2
       tests: ["acc_zero_state_err_urnd"]
-      features: []
+      features: ["ACC.SECUREWIPE"]
     }
     {
       name: illegal_bus_access
@@ -165,7 +165,7 @@
             '''
       stage: V2S
       tests: ["acc_illegal_mem_acc"]
-      features: []
+      features: ["ACC.SECUREWIPE"]
     }
     {
       name: sw_errs_fatal_chk
@@ -175,7 +175,7 @@
             '''
       stage: V2
       tests: ["acc_sw_errs_fatal_chk"]
-      features: []
+      features: ["ACC.SECUREWIPE"]
     }
     {
       name: acc_mem_gnt_acc_err
@@ -186,7 +186,7 @@
             '''
       stage: V2S
       tests: ["acc_mem_gnt_acc_err"]
-      features: []
+      features: ["ACC.SECUREWIPE"]
     }
     {
       name: acc_non_sec_partial_wipe
