@@ -10,31 +10,18 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top/otp_ctrl_regs.h"               // Generated
+#include "hw/top/otp_ctrl_regs.h"  // Generated
+#if defined(OPENTITAN_IS_EGRET)
+#include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
+
 #include "hw/top_egret/sw/autogen/top_egret.h"  // Generated.
+#endif
 
 OTTF_DEFINE_TEST_CONFIG();
-
-/**
- * OTP HW partition relative IFETCH offset in bytes.
- */
-static const uint32_t kOtpIfetchHwRelativeOffset =
-    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG1_OFFSET;
-
-/**
- * OTP can only be accessed by 32b aligned addresses. As `csrng_sw_app_read` is
- * not aligned, we read from the previous aligned address and use the following
- * offset in bits to access the `csrng_sw_app_read` byte.
- */
-static const uint32_t kOtpCsrngFwReadBitOffset =
-    (OTP_CTRL_PARAM_EN_CSRNG_SW_APP_READ_OFFSET -
-     OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET) *
-    8;
 
 /**
  * CTR DRBG Known-Answer-Test (KAT) for GENERATE command.
@@ -45,6 +32,7 @@ static void test_fuse_enable(const dif_csrng_t *csrng) {
   CHECK_STATUS_OK(csrng_testutils_fips_generate_kat(csrng));
 }
 
+#if defined(OPENTITAN_IS_EGRET)
 /**
  * Check that the internal states will read zero.
  */
@@ -72,19 +60,17 @@ static void check_csrng_fuse_enabled(bool expected) {
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-
   uint32_t value;
-  // Read the current value of the partition.
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kOtpPartitionHwCfg1,
-                                           kOtpIfetchHwRelativeOffset));
-  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));
-  multi_bit_bool_t enable = bitfield_field32_read(
-      value,
-      (bitfield_field32_t){.mask = 0xff, .index = kOtpCsrngFwReadBitOffset});
+  CHECK_STATUS_OK(dif_otp_ctrl_dai_read_unaligned(
+      &otp, &value, kOtpPartitionHwCfg1, OTP_CTRL_PARAM_HW_CFG1_OFFSET,
+      OTP_CTRL_PARAM_EN_CSRNG_SW_APP_READ_OFFSET,
+      OTP_CTRL_PARAM_EN_CSRNG_SW_APP_READ_SIZE));
+
+  multi_bit_bool_t enable = value;
   CHECK((enable == kMultiBitBool8True) == expected,
         "`fw_enable` not expected (%x)", enable);
 }
+#endif
 
 /**
  * This test takes the following steps:
@@ -99,14 +85,13 @@ static void check_csrng_fuse_enabled(bool expected) {
  */
 bool test_main(void) {
   dif_csrng_t csrng;
-  CHECK_DIF_OK(
-      dif_csrng_init(mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR), &csrng));
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
+#if defined(OPENTITAN_IS_EGRET)
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
   info = rstmgr_testutils_reason_get();
 
   if (info == kDifRstmgrResetInfoPor) {
@@ -130,4 +115,18 @@ bool test_main(void) {
     return true;
   }
   return false;
+
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  /* Note that this test has been simplified to just test the test_fuse_enable
+   * path, since the HW has been updated to always hardwire the
+   * EN_CSRNG_SW_APP_READ chicken switch to True. The chicken switch itself has
+   * been removed from OTP.
+   */
+
+  test_fuse_enable(&csrng);
+  return true;
+
+#else
+#error "Unrecognized Top Configuration"
+#endif
 }

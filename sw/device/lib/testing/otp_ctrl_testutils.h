@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -159,6 +160,27 @@ status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
                                         otp_partition_t partition,
                                         uint32_t start_address,
                                         const uint64_t *buffer, size_t len);
+/**
+ * Gets the result of an unaligned 8- or 16-bit read operation on the Direct
+ * Access Interface.
+ *
+ * Calls dif_otp_ctrl_dai_read32_end to access the entire 32-bit section
+ * Then
+ *
+ * @param otp An OTP handle -- closest aligned OTP field
+ * @param[out] value Out-param for the read value.
+ * @param partition Target Partition
+ * @param start Partition Starting Address
+ * @param addr Unaligned base address
+ * @param size Size of the read (bytes)
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t dif_otp_ctrl_dai_read_unaligned(const dif_otp_ctrl_t *otp,
+                                         uint32_t *value,
+                                         otp_partition_t partition,
+                                         uint32_t start_addr, uint32_t addr,
+                                         uint32_t size);
 
 /**
  * Weak function to enable tests to define logic that is run immediately before

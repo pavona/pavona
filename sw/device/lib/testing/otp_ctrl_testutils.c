@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -123,6 +124,43 @@ status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
     TRY(dif_otp_ctrl_dai_read64_end(otp, &buffer[i]));
     TRY(otp_ctrl_testutils_dai_read_post_hook(otp));
   }
+  return OK_STATUS();
+}
+
+status_t dif_otp_ctrl_dai_read_unaligned(const dif_otp_ctrl_t *otp,
+                                         uint32_t *value,
+                                         otp_partition_t partition,
+                                         uint32_t start_addr, uint32_t addr,
+                                         uint32_t size) {
+  uint32_t align_addr_offset = (addr - start_addr) & ~3U;
+
+  TRY(otp_ctrl_testutils_wait_for_dai(otp));
+  // Set the dai read to start at the aligned address
+  TRY(dif_otp_ctrl_dai_read_start(otp, partition, align_addr_offset));
+
+  TRY(otp_ctrl_testutils_wait_for_dai(otp));
+  // Read entire 32-bit partition
+  TRY(dif_otp_ctrl_dai_read32_end(otp, value));
+
+  // Get the relative byte offset from the start of the partition
+  // by taking the only the lowest 2 bits.
+  uint32_t rel_byte_offset = addr & 3U;
+  uint32_t mask;
+
+  // Using relative_byte_offset, find the suitable
+  // mask depending on the read size (1 or 2)
+  // if shifting first, only need 2 masks: 0xff or 0xffff
+  // Also, only allow a 2-byte read aligned or 2 bytes off
+  mask = (size == 1) ? 0x000000ff
+         : (size == 2 && (rel_byte_offset == 0 || rel_byte_offset == 2))
+             ? 0x0000ffff
+             : 0x00000000;
+
+  if (mask == 0x0) {
+    LOG_ERROR("Mask = 0");
+    return INTERNAL();
+  } else
+    *value = (*value >> (8 * rel_byte_offset)) & mask;
   return OK_STATUS();
 }
 
