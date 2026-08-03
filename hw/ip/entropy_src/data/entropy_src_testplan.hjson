@@ -54,7 +54,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng"]
-      features: ["ENTROPY_SRC.MODE.FIPS"]
+      features: ["ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: rng_max_rate
@@ -82,7 +82,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng"]
-      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.HEALTH_TESTS", "ENTROPY_SRC.HEALTH_TESTS_EXT"]
+      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.HEALTH_TESTS", "ENTROPY_SRC.HEALTH_TESTS_EXT, ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: conditioning
@@ -92,7 +92,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng"]
-      features: ["ENTROPY_SRC.MODE.BYPASS"]
+      features: ["ENTROPY_SRC.MODE.BYPASS, ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: interrupts
@@ -103,7 +103,7 @@
             '''
       stage: V2
       tests: ["entropy_src_intr", "entropy_src_rng"]
-      features: []
+      features: ["ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: alerts
@@ -114,7 +114,7 @@
             '''
       stage: V2
       tests: ["entropy_src_functional_alerts", "entropy_src_rng"]
-      features: []
+      features: ["ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: stress_all
@@ -144,7 +144,7 @@
             '''
       stage: V2
       tests: ["entropy_src_fw_ov_contiguous"]
-      features: ["ENTROPY_SRC.ROUTE_TO_FIRMWARE", "ENTROPY_SRC.FW_OV.OBSERVE"]
+      features: ["ENTROPY_SRC.ROUTE_TO_FIRMWARE", "ENTROPY_SRC.FW_OV.OBSERVE", "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT"]
     }
     {
       name: external_health_tests
