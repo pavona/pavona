@@ -3,6 +3,7 @@
 <!-- BEGIN-FEATURE: KMAC.MODE.SHA3 -->
 <!-- BEGIN-FEATURE: KMAC.MODE.SHAKE -->
 <!-- BEGIN-FEATURE: KMAC.MODE.CSHAKE -->
+<!-- BEGIN-FEATURE: KMAC.MODE.XOF -->
 ## Block Diagram
 
 ![](../doc/kmac-block-diagram.svg)
@@ -39,10 +40,10 @@ If desired, the masking can be disabled and the internal state width can be redu
 <!-- END-FEATURE: KMAC.MODE.SHA3 -->
 <!-- END-FEATURE: KMAC.MODE.SHAKE -->
 <!-- END-FEATURE: KMAC.MODE.CSHAKE -->
+<!-- BEGIN-FEATURE: KMAC.MODE.XOF -->
 
 ## Design Details
 
-<!-- BEGIN-FEATURE: KMAC.MODE.KMAC -->
 ### Keccak Round
 
 A Keccak round implements the Keccak_f function described in the SHA3 specification.
@@ -78,7 +79,6 @@ Processing a Keccak_f (1600 bit state) takes a total of 96 cycles (24 rounds X 4
 If the masking compile time option is enabled, Keccak round logic requires an additional 3200 flip flops to store the intermediate half state inside the 800 DOM multipliers.
 In addition to that Keccak round logic needs two sets of the same Theta, Rho, and Pi functions.
 As a result, the masked Keccak round logic takes more than twice as much as area than the unmasked version of it.
-<!-- END-FEATURE: KMAC.MODE.KMAC -->
 
 ### Padding for Keccak
 
@@ -136,13 +136,16 @@ The KMAC first sends the block of secret key then accepts the incoming message b
 At the end of the message, the software writes `right_encode(output_length)` to MSG_FIFO prior to issue Process command.
 <!-- END-FEATURE: KMAC.MODE.KMAC -->
 
+<!-- BEGIN-FEATURE: KMAC.ENDIANNESS.MESSAGE -->
 ### Message FIFO
 
 The KMAC HWIP has a compile-time configurable depth message FIFO inside.
 The message FIFO receives incoming message bitstream regardless of its byte position in a word.
+Data written to the message FIFO may be in either big or little endian order depending on the [`CFG_SHADOWED.msg_endianness`](registers.md#cfg_shadowed--msg_endianness) register value.
 Then it packs the partial message bytes into the internal 64 bit data width.
 After packing the data, the logic stores the data into the FIFO until the internal KMAC/SHA3 engine consumes the data.
 
+<!-- END-FEATURE: KMAC.ENDIANNESS.MESSAGE -->
 #### FIFO Depth calculation
 
 The depth of the message FIFO is chosen to cover the throughput of the software or other producers such as DMA engine.
@@ -194,10 +197,12 @@ This is useful when software interface compatibility between the masked and unma
 
 If the `EnMasking` parameter is set, the `SwKeyMasked` parameter has no effect: Software always provides the key in two shares.
 
+<!-- BEGIN-FEATURE: KMAC.ENDIANNESS.DIGEST -->
 ### Keccak State Access
 
 After the Keccak round completes the KMAC/SHA3 operation, the contents of the Keccak state contain the digest value.
 The software can access the 1600 bit of the Keccak state directly through the window of the KMAC/SHA3 register.
+The endianness of the Keccak state may be big or little, depending on the [`CFG_SHADOWED.state_endianness`](registers.md#cfg_shadowed--state_endianness) register configuration.
 
 If the compile-time parameter masking feature is enabled, the upper 256B of the window is the second share of the Keccak state.
 If not, the upper address space is zero value.
@@ -207,6 +212,7 @@ The Keccak state is valid after the sponge absorbing process is completed.
 While in an idle state or in the sponge absorbing stage, the value is zero.
 This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software.
 In addition to that, the KMAC/SHA3 blocks the software access to the Keccak state when it processes the request from KeyMgr for Key Derivation Function (KDF).
+<!-- END-FEATURE: KMAC.ENDIANNESS.DIGEST -->
 
 <!-- BEGIN-FEATURE: KMAC.KEY.SIDELOAD -->
 ### Application Interface

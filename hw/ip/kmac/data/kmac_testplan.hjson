@@ -45,7 +45,7 @@
             '''
       stage: V1
       tests: ["{name}_smoke"]
-      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
+      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.ENDIANNESS.DIGEST", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
     }
     {
       name: long_msg_and_output
@@ -64,7 +64,7 @@
             '''
       stage: V2
       tests: ["{name}_long_msg_and_output"]
-      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
+      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.ENDIANNESS.DIGEST", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
     }
     {
       name: burst_write
@@ -74,7 +74,7 @@
             '''
       stage: V2
       tests: ["{name}_burst_write"]
-      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
+      features: ["KMAC.MODE.SHA3", "KMAC.MODE.SHAKE", "KMAC.MODE.CSHAKE", "KMAC.MODE.KMAC", "KMAC.ENDIANNESS.MESSAGE", "KMAC.ENDIANNESS.DIGEST", "KMAC.KEY.SIDELOAD", "KMAC.ENTROPY_MODES"]
     }
     {
       name: test_vectors
