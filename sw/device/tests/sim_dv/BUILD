@@ -751,9 +751,12 @@ pavona_test(
 pavona_test(
     name = "csrng_fuse_en_sw_app_read",
     srcs = ["csrng_fuse_en_sw_app_read.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_dragonfly:sim_dv": None,
+    },
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
