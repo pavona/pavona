@@ -467,6 +467,7 @@ For this reason, the AES unit uses reset flops only.
 However, all major key and data registers are cleared with pseudo-random data upon reset.
 
 <!-- BEGIN-FEATURE: AES.CLEAR.DATA_OUT -->
+<!-- BEGIN-FEATURE: AES.CLEAR.KEY_IV_DATA_IN -->
 ### Clearing Registers with Pseudo-Random Data
 
 Upon reset or if initiated by software, all major key and data registers inside the AES module are cleared with pseudo-random data (PRD).
@@ -474,6 +475,7 @@ This helps to reduce SCA leakage when both writing these registers for reconfigu
 
 In addition, the state registers inside the cipher core are cleared with PRD during the last round of every encryption/decryption.
 This prevents Hamming distance leakage between the states of the last two rounds as well as between output and input data.
+<!-- END-FEATURE: AES.CLEAR.KEY_IV_DATA_IN -->
 <!-- END-FEATURE: AES.CLEAR.DATA_OUT -->
 
 ## Fault Injection
