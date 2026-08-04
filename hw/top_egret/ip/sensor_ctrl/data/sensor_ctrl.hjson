@@ -41,6 +41,7 @@
       desc: "ast init status has changed",
     }
   ],
+  features: [], 
   regwidth: "32",
   param_list: [
     { name:    "NumAlertEvents",
