@@ -127,6 +127,20 @@
         It sends an rx_overflow interrupt if it sees an extra character when the RX FIFO is full.
       '''
     },
+    { name: "UART.RX_FILTERING",
+      desc: '''
+        The RX line is oversampled at 16x the baud rate, which is used both to reject glitches and
+        to expose the raw oversampled values. A start bit is only accepted if the line is still low
+        half a bit-time after the falling edge, and an optional noise filter passes the RX line
+        through a 3-tap repetition code so that noise lasting a single clock period is ignored.
+      '''
+    },
+    { name: "UART.TX_OVERRIDE",
+      desc: '''
+        Software can take direct control of the TX pin, driving its level from a register instead
+        of from the transmit FIFO.
+      '''
+    },
   ]
   inter_signal_list: [
     { struct: "logic"

@@ -53,15 +53,26 @@ triggers the transmit module to start UART TX serial data transfer. The TX
 module dequeues the byte from the FIFO and shifts it bit by bit out to the UART
 TX pin on positive edges of the baud clock.
 
-The transmitter can be configured into system_loopback mode, in which theoutgoing bits are registered as having been received on the RX side.
+The transmitter can be configured into system_loopback mode, in which the outgoing bits are registered as having been received on the RX side.
 
 If TX is not enabled, written DATA into FIFO will be stacked up and sent out
 when TX is enabled.
 
 When the FIFO becomes empty as part of transmission, a TX FIFO done interrupt will be raised when the final byte has finished transmitting.
 This is separate from the TX FIFO water mark interrupt.
-<!-- END-FEATURE: UART.SYSTEM_LOOPBACK -->
 
+<!-- END-FEATURE: UART.SYSTEM_LOOPBACK -->
+<!-- BEGIN-FEATURE: UART.TX_OVERRIDE -->
+### TX pin override
+
+Setting [`OVRD.TXEN`](registers.md#ovrd) disconnects the TX pin from the transmit path and drives it
+directly from [`OVRD.TXVAL`](registers.md#ovrd), so software controls the pin level itself.
+This bypasses the serializer entirely: the FIFO, the baud clock and the framing play no part while
+the override is enabled, which is what allows software to generate arbitrary line conditions such as
+a deliberate break, at the cost of violating the UART protocol for as long as it is asserted.
+<!-- END-FEATURE: UART.TX_OVERRIDE -->
+
+<!-- BEGIN-FEATURE: UART.RX_FILTERING -->
 <!-- BEGIN-FEATURE: UART.LINE_LOOPBACK -->
 ### Reception
 
@@ -76,7 +87,12 @@ detected as high and the optional parity bit is correct the data byte
 is pushed into a 32 byte deep RX FIFO. The data can be read out by
 reading [`RDATA`](registers.md#rdata) register.
 
-The reciever can be configured into line_loopback mode, in which the incoming bits are sent along the TX side.
+Setting [`CTRL.NF`](registers.md#ctrl) additionally passes the RX line through a 3-tap repetition
+code, so that noise lasting a single clock period is ignored before the line reaches the sampling
+logic described above.
+The oversampled values themselves are readable from the [`VAL`](registers.md#val) register.
+
+The receiver can be configured into line_loopback mode, in which the incoming bits are sent along the TX side.
 
 This behavior of the receiver can be used to compute the approximate
 baud clock frequency error that can be tolerated between the
@@ -118,6 +134,7 @@ ideal baud rate. Since the worst case difference for reception is 5%,
 the uart can be expected to work if both sides are within +/- 2.5% of
 the ideal baud rate.
 <!-- END-FEATURE: UART.LINE_LOOPBACK -->
+<!-- END-FEATURE: UART.RX_FILTERING -->
 
 <!-- BEGIN-FEATURE: UART.BAUD_RATE_CONTROL -->
 ### Setting the baud rate

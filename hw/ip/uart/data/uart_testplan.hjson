@@ -144,7 +144,7 @@
               uart.WDATA'''
       stage: V2
       tests: ["uart_loopback"]
-      features: ["UART.LINE_LOOPBACK"]
+      features: ["UART.SYSTEM_LOOPBACK"]
     }
     {
       name: line_loopback
@@ -167,7 +167,7 @@
               transaction'''
       stage: V2
       tests: ["uart_noise_filter"]
-      features: []
+      features: ["UART.RX_FILTERING"]
     }
     {
       name: rx_start_bit_filter
@@ -177,7 +177,7 @@
             - Ensure the start bit will be dropped'''
       stage: V2
       tests: ["uart_rx_start_bit_filter"]
-      features: []
+      features: ["UART.RX_FILTERING"]
     }
     {
       name: tx_overide
@@ -185,7 +185,7 @@
             directly.'''
       stage: V2
       tests: ["uart_tx_ovrd"]
-      features: []
+      features: ["UART.TX_OVERRIDE"]
     }
     {
       name: rx_oversample
@@ -195,7 +195,7 @@
             - Read RX oversampled value and ensure it's same as driven value'''
       stage: V2
       tests: ["uart_rx_oversample"]
-      features: []
+      features: ["UART.RX_FILTERING"]
     }
     {
       name: long_b2b_transfer
@@ -215,7 +215,8 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["uart_stress_all"]
-      features: []
+      features: ["UART.PARITY", "UART.LINE_LOOPBACK", "UART.SYSTEM_LOOPBACK",
+                 "UART.FIFO_INTERRUPTS", "UART.RX_FILTERING", "UART.TX_OVERRIDE"]
     }
   ]
 

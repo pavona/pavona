@@ -15,62 +15,14 @@
                      "hw/top_dragonfly/data/chip_conn_testplan.hjson",
                      "hw/top_dragonfly/data/ip/chip_soc_proxy_testplan.hjson",
                      "hw/top_dragonfly/data/ip/chip_dma_testplan.hjson",
-                     "hw/top_dragonfly/data/ip/chip_rom_ctrl_testplan.hjson"]
+                     "hw/top_dragonfly/data/ip/chip_rom_ctrl_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_uart_testplan.hjson"]
 
   testpoints: [
     /////////////////////////////////////////////////////////////
     // IO Peripherals                                          //
     // UART, GPIO, I2C, SPIDEV, SPIHOST, PINMUX & PADCTRL, MBX //
     /////////////////////////////////////////////////////////////
-
-    // UART (pre-verified IP) integration tests:
-    {
-      name: chip_sw_uart_tx_rx
-      desc: '''Verify transmission of data over the TX and RX port.
-
-            SW test sends a known payload over the TX port. The testbench, at the same time
-            sends a known payload over RX. On reception, both payloads are checked for integrity.
-            SW validates the reception of TX watermark, RX watermark, and the TX empty interrupts.
-            Choosing the max supported baud rate for the UART is sufficient.
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_tx_rx"]
-      tags: ["gls"]
-    }
-    {
-      name: chip_sw_uart_rx_overflow
-      desc: '''Verify the RX overflow interrupt.
-
-            The testbench sends a random payload of size greater than the RX fifo size (32). The SW
-            ignores the received the data to allow the RX overflow interrupt to assert.
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_tx_rx"]
-    }
-    {
-      name: chip_sw_uart_rand_baudrate
-      desc: '''Verify UART transmission of data at various speeds.
-
-            Randomly pick one of the UART instances and configure it to run with any of these baud
-            rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mkbps, 1.5Mkbps.
-
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_rand_baudrate"]
-    }
-    {
-      name: chip_sw_uart_tx_rx_alt_clk_freq
-      desc: '''Verify the transmission of UART via using external clock as uart core clock.
-
-            Extend from chip_sw_uart_rand_baudrate with following added settings.
-            - Configure LC to RMA state, so that it allows clkmgr to use external clock.
-            - Configure clkmgr to select external clock.
-            - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
-              ext_clk_freq / 4 or ext_clk_freq / 2.
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_tx_rx_alt_clk_freq"]
-    }
 
     // GPIO (pre-verified IP) integration tests:
     {
