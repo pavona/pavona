@@ -100,7 +100,7 @@ module soc_proxy
   );
 
   // Perform the base address translation before exiting to the AC Ranges
-  bat u_bat (
+  soc_proxy_bat u_bat (
     .tl_in_h2d_i     ( muxed_host_tl_h2d ),
     .tl_in_d2h_o     ( muxed_host_tl_d2h ),
     .integrator_id_i ( integrator_id_i   ),

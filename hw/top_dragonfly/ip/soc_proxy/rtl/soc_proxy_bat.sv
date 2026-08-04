@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module bat (
+module soc_proxy_bat (
   // Input port
   input  tlul_pkg::tl_h2d_t tl_in_h2d_i,
   output tlul_pkg::tl_d2h_t tl_in_d2h_o,

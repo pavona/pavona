@@ -18,7 +18,7 @@ The socket tracks outstanding transactions, so responses return to the originati
 <!-- BEGIN-FEATURE: SOC_PROXY.CTN_EGRESS.BAT -->
 ## Base Address Translation
 
-The muxed request then passes through the base address translation stage before leaving the block.
+The muxed request then passes through the base address translation stage, implemented by the `soc_proxy_bat` module, before leaving the block.
 A request is treated as CTN-bound when it is valid and its two most significant address bits are `2'b01`, that is when it addresses the [1G, 2G) window.
 For such a request those two bits are replaced with zeros, which downlifts the address into the [0, 1G) window that the CTN expects; every other request keeps its address unchanged.
 
