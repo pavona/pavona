@@ -1,0 +1,45 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: ac_range_check
+  testpoints: [
+    // AC Range Check integration tests:
+    {
+      name: chip_ac_range_check_csr_access
+      desc: '''Verify that the AC Range Check CSRs are reachable and well behaved from the chip
+            level.
+
+            The AC Range Check is instantiated on the path between `soc_proxy` and the CTN fabric,
+            so its register file is part of the chip RAL and is walked by the chip-level CSR tests
+            along with every other peripheral.
+
+            The RANGE_RACL_POLICY_SHADOWED registers are deliberately excluded from writes in
+            `chip_common_vseq`: random generic CSR writes to them can revoke RACL permissions, which
+            would make later TL accesses through the block return `d_error` and fail unrelated parts
+            of the test. All remaining AC Range Check registers, including RANGE_BASE, RANGE_LIMIT,
+            RANGE_ATTR, RANGE_REGWEN and the LOG_* registers, participate normally.
+
+            Checks:
+            - The registers read back their expected reset values and honor their access policies,
+              including the RANGE_REGWEN write-enable relationship of the range configuration
+              registers.
+            - TL-UL error conditions on the register interface behave as expected.
+
+            The features below are covered at the level of their configuration registers only: this
+            testpoint exercises the register interface through which each feature is programmed, not
+            the filtering behavior itself. AC_RANGE_CHECK.BYPASS is absent because it is controlled
+            by the chip input `ac_range_check_overwrite_i` and has no CSR.
+            '''
+      features: ["AC_RANGE_CHECK.RANGE.MATCH", "AC_RANGE_CHECK.RANGE.PERMISSIONS",
+                 "AC_RANGE_CHECK.RANGE.PRIORITY", "AC_RANGE_CHECK.RANGE.RACL_POLICY",
+                 "AC_RANGE_CHECK.RANGE.LOCK", "AC_RANGE_CHECK.DENY_LOG"]
+      stage: V2
+      si_stage: NA
+      tests: ["chip_csr_bit_bash",
+              "chip_csr_aliasing",
+              "chip_same_csr_outstanding",
+              "chip_tl_errors"]
+    }
+  ]
+}
