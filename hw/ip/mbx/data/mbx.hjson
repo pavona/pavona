@@ -92,6 +92,34 @@
       desc: "This recoverable alert is triggered when memory with invalid ECC (e.g., uninitialized memory) or at an invalid address is accessed."
     }
   ]
+  features: [
+    {
+      name: "MBX.INBOUND"
+      desc: '''
+        Mailbox can receive inbound messages.
+      '''
+    }
+    {
+      name: "MBX.OUTBOUND"
+      desc: '''
+        Mailbox can transmit outbound messages.
+      '''
+    }
+    {
+      name: "MBX.ADDRESS_RANGE"
+      desc: '''
+        When valid inbound and outbound address ranges are defined,
+        the inbound side can declare them valid and optionally lock
+        these ranges from subsequent modification.
+      '''
+    }
+    {
+      name: "MBX.ABORT"
+      desc: '''
+        The outbound side can abort a mailbox transaction.
+      '''
+    }
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY"
       desc: "End-to-end bus integrity scheme."
