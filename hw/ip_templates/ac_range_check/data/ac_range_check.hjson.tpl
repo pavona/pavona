@@ -143,6 +143,46 @@ import math
      desc: "The log counter is protected by a second counter that counts in the opposite direction."
     }
   ]
+  features: [
+    { name: "AC_RANGE_CHECK.RANGE.MATCH",
+      desc: '''Each enabled range matches an incoming request when its address falls between the
+               configured base and limit addresses. Disabled ranges never match.
+            '''
+    }
+    { name: "AC_RANGE_CHECK.RANGE.PERMISSIONS",
+      desc: '''Each range grants read, write and/or execute access. A request is allowed only if the
+               matching range permits its access type; otherwise it is denied. Requests which match
+               no enabled range are denied by default.
+            '''
+    }
+    { name: "AC_RANGE_CHECK.RANGE.PRIORITY",
+      desc: '''When a request matches multiple enabled ranges, the enabled range with the lowest
+               index determines the permissions which apply to the request.
+            '''
+    }
+    { name: "AC_RANGE_CHECK.RANGE.RACL_POLICY",
+      desc: '''Each range carries a RACL policy which additionally checks the RACL role of the
+               requester against the read and write permission masks of the matching range.
+            '''
+    }
+    { name: "AC_RANGE_CHECK.RANGE.LOCK",
+      desc: '''The configuration of each range can be locked individually, making its base, limit,
+               attribute and RACL policy registers immutable until the next reset.
+            '''
+    }
+    { name: "AC_RANGE_CHECK.DENY_LOG",
+      desc: '''Denied requests increment a global deny counter and the first denied request is
+               logged. Reaching the programmed deny count threshold raises an interrupt, and
+               clearing the log resets the counter and the logged information.
+            '''
+    }
+    { name: "AC_RANGE_CHECK.BYPASS",
+      desc: '''Asserting the multi-bit encoded range check overwrite input bypasses the matching,
+               permission and RACL logic, allowing all requests to pass unfiltered.
+            '''
+    }
+  ]
+
   regwidth: "32"
   registers: [
     { name: "ALERT_STATUS"
@@ -202,8 +242,11 @@ import math
           resval: 0x0
           swaccess: "r0w1c"
           desc: '''Clears all log information for the first denied access including:
-                    - LOG_STATUS
+                    - LOG_STATUS, which resets the deny counter LOG_STATUS.deny_cnt to zero
+                      together with the diagnostic fields of that register
                     - LOG_ADDRESS.
+                   Clearing the deny counter is the only way to re-arm the logging of a first
+                   denied access, and it also deasserts the deny_cnt_reached interrupt.
           '''
         }
         { bits: "0"

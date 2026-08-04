@@ -8,7 +8,7 @@
                        "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/rst_safe_stress_testplan.hjson"]
+                       "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
     testpoints: [
       {
         name: ac_range_check_smoke
@@ -47,15 +47,32 @@
         tests: ["ac_range_check_rst_safe_smoke",
                 "ac_range_check_rst_safe_smoke_high_threshold",
                 "ac_range_check_rst_safe_smoke_with_rand_reset"]
+        features: ["AC_RANGE_CHECK.RANGE.MATCH", "AC_RANGE_CHECK.RANGE.PERMISSIONS",
+                   "AC_RANGE_CHECK.RANGE.PRIORITY"]
       }
       {
         name: ac_range_check_smoke_racl
         desc: '''
-              TODO
+              Smoke test which exercises the RACL policy check of the ranges.
+
+              Stimulus:
+                - Configure a random number of ranges with all of the read, write and execute
+                  permissions granted, so that the access decision is governed by the RACL policy.
+                - Randomize RANGE_RACL_POLICY_SHADOWED.read_perm and
+                  RANGE_RACL_POLICY_SHADOWED.write_perm over their full range.
+                - Perform random TLUL requests with random RACL roles on the unfiltered interface.
+
+              Checking:
+                - A read or execute request is allowed only if the RACL role of the request is
+                  permitted by the read_perm mask of the matching range, and a write request only if
+                  the role is permitted by its write_perm mask.
+                - Requests denied by the RACL check are handled like any other denied request: they
+                  do not propagate and an error is returned on the unfiltered TLUL D channel.
               '''
         stage: V1
         tests: ["ac_range_check_rst_safe_smoke_racl",
                 "ac_range_check_rst_safe_racl_cov"]
+        features: ["AC_RANGE_CHECK.RANGE.RACL_POLICY"]
       }
       {
         name: ac_range_check_lock_range
@@ -67,18 +84,16 @@
                 register
               - Clear RANGE_REGWEN to MuBi4::False in a randomized way
               - Try to reconfigure the range with different values
-              - Assert random reset while any functional phase is active, then restart the
-                lock-range operation after reset is released
 
               Checking:
               - If RANGE_REGWEN was cleared to MuBi4::False, the reconfigured register values
                 The original configuration should remain in the registers. If RANGE_REGWEN was not
                 cleared, the reconfigured values should have replaced the original ones.
-              - After reset, no pre-reset lock or sequence state affects the restarted operation.
               '''
         stage: V2
         tests: ["ac_range_check_rst_safe_lock_range_with_rand_reset",
                 "ac_range_check_rst_safe_lock_cov"]
+        features: ["AC_RANGE_CHECK.RANGE.LOCK"]
       }
       {
         name: ac_range_check_attr_permissions
@@ -98,6 +113,7 @@
               '''
         stage: V2
         tests: ["ac_range_check_rst_safe_attr_cov"]
+        features: ["AC_RANGE_CHECK.RANGE.MATCH", "AC_RANGE_CHECK.RANGE.PERMISSIONS"]
       }
       {
         name: ac_range_check_log_intr_boundaries
@@ -117,6 +133,7 @@
               '''
         stage: V2
         tests: ["ac_range_check_rst_safe_log_intr_cov"]
+        features: ["AC_RANGE_CHECK.DENY_LOG"]
       }
       {
         name: ac_range_check_mubi_encodings
@@ -136,6 +153,8 @@
               '''
         stage: V2
         tests: ["ac_range_check_rst_safe_mubi_cov"]
+        features: ["AC_RANGE_CHECK.RANGE.MATCH", "AC_RANGE_CHECK.RANGE.PERMISSIONS",
+                   "AC_RANGE_CHECK.RANGE.LOCK", "AC_RANGE_CHECK.DENY_LOG"]
       }
       {
         name: ac_range_check_tl_datapath
@@ -159,6 +178,7 @@
               '''
         stage: V2
         tests: ["ac_range_check_rst_safe_tl_cov"]
+        features: ["AC_RANGE_CHECK.RANGE.PERMISSIONS"]
       }
       {
         name: ac_range_bypass_enable
@@ -178,6 +198,7 @@
               '''
         stage: V2
         tests: ["ac_range_check_rst_safe_bypass"]
+        features: ["AC_RANGE_CHECK.BYPASS", "AC_RANGE_CHECK.DENY_LOG"]
       }
     ]
     covergroups: [
