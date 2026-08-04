@@ -1,5 +1,8 @@
 # Theory of Operation
 
+<!-- BEGIN-FEATURE: KEYMGR_DPE.SIDELOAD.KMAC -->
+<!-- BEGIN-FEATURE: KEYMGR_DPE.SIDELOAD.AES -->
+<!-- BEGIN-FEATURE: KEYMGR_DPE.SIDELOAD.ACC -->
 The following diagram gives an example on how keymgr DPE handles multiple DICE contexts.
 
 ![Key Manager Functional Model](../doc/keymgr_dpe_diagram.svg)
@@ -25,11 +28,17 @@ A DPE context refers to what is stored in a keymgr slot, and it consists of a se
 A keymgr slot refers to the storage unit for DPE contexts, and the actual DPE context it stores is dynamically controlled by SW commands.
 In order to address the relationships among keymgr_dpe slots and their stored DPE contexts more clearly, we use the terms _parent slot_ and _child slot_ to mean that their stored DPE contexts follow parent-child relationship in DICE hierarchy.
 `a || b` is used to denote the concatenation of two bit strings `a` and `b` (noticeably, not the logical OR operation).
+<!-- END-FEATURE: KEYMGR_DPE.SIDELOAD.ACC -->
+<!-- END-FEATURE: KEYMGR_DPE.SIDELOAD.AES -->
+<!-- END-FEATURE: KEYMGR_DPE.SIDELOAD.KMAC -->
 
+<!-- BEGIN-FEATURE: KEYMGR_DPE.DERIVE.ATTESTATION -->
+<!-- BEGIN-FEATURE: KEYMGR_DPE.GENERATE.OUTPUT -->
 ## Key Manager Slots
 
 Keymgr_dpe consists of `DpeNumSlots` slots, which is a generic parameter.
-Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage. That includes a secret key along with additional context information described below.
+Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage.
+That includes a secret key along with additional context information described below.
 The secret key size is fixed to 256-bit.
 
 Each slot data consists of the following fields:
@@ -59,6 +68,8 @@ Similar to `max_key_version`, the slot policy is not a value inherited from pare
 Otherwise all advance requests are rejected that specify this slot as its source.
 *  If `retain_parent` is set to `true`/`1`, then the parent slot remains valid after an advance call.
 Otherwise, after the derivation of a child slot, the DPE context of the parent slot is removed automatically.
+<!-- END-FEATURE: KEYMGR_DPE.GENERATE.OUTPUT -->
+<!-- END-FEATURE: KEYMGR_DPE.DERIVE.ATTESTATION -->
 
 ## Key Manager State
 
@@ -117,6 +128,7 @@ If a command is valid during the current working state, it is processed and ackn
 If a command is invalid, the requested operation is rejected and the values in key slots remain unmodified.
 More details about command interactions can be found in Programmers Guide.
 
+<!-- BEGIN-FEATURE: KEYMGR_DPE.DPE.ADVANCE -->
 ### Advance
 
 Advancing a keymgr_dpe slot (also referred to as _deriving a child_) uses multiple inputs.
@@ -162,8 +174,10 @@ When there is no fault and the enable signal is active by life cycle controller,
   * If `retain_parent = true`, then the destination slot is not valid (i.e. `valid = 0`).
   * If `retain_parent = false`, then the source and the destination slots are the same.
   * `boot_stage` of the source slot has not reached to the maximum value supported by HW (i.e. `boot_stage + 1 < DpeNumBootStages`.
+<!-- END-FEATURE: KEYMGR_DPE.DPE.ADVANCE -->
 
 
+<!-- BEGIN-FEATURE: KEYMGR_DPE.KEY_VERSIONING -->
 ### Versioned Key Generation
 
 A versioned key generation operation uses the following registers:
@@ -185,7 +199,9 @@ The only difference is that the input messages are 0-padded to another length pa
 Key generation request is valid if all of the following conditions are satisfied (AND clause):
 * The internal FSM is in `Available` state. Namely, keymgr_dpe rejects key generation requests during `Invalid`/`Disabled` as they are inactive states, and during `Reset` for not having latched the UDS key yet.
 * The selected source slot is valid.
+<!-- END-FEATURE: KEYMGR_DPE.KEY_VERSIONING -->
 
+<!-- BEGIN-FEATURE: KEYMGR_DPE.DPE.ERASE -->
 ### Erase slot
 
 Erasing operation can be used to clear the DICE context from a destination slot. This is done by selecting the slot with `CONTROL_SHADOWED.DST_SEL`, and then configuring and initiating the operation. At the end of a successful erase, the DPE context is removed from the destination slot.
@@ -197,10 +213,13 @@ Meanwhile, the slots with `retain_parent = true` can only be destroyed with expl
 Erase request is valid if the following conditions are satisfied:
 * The destination slot is valid (i.e. not empty).
 * keymgr_dpe FSM's working state is `Available`.
+<!-- END-FEATURE: KEYMGR_DPE.DPE.ERASE -->
 
+<!-- BEGIN-FEATURE: KEYMGR_DPE.DPE.DISABLE -->
 ### Disable
 
 Disable operation simply moves the keymgr_DPE's FSM into `Disabled` state. This operation request is valid only if the FSM is in `Available` state.
+<!-- END-FEATURE: KEYMGR_DPE.DPE.DISABLE -->
 
 ## Peripheral Connections
 
