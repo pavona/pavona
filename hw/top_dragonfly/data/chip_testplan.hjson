@@ -12,7 +12,8 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",
                      "hw/ip/tlul/data/tlul_testplan.hjson",
                      "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
-                     "hw/top_dragonfly/data/chip_conn_testplan.hjson"]
+                     "hw/top_dragonfly/data/chip_conn_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_soc_proxy_testplan.hjson"]
 
   testpoints: [
     /////////////////////////////////////////////////////////////
@@ -2380,59 +2381,6 @@
              '''
       stage: V2
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
-    }
-
-    // soc_proxy tests:
-    {
-      name: chip_sw_soc_proxy_external_reset_requests
-      desc: '''Verify that external reset requests reset (parts of) OT.
-
-               - In DV env, trigger the external reset request.
-               - In DV env, ensure that the desired parts of OT get reset and the others don't.
-               - In SW, ensure that the reset request shows up in Reset Manager's RESET_INFO register.
-           '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_smoketest"]
-    }
-    {
-      name: chip_sw_soc_proxy_external_irqs
-      desc: '''Verify that external IRQs are forwarded to the PLIC.
-
-               For each of the external IRQs:
-               - In DV env, trigger the external IRQ.
-               - In DV env, ensure that an internal wakeup is requested.
-               - In SW, ensure that the IRQ shows up in the respective *Interrupt Pending* register of the PLIC.
-            '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_smoketest"]
-    }
-    {
-      name: chip_sw_soc_proxy_external_wakeup_requests
-      desc: '''Verify that external wakeup requests are forwarded to Power Manager.
-
-               - In SW, enable the wakeup in Power Manager.
-               - In DV env, trigger the wakeup request.
-               - In SW, ensure that the wakeup request shows up in Power Manager's `WAKE_STATUS` register.
-            '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_external_wakeup"]
-    }
-    {
-      name: chip_sw_soc_proxy_gpios
-      desc: '''Verify that GPI/Os of the SoC into/from OT are correctly connected to multiplexed I/Os.
-
-               For each of the general-purpose outputs of the SoC into OT
-               - In SW, configure Pinmux MIO such that the pin is externally observable.
-               - In DV env, toggle the pin.
-               - In DV env, ensure that the pattern shows up on the configured pin.
-
-               For each of the general-purpose inputs of the SoC from OT
-               - In SW, configure Pinmux MIO such that the pin is externally controllable.
-               - In DV env, toggle the pin.
-               - In DV env, ensure that the pattern shows up on the SoC input.
-            '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_gpios"]
     }
 
     //////////////////
