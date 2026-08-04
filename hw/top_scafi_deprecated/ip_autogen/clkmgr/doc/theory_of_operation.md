@@ -93,7 +93,6 @@ As influencing time can change the perspective of software and potentially revea
 Functionally, this group is identical to the security group.
 
 <!-- BEGIN-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
-<!-- BEGIN-FEATURE: CLKMGR.ENABLE.TRANS_CLK -->
 ## Peripheral Clock Group
 
 The peripheral clock group is composed of I/O peripherals modules.
@@ -102,7 +101,6 @@ By their nature, I/O peripherals are both transactional and most of the time not
 These modules can be both directly and indirectly controlled by software.
 The controls can also be individual to each peripheral.
 <!-- END-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
-<!-- END-FEATURE: CLKMGR.ENABLE.TRANS_CLK -->
 
 ## Wait-for-Interrupt (wfi) Gating
 
@@ -144,6 +142,16 @@ Further, since it is possible hardware may issue requests at the boundary of a c
 The bus requests themselves thus become dynamic clock request signals to help enable components in its path.
 
 There is thus a moderate design and high verification cost to supporting `wfi` gating for the infrastructural group.
+
+<!-- BEGIN-FEATURE: CLKMGR.JITTER.ENABLE -->
+<!-- BEGIN-FEATURE: CLKMGR.JITTER.REGWEN -->
+### Clock Jitter
+The main clock, running at 100 MHz in the assumed diagram above, drives the main crypto engines.
+In order to protect the device from side channel analysis attacks, the main clock can be configured to add jitter at the source.
+The jitter generation is expected to cause each clock cycle to be randomly reduced from the nominal frequency.
+The clock manager can enable jitter, and can also lock jitter so that it cannot be disabled until the device is reset.
+<!-- END-FEATURE: CLKMGR.JITTER.REGWEN -->
+<!-- END-FEATURE: CLKMGR.JITTER.ENABLE -->
 
 ## Block Diagram
 
@@ -286,19 +294,21 @@ Clock manager can continuously measure root clock frequencies to see if any of t
 This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).
 
 The root clocks, specifically the clocks supplied from `ast` and their divided variants, are constantly measured against the `always on clock` when this feature is enabled.
-Software sets both an expected maximum and minimum for each measured clock.
+Software sets both an expected maximum and minimum cycle count for each measured clock.
 
 Clock manager then counts the number of relevant root clock cycles in each always-on clock period.
-If the resulting count differs from the programmed thresholds, a recoverable error is registered.
+A recoverable error is triggered if the resulting count does not fall between the programmed minimum and maximum counts.
 
-Since the counts are measured against a single cycle of always on clock, the minimal error that can be detected is dependent on the clock ratio between the measured clock and 1 cycle of the always on clock.
+The counts can be measured against a number of cycles of always on clock, depending on the clock ratios.
+The minimal error that can be detected depends on the clock ratio between the measured clock and the always on clock, and on the cycles of the always on clock used to perform each measurement.
 Assume a 24MHz clock and an always-on clock of 200KHz.
-The minimal error detection is then 200KHz / 24MHz, or approximately 0.83%.
-
+With a single always on clock cycle the minimal error detection is then 200KHz / 24MHz, or approximately 0.83%.
 This means if the clock's actual value is between 23.8MHz and 24.2MHz, this deviation will not be detected.
 Conversely, if the clock's natural operation has an error range wider than this resolution, the min / max counts must be adjusted to account for this error.
 
-Additionally, clock manager uses a similar time-out mechanism to see if any of the root clocks have stopped toggling for an extended period of time.
+If the clock ratios are smaller it is necessary to configure the hardware to count over a suitable number of always on clock cycles in order to achieve a certain error detection.
+
+Additionally, clock manager uses a time-out mechanism to see if any of the root clocks have stopped toggling for an extended period of time.
 This is done by creating an artificial handshake between the root clock domain and the always on clock domain that must complete within a certain amount of time based on known clock ratios.
 Based on the nature of the handshake and the margin window, the minimal timeout detection window is approximately 2-4 always on clock cycles.
 If the root clock domain stops and resumes in significantly less time than this window, the time-out may not be detected.

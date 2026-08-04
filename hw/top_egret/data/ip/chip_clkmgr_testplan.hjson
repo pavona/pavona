@@ -122,8 +122,8 @@
       desc: '''Verify the clkmgr requests ext clk src during certain LC states.
 
             On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
-            it when lc_program completes. This also triggers divided clocks to step down. It may be
-            best to verify this via SVA, unless we implement clock cycle counters.
+            it when lc_program completes. This also triggers divided clocks to step down.
+            Verify this using clock cycle counters.
             SiVal: This is implicitly tested by the success of OTP updates for calibration.
             '''
       stage: V2
