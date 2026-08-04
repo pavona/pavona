@@ -1,0 +1,49 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: dma
+  testpoints: [
+    // DMA integration tests:
+    {
+      name: chip_sw_dma_inline_hashing
+      desc: '''Verify DMA hardware-handshake transfers from a peripheral FIFO with inline hashing.
+
+            - SW configures the SPI host and the DMA controller for a hardware handshake transfer,
+              with the SPI host as the source of the data and an opcode selecting an inline SHA-2
+              digest.
+            - The DV environment drives the SPI traffic so that the DMA controller is paced by the
+              LSIO trigger of the SPI host.
+            - SW then performs a second, memory-to-memory transfer of the received data.
+
+            Checks:
+            - The transfer completes and the received data matches the data driven by the testbench.
+            - The digest collected from the SHA2_DIGEST registers matches the expected digest of the
+              transferred data.
+            '''
+      features: ["DMA.MODE.HANDSHAKE", "DMA.MODE.MEMORY", "DMA.INLINE_HASHING"]
+      stage: V2
+      tests: ["chip_sw_dma_inline_hashing"]
+    }
+    {
+      name: chip_sw_dma_abort
+      desc: '''Verify that an in-progress DMA transfer can be aborted at the chip level.
+
+            - SW configures the SPI host and the DMA controller for the same hardware handshake
+              transfer with an inline SHA-2 digest as above.
+            - Once the transfer has started, SW sets CONTROL.abort.
+            - SW then reconfigures the SPI host and the DMA controller and runs the transfer again
+              to completion.
+
+            Checks:
+            - STATUS.aborted is set after the abort request, indicating that the outstanding
+              secure-side transactions have drained.
+            - The controller is left in a state from which a subsequent transfer can be configured
+              and completed normally.
+            '''
+      features: ["DMA.ABORT", "DMA.MODE.HANDSHAKE", "DMA.INLINE_HASHING"]
+      stage: V2
+      tests: ["chip_sw_dma_abort"]
+    }
+  ]
+}

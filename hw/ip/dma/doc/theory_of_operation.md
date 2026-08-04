@@ -4,6 +4,7 @@
 
 ![DMA Block Diagram](block_diagram.svg)
 
+<!-- BEGIN-FEATURE: DMA.MEMORY_RANGE.CONFIG -->
 ## Defining Relevant Memory Regions
 
 |                       |     |
@@ -18,6 +19,7 @@
 |                       | This memory may be untrusted from the secure-side perspective or may be included in its trust boundary for certain cases by leveraging SoC defined security access control enforcement |
 
 ![](./secure_perimeter.svg)
+<!-- END-FEATURE: DMA.MEMORY_RANGE.CONFIG -->
 
 ## Mode of operation
 
@@ -30,6 +32,7 @@ The DMA is envisioned to operate in two main modes:
     up or drain out hardware FIFO data for low speed IO peripherals (or
     other peripherals) that support it.
 
+<!-- BEGIN-FEATURE: DMA.MODE.MEMORY -->
 ### Generic DMA operation
 
 Mode of operation & interactions with components considered external to
@@ -101,7 +104,10 @@ the Trusted Compute Boundary
 -   *Note that the DMA enabled memory may be a physically separate SRAM
     structure or a partitioned and access controlled region of the secure
     SRAM memory.*
+<!-- END-FEATURE: DMA.MODE.MEMORY -->
 
+<!-- BEGIN-FEATURE: DMA.MODE.HANDSHAKE -->
+<!-- BEGIN-FEATURE: DMA.ADDRESSING -->
 ### Hardware handshake based DMA operation
 
 DMA based hardware handshake is used to offload the receiving data from
@@ -243,7 +249,10 @@ hardware handshake DMA operation.
     chunk if the source/destination configuration does not specify 'wrap' addressing mode.
 -   DMA engine waits for the interrupt to get asserted again (i.e. waits
     for FIFO to be almost empty).
+<!-- END-FEATURE: DMA.MODE.HANDSHAKE -->
+<!-- END-FEATURE: DMA.ADDRESSING -->
 
+<!-- BEGIN-FEATURE: DMA.SECURITY_CHECKS -->
 ## Security Considerations
 
 The DMA controller provides the following security value:
@@ -311,6 +320,7 @@ hold:
 -   If source (or destination) address space ID is set to System, then
     read (or write transactions) are sent to system port only. Full 64
     bits of the source (or destination) address pointer is available.
+<!-- END-FEATURE: DMA.SECURITY_CHECKS -->
 
 ## DMA Controller Configuration Notes
 
@@ -319,6 +329,48 @@ agent) through the appropriately defined [*DOE mailbox
 objects*](). Completion status of the DMA operation to
 the original requested is done via the DOE response object mechanism.
 
+<!-- BEGIN-FEATURE: DMA.MEMORY_RANGE.LOCK -->
+<!-- BEGIN-FEATURE: DMA.CONFIG_LOCK -->
+### Configuration Locking
+
+Two independent locks protect the configuration, one owned by software and one by hardware.
+
+[`RANGE_REGWEN`](registers.md#range_regwen) is the software lock over the DMA-enabled memory range.
+It is multi-bit encoded, resets to `kMultiBitBool4True`, and has `rw0c` access, so software can only ever clear it; once cleared to `kMultiBitBool4False` it returns to true only through a reset.
+Clearing it freezes [`ENABLED_MEMORY_RANGE_BASE`](registers.md#enabled_memory_range_base), [`ENABLED_MEMORY_RANGE_LIMIT`](registers.md#enabled_memory_range_limit) and [`RANGE_VALID`](registers.md#range_valid), which is what allows the range to be established once at boot and then made immutable for the rest of that boot.
+
+[`CFG_REGWEN`](registers.md#cfg_regwen) is the hardware lock over the transfer configuration.
+It is read-only to software and managed entirely by the controller: it reads `kMultiBitBool4True` while the controller is idle and `kMultiBitBool4False` while a transfer is in progress.
+While it is clear the transfer configuration registers reject writes, but [`CONTROL`](registers.md#control) and [`STATUS`](registers.md#status) remain usable, so software can still observe or abort the transfer.
+The comportable interrupt and alert registers are deliberately left writable during a transfer; if an interrupt or alert condition is then reached, the controller acts on whatever configuration is current at that moment.
+<!-- END-FEATURE: DMA.MEMORY_RANGE.LOCK -->
+<!-- END-FEATURE: DMA.CONFIG_LOCK -->
+
+<!-- BEGIN-FEATURE: DMA.ABORT -->
+## Aborting a Transfer
+
+Software terminates a transfer in progress by setting [`CONTROL.abort`](registers.md#control--abort).
+The abort is not instantaneous: the controller first drains the transactions it already has in flight, and only then sets `STATUS.aborted` to signal that the abort has completed and the controller is quiescent.
+
+The guarantee this provides is asymmetric, and the asymmetry is deliberate.
+Transactions on the secure-side internal interfaces are guaranteed to complete, so the internal fabric is never left with a dangling transaction.
+No such guarantee is offered for the SoC interface, because a read of an SoC address may have side effects or may simply never respond; making the abort wait on it would reintroduce exactly the availability problem that motivates routing such accesses through the DMA controller in the first place.
+<!-- END-FEATURE: DMA.ABORT -->
+
+<!-- BEGIN-FEATURE: DMA.ERROR_HANDLING -->
+## Error Handling
+
+An error stops the transfer, sets `STATUS.error`, records the reason in [`ERROR_CODE`](registers.md#error_code) and raises the `dma_error` interrupt.
+The reasons fall into two groups which differ in when they are detected.
+
+Configuration errors are caught from the programmed configuration itself, and correspond to the checks described under [DMAC HW Enforced Security Checks](#dmac-hw-enforced-security-checks): `src_addr_error`, `dst_addr_error`, `asid_error`, `base_limit_error`, `range_valid_error`, `opcode_error` and `size_error`.
+A transfer which fails one of these does not move data.
+
+Bus errors, reported as `bus_error`, arise while the transfer is already running, when a host interface returns an error response.
+Because `dma_error` is a status-type interrupt, it stays asserted while the error condition holds, and software clears the condition rather than acknowledging the interrupt alone.
+<!-- END-FEATURE: DMA.ERROR_HANDLING -->
+
+<!-- BEGIN-FEATURE: DMA.INLINE_HASHING -->
 ## Inline Hashing
 
 The DMA controller offers support for on-the-fly calculation of hash digests on
@@ -332,6 +384,8 @@ This is achieved simply by modifying the [*opcode*](registers.md#control--opcode
 field of the [*CONTROL*](registers.md#control) and collecting the
 [digest](registers.md#sha2_digest) from the registers interface when the
 transfer has completed.
+
+<!-- END-FEATURE: DMA.INLINE_HASHING -->
 
 ## Extension: Inline Operations
 
@@ -435,6 +489,7 @@ The DMA controller, however, presently issues only a single read or a single wri
 | error_vld         | Indicates a read/write error     |
 | error_vec         | Error condition(s) that occurred |
 
+<!-- BEGIN-FEATURE: DMA.TRANSFER_WIDTH -->
 ## Sub-word extraction and replication
 
 The DMA controller supports sub-word transfers on the bus, e.g. for a 32-bit TL-UL implementation it is also capable of transferring 1-byte and 2-byte quantities.
@@ -452,6 +507,9 @@ The example below shows this behavior when performing 1-byte transfers from a so
 
 The second byte within the 32-bit word ('b') is extracted from the 32-bit word read from the source, and then replicated at every byte position within the 32-bit data word that is written to the destination.
 
+<!-- END-FEATURE: DMA.TRANSFER_WIDTH -->
+
+<!-- BEGIN-FEATURE: DMA.MODE.HANDSHAKE -->
 ## Low Speed I/O peripheral interrupt lines
 
 The DMA controller also offers hardware-mediated transfers using direct interrupt lines from a peripheral block involved in the transfer.
@@ -461,3 +519,4 @@ In response to the assertion of an enabled bit of the `lsio_trigger_i` input, th
 The action of reading/writing this data must cause the interrupt input to become deasserted before the DMA controller has completed the reading/writing of this chunk, unless sufficient additional input/output causes another interrupt-generating condition to occur.
 Whilst the `lsio_trigger_i` input is not asserted, the DMA controller will remain in its Idle state awaiting instruction to proceed with the next chunk of the transfer.
 Data is thus transferred from source to destination at a rate appropriate for each device involved in the transfer.
+<!-- END-FEATURE: DMA.MODE.HANDSHAKE -->
