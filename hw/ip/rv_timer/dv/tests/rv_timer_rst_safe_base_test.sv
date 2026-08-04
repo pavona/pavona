@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class rv_timer_rst_safe_base_test extends cip_base_test #(
-    .ENV_T(rv_timer_rst_safe_env),
-    .CFG_T(rv_timer_env_cfg)
-  );
+  .ENV_T(rv_timer_rst_safe_env),
+  .CFG_T(rv_timer_env_cfg)
+);
   `uvm_component_utils(rv_timer_rst_safe_base_test)
 
   extern function new(string name = "", uvm_component parent = null);
