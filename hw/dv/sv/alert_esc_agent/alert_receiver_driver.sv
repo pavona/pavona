@@ -9,7 +9,13 @@ class alert_receiver_driver extends alert_esc_base_driver;
 
   bit working_on_alert;
 
+  // End-of-test control owned by the agent, rather than cfg. Once asserted,
+  // an item still in its pre-ping delay is completed without touching the
+  // pins. A ping already driven onto the interface completes normally.
+  local bit ping_stop_requested;
+
   extern function new(string name, uvm_component parent);
+  extern function void request_ping_stop();
 
   extern task drive_req();
   extern task reset_signals();
@@ -76,6 +82,10 @@ endclass : alert_receiver_driver
 function alert_receiver_driver::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction
+
+function void alert_receiver_driver::request_ping_stop();
+  ping_stop_requested = 1'b1;
+endfunction : request_ping_stop
 
 task alert_receiver_driver::drive_req();
   fork
@@ -155,7 +165,7 @@ task alert_receiver_driver::send_ping(alert_esc_seq_item req);
       end
     join
 
-    if (item_not_driven) begin
+    if (item_not_driven && !ping_stop_requested) begin
       `uvm_info(`gfn, {"Ping sequence item not driven because there's been an alert with no",
                        "previous ping - pushing back to its queue"}, UVM_DEBUG)
       // Note item is pushed to the front since it was the oldest in the queue
@@ -164,6 +174,10 @@ task alert_receiver_driver::send_ping(alert_esc_seq_item req);
       @(cfg.vif.receiver_cb);
       return;
     end
+
+    // A stop requested during the pre-ping delay deliberately completes the
+    // item without driving it. Returning its response releases get_response()
+    // so the producer can observe stop_requested and exit at this item boundary.
   end
 
   `uvm_info(`gfn,
@@ -282,6 +296,11 @@ task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
   `uvm_info(`gfn, $sformatf("%m - Wait for ping_delay=%0d clock cycles before driving ping",
                             ping_delay), UVM_DEBUG)
 
+  if (ping_stop_requested) begin
+    item_not_driven = 1'b1;
+    return;
+  end
+
   fork
     begin : delay_isolation_fork
       fork
@@ -289,6 +308,13 @@ task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
         begin
           wait(cfg.vif.receiver_cb.alert_tx.alert_p);
           item_not_driven = 1;
+        end
+        begin
+          // It is safe to cancel only while the ping is a queued intention.
+          // After set_ping() below, the protocol handshake must run to its
+          // normal completion so the interface is left in an idle state.
+          wait(ping_stop_requested);
+          item_not_driven = 1'b1;
         end
       join_any
       disable fork;

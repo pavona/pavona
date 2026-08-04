@@ -10,7 +10,14 @@ class alert_receiver_ping_seq extends dv_base_seq #(.REQ         (alert_esc_seq_
                                                     .CFG_T       (alert_esc_agent_cfg),
                                                     .SEQUENCER_T (alert_esc_sequencer));
   `uvm_object_utils(alert_receiver_ping_seq)
+
+  // Set only through request_stop(). Keeping this run-time control on the
+  // sequence avoids using the build-time agent configuration as a mailbox.
+  local bit stop_requested;
+
   extern function new (string name="");
+  extern function void request_stop();
+  extern virtual task wait_for_stop();
   extern virtual task body();
 endclass : alert_receiver_ping_seq
 
@@ -18,8 +25,19 @@ function alert_receiver_ping_seq::new (string name="");
   super.new(name);
 endfunction : new
 
+// Request a cooperative stop. The outstanding item, if any, still receives a
+// normal driver response before body() exits, so the sequencer protocol is not
+// interrupted by kill() or stop_sequences().
+function void alert_receiver_ping_seq::request_stop();
+  stop_requested = 1'b1;
+endfunction : request_stop
+
+task alert_receiver_ping_seq::wait_for_stop();
+  wait_for_sequence_state(UVM_CREATED | UVM_STOPPED | UVM_FINISHED);
+endtask : wait_for_stop
+
 task alert_receiver_ping_seq::body();
-  forever begin
+  while (!stop_requested) begin
     req = alert_esc_seq_item::type_id::create("req");
     start_item(req);
     // Randomise the item to be a ping request, but with a large ping delay. This means that even
