@@ -116,6 +116,7 @@ The result is that, while the chip will function, it will have the "wrong" root 
 <!-- END-FEATURE: ROM_CTRL.DIGESTS -->
 <!-- END-FEATURE: ROM_CTRL.EXP_DIGESTS -->
 
+<!-- BEGIN-FEATURE: ROM_CTRL.FI_HARDENING -->
 ## Fault-injection hardening
 
 The core integrity check, flowing from the ROM data to `CreatorRootKey`, should be infeasible to subvert.
@@ -127,6 +128,7 @@ To avoid attacks propagating into the rest of the system, we take the following 
 - The switching signals for the mux are multi-bit encoded (using `mubi4_t`).
 - We check to ensure the mux doesn't switch back to the checker after giving access to the bus.
 - The main FSM has internal consistency checking to ensure that other blocks don't signal completion when the FSM is in a state that doesn't expect them to be running.
+<!-- END-FEATURE: ROM_CTRL.FI_HARDENING -->
 
 ## Hardware Interfaces
 

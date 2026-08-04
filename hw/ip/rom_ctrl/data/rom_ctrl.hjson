@@ -112,6 +112,17 @@
         This is available in the EXP_DIGEST_<i> CSRs.
       '''
     },
+    { name: "ROM_CTRL.FI_HARDENING",
+      desc: '''
+        Fault injection targeting the control path is contained rather than allowed to propagate
+        into the rest of the system.
+        Internal FSMs are sparsely encoded, the mux select and the "good" signal to the power
+        manager are multi-bit encoded, the mux is prevented from switching back to the checker
+        once the bus has been given access, and the main FSM checks that other blocks do not
+        signal completion from states which do not expect it.
+        Detecting any of these conditions raises a fatal alert.
+      '''
+    },
   ]
 
   inter_signal_list: [

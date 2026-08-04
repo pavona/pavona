@@ -62,6 +62,7 @@
               effectively dead.
             SiVal: Creating a glitch is not feasible, so this is not a sival test.
             '''
+      features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.FI_HARDENING"]
       stage: V3
       si_stage: NA
       tests: []

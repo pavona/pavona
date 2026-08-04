@@ -36,7 +36,7 @@
             '''
       stage: V1
       tests: ["rom_ctrl_smoke"]
-      features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
+      features: ["ROM_CTRL.SCRAMBLED", "ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
     }
     {
       name: corrupt_sig_fatal_chk
@@ -48,7 +48,7 @@
             '''
       stage: V2S
       tests: ["rom_ctrl_corrupt_sig_fatal_chk"]
-      features: []
+      features: ["ROM_CTRL.FI_HARDENING"]
     }
     {
       name: max_throughput_chk
@@ -61,7 +61,7 @@
             '''
       stage: V2
       tests: ["rom_ctrl_max_throughput_chk"]
-      features: []
+      features: ["ROM_CTRL.SCRAMBLED"]
     }
     {
       name: stress_all
@@ -70,7 +70,7 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["rom_ctrl_stress_all"]
-      features: []
+      features: ["ROM_CTRL.SCRAMBLED", "ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
     }
     {
       name: kmac_err_chk
