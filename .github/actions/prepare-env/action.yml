@@ -82,7 +82,15 @@ runs:
     - name: Install UTF-8 language pack
       run: |
         if command -v apt > /dev/null; then
-          sudo apt install -y language-pack-gnome-en-base
+          # Only Ubuntu ships the language-pack-* packages. On Debian the
+          # locale has to be generated from the `locales` package instead.
+          if apt-cache show language-pack-gnome-en-base > /dev/null 2>&1; then
+            sudo apt install -y language-pack-gnome-en-base
+          else
+            sudo apt install -y locales
+            echo "en_US.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen > /dev/null
+            sudo locale-gen
+          fi
           echo "LANG=en_US.UTF-8" >> "$GITHUB_ENV"
           echo "LANGUAGE=en.UTF-8" >> "$GITHUB_ENV"
         fi
