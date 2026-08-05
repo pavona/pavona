@@ -23,6 +23,9 @@ inputs:
   working-directory:
     description: Working directory
     default: ${{ github.workspace }}
+  python-version:
+    description: Python version to install and use
+    default: '3.10'
   vivado-version:
     description: Vivado version to configure, if any.
     default: ''
@@ -109,9 +112,8 @@ runs:
       run: |
         # Install python with a retry to work around broken pipe errors
         source ci/scripts/utils.sh
-        retry 5 2 2 uv python install 3.10
-        # Create a virtual environment for UV
-        uv venv ~/.local/share/venv
+        retry 5 2 2 uv python install ${{ inputs.python-version }}
+        uv venv --python ${{ inputs.python-version }} ~/.local/share/venv
         echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
         echo "VIRTUAL_ENV=$HOME/.local/share/venv" >> "$GITHUB_ENV"
       working-directory: ${{ inputs.working-directory }}
