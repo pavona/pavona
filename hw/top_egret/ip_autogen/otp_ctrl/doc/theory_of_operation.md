@@ -139,6 +139,7 @@ The life cycle partition cannot be locked and will therefore not contain a store
 Note however that only the life cycle controller has access to this partition, i.e., the Direct Access Interface (DAI) cannot read nor write from/to the life cycle partition.
 <!-- END-FEATURE: OTP_CTRL.PROGRAM -->
 
+<!-- BEGIN-FEATURE: OTP_CTRL.ZEROIZATION -->
 ## Zeroizing a Partition
 
 When a partition is configured as zeroizable, software can zeroize each word in a partition individually through the Direct-Access Interface (DAI).
@@ -167,6 +168,7 @@ There are two distinct cases when the OTP controller performs a zeroization dete
   If a zeroized word does not meet the criterion, then firmware should continue erasing the remaining parts of a partition and retry the faulty erasure at a later point.
   Software should trigger an escalation if repeated zeroizations fall below the `ZeroizationValidBound`.
   The `ZeroizationValidBound` should be chosen such that the probability that a scrambled word is accidentally recognized as zeroized is as small as possible while still accounting for potentially stuck-at-0 bits.
+<!-- END-FEATURE: OTP_CTRL.ZEROIZATION -->
 
 <!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.SECRET0 -->
 <!-- BEGIN-FEATURE: OTP_CTRL.PARTITION.SECRET1 -->
@@ -338,6 +340,7 @@ This means software can always determine if zeroization completed satisfactorily
 
 ## Design Details
 
+<!-- BEGIN-FEATURE: OTP_CTRL.ENTROPY_READ -->
 ### Block Diagram
 
 The following is a high-level block diagram of the Earlygrey OTP that illustrates everything that has been discussed.
@@ -363,6 +366,7 @@ Otherwise, test access via this TL-UL window is locked down.
 
 In addition to the blocks mentioned so far, the OTP controller also contains an LFSR timer that creates pseudo-randomly distributed partition check requests, and provides pseudo random data at high bandwidth in the event of a secure erase request due to chip-wide alert escalation.
 For security reasons, the LFSR is periodically reseeded with entropy coming from EDN.
+<!-- END-FEATURE: OTP_CTRL.ENTROPY_READ -->
 
 ### Data Allocation and Packing
 #### Software View
@@ -430,6 +434,7 @@ External escalation via the `lc_escalate_en` signal will move the partition cont
 See the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details.
 <!-- END-FEATURE: OTP_CTRL.ERROR_HANDLING.FATAL -->
 
+<!-- BEGIN-FEATURE: OTP_CTRL.PROGRAM -->
 <!-- BEGIN-FEATURE: OTP_CTRL.ERROR_HANDLING.RECOVERABLE -->
 ### Direct Access Interface Control
 
@@ -450,6 +455,7 @@ Note that any unrecoverable OTP error will move the DAI into a terminal error st
 Also, the DAI consumes the read and write access information provided by the partition controller, and if a certain read or write access is not permitted, a recoverable error will be flagged in the status / error CSRs.
 
 [Zeroization](#the-zeroization-command) is a separate command and resembles a write with all bits set to one, followed by a read to compute the number of bits set to one in the zeroized item's access granule.
+<!-- END-FEATURE: OTP_CTRL.PROGRAM -->
 <!-- END-FEATURE: OTP_CTRL.ERROR_HANDLING.RECOVERABLE -->
 
 ### Life Cycle Interface Control
@@ -497,6 +503,7 @@ If a chunk is not an even number of 64bit blocks, its length is aligned to a mul
 After the blocks have been included, there is a finalization operation that consists of another 31-round encryption pass but with a finalization constant.
 Note that both the IV as well as the finalization constant are global netlist constants chosen by the silicon creator.
 
+<!-- BEGIN-FEATURE: OTP_CTRL.ENTROPY_READ -->
 #### Scrambling Key Derivation
 
 The key derivation functions for ephemeral SRAM and static FLASH scrambling keys employ a similar construction as the digest calculation function.
@@ -504,6 +511,7 @@ In particular, the keys are derived by repeatedly reducing a (partially random) 
 
 For ephemeral SRAM scrambling keys, the data block is composed of the 128bit SRAM_DATA_KEY_SEED stored in OTP, as well as 128bit of fresh entropy fetched from the EDN.
 This process is repeated twice in order to produce a 128bit key.
+<!-- END-FEATURE: OTP_CTRL.ENTROPY_READ -->
 
 For static FLASH scrambling keys, the data block is composed of a 128bit part of either the FLASH_DATA_KEY_SEED or the FLASH_ADDR_KEY_SEED stored in OTP.
 These key seeds are 256bit in size, allowing to use a unique chunk of 128bit of key seed data to derive a 64bit halve of a particular scrambling key.

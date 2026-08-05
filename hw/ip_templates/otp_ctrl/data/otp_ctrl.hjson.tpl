@@ -584,7 +584,10 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.PARTITION.OWNER_SW_CFG"
-      desc: "Define attributes for rom code execution"
+      desc: '''Define attributes for rom code execution.
+            Most tests for this partition described in
+            sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson.
+            '''
     }
     {
       name: "OTP_CTRL.INIT"
@@ -664,6 +667,10 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     {
       name: "OTP_CTRL.BACKGROUND_CHECK.CONSISTENCY_CHECK_PERIOD"
       desc: "Re-read period of the buffer registers to ensure data is matched with the associated OTP partition."
+    }
+    {
+      name: "OTP_CTRL.ZEROIZATION"
+      desc: "Perform zeroization of selected partitions for FIPS compliance."
     }
   ]
 
