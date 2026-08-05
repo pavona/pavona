@@ -708,7 +708,7 @@ class FlowCfg():
             env.setdefault("GIT_SSH_COMMAND", "ssh")
             return env
         with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-            f.write(f'#!/bin/sh\necho "{passphrase}"\n')
+            f.write(f'#!/usr/bin/env sh\necho "{passphrase}"\n')
             askpass_script = f.name
         os.chmod(askpass_script, stat.S_IRWXU)
         env = os.environ.copy()
