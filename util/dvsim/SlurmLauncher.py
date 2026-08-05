@@ -100,7 +100,7 @@ class SlurmLauncher(Launcher):
         # The job reports its own id, which is the cheapest way for the
         # launcher to learn it: srun does not hand it back, and searching the
         # queue for the job by name costs a round trip per job.
-        script_body = '#!/bin/bash\n'
+        script_body = '#!/usr/bin/env bash\n'
         script_body += f'echo "${{SLURM_JOB_ID}}" > {self.slurm_jobid_file}\n'
         if SLURM_SETUP_CMD:
             script_body += f'{SLURM_SETUP_CMD}\n'
