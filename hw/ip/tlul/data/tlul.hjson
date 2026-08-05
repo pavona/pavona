@@ -6,7 +6,7 @@
     name:               "tlul",
     design_spec:        "../doc",
     dv_doc:             "../doc/dv",
-    hw_checklist:       "/hw/top_egret/ip/xbar/doc/checklist",
+    hw_checklist:       "../doc/checklist",
     revisions: [
       {
         version:            "0.5.0",

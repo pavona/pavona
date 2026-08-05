@@ -370,6 +370,7 @@
     - [Design Verification](./hw/ip/tlul/doc/dv/README.md)
       - [Testplan](./hw/ip/tlul/data/tlul_testplan.hjson)
     - [Protocol Checker](./hw/ip/tlul/doc/TlulProtocolChecker.md)
+    - [Hardware Checklist](./hw/ip/tlul/doc/checklist.md)
 
   - [UART](./hw/ip/uart/README.md)
     - [Theory of Operation](./hw/ip/uart/doc/theory_of_operation.md)
@@ -595,7 +596,6 @@
       - [Device Interface Functions](./sw/device/lib/dif/dif_sensor_ctrl.h)
       - [Hardware Checklist](./hw/top_egret/ip/sensor_ctrl/doc/checklist.md)
       - [Software Checklist](./sw/device/lib/dif/dif_sensor_ctrl.md)
-    - [TL-UL Checklist](./hw/top_egret/ip/xbar/doc/checklist.md)
     - [Alert Handler](./hw/top_egret/ip_autogen/alert_handler/README.md)
       - [Template Configuration](./hw/top_egret/ip_autogen/alert_handler/data/top_egret_alert_handler.ipconfig.hjson)
       - [Theory of Operation](./hw/top_egret/ip_autogen/alert_handler/doc/theory_of_operation.md)

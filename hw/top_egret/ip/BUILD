@@ -10,7 +10,6 @@ filegroup(
     srcs = glob(["**"]) + [
         "//hw/top_egret/ip/ast:rtl_files",
         "//hw/top_egret/ip/sensor_ctrl:rtl_files",
-        "//hw/top_egret/ip/xbar:rtl_files",
         "//hw/top_egret/ip/xbar_main:rtl_files",
         "//hw/top_egret/ip/xbar_peri:rtl_files",
         "//hw/top_egret/ip_autogen/alert_handler:rtl_files",
@@ -32,7 +31,6 @@ filegroup(
     srcs = [
         "//hw/top_egret/ip/ast:doc_files",
         "//hw/top_egret/ip/sensor_ctrl:doc_files",
-        "//hw/top_egret/ip/xbar:doc_files",
     ],
 )
 
