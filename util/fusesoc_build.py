@@ -36,9 +36,12 @@ if __name__ == "__main__":
     cxxflags = ["-stdlib=libc++"]
     ldflags = [
         "-fuse-ld=lld",
-        "-static",
+        "-static-libstdc++",
         "-stdlib=libc++",
+        # Static C++ runtime, but dynamic host libraries such as libelf.
+        "-Wl,-Bstatic",
         "-lc++abi",
+        "-Wl,-Bdynamic",
         "-lzstd",
     ]
     if "VERILATOR_AR" in os.environ:
