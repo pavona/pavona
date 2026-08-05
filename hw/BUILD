@@ -133,7 +133,7 @@ genrule(
     outs = ["Vfake_sim_tb"],
     cmd = """
         script=$@
-        echo '#!/bin/bash' > $$script
+        echo '#!/usr/bin/env bash' > $$script
         echo 'echo "ERROR: sim_verilator tests cannot be run when --define DISABLE_VERILATOR_BUILD=true is set!"' >> $$script
         echo 'echo "This indicates an error in your Bazel invokation"' >> $$script
         echo 'exit 1' >> $$script

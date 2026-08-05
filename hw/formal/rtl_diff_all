@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # to run rtl_diff (Conformal LEC) on all modules, type
 #   rtl_diff_all
