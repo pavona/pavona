@@ -20,7 +20,7 @@ load(
 )
 load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
-_TEST_SCRIPT = """#!/bin/bash
+_TEST_SCRIPT = """#!/usr/bin/env bash
 set -e
 
 # QEMU requires mutable flash and OTP files but Bazel only provides RO

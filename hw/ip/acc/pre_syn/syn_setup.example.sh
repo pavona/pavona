@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright lowRISC contributors (OpenTitan project).
 # Copyright zeroRISC Inc.
