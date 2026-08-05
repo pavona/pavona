@@ -104,6 +104,36 @@ jobs:
       - name: Run ACC ISS test
         run: make -C hw/ip/acc/dv/accsim test
 
+  python_version_support:
+    name: Python version support (${{ matrix.python-version }}, ${{ matrix.runner }})
+    if: ${{ !github.event.repository.private }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
+        runner:
+          - ubuntu-26.04
+          - ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the tools that use the local interpreter
+        run: |
+          ./util/regtool.py --help
+          ./util/dvsim/dvsim.py --help
+          ./util/design/secded_gen.py --help
+          ./ci/scripts/check-countermeasures.sh egret
+      - name: Run ACC ISS test
+        run: make -C hw/ip/acc/dv/accsim test
+
   docker_verilator_smoketest:
     name: Docker Verilator smoketest (${{ matrix.runner }})
     if: ${{ !github.event.repository.private }}
