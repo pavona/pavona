@@ -129,8 +129,8 @@ runs:
         VERIBLE_URL="https://github.com/chipsalliance/verible/releases/download/${{ inputs.verible-version }}/${VERIBLE_TAR}"
         source ci/scripts/utils.sh
         sudo mkdir -p "${{ inputs.verible-path }}"
-        retry 5 2 2 curl -sSfL "$VERIBLE_URL" -o "${{ runner.temp }}/${VERIBLE_TAR}"
-        sudo tar -C "${{ inputs.verible-path }}" -xvzf "${{ runner.temp }}/${VERIBLE_TAR}" --strip-components=1
+        retry 5 2 2 curl -sSfL "$VERIBLE_URL" -o "$RUNNER_TEMP/${VERIBLE_TAR}"
+        sudo tar -C "${{ inputs.verible-path }}" -xvzf "$RUNNER_TEMP/${VERIBLE_TAR}" --strip-components=1
         # Fixup bin permission which is broken in tarball.
         sudo chmod 755 "${{ inputs.verible-path }}/bin"
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
@@ -154,7 +154,7 @@ runs:
       if: github.event_name != 'pull_request'
       run: |
         SOURCE=${{ steps.auth.outputs.credentials_file_path }}
-        TARGET=${{ runner.temp }}/$(basename "$SOURCE")
+        TARGET=$RUNNER_TEMP/$(basename "$SOURCE")
         mv $SOURCE $TARGET
         echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$TARGET" >> $GITHUB_ENV
         echo "GOOGLE_APPLICATION_CREDENTIALS=$TARGET" >> $GITHUB_ENV
@@ -193,8 +193,8 @@ runs:
         MERGE_JUNIT_SHA256="5c6a63063f3a155ea4da912d5cae2ec4a89022df31d7942f2aba463ee4790152"
 
         source ci/scripts/utils.sh
-        retry 5 2 2 curl -fLSs -o "${{ runner.temp }}/${MERGE_JUNIT_TAR}" "$MERGE_JUNIT_URL"
-        HASH=$(sha256sum "/${{ runner.temp }}/$MERGE_JUNIT_TAR" | awk '{print $1}')
+        retry 5 2 2 curl -fLSs -o "$RUNNER_TEMP/${MERGE_JUNIT_TAR}" "$MERGE_JUNIT_URL"
+        HASH=$(sha256sum "$RUNNER_TEMP/$MERGE_JUNIT_TAR" | awk '{print $1}')
         if [[ "$HASH" != "$MERGE_JUNIT_SHA256" ]]; then
           echo "The hash of merge-junit does not match" >&2
           echo "$HASH != $MERGE_JUNIT_SHA256" >&2
@@ -203,9 +203,9 @@ runs:
 
         sudo mkdir -p $MERGE_JUNIT_PATH
         sudo chmod 777 $MERGE_JUNIT_PATH
-        tar -C $MERGE_JUNIT_PATH -xvzf "${{ runner.temp }}/${MERGE_JUNIT_TAR}" --strip-components=1
+        tar -C $MERGE_JUNIT_PATH -xvzf "$RUNNER_TEMP/${MERGE_JUNIT_TAR}" --strip-components=1
         echo $MERGE_JUNIT_PATH >> "$GITHUB_PATH"
-        rm "${{ runner.temp }}/${MERGE_JUNIT_TAR}"
+        rm "$RUNNER_TEMP/${MERGE_JUNIT_TAR}"
       shell: bash
       working-directory: ${{ inputs.working-directory }}
 
