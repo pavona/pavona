@@ -41,7 +41,7 @@ Parameter      | Default (Max)    | Description
 
 <%text>### Signals</%text>
 
-* [Interface Tables](../data/alert_handler.hjson#interfaces)
+* [Interface Tables](interfaces.md)
 
 The table below lists other alert handler module signals.
 The number of alert instances is parametric and hence alert and ping diff pairs are grouped together in packed arrays.
@@ -109,7 +109,7 @@ The `crashdump_o` struct outputs a snapshot of CSRs and alert handler state bits
 This can be useful for extracting more information about possible failures or bugs without having to use the tile-link bus interface (which may become unresponsive under certain circumstances).
 It is recommended for the top level to store this information in an always-on location.
 
-Note that the crashdump state is continuously output via `crashdump_o` until the latching trigger condition is true for the first time (see [`CLASSA_CRASHDUMP_TRIGGER_SHADOWED`](../data/alert_handler.hjson#classa_crashdump_trigger_shadowed)).
+Note that the crashdump state is continuously output via `crashdump_o` until the latching trigger condition is true for the first time (see [`CLASSA_CRASHDUMP_TRIGGER_SHADOWED`](registers.md#classa_crashdump_trigger_shadowed)).
 After that, the `crashdump_o` is held constant until all classes that have escalated are cleared.
 This is done so that it is possible to capture the true alert cause before spurious alert events start to pop up due to escalation countermeasures with excessive side effects (like life cycle scrapping for example).
 If classes that have escalated are not configured as clearable, then it is not possible to re-arm the crashdump latching mechanism at runtime and the alert handler has to be reset.
@@ -322,7 +322,7 @@ After selecting one of the peripherals to ping, the LFSR timer waits until eithe
 In both cases, the LFSR timer proceeds with the next ping, but in the second case it will additionally raise a "pingfail" alert.
 The ping enable signal remains asserted during the time where the LFSR counter waits.
 
-The timeout value is a function of the ratios between the alert handler clock and peripheral clocks present in the system, and can be programmed at startup time via the register [`PING_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#ping_timeout_cyc_shadowed).
+The timeout value is a function of the ratios between the alert handler clock and peripheral clocks present in the system, and can be programmed at startup time via the register [`PING_TIMEOUT_CYC_SHADOWED`](registers.md#ping_timeout_cyc_shadowed).
 
 Note that the ping timer directly flags a "pingfail" alert if a spurious "ping ok" message comes in that has not been requested.
 
@@ -384,20 +384,20 @@ protocol:
 
     - Accumulation max value.
       This is the total number (sum of all alerts classified in this group) of alerts required to enter escalation phase (see below).
-      Example register is [`CLASSA_ACCUM_THRESH_SHADOWED`](../data/alert_handler.hjson#classa_accum_thresh_shadowed).
+      Example register is [`CLASSA_ACCUM_THRESH_SHADOWED`](registers.md#classa_accum_thresh_shadowed).
     - Current accumulation register.
       This clearable register indicates how many alerts have been accumulated to date.
       Software should clear before it reaches the accumulation setting to avoid escalation.
-      Example register is [`CLASSA_ACCUM_CNT`](../data/alert_handler.hjson#classa_accum_cnt).
+      Example register is [`CLASSA_ACCUM_CNT`](registers.md#classa_accum_cnt).
 
 2. The second way is an interrupt timeout counter which triggers escalation if an alert interrupt is not handled within the programmable timeout window.
    Once the counter hits the timeout threshold, the escalation protocol is triggered.
    The corresponding CSRs are:
 
-    - Interrupt timeout value in cycles [`CLASSA_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#classa_timeout_cyc_shadowed).
+    - Interrupt timeout value in cycles [`CLASSA_TIMEOUT_CYC_SHADOWED`](registers.md#classa_timeout_cyc_shadowed).
       The interrupt timeout is disabled if this is set to 0 (default).
-    - The current interrupt timeout value can be read via [`CLASSA_ESC_CNT`](../data/alert_handler.hjson#classa_esc_cnt) if [`CLASSA_STATE`](../data/alert_handler.hjson#classa_state) is in the `Timeout` state.
-      Software should clear the corresponding interrupt state bit [`INTR_STATE.CLASSA`](../data/alert_handler.hjson#intr_state) before the timeout expires to avoid escalation.
+    - The current interrupt timeout value can be read via [`CLASSA_ESC_CNT`](registers.md#classa_esc_cnt) if [`CLASSA_STATE`](registers.md#classa_state) is in the `Timeout` state.
+      Software should clear the corresponding interrupt state bit [`INTR_STATE.CLASSA`](registers.md#intr_state) before the timeout expires to avoid escalation.
 
 Technically, the interrupt timeout feature (2. above) is implemented using the same counter used to time the escalation phases.
 This is possible since escalation phases or interrupt timeout periods are non-overlapping (escalation always takes precedence should it be triggered).
@@ -416,13 +416,13 @@ triggers.
 
 Each class can be programmed with its own escalation protocol.
 If one of the two mechanisms described above fires, a timer for that particular class is started.
-The timer can be programmed with up to 4 delays (e.g., [`CLASSA_PHASE0_CYC`](../data/alert_handler.hjson#classa_phase0_cyc)), each representing a distinct escalation phase (0 - 3).
+The timer can be programmed with up to 4 delays (e.g., [`CLASSA_PHASE0_CYC`](registers.md#classa_phase0_cyc)), each representing a distinct escalation phase (0 - 3).
 Each of the four escalation severity outputs (0 - 3) are by default configured to be asserted during the corresponding phase, e.g., severity 0 in phase 0,  severity 1 in phase 1, etc.
-However, this mapping can be freely reassigned by modifying the corresponding enable/phase mappings (e.g., [`CLASSA_CTRL_SHADOWED.E0_MAP`](../data/alert_handler.hjson#classa_ctrl_shadowed) for enable bit 0 of class A).
+However, this mapping can be freely reassigned by modifying the corresponding enable/phase mappings (e.g., [`CLASSA_CTRL_SHADOWED.E0_MAP`](registers.md#classa_ctrl_shadowed) for enable bit 0 of class A).
 This mapping will be locked in together with the alert enable configuration after initial configuration.
 
-SW can stop a triggered escalation protocol by clearing the corresponding escalation counter (e.g., [`CLASSA_ESC_CNT`](../data/alert_handler.hjson#classa_esc_cnt)).
-Protection of this clearing is up to software, see the register control section that follows for [`CLASSA_CTRL_SHADOWED.LOCK`](../data/alert_handler.hjson#classa_ctrl_shadowed).
+SW can stop a triggered escalation protocol by clearing the corresponding escalation counter (e.g., [`CLASSA_ESC_CNT`](registers.md#classa_esc_cnt)).
+Protection of this clearing is up to software, see the register control section that follows for [`CLASSA_CTRL_SHADOWED.LOCK`](registers.md#classa_ctrl_shadowed).
 
 It should be noted that each of the escalation phases have a duration of at least 1 clock cycle, even if the cycle count of a particular phase has been
 set to 0.
@@ -766,7 +766,7 @@ Due to asynchronous transitions and different path latencies in the system, a ch
 It is consequently possible for a group of alert senders to already be in reset or clock gated state, while the corresponding LPG logic does not yet know about this state change - and vice versa.
 
 In practice, this means that ping requests may be pending for several cycles until the LPG logic detects a reset or clock-gated condition and disables the corresponding alert channel(s).
-Fortunately, such delay can be tolerated by setting the ping timeout to a sufficiently large value (see [`CLASSA_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#classa_timeout_cyc_shadowed)).
+Fortunately, such delay can be tolerated by setting the ping timeout to a sufficiently large value (see [`CLASSA_TIMEOUT_CYC_SHADOWED`](registers.md#classa_timeout_cyc_shadowed)).
 
 As for alert events, this latency difference should not pose a problem.
 Alert events may get stuck in the alert sender due to a reset or clock-gated condition - but this is to be expected.

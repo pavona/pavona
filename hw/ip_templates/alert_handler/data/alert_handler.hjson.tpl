@@ -560,7 +560,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                       bits: "CLASS_DW-1:0",
                       name: "CLASS_A",
                       resval: 0
-                      desc: "Classification ",
+                      desc: "Classification",
                       enum: [
 % for i in range(n_classes):
                               { value: "${i}", name: "Class${chars[i]}", desc: "" },
@@ -579,7 +579,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       swaccess: "rw1c",
       hwaccess: "hrw",
       fields: [
-        { bits: "0", name: "A", desc: "Cause bit ", resval: 0}
+        { bits: "0", name: "A", desc: "Cause bit", resval: 0}
       ],
       }
     },
@@ -656,7 +656,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                       bits: "CLASS_DW-1:0",
                       name: "CLASS_LA",
                       resval: 0
-                      desc: "Classification ",
+                      desc: "Classification",
                       enum: [
 % for i in range(n_classes):
                               { value: "${i}", name: "Class${chars[i]}", desc: "" },
@@ -684,7 +684,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
              // automatically.
              "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
-        { bits: "0", name: "LA", desc: "Cause bit ", resval: 0}
+        { bits: "0", name: "LA", desc: "Cause bit", resval: 0}
       ]
       }
     },

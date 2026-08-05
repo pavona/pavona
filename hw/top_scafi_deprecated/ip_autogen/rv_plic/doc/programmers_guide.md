@@ -6,7 +6,7 @@ After reset, RV_PLIC doesn't generate any interrupts to any targets even if
 interrupt sources are set, as all priorities and thresholds are 0 by default and
 all ``IE`` values are 0. Software should configure the above three registers.
 
-[`PRIO0`](../data/rv_plic.hjson#prio_0) .. [`PRIO31`](../data/rv_plic.hjson#prio_1) registers are unique. So, only one of the targets
+[`PRIO0`](registers.md#prio_0) .. [`PRIO31`](registers.md#prio_1) registers are unique. So, only one of the targets
 shall configure them.
 
 ```c
@@ -34,14 +34,14 @@ void plic_enable(tid, iid) {
 ## Handling Interrupt Request Events
 
 If software receives an interrupt request, it is recommended to follow the steps
-shown below (assuming target 0 which uses [`CC0`](../data/rv_plic.hjson#cc0) for claim/complete).
+shown below (assuming target 0 which uses [`CC0`](registers.md#cc0) for claim/complete).
 
 1. Claim the interrupts right after entering to the interrupt service routine
-   by reading the [`CC0`](../data/rv_plic.hjson#cc0) register.
+   by reading the [`CC0`](registers.md#cc0) register.
 2. Determine which interrupt should be serviced based on the values read from
-   the [`CC0`](../data/rv_plic.hjson#cc0) register.
+   the [`CC0`](registers.md#cc0) register.
 3. Execute ISR, clearing the originating peripheral interrupt.
-4. Write Interrupt ID to [`CC0`](../data/rv_plic.hjson#cc0)
+4. Write Interrupt ID to [`CC0`](registers.md#cc0)
 5. Repeat as necessary for other pending interrupts.
 
 It is possible to have multiple interrupt events claimed. If software claims one
@@ -97,4 +97,4 @@ interrupt sources may be different.
 -   CC: N_TARGET
     Claim by read, complete by write
 
-* [Register Table](../data/rv_plic.hjson#interfaces)
+* [Register Table](registers.md)
