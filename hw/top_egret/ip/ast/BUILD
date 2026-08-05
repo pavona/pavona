@@ -24,6 +24,5 @@ filegroup(
     srcs = glob([
         "**/*.md",
         "**/*.png",
-        "**/*.html",
     ]),
 )

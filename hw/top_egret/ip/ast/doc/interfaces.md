@@ -1,5 +1,28 @@
 # Interface Signals
 
+<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_egret/ip/ast/data/ast.hjson -->
+Referring to the [Comportable guideline for peripheral device functionality](../../../../../doc/contributing/hw/comportability), the module **`ast`** has the following hardware interfaces defined
+- Primary Clock: **`clk_ast_tlul_i`**
+- Other Clocks: **`clk_ast_adc_i`**, **`clk_ast_alert_i`**, **`clk_ast_es_i`**, **`clk_ast_rng_i`**, **`clk_ast_usb_i`**
+- Bus Device Interfaces (TL-UL): **`tl`**
+- Bus Host Interfaces (TL-UL): *none*
+- Peripheral Pins for Chip IO: *none*
+- Interrupts: *none*
+- Security Alerts: *none*
+- Security Countermeasures: *none*
+
+## [Inter-Module Signals](../../../../../doc/contributing/hw/comportability#inter-signal-handling)
+
+| Port Name   | Package::Struct   | Type    | Act   |   Width | Description   |
+|:------------|:------------------|:--------|:------|--------:|:--------------|
+| tl          | tlul_pkg::tl      | req_rsp | rsp   |       1 |               |
+
+
+<!-- END CMDGEN -->
+
+The remainder of this document describes the AST-specific signals, including the
+analog and power connections that are not visible to the comportable tooling.
+
 ## Table notes
 
 ### Signal naming conventions used in this document
