@@ -1,5 +1,7 @@
 # Theory of Operation
 
+<!-- BEGIN-FEATURE: PINMUX.MIO.ATTRS -->
+<!-- BEGIN-FEATURE: PINMUX.DIO.ATTRS -->
 ${"##"} Block Diagram and Overview
 
 The `pinmux` peripheral is a programmable module designed to wire arbitrary peripheral inputs and outputs to arbitrary multiplexable chip bidirectional pins.
@@ -9,7 +11,10 @@ The top-level module `pinmux` contains the CSRs accessible via the TL-UL interfa
 The chip-level module `padring` instantiates the bidirectional pads and connects the physical pad attributes.
 
 ![Pinmux Block Diagram](../doc/pinmux_overview_block_diagram.svg)
+<!-- END-FEATURE: PINMUX.DIO.ATTRS -->
+<!-- END-FEATURE: PINMUX.MIO.ATTRS -->
 
+<!-- BEGIN-FEATURE: PINMUX.DIO.CONNECTED -->
 ${"###"} MIO and DIO Signal Categories
 
 The `pinmux` supports two different IO signal categories:
@@ -27,7 +32,10 @@ Further, all output enables are set to zero, which essentially causes all pads t
 In addition to wiring programmability, each muxed peripheral input can be set constantly to 0 or 1, and each muxed chip output can be set constantly to 0, 1 or high-Z.
 
 See the [muxing matrix](#muxing-matrix) section for more details about the mux implementation.
+<!-- END-FEATURE: PINMUX.DIO.CONNECTED -->
 
+<!-- BEGIN-FEATURE: PINMUX.SLEEP.MODE -->
+<!-- BEGIN-FEATURE: PINMUX.SLEEP.STABLE -->
 ${"###"} Retention and Wakeup Features
 
 The retention logic allows SW to specify a certain behavior during sleep for each muxed and dedicated output.
@@ -36,17 +44,21 @@ Legal behaviors are tie low, tie high, high-Z, keeping the previous state, or dr
 The wakeup detectors can detect patterns such as rising / falling edges and pulses of a certain width up to 255 AON clock cycles.
 Each wakeup detector can listen on any one of the MIO / DIO signals that are routed through the `pinmux`, and if a pattern is detected, the power manager is informed of that event via a wakeup request.
 
-The `pinmux` module itself is in the always-on (AON) power domain, and as such does not loose configuration state when a sleep power cycle is performed.
+The `pinmux` module itself is in the always-on (AON) power domain, and as such does not lose configuration state when a sleep power cycle is performed.
 However, only the wakeup detector logic will be actively clocked during sleep in order to save power.
 
 See the [retention logic](#retention-logic) and [wakeup detectors](#wakeup-detectors) sections for more details about the mux implementation.
+<!-- END-FEATURE: PINMUX.SLEEP.STABLE -->
+<!-- END-FEATURE: PINMUX.SLEEP.MODE -->
 
 % if enable_usb_wakeup:
+<!-- BEGIN-FEATURE: PINMUX.USB_CONNECTION -->
 ${"###"} USB Wakeup Detection Module
 
 The USB device in the Egret top-level is not in the AON power domain and hence the associated wakeup detection module is placed inside the pinmux IP in that top-level.
 The USB wakeup module is not connected to any pinmux infrastructure or CSRs except for the `usb_wkup_req` signal going to the power manager.
 See [USB device documentation](../../../../ip/usbdev/README.md) for more information on the USB wakeup mechanism.
+<!-- BEGIN-FEATURE: PINMUX.USB_CONNECTION -->
 
 % endif
 % if enable_strap_sampling:
@@ -56,6 +68,7 @@ The hardware strap sampling and TAP isolation logic provides test and debug acce
 This mechanism is explained in more detail in the [strap sampling and TAP isolation](#strap-sampling-and-tap-isolation) section.
 
 % endif
+<!-- BEGIN-FEATURE: PINMUX.MIO.ATTRS -->
 ${"###"} Pad Attributes
 
 Additional pad-specific features such as inversion, pull-up, pull-down, virtual open-drain, drive-strength and input/output inversion etc. can be exercise via the pad attribute CSRs.
@@ -63,7 +76,12 @@ The `pinmux` module supports a comprehensive set of such pad attributes, but it 
 For example, certain ASIC libraries may not provide open-drain outputs, and FPGAs typically do not allow all of these attributes to be programmed dynamically at runtime.
 See the [generic pad wrapper](#generic-pad-wrapper) section below for more details.
 Note that static pad attributes for FPGAs are currently not covered in this specification.
+<!-- END-FEATURE: PINMUX.MIO.ATTRS -->
 
+<!-- BEGIN-FEATURE: PINMUX.MIO.INSEL -->
+<!-- BEGIN-FEATURE: PINMUX.MIO.OUTSEL -->
+<!-- BEGIN-FEATURE: PINMUX.MIO.MUX -->
+<!-- BEGIN-FEATURE: PINMUX.MIO.EN -->
 ${"##"} Muxing Matrix
 
 The diagram below shows connectivity between four arbitrary chip pins, named `MIO0` .. `MIO3`, and several muxed peripheral inputs and outputs.
@@ -77,6 +95,9 @@ Note that apart from selecting a specific input pad, the `periph_insel[*]` signa
 Likewise, the output select signals `mio_outsel[*]` can also be used to constantly drive an output pin to 0/1 or to put it into high-Z state (default).
 The output enable and the associated data signal (i.e. `periph_to_mio` and `periph_to_mio_oe`) are indexed with the same select signal to allow the peripheral hardware to determine the pad direction instead of demoting that control to SW.
 
+<!-- BEGIN-FEATURE: PINMUX.DIO.EN -->
+<!-- BEGIN-FEATURE: PINMUX.SLEEP.MODE -->
+<!-- BEGIN-FEATURE: PINMUX.SLEEP.STABLE -->
 ${"##"} Retention Logic
 
 As illustrated in the picture above, all muxing matrix and DIO outputs are routed through the retention logic, which essentially consists of a set of multiplexors and two retention registers per output (one register is for the output data and one for the output enable).
@@ -86,7 +107,16 @@ If no sleep behavior is specified, the retention logic will continue to drive ou
 The sleep behavior of all outputs is activated in parallel via a trigger signal asserted by the power manager.
 Once activated, it is the task of SW to disable the sleep behavior for each individual pin when waking up from sleep.
 This ensures that the output values remain stable until the system and its peripherals have been re-initialized.
+<!-- END-FEATURE: PINMUX.SLEEP.STABLE -->
+<!-- END-FEATURE: PINMUX.SLEEP.MODE -->
+<!-- END-FEATURE: PINMUX.DIO.EN -->
+<!-- END-FEATURE: PINMUX.MIO.EN -->
+<!-- END-FEATURE: PINMUX.MIO.MUX -->
+<!-- END-FEATURE: PINMUX.MIO.OUTSEL -->
+<!-- END-FEATURE: PINMUX.MIO.INSEL -->
 
+<!-- BEGIN-FEATURE: PINMUX.WKUP.MODE -->
+<!-- BEGIN-FEATURE: PINMUX.WKUP.CAUSE -->
 ${"##"} Wakeup Detectors
 
 The `pinmux` contains eight programmable wakeup detector modules that can listen on any of the MIO or DIO pins.
@@ -106,7 +136,13 @@ If a pattern is detected, the wakeup detector will send a wakeup request to the 
 
 Note that the wkup detector should be disabled by setting [`WKUP_DETECTOR_EN_0`](registers.md#wkup_detector_en) before changing the detection mode.
 The reason for that is that the pulse width counter is NOT cleared upon a mode change while the detector is enabled.
+<!-- END-FEATURE: PINMUX.WKUP.CAUSE -->
+<!-- END-FEATURE: PINMUX.WKUP.MODE -->
 
+<!-- BEGIN-FEATURE: PINMUX.MIO.ATTRS -->
+<!-- BEGIN-FEATURE: PINMUX.JTAG.LC -->
+<!-- BEGIN-FEATURE: PINMUX.JTAG.RV -->
+<!-- BEGIN-FEATURE: PINMUX.JTAG.DFT -->
 ${"##"} Strap Sampling and TAP Isolation
 
 The `pinmux` contains a set of dedicated HW "straps", which are essentially signals that are multiplexed onto fixed MIO pad locations.
@@ -149,6 +185,10 @@ Also, it should be noted that the pad attributes of all JTAG IOs will be gated t
 This is to ensure that any functional attributes like inversion or pull-ups / pull-downs do not interfere with the JTAG while it is in use.
 
 For more information about the life cycle states, see [Life Cycle Controller Specification](../../../../ip/lc_ctrl/README.md) and the [Life Cycle Definition Table](../../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
+<!-- END-FEATURE: PINMUX.JTAG.DFT -->
+<!-- END-FEATURE: PINMUX.JTAG.RV -->
+<!-- END-FEATURE: PINMUX.JTAG.LC -->
+<!-- END-FEATURE: PINMUX.MIO.ATTRS -->
 % if enable_strap_sampling:
 
 ${"###"} Non-debug Module Reset
@@ -168,6 +208,7 @@ Finally, note that there is secondary gating on the `rv_dm` and DFT TAPs that is
 See also [rv_dm documentation](../../../../ip/rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support).
 % endif
 
+<!-- BEGIN-FEATURE: PINMUX.JTAG.SCANMODE -->
 ${"##"} Generic Pad Wrapper
 
 <center>
@@ -219,3 +260,4 @@ Signal               | Direction  | Type        | Description
 `attr_i[13:10]`      | `input`    | `logic`     | Drive strength (0x0: weakest, 0xf: strongest)
 
 Note that the corresponding pad attribute registers [`MIO_PAD_ATTR_0`](registers.md#mio_pad_attr) and [`DIO_PAD_ATTR_0`](registers.md#dio_pad_attr) have "writes-any-reads-legal" (WARL) behavior (see also [pad attributes](#pad-attributes)).
+<!-- END-FEATURE: PINMUX.JTAG.SCANMODE -->
