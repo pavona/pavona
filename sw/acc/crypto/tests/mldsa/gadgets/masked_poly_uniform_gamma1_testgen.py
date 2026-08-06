@@ -83,4 +83,6 @@ if __name__ == '__main__':
     parser.add_argument('exp', metavar='FILE', type=argparse.FileType('w'))
     parser.add_argument('dexp', metavar='FILE', type=argparse.FileType('w'))
     args = parser.parse_args()
-    gen_masked_poly_uniform_gamma1_test(args.seed, args.data, args.exp, args.dexp)
+    with args.data, args.exp, args.dexp:
+        gen_masked_poly_uniform_gamma1_test(args.seed, args.data, args.exp,
+                                            args.dexp)

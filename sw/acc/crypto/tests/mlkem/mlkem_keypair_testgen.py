@@ -63,4 +63,5 @@ if __name__ == '__main__':
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
     mlkem = INSTANCE_FOR_PARAMS[args.params]
-    gen_keypair_test(mlkem, args.data, args.exp, args.dexp)
+    with args.data, args.exp, args.dexp:
+        gen_keypair_test(mlkem, args.data, args.exp, args.dexp)

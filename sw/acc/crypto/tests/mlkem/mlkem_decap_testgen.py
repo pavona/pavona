@@ -76,4 +76,5 @@ if __name__ == '__main__':
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
     mlkem = INSTANCE_FOR_PARAMS[args.params]
-    gen_decaps_test(mlkem, args.data, args.exp, args.dexp, args.invalid)
+    with args.data, args.exp, args.dexp:
+        gen_decaps_test(mlkem, args.data, args.exp, args.dexp, args.invalid)
