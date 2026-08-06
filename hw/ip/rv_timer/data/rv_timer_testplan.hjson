@@ -98,7 +98,7 @@
             asserted at the same time. Scoreboard should be robust enough to deal with all
             scenarios.'''
       stage: V2
-      features: []
+      features: ["RV_TIMER.RISCV_CSRS_INTEGRATION", "RV_TIMER.ENABLE", "RV_TIMER.DISABLE", "RV_TIMER.INTERRUPT", "RV_TIMER.CONFIG", "RV_TIMER.COUNTER", "RV_TIMER.COMPARE"]
       tests: ["rv_timer_stress_all"]
     }
   ]
