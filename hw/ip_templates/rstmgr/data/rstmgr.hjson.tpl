@@ -151,11 +151,18 @@
     },
   ],
   features: [
+    { name: "RSTMGR.POR.STRETCHER",
+      desc: '''Debounces external POR input, causing the internal POR to
+            be inactive after the external POR has been inactive for almost
+            100 cycles. Conversely, there is only some synchronization delay
+            between the external POR and the internal POR to become active.
+            '''
+    }
     { name: "RSTMGR.SW_RST.CHIP_RESET",
       desc: "Cause a reset of all but some AON and system debug blocks via CSR."
     }
     { name: "RSTMGR.SW_RST.REQUEST",
-      desc: "Enable/trigger reset of peripheral via CSR."
+      desc: "Enable/trigger reset of some peripherals via CSR."
     }
     { name: "RSTMGR.RESET_INFO.CAPTURE",
       desc: "Capture information about the causes of a reset."
@@ -181,6 +188,9 @@
 % endif
     { name: "RSTMGR.ALERT_HANDLER.RESET_STATUS",
       desc: "Inform alert handler about reset enable status for each reset."
+    }
+    { name: "RSTMGR.RESET_CONSISTENCY_CHECKS",
+      desc: "Cause a fatal alert if any reset has no legitimate cause."
     }
   ]
   // Define rstmgr struct package

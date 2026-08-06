@@ -86,7 +86,7 @@ The reset topology also contains additional properties:
     *   In a production system, `TRSTn` only needs to be released for RMA transitions and nothing else.
 .
 
-<!-- BEGIN-FEATURE: RSTMGR.SW_RST.REQUEST -->
+<!-- BEGIN-FEATURE: RSTMGR.SW_RST.CHIP_RESET -->
 <%text>## Reset Manager</%text>
 
 The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
@@ -104,7 +104,7 @@ These requests primarily come from the following sources:
 *  Power manager request for low power entry and exit.
 *  Escalation reset requests such as those from `alert_handler` or `pwrmgr` itself.
 *  Direct software request for reset.
-<!-- END-FEATURE: RSTMGR.SW_RST.REQUEST -->
+<!-- END-FEATURE: RSTMGR.SW_RST.CHIP_RESET -->
 
 <%text>### Shadow Resets</%text>
 
@@ -113,6 +113,7 @@ These are registers stored in two constantly checking copies to ensure the value
 For these components, the reset manager outputs a shadow reset dedicated to resetting only the shadow storage.
 This reset separation ensures that a targeted attack on the reset line cannot easily defeat shadow registers.
 
+<!-- BEGIN-FEATURE: RSTMGR.RESET_CONSISTENCY_CHECKS -->
 <%text>### Reset Consistency Checks</%text>
 
 The reset manager implements reset consistency checks to ensure that triggered resets are supposed to happen and not due to some fault in the system.
@@ -135,6 +136,7 @@ The reset manager then checks as follows:
   - If the appropriate pairing is not seen in the given amount of time, signal an error, as the leaf reset asserted without cause.
 
 - If all reset conditions are satisfied, wait for the reset release to gracefully complete the cycle.
+<!-- END-FEATURE: RSTMGR.RESET_CONSISTENCY_CHECKS -->
 
 <!-- BEGIN-FEATURE: RSTMGR.ALERT_HANDLER.RESET_STATUS -->
 <%text>### Reset Indications for Alert Handler</%text>
@@ -150,6 +152,7 @@ As a result, a particular reset tree (for example `rst_lc_n`) may have multiple 
 
 Each reset tree is discussed in detail below.
 
+<!-- BEGIN-FEATURE: RSTMGR.POR.SCRETCHER -->
 <%text>## POR Reset Tree</%text>
 
 The POR reset tree, `rst_por_n`, is the root reset of the entire device.
@@ -164,7 +167,7 @@ The stretch parameters are design time configurations.
     *   The counter increments only when all stages of the filter are 1.
     *   If any stage at any point becomes '0', the reset counter returns to 0 and downstream logic is driven to reset again.
 *   Both functions are expected to operate on slow, always available KHz clocks.
-
+<!-- END-FEATURE: RSTMGR.POR.SCRETCHER -->
 
 <%text>## Life Cycle Reset Tree</%text>
 
@@ -208,6 +211,7 @@ For example, assume a system with two power domains - `Domain A` is always-on, a
 When `Domain B` is powered off, all of `Domain B`'s resets, from `rst_lc_n`, `rst_sys_n` to `rst_module_n` are asserted.
 However, the corresponding resets for `Domain A` are left untouched because it has not been powered off.
 
+<!-- BEGIN-FEATURE: RSTMGR.SW_RST.REQUEST -->
 <%text>## Software Controlled Resets</%text>
 
 Certain leaf resets can be directly controlled by software.
@@ -224,6 +228,7 @@ In general, the following rules apply:
 *   If a module can alter the software's perception of time or general control flow (timer or interrupt aggregator), it cannot be software resettable.
 *   If a module contains sensor functions for security, it cannot be software resettable.
 *   If a module controls life cycle or related function, it cannot be software resettable.
+<!-- END-FEATURE: RSTMGR.SW_RST.REQUEST -->
 
 <%text>## Summary</%text>
 
