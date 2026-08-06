@@ -50,6 +50,7 @@ not selected for pin multiplexing), the output values are disconnected
 and have no effect on the GPIO input, regardless of output enable values.
 <!-- END-FEATURE: GPIO.OUT.MASK -->
 
+<!-- BEGIN-FEATURE: GPIO.IN.FILTER -->
 <%text>### GPIO Input</%text>
 
 The [`DATA_IN`](registers.md#data_in) register returns the contents as seen on the
@@ -73,6 +74,7 @@ chip-level pad), the value read from [`DATA_IN`](registers.md#data_in) includes 
 effect of the peripheral's driven output (so will only differ from DATA_OUT if
 the output driver is unable to switch the pin or during the delay imposed
 if the noise filter is enabled).
+<!-- END-FEATURE: GPIO.IN.FILTER -->
 
 <%text>#### GPIO Inputs as HW Straps</%text>
 
@@ -84,7 +86,6 @@ Sampling occurs exclusively at this time, and any subsequent changes to the GPIO
 This mechanism samples all 32 bits of the GPIO input data, regardless of the GPIO output enable status, providing a reliable snapshot of the input values for firmware access.
 
 <!-- BEGIN-FEATURE: GPIO.IN.INTR_CTRL -->
-<!-- BEGIN-FEATURE: GPIO.IN.FILTER -->
 <%text>### Interrupts</%text>
 
 The GPIO module provides 32 interrupt signals to the main processor.
@@ -112,7 +113,6 @@ assistance to indicate which edge caused the output interrupt.
 The GPIO module, if configured, converts an edge detection into a level interrupt to the processor core.
 % if num_inp_period_counters > 0:
 <!-- END-FEATURE: GPIO.IN.INTR_CTRL -->
-<!-- END-FEATURE: GPIO.IN.FILTER -->
 
 <%text>### Input Period Counters</%text>
 

@@ -40,7 +40,7 @@ If desired, the masking can be disabled and the internal state width can be redu
 <!-- END-FEATURE: KMAC.MODE.SHA3 -->
 <!-- END-FEATURE: KMAC.MODE.SHAKE -->
 <!-- END-FEATURE: KMAC.MODE.CSHAKE -->
-<!-- BEGIN-FEATURE: KMAC.MODE.XOF -->
+<!-- END-FEATURE: KMAC.MODE.XOF -->
 
 ## Design Details
 

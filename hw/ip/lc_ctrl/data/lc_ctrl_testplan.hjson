@@ -31,7 +31,7 @@
             '''
       stage: V1
       tests: ["lc_ctrl_smoke"]
-      features: []
+      features: ["LC_CTRL.STATE.RAW", "LC_CTRL.STATE.TEST_UNLOCKED", "LC_CTRL.AUTHENTICATED_TRANSITIONS"]
     }
     {
       name: state_post_trans
@@ -105,7 +105,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_state_failure"]
-      features: ["LC_CTRL.LOGICAL_SCRAP"]
+      features: []
     }
     {
       name: lc_errors
@@ -145,7 +145,7 @@
               "lc_ctrl_jtag_state_failure",
               "lc_ctrl_jtag_prog_failure"
               ]
-      features: []
+      features: ["LC_CTRL.LOGICAL_SCRAP"]
     }
     {
       name: jtag_access

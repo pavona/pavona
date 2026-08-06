@@ -1,8 +1,8 @@
-# Theory of Operation
-
 <!-- BEGIN-FEATURE: KEYMGR_DPE.SIDELOAD.KMAC -->
 <!-- BEGIN-FEATURE: KEYMGR_DPE.SIDELOAD.AES -->
 <!-- BEGIN-FEATURE: KEYMGR_DPE.SIDELOAD.ACC -->
+# Theory of Operation
+
 The following diagram gives an example on how keymgr DPE handles multiple DICE contexts.
 
 ![Key Manager Functional Model](../doc/keymgr_dpe_diagram.svg)

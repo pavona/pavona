@@ -77,7 +77,7 @@
             '''
       stage: V2
       tests: ["${module_instance_name}_smoke"]
-      features: []
+      features: ["ALERT_HANDLER.ALERT.OBSERVE"]
     }
     {
       name: random_alerts
@@ -169,7 +169,9 @@
             '''
       stage: V2
       tests: ["${module_instance_name}_alert_accum_saturation"]
-      features: ["ALERT_HANDLER.ALERT.INTERRUPT"]
+      features: ["ALERT_HANDLER.ALERT.INTERRUPT",
+                 "ALERT_HANDLER.ESCALATION.COUNT",
+                 "ALERT_HANDLER.ALERT.ESCALATE"]
     }
  ]
 

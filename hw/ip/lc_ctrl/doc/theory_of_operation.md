@@ -13,7 +13,7 @@ After covering the relevant life cycle states, they proceed to describe life cyc
 <!-- BEGIN-FEATURE: LC_CTRL.STATE.SCRAP -->
 ## Life Cycle State Overview
 The following summarizes the states the life cycle controller can cycle through:
-- RAW: This is the default state of the OTP; no functions other than transition to TEST_UNLOCKED0 are available.
+- RAW: This is the initial state of the OTP; no functions other than transition to TEST_UNLOCKED0 are available.
 - TEST_UNLOCKED{N}: Transition from RAW state using OTP write.
 This state is used for manufacturing and production testing.
 - TEST_LOCKED{N}: TEST_LOCKED{N} states have identical functionality to RAW state and serve as a way for the Silicon Creator to protect devices in transit.
