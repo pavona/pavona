@@ -14,6 +14,7 @@ py_library(
     srcs = [
         "bitstreams_workspace.py",
     ],
+    data = glob(["bitstreams_manifest*.schema.json"]),
     deps = [
         requirement("jsonschema"),
     ],

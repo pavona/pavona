@@ -2076,7 +2076,7 @@
         "bzlTransitiveDigest": "+kD0xs0Ri5a+XKRcO6soDCgHTzVRyY15sflqqpmJ9vY=",
         "usagesDigest": "6SsJMu2YKa7CwbdXpWF84TuUKywW42ajyI1wp5wt3XE=",
         "recordedFileInputs": {
-          "@@//python-requirements.txt": "5f9ffcacf5e4b851e95c55719e3a6086d0cfbac57901e7a7e00013a17527f927",
+          "@@//python-requirements.txt": "a0fbd07403f7dcc591d6060815c7a404f5251de595dd0a267b3c8ac172deb73a",
           "@@lowrisc_misc_linters+//requirements.txt": "c6970973760040a085c07efdfd08dcadb7e052a18efa51f88a3eb19ab9f787c7",
           "@@protobuf+//python/requirements.txt": "983be60d3cec4b319dcab6d48aeb3f5b2f7c3350f26b3a9e97486c37967c73c5",
           "@@rules_fuzzing+//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
@@ -2441,6 +2441,15 @@
               "requirement": "markdown==3.7 --hash=sha256:2ae2471477cfd02dbbf038d5d9bc226d40def84b4fe2986e49b59b6b472bbed2 --hash=sha256:7eb6df5690b81a1d7942992c97fad2938e956e79df20cbc6186e9c3a77b1c803"
             }
           },
+          "ot_python_deps_310_markdown_it_py": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "markdown-it-py==3.0.0 --hash=sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1 --hash=sha256:e3f60a94fa066dc52ec76661e37c851cb232d92f9886b15cb560aaada2df8feb"
+            }
+          },
           "ot_python_deps_310_markupsafe": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -2457,6 +2466,15 @@
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
               "requirement": "mccabe==0.7.0 --hash=sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325 --hash=sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e"
+            }
+          },
+          "ot_python_deps_310_mdurl": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "mdurl==0.1.2 --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8 --hash=sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"
             }
           },
           "ot_python_deps_310_mistletoe": {
@@ -2952,6 +2970,15 @@
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
               "requirement": "urllib3==2.6.3 --hash=sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed --hash=sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4"
+            }
+          },
+          "ot_python_deps_310_validators": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "validators==0.35.0 --hash=sha256:992d6c48a4e77c81f1b4daba10d16c3a9bb0dbb79b3a19ea847ff0928e70497a --hash=sha256:e8c947097eae7892cb3d26868d637f79f47b4a0554bc6b80065dfe5aac3705dd"
             }
           },
           "ot_python_deps_310_wcwidth": {
@@ -5523,8 +5550,10 @@
                 "lxml": "{\"ot_python_deps_310_lxml\":[{\"version\":\"3.10\"}]}",
                 "mako": "{\"ot_python_deps_310_mako\":[{\"version\":\"3.10\"}]}",
                 "markdown": "{\"ot_python_deps_310_markdown\":[{\"version\":\"3.10\"}]}",
+                "markdown_it_py": "{\"ot_python_deps_310_markdown_it_py\":[{\"version\":\"3.10\"}]}",
                 "markupsafe": "{\"ot_python_deps_310_markupsafe\":[{\"version\":\"3.10\"}]}",
                 "mccabe": "{\"ot_python_deps_310_mccabe\":[{\"version\":\"3.10\"}]}",
+                "mdurl": "{\"ot_python_deps_310_mdurl\":[{\"version\":\"3.10\"}]}",
                 "mistletoe": "{\"ot_python_deps_310_mistletoe\":[{\"version\":\"3.10\"}]}",
                 "more_itertools": "{\"ot_python_deps_310_more_itertools\":[{\"version\":\"3.10\"}]}",
                 "msgpack_python": "{\"ot_python_deps_310_msgpack_python\":[{\"version\":\"3.10\"}]}",
@@ -5580,6 +5609,7 @@
                 "types_tabulate": "{\"ot_python_deps_310_types_tabulate\":[{\"version\":\"3.10\"}]}",
                 "typing_extensions": "{\"ot_python_deps_310_typing_extensions\":[{\"version\":\"3.10\"}]}",
                 "urllib3": "{\"ot_python_deps_310_urllib3\":[{\"version\":\"3.10\"}]}",
+                "validators": "{\"ot_python_deps_310_validators\":[{\"version\":\"3.10\"}]}",
                 "wcwidth": "{\"ot_python_deps_310_wcwidth\":[{\"version\":\"3.10\"}]}",
                 "yapf": "{\"ot_python_deps_310_yapf\":[{\"version\":\"3.10\"}]}"
               },
@@ -5623,8 +5653,10 @@
                 "lxml",
                 "mako",
                 "markdown",
+                "markdown_it_py",
                 "markupsafe",
                 "mccabe",
+                "mdurl",
                 "mistletoe",
                 "more_itertools",
                 "msgpack_python",
@@ -5680,6 +5712,7 @@
                 "types_tabulate",
                 "typing_extensions",
                 "urllib3",
+                "validators",
                 "wcwidth",
                 "yapf"
               ],

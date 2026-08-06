@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -12,82 +13,30 @@ filegroup(
     srcs = glob(["**/*.md"]),
 )
 
+# One target: these modules import each other in a cycle.
 py_library(
     name = "topgen",
-    srcs = [
-        "__init__.py",
-        "gen_top_docs.py",
-        "secure_prng.py",
-        "validate.py",
-    ],
-    deps = [
-        ":merge",
-        ":typing",
-        requirement("tabulate"),
-        requirement("pycryptodome"),
-    ],
-)
-
-py_library(
-    name = "c_test",
-    srcs = ["c_test.py"],
-    deps = [
-        ":lib",
-    ],
-)
-
-py_library(
-    name = "typing",
-    srcs = ["typing.py"],
-    deps = [
-        "//util/reggen:ip_block",
-    ],
-)
-
-py_library(
-    name = "gen_dv",
-    srcs = [
-        "gen_dv.py",
-        "top.py",
-    ],
-    deps = [
-        "//util/reggen:gen_dv",
-        "//util/reggen:ip_block",
-        "//util/reggen:params",
-        "//util/reggen:window",
-        requirement("mako"),
-    ],
-)
-
-py_library(
-    name = "lib",
-    srcs = [
-        "c.py",
-        "intermodule.py",
-        "lib.py",
-        "resets.py",
-        "rust.py",
-    ],
+    srcs = glob(["*.py"]),
+    imports = [".."],
     deps = [
         "//util:version_file",
+        "//util/basegen",
+        "//util/raclgen",
+        "//util/reggen:gen_dv",
+        "//util/reggen:gen_selfdoc",
         "//util/reggen:inter_signal",
+        "//util/reggen:interrupt",
         "//util/reggen:ip_block",
+        "//util/reggen:lib",
         "//util/reggen:md_helpers",
+        "//util/reggen:params",
+        "//util/reggen:reg_block",
         "//util/reggen:validate",
+        "//util/reggen:window",
         requirement("hjson"),
         requirement("mako"),
-    ],
-)
-
-py_library(
-    name = "merge",
-    srcs = [
-        "clocks.py",
-        "merge.py",
-    ],
-    deps = [
-        ":lib",
-        "//util/reggen:params",
+        requirement("pycryptodome"),
+        requirement("tabulate"),
     ],
 )
 

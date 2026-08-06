@@ -18,5 +18,6 @@ py_binary(
         "//hw/ip/acc/dv/accsim/sim:load_elf",
         "//hw/ip/acc/dv/accsim/sim:standalonesim",
         "//hw/ip/acc/dv/accsim/sim:stats",
+        "//hw/ip/acc/util/shared:testcase",
     ],
 )

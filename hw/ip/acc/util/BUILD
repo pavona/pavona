@@ -44,6 +44,7 @@ py_binary(
     srcs = ["check_const_time.py"],
     deps = [
         "//hw/ip/acc/util/shared:check",
+        "//hw/ip/acc/util/shared:constants",
         "//hw/ip/acc/util/shared:control_flow",
         "//hw/ip/acc/util/shared:decode",
         "//hw/ip/acc/util/shared:information_flow_analysis",
@@ -76,8 +77,11 @@ py_binary(
     srcs = ["acc_sim_test.py"],
     deps = [
         "//hw/ip/acc/util/shared:check",
+        "//hw/ip/acc/util/shared:dmem_dump",
+        "//hw/ip/acc/util/shared:elf",
         "//hw/ip/acc/util/shared:mem_layout",
         "//hw/ip/acc/util/shared:reg_dump",
+        "//hw/ip/acc/util/shared:testcase",
         requirement("pyelftools"),
     ],
 )

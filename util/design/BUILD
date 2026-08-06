@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "prince",
     srcs = ["prince.py"],
+    imports = ["."],
 )
 
 py_library(
@@ -26,7 +27,9 @@ py_library(
 py_binary(
     name = "gen-flash-img",
     srcs = ["gen-flash-img.py"],
+    imports = ["."],
     deps = [
+        ":prince",
         ":secded_gen",
         "//util/design/lib:common",
         "//util/design/lib:otp_mem_map",

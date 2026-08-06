@@ -51,6 +51,10 @@ dependencies = [
   # users to a newer version.
   "premailer==3.8.0",
 
+  # Dependencies: mdbook preprocessors
+  "markdown-it-py ~= 3.0",
+  "validators ~= 0.34",
+
   # Dependencies: check_dif_statuses.py
   "pydriller ~= 2.7",
   "termcolor==1.1.0",
