@@ -1490,14 +1490,6 @@ generate
       ) begin
         kmac_fifo_deadlock = 1'b1;
       end
-      if ((ispr_addr_i == IsprKmacPartialW) & ispr_base_wr_en_i[0]) begin
-        if (kmac_msg_valid_q[1] & ~kmac_msg_fifo_rready[1] & ~kmac_msg_fifo_rvalid[0]) begin
-          kmac_fifo_deadlock = 1'b1;
-        end
-        if (kmac_msg_valid_q[0] & ~kmac_msg_fifo_rready[0] & ~kmac_msg_fifo_rvalid[1]) begin
-          kmac_fifo_deadlock = 1'b1;
-        end
-      end
     end
   end
 
