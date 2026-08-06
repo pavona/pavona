@@ -51,6 +51,7 @@ This behavior, combined with other top level defenses, forms a multi-layered def
 
 <!-- BEGIN-FEATURE: SRAM_CTRL.SCRAMBLED -->
 <!-- BEGIN-FEATURE: SRAM_CTRL.MEMSET -->
+<!-- BEGIN-FEATURE: SRAM_CTRL.INTEGRITY -->
 ### LFSR Initialization Feature
 
 Since the scrambling device uses a block cipher in CTR mode, it is undesirable from a security perspective to initialize the memory with all zeros.
@@ -61,6 +62,7 @@ Initialization can be triggered via the [`CTRL.INIT`](registers.md#ctrl) CSR.
 When initialization is triggered, the LFSR is first re-seeded with the nonce that has been fetched, together with the scrambling key.
 Then the memory is initialized with pseudorandom data pulled from the LFSR.
 For each pseudorandom 32bit word, the initialization mechanism computes the corresponding integrity bits and writes both the data and integrity bits (39bit total) through the scrambling device using the most recently obtained scrambling key.
+<!-- END-FEATURE: SRAM_CTRL.INTEGRITY -->
 
 If SW triggers the scrambling key update and LFSR initialization at the same time (i.e., with the same CSR write operation), the LFSR initialization will be stalled until an updated scrambling key has been obtained.
 

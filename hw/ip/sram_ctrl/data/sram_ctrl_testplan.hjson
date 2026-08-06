@@ -28,7 +28,10 @@
             '''
       stage: V1
       tests: ["{name}_smoke"]
-      features: ["SRAM_CTRL.SCRAMBLED"]
+      features: [
+        "SRAM_CTRL.MEMSET",
+        "SRAM_CTRL.SCRAMBLED",
+      ]
     }
     {
       name: multiple_keys
@@ -47,7 +50,10 @@
             '''
       stage: V2
       tests: ["{name}_multiple_keys"]
-      features: []
+      features: [
+        "SRAM_CTRL.MEMSET",
+        "SRAM_CTRL.SCRAMBLED",
+      ]
     }
     {
       name: stress_pipeline
@@ -58,7 +64,10 @@
             '''
       stage: V2
       tests: ["{name}_stress_pipeline"]
-      features: []
+      features: [
+        "SRAM_CTRL.MEMSET",
+        "SRAM_CTRL.SCRAMBLED",
+      ]
     }
     {
       name: bijection
@@ -80,7 +89,10 @@
             '''
       stage: V2
       tests: ["{name}_bijection"]
-      features: []
+      features: [
+        "SRAM_CTRL.MEMSET",
+        "SRAM_CTRL.SCRAMBLED",
+      ]
     }
     {
       name: access_during_key_req
@@ -91,7 +103,10 @@
             '''
       stage: V2
       tests: ["{name}_access_during_key_req"]
-      features: []
+      features: [
+        "SRAM_CTRL.MEMSET",
+        "SRAM_CTRL.SCRAMBLED",
+      ]
     }
     {
       name: lc_escalation
@@ -107,7 +122,11 @@
             '''
       stage: V2
       tests: ["{name}_lc_escalation"]
-      features: []
+      features: [
+        "SRAM_CTRL.LOCK_ON_ERROR",
+        "SRAM_CTRL.MEMSET",
+        "SRAM_CTRL.SCRAMBLED",
+      ]
     }
     {
       name: executable
@@ -138,7 +157,7 @@
             '''
       stage: V2
       tests: ["{name}_partial_access", "{name}_partial_access_b2b"]
-      features: []
+      features: ["SRAM_CTRL.SUBWORD_ACCESS"]
     }
     {
       name: max_throughput

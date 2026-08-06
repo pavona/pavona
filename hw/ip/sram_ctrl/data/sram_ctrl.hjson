@@ -471,8 +471,7 @@
                   Write 1 to request a new scrambling key from OTP. After writing to this register, SRAM transactions will
                   be blocked until !!STATUS.SCR_KEY_VALID has been set to 1. If !!STATUS.SCR_KEY_VALID was already 1
                   before triggering a key renewal, hardware will automatically clear that status bit such that software
-                  can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
-                  to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
+                  can poll its status. Note that writing 1 to this register while
                   a key request or a memory initialization request is already pending has no effect.
                   '''
           },
