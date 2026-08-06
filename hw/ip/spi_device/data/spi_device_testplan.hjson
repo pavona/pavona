@@ -104,7 +104,7 @@
             - Ensure that the data returned is correct for the given address and active locality.'''
       stage: V2
       tests: ["spi_device_tpm_sts_read", "spi_device_tpm_read_hw_reg"]
-      features: ["SPI_DEVICE.MODE.TPM"]
+      features: ["SPI_DEVICE.MODE.TPM", "SPI_DEVICE.MODE.TPM.READ_FIFO_MODE"]
     }
     {
       name: tpm_fully_random_case
@@ -118,7 +118,7 @@
             - Ensure all the data is correct in the scoreboard.'''
       stage: V2
       tests: ["spi_device_tpm_all"]
-      features: ["SPI_DEVICE.MODE.TPM"]
+      features: ["SPI_DEVICE.MODE.TPM", "SPI_DEVICE.MODE.TPM.RETURN-BY-HW_REGS", "SPI_DEVICE.MODE.TPM.AUTO_WAIT", "SPI_DEVICE.MODE.TPM.READ_FIFO_MODE"]
     }
     {
       name: pass_cmd_filtering
@@ -147,7 +147,7 @@
             - Check address is now passing unchanged.'''
       stage: V2
       tests: ["spi_device_pass_addr_payload_swap", "spi_device_flash_all"]
-      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.CMDINFOS"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.MODE.PASSTHROUGH.ADDRESS_MANIPULATION"]
     }
     {
       name: pass_payload_translation
@@ -160,7 +160,7 @@
             - Check payload is now passing unchanged.'''
       stage: V2
       tests: ["spi_device_pass_addr_payload_swap", "spi_device_flash_all"]
-      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.CMDINFOS"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.MODE.PASSTHROUGH.STATUS_MANIPULATION"]
     }
     {
       name: cmd_info_slots
@@ -198,7 +198,7 @@
             - Check proper reception of response.'''
       stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
-      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS", "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS", "SPI_DEVICE.HW.CMDINFOS"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS", "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.JEDEC_CC", "SPI_DEVICE.JEDEC_ID"]
     }
     {
       name: cmd_read_sfdp
@@ -336,7 +336,7 @@
             - Check data on both lines.'''
       stage: V2
       tests: ["spi_device_flash_all"]
-      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.MODE.PASSTHROUGH"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.HW.LANES", "SPI_DEVICE.MODE.PASSTHROUGH"]
     }
     {
       name: 4b_3b_feature

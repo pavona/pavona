@@ -2,8 +2,11 @@
 
 <!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION -->
 <!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS -->
 <!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
 <!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.JEDEC_CC -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.JEDEC_ID -->
 ## Block Diagram
 
 ![Block Diagram](../doc/block_diagram.svg)
@@ -28,13 +31,17 @@ It may additionally let hardware set the BUSY bit in the Status register when th
 In Passthrough mode, the logic filters the incoming transaction if the transaction is not permitted.
 The software may configure the logic to change a portion of the address or first 4 bytes of the payload.
 <!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION -->
+<!-- END-FEATURE: SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS -->
 <!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
 <!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX -->
+<!-- END-FEATURE: SPI_DEVICE.JEDEC_CC -->
+<!-- END-FEATURE: SPI_DEVICE.JEDEC_ID -->
 
 ## SPI Flash and Passthrough Modes
 
 <!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS -->
 <!-- BEGIN-FEATURE: SPI_DEVICE.HW.CMDINFOS -->
+<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN -->
 ### Command Information List
 
 The software may configure the map from the received opcode to the command process module by programming *cmd_info* list.
@@ -64,7 +71,6 @@ See [Command Upload](#command-upload) section for details.
 <!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH -->
 <!-- END-FEATURE: SPI_DEVICE.HW.CMDINFOS -->
 
-<!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN -->
 ### Command Parser
 
 ![Command Parser block](../doc/cmdparse.svg)
@@ -139,6 +145,7 @@ The hardware sends the manufacturer ID first, then `[7:0]` of the device ID then
 <!-- END-FEATURE: SPI_DEVICE.JEDEC_ID -->
 <!-- END-FEATURE: SPI_DEVICE.JEDEC_CC -->
 
+<!-- BEGIN-FEATURE: SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS -->
 ### Serial Flash Discoverable Parameters (SFDP) Control
 
 The hardware parses SFDP command then fetch the data from SFDP space in the DPSRAM.
@@ -148,6 +155,7 @@ The software should prepare proper SFDP contents before the host system issues S
 
 Hardware fetches from the DPSRAM in 4B and returns the data to the SPI line.
 Hardware repeats the operation until `CSb` is de-asserted.
+<!-- END-FEATURE: SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS -->
 
 <!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
 ### Read Command Processor
@@ -161,7 +169,6 @@ The double buffering scheme aids the software to prepare the next chunk of data.
 The software copies a portion of data (1kB) from the internal flash memory into the SPI device DPSRAM.
 From the host system, the emulated SPI Device is seen more than 2kB storage device with the double buffering scheme.
 The assumption is that the host system reads mostly sequentially.
-<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
 
 <!-- BEGIN-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX -->
 #### Address Handling
@@ -174,6 +181,7 @@ When the module receives `addr[0]`, at the positive edge of `SCK`, the module mo
 
 If the received address falls into mailbox address range and mailbox feature is enabled, the module turns on the mailbox selection bit.
 Then all out-going requests to the DPSRAM are forwarded to the mailbox section, not the read buffer section.
+<!-- END-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR -->
 <!-- END-FEATURE: SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX -->
 
 <!-- BEGIN-FEATURE: SPI_DEVICE.MODE.FLASH_EMULATION.DUMMY_CYCLE -->
@@ -427,7 +435,7 @@ The TPM submodule accepts the payload for the TPM write command without the `WAI
 In other case, the TPM submodule sends `WAIT` until the write and command FIFOs become available (empty).
 <!-- END-FEATURE: SPI_DEVICE.MODE.TPM -->
 <!-- END-FEATURE: SPI_DEVICE.MODE.TPM.AUTO_WAIT -->
-<!-- END-FEATURE: SPI_DEVICE.MODE.TPM.READ_FIFO_MODE -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.TPM.RETURN-BY-HW_REGS -->
 
 ### Configuring Return-by-HW registers
 
@@ -444,7 +452,7 @@ Other registers in the table should be processed by software.
 Note that firmware is in the loop to process write commands to these registers.
 Consequently, the TPM over SPI submodule cannot meet timing requirements for updated data to be available within one wait state.
 Once firmware writes the CSRs, the submodule can return the data as specified, however.
-<!-- END-FEATURE: SPI_DEVICE.MODE.TPM.RETURN-BY-HW_REGS -->
+<!-- END-FEATURE: SPI_DEVICE.MODE.TPM.READ_FIFO_MODE -->
 
 ## Detecting Reliability Errors
 
