@@ -43,7 +43,7 @@
             '''
       stage: V2
       tests: ["spi_host_performance"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.RATE.DUAL", "SPIHOST.RATE.QUAD", "SPIHOST.CONFIG.CPOL", "SPIHOST.CONFIG.CLOCKDIV"]
     }
     {
       name: error_event_intr
@@ -95,7 +95,7 @@
             '''
       stage: V2
       tests: ["spi_host_speed"]
-      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.RATE.DUAL", "SPIHOST.RATE.QUAD"]
+      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.RATE.DUAL", "SPIHOST.RATE.QUAD", "SPIHOST.CONFIG.CPOL", "SPIHOST.CONFIG.CLOCKDIV"]
     }
     {
       name: chip_select_timing
@@ -166,7 +166,7 @@
             '''
       stage: V2
       tests: ["spi_host_speed"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.RATE.DUAL", "SPIHOST.RATE.QUAD", "SPIHOST.CONFIG.CPOL"]
     }
     {
       name: duplex
@@ -179,7 +179,7 @@
             '''
       stage: V2
       tests: ["spi_host_smoke"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD"]
     }
     {
       name: tx_rx_only
@@ -194,7 +194,7 @@
             '''
       stage: V2
       tests: ["spi_host_smoke"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD"]
     }
     {
       name: stress_all
@@ -212,7 +212,7 @@
             '''
       stage: V2
       tests: ["spi_host_stress_all"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.RATE.DUAL", "SPIHOST.RATE.QUAD", "SPIHOST.CONFIG.CPOL", "SPIHOST.CONFIG.CLOCKDIV", "SPIHOST.EVENT.WATERMARK", "SPIHOST.EVENT.FULL", "SPIHOST.EVENT.EMPTY"]
     }
     {
       name: spien
@@ -234,7 +234,7 @@
             '''
       stage: V2
       tests: ["spi_host_spien"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD"]
     }
     {
       name: stall
@@ -251,7 +251,7 @@
             '''
       stage: V2
       tests: ["spi_host_status_stall"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.EVENT.FULL", "SPIHOST.EVENT.EMPTY"]
     }
     {
       name: Idlecsbactive
@@ -265,7 +265,7 @@
             '''
       stage: V2
       tests: ["spi_host_idlecsbactive"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD"]
     }
     {
       name: data_fifo_status
@@ -287,7 +287,7 @@
             '''
       stage: V2
       tests: ["spi_host_overflow_underflow"]
-      features: []
+      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.CONFIG.CLOCKDIV"]
     }
     {
       name: winbond

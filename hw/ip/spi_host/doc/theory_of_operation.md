@@ -233,6 +233,7 @@ The following sections give details on how the SPI_HOST IP can be used to contro
 For simplicity, this section describes how to interact one device, attached to `CSB[0]`, and as such references are made to the multi-registers [`CONFIGOPTS`](registers.md#configopts) and [`COMMAND`](registers.md#command).
 To configure timing and send commands to devices on other `CSB` lines, instead use the `CONFIGOPTS` multi-register corresponding to desired `CSB` line.
 
+<!-- BEGIN-FEATURE: SPIHOST.CONFIG.CLOCKDIV -->
 #### Clock rate selection
 
 The SPI clock rate for each peripheral is set by two factors:
@@ -246,6 +247,7 @@ Since some peripheral devices attached to the same SPI_HOST IP may require diffe
 This is configured per-peripheral by setting the field [`CONFIGOPTS.CLKDIV`](#configopts--clkdiv).
 
 $$T_{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{clk}}{\textrm{CONFIGOPTS.CLKDIV}+1}$$
+<!-- END-FEATURE: SPIHOST.CONFIG.CLOCKDIV -->
 
 #### Chip-select Timing Control
 

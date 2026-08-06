@@ -20,6 +20,7 @@
                      "hw/top_dragonfly/data/ip/chip_rv_core_ibex_testplan.hjson",
                      "hw/top_dragonfly/data/ip/chip_rv_dm_testplan.hjson"
                      "hw/top_dragonfly/data/ip/chip_soc_proxy_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_spi_host_testplan.hjson",
                      "hw/top_dragonfly/data/ip/chip_uart_testplan.hjson"
                      ]
 
@@ -172,23 +173,6 @@
              '''
       stage: V3
       tests: []
-    }
-
-    // SPI_HOST (pre-verified IP) integration tests:
-    {
-      name: chip_sw_spi_host_tx_rx
-      desc: '''Verify the transmission of data on the chip's SPI host port.
-
-            - Program the SPI host to send a known payload out of the chip on the SPI host ports.
-            - The testbench receives the payload and plays it back to the SPI host interface.
-            - The SW verifies the sent payload matches the read response and services SPI event
-              interrupts.
-            - Run with min and max SPI clk frequencies and with single, dual and quad SPI modes.
-
-            Verify all SPI host instances in the chip.
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_host_tx_rx"]
     }
 
     // I2C (pre-verified IP) integration tests:
