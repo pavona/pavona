@@ -48,6 +48,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       features: [
+        "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.LOW_POWER.WAKEUP",
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
@@ -69,6 +70,10 @@
             '''
       stage: V2
       si_stage: SV3
+      features: [
+        "PWRMGR.LOW_POWER.WAKEUP",
+        "PWRMGR.LOW_POWER.WAKE_INFO"
+      ]
       tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
       bazel: ["//sw/device/tests:pwrmgr_normal_sleep_all_wake_ups"]
     }
@@ -125,6 +130,11 @@
             '''
       stage: V2
       si_stage: SV3
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.WAKEUP",
+        "PWRMGR.LOW_POWER.WAKE_INFO"
+      ]
       tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
       bazel: ["//sw/device/tests:pwrmgr_deep_sleep_all_wake_ups"]
     }
@@ -174,6 +184,7 @@
       stage: V3
       si_stage: NA
       features: [
+        "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.LOW_POWER.WAKEUP"
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
@@ -250,6 +261,7 @@
             '''
       stage: V2
       si_stage: NA
+      features: ["PWRMGR.RESET.MAIN_POWER_GLITCH_RESET"]
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
     }
     {
@@ -272,6 +284,10 @@
             '''
       stage: V2
       si_stage: NA
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET",
+      ]
       tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
     }
     {
@@ -291,6 +307,11 @@
             '''
       stage: V2
       si_stage: NA
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.DISABLE_POWER"
+        "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET",
+      ]
       tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
     }
     {
@@ -305,6 +326,10 @@
             '''
       stage: V2
       si_stage: NA
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET",
+      ]
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
     }
     {
@@ -352,6 +377,7 @@
             '''
       stage: V2
       si_stage: SV3
+      features: ["PWRMGR.RESET.REQUEST"]
       lc_states: ["PROD"]
       tests: [
         "chip_sw_pwrmgr_sysrst_ctrl_reset",
@@ -366,6 +392,12 @@
             '''
       stage: V2
       si_stage: NA
+      features: [
+        "PWRMGR.RESET.POR_RESET",
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.DISABLE_POWER"
+        "PWRMGR.LOW_POWER.WAKEUP",
+      ]
       tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
     }
     {
@@ -397,7 +429,10 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
-      features: ["PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
+      features: [
+        "PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE",
+        "PWRMGR.RESET.REQUEST",
+      ]
       tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
       bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test"]
     }

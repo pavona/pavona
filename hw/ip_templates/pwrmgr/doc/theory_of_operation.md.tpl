@@ -38,8 +38,12 @@ The slow FSM `Low Power` and fast FSM `Active` states specifically are concepts 
 
 <!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
 <!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
+% if 'usb' in src_clks:
 <!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE -->
+% endif
 <!-- BEGIN-FEATURE: PWRMGR.RESET.POR_REQUEST -->
+<!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 ${"##"} Slow Clock Domain FSM
 
 The slow clock domain FSM (referred to as the slow FSM from here on) resets to the Reset state.
@@ -61,8 +65,12 @@ This means the clocks and power are not always turned off, but are rather contro
 Once these steps are complete, the slow FSM transitions to a low power state and awaits a wake request, which can come either as an actual wakeup, or a reset event (for example always on watchdog expiration).
 <!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
 <!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
+% if 'usb' in src_clks:
 <!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE -->
+% endif
 <!-- END-FEATURE: PWRMGR.RESET.POR_REQUEST -->
+<!-- END-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 
 ${"####"} Sparse FSM
 
@@ -310,6 +318,12 @@ ${"##"} Supported Low Power Modes
 
 This section details the various low power modes supported.
 
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
+% if 'usb' in src_clks:
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE -->
+% endif
 <!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 ${"###"} Deep Sleep or Standby
 
@@ -332,6 +346,12 @@ During this state:
 *   Sensor countermeasures can be opportunistically on.
 *   I/O power domains may or may not be off.
     *   The state of the IO power domain has no impact on the digital core's power budget, e.g. the IO power being off does not cause the accompanying digital logic in pads or elsewhere to leak more.
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
+% if 'usb' in src_clks:
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE -->
+% endif
 
 ${"##"} Debug
 

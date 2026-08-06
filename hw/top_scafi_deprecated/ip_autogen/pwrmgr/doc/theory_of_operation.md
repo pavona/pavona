@@ -39,7 +39,9 @@ The slow FSM `Low Power` and fast FSM `Active` states specifically are concepts 
 <!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
 <!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
 <!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE -->
 <!-- BEGIN-FEATURE: PWRMGR.RESET.POR_REQUEST -->
+<!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 ## Slow Clock Domain FSM
 
 The slow clock domain FSM (referred to as the slow FSM from here on) resets to the Reset state.
@@ -58,7 +60,9 @@ Once these steps are complete, the slow FSM transitions to a low power state and
 <!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
 <!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
 <!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE -->
 <!-- END-FEATURE: PWRMGR.RESET.POR_REQUEST -->
+<!-- END-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 
 #### Sparse FSM
 
@@ -302,6 +306,10 @@ Because of this, the software also cannot distinguish between these two reset ca
 
 This section details the various low power modes supported.
 
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- BEGIN-FEATURE: PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE -->
 <!-- BEGIN-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 ### Deep Sleep or Standby
 
@@ -324,6 +332,10 @@ During this state:
 *   Sensor countermeasures can be opportunistically on.
 *   I/O power domains may or may not be off.
     *   The state of the IO power domain has no impact on the digital core's power budget, e.g. the IO power being off does not cause the accompanying digital logic in pads or elsewhere to leak more.
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER -->
+<!-- END-FEATURE: PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE -->
 
 ## Debug
 

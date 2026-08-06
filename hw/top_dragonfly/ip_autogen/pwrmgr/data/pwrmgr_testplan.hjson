@@ -40,7 +40,12 @@
             '''
       stage: V1
       tests: ["pwrmgr_smoke"]
-      features: ["PWRMGR.LOW_POWER.ENTRY", "PWRMGR.LOW_POWER.WAKEUP", "PWRMGR.LOW_POWER.WAKE_INFO", "PWRMGR.RESET.REQUEST"]
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.WAKEUP",
+        "PWRMGR.LOW_POWER.WAKE_INFO",
+        "PWRMGR.RESET.REQUEST"
+      ]
     }
     {
       name: wakeup
@@ -76,7 +81,11 @@
             '''
       stage: V2
       tests: ["pwrmgr_wakeup"]
-      features: ["PWRMGR.LOW_POWER.WAKEUP", "PWRMGR.LOW_POWER.WAKE_INFO", "PWRMGR.LOW_POWER.ENTRY"]
+      features: [
+        "PWRMGR.LOW_POWER.WAKEUP",
+        "PWRMGR.LOW_POWER.WAKE_INFO",
+        "PWRMGR.LOW_POWER.ENTRY",
+      ]
     }
     {
       name: control_clks
@@ -84,9 +93,7 @@
             Test CSR control of peripheral clocks during low power.
 
             The peripheral clocks can be configured to remain on or be turned
-            off during low power with bits in the `control` CSR register. The
-            usb clock can also be configured off in active mode.
-
+            off during low power with bits in the `control` CSR register.
             **Stimulus**:
             - Sets these control bits at random.
             - Cause a low power transition and wakeup.
@@ -94,12 +101,16 @@
             **Checks**:
             - The clock enable outputs to the AST clocks during a low
               power transition match the control bits.
-            - The usb clock enable is also checked during active mode against
-              the control register.
             '''
       stage: V2
       tests: ["pwrmgr_wakeup"]
-      features: ["PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER", "PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER", "PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER", "PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
+      features: [
+        "PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER",
+        "PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER",
+        "PWRMGR.LOW_POWER.WAKEUP",
+        "PWRMGR.LOW_POWER.WAKE_INFO",
+        "PWRMGR.LOW_POWER.ENTRY",
+      ]
     }
     {
       name: aborted_low_power
@@ -129,7 +140,10 @@
             '''
       stage: V2
       tests: ["pwrmgr_aborted_low_power", "pwrmgr_lowpower_invalid"]
-      features: ["PWRMGR.LOW_POWER.ENTRY", "PWRMGR.LOW_POWER.WAKE_INFO"]
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.WAKE_INFO",
+      ]
     }
     {
       name: reset
@@ -159,7 +173,12 @@
             '''
       stage: V2
       tests: ["pwrmgr_reset", "pwrmgr_reset_invalid"]
-      features: ["PWRMGR.RESET.REQUEST", "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET", "PWRMGR.RESET.ESCALATION_REQUEST", "PWRMGR.RESET.SW_RST_REQUEST"]
+      features: [
+        "PWRMGR.RESET.REQUEST",
+        "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
+        "PWRMGR.RESET.SW_RST_REQUEST",
+      ]
     }
     {
       name: main_power_glitch_reset
@@ -203,7 +222,11 @@
               '''
       stage: V2
       tests: ["pwrmgr_wakeup_reset"]
-      features: ["PWRMGR.LOW_POWER.WAKEUP", "PWRMGR.RESET.REQUEST", "PWRMGR.LOW_POWER.WAKE_INFO"]
+      features: [
+        "PWRMGR.LOW_POWER.WAKEUP",
+        "PWRMGR.RESET.REQUEST",
+        "PWRMGR.LOW_POWER.WAKE_INFO",
+      ]
     }
     {
       name: lowpower_wakeup_race
@@ -226,7 +249,10 @@
             '''
       stage: V2
       tests: ["pwrmgr_lowpower_wakeup_race"]
-      features: ["PWRMGR.LOW_POWER.ENTRY", "PWRMGR.LOW_POWER.WAKEUP"]
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.WAKEUP",
+      ]
     }
     {
       name: disable_rom_integrity_check
