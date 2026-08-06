@@ -77,6 +77,46 @@ typedef struct dif_keymgr_dpe_advance_params {
 } dif_keymgr_dpe_advance_params_t;
 
 /**
+ * Software binding value.
+ */
+typedef struct dif_keymgr_dpe_binding_value {
+  /**
+   * Software binding value.
+   */
+  uint32_t binding[8];
+} dif_keymgr_dpe_binding_value_t;
+
+/**
+ * Reads the software binding value set.
+ *
+ * @param keymgr A key manager handle.
+ * @param[out] output Value read.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_dpe_read_binding(
+    const dif_keymgr_dpe_t *keymgr_dpe, dif_keymgr_dpe_binding_value_t *output);
+
+typedef struct dif_keymgr_dpe_max_key_version {
+  /**
+   * Max key version.
+   */
+  uint32_t max_key_version;
+} dif_keymgr_dpe_max_key_version_t;
+
+/**
+ * Reads the max key version of each stage.
+ *
+ * @param keymgr_dpe A key manager handle.
+ * @param version Struct with the max versions set.
+ * @return dif_result_t
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_dpe_read_max_key_version(
+    const dif_keymgr_dpe_t *keymgr_dpe,
+    dif_keymgr_dpe_max_key_version_t *versions);
+
+/**
  * Key destination of a versioned key generation operation.
  *
  * Regardless of whether the generated key is SW or sideload key, HW uses a

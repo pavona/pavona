@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <stdbool.h>
 
 #include "hw/top/dt/keymgr.h"
 #include "hw/top/dt/otp_ctrl.h"

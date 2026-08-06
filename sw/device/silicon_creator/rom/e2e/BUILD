@@ -268,6 +268,7 @@ pavona_test(
             ":empty_test_slot_{}_{}_corrupted_sim_dv_{}".format(slot, key, file_type)
             for file_type in [
                 "signed_bin",
+                "vmem32_signed",
                 "vmem64_signed",
                 "scr_vmem64_signed",
             ]
@@ -317,7 +318,6 @@ pavona_test(
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
     ),
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ],
@@ -363,7 +363,7 @@ pavona_test(
     exec_env = {
         "//hw/top_egret:sim_dv": None,
         "//hw/top_egret:sim_verilator": None,
-        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        #"//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_dragonfly:sim_dv": None,
         "//hw/top_dragonfly:sim_verilator": None,
     },

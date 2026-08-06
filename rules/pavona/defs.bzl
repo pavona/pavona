@@ -67,6 +67,7 @@ load(
 load(
     "@pavona_pavona//hw/top:defs.bzl",
     "ALL_TOPS",
+    "pavona_if_ip",
     "pavona_select_top",
 )
 load(
@@ -257,7 +258,15 @@ def exec_env_to_top_map(exec_env):
 # binaries which can be compiled for the active top.
 #
 # See exec_env_to_top_map() for constraints on the exec_env for this work.
-def pavona_binary(name, exec_env, **kwargs):
+def pavona_binary(
+        name,
+        exec_env,
+        kind = pavona_if_ip(
+            "flash_ctrl",
+            "flash",
+            "ram",
+        ),
+        **kwargs):
     # Filter execution environments by top.
     ev_map = exec_env_to_top_map(exec_env)
     select_map = {}
@@ -278,6 +287,7 @@ def pavona_binary(name, exec_env, **kwargs):
     _pavona_binary(
         name = name,
         exec_env = pavona_select_top(select_map, []),
+        kind = kind,
         **kwargs
     )
 
@@ -292,7 +302,11 @@ def pavona_binary(name, exec_env, **kwargs):
 def pavona_test(
         name,
         srcs = [],
-        kind = "flash",
+        kind = pavona_if_ip(
+            "flash_ctrl",
+            "flash",
+            "ram",
+        ),
         deps = [],
         copts = [],
         defines = [],

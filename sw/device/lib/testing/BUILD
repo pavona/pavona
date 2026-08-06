@@ -255,7 +255,6 @@ cc_library(
         ":rstmgr_testutils",
         "//hw/top:keymgr_c_regs",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",

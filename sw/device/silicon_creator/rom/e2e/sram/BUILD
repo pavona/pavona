@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules/pavona:defs.bzl",
     "fpga_params",
     "pavona_test",
@@ -38,7 +42,13 @@ otp_json(
 # OTP images that enable the watchdog.
 otp_image(
     name = "otp_img_readback_enable",
-    src = "//hw/top_egret/data/otp:otp_json_rma",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_rma",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_rma",
+        },
+        None,
+    ),
     overlays = STD_OTP_OVERLAYS + [":otp_json_readback_enable"],
 )
 

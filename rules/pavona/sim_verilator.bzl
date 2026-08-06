@@ -123,9 +123,6 @@ def _test_dispatch(ctx, exec_env, firmware):
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
-    if ctx.attr.kind == "ram":
-        fail("verilator is not capable of executing RAM tests")
-
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
 
     # Perform all relevant substitutions on the test_cmd.

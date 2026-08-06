@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules/pavona:defs.bzl",
     "fpga_params",
     "pavona_test",
@@ -24,8 +28,20 @@ package(default_visibility = ["//visibility:public"])
 [
     otp_image(
         name = "img_{}_exec_disabled".format(lc_state),
-        src = "//hw/top_egret/data/otp:otp_json_" + lc_state,
-        overlays = STD_OTP_OVERLAYS + ["//hw/top_egret/data/otp:otp_json_exec_disabled"],
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_{}".format(lc_state),
+            },
+            None,
+        ),
+        overlays = STD_OTP_OVERLAYS + pavona_select_top(
+            {
+                "egret": ["//hw/top_egret/data/otp:otp_json_exec_disabled"],
+                "dragonfly": ["//hw/top_dragonfly/data/otp:otp_json_exec_disabled"],
+            },
+            [],
+        ),
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()
