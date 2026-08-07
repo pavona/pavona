@@ -114,36 +114,8 @@ The following command processes this file and passes it to apt to install them:
 $ sed '/^#/d' apt-requirements.txt | xargs sudo apt install -y
 ```
 
-You'll also need to set up a Pavona-specific Python environment.
-This process keeps Pavona-specific Python package versions from clashing with others that may already exist on your system.
-
-First, install the python3-venv package from apt, then create your virtual environment:
-
-```shell
-$ sudo apt install python3-venv
-$ python3 -m venv .venv
-```
-
-### Activating your Pavona Python environment
-
-The second step creates a hidden directory called `.venv` in your `pavona/` directory.
-In order to use Pavona's Python-based tools, you'll need to *activate* this environment:
-
-```shell
-$ source .venv/bin/activate
-(.venv) $
-```
-
-The `(.venv)` prepended to your shell prompt indicates that the virtual environment is now activated.
-If you close your terminal and later return to use the Pavona repository, **be sure to re-activate your virtual environment by running the above command**.
-Alternatively, you may activate your environment as part of your shell rc file (e.g. bashrc, cshrc, zshrc).
-
-Once you've activated your Pavona environment, install the Python dependencies.
-You'll need to do this only once.
-
-```shell
-$ pip3 install -r python-requirements.txt --require-hashes
-```
+Anything you build or test with Bazel brings its own Python, so no Python setup is needed here.
+The few tools that run outside Bazel, such as `util/dvsim/dvsim.py` and `util/regtool.py`, do need one; see [Python Environment Setup](setup_python.md).
 
 ## Build and run a test
 

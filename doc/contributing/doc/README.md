@@ -12,9 +12,7 @@ The `util/site/build-docs.sh` script is used to build this book as well as the g
 Rules for how to write correct Markdown files can be found in the [reference manual](../style_guides/markdown_usage_style.md).
 
 In order to run them, you'll need some dependencies.
-Most are mentioned in two steps of the Getting Started guide:
-- [Install dependencies using the package manager](../../getting_started/README.md#step-2-install-dependencies-using-the-package-manager)
-- [Install Python libraries needed](../../getting_started/README.md#step-3-install-python-libraries-needed)
+Most are covered by [Install system dependencies](../../getting_started/README.md#install-system-dependencies) in the Getting Started guide, along with the packages in `python-requirements.txt`.
 
 Since the creation of documentation is based around the conversion from Markdown to HTML files, you also need
 - [Cargo](https://doc.rust-lang.org/cargo/), the Rust package manager

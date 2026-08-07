@@ -6,14 +6,7 @@ The example commands assume `$REPO_TOP` is set to the toplevel directory of the 
 
 ### Setup
 
-If packages have not previously been installed you will need to set a few things up.
-First use `pip3` to install some required packages:
-
-```console
-$ pip3 install --user hjson
-$ pip3 install --user mistletoe
-$ pip3 install --user mako
-```
+`regtool.py` runs outside Bazel, so it needs the environment described in [Python Environment Setup](../../../doc/getting_started/setup_python.md).
 
 ### Register JSON Format
 

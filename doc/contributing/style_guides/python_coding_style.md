@@ -117,12 +117,7 @@ Fixing import ordering errors for a single file can be done with `isort`:
 $ isort file.py
 ```
 
-Yapf and isort are Python packages and should be installed with pip:
-
-```console
-$ pip3 install --user yapt
-$ pip3 install --user isort
-```
+Yapf and isort are both listed in `python-requirements.txt`, so they come with the environment described in [Python Environment Setup](../../getting_started/setup_python.md).
 
 ### File Extensions
 

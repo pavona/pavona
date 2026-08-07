@@ -9,6 +9,7 @@
 
 # Using Pavona
 
+- [Python Environment Setup](./doc/getting_started/setup_python.md)
 - [Verilator Setup](./doc/getting_started/setup_verilator.md)
 - [FPGA Setup](./doc/getting_started/setup_fpga.md)
   - [Vivado Setup](./doc/getting_started/install_vivado/README.md)
