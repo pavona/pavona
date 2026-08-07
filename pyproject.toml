@@ -100,3 +100,11 @@ extend-select = ["E", "E303", "W391"]
 
 [tool.uv.workspace]
 members = ["util/testplantool", "util/testplantool/testplanlib"]
+
+[tool.uv.extra-build-dependencies]
+"crcmod" = ["setuptools"]
+"msgpack-python" = ["setuptools"]
+"premailer" = ["setuptools"]
+"pyfinite" = ["setuptools"]
+"siphash" = ["setuptools"]
+"termcolor" = ["setuptools"]
