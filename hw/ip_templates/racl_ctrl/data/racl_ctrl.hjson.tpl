@@ -114,6 +114,34 @@
     }
   ],
 
+  features: [
+    {
+      name: "RACL.POLICY_ENFORCEMENT",
+      desc: '''Subscribing IPs can bind registers to RACL policies. Read/write permissions for roles (defined in RACL controller configuration file) dictate the access to registers. 
+            '''
+    },
+    {
+      name: "RACL.ROT_POLICY",
+      desc: '''RACL control offers exactly one special ROT policy such that only requesters in the ROT role may modify the policy bitmaps themselves.
+            '''
+    },
+    {
+      name: "RACL.ERROR_LOG",
+      desc: '''RACL control can deny access to a register from a processing element and log the attempt.
+            '''
+    },
+    {
+      name: "RACL.EXT_USE",
+      desc: '''RACL control provides additional input to collect error logs from externally subscribing IPs.
+            '''
+    },
+    {
+      name: "RACL.ERROR_ARBITRATION",
+      desc: '''RACL control can handle multiple register access errors that arrive simultaneously.
+            '''
+    }
+  ],
+
   registers: [
     % for policy in policies:
     { name: "POLICY_${policy['name'].upper()}${"_SHADOWED" if enable_shadow_reg else ""}"
