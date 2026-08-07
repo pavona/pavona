@@ -1,6 +1,27 @@
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// High-level goal
+// ---------------
+// - Exercise the AC_RANGE_CHECK range-locking feature under live traffic and random reset.
+// - Confirm that clearing RANGE_REGWEN for a range makes later writes to that range ineffective,
+//   while unlocked ranges continue to accept reprogramming.
+// - Confirm that reset removes the locks and that a restarted operation has no stale sequence or
+//   DUT state from the interrupted pass.
+//
+// Test flow for every main-thread pass
+// ------------------------------------
+// 1. Configure every range with an initial set of values.
+// 2. Lock a randomized nonempty subset by clearing the corresponding RANGE_REGWEN fields.
+// 3. Run live unfiltered TLUL traffic while attempting to reprogram every range after a randomized
+//    delay. Locked ranges receive direct CSR writes; unlocked ranges use normal configuration.
+// 4. Read every range back so the scoreboard checks that locked values stayed unchanged and
+//    unlocked values changed. Send one guaranteed-granted transaction required by the existing DV
+//    end-of-test check.
+//
+// Reset may terminate any of these steps. The common reset-safe lifecycle discards that pass and
+// starts main_thread() again after reset. The final pass must complete all four steps.
 
 class ${module_instance_name}_lock_range_with_rand_reset_test_seq_parameters
     extends ${module_instance_name}_base_test_seq_parameters;
@@ -25,27 +46,32 @@ class ${module_instance_name}_lock_range_config_parameters
   import ${module_instance_name}_reg_pkg::*;
   `uvm_object_utils(${module_instance_name}_lock_range_config_parameters)
 
+  // Initial values programmed before locking.
   rand bit [DataWidth-1:0] base[NUM_RANGES];
   rand bit [DataWidth-1:0] limit[NUM_RANGES];
   rand bit                 read_perm[NUM_RANGES];
   rand bit                 write_perm[NUM_RANGES];
   rand bit                 execute_perm[NUM_RANGES];
 
+  // Second values used for the reprogramming attempt.
   rand bit [DataWidth-1:0] base_new[NUM_RANGES];
   rand bit [DataWidth-1:0] limit_new[NUM_RANGES];
   rand bit                 read_perm_new[NUM_RANGES];
   rand bit                 write_perm_new[NUM_RANGES];
   rand bit                 execute_perm_new[NUM_RANGES];
 
+  // Per-range lock, enable, and logging choices for the initial and replacement configurations.
   rand bit [NUM_RANGES-1:0] lock_mask;
   rand bit [NUM_RANGES-1:0] enable;
   rand bit [NUM_RANGES-1:0] enable_new;
   rand bit [NUM_RANGES-1:0] log_denied_access;
   rand bit [NUM_RANGES-1:0] log_denied_access_new;
+  // Delay in clock cycles before the reprogramming attempt begins.
   rand int unsigned         reprogram_delay_clks;
 
   constraint addr_pairs_c {
     foreach (base[i]) {
+      // Use aligned, forward ranges of bounded size for both configurations.
       base[i][3:0]      == 0;
       limit[i][3:0]     == 0;
       base_new[i][3:0]  == 0;
@@ -57,6 +83,8 @@ class ${module_instance_name}_lock_range_config_parameters
       base_new[i] < limit_new[i];
 
       if (i == (NUM_RANGES-1)) {
+        // The final range supplies a guaranteed-granted write required by the existing DV
+        // end-of-test check. Locking it also guarantees every test exercises a locked range.
         enable[i]     == 1;
         lock_mask[i]  == 1;
         write_perm[i] == 1;
@@ -65,6 +93,7 @@ class ${module_instance_name}_lock_range_config_parameters
   }
 
   constraint mask_c {
+    // Exercise at least one locked range and at least one enabled range in both configurations.
     lock_mask  != 0;
     enable     != 0;
     enable_new != 0;
@@ -79,6 +108,8 @@ class ${module_instance_name}_lock_range_config_parameters
   endfunction : new
 
   function void set_lock_fields_rand_mode(bit enable_rand);
+    // A reset restarts main_thread() with the same config object. Toggle all lock-test fields
+    // together so each restarted pass can select a fresh, then stable, configuration.
     base.rand_mode(enable_rand);
     limit.rand_mode(enable_rand);
     read_perm.rand_mode(enable_rand);
@@ -137,18 +168,20 @@ task ${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq::main_thre
 
   `uvm_info(`gfn, "Starting reset-safe lock-range stimulus", UVM_LOW)
 
-  // A random-reset restart reuses the parameter object, so explicitly re-enable
-  // the lock fields before choosing the configuration for this pass.
+  // A random-reset restart reuses the parameter object, so explicitly re-enable the lock fields
+  // before choosing the configuration for this pass.
   lock_cfg.set_lock_fields_rand_mode(1'b1);
   `DV_CHECK_RANDOMIZE_FATAL(lock_cfg)
   lock_cfg.set_lock_fields_rand_mode(1'b0);
 
+  // Step 1: Program every range with its initial values.
   foreach (lock_cfg.base[i]) begin
     configure_range(i, lock_cfg.base[i], lock_cfg.limit[i], lock_cfg.read_perm[i],
                     lock_cfg.write_perm[i], lock_cfg.execute_perm[i], lock_cfg.enable[i],
                     lock_cfg.log_denied_access[i]);
   end
 
+  // Step 2: Lock the selected ranges and retain the original coverage sampling behavior.
   foreach (lock_cfg.lock_mask[i]) begin
     if (lock_cfg.lock_mask[i]) begin
       `uvm_info(`gfn, $sformatf("Range index %0d locked", i), UVM_MEDIUM)
@@ -167,6 +200,8 @@ task ${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq::main_thre
     end
   end
 
+  // Step 3: Keep traffic active while the delayed reprogramming attempt executes. delay_seq owns
+  // the timed wait so reset can terminate the complete main_thread() hierarchy cleanly.
   fork
     begin : traffic_thread
       while (!reprogram_done) begin
@@ -193,6 +228,10 @@ task ${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq::main_thre
           bit [MuBi4Width-1:0] mubi4_log_denied;
           bit [DataWidth-1:0]  mubi4_attr;
 
+          // RAL also knows that this range is locked, so field set/update calls would preserve the
+          // old mirror and would not put the attempted replacement value on TL. Assemble the
+          // complete attribute word and use direct csr_wr() calls to prove the DUT ignores writes
+          // to the locked base, limit, and attribute registers.
           mubi4_execute = mubi4_bool_to_mubi(lock_cfg.execute_perm_new[i]);
           mubi4_write = mubi4_bool_to_mubi(lock_cfg.write_perm_new[i]);
           mubi4_read = mubi4_bool_to_mubi(lock_cfg.read_perm_new[i]);
@@ -225,6 +264,8 @@ task ${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq::main_thre
     end
   join
 
+  // Step 4: Read back every range. Normal CSR checking proves locked ranges retained the initial
+  // values and unlocked ranges accepted the replacement values.
   foreach (lock_cfg.base[i]) begin
     uvm_reg_data_t act_base;
     uvm_reg_data_t act_limit;
@@ -240,6 +281,8 @@ task ${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq::main_thre
               UVM_MEDIUM)
 
     if (i == (NUM_RANGES-1)) begin
+      // Satisfy the existing scoreboard requirement that the test observes at least one granted
+      // transaction. The final range was constrained to make this write legal.
       lock_cfg.tl_main_vars.addr = lock_cfg.base[i];
       lock_cfg.tl_main_vars.write = 1'b1;
       send_single_tl_unfilt_tr(1'b0);

@@ -1,6 +1,14 @@
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// Reset-safe stress wrapper. It randomly selects complete smoke, RACL, high-threshold, and bypass
+// children and runs them sequentially. The wrapper owns child selection and reset policy; each
+// child retains its normal smoke workload and typed parameter objects.
+//
+// The lock-range sequence is intentionally excluded. It leaves selected RANGE_REGWEN fields locked
+// until a hard reset and owns a directed reset/restart scenario, so it cannot hand over cleanly to
+// an arbitrary following stress child.
 
 class ${module_instance_name}_rst_safe_stress_all_test_seq_parameters
     extends ${module_instance_name}_base_test_seq_parameters;
@@ -44,6 +52,7 @@ endfunction : new
 
 function void ${module_instance_name}_rst_safe_stress_all_vseq::get_stress_seq_names(
     ref string seq_names[$]);
+  // Every migrated sequence that can leave the DUT reusable without a reset is a stress child.
   seq_names.push_back("${module_instance_name}_rst_safe_smoke_vseq");
   seq_names.push_back("${module_instance_name}_rst_safe_smoke_racl_vseq");
   seq_names.push_back("${module_instance_name}_rst_safe_smoke_high_threshold_vseq");
@@ -58,11 +67,13 @@ function void ${module_instance_name}_rst_safe_stress_all_vseq::configure_stress
   ${module_instance_name}_rst_safe_smoke_vseq                  smoke_child;
 
   if ($cast(rst_safe_child, selected_seq)) begin
+    // The outer stress wrapper owns reset. A child only runs its functional main_thread().
     rst_safe_child.do_apply_reset        = 1'b0;
     rst_safe_child.reset_ctrl_higher_seq = 1'b1;
     rst_safe_child.test_params =
         ${module_instance_name}_smoke_test_seq_parameters::type_id::create("test_params");
 
+    // Preserve the same typed parameter classes used by each standalone test.
     if ($cast(high_threshold_child, selected_seq)) begin
       rst_safe_child.config_params =
           ${module_instance_name}_smoke_high_threshold_config_parameters::type_id::create(

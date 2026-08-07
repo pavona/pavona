@@ -1,6 +1,10 @@
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// Random-reset specialization of rst_safe_stress_all. It uses the identical child inventory and
+// functional workloads, but permits reset to terminate an active child and restart stress from a
+// clean DUT/testbench epoch. The final main-thread pass completes without another injected reset.
 
 class ${module_instance_name}_rst_safe_stress_all_with_rand_reset_test_seq_parameters
     extends ${module_instance_name}_rst_safe_stress_all_test_seq_parameters;
