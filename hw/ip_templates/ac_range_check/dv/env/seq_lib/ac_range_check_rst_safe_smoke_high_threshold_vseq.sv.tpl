@@ -1,6 +1,10 @@
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// Reset-safe smoke variant for the upper end of the deny-counter threshold. It biases range
+// enable and access permissions toward denial and constrains the threshold close to its maximum,
+// while reusing the smoke sequence's live traffic, logging, interrupt, and CSR checking.
 
 class ${module_instance_name}_smoke_high_threshold_config_parameters
     extends ${module_instance_name}_smoke_config_parameters;
@@ -9,6 +13,7 @@ class ${module_instance_name}_smoke_high_threshold_config_parameters
 
   constraint range_attr_c {
     foreach (dut_cfg.range_base[i]) {
+      // Generate enough denied accesses to reach a high threshold within the smoke workload.
       dut_cfg.range_attr[i].execute_access dist {
         0 :/ 9,
         1 :/ 1
@@ -30,6 +35,7 @@ class ${module_instance_name}_smoke_high_threshold_config_parameters
 
   constraint deny_cnt_threshold_c {
     if (apply_deny_cnt_threshold_c) {
+      // Target the six highest representable threshold values.
       deny_cnt_threshold inside {[(1 << DenyCountWidth)-6 : (1 << DenyCountWidth)-1]};
     } else {
       deny_cnt_threshold == fixed_deny_cnt_threshold;
