@@ -1,6 +1,10 @@
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// Runs the same functional workload as rst_safe_smoke, but enables the common random-reset
+// lifecycle for two to four main-thread passes. Reset may terminate an active smoke pass; the next
+// pass starts from reset state, and the final pass must complete normally.
 
 class ${module_instance_name}_smoke_with_rand_reset_test_seq_parameters
     extends ${module_instance_name}_smoke_test_seq_parameters;
