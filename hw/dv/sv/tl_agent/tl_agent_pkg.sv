@@ -84,6 +84,7 @@ package tl_agent_pkg;
   `include "tl_rst_safe_host_driver.sv"
   `include "tl_rst_safe_device_driver.sv"
   `include "tl_sequencer.sv"
+  `include "tl_rst_safe_sequencer.sv"
   `include "tl_monitor.sv"
   `include "tl_agent.sv"
   `include "tl_rst_safe_agent.sv"
