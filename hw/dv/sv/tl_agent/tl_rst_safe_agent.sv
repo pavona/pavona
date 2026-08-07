@@ -10,7 +10,7 @@ class tl_rst_safe_agent extends dv_rst_safe_base_agent#(
     .DRIVER_T        (tl_rst_safe_base_driver),
     .HOST_DRIVER_T   (tl_rst_safe_host_driver),
     .DEVICE_DRIVER_T (tl_rst_safe_device_driver),
-    .SEQUENCER_T     (tl_sequencer),
+    .SEQUENCER_T     (tl_rst_safe_sequencer),
     .MONITOR_T       (tl_monitor),
     .COV_T           (tl_agent_cov)
   );
