@@ -68,6 +68,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // once triggered, it won't be triggered again until it flips
   bit read_buffer_watermark_triggered;
 
+  // Highest read buffer address whose events have already been predicted. Back-to-back read
+  // commands continue one incrementing address, so each command starts where the previous ended.
+  bit        last_predicted_addr_valid;
+  bit [31:0] last_predicted_addr;
+
   // ADDR_MODE TL side values;
   bit tl_ul_side_addr_mode_pending;
   bit tl_ul_side_addr_mode_addr_4b_en;
@@ -1878,9 +1883,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           if (start_addr == read_buffer_addr /*&& start_addr % READ_BUFFER_HALF_SIZE == 0*/) begin
             // Also predicting the first address, in case the starting addr causes any flip/watermark
             // interrupt
-            predict_read_buffer_intr(read_buffer_addr, item.opcode, item.read_pipeline_mode>0);
+            predict_read_buffer_intr(read_buffer_addr, item.opcode, item.read_pipeline_mode>0,
+                                     item.num_lanes);
           end
-          predict_read_buffer_intr(read_buffer_addr + 1, item.opcode, item.read_pipeline_mode>0);
+          // A command that ended before any byte moved never advanced the design's address, so
+          // `read_buffer_addr + 1` is an address it never drove. Only predict it while bytes are
+          // actually going out.
+          if (reading_readbuffer) begin
+            predict_read_buffer_intr(read_buffer_addr + 1, item.opcode, item.read_pipeline_mode>0,
+                                     item.num_lanes);
+          end
 
           // task above is delay free since it's within a fork...join_any
           // Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
@@ -1970,6 +1982,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       if ((payload_idx > 0) || (start_addr != `gmv(ral.last_read_addr) &&
          (item.read_pipeline_mode > 0) && payload_idx==0 && item.read_size==0)) begin
         bit updating_last_read_addr=1;
+        // Kept separate from read_buffer_addr, which the interrupt prediction thread also reads
+        bit [31:0] predicted_last_read_addr = read_buffer_addr;
         if(item.read_pipeline_mode > 0 && item.opcode inside {READ_QUAD, READ_QUADIO }) begin
           string print_str =
                            "Opcode is inside {READ_QUAD, READ_QUADIO} and read_pipeline is enabled";
@@ -1979,6 +1993,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           `uvm_info(`gfn, print_str,
                     UVM_DEBUG)
           read_buffer_addr++;
+          if (item.payload_q.size > 0) begin
+            predicted_last_read_addr = read_buffer_addr;
+          end
+          else begin
+            // No byte was taken, so the RTL latched addr_q, this command's own start address
+            predicted_last_read_addr = start_addr;
+          end
         end // if (payload_idx>0 && item.read_pipeline_mode > 0...
         else if (item.terminated_before_read_pipeline) begin
           // SPI Txn was terminated before the dummy cycles/read_pipeline started, hence the RTL
@@ -1988,10 +2009,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
         if (updating_last_read_addr) begin
           // Update read_buffer_addr predicted value
-          `DV_CHECK_EQ_FATAL( ral.last_read_addr.predict(.value(read_buffer_addr),
+          `DV_CHECK_EQ_FATAL( ral.last_read_addr.predict(.value(predicted_last_read_addr),
                                                          .kind(UVM_PREDICT_READ)), 1,
                               "ral.last_read_addr.predict did not succeed")
-          `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", read_buffer_addr), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", predicted_last_read_addr),
+                    UVM_MEDIUM)
 
         end
         else begin
@@ -2002,69 +2024,59 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endtask // process_read_buffer_cmd
 
+  // Marks every read buffer address up to addr as predicted, so their flip and watermark events
+  // are not predicted again. Used when one of those interrupts arrives before its prediction.
+  virtual function void account_for_read_buffer_addr(bit [31:0] addr);
+    if (!last_predicted_addr_valid || addr > last_predicted_addr) begin
+      last_predicted_addr_valid = 1;
+      last_predicted_addr       = addr;
+    end
+  endfunction
+
+  // Predicts the two read buffer interrupts. `spid_readbuffer` compares one address that keeps
+  // counting up across commands: the watermark fires when the offset inside the current 1kB
+  // buffer reaches the threshold, the flip fires when the address enters the next buffer, and a
+  // flip re-arms the watermark. Predict only the addresses this call adds to that count, skipping
+  // any an earlier command or the interrupt read handler already covered.
   virtual function void predict_read_buffer_intr(int addr, bit [7:0] opcode,
-                                                 bit read_pipeline_enabled);
+                                                 bit read_pipeline_enabled, bit [2:0] num_lanes);
     int threshold = `gmv(ral.read_threshold);
-    int offset;
-    bit watermark_crossed_initial_addr, buf_flip_crossed_initial_addr;
+    int first     = addr;
+    int last      = addr;
 
-    if(read_pipeline_enabled) begin
-      if(opcode inside {READ_CMD_LIST} /*&& !(opcode inside {READ_NORMAL,READ_FAST})*/) begin
+    // With the read pipeline on, a four lane read has already fetched the next byte, so the
+    // design compares one address beyond the byte going out.
+    if (read_pipeline_enabled && num_lanes == 4 && opcode inside {READ_CMD_LIST}) last = addr + 1;
 
-        offset                              = addr % READ_BUFFER_HALF_SIZE;
-        if (offset >= threshold && threshold > 0 && !read_buffer_watermark_triggered) begin
-          //covers the case when the original address crosses the watermark, but the next one doesn't because it wraps
-          `uvm_info(`gfn, "Read-pipeline ON -> 1st addr crossed watermark interrupt threshold",
-                    UVM_DEBUG)
-          watermark_crossed_initial_addr = 1;
+    if (last_predicted_addr_valid) begin
+      if (last <= last_predicted_addr) return;
+      if (first <= last_predicted_addr) first = last_predicted_addr + 1;
+    end
+
+    for (int a = first; a <= last; a++) begin
+      int offset = a % READ_BUFFER_HALF_SIZE;
+
+      if (threshold > 0 && offset >= threshold && !read_buffer_watermark_triggered) begin
+        read_buffer_watermark_triggered = 1;
+        update_pending_intr_w_delay(ReadbufWatermark);
+        `uvm_info(`gfn, $sformatf("read buffer watermark is triggered, addr: 0x%0x", a),
+                  UVM_MEDIUM)
+      end
+      if (a > 0 && offset == 0) begin
+        // A flip clears `watermark_crossed` in the design, so the next buffer can fire again
+        read_buffer_watermark_triggered = 0;
+        update_pending_intr_w_delay(ReadbufFlip);
+        `uvm_info(`gfn, $sformatf("read buffer flip is triggered, addr: 0x%0x", a), UVM_MEDIUM)
+        if (cfg.en_cov) begin
+          // flip at full buffer size or half
+          bit flip_position = a % READ_BUFFER_SIZE == 0;
+          cov.spi_device_buffer_boundary_cg.sample(opcode, flip_position);
         end
-        if (addr > 0 &&
-            addr % READ_BUFFER_HALF_SIZE == 0) begin
-          `uvm_info(`gfn, "Read-pipeline ON -> 1st addr crossed buf_flip interrupt threshold",
-                    UVM_DEBUG)
-          buf_flip_crossed_initial_addr  = 1;
-        end
-
-        // If the read_pipeline feature is enabled, that means the RTL will be "ahead" with data
-        // from the read buffer stored in the internal read_pipeline
-        `uvm_info(`gfn , "Increasing read buffer address because read_pipeline is ON", UVM_DEBUG)
-        addr++;
       end
     end
-    offset                              = addr % READ_BUFFER_HALF_SIZE;
 
-    `uvm_info(`gfn, {$sformatf("Read-buffer command (op=0x%0x) - addr=0x%0x - offset=0x%0x",
-                              opcode, addr, offset),
-                     $sformatf(" - threshold=0x%0x - watermark_crossed_initial_addr=0x%0x",
-                               threshold, watermark_crossed_initial_addr),
-                     $sformatf(" - buf_flip_crossed_initial_addr=0x%0x",
-                               buf_flip_crossed_initial_addr),
-                     $sformatf(" - read_buffer_watermark_triggered=0x%0x",
-                               read_buffer_watermark_triggered),
-                     $sformatf(" - READ_BUFFER_HALF_SIZE=0x%0x",READ_BUFFER_HALF_SIZE)}
-
-              , UVM_DEBUG)
-
-    if (watermark_crossed_initial_addr ||
-        (offset >= threshold && threshold > 0 && !read_buffer_watermark_triggered)) begin
-      read_buffer_watermark_triggered = 1;
-      update_pending_intr_w_delay(ReadbufWatermark);
-      `uvm_info(`gfn, $sformatf("read buffer watermark is triggered, addr: 0x%0x", addr),
-                UVM_MEDIUM)
-    end
-    if (buf_flip_crossed_initial_addr ||
-        (addr>0 && addr % READ_BUFFER_HALF_SIZE == 0)) begin
-      // after flip, WM can be triggered again
-      read_buffer_watermark_triggered = 0;
-      update_pending_intr_w_delay(ReadbufFlip);
-      `uvm_info(`gfn, $sformatf("read buffer flip is triggered, addr: 0x%0x", addr),
-                UVM_MEDIUM)
-      if (cfg.en_cov) begin
-        // flip at full buffer size or half
-        bit flip_position = addr % READ_BUFFER_SIZE == 0;
-        cov.spi_device_buffer_boundary_cg.sample(opcode, flip_position);
-      end
-    end
+    last_predicted_addr_valid = 1;
+    last_predicted_addr       = last;
   endfunction
 
   // flash/tpm interrupt is updated from spi domain to sys clk domain, which takes 2+ cycles.
@@ -2346,6 +2358,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 intr_trigger_pending[i] = 1;
                 readbuf_int_predicted_already = 1;
                 read_buffer_watermark_triggered = 0;
+                account_for_read_buffer_addr(last_read_buffer_addr + 1);
               end
 
               if ( (i == ReadbufWatermark) &&
@@ -2357,6 +2370,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 intr_trigger_pending[i] = 1;
                 readwatermark_int_predicted_already = 1;
                 read_buffer_watermark_triggered = 1;
+                account_for_read_buffer_addr(last_read_buffer_addr + 1);
               end
             end // if (item.d_data[i] && read_pipeline_cmd_now_or_last &&...
 
@@ -2815,6 +2829,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     cfg.read_buffer_ptr  = 0;
 
     read_buffer_watermark_triggered = 0;
+    // The address stream restarts from 0 after a reset, so the walk must forget how far it
+    // had reached or every later address would look already accounted for.
+    last_predicted_addr_valid = 0;
+    last_predicted_addr       = '0;
 
     spi_side_flash_status = `gmv(ral.flash_status);
 
