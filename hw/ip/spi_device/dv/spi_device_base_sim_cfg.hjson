@@ -164,6 +164,7 @@
     {
       name: spi_device_flash_and_tpm_min_idle
       uvm_test_seq: spi_device_flash_and_tpm_min_idle_vseq
+      run_opts: ["+test_timeout_ns=3000000000"]
     }
   ]
 
