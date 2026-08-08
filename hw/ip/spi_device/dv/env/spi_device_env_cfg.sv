@@ -37,9 +37,8 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // as long as all TPM requests can be read out and compared correctly, it's sufficient.
   bit                 en_check_tpm_not_empty_intr = 1;
 
-  // The scoreboard sets the flag below, just so certain sequences have 'busy' visibility and checks
-  // work correctly
-  bit                 last_flash_cmd_set_busy = 0;
+  // Counts the flash commands that set flash_status.busy
+  int unsigned        flash_cmd_set_busy_cnt = 0;
 
   // vseq_txn_finished is used to avoid blocking on flash_status.busy being set
   // If the busy set
