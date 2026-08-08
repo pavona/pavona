@@ -40,6 +40,9 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
         main_seq_done = 1;
       end
     join
+
+    // The reader thread above stops with main_seq, so drain what the last command uploaded
+    read_upload_fifos();
   endtask : body
 
   // Empty task to be overridden by child sequences in case any different configuration is needed

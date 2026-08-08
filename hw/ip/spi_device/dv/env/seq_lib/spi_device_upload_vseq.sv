@@ -22,6 +22,9 @@ class spi_device_upload_vseq extends spi_device_pass_cmd_filtering_vseq;
       // main seq that sends spi items
       begin
         super.body();
+        // Tell the reader thread no further SPI activity is coming, so a busy clear it is waiting
+        // on does not park forever on an SCK edge that will never arrive.
+        cfg.vseq_txn_finished = 1;
         // add some delay to allow interrupt to be sent and captured in another thread.
         cfg.clk_rst_vif.wait_clks(100);
         main_seq_done = 1;
