@@ -406,9 +406,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.busy CSR to: %p",
                                        spi_side_flash_status.busy), UVM_DEBUG)
 
-              cfg.last_flash_cmd_set_busy = 1;
-              `uvm_info(`gfn, "'cfg.last_flash_cmd_set_busy' set to help seqs 'busy' visibility",
-                        UVM_DEBUG)
+              cfg.flash_cmd_set_busy_cnt++;
+              `uvm_info(`gfn, $sformatf("'cfg.flash_cmd_set_busy_cnt' now %0d",
+                                        cfg.flash_cmd_set_busy_cnt), UVM_DEBUG)
 
               // After setting the SCK busy bit due to a command info (upload+valid+busy)
               // we tweak all of the predictions accordingly
@@ -1158,12 +1158,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `uvm_info(`gfn, "CSB is now active (low)", UVM_DEBUG)
       spi_side_fs_busy_at_csb_low = spi_side_flash_status.busy;
 
-      if (cfg.last_flash_cmd_set_busy) begin
-        cfg.last_flash_cmd_set_busy = 0;
-        `uvm_info(`gfn, "'cfg.last_flash_cmd_set_busy' unset to help seqs 'busy' visibility",
-          UVM_DEBUG)
-      end
-
       fork
         begin: isolation_thread
           fork
@@ -1327,6 +1321,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     // Updating SPI-side with committed value:
                     spi_side_flash_status = flash_status_q[0];
                     flash_rtl_committed = f_status_rtl_committed_value;
+
+                    // Flash commands can also change WEL and busy, so use the committed value.
+                    spi_side_flash_status.wel  = flash_rtl_committed.wel;
+                    spi_side_flash_status.busy = flash_rtl_committed.busy;
 
                     // We check if the current committed value is the newest write, if there was a
                     // previous write which cleared WEL/BUSY, clear them (upon checking on actual RTL
