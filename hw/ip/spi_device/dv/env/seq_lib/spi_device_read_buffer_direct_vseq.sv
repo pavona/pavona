@@ -14,7 +14,9 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
   // output due to the pipeline delay
   bit [31:0] computed_last_addr;
   bit [31:0] last_cmd_computed_last_addr;
-  bit        watermark_set_last;
+  // Mirrors `watermark_crossed` in `spid_readbuffer`: set when the address reaches the threshold,
+  // cleared when the address enters the next buffer
+  bit        wm_crossed;
 
   task body();
     int start_addr = 0;
@@ -75,15 +77,12 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
       payload_size = read_threshold_val - 2;
       send_read_cmd(start_addr, payload_size, readpipeline, num_lanes);
 
-      watermark_set_last = 0;
-      // Start address before the threshold but after all payload we've gone over threshold
-      if (is_read_overlap_threshold(num_lanes, readpipeline, start_addr[9:0],
-                                    ral.read_threshold.get(), payload_size)) begin
+      if (expected_watermark(start_addr, payload_size, num_lanes, readpipeline)) begin
         check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(1));
-        watermark_set_last = 1;
       end
-      else
+      else begin
         check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(0));
+      end
 
       start_addr += payload_size;
     end // if (read_threshold_val > 1)
@@ -91,18 +90,13 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
     `uvm_info(`gfn, "reading 1 more byte at read_threshold_val - 1", UVM_MEDIUM)
     payload_size = 1;
     send_read_cmd(start_addr, payload_size, readpipeline, num_lanes);
-    // Only check for watermark set if the previous read didn't set the watermark
-    // If it did, reading one more byte won't set the watermark again
-    if (watermark_set_last == 0 &&
-        is_read_overlap_threshold(num_lanes, readpipeline, start_addr[9:0],
-                                  ral.read_threshold.get(), payload_size)) begin
+    // Only check for watermark set if the previous read didn't set the watermark, unless this
+    // read flipped the buffer and re-armed it
+    if (expected_watermark(start_addr, payload_size, num_lanes, readpipeline)) begin
       check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(1));
-      watermark_set_last = 1;
     end
     else begin
       check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(0));
-      // Reset the flag - the next read command may go over the threshold next
-      watermark_set_last = 0;
     end
     check_interrupts(.interrupts((1 << ReadbufFlip)), .check_set(0));
     start_addr += 1;
@@ -110,15 +104,12 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
     payload_size = READ_BUFFER_SIZE / 2 - 1;
     `uvm_info(`gfn, "reading from read_threshold_val for 1k", UVM_MEDIUM)
     send_read_cmd(start_addr, payload_size, readpipeline, num_lanes);
-    if (watermark_set_last == 0 &&
-        is_read_overlap_threshold(num_lanes, readpipeline, start_addr[9:0],
-                                  ral.read_threshold.get(), payload_size)) begin
+    if (expected_watermark(start_addr, payload_size, num_lanes, readpipeline)) begin
       check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(1));
     end
-    else
+    else begin
       check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(0));
-    // Clearing the flag since we just went over the half buffer side
-    watermark_set_last = 0;
+    end
     check_interrupts(.interrupts((1 << ReadbufFlip)), .check_set(1));
 
     start_addr += payload_size;
@@ -127,29 +118,44 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
     payload_size = 1;
     send_read_cmd(start_addr, payload_size, readpipeline, num_lanes);
 
-    // Only reading 1-byte: if the watermark was set it won't be set now
-    if (watermark_set_last == 0 &&
-        is_read_overlap_threshold(num_lanes, readpipeline, start_addr[9:0],
-                                  ral.read_threshold.get(), payload_size)) begin
+    // Only reading 1-byte: if the watermark was set it won't be set now, unless this read
+    // flipped the buffer and re-armed it
+    if (expected_watermark(start_addr, payload_size, num_lanes, readpipeline)) begin
       check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(1));
     end
-    else
+    else begin
       check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(0));
+    end
 
     check_interrupts(.interrupts((1 << ReadbufFlip)), .check_set(0));
   endtask
 
-  function bit is_read_overlap_threshold(bit [2:0] num_lanes, bit [1:0] readpipeline,
-                                         bit [9:0] start_addr, bit [9:0] threshold,
-                                         int       payload_size);
+  // Model of spid_readbuffer. The event fires on the first address in a buffer that reaches the
+  // threshold, and the flip clears 'watermark_crossed' so the next buffer can fire again. Walks the
+  // addresses this read makes the RTL send and reports whether any of them raised the event.
+  //
+  // Walk to `start_addr + payload_size`, one past the last byte sent, because `spid_readbuffer`
+  // compares `addr_d`, the address of the next byte to fetch, not the one going out. So a one
+  // byte read at the address just below the threshold still reaches it.
+  function bit expected_watermark(bit [31:0] start_addr, int payload_size,
+                                  bit [2:0] num_lanes, bit [1:0] readpipeline);
+    int thr   = ral.read_threshold.get();
+    bit extra = (num_lanes == 4 && readpipeline > 0);
+    int last  = start_addr + payload_size + extra;
+    bit fired = 0;
 
-    bit extra_due_to_pipeline = num_lanes==4 && readpipeline>0;
+    // Threshold 0 disables the event, and leaves 'watermark_crossed' alone
+    if (thr == 0) return 0;
 
-    if ( (start_addr[9:0] <= ral.read_threshold.get()) &&
-         (start_addr[9:0] + payload_size + extra_due_to_pipeline) >= (ral.read_threshold.get()))
-      return 1;
-    else
-      return 0;
+    for (int a = start_addr; a <= last; a++) begin
+      int off = a % READ_BUFFER_HALF_SIZE;
+      if (off == 0 && a != start_addr) wm_crossed = 0;  // buffer flip re-arms
+      if (!wm_crossed && off >= thr) begin
+        fired      = 1;
+        wm_crossed = 1;
+      end
+    end
+    return fired;
   endfunction
 
   task send_read_cmd(input bit [31:0] start_addr, input int payload_size,
