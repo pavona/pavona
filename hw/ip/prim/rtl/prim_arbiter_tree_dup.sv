@@ -24,7 +24,7 @@ module prim_arbiter_tree_dup #(
   parameter bit FixedArb = 0,
 
   // Derived parameters
-  localparam int IdxW = $clog2(N)
+  localparam int IdxW = prim_util_pkg::vbits(N)
 ) (
   input clk_i,
   input rst_ni,

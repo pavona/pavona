@@ -22,7 +22,7 @@ module prim_arbiter_fixed #(
   parameter bit EnDataPort = 1,
 
   // Derived parameters
-  localparam int IdxW = $clog2(N)
+  localparam int IdxW = prim_util_pkg::vbits(N)
 ) (
   // used for assertions only
   input clk_i,
