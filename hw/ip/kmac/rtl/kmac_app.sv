@@ -197,7 +197,9 @@ module kmac_app
 
   // One more slot for value NumAppIntf. It is the value when no app intf is
   // chosen.
-  localparam int unsigned AppIdxW = $clog2(NumAppIntf);
+  // vbits() rather than $clog2() so that a single app interface still yields a
+  // 1 bit index instead of a zero width signal.
+  localparam int unsigned AppIdxW = prim_util_pkg::vbits(NumAppIntf);
 
   // app_id indicates, which app interface was chosen. various logic use this
   // value to get the config or return the data.
@@ -344,7 +346,7 @@ module kmac_app
   // Prep for arbiter
   logic [NumAppIntf-1:0] app_reqs;
   logic [NumAppIntf-1:0] unused_app_gnts;
-  logic [$clog2(NumAppIntf)-1:0] arb_idx;
+  logic [AppIdxW-1:0] arb_idx;
   logic arb_valid;
   logic arb_ready;
 
