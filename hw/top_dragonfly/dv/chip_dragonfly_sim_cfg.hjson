@@ -465,7 +465,7 @@
           "+bypass_alert_ready_to_end_check=1",
           # Exclude retention sram because when it gets a fault all accesses to
           # it are blocked and the test uses retention sram to track state.
-          "+excluded_ips=sram_ctrl_ret_aon",
+          "+avoid_inject_fatal_error_for_ips=sram_ctrl_ret",
       ]
       reseed: 100
     }
