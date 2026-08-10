@@ -8047,6 +8047,25 @@ pavona_test(
 )
 
 pavona_test(
+    name = "otp_ctrl_nvm_cnt_test",
+    srcs = ["otp_ctrl_nvm_cnt_test.c"],
+    exec_env = DRAGONFLY_TEST_ENVS,
+    deps = [
+        "//hw/top/dt",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+pavona_test(
     name = "soc_proxy_smoketest",
     srcs = ["soc_proxy_smoketest.c"],
     exec_env = DRAGONFLY_TEST_ENVS,
