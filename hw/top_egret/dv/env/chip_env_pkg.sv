@@ -108,7 +108,7 @@ package chip_env_pkg;
     SwTypeRom       = 0, // Ibex SW - first stage boot ROM.
     SwTypeTestSlotA = 1, // Ibex SW - test SW in (flash) slot A.
     SwTypeTestSlotB = 2, // Ibex SW - test SW in (flash) slot B.
-    SwTypeAcc      = 3, // Acc SW
+    SwTypeAcc       = 3, // Acc SW
     SwTypeOtp       = 4, // Customized OTP image
     SwTypeDebug     = 5  // Debug SW - injected into SRAM.
   } sw_type_e;
