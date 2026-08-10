@@ -21,7 +21,7 @@ class spi_host_spien_vseq extends spi_host_tx_rx_vseq;
   virtual task body();
     spi_host_status_t status;
     csr_spinwait_ctrl_object spinwait_ctrl_obj;
-    bit rd_rx_fifo_finished;
+    bit [7:0] read_q[$];
     spinwait_ctrl_obj = csr_spinwait_ctrl_object::type_id::create("spinwait_ctrl_obj");
     fork start_agent_reactive_seqs(); join_none
     wait_ready_for_command();
@@ -30,12 +30,24 @@ class spi_host_spien_vseq extends spi_host_tx_rx_vseq;
       begin
         // Read RXFIFO until STATUS.ACTIVE == 0
         read_rx_fifo();
+        rd_rx_fifo_finished = 1;
       end
       begin
         start_spi_host_trans(.num_transactions(3), .wait_ready(1));
         // Wait until the DUT has finished processing commands, and
         // the RXFIFO is empty (has been fully processed by the scoreboard).
         csr_spinwait(.ptr(ral.status.active), .exp_data(1'b0), .timeout_ns(50_000_000));
+        // Re-enabling spien can land a byte in the RXFIFO after read_rx_fifo() has returned,
+        // leaving nobody to drain it. Empty it here, then confirm with the spinwait. Wait for that
+        // thread first: two drainers race for the same byte, and the loser blocks inside
+        // access_data_fifo waiting for data that the winner already took.
+        wait (rd_rx_fifo_finished);
+        do begin
+          csr_rd(.ptr(ral.status), .value(status), .backdoor(1));
+          for (int i = 0; i < status.rx_qd; i++) begin
+            access_data_fifo(read_q, RxFifo);
+          end
+        end while (status.rx_qd > 0);
         csr_spinwait(.ptr(ral.status.rxqd), .exp_data(8'h0));
         cfg.clk_rst_vif.wait_clks(100);
         // This thread should be the last to end.

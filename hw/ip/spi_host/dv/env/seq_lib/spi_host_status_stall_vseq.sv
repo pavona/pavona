@@ -46,14 +46,14 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
             // if we're mid-spi transaction and the QUEUE is FULL minus 1 then we need to
             // check if it fills up
             csr_rd(.ptr(ral.status.rxqd), .value(current_rxqd), .backdoor(1));
-            if ((rxqd + 1) == SPI_HOST_RX_DEPTH &&
-                cfg.m_spi_agent_cfg.vif.csb[0] === 0 // active spi txn
-                ) begin
-              cfg.m_spi_agent_cfg.vif.wait_for_clks(1);
-              csr_rd(.ptr(ral.status.rxqd), .value(current_rxqd), .backdoor(1));
-              if (rxqd == SPI_HOST_RX_DEPTH)
-                break; // break because Q is full!
-            end
+            // Guard on the depth just read. The member only updates once per rd_trans and can be
+            // several entries behind.
+            rxqd = current_rxqd;
+            if (rxqd >= SPI_HOST_RX_DEPTH) break; // Q is full
+            // Within one entry of full, rxfull and rxstall are not predictable: the FIFO can reach
+            // full between this read and the checks below whether or not a transaction is active.
+            // Loop instead and let it fill, the full case is checked after the loop.
+            if ((rxqd + 1) >= SPI_HOST_RX_DEPTH) continue;
 
             check_event(ral.status.rxfull, 0, 0);
             csr_rd_check(.ptr(ral.status.rxstall), .compare_value(1'b0));

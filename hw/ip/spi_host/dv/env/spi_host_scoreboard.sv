@@ -64,6 +64,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   int                               checked_rx_seq_cnt = 0;
   // flag used used for SB when spi tx data is programmed later than command
   local bit commit_exp_txn_at_txfifo_write = 0;
+  // Set while a SW_RST has emptied the RX FIFO and a read issued before it may still land
+  local bit rx_drain_pending = 0;
   // events
   event event_sw_rst;
 
@@ -216,8 +218,16 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       tl_segment = read_segment_q.pop_front();
       // always read 4 bytes that is the minimum read size
       txt = "\n\t byte      SPI Bus     TL Bus";
-      if (rx_data_q.size == 0)
+      if (rx_data_q.size == 0) begin
+        // A read issued before a SW_RST lands afterwards with no prediction behind it. Drop
+        // those until real data flows again, so a missing prediction still fails.
+        if (rx_drain_pending) begin
+          `uvm_info(`gfn, "Dropping a read segment left over from the SW_RST drain", UVM_MEDIUM)
+          continue;
+        end
         `uvm_fatal(`gfn, "'rx_data_q.size' is empty - hence can't compare TXN")
+      end
+      rx_drain_pending = 0;
       for ( int i = 0; i < 4; i++) begin
         read_data = rx_data_q.pop_back();
         if (read_data != tl_segment.spi_data[i]) begin
@@ -602,24 +612,16 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           end
           if (spi_ctrl_reg.sw_rst) begin
             `uvm_info(`gfn, "CONTROL.sw_rst has been set", UVM_DEBUG)
-            if (active) begin
-              // Zero the checked segment counters here.
-              // 'in_tx_seg_cnt' updates when we drive the stimulus, but 'checked_tx_seg_cnt' only
-              // increments when the monitor sees the transaction on the bus. If the sw_rst is
-              // mid-transaction, the second count will not be updated.
-              // NB. As the segment counter values are only checked at the end of the simulation
-              // (in the check_phase()), if we reset mid-test then all previous transactions will
-              // not be captured in this final count. If the final transaction resets the counters,
-              // they are not very useful. A better solution would be to disable the counters for
-              // tests where they are not valuable, or improve the way we increment them such that
-              // they remain in-sync across a SW_RESET event.
-              // TODO(#18886)
-              // As described above, consider improving segment_cnt check for tests with resets
-              in_tx_seg_cnt = 0;
-              checked_tx_seg_cnt = 0;
-            end
-            // Reset the scoreboard state.
+            // Zero the checked segment counters on every SW_RST. The backdoor read of the active
+            // state races the reset, and a segment driven but never seen on the bus would leave
+            // the two counts different for the rest of the test.
+            // TODO(#18886)
+            // As described above, consider improving segment_cnt check for tests with resets
+            in_tx_seg_cnt = 0;
+            checked_tx_seg_cnt = 0;
+            // Reset the scoreboard state. Reads issued before this land with nothing to compare.
             reset();
+            rx_drain_pending = 1;
             ->event_sw_rst;
           end
         end
@@ -798,6 +800,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     host_wr_segment = spi_segment_item::type_id::create("host_wr_segment");
     host_rd_segment = spi_segment_item::type_id::create("host_rd_segment");
     initialise_configopts = 1;
+    rx_drain_pending = 0;
   endfunction : reset
 
   function void check_phase(uvm_phase phase);

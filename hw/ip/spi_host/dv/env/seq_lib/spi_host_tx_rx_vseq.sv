@@ -20,6 +20,9 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
 
   int unsigned num_wr, num_rd; // Keeps score of the reads/writes sent
   bit          spi_host_txn_sent;
+  // Set when read_rx_fifo() returns, so a sequence can drain what lands afterwards without
+  // racing it for the same byte.
+  bit          rd_rx_fifo_finished;
 
   virtual task start_spi_host_trans(int num_transactions, bit wait_ready = 1'b1);
     spi_host_status_t status;
@@ -33,40 +36,68 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
 
     num_wr = 0;
     num_rd = 0;
+    spi_host_txn_sent = 0;
     for (int n = 0; n < num_transactions; n++) begin
       generate_transaction();
       send_trans(transaction, wait_ready);
       if (wait_ready)
         wait_ready_for_command();
     end
+    // Releases the waiter when every segment was a write and num_rd stayed 0. Set only after all
+    // transactions, since a later one could still add reads.
+    spi_host_txn_sent = 1;
   endtask
 
   // Read CSR.RXFIFO until spi_host is inactive and the fifo is empty.
   // Wait until the TL-bus is inactive, then read status/intr_state for scb checking.
-  virtual task read_rx_fifo();
+  // Set 'producer_running' when another thread is still sending. The DUT looks idle with an
+  // empty RXFIFO both between segments and at the end of the traffic, and returning on the
+  // former leaves the next segment's reads uncollected.
+  virtual task read_rx_fifo(bit producer_running = 1'b0);
     bit [7:0] read_q[$];
     spi_host_status_t status;
 
-    // Wait until not-empty before entering the forever loop.
-    csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0), .backdoor(1));
+    rd_rx_fifo_finished = 0;
+    // Wait until not-empty before entering the forever loop. Paced because csr_spinwait polls a
+    // backdoor read every 1ns, which burns wall clock. 1us is finer than any SCK period.
+    csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0), .backdoor(1),
+                 .spinwait_delay_ns(1000));
     forever begin : read_rxfifo_until_empty_and_inactive
-      do begin
-        // Add some delay here so other tb tasks can use the bus while we spin.
-        #($urandom_range(500, 1000) * 1ns)
-        csr_rd(.ptr(ral.status), .value(status));
-        // Read again if only 1 entry, in case we call 'access_data_fifo' at a time the Q is empty
-        // To avoid deadlock and timeout
-        if (status.rx_qd == 1)
-          csr_rd(.ptr(ral.status), .value(status), .backdoor(1));
-        for (int i = 0; i < status.rx_qd; i++) begin
-          `uvm_info(`gfn, $sformatf("Calling 'access_data_fifo' since status.rx_qd = 0x%0x > 0",
-                                    status.rx_qd), UVM_DEBUG)
-          access_data_fifo(read_q, RxFifo);
-        end
-      end while (status.rx_qd > 0);
-      if (!status.active && status.rxempty && (status.rx_qd == 0)) begin
-        break;
+      // Re-read the depth before every access: a count sampled once goes stale when a SW_RST
+      // empties the FIFO, and reading it then underflows. Deliberately unlocked, since send_trans
+      // holds spi_host_atomic waiting for TXFIFO space that this drain may have to free.
+      csr_rd(.ptr(ral.status), .value(status));
+      forever begin
+        csr_rd(.ptr(ral.status), .value(status), .backdoor(1));
+        if (status.rx_qd == 0) break;
+        `uvm_info(`gfn, $sformatf("Calling 'access_data_fifo' since status.rx_qd = 0x%0x > 0",
+                                  status.rx_qd), UVM_DEBUG)
+        access_data_fifo(read_q, RxFifo);
       end
+      if (!status.active && status.rxempty && (status.rx_qd == 0)) begin
+        if (!producer_running || spi_host_txn_sent) break;
+        // Idle only because the producer is between segments. Block until it either queues more
+        // data or reports that every transaction has been sent.
+        fork begin : wait_for_rx_or_producer_done
+          fork
+            csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0), .backdoor(1),
+                         .spinwait_delay_ns(1000));
+            wait (spi_host_txn_sent);
+          join_any
+          disable fork;
+        end join
+        continue;
+      end
+      // Nothing queued and the DUT still running: wait for RX data or for the DUT to go idle.
+      fork begin : wait_for_rx_or_idle
+        fork
+          csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0), .backdoor(1),
+                       .spinwait_delay_ns(1000));
+          csr_spinwait(.ptr(ral.status.active),  .exp_data(1'b0), .backdoor(1),
+                       .spinwait_delay_ns(1000));
+        join_any
+        disable fork;
+      end join
     end : read_rxfifo_until_empty_and_inactive
 
     // Wait for all accesses to complete
@@ -75,6 +106,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     // Read out status/intr_state CSRs (ignore the data)
     // This lets the scoreboard check the values.
     check_status_and_clear_intrs();
+    rd_rx_fifo_finished = 1;
 
   endtask
 
