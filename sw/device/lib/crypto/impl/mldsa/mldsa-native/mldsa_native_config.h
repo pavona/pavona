@@ -63,19 +63,6 @@
 #define MLD_CONFIG_NO_RANDOMIZED_API
 
 /******************************************************************************
- * Name:        MLD_CONFIG_NO_SUPERCOP
- *
- * Description: By default, mldsa_native.h exposes the mldsa-native API in the
- *              SUPERCOP naming convention (crypto_sign_xxx). If you don't need
- *              this, set MLD_CONFIG_NO_SUPERCOP.
- *
- *              NOTE: You must set this for a multi-level build as the SUPERCOP
- *              naming does not disambiguate between the parameter sets.
- *
- *****************************************************************************/
-#define MLD_CONFIG_NO_SUPERCOP
-
-/******************************************************************************
  * Name:        MLD_CONFIG_INTERNAL_API_QUALIFIER
  *
  * Description: If set, this option provides an additional function

@@ -196,9 +196,8 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
     memcpy(pre + 2, context.data, context.len);
   }
 
-  size_t signature_len;
   int result = mldsa44_signature_internal(
-      (uint8_t *)signature.data, &signature_len, message.data, message.len, pre,
+      (uint8_t *)signature.data, message.data, message.len, pre,
       2 + context.len, (const uint8_t *)rnd.data, (const uint8_t *)sk_share0, 0,
       &ctx);
 
@@ -248,9 +247,9 @@ otcrypto_status_t otcrypto_mldsa44_verify(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa44WorkBufferVerifyWords,
                          .offset_words = 0};
-  int result = mldsa44_verify(
-      (const uint8_t *)signature.data, signature.len, message.data, message.len,
-      context.data, context.len, (const uint8_t *)public_key->key, &ctx);
+  int result = mldsa44_verify((const uint8_t *)signature.data, message.data,
+                              message.len, context.data, context.len,
+                              (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
 #endif
@@ -402,9 +401,8 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
     memcpy(pre + 2, context.data, context.len);
   }
 
-  size_t signature_len;
   int result = mldsa65_signature_internal(
-      (uint8_t *)signature.data, &signature_len, message.data, message.len, pre,
+      (uint8_t *)signature.data, message.data, message.len, pre,
       2 + context.len, (const uint8_t *)rnd.data, (const uint8_t *)sk_share0, 0,
       &ctx);
 
@@ -454,9 +452,9 @@ otcrypto_status_t otcrypto_mldsa65_verify(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa65WorkBufferVerifyWords,
                          .offset_words = 0};
-  int result = mldsa65_verify(
-      (const uint8_t *)signature.data, signature.len, message.data, message.len,
-      context.data, context.len, (const uint8_t *)public_key->key, &ctx);
+  int result = mldsa65_verify((const uint8_t *)signature.data, message.data,
+                              message.len, context.data, context.len,
+                              (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
 #endif
@@ -608,9 +606,8 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
     memcpy(pre + 2, context.data, context.len);
   }
 
-  size_t signature_len;
   int result = mldsa87_signature_internal(
-      (uint8_t *)signature.data, &signature_len, message.data, message.len, pre,
+      (uint8_t *)signature.data, message.data, message.len, pre,
       2 + context.len, (const uint8_t *)rnd.data, (const uint8_t *)sk_share0, 0,
       &ctx);
 
@@ -660,9 +657,9 @@ otcrypto_status_t otcrypto_mldsa87_verify(
   mld_alloc_ctx_t ctx = {.base = work,
                          .size_words = kOtcryptoMldsa87WorkBufferVerifyWords,
                          .offset_words = 0};
-  int result = mldsa87_verify(
-      (const uint8_t *)signature.data, signature.len, message.data, message.len,
-      context.data, context.len, (const uint8_t *)public_key->key, &ctx);
+  int result = mldsa87_verify((const uint8_t *)signature.data, message.data,
+                              message.len, context.data, context.len,
+                              (const uint8_t *)public_key->key, &ctx);
 
   *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
 #endif
