@@ -4,6 +4,7 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//hw/top:defs.bzl", "pavona_select_top_attr")
 
@@ -59,6 +60,7 @@ py_library(
         "tool_requirements.py",
     ],
     imports = ["."],  # Allows `import check_tool_requirements` from dependents.
+    deps = [requirement("packaging")],
 )
 
 filegroup(

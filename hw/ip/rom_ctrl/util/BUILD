@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "mem",
     srcs = ["mem.py"],
+    imports = ["."],
     deps = [
         "//util/design:secded_gen",
         requirement("pyelftools"),
@@ -19,6 +20,7 @@ py_library(
 py_binary(
     name = "gen_vivado_mem_image",
     srcs = ["gen_vivado_mem_image.py"],
+    imports = ["."],
     deps = [":mem"],
 )
 
@@ -31,6 +33,7 @@ py_test(
 py_binary(
     name = "scramble_image",
     srcs = ["scramble_image.py"],
+    imports = ["."],
     deps = [
         ":mem",
         "//util/design:prince",

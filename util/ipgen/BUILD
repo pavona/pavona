@@ -9,15 +9,15 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "ipgen",
-    srcs = [
-        "__init__.py",
-        "lib.py",
-        "renderer.py",
-    ],
+    srcs = glob(["*.py"]),
     deps = [
+        "//util/basegen",
+        "//util/reggen:countermeasure",
         "//util/reggen:gen_rtl",
+        "//util/reggen:ip_block",
         "//util/reggen:lib",
         "//util/reggen:params",
+        "//util/topgen",
         requirement("hjson"),
         requirement("mako"),
     ],
@@ -28,6 +28,7 @@ py_test(
     srcs = ["tests/test_render.py"],
     deps = [
         ":ipgen",
+        "//util/reggen:params",
         requirement("pytest"),
     ],
 )

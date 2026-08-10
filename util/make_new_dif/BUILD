@@ -8,7 +8,10 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "ip",
-    srcs = ["ip.py"],
+    srcs = [
+        "__init__.py",
+        "ip.py",
+    ],
 )
 
 filegroup(

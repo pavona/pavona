@@ -18,6 +18,7 @@ py_library(
 py_test(
     name = "common_test",
     srcs = ["common_test.py"],
+    imports = ["."],
     deps = [":common"],
 )
 
@@ -57,6 +58,7 @@ py_library(
     ],
     deps = [
         ":common",
+        "//util/basegen",
         "//util/design/mubi:prim_mubi",
         "//util/topgen",
         requirement("tabulate"),
@@ -73,6 +75,7 @@ py_library(
         ":otp_mem_map",
         ":present",
         "//util/design/mubi:prim_mubi",
+        "//util/topgen",
         requirement("pycryptodome"),
     ],
 )

@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [project]
-name = "opentitan"
+name = "pavona"
 version = "0.0.0"
-description = "Open-source hardware root-of-trust"
-requires-python = ">=3.10, <3.14"
+description = "A library of modular, tapeout-proven, and secure-by-default open silicon blocks"
+requires-python = ">=3.10, <3.15"
 
 dependencies = [
   # Keep sorted
@@ -16,7 +16,7 @@ dependencies = [
   "kyber-py==1.0.1",
   "libclang==16.0.0",
   "libcst ~= 1.1",
-  "lxml ~= 5.0",
+  "lxml ~= 6.0",
   "mako ~= 1.2",
   "ninja ~= 1.11.1.1",
   "pluralizer==1.2.0",
@@ -50,6 +50,10 @@ dependencies = [
   # To relax the constraint we either need to do a runtime detection, or switch all
   # users to a newer version.
   "premailer==3.8.0",
+
+  # Dependencies: mdbook preprocessors
+  "markdown-it-py ~= 3.0",
+  "validators ~= 0.34",
 
   # Dependencies: check_dif_statuses.py
   "pydriller ~= 2.7",

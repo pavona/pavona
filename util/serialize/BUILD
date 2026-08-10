@@ -9,6 +9,10 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "parse_helpers",
-    srcs = ["parse_helpers.py"],
+    srcs = [
+        "__init__.py",
+        "parse_helpers.py",
+    ],
+    imports = [".."],
     deps = [requirement("pyyaml")],
 )

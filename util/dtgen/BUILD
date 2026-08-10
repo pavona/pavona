@@ -9,15 +9,21 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "helper",
-    srcs = ["helper.py"],
-    deps = ["//util/topgen:lib"],
+    srcs = [
+        "__init__.py",
+        "helper.py",
+    ],
+    deps = [
+        "//util/basegen",
+        "//util/topgen",
+    ],
 )
 
 py_library(
     name = "ipgen_ext",
     srcs = ["ipgen_ext.py"],
     deps = [
-        "//util/topgen:lib",
+        "//util/topgen",
         requirement("jsonschema"),
     ],
 )

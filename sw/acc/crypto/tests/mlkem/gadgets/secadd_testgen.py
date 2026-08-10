@@ -89,4 +89,5 @@ if __name__ == '__main__':
                         help=('Output file for expected DMEM values.'))
     args = parser.parse_args()
 
-    gen_secadd_test(args.seed, args.data, args.exp, args.dexp)
+    with args.data, args.exp, args.dexp:
+        gen_secadd_test(args.seed, args.data, args.exp, args.dexp)

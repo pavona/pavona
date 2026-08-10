@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -9,7 +10,11 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "lib",
-    srcs = ["lib.py"],
+    srcs = [
+        "__init__.py",
+        "lib.py",
+    ],
+    imports = [".."],
 )
 
 py_library(
@@ -87,6 +92,7 @@ py_library(
     name = "interrupt",
     srcs = ["interrupt.py"],
     deps = [
+        ":access",
         ":bits",
         ":lib",
         ":signal",
@@ -101,7 +107,10 @@ py_library(
 py_library(
     name = "inter_signal",
     srcs = ["inter_signal.py"],
-    deps = [":lib"],
+    deps = [
+        ":lib",
+        ":params",
+    ],
 )
 
 py_library(
@@ -116,6 +125,7 @@ py_library(
         ":inter_signal",
         ":interrupt",
         ":lib",
+        ":memory",
         ":params",
         ":reg_block",
         ":signal",
@@ -133,7 +143,10 @@ py_library(
 py_library(
     name = "reg_base",
     srcs = ["reg_base.py"],
-    deps = [":field"],
+    deps = [
+        ":clocking",
+        ":field",
+    ],
 )
 
 py_library(
@@ -145,6 +158,7 @@ py_library(
         ":bus_interfaces",
         ":clocking",
         ":field",
+        ":interrupt",
         ":lib",
         ":memory",
         ":multi_register",
@@ -166,6 +180,7 @@ py_library(
         ":lib",
         ":params",
         ":reg_base",
+        "//util/design/mubi:prim_mubi",
     ],
 )
 
@@ -198,6 +213,7 @@ py_library(
         ":access",
         ":lib",
         ":params",
+        ":window",
     ],
 )
 
@@ -263,6 +279,29 @@ py_library(
 )
 
 py_library(
+    name = "gen_md",
+    srcs = ["gen_md.py"],
+    deps = [
+        ":ip_block",
+        ":md_helpers",
+        ":multi_register",
+        ":reg_block",
+        ":register",
+        ":window",
+    ],
+)
+
+py_library(
+    name = "gen_cfg_md",
+    srcs = ["gen_cfg_md.py"],
+    deps = [
+        ":ip_block",
+        ":md_helpers",
+        ":params",
+    ],
+)
+
+py_library(
     name = "gen_json",
     srcs = ["gen_json.py"],
     deps = [requirement("hjson")],
@@ -306,6 +345,7 @@ py_library(
         ":register",
         ":signal",
         ":window",
+        "//util:version_file",
     ],
 )
 
@@ -327,6 +367,7 @@ py_library(
         ":enum_entry",
         ":field",
         ":ip_block",
+        ":lib",
         ":multi_register",
         ":register",
         ":validate",
@@ -354,6 +395,7 @@ py_library(
         ":reg_block",
         ":register",
         ":window",
+        "//util/reggen/systemrdl:udp",
         requirement("peakrdl_systemrdl"),
     ],
 )
@@ -363,6 +405,7 @@ py_library(
     srcs = ["md_helpers.py"],
     deps = [
         ":signal",
+        requirement("tabulate"),
     ],
 )
 

@@ -18,7 +18,10 @@ fi
 
 # The below shellcode autogenerates the `python-requirements.txt`, with hashes,
 # and prepends the license and auto-generated banners at the top of the file.
+# The resolution is universal so that the lock file covers every Python version
+# allowed by `requires-python`, not just the 3.10 given below.
 uv pip compile \
+  --universal \
   --generate-hashes \
   --no-annotate \
   --no-header \

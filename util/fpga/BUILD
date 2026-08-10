@@ -28,5 +28,6 @@ py_test(
         "bitstream_bisect.py",
         "bitstream_bisect_test.py",
     ],
+    imports = ["."],
     deps = [":bitstream_bisect_support"],
 )

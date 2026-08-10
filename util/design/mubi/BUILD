@@ -9,6 +9,9 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "prim_mubi",
-    srcs = ["prim_mubi.py"],
+    srcs = [
+        "__init__.py",
+        "prim_mubi.py",
+    ],
     deps = [requirement("mako")],
 )
