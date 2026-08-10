@@ -66,6 +66,8 @@
       name: spi_host_upper_range_clkdiv
       uvm_test_seq: spi_host_upper_range_clkdiv_vseq
       reseed: 10 // Reduced reseed since this test may take ages
+      // Slowest seeds land near 100ms. Low enough that a hung seed reports PH_TIMEOUT first.
+      run_opts: ["+test_timeout_ns=400_000_000"]
     }
     {
       name: spi_host_performance
@@ -99,7 +101,10 @@
     {
       name: spi_host_status_stall
       uvm_test_seq: spi_host_status_stall_vseq
-      run_opts: ["+test_timeout_ns=1_000_000_000"]
+      // A high-clkdiv seed drawing many segments needs over 1s and is still making progress when
+      // a 1s budget cuts it off
+      run_opts: ["+test_timeout_ns=2_500_000_000"]
+      run_timeout_mins: 120
     }
     {
       name: spi_host_idlecsbactive

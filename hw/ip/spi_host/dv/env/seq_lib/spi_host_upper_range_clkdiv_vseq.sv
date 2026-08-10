@@ -33,11 +33,6 @@ class spi_host_upper_range_clkdiv_vseq extends spi_host_speed_vseq;
   }
 
 
-  constraint spi_config_regs_faster_clkdiv_c {
-    // Only multiples of 16 to quicken up the clock - this constraint should be part of the clkdiv
-    spi_config_regs.clkdiv[3:0] == 0;
-  }
-
   constraint num_trans_c {
     // Really low number of TXN generated to avoid lenghty simulation time
     // since we already have a very slow SPI clock
@@ -45,7 +40,8 @@ class spi_host_upper_range_clkdiv_vseq extends spi_host_speed_vseq;
   }
 
   // This VSEQ is the only one which allows large clock divider values and due to that the
-  // VSEQ allow the internal FSM counter to be decremented by 16-units.
+  // VSEQ allow the internal FSM counter to be decremented by 16-units. It saturates at zero, so
+  // any clkdiv is allowed.
   // The VIF flag is enabled only whilst this VSEQ is run
   virtual task pre_start();
     super.pre_start();
