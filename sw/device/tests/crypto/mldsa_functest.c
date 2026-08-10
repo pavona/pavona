@@ -55,10 +55,11 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // FIPS 204 expected iteration counts for signing (scaled by 100)
 // From FIPS 204 Table 1: Expected number of iterations of the
-// main loop in Algorithm 2 (ML-DSA.Sign)
-#define FIPS204_EXPECTED_ITERS_44 425  // 4.25
-#define FIPS204_EXPECTED_ITERS_65 510  // 5.1
-#define FIPS204_EXPECTED_ITERS_87 385  // 3.85
+// main loop in Algorithm 2 (ML-DSA.Sign), as revised by the FIPS 204 errata:
+// https://csrc.nist.gov/files/pubs/fips/204/final/docs/fips-204-potential-updates.xlsx
+#define FIPS204_EXPECTED_ITERS_44 436  // 4.36
+#define FIPS204_EXPECTED_ITERS_65 514  // 5.14
+#define FIPS204_EXPECTED_ITERS_87 391  // 3.91
 
 #define TEST_MSG_LEN (sizeof(TEST_MSG) - 1)
 
@@ -217,11 +218,11 @@ static void test_mldsa44_derand(void) {
   LOG_INFO("1-iteration message signing time: %u cycles", (uint32_t)time_1iter);
 
 #ifdef MLDSA_BENCHMARK_MODE
-  // Calculate expected runtime for expected iterations (4.25)
+  // Calculate expected runtime for expected iterations (4.36)
   uint32_t time_per_iter = (uint32_t)(time_2iter - time_1iter);
   uint64_t expected_time =
       time_1iter + ((FIPS204_EXPECTED_ITERS_44 - 100) * time_per_iter) / 100;
-  LOG_INFO("Expected signing time (4.25 iterations): %u cycles",
+  LOG_INFO("Expected signing time (4.36 iterations): %u cycles",
            (uint32_t)expected_time);
 #endif
 
@@ -317,11 +318,11 @@ static void test_mldsa65_derand(void) {
   LOG_INFO("1-iteration message signing time: %u cycles", (uint32_t)time_1iter);
 
 #ifdef MLDSA_BENCHMARK_MODE
-  // Calculate expected runtime for expected iterations (5.1)
+  // Calculate expected runtime for expected iterations (5.14)
   uint32_t time_per_iter = (uint32_t)(time_2iter - time_1iter);
   uint64_t expected_time =
       time_1iter + ((FIPS204_EXPECTED_ITERS_65 - 100) * time_per_iter) / 100;
-  LOG_INFO("Expected signing time (5.1 iterations): %u cycles",
+  LOG_INFO("Expected signing time (5.14 iterations): %u cycles",
            (uint32_t)expected_time);
 #endif
 
@@ -417,11 +418,11 @@ static void test_mldsa87_derand(void) {
   LOG_INFO("1-iteration message signing time: %u cycles", (uint32_t)time_1iter);
 
 #ifdef MLDSA_BENCHMARK_MODE
-  // Calculate expected runtime for expected iterations (3.85)
+  // Calculate expected runtime for expected iterations (3.91)
   uint32_t time_per_iter = (uint32_t)(time_2iter - time_1iter);
   uint64_t expected_time =
       time_1iter + ((FIPS204_EXPECTED_ITERS_87 - 100) * time_per_iter) / 100;
-  LOG_INFO("Expected signing time (3.85 iterations): %u cycles",
+  LOG_INFO("Expected signing time (3.91 iterations): %u cycles",
            (uint32_t)expected_time);
 #endif
 
