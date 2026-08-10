@@ -62,19 +62,6 @@
 #define MLK_CONFIG_NO_RANDOMIZED_API
 
 /******************************************************************************
- * Name:        MLK_CONFIG_NO_SUPERCOP
- *
- * Description: By default, mlkem_native.h exposes the mlkem-native API in the
- *              SUPERCOP naming convention (crypto_kem_xxx). If you don't need
- *              this, set MLK_CONFIG_NO_SUPERCOP.
- *
- *              NOTE: You must set this for a multi-level build as the SUPERCOP
- *              naming does not disambiguate between the parameter sets.
- *
- *****************************************************************************/
-#define MLK_CONFIG_NO_SUPERCOP
-
-/******************************************************************************
  * Name:        MLK_CONFIG_INTERNAL_API_QUALIFIER
  *
  * Description: If set, this option provides an additional function

@@ -12,6 +12,7 @@ cc_library(
         "mlkem/mlkem_native.h",
         "mlkem/src/cbmc.h",
         "mlkem/src/common.h",
+        "mlkem/src/context.h",
         "mlkem/src/randombytes.h",
         "mlkem/src/debug.h",
         "mlkem/src/debug.c",
