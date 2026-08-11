@@ -125,6 +125,14 @@ Note that this has been implemented in this way to not overly complicate the des
 For full write throughput, a more elaborate write buffering scheme would be required.
 <!-- END-FEATURE: SRAM_CTRL.SUBWORD_ACCESS -->
 
+<!-- BEGIN-FEATURE: SRAM_CTRL.READBACK -->
+### SRAM Readback
+
+As an additional security countermeasure the SRAM can be configured via the READBACK CSR to perform a read after each read or write access.
+A fatal alert is flagged if the data read back is not identical to the data first read or the data that was written.
+Readback adds an extra cycle of latency for either read or write operations.
+<!-- END-FEATURE: SRAM_CTRL.READBACK -->
+
 ### ECC Error Handling and Correction
 
 This memory utilizes a SECDED ECC code stored alongside the data in the underlying memory primitive to enhance data integrity.
