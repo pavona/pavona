@@ -792,14 +792,22 @@ class SimCfg(FlowCfg):
         tests_by_name = OrderedDict()
         for r in self.runs:
             start = getattr(r.launcher, "start_time", None)
+            status = run_results.get(r, "K")
             tests_by_name.setdefault(r.name, []).append({
                 'seed': str(r.seed),
-                'status': run_results.get(r, "K"),
+                'status': status,
                 'start': start.isoformat() if start else None,
                 'wall_time_s': _jobtime_val(r.job_wall_time, 's'),
                 'cpu_time_s': _jobtime_val(r.job_runtime, 's'),
                 'simulated_time_us': _jobtime_val(r.simulated_time, 'us'),
                 'data_structure_size_mb': r.job_mem,
+                'peak_rss_mb': r.job_peak_rss,
+                'odir_size_mb': r.job_odir_size,
+                # Why the job failed or was killed. For a killed job this is
+                # the only record of the reason, so it matters most for the
+                # runs that never got to report anything themselves.
+                'fail_msg': (r.launcher.fail_msg.message
+                             if status != "P" else None),
             })
         results['tests'] = [{'name': name, 'seeds': seeds}
                             for name, seeds in tests_by_name.items()]

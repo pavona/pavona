@@ -20,8 +20,89 @@ from Launcher import ErrorMessage, Launcher, LauncherBusy, LauncherError
 _LOG_SCAN_TAIL_CHARS = 256
 
 
+def _read_vmhwm_mb(pid: int) -> Union[float, None]:
+    """Return a process's peak resident set size in MB, read from procfs.
+
+    VmHWM is a high water mark that the kernel maintains from the moment the
+    process starts, so a single read reports the true peak so far. That means
+    there is no need to sample continuously and no way for a spike between two
+    reads to go unnoticed.
+
+    Opening unbuffered and reading once skips the buffering and UTF-8 decoding on
+    a call made for every running job on every poll. VmHWM sits in the first
+    kilobyte, so the long bitmasks at the end of the file do not matter.
+
+    Returns None if the process has already exited or procfs cannot be read. A
+    process with no memory map of its own, such as a kernel thread, reports no
+    VmHWM at all and also comes back as None.
+    """
+    try:
+        with open(f"/proc/{pid}/status", "rb", buffering=0) as f:
+            blob = f.read(4096)
+    except OSError:
+        return None
+
+    start = blob.find(b"VmHWM:")
+    if start < 0:
+        return None
+    end = blob.find(b"kB", start)
+    if end < 0:
+        return None
+
+    try:
+        # The value is in kB, per proc(5).
+        return int(blob[start + len(b"VmHWM:"):end]) / 1024
+    except ValueError:
+        return None
+
+
+def _iter_job_pids(pid: int):
+    """Yield the given process and every descendant of it.
+
+    Descendants are read from /proc/<pid>/task/<tid>/children, which lists a
+    thread's direct children. Walking down from the job costs a couple of reads
+    per process belonging to it, rather than a scan of every process on the
+    machine, which would be orders of magnitude dearer.
+
+    Processes that exit midway through the walk are skipped rather than raising,
+    since a job's process tree changes shape while it runs.
+    """
+    pending = [pid]
+    seen = set()
+
+    while pending:
+        current = pending.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        yield current
+
+        task_dir = f"/proc/{current}/task"
+        try:
+            tids = os.listdir(task_dir)
+        except OSError:
+            continue
+
+        for tid in tids:
+            try:
+                with open(f"{task_dir}/{tid}/children", encoding="UTF-8") as f:
+                    children = f.read().split()
+            except OSError:
+                continue
+
+            for child in children:
+                try:
+                    pending.append(int(child))
+                except ValueError:
+                    continue
+
+
 class LocalLauncher(Launcher):
     """Implementation of Launcher to launch jobs in the user's local workstation."""
+
+    # Re-discover the job's process tree once every this many polls. See
+    # _sample_peak_rss() for why the tree is not walked afresh every time.
+    pid_walk_interval = 30
 
     def __init__(self, deploy) -> None:
         """Initialize common class members."""
@@ -30,6 +111,10 @@ class LocalLauncher(Launcher):
         # Popen object when launching the job.
         self._process = None
         self._log_file = None
+
+        # The job's process tree, and the countdown to re-walking it.
+        self._job_pids = []
+        self._pid_walk_countdown = 0
 
         # When the job started doing its work, as opposed to when it was
         # launched. None until we see it start. See _detect_job_start().
@@ -132,7 +217,8 @@ class LocalLauncher(Launcher):
 
         elapsed_time = datetime.datetime.now() - self.start_time
         self.job_runtime_secs = elapsed_time.total_seconds()
-        if self._process.poll() is None:
+        if self._reap() is None:
+            # Still running.
             timeout_reason = self._timeout_reason()
             if timeout_reason is not None:
                 self._kill_with_reason(timeout_reason)
@@ -140,19 +226,10 @@ class LocalLauncher(Launcher):
 
             return "D"
 
-        self.exit_code = self._process.returncode
         status, err_msg = self._check_status()
         self._post_finish(status, err_msg)
 
         return self.status
-
-    def _kill_with_reason(self, message: str) -> None:
-        """Kill the job and record why dvsim decided to kill it."""
-        self._kill()
-        self._post_finish(
-            "K",
-            ErrorMessage(line_number=None, message=message, context=[message]),
-        )
 
     def _detect_job_start(self) -> None:
         """Look for the point in the log where the job started doing its work.
@@ -232,6 +309,104 @@ class LocalLauncher(Launcher):
 
         return None
 
+    def _reap(self) -> Union[int, None]:
+        """Reap the process if it has finished, returning its exit code.
+
+        Returns None while the process is still running.
+
+        We reap with os.wait4() rather than Popen.poll() so as to receive the
+        rusage that the kernel hands over at reap time. Its ru_maxrss field is
+        the job's peak resident set size, and the moment the process is gone
+        that number is unknowable, so for a job that runs to completion this is
+        the only chance to capture it. The kernel rolls the peak of a reaped
+        descendant into its parent's figure, so this covers the simulator even
+        though the process we launched is only its wrapper.
+        """
+        if self._process.returncode is None:
+            try:
+                pid, wait_status, usage = os.wait4(self._process.pid, os.WNOHANG)
+            except ChildProcessError:
+                # Something else already reaped it, so the rusage is lost. Fall
+                # back to Popen's own bookkeeping for the exit code.
+                self._process.poll()
+            else:
+                if pid == 0:
+                    return None
+
+                # Record the exit code the way Popen would have, which also
+                # tells Popen not to try reaping the child a second time.
+                self._process.returncode = os.waitstatus_to_exitcode(wait_status)
+                # ru_maxrss is in kB on Linux.
+                self._record_peak_rss(usage.ru_maxrss / 1024)
+
+        self.exit_code = self._process.returncode
+        return self.exit_code
+
+    def _record_peak_rss(self, peak_rss_mb: Union[float, None]) -> None:
+        """Keep the largest peak resident set size seen for this job, in MB."""
+        if peak_rss_mb is None:
+            return
+        if (
+            self.deploy.job_peak_rss is None
+            or peak_rss_mb > self.deploy.job_peak_rss  # noqa: W503
+        ):
+            self.deploy.job_peak_rss = peak_rss_mb
+
+    def _sample_peak_rss(self) -> Union[float, None]:
+        """Read the running job's peak resident set size so far, in MB.
+
+        The process dvsim launches is a make wrapper, and the simulator it goes
+        on to spawn is where the memory actually goes, so reading the launched
+        process alone reports a handful of MB and misses the job entirely. Walk
+        the whole tree instead and report the largest peak in it.
+
+        The largest rather than the total, because VmHWM is a per-process high
+        water mark and the peaks of two processes need not coincide, so adding
+        them up would overstate the job. For the shapes dvsim runs, where one
+        simulator dwarfs its wrapper, the largest peak is the job's peak. A job
+        with two large processes running at once would be understated.
+
+        Returns None once the processes have gone, since procfs then has nothing
+        left to tell us about them.
+        """
+        if self._process is None:
+            return None
+
+        # Walking the tree costs a read per thread of every process in the job,
+        # whereas reading the peaks costs one read per process, so the walk is
+        # what to avoid repeating. An EDA job's tree settles as soon as its
+        # simulator is up and does not change shape after that, so re-walk it
+        # only occasionally. Discovering a process late does not lose any of its
+        # peak, because VmHWM covers the whole life of the process.
+        #
+        # Until the job has spawned something below the wrapper, though, keep
+        # walking on every poll: a job can balloon within seconds of starting,
+        # and the memory budget must not be blind while that happens. The walk
+        # is cheap in that window, since a wrapper has a single thread.
+        if len(self._job_pids) < 2 or self._pid_walk_countdown <= 0:
+            self._job_pids = list(_iter_job_pids(self._process.pid))
+            self._pid_walk_countdown = self.pid_walk_interval
+        self._pid_walk_countdown -= 1
+
+        peak_rss_mb = None
+        for pid in self._job_pids:
+            pid_peak_mb = _read_vmhwm_mb(pid)
+            if pid_peak_mb is None:
+                continue
+            if peak_rss_mb is None or pid_peak_mb > peak_rss_mb:
+                peak_rss_mb = pid_peak_mb
+
+        self._record_peak_rss(peak_rss_mb)
+        return peak_rss_mb
+
+    def _kill_with_reason(self, message: str) -> None:
+        """Kill the job and record why dvsim decided to kill it."""
+        self._kill()
+        self._post_finish(
+            "K",
+            ErrorMessage(line_number=None, message=message, context=[message]),
+        )
+
     def _signal_job_group(self, sig: int) -> None:
         """Send a signal to every process belonging to the job.
 
@@ -280,6 +455,11 @@ class LocalLauncher(Launcher):
             # process already dead or didn't start
             return
 
+        # Read the job's peak memory before signaling it. This is the last
+        # moment at which procfs can still tell us, and a killed job is exactly
+        # the case where the tool never gets to report the figure itself.
+        self._sample_peak_rss()
+
         self._signal_job_group(signal.SIGTERM)
         try:
             # The wrapper exiting is the best proxy we have for the job being
@@ -310,12 +490,15 @@ class LocalLauncher(Launcher):
         it has not, leaving a zombie that is cleaned up when dvsim exits.
         """
         if self._process is not None:
+            # One cheap procfs read before it dies, so that even a force-quit
+            # leaves the job's memory figure behind for the report.
+            self._sample_peak_rss()
             self._signal_job_group(signal.SIGKILL)
             self._process.poll()
 
         # Finish the job off properly even though we are in a hurry: this is
-        # what records the job as killed, and it is the whole point of
-        # force-quitting rather than crashing out.
+        # what sizes the output directory and records the job as killed, and
+        # it is the whole point of force-quitting rather than crashing out.
         self._post_finish(
             "K",
             ErrorMessage(

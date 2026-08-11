@@ -97,6 +97,15 @@ class Deploy():
         # does not report it). For VCS this is the design's
         # "data structure size", not the process's peak resident memory.
         self.job_mem = None
+        # Job's peak resident set size in MB, as measured by dvsim rather than
+        # reported by the tool (None if it could not be measured). This is the
+        # real memory the job occupied, and unlike job_mem it is known even for
+        # a job that was killed before the tool printed its summary.
+        self.job_peak_rss = None
+        # Size of the job's output directory in MB when the job finished (None
+        # if it could not be measured). Measured before any post-run cleanup,
+        # so it reflects what the job actually wrote.
+        self.job_odir_size = None
 
     def _define_attrs(self):
         """Defines the attributes this instance needs to have.

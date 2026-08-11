@@ -263,7 +263,7 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
 
     If a wildcard appears in var but is not in mdict, the environment is
     checked for the variable. If the name still isn't found, the default
-    behaviour is to log an error and exit. If ignore_error is True, the
+    behavior is to log an error and exit. If ignore_error is True, the
     wildcard is ignored (as if it appeared in ignore_wildcards).
 
     If {eval_cmd} appears in the string and 'eval_cmd' is not in
@@ -602,6 +602,29 @@ def mk_path(path):
     except PermissionError as e:
         log.fatal("Failed to create directory {}:\n{}.".format(path, e))
         sys.exit(1)
+
+
+def dir_size_mb(path):
+    '''Return the total apparent size of the files under path, in MB.
+
+    'path' is a Path-like object. Returns None if the path cannot be walked at
+    all. Symlinks are not followed, and files that vanish midway through are
+    skipped rather than raising: a job's output directory may still be
+    changing while it is measured.
+    '''
+    # os.walk() reports nothing at all for a path it cannot read, so check up
+    # front rather than returning a bogus zero for a directory that is missing.
+    if not os.path.isdir(path):
+        return None
+
+    total = 0
+    for dirpath, _, filenames in os.walk(path):
+        for name in filenames:
+            try:
+                total += os.lstat(os.path.join(dirpath, name)).st_size
+            except OSError:
+                continue
+    return total / (1024 * 1024)
 
 
 def mk_symlink(path, link):

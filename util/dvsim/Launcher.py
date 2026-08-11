@@ -12,7 +12,7 @@ from itertools import islice
 from pathlib import Path
 from typing import Union
 
-from utils import VERBOSE, clean_odirs, mk_symlink, rm_path
+from utils import VERBOSE, clean_odirs, dir_size_mb, mk_symlink, rm_path
 
 
 # Failure message used when a job returns a non-zero exit code without any of
@@ -471,6 +471,12 @@ class Launcher:
         assert status in ["P", "F", "K"]
         self._link_odir(status)
         log.debug("Item %s has completed execution: %s", self, status)
+
+        # Size the output directory now, before the cleanup below runs. That
+        # cleanup deletes artifacts (the coverage database, for one), so
+        # measuring afterwards would hide how much the job actually wrote,
+        # which is the very thing we want to know about a runaway job.
+        self.deploy.job_odir_size = dir_size_mb(self.deploy.odir)
 
         try:
             # Run the target-specific cleanup tasks regardless of the job's
