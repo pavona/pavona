@@ -20,6 +20,11 @@ from utils import VERBOSE, clean_odirs, mk_symlink, rm_path
 # fell over before it got going from one that reported a testbench failure
 _EXIT_CODE_FAIL_MSG = "Job returned non-zero exit code"
 
+# Lines kept from the end of a killed job's log when mining it for runtime and
+# simulated time. Every sim_utils parser scans backwards for the last match, so
+# only the end can carry them, and a runaway job's log has no bound.
+_LOG_TAIL_LINES = 10000
+
 
 def find_first_match(lines, patterns, context_lines=5):
     """Find the first of the lines matching any of the patterns.
@@ -201,6 +206,11 @@ class Launcher:
         # The actual job runtime computed by dvsim, in seconds.
         self.job_runtime_secs = 0
 
+        # Whether the job's log has already been mined for information about
+        # the job. Guards against reading it twice, since the job's outcome
+        # decides which of the two code paths gets there first.
+        self._log_parsed = False
+
     def _make_odir(self) -> None:
         """Create the output directory."""
         # If renew_odir flag is True - then move it.
@@ -379,6 +389,7 @@ class Launcher:
         # status, use this opportunity to also extract other pieces of
         # information.
         self.deploy.extract_info_from_log(lines)
+        self._log_parsed = True
 
         if chk_failed or chk_passed:
             for cnt, line in enumerate(lines):
@@ -415,6 +426,40 @@ class Launcher:
             )
         return "P", None
 
+    def _extract_info_from_log(self) -> None:
+        """Have the deploy object mine the job's log, at most once.
+
+        _check_status() already does this for a job that ran to completion,
+        since it has the log open anyway to work out the outcome. A job that was
+        killed never reaches that point, so this is the fallback for it: it is
+        the difference between a killed job reporting how long it ran and how
+        much it simulated, and it reporting nothing at all.
+
+        _check_log_status() needs the whole log for its context quotes; this
+        needs only what the tool prints as it winds up, so it keeps a tail.
+        """
+        if self._log_parsed:
+            return
+        self._log_parsed = True
+
+        log_path = self.deploy.get_log_path()
+        try:
+            with open(log_path, encoding="UTF-8", errors="surrogateescape") as f:
+                # A sequence, because the parsers reverse and index it.
+                lines = list(collections.deque(f, maxlen=_LOG_TAIL_LINES))
+        except OSError as e:
+            log.log(VERBOSE, "Could not read %s to extract the job's "
+                             "info: %s", log_path, e)
+            return
+
+        # This runs while dvsim is shutting down after an interrupt, so it must
+        # not be the thing that brings the shutdown down with it.
+        try:
+            self.deploy.extract_info_from_log(lines)
+        except Exception as e:
+            log.log(VERBOSE, "Could not extract the job's info from %s: %s",
+                    log_path, e)
+
     def _post_finish(self, status, err_msg) -> None:
         """Do post-completion activities, such as preparing the results.
 
@@ -448,3 +493,8 @@ class Launcher:
             assert isinstance(err_msg, ErrorMessage)
             self.fail_msg = err_msg
             log.log(VERBOSE, err_msg.message)
+
+        # A job that was killed never went through _check_status(), so nothing
+        # has read its log yet. Do it now: whatever the tool printed before it
+        # died is the only record of how far the job actually got.
+        self._extract_info_from_log()

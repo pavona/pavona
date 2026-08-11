@@ -326,8 +326,12 @@ class Deploy():
             time, unit = get_job_runtime(log_text, self.sim_cfg.tool)
             self.job_runtime.set(time, unit)
         except RuntimeError as e:
-            log.warning(f"{self.full_name}: {e} Using dvsim-maintained "
-                        "job_runtime instead.")
+            # A job that was killed never got to print its runtime, so this is
+            # expected rather than noteworthy. Interrupting a large regression
+            # would otherwise bury the report behind one warning per job.
+            level = VERBOSE if self.launcher.status == "K" else log.WARNING
+            log.log(level, f"{self.full_name}: {e} Using dvsim-maintained "
+                           "job_runtime instead.")
             self.job_runtime.set(self.launcher.job_runtime_secs, "s")
 
         # Extract the tool-reported memory footprint if available.
