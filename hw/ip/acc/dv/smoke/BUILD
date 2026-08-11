@@ -56,3 +56,37 @@ fusesoc_build(
     target = "sim",
     verilator_options = "//hw:verilator_options",
 )
+
+filegroup(
+    name = "verilator_acc_bin",
+    srcs = [":verilator_acc"],
+    output_group = "binary",
+)
+
+filegroup(
+    name = "smoke_test_nondeterministic_elf",
+    srcs = [":smoke_test_nondeterministic"],
+    output_group = "elf",
+)
+
+sh_test(
+    name = "run_smoke_test",
+    size = "small",
+    srcs = ["//hw/ip/acc/util:run_smoke_test.sh"],
+    args = [
+        "$(rootpath :verilator_acc_bin)",
+        "$(rootpath :smoke_test_nondeterministic_elf)",
+        "$(rootpath smoke_expected.txt)",
+        "$(rootpath //hw/ip/acc/dv/accsim:stepped)",
+    ],
+    data = [
+        "smoke_expected.txt",
+        ":smoke_test_nondeterministic_elf",
+        ":verilator_acc_bin",
+        "//hw/ip/acc/dv/accsim:stepped",
+    ],
+    tags = [
+        "manual",
+        "verilator",
+    ],
+)

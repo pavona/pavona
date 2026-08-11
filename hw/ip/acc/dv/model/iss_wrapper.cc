@@ -190,7 +190,14 @@ static std::string find_repo_top() {
 
 // Find the acc Python model. On failure, throw a std::runtime_error with a
 // description of what went wrong.
+//
+// If ACC_ISS is defined, it names an ISS executable that brings its own Python
+// environment, such as the bazel-built //hw/ip/acc/dv/accsim:stepped.
 static std::string find_acc_model() {
+  const char *from_env = getenv("ACC_ISS");
+  if (from_env)
+    return std::string(from_env);
+
   std::string path = find_repo_top() + "/hw/ip/acc/dv/accsim/stepped.py";
   c_str_ptr abs_path(realpath(path.c_str(), NULL));
   if (!abs_path) {
@@ -317,11 +324,9 @@ ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
 
 // Finally, exec the ISS
 #ifdef PQC_EN
-    execl("/usr/bin/env", "/usr/bin/env", "python3", "-u", model_path.c_str(),
-          "--pqc", NULL);
+    execl(model_path.c_str(), model_path.c_str(), "--pqc", NULL);
 #else
-    execl("/usr/bin/env", "/usr/bin/env", "python3", "-u", model_path.c_str(),
-          NULL);
+    execl(model_path.c_str(), model_path.c_str(), NULL);
 #endif
   }
 

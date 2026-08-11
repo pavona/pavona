@@ -8,6 +8,8 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["run_smoke_test.sh"])
+
 py_binary(
     name = "acc_as",
     srcs = ["acc_as.py"],

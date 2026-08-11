@@ -251,9 +251,9 @@ jobs:
       - name: ACC ISS test
         run: make -C hw/ip/acc/dv/accsim test
       - name: ACC smoke test
-        run: ./hw/ip/acc/dv/smoke/run_smoke.sh
+        run: ./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke:run_smoke_test
       - name: ACC PQC smoke test
-        run: ./hw/ip/acc/dv/smoke_pqc/run_smoke.sh
+        run: ./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke_pqc:run_smoke_test
       - name: Assemble & link code snippets
         run: make -C hw/ip/acc/util asm-check
 

@@ -87,13 +87,19 @@ The generated binaries, a Verilated model and the output from running them can a
 ### Run the smoke test
 
 A smoke test which exercises some functionality of ACC can be found, together with its expected outputs (in the form of final register values), in `./hw/ip/acc/dv/smoke`.
-The test can be run using a script.
+The test can be run with Bazel.
 
 ```sh
-hw/ip/acc/dv/smoke/run_smoke.sh
+./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke:run_smoke_test
 ```
 
 This will build the standalone simulation, build the smoke test binary, run it and check the results are as expected.
+
+`./hw/ip/acc/dv/smoke_pqc` holds the equivalent test for ACC with the PQC instructions enabled.
+
+```sh
+./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke_pqc:run_smoke_test
+```
 
 ### Run the ISS on its own
 

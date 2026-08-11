@@ -21,3 +21,13 @@ py_binary(
         "//hw/ip/acc/util/shared:testcase",
     ],
 )
+
+py_binary(
+    name = "stepped",
+    srcs = ["stepped.py"],
+    deps = [
+        "//hw/ip/acc/dv/accsim/sim",
+        "//hw/ip/acc/dv/accsim/sim:decode",
+        "//hw/ip/acc/dv/accsim/sim:load_elf",
+    ],
+)
