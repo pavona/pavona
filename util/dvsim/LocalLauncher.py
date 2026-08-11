@@ -7,6 +7,7 @@ import datetime
 import os
 import re
 import shlex
+import signal
 import subprocess
 from pathlib import Path
 from typing import Union
@@ -77,6 +78,12 @@ class LocalLauncher(Launcher):
                     stdout=self._log_file,
                     stderr=self._log_file,
                     env=exports,
+                    # Give the job a process group of its own. The command we
+                    # run is a make wrapper which spawns the simulator as a
+                    # separate process, so a group is what lets us later signal
+                    # the whole job rather than just the wrapper. See
+                    # _signal_job_group().
+                    start_new_session=True,
                 )
 
             except BlockingIOError as e:
@@ -225,21 +232,61 @@ class LocalLauncher(Launcher):
 
         return None
 
-    def _kill(self) -> None:
-        """Kill the running process.
+    def _signal_job_group(self, sig: int) -> None:
+        """Send a signal to every process belonging to the job.
 
-        Try to kill the running process. Send SIGTERM first, wait a bit,
-        and then send SIGKILL if it didn't work.
+        Signaling only the process we launched is not enough: that process is a
+        make wrapper, and the simulator it spawns is a separate process, so the
+        wrapper dies while the simulator carries on holding its license and
+        writing its wave dump. The job has a process group of its own (see
+        _do_launch), so one killpg reaches all of it.
+
+        Falls back to signaling just the process we have a handle on when the
+        group cannot be used, and gives up quietly if that process has gone too,
+        which only happens when the job was on its way out regardless.
+        """
+        if self._process is None:
+            return
+
+        try:
+            pgid = os.getpgid(self._process.pid)
+        except OSError:
+            pgid = None
+
+        # Only signal the group if it really is the job's own. A job launched
+        # without a new session of its own sits in dvsim's group, and signaling
+        # that would take down dvsim itself along with every other running job.
+        # The interactive path deliberately does not start a new session, so
+        # this is reachable rather than theoretical.
+        if pgid is not None and pgid != os.getpgid(0):
+            try:
+                os.killpg(pgid, sig)
+                return
+            except OSError:
+                pass
+
+        try:
+            self._process.send_signal(sig)
+        except OSError:
+            pass
+
+    def _kill(self) -> None:
+        """Kill the running job.
+
+        Try to kill the whole job. Send SIGTERM first, wait a bit, and then send
+        SIGKILL if it didn't work.
         """
         if self._process is None:
             # process already dead or didn't start
             return
 
-        self._process.terminate()
+        self._signal_job_group(signal.SIGTERM)
         try:
+            # The wrapper exiting is the best proxy we have for the job being
+            # done: it does not return until the simulator it spawned has gone.
             self._process.wait(timeout=2)
         except subprocess.TimeoutExpired:
-            self._process.kill()
+            self._signal_job_group(signal.SIGKILL)
 
     def kill(self) -> None:
         """Kill the running process.
@@ -263,7 +310,7 @@ class LocalLauncher(Launcher):
         it has not, leaving a zombie that is cleaned up when dvsim exits.
         """
         if self._process is not None:
-            self._process.kill()
+            self._signal_job_group(signal.SIGKILL)
             self._process.poll()
 
         # Finish the job off properly even though we are in a hurry: this is
