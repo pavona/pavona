@@ -26,6 +26,12 @@
   build_started_patterns: []
   run_started_patterns: []
 
+  // Patterns saying a job died because the license server would not serve it,
+  // rather than because of the design or the testbench. Such a job is reported
+  // as killed, so a license outage does not read as a DV failure. Every tool
+  // words these differently, so they live with the tool cfg that prints them.
+  license_error_patterns: []
+
   exports: [
     { SCRATCH_PATH: "{scratch_path}" },
     { proj_root: "{proj_root}" }

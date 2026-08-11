@@ -8,10 +8,36 @@ import logging as log
 import os
 import re
 import sys
+from itertools import islice
 from pathlib import Path
 from typing import Union
 
 from utils import VERBOSE, clean_odirs, mk_symlink, rm_path
+
+
+# Failure message used when a job returns a non-zero exit code without any of
+# its fail patterns matching. _check_status() keys off this to tell a job that
+# fell over before it got going from one that reported a testbench failure
+_EXIT_CODE_FAIL_MSG = "Job returned non-zero exit code"
+
+
+def find_first_match(lines, patterns, context_lines=5):
+    """Find the first of the lines matching any of the patterns.
+
+    `lines` is any iterable, so an open file can be handed in directly and the
+    log is never held whole.
+
+    Returns (line_number, context) with a 1-based line_number and the matching
+    line plus the next context_lines - 1 lines, or None if nothing matches.
+    """
+    lines = iter(lines)
+    for line_number, line in enumerate(lines, start=1):
+        if any(re.search(pattern, line) for pattern in patterns):
+            # Same iterator, so only the lines after the match are ever held.
+            context = [line] + list(islice(lines, context_lines - 1))
+            return line_number, context
+
+    return None
 
 
 class LauncherError(Exception):
@@ -243,11 +269,60 @@ class Launcher:
         raise NotImplementedError
 
     def _check_status(self):
+        """Determine the outcome of the job (P/F/K if it ran to completion).
+
+        Returns (status, err_msg) as _check_log_status() does, except that a job
+        which failed because the license server would not serve it is reported
+        as killed rather than failed.
+        """
+        status, err_msg = self._check_log_status()
+        if status != "F":
+            return status, err_msg
+
+        if err_msg.message != _EXIT_CODE_FAIL_MSG:
+            return status, err_msg
+
+        license_err_msg = self._find_license_error()
+        if license_err_msg:
+            return "K", license_err_msg
+
+        return status, err_msg
+
+    def _find_license_error(self):
+        """Return an ErrorMessage if the job's log shows a license failure.
+
+        Returns None if it does not, or if the log cannot be read.
+        """
+        patterns = self.deploy.license_error_patterns
+        if not patterns:
+            return None
+
+        try:
+            with open(
+                self.deploy.get_log_path(),
+                encoding="UTF-8",
+                errors="surrogateescape",
+            ) as f:
+                match = find_first_match(f, patterns)
+        except OSError:
+            return None
+
+        if not match:
+            return None
+
+        line_number, context = match
+        return ErrorMessage(
+            line_number=line_number,
+            message="Job could not obtain a license",
+            context=context,
+        )
+
+    def _check_log_status(self):
         """Determine the outcome of the job (P/F if it ran to completion).
 
         Returns (status, err_msg) extracted from the log, where the status is
-        "P" if the it passed, "F" otherwise. This is invoked by poll() just
-        after the job finishes. err_msg is an instance of the named tuple
+        "P" if the it passed, "F" otherwise. This is invoked by _check_status()
+        just after the job finishes. err_msg is an instance of the named tuple
         ErrorMessage.
         """
 
@@ -316,7 +391,7 @@ class Launcher:
         if self.exit_code != 0:
             return "F", ErrorMessage(
                 line_number=None,
-                message="Job returned non-zero exit code",
+                message=_EXIT_CODE_FAIL_MSG,
                 context=lines[-10:],
             )
         if chk_passed:

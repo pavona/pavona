@@ -283,6 +283,11 @@
   // elaborated, so the first one marks the run as under way.
   run_started_patterns: ["^UVM_(INFO|WARNING|ERROR|FATAL)"]
 
+  // What VCS prints when the server rereads its license file.
+  license_error_patterns: ["Feature removed during lmreread",
+                           "SERVER line hostid",
+                           "Check your license file"]
+
   build_modes: [
     {
       name: vcs_gui

@@ -120,6 +120,7 @@ class Deploy():
             "dry_run": False,
             "exports": False,
             "flow_makefile": False,
+            "license_error_patterns": False,
             "name": False,
         }
 
