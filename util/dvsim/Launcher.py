@@ -268,6 +268,19 @@ class Launcher:
         """Terminate the job."""
         raise NotImplementedError
 
+    def force_kill(self) -> None:
+        """Terminate the job at once, without waiting for it to wind down.
+
+        Invoked when dvsim is force-quit while this job is still running.
+
+        This default implementation simply defers to kill(). That still gives
+        the job a grace period, which is not what a force-quit asks for, but
+        terminating it slowly beats leaving it behind: an abandoned job carries
+        on consuming licenses, memory and disk long after dvsim has exited.
+        Launchers that can terminate a job more abruptly should override this.
+        """
+        self.kill()
+
     def _check_status(self):
         """Determine the outcome of the job (P/F/K if it ran to completion).
 

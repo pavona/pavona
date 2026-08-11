@@ -184,6 +184,15 @@ class Scheduler:
                 # signal.
                 stop_now.wait(timeout=self.launcher_cls.poll_freq)
 
+        except KeyboardInterrupt:
+            # A second SIGINT restored the default handler, so the interrupt
+            # arrived here as an exception. The user does not want to wait for
+            # the jobs to wind down, so kill them outright, but carry on to
+            # return the statuses gathered so far: the caller still needs them
+            # to write the results.
+            log.info("Force-quitting. Killing all remaining jobs.")
+            self._kill(force=True)
+
         finally:
             signal(SIGINT, old_handler)
 
@@ -512,8 +521,13 @@ class Scheduler:
                 self._running[target].append(item)
                 self.item_to_status[item] = "D"
 
-    def _kill(self):
-        """Kill any running items and cancel any that are waiting"""
+    def _kill(self, force=False):
+        """Kill any running items and cancel any that are waiting
+
+        If force is set, the running items are killed outright instead of being
+        given a grace period in which to wind down. Either way, nothing is left
+        running.
+        """
         # Cancel any waiting items. We take a copy of self._queued to avoid
         # iterating over the set as we modify it.
         for target in self._queued:
@@ -524,7 +538,7 @@ class Scheduler:
         # modifying it while iterating over it.
         for target in self._running:
             for item in [item for item in self._running[target]]:
-                self._kill_item(item)
+                self._kill_item(item, force)
 
     def _check_if_done(self, hms):
         """Check if we are done executing all jobs.
@@ -588,9 +602,12 @@ class Scheduler:
         if cancel_successors:
             self._cancel_successors(item)
 
-    def _kill_item(self, item):
+    def _kill_item(self, item, force=False):
         """Kill a running item and cancel all of its successors."""
-        item.launcher.kill()
+        if force:
+            item.launcher.force_kill()
+        else:
+            item.launcher.kill()
         self.item_to_status[item] = "K"
         self._killed[item.target].add(item)
         self._running[item.target].remove(item)

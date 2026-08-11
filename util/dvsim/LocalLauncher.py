@@ -253,6 +253,31 @@ class LocalLauncher(Launcher):
             ErrorMessage(line_number=None, message="Job killed!", context=[]),
         )
 
+    def force_kill(self) -> None:
+        """SIGKILL the process without waiting around for it to die.
+
+        We deliberately do not block on the process here. A job that is stuck
+        in uninterruptible IO (writing a large wave dump over NFS, say) does
+        not die the moment SIGKILL lands, and a force-quit must not hang on it.
+        poll() reaps the process if it has already gone and returns at once if
+        it has not, leaving a zombie that is cleaned up when dvsim exits.
+        """
+        if self._process is not None:
+            self._process.kill()
+            self._process.poll()
+
+        # Finish the job off properly even though we are in a hurry: this is
+        # what records the job as killed, and it is the whole point of
+        # force-quitting rather than crashing out.
+        self._post_finish(
+            "K",
+            ErrorMessage(
+                line_number=None,
+                message="Job force-killed when dvsim was force-quit.",
+                context=[],
+            ),
+        )
+
     def _post_finish(self, status: str, err_msg: Union[ErrorMessage, None]) -> None:
         self._close_job_log_file()
         self._process = None

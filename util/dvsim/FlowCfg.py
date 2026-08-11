@@ -467,10 +467,21 @@ class FlowCfg():
             sys.exit(1)
 
         scheduler = Scheduler(deploy, get_launcher_cls(), self.interactive)
-        results = scheduler.run()
-        # Stash the run's wall-clock footprint so it can be shown in the report.
-        self.target_runtime = scheduler.target_runtime
-        self.total_runtime = scheduler.total_runtime
+        try:
+            results = scheduler.run()
+        except (Exception, KeyboardInterrupt):
+            # An interrupted or broken run is exactly when the logs and the
+            # per-job numbers matter most, so losing them is not an option.
+            # Hand back the statuses gathered so far and let the caller report
+            # on them. Anything that never ran counts as killed.
+            log.exception("Run did not complete. Reporting on the %d job(s) "
+                          "that finished.", len(scheduler.item_to_status))
+            results = scheduler.item_to_status
+        finally:
+            # Stash the run's wall-clock footprint so it can be shown in the
+            # report, including for a run that was cut short.
+            self.target_runtime = scheduler.target_runtime
+            self.total_runtime = scheduler.total_runtime
         return results
 
     def _gen_results(self, results):

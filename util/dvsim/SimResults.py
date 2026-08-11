@@ -84,7 +84,10 @@ class SimResults:
 
     def _add_item(self, item, results):
         '''Recursively add a single item to the table of results'''
-        status = results[item]
+        # An item that never got dispatched (because the run was cut short) has
+        # no entry in the status map. Treat it as killed rather than letting a
+        # KeyError take down the whole report.
+        status = results.get(item, "K")
         if status in ["F", "K"]:
             bucket = self._bucketize(item.launcher.fail_msg.message)
             self.buckets[bucket].append(
