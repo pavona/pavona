@@ -40,6 +40,15 @@ class Deploy():
     # TODO: Allow these to be set in the HJson.
     weight = 1
 
+    # Patterns whose first appearance in the job's log marks where it stopped
+    # waiting for a license and started work. The timeout is measured from there.
+    # Empty means nothing to wait for, so the job is timed from its launch.
+    #
+    # The marker depends on the flow and the tool, so the targets that have one
+    # take it from the HJson, alongside their pass and fail patterns. This is the
+    # fallback for the targets that have none.
+    started_patterns = []
+
     def __str__(self):
         return (pprint.pformat(self.__dict__)
                 if log.getLogger().isEnabledFor(VERBOSE) else self.full_name)
@@ -372,6 +381,7 @@ class CompileSim(Deploy):
         self.mandatory_misc_attrs.update({
             "build_fail_patterns": False,
             "build_pass_patterns": False,
+            "build_started_patterns": False,
             "build_timeout_mins": False,
             "cov_db_dir": False,
         })
@@ -390,6 +400,7 @@ class CompileSim(Deploy):
             self.output_dirs += [self.cov_db_dir]
         self.pass_patterns = self.build_pass_patterns
         self.fail_patterns = self.build_fail_patterns
+        self.started_patterns = self.build_started_patterns
 
         if self.sim_cfg.args.build_timeout_mins is not None:
             self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins
@@ -447,7 +458,8 @@ class CompileOneShot(Deploy):
 
         self.mandatory_misc_attrs.update({
             "build_fail_patterns": False,
-            "build_pass_patterns": False
+            "build_pass_patterns": False,
+            "build_started_patterns": False
         })
 
     def _set_attrs(self):
@@ -459,6 +471,7 @@ class CompileOneShot(Deploy):
         self.job_name += f"_{self.build_mode}"
         self.fail_patterns = self.build_fail_patterns
         self.pass_patterns = self.build_pass_patterns
+        self.started_patterns = self.build_started_patterns
 
         if self.sim_cfg.args.build_timeout_mins is not None:
             self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins
@@ -527,6 +540,7 @@ class RunTest(Deploy):
             "run_dir_name": False,
             "run_fail_patterns": False,
             "run_pass_patterns": False,
+            "run_started_patterns": False,
             "run_timeout_mins": False,
             "run_timeout_multiplier": False,
         })
@@ -544,10 +558,12 @@ class RunTest(Deploy):
         if self.sim_cfg.cov:
             self.output_dirs += [self.cov_db_dir]
 
-        # In GUI mode, the log file is not updated; hence, nothing to check.
+        # In GUI mode, the log file is not updated; hence, nothing to check,
+        # and nothing to wait for either, so the job is timed from its launch.
         if not self.gui:
             self.pass_patterns = self.run_pass_patterns
             self.fail_patterns = self.run_fail_patterns
+            self.started_patterns = self.run_started_patterns
 
         if self.sim_cfg.args.run_timeout_mins is not None:
             self.run_timeout_mins = self.sim_cfg.args.run_timeout_mins

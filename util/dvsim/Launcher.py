@@ -66,6 +66,12 @@ class Launcher:
     # more than this many directories.
     max_odirs = 5
 
+    # Give up on a job that has not started doing its work within this many
+    # minutes of being launched, which normally means it is still queueing for a
+    # license. Zero waits indefinitely. This is a separate limit from the job's
+    # own timeout, which only starts counting once the job is under way.
+    max_job_wait_mins = 180
+
     # Flag indicating the workspace preparation steps are complete.
     workspace_prepared = False
     workspace_prepared_for_cfg = set()

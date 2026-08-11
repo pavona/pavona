@@ -99,6 +99,9 @@
                         "^TEST FAILED CHECKS$"
                         ]
 
+  // Verilator checks out no license, so there is nothing to wait for.
+  // run_started_patterns is left empty: a run is timed from its launch.
+
   // Coverage related.
   cov_db_dir: ""
   cov_db_test_dir: ""

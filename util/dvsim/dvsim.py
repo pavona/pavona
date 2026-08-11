@@ -388,6 +388,18 @@ def parse_args():
                             'is used. Only applicable when launching jobs '
                             'locally.'))
 
+    disg.add_argument("--run-wait-timeout-mins",
+                      type=int,
+                      default=180,
+                      metavar="MINUTES",
+                      help=('Give up on a run that has not started simulating '
+                            'within MINUTES of being launched, which normally '
+                            'means it is still queueing for a license. This is '
+                            'separate from --run-timeout-mins, which only '
+                            'starts counting once the run is under way, so that '
+                            'a license queue does not eat into it. Pass 0 to '
+                            'wait indefinitely.'))
+
     pathg = parser.add_argument_group('File management')
 
     pathg.add_argument("--scratch-root",
@@ -802,6 +814,7 @@ def main():
     LsfLauncher.LsfLauncher.max_parallel = args.max_parallel
     NcLauncher.NcLauncher.max_parallel = args.max_parallel
     Launcher.Launcher.max_odirs = args.max_odirs
+    Launcher.Launcher.max_job_wait_mins = args.run_wait_timeout_mins
     LauncherFactory.set_launcher_type(args.local)
 
     # Build infrastructure from hjson file and create the list of items to

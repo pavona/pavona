@@ -196,6 +196,10 @@
   build_fail_patterns: ["\\*E.*$"]
   run_fail_patterns:   ["\\*E.*$"] // Null pointer error
 
+  // A UVM report appears only once the simulator holds a license and has
+  // elaborated, so the first one marks the run as under way.
+  run_started_patterns: ["^UVM_(INFO|WARNING|ERROR|FATAL)"]
+
   build_modes: [
     {
       name: xcelium_gui

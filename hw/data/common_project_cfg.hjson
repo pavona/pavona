@@ -17,6 +17,15 @@
   // TODO: Add back FuseSoC fail pattern
   build_fail_patterns: []
 
+  // Patterns whose first appearance in a job's log marks where it stopped
+  // queueing for a license and started work. The timeout is measured from there.
+  // Empty means nothing to wait for, so the job is timed from its launch.
+  //
+  // These are the neutral defaults; each tool cfg adds what it prints. Imported
+  // lists concatenate, so a tool can add a marker but not take one away.
+  build_started_patterns: []
+  run_started_patterns: []
+
   exports: [
     { SCRATCH_PATH: "{scratch_path}" },
     { proj_root: "{proj_root}" }

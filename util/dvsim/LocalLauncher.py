@@ -5,12 +5,18 @@
 
 import datetime
 import os
+import re
 import shlex
 import subprocess
 from pathlib import Path
 from typing import Union
 
 from Launcher import ErrorMessage, Launcher, LauncherBusy, LauncherError
+
+# How much of the end of each log read to carry over to the next one, so that a
+# start marker split across two reads is still matched. Comfortably longer than
+# the lines being looked for
+_LOG_SCAN_TAIL_CHARS = 256
 
 
 class LocalLauncher(Launcher):
@@ -23,6 +29,15 @@ class LocalLauncher(Launcher):
         # Popen object when launching the job.
         self._process = None
         self._log_file = None
+
+        # When the job started doing its work, as opposed to when it was
+        # launched. None until we see it start. See _detect_job_start().
+        self._run_start_time = None
+
+        # How far through the log we have looked for the job starting, and the
+        # tail of what we read, so a marker split across two reads is not missed.
+        self._log_scan_offset = 0
+        self._log_scan_tail = ""
 
     def _do_launch(self) -> None:
         # Update the shell's env vars with self.exports. Values in exports must
@@ -111,22 +126,9 @@ class LocalLauncher(Launcher):
         elapsed_time = datetime.datetime.now() - self.start_time
         self.job_runtime_secs = elapsed_time.total_seconds()
         if self._process.poll() is None:
-            if (
-                self.timeout_secs
-                and (self.job_runtime_secs > self.timeout_secs)  # noqa: W503
-                and not (self.deploy.gui)  # noqa: W503
-            ):
-                self._kill()
-                timeout_mins = self.deploy.get_timeout_mins()
-                timeout_message = f"Job timed out after {timeout_mins} minutes"
-                self._post_finish(
-                    "K",
-                    ErrorMessage(
-                        line_number=None,
-                        message=timeout_message,
-                        context=[timeout_message],
-                    ),
-                )
+            timeout_reason = self._timeout_reason()
+            if timeout_reason is not None:
+                self._kill_with_reason(timeout_reason)
                 return "K"
 
             return "D"
@@ -136,6 +138,92 @@ class LocalLauncher(Launcher):
         self._post_finish(status, err_msg)
 
         return self.status
+
+    def _kill_with_reason(self, message: str) -> None:
+        """Kill the job and record why dvsim decided to kill it."""
+        self._kill()
+        self._post_finish(
+            "K",
+            ErrorMessage(line_number=None, message=message, context=[message]),
+        )
+
+    def _detect_job_start(self) -> None:
+        """Look for the point in the log where the job started doing its work.
+
+        Sets _run_start_time when one of the deploy's started_patterns turns up.
+        Only the bytes added to the log since the last look are read, so the cost
+        does not grow with the log, and nothing is read at all once the job has
+        started.
+        """
+        patterns = self.deploy.started_patterns
+        if not patterns:
+            # Nothing marks the start for this flow, so treat the job as under
+            # way from the moment it was launched.
+            self._run_start_time = self.start_time
+            return
+
+        try:
+            with open(self.deploy.get_log_path(), "rb") as f:
+                f.seek(self._log_scan_offset)
+                chunk = f.read()
+                self._log_scan_offset = f.tell()
+        except OSError:
+            # The log is not there yet, or cannot be read. Try again next poll.
+            return
+
+        if not chunk:
+            return
+
+        text = self._log_scan_tail + chunk.decode("UTF-8", errors="surrogateescape")
+        for pattern in patterns:
+            if re.search(pattern, text, re.MULTILINE):
+                self._run_start_time = datetime.datetime.now()
+                self._log_scan_tail = ""
+                return
+
+        # Hold on to the tail, so that a marker straddling two reads still
+        # matches when the rest of it arrives
+        self._log_scan_tail = text[-_LOG_SCAN_TAIL_CHARS:]
+
+    def _timeout_reason(self) -> Union[str, None]:
+        """Return why the job ought to be killed for taking too long, or None.
+
+        A job is timed from the point where it starts doing its work rather than
+        from the point where it was launched, because the gap between the two is
+        spent queueing for a license.
+
+        The waiting and the running phases therefore get separate limits and
+        separate messages, so that a report can tell a job that never got a
+        license apart from one that genuinely ran too long.
+        """
+        if self.deploy.gui:
+            # The user is driving, so nothing counts as too slow
+            return None
+
+        if self._run_start_time is None:
+            self._detect_job_start()
+
+        if self._run_start_time is None:
+            wait_mins = Launcher.max_job_wait_mins
+            if wait_mins and self.job_runtime_secs > wait_mins * 60:
+                return (
+                    f"Job did not start running within {wait_mins} minutes of "
+                    f"being launched, so it was most likely still waiting for a "
+                    f"license"
+                )
+            return None
+
+        if not self.timeout_secs:
+            return None
+
+        run_secs = (
+            datetime.datetime.now() - self._run_start_time
+        ).total_seconds()
+        if run_secs > self.timeout_secs:
+            timeout_mins = self.deploy.get_timeout_mins()
+            return f"Job timed out after running for {timeout_mins} minutes"
+
+        return None
 
     def _kill(self) -> None:
         """Kill the running process.
