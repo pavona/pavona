@@ -388,6 +388,15 @@ def parse_args():
                             'is used. Only applicable when launching jobs '
                             'locally.'))
 
+    disg.add_argument("--max-job-mem-gb",
+                      type=float,
+                      metavar="GB",
+                      help=('Kill any single job whose peak resident set size '
+                            'grows beyond GB gigabytes. Only that job is '
+                            'killed; the rest of the regression carries on, '
+                            'and the report says why it died. Off by default. '
+                            'Only applicable when launching jobs locally.'))
+
     disg.add_argument("--run-wait-timeout-mins",
                       type=int,
                       default=180,
@@ -538,7 +547,7 @@ def parse_args():
 
     rung.add_argument("--no-rerun",
                       action='store_true',
-                      help=("Disable the default behaviour, where failing "
+                      help=("Disable the default behavior, where failing "
                             "tests are automatically rerun with waves "
                             "enabled."))
 
@@ -814,6 +823,7 @@ def main():
     LsfLauncher.LsfLauncher.max_parallel = args.max_parallel
     NcLauncher.NcLauncher.max_parallel = args.max_parallel
     Launcher.Launcher.max_odirs = args.max_odirs
+    Launcher.Launcher.max_job_mem_gb = args.max_job_mem_gb
     Launcher.Launcher.max_job_wait_mins = args.run_wait_timeout_mins
     LauncherFactory.set_launcher_type(args.local)
 

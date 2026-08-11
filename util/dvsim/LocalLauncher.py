@@ -224,6 +224,17 @@ class LocalLauncher(Launcher):
                 self._kill_with_reason(timeout_reason)
                 return "K"
 
+            mem_limit_gb = Launcher.max_job_mem_gb
+            if mem_limit_gb is not None:
+                peak_rss_mb = self._sample_peak_rss()
+                if peak_rss_mb is not None and peak_rss_mb > mem_limit_gb * 1024:
+                    self._kill_with_reason(
+                        f"Job exceeded the {mem_limit_gb} GB memory limit "
+                        f"(peak resident set size "
+                        f"{peak_rss_mb / 1024:.2f} GB)",
+                    )
+                    return "K"
+
             return "D"
 
         status, err_msg = self._check_status()

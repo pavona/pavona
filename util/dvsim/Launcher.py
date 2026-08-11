@@ -97,6 +97,11 @@ class Launcher:
     # more than this many directories.
     max_odirs = 5
 
+    # Kill a job whose peak resident set size grows beyond this many GB. None
+    # disables the check. It is only enforced by the launchers that can measure
+    # a running job's memory, which today means LocalLauncher.
+    max_job_mem_gb = None
+
     # Give up on a job that has not started doing its work within this many
     # minutes of being launched, which normally means it is still queueing for a
     # license. Zero waits indefinitely. This is a separate limit from the job's
