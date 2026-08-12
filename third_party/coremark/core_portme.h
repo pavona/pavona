@@ -1,5 +1,5 @@
-#ifndef OPENTITAN_THIRD_PARTY_COREMARK_TOP_EGRET_CORE_PORTME_H_
-#define OPENTITAN_THIRD_PARTY_COREMARK_TOP_EGRET_CORE_PORTME_H_
+#ifndef OPENTITAN_THIRD_PARTY_COREMARK_CORE_PORTME_H_
+#define OPENTITAN_THIRD_PARTY_COREMARK_CORE_PORTME_H_
 /*
 Copyright 2018 Embedded Microprocessor Benchmark Consortium (EEMBC)
 
@@ -213,4 +213,4 @@ void portable_fini(core_portable *p);
 
 int ee_printf(const char *fmt, ...);
 
-#endif  // OPENTITAN_THIRD_PARTY_COREMARK_TOP_EGRET_CORE_PORTME_H_
+#endif  // OPENTITAN_THIRD_PARTY_COREMARK_CORE_PORTME_H_

@@ -241,7 +241,7 @@ test_suite(
 test_suite(
     name = "sv4_tests",
     tests = [
-        "//third_party/coremark/top_egret:coremark_test",
+        "//third_party/coremark:coremark_test",
     ],
 )
 

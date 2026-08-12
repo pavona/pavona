@@ -582,7 +582,7 @@
       si_stage: SV4
       lc_states: ["PROD"]
       tests: ["chip_sw_coremark"]
-      bazel: ["//third_party/coremark/top_egret:coremark_test"]
+      bazel: ["//third_party/coremark:coremark_test"]
     }
     {
       name: chip_sw_boot
