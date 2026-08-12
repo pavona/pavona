@@ -219,4 +219,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   logic [SeedLen-1:0] unused_upd_rsp_pdata;
   assign unused_upd_rsp_pdata = update_rsp_data_i.pdata;
 
+  // Disabling the block must leave this state machine able to start again, since software is only
+  // required to disable the EDNs first. csrng_main_sm, csrng_cmd_stage, csrng_ctr_drbg_upd and
+  // csrng_ctr_drbg_gen all return to idle for that reason.
+  `ASSERT(CsrngDrbgCmdDisableToIdle_A,
+          !enable_i && state_q inside {ReqIdle, RspPend} |=> state_q == ReqIdle)
 endmodule
