@@ -234,7 +234,7 @@ main:
      Loop invariants at start of loop (i=0..15):
        w11 = (b << i) mod m */
   loopi     16, 1
-    bn.addm   w11, w11, w22
+    bn.addm   w11, w11, w11
 
   /* Add to the first operand.
        w10 <= (w10 + w11) mod m = (a + b << 16) mod m */
@@ -291,7 +291,7 @@ Look below for instructions on how to reproduce these benchmarks.
 |-----------|-------:|--------|:-------|---------------|
 | P256 scalar mult | 670089 | 5bcd7d | p256_scalar_mult_test | yes |
 | ECDSA-P256 sign | 704126 | 5bcd7d | run_p256_sign_test | yes |
-| ECDH-P256 verify | 420220 | 5bcd7d | run_p256_verify_test | no |
+| ECDSA-P256 verify | 420220 | 5bcd7d | run_p256_verify_test | no |
 | P384 scalar mult | 1632638 | 875b3a | p384_scalar_mult_test | yes |
 | ECDSA-P384 sign | 1697985 | 875b3a | p384_ecdsa_sign_test | yes |
 | ECDSA-P384 verify | 1075092 | 875b3a | p384_ecdsa_verify_test | no |
