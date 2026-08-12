@@ -170,7 +170,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
         end else begin
           // Update unit is required - complete first the request and then the
           // response handshake before asserting the upstrem ready.
-          update_req_vld_o = req_vld_i;
+          // Do not open a transaction while the block is disabled, otherwise this state machine
+          // lands in RspPend owed a response by an update unit that is being flushed.
+          update_req_vld_o = enable_i && req_vld_i;
           if (update_req_vld_o && update_req_rdy_i) begin
             state_d = RspPend;
           end
@@ -179,11 +181,19 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
       RspPend: begin
         // We get here after having done a request handshake with the update unit.
         // Now, wait for the response handshake to complete the transaction.
-        rsp_vld_o = update_rsp_vld_i;
-        update_rsp_rdy_o = rsp_rdy_i;
-        if (update_rsp_vld_i && update_rsp_rdy_o) begin
-          req_rdy_o = 1'b1;
+        if (!enable_i) begin
+          // The update unit returns its own state machines to idle when the block is disabled and
+          // drops the transaction, so the response waited for here is never coming and the block
+          // deadlocks once it is re-enabled. The rcstage FIFO that this state machine replaced was
+          // cleared by this same condition.
           state_d = ReqIdle;
+        end else begin
+          rsp_vld_o = update_rsp_vld_i;
+          update_rsp_rdy_o = rsp_rdy_i;
+          if (update_rsp_vld_i && update_rsp_rdy_o) begin
+            req_rdy_o = 1'b1;
+            state_d = ReqIdle;
+          end
         end
       end
       Error: begin
