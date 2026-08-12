@@ -16,11 +16,11 @@
     ]
     pages_per_bank: 16
     program_resolution: 8
-    words_per_page: 256
-    integrity_width: 4
     size: 65536
+    words_per_page: 256
     topname: scafi_deprecated
     uniquified_modules: {}
+    integrity_width: 4
     module_instance_name: flash_ctrl
   }
 }

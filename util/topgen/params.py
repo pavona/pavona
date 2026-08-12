@@ -278,8 +278,10 @@ def get_flash_ctrl_params(top: ConfigT) -> ParamsT:
             "In _get_flash_ctrl_params for design with no flash_ctrl")
 
     ipgen_params = get_ipgen_params(flash_mems[0])
-    ipgen_params.update(vars(flash_mems[0]["memory"]["mem"]["config"]))
+    mem_cfg = flash_mems[0]["memory"]["mem"]["config"]
+    ipgen_params.update(vars(mem_cfg) or mem_cfg)  # mem_cfg either EFlash obj or dict
     ipgen_params.pop('base_addrs', None)
+    ipgen_params.pop('type', None)
     return ipgen_params
 
 

@@ -110,10 +110,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Generator options for compile time random netlist constants
-    parser.add_argument('--seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='Custom seed for RNG to compute default values.')
+    parser.add_argument('--gen-keys',
+                        action='store_true',
+                        help='Recompute random constants with topgen seed')
 
     parser.add_argument('--topname',
                         required=True,
@@ -126,7 +125,7 @@ def main():
     check_in_repo_top()
 
     otp_mmap = OtpMemMap.from_mmap_path(
-        MMAP_DEFINITION_FILE.replace('egret', args.topname), args.seed)
+        MMAP_DEFINITION_FILE.replace('egret', args.topname), args.gen_keys)
     partitions = otp_mmap.config["partitions"]
     output_path = (Path("hw") / f"top_{args.topname}" / "ip_autogen" /
                    "otp_ctrl")

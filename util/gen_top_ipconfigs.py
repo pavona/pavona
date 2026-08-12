@@ -142,7 +142,7 @@ def main():
         inst_name = f"top_{completecfg['name']}_{module_name}"
         ip_config = IpConfig(template.params, inst_name, params)
 
-        outfile = args.outdir / (ip_config.instance_name + ".hjson")
+        outfile = args.outdir / (ip_config.instance_name + ".ipconfig.hjson")
         ip_config.to_file(outfile, HEADER.format(args.completecfg.relative_to(REPO_TOP),
                                                  args.outdir.relative_to(REPO_TOP)))
 
