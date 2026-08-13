@@ -125,8 +125,12 @@
       name: edn_disable_auto_req_mode
       uvm_test: edn_disable_auto_req_mode_test
       uvm_test_seq: edn_disable_auto_req_mode_vseq
-      // For debug purpose, this test is very short.
-      run_opts: ["+test_timeout_ns=500_000"]
+      // The sequence waits a randomized number of clock cycles before it re-enables EDN, and
+      // post_start then watches each alert for a randomized number of cycles. Both are counted in
+      // cycles, so the same work takes twenty times as long at the slowest clock frequency the
+      // testbench randomizes as it does at the fastest. Keep the budget far below the default so a
+      // genuine hang still fails quickly, but wide enough that the slowest clock can finish.
+      run_opts: ["+test_timeout_ns=4_000_000"]
     }
   ]
 
