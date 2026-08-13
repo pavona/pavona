@@ -29,25 +29,22 @@
     {
       name: smoke
       desc: '''
-        Write an arbitrary value to each policy register and check that this gets correctly
-        reflected in the racl_policies_o output.
+            Write an arbitrary value to each policy register and check that this gets correctly
+            reflected in the racl_policies_o output.
 
-        Also drive the racl_error_i and racl_error_external_i inputs. Check that
-        intr_racl_error_o is raised correctly.
-      '''
+            Also drive the racl_error_i and racl_error_external_i inputs. Check that
+            intr_racl_error_o is raised correctly.
+
+            Note: the racl_ctrl cannot verify the various blocks whose registers are racl-protected
+            handle the protocol correctly.
+            This can be verified by tests run on those blocks.
+            '''
       stage: V1
       tests: ["racl_ctrl_smoke"]
       features: [
         "RACL.EXT_USE",
         "RACL.POLICY_ENFORCEMENT"
       ]
-    }
-    {
-      name: policy_enforcement
-      desc: "Verify that subscribing IPs receive the expected policy values and enforce the configured read/write permissions for each role."
-      stage: V2
-      tests: []
-      features: ["RACL.POLICY_ENFORCEMENT"]
     }
     {
       name: rot_private
