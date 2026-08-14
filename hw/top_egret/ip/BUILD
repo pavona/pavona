@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -32,5 +33,13 @@ filegroup(
         "//hw/top_egret/ip/ast:doc_files",
         "//hw/top_egret/ip/sensor_ctrl:doc_files",
         "//hw/top_egret/ip/xbar:doc_files",
+    ],
+)
+
+filegroup(
+    name = "block_descriptions",
+    srcs = [
+        "//hw/top_egret/ip/ast/data:ast.hjson",
+        "//hw/top_egret/ip/sensor_ctrl/data:sensor_ctrl.hjson",
     ],
 )

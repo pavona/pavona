@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -92,5 +93,39 @@ filegroup(
         "//hw/ip/tlul:doc_files",
         "//hw/ip/uart:doc_files",
         "//hw/ip/usbdev:doc_files",
+    ],
+)
+
+filegroup(
+    name = "block_descriptions",
+    srcs = [
+        "//hw/ip/acc/data:acc.hjson",
+        "//hw/ip/adc_ctrl/data:adc_ctrl.hjson",
+        "//hw/ip/aes/data:aes.hjson",
+        "//hw/ip/aon_timer/data:aon_timer.hjson",
+        "//hw/ip/csrng/data:csrng.hjson",
+        "//hw/ip/dma/data:dma.hjson",
+        "//hw/ip/edn/data:edn.hjson",
+        "//hw/ip/entropy_src/data:entropy_src.hjson",
+        "//hw/ip/flash_macro_wrapper/data:flash_macro_wrapper.hjson",
+        "//hw/ip/hmac/data:hmac.hjson",
+        "//hw/ip/i2c/data:i2c.hjson",
+        "//hw/ip/keymgr/data:keymgr.hjson",
+        "//hw/ip/keymgr_dpe/data:keymgr_dpe.hjson",
+        "//hw/ip/kmac/data:kmac.hjson",
+        "//hw/ip/lc_ctrl/data:lc_ctrl.hjson",
+        "//hw/ip/mbx/data:mbx.hjson",
+        "//hw/ip/otp_macro/data:otp_macro.hjson",
+        "//hw/ip/pattgen/data:pattgen.hjson",
+        "//hw/ip/rom_ctrl/data:rom_ctrl.hjson",
+        "//hw/ip/rv_dm/data:rv_dm.hjson",
+        "//hw/ip/rv_timer/data:rv_timer.hjson",
+        "//hw/ip/soc_dbg_ctrl/data:soc_dbg_ctrl.hjson",
+        "//hw/ip/spi_device/data:spi_device.hjson",
+        "//hw/ip/spi_host/data:spi_host.hjson",
+        "//hw/ip/sram_ctrl/data:sram_ctrl.hjson",
+        "//hw/ip/sysrst_ctrl/data:sysrst_ctrl.hjson",
+        "//hw/ip/uart/data:uart.hjson",
+        "//hw/ip/usbdev/data:usbdev.hjson",
     ],
 )

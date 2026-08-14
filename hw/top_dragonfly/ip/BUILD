@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -32,5 +33,13 @@ filegroup(
     srcs = [
         "//hw/top_dragonfly/ip/ast:doc_files",
         "//hw/top_dragonfly/ip/soc_proxy:doc_files",
+    ],
+)
+
+filegroup(
+    name = "block_descriptions",
+    srcs = [
+        "//hw/top_dragonfly/ip/ast/data:ast.hjson",
+        "//hw/top_dragonfly/ip/soc_proxy/data:soc_proxy.hjson",
     ],
 )
