@@ -13,12 +13,79 @@ load(
     "pavona_select_ip_attr",
 )
 
-"""Autogeneration rules for OpenTitan.
+"""Autogeneration rules for Pavona.
 
 The rules in this file are for autogenerating various file resources
-used by the OpenTitan build, such as register definition files generated
+used by the Pavona build, such as register definition files generated
 from hjson register descriptions.
 """
+
+def _pavona_completecfg_impl(ctx):
+    # get paths to output files (complete cfg and secrets file)
+    topname = ctx.file.topcfg.basename.removesuffix(".hjson")
+    seed_mode = ctx.file.seedcfg.basename.split(".")[1]  # top_<topname>.<seed_mode>.hjson
+    completecfg = ctx.actions.declare_file("autogen/" + topname + ".gen.hjson")
+    secrets = ctx.actions.declare_file("autogen/" + topname + ".secrets." + seed_mode + ".gen.hjson")
+
+    # run topgen with given inputs
+    arguments = [
+        "-t",
+        ctx.file.topcfg.path,
+        "-s",
+        ctx.file.seedcfg.path,
+        "-o",
+        "/".join(completecfg.path.split("/")[:-3]),  # top directory in sandbox
+    ]
+    ctx.actions.run(
+        outputs = [completecfg, secrets],
+        inputs = [ctx.file.topcfg, ctx.file.seedcfg] + ctx.files.data,
+        arguments = arguments,
+        executable = ctx.executable._topgen,
+    )
+
+    return [
+        DefaultInfo(files = depset([completecfg, secrets])),
+    ]
+
+pavona_completecfg_rule = rule(
+    implementation = _pavona_completecfg_impl,
+    doc = "Generate complete top config and secrets file with topgen",
+    attrs = {
+        # TODO: add more arguments to pass into topgen; for now, assuming default paths
+        "topcfg": attr.label(allow_single_file = True, doc = "Top configuration Hjson"),
+        "seedcfg": attr.label(allow_single_file = True, doc = "Seed configuration Hjson"),
+        "data": attr.label_list(allow_files = True, doc = "Other top-specific sources needed"),
+        "_topgen": attr.label(
+            default = "//util:topgen.py",
+            executable = True,
+            allow_single_file = True,
+            cfg = "exec",
+        ),
+    },
+)
+
+def pavona_completecfg(name, top, seed, data = [], **kwargs):
+    """
+    Macro around `pavona_completecfg_rule` which uses top config and seed config
+    to generate complete top information with topgen.
+
+    Data should include top-reggen IPs, the RACL config, the OTP memory map, and
+    all xbar configuration hjsons.
+    """
+    needed_for_topgen = [
+        # always required whenever running topgen
+        "//util/topgen:topgen",
+        "//hw/ip:block_descriptions",
+        "//hw/ip_templates:all_files",
+    ]
+
+    pavona_completecfg_rule(
+        name = name,
+        topcfg = top,
+        seedcfg = seed,
+        data = data + needed_for_topgen,
+        **kwargs
+    )
 
 def _pavona_ip_c_header_impl(ctx):
     header = ctx.actions.declare_file("{}_regs.h".format(ctx.attr.ip))

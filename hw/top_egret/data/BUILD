@@ -5,6 +5,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:autogen.bzl", "pavona_completecfg")
+
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),
@@ -18,4 +20,15 @@ filegroup(
 filegroup(
     name = "top_xbar_hjsons",
     srcs = glob(["xbar*.hjson"]),
+)
+
+pavona_completecfg(
+    "completecfg",
+    data = [
+        ":top_xbar_hjsons",
+        "//hw/top_egret/data/otp:otp_ctrl_mmap.hjson",
+        "//hw/top_egret/ip:block_descriptions",
+    ],
+    seed = ":top_egret_seed.testing.hjson",
+    top = ":top_egret.hjson",
 )
