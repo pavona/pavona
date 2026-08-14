@@ -23,12 +23,30 @@ NSHARES = 2
 DELTA = 44
 
 
-def arith_share_modq(vals, nshares):
+PINNED_SHARE0 = {
+    8285185: 5779889,  # least rounding slack; only correct with the +1 bias
+    8330000: 8350000,  # share 0 > x, so V' reaches 88 and both csubs run
+}
+
+
+def edge_coeffs(gamma2):
+    """Every bucket boundary: low part 0, +gamma2 and -gamma2+1."""
+    alpha = 2 * gamma2
+    vals = {0, 1, Q - 1, Q - 2}
+    for k in range(Q // alpha + 1):
+        vals.update(v for v in (k * alpha, k * alpha + gamma2,
+                                k * alpha + gamma2 + 1) if v < Q)
+    return sorted(vals)
+
+
+def arith_share_modq(vals, nshares, pinned=None):
     shares = [[0] * N_LANES for _ in range(nshares)]
     for lane in range(N_LANES):
         acc = vals[lane]
         for s in range(nshares - 1):
             r = random.randrange(Q)
+            if pinned is not None:
+                r = pinned.get(vals[lane], r)
             shares[s][lane] = r
             acc = (acc - r) % Q
         shares[nshares - 1][lane] = acc % Q
@@ -62,8 +80,11 @@ def gen_seccompress_test(
         random.seed(seed)
 
     x_vals = [random.randrange(Q) for _ in range(N_LANES)]
-    x_vals[:4] = [Q - 1, Q - 2, 0, 1]            # pin corner cases
-    share_vals = arith_share_modq(x_vals, NSHARES)
+    fixed = edge_coeffs(ML_DSA_44.gamma_2)
+    fixed += [v for v in PINNED_SHARE0 if v not in fixed]
+    assert len(fixed) <= N_LANES
+    x_vals[:len(fixed)] = fixed
+    share_vals = arith_share_modq(x_vals, NSHARES, PINNED_SHARE0)
 
     alpha = 2 * ML_DSA_44.gamma_2
     w1 = [high_bits(x, alpha, Q) for x in x_vals]

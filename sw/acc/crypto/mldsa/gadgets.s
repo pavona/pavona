@@ -1770,8 +1770,8 @@ secboundcheck:
  * k = ell + c = 32).
  * Bitsliced.
  *
- *   z_0 <- round(x_0 * delta * 2^ell / q) + 2^(ell-1)  mod 2^(ell+c)
- *   z_1 <- round(x_1 * delta * 2^ell / q)              mod 2^(ell+c)
+ *   z_0 <- round(x_0 * delta * 2^ell / q) + 2^(ell-1) + 1  mod 2^(ell+c)
+ *   z_1 <- round(x_1 * delta * 2^ell / q)                  mod 2^(ell+c)
  *   Z   <- seca2b((z_0, z_1))
  *   V'  <- Z >> ell                                    (top c = 8 stripes)
  *   V'  <- (V' >= delta) ? V' - delta : V'             (twice; V' in [0, 88])
@@ -1820,15 +1820,16 @@ seccompress:
     bn.rshi  w18, w16, w31 >> 128
     bn.or    w16, w16, w18
 
-    /* BIAS = 2^23 -> w17 (broadcast to all 8 lanes). */
+    /* BIAS = 2^23 + 1 -> w17 (broadcast to all 8 lanes). */
     bn.addi   w17, w31, 1
+    bn.shv.8s w17, w17 << 23
+    bn.addi   w17, w17, 1
     bn.rshi   w18, w17, w31 >> 224
     bn.or     w17, w17, w18
     bn.rshi   w18, w17, w31 >> 192
     bn.or     w17, w17, w18
     bn.rshi   w18, w17, w31 >> 128
     bn.or     w17, w17, w18
-    bn.shv.8s w17, w17 << 23
 
     /* Steps 1-2: z_i = round(x_i*delta*2^ell / q) mod 2^(ell+c) for i in {0,1}. */
     addi     s0, a1, 0
@@ -1848,7 +1849,7 @@ seccompress:
         bn.xor w3, w3, w3
     endloop
 
-    /* Add the rounding bias 2^(ell-1) = 2^23 to share 0. */
+    /* Add the rounding bias 2^(ell-1) + 1 to share 0. */
     lw       s0, 32(sp)
     li       t0, 0
     loopi    32, 3

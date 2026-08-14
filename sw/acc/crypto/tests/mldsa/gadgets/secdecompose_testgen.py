@@ -24,13 +24,30 @@ NSHARES = 2
 SPECIAL_L2 = [Q - 1, Q - 2, 8285185, 8285184, 8330000]
 SPECIAL_L35 = [Q - 1, Q - 2, 8118529, 8118528, 8249473]
 
+PINNED_SHARE0_L2 = {
+    8285185: 5779889,  # least SecCompress rounding slack; needs the +1 bias
+    8330000: 8350000,  # share 0 > w, so V' reaches 88 and both csubs run
+}
 
-def arith_share(vals):
+
+def edge_coeffs(gamma2):
+    """Every bucket boundary: w0 = 0, +gamma2 and -gamma2+1."""
+    alpha = 2 * gamma2
+    vals = {0, 1, Q - 1, Q - 2}
+    for k in range(Q // alpha + 1):
+        vals.update(v for v in (k * alpha, k * alpha + gamma2,
+                                k * alpha + gamma2 + 1) if v < Q)
+    return sorted(vals)
+
+
+def arith_share(vals, pinned=None):
     shares = [[0] * N_COEFS for _ in range(NSHARES)]
     for lane in range(N_COEFS):
         acc = vals[lane]
         for s in range(NSHARES - 1):
             r = random.randrange(Q)
+            if pinned is not None:
+                r = pinned.get(vals[lane], r)
             shares[s][lane] = r
             acc = (acc - r) % Q
         shares[NSHARES - 1][lane] = acc % Q
@@ -53,16 +70,19 @@ def pack_canonical(vals):
     return bytes(buf)
 
 
-def decompose_poly(mldsa, special):
+def decompose_poly(mldsa, special, pinned=None):
     alpha = 2 * mldsa.gamma_2
     w_vals = [random.randrange(Q) for _ in range(N_COEFS)]
-    w_vals[:len(special)] = special
+    fixed = special + [v for v in edge_coeffs(mldsa.gamma_2) if v not in special]
+    fixed += [v for v in (pinned or {}) if v not in fixed]
+    assert len(fixed) <= N_COEFS
+    w_vals[:len(fixed)] = fixed
     w1_ref, w0_ref = [], []
     for v in w_vals:
         r1, r0 = decompose(v, alpha, Q)
         w1_ref.append(r1)
         w0_ref.append(r0)
-    return arith_share(w_vals), w1_ref, w0_ref
+    return arith_share(w_vals, pinned), w1_ref, w0_ref
 
 
 def gen_secdecompose_test(
@@ -71,7 +91,7 @@ def gen_secdecompose_test(
     if seed is not None:
         random.seed(seed)
 
-    sh2, w1_2, w0_2 = decompose_poly(ML_DSA_44, SPECIAL_L2)
+    sh2, w1_2, w0_2 = decompose_poly(ML_DSA_44, SPECIAL_L2, PINNED_SHARE0_L2)
     sh35, w1_35, w0_35 = decompose_poly(ML_DSA_65, SPECIAL_L35)
     gamma2_35 = ML_DSA_65.gamma_2
 
