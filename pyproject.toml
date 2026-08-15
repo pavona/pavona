@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [project]
-name = "opentitan"
+name = "pavona"
 version = "0.0.0"
-description = "Open-source hardware root-of-trust"
+description = "A library of modular, tapeout-proven, and secure-by-default open silicon blocks"
 requires-python = ">=3.10, <3.14"
 
 dependencies = [
