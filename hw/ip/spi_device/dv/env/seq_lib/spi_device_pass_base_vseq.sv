@@ -641,12 +641,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     while (wait_sck_count > 0) begin
       `uvm_info(`gfn, $sformatf("Waiting 'wait_sck_count=%0d' SCK ticks",wait_sck_count), UVM_DEBUG)
 
-      // The check above only covers a caller that already knew it was the last transaction. A
-      // reader thread can reach here while the main sequence still has work, and then have that
-      // sequence finish while this task is parked on SCK, which never comes again. Wait on either.
+      // Wait for the next SCK edge, but stop waiting if the sequence finishes first. The busy
+      // clear only reaches the committed value after a few SCK ticks, so the edges are what this
+      // loop counts.
       fork begin : isolation_fork
         fork
-          @(posedge cfg.spi_host_agent_cfg.vif.sck);
+          cfg.spi_host_agent_cfg.wait_sck_edge(SamplingEdge, FW_FLASH_CSB_ID);
           wait (cfg.vseq_txn_finished);
         join_any
         disable fork;
