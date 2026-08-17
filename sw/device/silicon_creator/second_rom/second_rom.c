@@ -43,8 +43,6 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
 
-  dbg_printf("Starting 2nd stage ROM\r\n");
-
   // Reset MMIO counters
   sec_mmio_next_stage_init();
 

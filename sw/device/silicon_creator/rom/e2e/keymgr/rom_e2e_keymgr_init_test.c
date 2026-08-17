@@ -34,15 +34,32 @@ static dif_rstmgr_t rstmgr;
 static uint32_t otp_state[kHmacDigestNumWords + 4] = {0};
 
 static void print_otp_sw_cfg_digests(void) {
-  uint64_t creator_digest, owner_digest = 0;
-  CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionCreatorSwCfg,
-                                       &creator_digest));
-  CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionOwnerSwCfg,
-                                       &owner_digest));
+  uint64_t creator_digest, owner_digest, auth_slot0_digest, auth_slot1_digest,
+           auth_slot2_digest, auth_slot3_digest = 0;
+  CHECK_DIF_OK(dif_otp_ctrl_get_digest(
+      &otp_ctrl, kOtpPartitionCreatorSwCfg, &creator_digest));
+  CHECK_DIF_OK(dif_otp_ctrl_get_digest(
+      &otp_ctrl, kOtpPartitionOwnerSwCfg, &owner_digest));
+  CHECK_DIF_OK(dif_otp_ctrl_get_digest(
+      &otp_ctrl, kOtpPartitionRotOwnerAuthSlot0, &auth_slot0_digest));
+  CHECK_DIF_OK(dif_otp_ctrl_get_digest(
+      &otp_ctrl, kOtpPartitionRotOwnerAuthSlot1, &auth_slot1_digest));
+  CHECK_DIF_OK(dif_otp_ctrl_get_digest(
+      &otp_ctrl, kOtpPartitionRotOwnerAuthSlot2, &auth_slot2_digest));
+  CHECK_DIF_OK(dif_otp_ctrl_get_digest(
+      &otp_ctrl, kOtpPartitionRotOwnerAuthSlot3, &auth_slot3_digest));
   LOG_INFO("CreatorSwCfg Digest: 0x%08x%08x", (uint32_t)(creator_digest >> 32),
            (uint32_t)creator_digest);
   LOG_INFO("OwnerSwCfg Digest:   0x%08x%08x", (uint32_t)(owner_digest >> 32),
            (uint32_t)owner_digest);
+  LOG_INFO("RotOwnerAuthSlot0 Digest: 0x%08x%08x", (uint32_t)(auth_slot0_digest >> 32),
+           (uint32_t)auth_slot0_digest);
+  LOG_INFO("RotOwnerAuthSlot1 Digest: 0x%08x%08x", (uint32_t)(auth_slot1_digest >> 32),
+           (uint32_t)auth_slot1_digest);
+  LOG_INFO("RotOwnerAuthSlot2 Digest: 0x%08x%08x", (uint32_t)(auth_slot2_digest >> 32),
+           (uint32_t)auth_slot2_digest);
+  LOG_INFO("RotOwnerAuthSlot3 Digest: 0x%08x%08x", (uint32_t)(auth_slot3_digest >> 32),
+           (uint32_t)auth_slot3_digest);
 }
 
 bool test_main(void) {
@@ -56,16 +73,35 @@ bool test_main(void) {
                                    kDtRstmgrAon, kDtRstmgrRegBlockCore)),
                                &rstmgr));
 
-  // Lock OTP *SwCfg partitions if this is the first boot and reset.
+  // If this is the first boot. lck measured OTP partitions and reset.
   if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
-    LOG_INFO("Power on reset. Locking OTP *SwCfg partitions ...");
-    const uint64_t kFakeOtpDigest = 0xaaaabbbbccccdddd;
-    CHECK_STATUS_OK(
-        otp_ctrl_testutils_lock_partition(&otp_ctrl, kOtpPartitionCreatorSwCfg,
-                                          /*digest=*/kFakeOtpDigest));
-    CHECK_STATUS_OK(
-        otp_ctrl_testutils_lock_partition(&otp_ctrl, kOtpPartitionOwnerSwCfg,
-                                          /*digest=*/kFakeOtpDigest));
+    LOG_INFO("Power on reset. Locking OTP *SwCfg and *AuthSlot* partitions ...");
+    const uint64_t kFakeOtpDigests[6] = {
+        0x0000111122223333,
+        0x4444555566667777,
+        0x88889999aaaabbbb,
+        0xccccddddeeeeffff,
+        0x3333222211110000,
+        0x7777666655554444,
+    };
+    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+        &otp_ctrl, kOtpPartitionCreatorSwCfg,
+        /*digest=*/kFakeOtpDigests[0]));
+    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+        &otp_ctrl, kOtpPartitionOwnerSwCfg,
+        /*digest=*/kFakeOtpDigests[1]));
+    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+        &otp_ctrl, kOtpPartitionRotOwnerAuthSlot0,
+        /*digest=*/kFakeOtpDigests[2]));
+    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+        &otp_ctrl, kOtpPartitionRotOwnerAuthSlot1,
+        /*digest=*/kFakeOtpDigests[3]));
+    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+        &otp_ctrl, kOtpPartitionRotOwnerAuthSlot2,
+        /*digest=*/kFakeOtpDigests[4]));
+    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+        &otp_ctrl, kOtpPartitionRotOwnerAuthSlot3,
+        /*digest=*/kFakeOtpDigests[5]));
     rstmgr_testutils_reason_clear();
     LOG_INFO("Issuing a software reset ...");
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
@@ -105,14 +141,10 @@ bool test_main(void) {
     hmac_sha256(otp_state, sizeof(otp_state), &otp_measurement);
     LOG_INFO("OTP CreatorSwCfg Digest: 0x%08x%08x", otp_state[1], otp_state[0]);
     LOG_INFO("OTP OwnerSwCfg Digest:   0x%08x%08x", otp_state[3], otp_state[2]);
-    LOG_INFO("OTP RotOwnerAuthSlot0 Digest:   0x%08x%08x", otp_state[5],
-             otp_state[4]);
-    LOG_INFO("OTP RotOwnerAuthSlot1 Digest:   0x%08x%08x", otp_state[7],
-             otp_state[6]);
-    LOG_INFO("OTP RotOwnerAuthSlot2 Digest:   0x%08x%08x", otp_state[9],
-             otp_state[8]);
-    LOG_INFO("OTP RotOwnerAuthSlot3 Digest:   0x%08x%08x", otp_state[11],
-             otp_state[10]);
+    LOG_INFO("OTP RotOwnerAuthSlot0 Digest:   0x%08x%08x", otp_state[5], otp_state[4]);
+    LOG_INFO("OTP RotOwnerAuthSlot1 Digest:   0x%08x%08x", otp_state[7], otp_state[6]);
+    LOG_INFO("OTP RotOwnerAuthSlot2 Digest:   0x%08x%08x", otp_state[9], otp_state[8]);
+    LOG_INFO("OTP RotOwnerAuthSlot3 Digest:   0x%08x%08x", otp_state[11], otp_state[10]);
 
     CHECK_ARRAYS_EQ(bindings.attestation, otp_measurement.digest,
                     ARRAYSIZE(bindings.attestation));
