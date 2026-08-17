@@ -14,7 +14,8 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  dif_pinmux_t pinmux = {};
+  dif_pinmux_t pinmux;
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
 
   // Map muxable SoC GPIs in pinmux.
   top_dragonfly_pinmux_peripheral_in_t peripheral_in[] = {
