@@ -6,6 +6,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules:autogen.bzl", "pavona_completecfg")
+load("//rules:files.bzl", "copy_files")
 
 filegroup(
     name = "all_files",
@@ -31,4 +32,11 @@ pavona_completecfg(
     ],
     seed = ":top_egret_seed.testing.hjson",
     top = ":top_egret.hjson",
+)
+
+copy_files(
+    name = "gen_completecfg",
+    srcs = [":completecfg"],
+    dest = "hw/top_egret/data/autogen",
+    tags = ["manual"],
 )

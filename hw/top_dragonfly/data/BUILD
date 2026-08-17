@@ -6,6 +6,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules:autogen.bzl", "pavona_completecfg")
+load("//rules:files.bzl", "copy_files")
 
 filegroup(
     name = "all_files",
@@ -32,4 +33,11 @@ pavona_completecfg(
     ],
     seed = ":top_dragonfly_seed.testing.hjson",
     top = ":top_dragonfly.hjson",
+)
+
+copy_files(
+    name = "gen_completecfg",
+    srcs = [":completecfg"],
+    dest = "hw/top_dragonfly/data/autogen",
+    tags = ["manual"],
 )

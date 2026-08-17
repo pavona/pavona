@@ -128,6 +128,12 @@ $ cd ${REPO_TOP}
 $ make -C hw top
 ```
 
+Another means of generating the complete config with topgen is by invoking it through Bazel.
+Each top can make use of its `gen_completecfg` target in order to regenerate it:
+```console
+$ ./bazelisk.sh run //hw/top_dragonfly/data:gen_completecfg
+```
+
 It is possible to restrict what the tool should generate.
 
 <!-- BEGIN CMDGEN util/selfdoc.py quote:util/topgen.py --help -->

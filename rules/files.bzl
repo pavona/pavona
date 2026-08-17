@@ -66,13 +66,16 @@ def _copy_files(ctx):
         if _matches_filter(file.basename, ctx.attr.filter):
             files.append(file)
 
+    if not ctx.attr.dest and not ctx.attr.relative_to:
+        fail("either `dest` or `relative_to` must be set")
+
     out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
     substitutions = {
         # This is maybe a bit naughty: we rely on the fact that the `package`
         # portion of the `relative_to` label looks just like the dirname
         # of the file and the package is relative to the root of the
         # workspace in which the rule resides.
-        "__DEST__": ctx.attr.relative_to.label.package,
+        "__DEST__": ctx.attr.dest or ctx.attr.relative_to.label.package,
         "__FILES__": " ".join([f.path for f in files]),
         "__WORKSPACE__": ctx.attr.workspace_env,
     }
@@ -97,9 +100,11 @@ copy_files = rule(
             doc = "Targets producing file outputs",
         ),
         "relative_to": attr.label(
-            mandatory = True,
             allow_single_file = True,
             doc = "Label of a file in the same subdir that the files should be copied to.",
+        ),
+        "dest": attr.string(
+            doc = "Workspace-relative destination directory, for use when it holds no label to point `relative_to` at.",
         ),
         "filter": attr.string_list(
             default = [],
