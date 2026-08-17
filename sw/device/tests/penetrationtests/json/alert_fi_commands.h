@@ -21,18 +21,18 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(AlertFiSubcommand, alert_fi_subcommand_t, ALERT_FI_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(AlertFiSubcommand, alert_fi_subcommand_t, ALERT_FI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define ALERT_FI_TRIGGER(field, string) \
+#define ALERT_FI_TRIGGER(field, string, bytes) \
     field(alert, uint32_t)
 UJSON_SERDE_STRUCT(AlertFiTrigger, alert_fi_trigger_t, ALERT_FI_TRIGGER);
 
-#define ALERT_FI_ALERT_OUT(field, string) \
+#define ALERT_FI_ALERT_OUT(field, string, bytes) \
     field(err_status, uint32_t) \
     field(alerts, uint32_t, 3) \
     field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AlertFiAlertOut, alert_fi_alert_out_t, ALERT_FI_ALERT_OUT);
 
-#define ALERT_FI_EMPTY_OUT(field, string) \
+#define ALERT_FI_EMPTY_OUT(field, string, bytes) \
     field(success, bool)
 UJSON_SERDE_STRUCT(AlertFiEmptyOut, alert_fi_empty_out_t, ALERT_FI_EMPTY_OUT);
 

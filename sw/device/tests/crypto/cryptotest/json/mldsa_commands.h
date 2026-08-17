@@ -49,14 +49,14 @@ UJSON_SERDE_ENUM(MldsaSubcommand, mldsa_subcommand_t, MLDSA_SUBCOMMAND);
 UJSON_SERDE_ENUM(MldsaSignMode, cryptotest_mldsa_sign_mode_t, MLDSA_SIGN_MODE);
 
 // Keygen: input seed only.
-#define MLDSA_KEYGEN_DATA(field, string) \
+#define MLDSA_KEYGEN_DATA(field, string, bytes) \
     field(parameter_set, uint32_t) \
     field(seed, uint8_t, MLDSA_CMD_MAX_SEED_BYTES) \
     field(seed_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestMldsaKeygenData, cryptotest_mldsa_keygen_data_t, MLDSA_KEYGEN_DATA);
 
 // KeygenSign: keygen from seed then sign.
-#define MLDSA_KEYGEN_SIGN_DATA(field, string) \
+#define MLDSA_KEYGEN_SIGN_DATA(field, string, bytes) \
     field(parameter_set, uint32_t) \
     field(sign_mode, cryptotest_mldsa_sign_mode_t) \
     field(seed, uint8_t, MLDSA_CMD_MAX_SEED_BYTES) \
@@ -70,7 +70,7 @@ UJSON_SERDE_STRUCT(CryptotestMldsaKeygenData, cryptotest_mldsa_keygen_data_t, ML
 UJSON_SERDE_STRUCT(CryptotestMldsaKeygenSignData, cryptotest_mldsa_keygen_sign_data_t, MLDSA_KEYGEN_SIGN_DATA);
 
 // Siggen: input secret key + message + context + randomness.
-#define MLDSA_SIGGEN_DATA(field, string) \
+#define MLDSA_SIGGEN_DATA(field, string, bytes) \
     field(parameter_set, uint32_t) \
     field(sign_mode, cryptotest_mldsa_sign_mode_t) \
     field(sk, uint8_t, MLDSA_CMD_MAX_SK_BYTES) \
@@ -84,7 +84,7 @@ UJSON_SERDE_STRUCT(CryptotestMldsaKeygenSignData, cryptotest_mldsa_keygen_sign_d
 UJSON_SERDE_STRUCT(CryptotestMldsaSiggenData, cryptotest_mldsa_siggen_data_t, MLDSA_SIGGEN_DATA);
 
 // Sigver: input public key + message + context + signature.
-#define MLDSA_SIGVER_DATA(field, string) \
+#define MLDSA_SIGVER_DATA(field, string, bytes) \
     field(parameter_set, uint32_t) \
     field(sign_mode, cryptotest_mldsa_sign_mode_t) \
     field(pk, uint8_t, MLDSA_CMD_MAX_PK_BYTES) \
@@ -98,7 +98,7 @@ UJSON_SERDE_STRUCT(CryptotestMldsaSiggenData, cryptotest_mldsa_siggen_data_t, ML
 UJSON_SERDE_STRUCT(CryptotestMldsaSigverData, cryptotest_mldsa_sigver_data_t, MLDSA_SIGVER_DATA);
 
 // Keygen output: the key pair in the standard FIPS 204 encoding.
-#define MLDSA_KEYGEN_OUTPUT(field, string) \
+#define MLDSA_KEYGEN_OUTPUT(field, string, bytes) \
     field(pk, uint8_t, MLDSA_CMD_MAX_PK_BYTES) \
     field(pk_len, size_t) \
     field(sk, uint8_t, MLDSA_CMD_MAX_SK_BYTES) \
@@ -107,7 +107,7 @@ UJSON_SERDE_STRUCT(CryptotestMldsaSigverData, cryptotest_mldsa_sigver_data_t, ML
 UJSON_SERDE_STRUCT(CryptotestMldsaKeygenOutput, cryptotest_mldsa_keygen_output_t, MLDSA_KEYGEN_OUTPUT);
 
 // KeygenSign output: derived public key and signature.
-#define MLDSA_KEYGEN_SIGN_OUTPUT(field, string) \
+#define MLDSA_KEYGEN_SIGN_OUTPUT(field, string, bytes) \
     field(pk, uint8_t, MLDSA_CMD_MAX_PK_BYTES) \
     field(pk_len, size_t) \
     field(signature, uint8_t, MLDSA_CMD_MAX_SIG_BYTES) \
@@ -116,14 +116,14 @@ UJSON_SERDE_STRUCT(CryptotestMldsaKeygenOutput, cryptotest_mldsa_keygen_output_t
 UJSON_SERDE_STRUCT(CryptotestMldsaKeygenSignOutput, cryptotest_mldsa_keygen_sign_output_t, MLDSA_KEYGEN_SIGN_OUTPUT);
 
 // Siggen output: signature.
-#define MLDSA_SIGGEN_OUTPUT(field, string) \
+#define MLDSA_SIGGEN_OUTPUT(field, string, bytes) \
     field(signature, uint8_t, MLDSA_CMD_MAX_SIG_BYTES) \
     field(signature_len, size_t) \
     field(success, bool)
 UJSON_SERDE_STRUCT(CryptotestMldsaSiggenOutput, cryptotest_mldsa_siggen_output_t, MLDSA_SIGGEN_OUTPUT);
 
 // Sigver output: verification result.
-#define MLDSA_SIGVER_OUTPUT(field, string) \
+#define MLDSA_SIGVER_OUTPUT(field, string, bytes) \
     field(success, bool)
 UJSON_SERDE_STRUCT(CryptotestMldsaSigverOutput, cryptotest_mldsa_sigver_output_t, MLDSA_SIGVER_OUTPUT);
 

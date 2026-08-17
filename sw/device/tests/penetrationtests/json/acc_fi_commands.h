@@ -35,7 +35,7 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(AccFiSubcommand, acc_fi_subcommand_t, ACCFI_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(AccFiSubcommand, acc_fi_subcommand_t, ACCFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define ACCFI_LOOP_COUNTER_OUTPUT(field, string) \
+#define ACCFI_LOOP_COUNTER_OUTPUT(field, string, bytes) \
     field(loop_counter, uint32_t) \
     field(err_acc, uint32_t) \
     field(err_ibx, uint32_t) \
@@ -44,7 +44,7 @@ RUST_ONLY(UJSON_SERDE_ENUM(AccFiSubcommand, acc_fi_subcommand_t, ACCFI_SUBCOMMAN
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiLoopCounterOutput, acc_fi_loop_counter_t, ACCFI_LOOP_COUNTER_OUTPUT);
 
-#define ACCFI_RESULT_OUTPUT(field, string) \
+#define ACCFI_RESULT_OUTPUT(field, string, bytes) \
     field(result, uint32_t) \
     field(err_acc, uint32_t) \
     field(err_ibx, uint32_t) \
@@ -53,7 +53,7 @@ UJSON_SERDE_STRUCT(AccFiLoopCounterOutput, acc_fi_loop_counter_t, ACCFI_LOOP_COU
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiResultOutput, acc_fi_result_t, ACCFI_RESULT_OUTPUT);
 
-#define ACCFI_KEY_OUTPUT(field, string) \
+#define ACCFI_KEY_OUTPUT(field, string, bytes) \
     field(res, uint32_t) \
     field(keys, uint32_t, 4) \
     field(err_acc, uint32_t) \
@@ -63,14 +63,14 @@ UJSON_SERDE_STRUCT(AccFiResultOutput, acc_fi_result_t, ACCFI_RESULT_OUTPUT);
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiKeyOutput, acc_fi_keys_t, ACCFI_KEY_OUTPUT);
 
-#define ACCFI_MEM_CFG(field, string) \
+#define ACCFI_MEM_CFG(field, string, bytes) \
     field(byte_offset, uint32_t) \
     field(num_words, uint32_t) \
     field(imem, bool) \
     field(dmem, bool)
 UJSON_SERDE_STRUCT(AccFiMemCfg, acc_fi_mem_cfg_t, ACCFI_MEM_CFG);
 
-#define ACCFI_MEM_OUTPUT(field, string) \
+#define ACCFI_MEM_OUTPUT(field, string, bytes) \
     field(res, uint32_t) \
     field(imem_data, uint32_t, 8) \
     field(imem_addr, uint32_t, 8) \
@@ -83,7 +83,7 @@ UJSON_SERDE_STRUCT(AccFiMemCfg, acc_fi_mem_cfg_t, ACCFI_MEM_CFG);
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiMemOutput, acc_fi_mem_t, ACCFI_MEM_OUTPUT);
 
-#define ACCFI_DATA_OUTPUT(field, string) \
+#define ACCFI_DATA_OUTPUT(field, string, bytes) \
     field(res, uint32_t) \
     field(data, uint32_t, 256) \
     field(insn_cnt, uint32_t) \
@@ -94,7 +94,7 @@ UJSON_SERDE_STRUCT(AccFiMemOutput, acc_fi_mem_t, ACCFI_MEM_OUTPUT);
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiDataOutput, acc_fi_data_t, ACCFI_DATA_OUTPUT);
 
-#define ACCFI_RF_CHAR_OUTPUT(field, string) \
+#define ACCFI_RF_CHAR_OUTPUT(field, string, bytes) \
     field(res, uint32_t) \
     field(faulty_gpr, uint32_t, 29) \
     field(faulty_wdr, uint32_t, 256) \
@@ -105,7 +105,7 @@ UJSON_SERDE_STRUCT(AccFiDataOutput, acc_fi_data_t, ACCFI_DATA_OUTPUT);
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiRfCharOutput, acc_fi_rf_char_t, ACCFI_RF_CHAR_OUTPUT);
 
-#define ACCFI_RESULT_CNT_OUTPUT(field, string) \
+#define ACCFI_RESULT_CNT_OUTPUT(field, string, bytes) \
     field(result, uint32_t) \
     field(insn_cnt, uint32_t) \
     field(err_acc, uint32_t) \
@@ -115,7 +115,7 @@ UJSON_SERDE_STRUCT(AccFiRfCharOutput, acc_fi_rf_char_t, ACCFI_RF_CHAR_OUTPUT);
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiResultCntOutput, acc_fi_result_cnt_t, ACCFI_RESULT_CNT_OUTPUT);
 
-#define ACCFI_RESULT_ARRAY(field, string) \
+#define ACCFI_RESULT_ARRAY(field, string, bytes) \
     field(result, uint32_t, 32) \
     field(insn_cnt, uint32_t) \
     field(err_acc, uint32_t) \
@@ -125,11 +125,11 @@ UJSON_SERDE_STRUCT(AccFiResultCntOutput, acc_fi_result_cnt_t, ACCFI_RESULT_CNT_O
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiResultArray, acc_fi_result_array_t, ACCFI_RESULT_ARRAY);
 
-#define ACCFI_BIG_NUM(field, string) \
+#define ACCFI_BIG_NUM(field, string, bytes) \
     field(big_num, uint32_t, 16)
 UJSON_SERDE_STRUCT(AccFiBigNum, acc_fi_big_num_t, ACCFI_BIG_NUM);
 
-#define ACCFI_BIG_NUM_OUTPUT(field, string) \
+#define ACCFI_BIG_NUM_OUTPUT(field, string, bytes) \
     field(big_num, uint32_t, 16) \
     field(insn_cnt, uint32_t) \
     field(err_acc, uint32_t) \
@@ -139,11 +139,11 @@ UJSON_SERDE_STRUCT(AccFiBigNum, acc_fi_big_num_t, ACCFI_BIG_NUM);
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AccFiBigNumOutput, acc_fi_big_num_out_t, ACCFI_BIG_NUM_OUTPUT);
 
-#define ACCFI_PC(field, string) \
+#define ACCFI_PC(field, string, bytes) \
     field(pc, uint32_t)
 UJSON_SERDE_STRUCT(AccFiPc, acc_fi_pc_t, ACCFI_PC);
 
-#define ACCFI_PC_OUTPUT(field, string) \
+#define ACCFI_PC_OUTPUT(field, string, bytes) \
     field(pc_dmem, uint32_t) \
     field(pc_acc, uint32_t) \
     field(insn_cnt, uint32_t) \

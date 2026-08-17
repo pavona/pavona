@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -123,6 +124,30 @@ TEST(Derive, MatrixDeserialize) {
   ujson_serialize_matrix(&uj, &m);
   std::cout << ss.Sink() << "\n\n";
   EXPECT_EQ(memcmp(&m, &expected, sizeof(m)), 0);
+}
+
+TEST(Derive, BlobSerialize) {
+  blob b = {{0xde, 0xad, 0xbe, 0xef}, 3};
+  SourceSink ss;
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_serialize_blob(&uj, &b)));
+  EXPECT_EQ(ss.Sink(), R"json({"data":"deadbe","data_len":3})json");
+}
+
+TEST(Derive, BlobDeserialize) {
+  blob expected = {{0xde, 0xad, 0xbe}, 3};
+  blob b{};
+  SourceSink ss(R"json({"data":"deadbe","data_len":3})json");
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_deserialize_blob(&uj, &b)));
+  EXPECT_EQ(memcmp(&b, &expected, sizeof(b)), 0);
+}
+
+TEST(Derive, BlobDeserializeTooLong) {
+  blob b{};
+  SourceSink ss(R"json({"data":"deadbeefdeadbeefff","data_len":9})json");
+  ujson_t uj = ss.UJson();
+  EXPECT_FALSE(status_ok(ujson_deserialize_blob(&uj, &b)));
 }
 
 TEST(Derive, DirectionSerialize) {

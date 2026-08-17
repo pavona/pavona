@@ -26,7 +26,7 @@ UJSON_SERDE_ENUM(AesGcmSubcommand, aes_gcm_subcommand_t, AES_GCM_SUBCOMMAND);
     value(_, Decrypt)
 UJSON_SERDE_ENUM(CryptotestAesGcmOperation, cryptotest_aes_gcm_operation_t, AES_GCM_OPERATION);
 
-#define AES_GCM_DATA(field, string) \
+#define AES_GCM_DATA(field, string, bytes) \
     field(key, uint8_t, AES_GCM_CMD_MAX_KEY_BYTES) \
     field(key_length, size_t) \
     field(iv, uint8_t, 16) \
@@ -39,7 +39,7 @@ UJSON_SERDE_ENUM(CryptotestAesGcmOperation, cryptotest_aes_gcm_operation_t, AES_
     field(tag_length, size_t)
 UJSON_SERDE_STRUCT(CryptotestAesGcmData, cryptotest_aes_gcm_data_t, AES_GCM_DATA);
 
-#define AES_GCM_OUTPUT(field, string) \
+#define AES_GCM_OUTPUT(field, string, bytes) \
     field(output, uint8_t, AES_GCM_CMD_MAX_MSG_BYTES) \
     field(output_len, size_t) \
     field(tag, uint8_t, AES_GCM_CMD_MAX_TAG_BYTES) \

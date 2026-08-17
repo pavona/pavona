@@ -23,19 +23,19 @@ extern "C" {
     value(_, P384)
 UJSON_SERDE_ENUM(CryptotestEcdhCurve, cryptotest_ecdh_curve_t, ECDH_CURVE);
 
-#define ECDH_PRIVATE_KEY(field, string) \
+#define ECDH_PRIVATE_KEY(field, string, bytes) \
     field(d0, uint8_t, ECDH_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
     field(d0_len, size_t) \
     field(d1, uint8_t, ECDH_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
     field(d1_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdhPrivateKey, cryptotest_ecdh_private_key_t, ECDH_PRIVATE_KEY);
 
-#define ECDH_COORDINATE(field, string) \
+#define ECDH_COORDINATE(field, string, bytes) \
     field(coordinate, uint8_t, ECDH_CMD_MAX_COORDINATE_BYTES) \
     field(coordinate_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdhCoordinate, cryptotest_ecdh_coordinate_t, ECDH_COORDINATE);
 
-#define ECDH_DERIVE_OUTPUT(field, string) \
+#define ECDH_DERIVE_OUTPUT(field, string, bytes) \
     field(ok, uint8_t) \
     field(shared_secret, uint8_t, ECDH_CMD_MAX_SHARED_SECRET_BYTES) \
     field(shared_secret_len, size_t)

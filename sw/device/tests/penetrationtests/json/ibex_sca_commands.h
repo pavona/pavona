@@ -35,40 +35,40 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define IBEXSCA_TEST_DATA(field, string) \
+#define IBEXSCA_TEST_DATA(field, string, bytes) \
     field(data, uint32_t, 8)
 UJSON_SERDE_STRUCT(IbexScaTestData, ibex_sca_test_data_t, IBEXSCA_TEST_DATA);
 
-#define IBEXSCA_SALT(field, string) \
+#define IBEXSCA_SALT(field, string, bytes) \
     field(salt, uint32_t, 8)
 UJSON_SERDE_STRUCT(IbexScaSalt, ibex_sca_salt_t, IBEXSCA_SALT);
 
-#define IBEXSCA_KEY(field, string) \
+#define IBEXSCA_KEY(field, string, bytes) \
     field(share0, uint32_t, 8) \
     field(share1, uint32_t, 8)
 UJSON_SERDE_STRUCT(IbexScaKey, ibex_sca_key_t, IBEXSCA_KEY);
 
-#define IBEXSCA_TEST_FVSR(field, string) \
+#define IBEXSCA_TEST_FVSR(field, string, bytes) \
     field(num_iterations, uint32_t) \
     field(fixed_data, uint32_t)
 UJSON_SERDE_STRUCT(IbexScaTestFvsr, ibex_sca_test_fvsr_t, IBEXSCA_TEST_FVSR);
 
-#define IBEXSCA_RESULT(field, string) \
+#define IBEXSCA_RESULT(field, string, bytes) \
     field(result, uint32_t)
 UJSON_SERDE_STRUCT(IbexScaResult, ibex_sca_result_t, IBEXSCA_RESULT);
 
-#define IBEXSCA_BATCH(field, string) \
+#define IBEXSCA_BATCH(field, string, bytes) \
     field(num_iterations, uint32_t)
 UJSON_SERDE_STRUCT(IbexScaBatch, ibex_sca_batch_t, IBEXSCA_BATCH);
 
-#define IBEXSCA_TEST_BATCH_OPS(field, string) \
+#define IBEXSCA_TEST_BATCH_OPS(field, string, bytes) \
     field(num_iterations, uint32_t) \
     field(trigger, uint32_t) \
     field(fixed_data1, uint32_t) \
     field(fixed_data2, uint32_t)
 UJSON_SERDE_STRUCT(IbexScaTestBatchOps, ibex_sca_test_batch_ops_t, IBEXSCA_TEST_BATCH_OPS);
 
-#define IBEXSCA_OPS_RESULT(field, string) \
+#define IBEXSCA_OPS_RESULT(field, string, bytes) \
     field(result, uint32_t, 12)
 UJSON_SERDE_STRUCT(IbexScaOpsResult, ibex_sca_ops_result_t, IBEXSCA_OPS_RESULT);
 

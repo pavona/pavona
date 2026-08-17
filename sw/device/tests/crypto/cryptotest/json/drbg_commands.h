@@ -16,7 +16,7 @@ extern "C" {
 
 // clang-format off
 
-#define DRBG_INPUT(field, string) \
+#define DRBG_INPUT(field, string, bytes) \
     field(entropy, uint8_t, DRBG_CMD_MAX_ENTROPY_BYTES) \
     field(entropy_len, size_t) \
     field(personalization_string, uint8_t, DRBG_CMD_MAX_PERSONALIZATION_STRING_BYTES) \
@@ -33,7 +33,7 @@ extern "C" {
     field(output_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestDrbgInput, cryptotest_drbg_input_t, DRBG_INPUT);
 
-#define DRBG_OUTPUT(field, string) \
+#define DRBG_OUTPUT(field, string, bytes) \
     field(output, uint8_t, DRBG_CMD_MAX_OUTPUT_BYTES) \
     field(output_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestDrbgOutput, cryptotest_drbg_output_t, DRBG_OUTPUT);

@@ -46,24 +46,24 @@ UJSON_SERDE_ENUM(CryptotestEcdsaHashAlg, cryptotest_ecdsa_hash_alg_t, ECDSA_HASH
     value(_, P384)
 UJSON_SERDE_ENUM(CryptotestEcdsaCurve, cryptotest_ecdsa_curve_t, ECDSA_CURVE);
 
-#define ECDSA_MESSAGE(field, string) \
+#define ECDSA_MESSAGE(field, string, bytes) \
     field(input, uint8_t, ECDSA_CMD_MAX_MESSAGE_BYTES) \
     field(input_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdsaMessage, cryptotest_ecdsa_message_t, ECDSA_MESSAGE);
 
-#define ECDSA_SIGNATURE(field, string) \
+#define ECDSA_SIGNATURE(field, string, bytes) \
     field(r, uint8_t, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES) \
     field(r_len, size_t) \
     field(s, uint8_t, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES) \
     field(s_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdsaSignature, cryptotest_ecdsa_signature_t, ECDSA_SIGNATURE);
 
-#define ECDSA_COORDINATE(field, string) \
+#define ECDSA_COORDINATE(field, string, bytes) \
     field(coordinate, uint8_t, ECDSA_CMD_MAX_COORDINATE_BYTES) \
     field(coordinate_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdsaCoordinate, cryptotest_ecdsa_coordinate_t, ECDSA_COORDINATE);
 
-#define ECDSA_PRIVATE_KEY(field, string) \
+#define ECDSA_PRIVATE_KEY(field, string, bytes) \
     field(d0, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
     field(d0_len, size_t) \
     field(d1, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \

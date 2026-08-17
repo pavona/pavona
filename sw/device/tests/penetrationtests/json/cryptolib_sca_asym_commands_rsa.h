@@ -17,7 +17,7 @@ extern "C" {
 
 // clang-format off
 
-#define CRYPTOLIBSCAASYM_RSA_DEC_IN(field, string) \
+#define CRYPTOLIBSCAASYM_RSA_DEC_IN(field, string, bytes) \
     field(data, uint8_t, RSA_CMD_MAX_MESSAGE_BYTES) \
     field(data_len, size_t) \
     field(mode, size_t) \
@@ -35,7 +35,7 @@ extern "C" {
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymRsaDecIn, cryptolib_sca_asym_rsa_dec_in_t, CRYPTOLIBSCAASYM_RSA_DEC_IN);
 
-#define CRYPTOLIBSCAASYM_RSA_DEC_OUT(field, string) \
+#define CRYPTOLIBSCAASYM_RSA_DEC_OUT(field, string, bytes) \
     field(p, uint8_t, RSA_CMD_MAX_COFACTOR_BYTES) \
     field(q, uint8_t, RSA_CMD_MAX_COFACTOR_BYTES) \
     field(n, uint8_t, RSA_CMD_MAX_N_BYTES) \
@@ -49,7 +49,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymRsaDecIn, cryptolib_sca_asym_rsa_dec_in_t, CR
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymRsaDecOut, cryptolib_sca_asym_rsa_dec_out_t, CRYPTOLIBSCAASYM_RSA_DEC_OUT);
 
-#define CRYPTOLIBSCAASYM_RSA_SIGN_IN(field, string) \
+#define CRYPTOLIBSCAASYM_RSA_SIGN_IN(field, string, bytes) \
     field(data, uint8_t, RSA_CMD_MAX_MESSAGE_BYTES) \
     field(data_len, size_t) \
     field(p, uint8_t, RSA_CMD_MAX_COFACTOR_BYTES) \
@@ -67,7 +67,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymRsaDecOut, cryptolib_sca_asym_rsa_dec_out_t, 
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymRsaSignIn, cryptolib_sca_asym_rsa_sign_in_t, CRYPTOLIBSCAASYM_RSA_SIGN_IN);
 
-#define CRYPTOLIBSCAASYM_RSA_SIGN_OUT(field, string) \
+#define CRYPTOLIBSCAASYM_RSA_SIGN_OUT(field, string, bytes) \
     field(p, uint8_t, RSA_CMD_MAX_COFACTOR_BYTES) \
     field(q, uint8_t, RSA_CMD_MAX_COFACTOR_BYTES) \
     field(n, uint8_t, RSA_CMD_MAX_N_BYTES) \
@@ -81,13 +81,13 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymRsaSignIn, cryptolib_sca_asym_rsa_sign_in_t, 
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymRsaSignOut, cryptolib_sca_asym_rsa_sign_out_t, CRYPTOLIBSCAASYM_RSA_SIGN_OUT);
 
-#define CRYPTOLIBSCAASYM_PRIME_IN(field, string) \
+#define CRYPTOLIBSCAASYM_PRIME_IN(field, string, bytes) \
     field(e, uint32_t) \
     field(cfg, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymPrimeIn, cryptolib_sca_asym_prime_in_t, CRYPTOLIBSCAASYM_PRIME_IN);
 
-#define CRYPTOLIBSCAASYM_PRIME_OUT(field, string) \
+#define CRYPTOLIBSCAASYM_PRIME_OUT(field, string, bytes) \
     field(prime, uint8_t, RSA_CMD_MAX_N_BYTES) \
     field(prime_len, size_t) \
     field(status, size_t) \

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -168,6 +169,25 @@ status_t ujson_parse_qs(ujson_t *uj, char *str, size_t len) {
   return OK_STATUS(n);
 }
 
+status_t ujson_deserialize_hex(ujson_t *uj, uint8_t *buf, size_t max_len,
+                               size_t *len) {
+  size_t n = 0;
+  TRY(ujson_consume(uj, '"'));
+  while (true) {
+    char ch = (char)TRY(ujson_getc(uj));
+    if (ch == '"')
+      break;
+    TRY(ujson_ungetc(uj, ch));
+    if (n >= max_len)
+      return OUT_OF_RANGE();
+    int hi = TRY(consume_hexdigit(uj));
+    int lo = TRY(consume_hexdigit(uj));
+    buf[n++] = (uint8_t)((hi << 4) | lo);
+  }
+  *len = n;
+  return OK_STATUS();
+}
+
 status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
   char ch = (char)TRY(consume_whitespace(uj));
   bool neg = false;
@@ -319,6 +339,25 @@ status_t ujson_serialize_string(ujson_t *uj, const char *buf) {
       TRY(ujson_putbuf(uj, buf, 1));
     }
     ++buf;
+  }
+  TRY(ujson_putbuf(uj, "\"", 1));
+  return OK_STATUS();
+}
+
+status_t ujson_serialize_hex(ujson_t *uj, const uint8_t *buf, size_t len) {
+  char chunk[32];
+  size_t n = 0;
+  TRY(ujson_putbuf(uj, "\"", 1));
+  for (size_t i = 0; i < len; ++i) {
+    chunk[n++] = hex[buf[i] >> 4];
+    chunk[n++] = hex[buf[i] & 0xF];
+    if (n == sizeof(chunk)) {
+      TRY(ujson_putbuf(uj, chunk, n));
+      n = 0;
+    }
+  }
+  if (n > 0) {
+    TRY(ujson_putbuf(uj, chunk, n));
   }
   TRY(ujson_putbuf(uj, "\"", 1));
   return OK_STATUS();

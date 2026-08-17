@@ -51,7 +51,7 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(CryptoLibScaSymSubcommand, cryptolib_sca_sym_subcommand_t, CRYPTOLIBSCASYM_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(CryptoLibScaSymSubcommand, cryptolib_sca_sym_subcommand_t, CRYPTOLIBSCASYM_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define CRYPTOLIBSCASYM_AES_IN(field, string) \
+#define CRYPTOLIBSCASYM_AES_IN(field, string, bytes) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
     field(key, uint8_t, AES_CMD_MAX_KEY_BYTES) \
@@ -65,14 +65,14 @@ RUST_ONLY(UJSON_SERDE_ENUM(CryptoLibScaSymSubcommand, cryptolib_sca_sym_subcomma
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymAesIn, cryptolib_sca_sym_aes_in_t, CRYPTOLIBSCASYM_AES_IN);
 
-#define CRYPTOLIBSCASYM_AES_OUT(field, string) \
+#define CRYPTOLIBSCASYM_AES_OUT(field, string, bytes) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
     field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymAesOut, cryptolib_sca_sym_aes_out_t, CRYPTOLIBSCASYM_AES_OUT);
 
-#define CRYPTOLIBSCASYM_CMAC_IN(field, string) \
+#define CRYPTOLIBSCASYM_CMAC_IN(field, string, bytes) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
     field(key, uint8_t, AES_CMD_MAX_KEY_BYTES) \
@@ -83,14 +83,14 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymAesOut, cryptolib_sca_sym_aes_out_t, CRYPTOLIB
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymCmacIn, cryptolib_sca_sym_cmac_in_t, CRYPTOLIBSCASYM_CMAC_IN);
 
-#define CRYPTOLIBSCASYM_CMAC_OUT(field, string) \
+#define CRYPTOLIBSCASYM_CMAC_OUT(field, string, bytes) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
     field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymCmacOut, cryptolib_sca_sym_cmac_out_t, CRYPTOLIBSCASYM_CMAC_OUT);
 
-#define CRYPTOLIBSCASYM_GCM_IN(field, string) \
+#define CRYPTOLIBSCASYM_GCM_IN(field, string, bytes) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
     field(aad, uint8_t, AES_CMD_MAX_MSG_BYTES) \
@@ -103,7 +103,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymCmacOut, cryptolib_sca_sym_cmac_out_t, CRYPTOL
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymGcmIn, cryptolib_sca_sym_gcm_in_t, CRYPTOLIBSCASYM_GCM_IN);
 
-#define CRYPTOLIBSCASYM_GCM_OUT(field, string) \
+#define CRYPTOLIBSCASYM_GCM_OUT(field, string, bytes) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, uint32_t) \
     field(tag, uint8_t, AES_CMD_MAX_MSG_BYTES) \
@@ -112,7 +112,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymGcmIn, cryptolib_sca_sym_gcm_in_t, CRYPTOLIBSC
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymGcmOut, cryptolib_sca_sym_gcm_out_t, CRYPTOLIBSCASYM_GCM_OUT);
 
-#define CRYPTOLIBSCASYM_TDES_IN(field, string) \
+#define CRYPTOLIBSCASYM_TDES_IN(field, string, bytes) \
     field(data, uint8_t, TDES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
     field(key, uint8_t, TDES_CMD_MAX_KEY_BYTES) \
@@ -126,14 +126,14 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymGcmOut, cryptolib_sca_sym_gcm_out_t, CRYPTOLIB
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymTdesIn, cryptolib_sca_sym_tdes_in_t, CRYPTOLIBSCASYM_TDES_IN);
 
-#define CRYPTOLIBSCASYM_TDES_OUT(field, string) \
+#define CRYPTOLIBSCASYM_TDES_OUT(field, string, bytes) \
     field(data, uint8_t, TDES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
     field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymTdesOut, cryptolib_sca_sym_tdes_out_t, CRYPTOLIBSCASYM_TDES_OUT);
 
-#define CRYPTOLIBSCASYM_HMAC_IN(field, string) \
+#define CRYPTOLIBSCASYM_HMAC_IN(field, string, bytes) \
     field(data, uint8_t, HMAC_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
     field(key, uint8_t, HMAC_CMD_MAX_KEY_BYTES) \
@@ -145,14 +145,14 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymTdesOut, cryptolib_sca_sym_tdes_out_t, CRYPTOL
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymHmacIn, cryptolib_sca_sym_hmac_in_t, CRYPTOLIBSCASYM_HMAC_IN);
 
-#define CRYPTOLIBSCASYM_HMAC_OUT(field, string) \
+#define CRYPTOLIBSCASYM_HMAC_OUT(field, string, bytes) \
     field(data, uint8_t, HMAC_CMD_MAX_TAG_BYTES) \
     field(data_len, size_t) \
     field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymHmacOut, cryptolib_sca_sym_hmac_out_t, CRYPTOLIBSCASYM_HMAC_OUT);
 
-#define CRYPTOLIBSCASYM_DRBG_GENERATE_IN(field, string) \
+#define CRYPTOLIBSCASYM_DRBG_GENERATE_IN(field, string, bytes) \
     field(data_len, size_t) \
     field(nonce, uint8_t, DRBG_CMD_MAX_NONCE_BYTES) \
     field(nonce_len, size_t) \
@@ -162,7 +162,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymHmacOut, cryptolib_sca_sym_hmac_out_t, CRYPTOL
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgGenerateIn, cryptolib_sca_sym_drbg_generate_in_t, CRYPTOLIBSCASYM_DRBG_GENERATE_IN);
 
-#define CRYPTOLIBSCASYM_DRBG_RESEED_IN(field, string) \
+#define CRYPTOLIBSCASYM_DRBG_RESEED_IN(field, string, bytes) \
     field(entropy, uint8_t, DRBG_CMD_MAX_ENTROPY_BYTES) \
     field(entropy_len, size_t) \
     field(nonce, uint8_t, DRBG_CMD_MAX_NONCE_BYTES) \
@@ -173,13 +173,13 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgGenerateIn, cryptolib_sca_sym_drbg_generat
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgReseedIn, cryptolib_sca_sym_drbg_reseed_in_t, CRYPTOLIBSCASYM_DRBG_RESEED_IN);
 
-#define CRYPTOLIBSCASYM_DRBG_GENERATE_OUT(field, string) \
+#define CRYPTOLIBSCASYM_DRBG_GENERATE_OUT(field, string, bytes) \
     field(data, uint8_t, DRBG_CMD_MAX_OUTPUT_BYTES) \
     field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgGenerateOut, cryptolib_sca_sym_drbg_generate_out_t, CRYPTOLIBSCASYM_DRBG_GENERATE_OUT);
 
-#define CRYPTOLIBSCASYM_DRBG_RESEED_OUT(field, string) \
+#define CRYPTOLIBSCASYM_DRBG_RESEED_OUT(field, string, bytes) \
     field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgReseedOut, cryptolib_sca_sym_drbg_reseed_out_t, CRYPTOLIBSCASYM_DRBG_RESEED_OUT);

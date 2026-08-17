@@ -17,7 +17,7 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(RomFiSubcommand, rom_fi_subcommand_t, ROMFI_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(RomFiSubcommand, rom_fi_subcommand_t, ROMFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define ROMFI_DIGEST(field, string) \
+#define ROMFI_DIGEST(field, string, bytes) \
     field(digest, uint32_t, 8) \
     field(alerts, uint32_t, 3) \
     field(loc_alerts, uint32_t) \

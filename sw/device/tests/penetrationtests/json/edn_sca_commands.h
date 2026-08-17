@@ -18,11 +18,11 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(EdnScaSubcommand, edn_sca_subcommand_t, EDNSCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(EdnScaSubcommand, edn_sca_subcommand_t, EDNSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define EDNSCA_RESULT(field, string) \
+#define EDNSCA_RESULT(field, string, bytes) \
     field(rnd_data, uint32_t, 4)
 UJSON_SERDE_STRUCT(EdnScaResult, edn_sca_result_t, EDNSCA_RESULT);
 
-#define EDNSCA_BATCH(field, string) \
+#define EDNSCA_BATCH(field, string, bytes) \
     field(num_iterations, uint32_t)
 UJSON_SERDE_STRUCT(EdnScaBatch, edn_sca_batch_t, EDNSCA_BATCH);
 

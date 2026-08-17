@@ -19,7 +19,7 @@ extern "C" {
     value(_, SeedPrng)
 UJSON_SERDE_ENUM(PrngScaSubcommand, prng_sca_subcommand_t, PRNGSCA_SUBCOMMAND);
 
-#define PRNG_SCA_LFSR(field, string) \
+#define PRNG_SCA_LFSR(field, string, bytes) \
     field(seed, uint8_t, PRNGSCA_CMD_MAX_LFSR_BYTES) \
     field(seed_length, size_t)
 UJSON_SERDE_STRUCT(CryptotestPrngScaLfsr, cryptotest_prng_sca_lfsr_t, PRNG_SCA_LFSR);

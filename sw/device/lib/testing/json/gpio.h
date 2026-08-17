@@ -30,13 +30,13 @@ extern "C" {
 
 UJSON_SERDE_ENUM(GpioAction, gpio_action_t, ENUM_GPIO_SET_ACTION);
 
-#define STRUCT_GPIO_SET(field, string) \
+#define STRUCT_GPIO_SET(field, string, bytes) \
     field(action, gpio_action_t) \
     field(pin_mask, uint32_t) \
     field(state, uint32_t)
 UJSON_SERDE_STRUCT(GpioSet, gpio_set_t, STRUCT_GPIO_SET);
 
-#define STRUCT_GPIO_GET(field, string) \
+#define STRUCT_GPIO_GET(field, string, bytes) \
     field(state, uint32_t)
 UJSON_SERDE_STRUCT(GpioGet, gpio_get_t, STRUCT_GPIO_GET);
 

@@ -34,61 +34,61 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(AccScaSubcommand, acc_sca_subcommand_t, ACCSCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(AccScaSubcommand, acc_sca_subcommand_t, ACCSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define ACC_SCA_EN_MASKS(field, string) \
+#define ACC_SCA_EN_MASKS(field, string, bytes) \
     field(en_masks, bool)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaEnMasks, penetrationtest_acc_sca_en_masks_t, ACC_SCA_EN_MASKS);
 
-#define ACC_SCA_NUM_TRACES(field, string) \
+#define ACC_SCA_NUM_TRACES(field, string, bytes) \
     field(num_traces, uint32_t)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaNumTraces, penetrationtest_acc_sca_num_traces_t, ACC_SCA_NUM_TRACES);
 
-#define ACC_SCA_BATCH_DIGEST(field, string) \
+#define ACC_SCA_BATCH_DIGEST(field, string, bytes) \
     field(batch_digest, uint8_t, ACCSCA_CMD_MAX_BATCH_DIGEST_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaBatchDigest, penetrationtest_acc_sca_batch_digest_t, ACC_SCA_BATCH_DIGEST);
 
-#define ACC_SCA_SEED(field, string) \
+#define ACC_SCA_SEED(field, string, bytes) \
     field(seed, uint8_t, ACCSCA_CMD_MAX_SEED_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaSeed, penetrationtest_acc_sca_seed_t, ACC_SCA_SEED);
 
-#define ACC_SCA_CONSTANT(field, string) \
+#define ACC_SCA_CONSTANT(field, string, bytes) \
     field(constant, uint8_t, ACCSCA_CMD_MAX_SEED_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaConstant, penetrationtest_acc_sca_constant_t, ACC_SCA_CONSTANT);
 
-#define ACC_SCA_KEY(field, string) \
+#define ACC_SCA_KEY(field, string, bytes) \
     field(shares, uint32_t, 4) \
     field(keys, uint32_t, 2)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaKey, penetrationtest_acc_sca_key_t, ACC_SCA_KEY);
 
-#define ACC_SCA_FIXED_SEED(field, string) \
+#define ACC_SCA_FIXED_SEED(field, string, bytes) \
     field(fixed_seed, uint32_t)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaFixedKey, penetrationtest_acc_sca_fixed_seed_t, ACC_SCA_FIXED_SEED);
 
-#define ACC_SCA_RSA512_DEC(field, string) \
+#define ACC_SCA_RSA512_DEC(field, string, bytes) \
     field(modu, uint8_t, 64) \
     field(exp, uint8_t, 64) \
     field(msg, uint8_t, 64)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaRsa512Dec, penetrationtest_acc_sca_rsa512_dec_t, ACC_SCA_RSA512_DEC);
 
-#define ACC_SCA_RSA512_DEC_OUT(field, string) \
+#define ACC_SCA_RSA512_DEC_OUT(field, string, bytes) \
     field(out, uint8_t, 64)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaRsa512DecOut, penetrationtest_acc_sca_rsa512_dec_out_t, ACC_SCA_RSA512_DEC_OUT);
 
-#define ACC_SCA_BIG_NUM(field, string) \
+#define ACC_SCA_BIG_NUM(field, string, bytes) \
     field(big_num, uint32_t, 8)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaBigNum, penetrationtest_acc_sca_big_num_t, ACC_SCA_BIG_NUM);
 
-#define ACC_SCA_ECDSA_P256_SIGN(field, string) \
+#define ACC_SCA_ECDSA_P256_SIGN(field, string, bytes) \
     field(msg, uint32_t, 8) \
     field(d0, uint32_t, 10) \
     field(k0, uint32_t, 10)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaEcdsaP256Sign, penetrationtest_acc_sca_ecdsa_p256_sign_t, ACC_SCA_ECDSA_P256_SIGN);
 
-#define ACC_SCA_ECDSA_P256_SIGNATURE(field, string) \
+#define ACC_SCA_ECDSA_P256_SIGNATURE(field, string, bytes) \
     field(r, uint8_t, 32) \
     field(s, uint8_t, 32)
 UJSON_SERDE_STRUCT(PenetrationtestAccScaEcdsaP256Signature, penetrationtest_acc_sca_ecdsa_p256_signature_t, ACC_SCA_ECDSA_P256_SIGNATURE);
 
-#define ACC_SCA_TEST_BATCH_OPS(field, string) \
+#define ACC_SCA_TEST_BATCH_OPS(field, string, bytes) \
     field(num_iterations, uint32_t) \
     field(fixed_data1, uint32_t) \
     field(fixed_data2, uint32_t) \
@@ -96,7 +96,7 @@ UJSON_SERDE_STRUCT(PenetrationtestAccScaEcdsaP256Signature, penetrationtest_acc_
     field(trigger, uint32_t)
 UJSON_SERDE_STRUCT(AccScaTestBatchOps, acc_sca_test_batch_ops_t, ACC_SCA_TEST_BATCH_OPS);
 
-#define ACC_SCA_OPS_RESULT(field, string) \
+#define ACC_SCA_OPS_RESULT(field, string, bytes) \
     field(result1, uint32_t, 8) \
     field(result2, uint32_t, 8) \
     field(result3, uint32_t, 8) \
@@ -107,7 +107,7 @@ UJSON_SERDE_STRUCT(AccScaTestBatchOps, acc_sca_test_batch_ops_t, ACC_SCA_TEST_BA
     field(result8, uint32_t)
 UJSON_SERDE_STRUCT(AccScaOpsResult, acc_sca_ops_result_t, ACC_SCA_OPS_RESULT);
 
-#define ACC_SCA_EMPTY(field, string) \
+#define ACC_SCA_EMPTY(field, string, bytes) \
     field(success, bool)
 UJSON_SERDE_STRUCT(AccScaEmpty, acc_sca_empty_t, ACC_SCA_EMPTY);
 

@@ -19,7 +19,7 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(GdbSubcommand, gdb_subcommand_t, GDB_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(GdbSubcommand, gdb_subcommand_t, GDB_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define GDB_OUT(field, string) \
+#define GDB_OUT(field, string, bytes) \
     field(err_status, uint32_t) \
     field(alerts, uint32_t, 3) \
     field(loc_alerts, uint32_t) \

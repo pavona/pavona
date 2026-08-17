@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -100,6 +101,20 @@ mod test {
         };
         let after = roundtrip("matrix", &serde_json::to_string(&before)?, true)?;
         let after = serde_json::from_str::<example::Matrix>(&after)?;
+        assert_eq!(before, after);
+        Ok(())
+    }
+
+    #[test]
+    fn test_blob() -> Result<()> {
+        let before = example::Blob {
+            data: [0xde, 0xad, 0xbe, 0xef].into_iter().collect(),
+            data_len: 4,
+        };
+        let json = serde_json::to_string(&before)?;
+        assert_eq!(json, r#"{"data":"deadbeef","data_len":4}"#);
+        let after = roundtrip("blob", &json, true)?;
+        let after = serde_json::from_str::<example::Blob>(&after)?;
         assert_eq!(before, after);
         Ok(())
     }

@@ -31,22 +31,22 @@ UJSON_SERDE_ENUM(Ed25519Subcommand, ed25519_subcommand_t, ED25519_SUBCOMMAND);
     value(_, HashEddsa)
 UJSON_SERDE_ENUM(CryptotestEd25519SignMode, cryptotest_ed25519_sign_mode_t, ED25519_SIGN_MODE);
 
-#define ED25519_MESSAGE(field, string) \
+#define ED25519_MESSAGE(field, string, bytes) \
     field(input, uint8_t, ED25519_CMD_MAX_MESSAGE_BYTES) \
     field(input_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEd25519Message, cryptotest_ed25519_message_t, ED25519_MESSAGE);
 
-#define ED25519_SIGNATURE(field, string) \
+#define ED25519_SIGNATURE(field, string, bytes) \
     field(signature, uint8_t, ED25519_CMD_MAX_SIGNATURE_BYTES) \
     field(signature_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEd25519Signature, cryptotest_ed25519_signature_t, ED25519_SIGNATURE);
 
-#define ED25519_PUBLIC_KEY(field, string) \
+#define ED25519_PUBLIC_KEY(field, string, bytes) \
     field(pk, uint8_t, ED25519_CMD_MAX_PUBLIC_KEY_BYTES) \
     field(pk_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEd25519PublicKey, cryptotest_ed25519_public_key_t, ED25519_PUBLIC_KEY);
 
-#define ED25519_SIGGEN_DATA(field, string) \
+#define ED25519_SIGGEN_DATA(field, string, bytes) \
     field(sk, uint8_t, ED25519_CMD_MAX_PRIVATE_KEY_BYTES) \
     field(sk_len, size_t) \
     field(pk, uint8_t, ED25519_CMD_MAX_PUBLIC_KEY_BYTES) \
@@ -57,7 +57,7 @@ UJSON_SERDE_STRUCT(CryptotestEd25519PublicKey, cryptotest_ed25519_public_key_t, 
     field(context_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEd25519SiggenData, cryptotest_ed25519_siggen_data_t, ED25519_SIGGEN_DATA);
 
-#define ED25519_SIGGEN_OUTPUT(field, string) \
+#define ED25519_SIGGEN_OUTPUT(field, string, bytes) \
     field(signature, uint8_t, ED25519_CMD_MAX_SIGNATURE_BYTES) \
     field(signature_len, size_t) \
     field(success, bool)

@@ -29,33 +29,33 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(KmacScaSubcommand, kmac_sca_subcommand_t, KMAC_SCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(KmacScaSubcommand, kmac_sca_subcommand_t, KMAC_SCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define KMAC_SCA_KEY(field, string) \
+#define KMAC_SCA_KEY(field, string, bytes) \
     field(key, uint8_t, KMACSCA_CMD_MAX_KEY_BYTES) \
     field(key_length, size_t)
 UJSON_SERDE_STRUCT(CryptotestKmacScaKey, cryptotest_kmac_sca_key_t, KMAC_SCA_KEY);
 
-#define KMAC_SCA_LFSR(field, string) \
+#define KMAC_SCA_LFSR(field, string, bytes) \
     field(seed, uint8_t, KMACSCA_CMD_MAX_LFSR_BYTES)
 UJSON_SERDE_STRUCT(CryptotestKmacScaLfsr, cryptotest_kmac_sca_lfsr_t, KMAC_SCA_LFSR);
 
-#define KMAC_SCA_FPGA_MODE(field, string) \
+#define KMAC_SCA_FPGA_MODE(field, string, bytes) \
     field(fpga_mode, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestKmacScaFpgaMode, cryptotest_kmac_sca_fpga_mode_t, KMAC_SCA_FPGA_MODE);
 
-#define KMAC_SCA_DATA(field, string) \
+#define KMAC_SCA_DATA(field, string, bytes) \
     field(data, uint8_t, KMACSCA_CMD_MAX_DATA_BYTES)
 UJSON_SERDE_STRUCT(CryptotestKmacScaData, cryptotest_kmac_sca_data_t, KMAC_SCA_DATA);
 
-#define KMAC_SCA_MSG(field, string) \
+#define KMAC_SCA_MSG(field, string, bytes) \
     field(msg, uint8_t, KMACSCA_CMD_MAX_MSG_BYTES) \
     field(msg_length, size_t)
 UJSON_SERDE_STRUCT(CryptotestKmacScaMsg, cryptotest_kmac_sca_msg_t, KMAC_SCA_MSG);
 
-#define KMAC_SCA_BATCH_DIGEST(field, string) \
+#define KMAC_SCA_BATCH_DIGEST(field, string, bytes) \
     field(batch_digest, uint8_t, KMACSCA_CMD_MAX_BATCH_DIGEST_BYTES)
 UJSON_SERDE_STRUCT(CryptotestKmacScaBatchDigest, cryptotest_kmac_sca_batch_digest_t, KMAC_SCA_BATCH_DIGEST);
 
-#define KMAC_SCA_DIGEST(field, string) \
+#define KMAC_SCA_DIGEST(field, string, bytes) \
     field(digest, uint8_t, KMACSCA_CMD_MAX_DIGEST_BYTES)
 UJSON_SERDE_STRUCT(CryptotestKmacScaDigest, cryptotest_kmac_sca_digest_t, KMAC_SCA_DIGEST);
 

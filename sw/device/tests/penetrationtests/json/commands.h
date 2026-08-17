@@ -38,7 +38,7 @@ extern "C" {
     value(_, BootFi)
 UJSON_SERDE_ENUM(PenetrationtestCommand, penetrationtest_cmd_t, COMMAND);
 
-#define PENTEST_NUM_ENC(field, string) \
+#define PENTEST_NUM_ENC(field, string, bytes) \
     field(num_enc, uint32_t)
 UJSON_SERDE_STRUCT(PenetrationtestCommandNumEnc, penetrationtest_num_enc_t, PENTEST_NUM_ENC);
 

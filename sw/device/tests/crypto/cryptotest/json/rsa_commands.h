@@ -55,38 +55,38 @@ UJSON_SERDE_ENUM(CryptotestRsaSecurityLevel, cryptotest_rsa_security_level_t, RS
     value(_, Shake256)
 UJSON_SERDE_ENUM(CryptotestRsaHashAlg, cryptotest_rsa_hash_alg_t, RSA_HASH_ALG);
 
-#define RSA_RAW_MESSAGE(field, string) \
+#define RSA_RAW_MESSAGE(field, string, bytes) \
     field(message, uint8_t, RSA_CMD_MAX_RAW_MESSAGE_BYTES) \
     field(message_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaRawMessage, cryptotest_rsa_raw_message_t, RSA_RAW_MESSAGE);
 
-#define RSA_DECRYPT_OUTPUT(field, string) \
+#define RSA_DECRYPT_OUTPUT(field, string, bytes) \
     field(success, uint8_t) \
     field(plaintext, uint8_t, RSA_CMD_MAX_RAW_MESSAGE_BYTES)    \
     field(plaintext_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaDecryptOutput, cryptotest_rsa_decrypt_output_t, RSA_DECRYPT_OUTPUT);
 
-#define RSA_LABEL(field, string) \
+#define RSA_LABEL(field, string, bytes) \
     field(label, uint8_t, RSA_CMD_MAX_LABEL_BYTES) \
     field(label_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaLabel, cryptotest_rsa_label_t, RSA_LABEL);
 
-#define RSA_MESSAGE_DIGEST(field, string) \
+#define RSA_MESSAGE_DIGEST(field, string, bytes) \
     field(message_digest, uint8_t, RSA_CMD_MAX_MESSAGE_DIGEST_BYTES) \
     field(message_digest_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaMessageDigest, cryptotest_rsa_message_digest_t, RSA_MESSAGE_DIGEST);
 
-#define RSA_SIGNATURE(field, string) \
+#define RSA_SIGNATURE(field, string, bytes) \
     field(signature, uint8_t, RSA_CMD_MAX_SIGNATURE_BYTES) \
     field(signature_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaSignature, cryptotest_rsa_signature_t, RSA_SIGNATURE);
 
-#define RSA_CIPHERTEXT(field, string) \
+#define RSA_CIPHERTEXT(field, string, bytes) \
     field(ciphertext, uint8_t, RSA_CMD_MAX_CIPHERTEXT_BYTES) \
     field(ciphertext_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaCiphertext, cryptotest_rsa_ciphertext_t, RSA_CIPHERTEXT);
 
-#define RSA_EXPECTED_LENGTH(field, string) \
+#define RSA_EXPECTED_LENGTH(field, string, bytes) \
     field(expected_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaExpectedLength, cryptotest_rsa_expected_length_t, RSA_EXPECTED_LENGTH);
 
@@ -95,13 +95,13 @@ UJSON_SERDE_STRUCT(CryptotestRsaExpectedLength, cryptotest_rsa_expected_length_t
     value(_, Failure)
 UJSON_SERDE_ENUM(CryptotestRsaVerifyOutput, cryptotest_rsa_verify_output_t, RSA_VERIFY_OUTPUT);
 
-#define RSA_PUBLIC_KEY(field, string) \
+#define RSA_PUBLIC_KEY(field, string, bytes) \
     field(n, uint8_t, RSA_CMD_MAX_MODULUS_BYTES) \
     field(n_len, size_t) \
     field(e, uint32_t)
 UJSON_SERDE_STRUCT(CryptotestRsaPublicKey, cryptotest_rsa_public_key_t, RSA_PUBLIC_KEY);
 
-#define RSA_PRIVATE_KEY(field, string) \
+#define RSA_PRIVATE_KEY(field, string, bytes) \
     field(n, uint8_t, RSA_CMD_MAX_MODULUS_BYTES) \
     field(n_len, size_t) \
     field(p, uint8_t, RSA_CMD_MAX_COFACTOR_BYTES) \

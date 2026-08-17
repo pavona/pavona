@@ -25,14 +25,14 @@ UJSON_SERDE_ENUM(AesKwpSubcommand, aes_kwp_subcommand_t, AES_KWP_SUBCOMMAND);
     value(_, Unwrap)
 UJSON_SERDE_ENUM(CryptotestAesKwpOperation, cryptotest_aes_kwp_operation_t, AES_KWP_OPERATION);
 
-#define AES_KWP_DATA(field, string) \
+#define AES_KWP_DATA(field, string, bytes) \
     field(key, uint8_t, AES_KWP_CMD_MAX_KEY_BYTES) \
     field(key_length, size_t) \
     field(input, uint8_t, AES_KWP_CMD_MAX_MSG_BYTES) \
     field(input_length, size_t)
 UJSON_SERDE_STRUCT(CryptotestAesKwpData, cryptotest_aes_kwp_data_t, AES_KWP_DATA);
 
-#define AES_KWP_OUTPUT(field, string) \
+#define AES_KWP_OUTPUT(field, string, bytes) \
     field(output, uint8_t, AES_KWP_CMD_MAX_MSG_BYTES) \
     field(output_len, size_t) \
     field(success, bool)

@@ -25,7 +25,7 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define OTPFI_VENDORTEST_PARTITION(field, string) \
+#define OTPFI_VENDORTEST_PARTITION(field, string, bytes) \
     field(partition_ref, uint32_t, OTPFI_MAX_VENDOR_TEST_SIZE) \
     field(partition_fi, uint32_t, OTPFI_MAX_VENDOR_TEST_SIZE) \
     field(data_faulty, bool, OTPFI_MAX_VENDOR_TEST_SIZE) \
@@ -36,7 +36,7 @@ RUST_ONLY(UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAN
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiVendortestPartition, otp_fi_vendortest_partition_t, OTPFI_VENDORTEST_PARTITION);
 
-#define OTPFI_OWNERSWCFG_PARTITION(field, string) \
+#define OTPFI_OWNERSWCFG_PARTITION(field, string, bytes) \
     field(partition_ref, uint32_t, OTPFI_MAX_OWNER_SW_CFG_SIZE) \
     field(partition_fi, uint32_t, OTPFI_MAX_OWNER_SW_CFG_SIZE) \
     field(data_faulty, bool, OTPFI_MAX_OWNER_SW_CFG_SIZE) \
@@ -47,7 +47,7 @@ UJSON_SERDE_STRUCT(OtpFiVendortestPartition, otp_fi_vendortest_partition_t, OTPF
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiOwnerswcfgPartition, otp_fi_ownerswcfg_partition_t, OTPFI_OWNERSWCFG_PARTITION);
 
-#define OTPFI_HWCFG_PARTITION(field, string) \
+#define OTPFI_HWCFG_PARTITION(field, string, bytes) \
     field(partition_ref, uint32_t, OTPFI_MAX_HW_CFG0_SIZE) \
     field(partition_fi, uint32_t, OTPFI_MAX_HW_CFG0_SIZE) \
     field(data_faulty, bool, OTPFI_MAX_HW_CFG0_SIZE) \
@@ -58,7 +58,7 @@ UJSON_SERDE_STRUCT(OtpFiOwnerswcfgPartition, otp_fi_ownerswcfg_partition_t, OTPF
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiHwcfgPartition, otp_fi_hwcfg_partition_t, OTPFI_HWCFG_PARTITION);
 
-#define OTPFI_LIFECYCLE_PARTITION(field, string) \
+#define OTPFI_LIFECYCLE_PARTITION(field, string, bytes) \
     field(partition_ref, uint32_t, OTPFI_MAX_LC_SIZE) \
     field(partition_fi, uint32_t, OTPFI_MAX_LC_SIZE) \
     field(data_faulty, bool, OTPFI_MAX_LC_SIZE) \

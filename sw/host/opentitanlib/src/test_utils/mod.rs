@@ -13,6 +13,7 @@ pub mod epmp;
 pub mod extclk;
 pub mod gpio;
 pub mod gpio_monitor;
+pub mod hex_bytes;
 pub mod i2c_target;
 pub mod init;
 pub mod lc;

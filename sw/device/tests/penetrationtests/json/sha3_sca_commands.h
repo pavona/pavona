@@ -27,32 +27,32 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(Sha3ScaSubcommand, sha3_sca_subcommand_t, SHA3_SCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(Sha3ScaSubcommand, sha3_sca_subcommand_t, SHA3_SCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define SHA3_SCA_MASKS(field, string) \
+#define SHA3_SCA_MASKS(field, string, bytes) \
     field(masks_off, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestSha3ScaMasks, cryptotest_sha3_sca_masks_off_t, SHA3_SCA_MASKS);
 
-#define SHA3_SCA_LFSR(field, string) \
+#define SHA3_SCA_LFSR(field, string, bytes) \
     field(seed, uint8_t, SHA3SCA_CMD_MAX_LFSR_BYTES)
 UJSON_SERDE_STRUCT(CryptotestSha3ScaLfsr, cryptotest_sha3_sca_lfsr_t, SHA3_SCA_LFSR);
 
-#define SHA3_SCA_DATA(field, string) \
+#define SHA3_SCA_DATA(field, string, bytes) \
     field(data, uint8_t, SHA3SCA_CMD_MAX_DATA_BYTES)
 UJSON_SERDE_STRUCT(CryptotestSha3ScaData, cryptotest_sha3_sca_data_t, SHA3_SCA_DATA);
 
-#define SHA3_SCA_FPGA_MODE(field, string) \
+#define SHA3_SCA_FPGA_MODE(field, string, bytes) \
     field(fpga_mode, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestSha3ScaFpgaMode, cryptotest_sha3_sca_fpga_mode_t, SHA3_SCA_FPGA_MODE);
 
-#define SHA3_SCA_MSG(field, string) \
+#define SHA3_SCA_MSG(field, string, bytes) \
     field(msg, uint8_t, SHA3SCA_CMD_MAX_MSG_BYTES) \
     field(msg_length, size_t)
 UJSON_SERDE_STRUCT(CryptotestSha3ScaMsg, cryptotest_sha3_sca_msg_t, SHA3_SCA_MSG);
 
-#define SHA3_SCA_STATUS(field, string) \
+#define SHA3_SCA_STATUS(field, string, bytes) \
     field(status, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestSha3ScaStatus, cryptotest_sha3_sca_status_t, SHA3_SCA_STATUS);
 
-#define SHA3_SCA_BATCH_DIGEST(field, string) \
+#define SHA3_SCA_BATCH_DIGEST(field, string, bytes) \
     field(batch_digest, uint8_t, SHA3SCA_CMD_MAX_BATCH_DIGEST_BYTES)
 UJSON_SERDE_STRUCT(CryptotestSha3ScaBatchDigest, cryptotest_sha3_sca_batch_digest_t, SHA3_SCA_BATCH_DIGEST);
 

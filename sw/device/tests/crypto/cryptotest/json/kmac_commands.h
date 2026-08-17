@@ -26,26 +26,26 @@ extern "C" {
     value(_, Kmac256)
 UJSON_SERDE_ENUM(CryptotestKmacMode, cryptotest_kmac_mode_t, KMAC_MODE);
 
-#define KMAC_REQUIRED_TAG_LENGTH(field, string) \
+#define KMAC_REQUIRED_TAG_LENGTH(field, string, bytes) \
     field(required_tag_length, size_t)
 UJSON_SERDE_STRUCT(CryptotestKmacRequiredTagLength, cryptotest_kmac_required_tag_length_t, KMAC_REQUIRED_TAG_LENGTH);
 
-#define KMAC_MESSAGE(field, string) \
+#define KMAC_MESSAGE(field, string, bytes) \
     field(message, uint8_t, KMAC_CMD_MAX_MESSAGE_BYTES) \
     field(message_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestKmacMessage, cryptotest_kmac_message_t, KMAC_MESSAGE);
 
-#define KMAC_KEY(field, string) \
+#define KMAC_KEY(field, string, bytes) \
     field(key, uint8_t, KMAC_CMD_MAX_KEY_BYTES) \
     field(key_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestKmacKey, cryptotest_kmac_key_t, KMAC_KEY);
 
-#define KMAC_CUSTOMIZATION_STRING(field, string) \
+#define KMAC_CUSTOMIZATION_STRING(field, string, bytes) \
     field(customization_string, uint8_t, KMAC_CMD_MAX_CUSTOMIZATION_STRING_BYTES) \
     field(customization_string_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestKmacCustomizationString, cryptotest_kmac_customization_string_t, KMAC_CUSTOMIZATION_STRING);
 
-#define KMAC_TAG(field, string) \
+#define KMAC_TAG(field, string, bytes) \
     field(tag, uint8_t, KMAC_CMD_MAX_TAG_BYTES) \
     field(tag_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestKmacTag, cryptotest_kmac_tag_t, KMAC_TAG);

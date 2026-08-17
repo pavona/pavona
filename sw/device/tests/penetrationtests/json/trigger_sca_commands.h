@@ -19,7 +19,7 @@ extern "C" {
     value(_, SelectTriggerSource)
 UJSON_SERDE_ENUM(TriggerScaSubcommand, trigger_sca_subcommand_t, TRIGGERSCA_SUBCOMMAND);
 
-#define TRIGGER_SCA_SOURCE(field, string) \
+#define TRIGGER_SCA_SOURCE(field, string, bytes) \
     field(source, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestTriggerScaSource, cryptotest_trigger_sca_source_t, TRIGGER_SCA_SOURCE);
 

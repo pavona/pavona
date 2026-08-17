@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -52,9 +53,12 @@
 #define ujson_struct_string(name_, size_, ...) \
     ujson_struct_field(name_, char, ##__VA_ARGS__, size_)
 
+#define ujson_struct_bytes(name_, size_, len_) \
+    ujson_struct_field(name_, uint8_t, size_)
+
 #define UJSON_DECLARE_STRUCT(formal_name_, name_, decl_, ...) \
     typedef struct formal_name_ { \
-        decl_(ujson_struct_field, ujson_struct_string) \
+        decl_(ujson_struct_field, ujson_struct_string, ujson_struct_bytes) \
     } name_
 
 #define ujson_enum_value(formal_name_, name_, ...) \
@@ -119,12 +123,20 @@
         if (--nfield) TRY(ujson_putbuf(uj, ",", 1)); \
     }
 
+#define ujson_ser_bytes(name_, size_, len_) { \
+        TRY(ujson_serialize_string(uj, #name_)); \
+        TRY(ujson_putbuf(uj, ":", 1)); \
+        size_t n = self->len_ < (size_t)size_ ? self->len_ : (size_t)size_; \
+        TRY(ujson_serialize_hex(uj, self->name_, n)); \
+        if (--nfield) TRY(ujson_putbuf(uj, ",", 1)); \
+    }
+
 #define UJSON_IMPL_SERIALIZE_STRUCT_WITH_PADDING(name_, decl_) \
     status_t ujson_serialize_with_padding_##name_(ujson_t *uj, const name_ *self, size_t max_size) { \
-        size_t nfield = decl_(ujson_count, ujson_count); \
+        size_t nfield = decl_(ujson_count, ujson_count, ujson_count); \
         uj->str_size = 0; \
         TRY(ujson_putbuf(uj, "{", 1)); \
-        decl_(ujson_ser_field, ujson_ser_string) \
+        decl_(ujson_ser_field, ujson_ser_string, ujson_ser_bytes) \
         if (max_size > uj->str_size + 1) { \
           for (size_t i = 0; i < max_size - uj->str_size - 1; i++) { \
             TRY(ujson_putbuf(uj, " ", 1)); \
@@ -137,9 +149,9 @@
 
 #define UJSON_IMPL_SERIALIZE_STRUCT(name_, decl_) \
     status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) { \
-        size_t nfield = decl_(ujson_count, ujson_count); \
+        size_t nfield = decl_(ujson_count, ujson_count, ujson_count); \
         TRY(ujson_putbuf(uj, "{", 1)); \
-        decl_(ujson_ser_field, ujson_ser_string) \
+        decl_(ujson_ser_field, ujson_ser_string, ujson_ser_bytes) \
         TRY(ujson_putbuf(uj, "}", 1)); \
         return OK_STATUS(); \
     } \
@@ -217,6 +229,11 @@
         ) /*endif*/ \
     }
 
+#define ujson_de_bytes(name_, size_, len_) \
+    else if (ujson_streq(key, #name_)) { \
+        TRY(ujson_deserialize_hex(uj, self->name_, size_, &self->len_)); \
+    }
+
 #define UJSON_IMPL_DESERIALIZE_STRUCT(name_, decl_) \
     status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
         size_t nfield = 0; \
@@ -230,7 +247,7 @@
             TRY(ujson_parse_qs(uj, key, sizeof(key))); \
             TRY(ujson_consume(uj, ':')); \
             if (0) {} \
-            decl_(ujson_de_field, ujson_de_string) \
+            decl_(ujson_de_field, ujson_de_string, ujson_de_bytes) \
             else { \
                 return INVALID_ARGUMENT(); \
             } \

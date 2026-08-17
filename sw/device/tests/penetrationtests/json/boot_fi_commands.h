@@ -20,7 +20,7 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(BootFiSubcommand, boot_fi_subcommand_t, BOOTFI_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(BootFiSubcommand, boot_fi_subcommand_t, BOOTFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define BOOTFI_STATUS(field, string) \
+#define BOOTFI_STATUS(field, string, bytes) \
     field(status, bool)
 UJSON_SERDE_STRUCT(BootFiStatus, boot_fi_status_t, BOOTFI_STATUS);
 // clang-format on

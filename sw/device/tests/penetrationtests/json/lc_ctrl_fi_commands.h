@@ -17,7 +17,7 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(LcCtrlFiSubcommand, lc_ctrl_fi_subcommand_t, LCCTRLFI_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(LcCtrlFiSubcommand, lc_ctrl_fi_subcommand_t, LCCTRLFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define LCCTRLFI_CORRUPTION(field, string) \
+#define LCCTRLFI_CORRUPTION(field, string, bytes) \
     field(res, uint32_t) \
     field(state, uint32_t) \
     field(counter, uint32_t) \

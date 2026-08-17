@@ -36,7 +36,7 @@ enum {
  * Provisioning data imported onto the device during CP.
  */
 // clang-format off
-#define STRUCT_MANUF_CP_PROVISIONING_DATA(field, string) \
+#define STRUCT_MANUF_CP_PROVISIONING_DATA(field, string, bytes) \
     field(wafer_auth_secret, uint32_t, 8) \
     field(test_unlock_token_hash, uint64_t, 2) \
     field(test_exit_token_hash, uint64_t, 2)
@@ -49,7 +49,7 @@ UJSON_SERDE_STRUCT(ManufCpProvisioningData, \
  * Provisioning data exported off the device during CP.
  */
 // clang-format off
-#define STRUCT_MANUF_CP_PROVISIONING_DATA_OUT(field, string) \
+#define STRUCT_MANUF_CP_PROVISIONING_DATA_OUT(field, string, bytes) \
     field(cp_device_id, uint32_t, 4)
 UJSON_SERDE_STRUCT(ManufCpProvisioningDataOut, \
                    manuf_cp_provisioning_data_out_t, \
@@ -60,7 +60,7 @@ UJSON_SERDE_STRUCT(ManufCpProvisioningDataOut, \
  * Test factory data imported onto the device prior to CP initialize stage.
  */
 // clang-format off
-#define STRUCT_MANUF_CP_TEST_DATA(field, string) \
+#define STRUCT_MANUF_CP_TEST_DATA(field, string, bytes) \
     field(lot_name, uint32_t) \
     field(wafer_number, uint32_t) \
     field(wafer_x_coord, uint32_t) \
@@ -74,7 +74,7 @@ UJSON_SERDE_STRUCT(ManufCpTestData, \
  * ECC P256 public key.
  */
 // clang-format off
-#define STRUCT_ECC_P256_PUBLIC_KEY(field, string) \
+#define STRUCT_ECC_P256_PUBLIC_KEY(field, string, bytes) \
     field(x, uint32_t, 8) \
     field(y, uint32_t, 8)
 UJSON_SERDE_STRUCT(EccP256PublicKey, \
@@ -87,7 +87,7 @@ UJSON_SERDE_STRUCT(EccP256PublicKey, \
  *  unlock, etc).
  */
 // clang-format off
-#define STRUCT_LC_TOKEN_HASH(field, string) \
+#define STRUCT_LC_TOKEN_HASH(field, string, bytes) \
     field(hash, uint64_t, 2)
 UJSON_SERDE_STRUCT(LcTokenHash, \
                    lc_token_hash_t, \
@@ -98,7 +98,7 @@ UJSON_SERDE_STRUCT(LcTokenHash, \
  * Provisioning data imported onto the device in FT during individualization.
  */
 // clang-format off
-#define STRUCT_MANUF_FT_INDIVIDUALIZE_DATA(field, string) \
+#define STRUCT_MANUF_FT_INDIVIDUALIZE_DATA(field, string, bytes) \
     field(ft_device_id, uint32_t, 4)
 UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
                    manuf_ft_individualize_data_t, \
@@ -109,7 +109,7 @@ UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
  * Inputs needed to generate certificates during personalization.
  */
 // clang-format off
-#define STRUCT_MANUF_CERTGEN_INPUTS(field, string) \
+#define STRUCT_MANUF_CERTGEN_INPUTS(field, string, bytes) \
     field(dice_auth_key_key_id, uint8_t, 20) \
     field(ext_auth_key_key_id, uint8_t, 20)
 UJSON_SERDE_STRUCT(ManufCertgenInputs, \
@@ -129,7 +129,7 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
  * index of the next free location in the container body.
  */
 // clang-format off
-#define STRUCT_PERSO_BLOB(field, string) \
+#define STRUCT_PERSO_BLOB(field, string, bytes) \
     field(num_objs, size_t) \
     field(next_free, size_t) \
     field(body, uint8_t, 5120)
@@ -142,7 +142,7 @@ UJSON_SERDE_STRUCT(PersoBlob, \
  * Sha256 hash digest.
  */
 // clang-format off
-#define STRUCT_SHA256_HASH(field, string) \
+#define STRUCT_SHA256_HASH(field, string, bytes) \
     field(data, uint32_t, 8)
 UJSON_SERDE_STRUCT(SerdesSha256Hash, \
                    serdes_sha256_hash_t, \

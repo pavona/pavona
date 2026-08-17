@@ -12,7 +12,7 @@ extern "C" {
 
 #define MODULE_ID MAKE_MODULE_ID('j', 'o', 't')
 
-#define STRUCT_OTTF_CRC(field, string) \
+#define STRUCT_OTTF_CRC(field, string, bytes) \
     field(crc, uint32_t)
 UJSON_SERDE_STRUCT(OttfCrc, ottf_crc_t, STRUCT_OTTF_CRC);
 

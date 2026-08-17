@@ -17,7 +17,7 @@ extern "C" {
     value(_, Configure)
 UJSON_SERDE_ENUM(ExtClkScaFiSubcommand, extclk_sca_fi_subcommand_t, EXTCLK_SCA_FI_SUBCOMMAND);
 
-#define EXTCLK_SCA_FI_CFG(field, string) \
+#define EXTCLK_SCA_FI_CFG(field, string, bytes) \
     field(sel, bool) \
     field(hi_speed_sel, bool)
 UJSON_SERDE_STRUCT(PenetrationtestExtClkScaFiCfg, penetrationtest_extclk_sca_fi_cfg_t, EXTCLK_SCA_FI_CFG);

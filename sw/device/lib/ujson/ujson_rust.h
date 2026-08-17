@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -37,6 +38,8 @@
 // clang-format off
 rust_attr[allow(unused_imports)]
 use opentitanlib::test_utils::status::status_t;
+rust_attr[allow(unused_imports)]
+use opentitanlib::test_utils::hex_bytes;
 
 // clang-format is turned off; as scary as these macros look, they look
 // even scarier after clang-format is done with them.
@@ -60,6 +63,10 @@ use opentitanlib::test_utils::status::status_t;
 #define ujson_struct_string(name_, size_, ...) \
     ujson_struct_field(name_, String, ##__VA_ARGS__)
 
+#define ujson_struct_bytes(name_, size_, len_) \
+    rust_attr[serde(with = "hex_bytes")] /*transform into #[...] */ \
+    ujson_struct_field(name_, uint8_t, size_)
+
 #define UJSON_DECLARE_STRUCT(formal_name_, name_, decl_, ...) \
     OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
     ( /*then*/ \
@@ -69,7 +76,7 @@ use opentitanlib::test_utils::status::status_t;
     ) /*endif*/ \
     rust_attr[allow(non_camel_case_types)] \
     pub struct name_ { \
-        decl_(ujson_struct_field, ujson_struct_string) \
+        decl_(ujson_struct_field, ujson_struct_string, ujson_struct_bytes) \
     } \
     rust_attr[allow(dead_code)] \
     pub type formal_name_ = name_ /*eat_semicolon*/

@@ -24,26 +24,26 @@ extern "C" {
 C_ONLY(UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
-#define HMACSCA_TRIGGERS(field, string) \
+#define HMACSCA_TRIGGERS(field, string, bytes) \
     field(start_trigger, bool) \
     field(msg_trigger, bool) \
     field(process_trigger, bool) \
     field(finish_trigger, bool)
 UJSON_SERDE_STRUCT(PenetrationtestHmacScaTriggers, penetrationtest_hmac_sca_triggers_t, HMACSCA_TRIGGERS);
 
-#define HMACSCA_MESSAGE(field, string) \
+#define HMACSCA_MESSAGE(field, string, bytes) \
     field(message, uint8_t, HMACSCA_CMD_MAX_MESSAGE_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestHmacScaMessage, penetrationtest_hmac_sca_message_t, HMACSCA_MESSAGE);
 
-#define HMACSCA_KEY(field, string) \
+#define HMACSCA_KEY(field, string, bytes) \
     field(key, uint8_t, HMACSCA_CMD_MAX_KEY_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestHmacScaKey, penetrationtest_hmac_sca_key_t, HMACSCA_KEY);
 
-#define HMACSCA_TAG(field, string) \
+#define HMACSCA_TAG(field, string, bytes) \
     field(tag, uint8_t, HMACSCA_CMD_MAX_TAG_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestHmacScaTag, penetrationtest_hmac_sca_tag_t, HMACSCA_TAG);
 
-#define HMACSCA_NUM_IT(field, string) \
+#define HMACSCA_NUM_IT(field, string, bytes) \
     field(num_iterations, uint32_t)
 UJSON_SERDE_STRUCT(PenetrationtestHmacScaNumIt, penetrationtest_hmac_sca_num_it_t, HMACSCA_NUM_IT);
 

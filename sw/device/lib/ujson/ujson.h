@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -164,6 +165,18 @@ status_t ujson_consume_maybe(ujson_t *uj, char ch);
 status_t ujson_parse_qs(ujson_t *uj, char *str, size_t len);
 
 /**
+ * Parse a JSON quoted string of hex digit pairs into a byte buffer.
+ *
+ * @param uj A ujson IO context.
+ * @param buf A buffer to write the bytes into.
+ * @param max_len The length of the target buffer.
+ * @param[out] len Receives the number of bytes written.
+ * @return OK or an error.
+ */
+status_t ujson_deserialize_hex(ujson_t *uj, uint8_t *buf, size_t max_len,
+                               size_t *len);
+
+/**
  * Parse a JSON integer.
  *
  * @param uj A ujson IO context.
@@ -212,6 +225,16 @@ status_t ujson_deserialize_status_t(ujson_t *uj, status_t *value);
  * @return OK or an error.
  */
 status_t ujson_serialize_string(ujson_t *uj, const char *buf);
+
+/**
+ * Serialize a byte buffer as a JSON quoted string of hex digit pairs.
+ *
+ * @param uj A ujson IO context.
+ * @param buf The bytes to serialize.
+ * @param len The number of bytes to serialize.
+ * @return OK or an error.
+ */
+status_t ujson_serialize_hex(ujson_t *uj, const uint8_t *buf, size_t len);
 
 /**
  * Serialize an integer.

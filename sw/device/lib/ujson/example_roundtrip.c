@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -55,6 +56,13 @@ status_t roundtrip(const char *name) {
     TRY(check_crc32(&uj));
     ujson_crc32_reset(&uj);
     TRY(ujson_serialize_matrix(&uj, &x));
+    printf("\n%x", ujson_crc32_finish(&uj));
+  } else if (!strcmp(name, "blob")) {
+    blob x = {0};
+    TRY(ujson_deserialize_blob(&uj, &x));
+    TRY(check_crc32(&uj));
+    ujson_crc32_reset(&uj);
+    TRY(ujson_serialize_blob(&uj, &x));
     printf("\n%x", ujson_crc32_finish(&uj));
   } else if (!strcmp(name, "direction")) {
     direction x = {0};

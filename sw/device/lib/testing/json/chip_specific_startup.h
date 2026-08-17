@@ -13,33 +13,33 @@ extern "C" {
 #define MODULE_ID MAKE_MODULE_ID('j', 'c', 'h')
 
 // OTP words that we care about for low-level init.
-#define STRUCT_ROM_OTP_CONFIG(field, string) \
+#define STRUCT_ROM_OTP_CONFIG(field, string, bytes) \
     field(creator_sw_cfg_ast_init_en, uint32_t) \
     field(creator_sw_cfg_jitter_en, uint32_t)
 UJSON_SERDE_STRUCT(RomOtpConfig, rom_otp_config_t, STRUCT_ROM_OTP_CONFIG);
 
 // Configuration values from the entropy/rng IPs.
-#define STRUCT_ROM_ENTROPY_CONFIG(field, string) \
+#define STRUCT_ROM_ENTROPY_CONFIG(field, string, bytes) \
     field(entropy_src, uint32_t) \
     field(csrng, uint32_t) \
     field(edn, uint32_t)
 UJSON_SERDE_STRUCT(RomEntropyConfig, rom_entropy_config_t, STRUCT_ROM_ENTROPY_CONFIG);
 
 // ePMP configuration from the ROM.
-#define STRUCT_ROM_EPMP_CONFIG(field, string) \
+#define STRUCT_ROM_EPMP_CONFIG(field, string, bytes) \
     field(cfg, uint32_t, 4) \
     field(addr, uint32_t, 16) \
     field(mseccfg, uint32_t)
 UJSON_SERDE_STRUCT(RomEpmpConfig, rom_epmp_config_t, STRUCT_ROM_EPMP_CONFIG);
 
 // SRAM initialization values.
-#define STRUCT_SRAM_INIT(field, string) \
+#define STRUCT_SRAM_INIT(field, string, bytes) \
     field(scr_key_valid, bool) \
     field(scr_key_seed_valid, bool) \
     field(init_done, bool)
 UJSON_SERDE_STRUCT(SramInit, sram_init_t, STRUCT_SRAM_INIT);
 
-#define STRUCT_CHIP_STARTUP(field, string) \
+#define STRUCT_CHIP_STARTUP(field, string, bytes) \
     field(otp, rom_otp_config_t) \
     field(lc_state, uint32_t) \
     field(mstatus, uint32_t) \

@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,7 +24,7 @@ extern "C" {
 // } foo;
 // status_t ujson_serialize_foo(ujson_t *context, const foo *self);
 // status_t ujson_deserialize_foo(ujson_t *context, foo *self);
-#define STRUCT_FOO(field, string) \
+#define STRUCT_FOO(field, string, bytes) \
     field(foo, int32_t) \
     field(bar, uint32_t) \
     string(message, 20)
@@ -39,12 +40,12 @@ UJSON_SERDE_STRUCT(Foo, foo, STRUCT_FOO);
 // status_t ujson_serialize_rect(ujson_t *context, const rect *self);
 // status_t ujson_deserialize_rect(ujson_t *context, rect *self);
 // (and yes: `coord` has serialize and deserialize functions as well).
-#define STRUCT_COORD(field, string) \
+#define STRUCT_COORD(field, string, bytes) \
     field(x, int32_t) \
     field(y, int32_t)
 UJSON_SERDE_STRUCT(Coord, coord, STRUCT_COORD);
 
-#define STRUCT_RECT(field, string) \
+#define STRUCT_RECT(field, string, bytes) \
     field(top_left, coord) \
     field(bottom_right, coord)
 UJSON_SERDE_STRUCT(Rect, rect, STRUCT_RECT);
@@ -59,9 +60,23 @@ UJSON_SERDE_STRUCT(Rect, rect, STRUCT_RECT);
 // of a variable sized array:
 //   - Serialize will always emit _all_ elements.
 //   - Deserialize will _not_ initialize absent elements.
-#define STRUCT_MATRIX(field, string) \
+#define STRUCT_MATRIX(field, string, bytes) \
     field(k, int32_t, 3, 5)
 UJSON_SERDE_STRUCT(Matrix, matrix, STRUCT_MATRIX);
+
+// The next example demonstrates a `bytes` field:
+// struct Blob {
+//     uint8_t data[8];
+//     size_t data_len;
+// } blob;
+//
+// Unlike `field`, a `bytes` field is encoded as a hex string and carries
+// only `data_len` bytes on the wire.  The named length field must be
+// declared separately and must be a `size_t`.
+#define STRUCT_BLOB(field, string, bytes) \
+    bytes(data, 8, data_len) \
+    field(data_len, size_t)
+UJSON_SERDE_STRUCT(Blob, blob, STRUCT_BLOB);
 
 /////////////////////////////////////////////////////////////////////////////
 // Automatic generation of enums with serialize/deserialize functions:
@@ -102,7 +117,7 @@ C_ONLY(UJSON_SERDE_ENUM(FuzzyBool, fuzzy_bool, ENUM_FUZZY_BOOL, WITH_UNKNOWN));
 //
 // status_t ujson_serialize_misc_t(ujson_t *context, const misc_t *self);
 // status_t ujson_deserialize_misc_t(ujson_t *context, misc_t *self);
-#define STRUCT_MISC(field, string) \
+#define STRUCT_MISC(field, string, bytes) \
     field(value, bool) \
     field(status, status_t)
 UJSON_SERDE_STRUCT(Misc, misc_t, STRUCT_MISC);

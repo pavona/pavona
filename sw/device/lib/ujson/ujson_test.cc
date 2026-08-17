@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -85,6 +86,40 @@ TEST(UJson, ParseQuotedStringShortBuffer) {
 
   s = ujson_parse_qs(&uj, buf, sizeof(buf));
   EXPECT_EQ(status_err(s), kResourceExhausted);
+}
+
+TEST(UJson, DeserializeHex) {
+  SourceSink ss(R"json("00ff5a")json");
+  ujson_t uj = ss.UJson();
+  uint8_t buf[8];
+  size_t len = 0;
+
+  EXPECT_TRUE(status_ok(ujson_deserialize_hex(&uj, buf, sizeof(buf), &len)));
+  EXPECT_EQ(len, 3);
+  EXPECT_EQ(buf[0], 0x00);
+  EXPECT_EQ(buf[1], 0xff);
+  EXPECT_EQ(buf[2], 0x5a);
+
+  // The empty string is zero bytes.
+  ss.Reset(R"json("")json");
+  EXPECT_TRUE(status_ok(ujson_deserialize_hex(&uj, buf, sizeof(buf), &len)));
+  EXPECT_EQ(len, 0);
+}
+
+TEST(UJson, DeserializeHexError) {
+  SourceSink ss(R"json("0")json");
+  ujson_t uj = ss.UJson();
+  uint8_t buf[2];
+  size_t len = 0;
+
+  // An odd number of digits.
+  EXPECT_EQ(status_err(ujson_deserialize_hex(&uj, buf, sizeof(buf), &len)),
+            kOutOfRange);
+
+  // More bytes than the buffer holds.
+  ss.Reset(R"json("00112233")json");
+  EXPECT_EQ(status_err(ujson_deserialize_hex(&uj, buf, sizeof(buf), &len)),
+            kOutOfRange);
 }
 
 TEST(UJson, ParseBoolean) {
@@ -194,6 +229,31 @@ TEST(UJson, SerializeString) {
   ss.Reset();
   EXPECT_TRUE(status_ok(ujson_serialize_string(&uj, "\xFF\x01\x99")));
   EXPECT_EQ(ss.Sink(), R"json("\u00ff\u0001\u0099")json");
+}
+
+TEST(UJson, SerializeHex) {
+  SourceSink ss;
+  ujson_t uj = ss.UJson();
+  uint8_t buf[3] = {0x00, 0xff, 0x5a};
+
+  EXPECT_TRUE(status_ok(ujson_serialize_hex(&uj, buf, sizeof(buf))));
+  EXPECT_EQ(ss.Sink(), R"json("00ff5a")json");
+
+  // Zero bytes is the empty string.
+  ss.Reset();
+  EXPECT_TRUE(status_ok(ujson_serialize_hex(&uj, buf, 0)));
+  EXPECT_EQ(ss.Sink(), R"json("")json");
+
+  // Longer than the internal chunk buffer.
+  uint8_t big[40];
+  for (size_t i = 0; i < sizeof(big); ++i) {
+    big[i] = static_cast<uint8_t>(i);
+  }
+  ss.Reset();
+  EXPECT_TRUE(status_ok(ujson_serialize_hex(&uj, big, sizeof(big))));
+  EXPECT_EQ(
+      ss.Sink(),
+      R"json("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627")json");
 }
 
 TEST(UJson, SerializeBool) {

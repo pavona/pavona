@@ -41,7 +41,7 @@ UJSON_SERDE_ENUM(CryptotestAesOperation, cryptotest_aes_operation_t, AES_OPERATI
     value(_, Null)
 UJSON_SERDE_ENUM(CryptotestAesPadding, cryptotest_aes_padding_t, AES_PADDING);
 
-#define AES_DATA(field, string) \
+#define AES_DATA(field, string, bytes) \
     field(key, uint8_t, AES_CMD_MAX_KEY_BYTES) \
     field(key_length, size_t) \
     field(iv, uint8_t, 16) \
@@ -49,7 +49,7 @@ UJSON_SERDE_ENUM(CryptotestAesPadding, cryptotest_aes_padding_t, AES_PADDING);
     field(input_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestAesData, cryptotest_aes_data_t, AES_DATA);
 
-#define AES_OUTPUT(field, string) \
+#define AES_OUTPUT(field, string, bytes) \
     field(output, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(output_len, uint32_t)
 UJSON_SERDE_STRUCT(CryptotestAesOutput, cryptotest_aes_output_t, AES_OUTPUT);
