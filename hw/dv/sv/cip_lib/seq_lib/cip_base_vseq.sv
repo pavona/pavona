@@ -488,7 +488,7 @@ task cip_base_vseq::post_start();
 
     // If we are not in reset, ask the dut to re-initialise itself. This will issue a reset if the
     // sequence has do_apply_reset=1. If not, the reset will be applied in an upper vseq.
-    if (cfg.clk_rst_vif.rst_n) dut_init();
+    if (cfg.clk_rst_vif.rst_n && do_dut_init) dut_init();
   end else begin
     if (cfg.clk_rst_vif.rst_n) check_no_fatal_alerts();
   end
