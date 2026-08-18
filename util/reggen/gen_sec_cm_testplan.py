@@ -6,7 +6,7 @@
 import logging as log
 from pathlib import Path
 
-import hjson  # type: ignore
+import hjson
 from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
 import importlib.resources
