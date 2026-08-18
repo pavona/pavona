@@ -7,7 +7,7 @@ import logging as log
 from typing import Sequence, Optional
 from dataclasses import dataclass
 
-import hjson  # type: ignore
+import hjson
 from reggen.alert import Alert
 from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
