@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass
-import hjson  # type: ignore
+import hjson
 import re
 from typing import Dict
 
