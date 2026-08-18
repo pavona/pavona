@@ -39,6 +39,11 @@ py_binary(
 )
 
 py_binary(
+    name = "acvp_client",
+    srcs = ["acvp_client.py"],
+)
+
+py_binary(
     name = "rom_chip_info",
     srcs = ["rom_chip_info.py"],
     deps = [":version_file"],

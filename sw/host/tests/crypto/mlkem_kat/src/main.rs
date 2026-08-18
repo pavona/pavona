@@ -5,11 +5,14 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
-use std::fs;
 use std::time::Duration;
 
 use serde::Deserialize;
+use serde_json::json;
 
+use cryptotest_acvp::{
+    AcvpIds, AcvpOpts, Fields, ResponseBuilder, check_output, hex, read_vectors,
+};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::mlkem_commands::{
     CryptotestMlkemDecapsData, CryptotestMlkemDecapsOutput, CryptotestMlkemEncapsData,
@@ -34,14 +37,22 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     mlkem_json: Vec<String>,
+
+    #[command(flatten)]
+    acvp: AcvpOpts,
 }
 
 #[derive(Debug, Deserialize)]
 struct MlkemTestCase {
     vendor: String,
-    test_case_id: usize,
+    test_case_id: u64,
     operation: String,
     parameter_set: usize,
+    #[serde(flatten)]
+    acvp: AcvpIds,
+    /// The group's encapDecap function, which selects the response shape.
+    #[serde(default)]
+    function: String,
     #[serde(default)]
     seed: Vec<u8>,
     #[serde(default)]
@@ -58,11 +69,39 @@ struct MlkemTestCase {
     expected_c: Vec<u8>,
     #[serde(default)]
     expected_k: Vec<u8>,
-    result: bool,
+    /// Absent where the outcome is the answer, as in the ACVP key checks.
+    #[serde(default)]
+    result: Option<bool>,
 }
 
-// Raw outputs returned by the device. Only the fields the operation produces
-// are populated.
+impl MlkemTestCase {
+    /// The response fields for this mode; in encapDecap the group's function selects the shape.
+    fn response_fields(&self, outputs: &MlkemOutputs) -> Fields {
+        let mut fields = Fields::new();
+        match (self.acvp.mode.as_str(), self.function.as_str()) {
+            ("keyGen", _) => {
+                fields.insert("ek".to_string(), json!(hex(&outputs.ek)));
+                fields.insert("dk".to_string(), json!(hex(&outputs.dk)));
+            }
+            ("encapDecap", "encapsulation") => {
+                fields.insert("c".to_string(), json!(hex(&outputs.c)));
+                fields.insert("k".to_string(), json!(hex(&outputs.k)));
+            }
+            ("encapDecap", "decapsulation") => {
+                fields.insert("k".to_string(), json!(hex(&outputs.k)));
+            }
+            ("encapDecap", "encapsulationKeyCheck" | "decapsulationKeyCheck") => {
+                fields.insert("testPassed".to_string(), json!(outputs.success));
+            }
+            (mode, function) => {
+                panic!("Unsupported ACVP ML-KEM mode/function: {mode}/{function}")
+            }
+        }
+        fields
+    }
+}
+
+// What the device returned; only the operation's own fields are set.
 #[derive(Default)]
 struct MlkemOutputs {
     success: bool,
@@ -70,13 +109,6 @@ struct MlkemOutputs {
     dk: Vec<u8>,
     c: Vec<u8>,
     k: Vec<u8>,
-}
-
-fn check_output(name: &str, tc_id: usize, actual: &[u8], expected: &[u8]) {
-    if expected.is_empty() {
-        return;
-    }
-    assert_eq!(actual, expected, "test #{}: {} mismatch", tc_id, name);
 }
 
 // Buffer sizes based on ML-KEM-1024 (largest parameter set),
@@ -90,6 +122,7 @@ fn run_mlkem_testcase(
     test_case: &MlkemTestCase,
     opts: &Opts,
     spi_console: &SpiConsoleDevice,
+    responses: &mut ResponseBuilder,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -187,18 +220,25 @@ fn run_mlkem_testcase(
         _ => panic!("Unsupported ML-KEM operation: {}", test_case.operation),
     };
 
-    assert_eq!(
-        outputs.success, test_case.result,
-        "test #{}: expected success={}, got={}",
-        test_case.test_case_id, test_case.result, outputs.success
-    );
+    if let Some(want) = test_case.result {
+        assert_eq!(
+            outputs.success, want,
+            "test #{}: expected success={}, got={}",
+            test_case.test_case_id, want, outputs.success
+        );
+    }
 
-    if test_case.result {
+    if test_case.result == Some(true) {
         let id = test_case.test_case_id;
         check_output("ek", id, &outputs.ek, &test_case.expected_ek);
         check_output("dk", id, &outputs.dk, &test_case.expected_dk);
         check_output("c", id, &outputs.c, &test_case.expected_c);
         check_output("k", id, &outputs.k, &test_case.expected_k);
+    }
+
+    if test_case.vendor == "acvp" {
+        let fields = test_case.response_fields(&outputs);
+        responses.add(&test_case.acvp, test_case.test_case_id, fields);
     }
 
     Ok(())
@@ -209,19 +249,14 @@ fn test_mlkem(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
-    let mut test_counter = 0u32;
-    let test_vector_files = &opts.mlkem_json;
-    for file in test_vector_files {
-        let raw_json = fs::read_to_string(file)?;
-        let tests: Vec<MlkemTestCase> = serde_json::from_str(&raw_json)?;
+    let cases: Vec<MlkemTestCase> = read_vectors(opts.acvp.vectors(&opts.mlkem_json))?;
 
-        for test in &tests {
-            test_counter += 1;
-            log::info!("Test counter: {}", test_counter);
-            run_mlkem_testcase(test, opts, &spi_console_device)?;
-        }
+    let mut responses = ResponseBuilder::new();
+    for (counter, case) in cases.iter().enumerate() {
+        log::info!("Test counter: {}", counter + 1);
+        run_mlkem_testcase(case, opts, &spi_console_device, &mut responses)?;
     }
-    Ok(())
+    responses.finish(&opts.acvp)
 }
 
 fn main() -> Result<()> {

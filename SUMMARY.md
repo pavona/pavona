@@ -771,6 +771,7 @@
   - [Top-Level Tests](./sw/device/tests/README.md)
     - [Manufacturer Test Hooks](./sw/device/tests/closed_source/README.md)
     - [Cryptotest](./sw/device/tests/crypto/cryptotest/README.md)
+      - [ACVP](./sw/host/cryptotest/testvectors/acvp/README.md)
       - [SPHINCS+ Test Vectors](./sw/device/tests/crypto/testvectors/sphincsplus_kat/README.md)
     - [Silicon Validation](./sw/device/tests/doc/sival/README.md)
       - [Developer Guide](./sw/device/tests/doc/sival/devguide.md)

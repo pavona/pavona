@@ -5,11 +5,14 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
-use std::fs;
 use std::time::Duration;
 
 use serde::Deserialize;
+use serde_json::json;
 
+use cryptotest_acvp::{
+    AcvpIds, AcvpOpts, Fields, ResponseBuilder, check_output, hex, read_vectors,
+};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::mldsa_commands::{
     CryptotestMldsaKeygenData, CryptotestMldsaKeygenOutput, CryptotestMldsaKeygenSignData,
@@ -34,14 +37,19 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     mldsa_json: Vec<String>,
+
+    #[command(flatten)]
+    acvp: AcvpOpts,
 }
 
 #[derive(Debug, Deserialize)]
 struct MldsaTestCase {
     vendor: String,
-    test_case_id: usize,
+    test_case_id: u64,
     operation: String,
     parameter_set: usize,
+    #[serde(flatten)]
+    acvp: AcvpIds,
     #[serde(default)]
     seed: Vec<u8>,
     #[serde(default)]
@@ -62,26 +70,41 @@ struct MldsaTestCase {
     expected_sk: Vec<u8>,
     #[serde(default)]
     expected_signature: Vec<u8>,
-    result: bool,
+    /// Absent where the outcome is the answer, as in ACVP sigVer.
+    #[serde(default)]
+    result: Option<bool>,
     #[serde(default)]
     sign_mode: String,
 }
 
-// Raw outputs returned by the device. Only the fields the operation produces
-// are populated.
+impl MldsaTestCase {
+    /// The response fields for this mode.
+    fn response_fields(&self, outputs: &MldsaOutputs) -> Fields {
+        let mut fields = Fields::new();
+        match self.acvp.mode.as_str() {
+            "keyGen" => {
+                fields.insert("pk".to_string(), json!(hex(&outputs.pk)));
+                fields.insert("sk".to_string(), json!(hex(&outputs.sk)));
+            }
+            "sigGen" => {
+                fields.insert("signature".to_string(), json!(hex(&outputs.signature)));
+            }
+            "sigVer" => {
+                fields.insert("testPassed".to_string(), json!(outputs.success));
+            }
+            other => panic!("Unsupported ACVP ML-DSA mode: {other}"),
+        }
+        fields
+    }
+}
+
+// What the device returned; only the operation's own fields are set.
 #[derive(Default)]
 struct MldsaOutputs {
     success: bool,
     pk: Vec<u8>,
     sk: Vec<u8>,
     signature: Vec<u8>,
-}
-
-fn check_output(name: &str, tc_id: usize, actual: &[u8], expected: &[u8]) {
-    if expected.is_empty() {
-        return;
-    }
-    assert_eq!(actual, expected, "test #{}: {} mismatch", tc_id, name);
 }
 
 fn mldsa_sign_mode(sign_mode: &str) -> MldsaSignMode {
@@ -115,6 +138,7 @@ fn run_mldsa_testcase(
     test_case: &MldsaTestCase,
     opts: &Opts,
     spi_console: &SpiConsoleDevice,
+    responses: &mut ResponseBuilder,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -237,13 +261,15 @@ fn run_mldsa_testcase(
         _ => panic!("Unsupported ML-DSA operation: {}", test_case.operation),
     };
 
-    assert_eq!(
-        outputs.success, test_case.result,
-        "test #{}: expected success={}, got={}",
-        test_case.test_case_id, test_case.result, outputs.success
-    );
+    if let Some(want) = test_case.result {
+        assert_eq!(
+            outputs.success, want,
+            "test #{}: expected success={}, got={}",
+            test_case.test_case_id, want, outputs.success
+        );
+    }
 
-    if test_case.result {
+    if test_case.result == Some(true) {
         let id = test_case.test_case_id;
         check_output("pk", id, &outputs.pk, &test_case.expected_pk);
         check_output("sk", id, &outputs.sk, &test_case.expected_sk);
@@ -255,6 +281,11 @@ fn run_mldsa_testcase(
         );
     }
 
+    if test_case.vendor == "acvp" {
+        let fields = test_case.response_fields(&outputs);
+        responses.add(&test_case.acvp, test_case.test_case_id, fields);
+    }
+
     Ok(())
 }
 
@@ -263,19 +294,14 @@ fn test_mldsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
-    let mut test_counter = 0u32;
-    let test_vector_files = &opts.mldsa_json;
-    for file in test_vector_files {
-        let raw_json = fs::read_to_string(file)?;
-        let tests: Vec<MldsaTestCase> = serde_json::from_str(&raw_json)?;
+    let cases: Vec<MldsaTestCase> = read_vectors(opts.acvp.vectors(&opts.mldsa_json))?;
 
-        for test in &tests {
-            test_counter += 1;
-            log::info!("Test counter: {}", test_counter);
-            run_mldsa_testcase(test, opts, &spi_console_device)?;
-        }
+    let mut responses = ResponseBuilder::new();
+    for (counter, case) in cases.iter().enumerate() {
+        log::info!("Test counter: {}", counter + 1);
+        run_mldsa_testcase(case, opts, &spi_console_device, &mut responses)?;
     }
-    Ok(())
+    responses.finish(&opts.acvp)
 }
 
 fn main() -> Result<()> {

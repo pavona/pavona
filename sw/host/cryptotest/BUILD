@@ -6,6 +6,11 @@ package(default_visibility = ["//visibility:public"])
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 rust_library(
     name = "cryptotest_parser",
     srcs = ["cryptotest_parser.rs"],

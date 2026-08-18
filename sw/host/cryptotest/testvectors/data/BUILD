@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -578,16 +579,21 @@ run_binary(
         name = "acvp_mlkem_{}_json".format(test_type),
         srcs = [
             "//sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json",
-            "@acvp_testvectors//{}:internalProjection.json".format(acvp_dir),
+            "@acvp_testvectors//{}:expectedResults.json".format(acvp_dir),
+            "@acvp_testvectors//{}:prompt.json".format(acvp_dir),
         ],
         outs = [":acvp_mlkem_{}.json".format(test_type)],
         args = [
             "--src",
-            "$(location @acvp_testvectors//{}:internalProjection.json)".format(acvp_dir),
+            "$(location @acvp_testvectors//{}:prompt.json)".format(acvp_dir),
             "--dst",
             "$(location :acvp_mlkem_{}.json)".format(test_type),
             "--schema",
             "$(location //sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json)",
+            # The answers, folded onto the test cases the same way the
+            # Wycheproof vectors carry theirs.
+            "--expected",
+            "$(location @acvp_testvectors//{}:expectedResults.json)".format(acvp_dir),
             "--test-type",
             test_type,
         ],
@@ -604,18 +610,27 @@ run_binary(
         name = "acvp_mldsa_{}_json".format(test_type),
         srcs = [
             "//sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json",
-            "@acvp_testvectors//{}:internalProjection.json".format(acvp_dir),
+            "@acvp_testvectors//{}:expectedResults.json".format(acvp_dir),
+            "@acvp_testvectors//{}:prompt.json".format(acvp_dir),
         ],
         outs = [":acvp_mldsa_{}.json".format(test_type)],
         args = [
             "--src",
-            "$(location @acvp_testvectors//{}:internalProjection.json)".format(acvp_dir),
+            "$(location @acvp_testvectors//{}:prompt.json)".format(acvp_dir),
             "--dst",
             "$(location :acvp_mldsa_{}.json)".format(test_type),
             "--schema",
             "$(location //sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json)",
+            # The answers, folded onto the test cases the same way the
+            # Wycheproof vectors carry theirs.
+            "--expected",
+            "$(location @acvp_testvectors//{}:expectedResults.json)".format(acvp_dir),
             "--test-type",
             test_type,
+            # NIST's published sample sets declare every capability the
+            # algorithm has, so they contain groups this cryptolib does not
+            # implement.
+            "--skip-unsupported",
         ],
         tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_mldsa_parser",
     )

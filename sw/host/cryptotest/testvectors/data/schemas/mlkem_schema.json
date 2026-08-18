@@ -26,6 +26,34 @@
         "description": "Incremental test case ID",
         "type": "integer"
       },
+      "algorithm": {
+        "description": "ACVP algorithm the test came from",
+        "type": "string"
+      },
+      "mode": {
+        "description": "ACVP mode the test came from",
+        "type": "string"
+      },
+      "function": {
+        "description": "ACVP encapDecap function the test came from",
+        "type": "string"
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
       "operation": {
         "description": "ML-KEM operation type",
         "type": "string",

@@ -8,6 +8,13 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 py_library(
+    name = "acvp_util",
+    srcs = ["acvp_util.py"],
+    imports = ["."],
+    visibility = ["//visibility:private"],
+)
+
+py_library(
     name = "cryptotest_util",
     srcs = ["cryptotest_util.py"],
     imports = ["."],
@@ -237,6 +244,7 @@ py_binary(
     name = "nist_acvp_mldsa_parser",
     srcs = ["nist_acvp_mldsa_parser.py"],
     deps = [
+        ":acvp_util",
         requirement("jsonschema"),
     ],
 )
@@ -253,6 +261,7 @@ py_binary(
     name = "nist_acvp_mlkem_parser",
     srcs = ["nist_acvp_mlkem_parser.py"],
     deps = [
+        ":acvp_util",
         requirement("jsonschema"),
     ],
 )

@@ -3,13 +3,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Parser for converting ACVP ML-DSA testvectors to JSON.
+"""Parser for converting ACVP ML-DSA prompts to JSON.
 
-Uses the internalProjection files from the NIST ACVP-Server repo.
+Reads a `prompt.json` vector set: the inputs an ACVP session hands the
+implementation under test. The harness assembles the response.
 Supports:
   - ML-DSA-keyGen-FIPS204 (keygen)
   - ML-DSA-sigGen-FIPS204 (siggen)
   - ML-DSA-sigVer-FIPS204 (sigver)
+
+Each test carries the `tg_id` and `vs_id` it came from, so the harness can
+rebuild the test group structure the response requires.
 
 Within the external interface, pure ML-DSA and HashML-DSA are supported
 for the hash functions the cryptolib implements (SHA2-256/384/512,
@@ -26,6 +30,9 @@ import json
 import sys
 
 import jsonschema
+
+from acvp_util import (acvp_common, apply_expected, load_vector_set,
+                       report_skipped)
 
 PARAMETER_SETS = {
     "ML-DSA-44": 44,
@@ -75,33 +82,25 @@ def message_and_sign_mode(group, test):
 
 
 def parse_keygen(data):
-    """Parse ML-DSA-keyGen internalProjection.
-    Expected outputs: pk and sk."""
+    """Parse an ML-DSA-keyGen prompt. Response: pk and sk."""
     test_vectors = []
     for group in data["testGroups"]:
         param_set = PARAMETER_SETS[group["parameterSet"]]
         for test in group["tests"]:
             seed = bytes.fromhex(test["seed"])
-            pk = bytes.fromhex(test["pk"])
-            sk = bytes.fromhex(test["sk"])
             test_vectors.append({
-                "vendor": "acvp",
+                **acvp_common(data, group),
                 "test_case_id": test["tcId"],
                 "operation": "keygen",
                 "parameter_set": param_set,
                 "seed": list(seed),
-                "expected_pk": list(pk),
-                "expected_sk": list(sk),
                 "result": True,
             })
     return test_vectors
 
 
-def parse_siggen(data):
-    """Parse ML-DSA-sigGen internalProjection.
-    Deterministic and randomized; pure ML-DSA, HashML-DSA, and the internal
-    signature interface with externalMu=true. Expected output: the
-    signature."""
+def parse_siggen(data, skip_unsupported):
+    """Parse an ML-DSA-sigGen prompt. Response: the signature."""
     test_vectors = []
     skipped_hash_alg = 0
     skipped_interface = 0
@@ -124,10 +123,9 @@ def parse_siggen(data):
                 continue
 
             sk = bytes.fromhex(test["sk"])
-            sig = bytes.fromhex(test["signature"])
             rnd = bytes(32) if deterministic else bytes.fromhex(test["rnd"])
             test_vectors.append({
-                "vendor": "acvp",
+                **acvp_common(data, group),
                 "test_case_id": test["tcId"],
                 "operation": "siggen",
                 "parameter_set": param_set,
@@ -136,24 +134,18 @@ def parse_siggen(data):
                 "message": list(message),
                 "context": list(context),
                 "rnd": list(rnd),
-                "expected_signature": list(sig),
                 "result": True,
             })
-    if skipped_hash_alg:
-        print(f"parse_siggen: skipped {skipped_hash_alg} test(s) with an "
-              "unsupported hash algorithm", file=sys.stderr)
-    if skipped_interface:
-        print(f"parse_siggen: skipped {skipped_interface} test(s) using the "
-              "internal signature interface without a precomputed mu "
-              "(this cryptolib has no on-device path to compute mu from a "
-              "raw message)", file=sys.stderr)
+    report_skipped("parse_siggen", {
+        "the hash algorithm is not implemented": skipped_hash_alg,
+        "the internal signature interface needs a precomputed mu":
+            skipped_interface,
+    }, skip_unsupported)
     return test_vectors
 
 
-def parse_sigver(data):
-    """Parse ML-DSA-sigVer internalProjection.
-    Pure ML-DSA, HashML-DSA, and the internal signature interface with
-    externalMu=true."""
+def parse_sigver(data, skip_unsupported):
+    """Parse an ML-DSA-sigVer prompt. Response: testPassed."""
     test_vectors = []
     skipped_hash_alg = 0
     skipped_interface = 0
@@ -177,7 +169,7 @@ def parse_sigver(data):
             pk = bytes.fromhex(test["pk"])
             sig = bytes.fromhex(test["signature"])
             test_vectors.append({
-                "vendor": "acvp",
+                **acvp_common(data, group),
                 "test_case_id": test["tcId"],
                 "operation": "sigver",
                 "parameter_set": param_set,
@@ -186,36 +178,47 @@ def parse_sigver(data):
                 "message": list(message),
                 "context": list(context),
                 "signature": list(sig),
-                "result": test["testPassed"],
             })
-    if skipped_hash_alg:
-        print(f"parse_sigver: skipped {skipped_hash_alg} test(s) with an "
-              "unsupported hash algorithm", file=sys.stderr)
-    if skipped_interface:
-        print(f"parse_sigver: skipped {skipped_interface} test(s) using the "
-              "internal signature interface without a precomputed mu "
-              "(this cryptolib has no on-device path to compute mu from a "
-              "raw message)", file=sys.stderr)
+    report_skipped("parse_sigver", {
+        "the hash algorithm is not implemented": skipped_hash_alg,
+        "the internal signature interface needs a precomputed mu":
+            skipped_interface,
+    }, skip_unsupported)
     return test_vectors
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Parsing utility for ACVP ML-DSA testvectors.")
+        description="Parsing utility for ACVP ML-DSA prompts.")
     parser.add_argument(
         "--src",
-        type=argparse.FileType("r"),
-        help="Source ACVP internalProjection JSON file.",
+        type=str,
+        help="Source ACVP prompt file.",
     )
     parser.add_argument(
         "--dst",
-        type=argparse.FileType("w"),
+        type=str,
         help="Destination output JSON file.",
+    )
+    parser.add_argument(
+        "--expected",
+        type=str,
+        help="ACVP expectedResults.json holding the answers to the prompt. "
+        "Without it the test vectors carry no expected outputs and the "
+        "harness only records what the device returns.",
     )
     parser.add_argument(
         "--schema",
         type=str,
         help="JSON schema file for validation.",
+    )
+    parser.add_argument(
+        "--skip-unsupported",
+        action="store_true",
+        help="Skip test cases this cryptolib cannot answer. Without it any "
+        "such test case is an error. NIST's published "
+        "sample sets declare every capability an algorithm has, so parsing "
+        "one of those needs this.",
     )
     parser.add_argument(
         "--test-type",
@@ -225,20 +228,23 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    raw_data = json.load(args.src)
+    raw_data = load_vector_set(args.src)
 
     if args.test_type == "keygen":
         test_vectors = parse_keygen(raw_data)
     elif args.test_type == "siggen":
-        test_vectors = parse_siggen(raw_data)
+        test_vectors = parse_siggen(raw_data, args.skip_unsupported)
     elif args.test_type == "sigver":
-        test_vectors = parse_sigver(raw_data)
+        test_vectors = parse_sigver(raw_data, args.skip_unsupported)
+
+    apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:
         schema = json.load(schema_file)
     jsonschema.validate(test_vectors, schema)
 
-    json.dump(test_vectors, args.dst, indent=4)
+    with open(args.dst, "w") as dst:
+        json.dump(test_vectors, dst, indent=4)
 
     return 0
 

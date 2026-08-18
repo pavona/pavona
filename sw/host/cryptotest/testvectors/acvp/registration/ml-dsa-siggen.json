@@ -1,0 +1,54 @@
+{
+  "algorithm": "ML-DSA",
+  "mode": "sigGen",
+  "revision": "FIPS204",
+  "capabilities": [
+    {
+      "parameterSets": [
+        "ML-DSA-44",
+        "ML-DSA-65",
+        "ML-DSA-87"
+      ],
+      "messageLength": [
+        {
+          "min": 8,
+          "max": 65536,
+          "increment": 8
+        }
+      ],
+      "hashAlgs": [
+        "SHA2-256",
+        "SHA2-384",
+        "SHA2-512",
+        "SHA3-224",
+        "SHA3-256",
+        "SHA3-384",
+        "SHA3-512",
+        "SHAKE-128",
+        "SHAKE-256"
+      ],
+      "contextLength": [
+        {
+          "min": 0,
+          "max": 2040,
+          "increment": 8
+        }
+      ]
+    }
+  ],
+  "deterministic": [
+    true,
+    false
+  ],
+  "signatureInterfaces": [
+    "external",
+    "internal"
+  ],
+  "externalMu": [
+    true
+  ],
+  "preHash": [
+    "pure",
+    "preHash"
+  ]
+}
